@@ -1,0 +1,17 @@
+{% extends "Base.html" %}
+{% load ptreefilters %}
+{% block title %}Thanks for playing{% endblock %}
+{% block content %}
+
+<p>
+Thank you for playing. 
+You have made at least <strong>{{ base_pay|currency }}</strong>. 
+You may receive an additional bonus. 
+To redeem this reward, please return to the Amazon Mechanical Turk HIT and enter your redemption code, 
+which is: 
+</p>
+
+<p><strong>{{ redemption_code }}</strong></p>
+
+
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "ptree/Base.html" %}
+{% load ptreefilters %}
+{% block application %}Start the game{% endblock %}
+{% block title %}Start{% endblock %}
+
+{% block content %}
+
+{% if debug %}
+<p><strong class="bad">Running in debug mode.</strong></p>
+{% endif %}
+
+<p>Thank you for accepting this HIT.</p>
+
+<p>
+You will perform a simple task. 
+Once you finish playing, you will receive a completion code in order 
+to get paid.
+</p>
+
+<p>Please enter a nickname.</p>
+
+{% include "ptree/Form.html" %}
+
+{% endblock %}

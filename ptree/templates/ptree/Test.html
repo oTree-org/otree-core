@@ -1,0 +1,46 @@
+<html>
+<head><title></title>
+
+<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.js"></script>
+
+</head>
+
+<body>
+
+<form id="form" method="post">
+    <label for="donation">Donation</label>
+	<input id="donation" name="donation" />
+
+    <input type="submit" value="Next page" />
+</form>
+
+<script type="text/javascript">
+
+    var SALTED = 'U2FsdGVkX1';
+    var EQUAL_SIGN = "=";
+
+    $.validator.addMethod("result_encrypted_text",
+    
+
+    function(text, element) {
+        return (this.optional(element) || text.substring(0, SALTED.length) == SALTED && text.slice(-1) == EQUAL_SIGN);
+    },
+    
+    "Result encrypted text should start with " + SALTED + " and end with " + EQUAL_SIGN
+    );
+
+    $("#form").validate({
+        errorClass: 'errorlist',
+        rules: {
+            donation: {
+                required: true,
+                result_encrypted_text: true
+            }
+        }
+    });
+</script>
+
+
+</body>
+</html>
