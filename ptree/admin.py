@@ -22,13 +22,13 @@ class PlayerAdmin(admin.ModelAdmin):
     list_display = ('code', 'link', 'has_visited')
 
     def link(self, instance):
-        url = '/{}/PickTreatment/?exp={}&player={}'.format(instance.experiment.URL_BASE, instance.experiment.code, instance.code)
+        url = '/{}/PickTreatment/?exp={}&player={}'.format(instance.experiment.url_base, instance.experiment.code, instance.code)
         return '<a href="{}" target="_blank">{}</a>'.format(url, url)
 
     link.short_description = "Give this link to a single user"
     link.allow_tags = True
 
-for game_label in settings.GAME_LABELS:
+for game_label in settings.PTREE_EXPERIMENT_APPS:
     module = import_module("{}.models".format(game_label))
     admin.site.register(module.Experiment)
     admin.site.register(module.Treatment, TreatmentAdmin)

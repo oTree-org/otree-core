@@ -25,7 +25,7 @@ import ayah
 
 
 class View(object):
-    URL_BASE = 'shared'
+    url_base = 'shared'
 
 class Captcha(ptree.views.abstract.PageWithForm, View):
     """
@@ -77,3 +77,17 @@ class RouteToNextPageInSequence(ptree.views.abstract.BaseView, View):
     def get(self, request, *args, **kwargs):
         self.increment_current_view_index()
         return self.redirect_to_current_view()
+
+class RedemptionCode(PageWithForm, View):
+
+    template_name = 'ptree/RedemptionCode.html'
+
+    def get_template_variables(self):
+        
+        self.player.is_finished = True
+        self.player.save()
+
+        return {'redemption_code': self.player.code,
+                'base_pay': self.treatment.base_pay,
+                'bonus': self.player.bonus(),
+                'total_pay': self.player.total_pay()}

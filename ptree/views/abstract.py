@@ -164,11 +164,11 @@ class BaseView(django.views.generic.base.View):
     @classmethod
     def url_base(cls):
         if hasattr(cls, 'Experiment'):
-            return cls.Experiment.URL_BASE
+            return cls.Experiment.url_base
         else:
             # i.e. if it's not part of a game, but rather a shared module etc
             # then you need to set this manually
-            return cls.URL_BASE
+            return cls.url_base
         
     @classmethod
     def url(cls):
@@ -225,8 +225,19 @@ class PageWithFormMixin(object):
 
     def get_context_data(self, **kwargs):
 
+        context = {}
+        
+        # jump to form on invalid submission
+        try:
+            # take it out of kwargs before calling super()
+            kwargs.pop('jump_to_form')
+        except KeyError:
+            context['jump_to_form'] = False
+        else:
+            context['jump_to_form'] = True
+
         # this will add the form to the context
-        context = super(PageWithFormMixin, self).get_context_data(**kwargs)
+        context += super(PageWithFormMixin, self).get_context_data(**kwargs)
         
         # whatever else you specify that doesn't go in the form
         # (e.g. info we display to the user)
@@ -265,6 +276,12 @@ class PageWithFormMixin(object):
         self.save_objects()
         self.increment_current_view_index()
         return super(PageWithFormMixin, self).form_valid(form)
+
+    def form_invalid(self, form):
+        """
+
+        """
+        return self.render_to_response(self.get_context_data(form=form, jump_to_form = True ))
 
 class PageWithModelForm(PageWithFormMixin, django.views.generic.edit.UpdateView, BaseView):
     """For pages with a form whose values you want to save to the database.
@@ -470,7 +487,7 @@ class PickTreatment(django.views.generic.base.View):
                 ## and assign to that one to even out the counts
                 
                 # lambda function to count the number of completed matches in a given treatment
-                number_of_completed_matches = lambda treatment: len([match for match in treatment.matches() if match.is_completed()])
+                number_of_completed_matches = lambda treatment: len([match for match in treatment.matches() if match.is_finished()])
 
                 # of all the treatments, what is the minimum number of matches completed?
                 min_number_of_completed_matches = number_of_completed_matches(min(experiment.treatment_set.all(), key = number_of_completed_matches))
@@ -486,18 +503,18 @@ class PickTreatment(django.views.generic.base.View):
         # we don't actually process this argument in the next view,
         # since we already stored it in cookies.
         # but it's convenient for troubleshooting to know what treatment you're in.
-        return HttpResponseRedirect('/{}/Start/?{}={}'.format(experiment.URL_BASE, SessionKeys.treatment_code, treatment.code))
+        return HttpResponseRedirect('/{}/Start/?{}={}'.format(experiment.url_base, SessionKeys.treatment_code, treatment.code))
 
     @classmethod
     def url_base(cls):
         """urls.py requires that each view know its own URL.
         a URL base is the first part of the path, usually the name of the game"""
         if hasattr(cls, 'Experiment'):
-            return cls.Experiment.URL_BASE
+            return cls.Experiment.url_base
         else:
             # i.e. if it's not part of a game, but rather a shared module etc
             # then you need to set this manually
-            return cls.URL_BASE
+            return cls.url_base
         
     @classmethod
     def url(cls):

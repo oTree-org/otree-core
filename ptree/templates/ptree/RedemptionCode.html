@@ -1,17 +1,39 @@
-{% extends "Base.html" %}
+{% extends "ptree/Base.html" %}
 {% load ptreefilters %}
-{% block title %}Thanks for playing{% endblock %}
+{% block title %}Task complete{% endblock %}
 {% block content %}
 
+<div class="alert alert-success"><strong>Success!</strong> You have completed the task.</div>
+
 <p>
-Thank you for playing. 
-You have made at least <strong>{{ base_pay|currency }}</strong>. 
-You may receive an additional bonus. 
-To redeem this reward, please return to the Amazon Mechanical Turk HIT and enter your redemption code, 
-which is: 
+You have made {{ base_pay|currency }} for participating. 
 </p>
 
-<p><strong>{{ redemption_code }}</strong></p>
+{% block bonus_explanation %}
+    <p>
+    {% if total_pay == None %}
+        You may receive an additional bonus.
+    {% else %}
+        As a result of the task, you made an additional bonus of {{ bonus|currency }}.
+        So, your total reward is {{ total_pay|currency }}.
+    {% endif %}
+    </p>
+{% endblock %}
+
+{% block redeem_instructions %}
+    <p>
+    To redeem this reward, please return to the Amazon Mechanical Turk HIT and enter the below redemption code.
+    </p>
+{% endblock %}
+
+<div class="panel panel-primary" >
+  <div class="panel-heading">
+    <h3 class="panel-title">Redemption code</h3>
+  </div>
+  <div class="panel-body">
+    <strong>{{ redemption_code }}</strong>
+  </div>
+</div>
 
 
 {% endblock %}

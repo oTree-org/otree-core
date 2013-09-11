@@ -22,7 +22,7 @@ class BaseTreatment(models.Model):
     # and end up in the wrong treatment
     code = ptree.models.common.RandomCharField(length=8)
         
-    base_pay = models.PositiveIntegerField(default=20) # how much people are getting paid to perform it
+    base_pay = models.PositiveIntegerField() # how much people are getting paid to perform it
 
 
     players_per_match = None
@@ -30,7 +30,7 @@ class BaseTreatment(models.Model):
 
     def start_url(self):
         """The URL that a user is redirected to in order to start a treatment"""
-        return '/{}/Start/'.format(self.experiment.URL_BASE, self.code)
+        return '/{}/Start/'.format(self.experiment.url_base, self.code)
     
     def __unicode__(self):
         s = self.code
@@ -48,6 +48,7 @@ class BaseTreatment(models.Model):
         Returns a list of all the View classes that the user gets routed through sequentially.
         (Not all pages have to be displayed for all players; see the is_displayed method)
         
+        Example:
         import donation.views as views
         import ptree.views.concrete
         return [views.Start,

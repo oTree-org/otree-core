@@ -3,6 +3,7 @@ import ptree.views.concrete
 from django.utils.importlib import import_module
 import inspect
 import django.views.generic.base
+from django.conf import settings
 
 def url_patterns_from_module(module_name):
     """automatically generates URLs for all Views in the module,
@@ -27,3 +28,13 @@ def url_patterns_from_module(module_name):
         view_urls.append(the_url)
 
     return patterns('', *view_urls)
+
+
+
+def urlpatterns():
+    p = patterns('')
+    for game_label in settings.PTREE_GAME_APPS:
+        views_module_name = '{}.views'.format(game_label)
+        p += url_patterns_from_module(views_module_name)
+    p += url_patterns_from_module('ptree.views.concrete')
+    return p
