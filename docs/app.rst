@@ -13,7 +13,7 @@ you can choose the name ``publicgoods``.
 
 At your command line, run this command, where <appname> is the name you have chosen for your app::
 
-    django-admin.py startapp --template http://ptree.org/templates/app.zip <appname>
+    django-admin.py startapp --template https://github.com/wickens/django-ptree/releases/download/latest/app-template.zip <appname>
     
 Once your app has been created,
 go to ``settings.py`` and append its name (as a string) to ``PTREE_EXPERIMENT_APPS``.
