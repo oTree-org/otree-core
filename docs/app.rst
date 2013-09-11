@@ -16,7 +16,7 @@ At your command line, run this command, where <appname> is the name you have cho
     django-admin.py startapp --template http://ptree.org/templates/app.zip <appname>
     
 Once your app has been created,
-go to ``settings.py`` and append its name (as a string) to the list ``PTREE_EXPERIMENT_APPS``.
+go to ``settings.py`` and append its name (as a string) to ``PTREE_EXPERIMENT_APPS``.
 
 Writing the app
 ===============

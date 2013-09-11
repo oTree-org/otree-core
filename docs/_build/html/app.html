@@ -57,16 +57,15 @@
 <h2>Creating the app<a class="headerlink" href="#creating-the-app" title="Permalink to this headline">¶</a></h2>
 <p>First, choose a name for your app that is descriptive and short,
 since you will be typing it and using it frequently.
-For example, if you are implementing the <cite>prisoner&#8217;s dilemma &lt;http://en.wikipedia.org/wiki/Prisoner&#8217;s_dilemma&gt;</cite>,
+For example, if you are implementing the <a class="reference external" href="http://en.wikipedia.org/wiki/Prisoner's_dilemma">prisoner&#8217;s dilemma</a>,
 you can choose the name <tt class="docutils literal"><span class="pre">prisoner</span></tt>.
 If you are implementing the <a class="reference external" href="http://en.wikipedia.org/wiki/Public_goods_game">public goods game</a>,
 you can choose the name <tt class="docutils literal"><span class="pre">publicgoods</span></tt>.</p>
-<dl class="docutils">
-<dt>At your command line, run this command, where &lt;appname&gt; is the name you have chosen for your app::</dt>
-<dd>django-admin.py startapp &#8211;template <a class="reference external" href="http://ptree.org/templates/app.zip">http://ptree.org/templates/app.zip</a> &lt;appname&gt;</dd>
-</dl>
+<p>At your command line, run this command, where &lt;appname&gt; is the name you have chosen for your app:</p>
+<div class="highlight-python"><pre>django-admin.py startapp --template http://ptree.org/templates/app.zip &lt;appname&gt;</pre>
+</div>
 <p>Once your app has been created,
-go to `` objectsettings.py`` and append its name (as a string) to the list <tt class="docutils literal"><span class="pre">PTREE_EXPERIMENT_APPS</span></tt>.</p>
+go to <tt class="docutils literal"><span class="pre">settings.py</span></tt> and append its name (as a string) to the list <tt class="docutils literal"><span class="pre">PTREE_EXPERIMENT_APPS</span></tt>.</p>
 </div>
 <div class="section" id="writing-the-app">
 <h2>Writing the app<a class="headerlink" href="#writing-the-app" title="Permalink to this headline">¶</a></h2>

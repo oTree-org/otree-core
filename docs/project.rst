@@ -29,7 +29,7 @@ Also add ``'crispy_forms'``.
 
 After the definition of ``INSTALLED_APPS``, paste the following lines::
 
-    PTREE_EXPERIMENT_APPS = []
+    PTREE_EXPERIMENT_APPS = ()
     INSTALLED_APPS += PTREE_EXPERIMENT_APPS
 
 urls.py
