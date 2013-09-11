@@ -1,4 +1,4 @@
 Installation
 ************
 
-(Content coming soon)
+Just type ``pip install django-ptree``.

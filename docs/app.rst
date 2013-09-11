@@ -13,10 +13,12 @@ you can choose the name ``publicgoods``.
 
 At your command line, run this command, where <appname> is the name you have chosen for your app::
 
-    django-admin.py startapp --template https://github.com/wickens/django-ptree/releases/download/latest/app-template.zip <appname>
+    django-admin.py startapp --template https://github.com/wickens/django-ptree/releases/download/latest/app-template.zip <app_name>
     
 Once your app has been created,
-go to ``settings.py`` and append its name (as a string) to ``PTREE_EXPERIMENT_APPS``.
+go to ``settings.py`` and append its name (as a string) to ``PTREE_EXPERIMENT_APPS``, like this::
+    
+    PTREE_EXPERIMENT_APPS = ('myappname',)
 
 Writing the app
 ===============
@@ -72,12 +74,10 @@ ______________
     
         the player's unique ID (and redemption code) that gets passed in the URL.
         This is generated automatically.
-        we don't use the primary key because a user might try incrementing/decrementing it out of curiosity/malice,
-        and end up affecting another player
-
+        
     .. py:attribute:: has_visited = models.BooleanField()
     
-        whether the user has visited our site at all
+        whether the user has visited our site at all.
     
     .. py:attribute:: index = models.PositiveIntegerField(null = True)
     
@@ -85,7 +85,7 @@ ______________
     
     .. py:attribute:: is_finished = models.BooleanField()
     
-        whether the player is finished playing (i.e. has seen the redemption code page)
+        whether the player is finished playing (i.e. has seen the redemption code page).
 
         
            
@@ -99,13 +99,6 @@ So, "Match" is used in the sense of "boxing match",
 in the sense that it is an event that occurs where the game is played.
 
 Example of a Match: "dictator game between users Alice & Bob, where Alice gave $0.50"
-
-If a piece of data is specific to a particular player, you should store it in a Player object instead.
-For example, in the Prisoner's Dilemma, each Player has to decide between "Cooperate" and "Compete".
-You should store these on the Player object as player.decision,
-NOT "match.player_1_decision" and "match.player_2_decision".
-
-The exception is if the game is asymmetric, and player_1_decision and player_2_decision have different data types.
 
 Implementation
 ______________
@@ -127,7 +120,7 @@ ______________
 
     .. py:method:: is_full(self)
     
-        Whether the match is full (i.e. no more ``Player``s can be assigned).
+        Whether the match is full (i.e. no more Players can be assigned).
     
     .. py:method:: is_finished(self)
     
@@ -163,7 +156,7 @@ ______________
     
         *You must implement this method.*
 
-        Returns a list of all the View classes that the user gets routed through sequentially.
+        Very important. Returns a list of all the View classes that the user gets routed through sequentially.
         (Not all pages have to be displayed for all players; see the ``is_displayed()`` method)
         
         Example::
@@ -193,12 +186,13 @@ ______________
         a single-player game would just have 1.
 
     .. py:method:: matches(self):
+    
             The matches in this treatment. Syntactic sugar for ``self.match_set.all()``
 
 
 Experiment
 ~~~~~~~~~~
-Not yet documented. You will not be using this object frequently.
+Coming soon. (You will not be using this object frequently.)
 
 views.py
 --------
