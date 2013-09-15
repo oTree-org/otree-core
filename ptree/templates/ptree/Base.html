@@ -2,8 +2,8 @@
 {% load ptreefilters %}
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<title>{% block header_title %}Task{% endblock %}</title>
+    <head>
+        <title>{% block header_title %}Task{% endblock %}</title>
         
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         
@@ -13,12 +13,12 @@
         <!-- Optional theme -->
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
 
-		<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+        <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
 
         <!-- Latest compiled and minified JavaScript -->
         <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
         
-		<script type="text/javascript" src="{% static "ptree/js/ptree.js" %}"></script>
+        <script type="text/javascript" src="{% static "ptree/js/ptree.js" %}"></script>
         
         <!-- documentation at jqueryvalidation.org -->
         <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.min.js"></script>
@@ -31,16 +31,16 @@
       <script src="../../assets/js/respond.min.js"></script>
     <![endif]-->
 
-		{% block head_content %}{% endblock %}
-	</head>
-	<body>
-		<div class="container" style='max-width:970px'>
+        {% block head_content %}{% endblock %}
+    </head>
+    <body>
+        <div class="container" style='max-width:970px'>
             <div class="page-header">
                 <h2>{% block title %}{% endblock %}</h2>
             </div>
-			{% block content %}{% endblock %}
-		</div>
-		
+            {% block content %}{% endblock %}
+        </div>
+        
         {% if jump_to_form %}
         <script type="text/javascript">
             $(document).ready(function () {
@@ -49,15 +49,15 @@
         </script>
         {% endif %}
 
-		<script type="text/javascript">
-			var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-			document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-			</script>
-			<script type="text/javascript">
-			try {
-			var pageTracker = _gat.viewTracker("UA-8400960-1");
-			pageTracker._trackPageview();
-			} catch(err) {}
-		</script>
-	</body>
+        <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+            </script>
+            <script type="text/javascript">
+            try {
+            var pageTracker = _gat.viewTracker("UA-8400960-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+        </script>
+    </body>
 </html>

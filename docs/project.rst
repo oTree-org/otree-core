@@ -1,8 +1,7 @@
 Creating your Django project
 ****************************
 
-Your pTree experiments will be contained inside a Django project.
-The first step is to create a Django project.
+The first step is to create a Django project, which will contain your pTree experiments.
 Instructions are `here <https://docs.djangoproject.com/en/dev/intro/tutorial01/#creating-a-project>`_.
 
 When you run ``django-admin.py startproject <projectname>``, 

@@ -1,7 +1,7 @@
 Prerequisites
 *************
 
-Before getting started with pTree, you need the following:
+Before getting started with pTree, you need the following.
 
 Python
 ======
@@ -25,7 +25,7 @@ but there will be more new concepts to learn.
 If you need to learn Python, 
 I recommend `Learn Python the Hard Way <http://learnpythonthehardway.org/book/>`_, 
 which is available free online. 
-Work your way up through Exercise 41: Learning to Speak Object Oriented.
+Work your way up through Exercise 41: "Learning to Speak Object Oriented".
 You can skip Exercises 11-17.
 
 Pip
@@ -42,5 +42,5 @@ Install Django using the instructions `here <https://docs.djangoproject.com/en/1
 
 In the process of learning and using pTree, you will learn Django.
 To understand the core concepts of Django (and pTree),
-go `here <http://www.djangobook.com/en/2.0/chapter01.html>`__ 
-page of the Django book and read until the end of the section "The MVC design pattern".
+go to `this page of the Django book <http://www.djangobook.com/en/2.0/chapter01.html>`__ 
+and read until the end of the section "The MVC design pattern".

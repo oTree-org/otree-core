@@ -15,7 +15,7 @@ Contents:
    prerequisites
    installation
    project
-   app
+   app/index
    deploying
    administering
 

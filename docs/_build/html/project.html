@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="pTree 0.1 documentation" href="index.html" />
-    <link rel="next" title="Writing a pTree app" href="app.html" />
+    <link rel="next" title="&lt;no title&gt;" href="deploying.html" />
     <link rel="prev" title="Installation" href="installation.html" /> 
   </head>
   <body>
@@ -37,7 +37,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="app.html" title="Writing a pTree app"
+          <a href="deploying.html" title="&lt;no title&gt;"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="installation.html" title="Installation"
@@ -53,8 +53,7 @@
             
   <div class="section" id="creating-your-django-project">
 <h1>Creating your Django project<a class="headerlink" href="#creating-your-django-project" title="Permalink to this headline">¶</a></h1>
-<p>Your pTree experiments will be contained inside a Django project.
-The first step is to create a Django project.
+<p>The first step is to create a Django project, which will contain your pTree experiments.
 Instructions are <a class="reference external" href="https://docs.djangoproject.com/en/dev/intro/tutorial01/#creating-a-project">here</a>.</p>
 <p>When you run <tt class="docutils literal"><span class="pre">django-admin.py</span> <span class="pre">startproject</span> <span class="pre">&lt;projectname&gt;</span></tt>,
 you can name your project anything you want, like <tt class="docutils literal"><span class="pre">ptree_experiments</span></tt> or <tt class="docutils literal"><span class="pre">experiments</span></tt> or <tt class="docutils literal"><span class="pre">games</span></tt>.</p>
@@ -72,7 +71,7 @@ because that name conflicts with the name of the pTree module you will be using.
 <p><tt class="docutils literal"><span class="pre">INSTALLED_APPS</span></tt>: add <tt class="docutils literal"><span class="pre">'ptree'</span></tt> near the top, followed by <tt class="docutils literal"><span class="pre">'django.contrib.admin'</span></tt>.
 Also add <tt class="docutils literal"><span class="pre">'crispy_forms'</span></tt>.</p>
 <p>After the definition of <tt class="docutils literal"><span class="pre">INSTALLED_APPS</span></tt>, paste the following lines:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">PTREE_EXPERIMENT_APPS</span> <span class="o">=</span> <span class="p">[]</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">PTREE_EXPERIMENT_APPS</span> <span class="o">=</span> <span class="p">()</span>
 <span class="n">INSTALLED_APPS</span> <span class="o">+=</span> <span class="n">PTREE_EXPERIMENT_APPS</span>
 </pre></div>
 </div>
@@ -107,8 +106,8 @@ Also add <tt class="docutils literal"><span class="pre">'crispy_forms'</span></t
   <p class="topless"><a href="installation.html"
                         title="previous chapter">Installation</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="app.html"
-                        title="next chapter">Writing a pTree app</a></p>
+  <p class="topless"><a href="deploying.html"
+                        title="next chapter">&lt;no title&gt;</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/project.txt"
@@ -138,7 +137,7 @@ Also add <tt class="docutils literal"><span class="pre">'crispy_forms'</span></t
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="app.html" title="Writing a pTree app"
+          <a href="deploying.html" title="&lt;no title&gt;"
              >next</a> |</li>
         <li class="right" >
           <a href="installation.html" title="Installation"
