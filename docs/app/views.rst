@@ -1,22 +1,22 @@
 views.py
 ========
 
-A View defines a single web page that is shown to users. 
+A View defines a single web page that is shown to participants. 
 It is implemented as a Python class -- more specifically, a Django `class-based view <https://docs.djangoproject.com/en/dev/topics/class-based-views/generic-display/>`__.
 
-If your experiment involves showing the user a sequence of 5 pages,
+If your experiment involves showing the participant a sequence of 5 pages,
 your views.py will contain 5 View classes.
 
 Here is what the code of a View should define (along with what attribute/method defines it):
 
-- Whether a given player sees this View (or whether it should be skipped): ``is_displayed()``
+- Whether a given participant sees this View (or whether it should be skipped): ``is_displayed()``
 - What HTML template to display: ``template_name``
 - What form to display on the page: ``form_class``
 - What variables to insert into the template (for displaying dynamic content), and how to calculate those variables: ``get_template_variables``
-- What to do after the user has submitted a valid form: ``after_form_validates``
+- What to do after the participant has submitted a valid form: ``after_form_validates``
 
-When a user visits your site, they are routed through your views in the order you specify in :py:meth:`Treatment.sequence`.
-The user must submit a valid form before they get routed to the next page.
+When a participant visits your site, they are routed through your views in the order you specify in :py:meth:`Treatment.sequence`.
+The participant must submit a valid form before they get routed to the next page.
 If the form they submit is invalid (e.g. missing or incorrect values),
 it will be re-displayed to them along with the list of errors they need to correct.
 
@@ -27,12 +27,12 @@ Here is the structure of a class you would write:
 
 .. py:class:: MyView(ptree.views.abstract.BaseView, ViewInThisApp)
     
-    .. py:attribute:: player
+    .. py:attribute:: participant
 					  match
 					  treatment
 					  experiment
     
-        The current player, match, treatment, and experiment objects.
+        The current participant, match, treatment, and experiment objects.
 					
         These are provided for you automatically.
         However, you need to define the following attributes and methods:
@@ -63,14 +63,14 @@ Here is the structure of a class you would write:
         
     .. py:method:: is_displayed(self)
     
-        Whether a given player sees this View (or whether it should be skipped).
-        If you don't define this method, all players in the treatment will see this page.
+        Whether a given participant sees this View (or whether it should be skipped).
+        If you don't define this method, all participants in the treatment will see this page.
         
         Example::
         
             def is_displayed(self):
-                """only display this page to users who made an offer of 0"""
-                return self.player.offer == 0
+                """only display this page to participants who made an offer of 0"""
+                return self.participant.offer == 0
             
     .. py:method:: get_template_variables(self)
     
@@ -84,15 +84,15 @@ Here is the structure of a class you would write:
                 return {'CHARITY': CHARITY,
                     'is_hypothetical': self.treatment.probability_of_honoring_split_as_fraction() == 0,
                     'max_offer_amount': self.treatment.max_offer_amount,
-                    'player_gets_all_money_if_no_honor_split': self.treatment.player_gets_all_money_if_no_honor_split}
+                    'participant_gets_all_money_if_no_honor_split': self.treatment.participant_gets_all_money_if_no_honor_split}
         
 
     
     .. py:method:: after_form_validates(self, form) 
     
-        After the user submits the form,
+        After the participant submits the form,
         pTree makes sure that it has all the required values
-        (and re-displays to the user with errors otherwise).
+        (and re-displays to the participant with errors otherwise).
         
         Here you can put anything additional that should happen after the form validates.
         If you don't need anything to be done, it's OK to leave this method blank,

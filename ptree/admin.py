@@ -17,12 +17,12 @@ class TreatmentAdmin(admin.ModelAdmin):
 
     link.allow_tags = True
     
-class PlayerAdmin(admin.ModelAdmin):
-    readonly_fields = ('link', 'code')
-    list_display = ('code', 'link', 'has_visited')
+class ParticipantAdmin(admin.ModelAdmin):
+    readonly_fields = ('code', 'link',)
+    list_display = readonly_fields + ('has_visited',)
 
     def link(self, instance):
-        url = '/{}/PickTreatment/?exp={}&player={}'.format(instance.experiment.url_base, instance.experiment.code, instance.code)
+        url = '/{}/PickTreatment/?exp={}&participant={}'.format(instance.experiment.url_base, instance.experiment.code, instance.code)
         return '<a href="{}" target="_blank">{}</a>'.format(url, url)
 
     link.short_description = "Give this link to a single user"
@@ -32,5 +32,5 @@ for game_label in settings.PTREE_EXPERIMENT_APPS:
     module = import_module("{}.models".format(game_label))
     admin.site.register(module.Experiment)
     admin.site.register(module.Treatment, TreatmentAdmin)
-    admin.site.register(module.Player, PlayerAdmin)
+    admin.site.register(module.Participant, ParticipantAdmin)
 

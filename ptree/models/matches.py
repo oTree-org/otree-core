@@ -6,12 +6,12 @@ import abc
 
 class MatchManager(models.Manager):
     def next_open_match(self, request):
-        """Get the next match that is accepting players.
+        """Get the next match that is accepting participants.
         May raise a StopIteration exception if there are no open matches.
         """
         from ptree.views.abstract import SessionKeys
         matches = super(MatchManager, self).get_query_set().all()
-        return (m for m in matches if m.treatment.code == request.session[SessionKeys.treatment_code] and m.is_ready_for_next_player()).next()
+        return (m for m in matches if m.treatment.code == request.session[SessionKeys.treatment_code] and m.is_ready_for_next_participant()).next()
 
 class BaseMatch(models.Model):
     """
@@ -24,12 +24,12 @@ class BaseMatch(models.Model):
     
     Example of a Match: "dictator game between users Alice & Bob, where Alice gave $0.50"
 
-    If a piece of data is specific to a particular player, you should store it in a Player object instead.
-    For example, in the Prisoner's Dilemma, each Player has to decide between "Cooperate" and "Compete".
-    You should store these on the Player object as player.decision,
-    NOT "match.player_1_decision" and "match.player_2_decision".
+    If a piece of data is specific to a particular participant, you should store it in a Participant object instead.
+    For example, in the Prisoner's Dilemma, each Participant has to decide between "Cooperate" and "Compete".
+    You should store these on the Participant object as participant.decision,
+    NOT "match.participant_1_decision" and "match.participant_2_decision".
 
-    The exception is if the game is asymmetric, and player_1_decision and player_2_decision have different data types.
+    The exception is if the game is asymmetric, and participant_1_decision and participant_2_decision have different data types.
     """
 
     #: when the game was started
@@ -38,29 +38,29 @@ class BaseMatch(models.Model):
     objects = MatchManager()
 
     #@abc.abstractmethod
-    def is_ready_for_next_player(self):
+    def is_ready_for_next_participant(self):
         """
         Needs to be implemented by child classes.
-        Whether the game is ready for another player to be added.
+        Whether the game is ready for another participant to be added.
         """
         raise NotImplementedError()
 
     def is_full(self):
         """
-        Whether the match is full (i.e. no more ``Player``s can be assigned).
+        Whether the match is full (i.e. no more ``Participant``s can be assigned).
         """
-        return len(self.players()) >= self.treatment.players_per_match
+        return len(self.participants()) >= self.treatment.participants_per_match
 
     def is_finished(self):
         """Whether the match is completed."""
-        return self.is_full() and [player.is_finished for player in self.players()]
+        return self.is_full() and [participant.is_finished for participant in self.participants()]
 
-    def players(self):
+    def participants(self):
         """
-        Returns the ``Player`` objects in this match.
-        Syntactic sugar ``for self.player_set.all()``
+        Returns the ``Participant`` objects in this match.
+        Syntactic sugar ``for self.participant_set.all()``
         """
-        return self.player_set.all()
+        return self.participant_set.all()
 
     
     class Meta:

@@ -4,17 +4,17 @@ from django.forms import ModelForm, Form
 from django import forms
 import abc
 
-class BasePlayer(models.Model):
+class BaseParticipant(models.Model):
     """
-    Base class for all players.
+    Base class for all participants.
     """
 
     #__metaclass__ = abc.ABCMeta
 
-    #: the player's unique ID (and redemption code) that gets passed in the URL.
+    #: the participant's unique ID (and redemption code) that gets passed in the URL.
     #: This is generated automatically.
     #: we don't use the primary key because a user might try incrementing/decrementing it out of curiosity/malice,
-    #: and end up affecting another player
+    #: and end up affecting another participant
     code = ptree.models.common.RandomCharField(length = 8)
 
     #: nickname they enter when they start playing.
@@ -28,10 +28,10 @@ class BasePlayer(models.Model):
     #: whether the user has visited our site at all
     has_visited = models.BooleanField()
 
-    #: the ordinal position in which a player joined a game. Starts at 0.
+    #: the ordinal position in which a participant joined a game. Starts at 0.
     index = models.PositiveIntegerField(null = True)
 
-    #: whether the player is finished playing (i.e. has seen the redemption code page)
+    #: whether the participant is finished playing (i.e. has seen the redemption code page)
     is_finished = models.BooleanField()
     
 
@@ -40,7 +40,7 @@ class BasePlayer(models.Model):
         """
         Must be implemented by child classes.
 
-        The bonus the ``Player`` gets paid, in addition to their base pay.
+        The bonus the ``Participant`` gets paid, in addition to their base pay.
 
         Should return None if the bonus cannot yet be determined.
         """
@@ -60,26 +60,26 @@ class BasePlayer(models.Model):
     class Meta:
         abstract = True
 
-class PlayerTwoPersonAsymmetric(BasePlayer):
-    """A player in a 2-player asymmetric game"""
+class ParticipantTwoPersonAsymmetric(BaseParticipant):
+    """A participant in a 2-participant asymmetric game"""
     
-    def is_player_1(self):
+    def is_participant_1(self):
         return self.index == 0
 
-    def is_player_2(self):
+    def is_participant_2(self):
         return self.index == 1
 
     def bonus(self):
-        if self.is_player_1():
-            return self.match.player_1_bonus()
-        elif self.is_player_2():
-            return self.match.player_2_bonus()  
+        if self.is_participant_1():
+            return self.match.participant_1_bonus()
+        elif self.is_participant_2():
+            return self.match.participant_2_bonus()  
 
     def is_finished(self):
-        if self.is_player_1():
-            return self.match.player_1_is_finished()
-        elif self.is_player_2():
-            return self.match.player_2_is_finished()
+        if self.is_participant_1():
+            return self.match.participant_1_is_finished()
+        elif self.is_participant_2():
+            return self.match.participant_2_is_finished()
         
     class Meta:
         abstract = True  

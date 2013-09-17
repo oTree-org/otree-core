@@ -47,4 +47,5 @@ Each of these files/folders holds one component of your app. They are explained 
    forms
    views
    templates
+   management
    admin

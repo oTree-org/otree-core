@@ -24,7 +24,7 @@ import django.views.generic.edit
 from django.conf import settings
 
 import ptree.models.common
-import ptree.models.players
+import ptree.models.participants
 from ptree.models.common import IPAddressVisit
 
 import abc
@@ -41,11 +41,11 @@ class SessionKeys(object):
     ExperimentClass = 'Experiment'
     TreatmentClass = 'Treatment'
     MatchClass = 'Match'
-    PlayerClass = 'Player'
+    ParticipantClass = 'Participant'
     
     match_id = 'match_id'
 
-    player_code = 'player_code'
+    participant_code = 'participant_code'
     experiment_code = 'experiment_code'
     treatment_code = 'treatment_code'
 
@@ -61,7 +61,7 @@ class BaseView(django.views.generic.base.View):
     - retrieving model classes and objects automatically
     - managing your position in the sequence of views
     so that you can easily access self.ExperimentClass, self.experiment, self.TreatmentClass, self.treatment, ...
-    You should generally use this, unless your view occurs as soon as the user visits,
+    You should generally use this, unless your view occurs as soon as the participant visits,
     and none of the objects have been created yet.
     
     """
@@ -70,7 +70,7 @@ class BaseView(django.views.generic.base.View):
         """This loads from cookies."""
         self.ExperimentClass = self.request.session.get(SessionKeys.ExperimentClass) or self.ExperimentClass
         self.TreatmentClass = self.request.session.get(SessionKeys.TreatmentClass) or self.TreatmentClass
-        self.PlayerClass = self.request.session.get(SessionKeys.PlayerClass) or self.PlayerClass
+        self.ParticipantClass = self.request.session.get(SessionKeys.ParticipantClass) or self.ParticipantClass
         self.MatchClass = self.request.session.get(SessionKeys.MatchClass) or self.MatchClass
 
     def load_experiment(self):
@@ -94,21 +94,21 @@ class BaseView(django.views.generic.base.View):
         else:
             self.match = None
 
-    def load_player(self):
-        player_code = self.request.session.get(SessionKeys.player_code)
-        if player_code:
-            self.player = get_object_or_404(self.PlayerClass, code = player_code)
+    def load_participant(self):
+        participant_code = self.request.session.get(SessionKeys.participant_code)
+        if participant_code:
+            self.participant = get_object_or_404(self.ParticipantClass, code = participant_code)
         else:
-            self.player = None
+            self.participant = None
 
     def load_objects(self):
         self.load_experiment()
         self.load_treatment()
         self.load_match()
-        self.load_player()
+        self.load_participant()
 
     def save_objects(self):
-        for obj in [self.match, self.player]:
+        for obj in [self.match, self.participant]:
             if obj:
                 obj.save()
 
@@ -142,7 +142,7 @@ class BaseView(django.views.generic.base.View):
         return self.treatment.sequence()[self.request.session[SessionKeys.current_view_index]].url()
 
     def user_skipped_a_page(self):
-        """Will detect if a user tried to access a page they didn't reach yet,
+        """Will detect if a participant tried to access a page they didn't reach yet,
         for example if they know the URL to the redemption code page,
         and try typing it in so they don't have to play the whole game.
         We should block that."""
@@ -153,9 +153,9 @@ class BaseView(django.views.generic.base.View):
         return (sequence_urls.index(self.request.path) > self.request.session[SessionKeys.current_view_index])
 
     def redirect_to_current_view(self):
-        """Redirect to where the user should be,
+        """Redirect to where the participant should be,
         according to the view index we maintain in their cookies
-        Useful if the user tried to skip ahead,
+        Useful if the participant tried to skip ahead,
         or if they hit the back button.
         We can put them back where they belong.
         """
@@ -202,12 +202,12 @@ class PageWithFormMixin(object):
         self.load_classes()
         self.load_objects()
 
-        # if the user shouldn't see this view, skip to the next
+        # if the participant shouldn't see this view, skip to the next
         if not self.is_displayed():
             self.increment_current_view_index()
             return self.redirect_to_current_view()
 
-        # if the user tried to skip past a part of the experiment
+        # if the participant tried to skip past a part of the experiment
         # (e.g. by typing in a future URL)
         if self.user_skipped_a_page():
             # then bring them back to where they should be
@@ -240,7 +240,7 @@ class PageWithFormMixin(object):
         context += super(PageWithFormMixin, self).get_context_data(**kwargs)
         
         # whatever else you specify that doesn't go in the form
-        # (e.g. info we display to the user)
+        # (e.g. info we display to the participant)
         context.update(self.get_template_variables())
 
         # protection against CSRF attacks
@@ -254,14 +254,14 @@ class PageWithFormMixin(object):
 
     def get_form_kwargs(self):
         """
-        Provides your form classes with access to the player, match, treatment, etc. objects
+        Provides your form classes with access to the participant, match, treatment, etc. objects
         So that they can have more dynamic rendering & validation behavior.
         """
 
         kwargs = super(PageWithFormMixin, self).get_form_kwargs()
         
         #TODO: maybe add experiment to this
-        kwargs.update({'player': self.player,
+        kwargs.update({'participant': self.participant,
                        'match': self.match,
                        'treatment': self.treatment,
                        'request': self.request})
@@ -306,8 +306,8 @@ class PageWithModelForm(PageWithFormMixin, django.views.generic.edit.UpdateView,
         cls = self.form_class.Meta.model
         if cls == self.MatchClass:
             return self.match
-        elif cls == self.PlayerClass:
-            return self.player
+        elif cls == self.ParticipantClass:
+            return self.participant
 
 
 class PageWithForm(PageWithFormMixin, django.views.generic.FormView, BaseView):
@@ -335,21 +335,21 @@ class Start(PageWithForm, BaseView):
 
         self.request.session[SessionKeys.ExperimentClass] = self.ExperimentClass
         self.request.session[SessionKeys.TreatmentClass] = self.TreatmentClass
-        self.request.session[SessionKeys.PlayerClass] = self.PlayerClass
+        self.request.session[SessionKeys.ParticipantClass] = self.ParticipantClass
         self.request.session[SessionKeys.MatchClass] = self.MatchClass
 
     def dispatch(self, request, *args, **kwargs):
         self.load_objects()
         assert self.experiment
         assert self.treatment
-        assert self.player
+        assert self.participant
 
         return super(PageWithFormMixin, self).dispatch(request, *args, **kwargs)
 
     
     def get_template_variables(self):
 
-        # Setting a test cookie to see if there will be problems with the user's browser.        
+        # Setting a test cookie to see if there will be problems with the participant's browser.        
         self.request.session.set_test_cookie() 
         
         # persist classes so that other views can access them,
@@ -364,41 +364,41 @@ class Start(PageWithForm, BaseView):
         return {}
 
     def after_form_validates(self, form):
-        if self.player.ip_address == None:
-            self.player.ip_address = self.request.META['REMOTE_ADDR']
-        if self.player.nickname == None:
-            self.player.nickname = form.cleaned_data['nickname']
+        if self.participant.ip_address == None:
+            self.participant.ip_address = self.request.META['REMOTE_ADDR']
+        if self.participant.nickname == None:
+            self.participant.nickname = form.cleaned_data['nickname']
         
-        # Checking if I was able to put a cookie in the user's browser
+        # Checking if I was able to put a cookie in the participant's browser
         if self.request.session.test_cookie_worked():
             self.request.session.delete_test_cookie()
         else:
-            # FIXME: we should tell the user there was a problem with cookies
+            # FIXME: we should tell the participant there was a problem with cookies
             raise Http404()
 
         self.request.session[SessionKeys.treatment_code] = self.treatment.code
         return {}
                 
-class AssignPlayerAndMatch(BaseView):
-    """Find the player and associate him with an existing or new match.
+class AssignParticipantAndMatch(BaseView):
+    """Find the participant and associate him with an existing or new match.
     No UI to this View. Just redirects.
     """
 
     def get(self, request, *args, **kwargs):
-        # objects loaded in dispatch. match usually will not exist, but will if a user hits the back button
-        assert self.player 
+        # objects loaded in dispatch. match usually will not exist, but will if a participant hits the back button
+        assert self.participant 
         assert self.treatment
         assert self.experiment
         assert self.request.session[SessionKeys.current_view_index] == 1
 
 
-        # if player already has a match, use that.
-        if self.player.match:
-            self.match = self.player.match
+        # if participant already has a match, use that.
+        if self.participant.match:
+            self.match = self.participant.match
         # otherwise, try finding an open match, or create a new match.
         else:
             self.match = self.next_open_match() or self.create_match()
-            self.add_player_to_match()
+            self.add_participant_to_match()
             
         assert self.match
         assert self.match.treatment
@@ -421,33 +421,33 @@ class AssignPlayerAndMatch(BaseView):
 
     def create_match(self):
         match = self.MatchClass(treatment = self.treatment)
-        # need to save it before you assign the player.match ForeignKey
+        # need to save it before you assign the participant.match ForeignKey
         match.save()
         return match
 
-    def add_player_to_match(self):
-        self.player.index = self.match.player_set.count()
-        self.player.match = self.match
+    def add_participant_to_match(self):
+        self.participant.index = self.match.participant_set.count()
+        self.participant.match = self.match
 
     
 class PickTreatment(django.views.generic.base.View):
     """
-    The first View when users visit a site.
+    The first View when participants visit a site.
     Doesn't have any UI.
-    Just looks up the player,
+    Just looks up the participant,
     decides what Treatment to randomize them to,
     and redirects to that Treatment.
     """
 
-    def load_player(self):
-        player_code = self.request.session.get(SessionKeys.player_code)
-        if player_code:
-            self.player = get_object_or_404(self.PlayerClass, code = player_code)
+    def load_participant(self):
+        participant_code = self.request.session.get(SessionKeys.participant_code)
+        if participant_code:
+            self.participant = get_object_or_404(self.ParticipantClass, code = participant_code)
         else:
-            self.player = None
+            self.participant = None
 
     def get(self, request, *args, **kwargs):
-        # clear all cookies, since they can cause problems if the user has played a previous game.
+        # clear all cookies, since they can cause problems if the participant has played a previous game.
         self.request.session.clear()
         
         # retrieve experiment
@@ -457,25 +457,25 @@ class PickTreatment(django.views.generic.base.View):
         # store for future access
         self.request.session[SessionKeys.experiment_code] = experiment_code
         
-        # get the player object, so that we can see if the player already has been assigned to a treatment
+        # get the participant object, so that we can see if the participant already has been assigned to a treatment
         # this helps us prevent re-randomization
-        self.request.session[SessionKeys.player_code] = self.request.GET['player']
-        self.load_player()
+        self.request.session[SessionKeys.participant_code] = self.request.GET['participant']
+        self.load_participant()
         
-        # player should exist after load_player since the object was created in advance, and its code was passed in the URL
-        assert self.player
+        # participant should exist after load_participant since the object was created in advance, and its code was passed in the URL
+        assert self.participant
 
         # record their visit, and save it since this is GET.
-        self.player.has_visited = True
-        self.player.save()
+        self.participant.has_visited = True
+        self.participant.save()
 
-        # if the user already got past the start view, they have had a match assigned to them.
-        # this check is for users who started to play the game,
+        # if the participant already got past the start view, they have had a match assigned to them.
+        # this check is for participants who started to play the game,
         # but abandoned or hit the back button and re-entered the URL.
-        # we don't want users to be assigned to a different treatment when they re-visit the URL
+        # we don't want participants to be assigned to a different treatment when they re-visit the URL
         # because they might want to get a treatment that pays more money
-        if self.player.match:
-            treatment = self.player.match.treatment
+        if self.participant.match:
+            treatment = self.participant.match.treatment
 
             # a match has a treatment assigned on creation
             assert treatment != None

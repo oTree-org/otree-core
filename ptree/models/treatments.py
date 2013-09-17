@@ -7,10 +7,10 @@ class BaseTreatment(models.Model):
     """
     Base class for all Treatments.
     Example of a treatment:
-    'dictator game with stakes of $1, where players have to chat with each other first'
+    'dictator game with stakes of $1, where participants have to chat with each other first'
     It's the definition of what everyone in the treatment group has to do.
     A treatment is defined before the experiment starts.
-    Results of a game are not stored in ther Treatment object, they are stored in Match or Player objects.
+    Results of a game are not stored in ther Treatment object, they are stored in Match or Participant objects.
     """
 
     #__metaclass__ = abc.ABCMeta
@@ -25,7 +25,7 @@ class BaseTreatment(models.Model):
     base_pay = models.PositiveIntegerField() # how much people are getting paid to perform it
 
 
-    players_per_match = None
+    participants_per_match = None
 
 
     def start_url(self):
@@ -46,13 +46,13 @@ class BaseTreatment(models.Model):
     def sequence(self):
         """
         Returns a list of all the View classes that the user gets routed through sequentially.
-        (Not all pages have to be displayed for all players; see the is_displayed method)
+        (Not all pages have to be displayed for all participants; see the is_displayed method)
         
         Example:
         import donation.views as views
         import ptree.views.concrete
         return [views.Start,
-                ptree.views.concrete.AssignPlayerAndMatch,
+                ptree.views.concrete.AssignParticipantAndMatch,
                 views.IntroPage,
                 views.EnterOfferEncrypted, 
                 views.ExplainRandomizationDetails, 
@@ -80,7 +80,7 @@ class BaseTreatment(models.Model):
 
 
 class OfferTreatment(BaseTreatment):
-    """Use this treatment if your game requires a player to offer money.
+    """Use this treatment if your game requires a participant to offer money.
     
     Examples: 
     - dictator game
@@ -96,7 +96,7 @@ class OfferTreatment(BaseTreatment):
     increment_amount = models.PositiveIntegerField(default=5) # the increment people get to choose.
 
     def offer_choices(self):
-       """A list of integers with the amounts the player can choose to offer.
+       """A list of integers with the amounts the participant can choose to offer.
        Example: [0, 10, 20, 30, 40, 50]"""
        return range(0, self.max_offer_amount + 1, self.increment_amount)
 

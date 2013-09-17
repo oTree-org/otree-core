@@ -3,16 +3,18 @@ from django import forms
 import ptree.forms
 
 class MyForm(ptree.forms.BlankModelForm):
-    # ptree.forms.BlankModelForm is based on a Django ModelForm.
-    # for documentation on ModelForms (which explains the code you have to write below), see here:
-    # https://docs.djangoproject.com/en/dev/topics/forms/modelforms/#modelform
+
     
     class Meta:
-        # What model does this Form modify? It's usually either Match or Player.
+        # What model does this Form modify? It's usually either Match or Participant.
         model = {{ app_name }}.models.Match 
          
          # the fields on the above model that this form includes
         fields = ['my_field']
+
+    def initialize_form(self):
+        """Customize your form fields here"""
+
 
     # clean a field during validation.
     # you can have as many of these as you want for as many fields as you want to make custom validation for.

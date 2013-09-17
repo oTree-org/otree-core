@@ -46,22 +46,22 @@ class Captcha(ptree.views.abstract.PageWithForm, View):
                 'current_step': self.request.session.get('captchas_completed', 0) + 1,
                 'total_steps': self.treatment.NUMBER_OF_CAPTCHAS}
      
-class AssignPlayerAndMatch(ptree.views.abstract.AssignPlayerAndMatch, View):
+class AssignParticipantAndMatch(ptree.views.abstract.AssignParticipantAndMatch, View):
     """Just a version of the parent class that is accessible from a URL"""
     pass
 
-class AssignPlayerAndMatchAsymmetric2Player(ptree.views.abstract.AssignPlayerAndMatch, View):
+class AssignParticipantAndMatchAsymmetric2Participant(ptree.views.abstract.AssignParticipantAndMatch, View):
     """
-    For convenience, we gime asymmetric 2 player games a player_1 and player_2 attributes.
+    For convenience, we gime asymmetric 2 participant games a participant_1 and participant_2 attributes.
     """
 
-    def add_player_to_match(self):
-        self.player.index = self.match.player_set.count()
-        self.player.match = self.match
-        if self.player.index == 0:
-            self.match.player_1 == self.player
-        elif self.player.index == 1:
-            self.match.player_2 == self.player
+    def add_participant_to_match(self):
+        self.participant.index = self.match.participant_set.count()
+        self.participant.match = self.match
+        if self.participant.index == 0:
+            self.match.participant_1 == self.participant
+        elif self.participant.index == 1:
+            self.match.participant_2 == self.participant
 
 class RouteToCurrentPageInSequence(ptree.views.abstract.BaseView, View):
     """Redirect to this page when you can't do a redirect with the redirect_to_current_view method that increments the view index.
@@ -84,10 +84,10 @@ class RedemptionCode(PageWithForm, View):
 
     def get_template_variables(self):
         
-        self.player.is_finished = True
-        self.player.save()
+        self.participant.is_finished = True
+        self.participant.save()
 
-        return {'redemption_code': self.player.code,
+        return {'redemption_code': self.participant.code,
                 'base_pay': self.treatment.base_pay,
-                'bonus': self.player.bonus(),
-                'total_pay': self.player.total_pay()}
+                'bonus': self.participant.bonus(),
+                'total_pay': self.participant.total_pay()}

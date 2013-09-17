@@ -11,15 +11,19 @@ class FormMixin(object):
     rewritable_fields = []
 
     def __init__(self, *args, **kwargs):
-        self.player = kwargs['player']
+        self.participant = kwargs['participant']
         self.match = kwargs['match']
         self.treatment = kwargs['treatment']
         self.request = kwargs['request']
-        kwargs.pop('player')
+        kwargs.pop('participant')
         kwargs.pop('match')
         kwargs.pop('treatment')
         kwargs.pop('request')
         super(FormMixin, self).__init__(*args, **kwargs)
+        self.initialize_form()
+
+    def initialize_form(self):
+        """Customize your form fields here"""
 
     def make_field_currency_choices(self, field_name, amounts):
         amount_choices = [(amount, ptreefilters.currency(amount)) for amount in amounts]
@@ -46,7 +50,7 @@ class BlankModelForm(FormMixin, forms.ModelForm):
 
 class BlankForm(FormMixin, forms.Form):
     """
-    If your form fields map to a Django Model (like a Player or Match object),
+    If your form fields map to a Django Model (like a Participant or Match object),
     then use BlankModelForm instead.
 
     Use this otherwise.

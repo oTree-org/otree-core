@@ -3,7 +3,7 @@
 from django.db import models
 
 import ptree.models.matches
-import ptree.models.players
+import ptree.models.participants
 import ptree.models.treatments
 import ptree.models.experiments
 
@@ -20,7 +20,7 @@ class Experiment(ptree.models.experiments.BaseExperiment):
 class Treatment(ptree.models.treatments.BaseTreatment):
     experiment = models.ForeignKey(Experiment)
     
-    players_per_match = 1
+    participants_per_match = 1
     
     # define any other attributes or methods here.
     
@@ -30,7 +30,7 @@ class Treatment(ptree.models.treatments.BaseTreatment):
         import ptree.views.concrete
         
         return [{{ app_name }}.views.Start,
-                ptree.views.concrete.AssignPlayerAndMatch,
+                ptree.views.concrete.AssignParticipantAndMatch,
                 {{ app_name }}.views.MyView, # insert your views here
                 ptree.views.concrete.RedemptionCode]
                 
@@ -40,10 +40,10 @@ class Match(ptree.models.matches.BaseMatch):
     
     # define any other attributes or methods here.
     
-    def is_ready_for_next_player(self):
+    def is_ready_for_next_participant(self):
         """You must implement this yourself"""
             
-class Player(ptree.models.players.BasePlayer):
+class Participant(ptree.models.participants.BaseParticipant):
     experiment = models.ForeignKey(Experiment)
     match = models.ForeignKey(Match, null = True)
     

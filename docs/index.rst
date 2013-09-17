@@ -13,13 +13,10 @@ Contents:
    
    intro
    prerequisites
-   installation
+   install
    project
    app/index
    deploying
-   administering
-
-
 
 Indices and tables
 ==================

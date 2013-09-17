@@ -17,7 +17,7 @@ def cents2dollars(num_cents):
 def bonus_amount(redemption_code):
     """We need to know what game type it is so that we can look up the right game"""
     try:
-        Profile.objects.get(redemption_code = redemption_code).player_bonus()
+        Profile.objects.get(redemption_code = redemption_code).participant_bonus()
     except Exception, e:
         print 'The following error occurred for HIT with redemption code', redemption_code, ':' 
         print [e]

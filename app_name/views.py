@@ -13,7 +13,7 @@ class ViewInThisApp(object):
     """Keep this as is"""
     TreatmentClass = {{ app_name }}.models.Treatment
     MatchClass = {{ app_name }}.models.Match
-    PlayerClass = {{ app_name }}.models.Player
+    ParticipantClass = {{ app_name }}.models.Participant
     ExperimentClass = {{ app_name }}.models.Experiment
     
 class Start(ptree.views.abstract.Start, ViewInThisApp):

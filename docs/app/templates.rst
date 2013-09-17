@@ -2,7 +2,7 @@ The ``templates/`` directory
 ============================
 
 Your ``templates/`` directory will contain the templates for the HTML
-that gets displayed to the user.
+that gets displayed to the participant.
 
 pTree uses `Django's template system <https://docs.djangoproject.com/en/dev/topics/templates/>`_.
 
@@ -51,7 +51,7 @@ Currently, the main filter in this module is the ``currency`` filter,
 which formats integers as currency amounts.
 
 For example, if you pass to your template a variable called ``some_number`` that is equal to ``142``,
-``{{ some_number|currency }}`` would display it to the user as "$1.42".
+``{{ some_number|currency }}`` would display it to the participant as "$1.42".
 
 You can customize this behavior or even create your own tags and filters,
 by following the documentation `here <https://docs.djangoproject.com/en/dev/howto/custom-template-tags/>`__.
@@ -72,7 +72,7 @@ Forms
 
 Each page should include a form.
 Even if the page is empty, it should contain an empty form with a submit button
-(which will say "Next") so that the user can go to the next page.
+(which will say "Next") so that the participant can go to the next page.
 
 Just paste this in the location where your form should be,
 and pTree will make sure the form gets displayed and formatted properly::
@@ -82,7 +82,7 @@ and pTree will make sure the form gets displayed and formatted properly::
 Making your page look great
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-pTree comes with `Bootstrap <http://getbootstrap.com/>`__, a very popular library for customizing a website's user interface.
+pTree comes with `Bootstrap <http://getbootstrap.com/>`__, a very popular library for customizing a website's participant interface.
 
 You can use it if you want a custom `style <http://getbootstrap.com/css/>`__,
 or a specific `component <http://getbootstrap.com/components/>`__    
@@ -102,12 +102,12 @@ For example, the following HTML will create a "Success" alert::
 Smartphones and tablets    
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Since pTree uses Bootstrap for its user interface, 
+Since pTree uses Bootstrap for its participant interface, 
 your pTree app should work on all major browsers (Chrome/Internet Explorer/Firefox/Safari).
-When users visit on a smartphone or tablet (e.g. iPhone/Android/etc.),
+When participants visit on a smartphone or tablet (e.g. iPhone/Android/etc.),
 they should see an appropriately scaled down "mobile friendly" version of the site.
 This will generally not require any effort on your part since Bootstrap does it automatically,
-but if you plan to deploy your app to users on mobile devices,
+but if you plan to deploy your app to participants on mobile devices,
 you should test it out on a mobile device during development,
 since some HTML code doesn't look good on mobile devices.
 
