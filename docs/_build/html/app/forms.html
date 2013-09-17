@@ -1,0 +1,156 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>forms.py &mdash; pTree 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pTree 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Writing a pTree app" href="index.html" />
+    <link rel="next" title="views.py" href="views.html" />
+    <link rel="prev" title="models.py" href="models.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="views.html" title="views.py"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="models.html" title="models.py"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pTree 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Writing a pTree app</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="forms-py">
+<span id="forms"></span><h1>forms.py<a class="headerlink" href="#forms-py" title="Permalink to this headline">¶</a></h1>
+<p>Each of your app&#8217;s Views will display a form to the participant.</p>
+<p>Even if the participant does not need to fill anything out,
+they will usually at least see a button that takes them to the next page in their sequence.</p>
+<p>pTree forms are based on Django <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/forms/">Forms</a>
+and <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/forms/modelforms/#modelform">ModelForms</a>.</p>
+<p>Your forms are defined in <tt class="docutils literal"><span class="pre">forms.py</span></tt> in your app.</p>
+<dl class="class">
+<dt id="MyForm">
+<em class="property">class </em><tt class="descname">MyForm</tt><big>(</big><em>ptree.forms.BlankModelForm</em><big>)</big><a class="headerlink" href="#MyForm" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="MyForm.participant">
+<tt class="descname">participant</tt><a class="headerlink" href="#MyForm.participant" title="Permalink to this definition">¶</a></dt>
+<dt id="MyForm.match">
+<tt class="descname">match</tt><a class="headerlink" href="#MyForm.match" title="Permalink to this definition">¶</a></dt>
+<dt id="MyForm.treatment">
+<tt class="descname">treatment</tt><a class="headerlink" href="#MyForm.treatment" title="Permalink to this definition">¶</a></dt>
+<dd><p>The current participant, match, treatment, and experiment objects.
+These are provided for you automatically.</p>
+<dl class="method">
+<dt id="MyForm.initialize_form">
+<tt class="descname">initialize_form</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#MyForm.initialize_form" title="Permalink to this definition">¶</a></dt>
+<dd><p>You can put any code here to customize how a particular field gets displayed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="MyForm.make_field_currency_choices">
+<tt class="descname">make_field_currency_choices</tt><big>(</big><em>self</em>, <em>field_name</em>, <em>amounts</em><big>)</big><a class="headerlink" href="#MyForm.make_field_currency_choices" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method will make an <tt class="docutils literal"><span class="pre">IntegerField</span></tt> (or <tt class="docutils literal"><span class="pre">FloatField</span></tt>, etc.)
+display as a dropdown menu with each amount displayed as a currency amounts.</p>
+<p>You need to call this in your form&#8217;s <tt class="docutils literal"><span class="pre">initialize_form()</span></tt> method, like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">initialize_form</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># in this example, self.treatment.offer_choices() returns a list like [0, 10, 20, 30, 40, 50]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">make_field_currency_choices</span><span class="p">(</span><span class="s">&#39;amount_offered&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">offer_choices</span><span class="p">())</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="models.html"
+                        title="previous chapter">models.py</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="views.html"
+                        title="next chapter">views.py</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/app/forms.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="views.html" title="views.py"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="models.html" title="models.py"
+             >previous</a> |</li>
+        <li><a href="../index.html">pTree 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Writing a pTree app</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Chris Wickens.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

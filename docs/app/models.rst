@@ -22,7 +22,8 @@ and multiple ``Treatment`` objects in an ``Experiment``, meaning that your objec
 .. image:: model-hierarchy.png
 
 Participant
-~~~~~~
+~~~~~~~~~~~
+
 A ``Participant`` is a person who participates in a ``Match``.
 For example, a Dictator Game match has 2 ``Participant`` objects.
 

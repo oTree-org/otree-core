@@ -1,0 +1,253 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>views.py &mdash; pTree 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pTree 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Writing a pTree app" href="index.html" />
+    <link rel="next" title="The templates/ directory" href="templates.html" />
+    <link rel="prev" title="forms.py" href="forms.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="templates.html" title="The templates/ directory"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="forms.html" title="forms.py"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pTree 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Writing a pTree app</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="views-py">
+<h1>views.py<a class="headerlink" href="#views-py" title="Permalink to this headline">¶</a></h1>
+<p>A View defines a single web page that is shown to participants.
+It is implemented as a Python class &#8211; more specifically, a Django <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/class-based-views/generic-display/">class-based view</a>.</p>
+<p>If your experiment involves showing the participant a sequence of 5 pages,
+your views.py will contain 5 View classes.</p>
+<p>Here is what the code of a View should define (along with what attribute/method defines it):</p>
+<ul class="simple">
+<li>Whether a given participant sees this View (or whether it should be skipped): <tt class="docutils literal"><span class="pre">is_displayed()</span></tt></li>
+<li>What HTML template to display: <tt class="docutils literal"><span class="pre">template_name</span></tt></li>
+<li>What form to display on the page: <tt class="docutils literal"><span class="pre">form_class</span></tt></li>
+<li>What variables to insert into the template (for displaying dynamic content), and how to calculate those variables: <tt class="docutils literal"><span class="pre">get_template_variables</span></tt></li>
+<li>What to do after the participant has submitted a valid form: <tt class="docutils literal"><span class="pre">after_form_validates</span></tt></li>
+</ul>
+<p>When a participant visits your site, they are routed through your views in the order you specify in <tt class="xref py py-meth docutils literal"><span class="pre">Treatment.sequence()</span></tt>.
+The participant must submit a valid form before they get routed to the next page.
+If the form they submit is invalid (e.g. missing or incorrect values),
+it will be re-displayed to them along with the list of errors they need to correct.</p>
+<div class="section" id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
+<p>Here is the structure of a class you would write:</p>
+<dl class="class">
+<dt id="MyView">
+<em class="property">class </em><tt class="descname">MyView</tt><big>(</big><em>ptree.views.abstract.BaseView</em>, <em>ViewInThisApp</em><big>)</big><a class="headerlink" href="#MyView" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="MyView.participant">
+<tt class="descname">participant</tt><a class="headerlink" href="#MyView.participant" title="Permalink to this definition">¶</a></dt>
+<dt id="MyView.match">
+<tt class="descname">match</tt><a class="headerlink" href="#MyView.match" title="Permalink to this definition">¶</a></dt>
+<dt id="MyView.treatment">
+<tt class="descname">treatment</tt><a class="headerlink" href="#MyView.treatment" title="Permalink to this definition">¶</a></dt>
+<dt id="MyView.experiment">
+<tt class="descname">experiment</tt><a class="headerlink" href="#MyView.experiment" title="Permalink to this definition">¶</a></dt>
+<dd><p>The current participant, match, treatment, and experiment objects.</p>
+<p>These are provided for you automatically.
+However, you need to define the following attributes and methods:</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="MyView.template_name">
+<tt class="descname">template_name</tt><a class="headerlink" href="#MyView.template_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the HTML template to display.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># This will look inside your app under the &#39;templates&#39; directory, to &#39;/app_name/MyView.html&#39;</span>
+<span class="n">template_name</span> <span class="o">=</span> <span class="s">&#39;app_name/MyView.html&#39;</span>
+
+<span class="c"># This will use the pTree built-in &#39;Start&#39; template</span>
+<span class="n">template_name</span> <span class="o">=</span> <span class="s">&#39;ptree/Start.html&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="MyView.form_class">
+<tt class="descname">form_class</tt><a class="headerlink" href="#MyView.form_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>The form to display on this page.
+Usually this will be the name of a form class defined in your <tt class="docutils literal"><span class="pre">forms.py</span></tt>.
+(See <a class="reference internal" href="forms.html#forms"><em>forms.py</em></a> for more info.)</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">form_class</span> <span class="o">=</span> <span class="n">app_name</span><span class="o">.</span><span class="n">forms</span><span class="o">.</span><span class="n">MyForm</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="MyView.is_displayed">
+<tt class="descname">is_displayed</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#MyView.is_displayed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether a given participant sees this View (or whether it should be skipped).
+If you don&#8217;t define this method, all participants in the treatment will see this page.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">is_displayed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;only display this page to participants who made an offer of 0&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">participant</span><span class="o">.</span><span class="n">offer</span> <span class="o">==</span> <span class="mi">0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="MyView.get_template_variables">
+<tt class="descname">get_template_variables</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#MyView.get_template_variables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get any variables that will be passed to the HTML template.
+Add them to the dictionary as key-value pairs.
+(You don&#8217;t need to include the form; that will be handled automatically)</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">get_template_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;CHARITY&#39;</span><span class="p">:</span> <span class="n">CHARITY</span><span class="p">,</span>
+        <span class="s">&#39;is_hypothetical&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">probability_of_honoring_split_as_fraction</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s">&#39;max_offer_amount&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">max_offer_amount</span><span class="p">,</span>
+        <span class="s">&#39;participant_gets_all_money_if_no_honor_split&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">participant_gets_all_money_if_no_honor_split</span><span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="MyView.after_form_validates">
+<tt class="descname">after_form_validates</tt><big>(</big><em>self</em>, <em>form</em><big>)</big><a class="headerlink" href="#MyView.after_form_validates" title="Permalink to this definition">¶</a></dt>
+<dd><p>After the participant submits the form,
+pTree makes sure that it has all the required values
+(and re-displays to the participant with errors otherwise).</p>
+<p>Here you can put anything additional that should happen after the form validates.
+If you don&#8217;t need anything to be done, it&#8217;s OK to leave this method blank,
+or to leave it out entirely.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If your <tt class="docutils literal"><span class="pre">form_class</span></tt> inherits from <tt class="docutils literal"><span class="pre">ModelForm</span></tt>,
+then pTree will automatically save the submitted values to the database.
+But if you inherit from <tt class="docutils literal"><span class="pre">Form</span></tt>,
+you will need to save the form fields to the database yourself here.
+(This is one of the advantages of using <tt class="docutils literal"><span class="pre">ModelForm</span></tt>).</p>
+</div>
+<p>You can access form fields like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">password</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;password&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">after_form_validates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">probability_of_honoring_split_as_fraction</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+
+        <span class="c"># note: you can access form data through the form.cleaned_data dictionary,</span>
+        <span class="c"># as defined here: https://docs.djangoproject.com/en/dev/ref/forms/api/#accessing-clean-data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">match</span><span class="o">.</span><span class="n">amount_given</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;amount_offered&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">match</span><span class="o">.</span><span class="n">split_was_honored</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">probability_of_honoring_split_as_fraction</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">match</span><span class="o">.</span><span class="n">amount_given</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">amount_given_if_no_honor_split</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">match</span><span class="o">.</span><span class="n">split_was_honored</span> <span class="o">=</span> <span class="bp">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">views.py</a><ul>
+<li><a class="reference internal" href="#implementation">Implementation</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="forms.html"
+                        title="previous chapter">forms.py</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="templates.html"
+                        title="next chapter">The <tt class="docutils literal"><span class="pre">templates/</span></tt> directory</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/app/views.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="templates.html" title="The templates/ directory"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="forms.html" title="forms.py"
+             >previous</a> |</li>
+        <li><a href="../index.html">pTree 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Writing a pTree app</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Chris Wickens.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

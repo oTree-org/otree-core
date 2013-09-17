@@ -1,0 +1,136 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Deploying &mdash; pTree 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pTree 0.1 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="index.html">pTree 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="deploying">
+<h1>Deploying<a class="headerlink" href="#deploying" title="Permalink to this headline">¶</a></h1>
+<p>Before you launch your app to your audience,
+you will need to test it.</p>
+<p>The easiest way is to run the website on the personal computer that you are writing the code on.</p>
+<p>If you have changed the structure of your models since the last time you deployed,
+you will need to update your database schema with <a class="reference external" href="https://docs.djangoproject.com/en/1.5/ref/django-admin/#django-admin-syncdb">syncdb</a>. Run this:</p>
+<div class="highlight-python"><pre>python manage.py syncdb --traceback</pre>
+</div>
+<p>You will be prompted to create a superuser.
+Choose Yes. You can then pick a username and password that you will use to explore the experimenter console (more at <a class="reference internal" href="app/admin.html#admin"><em>Experimenter console</em></a>).</p>
+<p>If you need to re-generate your objects (Experiment, Treatments, Participants),
+run the command you defined in ref:<cite>management</cite>:</p>
+<div class="highlight-python"><pre>python manage.py [your_app_name]_create_objects --traceback</pre>
+</div>
+<p>Finally, you can launch your site on your local machine:</p>
+<div class="highlight-python"><pre>python manage.py runserver</pre>
+</div>
+<p>The output of that command should include this:</p>
+<div class="highlight-python"><pre>Starting development server at http://127.0.0.1:8000/</pre>
+</div>
+<p>Visit the pTree experimenter console in your browser by appending <tt class="docutils literal"><span class="pre">admin</span></tt> to the above URL.
+You can read more about the experimenter console at ref:<cite>admin</cite>.</p>
+<div class="section" id="deploying-on-a-remote-web-server">
+<h2>Deploying on a remote web server<a class="headerlink" href="#deploying-on-a-remote-web-server" title="Permalink to this headline">¶</a></h2>
+<p>When your app functions properly, you will want to launch it to your audience
+by deploying it from your personal computer to a web server,
+so that participants can access it from a URL.</p>
+<p>pTree can run with any operating system, database engine, or web server supported by Django.</p>
+<p>The easiest option I have found is <cite>Heroku &lt;https://www.heroku.com/&gt;</cite>,
+a website hosting service that greatly simplifies the amount of configuration and maintenance you need to do.
+Once you have created a free account,
+you can follow the instructions <a class="reference external" href="https://devcenter.heroku.com/articles/getting-started-with-django">here</a>.</p>
+<p>You can create multiple <a class="reference external" href="https://devcenter.heroku.com/articles/multiple-environments">environments</a>.
+For example, if your participants access the experiment at mysite.com,
+you can have a separate site called development.mysite.com
+where you can test the site before launching.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Deploying</a><ul>
+<li><a class="reference internal" href="#deploying-on-a-remote-web-server">Deploying on a remote web server</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/deploy.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="index.html">pTree 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Chris Wickens.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

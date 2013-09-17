@@ -16,7 +16,7 @@ Contents:
    install
    project
    app/index
-   deploying
+   deploy
 
 Indices and tables
 ==================

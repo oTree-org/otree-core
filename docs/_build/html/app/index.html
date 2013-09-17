@@ -1,0 +1,189 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Writing a pTree app &mdash; pTree 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pTree 0.1 documentation" href="../index.html" />
+    <link rel="next" title="models.py" href="models.html" />
+    <link rel="prev" title="Creating your Django project" href="../project.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="models.html" title="models.py"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../project.html" title="Creating your Django project"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pTree 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="writing-a-ptree-app">
+<h1>Writing a pTree app<a class="headerlink" href="#writing-a-ptree-app" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="creating-the-app">
+<h2>Creating the app<a class="headerlink" href="#creating-the-app" title="Permalink to this headline">¶</a></h2>
+<p>First, choose a name for your app that is descriptive and short,
+since you will be typing it and using it frequently.
+For example, if you are implementing the <a class="reference external" href="http://en.wikipedia.org/wiki/Prisoner's_dilemma">prisoner&#8217;s dilemma</a>,
+you can choose the name <tt class="docutils literal"><span class="pre">prisoner</span></tt>.
+If you are implementing the <a class="reference external" href="http://en.wikipedia.org/wiki/Public_goods_game">public goods game</a>,
+you can choose the name <tt class="docutils literal"><span class="pre">publicgoods</span></tt>.</p>
+<p>At your command line, run this command, where &lt;app_name&gt; is the name you have chosen for your app:</p>
+<div class="highlight-python"><pre>django-admin.py startapp --template https://github.com/wickens/django-ptree/releases/download/latest/app-template.zip &lt;app_name&gt;</pre>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This will create a new app based on a pTree template, with most of the structure already set up for you.</p>
+</div>
+<p>Once your app has been created,
+go to <tt class="docutils literal"><span class="pre">settings.py</span></tt> and append its name (as a string) to <tt class="docutils literal"><span class="pre">PTREE_EXPERIMENT_APPS</span></tt>, like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">PTREE_EXPERIMENT_APPS</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;myappname&#39;</span><span class="p">,)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="writing-the-code">
+<h2>Writing the code<a class="headerlink" href="#writing-the-code" title="Permalink to this headline">¶</a></h2>
+<p>The directory structure of your new app will look like this:</p>
+<div class="highlight-python"><pre>management/
+static/
+templates/
+admin.py
+forms.py
+models.py
+views.py</pre>
+</div>
+<p>Each of these files/folders holds one component of your app. They are explained in the following pages:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="models.html">models.py</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="models.html#participant">Participant</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html#match">Match</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html#treatment">Treatment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html#experiment">Experiment</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="forms.html">forms.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="views.html">views.py</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="views.html#implementation">Implementation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="templates.html">The <tt class="docutils literal"><span class="pre">templates/</span></tt> directory</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="templates.html#template-configuration">Template configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="templates.html#forms">Forms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="templates.html#making-your-page-look-great">Making your page look great</a></li>
+<li class="toctree-l2"><a class="reference internal" href="templates.html#smartphones-and-tablets">Smartphones and tablets</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="management.html">Populating the database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="management.html#which-objects-to-create">Which objects to create</a></li>
+<li class="toctree-l2"><a class="reference internal" href="management.html#how-to-create-your-objects">How to create your objects</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="admin.html">Experimenter console</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="admin.html#customizing-the-experimenter-console">Customizing the experimenter console</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Writing a pTree app</a><ul>
+<li><a class="reference internal" href="#creating-the-app">Creating the app</a></li>
+<li><a class="reference internal" href="#writing-the-code">Writing the code</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../project.html"
+                        title="previous chapter">Creating your Django project</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="models.html"
+                        title="next chapter">models.py</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/app/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="models.html" title="models.py"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../project.html" title="Creating your Django project"
+             >previous</a> |</li>
+        <li><a href="../index.html">pTree 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Chris Wickens.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

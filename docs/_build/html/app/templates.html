@@ -1,0 +1,220 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The templates/ directory &mdash; pTree 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pTree 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Writing a pTree app" href="index.html" />
+    <link rel="next" title="Populating the database" href="management.html" />
+    <link rel="prev" title="views.py" href="views.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="management.html" title="Populating the database"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="views.html" title="views.py"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pTree 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Writing a pTree app</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="the-templates-directory">
+<h1>The <tt class="docutils literal"><span class="pre">templates/</span></tt> directory<a class="headerlink" href="#the-templates-directory" title="Permalink to this headline">¶</a></h1>
+<p>Your <tt class="docutils literal"><span class="pre">templates/</span></tt> directory will contain the templates for the HTML
+that gets displayed to the participant.</p>
+<p>pTree uses <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/templates/">Django&#8217;s template system</a>.</p>
+<div class="section" id="template-configuration">
+<h2>Template configuration<a class="headerlink" href="#template-configuration" title="Permalink to this headline">¶</a></h2>
+<p>Each template needs a few lines of code at the top.</p>
+<div class="section" id="base-template">
+<h3>Base template<a class="headerlink" href="#base-template" title="Permalink to this headline">¶</a></h3>
+<p>Put this line at the top of your file:</p>
+<div class="highlight-python"><pre>{% extends "ptree/Base.html" %}</pre>
+</div>
+<p>Now, instead of having to write all your HTML from scratch, for example:</p>
+<div class="highlight-python"><pre>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+    &lt;head&gt;
+    &lt;!-- and so on... --&gt;</pre>
+</div>
+<p>You just have to define 2 blocks:</p>
+<div class="highlight-python"><pre>{% block title %}
+    Title goes here
+{% endblock %}
+
+{% block content %}
+    Body HTML goes here.
+{% endblock %}</pre>
+</div>
+<p>You may want to define your own base template rather than using pTree&#8217;s built-in base template.
+This is useful when you want to customize the appearance or functionality (e.g. by adding custom CSS or JavaScript),
+or customize the structure of HTML headings. This is easily done.
+Just follow the instructions <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/templates/#template-inheritance">here</a>.</p>
+</div>
+<div class="section" id="custom-filters">
+<h3>Custom filters<a class="headerlink" href="#custom-filters" title="Permalink to this headline">¶</a></h3>
+<p>The following line will load pTree&#8217;s filter module:</p>
+<div class="highlight-python"><pre>{% load ptreefilters %}</pre>
+</div>
+<p>Currently, the main filter in this module is the <tt class="docutils literal"><span class="pre">currency</span></tt> filter,
+which formats integers as currency amounts.</p>
+<p>For example, if you pass to your template a variable called <tt class="docutils literal"><span class="pre">some_number</span></tt> that is equal to <tt class="docutils literal"><span class="pre">142</span></tt>,
+<tt class="docutils literal"><span class="pre">{{</span> <span class="pre">some_number|currency</span> <span class="pre">}}</span></tt> would display it to the participant as &#8220;$1.42&#8221;.</p>
+<p>You can customize this behavior or even create your own tags and filters,
+by following the documentation <a class="reference external" href="https://docs.djangoproject.com/en/dev/howto/custom-template-tags/">here</a>.</p>
+</div>
+<div class="section" id="static-files">
+<h3>Static files<a class="headerlink" href="#static-files" title="Permalink to this headline">¶</a></h3>
+<p>You will likely want to include images, CSS, or JavaScript in your pages.</p>
+<p>To do that, put the following line in your template:</p>
+<div class="highlight-python"><pre>{% load staticfiles %}</pre>
+</div>
+<p>And follow the instructions <a class="reference external" href="https://docs.djangoproject.com/en/dev/howto/static-files/">here</a>.</p>
+</div>
+</div>
+<div class="section" id="forms">
+<h2>Forms<a class="headerlink" href="#forms" title="Permalink to this headline">¶</a></h2>
+<p>Each page should include a form.
+Even if the page is empty, it should contain an empty form with a submit button
+(which will say &#8220;Next&#8221;) so that the participant can go to the next page.</p>
+<p>Just paste this in the location where your form should be,
+and pTree will make sure the form gets displayed and formatted properly:</p>
+<div class="highlight-python"><pre>{% include "ptree/Form.html" %}</pre>
+</div>
+</div>
+<div class="section" id="making-your-page-look-great">
+<h2>Making your page look great<a class="headerlink" href="#making-your-page-look-great" title="Permalink to this headline">¶</a></h2>
+<p>pTree comes with <a class="reference external" href="http://getbootstrap.com/">Bootstrap</a>, a very popular library for customizing a website&#8217;s participant interface.</p>
+<p>You can use it if you want a custom <a class="reference external" href="http://getbootstrap.com/css/">style</a>,
+or a specific <a class="reference external" href="http://getbootstrap.com/components/">component</a>
+like a table, alert, progress bar, label, etc.
+You can even make your page dynamic with elements like <a class="reference external" href="http://getbootstrap.com/javascript/#popovers">popovers</a>,
+<a class="reference external" href="http://getbootstrap.com/javascript/#modals">modals</a>,
+and <a class="reference external" href="http://getbootstrap.com/javascript/#collapse">collapsible text</a>.</p>
+<p>Bootstrap is very easy to use and well documented.
+Usually you just need to add a <tt class="docutils literal"><span class="pre">class=</span></tt> attribute to your HTML element,
+and Bootstrap will take care of the rest.</p>
+<p>For example, the following HTML will create a &#8220;Success&#8221; alert:</p>
+<div class="highlight-python"><pre>&lt;div class="alert alert-success"&gt;Great job!&lt;/div&gt;</pre>
+</div>
+</div>
+<div class="section" id="smartphones-and-tablets">
+<h2>Smartphones and tablets<a class="headerlink" href="#smartphones-and-tablets" title="Permalink to this headline">¶</a></h2>
+<p>Since pTree uses Bootstrap for its participant interface,
+your pTree app should work on all major browsers (Chrome/Internet Explorer/Firefox/Safari).
+When participants visit on a smartphone or tablet (e.g. iPhone/Android/etc.),
+they should see an appropriately scaled down &#8220;mobile friendly&#8221; version of the site.
+This will generally not require any effort on your part since Bootstrap does it automatically,
+but if you plan to deploy your app to participants on mobile devices,
+you should test it out on a mobile device during development,
+since some HTML code doesn&#8217;t look good on mobile devices.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">The <tt class="docutils literal"><span class="pre">templates/</span></tt> directory</a><ul>
+<li><a class="reference internal" href="#template-configuration">Template configuration</a><ul>
+<li><a class="reference internal" href="#base-template">Base template</a></li>
+<li><a class="reference internal" href="#custom-filters">Custom filters</a></li>
+<li><a class="reference internal" href="#static-files">Static files</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#forms">Forms</a></li>
+<li><a class="reference internal" href="#making-your-page-look-great">Making your page look great</a></li>
+<li><a class="reference internal" href="#smartphones-and-tablets">Smartphones and tablets</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="views.html"
+                        title="previous chapter">views.py</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="management.html"
+                        title="next chapter">Populating the database</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/app/templates.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="management.html" title="Populating the database"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="views.html" title="views.py"
+             >previous</a> |</li>
+        <li><a href="../index.html">pTree 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Writing a pTree app</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Chris Wickens.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
