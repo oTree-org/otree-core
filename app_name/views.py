@@ -11,12 +11,12 @@ from django.conf import settings
 
 class ViewInThisApp(object):
     """Keep this as is"""
-    Treatment = {{ app_name }}.models.Treatment
-    Match = {{ app_name }}.models.Match
-    Player = {{ app_name }}.models.Player
-    Experiment = {{ app_name }}.models.Experiment
+    TreatmentClass = {{ app_name }}.models.Treatment
+    MatchClass = {{ app_name }}.models.Match
+    PlayerClass = {{ app_name }}.models.Player
+    ExperimentClass = {{ app_name }}.models.Experiment
     
-class Start(ptree.views.abstract.Start, View):
+class Start(ptree.views.abstract.Start, ViewInThisApp):
     """Keep this as is"""
 
 # change the name as necessary

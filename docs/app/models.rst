@@ -1,9 +1,10 @@
 models.py
 *******************
 
-(For background, read about Django models `here <https://docs.djangoproject.com/en/dev/topics/db/models/>`_.)
 
-Every pTree app needs 4 core models:
+
+Every pTree app needs 4 core database models 
+(for background, read about Django models `here <https://docs.djangoproject.com/en/dev/topics/db/models/>`_):
 
 - Player
 - Match

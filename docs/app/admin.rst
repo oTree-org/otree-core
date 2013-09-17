@@ -1,0 +1,5 @@
+.. _admin:
+
+Experimenter console
+********************
+

@@ -2,7 +2,7 @@ views.py
 ========
 
 A View defines a single web page that is shown to users. 
-It is implemented as a Python class -- more specifically, a Django ` class-based view <https://docs.djangoproject.com/en/dev/topics/class-based-views/generic-display/>`__.
+It is implemented as a Python class -- more specifically, a Django `class-based view <https://docs.djangoproject.com/en/dev/topics/class-based-views/generic-display/>`__.
 
 If your experiment involves showing the user a sequence of 5 pages,
 your views.py will contain 5 View classes.
@@ -15,12 +15,10 @@ Here is what the code of a View should define (along with what attribute/method 
 - What variables to insert into the template (for displaying dynamic content), and how to calculate those variables: ``get_template_variables``
 - What to do after the user has submitted a valid form: ``after_form_validates``
 
-Here is what you *don't* need to worry about (what pTree does automatically)
-
-- Defining a URL for the View
-- Checking the submitted form for errors and re-displaying to the user if they need to fix an error
-- Redirecting to the next page
-- Calling ``player.save()`` or ``match.save()``
+When a user visits your site, they are routed through your views in the order you specify in :py:meth:`Treatment.sequence`.
+The user must submit a valid form before they get routed to the next page.
+If the form they submit is invalid (e.g. missing or incorrect values),
+it will be re-displayed to them along with the list of errors they need to correct.
 
 Implementation
 ______________
@@ -29,11 +27,17 @@ Here is the structure of a class you would write:
 
 .. py:class:: MyView(ptree.views.abstract.BaseView, ViewInThisApp)
     
-    .. py:attribute:: player, match, treatment, experiment
+    .. py:attribute:: player
+					  match
+					  treatment
+					  experiment
     
         The current player, match, treatment, and experiment objects.
+					
         These are provided for you automatically.
         However, you need to define the following attributes and methods:
+		
+		
     
     .. py:attribute:: template_name
     

@@ -10,7 +10,12 @@ import ptree.models.experiments
 from django.conf import settings
 
 class Experiment(ptree.models.experiments.BaseExperiment):
+
+    # this will be in the URL users see,
+    # so you may want to change it to a code name
+    # if you don't want to reveal to users the name of the experiment.
     url_base = '{{ app_name }}'
+
     
 class Treatment(ptree.models.treatments.BaseTreatment):
     experiment = models.ForeignKey(Experiment)

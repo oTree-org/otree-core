@@ -38,10 +38,10 @@ def get_parent_directory_name(_file_):
 class SessionKeys(object):
     """Key names used for request.session (to prevent string duplication)"""
 
-    Experiment = 'Experiment'
-    Treatment = 'Treatment'
-    Match = 'Match'
-    Player = 'Player'
+    ExperimentClass = 'Experiment'
+    TreatmentClass = 'Treatment'
+    MatchClass = 'Match'
+    PlayerClass = 'Player'
     
     match_id = 'match_id'
 
@@ -60,7 +60,7 @@ class BaseView(django.views.generic.base.View):
     Takes care of:
     - retrieving model classes and objects automatically
     - managing your position in the sequence of views
-    so that you can easily access self.Experiment, self.experiment, self.Treatment, self.treatment, ...
+    so that you can easily access self.ExperimentClass, self.experiment, self.TreatmentClass, self.treatment, ...
     You should generally use this, unless your view occurs as soon as the user visits,
     and none of the objects have been created yet.
     
@@ -68,36 +68,36 @@ class BaseView(django.views.generic.base.View):
 
     def load_classes(self):
         """This loads from cookies."""
-        self.Experiment = self.request.session.get(SessionKeys.Experiment) or self.Experiment
-        self.Treatment = self.request.session.get(SessionKeys.Treatment) or self.Treatment
-        self.Player = self.request.session.get(SessionKeys.Player) or self.Player
-        self.Match = self.request.session.get(SessionKeys.Match) or self.Match
+        self.ExperimentClass = self.request.session.get(SessionKeys.ExperimentClass) or self.ExperimentClass
+        self.TreatmentClass = self.request.session.get(SessionKeys.TreatmentClass) or self.TreatmentClass
+        self.PlayerClass = self.request.session.get(SessionKeys.PlayerClass) or self.PlayerClass
+        self.MatchClass = self.request.session.get(SessionKeys.MatchClass) or self.MatchClass
 
     def load_experiment(self):
         experiment_code = self.request.session.get(SessionKeys.experiment_code)
         if experiment_code:
-            self.experiment = get_object_or_404(self.Experiment, code=experiment_code)
+            self.experiment = get_object_or_404(self.ExperimentClass, code=experiment_code)
         else:
             self.experiment = None
 
     def load_treatment(self):
         treatment_code = self.request.session.get(SessionKeys.treatment_code)
         if treatment_code:
-            self.treatment = get_object_or_404(self.Treatment, code=treatment_code)
+            self.treatment = get_object_or_404(self.TreatmentClass, code=treatment_code)
         else:
             self.treatment = None
         
     def load_match(self):
         match_id = self.request.session.get(SessionKeys.match_id)
         if match_id:
-            self.match = get_object_or_404(self.Match, pk=match_id)
+            self.match = get_object_or_404(self.MatchClass, pk=match_id)
         else:
             self.match = None
 
     def load_player(self):
         player_code = self.request.session.get(SessionKeys.player_code)
         if player_code:
-            self.player = get_object_or_404(self.Player, code = player_code)
+            self.player = get_object_or_404(self.PlayerClass, code = player_code)
         else:
             self.player = None
 
@@ -163,8 +163,8 @@ class BaseView(django.views.generic.base.View):
 
     @classmethod
     def url_base(cls):
-        if hasattr(cls, 'Experiment'):
-            return cls.Experiment.url_base
+        if hasattr(cls, 'ExperimentClass'):
+            return cls.ExperimentClass.url_base
         else:
             # i.e. if it's not part of a game, but rather a shared module etc
             # then you need to set this manually
@@ -304,9 +304,9 @@ class PageWithModelForm(PageWithFormMixin, django.views.generic.edit.UpdateView,
         """FIXME: need a more general way of handling this.
         This is kind of a hack."""
         cls = self.form_class.Meta.model
-        if cls == self.Match:
+        if cls == self.MatchClass:
             return self.match
-        elif cls == self.Player:
+        elif cls == self.PlayerClass:
             return self.player
 
 
@@ -333,10 +333,10 @@ class Start(PageWithForm, BaseView):
         some Views are in a shared module and therefore can be bound to different Experiments, Treatments, etc.
         """
 
-        self.request.session[SessionKeys.Experiment] = self.Experiment
-        self.request.session[SessionKeys.Treatment] = self.Treatment
-        self.request.session[SessionKeys.Player] = self.Player
-        self.request.session[SessionKeys.Match] = self.Match
+        self.request.session[SessionKeys.ExperimentClass] = self.ExperimentClass
+        self.request.session[SessionKeys.TreatmentClass] = self.TreatmentClass
+        self.request.session[SessionKeys.PlayerClass] = self.PlayerClass
+        self.request.session[SessionKeys.MatchClass] = self.MatchClass
 
     def dispatch(self, request, *args, **kwargs):
         self.load_objects()
@@ -415,12 +415,12 @@ class AssignPlayerAndMatch(BaseView):
 
     def next_open_match(self):
         try:
-            return self.Match.objects.next_open_match(self.request)
+            return self.MatchClass.objects.next_open_match(self.request)
         except StopIteration:
             return None
 
     def create_match(self):
-        match = self.Match(treatment = self.treatment)
+        match = self.MatchClass(treatment = self.treatment)
         # need to save it before you assign the player.match ForeignKey
         match.save()
         return match
@@ -442,7 +442,7 @@ class PickTreatment(django.views.generic.base.View):
     def load_player(self):
         player_code = self.request.session.get(SessionKeys.player_code)
         if player_code:
-            self.player = get_object_or_404(self.Player, code = player_code)
+            self.player = get_object_or_404(self.PlayerClass, code = player_code)
         else:
             self.player = None
 
@@ -452,7 +452,7 @@ class PickTreatment(django.views.generic.base.View):
         
         # retrieve experiment
         experiment_code = self.request.GET['exp']
-        experiment = get_object_or_404(self.Experiment, code=experiment_code)
+        experiment = get_object_or_404(self.ExperimentClass, code=experiment_code)
 
         # store for future access
         self.request.session[SessionKeys.experiment_code] = experiment_code
@@ -480,9 +480,9 @@ class PickTreatment(django.views.generic.base.View):
             # a match has a treatment assigned on creation
             assert treatment != None
         else:
-            if experiment.randomization_mode == self.Experiment.INDEPENDENT:
+            if experiment.randomization_mode == self.ExperimentClass.INDEPENDENT:
                 treatment = random.choice(experiment.treatment_set.all())
-            elif experiment.randomization_mode == self.Experiment.SMOOTHING:
+            elif experiment.randomization_mode == self.ExperimentClass.SMOOTHING:
                 ## find the treatment with the fewest responses
                 ## and assign to that one to even out the counts
                 
@@ -509,8 +509,8 @@ class PickTreatment(django.views.generic.base.View):
     def url_base(cls):
         """urls.py requires that each view know its own URL.
         a URL base is the first part of the path, usually the name of the game"""
-        if hasattr(cls, 'Experiment'):
-            return cls.Experiment.url_base
+        if hasattr(cls, 'ExperimentClass'):
+            return cls.ExperimentClass.url_base
         else:
             # i.e. if it's not part of a game, but rather a shared module etc
             # then you need to set this manually
