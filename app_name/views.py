@@ -29,7 +29,7 @@ class MyView(ViewInThisApp, ptree.views.abstract.PageWithModelForm):
     def is_displayed(self):
         pass
 
-    def get_template_variables(self):
+    def get_variables_for_template(self):
         return {}
 
     def after_form_validates(self, form):

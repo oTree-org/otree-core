@@ -13,7 +13,7 @@ you can choose the name ``publicgoods``.
 
 At your command line, run this command, where <app_name> is the name you have chosen for your app::
 
-    django-admin.py startapp --template https://github.com/wickens/django-ptree/releases/download/latest/app_name.zip <app_name>
+    django-admin.py startapp --template https://github.com/wickens/django-ptree/releases/download/latest/app_template.zip <app_name>
     
 .. note::
 

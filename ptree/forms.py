@@ -65,13 +65,13 @@ class StartForm(BlankForm):
     since it can be used with many different models"""
     nickname = forms.CharField(max_length = 50)
     
-class CaptchaForm(BlankForm):
+class CaptchaAreYouAHumanForm(BlankForm):
     """
     CAPTCHA from AreYouHuman.com
     """
 
     def clean(self):
-        cleaned_data = super(CaptchaForm, self).clean()
+        cleaned_data = super(CaptchaAreYouAHumanForm, self).clean()
         secret = self.data['session_secret']
 
         ayah.configure(settings.AYAH_PUBLISHER_KEY, settings.AYAH_SCORING_KEY)

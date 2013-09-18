@@ -27,16 +27,16 @@ import ayah
 class View(object):
     url_base = 'shared'
 
-class Captcha(ptree.views.abstract.PageWithForm, View):
+class CaptchaAreYouAHuman(ptree.views.abstract.PageWithForm, View):
     """
     CAPTCHA from http://areyouahuman.com/.
-    To use this, you first need to register an that site to get a publisher key and scoring key
+    To use this, you first need to register on that site to get a publisher key and scoring key
     (see variables below)
     """
-    template_name = 'ptree/Captcha.html'
-    form_class = ptree.forms.CaptchaForm
+    template_name = 'ptree/CaptchaAreYouAHuman.html'
+    form_class = ptree.forms.CaptchaAreYouAHumanForm
 
-    def get_template_variables(self):
+    def get_variables_for_template(self):
         
         #FIXME: this should go in the form code
         ayah.configure(settings.AYAH_PUBLISHER_KEY, settings.AYAH_SCORING_KEY)
@@ -82,7 +82,7 @@ class RedemptionCode(PageWithForm, View):
 
     template_name = 'ptree/RedemptionCode.html'
 
-    def get_template_variables(self):
+    def get_variables_for_template(self):
         
         self.participant.is_finished = True
         self.participant.save()

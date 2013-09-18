@@ -214,7 +214,7 @@ class PageWithFormMixin(object):
             return HttpResponseRedirect(ROUTE_TO_CURRENT_VIEW)
         return super(PageWithFormMixin, self).dispatch(request, *args, **kwargs)
 
-    def get_template_variables(self):
+    def get_variables_for_template(self):
         """
         Should be implemented by subclasses
         Return a dictionary that contains the template context variables (see Django documentation)
@@ -241,7 +241,7 @@ class PageWithFormMixin(object):
         
         # whatever else you specify that doesn't go in the form
         # (e.g. info we display to the participant)
-        context.update(self.get_template_variables())
+        context.update(self.get_variables_for_template())
 
         # protection against CSRF attacks
         context.update(csrf(self.request))
@@ -347,7 +347,7 @@ class Start(PageWithForm, BaseView):
         return super(PageWithFormMixin, self).dispatch(request, *args, **kwargs)
 
     
-    def get_template_variables(self):
+    def get_variables_for_template(self):
 
         # Setting a test cookie to see if there will be problems with the participant's browser.        
         self.request.session.set_test_cookie() 
@@ -356,8 +356,6 @@ class Start(PageWithForm, BaseView):
         # even if those classes are not a class attribute.
         self.persist_classes()
         
-        # FIXME: why do we need this? We already call load_objects in dispatch()
-        # self.load_objects()
         self.request.session[SessionKeys.current_view_index] = 0
         self.initialize_ticket_to_next_page_has_been_used_list()
 
@@ -367,7 +365,7 @@ class Start(PageWithForm, BaseView):
         if self.participant.ip_address == None:
             self.participant.ip_address = self.request.META['REMOTE_ADDR']
         if self.participant.nickname == None:
-            self.participant.nickname = form.cleaned_data['nickname']
+            self.participant.nickname = form.cleaned_data.get('nickname')
         
         # Checking if I was able to put a cookie in the participant's browser
         if self.request.session.test_cookie_worked():
