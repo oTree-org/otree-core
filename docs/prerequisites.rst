@@ -6,10 +6,30 @@ Before getting started with pTree, you need the following.
 Python
 ======
 You will write your pTree apps in `Python <http://www.python.org/>`_.
-Install version 2.7 (not 3.X).
 
 Python is an easy-to-learn yet powerful and versatile programming language.
 It is also very popular and has a great ecosystem of tutorials, libraries, and tools.
+
+Installation
+------------
+Install version 2.7 (not 3.X).
+
+You will also need an editor to write your Python code.
+Although you can use any text editor you want,
+I find it is much easier to create pTree apps in an IDE
+that has features like code completion, error detection,
+and easy navigation between the many modules and classes in your project.
+
+Here are some popular IDEs:
+
+- `Python Tools for Visual Studio <https://pytools.codeplex.com/wikipage?title=PTVS%20Installation>`__ (Windows only); just make sure to follow the instructions on how to download the free version.
+- `PyDev for Eclipse <http://pydev.org/>` (Windows/Mac/Linux)
+- `Komodo Edit <http://www.openkomodo.com/>`__ (Windows/Mac/Linux)
+- `PyCharm <http://www.jetbrains.com/pycharm/>`__ (Windows/Mac/Linux) (not free)
+- `Sublime Text 2 <http://www.sublimetext.com/>`__ (Windows/Mac/Linux) (not free)
+
+Learning Python
+---------------
 
 You must have intermediate knowledge of Python to use pTree.
 You should at least understand the basics of procedural and object-oriented programming: 

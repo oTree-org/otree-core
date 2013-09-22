@@ -66,8 +66,27 @@ class BaseView(django.views.generic.base.View):
     
     """
 
+    def autocomplete_dummy_method(self):
+        """
+        never actually gets called :)
+        only exists to declare frequently used instance vars,
+        so that the IDE's IntelliSense/code completion finds these attributes
+        to make writing code faster.
+        """
+
+        # would be nicer if we could dynamically set these to
+        # the descendant classes' model classes (e.g. ExperimentClass),
+        # but it seems IDEs (PTVS, PyCharm) can't do that.
+        self.experiment = ptree.models.experiments.BaseExperiment()
+        self.treatment = ptree.models.treatments.BaseTreatment()
+        self.match = ptree.models.matches.BaseMatch()
+        self.participant = ptree.models.participants.BaseParticipant()
+
+
+
     def load_classes(self):
         """This loads from cookies."""
+        
         self.ExperimentClass = self.request.session.get(SessionKeys.ExperimentClass) or self.ExperimentClass
         self.TreatmentClass = self.request.session.get(SessionKeys.TreatmentClass) or self.TreatmentClass
         self.ParticipantClass = self.request.session.get(SessionKeys.ParticipantClass) or self.ParticipantClass
@@ -100,6 +119,7 @@ class BaseView(django.views.generic.base.View):
             self.participant = get_object_or_404(self.ParticipantClass, code = participant_code)
         else:
             self.participant = None
+        
 
     def load_objects(self):
         self.load_experiment()
@@ -301,6 +321,7 @@ class PageWithModelForm(PageWithFormMixin, django.views.generic.edit.UpdateView,
         return super(PageWithModelForm, self).form_valid(form)
 
     def get_object(self):
+        
         """FIXME: need a more general way of handling this.
         This is kind of a hack."""
         cls = self.form_class.Meta.model
@@ -310,11 +331,11 @@ class PageWithModelForm(PageWithFormMixin, django.views.generic.edit.UpdateView,
             return self.participant
 
 
+
 class PageWithForm(PageWithFormMixin, django.views.generic.FormView, BaseView):
     """If you can't use a ModelForm, e.g. the data in the form will not be saved to the database,
     then you can use this as a fallback."""
     form_class = ptree.forms.BlankForm
-
 
 class Start(PageWithForm, BaseView):
     """Start page. Each game should have a Start view that inherits from this.
@@ -523,3 +544,5 @@ class PickTreatment(django.views.generic.base.View):
     def url_pattern(cls):
         """URL pattern regular expression, as required by urls.py"""
         return r'^{}/{}/$'.format(cls.url_base(), cls.__name__)
+
+

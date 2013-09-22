@@ -37,4 +37,5 @@ def urlpatterns():
         views_module_name = '{}.views'.format(game_label)
         p += url_patterns_from_module(views_module_name)
     p += url_patterns_from_module('ptree.views.concrete')
+    p += url(r'^exports/', include('data_exports.urls', namespace='data_exports'))
     return p
