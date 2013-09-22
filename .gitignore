@@ -8,4 +8,4 @@ docs/app/Thumbs.db
 manage.py
 django_ptree.egg-info/
 setup.py
-myapp/
+myapp*
