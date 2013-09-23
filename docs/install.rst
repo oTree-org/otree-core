@@ -1,4 +1,4 @@
 Installation
 ************
 
-Just type ``pip install django-ptree``.
+On your command line, just type ``pip install django-ptree``.
