@@ -21,6 +21,10 @@ class FormMixin(object):
         kwargs.pop('request')
         super(FormMixin, self).__init__(*args, **kwargs)
         self.initialize_form()
+        self.fields[SessionKeys.current_view_index] = forms.CharField(widget=forms.HiddenInput(), max_length=200)
+        self.fields[SessionKeys.current_view_index].initial = self.request.session[SessionKeys.current_view_index]
+
+
 
     def initialize_form(self):
         """Customize your form fields here"""

@@ -68,15 +68,18 @@ class RouteToCurrentPageInSequence(ptree.views.abstract.BaseView, View):
     Use cases: redirects from external websites, or from Django FormView, etc.
     """
     def get(self, request, *args, **kwargs):
-        return self.redirect_to_current_view()
+        return self.redirect_to_page_the_user_should_be_on()
 
 class RouteToNextPageInSequence(ptree.views.abstract.BaseView, View):
-    """Use this when you need to go to the next index.
+    """
+    Try to avoid using this. It may get removed in a future version of pTree
+    because of the potential for abuse.
+    Use this when you need to go to the next index.
     But only use it in places where it's OK for the user to jump ahead as much as they want,
     since they might find a way to refresh this URL."""
     def get(self, request, *args, **kwargs):
-        self.increment_current_view_index()
-        return self.redirect_to_current_view()
+        self.request.session[ptree.views.abstract.SessionKeys.current_view_index] += 1
+        return self.redirect_to_page_the_user_should_be_on()
 
 class RedemptionCode(PageWithForm, View):
 

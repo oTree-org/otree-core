@@ -58,9 +58,9 @@ Django
 pTree is built on top of Django, 
 which is the most popular web development framework for Python.
 
-Install Django using the instructions `here <https://docs.djangoproject.com/en/1.5/intro/install/>`__.
-
 In the process of learning and using pTree, you will learn Django.
 To understand the core concepts of Django (and pTree),
 go to `this page of the Django book <http://www.djangobook.com/en/2.0/chapter01.html>`__ 
 and read until the end of the section "The MVC design pattern".
+
+Django is installed automatically installed with pTree.

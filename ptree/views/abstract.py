@@ -30,7 +30,7 @@ from ptree.models.common import IPAddressVisit
 import abc
 import ptree.forms
 
-ROUTE_TO_CURRENT_VIEW = '/shared/RouteToCurrentPageInSequence/'
+ROUTE_TO_PAGE_THE_USER_SHOULD_BE_ON = '/shared/RouteToPageUserShouldBeOn/'
 
 def get_parent_directory_name(_file_):
     return split(dirname(abspath(_file_)))[1]
@@ -53,7 +53,7 @@ class SessionKeys(object):
 
     current_view_index = 'current_view_index'
 
-    ticket_to_next_page_has_been_used_list = 'ticket_to_next_page_has_been_used_list'
+    completed_views = 'ticket_to_next_page_has_been_used_list'
 
 class BaseView(django.views.generic.base.View):
     """Base class for pTree views.
@@ -137,49 +137,25 @@ class BaseView(django.views.generic.base.View):
         self.load_objects()
         return super(BaseView, self).dispatch(request, *args, **kwargs)
 
-    def initialize_ticket_to_next_page_has_been_used_list(self):
-        """Each level should allow you to increment the current view index only once"""
-        
-        self.request.session[SessionKeys.ticket_to_next_page_has_been_used_list] = [False] * (len(self.treatment.sequence()) - 1)
-    
-    def increment_current_view_index(self):
-        
-        # the indices of all views in the sequence whose URL match the current page's URL
-        indices_of_current_page = [i for i, x in enumerate(self.treatment.sequence_as_urls()) 
-                                       if x == self.request.path
-                                          and i <= self.request.session[SessionKeys.current_view_index]]
+    def page_the_user_should_be_on(self):
+        return self.treatment.sequence_as_urls()[SessionKeys.current_view_index]
 
-        # see if any of them have an unused ticket, and use it.
-        for i in indices_of_current_page:
-            if self.request.session[SessionKeys.ticket_to_next_page_has_been_used_list][i] == False:
-                self.request.session[SessionKeys.ticket_to_next_page_has_been_used_list][i] = True
-                self.request.session[SessionKeys.current_view_index] += 1
-                return
-            
-    def current_view(self):
-        #print 'self.treatment.sequence(): {}'.format(self.treatment.sequence())
-        #print 'self.request.session[SessionKeys.current_view_index]: {}'.format(self.request.session[SessionKeys.current_view_index])
-        return self.treatment.sequence()[self.request.session[SessionKeys.current_view_index]].url()
-
-    def user_skipped_a_page(self):
+    def user_is_on_right_page(self):
         """Will detect if a participant tried to access a page they didn't reach yet,
         for example if they know the URL to the redemption code page,
         and try typing it in so they don't have to play the whole game.
         We should block that."""
-        sequence_urls = self.treatment.sequence_as_urls()
 
-        # if the index of the first occurrence in the list is ahead of where you should be,
-        # then you must have gotten there erroneously.
-        return (sequence_urls.index(self.request.path) > self.request.session[SessionKeys.current_view_index])
+        return self.request.path == self.page_the_user_should_be_on()
 
-    def redirect_to_current_view(self):
+    def redirect_to_page_the_user_should_be_on(self):
         """Redirect to where the participant should be,
         according to the view index we maintain in their cookies
         Useful if the participant tried to skip ahead,
         or if they hit the back button.
         We can put them back where they belong.
         """
-        return HttpResponseRedirect(self.current_view())
+        return HttpResponseRedirect(self.page_the_user_should_be_on())
 
     @classmethod
     def url_base(cls):
@@ -212,7 +188,7 @@ class PageWithFormMixin(object):
     - 
     
     """
-    success_url = ROUTE_TO_CURRENT_VIEW
+    success_url = ROUTE_TO_PAGE_THE_USER_SHOULD_BE_ON
 
     def is_displayed(self):
         """whether this view is displayed. This method can be overridden by child classes"""
@@ -224,14 +200,14 @@ class PageWithFormMixin(object):
 
         # if the participant shouldn't see this view, skip to the next
         if not self.is_displayed():
-            self.increment_current_view_index()
-            return self.redirect_to_current_view()
+            self.request.session[SessionKeys.current_view_index] += 1
+            return self.redirect_to_page_the_user_should_be_on()
 
         # if the participant tried to skip past a part of the experiment
         # (e.g. by typing in a future URL)
-        if self.user_skipped_a_page():
+        if not self.user_is_on_right_page():
             # then bring them back to where they should be
-            return HttpResponseRedirect(ROUTE_TO_CURRENT_VIEW)
+            return self.redirect_to_page_the_user_should_be_on()
         return super(PageWithFormMixin, self).dispatch(request, *args, **kwargs)
 
     def get_variables_for_template(self):
@@ -257,6 +233,7 @@ class PageWithFormMixin(object):
             context['jump_to_form'] = True
 
         # this will add the form to the context
+        # FIXME: parent class is just object; how does this work?
         context += super(PageWithFormMixin, self).get_context_data(**kwargs)
         
         # whatever else you specify that doesn't go in the form
@@ -294,7 +271,8 @@ class PageWithFormMixin(object):
     def form_valid(self, form):
         self.after_form_validates(form)
         self.save_objects()
-        self.increment_current_view_index()
+        if form.cleaned_data[SessionKeys.current_view_index] == self.request.session[SessionKeys.current_view_index]:
+            self.request.session[SessionKeys.current_view_index] += 1
         return super(PageWithFormMixin, self).form_valid(form)
 
     def form_invalid(self, form):
@@ -337,7 +315,7 @@ class PageWithForm(PageWithFormMixin, django.views.generic.FormView, BaseView):
     then you can use this as a fallback."""
     form_class = ptree.forms.BlankForm
 
-class Start(PageWithForm, BaseView):
+class Start(PageWithForm):
     """Start page. Each game should have a Start view that inherits from this.
     This is not a modelform, because it can be used with many models.
     """
@@ -378,7 +356,6 @@ class Start(PageWithForm, BaseView):
         self.persist_classes()
         
         self.request.session[SessionKeys.current_view_index] = 0
-        self.initialize_ticket_to_next_page_has_been_used_list()
 
         return {}
 
@@ -428,8 +405,8 @@ class AssignParticipantAndMatch(BaseView):
         self.request.session[SessionKeys.match_id] = self.match.pk
 
         # redirect to next view
-        self.increment_current_view_index()
-        return self.redirect_to_current_view()
+        self.request.session[SessionKeys.current_view_index] += 1
+        return self.redirect_to_page_the_user_should_be_on()
 
 
     def next_open_match(self):
@@ -469,6 +446,10 @@ class PickTreatment(django.views.generic.base.View):
         # clear all cookies, since they can cause problems if the participant has played a previous game.
         self.request.session.clear()
         
+        # get parameters automatically inserted by mTurk
+        # See: http://docs.aws.amazon.com/AWSMechTurk/2008-02-14/AWSMechanicalTurkRequester/ApiReference_ExternalQuestionArticle.html
+
+
         # retrieve experiment
         experiment_code = self.request.GET['exp']
         experiment = get_object_or_404(self.ExperimentClass, code=experiment_code)

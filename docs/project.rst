@@ -23,8 +23,18 @@ settings.py
 
 In ``settings.py``, you should set the following values:
 
-``INSTALLED_APPS``: add ``'ptree'`` near the top, followed by ``'django.contrib.admin'``.
-Also add ``'crispy_forms'``.
+Find your ``INSTALLED_APPS``, add the following variables at the beginning, and uncomment ``'django.contrib.admin'``::
+
+	INSTALLED_APPS = (
+		'ptree',
+		'data_exports',
+		'crispy_forms',
+		
+		# Uncomment the next line to enable the admin:
+		'django.contrib.admin',
+		
+		# rest of your apps...		
+    )
 
 After the definition of ``INSTALLED_APPS``, paste the following lines::
 
