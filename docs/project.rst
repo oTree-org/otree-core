@@ -1,48 +1,88 @@
-Creating your Django project
+Setting up your Django project
 ****************************
+pTree is built on top of Django, 
+which is the most popular web development framework for Python.
+When you install pTree, Django will get installed automatically.
 
-The first step is to create a Django project, which will contain your pTree experiments.
-Instructions are `here <https://docs.djangoproject.com/en/dev/intro/tutorial01/#creating-a-project>`_.
+Create your project
+===================
 
-When you run ``django-admin.py startproject <projectname>``, 
-you can name your project anything you want, like ``ptree_experiments`` or ``experiments`` or ``games``.
+From the command line, ``cd`` into a directory where you'd like to store your
+code (can be anywhere, like a folder in "My Documents" or "Documents"), 
+then run the following command::
 
-.. note::
+   django-admin.py startproject ptree_experiments
 
-    To avoid confusion, don't call it ``ptree``, 
-    because that name conflicts with the name of the pTree module you will be using.
+This will create a ``ptree_experiments`` directory in your current directory. If it didn't
+work, see the `troubleshooting <https://docs.djangoproject.com/en/dev/faq/troubleshooting/#troubleshooting-django-admin-py>`__ page.
+	
+Test that it worked
+-------------------
 
-In the section about configuring the database engine, follow the instructions for SQLite
-(recommended for simplicity).
+Let's verify this worked. Change into the outer :file:`ptree_experiments` directory, if
+you haven't already, and run the command ``python manage.py runserver``. You'll
+see the following output on the command line::
 
-Follow the instructions up to and including the part about running ``python manage.py syncdb``.
+    Validating models...
 
+    0 errors found
+    |today| - 15:50:53
+    Django version |version|, using settings 'ptree_experiments.settings'
+    Starting development server at http://127.0.0.1:8000/
+    Quit the server with CONTROL-C.
 
-settings.py
-===========
+Now that the server's running, visit http://127.0.0.1:8000/ with your Web
+browser. You'll see a "Welcome to Django" page, in pleasant, light-blue pastel.
+It worked!
 
-In ``settings.py``, you should set the following values:
+Configure your project
+======================
 
-Find your ``INSTALLED_APPS``, add the following variables at the beginning, and uncomment ``'django.contrib.admin'``::
+Launch PyCharm, and select "Open Directory".
+Navigate to the outer ``ptree_experiments`` directory and click OK.
+When the project opens, on the left-hand site you should see a directory tree that expands to the following::
 
-	INSTALLED_APPS = (
-		'ptree',
-		'data_exports',
-		'crispy_forms',
-		
-		# Uncomment the next line to enable the admin:
-		'django.contrib.admin',
-		
-		# rest of your apps...		
-    )
+    ptree_experiments/
+        manage.py
+        ptree_experiments/
+            __init__.py
+            settings.py
+            urls.py
+            wsgi.py
 
-After the definition of ``INSTALLED_APPS``, paste the following lines::
+Edit the following files.			
+			
+ptree_experiments/settings.py
+------------------
 
+- Put the following lines at the top of the file (if they aren't there already)::
+
+	import os
+	import os.path
+
+	BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+- Change ``DATABASES`` to the following::
+
+	DATABASES = {
+		'default': {
+			'ENGINE': 'django.db.backends.sqlite3',
+			'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+		}
+	}
+
+- Change ``TIME_ZONE`` to your time zone (e.g. ``'Europe/Zurich'`` or ``'America/New_York'``).
+
+- In the ``INSTALLED_APPS`` variable, uncomment ``'django.contrib.admin'``.
+
+- After the definition of ``INSTALLED_APPS``, paste the following lines::
+
+    import ptree.settings
     PTREE_EXPERIMENT_APPS = ()
-    INSTALLED_APPS += PTREE_EXPERIMENT_APPS
+    INSTALLED_APPS = ptree.settings.INSTALLED_APPS + INSTALLED_APPS + PTREE_EXPERIMENT_APPS
 
-urls.py
-=======
+ptree_experiments/urls.py
+--------------
 
 There is a line in ``urls.py`` to enable the admin site URL; uncomment it.
 
@@ -50,4 +90,3 @@ Add the following lines after the definition of ``urlpatterns``::
 
     import ptree.urls
     urlpatterns += ptree.urls.urlpatterns()
-

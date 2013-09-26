@@ -1,12 +1,11 @@
 Prerequisites
 *************
 
-Before getting started with pTree, you need the following.
-
 Command line
 ============
-You need a basic understanding of what a command prompt is and how to use it.
-You should know basic comamnds like ``ls``, ``cd``, and ``mv``.
+You need a basic understanding of your operating system's command prompt.
+You should know common commands like ``ls``, ``cd``, and ``mv``,
+and how to launch a program by entering its name at the command prompt.
 
 Windows
 -------
@@ -32,6 +31,46 @@ You will write your pTree apps in `Python <http://www.python.org/>`__.
 Python is an easy-to-learn yet powerful and versatile programming language.
 It is very popular and has a great ecosystem of tutorials, libraries, and tools.
 
+Installation
+------------
+
+Python
+******
+
+Install `Python <http://www.python.org/>`__ version 2.7 (not 3.X).
+
+Pip
+***
+
+You will need a program called Pip in order to install packages.
+
+Download `ez_setup.py <https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py>`__,
+then run the following command with administrator privileges
+(on Windows, right-click the Windows PowerShell app icon, then click "Run as administrator".)::
+
+	python ez_setup.py
+
+Then, download `get-pip.py <https://raw.github.com/pypa/pip/master/contrib/get-pip.py>`__,
+and run it (again with administrator privileges) as follows::
+
+	python get-pip.py
+	
+To verify that it is correctly installed, try the command ``pip install requests`` from your command line.
+
+Editor
+******
+
+You will also need an editor to write your Python code.
+Although you can use any text editor you want,
+I find it is much easier to create pTree apps in an IDE
+that assists you while you are writing your code,
+(by auto-completing code you write or underlining errors),
+and helping you navigate between the modules and classes in your project.
+
+I recommend `PyCharm <http://www.jetbrains.com/pycharm/>`__ (Community Edition is free).
+This documentation gives instructions assuming you are using PyCharm,
+but you can use any editor you want.
+
 Learning
 ---------------
 
@@ -51,38 +90,3 @@ If you need to learn Python, there are many good tutorials on the web you can ch
 - The `Codecademy <http://www.codecademy.com/tracks/python>`__ interactive tutorial that runs in your browser.
 - `Learn Python the Hard Way <http://learnpythonthehardway.org/book/>`_. (Work your way up through Exercise 41: "Learning to Speak Object Oriented". You can skip Exercises 11-17.)
 
-Installation
-------------
-Install `Python <http://www.python.org/>`__ version 2.7 (not 3.X).
-
-You will also need an editor to write your Python code.
-Although you can use any text editor you want,
-I find it is much easier to create pTree apps in an IDE
-that has features like code completion, error detection,
-and easy navigation between the many modules and classes in your project.
-
-Here are some popular IDEs:
-
-- `Python Tools for Visual Studio <https://pytools.codeplex.com/wikipage?title=PTVS%20Installation>`__ (Windows only); just make sure to follow the instructions on how to download the free version.
-- `PyDev for Eclipse <http://pydev.org/>` (Windows/Mac/Linux)
-- `Komodo Edit <http://www.openkomodo.com/>`__ (Windows/Mac/Linux)
-- `PyCharm <http://www.jetbrains.com/pycharm/>`__ (Windows/Mac/Linux) (not free)
-- `Sublime Text 2 <http://www.sublimetext.com/>`__ (Windows/Mac/Linux) (not free)
-
-
-Pip
-===
-You will need `Pip <http://www.pip-installer.org/en/latest/installing.html>`_ to install packages.
-Install it and make sure you can run commands like ``pip install django-ptree`` from your command line.
-
-Django
-======
-pTree is built on top of Django, 
-which is the most popular web development framework for Python.
-
-In the process of learning and using pTree, you will learn some Django.
-To understand the core concepts of Django (and pTree),
-go to `this page of the Django book <http://www.djangobook.com/en/2.0/chapter01.html>`__ 
-and read until the end of the section "The MVC design pattern".
-
-When you install pTree, Django will get installed automatically.

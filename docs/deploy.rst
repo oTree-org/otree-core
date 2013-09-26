@@ -38,7 +38,7 @@ so that participants can access it from a URL.
 
 pTree can run with any operating system, database engine, or web server supported by Django.
 
-The easiest option I have found is `Heroku <https://www.heroku.com/>`,
+The easiest option I have found is `Heroku <https://www.heroku.com/>`__,
 a website hosting service that greatly simplifies the amount of configuration and maintenance you need to do.
 Once you have created a free account, 
 you can follow the instructions `here <https://devcenter.heroku.com/articles/getting-started-with-django>`__.
