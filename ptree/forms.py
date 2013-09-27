@@ -1,7 +1,9 @@
 from django import forms
-from ptree.templatetags.ptreefilters import currency
+import templatetags.ptreefilters
 import ayah
 from django.conf import settings
+
+from views.abstract import SessionKeys
 
 class FormMixin(object):
 
@@ -30,7 +32,7 @@ class FormMixin(object):
         """Customize your form fields here"""
 
     def make_field_currency_choices(self, field_name, amounts):
-        amount_choices = [(amount, ptreefilters.currency(amount)) for amount in amounts]
+        amount_choices = [(amount, templatetags.ptreefilters.currency(amount)) for amount in amounts]
         self.fields[field_name].choices = amount_choices
 
 
@@ -45,11 +47,16 @@ class BlankModelForm(FormMixin, forms.ModelForm):
     def clean(self):
         """Prevent the user from going back and modifying an old value."""
         cleaned_data = super(BlankModelForm, self).clean()
+
+        participant_resubmitted_this_form = False
         for field_name in cleaned_data.keys():
             if not field_name in self.rewritable_fields:
                 current_value = getattr(self.instance, field_name)
                 if current_value != None:
                     cleaned_data[field_name] = current_value
+                    participant_resubmitted_this_form = True
+
+        self.request.session[SessionKeys.participant_resubmitted_last_form] = participant_resubmitted_this_form
         return cleaned_data
 
 class BlankForm(FormMixin, forms.Form):

@@ -2,8 +2,6 @@ from django.db import models
 import ptree.models.common
 from django.template import defaultfilters
 
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
 import abc
 
 class BaseExperiment(models.Model):

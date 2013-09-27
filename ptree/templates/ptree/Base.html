@@ -38,26 +38,21 @@
             <div class="page-header">
                 <h2>{% block title %}{% endblock %}</h2>
             </div>
+
+            <div>
+            {% if participant_resubmitted_last_form %}
+                <div class="alert alert-warning">
+                    It looks like you resubmitted a form.
+                    We do not allow you to change your answers, so we ignored your re-submission.
+                </div>
+            {% endif %}
             {% block content %}{% endblock %}
+            </div>
         </div>
         
-        {% if jump_to_form %}
-        <script type="text/javascript">
-            $(document).ready(function () {
-                location.href = "#form";
-            });
-        </script>
-        {% endif %}
 
-        <script type="text/javascript">
-            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-            </script>
-            <script type="text/javascript">
-            try {
-            var pageTracker = _gat.viewTracker("UA-8400960-1");
-            pageTracker._trackPageview();
-            } catch(err) {}
-        </script>
+        {% block scripts_at_bottom_of_page %}
+        {% endblock %}
+
     </body>
 </html>

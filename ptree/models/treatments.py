@@ -24,6 +24,7 @@ class BaseTreatment(models.Model):
         
     base_pay = models.PositiveIntegerField() # how much people are getting paid to perform it
 
+    randomization_weight = models.PositiveIntegerField(default = 1)
 
     participants_per_match = None
 

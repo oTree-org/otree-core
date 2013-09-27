@@ -13,15 +13,16 @@ and `ModelForms <https://docs.djangoproject.com/en/dev/topics/forms/modelforms/#
 
 Your forms are defined in ``forms.py`` in your app.
 
-
-
 .. py:class:: MyForm(ptree.forms.BlankModelForm)
     
     .. py:attribute:: participant
 					  match
 					  treatment
+					  experiment
+					  request
     
         The current participant, match, treatment, and experiment objects.
+        Also, the HTTP request object.
         These are provided for you automatically.
         
 

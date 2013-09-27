@@ -1,7 +1,5 @@
 from django.db import models
 import ptree.models.common
-from django.forms import ModelForm, Form
-from django import forms
 import abc
 
 class BaseParticipant(models.Model):
@@ -19,7 +17,7 @@ class BaseParticipant(models.Model):
 
     #: nickname they enter when they start playing.
     #: not currently essential to any functionality.
-    nickname = models.CharField(max_length = 50, null = True)
+    name = models.CharField(max_length = 50, null = True)
 
     #: just in case we need to look up a user's IP address at some point
     #: (e.g. to investigate an issue or debug)
@@ -33,7 +31,9 @@ class BaseParticipant(models.Model):
 
     #: whether the participant is finished playing (i.e. has seen the redemption code page)
     is_finished = models.BooleanField()
-    
+
+    mturk_assignment_id = models.CharField(max_length = 50, null = True)
+
 
     #@abc.abstractmethod
     def bonus(self):

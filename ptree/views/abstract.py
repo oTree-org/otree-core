@@ -3,31 +3,20 @@ The view classes in this module are just base classes, and cannot be called from
 You should inherit from these classes and put your view class in your game directory (under "games/")
 Or in the other view file in this directory, which stores shared concrete views that have URLs."""
 
-from django.db.models import Min
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
-from django.core.urlresolvers import reverse
 import django.http
 from django.core.context_processors import csrf
 import random
 
 from os.path import split, dirname, abspath
 
-import datetime, smtplib, re, os
-import os.path
-from urllib import urlencode
-import itertools
-
 import django.views.generic.base
 import django.views.generic.edit
 
-from django.conf import settings
-
 import ptree.models.common
 import ptree.models.participants
-from ptree.models.common import IPAddressVisit
 
-import abc
 import ptree.forms
 
 ROUTE_TO_PAGE_THE_USER_SHOULD_BE_ON = '/shared/RouteToPageUserShouldBeOn/'
@@ -38,10 +27,10 @@ def get_parent_directory_name(_file_):
 class SessionKeys(object):
     """Key names used for request.session (to prevent string duplication)"""
 
-    ExperimentClass = 'Experiment'
-    TreatmentClass = 'Treatment'
-    MatchClass = 'Match'
-    ParticipantClass = 'Participant'
+    ExperimentClass = 'ExperimentClass'
+    TreatmentClass = 'TreatmentClass'
+    MatchClass = 'MatchClass'
+    ParticipantClass = 'ParticipantClass'
     
     match_id = 'match_id'
 
@@ -53,7 +42,9 @@ class SessionKeys(object):
 
     current_view_index = 'current_view_index'
 
-    completed_views = 'ticket_to_next_page_has_been_used_list'
+    completed_views = 'completed_views'
+
+    participant_resubmitted_last_form = 'participant_resubmitted_last_form'
 
 class BaseView(django.views.generic.base.View):
     """Base class for pTree views.
@@ -180,7 +171,7 @@ class OldPage(object):
     Should be removed"""
     pass
 
-class PageWithFormMixin(object):
+class ViewWithFormMixin(object):
     """
     Base class for most views.
     Abilities:
@@ -208,7 +199,7 @@ class PageWithFormMixin(object):
         if not self.user_is_on_right_page():
             # then bring them back to where they should be
             return self.redirect_to_page_the_user_should_be_on()
-        return super(PageWithFormMixin, self).dispatch(request, *args, **kwargs)
+        return super(ViewWithFormMixin, self).dispatch(request, *args, **kwargs)
 
     def get_variables_for_template(self):
         """
@@ -234,7 +225,7 @@ class PageWithFormMixin(object):
 
         # this will add the form to the context
         # FIXME: parent class is just object; how does this work?
-        context += super(PageWithFormMixin, self).get_context_data(**kwargs)
+        context += super(ViewWithFormMixin, self).get_context_data(**kwargs)
         
         # whatever else you specify that doesn't go in the form
         # (e.g. info we display to the participant)
@@ -242,6 +233,8 @@ class PageWithFormMixin(object):
 
         # protection against CSRF attacks
         context.update(csrf(self.request))
+        context.update({'participant_resubmitted_last_form':
+                        self.request.session.get(SessionKeys.participant_resubmitted_last_form)})
         
         # we may or may not need this line.
         # strictly speaking, we shouldn't really be modifying the database on a GET request
@@ -255,12 +248,13 @@ class PageWithFormMixin(object):
         So that they can have more dynamic rendering & validation behavior.
         """
 
-        kwargs = super(PageWithFormMixin, self).get_form_kwargs()
+        kwargs = super(ViewWithFormMixin, self).get_form_kwargs()
         
         #TODO: maybe add experiment to this
         kwargs.update({'participant': self.participant,
                        'match': self.match,
                        'treatment': self.treatment,
+                       'experiment': self.experiment,
                        'request': self.request})
         return kwargs
 
@@ -273,7 +267,7 @@ class PageWithFormMixin(object):
         self.save_objects()
         if form.cleaned_data[SessionKeys.current_view_index] == self.request.session[SessionKeys.current_view_index]:
             self.request.session[SessionKeys.current_view_index] += 1
-        return super(PageWithFormMixin, self).form_valid(form)
+        return super(ViewWithFormMixin, self).form_valid(form)
 
     def form_invalid(self, form):
         """
@@ -281,7 +275,7 @@ class PageWithFormMixin(object):
         """
         return self.render_to_response(self.get_context_data(form=form, jump_to_form = True ))
 
-class PageWithModelForm(PageWithFormMixin, django.views.generic.edit.UpdateView, BaseView):
+class StandardView(ViewWithFormMixin, django.views.generic.edit.UpdateView, BaseView):
     """For pages with a form whose values you want to save to the database.
     Try to inherit from this as much as you can.
     This is the bread and butter View of pTree.
@@ -295,8 +289,9 @@ class PageWithModelForm(PageWithFormMixin, django.views.generic.edit.UpdateView,
         # But I think I should take it out since it's inconsistent with FormView,
         # and also non-standard.
         # do this as soon as i get a chance
+        # actually, since i may want to deprecate FormView, I may want to keep this in.
         form.save(commit = True)
-        return super(PageWithModelForm, self).form_valid(form)
+        return super(StandardView, self).form_valid(form)
 
     def get_object(self):
         
@@ -310,12 +305,12 @@ class PageWithModelForm(PageWithFormMixin, django.views.generic.edit.UpdateView,
 
 
 
-class PageWithForm(PageWithFormMixin, django.views.generic.FormView, BaseView):
+class ViewWithForm(ViewWithFormMixin, django.views.generic.FormView, BaseView):
     """If you can't use a ModelForm, e.g. the data in the form will not be saved to the database,
     then you can use this as a fallback."""
     form_class = ptree.forms.BlankForm
 
-class Start(PageWithForm):
+class Start(ViewWithForm):
     """Start page. Each game should have a Start view that inherits from this.
     This is not a modelform, because it can be used with many models.
     """
@@ -343,7 +338,7 @@ class Start(PageWithForm):
         assert self.treatment
         assert self.participant
 
-        return super(PageWithFormMixin, self).dispatch(request, *args, **kwargs)
+        return super(ViewWithFormMixin, self).dispatch(request, *args, **kwargs)
 
     
     def get_variables_for_template(self):
@@ -425,7 +420,16 @@ class AssignParticipantAndMatch(BaseView):
         self.participant.index = self.match.participant_set.count()
         self.participant.match = self.match
 
-    
+
+def weighted_choice(choices):
+   total = sum(w for c, w in choices)
+   r = random.uniform(0, total)
+   upto = 0
+   for c, w in choices:
+      if upto + w > r:
+         return c
+      upto += w
+
 class PickTreatment(django.views.generic.base.View):
     """
     The first View when participants visit a site.
@@ -465,6 +469,9 @@ class PickTreatment(django.views.generic.base.View):
         # participant should exist after load_participant since the object was created in advance, and its code was passed in the URL
         assert self.participant
 
+        # in your mTurk experiment you can append the assignmentId to the URL with JavaScript.
+        self.participant.mturk_assignment_id = self.request.GET.get('assignmentId')
+
         # record their visit, and save it since this is GET.
         self.participant.has_visited = True
         self.participant.save()
@@ -481,7 +488,8 @@ class PickTreatment(django.views.generic.base.View):
             assert treatment != None
         else:
             if experiment.randomization_mode == self.ExperimentClass.INDEPENDENT:
-                treatment = random.choice(experiment.treatment_set.all())
+                choices = [(treatment, treatment.randomization_weight) for treatment in experiment.treatment_set.all()]
+                treatment = weighted_choice(choices)
             elif experiment.randomization_mode == self.ExperimentClass.SMOOTHING:
                 ## find the treatment with the fewest responses
                 ## and assign to that one to even out the counts

@@ -25,7 +25,7 @@ ______________
 
 Here is the structure of a class you would write:
 
-.. py:class:: MyView(ptree.views.abstract.BaseView, ViewInThisApp)
+.. py:class:: MyView(ptree.views.abstract.StandardView, ViewInThisApp)
     
     .. py:attribute:: participant
 					  match
@@ -97,15 +97,7 @@ Here is the structure of a class you would write:
         Here you can put anything additional that should happen after the form validates.
         If you don't need anything to be done, it's OK to leave this method blank,
         or to leave it out entirely.
-        
-        .. note::
-        
-            If your ``form_class`` inherits from ``ModelForm``, 
-            then pTree will automatically save the submitted values to the database.
-            But if you inherit from ``Form``,
-            you will need to save the form fields to the database yourself here.
-            (This is one of the advantages of using ``ModelForm``).
-                
+
         You can access form fields like this::
         
             password = form.cleaned_data['password']

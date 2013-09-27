@@ -1,7 +1,4 @@
 from django.db import models
-from django.forms import ModelForm
-from django import forms
-from ptree.templatetags.ptreefilters import currency
 import abc
 
 class MatchManager(models.Manager):

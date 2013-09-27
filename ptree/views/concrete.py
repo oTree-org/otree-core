@@ -2,20 +2,7 @@ __doc__ = """This module contains views that are shared across many game types.
 They are ready to be included in your  Just import this module,
 and include these classes in your Treatment's sequence() method."""
 
-from django.shortcuts import render_to_response, get_object_or_404
-from django.http import HttpResponse, Http404, HttpResponseRedirect
-from django.core.urlresolvers import reverse
-import django.http
-from os.path import split, dirname, abspath
-import os.path
-
-import datetime
-import re, os
-from urllib import urlencode
-import itertools
-
-import django.views.generic.base
-import django.views.generic.edit
+from django.shortcuts import render_to_response
 
 from django.conf import settings
 
@@ -27,7 +14,7 @@ import ayah
 class View(object):
     url_base = 'shared'
 
-class CaptchaAreYouAHuman(ptree.views.abstract.PageWithForm, View):
+class CaptchaAreYouAHuman(ptree.views.abstract.ViewWithForm, View):
     """
     CAPTCHA from http://areyouahuman.com/.
     To use this, you first need to register on that site to get a publisher key and scoring key
@@ -81,7 +68,7 @@ class RouteToNextPageInSequence(ptree.views.abstract.BaseView, View):
         self.request.session[ptree.views.abstract.SessionKeys.current_view_index] += 1
         return self.redirect_to_page_the_user_should_be_on()
 
-class RedemptionCode(PageWithForm, View):
+class RedemptionCode(ptree.views.abstract.ViewWithForm, View):
 
     template_name = 'ptree/RedemptionCode.html'
 
