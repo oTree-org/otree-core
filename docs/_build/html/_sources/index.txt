@@ -6,12 +6,16 @@
 pTree Documentation
 ===================
 
+Welcome to the documentation for pTree!
+This documentation explains how to build and launch pTree apps.
+
+For a general introduction to pTree, see the `pTree homepage <http://ptree.org>`__.
+
 Contents:
 
 .. toctree::
    :maxdepth: 2
    
-   intro
    prerequisites
    install
    project

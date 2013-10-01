@@ -3,6 +3,7 @@ Prerequisites
 
 Command line
 ============
+
 You need a basic understanding of your operating system's command prompt.
 You should know common commands like ``ls``, ``cd``, and ``mv``,
 and how to launch a program by entering its name at the command prompt.
@@ -26,6 +27,7 @@ Mac OSX
 
 Python
 ======
+
 You will write your pTree apps in `Python <http://www.python.org/>`__.
 
 Python is an easy-to-learn yet powerful and versatile programming language.
@@ -72,7 +74,7 @@ This documentation gives instructions assuming you are using PyCharm,
 but you can use any editor you want.
 
 Learning
----------------
+=========
 
 You must have intermediate knowledge of Python to use pTree.
 You should at least understand the basics of procedural and object-oriented programming: 

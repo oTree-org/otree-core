@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Creating your Django project &mdash; pTree 0.1 documentation</title>
+    <title>Setting up your Django project &mdash; pTree 0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -26,8 +26,8 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="pTree 0.1 documentation" href="index.html" />
-    <link rel="next" title="&lt;no title&gt;" href="deploying.html" />
-    <link rel="prev" title="Installation" href="installation.html" /> 
+    <link rel="next" title="Writing a pTree app" href="app/index.html" />
+    <link rel="prev" title="Installation" href="install.html" /> 
   </head>
   <body>
     <div class="related">
@@ -37,10 +37,10 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="deploying.html" title="&lt;no title&gt;"
+          <a href="app/index.html" title="Writing a pTree app"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="installation.html" title="Installation"
+          <a href="install.html" title="Installation"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">pTree 0.1 documentation</a> &raquo;</li> 
       </ul>
@@ -51,38 +51,94 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="creating-your-django-project">
-<h1>Creating your Django project<a class="headerlink" href="#creating-your-django-project" title="Permalink to this headline">¶</a></h1>
-<p>The first step is to create a Django project, which will contain your pTree experiments.
-Instructions are <a class="reference external" href="https://docs.djangoproject.com/en/dev/intro/tutorial01/#creating-a-project">here</a>.</p>
-<p>When you run <tt class="docutils literal"><span class="pre">django-admin.py</span> <span class="pre">startproject</span> <span class="pre">&lt;projectname&gt;</span></tt>,
-you can name your project anything you want, like <tt class="docutils literal"><span class="pre">ptree_experiments</span></tt> or <tt class="docutils literal"><span class="pre">experiments</span></tt> or <tt class="docutils literal"><span class="pre">games</span></tt>.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">To avoid confusion, don&#8217;t call it <tt class="docutils literal"><span class="pre">ptree</span></tt>,
-because that name conflicts with the name of the pTree module you will be using.</p>
+  <div class="section" id="setting-up-your-django-project">
+<h1>Setting up your Django project<a class="headerlink" href="#setting-up-your-django-project" title="Permalink to this headline">¶</a></h1>
+<p>pTree is built on top of Django,
+which is the most popular web development framework for Python.
+When you install pTree, Django will get installed automatically.</p>
+<div class="section" id="create-your-project">
+<h2>Create your project<a class="headerlink" href="#create-your-project" title="Permalink to this headline">¶</a></h2>
+<p>From the command line, <tt class="docutils literal"><span class="pre">cd</span></tt> into a directory where you&#8217;d like to store your
+code (can be anywhere, like a folder in &#8220;My Documents&#8221; or &#8220;Documents&#8221;),
+then run the following command:</p>
+<div class="highlight-python"><pre>django-admin.py startproject ptree_experiments</pre>
 </div>
-<p>In the section about configuring the database engine, follow the instructions for SQLite
-(recommended for simplicity).</p>
-<p>Follow the instructions up to and including the part about running <tt class="docutils literal"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">syncdb</span></tt>.</p>
-<div class="section" id="settings-py">
-<h2>settings.py<a class="headerlink" href="#settings-py" title="Permalink to this headline">¶</a></h2>
-<p>In <tt class="docutils literal"><span class="pre">settings.py</span></tt>, you should set the following values:</p>
-<p><tt class="docutils literal"><span class="pre">INSTALLED_APPS</span></tt>: add <tt class="docutils literal"><span class="pre">'ptree'</span></tt> near the top, followed by <tt class="docutils literal"><span class="pre">'django.contrib.admin'</span></tt>.
-Also add <tt class="docutils literal"><span class="pre">'crispy_forms'</span></tt>.</p>
-<p>After the definition of <tt class="docutils literal"><span class="pre">INSTALLED_APPS</span></tt>, paste the following lines:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">PTREE_EXPERIMENT_APPS</span> <span class="o">=</span> <span class="p">()</span>
-<span class="n">INSTALLED_APPS</span> <span class="o">+=</span> <span class="n">PTREE_EXPERIMENT_APPS</span>
+<p>This will create a <tt class="docutils literal"><span class="pre">ptree_experiments</span></tt> directory in your current directory. If it didn&#8217;t
+work, see the <a class="reference external" href="https://docs.djangoproject.com/en/dev/faq/troubleshooting/#troubleshooting-django-admin-py">troubleshooting</a> page.</p>
+<div class="section" id="test-that-it-worked">
+<h3>Test that it worked<a class="headerlink" href="#test-that-it-worked" title="Permalink to this headline">¶</a></h3>
+<p>Let&#8217;s verify this worked. Change into the outer <tt class="file docutils literal"><span class="pre">ptree_experiments</span></tt> directory, if
+you haven&#8217;t already, and run the command <tt class="docutils literal"><span class="pre">python</span> <span class="pre">manage.py</span> <span class="pre">runserver</span></tt>. You&#8217;ll
+see the following output on the command line:</p>
+<div class="highlight-python"><pre>Validating models...
+
+0 errors found
+|today| - 15:50:53
+Django version |version|, using settings 'ptree_experiments.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.</pre>
+</div>
+<p>Now that the server&#8217;s running, visit <a class="reference external" href="http://127.0.0.1:8000/">http://127.0.0.1:8000/</a> with your Web
+browser. You&#8217;ll see a &#8220;Welcome to Django&#8221; page, in pleasant, light-blue pastel.
+It worked!</p>
+</div>
+</div>
+<div class="section" id="configure-your-project">
+<h2>Configure your project<a class="headerlink" href="#configure-your-project" title="Permalink to this headline">¶</a></h2>
+<p>Launch PyCharm, and select &#8220;Open Directory&#8221;.
+Navigate to the outer <tt class="docutils literal"><span class="pre">ptree_experiments</span></tt> directory and click OK.
+When the project opens, on the left-hand site you should see a directory tree that expands to the following:</p>
+<div class="highlight-python"><pre>ptree_experiments/
+    manage.py
+    ptree_experiments/
+        __init__.py
+        settings.py
+        urls.py
+        wsgi.py</pre>
+</div>
+<p>Edit the following files.</p>
+<div class="section" id="ptree-experiments-settings-py">
+<h3>ptree_experiments/settings.py<a class="headerlink" href="#ptree-experiments-settings-py" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first">Put the following lines at the top of the file (if they aren&#8217;t there already):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+
+<span class="n">BASE_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">))</span>
 </pre></div>
 </div>
+</li>
+<li><p class="first">Change <tt class="docutils literal"><span class="pre">DATABASES</span></tt> to the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">DATABASES</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;default&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s">&#39;ENGINE&#39;</span><span class="p">:</span> <span class="s">&#39;django.db.backends.sqlite3&#39;</span><span class="p">,</span>
+                <span class="s">&#39;NAME&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s">&#39;db.sqlite3&#39;</span><span class="p">),</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
 </div>
-<div class="section" id="urls-py">
-<h2>urls.py<a class="headerlink" href="#urls-py" title="Permalink to this headline">¶</a></h2>
+</li>
+<li><p class="first">Change <tt class="docutils literal"><span class="pre">TIME_ZONE</span></tt> to your time zone (e.g. <tt class="docutils literal"><span class="pre">'Europe/Zurich'</span></tt> or <tt class="docutils literal"><span class="pre">'America/New_York'</span></tt>).</p>
+</li>
+<li><p class="first">In the <tt class="docutils literal"><span class="pre">INSTALLED_APPS</span></tt> variable, uncomment <tt class="docutils literal"><span class="pre">'django.contrib.admin'</span></tt>.</p>
+</li>
+<li><p class="first">After the definition of <tt class="docutils literal"><span class="pre">INSTALLED_APPS</span></tt>, paste the following lines:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">ptree.settings</span>
+<span class="n">PTREE_EXPERIMENT_APPS</span> <span class="o">=</span> <span class="p">()</span>
+<span class="n">INSTALLED_APPS</span> <span class="o">=</span> <span class="n">ptree</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">INSTALLED_APPS</span> <span class="o">+</span> <span class="n">INSTALLED_APPS</span> <span class="o">+</span> <span class="n">PTREE_EXPERIMENT_APPS</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="ptree-experiments-urls-py">
+<h3>ptree_experiments/urls.py<a class="headerlink" href="#ptree-experiments-urls-py" title="Permalink to this headline">¶</a></h3>
 <p>There is a line in <tt class="docutils literal"><span class="pre">urls.py</span></tt> to enable the admin site URL; uncomment it.</p>
 <p>Add the following lines after the definition of <tt class="docutils literal"><span class="pre">urlpatterns</span></tt>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">ptree.urls</span>
 <span class="n">urlpatterns</span> <span class="o">+=</span> <span class="n">ptree</span><span class="o">.</span><span class="n">urls</span><span class="o">.</span><span class="n">urlpatterns</span><span class="p">()</span>
 </pre></div>
+</div>
 </div>
 </div>
 </div>
@@ -95,19 +151,26 @@ Also add <tt class="docutils literal"><span class="pre">'crispy_forms'</span></t
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Creating your Django project</a><ul>
-<li><a class="reference internal" href="#settings-py">settings.py</a></li>
-<li><a class="reference internal" href="#urls-py">urls.py</a></li>
+<li><a class="reference internal" href="#">Setting up your Django project</a><ul>
+<li><a class="reference internal" href="#create-your-project">Create your project</a><ul>
+<li><a class="reference internal" href="#test-that-it-worked">Test that it worked</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configure-your-project">Configure your project</a><ul>
+<li><a class="reference internal" href="#ptree-experiments-settings-py">ptree_experiments/settings.py</a></li>
+<li><a class="reference internal" href="#ptree-experiments-urls-py">ptree_experiments/urls.py</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="installation.html"
+  <p class="topless"><a href="install.html"
                         title="previous chapter">Installation</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="deploying.html"
-                        title="next chapter">&lt;no title&gt;</a></p>
+  <p class="topless"><a href="app/index.html"
+                        title="next chapter">Writing a pTree app</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/project.txt"
@@ -137,10 +200,10 @@ Also add <tt class="docutils literal"><span class="pre">'crispy_forms'</span></t
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="deploying.html" title="&lt;no title&gt;"
+          <a href="app/index.html" title="Writing a pTree app"
              >next</a> |</li>
         <li class="right" >
-          <a href="installation.html" title="Installation"
+          <a href="install.html" title="Installation"
              >previous</a> |</li>
         <li><a href="index.html">pTree 0.1 documentation</a> &raquo;</li> 
       </ul>

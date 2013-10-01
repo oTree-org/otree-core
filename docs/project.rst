@@ -1,5 +1,6 @@
 Setting up your Django project
-****************************
+******************************
+
 pTree is built on top of Django, 
 which is the most popular web development framework for Python.
 When you install pTree, Django will get installed automatically.
@@ -53,7 +54,7 @@ When the project opens, on the left-hand site you should see a directory tree th
 Edit the following files.			
 			
 ptree_experiments/settings.py
-------------------
+-------------------------------
 
 - Put the following lines at the top of the file (if they aren't there already)::
 
@@ -82,7 +83,7 @@ ptree_experiments/settings.py
     INSTALLED_APPS = ptree.settings.INSTALLED_APPS + INSTALLED_APPS + PTREE_EXPERIMENT_APPS
 
 ptree_experiments/urls.py
---------------
+--------------------------
 
 There is a line in ``urls.py`` to enable the admin site URL; uncomment it.
 

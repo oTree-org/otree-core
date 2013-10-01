@@ -64,7 +64,7 @@ your views.py will contain 5 View classes.</p>
 <li>Whether a given participant sees this View (or whether it should be skipped): <tt class="docutils literal"><span class="pre">is_displayed()</span></tt></li>
 <li>What HTML template to display: <tt class="docutils literal"><span class="pre">template_name</span></tt></li>
 <li>What form to display on the page: <tt class="docutils literal"><span class="pre">form_class</span></tt></li>
-<li>What variables to insert into the template (for displaying dynamic content), and how to calculate those variables: <tt class="docutils literal"><span class="pre">get_template_variables</span></tt></li>
+<li>What variables to insert into the template (for displaying dynamic content), and how to calculate those variables: <tt class="docutils literal"><span class="pre">get_variables_for_template</span></tt></li>
 <li>What to do after the participant has submitted a valid form: <tt class="docutils literal"><span class="pre">after_form_validates</span></tt></li>
 </ul>
 <p>When a participant visits your site, they are routed through your views in the order you specify in <tt class="xref py py-meth docutils literal"><span class="pre">Treatment.sequence()</span></tt>.
@@ -76,7 +76,7 @@ it will be re-displayed to them along with the list of errors they need to corre
 <p>Here is the structure of a class you would write:</p>
 <dl class="class">
 <dt id="MyView">
-<em class="property">class </em><tt class="descname">MyView</tt><big>(</big><em>ptree.views.abstract.BaseView</em>, <em>ViewInThisApp</em><big>)</big><a class="headerlink" href="#MyView" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descname">MyView</tt><big>(</big><em>ptree.views.abstract.StandardView</em>, <em>ViewInThisApp</em><big>)</big><a class="headerlink" href="#MyView" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="attribute">
 <dt id="MyView.participant">
 <tt class="descname">participant</tt><a class="headerlink" href="#MyView.participant" title="Permalink to this definition">¶</a></dt>
@@ -131,13 +131,13 @@ If you don&#8217;t define this method, all participants in the treatment will se
 </dd></dl>
 
 <dl class="method">
-<dt id="MyView.get_template_variables">
-<tt class="descname">get_template_variables</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#MyView.get_template_variables" title="Permalink to this definition">¶</a></dt>
+<dt id="MyView.get_variables_for_template">
+<tt class="descname">get_variables_for_template</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#MyView.get_variables_for_template" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get any variables that will be passed to the HTML template.
 Add them to the dictionary as key-value pairs.
 (You don&#8217;t need to include the form; that will be handled automatically)</p>
 <p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">get_template_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">get_variables_for_template</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">{</span><span class="s">&#39;CHARITY&#39;</span><span class="p">:</span> <span class="n">CHARITY</span><span class="p">,</span>
         <span class="s">&#39;is_hypothetical&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">probability_of_honoring_split_as_fraction</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span>
         <span class="s">&#39;max_offer_amount&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">max_offer_amount</span><span class="p">,</span>
@@ -155,14 +155,6 @@ pTree makes sure that it has all the required values
 <p>Here you can put anything additional that should happen after the form validates.
 If you don&#8217;t need anything to be done, it&#8217;s OK to leave this method blank,
 or to leave it out entirely.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">If your <tt class="docutils literal"><span class="pre">form_class</span></tt> inherits from <tt class="docutils literal"><span class="pre">ModelForm</span></tt>,
-then pTree will automatically save the submitted values to the database.
-But if you inherit from <tt class="docutils literal"><span class="pre">Form</span></tt>,
-you will need to save the form fields to the database yourself here.
-(This is one of the advantages of using <tt class="docutils literal"><span class="pre">ModelForm</span></tt>).</p>
-</div>
 <p>You can access form fields like this:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">password</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;password&#39;</span><span class="p">]</span>
 </pre></div>
@@ -185,6 +177,50 @@ you will need to save the form fields to the database yourself here.
 </dd></dl>
 
 </div>
+<div class="section" id="built-in-views">
+<h2>Built-in views<a class="headerlink" href="#built-in-views" title="Permalink to this headline">¶</a></h2>
+<p>pTree provides built-in views.</p>
+<dl class="class">
+<dt id="Start">
+<em class="property">class </em><tt class="descname">Start</tt><a class="headerlink" href="#Start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Every app needs to define a <tt class="docutils literal"><span class="pre">Start</span></tt> view that inherits from <tt class="docutils literal"><span class="pre">ptree.views.abstract.Start</span></tt>.
+This view displays a welcome page to users and an overview of the task they will be performing,
+followed by a &#8220;Next&#8221; button.
+This page gives users a chance to drop out before we assign them to a match,
+thus preventing &#8220;orphan&#8221; games.
+Behind the scenes, this view also plays an important role in initializing the user&#8217;s cookies.</p>
+<p>If you&#8217;d like to display different text on the page,
+or have a start form with fields other than <tt class="docutils literal"><span class="pre">nickname</span></tt>,
+you can just override the <tt class="docutils literal"><span class="pre">form_class</span></tt>
+(the parent class uses <tt class="docutils literal"><span class="pre">ptree.forms.StartForm</span></tt>),
+and <tt class="docutils literal"><span class="pre">template_name</span></tt> (the parent class uses <tt class="docutils literal"><span class="pre">'ptree/Start.html'</span></tt>).</p>
+<p>Here are some you may want to use:</p>
+<dl class="class">
+<dt id="ptree.views.concrete.RedemptionCode">
+<em class="property">class </em><tt class="descclassname">ptree.views.concrete.</tt><tt class="descname">RedemptionCode</tt><a class="headerlink" href="#ptree.views.concrete.RedemptionCode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>This view should usually be the last View in your sequence.
+It tells the user how much they made,
+and also gives them their redemption code.</p>
+<p>The template is at <tt class="docutils literal"><span class="pre">ptree/templates/ptree/RedemptionCode.html</span></tt>.
+You can have a look at the various blocks in that template to see how you can customize it.</p>
+</div>
+<div class="section" id="questionnaires">
+<h2>Questionnaires<a class="headerlink" href="#questionnaires" title="Permalink to this headline">¶</a></h2>
+<p>Frequently, you will want users to fill out a questionnaire/survey,
+in addition to taking part in your experiment/game.
+You can use pTree to create a survey,
+but a potentially more efficient approach is to embed or link to a survey
+from a service like SurveyGizmo, SurveyMonkey, WuFoo, Qualtrics, or Google Forms.
+These services all have easy-to-use visual interfaces for creating and analyzing data from surveys.
+With some of these services, you can embed a survey on your site so that it looks like it&#8217;s part of pTree.
+You can see an example of this in the template <tt class="docutils literal"><span class="pre">ptree/SurveyGizmoEmbedded.html</span></tt>.
+Just make sure to pass the participant&#8217;s identifier to the survey
+so that you can link the survey to that participant later.</p>
+</div>
 </div>
 
 
@@ -197,6 +233,8 @@ you will need to save the form fields to the database yourself here.
   <ul>
 <li><a class="reference internal" href="#">views.py</a><ul>
 <li><a class="reference internal" href="#implementation">Implementation</a></li>
+<li><a class="reference internal" href="#built-in-views">Built-in views</a></li>
+<li><a class="reference internal" href="#questionnaires">Questionnaires</a></li>
 </ul>
 </li>
 </ul>

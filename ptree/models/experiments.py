@@ -26,19 +26,6 @@ class BaseExperiment(models.Model):
     # and instead assigns you to a pre-determined treatment.
     demo_code = ptree.models.common.RandomCharField(length=8)
 
-    INDEPENDENT, SMOOTHING, = range(2)
-
-    RANDOMIZATION_MODE_CHOICES = (
-
-        # random.choice
-        (INDEPENDENT, 'Independent'),
-
-        # assign to the treatment that has the fewest data points
-        (SMOOTHING, 'Smoothing'),
-    )
-
-    randomization_mode = models.SmallIntegerField(choices = RANDOMIZATION_MODE_CHOICES)
-
     def weighted_randomization_choice(self, choices):
        total = sum(w for c, w in choices)
        r = random.uniform(0, total)
@@ -54,6 +41,9 @@ class BaseExperiment(models.Model):
         treatment = self.weighted_randomization_choice(choices)
         return treatment
 
+    def treatments(self):
+        return self.treatment_set.all()
+
     def __unicode__(self):
         
         if self.description:
@@ -66,7 +56,7 @@ class BaseExperiment(models.Model):
 
         s += 'code: {}, mode: {}, treatments: {} [{}]'.format(self.code, 
                                                               self.RANDOMIZATION_MODE_CHOICES[self.randomization_mode][1], 
-                                                              len(self.treatment_set.all()), 
+                                                              len(self.treatments()),
                                                               treatment_listing)
 
         s = defaultfilters.truncatechars(s, 150)
