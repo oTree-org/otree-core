@@ -5,6 +5,38 @@ import string
 
 from django.conf import settings
 
+class Symbols(object):
+    """
+    Strings used internally
+    Use this structure to prevent string duplication
+    and ease refactoring
+    """
+
+    ExperimentClass = 'ExperimentClass'
+    TreatmentClass = 'TreatmentClass'
+    MatchClass = 'MatchClass'
+    ParticipantClass = 'ParticipantClass'
+
+
+
+    match_id = 'match_id'
+
+    participant_code = 'participant_code'
+    experiment_code = 'experiment_code'
+    experiment_code_obfuscated = 'exp_code'
+    treatment_code = 'treatment_code'
+    demo_code = 'demo_code'
+
+    nickname = 'nickname'
+
+    current_view_index = 'current_view_index'
+    current_view_index_in_form = 'current_view_index_in_form'
+
+    completed_views = 'completed_views'
+
+    participant_resubmitted_last_form = 'participant_resubmitted_last_form'
+
+
 def string_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
 

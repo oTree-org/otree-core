@@ -10,11 +10,12 @@ import ptree.views.abstract
 import ptree.forms
 import ayah
 
+from ptree.models.common import Symbols
 
-class View(object):
+class ViewInThisApp(object):
     url_base = 'shared'
 
-class CaptchaAreYouAHuman(ptree.views.abstract.ViewWithForm, View):
+class CaptchaAreYouAHuman(ptree.views.abstract.ViewWithNonModelForm, ViewInThisApp):
     """
     CAPTCHA from http://areyouahuman.com/.
     To use this, you first need to register on that site to get a publisher key and scoring key
@@ -32,32 +33,25 @@ class CaptchaAreYouAHuman(ptree.views.abstract.ViewWithForm, View):
         return {'captcha_html': captcha_html, 
                 'current_step': self.request.session.get('captchas_completed', 0) + 1,
                 'total_steps': self.treatment.NUMBER_OF_CAPTCHAS}
-     
-class AssignParticipantAndMatch(ptree.views.abstract.AssignParticipantAndMatch, View):
-    """Just a version of the parent class that is accessible from a URL"""
-    pass
 
-class AssignParticipantAndMatchAsymmetric2Participant(ptree.views.abstract.AssignParticipantAndMatch, View):
-    """
-    For convenience, we gime asymmetric 2 participant games a participant_1 and participant_2 attributes.
-    """
-
-    def add_participant_to_match(self):
-        self.participant.index = self.match.participant_set.count()
-        self.participant.match = self.match
-        if self.participant.index == 0:
-            self.match.participant_1 == self.participant
-        elif self.participant.index == 1:
-            self.match.participant_2 == self.participant
-
-class RouteToCurrentPageInSequence(ptree.views.abstract.BaseView, View):
+class RedirectToPageUserShouldBeOn(ptree.views.abstract.BaseView, ViewInThisApp):
     """Redirect to this page when you can't do a redirect with the redirect_to_current_view method that increments the view index.
     Use cases: redirects from external websites, or from Django FormView, etc.
     """
     def get(self, request, *args, **kwargs):
         return self.redirect_to_page_the_user_should_be_on()
 
-class RouteToNextPageInSequence(ptree.views.abstract.BaseView, View):
+    @classmethod
+    def url(cls):
+        return '/{}/{}/'.format(cls.get_url_base(), cls.__name__)
+
+
+    @classmethod
+    def url_pattern(cls):
+        return r'^{}/{}/$'.format(cls.get_url_base(), cls.__name__)
+
+
+class RedirectToNextPageInSequence(ptree.views.abstract.BaseView, ViewInThisApp):
     """
     Try to avoid using this. It may get removed in a future version of pTree
     because of the potential for abuse.
@@ -65,10 +59,20 @@ class RouteToNextPageInSequence(ptree.views.abstract.BaseView, View):
     But only use it in places where it's OK for the user to jump ahead as much as they want,
     since they might find a way to refresh this URL."""
     def get(self, request, *args, **kwargs):
-        self.request.session[ptree.views.abstract.SessionKeys.current_view_index] += 1
+        self.request.session[Symbols.current_view_index] += 1
         return self.redirect_to_page_the_user_should_be_on()
 
-class RedemptionCode(ptree.views.abstract.ViewWithForm, View):
+    @classmethod
+    def url(cls):
+        return '/{}/{}/'.format(cls.get_url_base(), cls.__name__)
+
+
+    @classmethod
+    def url_pattern(cls):
+        return r'^{}/{}/$'.format(cls.get_url_base(), cls.__name__)
+
+
+class RedemptionCode(ptree.views.abstract.ViewWithNonModelForm, ViewInThisApp):
 
     template_name = 'ptree/RedemptionCode.html'
 

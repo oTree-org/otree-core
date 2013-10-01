@@ -6,9 +6,9 @@ class MatchManager(models.Manager):
         """Get the next match that is accepting participants.
         May raise a StopIteration exception if there are no open matches.
         """
-        from ptree.views.abstract import SessionKeys
+        from ptree.models.common import Symbols
         matches = super(MatchManager, self).get_query_set().all()
-        return (m for m in matches if m.treatment.code == request.session[SessionKeys.treatment_code] and m.is_ready_for_next_participant()).next()
+        return (m for m in matches if m.treatment.code == request.session[Symbols.treatment_code] and m.is_ready_for_next_participant()).next()
 
 class BaseMatch(models.Model):
     """
@@ -28,6 +28,8 @@ class BaseMatch(models.Model):
 
     The exception is if the game is asymmetric, and participant_1_decision and participant_2_decision have different data types.
     """
+
+    treatment = models.ForeignKey('Treatment')
 
     #: when the game was started
     time_started = models.DateTimeField(auto_now_add = True)
@@ -63,3 +65,17 @@ class BaseMatch(models.Model):
     class Meta:
         abstract = True
         verbose_name_plural = "matches"
+
+class MatchInTwoPersonAsymmetricGame(BaseMatch):
+    participant_1 = models.ForeignKey('Participant', related_name = "games_as_participant_1")
+    participant_2 = models.ForeignKey('Participant', related_name = "games_as_participant_2", null = True)
+
+    class Meta:
+        abstract = True
+
+    def is_ready_for_next_participant(self):
+        return self.participant_1 and self.participant_1.is_finished_playing() and not self.participant_2
+
+class MatchOffer(BaseMatch):
+    amount_offered = models.PositiveIntegerField(null = True) # amount the first player offers to second player
+

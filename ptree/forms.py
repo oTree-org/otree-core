@@ -3,7 +3,8 @@ import templatetags.ptreefilters
 import ayah
 from django.conf import settings
 
-from views.abstract import SessionKeys
+import ptree.views.abstract
+from ptree.models.common import Symbols
 
 class FormMixin(object):
 
@@ -13,22 +14,20 @@ class FormMixin(object):
     rewritable_fields = []
 
     def __init__(self, *args, **kwargs):
-        self.participant = kwargs['participant']
-        self.match = kwargs['match']
-        self.treatment = kwargs['treatment']
-        self.request = kwargs['request']
-        kwargs.pop('participant')
-        kwargs.pop('match')
-        kwargs.pop('treatment')
-        kwargs.pop('request')
+        self.participant = kwargs.pop('participant')
+        self.match = kwargs.pop('match')
+        self.treatment = kwargs.pop('treatment')
+        self.request = kwargs.pop('request')
+        self.experiment = kwargs.pop('experiment')
+
         super(FormMixin, self).__init__(*args, **kwargs)
-        self.initialize_form()
-        self.fields[SessionKeys.current_view_index] = forms.CharField(widget=forms.HiddenInput(), max_length=200)
-        self.fields[SessionKeys.current_view_index].initial = self.request.session[SessionKeys.current_view_index]
+        self.customize()
+        self.fields[Symbols.current_view_index] = forms.IntegerField(widget=forms.HiddenInput())
+        self.fields[Symbols.current_view_index].initial = self.request.session.get(Symbols.current_view_index, 0)
 
 
 
-    def initialize_form(self):
+    def customize(self):
         """Customize your form fields here"""
 
     def make_field_currency_choices(self, field_name, amounts):
@@ -50,13 +49,16 @@ class BlankModelForm(FormMixin, forms.ModelForm):
 
         participant_resubmitted_this_form = False
         for field_name in cleaned_data.keys():
-            if not field_name in self.rewritable_fields:
+            if not field_name in self.rewritable_fields and field_name != Symbols.current_view_index:
                 current_value = getattr(self.instance, field_name)
-                if current_value != None:
+                # FIXME:
+                # this assumes that the default value of these fields is None.
+                # but this means I should set null=True on everything.
+                if current_value is not None:
                     cleaned_data[field_name] = current_value
                     participant_resubmitted_this_form = True
 
-        self.request.session[SessionKeys.participant_resubmitted_last_form] = participant_resubmitted_this_form
+        self.request.session[Symbols.participant_resubmitted_last_form] = participant_resubmitted_this_form
         return cleaned_data
 
 class BlankForm(FormMixin, forms.Form):
@@ -74,7 +76,7 @@ class BlankForm(FormMixin, forms.Form):
 class StartForm(BlankForm):
     """Form rather than ModelForm,
     since it can be used with many different models"""
-    nickname = forms.CharField(max_length = 50)
+    name = forms.CharField(max_length = 50)
     
 class CaptchaAreYouAHumanForm(BlankForm):
     """

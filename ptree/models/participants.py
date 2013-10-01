@@ -1,5 +1,6 @@
 from django.db import models
 import ptree.models.common
+from ptree.models.common import Symbols
 import abc
 
 class BaseParticipant(models.Model):
@@ -8,6 +9,8 @@ class BaseParticipant(models.Model):
     """
 
     #__metaclass__ = abc.ABCMeta
+    experiment = models.ForeignKey('Experiment')
+    match = models.ForeignKey('Match', null = True)
 
     #: the participant's unique ID (and redemption code) that gets passed in the URL.
     #: This is generated automatically.
@@ -34,6 +37,10 @@ class BaseParticipant(models.Model):
 
     mturk_assignment_id = models.CharField(max_length = 50, null = True)
 
+    def start_url(self):
+        return '/{}/StartParticipant/?{}={}'.format(self.experiment.url_base,
+                                                          Symbols.participant_code,
+                                                          self.code)
 
     #@abc.abstractmethod
     def bonus(self):
@@ -60,7 +67,7 @@ class BaseParticipant(models.Model):
     class Meta:
         abstract = True
 
-class ParticipantTwoPersonAsymmetric(BaseParticipant):
+class ParticipantInTwoPersonAsymmetricGame(BaseParticipant):
     """A participant in a 2-participant asymmetric game"""
     
     def is_participant_1(self):
@@ -82,4 +89,4 @@ class ParticipantTwoPersonAsymmetric(BaseParticipant):
             return self.match.participant_2_is_finished()
         
     class Meta:
-        abstract = True  
+        abstract = True

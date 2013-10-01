@@ -32,10 +32,10 @@ def url_patterns_from_module(module_name):
 
 
 def urlpatterns():
-    p = patterns('')
-    for game_label in settings.PTREE_GAME_APPS:
+    p = patterns('' ) #url(r'^exports/', include('data_exports.urls', namespace='data_exports')))
+    for game_label in settings.PTREE_EXPERIMENT_APPS:
         views_module_name = '{}.views'.format(game_label)
         p += url_patterns_from_module(views_module_name)
     p += url_patterns_from_module('ptree.views.concrete')
-    p += url(r'^exports/', include('data_exports.urls', namespace='data_exports'))
+
     return p

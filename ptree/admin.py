@@ -13,8 +13,10 @@ class TreatmentAdmin(admin.ModelAdmin):
     readonly_fields = ('link', 'code')
 
     def link(self, instance):
+        url = instance.start_url(demo_mode = True)
         return '<a href="{}" target="_blank">{}</a>'.format(instance.start_url(), instance.start_url())
 
+    link.short_description = "Click link to try this treatment in demo mode"
     link.allow_tags = True
     
 class ParticipantAdmin(admin.ModelAdmin):
@@ -22,7 +24,7 @@ class ParticipantAdmin(admin.ModelAdmin):
     list_display = readonly_fields + ('has_visited',)
 
     def link(self, instance):
-        url = '/{}/PickTreatment/?exp={}&participant={}'.format(instance.experiment.url_base, instance.experiment.code, instance.code)
+        url = instance.start_url()
         return '<a href="{}" target="_blank">{}</a>'.format(url, url)
 
     link.short_description = "Give this link to a single user"

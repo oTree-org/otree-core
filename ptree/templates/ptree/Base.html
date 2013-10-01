@@ -42,14 +42,23 @@
             <div>
             {% if participant_resubmitted_last_form %}
                 <div class="alert alert-warning">
-                    It looks like you resubmitted a form.
+                    It looks like you just resubmitted a form.
                     We do not allow you to change your answers, so we ignored your re-submission.
+                    Please continue.
                 </div>
             {% endif %}
             {% block content %}{% endblock %}
             </div>
         </div>
         
+
+        {% if jump_to_form %}
+            <script type="text/javascript">
+                $(document).ready(function () {
+                    location.href = "#{{ form_element_id }}";
+                });
+            </script>
+        {% endif %}
 
         {% block scripts_at_bottom_of_page %}
         {% endblock %}

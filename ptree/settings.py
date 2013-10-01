@@ -1,5 +1,7 @@
-INSTALLED_APPS = (
+REQUIRED_APPS = (
     'ptree',
-	'data_exports',
+    #'data_exports',
 	'crispy_forms',
 )
+
+CRISPY_TEMPLATE_PACK = 'bootstrap3'

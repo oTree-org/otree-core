@@ -26,9 +26,9 @@ Your forms are defined in ``forms.py`` in your app.
         These are provided for you automatically.
         
 
-	.. py:method:: initialize_form(self)
+	.. py:method:: customize(self)
 	
-		You can put any code here to customize how a particular field gets displayed.
+		You can put any code here to customize how fields get displayed.
 		
 	.. py:method:: make_field_currency_choices(self, field_name, amounts)
 	

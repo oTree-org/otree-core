@@ -1,6 +1,7 @@
 from django.http import HttpResponseRedirect
 from django.db import models
 import ptree.models.common
+from ptree.models.common import Symbols
 import abc
 
 class BaseTreatment(models.Model):
@@ -13,6 +14,7 @@ class BaseTreatment(models.Model):
     Results of a game are not stored in ther Treatment object, they are stored in Match or Participant objects.
     """
 
+    experiment = models.ForeignKey('Experiment')
     #__metaclass__ = abc.ABCMeta
 
     description = models.TextField(max_length = 1000, null = True, blank = True)
@@ -28,11 +30,16 @@ class BaseTreatment(models.Model):
 
     participants_per_match = None
 
-
-    def start_url(self):
+    def start_url(self, demo_mode = False):
         """The URL that a user is redirected to in order to start a treatment"""
-        return '/{}/Start/'.format(self.experiment.url_base, self.code)
-    
+        url = '/{}/StartTreatment/{}/?{}={}'.format(self.experiment.url_base,
+                                                          0,
+                                                          Symbols.treatment_code,
+                                                          self.code)
+        if demo_mode:
+            url = '{}&{}={}'.format(url, Symbols.demo_code, self.experiment.demo_code )
+        return url
+
     def __unicode__(self):
         s = self.code
         if self.description:
@@ -74,7 +81,7 @@ class BaseTreatment(models.Model):
         sequence() returns something like [views.IntroPage, ...]
         sequence_as_urls() returns something like ['mygame/IntroPage', ...]
         """
-        return [view.url() for view in self.sequence()]
+        return [View.url(index) for index, View in enumerate(self.sequence())]
 
     class Meta:
         abstract = True
