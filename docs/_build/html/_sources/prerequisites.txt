@@ -71,7 +71,7 @@ and thus ease the learning curve of pTree.
 
 After 30 days, you can either get a free Classroom License
 (as explained `here <http://www.jetbrains.com/pycharm/buy/index.jsp>`__),
-or downgrade to the Community Edition, 
+or downgrade to the free Community Edition, 
 or buy an Academic License for $29.
 
 .. note::

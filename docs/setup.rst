@@ -13,6 +13,12 @@ When you install pTree, Django will get installed automatically.
 Create your project
 ===================
 
+Each pTree experiment type is implemented as a Django app.
+For example, if you want to create the prisoner's dilemma, trust game, and public goods game,
+those would be 3 separate apps. 
+
+Before you create your apps, you need to create a Django project that will contain them.
+
 From the command line, ``cd`` into a directory where you'd like to store your
 code (can be anywhere, like a folder in "My Documents" or "Documents"), 
 then run the following command::
