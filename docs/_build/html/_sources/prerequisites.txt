@@ -7,6 +7,7 @@ Command line
 You need a basic understanding of your operating system's command prompt.
 You should know common commands like ``ls``, ``cd``, and ``mv``,
 and how to launch a program by entering its name at the command prompt.
+Here is how to open your command prompt.
 
 Windows
 -------
@@ -62,17 +63,22 @@ To verify that it is correctly installed, try the command ``pip install requests
 Editor
 ~~~~~~
 
-You will also need an editor to write your Python code.
-Although you can use any text editor you want,
-I find it is much easier to create pTree apps in an IDE
-that assists you while you are writing your code,
-(by auto-completing code you write or underlining errors),
-and helping you navigate between the modules and classes in your project.
+Install `PyCharm <http://www.jetbrains.com/pycharm/>`__.
 
-I recommend `PyCharm <http://www.jetbrains.com/pycharm/>`__ (Community Edition is free).
-This documentation gives instructions assuming you are using PyCharm,
-but you can use any editor you want.
+I recommend installing the free 30-day trial of the Professional Edition,
+since it has features that make Django development much easier,
+and thus ease the learning curve of pTree.
 
+After 30 days, you can either get a free Classroom License
+(as explained `here <http://www.jetbrains.com/pycharm/buy/index.jsp>`__),
+or downgrade to the Community Edition, 
+or buy an Academic License for $29.
+
+.. note::
+
+	You can use any Python editor you want,
+	but this documentation gives instructions assuming you are using PyCharm,
+	
 Learning
 =========
 
