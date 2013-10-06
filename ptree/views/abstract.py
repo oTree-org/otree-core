@@ -107,6 +107,29 @@ class BaseView(django.views.generic.base.View):
             return cls.url_base
         
     @classmethod
+    def url(cls):
+        return '/{}/{}/'.format(cls.get_url_base(), cls.__name__)
+
+    @classmethod
+    def url_pattern(cls):
+        return r'^{}/{}/$'.format(cls.get_url_base(), cls.__name__)
+
+
+class OldPage(object):
+    """It's here so that classes that inherit from it can be loaded.
+    Should be removed"""
+    pass
+
+class SequenceView(BaseView):
+    """
+    Base class for most views.
+    Abilities:
+    - 
+    - 
+    
+    """
+
+    @classmethod
     def url(cls, index):
         return '/{}/{}/{}/'.format(cls.get_url_base(), cls.__name__, index)
 
@@ -115,19 +138,6 @@ class BaseView(django.views.generic.base.View):
         return r'^{}/{}/(\d+)/$'.format(cls.get_url_base(), cls.__name__)
 
 
-class OldPage(object):
-    """It's here so that classes that inherit from it can be loaded.
-    Should be removed"""
-    pass
-
-class ViewWithFormMixin(object):
-    """
-    Base class for most views.
-    Abilities:
-    - 
-    - 
-    
-    """
     success_url = REDIRECT_TO_PAGE_USER_SHOULD_BE_ON_URL
 
     def is_displayed(self):
@@ -149,7 +159,7 @@ class ViewWithFormMixin(object):
         if not self.user_is_on_right_page():
             # then bring them back to where they should be
             return self.redirect_to_page_the_user_should_be_on()
-        return super(ViewWithFormMixin, self).dispatch(request, *args, **kwargs)
+        return super(SequenceView, self).dispatch(request, *args, **kwargs)
 
     def get_variables_for_template(self):
         """
@@ -165,18 +175,13 @@ class ViewWithFormMixin(object):
         context = {}
         
         # jump to form on invalid submission
-        try:
-            # take it out of kwargs before calling super()
+        if kwargs.has_key('jump_to_form'):
+            context['element_to_jump_to'] = 'form'
             kwargs.pop('jump_to_form')
-        except KeyError:
-            context['jump_to_form'] = False
-        else:
-            context['jump_to_form'] = True
-        context['form_element_id'] = 'form'
 
         # this will add the form to the context
         # FIXME: parent class is just object; how does this work?
-        context.update(super(ViewWithFormMixin, self).get_context_data(**kwargs))
+        context.update(super(SequenceView, self).get_context_data(**kwargs))
         
         # whatever else you specify that doesn't go in the form
         # (e.g. info we display to the participant)
@@ -184,8 +189,9 @@ class ViewWithFormMixin(object):
 
         # protection against CSRF attacks
         context.update(csrf(self.request))
-        context.update({'participant_resubmitted_last_form':
-                        self.request.session.get(Symbols.participant_resubmitted_last_form)})
+
+        #context.update({'participant_resubmitted_last_form':
+        #                self.request.session.get(Symbols.participant_resubmitted_last_form)})
         
         # we may or may not need this line.
         # strictly speaking, we shouldn't really be modifying the database on a GET request
@@ -199,9 +205,8 @@ class ViewWithFormMixin(object):
         So that they can have more dynamic rendering & validation behavior.
         """
 
-        kwargs = super(ViewWithFormMixin, self).get_form_kwargs()
-        
-        #TODO: maybe add experiment to this
+        kwargs = super(SequenceView, self).get_form_kwargs()
+
         kwargs.update({'participant': self.participant,
                        'match': self.match,
                        'treatment': self.treatment,
@@ -221,7 +226,7 @@ class ViewWithFormMixin(object):
         if self.current_view_index == self.request.session[Symbols.current_view_index]:
             self.request.session[Symbols.current_view_index] += 1
         #form.cleaned_data.pop(Symbols.current_view_index)
-        return super(ViewWithFormMixin, self).form_valid(form)
+        return super(SequenceView, self).form_valid(form)
 
     def form_invalid(self, form):
         """
@@ -229,7 +234,7 @@ class ViewWithFormMixin(object):
         """
         return self.render_to_response(self.get_context_data(form=form, jump_to_form = True ))
 
-class StandardView(ViewWithFormMixin, django.views.generic.edit.UpdateView, BaseView):
+class StandardView(SequenceView, django.views.generic.edit.UpdateView):
     """For pages with a form whose values you want to save to the database.
     Try to inherit from this as much as you can.
     This is the bread and butter View of pTree.
@@ -247,7 +252,6 @@ class StandardView(ViewWithFormMixin, django.views.generic.edit.UpdateView, Base
         # actually, since i may want to deprecate FormView, I may want to keep this in.
         # but if a person uses cleaned_data, they will have to access cleaned_data, right?
 
-
         form.save(commit = True)
         return super(StandardView, self).form_valid(form)
 
@@ -261,14 +265,12 @@ class StandardView(ViewWithFormMixin, django.views.generic.edit.UpdateView, Base
         elif cls == self.ParticipantClass:
             return self.participant
 
-
-
-class ViewWithNonModelForm(ViewWithFormMixin, django.views.generic.FormView, BaseView):
+class ViewWithNonModelForm(SequenceView, django.views.generic.FormView, BaseView):
     """If you can't use a ModelForm, e.g. the data in the form will not be saved to the database,
     then you can use this as a fallback."""
-    form_class = ptree.forms.BlankForm
+    form_class = ptree.forms.NonModelForm
 
-class StartParticipant(django.views.generic.base.View):
+class GetTreatmentOrParticipant(django.views.generic.base.View):
     """
     The first View when participants visit a site.
     Doesn't have any UI.
@@ -282,33 +284,45 @@ class StartParticipant(django.views.generic.base.View):
 
         self.request.session.clear()
 
-        participant_code = self.request.GET[Symbols.participant_code]
-        self.request.session[Symbols.participant_code] = participant_code
-        self.participant = get_object_or_404(self.ParticipantClass, code = participant_code)
+        participant_code = self.request.GET.get(Symbols.participant_code)
+        treatment_code = self.request.GET.get(Symbols.treatment_code)
 
-        # record their visit, and save it since this is GET.
-        self.participant.has_visited = True
-        # in your mTurk experiment you can append the assignmentId to the URL with JavaScript.
-        self.participant.mturk_assignment_id = self.request.GET.get('assignmentId')
-        self.participant.save()
+        # need at least one
+        assert participant_code or treatment_code
 
-        experiment = self.participant.experiment
-        # store for future access
-        self.request.session[Symbols.experiment_code] = experiment.code
+        if participant_code:
+            self.participant = get_object_or_404(self.ParticipantClass, code = participant_code)
 
-        # block re-randomization.
-        # if the participant already got past the start view, they have had a match assigned to them.
-        # this check is for participants who started to play the game,
-        # but abandoned or hit the back button and re-entered the URL.
-        # we don't want participants to be assigned to a different treatment when they re-visit the URL
-        # because they might want to get a treatment that pays more money
-        if self.participant.match:
-            treatment = self.participant.match.treatment
+            # in your mTurk experiment you can append the assignmentId to the URL with JavaScript.
+            self.participant.mturk_assignment_id = self.request.GET.get('assignmentId')
+
+            self.experiment = self.participant.experiment
+
+            # block re-randomization.
+            # if the participant already got past the start view, they have had a match assigned to them.
+            # this check is for participants who started to play the game,
+            # but abandoned or hit the back button and re-entered the URL.
+            # we don't want participants to be assigned to a different treatment when they re-visit the URL
+            # because they might want to get a treatment that pays more money
+            if self.participant.match:
+                self.treatment = self.participant.match.treatment
+            else:
+                self.treatment = self.experiment.pick_treatment_for_incoming_participant()
         else:
-            treatment = experiment.randomize_to_treatment()
+            # demo mode
+            self.treatment = get_object_or_404(self.TreatmentClass, code=treatment_code)
+            self.experiment = self.treatment.experiment
 
-        # The 0 is because it's the first page in the sequence.
-        return HttpResponseRedirect(treatment.start_url())
+            if self.request.GET[Symbols.demo_code] == self.experiment.demo_code:
+                self.participant = self.ParticipantClass.objects.filter(experiment=self.experiment,
+                                                            has_visited=False)[0]
+
+        self.participant.has_visited = True
+        self.participant.save()
+        self.request.session[Symbols.participant_code] = self.participant.code
+        self.request.session[Symbols.treatment_code] = self.treatment.code
+
+        return HttpResponseRedirect('/{}/StartTreatment/{}/'.format(self.experiment.url_base, 0))
 
     @classmethod
     def get_url_base(cls):
@@ -332,31 +346,19 @@ class StartTreatment(ViewWithNonModelForm):
     """
 
     form_class = ptree.forms.StartForm
-    template_name = 'ptree/Start.html'
+    template_name = 'Start.html'
+
+    def load_classes(self):
+        """Don't want to load from cookies"""
 
     def load_objects(self):
-        if self.request.method == 'GET':
-            treatment_code = self.request.GET[Symbols.treatment_code]
-            self.treatment = get_object_or_404(self.TreatmentClass, code=treatment_code)
-            self.request.session[Symbols.treatment_code] = treatment_code
+        self.match = None
 
-            participant_code = self.request.session.get(Symbols.participant_code)
-
-            if participant_code:
-                self.participant = get_object_or_404(self.ParticipantClass, code = participant_code)
-            else: # only allow omission of participant if it's demo mode.
-                experiment = self.treatment.experiment
-                if self.request.GET[Symbols.demo_code] == experiment.demo_code:
-                    # get the next available participant
-                    self.participant = self.ParticipantClass.objects.filter(experiment=experiment,has_visited=False)[0]
-                    self.request.session[Symbols.participant_code] = self.participant.code
-                    self.request.session[Symbols.experiment_code] = experiment.code
-
-        elif self.request.method == 'POST':
-            participant_code = self.request.session.get(Symbols.participant_code)
-            self.participant = get_object_or_404(self.ParticipantClass, code = participant_code)
-            self.treatment = get_object_or_404(self.TreatmentClass, code = self.request.session[Symbols.treatment_code])
-            self.experiment = self.participant.experiment
+        self.participant = get_object_or_404(self.ParticipantClass,
+                                             code = self.request.session[Symbols.participant_code])
+        self.treatment = get_object_or_404(self.TreatmentClass,
+                                           code = self.request.session[Symbols.treatment_code])
+        self.experiment = self.participant.experiment
 
     def persist_classes(self):
         """We need these classes so that we can load the objects.

@@ -29,8 +29,6 @@ class BaseMatch(models.Model):
     The exception is if the game is asymmetric, and participant_1_decision and participant_2_decision have different data types.
     """
 
-    treatment = models.ForeignKey('Treatment')
-
     #: when the game was started
     time_started = models.DateTimeField(auto_now_add = True)
 

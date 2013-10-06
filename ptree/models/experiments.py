@@ -35,7 +35,7 @@ class BaseExperiment(models.Model):
              return c
           upto += w
 
-    def pick_treatment(self):
+    def pick_treatment_for_incoming_participant(self):
         """pick a treatment according to randomization algorithm."""
         choices = [(treatment, treatment.randomization_weight) for treatment in self.treatment_set.all()]
         treatment = self.weighted_randomization_choice(choices)
@@ -54,10 +54,9 @@ class BaseExperiment(models.Model):
         MAX_NUMBER_OF_TREATMENT_CHARS = 100
         treatment_listing = ', '.join([t.__unicode__() for t in self.treatment_set.all()])
 
-        s += 'code: {}, mode: {}, treatments: {} [{}]'.format(self.code, 
-                                                              self.RANDOMIZATION_MODE_CHOICES[self.randomization_mode][1], 
-                                                              len(self.treatments()),
-                                                              treatment_listing)
+        s += 'code: {}, treatments: {} [{}]'.format(self.code,
+                                                  len(self.treatments()),
+                                                  treatment_listing)
 
         s = defaultfilters.truncatechars(s, 150)
 

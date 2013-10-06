@@ -9,8 +9,6 @@ class BaseParticipant(models.Model):
     """
 
     #__metaclass__ = abc.ABCMeta
-    experiment = models.ForeignKey('Experiment')
-    match = models.ForeignKey('Match', null = True)
 
     #: the participant's unique ID (and redemption code) that gets passed in the URL.
     #: This is generated automatically.
@@ -38,7 +36,7 @@ class BaseParticipant(models.Model):
     mturk_assignment_id = models.CharField(max_length = 50, null = True)
 
     def start_url(self):
-        return '/{}/StartParticipant/?{}={}'.format(self.experiment.url_base,
+        return '/{}/GetTreatmentOrParticipant/?{}={}'.format(self.experiment.url_base,
                                                           Symbols.participant_code,
                                                           self.code)
 

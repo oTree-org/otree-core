@@ -98,8 +98,9 @@ For example, a game that is simply a survey.</p>
 <div class="section" id="bonus">
 <h5>bonus()<a class="headerlink" href="#bonus" title="Permalink to this headline">¶</a></h5>
 <p>The bonus the <tt class="docutils literal"><span class="pre">Participant</span></tt> gets paid, in addition to their base pay.</p>
-<p>..note:</p>
-<div class="highlight-python"><pre>Add your own attributes or methods to this class.</pre>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Add your own attributes or methods to this class.</p>
 </div>
 </div>
 </div>
@@ -218,7 +219,7 @@ and needs to be randomized to a treatment.
 Unless you override it,
 this method returns a random choice between the treatments in the experiment,
 weighted by their <tt class="docutils literal"><span class="pre">randomization_weight</span></tt>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">pick_treatment</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">pick_treatment_for_incoming_participant</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="n">choices</span> <span class="o">=</span> <span class="p">[(</span><span class="n">treatment</span><span class="p">,</span> <span class="n">treatment</span><span class="o">.</span><span class="n">randomization_weight</span><span class="p">)</span> <span class="k">for</span> <span class="n">treatment</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment_set</span><span class="o">.</span><span class="n">all</span><span class="p">()]</span>
     <span class="n">treatment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weighted_randomization_choice</span><span class="p">(</span><span class="n">choices</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">treatment</span>

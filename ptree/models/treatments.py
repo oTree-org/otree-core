@@ -14,9 +14,6 @@ class BaseTreatment(models.Model):
     Results of a game are not stored in ther Treatment object, they are stored in Match or Participant objects.
     """
 
-    experiment = models.ForeignKey('Experiment')
-    #__metaclass__ = abc.ABCMeta
-
     description = models.TextField(max_length = 1000, null = True, blank = True)
 
     # the treatment code in the URL. This is generated automatically.
@@ -26,19 +23,17 @@ class BaseTreatment(models.Model):
         
     base_pay = models.PositiveIntegerField() # how much people are getting paid to perform it
 
-    randomization_weight = models.PositiveIntegerField(default = 1)
+    randomization_weight = models.FloatField(default = 1.0)
 
     participants_per_match = None
 
-    def start_url(self, demo_mode = False):
+    def start_url(self):
         """The URL that a user is redirected to in order to start a treatment"""
-        url = '/{}/StartTreatment/{}/?{}={}'.format(self.experiment.url_base,
-                                                          0,
+        return '/{}/GetTreatmentOrParticipant/?{}={}&{}={}'.format(self.experiment.url_base,
                                                           Symbols.treatment_code,
-                                                          self.code)
-        if demo_mode:
-            url = '{}&{}={}'.format(url, Symbols.demo_code, self.experiment.demo_code )
-        return url
+                                                          self.code,
+                                                          Symbols.demo_code,
+                                                          self.experiment.demo_code)
 
     def __unicode__(self):
         s = self.code

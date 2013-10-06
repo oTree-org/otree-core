@@ -11,7 +11,8 @@ class FormMixin(object):
     # In general, pTree does not allow a user to go back and change their answer on a previous page,
     # since that often defeats the purpose of the game (e.g. eliciting an honest answer).
     # But you can put it in rewritable_fields to make it an exception.
-    rewritable_fields = []
+    ## UPDATE: deprecated for now
+    # rewritable_fields = []
 
     def __init__(self, *args, **kwargs):
         self.participant = kwargs.pop('participant')
@@ -34,8 +35,7 @@ class FormMixin(object):
         amount_choices = [(amount, templatetags.ptreefilters.currency(amount)) for amount in amounts]
         self.fields[field_name].choices = amount_choices
 
-
-class BlankModelForm(FormMixin, forms.ModelForm):
+class ModelForm(FormMixin, forms.ModelForm):
     """
     Try to inherit from this class whenever you can.
     ModelForms are ofter preferable to plain Forms,
@@ -43,9 +43,9 @@ class BlankModelForm(FormMixin, forms.ModelForm):
     and they require less code to write and validate.
     """
 
-    def clean(self):
+    def old_clean(self):
         """Prevent the user from going back and modifying an old value."""
-        cleaned_data = super(BlankModelForm, self).clean()
+        cleaned_data = super(ModelForm, self).clean()
 
         participant_resubmitted_this_form = False
         for field_name in cleaned_data.keys():
@@ -61,10 +61,10 @@ class BlankModelForm(FormMixin, forms.ModelForm):
         self.request.session[Symbols.participant_resubmitted_last_form] = participant_resubmitted_this_form
         return cleaned_data
 
-class BlankForm(FormMixin, forms.Form):
+class NonModelForm(FormMixin, forms.Form):
     """
     If your form fields map to a Django Model (like a Participant or Match object),
-    then use BlankModelForm instead.
+    then use ModelForm instead.
 
     Use this otherwise.
     
@@ -73,27 +73,7 @@ class BlankForm(FormMixin, forms.Form):
     pass
 
 
-class StartForm(BlankForm):
+class StartForm(NonModelForm):
     """Form rather than ModelForm,
     since it can be used with many different models"""
     name = forms.CharField(max_length = 50)
-    
-class CaptchaAreYouAHumanForm(BlankForm):
-    """
-    CAPTCHA from AreYouHuman.com
-    """
-
-    def clean(self):
-        cleaned_data = super(CaptchaAreYouAHumanForm, self).clean()
-        secret = self.data['session_secret']
-
-        ayah.configure(settings.AYAH_PUBLISHER_KEY, settings.AYAH_SCORING_KEY)
-        passed = ayah.score_result(secret)
-        if passed:
-            if not self.request.session.get('captchas_completed'):
-                self.request.session['captchas_completed'] = 1
-            else:
-                self.request.session['captchas_completed'] += 1
-            return cleaned_data
-        else:
-            raise forms.ValidationError("Please try again.")

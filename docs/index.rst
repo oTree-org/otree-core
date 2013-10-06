@@ -17,8 +17,7 @@ Contents:
    :maxdepth: 2
    
    prerequisites
-   install
-   project
+   setup
    app/index
    deploy
 

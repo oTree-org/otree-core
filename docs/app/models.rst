@@ -38,6 +38,7 @@ What is provided for you automatically
 
 match
 =====
+
 The ``Match`` this ``Participant`` is a part of.
 
 index (integer)
@@ -58,7 +59,7 @@ bonus()
 
 The bonus the ``Participant`` gets paid, in addition to their base pay.
 
-..note::
+.. note::
 
 	Add your own attributes or methods to this class.
    
@@ -199,7 +200,7 @@ Returns the ``Treatment`` objects in this ``Experiment``.
 Methods that are optional to define
 -----------------------------------
 
-pick_treatment(self): Treatment
+pick_treatment_for_incoming_participant(self): Treatment
 ===============================
 
 This method will get called when a participant arrives at your site,
@@ -208,7 +209,7 @@ Unless you override it,
 this method returns a random choice between the treatments in the experiment,
 weighted by their ``randomization_weight``::
 
-    def pick_treatment(self):        
+    def pick_treatment_for_incoming_participant(self):
         choices = [(treatment, treatment.randomization_weight) for treatment in self.treatment_set.all()]
         treatment = self.weighted_randomization_choice(choices)
         return treatment

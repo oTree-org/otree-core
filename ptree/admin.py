@@ -6,15 +6,13 @@ from donation.models import Experiment
 
 from django.utils.importlib import import_module
 
-# will this work? i think so.
-from django.conf import settings
-
 class TreatmentAdmin(admin.ModelAdmin):
-    readonly_fields = ('link', 'code')
+    readonly_fields = ('code', 'link')
+    list_display = ('__unicode__', 'link')
 
     def link(self, instance):
-        url = instance.start_url(demo_mode = True)
-        return '<a href="{}" target="_blank">{}</a>'.format(instance.start_url(), instance.start_url())
+        url = instance.start_url()
+        return '<a href="{}" target="_blank">{}</a>'.format(url, instance.__unicode__())
 
     link.short_description = "Click link to try this treatment in demo mode"
     link.allow_tags = True

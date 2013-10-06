@@ -1,5 +1,10 @@
-Setting up your Django project
-******************************
+Setup
+~~~~~
+
+Install
+===================
+
+On your command line, type ``pip install django-ptree``.
 
 pTree is built on top of Django, 
 which is the most popular web development framework for Python.

@@ -15,25 +15,6 @@ from ptree.models.common import Symbols
 class ViewInThisApp(object):
     url_base = 'shared'
 
-class CaptchaAreYouAHuman(ptree.views.abstract.ViewWithNonModelForm, ViewInThisApp):
-    """
-    CAPTCHA from http://areyouahuman.com/.
-    To use this, you first need to register on that site to get a publisher key and scoring key
-    (see variables below)
-    """
-    template_name = 'ptree/CaptchaAreYouAHuman.html'
-    form_class = ptree.forms.CaptchaAreYouAHumanForm
-
-    def get_variables_for_template(self):
-        
-        #FIXME: this should go in the form code
-        ayah.configure(settings.AYAH_PUBLISHER_KEY, settings.AYAH_SCORING_KEY)
-        captcha_html = ayah.get_publisher_html()
-        
-        return {'captcha_html': captcha_html, 
-                'current_step': self.request.session.get('captchas_completed', 0) + 1,
-                'total_steps': self.treatment.NUMBER_OF_CAPTCHAS}
-
 class RedirectToPageUserShouldBeOn(ptree.views.abstract.BaseView, ViewInThisApp):
     """Redirect to this page when you can't do a redirect with the redirect_to_current_view method that increments the view index.
     Use cases: redirects from external websites, or from Django FormView, etc.

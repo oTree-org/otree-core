@@ -13,7 +13,7 @@ and `ModelForms <https://docs.djangoproject.com/en/dev/topics/forms/modelforms/#
 
 Your forms are defined in ``forms.py`` in your app.
 
-.. py:class:: MyForm(ptree.forms.BlankModelForm)
+.. py:class:: MyForm(ptree.forms.ModelForm)
     
     .. py:attribute:: participant
 					  match

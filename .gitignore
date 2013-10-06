@@ -9,3 +9,4 @@ manage.py
 django_ptree.egg-info/
 setup.py
 myapp*
+*.pyc
