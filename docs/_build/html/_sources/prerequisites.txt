@@ -36,13 +36,13 @@ It is very popular and has a great ecosystem of tutorials, libraries, and tools.
 Installation
 ------------
 
-Python
-******
+Python interpreter
+~~~~~~~~~~~~~~~~~~
 
 Install `Python <http://www.python.org/>`__ version 2.7 (not 3.X).
 
 Pip
-***
+~~~
 
 You will need a program called Pip in order to install packages.
 
@@ -60,7 +60,7 @@ and run it (again with administrator privileges) as follows::
 To verify that it is correctly installed, try the command ``pip install requests`` from your command line.
 
 Editor
-******
+~~~~~~
 
 You will also need an editor to write your Python code.
 Although you can use any text editor you want,
