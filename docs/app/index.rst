@@ -33,18 +33,18 @@ When the project opens, on the left-hand site you should see a directory tree th
             __init__.py
             settings.py
             urls.py
-            wsgi.py	
-		<your_app_name>
-			management/
-			static/
-			templates/
-			__init__.py
-			admin.py
-			forms.py
-			models.py
-			utilities.py
-			views.py
-			
+            wsgi.py    
+        <your_app_name>
+            management/
+            static/
+            templates/
+            __init__.py
+            admin.py
+            forms.py
+            models.py
+            utilities.py
+            views.py
+            
 Go to ``ptree_experiments/settings.py`` and append its name (as a string) to ``PTREE_EXPERIMENT_APPS``, like this::
     
     PTREE_EXPERIMENT_APPS = ('myappname',)
