@@ -178,6 +178,7 @@ Example::
         
 participants_per_match: integer
 ================================
+
 Class attribute that specifies the number of participants in each match. 
 For example, Prisoner's Dilemma has 2 participants.
 a single-participant game would just have 1.
@@ -188,6 +189,9 @@ Experiment
 An experiment is generally a randomization between treatments, though it could just have one treatment.
 
 Generally, the only place you will need to work with an ``Experiment`` object is when you are 
+
+Implementation
+______________
 
 What is provided for you automatically
 --------------------------------------
@@ -201,7 +205,7 @@ Methods that are optional to define
 -----------------------------------
 
 pick_treatment_for_incoming_participant(self): Treatment
-===============================
+=========================================================
 
 This method will get called when a participant arrives at your site,
 and needs to be randomized to a treatment.
