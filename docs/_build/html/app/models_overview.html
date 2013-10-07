@@ -1,0 +1,212 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>models.py &mdash; pTree 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pTree 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Writing a pTree app" href="index.html" />
+    <link rel="next" title="pTree models reference" href="models_reference.html" />
+    <link rel="prev" title="Writing a pTree app" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="models_reference.html" title="pTree models reference"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Writing a pTree app"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pTree 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Writing a pTree app</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="models-py">
+<h1>models.py<a class="headerlink" href="#models-py" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction-to-models">
+<h2>Introduction to models<a class="headerlink" href="#introduction-to-models" title="Permalink to this headline">¶</a></h2>
+<p>The purpose of running an experiment is to record data &#8211;
+what treatments are in your experiment,
+what games were played in those treatments,
+what the results were,
+what actions the participants took, etc.</p>
+<p>pTree stores your data in database tables (SQL).
+For example, let&#8217;s say you are programming an ultimatum game,
+where in each 2-person match, one participant makes a monetary offer (say, 0-100 cents),
+and another participant either rejects or accepts the offer.
+You will want your &#8220;Match&#8221; table to look something like this:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="38%" />
+<col width="38%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Match ID</th>
+<th class="head">Amount offered</th>
+<th class="head">Offer accepted</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td>50</td>
+<td>TRUE</td>
+</tr>
+<tr class="row-odd"><td>2</td>
+<td>25</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-even"><td>3</td>
+<td>50</td>
+<td>TRUE</td>
+</tr>
+<tr class="row-odd"><td>4</td>
+<td>0</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-even"><td>5</td>
+<td>60</td>
+<td>TRUE</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>In order to end up with a table like this this, you need to define a Django model,
+which is a Python class that defines a database table.
+You define what fields (columns) are in the table,
+what their data types are, and so on.
+When you run your experiment, the SQL tables will get automatically generated,
+and each time users visit, new rows will get added to the tables.</p>
+<p>Here is what the model might look like for the above &#8220;Match&#8221; table:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Match</span><span class="p">(</span><span class="n">ptree</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">amount_offered</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">offer_accepted</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This class will be placed in your app&#8217;s <tt class="docutils literal"><span class="pre">models.py</span></tt> file.</p>
+<p>Every pTree app needs the following 4 models:</p>
+<ul class="simple">
+<li>Participant</li>
+<li>Match</li>
+<li>Treatment</li>
+<li>Experiment</li>
+</ul>
+<p>They are related to each other as follows:</p>
+<p>A <tt class="docutils literal"><span class="pre">Participant</span></tt> is part of a <tt class="docutils literal"><span class="pre">Match</span></tt>, which is part of a <tt class="docutils literal"><span class="pre">Treatment</span></tt>, which is part of an <tt class="docutils literal"><span class="pre">Experiment</span></tt>.</p>
+<p>Furthermore, there are usually multiple <tt class="docutils literal"><span class="pre">Participant</span></tt> objects in a <tt class="docutils literal"><span class="pre">Match</span></tt>,
+multiple <tt class="docutils literal"><span class="pre">Match</span></tt> objects in a <tt class="docutils literal"><span class="pre">Treatment</span></tt>,
+and multiple <tt class="docutils literal"><span class="pre">Treatment</span></tt> objects in an <tt class="docutils literal"><span class="pre">Experiment</span></tt>, meaning that your objects would look something like this:</p>
+<img alt="../_images/model-hierarchy.png" src="../_images/model-hierarchy.png" />
+</div>
+<div class="section" id="how-to-define-a-model">
+<h2>How to define a model<a class="headerlink" href="#how-to-define-a-model" title="Permalink to this headline">¶</a></h2>
+<p>pTree models are Django models with some extra fields and capabilities.
+To be able to define a model,
+you need to read the Django documentation on models and understand:</p>
+<ul class="simple">
+<li>Different types of model fields. The full list is <a class="reference external" href="https://docs.djangoproject.com/en/dev/ref/models/fields/#model-field-types">here</a>. You don&#8217;t have to know all field types. Just make sure you at least know <tt class="docutils literal"><span class="pre">IntegerField</span></tt>, <tt class="docutils literal"><span class="pre">PositiveIntegerField</span></tt>, <tt class="docutils literal"><span class="pre">CharField</span></tt>, <tt class="docutils literal"><span class="pre">BooleanField</span></tt>, <tt class="docutils literal"><span class="pre">NullBooleanField</span></tt>, and <tt class="docutils literal"><span class="pre">FloatField</span></tt>.</li>
+<li>Field options (explained <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/db/models/#field-options">here</a>).</li>
+<li>Verbose field names (explained <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/db/models/#verbose-field-names">here</a>).</li>
+<li>Model methods (explained <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/db/models/#model-methods">here</a>).</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">models.py</a><ul>
+<li><a class="reference internal" href="#introduction-to-models">Introduction to models</a></li>
+<li><a class="reference internal" href="#how-to-define-a-model">How to define a model</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Writing a pTree app</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="models_reference.html"
+                        title="next chapter">pTree models reference</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/app/models_overview.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="models_reference.html" title="pTree models reference"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Writing a pTree app"
+             >previous</a> |</li>
+        <li><a href="../index.html">pTree 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Writing a pTree app</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Chris Wickens.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
