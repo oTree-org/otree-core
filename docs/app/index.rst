@@ -54,7 +54,8 @@ Each of the files/folders in your app directory holds one component of your app.
 .. toctree::
    :maxdepth: 2
    
-   models
+   models_overview
+   models_reference
    forms
    views
    templates

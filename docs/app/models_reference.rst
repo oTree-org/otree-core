@@ -1,86 +1,10 @@
-models.py
-*******************
+pTree models reference
++++++++++++++++++++++++++++
 
-Introduction to models
-++++++++++++++++++++++
-
-The purpose of running an experiment is to record data --
-what treatments are in your experiment,
-what games are played in those treatments,
-what the results are,
-what actions the participants take, etc.
-
-pTree stores your data in a standard database (SQL),
-which stores your data in a tabular format.
-For example, let's say you are programming an ultimatum game,
-where in each 2-person match, one participant makes a monetary offer (say, 0-100 cents),
-and another participant either rejects or accepts the offer.
-You will want your "Match" table to look something like this:
-
-    +----------+----------------+----------------+ 
-    | Match ID | Amount offered | Offer accepted |
-    +==========+================+================+
-    | 1        | 50             | TRUE           |
-    +----------+----------------+----------------+ 
-    | 2        | 25             | FALSE          |
-    +----------+----------------+----------------+ 
-    | 3        | 50             | TRUE           |
-    +----------+----------------+----------------+ 
-    | 4        | 0              | FALSE          |
-    +----------+----------------+----------------+ 
-    | 5        | 60             | TRUE           |
-    +----------+----------------+----------------+ 
-
-In order to do this, you need to define a Django *model*.
-
-A model is a Python class that defines a database table.
-You define what fields (columns) are in the table,
-what their data types are, and so on.
-When you run your experiment, the SQL tables will get automatically generated,
-and each time users visit, new rows will get added to the tables.
-
-Here is what the model might look like for the above "Match" table:
-
-class Match(ptree.models.BaseModel):
-    amount_offered = models.IntegerField()
-    offer_accepted = models.BooleanField()
-    
-This class will be placed in your app's ``models.py`` file.
-
-Every pTree app needs 4 core database models:
-
-- Participant
-- Match
-- Treatment
-- Experiment
-
-They are related to each other as follows:
-
-A ``Participant`` is part of a ``Match``, which is part of a ``Treatment``, which is part of an ``Experiment``.
-
-Furthermore, there are usually multiple ``Participant`` objects in a ``Match``, 
-multiple ``Match`` objects in a ``Treatment``, 
-and multiple ``Treatment`` objects in an ``Experiment``, meaning that your objects would look something like this:
-
-.. image:: model-hierarchy.png
-
-How to define a model
-+++++++++++++++++++++
-
-pTree models are Django models with some extra fields and capabilities.
-To be able to define a model, 
-you need to read the Django `documentation on models <https://docs.djangoproject.com/en/dev/topics/db/models/>`__.
-In particular, you should understand:
-
-- Different types of model fields. The full list is `here <https://docs.djangoproject.com/en/dev/ref/models/fields/#model-field-types>`__. You don't have to know all field types. Just make sure you at least know ``IntegerField``, ``PositiveIntegerField``, ``CharField``, ``BooleanField``, ``NullBooleanField``, and ``FloatField``.
-- Field options (explained `here <https://docs.djangoproject.com/en/dev/topics/db/models/#field-options>`__).
-- Verbose field names (explained `here <https://docs.djangoproject.com/en/dev/topics/db/models/#verbose-field-names>`__).
-- Model methods (explained `here <https://docs.djangoproject.com/en/dev/topics/db/models/#model-methods>`__).
-
-Once you understand the above, you can implement your models. When you create your pTree app from the template,
-your models will be pre-defined for you with the fields and methods in the below sections,
+When you create your pTree app from the template,
+your models will be pre-defined for you.
+They inherit  with the fields and methods in the below sections,
 so you can just add whatever fields and methods you need for your particular experiment.
-
 
 Participant
 ~~~~~~~~~~~
@@ -94,31 +18,33 @@ For example, a game that is simply a survey.
 Implementation
 ______________
 
-``Participant`` classes should inherit from ``ptree.models.participants.BaseParticipant``.
 
 What is provided for you automatically
 --------------------------------------
+
+``Participant`` classes should inherit from ``ptree.models.participants.BaseParticipant``,
+which gives you the following fields and methods:
 
 match
 =====
 
 The ``Match`` this ``Participant`` is a part of.
 
-index (integer)
-===============
+index: PositiveIntegerField
+============================
 
 the ordinal position in which a participant joined a game. Starts at 0.
 
-is_finished() (boolean)
-=======================
+is_finished(self): boolean
+===========================
 
 whether the participant is finished playing (i.e. has seen the redemption code page).
 
 What you must implement yourself
 --------------------------------
 
-bonus()
-========
+bonus(self): integer
+====================
 
 The bonus the ``Participant`` gets paid, in addition to their base pay.
 
@@ -140,10 +66,12 @@ Example of a Match: "dictator game between participants Alice & Bob, where Alice
 Implementation
 ______________
 
-``Match`` classes should inherit from ``ptree.models.participants.BaseMatch``. Here is the class structure:
 
 What is provided for you automatically
 --------------------------------------
+
+``Match`` classes should inherit from ``ptree.models.participants.BaseMatch``,
+which gives you the following fields and methods.
 
 treatment
 =========
@@ -194,18 +122,19 @@ Results of a game are not stored in Treatment object, they are stored in Match o
 Implementation
 ______________
 
-``Treatment`` classes should inherit from ``ptree.models.participants.BaseTreatment``.
-
 What is provided for you automatically
 --------------------------------------
+
+``Treatment`` classes should inherit from ``ptree.models.participants.BaseTreatment``,
+which gives you the following fields and methods.
 
 matches(self): list
 ===================
     
 The ``Match`` objects in this ``Treatment``.
 
-base_pay: integer
-==================
+base_pay: PositiveIntegerField
+==============================
     
 How much each Participant is getting paid to play the game.
 Needs to be set when you instantiate your ``Participant`` objects.
@@ -239,8 +168,8 @@ Example::
 			views.Survey,
 			ptree.views.concrete.RedemptionCode]
         
-participants_per_match: integer
-================================
+participants_per_match: int
+============================
 
 Class attribute that specifies the number of participants in each match. 
 For example, Prisoner's Dilemma has 2 participants.
@@ -251,7 +180,7 @@ Experiment
 ~~~~~~~~~~
 An experiment is generally a randomization between treatments, though it could just have one treatment.
 
-Generally, the only place you will need to work with an ``Experiment`` object is when you are 
+Most experiments won't need to access the experiment class, but info is provided here for the sake of completeness.
 
 Implementation
 ______________
