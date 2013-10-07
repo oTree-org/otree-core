@@ -55,8 +55,70 @@
             
   <div class="section" id="models-py">
 <h1>models.py<a class="headerlink" href="#models-py" title="Permalink to this headline">¶</a></h1>
-<p>Every pTree app needs 4 core database models
-(for background, read about Django models <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/db/models/">here</a>):</p>
+<div class="section" id="introduction-to-models">
+<h2>Introduction to models<a class="headerlink" href="#introduction-to-models" title="Permalink to this headline">¶</a></h2>
+<p>The purpose of running an experiment is to record data &#8211;
+what treatments are in your experiment,
+what games are played in those treatments,
+what the results are,
+what actions the participants take, etc.</p>
+<p>pTree stores your data in a standard database (SQL),
+which stores your data in a tabular format.
+For example, let&#8217;s say you are programming an ultimatum game,
+where in each 2-person match, one participant makes a monetary offer (say, 0-100 cents),
+and another participant either rejects or accepts the offer.
+You will want your &#8220;Match&#8221; table to look something like this:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="38%" />
+<col width="38%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Match ID</th>
+<th class="head">Amount offered</th>
+<th class="head">Offer accepted</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td>50</td>
+<td>TRUE</td>
+</tr>
+<tr class="row-odd"><td>2</td>
+<td>25</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-even"><td>3</td>
+<td>50</td>
+<td>TRUE</td>
+</tr>
+<tr class="row-odd"><td>4</td>
+<td>0</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-even"><td>5</td>
+<td>60</td>
+<td>TRUE</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>In order to do this, you need to define a Django <em>model</em>.</p>
+<p>A model is a Python class that defines a database table.
+You define what fields (columns) are in the table,
+what their data types are, and so on.
+When you run your experiment, the SQL tables will get automatically generated,
+and each time users visit, new rows will get added to the tables.</p>
+<p>Here is what the model might look like for the above &#8220;Match&#8221; table:</p>
+<dl class="docutils">
+<dt>class Match(ptree.models.BaseModel):</dt>
+<dd>amount_offered = models.IntegerField()
+offer_accepted = models.BooleanField()</dd>
+</dl>
+<p>This class will be placed in your app&#8217;s <tt class="docutils literal"><span class="pre">models.py</span></tt> file.</p>
+<p>Every pTree app needs 4 core database models:</p>
 <ul class="simple">
 <li>Participant</li>
 <li>Match</li>
@@ -69,34 +131,50 @@
 multiple <tt class="docutils literal"><span class="pre">Match</span></tt> objects in a <tt class="docutils literal"><span class="pre">Treatment</span></tt>,
 and multiple <tt class="docutils literal"><span class="pre">Treatment</span></tt> objects in an <tt class="docutils literal"><span class="pre">Experiment</span></tt>, meaning that your objects would look something like this:</p>
 <img alt="../_images/model-hierarchy.png" src="../_images/model-hierarchy.png" />
+</div>
+<div class="section" id="how-to-define-a-model">
+<h2>How to define a model<a class="headerlink" href="#how-to-define-a-model" title="Permalink to this headline">¶</a></h2>
+<p>pTree models are Django models with some extra fields and capabilities.
+To be able to define a model,
+you need to read the Django <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/db/models/">documentation on models</a>.
+In particular, you should understand:</p>
+<ul class="simple">
+<li>Different types of model fields. The full list is <a class="reference external" href="https://docs.djangoproject.com/en/dev/ref/models/fields/#model-field-types">here</a>. You don&#8217;t have to know all field types. Just make sure you at least know <tt class="docutils literal"><span class="pre">IntegerField</span></tt>, <tt class="docutils literal"><span class="pre">PositiveIntegerField</span></tt>, <tt class="docutils literal"><span class="pre">CharField</span></tt>, <tt class="docutils literal"><span class="pre">BooleanField</span></tt>, <tt class="docutils literal"><span class="pre">NullBooleanField</span></tt>, and <tt class="docutils literal"><span class="pre">FloatField</span></tt>.</li>
+<li>Field options (explained <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/db/models/#field-options">here</a>).</li>
+<li>Verbose field names (explained <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/db/models/#verbose-field-names">here</a>).</li>
+<li>Model methods (explained <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/db/models/#model-methods">here</a>).</li>
+</ul>
+<p>Once you understand the above, you can implement your models. When you create your pTree app from the template,
+your models will be pre-defined for you with the fields and methods in the below sections,
+so you can just add whatever fields and methods you need for your particular experiment.</p>
 <div class="section" id="participant">
-<h2>Participant<a class="headerlink" href="#participant" title="Permalink to this headline">¶</a></h2>
+<h3>Participant<a class="headerlink" href="#participant" title="Permalink to this headline">¶</a></h3>
 <p>A <tt class="docutils literal"><span class="pre">Participant</span></tt> is a person who participates in a <tt class="docutils literal"><span class="pre">Match</span></tt>.
 For example, a Dictator Game match has 2 <tt class="docutils literal"><span class="pre">Participant</span></tt> objects.</p>
 <p>A match can contain only 1 <tt class="docutils literal"><span class="pre">Participant</span></tt> if there is no interaction between <tt class="docutils literal"><span class="pre">Participant</span></tt> objects.
 For example, a game that is simply a survey.</p>
 <div class="section" id="implementation">
-<h3>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h3>
+<h4>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h4>
 <p><tt class="docutils literal"><span class="pre">Participant</span></tt> classes should inherit from <tt class="docutils literal"><span class="pre">ptree.models.participants.BaseParticipant</span></tt>.</p>
 <div class="section" id="what-is-provided-for-you-automatically">
-<h4>What is provided for you automatically<a class="headerlink" href="#what-is-provided-for-you-automatically" title="Permalink to this headline">¶</a></h4>
+<h5>What is provided for you automatically<a class="headerlink" href="#what-is-provided-for-you-automatically" title="Permalink to this headline">¶</a></h5>
 <div class="section" id="match">
-<h5>match<a class="headerlink" href="#match" title="Permalink to this headline">¶</a></h5>
+<h6>match<a class="headerlink" href="#match" title="Permalink to this headline">¶</a></h6>
 <p>The <tt class="docutils literal"><span class="pre">Match</span></tt> this <tt class="docutils literal"><span class="pre">Participant</span></tt> is a part of.</p>
 </div>
 <div class="section" id="index-integer">
-<h5>index (integer)<a class="headerlink" href="#index-integer" title="Permalink to this headline">¶</a></h5>
+<h6>index (integer)<a class="headerlink" href="#index-integer" title="Permalink to this headline">¶</a></h6>
 <p>the ordinal position in which a participant joined a game. Starts at 0.</p>
 </div>
 <div class="section" id="is-finished-boolean">
-<h5>is_finished() (boolean)<a class="headerlink" href="#is-finished-boolean" title="Permalink to this headline">¶</a></h5>
+<h6>is_finished() (boolean)<a class="headerlink" href="#is-finished-boolean" title="Permalink to this headline">¶</a></h6>
 <p>whether the participant is finished playing (i.e. has seen the redemption code page).</p>
 </div>
 </div>
 <div class="section" id="what-you-must-implement-yourself">
-<h4>What you must implement yourself<a class="headerlink" href="#what-you-must-implement-yourself" title="Permalink to this headline">¶</a></h4>
+<h5>What you must implement yourself<a class="headerlink" href="#what-you-must-implement-yourself" title="Permalink to this headline">¶</a></h5>
 <div class="section" id="bonus">
-<h5>bonus()<a class="headerlink" href="#bonus" title="Permalink to this headline">¶</a></h5>
+<h6>bonus()<a class="headerlink" href="#bonus" title="Permalink to this headline">¶</a></h6>
 <p>The bonus the <tt class="docutils literal"><span class="pre">Participant</span></tt> gets paid, in addition to their base pay.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -107,41 +185,41 @@ For example, a game that is simply a survey.</p>
 </div>
 </div>
 <div class="section" id="id1">
-<h2>Match<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<h3>Match<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <p>A Match is a particular instance of a game being played,
 and holds the results of that instance, i.e. what the score was, who got paid what.</p>
 <p>So, &#8220;Match&#8221; is used in the sense of &#8220;boxing match&#8221;,
 in the sense that it is an event that occurs where the game is played.</p>
 <p>Example of a Match: &#8220;dictator game between participants Alice &amp; Bob, where Alice gave $0.50&#8221;</p>
 <div class="section" id="id2">
-<h3>Implementation<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<h4>Implementation<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
 <p><tt class="docutils literal"><span class="pre">Match</span></tt> classes should inherit from <tt class="docutils literal"><span class="pre">ptree.models.participants.BaseMatch</span></tt>. Here is the class structure:</p>
 <div class="section" id="id3">
-<h4>What is provided for you automatically<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<h5>What is provided for you automatically<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h5>
 <div class="section" id="treatment">
-<h5>treatment<a class="headerlink" href="#treatment" title="Permalink to this headline">¶</a></h5>
+<h6>treatment<a class="headerlink" href="#treatment" title="Permalink to this headline">¶</a></h6>
 <p>The <tt class="docutils literal"><span class="pre">Treatment</span></tt> this <tt class="docutils literal"><span class="pre">Match</span></tt> is part of.</p>
 </div>
 <div class="section" id="participants-self-list">
-<h5>participants(self): list<a class="headerlink" href="#participants-self-list" title="Permalink to this headline">¶</a></h5>
+<h6>participants(self): list<a class="headerlink" href="#participants-self-list" title="Permalink to this headline">¶</a></h6>
 <p>Returns the <tt class="docutils literal"><span class="pre">Participant</span></tt> objects in this match.</p>
 </div>
 <div class="section" id="is-full-self-boolean">
-<h5>is_full(self): boolean<a class="headerlink" href="#is-full-self-boolean" title="Permalink to this headline">¶</a></h5>
+<h6>is_full(self): boolean<a class="headerlink" href="#is-full-self-boolean" title="Permalink to this headline">¶</a></h6>
 <p>Whether the match is full, i.e.:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">participants</span><span class="p">())</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">participants_per_match</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="is-finished-self-boolean">
-<h5>is_finished(self): boolean<a class="headerlink" href="#is-finished-self-boolean" title="Permalink to this headline">¶</a></h5>
+<h6>is_finished(self): boolean<a class="headerlink" href="#is-finished-self-boolean" title="Permalink to this headline">¶</a></h6>
 <p>Whether the match is completed (i.e. <tt class="docutils literal"><span class="pre">is_finished()</span></tt> is <tt class="docutils literal"><span class="pre">True</span></tt> for each participant).</p>
 </div>
 </div>
 <div class="section" id="id4">
-<h4>What you must implement yourself<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
+<h5>What you must implement yourself<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h5>
 <div class="section" id="is-ready-for-next-participant-self-boolean">
-<h5>is_ready_for_next_participant(self): boolean<a class="headerlink" href="#is-ready-for-next-participant-self-boolean" title="Permalink to this headline">¶</a></h5>
+<h6>is_ready_for_next_participant(self): boolean<a class="headerlink" href="#is-ready-for-next-participant-self-boolean" title="Permalink to this headline">¶</a></h6>
 <p>Whether the game is ready for another participant to be added.</p>
 <p>If it&#8217;s a non-sequential game (you do not have to wait for one participant to finish before the next one joins),
 you can use this to assign participants until the game is full:</p>
@@ -153,31 +231,31 @@ you can use this to assign participants until the game is full:</p>
 </div>
 </div>
 <div class="section" id="id5">
-<h2>Treatment<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<h3>Treatment<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <p>A Treatment is the definition of what everyone in the treatment group has to do.</p>
 <p>Example of a treatment:
 &#8216;dictator game with stakes of $1, where participants have to chat with each other first&#8217;</p>
 <p>A treatment is defined before the experiment starts.
 Results of a game are not stored in Treatment object, they are stored in Match or Participant objects.</p>
 <div class="section" id="id6">
-<h3>Implementation<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<h4>Implementation<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h4>
 <p><tt class="docutils literal"><span class="pre">Treatment</span></tt> classes should inherit from <tt class="docutils literal"><span class="pre">ptree.models.participants.BaseTreatment</span></tt>.</p>
 <div class="section" id="id7">
-<h4>What is provided for you automatically<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h4>
+<h5>What is provided for you automatically<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h5>
 <div class="section" id="matches-self-list">
-<h5>matches(self): list<a class="headerlink" href="#matches-self-list" title="Permalink to this headline">¶</a></h5>
+<h6>matches(self): list<a class="headerlink" href="#matches-self-list" title="Permalink to this headline">¶</a></h6>
 <p>The <tt class="docutils literal"><span class="pre">Match</span></tt> objects in this <tt class="docutils literal"><span class="pre">Treatment</span></tt>.</p>
 </div>
 <div class="section" id="base-pay-integer">
-<h5>base_pay: integer<a class="headerlink" href="#base-pay-integer" title="Permalink to this headline">¶</a></h5>
+<h6>base_pay: integer<a class="headerlink" href="#base-pay-integer" title="Permalink to this headline">¶</a></h6>
 <p>How much each Participant is getting paid to play the game.
 Needs to be set when you instantiate your <tt class="docutils literal"><span class="pre">Participant</span></tt> objects.</p>
 </div>
 </div>
 <div class="section" id="id8">
-<h4>What you must implement yourself<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h4>
+<h5>What you must implement yourself<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h5>
 <div class="section" id="sequence-self-list">
-<h5>sequence(self): list<a class="headerlink" href="#sequence-self-list" title="Permalink to this headline">¶</a></h5>
+<h6>sequence(self): list<a class="headerlink" href="#sequence-self-list" title="Permalink to this headline">¶</a></h6>
 <p>Very important. Returns a list of all the View classes that the participant gets routed through sequentially.
 (Not all pages have to be displayed for all participants; see the <tt class="docutils literal"><span class="pre">is_displayed()</span></tt> method).
 Must start with your app&#8217;s <tt class="docutils literal"><span class="pre">StartTreatment</span></tt>, and usually ends the Redemption Code view.
@@ -201,7 +279,7 @@ The rest is up to you.</p>
 </div>
 </div>
 <div class="section" id="participants-per-match-integer">
-<h5>participants_per_match: integer<a class="headerlink" href="#participants-per-match-integer" title="Permalink to this headline">¶</a></h5>
+<h6>participants_per_match: integer<a class="headerlink" href="#participants-per-match-integer" title="Permalink to this headline">¶</a></h6>
 <p>Class attribute that specifies the number of participants in each match.
 For example, Prisoner&#8217;s Dilemma has 2 participants.
 a single-participant game would just have 1.</p>
@@ -210,22 +288,22 @@ a single-participant game would just have 1.</p>
 </div>
 </div>
 <div class="section" id="experiment">
-<h2>Experiment<a class="headerlink" href="#experiment" title="Permalink to this headline">¶</a></h2>
+<h3>Experiment<a class="headerlink" href="#experiment" title="Permalink to this headline">¶</a></h3>
 <p>An experiment is generally a randomization between treatments, though it could just have one treatment.</p>
 <p>Generally, the only place you will need to work with an <tt class="docutils literal"><span class="pre">Experiment</span></tt> object is when you are</p>
 <div class="section" id="id9">
-<h3>Implementation<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<h4>Implementation<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h4>
 <div class="section" id="id10">
-<h4>What is provided for you automatically<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h4>
+<h5>What is provided for you automatically<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h5>
 <div class="section" id="treatments-self-list">
-<h5>treatments(self): list<a class="headerlink" href="#treatments-self-list" title="Permalink to this headline">¶</a></h5>
+<h6>treatments(self): list<a class="headerlink" href="#treatments-self-list" title="Permalink to this headline">¶</a></h6>
 <p>Returns the <tt class="docutils literal"><span class="pre">Treatment</span></tt> objects in this <tt class="docutils literal"><span class="pre">Experiment</span></tt>.</p>
 </div>
 </div>
 <div class="section" id="methods-that-are-optional-to-define">
-<h4>Methods that are optional to define<a class="headerlink" href="#methods-that-are-optional-to-define" title="Permalink to this headline">¶</a></h4>
+<h5>Methods that are optional to define<a class="headerlink" href="#methods-that-are-optional-to-define" title="Permalink to this headline">¶</a></h5>
 <div class="section" id="pick-treatment-for-incoming-participant-self-treatment">
-<h5>pick_treatment_for_incoming_participant(self): Treatment<a class="headerlink" href="#pick-treatment-for-incoming-participant-self-treatment" title="Permalink to this headline">¶</a></h5>
+<h6>pick_treatment_for_incoming_participant(self): Treatment<a class="headerlink" href="#pick-treatment-for-incoming-participant-self-treatment" title="Permalink to this headline">¶</a></h6>
 <p>This method will get called when a participant arrives at your site,
 and needs to be randomized to a treatment.
 Unless you override it,
@@ -242,6 +320,7 @@ weighted by their <tt class="docutils literal"><span class="pre">randomization_w
 </div>
 </div>
 </div>
+</div>
 
 
           </div>
@@ -252,6 +331,8 @@ weighted by their <tt class="docutils literal"><span class="pre">randomization_w
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">models.py</a><ul>
+<li><a class="reference internal" href="#introduction-to-models">Introduction to models</a></li>
+<li><a class="reference internal" href="#how-to-define-a-model">How to define a model</a><ul>
 <li><a class="reference internal" href="#participant">Participant</a><ul>
 <li><a class="reference internal" href="#implementation">Implementation</a><ul>
 <li><a class="reference internal" href="#what-is-provided-for-you-automatically">What is provided for you automatically</a><ul>
@@ -309,6 +390,8 @@ weighted by their <tt class="docutils literal"><span class="pre">randomization_w
 </li>
 <li><a class="reference internal" href="#methods-that-are-optional-to-define">Methods that are optional to define</a><ul>
 <li><a class="reference internal" href="#pick-treatment-for-incoming-participant-self-treatment">pick_treatment_for_incoming_participant(self): Treatment</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

@@ -62,13 +62,10 @@ you can choose the name <tt class="docutils literal"><span class="pre">prisoner<
 If you are implementing the <a class="reference external" href="http://en.wikipedia.org/wiki/Public_goods_game">public goods game</a>,
 you can choose the name <tt class="docutils literal"><span class="pre">publicgoods</span></tt>.</p>
 <p>At your command line, go inside your project directory (the same directory as <tt class="docutils literal"><span class="pre">manage.py</span></tt>),
-and run this command, where &lt;app_name&gt; is the name you have chosen for your app:</p>
+and run this command, where <tt class="docutils literal"><span class="pre">&lt;app_name&gt;</span></tt> is the name you have chosen for your app:</p>
 <div class="highlight-python"><pre>django-admin.py startapp --template=http://is.gd/ptree_app &lt;app_name&gt;</pre>
 </div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">This will create a new app based on a pTree template, with most of the structure already set up for you.</p>
-</div>
+<p>This will create a new app based on a pTree template, with most of the structure already set up for you.</p>
 </div>
 <div class="section" id="open-your-project-for-editing">
 <h2>Open your project for editing<a class="headerlink" href="#open-your-project-for-editing" title="Permalink to this headline">¶</a></h2>
@@ -93,18 +90,17 @@ When the project opens, on the left-hand site you should see a directory tree th
         utilities.py
         views.py</pre>
 </div>
-<p>Go to <tt class="docutils literal"><span class="pre">ptree_experiments/settings.py</span></tt> and append its name (as a string) to <tt class="docutils literal"><span class="pre">PTREE_EXPERIMENT_APPS</span></tt>, like this:</p>
+<p>Go to <tt class="docutils literal"><span class="pre">ptree_experiments/settings.py</span></tt> and append your app&#8217;s name (as a string) to <tt class="docutils literal"><span class="pre">PTREE_EXPERIMENT_APPS</span></tt>, like this:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">PTREE_EXPERIMENT_APPS</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;myappname&#39;</span><span class="p">,)</span>
 </pre></div>
 </div>
+<p>(Note the trailing comma, which is necessary.)</p>
 <p>Each of the files/folders in your app directory holds one component of your app. They are explained in the following pages:</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="models.html">models.py</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="models.html#participant">Participant</a></li>
-<li class="toctree-l2"><a class="reference internal" href="models.html#id1">Match</a></li>
-<li class="toctree-l2"><a class="reference internal" href="models.html#id5">Treatment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="models.html#experiment">Experiment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html#introduction-to-models">Introduction to models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html#how-to-define-a-model">How to define a model</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="forms.html">forms.py</a></li>

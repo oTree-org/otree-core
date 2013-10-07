@@ -23,7 +23,8 @@ Participants
 	With single-use URLs, you can control how many people take part in your experiment,
 	and prevent the same person from playing twice.
 	
-..note::
+.. note::
+
 	You do not need to create Match objects in advance.
 	Match objects are created on the fly when participants visit the site.
 	This allows pTree to randomize Matches to Treatments,

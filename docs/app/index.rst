@@ -12,13 +12,11 @@ If you are implementing the `public goods game <http://en.wikipedia.org/wiki/Pub
 you can choose the name ``publicgoods``.
 
 At your command line, go inside your project directory (the same directory as ``manage.py``),
-and run this command, where <app_name> is the name you have chosen for your app::
+and run this command, where ``<app_name>`` is the name you have chosen for your app::
 
     django-admin.py startapp --template=http://is.gd/ptree_app <app_name>
     
-.. note::
-
-    This will create a new app based on a pTree template, with most of the structure already set up for you.
+This will create a new app based on a pTree template, with most of the structure already set up for you.
 
 Open your project for editing
 =============================
@@ -45,10 +43,12 @@ When the project opens, on the left-hand site you should see a directory tree th
             utilities.py
             views.py
             
-Go to ``ptree_experiments/settings.py`` and append its name (as a string) to ``PTREE_EXPERIMENT_APPS``, like this::
+Go to ``ptree_experiments/settings.py`` and append your app's name (as a string) to ``PTREE_EXPERIMENT_APPS``, like this::
     
     PTREE_EXPERIMENT_APPS = ('myappname',)
 
+(Note the trailing comma, which is necessary.)    
+    
 Each of the files/folders in your app directory holds one component of your app. They are explained in the following pages:    
 
 .. toctree::

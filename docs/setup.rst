@@ -47,17 +47,3 @@ Now that the server's running, visit http://127.0.0.1:8000/ with your Web
 browser. You'll see a "Welcome to Django" page, in pleasant, light-blue pastel.
 It worked!
 
-Open your project for editing
-=============================
-
-Launch PyCharm, and select "Open Directory".
-Navigate to the outer ``ptree_experiments`` directory (not the subfolder that has the same name) and click OK.
-When the project opens, on the left-hand site you should see a directory tree that expands to the following::
-
-    ptree_experiments/
-        manage.py
-        ptree_experiments/
-            __init__.py
-            settings.py
-            urls.py
-            wsgi.py
