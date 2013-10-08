@@ -21,19 +21,25 @@ class FormMixin(object):
         self.request = kwargs.pop('request')
         self.experiment = kwargs.pop('experiment')
 
+        initial = kwargs.get('initial', {})
+        initial.update(self.get_field_initial_values())
+        kwargs['initial'] = initial
         super(FormMixin, self).__init__(*args, **kwargs)
         self.customize()
-        self.fields[Symbols.current_view_index] = forms.IntegerField(widget=forms.HiddenInput())
-        self.fields[Symbols.current_view_index].initial = self.request.session.get(Symbols.current_view_index, 0)
 
+    def get_field_initial_values(self):
+        """Return a dict of any initial values"""
+        return {}
 
+    def get_field_choices(self):
+        return {}
 
     def customize(self):
         """Customize your form fields here"""
 
-    def make_field_currency_choices(self, field_name, amounts):
-        amount_choices = [(amount, templatetags.ptreefilters.currency(amount)) for amount in amounts]
-        self.fields[field_name].choices = amount_choices
+    def make_field_currency_choices(self, amounts):
+        return [(amount, templatetags.ptreefilters.currency(amount)) for amount in amounts]
+
 
 class ModelForm(FormMixin, forms.ModelForm):
     """

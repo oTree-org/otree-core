@@ -55,7 +55,7 @@ class RedirectToNextPageInSequence(ptree.views.abstract.BaseView, ViewInThisApp)
 
 class RedemptionCode(ptree.views.abstract.ViewWithNonModelForm, ViewInThisApp):
 
-    template_name = 'ptree/RedemptionCode.html'
+    template_name = 'RedemptionCode.html'
 
     def get_variables_for_template(self):
         

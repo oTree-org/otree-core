@@ -18,6 +18,11 @@ and run this command, where ``<app_name>`` is the name you have chosen for your 
     
 This will create a new app based on a pTree template, with most of the structure already set up for you.
 
+Think of this as a skeleton to which you can add as much as you want.
+You can add your own classes, functions, methods, and attributes,
+or import any 3rd-party modules.
+
+
 Open your project for editing
 =============================
 
@@ -54,8 +59,7 @@ Each of the files/folders in your app directory holds one component of your app.
 .. toctree::
    :maxdepth: 2
    
-   models_overview
-   models_reference
+   models
    forms
    views
    templates

@@ -28,9 +28,8 @@ def get_parent_directory_name(_file_):
 class BaseView(django.views.generic.base.View):
     """Base class for pTree views.
     Takes care of:
-    - retrieving model classes and objects automatically
-    - managing your position in the sequence of views
-    so that you can easily access self.ExperimentClass, self.experiment, self.TreatmentClass, self.treatment, ...
+    - retrieving model classes and objects automatically,
+    so you can access self.treatment, self.match, self.participant, etc.
     """
 
     def autocomplete_dummy_method(self):
@@ -77,26 +76,6 @@ class BaseView(django.views.generic.base.View):
         self.load_objects()
         return super(BaseView, self).dispatch(request, *args, **kwargs)
 
-    def page_the_user_should_be_on(self):
-        return self.treatment.sequence_as_urls()[self.request.session[Symbols.current_view_index]]
-
-    def user_is_on_right_page(self):
-        """Will detect if a participant tried to access a page they didn't reach yet,
-        for example if they know the URL to the redemption code page,
-        and try typing it in so they don't have to play the whole game.
-        We should block that."""
-
-        return self.request.path == self.page_the_user_should_be_on()
-
-    def redirect_to_page_the_user_should_be_on(self):
-        """Redirect to where the participant should be,
-        according to the view index we maintain in their cookies
-        Useful if the participant tried to skip ahead,
-        or if they hit the back button.
-        We can put them back where they belong.
-        """
-        return HttpResponseRedirect(self.page_the_user_should_be_on())
-
     @classmethod
     def get_url_base(cls):
         if hasattr(cls, 'ExperimentClass'):
@@ -115,6 +94,25 @@ class BaseView(django.views.generic.base.View):
         return r'^{}/{}/$'.format(cls.get_url_base(), cls.__name__)
 
 
+class TemplateView(BaseView, django.views.generic.base.TemplateView):
+    def get_variables_for_template(self):
+        """
+        Should be implemented by subclasses
+        Return a dictionary that contains the template context variables (see Django documentation)
+        You don't need to include the form here; that is taken care of automatically.
+        """
+
+        return {}
+
+    def get_context_data(self, **kwargs):
+
+        context = super(TemplateView, self).get_context_data(**kwargs)
+
+        context.update(self.get_variables_for_template())
+
+        return context
+
+
 class OldPage(object):
     """It's here so that classes that inherit from it can be loaded.
     Should be removed"""
@@ -122,11 +120,7 @@ class OldPage(object):
 
 class SequenceView(BaseView):
     """
-    Base class for most views.
-    Abilities:
-    - 
-    - 
-    
+    View that manages its position in the match sequence.
     """
 
     @classmethod
@@ -225,7 +219,6 @@ class SequenceView(BaseView):
         print self.request.session.items()
         if self.current_view_index == self.request.session[Symbols.current_view_index]:
             self.request.session[Symbols.current_view_index] += 1
-        #form.cleaned_data.pop(Symbols.current_view_index)
         return super(SequenceView, self).form_valid(form)
 
     def form_invalid(self, form):
@@ -233,6 +226,26 @@ class SequenceView(BaseView):
 
         """
         return self.render_to_response(self.get_context_data(form=form, jump_to_form = True ))
+
+    def page_the_user_should_be_on(self):
+        return self.treatment.sequence_as_urls()[self.request.session[Symbols.current_view_index]]
+
+    def user_is_on_right_page(self):
+        """Will detect if a participant tried to access a page they didn't reach yet,
+        for example if they know the URL to the redemption code page,
+        and try typing it in so they don't have to play the whole game.
+        We should block that."""
+
+        return self.request.path == self.page_the_user_should_be_on()
+
+    def redirect_to_page_the_user_should_be_on(self):
+        """Redirect to where the participant should be,
+        according to the view index we maintain in their cookies
+        Useful if the participant tried to skip ahead,
+        or if they hit the back button.
+        We can put them back where they belong.
+        """
+        return HttpResponseRedirect(self.page_the_user_should_be_on())
 
 class StandardView(SequenceView, django.views.generic.edit.UpdateView):
     """For pages with a form whose values you want to save to the database.
@@ -250,7 +263,7 @@ class StandardView(SequenceView, django.views.generic.edit.UpdateView):
         #
         # do this as soon as i get a chance
         # actually, since i may want to deprecate FormView, I may want to keep this in.
-        # but if a person uses cleaned_data, they will have to access cleaned_data, right?
+        # but if a person uses form field validation, they will have to access cleaned_data, right?
 
         form.save(commit = True)
         return super(StandardView, self).form_valid(form)
@@ -258,6 +271,7 @@ class StandardView(SequenceView, django.views.generic.edit.UpdateView):
     def get_object(self):
         
         """FIXME: need a more general way of handling this.
+        or just document that you can only modify your match or participant.
         This is kind of a hack."""
         cls = self.form_class.Meta.model
         if cls == self.MatchClass:
@@ -266,8 +280,10 @@ class StandardView(SequenceView, django.views.generic.edit.UpdateView):
             return self.participant
 
 class ViewWithNonModelForm(SequenceView, django.views.generic.FormView, BaseView):
-    """If you can't use a ModelForm, e.g. the data in the form will not be saved to the database,
-    then you can use this as a fallback."""
+    """If you can't use a ModelForm, e.g. the data in the form should not be saved to the database,
+    then you can use this as a fallback.
+    Not emphasizing this in pTree documentation.
+    """
     form_class = ptree.forms.NonModelForm
 
 class GetTreatmentOrParticipant(django.views.generic.base.View):

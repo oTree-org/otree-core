@@ -4,8 +4,14 @@ views.py
 A View defines a single web page that is shown to participants. 
 It is implemented as a Python class -- more specifically, a Django `class-based view <https://docs.djangoproject.com/en/dev/topics/class-based-views/generic-display/>`__.
 
-If your experiment involves showing the participant a sequence of 5 pages,
-your views.py will contain 5 View classes.
+For example, if your experiment involves showing the participant a sequence of 5 pages,
+your views.py should contain 5 View classes.
+
+When a participant visits your site, they are routed through your views in the order you specify in :py:meth:`Treatment.sequence`.
+
+The participant must submit a valid form before they get routed to the next page.
+If the form they submit is invalid (e.g. missing or incorrect values),
+it will be re-displayed to them along with the list of errors they need to correct.
 
 Here is what the code of a View should define (along with what attribute/method defines it):
 
@@ -15,10 +21,10 @@ Here is what the code of a View should define (along with what attribute/method 
 - What variables to insert into the template (for displaying dynamic content), and how to calculate those variables: ``get_variables_for_template``
 - What to do after the participant has submitted a valid form: ``after_form_validates``
 
-When a participant visits your site, they are routed through your views in the order you specify in :py:meth:`Treatment.sequence`.
-The participant must submit a valid form before they get routed to the next page.
-If the form they submit is invalid (e.g. missing or incorrect values),
-it will be re-displayed to them along with the list of errors they need to correct.
+In your view code, pTree automatically provides you with attributes called
+``participant``, ``match``, ``treatment``, and ``experiment``,
+so that you can access the current participant, match, treatment, and experiment objects,
+and get/set fields or call those objects' methods.
 
 Implementation
 ______________
@@ -26,19 +32,7 @@ ______________
 Here is the structure of a class you would write:
 
 .. py:class:: MyView(ptree.views.abstract.StandardView, ViewInThisApp)
-    
-    .. py:attribute:: participant
-					  match
-					  treatment
-					  experiment
-    
-        The current participant, match, treatment, and experiment objects.
-					
-        These are provided for you automatically.
-        However, you need to define the following attributes and methods:
-		
-		
-    
+        
     .. py:attribute:: template_name
     
         The name of the HTML template to display.
@@ -115,27 +109,24 @@ Here is the structure of a class you would write:
                     self.match.amount_given = self.treatment.amount_given_if_no_honor_split()
                     self.match.split_was_honored = False
 
+                                        
 Built-in views
 ______________
 
-pTree provides built-in views.
+pTree provides some commonly used views.
 
 .. py:class:: Start
     
 Every app needs to define a ``Start`` view that inherits from ``ptree.views.abstract.Start``.
 This view displays a welcome page to users and an overview of the task they will be performing,
 followed by a "Next" button.
-This page gives users a chance to drop out before we assign them to a match, 
+This page gives users a chance to drop out *before* we assign them to a match, 
 thus preventing "orphan" games.
-Behind the scenes, this view also plays an important role in initializing the user's cookies.
+Behind the scenes, this view also plays an important role in initializing the database session.
 
 If you'd like to display different text on the page,
 or have a start form with fields other than ``nickname``,
-you can just override the ``form_class``
-(the parent class uses ``ptree.forms.StartForm``),
-and ``template_name`` (the parent class uses ``'ptree/Start.html'``).
-
-Here are some you may want to use:
+you can just override the ``form_class`` or ``template_name``.
 
 .. py:class:: ptree.views.concrete.RedemptionCode
 
@@ -143,9 +134,102 @@ This view should usually be the last View in your sequence.
 It tells the user how much they made,
 and also gives them their redemption code.
 
-The template is at ``ptree/templates/ptree/RedemptionCode.html``.
+The template is in your project's ``ptree/templates/ptree/RedemptionCode.html``.
 You can have a look at the various blocks in that template to see how you can customize it.
 
+Out-of-sequence views
+__________________
+
+Sometimes you will want to have a view that is not in the sequence.
+For example, let's say you want a link that opens in a new page and displays some information, 
+but has no form for the user to fill out.
+
+To do this, define a View that inherits from ``ptree.views.abstract.TemplateView`` rather than ``ptree.views.abstract.StandardView``.
+define ``template_name`` and ``get_variables_for_template``, but none of the other methods and attributes.
+
+Real-time interaction
+_____________________
+
+You may want your game to involve some real-time interaction between participants, or with the experiment administrator.
+For example, let's say you build a 4-participant game where all 4 participants must complete some action before anyone can proceed to the next view.
+
+In this case, you will need to display a "please wait" page to participants,
+and only display the "Next" button when the condition is met.
+
+This kind of functionality can be built with a common technique called AJAX.
+The below code demonstrates this.
+
+First, you need to write the HTML div that is displayed while the participant is waiting,
+like this Bootstrap progress bar::
+
+    <div class="progress progress-striped active" id='waitingIndicator'>
+      <div class="progress-bar"  role="progressbar" style="width: 100%">
+        <span class="sr-only">Please wait</span>
+      </div>
+    </div>
+
+Then below it write the HTML div that is displayed when the user is ready for the next step.
+This could be the page's form (which contains the "Next" button)::
+    
+    <div id='goToNextPage' style='display:none'>
+        {% include "Form.html" %}
+    </div>
+
+Note the ``style='display:none'``, which gives that div an initial hidden state.
+    
+Now, you need to write the JavaScript/jQuery code that queries your server at regular intervals,
+and when it gets the desired response from the server, toggles the visibility of the divs::
+
+    <script type="text/javascript">
+    var checkIfReady = function() {
+
+        var args = { type: "GET", url: "{{ checkIfReadyURL }}", complete: addNextButtonIfReady };
+        $.ajax(args);
+
+    }
+
+    var addNextButtonIfReady = function(res, status) {
+        if (status == "success") {
+            var response = res.responseText;
+            if (response == "1") {
+                $('#goToNextPage').show();
+                $('#waitingIndicator').hide();
+                
+                window.clearInterval(intervalId);
+            }
+        }
+    }
+
+    var SECOND = 1000;
+    var intervalId = window.setInterval("checkIfReady()", 20 * SECOND);
+    </script>
+
+Now we need to write the Python code on the server that will process these JavaScript requests.
+This will be a View, but instead of inheriting from ``StandardView``, it should inherit from ``BaseView``,
+and should define a ``get`` method that responds to HTTP ``GET`` requests.
+In this example, it returns a boolean (1 or 0)::
+
+    class CheckIfReady(BaseView):
+
+        def get(self, request, *args, **kwargs):
+            
+            # Let's imagine some method exists in your Match class called "all_participants_are_ready".
+            if self.match.all_participants_are_ready()
+                return HttpResponse('1')
+            else:
+                return HttpResponse('0')
+
+The final step is to connect the JavaScript code to the Python code.
+We do this by passing the URL of the CheckIsReady view as a template variable::
+
+    def get_variables_for_template(self):
+        return { 'checkIfReadyURL': CheckIfReady.url(),
+                 # other template variables go here... }
+               
+In our JavaScript above, this variable is inserted in the AJAX request as ``url: "{{ checkIfReadyURL }}"``,
+so the AJAX requests will be handled by the Python view you defined.
+        
+                
 Questionnaires
 _______________
 
