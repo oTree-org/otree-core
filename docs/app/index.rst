@@ -1,4 +1,4 @@
-Writing a pTree app
+Writing a ptree app
 *******************
 
 Creating the app
@@ -16,7 +16,7 @@ and run this command, where ``<app_name>`` is the name you have chosen for your 
 
     django-admin.py startapp --template=http://is.gd/ptree_app <app_name>
     
-This will create a new app based on a pTree template, with most of the structure already set up for you.
+This will create a new app based on a ptree template, with most of the structure already set up for you.
 
 Think of this as a skeleton to which you can add as much as you want.
 You can add your own classes, functions, methods, and attributes,

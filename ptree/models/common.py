@@ -2,8 +2,37 @@
 from django.db import models
 import random
 import string
-
+from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
+
+from django.contrib.auth import models as auth_models
+from django.contrib.auth.management import create_superuser
+from django.db.models import signals
+
+class BonusNotYetKnownError(Exception):
+    pass
+
+class AuxiliaryModel(models.Model):
+    participant_content_type = models.ForeignKey(ContentType,
+                                                 editable=False,
+                                                 related_name = '%(app_label)s_%(class)s_participant')
+    participant_object_id = models.PositiveIntegerField(editable=False)
+    participant = generic.GenericForeignKey('participant_content_type',
+                                            'participant_object_id',
+                                            )
+
+    match_content_type = models.ForeignKey(ContentType,
+                                           editable=False,
+                                           related_name = '%(app_label)s_%(class)s_match')
+    match_object_id = models.PositiveIntegerField(editable=False)
+    match = generic.GenericForeignKey('match_content_type',
+                                      'match_object_id',
+                                      )
+
+    class Meta:
+        abstract = True
+
 
 class Symbols(object):
     """
@@ -140,3 +169,47 @@ class RandomCharField(BaseUniqueField):
 class IPAddressVisit(models.Model):
     ip = models.IPAddressField()
     experiment_code = models.CharField(max_length = 100)
+
+def create_default_superuser(app, created_models, verbosity, **kwargs):
+    """
+    Creates our default superuser.
+    """
+    username = settings.ADMIN_USERNAME
+    password = settings.ADMIN_PASSWORD
+    email = settings.ADMIN_EMAIL
+    try:
+        auth_models.User.objects.get(username=username)
+    except auth_models.User.DoesNotExist:
+        s = '\n'.join(['Creating default superuser.',
+             'Username: {}'.format(username),
+             'Email: {}'.format(email)])
+        assert auth_models.User.objects.create_superuser(username, email, password)
+    else:
+        print 'Default superuser already exists.'
+
+if getattr(settings, 'CREATE_DEFAULT_SUPERUSER', False):
+    # From http://stackoverflow.com/questions/1466827/:
+    # Prevent interactive question about wanting a superuser created.
+    # (This code has to go in this otherwise empty "models" module
+    # so that it gets processed by the "syncdb" command during
+    # database creation.)
+    signals.post_syncdb.disconnect(
+        create_superuser,
+        sender=auth_models,
+        dispatch_uid='django.contrib.auth.management.create_superuser'
+    )
+
+    # Trigger default superuser creation.
+    signals.post_syncdb.connect(
+        create_default_superuser,
+        sender=auth_models,
+        dispatch_uid='common.models.create_testuser'
+    )
+
+import data_exports
+def create_csv_export_format():
+        csv_format = data_exports.Format(name="CSV",
+                            file_ext="csv",
+                            mime="text/csv",
+                            template="data_exports/ptree_csv.html")
+        csv_format.save()

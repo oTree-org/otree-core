@@ -8,7 +8,7 @@ Each of your app's Views will display a form to the participant.
 Even if the participant does not need to fill anything out,
 they will usually at least see a button that takes them to the next page in their sequence.
 
-pTree forms are based on Django `Forms <https://docs.djangoproject.com/en/dev/topics/forms/>`__
+ptree forms are based on Django `Forms <https://docs.djangoproject.com/en/dev/topics/forms/>`__
 and `ModelForms <https://docs.djangoproject.com/en/dev/topics/forms/modelforms/#modelform>`__.
 
 Your forms are defined in ``forms.py`` in your app.

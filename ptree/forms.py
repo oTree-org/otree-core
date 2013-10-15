@@ -1,6 +1,5 @@
 from django import forms
 import templatetags.ptreefilters
-import ayah
 from django.conf import settings
 
 import ptree.views.abstract
@@ -18,13 +17,22 @@ class FormMixin(object):
         self.participant = kwargs.pop('participant')
         self.match = kwargs.pop('match')
         self.treatment = kwargs.pop('treatment')
-        self.request = kwargs.pop('request')
         self.experiment = kwargs.pop('experiment')
+        self.request = kwargs.pop('request')
 
         initial = kwargs.get('initial', {})
         initial.update(self.get_field_initial_values())
         kwargs['initial'] = initial
         super(FormMixin, self).__init__(*args, **kwargs)
+
+        for field_name, label in self.get_field_labels().items():
+            self.fields[field_name].label = label
+
+        for field_name, choices in self.get_field_choices().items():
+            self.fields[field_name].widget = forms.Select(choices=choices)
+            #self.fields[field_name].choices = choices
+
+
         self.customize()
 
     def get_field_initial_values(self):
@@ -34,8 +42,11 @@ class FormMixin(object):
     def get_field_choices(self):
         return {}
 
+    def get_field_labels(self):
+        return {}
+
     def customize(self):
-        """Customize your form fields here"""
+        """Make any customizations to your field forms that are not covered by the other methods"""
 
     def make_field_currency_choices(self, amounts):
         return [(amount, templatetags.ptreefilters.currency(amount)) for amount in amounts]

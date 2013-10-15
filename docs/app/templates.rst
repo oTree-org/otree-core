@@ -4,7 +4,7 @@ The ``templates/`` directory
 Your ``templates/`` directory will contain the templates for the HTML
 that gets displayed to the participant.
 
-pTree uses `Django's template system <https://docs.djangoproject.com/en/dev/topics/templates/>`_.
+ptree uses `Django's template system <https://docs.djangoproject.com/en/dev/topics/templates/>`_.
 
 Template configuration
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -35,7 +35,7 @@ You just have to define 2 blocks::
         Body HTML goes here.
     {% endblock %}
 
-You may want to define your own base template rather than using pTree's built-in base template.
+You may want to define your own base template rather than using ptree's built-in base template.
 This is useful when you want to customize the appearance or functionality (e.g. by adding custom CSS or JavaScript),
 or customize the structure of HTML headings. This is easily done.
 Just follow the instructions `here <https://docs.djangoproject.com/en/dev/topics/templates/#template-inheritance>`__.
@@ -43,7 +43,7 @@ Just follow the instructions `here <https://docs.djangoproject.com/en/dev/topics
 Custom filters
 --------------
 
-The following line will load pTree's filter module::
+The following line will load ptree's filter module::
     
     {% load ptreefilters %}
     
@@ -75,14 +75,14 @@ Even if the page is empty, it should contain an empty form with a submit button
 (which will say "Next") so that the participant can go to the next page.
 
 Just paste this in the location where your form should be,
-and pTree will make sure the form gets displayed and formatted properly::
+and ptree will make sure the form gets displayed and formatted properly::
 
     {% include "ptree/Form.html" %}
     
 Making your page look great
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-pTree comes with `Bootstrap <http://getbootstrap.com/>`__, a very popular library for customizing a website's participant interface.
+ptree comes with `Bootstrap <http://getbootstrap.com/>`__, a very popular library for customizing a website's participant interface.
 
 You can use it if you want a custom `style <http://getbootstrap.com/css/>`__,
 or a specific `component <http://getbootstrap.com/components/>`__    
@@ -102,8 +102,8 @@ For example, the following HTML will create a "Success" alert::
 Smartphones and tablets    
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Since pTree uses Bootstrap for its participant interface, 
-your pTree app should work on all major browsers (Chrome/Internet Explorer/Firefox/Safari).
+Since ptree uses Bootstrap for its participant interface, 
+your ptree app should work on all major browsers (Chrome/Internet Explorer/Firefox/Safari).
 When participants visit on a smartphone or tablet (e.g. iPhone/Android/etc.),
 they should see an appropriately scaled down "mobile friendly" version of the site.
 This will generally not require any effort on your part since Bootstrap does it automatically,

@@ -1,0 +1,26 @@
+{% extends "Base.html" %}
+{% load ptreefilters %}
+{% block title %}Questionnaire{% endblock %}
+
+{% block content %}
+
+<p>
+Please answer the following questions about yourself by indicating the extent of your agreement using the following scale:
+</p>
+
+<ul>
+    <li>[0] = strongly disagree</li>
+    <li>[1] = disagree</li>
+    <li>[2] = neutral</li>
+    <li>[3] = agree</li>
+    <li>[4] = strongly agree</li>
+</ul>
+
+<p>
+Be as honest as you can throughout, and try not to let your responses to one question influence your response to other questions.
+There are no right or wrong answers.
+</p>
+
+{% include "Form.html" %}
+
+{% endblock %}

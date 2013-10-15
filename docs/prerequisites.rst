@@ -29,7 +29,7 @@ Mac OSX
 Python
 ======
 
-You will write your pTree apps in `Python <http://www.python.org/>`__.
+You will write your ptree apps in `Python <http://www.python.org/>`__.
 
 Python is an easy-to-learn yet powerful and versatile programming language.
 It is very popular and has a great ecosystem of tutorials, libraries, and tools.
@@ -67,7 +67,7 @@ Install `PyCharm <http://www.jetbrains.com/pycharm/>`__.
 
 I recommend installing the free 30-day trial of the Professional Edition,
 since it has features that make Django development much easier,
-and thus ease the learning curve of pTree.
+and thus ease the learning curve of ptree.
 
 After 30 days, you can either get a free Classroom License
 (as explained `here <http://www.jetbrains.com/pycharm/buy/index.jsp>`__),
@@ -82,7 +82,7 @@ or buy an Academic License for $29.
 Learning
 =========
 
-You must have intermediate knowledge of Python to use pTree.
+You must have intermediate knowledge of Python to use ptree.
 You should at least understand the basics of procedural and object-oriented programming: 
 control structures (e.g., if, while, for), 
 data structures (lists, hashes/dictionaries), 

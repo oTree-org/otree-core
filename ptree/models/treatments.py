@@ -1,8 +1,9 @@
 from django.http import HttpResponseRedirect
 from django.db import models
-import ptree.models.common
-from ptree.models.common import Symbols
-import abc
+import common
+from common import Symbols
+from urlparse import urljoin
+from django.conf import settings
 
 class BaseTreatment(models.Model):
     """
@@ -19,7 +20,7 @@ class BaseTreatment(models.Model):
     # the treatment code in the URL. This is generated automatically.
     # we don't use the primary key because a user might try incrementing/decrementing it out of curiosity/malice,
     # and end up in the wrong treatment
-    code = ptree.models.common.RandomCharField(length=8)
+    code = common.RandomCharField(length=8)
         
     base_pay = models.PositiveIntegerField() # how much people are getting paid to perform it
 
@@ -29,11 +30,12 @@ class BaseTreatment(models.Model):
 
     def start_url(self):
         """The URL that a user is redirected to in order to start a treatment"""
-        return '/{}/GetTreatmentOrParticipant/?{}={}&{}={}'.format(self.experiment.url_base,
+        return urljoin(settings.DOMAIN,
+                       '/{}/GetTreatmentOrParticipant/?{}={}&{}={}'.format(self.experiment.url_base,
                                                           Symbols.treatment_code,
                                                           self.code,
                                                           Symbols.demo_code,
-                                                          self.experiment.demo_code)
+                                                          self.experiment.demo_code))
 
     def __unicode__(self):
         s = self.code
@@ -77,34 +79,6 @@ class BaseTreatment(models.Model):
         sequence_as_urls() returns something like ['mygame/IntroPage', ...]
         """
         return [View.url(index) for index, View in enumerate(self.sequence())]
-
-    class Meta:
-        abstract = True
-
-
-class OfferTreatment(BaseTreatment):
-    """Use this treatment if your game requires a participant to offer money.
-    
-    Examples: 
-    - dictator game
-    - ultimatum game
-    - public goods game
-    - donation game
-    - grading game
-    
-    The maximum offer and increment are customizable.
-    """
-
-    max_offer_amount = models.PositiveIntegerField(default=50)
-    increment_amount = models.PositiveIntegerField(default=5) # the increment people get to choose.
-
-    def offer_choices(self):
-       """A list of integers with the amounts the participant can choose to offer.
-       Example: [0, 10, 20, 30, 40, 50]"""
-       return range(0, self.max_offer_amount + 1, self.increment_amount)
-
-    def is_valid_offer(self, amount):
-        return amount in self.offer_choices()
 
     class Meta:
         abstract = True

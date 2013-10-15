@@ -1,7 +1,8 @@
 from django.db import models
-import ptree.models.common
-from ptree.models.common import Symbols
-import abc
+import common
+from common import Symbols
+from urlparse import urljoin
+from django.conf import settings
 
 class BaseParticipant(models.Model):
     """
@@ -14,7 +15,7 @@ class BaseParticipant(models.Model):
     #: This is generated automatically.
     #: we don't use the primary key because a user might try incrementing/decrementing it out of curiosity/malice,
     #: and end up affecting another participant
-    code = ptree.models.common.RandomCharField(length = 8)
+    code = common.RandomCharField(length = 8)
 
     #: nickname they enter when they start playing.
     #: not currently essential to any functionality.
@@ -30,15 +31,13 @@ class BaseParticipant(models.Model):
     #: the ordinal position in which a participant joined a game. Starts at 0.
     index = models.PositiveIntegerField(null = True)
 
-    #: whether the participant is finished playing (i.e. has seen the redemption code page)
-    is_finished = models.BooleanField()
-
     mturk_assignment_id = models.CharField(max_length = 50, null = True)
 
     def start_url(self):
-        return '/{}/GetTreatmentOrParticipant/?{}={}'.format(self.experiment.url_base,
+        return urljoin(settings.DOMAIN,
+                       '/{}/GetTreatmentOrParticipant/?{}={}'.format(self.experiment.url_base,
                                                           Symbols.participant_code,
-                                                          self.code)
+                                                          self.code))
 
     #@abc.abstractmethod
     def bonus(self):
@@ -80,11 +79,5 @@ class ParticipantInTwoPersonAsymmetricGame(BaseParticipant):
         elif self.is_participant_2():
             return self.match.participant_2_bonus()  
 
-    def is_finished(self):
-        if self.is_participant_1():
-            return self.match.participant_1_is_finished()
-        elif self.is_participant_2():
-            return self.match.participant_2_is_finished()
-        
     class Meta:
         abstract = True

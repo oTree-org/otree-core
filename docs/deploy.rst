@@ -26,7 +26,7 @@ The output of that command should include this::
 
 	Starting development server at http://127.0.0.1:8000/
 	
-Visit the pTree experimenter console in your browser by appending ``admin`` to the above URL.
+Visit the ptree experimenter console in your browser by appending ``admin`` to the above URL.
 You can read more about the experimenter console at ref:`admin`.
 	
 Deploying on a remote web server
@@ -36,7 +36,7 @@ When your app functions properly, you will want to launch it to your audience
 by deploying it from your personal computer to a web server,
 so that participants can access it from a URL.
 
-pTree can run with any operating system, database engine, or web server supported by Django.
+ptree can run with any operating system, database engine, or web server supported by Django.
 
 The easiest option I have found is `Heroku <https://www.heroku.com/>`__,
 a website hosting service that greatly simplifies the amount of configuration and maintenance you need to do.

@@ -2,20 +2,20 @@ __doc__ = """This module contains views that are shared across many game types.
 They are ready to be included in your  Just import this module,
 and include these classes in your Treatment's sequence() method."""
 
+
 from django.shortcuts import render_to_response
 
 from django.conf import settings
 
 import ptree.views.abstract
 import ptree.forms
-import ayah
 
-from ptree.models.common import Symbols
+from ptree.models.common import Symbols, BonusNotYetKnownError
 
 class ViewInThisApp(object):
     url_base = 'shared'
 
-class RedirectToPageUserShouldBeOn(ptree.views.abstract.BaseView, ViewInThisApp):
+class RedirectToPageUserShouldBeOn(ptree.views.abstract.View, ViewInThisApp):
     """Redirect to this page when you can't do a redirect with the redirect_to_current_view method that increments the view index.
     Use cases: redirects from external websites, or from Django FormView, etc.
     """
@@ -32,7 +32,7 @@ class RedirectToPageUserShouldBeOn(ptree.views.abstract.BaseView, ViewInThisApp)
         return r'^{}/{}/$'.format(cls.get_url_base(), cls.__name__)
 
 
-class RedirectToNextPageInSequence(ptree.views.abstract.BaseView, ViewInThisApp):
+class RedirectToNextPageInSequence(ptree.views.abstract.View, ViewInThisApp):
     """
     Try to avoid using this. It may get removed in a future version of pTree
     because of the potential for abuse.
@@ -53,16 +53,21 @@ class RedirectToNextPageInSequence(ptree.views.abstract.BaseView, ViewInThisApp)
         return r'^{}/{}/$'.format(cls.get_url_base(), cls.__name__)
 
 
-class RedemptionCode(ptree.views.abstract.ViewWithNonModelForm, ViewInThisApp):
+class RedemptionCode(ptree.views.abstract.FormView, ViewInThisApp):
 
     template_name = 'RedemptionCode.html'
 
     def get_variables_for_template(self):
-        
-        self.participant.is_finished = True
-        self.participant.save()
 
-        return {'redemption_code': self.participant.code,
-                'base_pay': self.treatment.base_pay,
-                'bonus': self.participant.bonus(),
-                'total_pay': self.participant.total_pay()}
+        vars = {'redemption_code': self.participant.code,
+                'base_pay': self.treatment.base_pay}
+
+        try:
+            bonus = self.participant.bonus()
+            additional_vars = {'bonus': bonus,
+                               'total_pay': self.participant.total_pay()}
+        except BonusNotYetKnownError:
+            additional_vars = {'bonus_not_yet_known': True}
+
+        vars.update(additional_vars)
+        return vars

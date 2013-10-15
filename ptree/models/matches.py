@@ -6,7 +6,7 @@ class MatchManager(models.Manager):
         """Get the next match that is accepting participants.
         May raise a StopIteration exception if there are no open matches.
         """
-        from ptree.models.common import Symbols
+        from common import Symbols
         matches = super(MatchManager, self).get_query_set().all()
         return (m for m in matches if m.treatment.code == request.session[Symbols.treatment_code] and m.is_ready_for_next_participant()).next()
 
@@ -48,10 +48,6 @@ class BaseMatch(models.Model):
         """
         return len(self.participants()) >= self.treatment.participants_per_match
 
-    def is_finished(self):
-        """Whether the match is completed."""
-        return self.is_full() and [participant.is_finished for participant in self.participants()]
-
     def participants(self):
         """
         Returns the ``Participant`` objects in this match.
@@ -65,15 +61,8 @@ class BaseMatch(models.Model):
         verbose_name_plural = "matches"
 
 class MatchInTwoPersonAsymmetricGame(BaseMatch):
-    participant_1 = models.ForeignKey('Participant', related_name = "games_as_participant_1")
-    participant_2 = models.ForeignKey('Participant', related_name = "games_as_participant_2", null = True)
+    participant_1 = models.ForeignKey('Participant', related_name = "games_as_participant_1", null=True)
+    participant_2 = models.ForeignKey('Participant', related_name = "games_as_participant_2", null=True)
 
     class Meta:
         abstract = True
-
-    def is_ready_for_next_participant(self):
-        return self.participant_1 and self.participant_1.is_finished_playing() and not self.participant_2
-
-class MatchOffer(BaseMatch):
-    amount_offered = models.PositiveIntegerField(null = True) # amount the first player offers to second player
-

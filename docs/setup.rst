@@ -6,14 +6,14 @@ Install
 
 On your command line, type ``pip install django-ptree``.
 
-pTree is built on top of Django, 
+ptree is built on top of Django, 
 which is the most popular web development framework for Python.
-When you install pTree, Django will get installed automatically.
+When you install ptree, Django will get installed automatically.
 
 Create your project
 ===================
 
-Each pTree experiment type is implemented as a Django app.
+Each ptree experiment type is implemented as a Django app.
 For example, if you want to create the prisoner's dilemma, trust game, and public goods game,
 those would be 3 separate apps. 
 

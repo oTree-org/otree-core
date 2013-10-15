@@ -19,9 +19,9 @@ Here is what the code of a View should define (along with what attribute/method 
 - What HTML template to display: ``template_name``
 - What form to display on the page: ``form_class``
 - What variables to insert into the template (for displaying dynamic content), and how to calculate those variables: ``get_variables_for_template``
-- What to do after the participant has submitted a valid form: ``after_form_validates``
+- What to do after the participant has submitted a valid form: ``after_valid_form_submission``
 
-In your view code, pTree automatically provides you with attributes called
+In your view code, ptree automatically provides you with attributes called
 ``participant``, ``match``, ``treatment``, and ``experiment``,
 so that you can access the current participant, match, treatment, and experiment objects,
 and get/set fields or call those objects' methods.
@@ -31,7 +31,7 @@ ______________
 
 Here is the structure of a class you would write:
 
-.. py:class:: MyView(ptree.views.abstract.StandardView, ViewInThisApp)
+.. py:class:: MyView(ptree.views.abstract.UpdateView, ViewInThisApp)
         
     .. py:attribute:: template_name
     
@@ -42,7 +42,7 @@ Here is the structure of a class you would write:
             # This will look inside your app under the 'templates' directory, to '/app_name/MyView.html'
             template_name = 'app_name/MyView.html'
             
-            # This will use the pTree built-in 'Start' template
+            # This will use the ptree built-in 'Start' template
             template_name = 'ptree/Start.html'
     
     .. py:attribute:: form_class
@@ -82,10 +82,10 @@ Here is the structure of a class you would write:
         
 
     
-    .. py:method:: after_form_validates(self, form) 
+    .. py:method:: after_valid_form_submission(self, form)
     
         After the participant submits the form,
-        pTree makes sure that it has all the required values
+        ptree makes sure that it has all the required values
         (and re-displays to the participant with errors otherwise).
         
         Here you can put anything additional that should happen after the form validates.
@@ -98,7 +98,7 @@ Here is the structure of a class you would write:
             
         Example::
         
-            def after_form_validates(self, form):
+            def after_valid_form_submission(self, form):
                 if self.treatment.probability_of_honoring_split_as_fraction() == 1:
                 
                     # note: you can access form data through the form.cleaned_data dictionary,
@@ -113,7 +113,7 @@ Here is the structure of a class you would write:
 Built-in views
 ______________
 
-pTree provides some commonly used views.
+ptree provides some commonly used views.
 
 .. py:class:: Start
     
@@ -144,7 +144,7 @@ Sometimes you will want to have a view that is not in the sequence.
 For example, let's say you want a link that opens in a new page and displays some information, 
 but has no form for the user to fill out.
 
-To do this, define a View that inherits from ``ptree.views.abstract.TemplateView`` rather than ``ptree.views.abstract.StandardView``.
+To do this, define a View that inherits from ``ptree.views.abstract.TemplateView`` rather than ``ptree.views.abstract.UpdateView``.
 define ``template_name`` and ``get_variables_for_template``, but none of the other methods and attributes.
 
 Real-time interaction
@@ -205,11 +205,11 @@ and when it gets the desired response from the server, toggles the visibility of
     </script>
 
 Now we need to write the Python code on the server that will process these JavaScript requests.
-This will be a View, but instead of inheriting from ``StandardView``, it should inherit from ``BaseView``,
+This will be a View, but instead of inheriting from ``UpdateView``, it should inherit from ``View``,
 and should define a ``get`` method that responds to HTTP ``GET`` requests.
 In this example, it returns a boolean (1 or 0)::
 
-    class CheckIfReady(BaseView):
+    class CheckIfReady(View):
 
         def get(self, request, *args, **kwargs):
             
@@ -235,11 +235,11 @@ _______________
 
 Frequently, you will want users to fill out a questionnaire/survey,
 in addition to taking part in your experiment/game.
-You can use pTree to create a survey,
+You can use ptree to create a survey,
 but a potentially more efficient approach is to embed or link to a survey
 from a service like SurveyGizmo, SurveyMonkey, WuFoo, Qualtrics, or Google Forms.
 These services all have easy-to-use visual interfaces for creating and analyzing data from surveys.
-With some of these services, you can embed a survey on your site so that it looks like it's part of pTree.
+With some of these services, you can embed a survey on your site so that it looks like it's part of ptree.
 You can see an example of this in the template ``ptree/SurveyGizmoEmbedded.html``.
 Just make sure to pass the participant's identifier to the survey
 so that you can link the survey to that participant later.

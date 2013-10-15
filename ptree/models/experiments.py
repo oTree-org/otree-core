@@ -1,5 +1,5 @@
 from django.db import models
-import ptree.models.common
+import common
 from django.template import defaultfilters
 import random
 
@@ -20,11 +20,11 @@ class BaseExperiment(models.Model):
     """
 
     description = models.TextField(max_length = 1000, null = True, blank = True)
-    code = ptree.models.common.RandomCharField(length=8) 
+    code = common.RandomCharField(length=8)
 
     # code to pass in URL to enable demo mode, which skips randomization
     # and instead assigns you to a pre-determined treatment.
-    demo_code = ptree.models.common.RandomCharField(length=8)
+    demo_code = common.RandomCharField(length=8)
 
     def weighted_randomization_choice(self, choices):
        total = sum(w for c, w in choices)

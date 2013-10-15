@@ -1,8 +1,9 @@
-__doc__ = """This module contains many of pTree's internals. 
+__doc__ = """This module contains many of pTree's internals.
 The view classes in this module are just base classes, and cannot be called from a URL.
 You should inherit from these classes and put your view class in your game directory (under "games/")
 Or in the other view file in this directory, which stores shared concrete views that have URLs."""
 
+from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 import django.http
@@ -11,8 +12,7 @@ import random
 
 from os.path import split, dirname, abspath
 
-import django.views.generic.base
-import django.views.generic.edit
+import vanilla
 
 import ptree.models.common
 import ptree.models.participants
@@ -25,28 +25,12 @@ REDIRECT_TO_PAGE_USER_SHOULD_BE_ON_URL = '/shared/RedirectToPageUserShouldBeOn/'
 def get_parent_directory_name(_file_):
     return split(dirname(abspath(_file_)))[1]
 
-class BaseView(django.views.generic.base.View):
+class View(vanilla.View):
     """Base class for pTree views.
     Takes care of:
     - retrieving model classes and objects automatically,
     so you can access self.treatment, self.match, self.participant, etc.
     """
-
-    def autocomplete_dummy_method(self):
-        """
-        never actually gets called :)
-        only exists to declare frequently used instance vars,
-        so that the IDE's IntelliSense/code completion finds these attributes
-        to make writing code faster.
-        """
-
-        # would be nicer if we could dynamically set these to
-        # the descendant classes' model classes (e.g. ExperimentClass),
-        # but it seems IDEs (PTVS, PyCharm) can't do that.
-        self.experiment = ptree.models.experiments.BaseExperiment()
-        self.treatment = ptree.models.treatments.BaseTreatment()
-        self.match = ptree.models.matches.BaseMatch()
-        self.participant = ptree.models.participants.BaseParticipant()
 
     def load_classes(self):
         """This loads from cookies"""
@@ -74,17 +58,15 @@ class BaseView(django.views.generic.base.View):
     def dispatch(self, request, *args, **kwargs):
         self.load_classes()
         self.load_objects()
-        return super(BaseView, self).dispatch(request, *args, **kwargs)
+        return super(View, self).dispatch(request, *args, **kwargs)
 
     @classmethod
     def get_url_base(cls):
-        if hasattr(cls, 'ExperimentClass'):
-            return cls.ExperimentClass.url_base
-        else:
-            # i.e. if it's not part of a game, but rather a shared module etc
-            # then you need to set this manually
-            return cls.url_base
-        
+        # look for url_base attribute on ExperimentClass
+        # if it's not part of a game, but rather a shared module etc, ExperimentClass won't exist.
+        # in that case, url_base needs to be defined on the class.
+        return getattr(cls, 'ExperimentClass', cls).url_base
+
     @classmethod
     def url(cls):
         return '/{}/{}/'.format(cls.get_url_base(), cls.__name__)
@@ -93,8 +75,20 @@ class BaseView(django.views.generic.base.View):
     def url_pattern(cls):
         return r'^{}/{}/$'.format(cls.get_url_base(), cls.__name__)
 
+    def page_the_user_should_be_on(self):
+        return self.treatment.sequence_as_urls()[self.request.session[Symbols.current_view_index]]
 
-class TemplateView(BaseView, django.views.generic.base.TemplateView):
+    def redirect_to_page_the_user_should_be_on(self):
+        """Redirect to where the participant should be,
+        according to the view index we maintain in their cookies
+        Useful if the participant tried to skip ahead,
+        or if they hit the back button.
+        We can put them back where they belong.
+        """
+        return HttpResponseRedirect(self.page_the_user_should_be_on())
+
+
+class TemplateView(View, vanilla.TemplateView):
     def get_variables_for_template(self):
         """
         Should be implemented by subclasses
@@ -118,7 +112,7 @@ class OldPage(object):
     Should be removed"""
     pass
 
-class SequenceView(BaseView):
+class SequenceView(View):
     """
     View that manages its position in the match sequence.
     """
@@ -142,6 +136,8 @@ class SequenceView(BaseView):
         self.load_classes()
         self.load_objects()
         self.current_view_index = int(args[0])
+        # remove it since post() may not be able to accept args.
+        args = args[1:]
 
         # if the participant shouldn't see this view, skip to the next
         if not self.is_displayed():
@@ -193,30 +189,27 @@ class SequenceView(BaseView):
         self.save_objects()
         return context
 
-    def get_form_kwargs(self):
+    def get_form(self, data=None, files=None, **kwargs):
         """
-        Provides your form classes with access to the participant, match, treatment, etc. objects
-        So that they can have more dynamic rendering & validation behavior.
+        Given `data` and `files` QueryDicts, and optionally other named
+        arguments, and returns a form.
         """
-
-        kwargs = super(SequenceView, self).get_form_kwargs()
-
         kwargs.update({'participant': self.participant,
                        'match': self.match,
                        'treatment': self.treatment,
                        'experiment': self.experiment,
                        'request': self.request})
-        return kwargs
 
-    def after_form_validates(self, form):
+        cls = self.get_form_class()
+        return cls(data=data, files=files, **kwargs)
+
+    def after_valid_form_submission(self, form):
         """Should be implemented by subclasses as necessary"""
         pass
 
     def form_valid(self, form):
-        self.after_form_validates(form)
+        self.after_valid_form_submission(form)
         self.save_objects()
-        print form.cleaned_data
-        print self.request.session.items()
         if self.current_view_index == self.request.session[Symbols.current_view_index]:
             self.request.session[Symbols.current_view_index] += 1
         return super(SequenceView, self).form_valid(form)
@@ -227,9 +220,6 @@ class SequenceView(BaseView):
         """
         return self.render_to_response(self.get_context_data(form=form, jump_to_form = True ))
 
-    def page_the_user_should_be_on(self):
-        return self.treatment.sequence_as_urls()[self.request.session[Symbols.current_view_index]]
-
     def user_is_on_right_page(self):
         """Will detect if a participant tried to access a page they didn't reach yet,
         for example if they know the URL to the redemption code page,
@@ -238,16 +228,8 @@ class SequenceView(BaseView):
 
         return self.request.path == self.page_the_user_should_be_on()
 
-    def redirect_to_page_the_user_should_be_on(self):
-        """Redirect to where the participant should be,
-        according to the view index we maintain in their cookies
-        Useful if the participant tried to skip ahead,
-        or if they hit the back button.
-        We can put them back where they belong.
-        """
-        return HttpResponseRedirect(self.page_the_user_should_be_on())
 
-class StandardView(SequenceView, django.views.generic.edit.UpdateView):
+class UpdateView(SequenceView, vanilla.UpdateView):
     """For pages with a form whose values you want to save to the database.
     Try to inherit from this as much as you can.
     This is the bread and butter View of pTree.
@@ -266,27 +248,45 @@ class StandardView(SequenceView, django.views.generic.edit.UpdateView):
         # but if a person uses form field validation, they will have to access cleaned_data, right?
 
         form.save(commit = True)
-        return super(StandardView, self).form_valid(form)
+        return super(UpdateView, self).form_valid(form)
 
     def get_object(self):
         
         """FIXME: need a more general way of handling this.
         or just document that you can only modify your match or participant.
         This is kind of a hack."""
-        cls = self.form_class.Meta.model
-        if cls == self.MatchClass:
+        Cls = self.form_class.Meta.model
+        if Cls == self.MatchClass:
             return self.match
-        elif cls == self.ParticipantClass:
+        elif Cls == self.ParticipantClass:
             return self.participant
+        else:
+            # see if it's something that points to participant with a GenericForeignKey.
+            # Assumes the generic relation is set up with the default object_id and content_type attributes.
+            return Cls.objects.get(object_id=self.participant.id,
+                                   content_type=ContentType.objects.get_for_model(self.participant))
 
-class ViewWithNonModelForm(SequenceView, django.views.generic.FormView, BaseView):
+class CreateView(SequenceView, vanilla.CreateView):
+    """Must be used with AuxiliaryModels"""
+    def form_valid(self, form):
+        """If we're creating a new object (like a questionnaire),
+        we want to associate it with the participant or the match"""
+        obj = form.save(commit=False)
+        if hasattr(obj, 'participant'):
+            obj.participant = self.participant
+        if hasattr(obj, 'match'):
+            obj.match = self.match
+        obj.save()
+        return super(CreateView, self).form_valid(form)
+
+class FormView(SequenceView, vanilla.FormView, View):
     """If you can't use a ModelForm, e.g. the data in the form should not be saved to the database,
     then you can use this as a fallback.
     Not emphasizing this in pTree documentation.
     """
     form_class = ptree.forms.NonModelForm
 
-class GetTreatmentOrParticipant(django.views.generic.base.View):
+class GetTreatmentOrParticipant(vanilla.View):
     """
     The first View when participants visit a site.
     Doesn't have any UI.
@@ -356,7 +356,7 @@ class GetTreatmentOrParticipant(django.views.generic.base.View):
         """URL pattern regular expression, as required by urls.py"""
         return r'^{}/{}/$'.format(cls.get_url_base(), cls.__name__)
 
-class StartTreatment(ViewWithNonModelForm):
+class StartTreatment(FormView):
     """Start page. Each game should have a Start view that inherits from this.
     This is not a modelform, because it can be used with many models.
     """
@@ -405,7 +405,7 @@ class StartTreatment(ViewWithNonModelForm):
 
         return {}
 
-    def after_form_validates(self, form):
+    def after_valid_form_submission(self, form):
         if self.participant.ip_address == None:
             self.participant.ip_address = self.request.META['REMOTE_ADDR']
         if self.participant.name == None:
@@ -455,7 +455,7 @@ class StartTreatment(ViewWithNonModelForm):
         self.participant.index = self.match.participant_set.count()
         self.participant.match = self.match
 
-class StartTreatmentAsymmetric2Participant(StartTreatment):
+class StartTreatmentInTwoPersonAsymmetricGame(StartTreatment):
     """
     For convenience, we give asymmetric 2 participant games a participant_1 and participant_2 attributes.
     """
@@ -464,6 +464,6 @@ class StartTreatmentAsymmetric2Participant(StartTreatment):
         self.participant.index = self.match.participant_set.count()
         self.participant.match = self.match
         if self.participant.index == 0:
-            self.match.participant_1 == self.participant
+            self.match.participant_1 = self.participant
         elif self.participant.index == 1:
-            self.match.participant_2 == self.participant
+            self.match.participant_2 = self.participant

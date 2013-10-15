@@ -27,7 +27,7 @@ Participants
 
 	You do not need to create Match objects in advance.
 	Match objects are created on the fly when participants visit the site.
-	This allows pTree to randomize Matches to Treatments,
+	This allows ptree to randomize Matches to Treatments,
 	regardless of the order in which participants visit the site.
 
 How to create your objects
@@ -44,5 +44,5 @@ you will be able to create your objects by running the following command from yo
 
 	python manage.py [your_app_name]_create_objects
 
-You can then browse the newly created objects in the pTree Experimenter Console,
+You can then browse the newly created objects in the ptree Experimenter Console,
 as explained in :ref:`admin`.

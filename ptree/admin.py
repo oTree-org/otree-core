@@ -2,9 +2,8 @@ __doc__ = """See https://docs.djangoproject.com/en/dev/ref/contrib/admin/"""
 
 from django.contrib import admin
 from django.conf import settings
-from donation.models import Experiment
-
 from django.utils.importlib import import_module
+import ptree.settings
 
 class TreatmentAdmin(admin.ModelAdmin):
     readonly_fields = ('code', 'link')
@@ -28,7 +27,7 @@ class ParticipantAdmin(admin.ModelAdmin):
     link.short_description = "Give this link to a single user"
     link.allow_tags = True
 
-for game_label in settings.PTREE_EXPERIMENT_APPS:
+for game_label in ptree.settings.get_ptree_experiment_apps(settings.USER_PTREE_EXPERIMENT_APPS):
     module = import_module("{}.models".format(game_label))
     admin.site.register(module.Experiment)
     admin.site.register(module.Treatment, TreatmentAdmin)

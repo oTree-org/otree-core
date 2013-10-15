@@ -1,0 +1,6 @@
+{% load i18n getter_tags %}{% if export.column_set.exists %}{% for column in export.column_set.all %}{% if column.label %}{{ column.label }}{% else %}{{ column }}{% endif %}{% if not forloop.last %},{% endif %}{% endfor %}
+{% for obj in data %}{% for column in export.column_set.all %}"{{ obj|getattribute:column.column|nice_display }}"{% if not forloop.last %},{% endif %}{% endfor %}
+{% endfor %}
+{% else %}
+{% trans "No columns where defined for this export, so there's no data to display" %}
+{% endif %}
