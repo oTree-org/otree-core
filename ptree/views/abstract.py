@@ -165,8 +165,8 @@ class SequenceView(View):
         context = {}
         
         # jump to form on invalid submission
-        if kwargs.has_key('jump_to_form'):
-            context['element_to_jump_to'] = 'form'
+        if kwargs.has_key('form_invalid'):
+            context['form_invalid'] = True
             kwargs.pop('jump_to_form')
 
         # this will add the form to the context
@@ -218,7 +218,7 @@ class SequenceView(View):
         """
 
         """
-        return self.render_to_response(self.get_context_data(form=form, jump_to_form = True ))
+        return self.render_to_response(self.get_context_data(form=form, form_invalid = True ))
 
     def user_is_on_right_page(self):
         """Will detect if a participant tried to access a page they didn't reach yet,

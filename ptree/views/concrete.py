@@ -10,7 +10,7 @@ from django.conf import settings
 import ptree.views.abstract
 import ptree.forms
 
-from ptree.models.common import Symbols, BonusNotYetKnownError
+from ptree.models.common import Symbols, PayNotYetKnownError
 
 class ViewInThisApp(object):
     url_base = 'shared'
@@ -59,15 +59,7 @@ class RedemptionCode(ptree.views.abstract.FormView, ViewInThisApp):
 
     def get_variables_for_template(self):
 
-        vars = {'redemption_code': self.participant.code,
-                'base_pay': self.treatment.base_pay}
-
-        try:
-            bonus = self.participant.bonus()
-            additional_vars = {'bonus': bonus,
-                               'total_pay': self.participant.total_pay()}
-        except BonusNotYetKnownError:
-            additional_vars = {'bonus_not_yet_known': True}
-
-        vars.update(additional_vars)
-        return vars
+        return {'redemption_code': self.participant.code,
+                'base_pay': self.treatment.base_pay,
+                'bonus': self.participant.bonus(),
+                'total_pay': self.participant.total_pay()}

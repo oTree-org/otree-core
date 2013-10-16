@@ -44,25 +44,6 @@ class BaseExperiment(models.Model):
     def treatments(self):
         return self.treatment_set.all()
 
-    def __unicode__(self):
-        
-        if self.description:
-            s = '{}, '.format(self.description)
-        else:
-            s = ''
-
-        MAX_NUMBER_OF_TREATMENT_CHARS = 100
-        treatment_listing = ', '.join([t.__unicode__() for t in self.treatment_set.all()])
-
-        s += 'code: {}, treatments: {} [{}]'.format(self.code,
-                                                  len(self.treatments()),
-                                                  treatment_listing)
-
-        s = defaultfilters.truncatechars(s, 150)
-
-        return s
-
-
     class Meta:
         abstract = True
 

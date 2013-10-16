@@ -50,13 +50,17 @@ class BaseParticipant(models.Model):
         """
         raise NotImplementedError()
 
-    def total_pay(self):
-        """
-        Returns (base pay + bonus), or None if bonus is not yet determined.
-        """
-        if self.bonus() == None:
+    def safe_bonus(self):
+        try:
+            return self.bonus()
+        except:
             return None
-        return self.match.treatment.base_pay + self.bonus()
+
+    def total_pay(self):
+        if self.bonus() is None:
+            return None
+        else:
+            return self.match.treatment.base_pay + self.bonus()
 
     def __unicode__(self):
         return self.code
