@@ -64,4 +64,5 @@ Each of the files/folders in your app directory holds one component of your app.
    views
    templates
    management
+   auxiliary-models
    admin

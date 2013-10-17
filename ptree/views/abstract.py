@@ -165,9 +165,9 @@ class SequenceView(View):
         context = {}
         
         # jump to form on invalid submission
-        if kwargs.has_key('form_invalid'):
-            context['form_invalid'] = True
-            kwargs.pop('jump_to_form')
+        if kwargs.has_key(Symbols.form_invalid):
+            context[Symbols.form_invalid] = True
+            kwargs.pop(Symbols.form_invalid)
 
         # this will add the form to the context
         # FIXME: parent class is just object; how does this work?

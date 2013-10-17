@@ -60,6 +60,7 @@ class Symbols(object):
     completed_views = 'completed_views'
 
     participant_resubmitted_last_form = 'participant_resubmitted_last_form'
+    form_invalid = 'form_invalid'
 
 
 def string_generator(size=6, chars=string.ascii_uppercase + string.digits):
