@@ -58,7 +58,11 @@ and run it (again with administrator privileges) as follows::
 
 	python get-pip.py
 	
-To verify that it is correctly installed, try the command ``pip install requests`` from your command line.
+
+virtualenv
+~~~~~~~~~~
+
+Run ``pip install virtualenv`` on your command line.
 
 Editor
 ~~~~~~

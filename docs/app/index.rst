@@ -12,9 +12,13 @@ If you are implementing the `public goods game <http://en.wikipedia.org/wiki/Pub
 you can choose the name ``publicgoods``.
 
 At your command line, go inside your project directory (the same directory as ``manage.py``),
-and run this command, where ``<app_name>`` is the name you have chosen for your app::
+and run this command, where ``your_app_name`` is the name you have chosen for your app::
 
-    django-admin.py startapp --template=http://is.gd/ptree_app <app_name>
+    ptree startapp your_app_name
+
+.. note::
+
+    On Windows, you may have to do ``python ..\venv\Scripts\ptree startapp your_app_name
     
 This will create a new app based on a ptree template, with most of the structure already set up for you.
 
@@ -64,5 +68,5 @@ Each of the files/folders in your app directory holds one component of your app.
    views
    templates
    management
-   auxiliary-models
+   auxiliary-models 
    admin

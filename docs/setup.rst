@@ -1,7 +1,57 @@
 Setup
 ~~~~~
 
-Install
+Choose a location for your ptree work
+======================================
+
+Choose where on your computer you want to store your ptree work.
+It can be anywhere, like a folder in "My Documents" or "Documents".
+
+Create a directory called 'ptree'.
+
+Create a virtualenv
+====================
+
+Open the 'ptree' directory in your command line,
+and type the following command::
+
+    virtualenv venv
+
+This will create an isolated Python environment.
+This means you won't need administrator permissions to install libraries.
+It also means that your your ptree programs will not break when a system-wide Python library is updated,
+so your ptree experiment will still run the same way a year from now.
+
+You can read more about virtualenv `here <https://pypi.python.org/pypi/virtualenv>`__.
+
+Mac
+---
+
+Go to your home directory (which appears in the sidebar of Finder windows),
+and create a new file in TextEdit called '.bash_profile' (or open it if it already exists).
+Add the following line::
+
+    source /home/[path to your ptree directory]/venv/bin/activate
+
+Then save and close the file. Open a new Terminal window.
+You should see ``(venv)`` at the beginning of your prompt.
+
+Windows
+--------
+
+In PowerShell, type::
+
+    notepad $profile
+
+(You may be prompted to create a new file, which you should do.)
+Add the following line (including the dot at the beginning)::
+
+    . "C:\[path to your virtual environment]\venv\Scripts\activate.ps1"
+    
+Then save and close the file. Open a new PowerShell window.
+You should see ``(venv)`` at the beginning of your prompt.
+
+Install ptree
 ===================
 
 On your command line, type ``pip install django-ptree``.
@@ -19,12 +69,14 @@ those would be 3 separate apps.
 
 Before you create your apps, you need to create a Django project that will contain them.
 
-From the command line, ``cd`` into a directory where you'd like to store your
-code (can be anywhere, like a folder in "My Documents" or "Documents"), 
 then run the following command::
 
-   django-admin.py startproject --template=http://is.gd/ptree_project ptree_experiments
+   ptree startproject ptree_experiments
 
+.. note::
+
+    On Windows, you may have to do ``python venv\Scripts\ptree startproject ptree_experiments
+    
 This will create a ``ptree_experiments`` directory in your current directory. If it didn't
 work, see the `troubleshooting <https://docs.djangoproject.com/en/dev/faq/troubleshooting/#troubleshooting-django-admin-py>`__ page.
 	
