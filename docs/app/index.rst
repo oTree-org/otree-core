@@ -18,7 +18,7 @@ and run this command, where ``your_app_name`` is the name you have chosen for yo
 
 .. note::
 
-    On Windows, you may have to do ``python ..\venv\Scripts\ptree startapp your_app_name
+    On Windows, you may have to do ``python ..\venv\Scripts\ptree startapp your_app_name``
     
 This will create a new app based on a ptree template, with most of the structure already set up for you.
 

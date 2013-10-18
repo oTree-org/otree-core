@@ -75,7 +75,7 @@ then run the following command::
 
 .. note::
 
-    On Windows, you may have to do ``python venv\Scripts\ptree startproject ptree_experiments
+    On Windows, you may have to do ``python venv\Scripts\ptree startproject ptree_experiments``
     
 This will create a ``ptree_experiments`` directory in your current directory. If it didn't
 work, see the `troubleshooting <https://docs.djangoproject.com/en/dev/faq/troubleshooting/#troubleshooting-django-admin-py>`__ page.

@@ -10,7 +10,7 @@ what games were played in those treatments,
 what the results were,
 what actions the participants took, etc.
 
-ptree stores your data in database tables (SQL).
+ptree stores your data in standard database tables (SQL).
 For example, let's say you are programming an ultimatum game,
 where in each 2-person match, one participant makes a monetary offer (say, 0-100 cents),
 and another participant either rejects or accepts the offer.
@@ -30,7 +30,7 @@ You will want your "Match" table to look something like this:
     | 5        | 60             | TRUE           |
     +----------+----------------+----------------+ 
 
-In order to end up with a table like this this, you need to define a Django model,
+In order to end up with this table schema, you need to define a Django model,
 which is a Python class that defines a database table.
 You define what fields (columns) are in the table,
 what their data types are, and so on.
