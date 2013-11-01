@@ -1,0 +1,12 @@
+{% if debug_values %}
+    <div class="panel panel-danger">
+        <div class="panel-heading">Debug info
+        </div>
+        <table class="table table-hover">
+            {% for k,v in debug_values %}
+                <tr><td>{{ k }}</td> <td><code>{{ v }}</code></td></tr>
+            {% endfor %}
+        </table>
+    </div>
+    {{ debug_info }}
+{% endif %}

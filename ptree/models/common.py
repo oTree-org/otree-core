@@ -5,6 +5,7 @@ import string
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
+import itertools
 
 class PayNotYetKnownError(Exception):
     pass
@@ -26,42 +27,10 @@ class AuxiliaryModel(models.Model):
                                       'match_object_id',
                                       )
 
+
+
     class Meta:
         abstract = True
-
-
-class Symbols(object):
-    """
-    Strings used internally
-    Use this structure to prevent string duplication
-    and ease refactoring
-    """
-
-    ExperimentClass = 'ExperimentClass'
-    TreatmentClass = 'TreatmentClass'
-    MatchClass = 'MatchClass'
-    ParticipantClass = 'ParticipantClass'
-
-
-
-    match_id = 'match_id'
-
-    participant_code = 'participant_code'
-    experiment_code = 'experiment_code'
-    experiment_code_obfuscated = 'exp_code'
-    treatment_code = 'treatment_code'
-    demo_code = 'demo_code'
-
-    nickname = 'nickname'
-
-    current_view_index = 'current_view_index'
-    current_view_index_in_form = 'current_view_index_in_form'
-
-    completed_views = 'completed_views'
-
-    participant_resubmitted_last_form = 'participant_resubmitted_last_form'
-    form_invalid = 'form_invalid'
-
 
 def string_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
@@ -76,7 +45,16 @@ def tuple_pairs(items):
         choices.append((item, item))
     return tuple(choices)
 
-class BaseUniqueField(models.CharField):
+class RandomCharField(models.CharField):
+    """
+    We use this for participant code, treatment code, experiment code
+    generates gibberish pronounceable words, like 'satonoha' or 'gimoradi'
+
+    # See https://derrickpetzold.com/p/auto-random-character-field-django/
+    """
+
+    vowels = list('aeiou')
+    consonants = list(set(string.ascii_lowercase) - set(vowels) - set('qxcyw'))
 
     def find_unique(self, model_instance, value, callback, *args):
         # exclude the current model instance from the queryset used in finding
@@ -85,7 +63,7 @@ class BaseUniqueField(models.CharField):
         if model_instance.pk:
             queryset = queryset.exclude(pk=model_instance.pk)
 
-        # form a kwarg dict used to impliment any unique_together contraints
+        # form a kwarg dict used to implement any unique_together constraints
         kwargs = {}
         for params in model_instance._meta.unique_together:
             if self.attname in params:
@@ -96,44 +74,26 @@ class BaseUniqueField(models.CharField):
         while queryset.filter(**kwargs):
             value = callback()
             kwargs[self.attname] = value
-        return value    
+        return value
 
-class RandomCharField(BaseUniqueField):
-    # See https://derrickpetzold.com/p/auto-random-character-field-django/
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('blank', True)
-        #kwargs.setdefault('editable', False)
-
-        #self.widget = forms.TextInput()
-
-        self.lower = kwargs.pop('lower', False)
-        self.digits_only = kwargs.pop('digits_only', False)
-        self.alpha_only = kwargs.pop('alpha_only', False)
-        self.include_punctuation = kwargs.pop('include_punctuation', False)
         self.length = kwargs.pop('length', 8)
         kwargs['max_length'] = self.length
-
-        # legacy
-        kwargs.pop('include_digits', False)
-
-        if self.digits_only:
-            self.valid_chars = string.digits
-        else:
-            self.valid_chars = string.lowercase
-
-            if not self.lower:
-                self.valid_chars += string.uppercase
-
-            if not self.alpha_only:
-                self.valid_chars += string.digits
-
-                if self.include_punctuation:
-                   self.valid_chars += string.punctuation
 
         super(RandomCharField, self).__init__(*args, **kwargs)
 
     def generate_chars(self, *args, **kwargs):
-        return ''.join([random.choice(list(self.valid_chars)) for x in range(self.length)])
+        chars = []
+        n = self.length
+        char_sets = [self.consonants, self.vowels]
+        for char_set in itertools.cycle(char_sets):
+            n -= 1
+            if n < 0:
+                break
+            chars.append(random.choice(char_set))
+
+        return ''.join(chars)
 
     def pre_save(self, model_instance, add):
         if not add:
@@ -146,8 +106,4 @@ class RandomCharField(BaseUniqueField):
 
     def get_internal_type(self):
         return "CharField"
-
-class IPAddressVisit(models.Model):
-    ip = models.IPAddressField()
-    experiment_code = models.CharField(max_length = 100)
 

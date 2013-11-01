@@ -1,58 +1,61 @@
 from django.db import models
 import common
-from common import Symbols
+import ptree.constants as constants
 from urlparse import urljoin
 from django.conf import settings
+from ptree.templatetags.ptreefilters import currency
 
 class BaseParticipant(models.Model):
     """
     Base class for all participants.
     """
 
-    #__metaclass__ = abc.ABCMeta
-
     #: the participant's unique ID (and redemption code) that gets passed in the URL.
-    #: This is generated automatically.
-    #: we don't use the primary key because a user might try incrementing/decrementing it out of curiosity/malice,
-    #: and end up affecting another participant
     code = common.RandomCharField(length = 8)
 
-    #: nickname they enter when they start playing.
-    #: not currently essential to any functionality.
     name = models.CharField(max_length = 50, null = True)
 
-    #: just in case we need to look up a user's IP address at some point
-    #: (e.g. to investigate an issue or debug)
     ip_address = models.IPAddressField(null = True)
 
     #: whether the user has visited our site at all
-    has_visited = models.BooleanField()
+    has_visited = models.BooleanField(default=False)
 
     #: the ordinal position in which a participant joined a game. Starts at 0.
-    index = models.PositiveIntegerField(null = True)
+    index_among_participants_in_match = models.PositiveIntegerField(null = True)
+
+    index_in_sequence_of_views = models.PositiveIntegerField(default=0)
 
     mturk_assignment_id = models.CharField(max_length = 50, null = True)
+    mturk_worker_id = models.CharField(max_length = 50, null = True)
+
+    def __unicode__(self):
+        return str(self.pk)
+
 
     def start_url(self):
         return urljoin(settings.DOMAIN,
                        '/{}/GetTreatmentOrParticipant/?{}={}'.format(self.experiment.url_base,
-                                                          Symbols.participant_code,
+                                                          constants.participant_code,
                                                           self.code))
 
-    #@abc.abstractmethod
     def bonus(self):
         """
-        Must be implemented by child classes.
-
-        The bonus the ``Participant`` gets paid, in addition to their base pay.
+        The bonus the participant gets paid, in addition to their base pay.
 
         Should return None if the bonus cannot yet be determined.
         """
         raise NotImplementedError()
 
-    def safe_bonus(self):
+    def bonus_display(self):
+        """printable version of the bonus"""
         try:
-            return self.bonus()
+            return currency(self.bonus())
+        except:
+            return None
+
+    def total_pay_display(self):
+        try:
+            return currency(self.total_pay())
         except:
             return None
 
@@ -63,7 +66,7 @@ class BaseParticipant(models.Model):
             return self.match.treatment.base_pay + self.bonus()
 
     def __unicode__(self):
-        return self.code
+        return str(self.pk)
 
     class Meta:
         abstract = True
@@ -72,10 +75,10 @@ class ParticipantInTwoPersonAsymmetricGame(BaseParticipant):
     """A participant in a 2-participant asymmetric game"""
     
     def is_participant_1(self):
-        return self.index == 0
+        return self.index_among_participants_in_match == 0
 
     def is_participant_2(self):
-        return self.index == 1
+        return self.index_among_participants_in_match == 1
 
     def bonus(self):
         if self.is_participant_1():

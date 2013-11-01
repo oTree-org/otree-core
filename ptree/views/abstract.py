@@ -6,24 +6,20 @@ Or in the other view file in this directory, which stores shared concrete views 
 from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
-import django.http
 from django.core.context_processors import csrf
-import random
-
-from os.path import split, dirname, abspath
-
+from django.conf import settings
+import extra_views
 import vanilla
+import time
+import ptree.constants as constants
+import logging
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
 
-import ptree.models.common
-import ptree.models.participants
-
-import ptree.forms
-from ptree.models.common import Symbols
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
 
 REDIRECT_TO_PAGE_USER_SHOULD_BE_ON_URL = '/shared/RedirectToPageUserShouldBeOn/'
-
-def get_parent_directory_name(_file_):
-    return split(dirname(abspath(_file_)))[1]
 
 class View(vanilla.View):
     """Base class for pTree views.
@@ -33,19 +29,14 @@ class View(vanilla.View):
     """
 
     def load_classes(self):
-        """This loads from cookies"""
-        
-        self.ExperimentClass = self.request.session.get(Symbols.ExperimentClass)
-        self.TreatmentClass = self.request.session.get(Symbols.TreatmentClass)
-        self.ParticipantClass = self.request.session.get(Symbols.ParticipantClass)
-        self.MatchClass = self.request.session.get(Symbols.MatchClass)
-
+        self.ExperimentClass = self.request.session.get(constants.ExperimentClass)
+        self.TreatmentClass = self.request.session.get(constants.TreatmentClass)
+        self.ParticipantClass = self.request.session.get(constants.ParticipantClass)
+        self.MatchClass = self.request.session.get(constants.MatchClass)
 
     def load_objects(self):
         self.participant = get_object_or_404(self.ParticipantClass,
-            code = self.request.session.get(Symbols.participant_code))
-
-        # for convenience
+            code = self.request.session.get(constants.participant_code))
         self.match = self.participant.match
         self.treatment = self.match.treatment
         self.experiment = self.treatment.experiment
@@ -76,7 +67,7 @@ class View(vanilla.View):
         return r'^{}/{}/$'.format(cls.get_url_base(), cls.__name__)
 
     def page_the_user_should_be_on(self):
-        return self.treatment.sequence_as_urls()[self.request.session[Symbols.current_view_index]]
+        return self.treatment.sequence_as_urls()[self.participant.index_in_sequence_of_views]
 
     def redirect_to_page_the_user_should_be_on(self):
         """Redirect to where the participant should be,
@@ -87,30 +78,15 @@ class View(vanilla.View):
         """
         return HttpResponseRedirect(self.page_the_user_should_be_on())
 
-
-class TemplateView(View, vanilla.TemplateView):
     def get_variables_for_template(self):
-        """
-        Should be implemented by subclasses
-        Return a dictionary that contains the template context variables (see Django documentation)
-        You don't need to include the form here; that is taken care of automatically.
-        """
-
         return {}
 
+class TemplateView(View, vanilla.TemplateView):
+
     def get_context_data(self, **kwargs):
-
         context = super(TemplateView, self).get_context_data(**kwargs)
-
         context.update(self.get_variables_for_template())
-
         return context
-
-
-class OldPage(object):
-    """It's here so that classes that inherit from it can be loaded.
-    Should be removed"""
-    pass
 
 class SequenceView(View):
     """
@@ -128,20 +104,64 @@ class SequenceView(View):
 
     success_url = REDIRECT_TO_PAGE_USER_SHOULD_BE_ON_URL
 
-    def is_displayed(self):
-        """whether this view is displayed. This method can be overridden by child classes"""
-        return True
+    def show_skip_wait(self):
+        return constants.PageActions.show
 
+    wait_page_template = 'ptree/WaitPage.html'
+
+    def wait_message(self):
+        pass
+
+    def time_limit_seconds(self):
+        return None
+
+    def set_time_limit(self, context):
+        page_expiration_times = self.request.session[constants.page_time_limits]
+        if page_expiration_times.has_key(self.index_in_sequence_of_views):
+            remaining_seconds = max(0, int(page_expiration_times[self.index_in_sequence_of_views] - time.time()))
+        else:
+            remaining_seconds = self.time_limit_seconds()
+
+            if remaining_seconds is None:
+                page_expiration_times[self.index_in_sequence_of_views] = None
+            elif remaining_seconds > 0:
+                page_expiration_times[self.index_in_sequence_of_views] = time.time() + remaining_seconds
+            else:
+                raise ValueError("Time limit must be None or a positive number.")
+        self.request.session.modified = True
+        context[constants.time_limit_seconds] = remaining_seconds
+
+    time_limit_was_exceeded = False
+
+    def get_time_limit_was_exceeded(self):
+        page_expiration_time = self.request.session[constants.page_time_limits][self.index_in_sequence_of_views]
+        if page_expiration_time is None:
+            return False
+        return time.time() > (page_expiration_time + settings.TIME_LIMIT_GRACE_PERIOD_SECONDS)
+
+    def timer_message(self):
+        pass
+
+    @method_decorator(never_cache)
     def dispatch(self, request, *args, **kwargs):
         self.load_classes()
         self.load_objects()
-        self.current_view_index = int(args[0])
+        self.index_in_sequence_of_views = int(args[0])
         # remove it since post() may not be able to accept args.
         args = args[1:]
 
+        ssw = self.show_skip_wait()
+        assert ssw in [constants.PageActions.show, constants.PageActions.skip, constants.PageActions.wait]
+
+        # should also add GET parameter like check_if_prerequisite_is_satisfied, to be explicit.
+        if self.request.is_ajax() and self.request.GET[constants.check_if_wait_is_over] == '1':
+            no_more_wait = ssw != constants.PageActions.wait
+            return HttpResponse(int(no_more_wait))
+
         # if the participant shouldn't see this view, skip to the next
-        if not self.is_displayed():
-            self.request.session[Symbols.current_view_index] += 1
+        if ssw == constants.PageActions.skip:
+            self.participant.index_in_sequence_of_views += 1
+            self.participant.save()
             return self.redirect_to_page_the_user_should_be_on()
 
         # if the participant tried to skip past a part of the experiment
@@ -149,7 +169,15 @@ class SequenceView(View):
         if not self.user_is_on_right_page():
             # then bring them back to where they should be
             return self.redirect_to_page_the_user_should_be_on()
+
+        if ssw == constants.PageActions.wait:
+            return render_to_response(self.wait_page_template, {'SequenceViewURL': self.request.path,
+                                                                   'wait_message': self.wait_message()})
         return super(SequenceView, self).dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.time_limit_was_exceeded = self.get_time_limit_was_exceeded()
+        return super(SequenceView, self).post(request, *args, **kwargs)
 
     def get_variables_for_template(self):
         """
@@ -163,42 +191,45 @@ class SequenceView(View):
     def get_context_data(self, **kwargs):
 
         context = {}
-        
-        # jump to form on invalid submission
-        if kwargs.has_key(Symbols.form_invalid):
-            context[Symbols.form_invalid] = True
-            kwargs.pop(Symbols.form_invalid)
-
-        # this will add the form to the context
-        # FIXME: parent class is just object; how does this work?
         context.update(super(SequenceView, self).get_context_data(**kwargs))
-        
-        # whatever else you specify that doesn't go in the form
-        # (e.g. info we display to the participant)
         context.update(self.get_variables_for_template())
-
-        # protection against CSRF attacks
         context.update(csrf(self.request))
+        context['timer_message'] = self.timer_message()
 
-        #context.update({'participant_resubmitted_last_form':
-        #                self.request.session.get(Symbols.participant_resubmitted_last_form)})
-        
-        # we may or may not need this line.
-        # strictly speaking, we shouldn't really be modifying the database on a GET request
-        # but that is more general guidance than a strict rule
+        if settings.DEBUG:
+            context[constants.debug_values] = self.get_debug_values()
+
+        self.set_time_limit(context)
         self.save_objects()
         return context
+
+
+    def get_debug_values(self):
+        try:
+            match_id = self.match.pk
+        except:
+            match_id = ''
+        return [('Index of participant in match', self.participant.index_among_participants_in_match),
+                ('Participant', self.participant.pk),
+                ('Match', match_id),
+                ('Treatment', self.treatment.pk),
+                ('Experiment code', self.experiment.code),]
+
+
+    def get_extra_form_kwargs(self):
+        return {'participant': self.participant,
+               'match': self.match,
+               'treatment': self.treatment,
+               'experiment': self.experiment,
+               'request': self.request,
+               'time_limit_was_exceeded': self.time_limit_was_exceeded}
 
     def get_form(self, data=None, files=None, **kwargs):
         """
         Given `data` and `files` QueryDicts, and optionally other named
         arguments, and returns a form.
         """
-        kwargs.update({'participant': self.participant,
-                       'match': self.match,
-                       'treatment': self.treatment,
-                       'experiment': self.experiment,
-                       'request': self.request})
+        kwargs.update(self.get_extra_form_kwargs())
 
         cls = self.get_form_class()
         return cls(data=data, files=files, **kwargs)
@@ -207,11 +238,18 @@ class SequenceView(View):
         """Should be implemented by subclasses as necessary"""
         pass
 
+    def update_index_in_sequence_of_views(self):
+        if self.index_in_sequence_of_views == self.participant.index_in_sequence_of_views:
+            self.participant.index_in_sequence_of_views += 1
+
+    def post_processing_on_valid_form(self, form):
+        pass
+
     def form_valid(self, form):
         self.after_valid_form_submission(form)
+        self.post_processing_on_valid_form(form)
+        self.update_index_in_sequence_of_views()
         self.save_objects()
-        if self.current_view_index == self.request.session[Symbols.current_view_index]:
-            self.request.session[Symbols.current_view_index] += 1
         return super(SequenceView, self).form_valid(form)
 
     def form_invalid(self, form):
@@ -228,63 +266,57 @@ class SequenceView(View):
 
         return self.request.path == self.page_the_user_should_be_on()
 
-
 class UpdateView(SequenceView, vanilla.UpdateView):
-    """For pages with a form whose values you want to save to the database.
-    Try to inherit from this as much as you can.
-    This is the bread and butter View of pTree.
-    """
-    
-    form_class = None
 
-    def form_valid(self, form):
-        #FIXME: form.save will also get called by parent class, so this is being duplicated.
-        # it prevents me from having to access the form attributes through cleaned_data.
-        # But I think I should take it out since it's inconsistent with FormView,
-        # and also non-standard.
-        #
-        # do this as soon as i get a chance
-        # actually, since i may want to deprecate FormView, I may want to keep this in.
-        # but if a person uses form field validation, they will have to access cleaned_data, right?
-
+    def post_processing_on_valid_form(self, form):
+        # form.save will also get called by the super() method, so this is technically redundant.
+        # but it means that you don't need to access cleaned_data in after_valid_form_submission,
+        # which is a little more user friendly.
         form.save(commit = True)
-        return super(UpdateView, self).form_valid(form)
 
     def get_object(self):
-        
-        """FIXME: need a more general way of handling this.
-        or just document that you can only modify your match or participant.
-        This is kind of a hack."""
-        Cls = self.form_class.Meta.model
+        Cls = self.model or self.form_class.Meta.model
         if Cls == self.MatchClass:
             return self.match
         elif Cls == self.ParticipantClass:
             return self.participant
         else:
-            # see if it's something that points to participant with a GenericForeignKey.
-            # Assumes the generic relation is set up with the default object_id and content_type attributes.
+            # For AuxiliaryModels
             return Cls.objects.get(object_id=self.participant.id,
                                    content_type=ContentType.objects.get_for_model(self.participant))
 
 class CreateView(SequenceView, vanilla.CreateView):
-    """Must be used with AuxiliaryModels"""
-    def form_valid(self, form):
-        """If we're creating a new object (like a questionnaire),
-        we want to associate it with the participant or the match"""
-        obj = form.save(commit=False)
-        if hasattr(obj, 'participant'):
-            obj.participant = self.participant
-        if hasattr(obj, 'match'):
-            obj.match = self.match
-        obj.save()
-        return super(CreateView, self).form_valid(form)
+    def associate_with_participant_and_match(self, form):
+        """
+        For AuxiliaryModels.
+        """
 
-class FormView(SequenceView, vanilla.FormView, View):
-    """If you can't use a ModelForm, e.g. the data in the form should not be saved to the database,
-    then you can use this as a fallback.
-    Not emphasizing this in pTree documentation.
-    """
-    form_class = ptree.forms.NonModelForm
+        instance = form.save(commit=False)
+        if hasattr(instance, 'participant'):
+            instance.participant = self.participant
+        if hasattr(instance, 'match'):
+            instance.match = self.match
+        instance.save()
+
+    def post_processing_on_valid_form(self, form):
+        self.associate_with_participant_and_match(form)
+
+class ModelFormSetView(extra_views.ModelFormSetView):
+    extra = 0
+
+    def formset_valid(self, formset):
+        for form in formset:
+            self.after_valid_form_submission(form)
+            self.post_processing_on_valid_form(form)
+        self.update_index_in_sequence_of_views()
+        self.save_objects()
+        return super(ModelFormSetView, self).formset_valid(formset)
+
+class CreateMultipleView(extra_views.ModelFormSetView, CreateView):
+    pass
+
+class UpdateMultipleView(extra_views.ModelFormSetView, UpdateView):
+    pass
 
 class GetTreatmentOrParticipant(vanilla.View):
     """
@@ -295,50 +327,76 @@ class GetTreatmentOrParticipant(vanilla.View):
     and redirects to that Treatment.
     """
 
+    def get_next_participant_in_experiment(self):
+        try:
+            self.participant = self.ParticipantClass.objects.filter(experiment=self.experiment,
+                                                        has_visited=False)[0]
+        except IndexError:
+            raise IndexError("No Participant objects left in the database to assign to new visitor.")
+
     def get(self, request, *args, **kwargs):
-        # clear all cookies, since they can cause problems if the participant has played a previous game.
-
         self.request.session.clear()
+        self.request.session[constants.page_time_limits] = {}
 
-        participant_code = self.request.GET.get(Symbols.participant_code)
-        treatment_code = self.request.GET.get(Symbols.treatment_code)
+        participant_code = self.request.GET.get(constants.participant_code)
+        treatment_code = self.request.GET.get(constants.treatment_code)
+        experiment_code = self.request.GET.get(constants.experiment_code_obfuscated)
 
-        # need at least one
-        assert participant_code or treatment_code
+        assert participant_code or treatment_code or experiment_code
+
+        self.participant = None
+        self.experiment = None
+        self.treatment = None
+
+        if experiment_code:
+            self.experiment = get_object_or_404(self.ExperimentClass, code = experiment_code)
+            if self.experiment.is_for_mturk:
+                self.assign_participant_with_mturk_parameters()
+            else:
+                self.participant = self.get_next_participant_in_experiment()
 
         if participant_code:
             self.participant = get_object_or_404(self.ParticipantClass, code = participant_code)
-
-            # in your mTurk experiment you can append the assignmentId to the URL with JavaScript.
-            self.participant.mturk_assignment_id = self.request.GET.get('assignmentId')
-
             self.experiment = self.participant.experiment
 
-            # block re-randomization.
-            # if the participant already got past the start view, they have had a match assigned to them.
-            # this check is for participants who started to play the game,
-            # but abandoned or hit the back button and re-entered the URL.
-            # we don't want participants to be assigned to a different treatment when they re-visit the URL
-            # because they might want to get a treatment that pays more money
+        if self.participant and self.experiment:
             if self.participant.match:
                 self.treatment = self.participant.match.treatment
             else:
                 self.treatment = self.experiment.pick_treatment_for_incoming_participant()
-        else:
+
+        elif treatment_code:
             # demo mode
             self.treatment = get_object_or_404(self.TreatmentClass, code=treatment_code)
             self.experiment = self.treatment.experiment
-
-            if self.request.GET[Symbols.demo_code] == self.experiment.demo_code:
-                self.participant = self.ParticipantClass.objects.filter(experiment=self.experiment,
-                                                            has_visited=False)[0]
+            self.get_next_participant_in_experiment()
 
         self.participant.has_visited = True
+        self.participant.treatment = self.treatment
         self.participant.save()
-        self.request.session[Symbols.participant_code] = self.participant.code
-        self.request.session[Symbols.treatment_code] = self.treatment.code
+        self.request.session[constants.participant_code] = self.participant.code
+        self.request.session[constants.treatment_code] = self.treatment.code
 
         return HttpResponseRedirect('/{}/StartTreatment/{}/'.format(self.experiment.url_base, 0))
+
+    def assign_participant_with_mturk_parameters(self):
+        try:
+            mturk_worker_id = self.request.GET[constants.mturk_worker_id]
+            mturk_assignment_id = self.request.GET[constants.mturk_assignment_id]
+            assert mturk_assignment_id != 'ASSIGNMENT_ID_NOT_AVAILABLE'
+        except:
+            print 'A visitor to this experiment was turned away because they did not have the MTurk parameters in their URL.'
+            print 'This URL only works if clicked from a MTurk job posting with the JavaScript snippet embedded'
+            return HttpResponse('You need to accept this Mechanical Turk HIT before continuing.')
+        try:
+            self.participant = self.ParticipantClass.objects.get(experiment=self.experiment,
+                                                                 mturk_worker_id = mturk_worker_id)
+        except self.ParticipantClass.DoesNotExist:
+            self.get_next_participant_in_experiment()
+            self.participant.mturk_worker_id = mturk_worker_id
+            self.participant.mturk_assignment_id = mturk_assignment_id
+
+
 
     @classmethod
     def get_url_base(cls):
@@ -356,24 +414,20 @@ class GetTreatmentOrParticipant(vanilla.View):
         """URL pattern regular expression, as required by urls.py"""
         return r'^{}/{}/$'.format(cls.get_url_base(), cls.__name__)
 
-class StartTreatment(FormView):
+class StartTreatment(UpdateView):
     """Start page. Each game should have a Start view that inherits from this.
     This is not a modelform, because it can be used with many models.
     """
-
-    form_class = ptree.forms.StartForm
-    template_name = 'Start.html'
 
     def load_classes(self):
         """Don't want to load from cookies"""
 
     def load_objects(self):
-        self.match = None
-
+        self.match = None # match not created yet.
         self.participant = get_object_or_404(self.ParticipantClass,
-                                             code = self.request.session[Symbols.participant_code])
+                                             code = self.request.session[constants.participant_code])
         self.treatment = get_object_or_404(self.TreatmentClass,
-                                           code = self.request.session[Symbols.treatment_code])
+                                           code = self.request.session[constants.treatment_code])
         self.experiment = self.participant.experiment
 
     def persist_classes(self):
@@ -384,39 +438,24 @@ class StartTreatment(FormView):
         some Views are in a shared module and therefore can be bound to different Experiments, Treatments, etc.
         """
 
-        self.request.session[Symbols.ExperimentClass] = self.ExperimentClass
-        self.request.session[Symbols.TreatmentClass] = self.TreatmentClass
-        self.request.session[Symbols.ParticipantClass] = self.ParticipantClass
-        self.request.session[Symbols.MatchClass] = self.MatchClass
-
-    def dispatch(self, request, *args, **kwargs):
-        self.request.session[Symbols.current_view_index] = self.request.session.get(Symbols.current_view_index, 0)
-
-        return super(StartTreatment, self).dispatch(request, *args, **kwargs)
+        self.request.session[constants.ExperimentClass] = self.ExperimentClass
+        self.request.session[constants.TreatmentClass] = self.TreatmentClass
+        self.request.session[constants.ParticipantClass] = self.ParticipantClass
+        self.request.session[constants.MatchClass] = self.MatchClass
 
     def get_variables_for_template(self):
-
-        # Setting a test cookie to see if there will be problems with the participant's browser.        
-        self.request.session.set_test_cookie() 
-        
-        # persist classes so that other views can access them,
-        # even if those classes are not a class attribute.
+        self.request.session.set_test_cookie()
         self.persist_classes()
-
         return {}
 
     def after_valid_form_submission(self, form):
         if self.participant.ip_address == None:
             self.participant.ip_address = self.request.META['REMOTE_ADDR']
-        if self.participant.name == None:
-            self.participant.name = form.cleaned_data.get('name')
-        
-        # Checking if I was able to put a cookie in the participant's browser
+
         if self.request.session.test_cookie_worked():
             self.request.session.delete_test_cookie()
         else:
-            # FIXME: we should tell the participant there was a problem with cookies
-            raise Http404()
+            raise HttpResponse("Your browser does not support this site's cookies.")
 
         self.configure_match()
 
@@ -425,34 +464,24 @@ class StartTreatment(FormView):
         Find the participant and associate him with an existing or new match.
         """
 
-        # if participant already has a match, use that.
         if self.participant.match:
             self.match = self.participant.match
-        # otherwise, try finding an open match, or create a new match.
         else:
-            self.match = self.next_open_match() or self.create_match()
+            self.match = self.MatchClass.objects.next_open_match(self.treatment) or self.create_match()
             self.add_participant_to_match()
             
         assert self.match
         assert self.match.treatment
 
-        # persist match so it can be loaded in load_objects
-        self.request.session[Symbols.match_id] = self.match.pk
-
-    def next_open_match(self):
-        try:
-            return self.MatchClass.objects.next_open_match(self.request)
-        except StopIteration:
-            return None
-
     def create_match(self):
-        match = self.MatchClass(treatment = self.treatment)
+        match = self.MatchClass(treatment = self.treatment,
+                                experiment = self.experiment)
         # need to save it before you assign the participant.match ForeignKey
         match.save()
         return match
 
     def add_participant_to_match(self):
-        self.participant.index = self.match.participant_set.count()
+        self.participant.index_among_participants_in_match = self.match.participant_set.count()
         self.participant.match = self.match
 
 class StartTreatmentInTwoPersonAsymmetricGame(StartTreatment):
@@ -461,9 +490,9 @@ class StartTreatmentInTwoPersonAsymmetricGame(StartTreatment):
     """
 
     def add_participant_to_match(self):
-        self.participant.index = self.match.participant_set.count()
+        self.participant.index_among_participants_in_match = self.match.participant_set.count()
         self.participant.match = self.match
-        if self.participant.index == 0:
+        if self.participant.index_among_participants_in_match == 0:
             self.match.participant_1 = self.participant
-        elif self.participant.index == 1:
+        elif self.participant.index_among_participants_in_match == 1:
             self.match.participant_2 = self.participant

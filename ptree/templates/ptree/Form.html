@@ -1,0 +1,10 @@
+{% load crispy_forms_tags %}
+
+<form method="post" id="{{ form_element_id }}" class="form">{% csrf_token %}
+    {% if form %}
+        {{ form|crispy }}
+    {% elif formset %}
+        {{ formset|crispy }}
+    {% endif %}
+    <input type="submit" class="btn btn-large btn-primary" value="{{ submit_button_text|default:"Next"}}" />
+</form>

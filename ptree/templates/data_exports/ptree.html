@@ -1,0 +1,61 @@
+{% load staticfiles %}
+{% load ptreefilters %}
+{% load i18n %}
+{% load i18n getter_tags %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>{% block head_title %}Payments{% endblock %}</title>
+
+        {% block head_content %}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+
+        <!-- Optional theme -->
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
+
+        <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+
+        <!-- Latest compiled and minified JavaScript -->
+        <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+        
+        <script type="text/javascript" src="{% static "ptree/js/ptree.js" %}"></script>
+        
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+          <script src="../../assets/js/html5shiv.js"></script>
+          <script src="../../assets/js/respond.min.js"></script>
+        <![endif]-->
+
+        {% endblock %}
+    </head>
+    <body>
+        {% block content %}
+            {% if export.column_set.exists %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                    {% for column in export.column_set.all %}
+                        <th>{% if column.label %}{{ column.label }}{% else %}{{ column }}{% endif %}</th>
+                    {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                {% for obj in data %}
+                    <tr>
+                    {% for column in export.column_set.all %}
+                        <td>{{ obj|getattribute:column.column|nice_display }}</td>
+                    {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            {% trans "No columns where defined for this export, so there's no data to display" %}
+            {% endif %}
+        {% endblock %}
+    </body>
+</html>

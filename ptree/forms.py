@@ -3,7 +3,7 @@ import templatetags.ptreefilters
 from django.conf import settings
 
 import ptree.views.abstract
-from ptree.models.common import Symbols
+import ptree.constants as constants
 
 class FormMixin(object):
 
@@ -12,28 +12,6 @@ class FormMixin(object):
     # But you can put it in rewritable_fields to make it an exception.
     ## UPDATE: deprecated for now
     # rewritable_fields = []
-
-    def __init__(self, *args, **kwargs):
-        self.participant = kwargs.pop('participant')
-        self.match = kwargs.pop('match')
-        self.treatment = kwargs.pop('treatment')
-        self.experiment = kwargs.pop('experiment')
-        self.request = kwargs.pop('request')
-
-        initial = kwargs.get('initial', {})
-        initial.update(self.get_field_initial_values())
-        kwargs['initial'] = initial
-        super(FormMixin, self).__init__(*args, **kwargs)
-
-        for field_name, label in self.get_field_labels().items():
-            self.fields[field_name].label = label
-
-        for field_name, choices in self.get_field_choices().items():
-            self.fields[field_name].widget = forms.Select(choices=choices)
-            #self.fields[field_name].choices = choices
-
-
-        self.customize()
 
     def get_field_initial_values(self):
         """Return a dict of any initial values"""
@@ -51,8 +29,40 @@ class FormMixin(object):
     def make_field_currency_choices(self, amounts):
         return [(amount, templatetags.ptreefilters.currency(amount)) for amount in amounts]
 
+    def __init__(self, *args, **kwargs):
+        self.process_kwargs(kwargs)
 
-class ModelForm(FormMixin, forms.ModelForm):
+        initial = kwargs.get('initial', {})
+        initial.update(self.get_field_initial_values())
+        kwargs['initial'] = initial
+        super(FormMixin, self).__init__(*args, **kwargs)
+
+        for field_name, label in self.get_field_labels().items():
+            self.fields[field_name].label = label
+
+        for field_name, choices in self.get_field_choices().items():
+            self.fields[field_name].widget = forms.Select(choices=choices)
+            #self.fields[field_name].choices = choices
+
+
+        self.customize()
+
+class ParticipantFormMixin(FormMixin):
+    def process_kwargs(self, kwargs):
+        self.participant = kwargs.pop('participant')
+        self.match = kwargs.pop('match')
+        self.treatment = kwargs.pop('treatment')
+        self.experiment = kwargs.pop('experiment')
+        self.request = kwargs.pop('request')
+        self.time_limit_was_exceeded = kwargs.pop('time_limit_was_exceeded')
+
+class ExperimenterFormMixin(FormMixin):
+    def process_kwargs(self, kwargs):
+        self.experiment = kwargs.pop('experiment')
+        self.request = kwargs.pop('request')
+
+
+class ModelForm(ParticipantFormMixin, forms.ModelForm):
     """
     Try to inherit from this class whenever you can.
     ModelForms are ofter preferable to plain Forms,
@@ -60,37 +70,5 @@ class ModelForm(FormMixin, forms.ModelForm):
     and they require less code to write and validate.
     """
 
-    def old_clean(self):
-        """Prevent the user from going back and modifying an old value."""
-        cleaned_data = super(ModelForm, self).clean()
-
-        participant_resubmitted_this_form = False
-        for field_name in cleaned_data.keys():
-            if not field_name in self.rewritable_fields and field_name != Symbols.current_view_index:
-                current_value = getattr(self.instance, field_name)
-                # FIXME:
-                # this assumes that the default value of these fields is None.
-                # but this means I should set null=True on everything.
-                if current_value is not None:
-                    cleaned_data[field_name] = current_value
-                    participant_resubmitted_this_form = True
-
-        self.request.session[Symbols.participant_resubmitted_last_form] = participant_resubmitted_this_form
-        return cleaned_data
-
-class NonModelForm(FormMixin, forms.Form):
-    """
-    If your form fields map to a Django Model (like a Participant or Match object),
-    then use ModelForm instead.
-
-    Use this otherwise.
-    
-    If you use this class, a user can go back and re-submit,
-    unless you block against that explicitly after form validation."""
+class ExperimenterModelForm(ExperimenterFormMixin, forms.ModelForm):
     pass
-
-
-class StartForm(NonModelForm):
-    """Form rather than ModelForm,
-    since it can be used with many different models"""
-    name = forms.CharField(max_length = 50)

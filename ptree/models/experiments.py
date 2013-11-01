@@ -1,51 +1,62 @@
 from django.db import models
 import common
+import ptree.constants as constants
 from django.template import defaultfilters
 import random
+from urlparse import urljoin
+from django.conf import settings
 
 class BaseExperiment(models.Model):
-    """Base class for all Experiments.
-    An Experiment is a randomization between Treatments.
-
-    Example:
-
-    You could have 2 Treatments:
-    - Prisoner's Dilemma with high payoff (users play for max reward of $5)
-    - Prisoner's Dilemma with low payoff (users play for max reward of $1)
-
-    You're interested in seeing how the payoff affects users' behavior.
-
-    So, you define those 2 Treatments,
-    and then create an Experiment that randomly assigns users to one or the other.
+    """
+    Base class for all Experiments.
     """
 
-    description = models.TextField(max_length = 1000, null = True, blank = True)
+    name = models.CharField(max_length = 500, null = True, blank = True)
     code = common.RandomCharField(length=8)
+    is_for_mturk = models.BooleanField(verbose_name='Is for MTurk', default=True)
+    payment_was_sent = models.BooleanField(verbose_name='Payment was sent', default=False)
+    experimenter_access_code = common.RandomCharField(length=8)
 
-    # code to pass in URL to enable demo mode, which skips randomization
-    # and instead assigns you to a pre-determined treatment.
-    demo_code = common.RandomCharField(length=8)
+    def __unicode__(self):
+        return self.name or str(self.pk)
 
-    def weighted_randomization_choice(self, choices):
-       total = sum(w for c, w in choices)
-       r = random.uniform(0, total)
-       upto = 0
-       for c, w in choices:
-          if upto + w > r:
-             return c
-          upto += w
+    def experimenter_input_url(self):
+        return urljoin(settings.DOMAIN,
+                       '/{}/ExperimenterLaunch/?{}={}&{}={}'.format(self.url_base,
+                                                          constants.experiment_code,
+                                                          self.code,
+                                                          constants.experimenter_access_code,
+                                                          self.experimenter_access_code
+                                                          ))
+
+    def mturk_start_url(self):
+        """The URL that a user is redirected to in order to start a treatment"""
+        return urljoin(settings.DOMAIN,
+                       '/{}/GetTreatmentOrParticipant/?{}={}'.format(self.url_base,
+                                                          constants.experiment_code_obfuscated,
+                                                          self.code))
+
 
     def pick_treatment_for_incoming_participant(self):
-        """pick a treatment according to randomization algorithm."""
-        choices = [(treatment, treatment.randomization_weight) for treatment in self.treatment_set.all()]
-        treatment = self.weighted_randomization_choice(choices)
-        return treatment
+        return random.choice(self.treatments())
 
     def treatments(self):
         return self.treatment_set.all()
 
+    def matches(self):
+        return self.match_set.all()
+
+    def participants(self):
+        return self.participant_set.all()
+
+    def sequence_as_urls(self):
+        """Converts the sequence to URLs.
+
+        e.g.:
+        sequence() returns something like [views.IntroPage, ...]
+        sequence_as_urls() returns something like ['mygame/IntroPage', ...]
+        """
+        return [View.url() for index, View in enumerate(self.experimenter_sequence_of_views())]
+
     class Meta:
         abstract = True
-
-    
-

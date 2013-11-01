@@ -1,0 +1,54 @@
+{% load staticfiles %}
+{% if time_limit_seconds %}
+    <div id="clock" class="alert alert-info">
+        <span class="glyphicon glyphicon-time"></span>
+        <span id="minutes" style="font-weight: bold"></span>:<span id="seconds" style="font-weight: bold"></span>
+        left to complete this page.
+        {% if timer_explanation %}
+        <p>
+            {{ timer_explanation }}
+        </p>
+        {% endif %}
+        <p style="display:none;" id="time_out_message">
+            Time ran out. Please fill out any form fields and continue.
+        </p>
+    </div>
+
+    <script type="text/javascript" src="{% static 'ptree/js/jquery.countdown.js' %}"></script>
+
+    <script type="text/javascript">
+        $(function() {
+            var currentDate = new Date();
+            var milliseconds = {{ time_limit_seconds }}*1000;
+            $('div#clock').countdown(currentDate.valueOf() + milliseconds, function(event) {
+
+                switch(event.type) {
+                    case "seconds":
+                    case "minutes":
+                    case "hours":
+                    case "days":
+                    case "weeks":
+                    case "daysLeft":
+                        $(this).find('span#'+event.type).html(event.value);
+                        break;
+                    case "finished":
+                        $('#time_out_message').show();
+                        break;
+                }
+
+                if (event.lasting.hours == 0) {
+                    if (event.lasting.minutes <= 2) {
+                        var alert_class;
+                        if (event.lasting.minutes == 0 && event.lasting.seconds < 30) {
+                            alert_class = 'alert-danger';
+                        }
+                        else {
+                            alert_class = 'alert-warning';
+                        }
+                        $('div#clock').attr('class', 'alert ' + alert_class);
+                    }
+                }
+            });
+        });
+    </script>
+{% endif %}
