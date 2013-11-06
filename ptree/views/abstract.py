@@ -84,7 +84,7 @@ class View(vanilla.View):
 class TemplateView(View, vanilla.TemplateView):
 
     def get_context_data(self, **kwargs):
-        context = super(TemplateView, self).get_context_data(**kwargs)
+        context = {}
         context.update(self.get_variables_for_template())
         return context
 
@@ -191,7 +191,6 @@ class SequenceView(View):
     def get_context_data(self, **kwargs):
 
         context = {}
-        context.update(super(SequenceView, self).get_context_data(**kwargs))
         context.update(self.get_variables_for_template())
         context.update(csrf(self.request))
         context['timer_message'] = self.timer_message()
