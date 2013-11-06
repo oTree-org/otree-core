@@ -10,14 +10,16 @@ from django.conf import settings
 import ptree.views.abstract
 import ptree.forms
 
-class ViewInThisApp(object):
+
+class RedirectToPageUserShouldBeOn(ptree.views.abstract.View):
     url_base = 'shared'
 
-class RedirectToPageUserShouldBeOn(ptree.views.abstract.View, ViewInThisApp):
     def get(self, request, *args, **kwargs):
         return self.redirect_to_page_the_user_should_be_on()
 
-class RedemptionCode(ptree.views.abstract.SequenceView, ptree.views.abstract.TemplateView, ViewInThisApp):
+
+class RedemptionCode(ptree.views.abstract.SequenceView, ptree.views.abstract.TemplateView):
+    url_base = 'shared'
 
     def get_variables_for_template(self):
 
