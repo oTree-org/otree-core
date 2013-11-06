@@ -11,14 +11,14 @@ import ptree.views.abstract
 import ptree.forms
 
 
-class RedirectToPageUserShouldBeOn(ptree.views.abstract.View):
+class RedirectToPageUserShouldBeOn(ptree.views.abstract.BaseView):
     url_base = 'shared'
 
     def get(self, request, *args, **kwargs):
         return self.redirect_to_page_the_user_should_be_on()
 
 
-class RedemptionCode(ptree.views.abstract.SequenceView, ptree.views.abstract.TemplateView):
+class RedemptionCode(ptree.views.abstract.SequenceTemplateView):
     url_base = 'shared'
 
     def get_variables_for_template(self):
