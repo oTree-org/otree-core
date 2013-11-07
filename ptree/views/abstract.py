@@ -21,8 +21,8 @@ logger = logging.getLogger(__name__)
 
 REDIRECT_TO_PAGE_USER_SHOULD_BE_ON_URL = '/shared/RedirectToPageUserShouldBeOn/'
 
-class View(vanilla.View):
-    """Base class for pTree views.
+class PTreeMixin(object):
+    """Base mixin class for pTree views.
     Takes care of:
     - retrieving model classes and objects automatically,
     so you can access self.treatment, self.match, self.participant, etc.
@@ -81,14 +81,13 @@ class View(vanilla.View):
     def get_variables_for_template(self):
         return {}
 
-class TemplateView(View, vanilla.TemplateView):
-
     def get_context_data(self, **kwargs):
-        context = super(TemplateView, self).get_context_data(**kwargs)
+        context = {}
         context.update(self.get_variables_for_template())
         return context
 
-class SequenceView(View):
+
+class SequenceMixin(PTreeMixin):
     """
     View that manages its position in the match sequence.
     """
@@ -191,7 +190,6 @@ class SequenceView(View):
     def get_context_data(self, **kwargs):
 
         context = {}
-        context.update(super(SequenceView, self).get_context_data(**kwargs))
         context.update(self.get_variables_for_template())
         context.update(csrf(self.request))
         context['timer_message'] = self.timer_message()
@@ -266,8 +264,27 @@ class SequenceView(View):
 
         return self.request.path == self.page_the_user_should_be_on()
 
-class UpdateView(SequenceView, vanilla.UpdateView):
 
+class BaseView(PTreeMixin, vanilla.View):
+    """
+    A basic view that provides no method implementations.
+    """
+    pass
+
+class TemplateView(PTreeMixin, vanilla.TemplateView):
+    """
+    A template view.
+    """
+    pass
+
+class SequenceTemplateView(SequenceMixin, vanilla.TemplateView):
+    """
+    A sequence template view.
+    """
+    pass
+
+
+class UpdateView(SequenceMixin, vanilla.UpdateView):
     def post_processing_on_valid_form(self, form):
         # form.save will also get called by the super() method, so this is technically redundant.
         # but it means that you don't need to access cleaned_data in after_valid_form_submission,
@@ -285,12 +302,8 @@ class UpdateView(SequenceView, vanilla.UpdateView):
             return Cls.objects.get(object_id=self.participant.id,
                                    content_type=ContentType.objects.get_for_model(self.participant))
 
-class CreateView(SequenceView, vanilla.CreateView):
-    def associate_with_participant_and_match(self, form):
-        """
-        For AuxiliaryModels.
-        """
-
+class CreateView(SequenceMixin, vanilla.CreateView):
+    def post_processing_on_valid_form(self, form):
         instance = form.save(commit=False)
         if hasattr(instance, 'participant'):
             instance.participant = self.participant
@@ -298,8 +311,6 @@ class CreateView(SequenceView, vanilla.CreateView):
             instance.match = self.match
         instance.save()
 
-    def post_processing_on_valid_form(self, form):
-        self.associate_with_participant_and_match(form)
 
 class ModelFormSetView(extra_views.ModelFormSetView):
     extra = 0
@@ -311,6 +322,7 @@ class ModelFormSetView(extra_views.ModelFormSetView):
         self.update_index_in_sequence_of_views()
         self.save_objects()
         return super(ModelFormSetView, self).formset_valid(formset)
+
 
 class CreateMultipleView(extra_views.ModelFormSetView, CreateView):
     pass
