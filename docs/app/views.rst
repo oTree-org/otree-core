@@ -2,7 +2,7 @@ views.py
 ========
 
 A View defines a single web page that is shown to participants. 
-It is implemented as a Python class -- more specifically, a Django `class-based view <https://docs.djangoproject.com/en/dev/topics/class-based-views/generic-display/>`__.
+It is implemented as a Python class -- more specifically, a Django `Vanilla View <http://django-vanilla-views.org/>`__.
 
 For example, if your experiment involves showing the participant a sequence of 5 pages,
 your views.py should contain 5 View classes.
