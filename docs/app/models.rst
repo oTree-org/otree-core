@@ -100,17 +100,18 @@ For example, a game that is simply a survey.
 Implementation
 ______________
 
+``Participant`` classes should inherit from ``ptree.models.participants.BaseParticipant``.
 
-What is provided for you automatically
---------------------------------------
+Fields
+--------
 
-``Participant`` classes should inherit from ``ptree.models.participants.BaseParticipant``,
-which gives you the following fields and methods:
+Provided for you
+.................
 
-match
-=====
+match: ForeignKey
+==================
 
-The ``Match`` this ``Participant`` is a part of.
+The match this participant is a part of.
 
 index_among_participants_in_match: PositiveIntegerField
 ==========================================================
@@ -122,20 +123,27 @@ index_in_sequence_of_views: PositiveIntegerField
 
 Which page the user is on.
 
+Methods
+---------
+
+Provided for you
+.................
+
 total_pay(): integer
 =====================
 
 How much the user makes (base pay + bonus).
 
 What you must implement yourself
---------------------------------
+.................................
 
 bonus(): integer
 ====================
 
 The bonus the participant gets paid, in addition to their base pay.
+If the bonus cannot yet be determined (e.g. the match is not complete), this should return None.
 
-   
+
 Match
 ~~~~~
 
@@ -150,43 +158,43 @@ Example of a Match: "dictator game between participants Alice & Bob, where Alice
 Implementation
 ______________
 
+``Match`` classes should inherit from ``ptree.models.participants.BaseMatch``.
 
-What is provided for you automatically
---------------------------------------
+Fields
+-------
 
-``Match`` classes should inherit from ``ptree.models.participants.BaseMatch``,
-which gives you the following fields and methods.
+Provided for you
+.......................................
 
-treatment
-=========
+treatment: ForeignKey
+=======================
 
 The treatment this match is a part of.
 
-experiment
-===========
+experiment: ForeignKey
+========================
 
 The experiment this match is a part of.
-
-participants(self): iterable
-=============================
-
-Returns the participants in this match. 
 
 time_started: DateTimeField
 ============================
 
 When the match was started.
 
-is_full(self): boolean
-======================
-    
-Whether the match is full, i.e.::
+Methods
+--------
 
-	return len(self.participants()) >= self.treatment.participants_per_match
+Provided for you
+.................
+
+participants(self): iterable
+=============================
+
+Returns the participants in this match. 
 
 
 What you must implement yourself
---------------------------------
+.................................
 
 is_ready_for_next_participant(self): boolean
 ============================================
@@ -196,7 +204,7 @@ Whether the game is ready for another participant to be added.
 If it's a non-sequential game (you do not have to wait for one participant to finish before the next one joins),
 you can use this to assign participants until the game is full::
 
-	return not self.is_full()
+	return len(self.participants()) < self.treatment.participants_per_match
 
 Treatment
 ~~~~~~~~~
@@ -212,16 +220,15 @@ Results of a game are not stored in Treatment object, they are stored in Match o
 Implementation
 ______________
 
-What is provided for you automatically
---------------------------------------
+``Treatment`` classes should inherit from ``ptree.models.participants.BaseTreatment``
 
-``Treatment`` classes should inherit from ``ptree.models.participants.BaseTreatment``,
-which gives you the following fields and methods.
+Fields
+-------
 
-matches(self): iterable
-========================
-    
-The ``Match`` objects in this ``Treatment``.
+Mandatory fields
+....................
+
+When you instantiate a ``Treatment``, the following fields are required.
 
 base_pay: PositiveIntegerField
 ==============================
@@ -229,10 +236,36 @@ base_pay: PositiveIntegerField
 How much each Participant is getting paid to play the game.
 Needs to be set when you instantiate your ``Participant`` objects.
 
-What you must implement yourself
---------------------------------
+Optional fields
+................
 
-sequence_of_views(self): list
+name: CharField
+=================
+
+Whatever internal label you want to give to this treatment.
+
+participants_per_match: PositiveIntegerField
+==============================================
+
+Number of participants in each match. 
+For example, Prisoner's Dilemma has 2 participants.
+a single-participant game would just have 1.
+
+Methods
+--------
+
+Provided for you
+..................
+
+matches(): iterable
+========================
+    
+The matches in this treatment.
+
+What you must implement yourself
+..................................
+
+sequence_of_views(): list
 ==============================
     
 Very important. Returns a list of all the View classes that the participant gets routed through sequentially.
@@ -244,21 +277,16 @@ Inside the method, you should import the modules containing the views you want t
 
 Example::
 	
-	import donation.views as views
-	import ptree.views.concrete
-	return [views.StartTreatment,
-			ptree.views.concrete.AssignParticipantAndMatch,
-			views.IntroPage,
-			views.EnterOffer, 
-			views.Survey,
-			ptree.views.concrete.RedemptionCode]
+    def sequence_of_views(self):
+        import donation.views as views
+        import ptree.views.concrete
+        return [views.StartTreatment,
+                ptree.views.concrete.AssignParticipantAndMatch,
+                views.IntroPage,
+                views.EnterOffer, 
+                views.Survey,
+                ptree.views.concrete.RedemptionCode]
         
-participants_per_match: PositiveIntegerField
-==============================================
-
-Number of participants in each match. 
-For example, Prisoner's Dilemma has 2 participants.
-a single-participant game would just have 1.
 
 
 Experiment
@@ -268,43 +296,58 @@ An experiment is generally a randomization between treatments, though it could j
 Implementation
 ______________
 
-Required arguments
-__________________
 
+Fields
+-------
 
+Optional
+................
 
-What is provided for you automatically
---------------------------------------
+name: CharField
+=================
+
+Whatever internal label you want to give to this experiment.
 
 is_for_mturk: BooleanField
 ==========================
 
 Defaults to True. If true, the experiment URL will not work unless a participant's Mechanical Turk worker ID & assignment ID are appended to the URL.
 
-treatments(self): iterable
+Methods
+-------
+
+Provided for you
+.................
+
+treatments(): iterable
 ==========================
 
 Returns the treatments in this experiment. 
 
-Methods that are optional to define
------------------------------------
+matches(): iterable
+==========================
 
-pick_treatment_for_incoming_participant(self): Treatment
+Returns the matches in this experiment. 
+
+participants(): iterable
+==========================
+
+Returns the participants in this experiment. 
+
+
+Optional to define
+.....................
+
+pick_treatment_for_incoming_participant(): Treatment
 =========================================================
 
 This method will get called when a participant arrives at your site,
 and needs to be randomized to a treatment.
 Unless you override it,
-this method returns a random choice between the treatments in the experiment,
-weighted by their ``randomization_weight``::
+this method picks a treatment randomly.
 
-    def pick_treatment_for_incoming_participant(self):
-        choices = [(treatment, treatment.randomization_weight) for treatment in self.treatment_set.all()]
-        treatment = self.weighted_randomization_choice(choices)
-        return treatment
-
-experimenter_sequence_of_views: list
-=====================================
+experimenter_sequence_of_views(): list
+==================================================
 
 pTree provides an "experimenter link", 
 which is a sequence of pages that lets the experimenter can participate interactively in the game.

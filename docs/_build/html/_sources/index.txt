@@ -1,15 +1,15 @@
-.. pTree documentation master file, created by
+.. ptree documentation master file, created by
    sphinx-quickstart on Mon Sep 09 12:41:53 2013.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-pTree Documentation
+ptree Documentation
 ===================
 
-Welcome to the documentation for pTree!
-This documentation explains how to build and launch pTree apps.
+Welcome to the documentation for ptree!
+This documentation explains how to build and launch ptree apps.
 
-For a general introduction to pTree, see the `pTree homepage <http://ptree.org>`__.
+For a general introduction to ptree, see the `ptree homepage <http://ptree.org>`__.
 
 Contents:
 

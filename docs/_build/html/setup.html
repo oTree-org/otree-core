@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="pTree 0.1 documentation" href="index.html" />
-    <link rel="next" title="Writing a pTree app" href="app/index.html" />
+    <link rel="next" title="Writing a ptree app" href="app/index.html" />
     <link rel="prev" title="Prerequisites" href="prerequisites.html" /> 
   </head>
   <body>
@@ -37,7 +37,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="app/index.html" title="Writing a pTree app"
+          <a href="app/index.html" title="Writing a ptree app"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="prerequisites.html" title="Prerequisites"
@@ -53,23 +53,65 @@
             
   <div class="section" id="setup">
 <h1>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="install">
-<h2>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="choose-a-location-for-your-ptree-work">
+<h2>Choose a location for your ptree work<a class="headerlink" href="#choose-a-location-for-your-ptree-work" title="Permalink to this headline">¶</a></h2>
+<p>Choose where on your computer you want to store your ptree work.
+It can be anywhere, like a folder in &#8220;My Documents&#8221; or &#8220;Documents&#8221;.</p>
+<p>Create a directory called &#8216;ptree&#8217;.</p>
+</div>
+<div class="section" id="create-a-virtualenv">
+<h2>Create a virtualenv<a class="headerlink" href="#create-a-virtualenv" title="Permalink to this headline">¶</a></h2>
+<p>Open the &#8216;ptree&#8217; directory in your command line,
+and type the following command:</p>
+<div class="highlight-python"><pre>virtualenv venv</pre>
+</div>
+<p>This will create an isolated Python environment.
+This means you won&#8217;t need administrator permissions to install libraries.
+It also means that your your ptree programs will not break when a system-wide Python library is updated,
+so your ptree experiment will still run the same way a year from now.</p>
+<p>You can read more about virtualenv <a class="reference external" href="https://pypi.python.org/pypi/virtualenv">here</a>.</p>
+<div class="section" id="mac">
+<h3>Mac<a class="headerlink" href="#mac" title="Permalink to this headline">¶</a></h3>
+<p>Go to your home directory (which appears in the sidebar of Finder windows),
+and create a new file in TextEdit called &#8216;.bash_profile&#8217; (or open it if it already exists).
+Add the following line:</p>
+<div class="highlight-python"><pre>source /home/[path to your ptree directory]/venv/bin/activate</pre>
+</div>
+<p>Then save and close the file. Open a new Terminal window.
+You should see <tt class="docutils literal"><span class="pre">(venv)</span></tt> at the beginning of your prompt.</p>
+</div>
+<div class="section" id="windows">
+<h3>Windows<a class="headerlink" href="#windows" title="Permalink to this headline">¶</a></h3>
+<p>In PowerShell, type:</p>
+<div class="highlight-python"><pre>notepad $profile</pre>
+</div>
+<p>(You may be prompted to create a new file, which you should do.)
+Add the following line (including the dot at the beginning):</p>
+<div class="highlight-python"><pre>. "C:\[path to your virtual environment]\venv\Scripts\activate.ps1"</pre>
+</div>
+<p>Then save and close the file. Open a new PowerShell window.
+You should see <tt class="docutils literal"><span class="pre">(venv)</span></tt> at the beginning of your prompt.</p>
+</div>
+</div>
+<div class="section" id="install-ptree">
+<h2>Install ptree<a class="headerlink" href="#install-ptree" title="Permalink to this headline">¶</a></h2>
 <p>On your command line, type <tt class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">django-ptree</span></tt>.</p>
-<p>pTree is built on top of Django,
+<p>ptree is built on top of Django,
 which is the most popular web development framework for Python.
-When you install pTree, Django will get installed automatically.</p>
+When you install ptree, Django will get installed automatically.</p>
 </div>
 <div class="section" id="create-your-project">
 <h2>Create your project<a class="headerlink" href="#create-your-project" title="Permalink to this headline">¶</a></h2>
-<p>Each pTree experiment type is implemented as a Django app.
+<p>Each ptree experiment type is implemented as a Django app.
 For example, if you want to create the prisoner&#8217;s dilemma, trust game, and public goods game,
 those would be 3 separate apps.</p>
 <p>Before you create your apps, you need to create a Django project that will contain them.</p>
-<p>From the command line, <tt class="docutils literal"><span class="pre">cd</span></tt> into a directory where you&#8217;d like to store your
-code (can be anywhere, like a folder in &#8220;My Documents&#8221; or &#8220;Documents&#8221;),
-then run the following command:</p>
-<div class="highlight-python"><pre>django-admin.py startproject --template=http://is.gd/ptree_project ptree_experiments</pre>
+<p>then run the following command:</p>
+<div class="highlight-python"><pre>ptree startproject ptree_experiments</pre>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">On Windows, you may have to do <tt class="docutils literal"><span class="pre">python</span> <span class="pre">venv\Scripts\ptree</span> <span class="pre">startproject</span> <span class="pre">ptree_experiments</span></tt></p>
 </div>
 <p>This will create a <tt class="docutils literal"><span class="pre">ptree_experiments</span></tt> directory in your current directory. If it didn&#8217;t
 work, see the <a class="reference external" href="https://docs.djangoproject.com/en/dev/faq/troubleshooting/#troubleshooting-django-admin-py">troubleshooting</a> page.</p>
@@ -102,7 +144,13 @@ It worked!</p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Setup</a><ul>
-<li><a class="reference internal" href="#install">Install</a></li>
+<li><a class="reference internal" href="#choose-a-location-for-your-ptree-work">Choose a location for your ptree work</a></li>
+<li><a class="reference internal" href="#create-a-virtualenv">Create a virtualenv</a><ul>
+<li><a class="reference internal" href="#mac">Mac</a></li>
+<li><a class="reference internal" href="#windows">Windows</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#install-ptree">Install ptree</a></li>
 <li><a class="reference internal" href="#create-your-project">Create your project</a><ul>
 <li><a class="reference internal" href="#test-that-it-worked">Test that it worked</a></li>
 </ul>
@@ -116,7 +164,7 @@ It worked!</p>
                         title="previous chapter">Prerequisites</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="app/index.html"
-                        title="next chapter">Writing a pTree app</a></p>
+                        title="next chapter">Writing a ptree app</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/setup.txt"
@@ -146,7 +194,7 @@ It worked!</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="app/index.html" title="Writing a pTree app"
+          <a href="app/index.html" title="Writing a ptree app"
              >next</a> |</li>
         <li class="right" >
           <a href="prerequisites.html" title="Prerequisites"

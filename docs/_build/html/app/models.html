@@ -26,9 +26,9 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="pTree 0.1 documentation" href="../index.html" />
-    <link rel="up" title="Writing a pTree app" href="index.html" />
+    <link rel="up" title="Writing a ptree app" href="index.html" />
     <link rel="next" title="forms.py" href="forms.html" />
-    <link rel="prev" title="Writing a pTree app" href="index.html" /> 
+    <link rel="prev" title="Writing a ptree app" href="index.html" /> 
   </head>
   <body>
     <div class="related">
@@ -41,10 +41,10 @@
           <a href="forms.html" title="forms.py"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Writing a pTree app"
+          <a href="index.html" title="Writing a ptree app"
              accesskey="P">previous</a> |</li>
         <li><a href="../index.html">pTree 0.1 documentation</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Writing a pTree app</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">Writing a ptree app</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -62,7 +62,7 @@ what treatments are in your experiment,
 what games were played in those treatments,
 what the results were,
 what actions the participants took, etc.</p>
-<p>pTree stores your data in database tables (SQL).
+<p>ptree stores your data in standard database tables (SQL).
 For example, let&#8217;s say you are programming an ultimatum game,
 where in each 2-person match, one participant makes a monetary offer (say, 0-100 cents),
 and another participant either rejects or accepts the offer.
@@ -104,7 +104,7 @@ You will want your &#8220;Match&#8221; table to look something like this:</p>
 </tbody>
 </table>
 </div></blockquote>
-<p>In order to end up with a table like this this, you need to define a Django model,
+<p>In order to end up with this table schema, you need to define a Django model,
 which is a Python class that defines a database table.
 You define what fields (columns) are in the table,
 what their data types are, and so on.
@@ -117,7 +117,7 @@ and each time users visit, new rows will get added to the tables.</p>
 </pre></div>
 </div>
 <p>This class will be placed in your app&#8217;s <tt class="docutils literal"><span class="pre">models.py</span></tt> file.</p>
-<p>Every pTree app needs the following 4 models:</p>
+<p>Every ptree app needs the following 4 models:</p>
 <ul class="simple">
 <li>Participant</li>
 <li>Match</li>
@@ -125,15 +125,13 @@ and each time users visit, new rows will get added to the tables.</p>
 <li>Experiment</li>
 </ul>
 <p>They are related to each other as follows:</p>
-<p>A <tt class="docutils literal"><span class="pre">Participant</span></tt> is part of a <tt class="docutils literal"><span class="pre">Match</span></tt>, which is part of a <tt class="docutils literal"><span class="pre">Treatment</span></tt>, which is part of an <tt class="docutils literal"><span class="pre">Experiment</span></tt>.</p>
-<p>Furthermore, there are usually multiple <tt class="docutils literal"><span class="pre">Participant</span></tt> objects in a <tt class="docutils literal"><span class="pre">Match</span></tt>,
-multiple <tt class="docutils literal"><span class="pre">Match</span></tt> objects in a <tt class="docutils literal"><span class="pre">Treatment</span></tt>,
-and multiple <tt class="docutils literal"><span class="pre">Treatment</span></tt> objects in an <tt class="docutils literal"><span class="pre">Experiment</span></tt>, meaning that your objects would look something like this:</p>
+<p>A <tt class="docutils literal"><span class="pre">Participant</span></tt> is part of a <tt class="docutils literal"><span class="pre">Match</span></tt>, which is part of a <tt class="docutils literal"><span class="pre">Treatment</span></tt>, which is part of an <tt class="docutils literal"><span class="pre">Experiment</span></tt>.
+This relationship is illustrated here:</p>
 <img alt="../_images/model-hierarchy.png" src="../_images/model-hierarchy.png" />
 </div>
 <div class="section" id="how-to-define-a-model">
 <h2>How to define a model<a class="headerlink" href="#how-to-define-a-model" title="Permalink to this headline">¶</a></h2>
-<p>pTree models are Django models with some extra fields and capabilities.
+<p>ptree models are Django models.
 To be able to define a model,
 you need to read the Django documentation on models and understand:</p>
 <ul class="simple">
@@ -144,9 +142,9 @@ you need to read the Django documentation on models and understand:</p>
 </ul>
 </div>
 <div class="section" id="ptree-models-reference">
-<h2>pTree models reference<a class="headerlink" href="#ptree-models-reference" title="Permalink to this headline">¶</a></h2>
+<h2>ptree models reference<a class="headerlink" href="#ptree-models-reference" title="Permalink to this headline">¶</a></h2>
 <p>In your models.py file, you will find pre-generated model classes
-(Participant, Match, Treatment, and Experiment) that inherit from pTree&#8217;s built-in
+(Participant, Match, Treatment, and Experiment) that inherit from ptree&#8217;s built-in
 models (BaseParticipant, BaseMatch, BaseTreatment, and BaseExperiment).</p>
 <p>The base models already define many fields and methods that will come in handy for you;
 they are documented below.</p>
@@ -164,133 +162,163 @@ For example, a Dictator Game match has 2 <tt class="docutils literal"><span clas
 For example, a game that is simply a survey.</p>
 <div class="section" id="implementation">
 <h4>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h4>
-<div class="section" id="what-is-provided-for-you-automatically">
-<h5>What is provided for you automatically<a class="headerlink" href="#what-is-provided-for-you-automatically" title="Permalink to this headline">¶</a></h5>
-<p><tt class="docutils literal"><span class="pre">Participant</span></tt> classes should inherit from <tt class="docutils literal"><span class="pre">ptree.models.participants.BaseParticipant</span></tt>,
-which gives you the following fields and methods:</p>
-<div class="section" id="match">
-<h6>match<a class="headerlink" href="#match" title="Permalink to this headline">¶</a></h6>
-<p>The <tt class="docutils literal"><span class="pre">Match</span></tt> this <tt class="docutils literal"><span class="pre">Participant</span></tt> is a part of.</p>
+<p><tt class="docutils literal"><span class="pre">Participant</span></tt> classes should inherit from <tt class="docutils literal"><span class="pre">ptree.models.participants.BaseParticipant</span></tt>.</p>
+<div class="section" id="fields">
+<h5>Fields<a class="headerlink" href="#fields" title="Permalink to this headline">¶</a></h5>
+<div class="section" id="provided-for-you">
+<h6>Provided for you<a class="headerlink" href="#provided-for-you" title="Permalink to this headline">¶</a></h6>
+<div class="section" id="match-foreignkey">
+<h7>match: ForeignKey<a class="headerlink" href="#match-foreignkey" title="Permalink to this headline">¶</a></h7>
+<p>The match this participant is a part of.</p>
 </div>
-<div class="section" id="index-positiveintegerfield">
-<h6>index: PositiveIntegerField<a class="headerlink" href="#index-positiveintegerfield" title="Permalink to this headline">¶</a></h6>
-<p>the ordinal position in which a participant joined a game. Starts at 0.</p>
+<div class="section" id="index-among-participants-in-match-positiveintegerfield">
+<h7>index_among_participants_in_match: PositiveIntegerField<a class="headerlink" href="#index-among-participants-in-match-positiveintegerfield" title="Permalink to this headline">¶</a></h7>
+<p>the ordinal position in which a participant joined a match. Starts at 0.</p>
 </div>
-<div class="section" id="is-finished-self-boolean">
-<h6>is_finished(self): boolean<a class="headerlink" href="#is-finished-self-boolean" title="Permalink to this headline">¶</a></h6>
-<p>whether the participant is finished playing (i.e. has seen the redemption code page).</p>
+<div class="section" id="index-in-sequence-of-views-positiveintegerfield">
+<h7>index_in_sequence_of_views: PositiveIntegerField<a class="headerlink" href="#index-in-sequence-of-views-positiveintegerfield" title="Permalink to this headline">¶</a></h7>
+<p>Which page the user is on.</p>
+</div>
+</div>
+</div>
+<div class="section" id="methods">
+<h5>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h5>
+<div class="section" id="id1">
+<h6>Provided for you<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h6>
+<div class="section" id="total-pay-integer">
+<h7>total_pay(): integer<a class="headerlink" href="#total-pay-integer" title="Permalink to this headline">¶</a></h7>
+<p>How much the user makes (base pay + bonus).</p>
 </div>
 </div>
 <div class="section" id="what-you-must-implement-yourself">
-<h5>What you must implement yourself<a class="headerlink" href="#what-you-must-implement-yourself" title="Permalink to this headline">¶</a></h5>
-<div class="section" id="bonus-self-integer">
-<h6>bonus(self): integer<a class="headerlink" href="#bonus-self-integer" title="Permalink to this headline">¶</a></h6>
-<p>The bonus the <tt class="docutils literal"><span class="pre">Participant</span></tt> gets paid, in addition to their base pay.</p>
+<h6>What you must implement yourself<a class="headerlink" href="#what-you-must-implement-yourself" title="Permalink to this headline">¶</a></h6>
+<div class="section" id="bonus-integer">
+<h7>bonus(): integer<a class="headerlink" href="#bonus-integer" title="Permalink to this headline">¶</a></h7>
+<p>The bonus the participant gets paid, in addition to their base pay.
+If the bonus cannot yet be determined (e.g. the match is not complete), this should return None.</p>
 </div>
 </div>
 </div>
 </div>
-<div class="section" id="id1">
-<h3>Match<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="match">
+<h3>Match<a class="headerlink" href="#match" title="Permalink to this headline">¶</a></h3>
 <p>A Match is a particular instance of a game being played,
 and holds the results of that instance, i.e. what the score was, who got paid what.</p>
-<p>So, &#8220;Match&#8221; is used in the sense of &#8220;boxing match&#8221;,
+<p>So, &#8220;Match&#8221; is used in the sense of &#8220;chess match&#8221;,
 in the sense that it is an event that occurs where the game is played.</p>
 <p>Example of a Match: &#8220;dictator game between participants Alice &amp; Bob, where Alice gave $0.50&#8221;</p>
 <div class="section" id="id2">
 <h4>Implementation<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<p><tt class="docutils literal"><span class="pre">Match</span></tt> classes should inherit from <tt class="docutils literal"><span class="pre">ptree.models.participants.BaseMatch</span></tt>.</p>
 <div class="section" id="id3">
-<h5>What is provided for you automatically<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h5>
-<p><tt class="docutils literal"><span class="pre">Match</span></tt> classes should inherit from <tt class="docutils literal"><span class="pre">ptree.models.participants.BaseMatch</span></tt>,
-which gives you the following fields and methods.</p>
-<div class="section" id="treatment">
-<h6>treatment<a class="headerlink" href="#treatment" title="Permalink to this headline">¶</a></h6>
-<p>The <tt class="docutils literal"><span class="pre">Treatment</span></tt> this <tt class="docutils literal"><span class="pre">Match</span></tt> is part of.</p>
-</div>
-<div class="section" id="participants-self-list">
-<h6>participants(self): list<a class="headerlink" href="#participants-self-list" title="Permalink to this headline">¶</a></h6>
-<p>Returns the <tt class="docutils literal"><span class="pre">Participant</span></tt> objects in this match.</p>
-</div>
-<div class="section" id="is-full-self-boolean">
-<h6>is_full(self): boolean<a class="headerlink" href="#is-full-self-boolean" title="Permalink to this headline">¶</a></h6>
-<p>Whether the match is full, i.e.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">participants</span><span class="p">())</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">participants_per_match</span>
-</pre></div>
-</div>
-</div>
+<h5>Fields<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h5>
 <div class="section" id="id4">
-<h6>is_finished(self): boolean<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h6>
-<p>Whether the match is completed (i.e. <tt class="docutils literal"><span class="pre">is_finished()</span></tt> is <tt class="docutils literal"><span class="pre">True</span></tt> for each participant).</p>
+<h6>Provided for you<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h6>
+<div class="section" id="treatment-foreignkey">
+<h7>treatment: ForeignKey<a class="headerlink" href="#treatment-foreignkey" title="Permalink to this headline">¶</a></h7>
+<p>The treatment this match is a part of.</p>
+</div>
+<div class="section" id="experiment-foreignkey">
+<h7>experiment: ForeignKey<a class="headerlink" href="#experiment-foreignkey" title="Permalink to this headline">¶</a></h7>
+<p>The experiment this match is a part of.</p>
+</div>
+<div class="section" id="time-started-datetimefield">
+<h7>time_started: DateTimeField<a class="headerlink" href="#time-started-datetimefield" title="Permalink to this headline">¶</a></h7>
+<p>When the match was started.</p>
+</div>
 </div>
 </div>
 <div class="section" id="id5">
-<h5>What you must implement yourself<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h5>
+<h5>Methods<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h5>
+<div class="section" id="id6">
+<h6>Provided for you<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h6>
+<div class="section" id="participants-self-iterable">
+<h7>participants(self): iterable<a class="headerlink" href="#participants-self-iterable" title="Permalink to this headline">¶</a></h7>
+<p>Returns the participants in this match.</p>
+</div>
+</div>
+<div class="section" id="id7">
+<h6>What you must implement yourself<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h6>
 <div class="section" id="is-ready-for-next-participant-self-boolean">
-<h6>is_ready_for_next_participant(self): boolean<a class="headerlink" href="#is-ready-for-next-participant-self-boolean" title="Permalink to this headline">¶</a></h6>
+<h7>is_ready_for_next_participant(self): boolean<a class="headerlink" href="#is-ready-for-next-participant-self-boolean" title="Permalink to this headline">¶</a></h7>
 <p>Whether the game is ready for another participant to be added.</p>
 <p>If it&#8217;s a non-sequential game (you do not have to wait for one participant to finish before the next one joins),
 you can use this to assign participants until the game is full:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_full</span><span class="p">()</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">participants</span><span class="p">())</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">participants_per_match</span>
 </pre></div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="section" id="id6">
-<h3>Treatment<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="treatment">
+<h3>Treatment<a class="headerlink" href="#treatment" title="Permalink to this headline">¶</a></h3>
 <p>A Treatment is the definition of what everyone in the treatment group has to do.</p>
 <p>Example of a treatment:
 &#8216;dictator game with stakes of $1, where participants have to chat with each other first&#8217;</p>
 <p>A treatment is defined before the experiment starts.
 Results of a game are not stored in Treatment object, they are stored in Match or Participant objects.</p>
-<div class="section" id="id7">
-<h4>Implementation<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h4>
 <div class="section" id="id8">
-<h5>What is provided for you automatically<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h5>
-<p><tt class="docutils literal"><span class="pre">Treatment</span></tt> classes should inherit from <tt class="docutils literal"><span class="pre">ptree.models.participants.BaseTreatment</span></tt>,
-which gives you the following fields and methods.</p>
-<div class="section" id="matches-self-list">
-<h6>matches(self): list<a class="headerlink" href="#matches-self-list" title="Permalink to this headline">¶</a></h6>
-<p>The <tt class="docutils literal"><span class="pre">Match</span></tt> objects in this <tt class="docutils literal"><span class="pre">Treatment</span></tt>.</p>
-</div>
+<h4>Implementation<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h4>
+<p><tt class="docutils literal"><span class="pre">Treatment</span></tt> classes should inherit from <tt class="docutils literal"><span class="pre">ptree.models.participants.BaseTreatment</span></tt></p>
+<div class="section" id="id9">
+<h5>Fields<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h5>
+<div class="section" id="mandatory-fields">
+<h6>Mandatory fields<a class="headerlink" href="#mandatory-fields" title="Permalink to this headline">¶</a></h6>
+<p>When you instantiate a <tt class="docutils literal"><span class="pre">Treatment</span></tt>, the following fields are required.</p>
 <div class="section" id="base-pay-positiveintegerfield">
-<h6>base_pay: PositiveIntegerField<a class="headerlink" href="#base-pay-positiveintegerfield" title="Permalink to this headline">¶</a></h6>
+<h7>base_pay: PositiveIntegerField<a class="headerlink" href="#base-pay-positiveintegerfield" title="Permalink to this headline">¶</a></h7>
 <p>How much each Participant is getting paid to play the game.
 Needs to be set when you instantiate your <tt class="docutils literal"><span class="pre">Participant</span></tt> objects.</p>
 </div>
 </div>
-<div class="section" id="id9">
-<h5>What you must implement yourself<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h5>
-<div class="section" id="sequence-self-list">
-<h6>sequence(self): list<a class="headerlink" href="#sequence-self-list" title="Permalink to this headline">¶</a></h6>
+<div class="section" id="optional-fields">
+<h6>Optional fields<a class="headerlink" href="#optional-fields" title="Permalink to this headline">¶</a></h6>
+<div class="section" id="name-charfield">
+<h7>name: CharField<a class="headerlink" href="#name-charfield" title="Permalink to this headline">¶</a></h7>
+<p>Whatever internal label you want to give to this treatment.</p>
+</div>
+<div class="section" id="participants-per-match-positiveintegerfield">
+<h7>participants_per_match: PositiveIntegerField<a class="headerlink" href="#participants-per-match-positiveintegerfield" title="Permalink to this headline">¶</a></h7>
+<p>Number of participants in each match.
+For example, Prisoner&#8217;s Dilemma has 2 participants.
+a single-participant game would just have 1.</p>
+</div>
+</div>
+</div>
+<div class="section" id="id10">
+<h5>Methods<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h5>
+<div class="section" id="id11">
+<h6>Provided for you<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h6>
+<div class="section" id="matches-iterable">
+<h7>matches(): iterable<a class="headerlink" href="#matches-iterable" title="Permalink to this headline">¶</a></h7>
+<p>The matches in this treatment.</p>
+</div>
+</div>
+<div class="section" id="id12">
+<h6>What you must implement yourself<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h6>
+<div class="section" id="sequence-of-views-list">
+<h7>sequence_of_views(): list<a class="headerlink" href="#sequence-of-views-list" title="Permalink to this headline">¶</a></h7>
 <p>Very important. Returns a list of all the View classes that the participant gets routed through sequentially.
-(Not all pages have to be displayed for all participants; see the <tt class="docutils literal"><span class="pre">is_displayed()</span></tt> method).
+(Not all pages have to be displayed for all participants; see the <tt class="docutils literal"><span class="pre">show_skip_wait()</span></tt> method).
 Must start with your app&#8217;s <tt class="docutils literal"><span class="pre">StartTreatment</span></tt>, and usually ends the Redemption Code view.
 The rest is up to you.</p>
 <p>Inside the method, you should import the modules containing the views you want to use.</p>
 <p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">donation.views</span> <span class="kn">as</span> <span class="nn">views</span>
-<span class="kn">import</span> <span class="nn">ptree.views.concrete</span>
-<span class="k">return</span> <span class="p">[</span><span class="n">views</span><span class="o">.</span><span class="n">StartTreatment</span><span class="p">,</span>
-                <span class="n">ptree</span><span class="o">.</span><span class="n">views</span><span class="o">.</span><span class="n">concrete</span><span class="o">.</span><span class="n">AssignParticipantAndMatch</span><span class="p">,</span>
-                <span class="n">views</span><span class="o">.</span><span class="n">IntroPage</span><span class="p">,</span>
-                <span class="n">views</span><span class="o">.</span><span class="n">EnterOfferEncrypted</span><span class="p">,</span>
-                <span class="n">views</span><span class="o">.</span><span class="n">ExplainRandomizationDetails</span><span class="p">,</span>
-                <span class="n">views</span><span class="o">.</span><span class="n">EnterDecryptionKey</span><span class="p">,</span>
-                <span class="n">views</span><span class="o">.</span><span class="n">NotifyOfInvalidEncryptedDonation</span><span class="p">,</span>
-                <span class="n">views</span><span class="o">.</span><span class="n">EnterOfferUnencrypted</span><span class="p">,</span>
-                <span class="n">views</span><span class="o">.</span><span class="n">NotifyOfShred</span><span class="p">,</span>
-                <span class="n">views</span><span class="o">.</span><span class="n">Survey</span><span class="p">,</span>
-                <span class="n">ptree</span><span class="o">.</span><span class="n">views</span><span class="o">.</span><span class="n">concrete</span><span class="o">.</span><span class="n">RedemptionCode</span><span class="p">]</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">sequence_of_views</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">donation.views</span> <span class="kn">as</span> <span class="nn">views</span>
+    <span class="kn">import</span> <span class="nn">ptree.views.concrete</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">views</span><span class="o">.</span><span class="n">StartTreatment</span><span class="p">,</span>
+            <span class="n">ptree</span><span class="o">.</span><span class="n">views</span><span class="o">.</span><span class="n">concrete</span><span class="o">.</span><span class="n">AssignParticipantAndMatch</span><span class="p">,</span>
+            <span class="n">views</span><span class="o">.</span><span class="n">IntroPage</span><span class="p">,</span>
+            <span class="n">views</span><span class="o">.</span><span class="n">EnterOffer</span><span class="p">,</span>
+            <span class="n">views</span><span class="o">.</span><span class="n">Survey</span><span class="p">,</span>
+            <span class="n">ptree</span><span class="o">.</span><span class="n">views</span><span class="o">.</span><span class="n">concrete</span><span class="o">.</span><span class="n">RedemptionCode</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="participants-per-match-int">
-<h6>participants_per_match: int<a class="headerlink" href="#participants-per-match-int" title="Permalink to this headline">¶</a></h6>
-<p>Class attribute that specifies the number of participants in each match.
-For example, Prisoner&#8217;s Dilemma has 2 participants.
-a single-participant game would just have 1.</p>
 </div>
 </div>
 </div>
@@ -298,30 +326,57 @@ a single-participant game would just have 1.</p>
 <div class="section" id="experiment">
 <h3>Experiment<a class="headerlink" href="#experiment" title="Permalink to this headline">¶</a></h3>
 <p>An experiment is generally a randomization between treatments, though it could just have one treatment.</p>
-<p>Most experiments won&#8217;t need to access the experiment class, but info is provided here for the sake of completeness.</p>
-<div class="section" id="id10">
-<h4>Implementation<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h4>
-<div class="section" id="id11">
-<h5>What is provided for you automatically<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h5>
-<div class="section" id="treatments-self-list">
-<h6>treatments(self): list<a class="headerlink" href="#treatments-self-list" title="Permalink to this headline">¶</a></h6>
-<p>Returns the <tt class="docutils literal"><span class="pre">Treatment</span></tt> objects in this <tt class="docutils literal"><span class="pre">Experiment</span></tt>.</p>
+<div class="section" id="id13">
+<h4>Implementation<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id14">
+<h5>Fields<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h5>
+<div class="section" id="optional">
+<h6>Optional<a class="headerlink" href="#optional" title="Permalink to this headline">¶</a></h6>
+<div class="section" id="id15">
+<h7>name: CharField<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h7>
+<p>Whatever internal label you want to give to this experiment.</p>
+</div>
+<div class="section" id="is-for-mturk-booleanfield">
+<h7>is_for_mturk: BooleanField<a class="headerlink" href="#is-for-mturk-booleanfield" title="Permalink to this headline">¶</a></h7>
+<p>Defaults to True. If true, the experiment URL will not work unless a participant&#8217;s Mechanical Turk worker ID &amp; assignment ID are appended to the URL.</p>
 </div>
 </div>
-<div class="section" id="methods-that-are-optional-to-define">
-<h5>Methods that are optional to define<a class="headerlink" href="#methods-that-are-optional-to-define" title="Permalink to this headline">¶</a></h5>
-<div class="section" id="pick-treatment-for-incoming-participant-self-treatment">
-<h6>pick_treatment_for_incoming_participant(self): Treatment<a class="headerlink" href="#pick-treatment-for-incoming-participant-self-treatment" title="Permalink to this headline">¶</a></h6>
+</div>
+<div class="section" id="id16">
+<h5>Methods<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h5>
+<div class="section" id="id17">
+<h6>Provided for you<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h6>
+<div class="section" id="treatments-iterable">
+<h7>treatments(): iterable<a class="headerlink" href="#treatments-iterable" title="Permalink to this headline">¶</a></h7>
+<p>Returns the treatments in this experiment.</p>
+</div>
+<div class="section" id="id18">
+<h7>matches(): iterable<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h7>
+<p>Returns the matches in this experiment.</p>
+</div>
+<div class="section" id="participants-iterable">
+<h7>participants(): iterable<a class="headerlink" href="#participants-iterable" title="Permalink to this headline">¶</a></h7>
+<p>Returns the participants in this experiment.</p>
+</div>
+</div>
+<div class="section" id="optional-to-define">
+<h6>Optional to define<a class="headerlink" href="#optional-to-define" title="Permalink to this headline">¶</a></h6>
+<div class="section" id="pick-treatment-for-incoming-participant-treatment">
+<h7>pick_treatment_for_incoming_participant(): Treatment<a class="headerlink" href="#pick-treatment-for-incoming-participant-treatment" title="Permalink to this headline">¶</a></h7>
 <p>This method will get called when a participant arrives at your site,
 and needs to be randomized to a treatment.
 Unless you override it,
-this method returns a random choice between the treatments in the experiment,
-weighted by their <tt class="docutils literal"><span class="pre">randomization_weight</span></tt>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">pick_treatment_for_incoming_participant</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-    <span class="n">choices</span> <span class="o">=</span> <span class="p">[(</span><span class="n">treatment</span><span class="p">,</span> <span class="n">treatment</span><span class="o">.</span><span class="n">randomization_weight</span><span class="p">)</span> <span class="k">for</span> <span class="n">treatment</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment_set</span><span class="o">.</span><span class="n">all</span><span class="p">()]</span>
-    <span class="n">treatment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weighted_randomization_choice</span><span class="p">(</span><span class="n">choices</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">treatment</span>
-</pre></div>
+this method picks a treatment randomly.</p>
+</div>
+<div class="section" id="experimenter-sequence-of-views-list">
+<h7><tt class="docutils literal"><span class="pre">experimenter_sequence_of_views():</span> <span class="pre">list</span></tt><a class="headerlink" href="#experimenter-sequence-of-views-list" title="Permalink to this headline">¶</a></h7>
+<p>pTree provides an &#8220;experimenter link&#8221;,
+which is a sequence of pages that lets the experimenter can participate interactively in the game.
+The design of your experiment may require this.
+For example, if you are running your experiment in a lab,
+and the experimenter needs to input the result of a of a random drawing into the database.
+You can have a page where the experimenter enters the result into a form and submits.</p>
+<p>You should implement this list in the same way as <tt class="docutils literal"><span class="pre">treatment.sequence_of_views()</span></tt>.</p>
 </div>
 </div>
 </div>
@@ -341,33 +396,50 @@ weighted by their <tt class="docutils literal"><span class="pre">randomization_w
 <li><a class="reference internal" href="#">models.py</a><ul>
 <li><a class="reference internal" href="#introduction-to-models">Introduction to models</a></li>
 <li><a class="reference internal" href="#how-to-define-a-model">How to define a model</a></li>
-<li><a class="reference internal" href="#ptree-models-reference">pTree models reference</a><ul>
+<li><a class="reference internal" href="#ptree-models-reference">ptree models reference</a><ul>
 <li><a class="reference internal" href="#participant">Participant</a><ul>
 <li><a class="reference internal" href="#implementation">Implementation</a><ul>
-<li><a class="reference internal" href="#what-is-provided-for-you-automatically">What is provided for you automatically</a><ul>
-<li><a class="reference internal" href="#match">match</a></li>
-<li><a class="reference internal" href="#index-positiveintegerfield">index: PositiveIntegerField</a></li>
-<li><a class="reference internal" href="#is-finished-self-boolean">is_finished(self): boolean</a></li>
+<li><a class="reference internal" href="#fields">Fields</a><ul>
+<li><a class="reference internal" href="#provided-for-you">Provided for you</a><ul>
+<li><a class="reference internal" href="#match-foreignkey">match: ForeignKey</a></li>
+<li><a class="reference internal" href="#index-among-participants-in-match-positiveintegerfield">index_among_participants_in_match: PositiveIntegerField</a></li>
+<li><a class="reference internal" href="#index-in-sequence-of-views-positiveintegerfield">index_in_sequence_of_views: PositiveIntegerField</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#methods">Methods</a><ul>
+<li><a class="reference internal" href="#id1">Provided for you</a><ul>
+<li><a class="reference internal" href="#total-pay-integer">total_pay(): integer</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#what-you-must-implement-yourself">What you must implement yourself</a><ul>
-<li><a class="reference internal" href="#bonus-self-integer">bonus(self): integer</a></li>
+<li><a class="reference internal" href="#bonus-integer">bonus(): integer</a></li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id1">Match</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#match">Match</a><ul>
 <li><a class="reference internal" href="#id2">Implementation</a><ul>
-<li><a class="reference internal" href="#id3">What is provided for you automatically</a><ul>
-<li><a class="reference internal" href="#treatment">treatment</a></li>
-<li><a class="reference internal" href="#participants-self-list">participants(self): list</a></li>
-<li><a class="reference internal" href="#is-full-self-boolean">is_full(self): boolean</a></li>
-<li><a class="reference internal" href="#id4">is_finished(self): boolean</a></li>
+<li><a class="reference internal" href="#id3">Fields</a><ul>
+<li><a class="reference internal" href="#id4">Provided for you</a><ul>
+<li><a class="reference internal" href="#treatment-foreignkey">treatment: ForeignKey</a></li>
+<li><a class="reference internal" href="#experiment-foreignkey">experiment: ForeignKey</a></li>
+<li><a class="reference internal" href="#time-started-datetimefield">time_started: DateTimeField</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id5">What you must implement yourself</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#id5">Methods</a><ul>
+<li><a class="reference internal" href="#id6">Provided for you</a><ul>
+<li><a class="reference internal" href="#participants-self-iterable">participants(self): iterable</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id7">What you must implement yourself</a><ul>
 <li><a class="reference internal" href="#is-ready-for-next-participant-self-boolean">is_ready_for_next_participant(self): boolean</a></li>
 </ul>
 </li>
@@ -375,16 +447,31 @@ weighted by their <tt class="docutils literal"><span class="pre">randomization_w
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id6">Treatment</a><ul>
-<li><a class="reference internal" href="#id7">Implementation</a><ul>
-<li><a class="reference internal" href="#id8">What is provided for you automatically</a><ul>
-<li><a class="reference internal" href="#matches-self-list">matches(self): list</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#treatment">Treatment</a><ul>
+<li><a class="reference internal" href="#id8">Implementation</a><ul>
+<li><a class="reference internal" href="#id9">Fields</a><ul>
+<li><a class="reference internal" href="#mandatory-fields">Mandatory fields</a><ul>
 <li><a class="reference internal" href="#base-pay-positiveintegerfield">base_pay: PositiveIntegerField</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id9">What you must implement yourself</a><ul>
-<li><a class="reference internal" href="#sequence-self-list">sequence(self): list</a></li>
-<li><a class="reference internal" href="#participants-per-match-int">participants_per_match: int</a></li>
+<li><a class="reference internal" href="#optional-fields">Optional fields</a><ul>
+<li><a class="reference internal" href="#name-charfield">name: CharField</a></li>
+<li><a class="reference internal" href="#participants-per-match-positiveintegerfield">participants_per_match: PositiveIntegerField</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id10">Methods</a><ul>
+<li><a class="reference internal" href="#id11">Provided for you</a><ul>
+<li><a class="reference internal" href="#matches-iterable">matches(): iterable</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id12">What you must implement yourself</a><ul>
+<li><a class="reference internal" href="#sequence-of-views-list">sequence_of_views(): list</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -392,13 +479,27 @@ weighted by their <tt class="docutils literal"><span class="pre">randomization_w
 </ul>
 </li>
 <li><a class="reference internal" href="#experiment">Experiment</a><ul>
-<li><a class="reference internal" href="#id10">Implementation</a><ul>
-<li><a class="reference internal" href="#id11">What is provided for you automatically</a><ul>
-<li><a class="reference internal" href="#treatments-self-list">treatments(self): list</a></li>
+<li><a class="reference internal" href="#id13">Implementation</a><ul>
+<li><a class="reference internal" href="#id14">Fields</a><ul>
+<li><a class="reference internal" href="#optional">Optional</a><ul>
+<li><a class="reference internal" href="#id15">name: CharField</a></li>
+<li><a class="reference internal" href="#is-for-mturk-booleanfield">is_for_mturk: BooleanField</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#methods-that-are-optional-to-define">Methods that are optional to define</a><ul>
-<li><a class="reference internal" href="#pick-treatment-for-incoming-participant-self-treatment">pick_treatment_for_incoming_participant(self): Treatment</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id16">Methods</a><ul>
+<li><a class="reference internal" href="#id17">Provided for you</a><ul>
+<li><a class="reference internal" href="#treatments-iterable">treatments(): iterable</a></li>
+<li><a class="reference internal" href="#id18">matches(): iterable</a></li>
+<li><a class="reference internal" href="#participants-iterable">participants(): iterable</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#optional-to-define">Optional to define</a><ul>
+<li><a class="reference internal" href="#pick-treatment-for-incoming-participant-treatment">pick_treatment_for_incoming_participant(): Treatment</a></li>
+<li><a class="reference internal" href="#experimenter-sequence-of-views-list"><tt class="docutils literal"><span class="pre">experimenter_sequence_of_views():</span> <span class="pre">list</span></tt></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -413,7 +514,7 @@ weighted by their <tt class="docutils literal"><span class="pre">randomization_w
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">Writing a pTree app</a></p>
+                        title="previous chapter">Writing a ptree app</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="forms.html"
                         title="next chapter">forms.py</a></p>
@@ -449,10 +550,10 @@ weighted by their <tt class="docutils literal"><span class="pre">randomization_w
           <a href="forms.html" title="forms.py"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Writing a pTree app"
+          <a href="index.html" title="Writing a ptree app"
              >previous</a> |</li>
         <li><a href="../index.html">pTree 0.1 documentation</a> &raquo;</li>
-          <li><a href="index.html" >Writing a pTree app</a> &raquo;</li> 
+          <li><a href="index.html" >Writing a ptree app</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

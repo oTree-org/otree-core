@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Writing a pTree app &mdash; pTree 0.1 documentation</title>
+    <title>Writing a ptree app &mdash; pTree 0.1 documentation</title>
     
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -52,7 +52,7 @@
           <div class="body">
             
   <div class="section" id="writing-a-ptree-app">
-<h1>Writing a pTree app<a class="headerlink" href="#writing-a-ptree-app" title="Permalink to this headline">¶</a></h1>
+<h1>Writing a ptree app<a class="headerlink" href="#writing-a-ptree-app" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="creating-the-app">
 <h2>Creating the app<a class="headerlink" href="#creating-the-app" title="Permalink to this headline">¶</a></h2>
 <p>First, choose a name for your app that is descriptive and short,
@@ -62,10 +62,14 @@ you can choose the name <tt class="docutils literal"><span class="pre">prisoner<
 If you are implementing the <a class="reference external" href="http://en.wikipedia.org/wiki/Public_goods_game">public goods game</a>,
 you can choose the name <tt class="docutils literal"><span class="pre">publicgoods</span></tt>.</p>
 <p>At your command line, go inside your project directory (the same directory as <tt class="docutils literal"><span class="pre">manage.py</span></tt>),
-and run this command, where <tt class="docutils literal"><span class="pre">&lt;app_name&gt;</span></tt> is the name you have chosen for your app:</p>
-<div class="highlight-python"><pre>django-admin.py startapp --template=http://is.gd/ptree_app &lt;app_name&gt;</pre>
+and run this command, where <tt class="docutils literal"><span class="pre">your_app_name</span></tt> is the name you have chosen for your app:</p>
+<div class="highlight-python"><pre>ptree startapp your_app_name</pre>
 </div>
-<p>This will create a new app based on a pTree template, with most of the structure already set up for you.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">On Windows, you may have to do <tt class="docutils literal"><span class="pre">python</span> <span class="pre">..\venv\Scripts\ptree</span> <span class="pre">startapp</span> <span class="pre">your_app_name</span></tt></p>
+</div>
+<p>This will create a new app based on a ptree template, with most of the structure already set up for you.</p>
 <p>Think of this as a skeleton to which you can add as much as you want.
 You can add your own classes, functions, methods, and attributes,
 or import any 3rd-party modules.</p>
@@ -104,16 +108,26 @@ When the project opens, on the left-hand site you should see a directory tree th
 <li class="toctree-l1"><a class="reference internal" href="models.html">models.py</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="models.html#introduction-to-models">Introduction to models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="models.html#how-to-define-a-model">How to define a model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="models.html#ptree-models-reference">pTree models reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html#ptree-models-reference">ptree models reference</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="forms.html">forms.py</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forms.html">forms.py</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="forms.html#participant">participant</a></li>
+<li class="toctree-l2"><a class="reference internal" href="forms.html#match">match</a></li>
+<li class="toctree-l2"><a class="reference internal" href="forms.html#treatment">treatment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="forms.html#experiment">experiment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="forms.html#request">request</a></li>
+<li class="toctree-l2"><a class="reference internal" href="forms.html#field-initial-values">field_initial_values()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="forms.html#field-choices">field_choices()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="forms.html#field-labels">field_labels()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="forms.html#currency-choices-amounts">currency_choices(amounts)</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="views.html">views.py</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="views.html#implementation">Implementation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="views.html#built-in-views">Built-in views</a></li>
-<li class="toctree-l2"><a class="reference internal" href="views.html#out-of-sequence-views">Out-of-sequence views</a></li>
-<li class="toctree-l2"><a class="reference internal" href="views.html#real-time-interaction">Real-time interaction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="views.html#questionnaires">Questionnaires</a></li>
+<li class="toctree-l2"><a class="reference internal" href="views.html#updateview">UpdateView</a></li>
+<li class="toctree-l2"><a class="reference internal" href="views.html#starttreatment">StartTreatment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="views.html#redemptioncode">RedemptionCode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="views.html#createview-templateview-sequencetemplateview-createmultipleview-updatemultipleview">CreateView, TemplateView, SequenceTemplateView, CreateMultipleView, UpdateMultipleView</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="templates.html">The <tt class="docutils literal"><span class="pre">templates/</span></tt> directory</a><ul>
@@ -128,6 +142,7 @@ When the project opens, on the left-hand site you should see a directory tree th
 <li class="toctree-l2"><a class="reference internal" href="management.html#how-to-create-your-objects">How to create your objects</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="auxiliary-models.html">Auxiliary models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="admin.html">Experimenter console</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="admin.html#customizing-the-experimenter-console">Customizing the experimenter console</a></li>
 </ul>
@@ -145,7 +160,7 @@ When the project opens, on the left-hand site you should see a directory tree th
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Writing a pTree app</a><ul>
+<li><a class="reference internal" href="#">Writing a ptree app</a><ul>
 <li><a class="reference internal" href="#creating-the-app">Creating the app</a></li>
 <li><a class="reference internal" href="#open-your-project-for-editing">Open your project for editing</a><ul>
 </ul>

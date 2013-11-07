@@ -26,7 +26,7 @@ class FormMixin(object):
     def customize(self):
         """Make any customizations to your field forms that are not covered by the other methods"""
 
-    def make_field_currency_choices(self, amounts):
+    def currency_choices(self, amounts):
         return [(amount, templatetags.ptreefilters.currency(amount)) for amount in amounts]
 
     def __init__(self, *args, **kwargs):

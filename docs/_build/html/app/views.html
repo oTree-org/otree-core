@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="pTree 0.1 documentation" href="../index.html" />
-    <link rel="up" title="Writing a pTree app" href="index.html" />
+    <link rel="up" title="Writing a ptree app" href="index.html" />
     <link rel="next" title="The templates/ directory" href="templates.html" />
     <link rel="prev" title="forms.py" href="forms.html" /> 
   </head>
@@ -44,7 +44,7 @@
           <a href="forms.html" title="forms.py"
              accesskey="P">previous</a> |</li>
         <li><a href="../index.html">pTree 0.1 documentation</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Writing a pTree app</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">Writing a ptree app</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -59,234 +59,149 @@
 It is implemented as a Python class &#8211; more specifically, a Django <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/class-based-views/generic-display/">class-based view</a>.</p>
 <p>For example, if your experiment involves showing the participant a sequence of 5 pages,
 your views.py should contain 5 View classes.</p>
-<p>When a participant visits your site, they are routed through your views in the order you specify in <tt class="xref py py-meth docutils literal"><span class="pre">Treatment.sequence()</span></tt>.</p>
+<p>When a participant visits your site, they are routed through your views in the order you specify in your treatment&#8217;s <tt class="docutils literal"><span class="pre">sequence_of_views()</span></tt> method.</p>
 <p>The participant must submit a valid form before they get routed to the next page.
 If the form they submit is invalid (e.g. missing or incorrect values),
 it will be re-displayed to them along with the list of errors they need to correct.</p>
 <p>Here is what the code of a View should define (along with what attribute/method defines it):</p>
-<ul class="simple">
-<li>Whether a given participant sees this View (or whether it should be skipped): <tt class="docutils literal"><span class="pre">is_displayed()</span></tt></li>
-<li>What HTML template to display: <tt class="docutils literal"><span class="pre">template_name</span></tt></li>
-<li>What form to display on the page: <tt class="docutils literal"><span class="pre">form_class</span></tt></li>
-<li>What variables to insert into the template (for displaying dynamic content), and how to calculate those variables: <tt class="docutils literal"><span class="pre">get_variables_for_template</span></tt></li>
-<li>What to do after the participant has submitted a valid form: <tt class="docutils literal"><span class="pre">after_form_validates</span></tt></li>
-</ul>
-<p>In your view code, pTree automatically provides you with attributes called
+<p>In your view code, ptree automatically provides you with attributes called
 <tt class="docutils literal"><span class="pre">participant</span></tt>, <tt class="docutils literal"><span class="pre">match</span></tt>, <tt class="docutils literal"><span class="pre">treatment</span></tt>, and <tt class="docutils literal"><span class="pre">experiment</span></tt>,
 so that you can access the current participant, match, treatment, and experiment objects,
 and get/set fields or call those objects&#8217; methods.</p>
-<div class="section" id="implementation">
-<h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
-<p>Here is the structure of a class you would write:</p>
-<dl class="class">
-<dt id="MyView">
-<em class="property">class </em><tt class="descname">MyView</tt><big>(</big><em>ptree.views.abstract.StandardView</em>, <em>ViewInThisApp</em><big>)</big><a class="headerlink" href="#MyView" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
-<dt id="MyView.template_name">
-<tt class="descname">template_name</tt><a class="headerlink" href="#MyView.template_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>The name of the HTML template to display.</p>
+<div class="section" id="updateview">
+<h2>UpdateView<a class="headerlink" href="#updateview" title="Permalink to this headline">¶</a></h2>
+<p>Most of the time, your view class will inhert from <tt class="docutils literal"><span class="pre">ptree.views.UpdateView</span></tt>.</p>
+<div class="section" id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="provided-for-you">
+<h4>Provided for you<a class="headerlink" href="#provided-for-you" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="participant">
+<h5>participant<a class="headerlink" href="#participant" title="Permalink to this headline">¶</a></h5>
+<p>The current participant.</p>
+</div>
+<div class="section" id="match">
+<h5>match<a class="headerlink" href="#match" title="Permalink to this headline">¶</a></h5>
+<p>The current match.</p>
+</div>
+<div class="section" id="treatment">
+<h5>treatment<a class="headerlink" href="#treatment" title="Permalink to this headline">¶</a></h5>
+<p>The current treatment.</p>
+</div>
+<div class="section" id="experiment">
+<h5>experiment<a class="headerlink" href="#experiment" title="Permalink to this headline">¶</a></h5>
+<p>The current experiment.</p>
+</div>
+</div>
+<div class="section" id="required">
+<h4>Required<a class="headerlink" href="#required" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="template-name">
+<h5>template_name<a class="headerlink" href="#template-name" title="Permalink to this headline">¶</a></h5>
+<p>The name of the HTML template to display.</p>
 <p>Example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># This will look inside your app under the &#39;templates&#39; directory, to &#39;/app_name/MyView.html&#39;</span>
 <span class="n">template_name</span> <span class="o">=</span> <span class="s">&#39;app_name/MyView.html&#39;</span>
 
-<span class="c"># This will use the pTree built-in &#39;Start&#39; template</span>
+<span class="c"># This will use the ptree built-in &#39;Start&#39; template</span>
 <span class="n">template_name</span> <span class="o">=</span> <span class="s">&#39;ptree/Start.html&#39;</span>
 </pre></div>
 </div>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="MyView.form_class">
-<tt class="descname">form_class</tt><a class="headerlink" href="#MyView.form_class" title="Permalink to this definition">¶</a></dt>
-<dd><p>The form to display on this page.
+</div>
+<div class="section" id="form-class">
+<h5>form_class<a class="headerlink" href="#form-class" title="Permalink to this headline">¶</a></h5>
+<p>The form to display on this page.
 Usually this will be the name of a form class defined in your <tt class="docutils literal"><span class="pre">forms.py</span></tt>.
 (See <a class="reference internal" href="forms.html#forms"><em>forms.py</em></a> for more info.)</p>
 <p>Example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">form_class</span> <span class="o">=</span> <span class="n">app_name</span><span class="o">.</span><span class="n">forms</span><span class="o">.</span><span class="n">MyForm</span>
 </pre></div>
 </div>
-</dd></dl>
-
-<dl class="method">
-<dt id="MyView.is_displayed">
-<tt class="descname">is_displayed</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#MyView.is_displayed" title="Permalink to this definition">¶</a></dt>
-<dd><p>Whether a given participant sees this View (or whether it should be skipped).
-If you don&#8217;t define this method, all participants in the treatment will see this page.</p>
-<p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">is_displayed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;only display this page to participants who made an offer of 0&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">participant</span><span class="o">.</span><span class="n">offer</span> <span class="o">==</span> <span class="mi">0</span>
-</pre></div>
 </div>
-</dd></dl>
-
-<dl class="method">
-<dt id="MyView.get_variables_for_template">
-<tt class="descname">get_variables_for_template</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#MyView.get_variables_for_template" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get any variables that will be passed to the HTML template.
+</div>
+<div class="section" id="id1">
+<h4>Provided for you<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="time-limit-was-exceeded-boolean">
+<h5>time_limit_was_exceeded: boolean<a class="headerlink" href="#time-limit-was-exceeded-boolean" title="Permalink to this headline">¶</a></h5>
+<p>Only available on POST (i.e., after the user submits the form).
+Indicates whether the participant exceeded the time limit specified in <tt class="docutils literal"><span class="pre">time_limit_seconds()</span></tt>.</p>
+</div>
+</div>
+</div>
+<div class="section" id="methods">
+<h3>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="optional">
+<h4>Optional<a class="headerlink" href="#optional" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="variables-for-template">
+<h5>variables_for_template()<a class="headerlink" href="#variables-for-template" title="Permalink to this headline">¶</a></h5>
+<p>Get any variables that will be passed to the HTML template.
 Add them to the dictionary as key-value pairs.
 (You don&#8217;t need to include the form; that will be handled automatically)</p>
 <p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">get_variables_for_template</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">variables_for_template</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">{</span><span class="s">&#39;CHARITY&#39;</span><span class="p">:</span> <span class="n">CHARITY</span><span class="p">,</span>
-        <span class="s">&#39;is_hypothetical&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">probability_of_honoring_split_as_fraction</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="s">&#39;max_offer_amount&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">max_offer_amount</span><span class="p">,</span>
-        <span class="s">&#39;participant_gets_all_money_if_no_honor_split&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">participant_gets_all_money_if_no_honor_split</span><span class="p">}</span>
+            <span class="s">&#39;is_hypothetical&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">probability_of_honoring_split_as_fraction</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s">&#39;max_offer_amount&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">max_offer_amount</span><span class="p">,</span>
+            <span class="s">&#39;participant_gets_all_money_if_no_honor_split&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">participant_gets_all_money_if_no_honor_split</span><span class="p">}</span>
 </pre></div>
 </div>
-</dd></dl>
-
-<dl class="method">
-<dt id="MyView.after_form_validates">
-<tt class="descname">after_form_validates</tt><big>(</big><em>self</em>, <em>form</em><big>)</big><a class="headerlink" href="#MyView.after_form_validates" title="Permalink to this definition">¶</a></dt>
-<dd><p>After the participant submits the form,
-pTree makes sure that it has all the required values
+</div>
+<div class="section" id="show-skip-wait">
+<h5>show_skip_wait()<a class="headerlink" href="#show-skip-wait" title="Permalink to this headline">¶</a></h5>
+<p>Whether this view should be shown, skipped, or whether the participant has to wait.
+Default behavior is to show the page.</p>
+<p>In the case where the participant has to wait, he is redirected to a waiting page
+that will make an AJAX call to this method every N seconds.
+The participant will have to wait until this method returns Show or Skip.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">show_skip_wait</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">participant</span><span class="o">.</span><span class="n">open_envelope</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">PageActions</span><span class="o">.</span><span class="n">wait</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">PageActions</span><span class="o">.</span><span class="n">show</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="wait-message">
+<h5>wait_message()<a class="headerlink" href="#wait-message" title="Permalink to this headline">¶</a></h5>
+<p>The message to display to users on the waiting page.
+(See <tt class="docutils literal"><span class="pre">show_skip_wait()</span></tt>).</p>
+</div>
+<div class="section" id="after-valid-form-submission">
+<h5>after_valid_form_submission()<a class="headerlink" href="#after-valid-form-submission" title="Permalink to this headline">¶</a></h5>
+<p>After the participant submits the form,
+ptree makes sure that it has all the required values
 (and re-displays to the participant with errors otherwise).</p>
 <p>Here you can put anything additional that should happen after the form validates.
 If you don&#8217;t need anything to be done, it&#8217;s OK to leave this method blank,
 or to leave it out entirely.</p>
-<p>You can access form fields like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">password</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;password&#39;</span><span class="p">]</span>
-</pre></div>
 </div>
-<p>Example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">after_form_validates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">):</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">probability_of_honoring_split_as_fraction</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-
-        <span class="c"># note: you can access form data through the form.cleaned_data dictionary,</span>
-        <span class="c"># as defined here: https://docs.djangoproject.com/en/dev/ref/forms/api/#accessing-clean-data</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">match</span><span class="o">.</span><span class="n">amount_given</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&#39;amount_offered&#39;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">match</span><span class="o">.</span><span class="n">split_was_honored</span> <span class="o">=</span> <span class="bp">True</span>
-    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">probability_of_honoring_split_as_fraction</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">match</span><span class="o">.</span><span class="n">amount_given</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">amount_given_if_no_honor_split</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">match</span><span class="o">.</span><span class="n">split_was_honored</span> <span class="o">=</span> <span class="bp">False</span>
-</pre></div>
+<div class="section" id="time-limit-seconds">
+<h5>time_limit_seconds()<a class="headerlink" href="#time-limit-seconds" title="Permalink to this headline">¶</a></h5>
+<p>Your page can have a time limit, in which case the participant will see a countdown timer on the page.
+This method lets you define what that time limit is.
+If the user exceeds the time limit, they can still submit the form, but once they submit,
+the <tt class="docutils literal"><span class="pre">time_limit_was_exceeded</span></tt> attribute will be set to <tt class="docutils literal"><span class="pre">True</span></tt>, which you can use to do anything you want.</p>
 </div>
-</dd></dl>
-
-</dd></dl>
-
 </div>
-<div class="section" id="built-in-views">
-<h2>Built-in views<a class="headerlink" href="#built-in-views" title="Permalink to this headline">¶</a></h2>
-<p>pTree provides some commonly used views.</p>
-<dl class="class">
-<dt id="Start">
-<em class="property">class </em><tt class="descname">Start</tt><a class="headerlink" href="#Start" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<p>Every app needs to define a <tt class="docutils literal"><span class="pre">Start</span></tt> view that inherits from <tt class="docutils literal"><span class="pre">ptree.views.abstract.Start</span></tt>.
-This view displays a welcome page to users and an overview of the task they will be performing,
-followed by a &#8220;Next&#8221; button.
+</div>
+</div>
+<div class="section" id="starttreatment">
+<h2>StartTreatment<a class="headerlink" href="#starttreatment" title="Permalink to this headline">¶</a></h2>
+<p>Every app needs to define a <tt class="docutils literal"><span class="pre">StartTreatment</span></tt> view that inherits from <tt class="docutils literal"><span class="pre">ptree.views.StartTreatment</span></tt>.
+This view displays a welcome page to users,
+followed by a &#8220;Next&#8221; button if they wish to start.
 This page gives users a chance to drop out <em>before</em> we assign them to a match,
-thus preventing &#8220;orphan&#8221; games.
+thus preventing &#8220;orphan&#8221; matches.
 Behind the scenes, this view also plays an important role in initializing the database session.</p>
-<p>If you&#8217;d like to display different text on the page,
-or have a start form with fields other than <tt class="docutils literal"><span class="pre">nickname</span></tt>,
-you can just override the <tt class="docutils literal"><span class="pre">form_class</span></tt> or <tt class="docutils literal"><span class="pre">template_name</span></tt>.</p>
-<dl class="class">
-<dt id="ptree.views.concrete.RedemptionCode">
-<em class="property">class </em><tt class="descclassname">ptree.views.concrete.</tt><tt class="descname">RedemptionCode</tt><a class="headerlink" href="#ptree.views.concrete.RedemptionCode" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+</div>
+<div class="section" id="redemptioncode">
+<h2>RedemptionCode<a class="headerlink" href="#redemptioncode" title="Permalink to this headline">¶</a></h2>
+<p>Should inherit from <tt class="docutils literal"><span class="pre">ptree.views.RedemptionCode</span></tt>.</p>
 <p>This view should usually be the last View in your sequence.
 It tells the user how much they made,
 and also gives them their redemption code.</p>
-<p>The template is in your project&#8217;s <tt class="docutils literal"><span class="pre">ptree/templates/ptree/RedemptionCode.html</span></tt>.
-You can have a look at the various blocks in that template to see how you can customize it.</p>
 </div>
-<div class="section" id="out-of-sequence-views">
-<h2>Out-of-sequence views<a class="headerlink" href="#out-of-sequence-views" title="Permalink to this headline">¶</a></h2>
-<p>Sometimes you will want to have a view that is not in the sequence.
-For example, let&#8217;s say you want a link that opens in a new page and displays some information,
-but has no form for the user to fill out.</p>
-<p>To do this, define a View that inherits from <tt class="docutils literal"><span class="pre">ptree.views.abstract.TemplateView</span></tt> rather than <tt class="docutils literal"><span class="pre">ptree.views.abstract.StandardView</span></tt>.
-define <tt class="docutils literal"><span class="pre">template_name</span></tt> and <tt class="docutils literal"><span class="pre">get_variables_for_template</span></tt>, but none of the other methods and attributes.</p>
-</div>
-<div class="section" id="real-time-interaction">
-<h2>Real-time interaction<a class="headerlink" href="#real-time-interaction" title="Permalink to this headline">¶</a></h2>
-<p>You may want your game to involve some real-time interaction between participants, or with the experiment administrator.
-For example, let&#8217;s say you build a 4-participant game where all 4 participants must complete some action before anyone can proceed to the next view.</p>
-<p>In this case, you will need to display a &#8220;please wait&#8221; page to participants,
-and only display the &#8220;Next&#8221; button when the condition is met.</p>
-<p>This kind of functionality can be built with a common technique called AJAX.
-The below code demonstrates this.</p>
-<p>First, you need to write the HTML div that is displayed while the participant is waiting,
-like this Bootstrap progress bar:</p>
-<div class="highlight-python"><pre>&lt;div class="progress progress-striped active" id='waitingIndicator'&gt;
-  &lt;div class="progress-bar"  role="progressbar" style="width: 100%"&gt;
-    &lt;span class="sr-only"&gt;Please wait&lt;/span&gt;
-  &lt;/div&gt;
-&lt;/div&gt;</pre>
-</div>
-<p>Then below it write the HTML div that is displayed when the user is ready for the next step.
-This could be the page&#8217;s form (which contains the &#8220;Next&#8221; button):</p>
-<div class="highlight-python"><pre>&lt;div id='goToNextPage' style='display:none'&gt;
-    {% include "Form.html" %}
-&lt;/div&gt;</pre>
-</div>
-<p>Note the <tt class="docutils literal"><span class="pre">style='display:none'</span></tt>, which gives that div an initial hidden state.</p>
-<p>Now, you need to write the JavaScript/jQuery code that queries your server at regular intervals,
-and when it gets the desired response from the server, toggles the visibility of the divs:</p>
-<div class="highlight-python"><pre>&lt;script type="text/javascript"&gt;
-var checkIfReady = function() {
-
-    var args = { type: "GET", url: "{{ checkIfReadyURL }}", complete: addNextButtonIfReady };
-    $.ajax(args);
-
-}
-
-var addNextButtonIfReady = function(res, status) {
-    if (status == "success") {
-        var response = res.responseText;
-        if (response == "1") {
-            $('#goToNextPage').show();
-            $('#waitingIndicator').hide();
-
-            window.clearInterval(intervalId);
-        }
-    }
-}
-
-var SECOND = 1000;
-var intervalId = window.setInterval("checkIfReady()", 20 * SECOND);
-&lt;/script&gt;</pre>
-</div>
-<p>Now we need to write the Python code on the server that will process these JavaScript requests.
-This will be a View, but instead of inheriting from <tt class="docutils literal"><span class="pre">StandardView</span></tt>, it should inherit from <tt class="docutils literal"><span class="pre">BaseView</span></tt>,
-and should define a <tt class="docutils literal"><span class="pre">get</span></tt> method that responds to HTTP <tt class="docutils literal"><span class="pre">GET</span></tt> requests.
-In this example, it returns a boolean (1 or 0):</p>
-<div class="highlight-python"><pre>class CheckIfReady(BaseView):
-
-    def get(self, request, *args, **kwargs):
-
-        # Let's imagine some method exists in your Match class called "all_participants_are_ready".
-        if self.match.all_participants_are_ready()
-            return HttpResponse('1')
-        else:
-            return HttpResponse('0')</pre>
-</div>
-<p>The final step is to connect the JavaScript code to the Python code.
-We do this by passing the URL of the CheckIsReady view as a template variable:</p>
-<div class="highlight-python"><pre>def get_variables_for_template(self):
-    return { 'checkIfReadyURL': CheckIfReady.url(),
-             # other template variables go here... }</pre>
-</div>
-<p>In our JavaScript above, this variable is inserted in the AJAX request as <tt class="docutils literal"><span class="pre">url:</span> <span class="pre">&quot;{{</span> <span class="pre">checkIfReadyURL</span> <span class="pre">}}&quot;</span></tt>,
-so the AJAX requests will be handled by the Python view you defined.</p>
-</div>
-<div class="section" id="questionnaires">
-<h2>Questionnaires<a class="headerlink" href="#questionnaires" title="Permalink to this headline">¶</a></h2>
-<p>Frequently, you will want users to fill out a questionnaire/survey,
-in addition to taking part in your experiment/game.
-You can use pTree to create a survey,
-but a potentially more efficient approach is to embed or link to a survey
-from a service like SurveyGizmo, SurveyMonkey, WuFoo, Qualtrics, or Google Forms.
-These services all have easy-to-use visual interfaces for creating and analyzing data from surveys.
-With some of these services, you can embed a survey on your site so that it looks like it&#8217;s part of pTree.
-You can see an example of this in the template <tt class="docutils literal"><span class="pre">ptree/SurveyGizmoEmbedded.html</span></tt>.
-Just make sure to pass the participant&#8217;s identifier to the survey
-so that you can link the survey to that participant later.</p>
+<div class="section" id="createview-templateview-sequencetemplateview-createmultipleview-updatemultipleview">
+<h2>CreateView, TemplateView, SequenceTemplateView, CreateMultipleView, UpdateMultipleView<a class="headerlink" href="#createview-templateview-sequencetemplateview-createmultipleview-updatemultipleview" title="Permalink to this headline">¶</a></h2>
+<p>Under development.</p>
 </div>
 </div>
 
@@ -299,11 +214,42 @@ so that you can link the survey to that participant later.</p>
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">views.py</a><ul>
-<li><a class="reference internal" href="#implementation">Implementation</a></li>
-<li><a class="reference internal" href="#built-in-views">Built-in views</a></li>
-<li><a class="reference internal" href="#out-of-sequence-views">Out-of-sequence views</a></li>
-<li><a class="reference internal" href="#real-time-interaction">Real-time interaction</a></li>
-<li><a class="reference internal" href="#questionnaires">Questionnaires</a></li>
+<li><a class="reference internal" href="#updateview">UpdateView</a><ul>
+<li><a class="reference internal" href="#attributes">Attributes</a><ul>
+<li><a class="reference internal" href="#provided-for-you">Provided for you</a><ul>
+<li><a class="reference internal" href="#participant">participant</a></li>
+<li><a class="reference internal" href="#match">match</a></li>
+<li><a class="reference internal" href="#treatment">treatment</a></li>
+<li><a class="reference internal" href="#experiment">experiment</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#required">Required</a><ul>
+<li><a class="reference internal" href="#template-name">template_name</a></li>
+<li><a class="reference internal" href="#form-class">form_class</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id1">Provided for you</a><ul>
+<li><a class="reference internal" href="#time-limit-was-exceeded-boolean">time_limit_was_exceeded: boolean</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#methods">Methods</a><ul>
+<li><a class="reference internal" href="#optional">Optional</a><ul>
+<li><a class="reference internal" href="#variables-for-template">variables_for_template()</a></li>
+<li><a class="reference internal" href="#show-skip-wait">show_skip_wait()</a></li>
+<li><a class="reference internal" href="#wait-message">wait_message()</a></li>
+<li><a class="reference internal" href="#after-valid-form-submission">after_valid_form_submission()</a></li>
+<li><a class="reference internal" href="#time-limit-seconds">time_limit_seconds()</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#starttreatment">StartTreatment</a></li>
+<li><a class="reference internal" href="#redemptioncode">RedemptionCode</a></li>
+<li><a class="reference internal" href="#createview-templateview-sequencetemplateview-createmultipleview-updatemultipleview">CreateView, TemplateView, SequenceTemplateView, CreateMultipleView, UpdateMultipleView</a></li>
 </ul>
 </li>
 </ul>
@@ -349,7 +295,7 @@ so that you can link the survey to that participant later.</p>
           <a href="forms.html" title="forms.py"
              >previous</a> |</li>
         <li><a href="../index.html">pTree 0.1 documentation</a> &raquo;</li>
-          <li><a href="index.html" >Writing a pTree app</a> &raquo;</li> 
+          <li><a href="index.html" >Writing a ptree app</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

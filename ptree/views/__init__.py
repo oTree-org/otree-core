@@ -1,12 +1,13 @@
 from ptree.views.abstract import (
-    View,
+    BaseView,
     UpdateView,
     CreateView,
     CreateMultipleView,
     UpdateMultipleView,
     TemplateView,
-    #FormView,
     GetTreatmentOrParticipant,
     StartTreatment,
-    StartTreatmentInTwoPersonAsymmetricGame
+    StartTreatmentInTwoPersonAsymmetricGame,
+    RedemptionCode,
+    SequenceTemplateView,
 )

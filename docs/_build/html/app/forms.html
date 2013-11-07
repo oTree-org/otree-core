@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="pTree 0.1 documentation" href="../index.html" />
-    <link rel="up" title="Writing a pTree app" href="index.html" />
+    <link rel="up" title="Writing a ptree app" href="index.html" />
     <link rel="next" title="views.py" href="views.html" />
     <link rel="prev" title="models.py" href="models.html" /> 
   </head>
@@ -44,7 +44,7 @@
           <a href="models.html" title="models.py"
              accesskey="P">previous</a> |</li>
         <li><a href="../index.html">pTree 0.1 documentation</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Writing a pTree app</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">Writing a ptree app</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -55,52 +55,80 @@
             
   <div class="section" id="forms-py">
 <span id="forms"></span><h1>forms.py<a class="headerlink" href="#forms-py" title="Permalink to this headline">¶</a></h1>
-<p>Each of your app&#8217;s Views will display a form to the participant.</p>
+<p>Most of your app&#8217;s Views will display a form to the participant.</p>
 <p>Even if the participant does not need to fill anything out,
 they will usually at least see a button that takes them to the next page in their sequence.</p>
-<p>pTree forms are based on Django <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/forms/">Forms</a>
+<p>ptree forms are based on Django <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/forms/">Forms</a>
 and <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/forms/modelforms/#modelform">ModelForms</a>.</p>
-<p>Your forms are defined in <tt class="docutils literal"><span class="pre">forms.py</span></tt> in your app.</p>
-<dl class="class">
-<dt id="MyForm">
-<em class="property">class </em><tt class="descname">MyForm</tt><big>(</big><em>ptree.forms.ModelForm</em><big>)</big><a class="headerlink" href="#MyForm" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
-<dt id="MyForm.participant">
-<tt class="descname">participant</tt><a class="headerlink" href="#MyForm.participant" title="Permalink to this definition">¶</a></dt>
-<dt id="MyForm.match">
-<tt class="descname">match</tt><a class="headerlink" href="#MyForm.match" title="Permalink to this definition">¶</a></dt>
-<dt id="MyForm.treatment">
-<tt class="descname">treatment</tt><a class="headerlink" href="#MyForm.treatment" title="Permalink to this definition">¶</a></dt>
-<dt id="MyForm.experiment">
-<tt class="descname">experiment</tt><a class="headerlink" href="#MyForm.experiment" title="Permalink to this definition">¶</a></dt>
-<dt id="MyForm.request">
-<tt class="descname">request</tt><a class="headerlink" href="#MyForm.request" title="Permalink to this definition">¶</a></dt>
-<dd><p>The current participant, match, treatment, and experiment objects.
-Also, the HTTP request object.
-These are provided for you automatically.</p>
-<dl class="method">
-<dt id="MyForm.customize">
-<tt class="descname">customize</tt><big>(</big><em>self</em><big>)</big><a class="headerlink" href="#MyForm.customize" title="Permalink to this definition">¶</a></dt>
-<dd><p>You can put any code here to customize how fields get displayed.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="MyForm.make_field_currency_choices">
-<tt class="descname">make_field_currency_choices</tt><big>(</big><em>self</em>, <em>field_name</em>, <em>amounts</em><big>)</big><a class="headerlink" href="#MyForm.make_field_currency_choices" title="Permalink to this definition">¶</a></dt>
-<dd><p>This method will make an <tt class="docutils literal"><span class="pre">IntegerField</span></tt> (or <tt class="docutils literal"><span class="pre">FloatField</span></tt>, etc.)
-display as a dropdown menu with each amount displayed as a currency amounts.</p>
-<p>You need to call this in your form&#8217;s <tt class="docutils literal"><span class="pre">initialize_form()</span></tt> method, like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">initialize_form</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c"># in this example, self.treatment.offer_choices() returns a list like [0, 10, 20, 30, 40, 50]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">make_field_currency_choices</span><span class="p">(</span><span class="s">&#39;amount_offered&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">treatment</span><span class="o">.</span><span class="n">offer_choices</span><span class="p">())</span>
+<p>Your forms are defined in <tt class="docutils literal"><span class="pre">forms.py</span></tt> in your app, and should inherit from <tt class="docutils literal"><span class="pre">ptree.forms.ModelForm</span></tt>.</p>
+<div class="section" id="participant">
+<h2>participant<a class="headerlink" href="#participant" title="Permalink to this headline">¶</a></h2>
+<p>The current participant.</p>
+</div>
+<div class="section" id="match">
+<h2>match<a class="headerlink" href="#match" title="Permalink to this headline">¶</a></h2>
+<p>The current match.</p>
+</div>
+<div class="section" id="treatment">
+<h2>treatment<a class="headerlink" href="#treatment" title="Permalink to this headline">¶</a></h2>
+<p>The current treatment.</p>
+</div>
+<div class="section" id="experiment">
+<h2>experiment<a class="headerlink" href="#experiment" title="Permalink to this headline">¶</a></h2>
+<p>The current experiment.</p>
+</div>
+<div class="section" id="request">
+<h2>request<a class="headerlink" href="#request" title="Permalink to this headline">¶</a></h2>
+<p>The HTTP request object (documented <a class="reference external" href="https://docs.djangoproject.com/en/dev/ref/request-response/#httprequest-objects">here</a>).</p>
+</div>
+<div class="section" id="field-initial-values">
+<h2>field_initial_values()<a class="headerlink" href="#field-initial-values" title="Permalink to this headline">¶</a></h2>
+<p>Allows you to pre-fill form fields with initial/default values.
+Return a dictionary where the keys are field names and the values are the inital values of those fields in the form.
+One use case is during development/testing, to pre-fill fields to save yourself typing.
+For example, you might have a text transcription task that you don&#8217;t want to fill out every time you test your app,
+so you could do this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">field_initial_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;transcription&#39;</span><span class="p">:</span> <span class="s">&#39;Lorem ipsum dolor sit amet, consectetur adipiscing...&#39;</span><span class="p">}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{}</span>
 </pre></div>
 </div>
-</dd></dl>
-
-</dd></dl>
-
-</dd></dl>
-
+</div>
+<div class="section" id="field-choices">
+<h2>field_choices()<a class="headerlink" href="#field-choices" title="Permalink to this headline">¶</a></h2>
+<p>Lets you specify choices for a dropdown field.
+Return a dictionary in the same format as <tt class="docutils literal"><span class="pre">field_initial_values</span></tt>.
+You can also set choices for a field in <tt class="docutils literal"><span class="pre">models.py</span></tt> using the <tt class="docutils literal"><span class="pre">choices</span></tt> argument,
+but those choices will be the same for everyone.
+Specifying choices here allows you to make the choices dynamic &#8211; they can depend on
+the current participant/match/treatment/request/etc.</p>
+<p>For dropdowns where users are choosing an amount of money, you can use this method
+in conjunction with <tt class="docutils literal"><span class="pre">currency_choices</span></tt>, as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">field_choices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;amount_offered&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">currency_choices</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">])}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="field-labels">
+<h2>field_labels()<a class="headerlink" href="#field-labels" title="Permalink to this headline">¶</a></h2>
+<p>Specify the labels of the fields.
+Return a dictionary in the same format as <tt class="docutils literal"><span class="pre">field_initial_values</span></tt>.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">field_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;amount_returned&#39;</span><span class="p">:</span>
+            <span class="s">&#39;If given {} (which gets multiplied into {}), I want to send back:&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">amount_offered</span><span class="p">,</span>
+                                                                                       <span class="bp">self</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">amount_offered_after_multiplying</span><span class="p">())}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="currency-choices-amounts">
+<h2>currency_choices(amounts)<a class="headerlink" href="#currency-choices-amounts" title="Permalink to this headline">¶</a></h2>
+<p>This method will make an <tt class="docutils literal"><span class="pre">IntegerField</span></tt> (or <tt class="docutils literal"><span class="pre">FloatField</span></tt>, etc.)
+display as a dropdown menu with each amount displayed as a currency amounts.</p>
+<p>You will typically want to use this in your form&#8217;s <tt class="docutils literal"><span class="pre">field_choices()</span></tt> method.</p>
+</div>
 </div>
 
 
@@ -109,6 +137,22 @@ display as a dropdown menu with each amount displayed as a currency amounts.</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">forms.py</a><ul>
+<li><a class="reference internal" href="#participant">participant</a></li>
+<li><a class="reference internal" href="#match">match</a></li>
+<li><a class="reference internal" href="#treatment">treatment</a></li>
+<li><a class="reference internal" href="#experiment">experiment</a></li>
+<li><a class="reference internal" href="#request">request</a></li>
+<li><a class="reference internal" href="#field-initial-values">field_initial_values()</a></li>
+<li><a class="reference internal" href="#field-choices">field_choices()</a></li>
+<li><a class="reference internal" href="#field-labels">field_labels()</a></li>
+<li><a class="reference internal" href="#currency-choices-amounts">currency_choices(amounts)</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="models.html"
                         title="previous chapter">models.py</a></p>
@@ -150,7 +194,7 @@ display as a dropdown menu with each amount displayed as a currency amounts.</p>
           <a href="models.html" title="models.py"
              >previous</a> |</li>
         <li><a href="../index.html">pTree 0.1 documentation</a> &raquo;</li>
-          <li><a href="index.html" >Writing a pTree app</a> &raquo;</li> 
+          <li><a href="index.html" >Writing a ptree app</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

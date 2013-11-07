@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="pTree 0.1 documentation" href="../index.html" />
-    <link rel="up" title="Writing a pTree app" href="index.html" />
+    <link rel="up" title="Writing a ptree app" href="index.html" />
     <link rel="next" title="Populating the database" href="management.html" />
     <link rel="prev" title="views.py" href="views.html" /> 
   </head>
@@ -44,7 +44,7 @@
           <a href="views.html" title="views.py"
              accesskey="P">previous</a> |</li>
         <li><a href="../index.html">pTree 0.1 documentation</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Writing a pTree app</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">Writing a ptree app</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -57,7 +57,7 @@
 <h1>The <tt class="docutils literal"><span class="pre">templates/</span></tt> directory<a class="headerlink" href="#the-templates-directory" title="Permalink to this headline">¶</a></h1>
 <p>Your <tt class="docutils literal"><span class="pre">templates/</span></tt> directory will contain the templates for the HTML
 that gets displayed to the participant.</p>
-<p>pTree uses <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/templates/">Django&#8217;s template system</a>.</p>
+<p>ptree uses <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/templates/">Django&#8217;s template system</a>.</p>
 <div class="section" id="template-configuration">
 <h2>Template configuration<a class="headerlink" href="#template-configuration" title="Permalink to this headline">¶</a></h2>
 <p>Each template needs a few lines of code at the top.</p>
@@ -81,14 +81,14 @@ that gets displayed to the participant.</p>
     Body HTML goes here.
 {% endblock %}</pre>
 </div>
-<p>You may want to define your own base template rather than using pTree&#8217;s built-in base template.
+<p>You may want to define your own base template rather than using ptree&#8217;s built-in base template.
 This is useful when you want to customize the appearance or functionality (e.g. by adding custom CSS or JavaScript),
 or customize the structure of HTML headings. This is easily done.
 Just follow the instructions <a class="reference external" href="https://docs.djangoproject.com/en/dev/topics/templates/#template-inheritance">here</a>.</p>
 </div>
 <div class="section" id="custom-filters">
 <h3>Custom filters<a class="headerlink" href="#custom-filters" title="Permalink to this headline">¶</a></h3>
-<p>The following line will load pTree&#8217;s filter module:</p>
+<p>The following line will load ptree&#8217;s filter module:</p>
 <div class="highlight-python"><pre>{% load ptreefilters %}</pre>
 </div>
 <p>Currently, the main filter in this module is the <tt class="docutils literal"><span class="pre">currency</span></tt> filter,
@@ -113,13 +113,13 @@ by following the documentation <a class="reference external" href="https://docs.
 Even if the page is empty, it should contain an empty form with a submit button
 (which will say &#8220;Next&#8221;) so that the participant can go to the next page.</p>
 <p>Just paste this in the location where your form should be,
-and pTree will make sure the form gets displayed and formatted properly:</p>
+and ptree will make sure the form gets displayed and formatted properly:</p>
 <div class="highlight-python"><pre>{% include "ptree/Form.html" %}</pre>
 </div>
 </div>
 <div class="section" id="making-your-page-look-great">
 <h2>Making your page look great<a class="headerlink" href="#making-your-page-look-great" title="Permalink to this headline">¶</a></h2>
-<p>pTree comes with <a class="reference external" href="http://getbootstrap.com/">Bootstrap</a>, a very popular library for customizing a website&#8217;s participant interface.</p>
+<p>ptree comes with <a class="reference external" href="http://getbootstrap.com/">Bootstrap</a>, a very popular library for customizing a website&#8217;s participant interface.</p>
 <p>You can use it if you want a custom <a class="reference external" href="http://getbootstrap.com/css/">style</a>,
 or a specific <a class="reference external" href="http://getbootstrap.com/components/">component</a>
 like a table, alert, progress bar, label, etc.
@@ -135,8 +135,8 @@ and Bootstrap will take care of the rest.</p>
 </div>
 <div class="section" id="smartphones-and-tablets">
 <h2>Smartphones and tablets<a class="headerlink" href="#smartphones-and-tablets" title="Permalink to this headline">¶</a></h2>
-<p>Since pTree uses Bootstrap for its participant interface,
-your pTree app should work on all major browsers (Chrome/Internet Explorer/Firefox/Safari).
+<p>Since ptree uses Bootstrap for its participant interface,
+your ptree app should work on all major browsers (Chrome/Internet Explorer/Firefox/Safari).
 When participants visit on a smartphone or tablet (e.g. iPhone/Android/etc.),
 they should see an appropriately scaled down &#8220;mobile friendly&#8221; version of the site.
 This will generally not require any effort on your part since Bootstrap does it automatically,
@@ -209,7 +209,7 @@ since some HTML code doesn&#8217;t look good on mobile devices.</p>
           <a href="views.html" title="views.py"
              >previous</a> |</li>
         <li><a href="../index.html">pTree 0.1 documentation</a> &raquo;</li>
-          <li><a href="index.html" >Writing a pTree app</a> &raquo;</li> 
+          <li><a href="index.html" >Writing a ptree app</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
