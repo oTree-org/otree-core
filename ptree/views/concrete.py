@@ -19,7 +19,7 @@ class RedirectToPageUserShouldBeOn(ptree.views.abstract.View, ViewInThisApp):
 
 class RedemptionCode(ptree.views.abstract.SequenceView, ptree.views.abstract.TemplateView, ViewInThisApp):
 
-    def get_variables_for_template(self):
+    def variables_for_template(self):
 
         return {'redemption_code': self.participant.code,
                 'base_pay': self.treatment.base_pay,

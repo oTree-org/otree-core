@@ -29,8 +29,3 @@ index_in_sequence_of_views = 'index_in_sequence_of_views'
 
 time_limit_seconds = 'time_limit_seconds'
 page_time_limits = 'page_time_limits'
-
-class PageActions:
-    show = 'show'
-    skip = 'skip'
-    wait = 'wait'

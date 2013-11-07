@@ -62,7 +62,7 @@ This relationship is illustrated here:
 How to define a model
 +++++++++++++++++++++
 
-ptree models are Django models with some extra fields and capabilities.
+ptree models are Django models.
 To be able to define a model, 
 you need to read the Django documentation on models and understand:
 
@@ -112,18 +112,28 @@ match
 
 The ``Match`` this ``Participant`` is a part of.
 
-index: PositiveIntegerField
-============================
+index_among_participants_in_match: PositiveIntegerField
+==========================================================
 
-the ordinal position in which a participant joined a game. Starts at 0.
+the ordinal position in which a participant joined a match. Starts at 0.
+
+index_in_sequence_of_views: PositiveIntegerField
+==================================================
+
+Which page the user is on.
+
+total_pay(): integer
+=====================
+
+How much the user makes (base pay + bonus).
 
 What you must implement yourself
 --------------------------------
 
-bonus(self): integer
+bonus(): integer
 ====================
 
-The bonus the ``Participant`` gets paid, in addition to their base pay.
+The bonus the participant gets paid, in addition to their base pay.
 
    
 Match
@@ -132,7 +142,7 @@ Match
 A Match is a particular instance of a game being played,
 and holds the results of that instance, i.e. what the score was, who got paid what.
 
-So, "Match" is used in the sense of "boxing match",
+So, "Match" is used in the sense of "chess match",
 in the sense that it is an event that occurs where the game is played.
 
 Example of a Match: "dictator game between participants Alice & Bob, where Alice gave $0.50"
@@ -150,12 +160,22 @@ which gives you the following fields and methods.
 treatment
 =========
 
-The ``Treatment`` this ``Match`` is part of.
+The treatment this match is a part of.
 
-participants(self): list
-========================
+experiment
+===========
 
-Returns the ``Participant`` objects in this match. 
+The experiment this match is a part of.
+
+participants(self): iterable
+=============================
+
+Returns the participants in this match. 
+
+time_started: DateTimeField
+============================
+
+When the match was started.
 
 is_full(self): boolean
 ======================
@@ -198,8 +218,8 @@ What is provided for you automatically
 ``Treatment`` classes should inherit from ``ptree.models.participants.BaseTreatment``,
 which gives you the following fields and methods.
 
-matches(self): list
-===================
+matches(self): iterable
+========================
     
 The ``Match`` objects in this ``Treatment``.
 
@@ -212,11 +232,11 @@ Needs to be set when you instantiate your ``Participant`` objects.
 What you must implement yourself
 --------------------------------
 
-sequence(self): list
-====================
+sequence_of_views(self): list
+==============================
     
 Very important. Returns a list of all the View classes that the participant gets routed through sequentially.
-(Not all pages have to be displayed for all participants; see the ``is_displayed()`` method).
+(Not all pages have to be displayed for all participants; see the ``show_skip_wait()`` method).
 Must start with your app's ``StartTreatment``, and usually ends the Redemption Code view.
 The rest is up to you.
 
@@ -229,19 +249,14 @@ Example::
 	return [views.StartTreatment,
 			ptree.views.concrete.AssignParticipantAndMatch,
 			views.IntroPage,
-			views.EnterOfferEncrypted, 
-			views.ExplainRandomizationDetails, 
-			views.EnterDecryptionKey,
-			views.NotifyOfInvalidEncryptedDonation,
-			views.EnterOfferUnencrypted,
-			views.NotifyOfShred,
+			views.EnterOffer, 
 			views.Survey,
 			ptree.views.concrete.RedemptionCode]
         
-participants_per_match: int
-============================
+participants_per_match: PositiveIntegerField
+==============================================
 
-Class attribute that specifies the number of participants in each match. 
+Number of participants in each match. 
 For example, Prisoner's Dilemma has 2 participants.
 a single-participant game would just have 1.
 
@@ -250,19 +265,26 @@ Experiment
 ~~~~~~~~~~
 An experiment is generally a randomization between treatments, though it could just have one treatment.
 
-Most experiments won't need to access the experiment class, but info is provided here for the sake of completeness.
-
 Implementation
 ______________
+
+Required arguments
+__________________
+
 
 
 What is provided for you automatically
 --------------------------------------
 
-treatments(self): list
-======================
+is_for_mturk: BooleanField
+==========================
 
-Returns the ``Treatment`` objects in this ``Experiment``. 
+Defaults to True. If true, the experiment URL will not work unless a participant's Mechanical Turk worker ID & assignment ID are appended to the URL.
+
+treatments(self): iterable
+==========================
+
+Returns the treatments in this experiment. 
 
 Methods that are optional to define
 -----------------------------------
@@ -281,3 +303,14 @@ weighted by their ``randomization_weight``::
         treatment = self.weighted_randomization_choice(choices)
         return treatment
 
+experimenter_sequence_of_views: list
+=====================================
+
+pTree provides an "experimenter link", 
+which is a sequence of pages that lets the experimenter can participate interactively in the game.
+The design of your experiment may require this.
+For example, if you are running your experiment in a lab, 
+and the experimenter needs to input the result of a of a random drawing into the database.
+You can have a page where the experimenter enters the result into a form and submits.
+
+You should implement this list in the same way as ``treatment.sequence_of_views()``.

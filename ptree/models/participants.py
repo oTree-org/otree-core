@@ -54,16 +54,17 @@ class BaseParticipant(models.Model):
             return None
 
     def total_pay_display(self):
-        try:
-            return currency(self.total_pay())
-        except:
-            return None
+        return currency(self.total_pay())
 
     def total_pay(self):
-        if self.bonus() is None:
+        try:
+            bonus = self.bonus()
+        except:
+            bonus = None
+        if bonus is None:
             return None
         else:
-            return self.match.treatment.base_pay + self.bonus()
+            return self.match.treatment.base_pay + bonus
 
     def __unicode__(self):
         return str(self.pk)

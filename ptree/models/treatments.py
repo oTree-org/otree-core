@@ -48,5 +48,15 @@ class BaseTreatment(models.Model):
         """
         return [View.url(index) for index, View in enumerate(self.sequence_of_views())]
 
+    def next_open_match(self):
+        """Get the next match that is accepting participants.
+        (or none if it does not exist)
+        """
+        try:
+            return (m for m in self.matches() if m.is_ready_for_next_participant()).next()
+        except StopIteration:
+            return None
+
+
     class Meta:
         abstract = True

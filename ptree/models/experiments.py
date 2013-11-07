@@ -49,7 +49,10 @@ class BaseExperiment(models.Model):
     def participants(self):
         return self.participant_set.all()
 
-    def sequence_as_urls(self):
+    def experimenter_sequence_of_views(self):
+        raise NotImplementedError()
+
+    def experimenter_sequence_as_urls(self):
         """Converts the sequence to URLs.
 
         e.g.:

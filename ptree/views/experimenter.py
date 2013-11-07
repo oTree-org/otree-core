@@ -84,7 +84,7 @@ class ExperimenterSequenceView(ExperimenterView):
                                                                    'wait_message': self.wait_message()})
         return super(ExperimenterSequenceView, self).dispatch(request, *args, **kwargs)
 
-    def get_variables_for_template(self):
+    def variables_for_template(self):
         """
         Should be implemented by subclasses
         Return a dictionary that contains the template context variables (see Django documentation)
@@ -102,7 +102,7 @@ class ExperimenterSequenceView(ExperimenterView):
             kwargs.pop(constants.form_invalid)
 
         context.update(super(ExperimenterSequenceView, self).get_context_data(**kwargs))
-        context.update(self.get_variables_for_template())
+        context.update(self.variables_for_template())
 
         return context
 

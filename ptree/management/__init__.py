@@ -11,9 +11,10 @@ from django.template.defaultfilters import slugify
 from django.contrib.auth import models as auth_models
 from django.contrib.auth.management import create_superuser
 from django.db.models import signals
-import ptree.admin
+import ptree.common
 import ptree.settings
 import ptree.models
+from django.contrib import admin
 from django.contrib.contenttypes.management import update_all_contenttypes
 
 class CreateObjectsCommand(BaseCommand):
@@ -129,16 +130,16 @@ def create_export_for_start_urls(app_label):
 
 def create_export_for_participants(app_label, Participant):
     participant_content_type = ContentType.objects.get(app_label=app_label, model='participant')
-    list_display = ptree.admin.get_participant_list_display(Participant,
-                                                      ptree.admin.get_participant_readonly_fields([]))
+    list_display = ptree.common.get_participant_list_display(Participant,
+                                                      ptree.common.get_participant_readonly_fields([]))
     create_export(participant_content_type,
                        'participants',
                        list_display)
 
 def create_export_for_matches(app_label, Match):
     match_content_type = ContentType.objects.get(app_label=app_label, model='match')
-    list_display = ptree.admin.get_match_list_display(Match,
-                                                      ptree.admin.get_match_readonly_fields([]))
+    list_display = ptree.common.get_match_list_display(Match,
+                                                      ptree.common.get_match_readonly_fields([]))
     create_export(match_content_type,
                        'matches',
                        list_display)
@@ -173,5 +174,4 @@ def create_all_data_exports(sender, **kwargs):
 
 signals.post_syncdb.connect(create_all_data_exports)
 
-from django import template
-template.add_to_builtins('ptree.templatetags.ptreefiltersaoneuhaoentuh')
+

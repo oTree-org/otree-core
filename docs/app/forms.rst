@@ -26,7 +26,7 @@ Your forms are defined in ``forms.py`` in your app.
         These are provided for you automatically.
         
 
-    .. py:method:: get_initial_field_values
+    .. py:method:: field_initial_values
         
         Allows you to pre-fill form fields with initial/default values.
         Return a dictionary where the keys are field names and the values are the inital values of those fields in the form.
@@ -34,13 +34,13 @@ Your forms are defined in ``forms.py`` in your app.
         For example, you might have a text transcription task that you don't want to fill out every time you test your app,
         so you could do this::
         
-            def get_field_initial_values(self):
+            def field_initial_values(self):
                 if settings.DEBUG:
                     return {'transcription': 'Lorem ipsum dolor sit amet, consectetur adipiscing...'}
                 else:
                     return {}
         
-    .. py:method:: get_field_choices
+    .. py:method:: field_choices
         
         Lets you specify choices for a dropdown field.
         You can also set choices for a field in ``models.py`` using the ``choices`` argument,
@@ -51,7 +51,7 @@ Your forms are defined in ``forms.py`` in your app.
         For dropdowns where users are choosing an amount of money, you can use this method
         in conjunction with ``make_field_currency_choices``, as follows::
         
-            def get_field_choices(self):
+            def field_choices(self):
                 return {'amount_offered': self.make_field_currency_choices(self.treatment.offer_choices())}
 
         

@@ -78,14 +78,19 @@ class View(vanilla.View):
         """
         return HttpResponseRedirect(self.page_the_user_should_be_on())
 
-    def get_variables_for_template(self):
+    def variables_for_template(self):
         return {}
+
+class AjaxView(View):
+    """Currently has no distinct functionality.
+    Only exists so to make it clear to programmers that this is the view to use for Ajax.
+     Also, View should be considered private API, and might be changed."""
 
 class TemplateView(View, vanilla.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(TemplateView, self).get_context_data(**kwargs)
-        context.update(self.get_variables_for_template())
+        context.update(self.variables_for_template())
         return context
 
 class SequenceView(View):
@@ -104,8 +109,13 @@ class SequenceView(View):
 
     success_url = REDIRECT_TO_PAGE_USER_SHOULD_BE_ON_URL
 
+    class PageActions:
+        show = 'show'
+        skip = 'skip'
+        wait = 'wait'
+
     def show_skip_wait(self):
-        return constants.PageActions.show
+        return self.PageActions.show
 
     wait_page_template = 'ptree/WaitPage.html'
 
@@ -151,15 +161,15 @@ class SequenceView(View):
         args = args[1:]
 
         ssw = self.show_skip_wait()
-        assert ssw in [constants.PageActions.show, constants.PageActions.skip, constants.PageActions.wait]
+        assert ssw in [self.PageActions.show, self.PageActions.skip, self.PageActions.wait]
 
         # should also add GET parameter like check_if_prerequisite_is_satisfied, to be explicit.
         if self.request.is_ajax() and self.request.GET[constants.check_if_wait_is_over] == '1':
-            no_more_wait = ssw != constants.PageActions.wait
+            no_more_wait = ssw != self.PageActions.wait
             return HttpResponse(int(no_more_wait))
 
         # if the participant shouldn't see this view, skip to the next
-        if ssw == constants.PageActions.skip:
+        if ssw == self.PageActions.skip:
             self.participant.index_in_sequence_of_views += 1
             self.participant.save()
             return self.redirect_to_page_the_user_should_be_on()
@@ -170,7 +180,7 @@ class SequenceView(View):
             # then bring them back to where they should be
             return self.redirect_to_page_the_user_should_be_on()
 
-        if ssw == constants.PageActions.wait:
+        if ssw == self.PageActions.wait:
             return render_to_response(self.wait_page_template, {'SequenceViewURL': self.request.path,
                                                                    'wait_message': self.wait_message()})
         return super(SequenceView, self).dispatch(request, *args, **kwargs)
@@ -179,7 +189,7 @@ class SequenceView(View):
         self.time_limit_was_exceeded = self.get_time_limit_was_exceeded()
         return super(SequenceView, self).post(request, *args, **kwargs)
 
-    def get_variables_for_template(self):
+    def variables_for_template(self):
         """
         Should be implemented by subclasses
         Return a dictionary that contains the template context variables (see Django documentation)
@@ -192,7 +202,7 @@ class SequenceView(View):
 
         context = {}
         context.update(super(SequenceView, self).get_context_data(**kwargs))
-        context.update(self.get_variables_for_template())
+        context.update(self.variables_for_template())
         context.update(csrf(self.request))
         context['timer_message'] = self.timer_message()
 
@@ -234,7 +244,7 @@ class SequenceView(View):
         cls = self.get_form_class()
         return cls(data=data, files=files, **kwargs)
 
-    def after_valid_form_submission(self, form):
+    def after_valid_form_submission(self):
         """Should be implemented by subclasses as necessary"""
         pass
 
@@ -246,7 +256,7 @@ class SequenceView(View):
         pass
 
     def form_valid(self, form):
-        self.after_valid_form_submission(form)
+        self.after_valid_form_submission()
         self.post_processing_on_valid_form(form)
         self.update_index_in_sequence_of_views()
         self.save_objects()
@@ -306,7 +316,7 @@ class ModelFormSetView(extra_views.ModelFormSetView):
 
     def formset_valid(self, formset):
         for form in formset:
-            self.after_valid_form_submission(form)
+            self.after_valid_form_submission()
             self.post_processing_on_valid_form(form)
         self.update_index_in_sequence_of_views()
         self.save_objects()
@@ -443,7 +453,7 @@ class StartTreatment(UpdateView):
         self.request.session[constants.ParticipantClass] = self.ParticipantClass
         self.request.session[constants.MatchClass] = self.MatchClass
 
-    def get_variables_for_template(self):
+    def variables_for_template(self):
         self.request.session.set_test_cookie()
         self.persist_classes()
         return {}
@@ -467,7 +477,7 @@ class StartTreatment(UpdateView):
         if self.participant.match:
             self.match = self.participant.match
         else:
-            self.match = self.MatchClass.objects.next_open_match(self.treatment) or self.create_match()
+            self.match = self.treatment.next_open_match() or self.create_match()
             self.add_participant_to_match()
             
         assert self.match

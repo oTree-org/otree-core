@@ -13,14 +13,14 @@ class FormMixin(object):
     ## UPDATE: deprecated for now
     # rewritable_fields = []
 
-    def get_field_initial_values(self):
+    def field_initial_values(self):
         """Return a dict of any initial values"""
         return {}
 
-    def get_field_choices(self):
+    def field_choices(self):
         return {}
 
-    def get_field_labels(self):
+    def field_labels(self):
         return {}
 
     def customize(self):
@@ -33,16 +33,16 @@ class FormMixin(object):
         self.process_kwargs(kwargs)
 
         initial = kwargs.get('initial', {})
-        initial.update(self.get_field_initial_values())
+        initial.update(self.field_initial_values())
         kwargs['initial'] = initial
         super(FormMixin, self).__init__(*args, **kwargs)
 
-        for field_name, label in self.get_field_labels().items():
+        for field_name, label in self.field_labels().items():
             self.fields[field_name].label = label
 
-        for field_name, choices in self.get_field_choices().items():
-            self.fields[field_name].widget = forms.Select(choices=choices)
-            #self.fields[field_name].choices = choices
+        for field_name, choices in self.field_choices().items():
+            #self.fields[field_name].widget = forms.Select(choices=choices)
+            self.fields[field_name].choices = choices
 
 
         self.customize()
