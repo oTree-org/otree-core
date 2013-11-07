@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 REDIRECT_TO_PAGE_USER_SHOULD_BE_ON_URL = '/shared/RedirectToPageUserShouldBeOn/'
 
-class ExperimenterView(object):
+class ExperimenterMixin(object):
     @classmethod
     def get_url_base(cls):
         # look for url_base attribute on ExperimentClass
@@ -30,28 +30,8 @@ class ExperimenterView(object):
     def url_pattern(cls):
         return r'^{}/{}/$'.format(cls.get_url_base(), cls.__name__)
 
-class ExperimenterLaunch(vanilla.View, ExperimenterView):
-    def get(self, request, *args, **kwargs):
-        # clear all cookies, since they can cause problems if the participant has played a previous game.
 
-        self.request.session.clear()
-
-        experiment_code = self.request.GET[constants.experiment_code]
-        experimenter_access_code = self.request.GET[constants.experimenter_access_code]
-
-        experiment = get_object_or_404(self.ExperimentClass,
-                          code = experiment_code,
-                          experimenter_access_code = experimenter_access_code)
-
-        self.request.session[constants.index_in_sequence_of_views] = 0
-        self.request.session[constants.experiment_code] = experiment_code
-        self.request.session[constants.ExperimentClass] = self.ExperimentClass
-        return HttpResponseRedirect(experiment.sequence_as_urls()[0])
-
-
-class ExperimenterSequenceView(ExperimenterView):
-
-
+class ExperimenterSequenceMixin(ExperimenterMixin):
     def show_skip_wait(self):
         return constants.PageActions.show
 
@@ -128,16 +108,38 @@ class ExperimenterSequenceView(ExperimenterView):
         """
         return self.render_to_response(self.get_context_data(form=form, form_invalid = True ))
 
-class ExperimenterUpdateView(ExperimenterSequenceView, vanilla.UpdateView):
+
+class ExperimenterLaunch(ExperimenterMixin, vanilla.View):
+    def get(self, request, *args, **kwargs):
+        # clear all cookies, since they can cause problems if the participant has played a previous game.
+
+        self.request.session.clear()
+
+        experiment_code = self.request.GET[constants.experiment_code]
+        experimenter_access_code = self.request.GET[constants.experimenter_access_code]
+
+        experiment = get_object_or_404(self.ExperimentClass,
+                          code = experiment_code,
+                          experimenter_access_code = experimenter_access_code)
+
+        self.request.session[constants.index_in_sequence_of_views] = 0
+        self.request.session[constants.experiment_code] = experiment_code
+        self.request.session[constants.ExperimentClass] = self.ExperimentClass
+        return HttpResponseRedirect(experiment.sequence_as_urls()[0])
+
+
+class ExperimenterUpdateView(ExperimenterSequenceMixin, vanilla.UpdateView):
     def get_object(self):
         Cls = self.form_class.Meta.model
         if Cls == self.ExperimentClass:
             return self.experiment
 
-class ExperimenterCreateView(ExperimenterSequenceView, vanilla.CreateView):
+
+class ExperimenterCreateView(ExperimenterSequenceMixin, vanilla.CreateView):
     pass
 
-class ExperimenterModelFormSetView(ExperimenterSequenceView, extra_views.ModelFormSetView):
+
+class ExperimenterModelFormSetView(ExperimenterSequenceMixin, extra_views.ModelFormSetView):
     extra = 0
 
     def get_extra_form_kwargs(self):

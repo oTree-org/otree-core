@@ -21,8 +21,8 @@ logger = logging.getLogger(__name__)
 
 REDIRECT_TO_PAGE_USER_SHOULD_BE_ON_URL = '/shared/RedirectToPageUserShouldBeOn/'
 
-class View(vanilla.View):
-    """Base class for pTree views.
+class PTreeMixin(object):
+    """Base mixin class for pTree views.
     Takes care of:
     - retrieving model classes and objects automatically,
     so you can access self.treatment, self.match, self.participant, etc.
@@ -49,7 +49,7 @@ class View(vanilla.View):
     def dispatch(self, request, *args, **kwargs):
         self.load_classes()
         self.load_objects()
-        return super(View, self).dispatch(request, *args, **kwargs)
+        return super(PTreeMixin, self).dispatch(request, *args, **kwargs)
 
     @classmethod
     def get_url_base(cls):
@@ -78,22 +78,16 @@ class View(vanilla.View):
         """
         return HttpResponseRedirect(self.page_the_user_should_be_on())
 
-    def variables_for_template(self):
+    def get_variables_for_template(self):
         return {}
 
-class AjaxView(View):
-    """Currently has no distinct functionality.
-    Only exists so to make it clear to programmers that this is the view to use for Ajax.
-     Also, View should be considered private API, and might be changed."""
-
-class TemplateView(View, vanilla.TemplateView):
-
     def get_context_data(self, **kwargs):
-        context = super(TemplateView, self).get_context_data(**kwargs)
-        context.update(self.variables_for_template())
+        context = {}
+        context.update(self.get_variables_for_template())
         return context
 
-class SequenceView(View):
+
+class SequenceMixin(PTreeMixin):
     """
     View that manages its position in the match sequence.
     """
@@ -109,13 +103,8 @@ class SequenceView(View):
 
     success_url = REDIRECT_TO_PAGE_USER_SHOULD_BE_ON_URL
 
-    class PageActions:
-        show = 'show'
-        skip = 'skip'
-        wait = 'wait'
-
     def show_skip_wait(self):
-        return self.PageActions.show
+        return constants.PageActions.show
 
     wait_page_template = 'ptree/WaitPage.html'
 
@@ -161,15 +150,15 @@ class SequenceView(View):
         args = args[1:]
 
         ssw = self.show_skip_wait()
-        assert ssw in [self.PageActions.show, self.PageActions.skip, self.PageActions.wait]
+        assert ssw in [constants.PageActions.show, constants.PageActions.skip, constants.PageActions.wait]
 
         # should also add GET parameter like check_if_prerequisite_is_satisfied, to be explicit.
         if self.request.is_ajax() and self.request.GET[constants.check_if_wait_is_over] == '1':
-            no_more_wait = ssw != self.PageActions.wait
+            no_more_wait = ssw != constants.PageActions.wait
             return HttpResponse(int(no_more_wait))
 
         # if the participant shouldn't see this view, skip to the next
-        if ssw == self.PageActions.skip:
+        if ssw == constants.PageActions.skip:
             self.participant.index_in_sequence_of_views += 1
             self.participant.save()
             return self.redirect_to_page_the_user_should_be_on()
@@ -180,16 +169,16 @@ class SequenceView(View):
             # then bring them back to where they should be
             return self.redirect_to_page_the_user_should_be_on()
 
-        if ssw == self.PageActions.wait:
+        if ssw == constants.PageActions.wait:
             return render_to_response(self.wait_page_template, {'SequenceViewURL': self.request.path,
                                                                    'wait_message': self.wait_message()})
-        return super(SequenceView, self).dispatch(request, *args, **kwargs)
+        return super(SequenceMixin, self).dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         self.time_limit_was_exceeded = self.get_time_limit_was_exceeded()
-        return super(SequenceView, self).post(request, *args, **kwargs)
+        return super(SequenceMixin, self).post(request, *args, **kwargs)
 
-    def variables_for_template(self):
+    def get_variables_for_template(self):
         """
         Should be implemented by subclasses
         Return a dictionary that contains the template context variables (see Django documentation)
@@ -201,8 +190,7 @@ class SequenceView(View):
     def get_context_data(self, **kwargs):
 
         context = {}
-        context.update(super(SequenceView, self).get_context_data(**kwargs))
-        context.update(self.variables_for_template())
+        context.update(self.get_variables_for_template())
         context.update(csrf(self.request))
         context['timer_message'] = self.timer_message()
 
@@ -244,7 +232,7 @@ class SequenceView(View):
         cls = self.get_form_class()
         return cls(data=data, files=files, **kwargs)
 
-    def after_valid_form_submission(self):
+    def after_valid_form_submission(self, form):
         """Should be implemented by subclasses as necessary"""
         pass
 
@@ -256,11 +244,11 @@ class SequenceView(View):
         pass
 
     def form_valid(self, form):
-        self.after_valid_form_submission()
+        self.after_valid_form_submission(form)
         self.post_processing_on_valid_form(form)
         self.update_index_in_sequence_of_views()
         self.save_objects()
-        return super(SequenceView, self).form_valid(form)
+        return super(SequenceMixin, self).form_valid(form)
 
     def form_invalid(self, form):
         """
@@ -276,8 +264,27 @@ class SequenceView(View):
 
         return self.request.path == self.page_the_user_should_be_on()
 
-class UpdateView(SequenceView, vanilla.UpdateView):
 
+class BaseView(PTreeMixin, vanilla.View):
+    """
+    A basic view that provides no method implementations.
+    """
+    pass
+
+class TemplateView(PTreeMixin, vanilla.TemplateView):
+    """
+    A template view.
+    """
+    pass
+
+class SequenceTemplateView(SequenceMixin, vanilla.TemplateView):
+    """
+    A sequence template view.
+    """
+    pass
+
+
+class UpdateView(SequenceMixin, vanilla.UpdateView):
     def post_processing_on_valid_form(self, form):
         # form.save will also get called by the super() method, so this is technically redundant.
         # but it means that you don't need to access cleaned_data in after_valid_form_submission,
@@ -295,12 +302,8 @@ class UpdateView(SequenceView, vanilla.UpdateView):
             return Cls.objects.get(object_id=self.participant.id,
                                    content_type=ContentType.objects.get_for_model(self.participant))
 
-class CreateView(SequenceView, vanilla.CreateView):
-    def associate_with_participant_and_match(self, form):
-        """
-        For AuxiliaryModels.
-        """
-
+class CreateView(SequenceMixin, vanilla.CreateView):
+    def post_processing_on_valid_form(self, form):
         instance = form.save(commit=False)
         if hasattr(instance, 'participant'):
             instance.participant = self.participant
@@ -308,19 +311,18 @@ class CreateView(SequenceView, vanilla.CreateView):
             instance.match = self.match
         instance.save()
 
-    def post_processing_on_valid_form(self, form):
-        self.associate_with_participant_and_match(form)
 
 class ModelFormSetView(extra_views.ModelFormSetView):
     extra = 0
 
     def formset_valid(self, formset):
         for form in formset:
-            self.after_valid_form_submission()
+            self.after_valid_form_submission(form)
             self.post_processing_on_valid_form(form)
         self.update_index_in_sequence_of_views()
         self.save_objects()
         return super(ModelFormSetView, self).formset_valid(formset)
+
 
 class CreateMultipleView(extra_views.ModelFormSetView, CreateView):
     pass
@@ -453,7 +455,7 @@ class StartTreatment(UpdateView):
         self.request.session[constants.ParticipantClass] = self.ParticipantClass
         self.request.session[constants.MatchClass] = self.MatchClass
 
-    def variables_for_template(self):
+    def get_variables_for_template(self):
         self.request.session.set_test_cookie()
         self.persist_classes()
         return {}
@@ -477,7 +479,7 @@ class StartTreatment(UpdateView):
         if self.participant.match:
             self.match = self.participant.match
         else:
-            self.match = self.treatment.next_open_match() or self.create_match()
+            self.match = self.MatchClass.objects.next_open_match(self.treatment) or self.create_match()
             self.add_participant_to_match()
             
         assert self.match
