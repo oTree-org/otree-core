@@ -122,12 +122,6 @@ def create_export(content_type, export_name, fields, format_name="CSV"):
                         order = i)
         column.save()
 
-def create_export_for_start_urls(app_label):
-    participant_content_type = ContentType.objects.get(app_label=app_label, model='participant')
-    create_export(participant_content_type,
-                       'start URLs',
-                       ['start_url'])
-
 def create_export_for_participants(app_label, Participant):
     participant_content_type = ContentType.objects.get(app_label=app_label, model='participant')
     list_display = ptree.common.get_participant_list_display(Participant,
@@ -144,15 +138,21 @@ def create_export_for_matches(app_label, Match):
                        'matches',
                        list_display)
 
-def create_export_for_payments(app_label):
-    participant_content_type = ContentType.objects.get(app_label=app_label, model='participant')
-    create_export(participant_content_type,
-                       'payments',
-                       ['code', 'total_pay_display'])
-    create_export(participant_content_type,
-                       'payments',
-                       ['code', 'total_pay_display'],
-                       format_name='HTML')
+def create_export_for_treatments(app_label, Treatment):
+    treatment_content_type = ContentType.objects.get(app_label=app_label, model='treatment')
+    list_display = ptree.common.get_treatment_list_display(Treatment,
+                                                      ptree.common.get_treatment_readonly_fields([]))
+    create_export(treatment_content_type,
+                       'treatments',
+                       list_display)
+
+def create_export_for_experiments(app_label, Experiment):
+    experiment_content_type = ContentType.objects.get(app_label=app_label, model='experiment')
+    list_display = ptree.common.get_experiment_list_display(Experiment,
+                                                      ptree.common.get_experiment_readonly_fields([]))
+    create_export(experiment_content_type,
+                       'experiments',
+                       list_display)
 
 
 def try_create_export_for_model(model):
@@ -161,8 +161,10 @@ def try_create_export_for_model(model):
         create_export_for_matches(app_label, model)
     elif issubclass(model, ptree.models.BaseParticipant):
         create_export_for_participants(app_label, model)
-        create_export_for_start_urls(app_label)
-        create_export_for_payments(app_label)
+    elif issubclass(model, ptree.models.BaseTreatment):
+        create_export_for_treatments(app_label, model)
+    elif issubclass(model, ptree.models.BaseExperiment):
+        create_export_for_experiments(app_label, model)
 
 def create_all_data_exports(sender, **kwargs):
     update_all_contenttypes()

@@ -1,0 +1,50 @@
+{% load staticfiles %}
+{% load ptreefilters %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>{% block head_title %}Task{% endblock %}</title>
+
+        {% block head_content %}
+            {% include 'ptree/HeadContent.html' %}
+        {% endblock %}
+    </head>
+    <body>
+        {% block content_at_top_of_body %}{% endblock %}
+        <div class="container" style='max-width:970px'>
+            <div class="page-header">
+                <h2>{% block title %}{% endblock %}</h2>
+            </div>
+
+            <div>
+            {% if participant_resubmitted_last_form %}
+                <div class="alert alert-warning">
+                    It looks like you just resubmitted a form.
+                    We do not allow you to change your answers, so we ignored your re-submission.
+                    Please continue.
+                </div>
+            {% endif %}
+
+            {% include 'ptree/Timer.html' %}
+
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    Please fix the errors in the form.
+                </div>
+            {% endif %}
+
+
+            {% block content %}{% endblock %}
+            </div>
+
+            <br/>
+
+        {% include 'ptree/debug_info.html' %}
+        </div>
+
+
+        {% block content_at_bottom_of_body %}
+        {% endblock %}
+
+    </body>
+</html>

@@ -1,86 +1,82 @@
-from settings import *
-BUILT_IN_INSTALLED_APPS = ['ptree', 'data_exports', 'crispy_forms']
-BUILT_IN_PTREE_NON_EXPERIMENT_APPS = ['ptree.questionnaires.life_orientation_test',]
-BUILT_IN_PTREE_EXPERIMENT_APPS = []
+from django.conf import settings
+from collections import OrderedDict
+import os
+import django.conf
+import django.contrib.sessions.serializers
 
-def get_ptree_experiment_apps(USER_PTREE_EXPERIMENT_APPS):
-    return USER_PTREE_EXPERIMENT_APPS + BUILT_IN_PTREE_EXPERIMENT_APPS
+def remove_duplicates(lst):
+    return list(OrderedDict.fromkeys(lst))
 
-def get_ptree_non_experiment_apps(USER_PTREE_NON_EXPERIMENT_APPS):
-    return USER_PTREE_NON_EXPERIMENT_APPS + BUILT_IN_PTREE_NON_EXPERIMENT_APPS
-
-def get_ptree_apps(USER_PTREE_EXPERIMENT_APPS, USER_PTREE_NON_EXPERIMENT_APPS):
-    return get_ptree_experiment_apps(USER_PTREE_EXPERIMENT_APPS) + \
-           get_ptree_non_experiment_apps(USER_PTREE_NON_EXPERIMENT_APPS)
-
-def get_installed_apps(USER_INSTALLED_APPS, USER_PTREE_EXPERIMENT_APPS, USER_PTREE_NON_EXPERIMENT_APPS):
-    INSTALLED_APPS = USER_INSTALLED_APPS + BUILT_IN_INSTALLED_APPS
-    return INSTALLED_APPS + get_ptree_apps(USER_PTREE_EXPERIMENT_APPS, USER_PTREE_NON_EXPERIMENT_APPS)
-
-CRISPY_TEMPLATE_PACK = 'bootstrap3'
-
-# pages with a time limit for the participant can have a grace period
-# to compensate for network latency.
-# the timer is started and stopped server-side,
-# so this grace period should account for time spent during
-# download, upload, page rendering, etc.
-TIME_LIMIT_GRACE_PERIOD_SECONDS = 15
-
-SESSION_SAVE_EVERY_REQUEST = True
-
-TEMPLATE_DIRS = (
-
-)
-
-TEMPLATE_DIRS = (
-    os.path.join(BASE_DIR, 'templates/'),
-    'ptree/templates',
-)
+def augment_settings(settings):
 
 
-# Language code for this installation. All choices can be found here:
-# http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'en-us'
 
-# List of finder classes that know how to find static files in
-# various locations.
-STATICFILES_FINDERS = (
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
-)
+    default_installed_apps = [
+        'django.contrib.admin',
+        'django.contrib.auth',
+        'django.contrib.contenttypes',
+        'django.contrib.sessions',
+        'django.contrib.messages',
+        'django.contrib.staticfiles',
+    ]
 
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-)
+    third_party_apps = ['data_exports', 'crispy_forms']
 
-MIDDLEWARE_CLASSES = (
-    'django.middleware.common.CommonMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-)
+    new_installed_apps = remove_duplicates(default_installed_apps + third_party_apps + list(settings['INSTALLED_APPS']) + list(settings['INSTALLED_PTREE_APPS']))
 
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
-)
 
-INSTALLED_APPS = (
-    'django.contrib.auth',
-    'django.contrib.admin',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.sites',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-)
+    new_template_dirs = remove_duplicates([os.path.join(settings['BASE_DIR'], 'templates/'),
+                                           'ptree/templates',]
+                                          + list(settings.get('TEMPLATE_DIRS', [])))
 
-STATIC_ROOT = 'staticfiles'
-STATIC_URL = '/static/'
+    new_staticfiles_dirs = remove_duplicates(list(settings.get('STATICFILES_DIRS', [])) + [os.path.join(settings['BASE_DIR'], 'static'),])
 
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+    new_middleware_classes = remove_duplicates(
+        ['django.middleware.common.CommonMiddleware',
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware',] + list(settings.get('MIDDLEWARE_CLASSES', []))
+    )
 
-TEMPLATE_DEBUG = DEBUG
+    augmented_settings = {
+        'INSTALLED_APPS': new_installed_apps,
+
+        # pages with a time limit for the participant can have a grace period
+        # to compensate for network latency.
+        # the timer is started and stopped server-side,
+        # so this grace period should account for time spent during
+        # download, upload, page rendering, etc.
+
+        'TEMPLATE_DIRS': new_template_dirs,
+        'STATICFILES_DIRS': new_staticfiles_dirs,
+        'MIDDLEWARE_CLASSES': new_middleware_classes,
+    }
+
+
+
+    overridable_settings = {
+        'CRISPY_TEMPLATE_PACK': 'bootstrap3',
+        'TIME_LIMIT_GRACE_PERIOD_SECONDS': 15,
+        'SESSION_SAVE_EVERY_REQUEST': True,
+        'TEMPLATE_DEBUG': settings['DEBUG'],
+        'STATIC_ROOT': 'staticfiles',
+        'STATIC_URL': '/static/',
+        'CURRENCY_CODE': 'USD',
+        'CURRENCY_LOCALE': 'en_US',
+        'CURRENCY_DECIMAL_PLACES': 2,
+        'TIME_ZONE': 'UTC',
+        'SESSION_SERIALIZER': 'django.contrib.sessions.serializers.PickleSerializer',
+    }
+
+
+    settings.update(augmented_settings)
+
+    for k,v in overridable_settings.items():
+        if not settings.has_key(k):
+            settings[k] = v
+
+
+
+
+

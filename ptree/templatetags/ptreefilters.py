@@ -11,8 +11,9 @@ def currency(value):
     """Takes in a number of cents (int) and returns a formatted currency amount.
     """
 
+    if value == None:
+        return '?'
     value_in_major_units = Decimal(value)/(10**settings.CURRENCY_DECIMAL_PLACES)
-
     return format_currency(value_in_major_units, settings.CURRENCY_CODE, locale=settings.CURRENCY_LOCALE)
 
 register.filter('currency',currency)

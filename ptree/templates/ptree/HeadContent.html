@@ -1,16 +1,17 @@
 {% load static %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+<!-- compiled and minified CSS -->
+<link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
 
 <!-- Optional theme -->
-<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
+<link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap-theme.min.css' %}">
 
-<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script src="//ajax.aspnetcdn.com/ajax/jquery/jquery-2.0.0.min.js"></script>
+<script>window.jQuery || document.write('<script src="js/jquery-2.0.0.min.js">\x3C/script>')</script>
 
-<!-- Latest compiled and minified JavaScript -->
-<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+<!-- compiled and minified JavaScript -->
+<script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
 
 <script type="text/javascript" src="{% static "ptree/js/ptree.js" %}"></script>
 

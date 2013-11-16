@@ -3,11 +3,11 @@
 {% block title %}Payments{% endblock %}
 {% block content %}
 
-<h2>Experiment</h2>
+<h3>Experiment</h3>
 <table class="table">
     <tr>
-        <th>ID</th>
-        <td>{{ experiment_id }}</td>
+        <th>Name</th>
+        <td>{{ experiment_name }}</td>
     </tr>
     <tr>
         <th>Code</th>
@@ -15,31 +15,33 @@
     </tr>
 </table>
 
-<h2>Participants</h2>
+<h3>Participants</h3>
 <table class="table table-striped">
     <tr>
-        <th>ID</th>
         <th>Code</th>
-        <th>Base bay</th>
+        <th>External ID</th>
+        <th>Base pay</th>
         <th>Bonus</th>
         <th>Total pay</th>
         <th>Notes</th>
     </tr>
 
     {% for p in participants %}
-        <td>{{ p.pk }}</td>
+    <tr>
         <td>{{ p.code }}</td>
-        <td>{{ p.treatment.base_pay }}</td>
+        <td>{{ p.external_id }}</td>
+        <td>{{ p.base_pay_display }}</td>
         <td>{{ p.bonus_display }}</td>
-        <td>{{ p.total_pay_display }}</td>
+        <td><strong>{{ p.total_pay_display }}</strong></td>
         <td></td>
+    </tr>
     {% endfor %}
 
     <tr class="success">
-        <th>Totals</th>
+        <th>Total</th>
         <th></th>
-        <th>{{ total_base_pays|currency }}</th>
-        <th>{{ total_bonuses|currency }}</th>
+        <th></th>
+        <th></th>
         <th>{{ total_payments|currency }}</th>
         <th></th>
     </tr>

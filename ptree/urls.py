@@ -1,10 +1,10 @@
 from django.conf.urls import *
-import ptree.views.concrete
 from django.utils.importlib import import_module
 import inspect
 import vanilla
 from django.conf import settings
-import ptree.settings
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.contrib import admin
 
 def url_patterns_from_module(module_name):
     """automatically generates URLs for all Views in the module,
@@ -24,20 +24,22 @@ def url_patterns_from_module(module_name):
     view_urls = []
 
     for View in all_views:
-
-        the_url = url(View.url_pattern(), View.as_view())
-        view_urls.append(the_url)
+        if hasattr(View, 'url_pattern'):
+            the_url = url(View.url_pattern(), View.as_view())
+            view_urls.append(the_url)
 
     return patterns('', *view_urls)
 
+def augment_urlpatterns(urlpatterns):
 
-
-def urlpatterns():
-    p = patterns('', url(r'^exports/', include('data_exports.urls', namespace='data_exports')))
-    for app_name in ptree.settings.get_ptree_apps(settings.USER_PTREE_EXPERIMENT_APPS,
-                                                  settings.USER_PTREE_NON_EXPERIMENT_APPS):
+    urlpatterns += patterns('',
+                            url(r'^admin/', include(admin.site.urls)),
+                            url(r'^exports/', include('data_exports.urls', namespace='data_exports')),
+                            )
+    urlpatterns += staticfiles_urlpatterns()
+    for app_name in settings.INSTALLED_PTREE_APPS:
         views_module_name = '{}.views'.format(app_name)
-        p += url_patterns_from_module(views_module_name)
-    p += url_patterns_from_module('ptree.views.concrete')
+        urlpatterns += url_patterns_from_module(views_module_name)
+    urlpatterns += url_patterns_from_module('ptree.views.concrete')
 
-    return p
+    return urlpatterns

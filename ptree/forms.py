@@ -41,9 +41,8 @@ class FormMixin(object):
             self.fields[field_name].label = label
 
         for field_name, choices in self.field_choices().items():
-            #self.fields[field_name].widget = forms.Select(choices=choices)
-            self.fields[field_name].choices = choices
-
+            field = self.fields[field_name]
+            field.widget = field.widget.__class__(choices=choices)
 
         self.customize()
 

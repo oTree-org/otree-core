@@ -12,6 +12,7 @@ Reasons for using an auxiliary model include:
 
 - You want a model that can be reused in any app,
 like a standard questionnaire or qualification test.
+
 - Your match or participant needs to store the same type of information multiple times.
 For example, in a 2-participant match where Participant 1 makes an offer and Participant 2 responds,
 and there are multiple rounds of this process, your fields may look like this::

@@ -122,7 +122,11 @@ class SequenceMixin(PTreeMixin):
     def set_time_limit(self, context):
         page_expiration_times = self.request.session[constants.page_time_limits]
         if page_expiration_times.has_key(self.index_in_sequence_of_views):
-            remaining_seconds = max(0, int(page_expiration_times[self.index_in_sequence_of_views] - time.time()))
+            page_expiration_time = page_expiration_times[self.index_in_sequence_of_views]
+            if page_expiration_time is None:
+                remaining_seconds = None
+            else:
+                remaining_seconds = max(0, int(page_expiration_times[self.index_in_sequence_of_views] - time.time()))
         else:
             remaining_seconds = self.time_limit_seconds()
 
@@ -132,6 +136,9 @@ class SequenceMixin(PTreeMixin):
                 page_expiration_times[self.index_in_sequence_of_views] = time.time() + remaining_seconds
             else:
                 raise ValueError("Time limit must be None or a positive number.")
+
+        # TODO: this doesn't seem to have any effect. remove?
+        # I had to turn on 'save session on every request' in settings anyway.
         self.request.session.modified = True
         context[constants.time_limit_seconds] = remaining_seconds
 
@@ -194,7 +201,7 @@ class SequenceMixin(PTreeMixin):
 
     def get_context_data(self, **kwargs):
 
-        context = {}
+        context = {'form': kwargs['form']}
         context.update(self.variables_for_template())
         context.update(csrf(self.request))
         context['timer_message'] = self.timer_message()
@@ -249,6 +256,7 @@ class SequenceMixin(PTreeMixin):
         pass
 
     def form_valid(self, form):
+        self.form = form
         self.after_valid_form_submission()
         self.post_processing_on_valid_form(form)
         self.update_index_in_sequence_of_views()
@@ -388,6 +396,9 @@ class GetTreatmentOrParticipant(vanilla.View):
             self.experiment = self.treatment.experiment
             self.get_next_participant_in_experiment()
 
+        external_id = self.request.GET.get(constants.external_id)
+        if external_id is not None:
+            self.participant.external_id = external_id
         self.participant.has_visited = True
         self.participant.treatment = self.treatment
         self.participant.save()
@@ -513,11 +524,3 @@ class StartTreatmentInTwoPersonAsymmetricGame(StartTreatment):
             self.match.participant_1 = self.participant
         elif self.participant.index_among_participants_in_match == 1:
             self.match.participant_2 = self.participant
-
-class RedemptionCode(SequenceTemplateView):
-    def variables_for_template(self):
-
-        return {'redemption_code': self.participant.code,
-                'base_pay': self.treatment.base_pay,
-                'bonus': self.participant.bonus(),
-                'total_pay': self.participant.total_pay()}

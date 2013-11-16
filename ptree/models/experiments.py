@@ -21,20 +21,18 @@ class BaseExperiment(models.Model):
         return self.name or str(self.pk)
 
     def experimenter_input_url(self):
-        return urljoin(settings.DOMAIN,
-                       '/{}/ExperimenterLaunch/?{}={}&{}={}'.format(self.url_base,
+        return '/{}/ExperimenterLaunch/?{}={}&{}={}'.format(self.url_base,
                                                           constants.experiment_code,
                                                           self.code,
                                                           constants.experimenter_access_code,
                                                           self.experimenter_access_code
-                                                          ))
+                                                          )
 
-    def mturk_start_url(self):
+    def start_url(self):
         """The URL that a user is redirected to in order to start a treatment"""
-        return urljoin(settings.DOMAIN,
-                       '/{}/GetTreatmentOrParticipant/?{}={}'.format(self.url_base,
-                                                          constants.experiment_code_obfuscated,
-                                                          self.code))
+        return urljoin('/{}/GetTreatmentOrParticipant/?{}={}'.format(self.url_base,
+                                                                      constants.experiment_code_obfuscated,
+                                                                      self.code))
 
 
     def pick_treatment_for_incoming_participant(self):

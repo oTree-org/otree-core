@@ -1,10 +1,13 @@
 from collections import OrderedDict
 from django.contrib import admin
-
 from django.conf.urls import patterns
 from django.shortcuts import render_to_response
+import ptree.constants
+from django.http import HttpResponse, HttpResponseBadRequest
+from urlparse import urljoin
 
 class ParticipantAdmin(admin.ModelAdmin):
+
 
     def link(self, instance):
         url = instance.start_url()
@@ -27,12 +30,12 @@ class TreatmentAdmin(admin.ModelAdmin):
     list_filter = ['experiment']
 
 class ExperimentAdmin(admin.ModelAdmin):
-    def mturk_link(self, instance):
-        url = instance.mturk_start_url()
+    def start_link(self, instance):
+        url = instance.start_url()
         return '<a href="{}" target="_blank">{}</a>'.format(url, 'Link')
 
-    mturk_link.short_description = "MTurk link (requires workerId to be appended to URL with JavaScript)"
-    mturk_link.allow_tags = True
+    start_link.short_description = "Start link (only if you can't use participant links)"
+    start_link.allow_tags = True
 
     def payments_link(self, instance):
         return '<a href="{}" target="_blank">{}</a>'.format('{}/payments/'.format(instance.pk), 'Link')
@@ -40,6 +43,10 @@ class ExperimentAdmin(admin.ModelAdmin):
     payments_link.short_description = "Payments page"
     payments_link.allow_tags = True
 
+    def start_urls_link(self, instance):
+        return '<a href="{}" target="_blank">{}</a>'.format('{}/start_urls/'.format(instance.pk), 'Link')
+
+    start_urls_link.short_description = 'Start URLs'
 
     def experimenter_input_link(self, instance):
         url = instance.experimenter_input_url()
@@ -51,15 +58,26 @@ class ExperimentAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super(ExperimentAdmin, self).get_urls()
         my_urls = patterns('',
-            (r'^(?P<pk>\d+)/payments/$', self.admin_site.admin_view(self.payments))
+            (r'^(?P<pk>\d+)/payments/$', self.admin_site.admin_view(self.payments)),
+            (r'^(?P<pk>\d+)/start_urls/$', self.payments),
         )
         return my_urls + urls
+
+    def start_urls(self, request, pk):
+        experiment = self.model.objects.get(pk=pk)
+        if request.GET.get(ptree.constants.experimenter_access_code) != experiment.experimenter_access_code:
+            return HttpResponseBadRequest('{} parameter missing or incorrect'.format(ptree.constants.experimenter_access_code))
+        participants = experiment.participants()
+        urls = [urljoin(request.META['HTTP_HOST'], participant.start_url()) for participant in participants]
+        return HttpResponse('\n'.join(urls), content_type="text/plain")
 
     def payments(self, request, pk):
         experiment = self.model.objects.get(pk=pk)
         participants = experiment.participants()
         return render_to_response('admin/Payments.html',
-                                  {'participants': participants,
+                                  {'experiment_name': experiment.name,
+                                   'experiment_code': experiment.code,
+                                   'participants': participants,
                                    'total_payments': sum(p.total_pay() for p in participants if p.total_pay())})
 
 
@@ -100,7 +118,7 @@ def get_treatment_list_display(Treatment, readonly_fields, first_fields=None):
     return get_list_display(Treatment, readonly_fields, first_fields)
 
 def get_experiment_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields(['mturk_link', 'experimenter_input_link', 'payments_link'], fields_specific_to_this_subclass)
+    return get_readonly_fields(['start_link', 'start_urls_link', 'experimenter_input_link', 'payments_link'], fields_specific_to_this_subclass)
 
 def get_experiment_list_display(Experiment, readonly_fields, first_fields=None):
     first_fields = ['__unicode__', 'id', 'description'] + (first_fields or [])

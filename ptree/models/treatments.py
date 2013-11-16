@@ -22,10 +22,9 @@ class BaseTreatment(models.Model):
 
     def start_url(self):
         """The URL that a user is redirected to in order to start a treatment"""
-        return urljoin(settings.DOMAIN,
-                       '/{}/GetTreatmentOrParticipant/?{}={}'.format(self.experiment.url_base,
-                                                          constants.treatment_code,
-                                                          self.code))
+        return '/{}/GetTreatmentOrParticipant/?{}={}'.format(self.experiment.url_base,
+                                      constants.treatment_code,
+                                      self.code)
 
     def __unicode__(self):
         return self.name or str(self.pk)
