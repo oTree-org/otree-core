@@ -1,0 +1,190 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Auxiliary models &mdash; pTree 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pTree 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Writing a ptree app" href="index.html" />
+    <link rel="next" title="Experimenter console" href="admin.html" />
+    <link rel="prev" title="Populating the database" href="management.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="admin.html" title="Experimenter console"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="management.html" title="Populating the database"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pTree 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Writing a ptree app</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="auxiliary-models">
+<h1>Auxiliary models<a class="headerlink" href="#auxiliary-models" title="Permalink to this headline">¶</a></h1>
+<p>As discussed earlier, the 4 core models in this diagram:</p>
+<img alt="../_images/model-hierarchy.png" src="../_images/model-hierarchy.png" />
+<p>ptree provides you with a fifth type of model, <tt class="docutils literal"><span class="pre">AuxiliaryModel</span></tt>,
+that you can use to store data that doesn&#8217;t fit well on any of the above models.</p>
+<p>Reasons for using an auxiliary model include:</p>
+<ul class="simple">
+<li>You want a model that can be reused in any app,</li>
+</ul>
+<p>like a standard questionnaire or qualification test.
+- Your match or participant needs to store the same type of information multiple times.
+For example, in a 2-participant match where Participant 1 makes an offer and Participant 2 responds,
+and there are multiple rounds of this process, your fields may look like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Match</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+
+    <span class="n">offer_1</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">response_1</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">()</span>
+
+    <span class="n">offer_2</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">response_2</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">()</span>
+
+    <span class="n">offer_3</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">response_3</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">()</span>
+
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>This is a sign that you could make your code more concise and robust with an auxiliary model.
+In models.py, add this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Round</span><span class="p">(</span><span class="n">ptree</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">AuxiliaryModel</span><span class="p">):</span>
+    <span class="n">offer</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In forms.py, add this:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>class OfferForm(ptree.forms.ModelForm):</dt>
+<dd><dl class="first last docutils">
+<dt>class Meta:</dt>
+<dd>model = myapp.models.Round
+fields = [&#8216;offer&#8217;]</dd>
+</dl>
+</dd>
+<dt>class ResponseForm(ptree.forms.ModelForm):</dt>
+<dd><dl class="first last docutils">
+<dt>class Meta:</dt>
+<dd>model = myapp.models.Round
+fields = [&#8216;response&#8217;]</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<p>In views.py, create a view. In this case, <tt class="docutils literal"><span class="pre">OfferView</span></tt> should inherit form <tt class="docutils literal"><span class="pre">ptree.views.CreateView</span></tt>,
+rather than <tt class="docutils literal"><span class="pre">ptree.views.UpdateView</span></tt>, since we are creating a <tt class="docutils literal"><span class="pre">Round</span></tt> object from scratch,
+rather than updating an existing <tt class="docutils literal"><span class="pre">Round</span></tt>. After a valid form submission, a new <tt class="docutils literal"><span class="pre">Round</span></tt> object will be created.
+and associated by a <tt class="docutils literal"><span class="pre">ForeignKey</span></tt> to the <tt class="docutils literal"><span class="pre">Participant</span></tt> who created it (as well as the current <tt class="docutils literal"><span class="pre">Match</span></tt>):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">OfferView</span><span class="p">(</span><span class="n">ViewInThisApp</span><span class="p">,</span> <span class="n">ptree</span><span class="o">.</span><span class="n">views</span><span class="o">.</span><span class="n">CreateView</span><span class="p">):</span>
+
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s">&#39;myapp/Offer.html&#39;</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">myapp</span><span class="o">.</span><span class="n">forms</span><span class="o">.</span><span class="n">OfferForm</span>
+</pre></div>
+</div>
+<p>Then, for Participant 2, you can retrieve the <tt class="docutils literal"><span class="pre">Round</span></tt> in an UpdateView
+by adding a <tt class="docutils literal"><span class="pre">get_object</span></tt> method:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">ResponseView</span><span class="p">(</span><span class="n">ViewInThisApp</span><span class="p">,</span> <span class="n">ptree</span><span class="o">.</span><span class="n">views</span><span class="o">.</span><span class="n">UpdateView</span><span class="p">):</span>
+
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s">&#39;myapp/Response.html&#39;</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">myapp</span><span class="o">.</span><span class="n">forms</span><span class="o">.</span><span class="n">ResponseForm</span>
+
+    <span class="k">def</span> <span class="nf">get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OfferAndResponse</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">match</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">match</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now you can put <tt class="docutils literal"><span class="pre">OfferView</span></tt> and <tt class="docutils literal"><span class="pre">ResponseView</span></tt> into your treatment&#8217;s <tt class="docutils literal"><span class="pre">sequence()</span></tt> method
+multiple times in a row, to create multiple <tt class="docutils literal"><span class="pre">Round</span></tt> objects in your database.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="management.html"
+                        title="previous chapter">Populating the database</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="admin.html"
+                        title="next chapter">Experimenter console</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/app/auxiliary-models.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="admin.html" title="Experimenter console"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="management.html" title="Populating the database"
+             >previous</a> |</li>
+        <li><a href="../index.html">pTree 0.1 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Writing a ptree app</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Chris Wickens.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
