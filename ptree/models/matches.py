@@ -29,14 +29,3 @@ class BaseMatch(models.Model):
     class Meta:
         abstract = True
         verbose_name_plural = "matches"
-
-class MatchInTwoPersonAsymmetricGame(BaseMatch):
-    participant_1 = models.ForeignKey('Participant',
-                                      related_name = "games_as_participant_1",
-                                      null=True)
-    participant_2 = models.ForeignKey('Participant',
-                                      related_name = "games_as_participant_2",
-                                      null=True)
-
-    class Meta:
-        abstract = True

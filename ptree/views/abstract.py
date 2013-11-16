@@ -511,16 +511,3 @@ class StartTreatment(UpdateView):
     def add_participant_to_match(self):
         self.participant.index_among_participants_in_match = self.match.participant_set.count()
         self.participant.match = self.match
-
-class StartTreatmentInTwoPersonAsymmetricGame(StartTreatment):
-    """
-    For convenience, we give asymmetric 2 participant games a participant_1 and participant_2 attributes.
-    """
-
-    def add_participant_to_match(self):
-        self.participant.index_among_participants_in_match = self.match.participant_set.count()
-        self.participant.match = self.match
-        if self.participant.index_among_participants_in_match == 0:
-            self.match.participant_1 = self.participant
-        elif self.participant.index_among_participants_in_match == 1:
-            self.match.participant_2 = self.participant

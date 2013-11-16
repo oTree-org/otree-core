@@ -74,21 +74,3 @@ class BaseParticipant(models.Model):
 
     class Meta:
         abstract = True
-
-class ParticipantInTwoPersonAsymmetricGame(BaseParticipant):
-    """A participant in a 2-participant asymmetric game"""
-    
-    def is_participant_1(self):
-        return self.index_among_participants_in_match == 0
-
-    def is_participant_2(self):
-        return self.index_among_participants_in_match == 1
-
-    def bonus(self):
-        if self.is_participant_1():
-            return self.match.participant_1_bonus()
-        elif self.is_participant_2():
-            return self.match.participant_2_bonus()  
-
-    class Meta:
-        abstract = True
