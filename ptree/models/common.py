@@ -7,9 +7,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 import itertools
 
-class PayNotYetKnownError(Exception):
-    pass
-
 class AuxiliaryModel(models.Model):
     participant_content_type = models.ForeignKey(ContentType,
                                                  editable=False,
@@ -26,8 +23,6 @@ class AuxiliaryModel(models.Model):
     match = generic.GenericForeignKey('match_content_type',
                                       'match_object_id',
                                       )
-
-
 
     class Meta:
         abstract = True

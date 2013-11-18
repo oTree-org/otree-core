@@ -2,7 +2,8 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.conf import settings
 import extra_views
-
+from ptree.forms import StubModelForm
+from ptree.stuff.models import StubModel
 import vanilla
 
 import ptree.constants as constants
@@ -32,8 +33,13 @@ class ExperimenterMixin(object):
 
 
 class ExperimenterSequenceMixin(ExperimenterMixin):
+    class PageActions:
+        show = 'show'
+        skip = 'skip'
+        wait = 'wait'
+
     def show_skip_wait(self):
-        return constants.PageActions.show
+        return self.PageActions.show
 
     wait_page_template = 'ptree/WaitPage.html'
 
@@ -41,7 +47,7 @@ class ExperimenterSequenceMixin(ExperimenterMixin):
         return None
 
     def get_success_url(self):
-        return self.experiment.sequence_as_urls()[self.request.session[constants.index_in_sequence_of_views]]
+        return self.experiment.experimenter_sequence_as_urls()[self.request.session[constants.index_in_sequence_of_views]]
 
     def dispatch(self, request, *args, **kwargs):
         self.ExperimentClass = self.request.session[constants.ExperimentClass]
@@ -51,18 +57,18 @@ class ExperimenterSequenceMixin(ExperimenterMixin):
 
         # should also add GET parameter like check_if_prerequisite_is_satisfied, to be explicit.
         if self.request.is_ajax():
-            no_more_wait = ssw != constants.PageActions.wait
+            no_more_wait = ssw != self.PageActions.wait
             return HttpResponse(int(no_more_wait))
 
         # if the participant shouldn't see this view, skip to the next
-        if ssw == constants.PageActions.skip:
+        if ssw == self.PageActions.skip:
             self.request.session[constants.index_in_sequence_of_views] += 1
             return HttpResponseRedirect(self.get_success_url())
 
-        if ssw == constants.PageActions.wait:
+        if ssw == self.PageActions.wait:
             return render_to_response(self.wait_page_template, {'SequenceViewURL': self.request.path,
-                                                                   'wait_message': self.wait_message()})
-        return super(ExperimenterSequenceView, self).dispatch(request, *args, **kwargs)
+                                                                'wait_message': self.wait_message()})
+        return super(ExperimenterSequenceMixin, self).dispatch(request, *args, **kwargs)
 
     def variables_for_template(self):
         """
@@ -81,7 +87,7 @@ class ExperimenterSequenceMixin(ExperimenterMixin):
             context[constants.form_invalid] = True
             kwargs.pop(constants.form_invalid)
 
-        context.update(super(ExperimenterSequenceView, self).get_context_data(**kwargs))
+        context.update(super(ExperimenterSequenceMixin, self).get_context_data(**kwargs))
         context.update(self.variables_for_template())
 
         return context
@@ -100,7 +106,7 @@ class ExperimenterSequenceMixin(ExperimenterMixin):
     def form_valid(self, form):
         self.after_valid_form_submission(form)
         self.request.session[constants.index_in_sequence_of_views] += 1
-        return super(ExperimenterSequenceView, self).form_valid(form)
+        return super(ExperimenterSequenceMixin, self).form_valid(form)
 
     def form_invalid(self, form):
         """
@@ -125,14 +131,18 @@ class ExperimenterLaunch(ExperimenterMixin, vanilla.View):
         self.request.session[constants.index_in_sequence_of_views] = 0
         self.request.session[constants.experiment_code] = experiment_code
         self.request.session[constants.ExperimentClass] = self.ExperimentClass
-        return HttpResponseRedirect(experiment.sequence_as_urls()[0])
+        return HttpResponseRedirect(experiment.experimenter_sequence_as_urls()[0])
 
 
 class ExperimenterUpdateView(ExperimenterSequenceMixin, vanilla.UpdateView):
+    form_class = StubModelForm
+
     def get_object(self):
         Cls = self.form_class.Meta.model
         if Cls == self.ExperimentClass:
             return self.experiment
+        elif Cls == StubModel:
+            return StubModel.objects.all()[0]
 
 
 class ExperimenterCreateView(ExperimenterSequenceMixin, vanilla.CreateView):

@@ -2,8 +2,6 @@ from django.http import HttpResponseRedirect
 from django.db import models
 import common
 import ptree.constants as constants
-from urlparse import urljoin
-from django.conf import settings
 
 class BaseTreatment(models.Model):
     """

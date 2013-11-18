@@ -15,6 +15,8 @@ import ptree.constants as constants
 import logging
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
+from ptree.forms import StubModelForm
+from ptree.stuff.models import StubModel
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -111,6 +113,8 @@ class SequenceMixin(PTreeMixin):
     def show_skip_wait(self):
         return self.PageActions.show
 
+    # TODO: this is intended to be in the user's project, not part of pTree core.
+    # but maybe have one in pTree core as a fallback in case the user doesn't have it.
     wait_page_template = 'ptree/WaitPage.html'
 
     def wait_message(self):
@@ -165,7 +169,7 @@ class SequenceMixin(PTreeMixin):
         assert ssw in [self.PageActions.show, self.PageActions.skip, self.PageActions.wait]
 
         # should also add GET parameter like check_if_prerequisite_is_satisfied, to be explicit.
-        if self.request.is_ajax() and self.request.GET[constants.check_if_wait_is_over] == '1':
+        if self.request.is_ajax() and self.request.GET[constants.check_if_wait_is_over] == constants.get_param_truth_value:
             no_more_wait = ssw != self.PageActions.wait
             return HttpResponse(int(no_more_wait))
 
@@ -182,8 +186,12 @@ class SequenceMixin(PTreeMixin):
             return self.redirect_to_page_the_user_should_be_on()
 
         if ssw == self.PageActions.wait:
-            return render_to_response(self.wait_page_template, {'SequenceViewURL': self.request.path,
-                                                                   'wait_message': self.wait_message()})
+            return render_to_response(self.wait_page_template,
+                {'SequenceViewURL': '{}?{}={}'.format(self.request.path,
+                                                   constants.check_if_wait_is_over,
+                                                   constants.get_param_truth_value),
+                'debug_values': self.get_debug_values() if settings.DEBUG else None,
+                'wait_message': self.wait_message()})
         return super(SequenceMixin, self).dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -298,6 +306,10 @@ class SequenceTemplateView(SequenceMixin, vanilla.TemplateView):
 
 
 class UpdateView(SequenceMixin, vanilla.UpdateView):
+
+    # if form_class is not provided, we use an empty form based on StubModel.
+    form_class = StubModelForm
+
     def post_processing_on_valid_form(self, form):
         # form.save will also get called by the super() method, so this is technically redundant.
         # but it means that you don't need to access cleaned_data in after_valid_form_submission,
@@ -310,6 +322,8 @@ class UpdateView(SequenceMixin, vanilla.UpdateView):
             return self.match
         elif Cls == self.ParticipantClass:
             return self.participant
+        elif Cls == StubModel:
+            return StubModel.objects.all()[0]
         else:
             # For AuxiliaryModels
             return Cls.objects.get(object_id=self.participant.id,

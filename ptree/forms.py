@@ -1,9 +1,8 @@
 from django import forms
 import templatetags.ptreefilters
-from django.conf import settings
+import ptree.models.common
+import ptree.stuff.models
 
-import ptree.views.abstract
-import ptree.constants as constants
 
 class FormMixin(object):
 
@@ -42,7 +41,12 @@ class FormMixin(object):
 
         for field_name, choices in self.field_choices().items():
             field = self.fields[field_name]
-            field.widget = field.widget.__class__(choices=choices)
+            try:
+                field.widget = field.widget.__class__(choices=choices)
+            # if the current widget can't accept a choices arg, fall back to using a Select widget
+            except TypeError:
+                field.widget = forms.Select(choices=choices)
+
 
         self.customize()
 
@@ -71,3 +75,8 @@ class ModelForm(ParticipantFormMixin, forms.ModelForm):
 
 class ExperimenterModelForm(ExperimenterFormMixin, forms.ModelForm):
     pass
+
+class StubModelForm(ParticipantFormMixin, forms.ModelForm):
+    class Meta:
+        model = ptree.stuff.models.StubModel
+        fields = []

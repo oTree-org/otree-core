@@ -3,7 +3,6 @@ import common
 import ptree.constants as constants
 from django.template import defaultfilters
 import random
-from urlparse import urljoin
 from django.conf import settings
 
 class BaseExperiment(models.Model):
@@ -30,9 +29,9 @@ class BaseExperiment(models.Model):
 
     def start_url(self):
         """The URL that a user is redirected to in order to start a treatment"""
-        return urljoin('/{}/GetTreatmentOrParticipant/?{}={}'.format(self.url_base,
+        return '/{}/GetTreatmentOrParticipant/?{}={}'.format(self.url_base,
                                                                       constants.experiment_code_obfuscated,
-                                                                      self.code))
+                                                                      self.code)
 
 
     def pick_treatment_for_incoming_participant(self):

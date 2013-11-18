@@ -1,7 +1,6 @@
 from django.db import models
 import common
 import ptree.constants as constants
-from urlparse import urljoin
 from django.conf import settings
 from ptree.templatetags.ptreefilters import currency
 
@@ -54,7 +53,7 @@ class BaseParticipant(models.Model):
         try:
             return currency(self.bonus())
         except:
-            return None
+            return currency(None)
 
     def total_pay_display(self):
         return currency(self.total_pay())

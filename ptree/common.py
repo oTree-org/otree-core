@@ -44,9 +44,12 @@ class ExperimentAdmin(admin.ModelAdmin):
     payments_link.allow_tags = True
 
     def start_urls_link(self, instance):
-        return '<a href="{}" target="_blank">{}</a>'.format('{}/start_urls/'.format(instance.pk), 'Link')
+        return '<a href="{}" target="_blank">{}</a>'.format('{}/start_urls/?{}={}'.format(instance.pk,
+                                                                                          ptree.constants.experimenter_access_code,
+                                                                                          instance.experimenter_access_code), 'Link')
 
     start_urls_link.short_description = 'Start URLs'
+    start_urls_link.allow_tags = True
 
     def experimenter_input_link(self, instance):
         url = instance.experimenter_input_url()
@@ -59,7 +62,7 @@ class ExperimentAdmin(admin.ModelAdmin):
         urls = super(ExperimentAdmin, self).get_urls()
         my_urls = patterns('',
             (r'^(?P<pk>\d+)/payments/$', self.admin_site.admin_view(self.payments)),
-            (r'^(?P<pk>\d+)/start_urls/$', self.payments),
+            (r'^(?P<pk>\d+)/start_urls/$', self.start_urls),
         )
         return my_urls + urls
 

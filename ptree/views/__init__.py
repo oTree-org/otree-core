@@ -7,7 +7,5 @@ from ptree.views.abstract import (
     TemplateView,
     GetTreatmentOrParticipant,
     StartTreatment,
-    StartTreatmentInTwoPersonAsymmetricGame,
-    RedemptionCode,
     SequenceTemplateView,
 )

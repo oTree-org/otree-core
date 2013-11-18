@@ -16,30 +16,7 @@ import ptree.settings
 import ptree.models
 from django.contrib import admin
 from django.contrib.contenttypes.management import update_all_contenttypes
-
-class CreateObjectsCommand(BaseCommand):
-    help = "pTree: Populate the database before launching, with Experiment, Treatments, and Participant objects."
-    app_label = None # child classes need to fill this in.
-    Participant = None
-    Match = None
-    Treatment = None
-    Experiment = None
-
-    option_list = BaseCommand.option_list + (
-        make_option('--participants',
-            type='int',
-            dest='num_participants',
-            help='Number of participants to pre-generate'),
-    )
-
-    def create_objects(self, num_participants):
-        raise NotImplementedError()
-
-
-    def handle(self, *args, **options):
-        num_participants = options['num_participants']
-        self.create_objects(num_participants)
-        print 'Created objects for {}'.format(self.app_label)
+from ptree.stuff.models import StubModel
 
 def create_default_superuser(app, created_models, verbosity, **kwargs):
     """
@@ -173,7 +150,11 @@ def create_all_data_exports(sender, **kwargs):
     created_models = kwargs['created_models']
     for model in created_models:
         try_create_export_for_model(model)
+    StubModel().save()
 
 signals.post_syncdb.connect(create_all_data_exports)
+
+# create a single instance so it can be used for empty ModelForms.
+
 
 

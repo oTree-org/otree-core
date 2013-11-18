@@ -24,6 +24,7 @@ mturk_worker_id = 'mturk_worker_id'
 debug_values_built_in = 'debug_values_built_in'
 debug_values = 'debug_values'
 check_if_wait_is_over = 'check_if_wait_is_over'
+get_param_truth_value = '1'
 experimenter_access_code = 'experimenter_access_code'
 index_in_sequence_of_views = 'index_in_sequence_of_views'
 

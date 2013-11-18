@@ -18,6 +18,7 @@ def augment_settings(settings):
         'django.contrib.sessions',
         'django.contrib.messages',
         'django.contrib.staticfiles',
+        'ptree.stuff',
     ]
 
     third_party_apps = ['data_exports', 'crispy_forms']
@@ -57,7 +58,7 @@ def augment_settings(settings):
 
     overridable_settings = {
         'CRISPY_TEMPLATE_PACK': 'bootstrap3',
-        'TIME_LIMIT_GRACE_PERIOD_SECONDS': 15,
+        'TIME_LIMIT_GRACE_PERIOD_SECONDS': 5,
         'SESSION_SAVE_EVERY_REQUEST': True,
         'TEMPLATE_DEBUG': settings['DEBUG'],
         'STATIC_ROOT': 'staticfiles',
