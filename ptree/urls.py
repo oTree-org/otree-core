@@ -5,6 +5,10 @@ import vanilla
 from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.contrib import admin
+from django.core.urlresolvers import reverse
+from django.views.generic.base import RedirectView
+
+
 
 def url_patterns_from_module(module_name):
     """automatically generates URLs for all Views in the module,
@@ -33,6 +37,7 @@ def url_patterns_from_module(module_name):
 def augment_urlpatterns(urlpatterns):
 
     urlpatterns += patterns('',
+                            url(r'^$', RedirectView.as_view(url='/admin')),
                             url(r'^admin/', include(admin.site.urls)),
                             url(r'^exports/', include('data_exports.urls', namespace='data_exports')),
                             )

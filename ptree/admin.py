@@ -6,8 +6,7 @@ from django.contrib.auth.models import Group
 from data_exports.models import Export
 from data_exports.admin import ExportAdmin
 
-admin.site.unregister(User)
-admin.site.unregister(Group)
+
 admin.site.unregister(Export)
 
 class PTreeExportAdmin(ExportAdmin):
@@ -16,3 +15,6 @@ class PTreeExportAdmin(ExportAdmin):
     list_display = ['get_export_link', 'name']
 
 admin.site.register(Export, PTreeExportAdmin)
+
+admin.site.unregister(User)
+admin.site.unregister(Group)

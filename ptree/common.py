@@ -5,13 +5,17 @@ from django.shortcuts import render_to_response
 import ptree.constants
 from django.http import HttpResponse, HttpResponseBadRequest
 from urlparse import urljoin
+import datetime
+
+def new_tab_link(url, label):
+    return '<a href="{}" target="_blank">{}</a>'.format(url, label)
 
 class ParticipantAdmin(admin.ModelAdmin):
 
 
     def link(self, instance):
         url = instance.start_url()
-        return '<a href="{}" target="_blank">{}</a>'.format(url, 'Link')
+        return
 
     link.short_description = "Participant link"
     link.allow_tags = True
@@ -23,7 +27,7 @@ class MatchAdmin(admin.ModelAdmin):
 class TreatmentAdmin(admin.ModelAdmin):
     def link(self, instance):
         url = instance.start_url()
-        return '<a href="{}" target="_blank">{}</a>'.format(url, 'Link')
+        return new_tab_link(url, 'Link')
 
     link.short_description = "Demo link"
     link.allow_tags = True
@@ -32,28 +36,28 @@ class TreatmentAdmin(admin.ModelAdmin):
 class ExperimentAdmin(admin.ModelAdmin):
     def start_link(self, instance):
         url = instance.start_url()
-        return '<a href="{}" target="_blank">{}</a>'.format(url, 'Link')
+        return new_tab_link(url, 'Link')
 
     start_link.short_description = "Start link (only if you can't use participant links)"
     start_link.allow_tags = True
 
     def payments_link(self, instance):
-        return '<a href="{}" target="_blank">{}</a>'.format('{}/payments/'.format(instance.pk), 'Link')
+        return new_tab_link('{}/payments/'.format(instance.pk), 'Link')
 
     payments_link.short_description = "Payments page"
     payments_link.allow_tags = True
 
     def start_urls_link(self, instance):
-        return '<a href="{}" target="_blank">{}</a>'.format('{}/start_urls/?{}={}'.format(instance.pk,
-                                                                                          ptree.constants.experimenter_access_code,
-                                                                                          instance.experimenter_access_code), 'Link')
+        return new_tab_link('{}/start_urls/?{}={}'.format(instance.pk,
+                                                          ptree.constants.experimenter_access_code,
+                                                          instance.experimenter_access_code), 'Link')
 
     start_urls_link.short_description = 'Start URLs'
     start_urls_link.allow_tags = True
 
     def experimenter_input_link(self, instance):
         url = instance.experimenter_input_url()
-        return '<a href="{}" target="_blank">{}</a>'.format(url, 'Link')
+        return new_tab_link(url, 'Link')
 
     experimenter_input_link.short_description = 'Link for experimenter input during gameplay'
     experimenter_input_link.allow_tags = True
@@ -71,14 +75,17 @@ class ExperimentAdmin(admin.ModelAdmin):
         if request.GET.get(ptree.constants.experimenter_access_code) != experiment.experimenter_access_code:
             return HttpResponseBadRequest('{} parameter missing or incorrect'.format(ptree.constants.experimenter_access_code))
         participants = experiment.participants()
-        urls = [urljoin(request.META['HTTP_HOST'], participant.start_url()) for participant in participants]
+        print request.META['HTTP_HOST']
+        urls = [request.build_absolute_uri(participant.start_url()) for participant in participants]
         return HttpResponse('\n'.join(urls), content_type="text/plain")
 
     def payments(self, request, pk):
         experiment = self.model.objects.get(pk=pk)
         participants = experiment.participants()
         return render_to_response('admin/Payments.html',
-                                  {'experiment_name': experiment.name,
+                                  {'date': datetime.datetime.now(),
+                                   'app_name': experiment._meta.app_label,
+                                   'experiment_name': experiment.name,
                                    'experiment_code': experiment.code,
                                    'participants': participants,
                                    'total_payments': sum(p.total_pay() for p in participants if p.total_pay())})

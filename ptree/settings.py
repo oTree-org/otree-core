@@ -7,13 +7,18 @@ import django.contrib.sessions.serializers
 def remove_duplicates(lst):
     return list(OrderedDict.fromkeys(lst))
 
+def collapse_to_unique_list(*args):
+    combined_list = []
+    for arg in args:
+        if arg is not None:
+            combined_list += list(arg)
+    return remove_duplicates(combined_list)
+
 def augment_settings(settings):
 
 
 
     default_installed_apps = [
-        'django.contrib.admin',
-        'django.contrib.auth',
         'django.contrib.contenttypes',
         'django.contrib.sessions',
         'django.contrib.messages',
@@ -23,32 +28,36 @@ def augment_settings(settings):
 
     third_party_apps = ['data_exports', 'crispy_forms']
 
-    new_installed_apps = remove_duplicates(default_installed_apps + third_party_apps + list(settings['INSTALLED_APPS']) + list(settings['INSTALLED_PTREE_APPS']))
+    # order is important:
+    # ptree unregisters User & Group, which are installed by auth.
+    # ptree templates need to get loaded before the admin.
+    # but ptree also unregisters data_exports, which comes afterwards?
+    new_installed_apps = collapse_to_unique_list(['django.contrib.auth',
+                                                  'ptree',
+                                                  'django.contrib.admin',],
+                                                 default_installed_apps,
+                                                 third_party_apps,
+                                                 settings['INSTALLED_APPS'],
+                                                 settings['INSTALLED_PTREE_APPS'])
 
+    new_template_dirs = collapse_to_unique_list(
+        [os.path.join(settings['BASE_DIR'], 'templates/')],
+         settings.get('TEMPLATE_DIRS'))
 
-    new_template_dirs = remove_duplicates([os.path.join(settings['BASE_DIR'], 'templates/'),
-                                           'ptree/templates',]
-                                          + list(settings.get('TEMPLATE_DIRS', [])))
+    new_staticfiles_dirs = collapse_to_unique_list(settings.get('STATICFILES_DIRS'),
+        [os.path.join(settings['BASE_DIR'], 'static')])
 
-    new_staticfiles_dirs = remove_duplicates(list(settings.get('STATICFILES_DIRS', [])) + [os.path.join(settings['BASE_DIR'], 'static'),])
-
-    new_middleware_classes = remove_duplicates(
+    new_middleware_classes = collapse_to_unique_list(
         ['django.middleware.common.CommonMiddleware',
         'django.contrib.sessions.middleware.SessionMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
-        'django.contrib.messages.middleware.MessageMiddleware',] + list(settings.get('MIDDLEWARE_CLASSES', []))
+        'django.contrib.messages.middleware.MessageMiddleware',],
+        settings.get('MIDDLEWARE_CLASSES')
     )
 
     augmented_settings = {
         'INSTALLED_APPS': new_installed_apps,
-
-        # pages with a time limit for the participant can have a grace period
-        # to compensate for network latency.
-        # the timer is started and stopped server-side,
-        # so this grace period should account for time spent during
-        # download, upload, page rendering, etc.
-
         'TEMPLATE_DIRS': new_template_dirs,
         'STATICFILES_DIRS': new_staticfiles_dirs,
         'MIDDLEWARE_CLASSES': new_middleware_classes,
@@ -58,6 +67,12 @@ def augment_settings(settings):
 
     overridable_settings = {
         'CRISPY_TEMPLATE_PACK': 'bootstrap3',
+
+        # pages with a time limit for the participant can have a grace period
+        # to compensate for network latency.
+        # the timer is started and stopped server-side,
+        # so this grace period should account for time spent during
+        # download, upload, page rendering, etc.
         'TIME_LIMIT_GRACE_PERIOD_SECONDS': 5,
         'SESSION_SAVE_EVERY_REQUEST': True,
         'TEMPLATE_DEBUG': settings['DEBUG'],

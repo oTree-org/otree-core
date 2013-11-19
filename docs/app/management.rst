@@ -33,16 +33,12 @@ Participants
 How to create your objects
 ===========================
 
-In your app, under ``management/commands``,
-open ``[app_name]_create_objects.py``.
-and edit the function ``create_objects``.
-In particular, you may want to customize the parameters of your Treatments,
-as well as the numbers of Treatments and Participants. 
+In ``models.py``, edit the function ``create_objects``.
 
 Then, whenever you launch your site (either for testing or the live version of the site), 
 you will be able to create your objects by running the following command from your command line::
 
-	python manage.py [your_app_name]_create_objects
+	python manage.py create_objects --app_name=[your app name] --participants=[number of participants]
 
 You can then browse the newly created objects in the ptree Experimenter Console,
 as explained in :ref:`admin`.
