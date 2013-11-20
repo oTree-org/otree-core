@@ -6,6 +6,7 @@ import ptree.constants
 from django.http import HttpResponse, HttpResponseBadRequest
 from urlparse import urljoin
 import datetime
+from django.contrib.staticfiles.templatetags.staticfiles import static as static_template_tag
 
 def new_tab_link(url, label):
     return '<a href="{}" target="_blank">{}</a>'.format(url, label)
@@ -34,12 +35,25 @@ class TreatmentAdmin(admin.ModelAdmin):
     list_filter = ['experiment']
 
 class ExperimentAdmin(admin.ModelAdmin):
-    def start_link(self, instance):
-        url = instance.start_url()
-        return new_tab_link(url, 'Link')
+    def global_start_link(self, instance):
+        if instance.is_for_mturk:
+            return 'N/A (is_for_mturk = True)'
+        else:
+            url = instance.start_url()
+            return new_tab_link(url, 'Link')
 
-    start_link.short_description = "Start link (only if you can't use participant links)"
-    start_link.allow_tags = True
+    global_start_link.allow_tags = True
+    global_start_link.short_description = "Global start URL (only if you can't use regular start URLs)"
+
+    def mturk_snippet_link(self, instance):
+        if instance.is_for_mturk:
+            return new_tab_link('{}/mturk_snippet/'.format(instance.pk), 'Link')
+        else:
+            return 'N/A (is_for_mturk = False)'
+
+    mturk_snippet_link.allow_tags = True
+    mturk_snippet_link.short_description = "HTML snippet for MTurk HIT page"
+
 
     def payments_link(self, instance):
         return new_tab_link('{}/payments/'.format(instance.pk), 'Link')
@@ -67,6 +81,7 @@ class ExperimentAdmin(admin.ModelAdmin):
         my_urls = patterns('',
             (r'^(?P<pk>\d+)/payments/$', self.admin_site.admin_view(self.payments)),
             (r'^(?P<pk>\d+)/start_urls/$', self.start_urls),
+            (r'^(?P<pk>\d+)/mturk_snippet/$', self.admin_site.admin_view(self.mturk_snippet))
         )
         return my_urls + urls
 
@@ -78,6 +93,15 @@ class ExperimentAdmin(admin.ModelAdmin):
         print request.META['HTTP_HOST']
         urls = [request.build_absolute_uri(participant.start_url()) for participant in participants]
         return HttpResponse('\n'.join(urls), content_type="text/plain")
+
+    def mturk_snippet(self, request, pk):
+        experiment = self.model.objects.get(pk=pk)
+        hit_page_js_url = request.build_absolute_uri(static_template_tag('ptree/js/mturk_hit_page.js'))
+        experiment_url = request.build_absolute_uri(experiment.start_url())
+        return render_to_response('admin/MTurkSnippet.html',
+                                  {'hit_page_js_url': hit_page_js_url,
+                                   'experiment_url': experiment_url,},
+                                  content_type='text/plain')
 
     def payments(self, request, pk):
         experiment = self.model.objects.get(pk=pk)
@@ -128,7 +152,7 @@ def get_treatment_list_display(Treatment, readonly_fields, first_fields=None):
     return get_list_display(Treatment, readonly_fields, first_fields)
 
 def get_experiment_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields(['start_link', 'start_urls_link', 'experimenter_input_link', 'payments_link'], fields_specific_to_this_subclass)
+    return get_readonly_fields(['start_urls_link', 'mturk_snippet_link', 'global_start_link', 'experimenter_input_link', 'payments_link'], fields_specific_to_this_subclass)
 
 def get_experiment_list_display(Experiment, readonly_fields, first_fields=None):
     first_fields = ['__unicode__', 'id', 'description'] + (first_fields or [])

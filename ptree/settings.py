@@ -83,6 +83,7 @@ def augment_settings(settings):
         'CURRENCY_DECIMAL_PLACES': 2,
         'TIME_ZONE': 'UTC',
         'SESSION_SERIALIZER': 'django.contrib.sessions.serializers.PickleSerializer',
+        'ALLOWED_HOSTS': ['*'],
     }
 
 

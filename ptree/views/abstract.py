@@ -390,7 +390,10 @@ class GetTreatmentOrParticipant(vanilla.View):
         if experiment_code:
             self.experiment = get_object_or_404(self.ExperimentClass, code = experiment_code)
             if self.experiment.is_for_mturk:
-                self.assign_participant_with_mturk_parameters()
+                try:
+                    self.assign_participant_with_mturk_parameters()
+                except AssertionError:
+                    return HttpResponse('You need to accept this Mechanical Turk HIT before continuing.')
             else:
                 self.participant = self.get_next_participant_in_experiment()
 
@@ -429,7 +432,8 @@ class GetTreatmentOrParticipant(vanilla.View):
         except:
             print 'A visitor to this experiment was turned away because they did not have the MTurk parameters in their URL.'
             print 'This URL only works if clicked from a MTurk job posting with the JavaScript snippet embedded'
-            return HttpResponse('You need to accept this Mechanical Turk HIT before continuing.')
+            raise AssertionError()
+
         try:
             self.participant = self.ParticipantClass.objects.get(experiment=self.experiment,
                                                                  mturk_worker_id = mturk_worker_id)
