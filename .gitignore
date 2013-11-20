@@ -5,8 +5,6 @@ django_ptree/
 docs/_build/doctrees
 docs/_build/html/_sources/
 docs/app/Thumbs.db
-manage.py
 django_ptree.egg-info/
-setup.py
 myapp*
 *.pyc
