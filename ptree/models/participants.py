@@ -55,6 +55,8 @@ class BaseParticipant(models.Model):
         except:
             return currency(None)
 
+    bonus_display.short_description = 'Bonus'
+
     def total_pay_display(self):
         return currency(self.total_pay())
 
@@ -73,3 +75,4 @@ class BaseParticipant(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ['pk']

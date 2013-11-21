@@ -57,3 +57,4 @@ class BaseTreatment(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ['pk']

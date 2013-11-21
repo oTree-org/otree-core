@@ -60,3 +60,4 @@ class BaseExperiment(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ['pk']

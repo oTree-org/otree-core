@@ -105,7 +105,7 @@ class ExperimentAdmin(admin.ModelAdmin):
 
     def payments(self, request, pk):
         experiment = self.model.objects.get(pk=pk)
-        participants = experiment.participants()
+        participants = experiment.participants().order_by('external_id', 'code')
         return render_to_response('admin/Payments.html',
                                   {'date': datetime.datetime.now(),
                                    'app_name': experiment._meta.app_label,

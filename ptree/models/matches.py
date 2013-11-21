@@ -29,3 +29,4 @@ class BaseMatch(models.Model):
     class Meta:
         abstract = True
         verbose_name_plural = "matches"
+        ordering = ['pk']
