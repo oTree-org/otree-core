@@ -3,7 +3,7 @@
 from django.db import models
 import ptree.models
 from django.conf import settings
-import random
+from django.utils.translation import ugettext_lazy as _
 
 class Experiment(ptree.models.BaseExperiment):
 

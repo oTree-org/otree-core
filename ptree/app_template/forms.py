@@ -1,6 +1,7 @@
 import {{ app_name }}.models as models
 from django import forms
 from {{ app_name }}.utilities import ModelForm
+from django.utils.translation import ugettext_lazy as _
 
 class StartForm(ModelForm):
     class Meta:

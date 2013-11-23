@@ -2,7 +2,7 @@ import ptree.views
 import ptree.views.concrete
 import {{ app_name }}.forms as forms
 from {{ app_name }}.utilities import ViewInThisApp
-
+from django.utils.translation import ugettext as _
 from django.conf import settings
 
 class GetTreatmentOrParticipant(ViewInThisApp, ptree.views.GetTreatmentOrParticipant):

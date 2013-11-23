@@ -394,7 +394,7 @@ class GetTreatmentOrParticipant(vanilla.View):
                 try:
                     self.assign_participant_with_mturk_parameters()
                 except AssertionError:
-                    return HttpResponse('You need to accept this Mechanical Turk HIT before continuing.')
+                    return HttpResponse('To participate, you need to first accept this Mechanical Turk HIT and then re-click this link (refreshing this page will not work).')
             else:
                 self.participant = self.get_next_participant_in_experiment()
 

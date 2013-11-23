@@ -1,5 +1,7 @@
 {% extends "Base.html" %}
 {% load ptreefilters %}
+{% load i18n %}
+{% load static %}
 {% block title %}Task complete{% endblock %}
 {% block content %}
 
@@ -24,8 +26,7 @@ You have made {{ base_pay|currency }} for participating.
 
 {% block redeem_instructions %}
     <p>
-    To redeem this reward, please return to the Amazon Mechanical Turk HIT and enter the below redemption code.
-    You will be paid for the HIT within a day, but it will take several days for your bonus to be paid.
+    Use the below redemption code to redeem this reward.
     </p>
 {% endblock %}
 
