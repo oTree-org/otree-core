@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-import os, sys
-
+import os
+import sys
+import ptree
 from django.core.management import execute_from_command_line
 
 STARTPROJECT = 'startproject'
@@ -14,9 +15,11 @@ if __name__ == "__main__":
     project_or_app_name = sys.argv[2]
 
     if command == STARTPROJECT:
-        argv = ['', STARTPROJECT, '--template={}'.format('http://is.gd/ptree_project'), project_or_app_name]
+        project_template = os.path.join(os.path.dirname(ptree.__file__), 'project_template')
+        argv = ['', STARTPROJECT, '--template={}'.format(project_template), project_or_app_name]
     elif command == STARTAPP:
-        argv = ['', STARTAPP, '--template={}'.format('http://is.gd/ptree_app'), project_or_app_name]
+        app_template = os.path.join(os.path.dirname(ptree.__file__), 'app_template')
+        argv = ['', STARTAPP, '--template={}'.format(app_template), project_or_app_name]
     else:
         print 'Available commands are: {}'.format(', '.join([STARTAPP, STARTPROJECT]))
         sys.exit(1)

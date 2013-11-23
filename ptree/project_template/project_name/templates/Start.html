@@ -1,0 +1,16 @@
+{% extends "Base.html" %}
+{% load ptreefilters %}
+{% block title %}Start{% endblock %}
+
+
+{% block content %}
+
+<p>
+On this site, you will perform some simple tasks.
+Once you finish,
+you will receive a completion code in order to get paid.
+</p>
+
+{% include "ptree/Form.html" %}
+
+{% endblock %}
