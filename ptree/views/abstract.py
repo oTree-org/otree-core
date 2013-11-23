@@ -166,7 +166,8 @@ class SequenceMixin(PTreeMixin):
         args = args[1:]
 
         ssw = self.show_skip_wait()
-        assert ssw in [self.PageActions.show, self.PageActions.skip, self.PageActions.wait]
+        if not ssw in [self.PageActions.show, self.PageActions.skip, self.PageActions.wait]:
+            raise ValueError('show_skip_wait() must return one of the following: [self.PageActions.show, self.PageActions.skip, self.PageActions.wait]')
 
         # should also add GET parameter like check_if_prerequisite_is_satisfied, to be explicit.
         if self.request.is_ajax() and self.request.GET[constants.check_if_wait_is_over] == constants.get_param_truth_value:
@@ -227,7 +228,7 @@ class SequenceMixin(PTreeMixin):
             match_id = self.match.pk
         except:
             match_id = ''
-        return [('Index of participant in match', self.participant.index_among_participants_in_match),
+        return [('Index among participants in match', self.participant.index_among_participants_in_match),
                 ('Participant', self.participant.pk),
                 ('Match', match_id),
                 ('Treatment', self.treatment.pk),
