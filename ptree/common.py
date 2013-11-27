@@ -16,7 +16,7 @@ class ParticipantAdmin(admin.ModelAdmin):
 
     def link(self, instance):
         url = instance.start_url()
-        return
+        return new_tab_link(url, 'Link')
 
     link.short_description = "Participant link"
     link.allow_tags = True
@@ -121,8 +121,9 @@ def remove_duplicates(lst):
 def get_list_display(ModelName, readonly_fields, first_fields):
     all_field_names = [field.name for field in ModelName._meta.fields]
 
+
     # make sure they're actually in the model.
-    first_fields = [f for f in first_fields if f in all_field_names]
+    #first_fields = [f for f in first_fields if f in all_field_names]
 
     list_display = first_fields + readonly_fields + all_field_names
     return remove_duplicates(list_display)
@@ -134,26 +135,26 @@ def get_participant_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields(['link', 'bonus_display'], fields_specific_to_this_subclass)
 
 def get_participant_list_display(Participant, readonly_fields, first_fields=None):
-    first_fields = ['__unicode__', 'id', 'experiment', 'treatment', 'match', 'has_visited'] + (first_fields or [])
+    first_fields = ['id', 'experiment', 'treatment', 'match', 'has_visited'] + (first_fields or [])
     return get_list_display(Participant, readonly_fields, first_fields)
 
 def get_match_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields([], fields_specific_to_this_subclass)
 
 def get_match_list_display(Match, readonly_fields, first_fields=None):
-    first_fields = ['__unicode__', 'id', 'experiment', 'treatment', 'time_started'] + (first_fields or [])
+    first_fields = ['id', 'experiment', 'treatment', 'time_started'] + (first_fields or [])
     return get_list_display(Match, readonly_fields, first_fields)
 
 def get_treatment_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields(['link'], fields_specific_to_this_subclass)
 
 def get_treatment_list_display(Treatment, readonly_fields, first_fields=None):
-    first_fields = ['__unicode__', 'id', 'description', 'experiment'] + (first_fields or [])
+    first_fields = ['unicode', 'experiment'] + (first_fields or [])
     return get_list_display(Treatment, readonly_fields, first_fields)
 
 def get_experiment_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields(['start_urls_link', 'mturk_snippet_link', 'global_start_link', 'experimenter_input_link', 'payments_link'], fields_specific_to_this_subclass)
 
 def get_experiment_list_display(Experiment, readonly_fields, first_fields=None):
-    first_fields = ['__unicode__', 'id', 'description'] + (first_fields or [])
+    first_fields = ['unicode'] + (first_fields or [])
     return get_list_display(Experiment, readonly_fields, first_fields)

@@ -16,8 +16,16 @@ class BaseExperiment(models.Model):
     payment_was_sent = models.BooleanField(verbose_name='Payment was sent', default=False)
     experimenter_access_code = common.RandomCharField(length=8)
 
-    def __unicode__(self):
+    def unicode(self):
+        """Define this because Django-Inspect-Model (django-inspect-model.rtfd.org/en/latest/#usage)
+        doesn't recognize the __unicode__ method, and Django-data-exports relies on this."""
         return self.name or str(self.pk)
+
+    unicode.short_description = 'name'
+
+    def __unicode__(self):
+        return self.unicode()
+
 
     def experimenter_input_url(self):
         return '/{}/ExperimenterLaunch/?{}={}&{}={}'.format(self.url_base,
