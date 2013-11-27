@@ -10,11 +10,21 @@ class StubModel(models.Model):
 class SequenceOfExperiments(models.Model):
     name = models.CharField(max_length = 300, null = True, blank = True)
     code = ptree.models.common.RandomCharField()
-    first_experiment_content_type = models.ForeignKey(ContentType, null=True)
+    first_experiment_content_type = models.ForeignKey(ContentType,
+                                                      null=True,
+                                                      related_name = '%(app_label)s_%(class)s')
     first_experiment_object_id = models.PositiveIntegerField(null=True)
     first_experiment = generic.GenericForeignKey('first_experiment_content_type',
                                             'first_experiment_object_id',)
 
+
+    def unicode(self):
+        """Define this because Django-Inspect-Model (django-inspect-model.rtfd.org/en/latest/#usage)
+        doesn't recognize the __unicode__ method, and Django-data-exports relies on this."""
+        return self.name or str(self.pk)
+
+    def __unicode__(self):
+        return unicode(self)
 
     def add_experiments(self, experiments):
         self.first_experiment = experiments[0]
@@ -22,3 +32,6 @@ class SequenceOfExperiments(models.Model):
             experiments[i].next_experiment = experiments[i + 1]
             experiments[i].save()
         self.save()
+
+    class Meta:
+        verbose_name_plural = 'sequences of experiments'

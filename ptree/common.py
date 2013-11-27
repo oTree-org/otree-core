@@ -20,6 +20,58 @@ def start_urls_for_experiment(experiment, request):
     urls = [request.build_absolute_uri(participant.start_url()) for participant in participants]
     return HttpResponse('\n'.join(urls), content_type="text/plain")
 
+def remove_duplicates(lst):
+    return list(OrderedDict.fromkeys(lst))
+
+def get_list_display(ModelName, readonly_fields, first_fields):
+    all_field_names = [field.name for field in ModelName._meta.fields]
+
+
+    # make sure they're actually in the model.
+    #first_fields = [f for f in first_fields if f in all_field_names]
+
+    list_display = first_fields + readonly_fields + all_field_names
+    return remove_duplicates(list_display)
+
+def get_readonly_fields(fields_common_to_all_models, fields_specific_to_this_subclass):
+    return remove_duplicates(fields_common_to_all_models + fields_specific_to_this_subclass)
+
+def get_participant_readonly_fields(fields_specific_to_this_subclass):
+    return get_readonly_fields(['link', 'bonus_display'], fields_specific_to_this_subclass)
+
+def get_participant_list_display(Participant, readonly_fields, first_fields=None):
+    first_fields = ['id', 'experiment', 'treatment', 'match', 'has_visited'] + (first_fields or [])
+    return get_list_display(Participant, readonly_fields, first_fields)
+
+def get_match_readonly_fields(fields_specific_to_this_subclass):
+    return get_readonly_fields([], fields_specific_to_this_subclass)
+
+def get_match_list_display(Match, readonly_fields, first_fields=None):
+    first_fields = ['id', 'experiment', 'treatment', 'time_started'] + (first_fields or [])
+    return get_list_display(Match, readonly_fields, first_fields)
+
+def get_treatment_readonly_fields(fields_specific_to_this_subclass):
+    return get_readonly_fields(['link'], fields_specific_to_this_subclass)
+
+def get_treatment_list_display(Treatment, readonly_fields, first_fields=None):
+    first_fields = ['unicode', 'experiment'] + (first_fields or [])
+    return get_list_display(Treatment, readonly_fields, first_fields)
+
+def get_experiment_readonly_fields(fields_specific_to_this_subclass):
+    return get_readonly_fields(['start_urls_link', 'mturk_snippet_link', 'global_start_link', 'experimenter_input_link', 'payments_link'], fields_specific_to_this_subclass)
+
+def get_experiment_list_display(Experiment, readonly_fields, first_fields=None):
+    first_fields = ['unicode'] + (first_fields or [])
+    return get_list_display(Experiment, readonly_fields, first_fields)
+
+def get_sequence_of_experiments_readonly_fields(fields_specific_to_this_subclass):
+    return get_readonly_fields(['start_urls_link', 'payments_link'], fields_specific_to_this_subclass)
+
+def get_sequence_of_experiments_list_display(SequenceOfExperiments, readonly_fields, first_fields=None):
+    first_fields = ['unicode'] + (first_fields or [])
+    return get_list_display(SequenceOfExperiments, readonly_fields, first_fields)
+
+
 class ParticipantAdmin(admin.ModelAdmin):
 
 
@@ -172,65 +224,17 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
     payments_link.allow_tags = True
 
     def start_urls_link(self, instance):
+        experiment = instance.first_experiment
         return new_tab_link('{}/start_urls/?{}={}'.format(instance.pk,
                                                           ptree.constants.experimenter_access_code,
-                                                          instance.experimenter_access_code), 'Link')
+                                                          experiment.experimenter_access_code), 'Link')
 
     start_urls_link.short_description = 'Start URLs'
     start_urls_link.allow_tags = True
 
-
-
-def remove_duplicates(lst):
-    return list(OrderedDict.fromkeys(lst))
-
-def get_list_display(ModelName, readonly_fields, first_fields):
-    all_field_names = [field.name for field in ModelName._meta.fields]
-
-
-    # make sure they're actually in the model.
-    #first_fields = [f for f in first_fields if f in all_field_names]
-
-    list_display = first_fields + readonly_fields + all_field_names
-    return remove_duplicates(list_display)
-
-def get_readonly_fields(fields_common_to_all_models, fields_specific_to_this_subclass):
-    return remove_duplicates(fields_common_to_all_models + fields_specific_to_this_subclass)
-
-def get_participant_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields(['link', 'bonus_display'], fields_specific_to_this_subclass)
-
-def get_participant_list_display(Participant, readonly_fields, first_fields=None):
-    first_fields = ['id', 'experiment', 'treatment', 'match', 'has_visited'] + (first_fields or [])
-    return get_list_display(Participant, readonly_fields, first_fields)
-
-def get_match_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields([], fields_specific_to_this_subclass)
-
-def get_match_list_display(Match, readonly_fields, first_fields=None):
-    first_fields = ['id', 'experiment', 'treatment', 'time_started'] + (first_fields or [])
-    return get_list_display(Match, readonly_fields, first_fields)
-
-def get_treatment_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields(['link'], fields_specific_to_this_subclass)
-
-def get_treatment_list_display(Treatment, readonly_fields, first_fields=None):
-    first_fields = ['unicode', 'experiment'] + (first_fields or [])
-    return get_list_display(Treatment, readonly_fields, first_fields)
-
-def get_experiment_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields(['start_urls_link', 'mturk_snippet_link', 'global_start_link', 'experimenter_input_link', 'payments_link'], fields_specific_to_this_subclass)
-
-def get_experiment_list_display(Experiment, readonly_fields, first_fields=None):
-    first_fields = ['unicode'] + (first_fields or [])
-    return get_list_display(Experiment, readonly_fields, first_fields)
-
-def get_sequence_of_experiments_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields(['start_urls_link', 'payments_link'], fields_specific_to_this_subclass)
-
-def get_experiment_list_display(Experiment, readonly_fields, first_fields=None):
-    first_fields = ['__unicode__', 'id', 'description'] + (first_fields or [])
-    return get_list_display(Experiment, readonly_fields, first_fields)
+    readonly_fields = get_sequence_of_experiments_readonly_fields([])
+    list_display = get_sequence_of_experiments_list_display(ptree.stuff.models.SequenceOfExperiments,
+                                                          readonly_fields=readonly_fields)
 
 
 def create_sequence_of_experiments(experiments, name):

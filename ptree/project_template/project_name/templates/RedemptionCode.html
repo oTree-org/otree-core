@@ -24,7 +24,7 @@ You have made {{ base_pay|currency }} for participating.
     </p>
 {% endblock %}
 
-{% if next_experiment_available %}
+{% if has_next_experiment %}
     {% include "ptree/Form.html" %}
 {% else %}
 
