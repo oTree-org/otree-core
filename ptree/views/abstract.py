@@ -17,6 +17,9 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 from ptree.forms import StubModelForm
 from ptree.stuff.models import StubModel
+import urllib
+import urlparse
+
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -69,6 +72,19 @@ class PTreeMixin(object):
         return r'^{}/{}/$'.format(cls.get_url_base(), cls.__name__)
 
     def page_the_user_should_be_on(self):
+        if self.participant.index_in_sequence_of_views >= len(self.treatment.sequence_as_urls()):
+            if self.experiment.next_experiment:
+                url = self.experiment.next_experiment.start_url()
+
+                # add external_id to URL
+                params_to_add = {constants.external_id: self.participant.external_id}
+                url_parts = list(urlparse.urlparse(url))
+                query = dict(urlparse.parse_qsl(url_parts[4]))
+                query.update(params_to_add)
+                url_parts[4] = urllib.urlencode(query)
+
+                return urlparse.urlunparse(url_parts)
+
         return self.treatment.sequence_as_urls()[self.participant.index_in_sequence_of_views]
 
     def redirect_to_page_the_user_should_be_on(self):

@@ -4,6 +4,8 @@ import ptree.constants as constants
 from django.template import defaultfilters
 import random
 from django.conf import settings
+from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.models import ContentType
 
 class BaseExperiment(models.Model):
     """
@@ -15,6 +17,14 @@ class BaseExperiment(models.Model):
     is_for_mturk = models.BooleanField(verbose_name='Is for MTurk', default=True)
     payment_was_sent = models.BooleanField(verbose_name='Payment was sent', default=False)
     experimenter_access_code = common.RandomCharField(length=8)
+
+    next_experiment_content_type = models.ForeignKey(ContentType, null=True)
+    next_experiment_object_id = models.PositiveIntegerField(null=True)
+    next_experiment = generic.GenericForeignKey('next_experiment_content_type',
+                                            'next_experiment_object_id',)
+
+    def has_next_experiment(self):
+        return bool(self.next_experiment)
 
     def __unicode__(self):
         return self.name or str(self.pk)
