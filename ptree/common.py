@@ -199,7 +199,8 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
 
         while True:
             for participant in experiment.participants():
-                payments[participant.external_id] += participant.total_pay()
+                if participant.external_id:
+                    payments[participant.external_id] += participant.total_pay() or 0
             experiment = experiment.next_experiment
             if not experiment:
                 break
@@ -236,8 +237,4 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
     list_display = get_sequence_of_experiments_list_display(ptree.stuff.models.SequenceOfExperiments,
                                                           readonly_fields=readonly_fields)
 
-
-def create_sequence_of_experiments(experiments, name):
-    seq = ptree.stuff.models.SequenceOfExperiments(name = name)
-    seq.add_experiments(experiments)
 

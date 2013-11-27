@@ -3,6 +3,8 @@ import common
 import ptree.constants as constants
 from django.template import defaultfilters
 import random
+from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 
 class BaseExperiment(models.Model):
@@ -15,6 +17,7 @@ class BaseExperiment(models.Model):
     is_for_mturk = models.BooleanField(verbose_name='Is for MTurk', default=True)
     payment_was_sent = models.BooleanField(verbose_name='Payment was sent', default=False)
     experimenter_access_code = common.RandomCharField(length=8)
+    sequence_of_experiments_access_code = common.RandomCharField(length=8)
 
     next_experiment_content_type = models.ForeignKey(ContentType,
                                                      null=True,
@@ -47,11 +50,15 @@ class BaseExperiment(models.Model):
                                                           self.experimenter_access_code
                                                           )
 
-    def start_url(self):
+    def start_url(self, in_sequence_of_experiments = False):
         """The URL that a user is redirected to in order to start a treatment"""
-        return '/{}/GetTreatmentOrParticipant/?{}={}'.format(self.url_base,
-                                                                      constants.experiment_code_obfuscated,
-                                                                      self.code)
+        url = '/{}/GetTreatmentOrParticipant/?{}={}'.format(self.url_base,
+                                                             constants.experiment_code_obfuscated,
+                                                             self.code)
+        if in_sequence_of_experiments:
+            url += '&{}={}'.format(constants.sequence_of_experiments_access_code,
+                                   self.sequence_of_experiments_access_code)
+        return url
 
 
     def pick_treatment_for_incoming_participant(self):
