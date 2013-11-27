@@ -1,0 +1,67 @@
+{% extends "Base.html" %}
+{% load ptreefilters %}
+{% block title %}pTree Payments{% endblock %}
+{% block content %}
+
+<p>
+    <strong>{% now "DATE_FORMAT" %}</strong>
+</p>
+
+
+<h3>Experiment</h3>
+<table class="table">
+    <tr>
+        <th>App</th>
+        <td>{{ app_name }}</td>
+    </tr>
+    <tr>
+        <th>Name</th>
+        <td>{{ experiment_name|default_if_none:"" }}</td>
+    </tr>
+    <tr>
+        <th>Code</th>
+        <td style="font-family: 'Courier New'">{{ experiment_code }}</td>
+    </tr>
+</table>
+
+<h3>Participants</h3>
+<table class="table table-striped">
+    <tr>
+        <th>Code</th>
+        <th>External ID</th>
+        <th>Base pay</th>
+        <th>Bonus</th>
+        <th>Total pay</th>
+        <th>Notes</th>
+    </tr>
+
+    {% for p in participants %}
+    <tr>
+        <td style="font-family: 'Courier New'">{{ p.code }}</td>
+        <td>{{ p.external_id|default_if_none:"" }}</td>
+        <td>{{ p.base_pay_display }}</td>
+        <td>{{ p.bonus_display }}</td>
+        <td><strong>{{ p.total_pay_display }}</strong></td>
+        <td></td>
+    </tr>
+    {% endfor %}
+
+    <tr class="success">
+        <th>Total</th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th>{{ total_payments|currency }}</th>
+        <th></th>
+    </tr>
+
+</table>
+
+<h3>Notes/Signature</h3>
+<div class="well well-lg">
+    <br/>
+    <br/>
+    <br/>
+</div>
+
+{% endblock %}
