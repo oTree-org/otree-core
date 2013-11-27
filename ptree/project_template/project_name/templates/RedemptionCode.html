@@ -24,6 +24,10 @@ You have made {{ base_pay|currency }} for participating.
     </p>
 {% endblock %}
 
+{% if has_next_experiment %}
+    {% include "ptree/Form.html" %}
+{% else %}
+
 {% block redeem_instructions %}
     <p>
     Use the below redemption code to redeem this reward.
@@ -39,5 +43,6 @@ You have made {{ base_pay|currency }} for participating.
   </div>
 </div>
 
+{% endif %}
 
 {% endblock %}

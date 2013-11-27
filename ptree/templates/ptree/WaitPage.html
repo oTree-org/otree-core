@@ -4,7 +4,7 @@
 
 {% block content %}
     <p>
-    {{ wait_message }}
+    {{ wait_message|default_if_none:'' }}
     </p>
 
     <div class="progress progress-striped active" id='waitingIndicator'>

@@ -17,12 +17,6 @@ class BaseMatch(models.Model):
         """
         raise NotImplementedError()
 
-    def is_full(self):
-        """
-        Whether the match is full (i.e. no more ``Participant``s can be assigned).
-        """
-        return len(self.participants()) >= self.treatment.participants_per_match
-
     def participants(self):
         return self.participant_set.all()
 

@@ -14,9 +14,12 @@ import time
 import ptree.constants as constants
 import logging
 from django.utils.decorators import method_decorator
-from django.views.decorators.cache import never_cache
+from django.views.decorators.cache import never_cache, cache_control
 from ptree.forms import StubModelForm
 from ptree.stuff.models import StubModel
+import urllib
+import urlparse
+
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -69,6 +72,19 @@ class PTreeMixin(object):
         return r'^{}/{}/$'.format(cls.get_url_base(), cls.__name__)
 
     def page_the_user_should_be_on(self):
+        if self.participant.index_in_sequence_of_views >= len(self.treatment.sequence_as_urls()):
+            if self.experiment.next_experiment:
+                url = self.experiment.next_experiment.start_url()
+
+                # add external_id to URL
+                params_to_add = {constants.external_id: self.participant.external_id}
+                url_parts = list(urlparse.urlparse(url))
+                query = dict(urlparse.parse_qsl(url_parts[4]))
+                query.update(params_to_add)
+                url_parts[4] = urllib.urlencode(query)
+
+                return urlparse.urlunparse(url_parts)
+
         return self.treatment.sequence_as_urls()[self.participant.index_in_sequence_of_views]
 
     def redirect_to_page_the_user_should_be_on(self):
@@ -158,6 +174,7 @@ class SequenceMixin(PTreeMixin):
         pass
 
     @method_decorator(never_cache)
+    @method_decorator(cache_control(must_revalidate=True, max_age=0, no_cache=True, no_store = True))
     def dispatch(self, request, *args, **kwargs):
         self.load_classes()
         self.load_objects()
@@ -394,7 +411,7 @@ class GetTreatmentOrParticipant(vanilla.View):
                 try:
                     self.assign_participant_with_mturk_parameters()
                 except AssertionError:
-                    return HttpResponse('To participate, you need to first accept this Mechanical Turk HIT and then re-click this link (refreshing this page will not work).')
+                    return HttpResponse('To participate, you need to first accept this Mechanical Turk HIT and then re-click the link (refreshing this page will not work).')
             else:
                 self.participant = self.get_next_participant_in_experiment()
 

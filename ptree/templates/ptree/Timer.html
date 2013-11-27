@@ -4,9 +4,9 @@
         <span class="glyphicon glyphicon-time"></span>
         <span id="minutes" style="font-weight: bold"></span>:<span id="seconds" style="font-weight: bold"></span>
         left to complete this page.
-        {% if timer_explanation %}
+        {% if timer_message %}
         <p>
-            {{ timer_explanation }}
+            {{ timer_message }}
         </p>
         {% endif %}
         <p style="display:none;" id="time_out_message">
