@@ -174,6 +174,7 @@ class SequenceMixin(PTreeMixin):
         pass
 
     @method_decorator(never_cache)
+    @method_decorator(cache_control(must_revalidate=True, max_age=0, no_cache=True, no_store = True))
     def dispatch(self, request, *args, **kwargs):
         self.load_classes()
         self.load_objects()
@@ -410,7 +411,7 @@ class GetTreatmentOrParticipant(vanilla.View):
                 try:
                     self.assign_participant_with_mturk_parameters()
                 except AssertionError:
-                    return HttpResponse('To participate, you need to first accept this Mechanical Turk HIT and then re-click this link (refreshing this page will not work).')
+                    return HttpResponse('To participate, you need to first accept this Mechanical Turk HIT and then re-click the link (refreshing this page will not work).')
             else:
                 self.participant = self.get_next_participant_in_experiment()
 

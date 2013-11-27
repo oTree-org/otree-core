@@ -24,8 +24,15 @@ class BaseTreatment(models.Model):
                                       constants.treatment_code,
                                       self.code)
 
-    def __unicode__(self):
+    def unicode(self):
+        """Define this because Django-Inspect-Model (django-inspect-model.rtfd.org/en/latest/#usage)
+        doesn't recognize the __unicode__ method, and Django-data-exports relies on this."""
         return self.name or str(self.pk)
+
+    unicode.short_description = 'name'
+
+    def __unicode__(self):
+        return self.unicode()
 
     def matches(self):
         return self.match_set.all()

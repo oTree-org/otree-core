@@ -38,7 +38,7 @@ In ``models.py``, edit the function ``create_objects``.
 Then, whenever you launch your site (either for testing or the live version of the site), 
 you will be able to create your objects by running the following command from your command line::
 
-	python manage.py create_objects --app_name=[your app name] --participants=[number of participants]
+	python manage.py create_objects <app_name> <number of participants>
 
 You can then browse the newly created objects in the ptree Experimenter Console,
 as explained in :ref:`admin`.
