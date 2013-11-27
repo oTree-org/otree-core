@@ -14,7 +14,7 @@ import time
 import ptree.constants as constants
 import logging
 from django.utils.decorators import method_decorator
-from django.views.decorators.cache import never_cache
+from django.views.decorators.cache import never_cache, cache_control
 from ptree.forms import StubModelForm
 from ptree.stuff.models import StubModel
 import urllib
