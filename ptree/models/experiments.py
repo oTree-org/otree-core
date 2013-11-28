@@ -1,5 +1,5 @@
 from django.db import models
-import common
+from ptree.fields import RandomCharField
 import ptree.constants as constants
 from django.template import defaultfilters
 import random
@@ -14,10 +14,13 @@ class BaseExperiment(models.Model):
     """
 
     name = models.CharField(max_length = 500, null = True, blank = True)
-    code = common.RandomCharField(length=8)
-    experimenter_access_code = common.RandomCharField(length=8)
+    code = RandomCharField(length=8)
+    experimenter_access_code = RandomCharField(length=8)
+    sequence_of_experiments_access_code = RandomCharField(length=8)
 
-    sequence_of_experiments = models.ForeignKey(SequenceOfExperiments, null=True)
+    sequence_of_experiments = models.ForeignKey(SequenceOfExperiments,
+                                                null=True,
+                                                related_name = '%(app_label)s_%(class)s')
 
     next_experiment_content_type = models.ForeignKey(ContentType,
                                                      null=True,
@@ -58,11 +61,15 @@ class BaseExperiment(models.Model):
                                                           self.experimenter_access_code
                                                           )
 
-    def start_url(self):
+    def start_url(self, in_sequence_of_experiments = False):
         """The URL that a user is redirected to in order to start a treatment"""
-        return '/{}/GetTreatmentOrParticipant/?{}={}'.format(self.url_base,
-                                                                      constants.experiment_code_obfuscated,
-                                                                      self.code)
+        url = '/{}/GetTreatmentOrParticipant/?{}={}'.format(self.url_base,
+                                                             constants.experiment_code_obfuscated,
+                                                             self.code)
+        if in_sequence_of_experiments:
+            url += '&{}={}'.format(constants.sequence_of_experiments_access_code,
+                                   self.sequence_of_experiments_access_code)
+        return url
 
 
     def pick_treatment_for_incoming_participant(self):

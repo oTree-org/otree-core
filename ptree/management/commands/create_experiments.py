@@ -9,6 +9,7 @@ class Command(BaseCommand):
     args = 'num_participants app_name [app_name] ...'
 
     def handle(self, *args, **options):
+        print 'Creating sequence of experiments...'
         if len(args) < 2:
             raise CommandError("Wrong number of arguments (expecting '{}')".format(self.args))
 
@@ -17,10 +18,11 @@ class Command(BaseCommand):
         experiments = []
         for app_name in app_names:
             if app_name not in settings.INSTALLED_PTREE_APPS:
+
                 print 'Before running this command you need to add "{}" to INSTALLED_PTREE_APPS.'.format(app_name)
                 return
 
-            models_module = import_module('{}.models').format(app_name)
+            models_module = import_module('{}.models'.format(app_name))
             experiment = models_module.create_experiment(num_participants=num_participants)
             print 'Created objects for {}'.format(app_name)
             experiments.append(experiment)

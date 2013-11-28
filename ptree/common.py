@@ -9,6 +9,10 @@ import datetime
 from django.contrib.staticfiles.templatetags.staticfiles import static as static_template_tag
 import ptree.sequence_of_experiments.models
 from collections import defaultdict
+import itertools
+import random
+import string
+from django.db import models
 
 def new_tab_link(url, label):
     return '<a href="{}" target="_blank">{}</a>'.format(url, label)
@@ -58,7 +62,7 @@ def get_treatment_list_display(Treatment, readonly_fields, first_fields=None):
     return get_list_display(Treatment, readonly_fields, first_fields)
 
 def get_experiment_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields(['start_urls_link', 'mturk_snippet_link', 'global_start_link', 'experimenter_input_link', 'payments_link'], fields_specific_to_this_subclass)
+    return get_readonly_fields(['experimenter_input_link'], fields_specific_to_this_subclass)
 
 def get_experiment_list_display(Experiment, readonly_fields, first_fields=None):
     first_fields = ['unicode'] + (first_fields or [])
@@ -170,7 +174,8 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
 
         for experiment in sequence_of_experiments.experiments():
             for participant in experiment.participants():
-                payments[participant.external_id] += participant.total_pay()
+                if participant.external_id:
+                    payments[participant.external_id] += participant.total_pay() or 0
 
         total_payments = 0
         participants = []
@@ -195,4 +200,7 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
     readonly_fields = get_sequence_of_experiments_readonly_fields([])
     list_display = get_sequence_of_experiments_list_display(ptree.sequence_of_experiments.models.SequenceOfExperiments,
                                                           readonly_fields=readonly_fields)
+
+
+
 

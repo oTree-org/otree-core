@@ -1,7 +1,9 @@
 from django.db import models
-import ptree.models.common
+from ptree.fields import RandomCharField
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
+
+
 
 class StubModel(models.Model):
     """To be used as the model for an empty form, so that form_class can be omitted."""
@@ -9,7 +11,7 @@ class StubModel(models.Model):
 
 class SequenceOfExperiments(models.Model):
     name = models.CharField(max_length = 300, null = True, blank = True)
-    code = ptree.models.common.RandomCharField(length=8)
+    code = RandomCharField(length=8)
     first_experiment_content_type = models.ForeignKey(ContentType,
                                                       null=True,
                                                       related_name = '%(app_label)s_%(class)s')
