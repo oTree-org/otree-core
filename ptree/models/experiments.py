@@ -20,10 +20,18 @@ class BaseExperiment(models.Model):
 
     next_experiment_content_type = models.ForeignKey(ContentType,
                                                      null=True,
-                                                     related_name = '%(app_label)s_%(class)s')
+                                                     related_name = '%(app_label)s_%(class)s_as_next_experiment')
     next_experiment_object_id = models.PositiveIntegerField(null=True)
     next_experiment = generic.GenericForeignKey('next_experiment_content_type',
                                             'next_experiment_object_id',)
+
+    previous_experiment_content_type = models.ForeignKey(ContentType,
+                                                     null=True,
+                                                     related_name = '%(app_label)s_%(class)s_as_previous_experiment')
+    previous_experiment_object_id = models.PositiveIntegerField(null=True)
+    previous_experiment = generic.GenericForeignKey('previous_experiment_content_type',
+                                            'previous_experiment_object_id',)
+
 
     def has_next_experiment(self):
         return bool(self.next_experiment)

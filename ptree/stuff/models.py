@@ -21,6 +21,18 @@ class SequenceOfExperiments(models.Model):
     def unicode(self):
         """Define this because Django-Inspect-Model (django-inspect-model.rtfd.org/en/latest/#usage)
         doesn't recognize the __unicode__ method, and Django-data-exports relies on this."""
+        if self.name:
+            return self.name
+        app_labels = []
+        experiment = self.first_experiment
+        while True:
+            app_labels.append(experiment._meta.app_label)
+            if experiment.next_experiment:
+                experiment = experiment.next_experiment
+            else:
+                break
+
+
         return self.name or str(self.pk)
 
     def __unicode__(self):
@@ -30,7 +42,9 @@ class SequenceOfExperiments(models.Model):
         self.first_experiment = experiments[0]
         for i in range(len(experiments) - 1):
             experiments[i].next_experiment = experiments[i + 1]
+            experiments[i + 1].previous_experiment = experiments[i]
             experiments[i].save()
+            experiments[i + 1].save()
         self.save()
 
     class Meta:
