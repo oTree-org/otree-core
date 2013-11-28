@@ -27,8 +27,8 @@ def start_urls_for_experiment(experiment, request):
 def remove_duplicates(lst):
     return list(OrderedDict.fromkeys(lst))
 
-def get_list_display(ModelName, readonly_fields, first_fields):
-    all_field_names = [field.name for field in ModelName._meta.fields]
+def get_list_display(ModelName, readonly_fields, first_fields, exclude_fields):
+    all_field_names = [field.name for field in ModelName._meta.fields if field.name not in exclude_fields]
 
 
     # make sure they're actually in the model.
@@ -45,36 +45,55 @@ def get_participant_readonly_fields(fields_specific_to_this_subclass):
 
 def get_participant_list_display(Participant, readonly_fields, first_fields=None):
     first_fields = ['id', 'experiment', 'treatment', 'match', 'has_visited'] + (first_fields or [])
-    return get_list_display(Participant, readonly_fields, first_fields)
+    fields_to_exclude = ['ip_address',
+                         'mturk_assignment_id',
+                         'mturk_worker_id']
+
+    return get_list_display(Participant, readonly_fields, first_fields, fields_to_exclude)
 
 def get_match_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields([], fields_specific_to_this_subclass)
 
 def get_match_list_display(Match, readonly_fields, first_fields=None):
     first_fields = ['id', 'experiment', 'treatment', 'time_started'] + (first_fields or [])
-    return get_list_display(Match, readonly_fields, first_fields)
+    fields_to_exclude = []
+    return get_list_display(Match, readonly_fields, first_fields, fields_to_exclude)
 
 def get_treatment_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields(['link'], fields_specific_to_this_subclass)
 
 def get_treatment_list_display(Treatment, readonly_fields, first_fields=None):
     first_fields = ['unicode', 'experiment'] + (first_fields or [])
-    return get_list_display(Treatment, readonly_fields, first_fields)
+    fields_to_exclude = []
+    return get_list_display(Treatment, readonly_fields, first_fields, fields_to_exclude)
 
 def get_experiment_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields(['experimenter_input_link'], fields_specific_to_this_subclass)
 
 def get_experiment_list_display(Experiment, readonly_fields, first_fields=None):
     first_fields = ['unicode'] + (first_fields or [])
-    return get_list_display(Experiment, readonly_fields, first_fields)
+    fields_to_exclude = ['name',
+                         'sequence_of_experiments_access_code',
+                         'next_experiment_content_type',
+                         'next_experiment_object_id',
+                         'next_experiment',
+                         'previous_experiment_content_type',
+                         'previous_experiment_object_id',
+                         'previous_experiment',
+                         'experimenter_access_code',
+                         ]
+    return get_list_display(Experiment, readonly_fields, first_fields, fields_to_exclude)
 
 def get_sequence_of_experiments_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields(['start_urls_link', 'payments_link'], fields_specific_to_this_subclass)
+    return get_readonly_fields(['start_urls_link', 'mturk_snippet_link', 'payments_link'], fields_specific_to_this_subclass)
 
 def get_sequence_of_experiments_list_display(SequenceOfExperiments, readonly_fields, first_fields=None):
     first_fields = ['unicode'] + (first_fields or [])
-    return get_list_display(SequenceOfExperiments, readonly_fields, first_fields)
-
+    fields_to_exclude = ['name',
+                         'first_experiment_content_type',
+                         'first_experiment_object_id',
+                         'first_experiment']
+    return get_list_display(SequenceOfExperiments, readonly_fields, first_fields, fields_to_exclude)
 
 class ParticipantAdmin(admin.ModelAdmin):
 

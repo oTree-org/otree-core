@@ -3,7 +3,7 @@ __doc__ = """See https://docs.djangoproject.com/en/dev/ref/contrib/admin/"""
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
-from data_exports.models import Export
+from data_exports.models import Export, Format
 from data_exports.admin import ExportAdmin
 import ptree.common
 from ptree.sequence_of_experiments.models import SequenceOfExperiments
@@ -11,6 +11,9 @@ from ptree.sequence_of_experiments.models import SequenceOfExperiments
 admin.site.register(SequenceOfExperiments, ptree.common.SequenceOfExperimentsAdmin)
 
 admin.site.unregister(Export)
+
+# users don't need to see this
+admin.site.unregister(Format)
 
 class PTreeExportAdmin(ExportAdmin):
 

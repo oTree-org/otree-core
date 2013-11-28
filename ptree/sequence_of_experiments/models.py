@@ -32,8 +32,10 @@ class SequenceOfExperiments(models.Model):
         experiment_names = []
 
         for experiment in self.experiments():
-            experiment_names.append('{}: <{}>'.format(experiment._meta.app_label, experiment))
-        return ' '.join(experiment_names)
+            experiment_names.append('{} {}'.format(experiment._meta.app_label, experiment))
+        return ', '.join(experiment_names)
+
+    unicode.short_description = 'Name'
 
     def experiments(self):
         lst = []
