@@ -16,7 +16,7 @@ import logging
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache, cache_control
 from ptree.forms import StubModelForm
-from ptree.stuff.models import StubModel
+from ptree.sequence_of_experiments.models import StubModel
 import urllib
 import urlparse
 
@@ -74,9 +74,12 @@ class PTreeMixin(object):
     def page_the_user_should_be_on(self):
         if self.participant.index_in_sequence_of_views >= len(self.treatment.sequence_as_urls()):
             if self.experiment.next_experiment:
-                url = self.experiment.next_experiment.start_url()
+                url = self.experiment.next_experiment.start_url(in_sequence_of_experiments = True)
 
                 # add external_id to URL
+                if not self.participant.external_id:
+                    self.participant.external_id = self.participant.code
+                    self.participant.save()
                 params_to_add = {constants.external_id: self.participant.external_id}
                 url_parts = list(urlparse.urlparse(url))
                 query = dict(urlparse.parse_qsl(url_parts[4]))
@@ -386,7 +389,7 @@ class GetTreatmentOrParticipant(vanilla.View):
 
     def get_next_participant_in_experiment(self):
         try:
-            self.participant = self.ParticipantClass.objects.filter(experiment=self.experiment,
+            return self.ParticipantClass.objects.filter(experiment=self.experiment,
                                                         has_visited=False)[0]
         except IndexError:
             raise IndexError("No Participant objects left in the database to assign to new visitor.")
@@ -398,6 +401,7 @@ class GetTreatmentOrParticipant(vanilla.View):
         participant_code = self.request.GET.get(constants.participant_code)
         treatment_code = self.request.GET.get(constants.treatment_code)
         experiment_code = self.request.GET.get(constants.experiment_code_obfuscated)
+        sequence_of_experiments_access_code = self.request.GET.get(constants.sequence_of_experiments_access_code)
 
         assert participant_code or treatment_code or experiment_code
 
@@ -407,7 +411,10 @@ class GetTreatmentOrParticipant(vanilla.View):
 
         if experiment_code:
             self.experiment = get_object_or_404(self.ExperimentClass, code = experiment_code)
-            if self.experiment.is_for_mturk:
+
+            if sequence_of_experiments_access_code and sequence_of_experiments_access_code == self.experiment.sequence_of_experiments_access_code:
+                self.participant = self.get_next_participant_in_experiment()
+            elif self.experiment.sequence_of_experiments.is_for_mturk:
                 try:
                     self.assign_participant_with_mturk_parameters()
                 except AssertionError:
@@ -429,7 +436,7 @@ class GetTreatmentOrParticipant(vanilla.View):
             # demo mode
             self.treatment = get_object_or_404(self.TreatmentClass, code=treatment_code)
             self.experiment = self.treatment.experiment
-            self.get_next_participant_in_experiment()
+            self.participant = self.get_next_participant_in_experiment()
 
         external_id = self.request.GET.get(constants.external_id)
         if external_id is not None:

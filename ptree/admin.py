@@ -6,7 +6,7 @@ from django.contrib.auth.models import Group
 from data_exports.models import Export
 from data_exports.admin import ExportAdmin
 import ptree.common
-from ptree.stuff.models import SequenceOfExperiments
+from ptree.sequence_of_experiments.models import SequenceOfExperiments
 
 admin.site.register(SequenceOfExperiments, ptree.common.SequenceOfExperimentsAdmin)
 

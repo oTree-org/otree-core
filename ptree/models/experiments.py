@@ -6,6 +6,7 @@ import random
 from django.conf import settings
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
+from ptree.sequence_of_experiments.models import SequenceOfExperiments
 
 class BaseExperiment(models.Model):
     """
@@ -14,9 +15,9 @@ class BaseExperiment(models.Model):
 
     name = models.CharField(max_length = 500, null = True, blank = True)
     code = common.RandomCharField(length=8)
-    is_for_mturk = models.BooleanField(verbose_name='Is for MTurk', default=True)
-    payment_was_sent = models.BooleanField(verbose_name='Payment was sent', default=False)
     experimenter_access_code = common.RandomCharField(length=8)
+
+    sequence_of_experiments = models.ForeignKey(SequenceOfExperiments, null=True)
 
     next_experiment_content_type = models.ForeignKey(ContentType,
                                                      null=True,

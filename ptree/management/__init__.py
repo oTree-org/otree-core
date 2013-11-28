@@ -16,7 +16,7 @@ import ptree.settings
 import ptree.models
 from django.contrib import admin
 from django.contrib.contenttypes.management import update_all_contenttypes
-from ptree.stuff.models import StubModel
+from ptree.sequence_of_experiments.models import StubModel
 
 def create_default_superuser(app, created_models, verbosity, **kwargs):
     """

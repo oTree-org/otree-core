@@ -9,7 +9,7 @@ class StubModel(models.Model):
 
 class SequenceOfExperiments(models.Model):
     name = models.CharField(max_length = 300, null = True, blank = True)
-    code = ptree.models.common.RandomCharField()
+    code = ptree.models.common.RandomCharField(length=8)
     first_experiment_content_type = models.ForeignKey(ContentType,
                                                       null=True,
                                                       related_name = '%(app_label)s_%(class)s')
@@ -17,23 +17,32 @@ class SequenceOfExperiments(models.Model):
     first_experiment = generic.GenericForeignKey('first_experiment_content_type',
                                             'first_experiment_object_id',)
 
+    is_for_mturk = models.BooleanField(verbose_name='Is for MTurk', default=True)
+    payment_was_sent = models.BooleanField(default=False)
+
+
 
     def unicode(self):
         """Define this because Django-Inspect-Model (django-inspect-model.rtfd.org/en/latest/#usage)
         doesn't recognize the __unicode__ method, and Django-data-exports relies on this."""
         if self.name:
             return self.name
-        app_labels = []
+        experiment_names = []
+
+        for experiment in self.experiments():
+            experiment_names.append('{}: <{}>'.format(experiment._meta.app_label, experiment))
+        return ' '.join(experiment_names)
+
+    def experiments(self):
+        lst = []
         experiment = self.first_experiment
         while True:
-            app_labels.append(experiment._meta.app_label)
-            if experiment.next_experiment:
-                experiment = experiment.next_experiment
-            else:
+            lst.append(experiment)
+            experiment = experiment.next_experiment
+            if not experiment:
                 break
+        return lst
 
-
-        return self.name or str(self.pk)
 
     def __unicode__(self):
         return unicode(self)
@@ -43,8 +52,9 @@ class SequenceOfExperiments(models.Model):
         for i in range(len(experiments) - 1):
             experiments[i].next_experiment = experiments[i + 1]
             experiments[i + 1].previous_experiment = experiments[i]
-            experiments[i].save()
-            experiments[i + 1].save()
+        for experiment in experiments:
+            experiment.sequence_of_experiments = self
+            experiment.save()
         self.save()
 
     class Meta:

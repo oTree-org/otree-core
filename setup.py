@@ -20,7 +20,7 @@ setup(
     packages=['ptree',
               'ptree.models',
               'ptree.management',
-              'ptree.stuff',
+              'ptree.sequence_of_experiments',
               'ptree.templatetags',
               'ptree.views',
               'ptree.questionnaires',

@@ -7,7 +7,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from urlparse import urljoin
 import datetime
 from django.contrib.staticfiles.templatetags.staticfiles import static as static_template_tag
-import ptree.stuff.models
+import ptree.sequence_of_experiments.models
 from collections import defaultdict
 
 def new_tab_link(url, label):
@@ -96,39 +96,6 @@ class TreatmentAdmin(admin.ModelAdmin):
     list_filter = ['experiment']
 
 class ExperimentAdmin(admin.ModelAdmin):
-    def global_start_link(self, instance):
-        if instance.is_for_mturk:
-            return 'N/A (is_for_mturk = True)'
-        else:
-            url = instance.start_url()
-            return new_tab_link(url, 'Link')
-
-    global_start_link.allow_tags = True
-    global_start_link.short_description = "Global start URL (only if you can't use regular start URLs)"
-
-    def mturk_snippet_link(self, instance):
-        if instance.is_for_mturk:
-            return new_tab_link('{}/mturk_snippet/'.format(instance.pk), 'Link')
-        else:
-            return 'N/A (is_for_mturk = False)'
-
-    mturk_snippet_link.allow_tags = True
-    mturk_snippet_link.short_description = "HTML snippet for MTurk HIT page"
-
-
-    def payments_link(self, instance):
-        return new_tab_link('{}/payments/'.format(instance.pk), 'Link')
-
-    payments_link.short_description = "Payments page"
-    payments_link.allow_tags = True
-
-    def start_urls_link(self, instance):
-        return new_tab_link('{}/start_urls/?{}={}'.format(instance.pk,
-                                                          ptree.constants.experimenter_access_code,
-                                                          instance.experimenter_access_code), 'Link')
-
-    start_urls_link.short_description = 'Start URLs'
-    start_urls_link.allow_tags = True
 
     def experimenter_input_link(self, instance):
         url = instance.experimenter_input_url()
@@ -136,39 +103,6 @@ class ExperimentAdmin(admin.ModelAdmin):
 
     experimenter_input_link.short_description = 'Link for experimenter input during gameplay'
     experimenter_input_link.allow_tags = True
-
-    def get_urls(self):
-        urls = super(ExperimentAdmin, self).get_urls()
-        my_urls = patterns('',
-            (r'^(?P<pk>\d+)/payments/$', self.admin_site.admin_view(self.payments)),
-            (r'^(?P<pk>\d+)/start_urls/$', self.start_urls),
-            (r'^(?P<pk>\d+)/mturk_snippet/$', self.admin_site.admin_view(self.mturk_snippet))
-        )
-        return my_urls + urls
-
-    def start_urls(self, request, pk):
-        experiment = self.model.objects.get(pk=pk)
-        return start_urls_for_experiment(experiment, request)
-
-
-    def mturk_snippet(self, request, pk):
-        experiment = self.model.objects.get(pk=pk)
-        hit_page_js_url = request.build_absolute_uri(static_template_tag('ptree/js/mturk_hit_page.js'))
-        experiment_url = request.build_absolute_uri(experiment.start_url())
-        return render_to_response('admin/MTurkSnippet.html',
-                                  {'hit_page_js_url': hit_page_js_url,
-                                   'experiment_url': experiment_url,},
-                                  content_type='text/plain')
-
-    def payments(self, request, pk):
-        experiment = self.model.objects.get(pk=pk)
-        participants = experiment.participants().order_by('external_id', 'code')
-        return render_to_response('admin/Payments.html',
-                                  {'app_name': experiment._meta.app_label,
-                                   'experiment_name': experiment.name,
-                                   'experiment_code': experiment.code,
-                                   'participants': participants,
-                                   'total_payments': sum(p.total_pay() for p in participants if p.total_pay())})
 
 class ParticipantInSequenceOfExperiments(object):
     def __init__(self, external_id, total_pay):
@@ -181,28 +115,62 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
         urls = super(SequenceOfExperimentsAdmin, self).get_urls()
         my_urls = patterns('',
             (r'^(?P<pk>\d+)/payments/$', self.admin_site.admin_view(self.payments)),
+            (r'^(?P<pk>\d+)/mturk_snippet/$', self.admin_site.admin_view(self.mturk_snippet)),
             (r'^(?P<pk>\d+)/start_urls/$', self.start_urls),
         )
         return my_urls + urls
 
-
     def start_urls(self, request, pk):
         sequence_of_experiments = self.model.objects.get(pk=pk)
         return start_urls_for_experiment(sequence_of_experiments.first_experiment, request)
+
+    def start_urls_link(self, instance):
+        experiment = instance.first_experiment
+        return new_tab_link('{}/start_urls/?{}={}'.format(instance.pk,
+                                                          ptree.constants.experimenter_access_code,
+                                                          experiment.experimenter_access_code), 'Link')
+
+    start_urls_link.short_description = 'Start URLs'
+    start_urls_link.allow_tags = True
+
+    def mturk_snippet(self, request, pk):
+        sequence_of_experiments = self.model.objects.get(pk=pk)
+        experiment = sequence_of_experiments.first_experiment
+        hit_page_js_url = request.build_absolute_uri(static_template_tag('ptree/js/mturk_hit_page.js'))
+        experiment_url = request.build_absolute_uri(experiment.start_url())
+        return render_to_response('admin/MTurkSnippet.html',
+                                  {'hit_page_js_url': hit_page_js_url,
+                                   'experiment_url': experiment_url,},
+                                  content_type='text/plain')
+
+    def mturk_snippet_link(self, instance):
+        if instance.is_for_mturk:
+            return new_tab_link('{}/mturk_snippet/'.format(instance.pk), 'Link')
+        else:
+            return 'N/A (is_for_mturk = False)'
+
+    mturk_snippet_link.allow_tags = True
+    mturk_snippet_link.short_description = "HTML snippet for MTurk HIT page"
+
+    def global_start_link(self, instance):
+        if instance.is_for_mturk:
+            return 'N/A (is_for_mturk = True)'
+        else:
+            url = instance.first_experiment.start_url()
+            return new_tab_link(url, 'Link')
+
+    global_start_link.allow_tags = True
+    global_start_link.short_description = "Global start URL (only if you can't use regular start URLs)"
+
 
     def payments(self, request, pk):
         sequence_of_experiments = self.model.objects.get(pk=pk)
 
         payments = defaultdict(int)
 
-        experiment = sequence_of_experiments.first_experiment
-
-        while True:
+        for experiment in sequence_of_experiments.experiments():
             for participant in experiment.participants():
                 payments[participant.external_id] += participant.total_pay()
-            experiment = experiment.next_experiment
-            if not experiment:
-                break
 
         total_payments = 0
         participants = []
@@ -223,21 +191,8 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
     payments_link.short_description = "Payments page"
     payments_link.allow_tags = True
 
-    def start_urls_link(self, instance):
-        experiment = instance.first_experiment
-        return new_tab_link('{}/start_urls/?{}={}'.format(instance.pk,
-                                                          ptree.constants.experimenter_access_code,
-                                                          experiment.experimenter_access_code), 'Link')
-
-    start_urls_link.short_description = 'Start URLs'
-    start_urls_link.allow_tags = True
 
     readonly_fields = get_sequence_of_experiments_readonly_fields([])
-    list_display = get_sequence_of_experiments_list_display(ptree.stuff.models.SequenceOfExperiments,
+    list_display = get_sequence_of_experiments_list_display(ptree.sequence_of_experiments.models.SequenceOfExperiments,
                                                           readonly_fields=readonly_fields)
-
-
-def create_sequence_of_experiments(experiments, name):
-    seq = ptree.stuff.models.SequenceOfExperiments(name = name)
-    seq.add_experiments(experiments)
 
