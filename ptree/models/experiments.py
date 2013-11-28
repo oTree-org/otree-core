@@ -1,11 +1,12 @@
 from django.db import models
-import common
+from ptree.fields import RandomCharField
 import ptree.constants as constants
 from django.template import defaultfilters
 import random
+from django.conf import settings
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-from django.conf import settings
+from ptree.sequence_of_experiments.models import SequenceOfExperiments
 
 class BaseExperiment(models.Model):
     """
@@ -13,18 +14,28 @@ class BaseExperiment(models.Model):
     """
 
     name = models.CharField(max_length = 500, null = True, blank = True)
-    code = common.RandomCharField(length=8)
-    is_for_mturk = models.BooleanField(verbose_name='Is for MTurk', default=True)
-    payment_was_sent = models.BooleanField(verbose_name='Payment was sent', default=False)
-    experimenter_access_code = common.RandomCharField(length=8)
-    sequence_of_experiments_access_code = common.RandomCharField(length=8)
+    code = RandomCharField(length=8)
+    experimenter_access_code = RandomCharField(length=8)
+    sequence_of_experiments_access_code = RandomCharField(length=8)
+
+    sequence_of_experiments = models.ForeignKey(SequenceOfExperiments,
+                                                null=True,
+                                                related_name = '%(app_label)s_%(class)s')
 
     next_experiment_content_type = models.ForeignKey(ContentType,
                                                      null=True,
-                                                     related_name = '%(app_label)s_%(class)s')
+                                                     related_name = '%(app_label)s_%(class)s_as_next_experiment')
     next_experiment_object_id = models.PositiveIntegerField(null=True)
     next_experiment = generic.GenericForeignKey('next_experiment_content_type',
                                             'next_experiment_object_id',)
+
+    previous_experiment_content_type = models.ForeignKey(ContentType,
+                                                     null=True,
+                                                     related_name = '%(app_label)s_%(class)s_as_previous_experiment')
+    previous_experiment_object_id = models.PositiveIntegerField(null=True)
+    previous_experiment = generic.GenericForeignKey('previous_experiment_content_type',
+                                            'previous_experiment_object_id',)
+
 
     def has_next_experiment(self):
         return bool(self.next_experiment)

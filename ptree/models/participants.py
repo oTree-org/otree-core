@@ -1,5 +1,5 @@
 from django.db import models
-import common
+from ptree.fields import RandomCharField
 import ptree.constants as constants
 from django.conf import settings
 from ptree.templatetags.ptreefilters import currency
@@ -10,7 +10,7 @@ class BaseParticipant(models.Model):
     """
 
     # the participant's unique ID (and redemption code) that gets passed in the URL.
-    code = common.RandomCharField(length = 8)
+    code = RandomCharField(length = 8)
 
     ip_address = models.IPAddressField(null = True)
 
@@ -69,9 +69,6 @@ class BaseParticipant(models.Model):
             return None
         else:
             return self.match.treatment.base_pay + bonus
-
-    def __unicode__(self):
-        return str(self.pk)
 
     class Meta:
         abstract = True

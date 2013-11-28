@@ -1,6 +1,6 @@
 from django.http import HttpResponseRedirect
 from django.db import models
-import common
+from ptree.fields import RandomCharField
 import ptree.constants as constants
 
 class BaseTreatment(models.Model):
@@ -11,7 +11,7 @@ class BaseTreatment(models.Model):
     name = models.CharField(max_length = 300, null = True, blank = True)
 
     # the treatment code in the URL. This is generated automatically.
-    code = common.RandomCharField(length=8)
+    code = RandomCharField(length=8)
 
     # how much people are getting paid to perform it
     base_pay = models.PositiveIntegerField()

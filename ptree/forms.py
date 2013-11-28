@@ -1,7 +1,7 @@
 from django import forms
 import templatetags.ptreefilters
 import ptree.models.common
-import ptree.stuff.models
+import ptree.sequence_of_experiments.models
 
 
 class FormMixin(object):
@@ -78,5 +78,5 @@ class ExperimenterModelForm(ExperimenterFormMixin, forms.ModelForm):
 
 class StubModelForm(ParticipantFormMixin, forms.ModelForm):
     class Meta:
-        model = ptree.stuff.models.StubModel
+        model = ptree.sequence_of_experiments.models.StubModel
         fields = []

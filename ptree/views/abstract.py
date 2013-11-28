@@ -16,7 +16,7 @@ import logging
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache, cache_control
 from ptree.forms import StubModelForm
-from ptree.stuff.models import StubModel
+from ptree.sequence_of_experiments.models import StubModel
 import urllib
 import urlparse
 
@@ -411,10 +411,10 @@ class GetTreatmentOrParticipant(vanilla.View):
 
         if experiment_code:
             self.experiment = get_object_or_404(self.ExperimentClass, code = experiment_code)
-            #FIXME: what about sequences of experiments on mTurk?
+
             if sequence_of_experiments_access_code and sequence_of_experiments_access_code == self.experiment.sequence_of_experiments_access_code:
                 self.participant = self.get_next_participant_in_experiment()
-            elif self.experiment.is_for_mturk:
+            elif self.experiment.sequence_of_experiments.is_for_mturk:
                 try:
                     self.assign_participant_with_mturk_parameters()
                 except AssertionError:

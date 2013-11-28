@@ -29,7 +29,7 @@ class MyView(ViewInThisApp, ptree.views.UpdateView):
         this can be left blank or omitted."""
 
 class RedemptionCode(ViewInThisApp, ptree.views.UpdateView):
-    template_name = 'RedemptionCode.html'
+    template_name = 'Results.html'
 
     def variables_for_template(self):
         return {'redemption_code': self.participant.code,
