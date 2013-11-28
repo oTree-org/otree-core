@@ -15,7 +15,7 @@ class StartTreatment(ViewInThisApp, ptree.views.StartTreatment):
 # change the name as necessary
 class MyView(ViewInThisApp, ptree.views.UpdateView):
 
-    form_class = {{ app_name }}.forms.MyForm
+    form_class = forms.MyForm
     template_name = '{{ app_name }}/MyView.html'
 
     def show_skip_wait(self):
@@ -28,7 +28,7 @@ class MyView(ViewInThisApp, ptree.views.UpdateView):
         """If all you need to do is save the form to the database,
         this can be left blank or omitted."""
 
-class RedemptionCode(ViewInThisApp, ptree.views.UpdateView):
+class Results(ViewInThisApp, ptree.views.UpdateView):
     template_name = 'Results.html'
 
     def variables_for_template(self):

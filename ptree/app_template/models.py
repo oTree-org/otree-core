@@ -50,7 +50,7 @@ class Participant(ptree.models.BaseParticipant):
     # define any other attributes or methods here.
     
 
-def create_objects(num_participants):
+def create_experiment(num_participants):
 
     experiment = Experiment()
     experiment.save()
@@ -66,3 +66,5 @@ def create_objects(num_participants):
     for i in range(num_participants):
         participant = Participant(experiment = experiment)
         participant.save()
+
+    return experiment
