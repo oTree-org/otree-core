@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-import os, sys
-import django.conf
-import {{ project_name }}.settings
+import os
+import sys
 
 if __name__ == "__main__":
-    if not django.conf.settings.configured:
-        django.conf.settings.configure(**{{ project_name }}.settings.settings)
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "{{ project_name }}.settings")
+
     from django.core.management import execute_from_command_line
+
     execute_from_command_line(sys.argv)
