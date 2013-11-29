@@ -2,7 +2,7 @@ from django import forms
 import templatetags.ptreefilters
 import ptree.models.common
 import ptree.sequence_of_experiments.models
-
+from django.db import models
 
 class FormMixin(object):
 
@@ -46,9 +46,19 @@ class FormMixin(object):
             # if the current widget can't accept a choices arg, fall back to using a Select widget
             except TypeError:
                 field.widget = forms.Select(choices=choices)
-
-
         self.customize()
+
+    def null_boolean_field_names(self):
+        null_boolean_fields_in_model_class = [field.name for field in self.Meta.model._meta.fields if field.__class__ == models.NullBooleanField]
+        return [field_name for field_name in self.Meta.fields if field_name in null_boolean_fields_in_model_class]
+
+    def clean(self):
+        cleaned_data = super(FormMixin, self).clean()
+        for field_name in self.null_boolean_field_names():
+            if cleaned_data[field_name] == None:
+                msg = 'This field is required.'
+                self._errors[field_name] = self.error_class([msg])
+        return cleaned_data
 
 class ParticipantFormMixin(FormMixin):
     def process_kwargs(self, kwargs):

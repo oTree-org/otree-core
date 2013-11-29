@@ -36,10 +36,6 @@ class BaseExperiment(models.Model):
     previous_experiment = generic.GenericForeignKey('previous_experiment_content_type',
                                             'previous_experiment_object_id',)
 
-
-    def has_next_experiment(self):
-        return bool(self.next_experiment)
-
     def is_last_experiment(self):
         return not self.next_experiment
 

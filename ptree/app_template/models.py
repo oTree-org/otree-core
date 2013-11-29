@@ -22,7 +22,7 @@ class Treatment(ptree.models.BaseTreatment):
         import {{ app_name }}.views as views
         return [views.StartTreatment,
                 views.MyView, # insert your views here
-                views.RedemptionCode]
+                views.Results]
                 
 class Match(ptree.models.BaseMatch):
 
@@ -41,6 +41,7 @@ class Participant(ptree.models.BaseParticipant):
     treatment = models.ForeignKey(Treatment, null = True)
     experiment = models.ForeignKey(Experiment)
 
+    my_field = models.BooleanField(default=False)
 
     def bonus(self):
         # make sure this doesn't trigger an exception if the match isn't finished.
@@ -50,7 +51,7 @@ class Participant(ptree.models.BaseParticipant):
     # define any other attributes or methods here.
     
 
-def create_experiment(num_participants):
+def create_experiment_and_treatments():
 
     experiment = Experiment()
     experiment.save()
@@ -63,8 +64,5 @@ def create_experiment(num_participants):
                           )
     treatment.save()
 
-    for i in range(num_participants):
-        participant = Participant(experiment = experiment)
-        participant.save()
-
     return experiment
+

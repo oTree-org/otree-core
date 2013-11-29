@@ -23,7 +23,11 @@ class Command(BaseCommand):
                 return
 
             models_module = import_module('{}.models'.format(app_name))
-            experiment = models_module.create_experiment(num_participants=num_participants)
+            experiment = models_module.create_experiment_and_treatments()
+            for i in range(num_participants):
+                participant = models_module.Participant(experiment = experiment)
+                participant.save()
+
             print 'Created objects for {}'.format(app_name)
             experiments.append(experiment)
 

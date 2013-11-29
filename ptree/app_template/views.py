@@ -35,4 +35,5 @@ class Results(ViewInThisApp, ptree.views.UpdateView):
         return {'redemption_code': self.participant.code,
                 'base_pay': self.treatment.base_pay,
                 'bonus': self.participant.bonus(),
-                'total_pay': self.participant.total_pay()}
+                'total_pay': self.participant.total_pay(),
+                'another_experiment': not self.experiment.is_last_experiment()}

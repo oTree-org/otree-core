@@ -2,6 +2,7 @@ import itertools
 import random
 import string
 from django.db import models
+from django import forms
 
 def string_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
@@ -67,3 +68,18 @@ class RandomCharField(models.CharField):
 
     def get_internal_type(self):
         return "CharField"
+
+class _RequiredNullBooleanFormField(forms.NullBooleanField):
+    def clean(self, value):
+        if value is None:
+            raise forms.ValidationError('Choose either Yes or No.')
+        return super(_RequiredNullBooleanFormField, self).clean(value)
+
+class RequiredNullBooleanField(models.NullBooleanField):
+    def formfield(self, **kwargs):
+        # This is a fairly standard way to set up some defaults
+        # while letting the caller override them.
+        defaults = {'form_class': _RequiredNullBooleanFormField}
+        defaults.update(kwargs)
+        return super(RequiredNullBooleanField, self).formfield(**defaults)
+

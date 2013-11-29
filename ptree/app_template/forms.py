@@ -12,7 +12,7 @@ class MyForm(ModelForm):
 
     class Meta:
         # What model does this Form modify? It's usually either Match or Participant.
-        model = models.Match
+        model = models.Participant
          
          # the fields on the above model that this form includes
         fields = ['my_field']

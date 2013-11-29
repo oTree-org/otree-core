@@ -1,0 +1,18 @@
+{% load ptreefilters %}
+{% load i18n %}
+{% load static %}
+
+<p>
+{% blocktrans %}
+Use the below redemption code to redeem this reward.
+{% endblocktrans %}
+</p>
+
+<div class="panel panel-primary" >
+  <div class="panel-heading">
+    <h3 class="panel-title">{% trans 'Redemption code' %}</h3>
+  </div>
+  <div class="panel-body">
+    <strong>{{ redemption_code }}</strong>
+  </div>
+</div>
