@@ -23,4 +23,6 @@ if __name__ == "__main__":
     else:
         print 'Available commands are: {}'.format(', '.join([STARTAPP, STARTPROJECT]))
         sys.exit(1)
+
+    argv += sys.argv[3:]  # Append any additional flags that were parsed.
     execute_from_command_line(argv)
