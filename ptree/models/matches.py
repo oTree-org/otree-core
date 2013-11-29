@@ -18,7 +18,7 @@ class BaseMatch(models.Model):
         raise NotImplementedError()
 
     def participants(self):
-        return self.participant_set.all()
+        return self.participant_set.order_by('index_among_participants_in_match')
 
     class Meta:
         abstract = True

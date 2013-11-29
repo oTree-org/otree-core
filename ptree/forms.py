@@ -3,6 +3,7 @@ import templatetags.ptreefilters
 import ptree.models.common
 import ptree.sequence_of_experiments.models
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
 
 class FormMixin(object):
 
@@ -26,7 +27,7 @@ class FormMixin(object):
         """Make any customizations to your field forms that are not covered by the other methods"""
 
     def currency_choices(self, amounts):
-        return [(amount, templatetags.ptreefilters.currency(amount)) for amount in amounts]
+        return [(None, '--------')] + [(amount, templatetags.ptreefilters.currency(amount)) for amount in amounts]
 
     def __init__(self, *args, **kwargs):
         self.process_kwargs(kwargs)
@@ -49,14 +50,14 @@ class FormMixin(object):
         self.customize()
 
     def null_boolean_field_names(self):
-        null_boolean_fields_in_model_class = [field.name for field in self.Meta.model._meta.fields if field.__class__ == models.NullBooleanField]
-        return [field_name for field_name in self.Meta.fields if field_name in null_boolean_fields_in_model_class]
+        null_boolean_fields_in_model = [field.name for field in self.Meta.model._meta.fields if field.__class__ == models.NullBooleanField]
+        return [field_name for field_name in self.Meta.fields if field_name in null_boolean_fields_in_model]
 
     def clean(self):
         cleaned_data = super(FormMixin, self).clean()
         for field_name in self.null_boolean_field_names():
             if cleaned_data[field_name] == None:
-                msg = 'This field is required.'
+                msg = _('This field is required.')
                 self._errors[field_name] = self.error_class([msg])
         return cleaned_data
 
