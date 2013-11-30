@@ -2,7 +2,7 @@ from django.db import models
 from ptree.fields import RandomCharField
 import ptree.constants as constants
 from django.conf import settings
-from ptree.templatetags.ptreefilters import currency
+from ptree.common import currency
 
 class BaseParticipant(models.Model):
     """

@@ -1,29 +1,38 @@
 {% extends "Base.html" %}
+
 {% load i18n %}
 {% load static %}
 
-{% block title %}Task complete{% endblock %}
-
+{% block title %}Results{% endblock %}
 {% block content %}
 
 <div class="alert alert-success">
     <strong>Success!</strong> You have completed the task.
 </div>
 
-<p>
-You have made {{ base_pay }} for participating.
-</p>
-
+<div>
 {% block bonus_explanation %}
-    <p>
-    {% if bonus == None %}
-        You may receive an additional bonus.
-    {% else %}
-        As a result of the task, you made an additional bonus of {{ bonus }}.
-        So, your total reward is {{ total_pay }}.
-    {% endif %}
-    </p>
 {% endblock %}
+</div>
+
+<h4>Total pay calculation</h4>
+
+<div>
+<table class="table">
+    <tr>
+        <th>Base pay</th>
+        <td>{{ base_pay_currency }}</td>
+    </tr>
+    <tr>
+        <th>Bonus</th>
+        <td>{{ bonus_currency }}</td>
+    </tr>
+    <tr>
+        <th>Total</th>
+        <th>{{ total_pay_currency }}</th>
+    </tr>
+</table>
+</div>
 
 {% if another_experiment %}
     {% include "ptree/Form.html" %}

@@ -21,7 +21,6 @@ setup(
               'ptree.models',
               'ptree.management',
               'ptree.sequence_of_experiments',
-              'ptree.templatetags',
               'ptree.views',
               'ptree.questionnaires',
               'ptree.questionnaires.life_orientation_test',

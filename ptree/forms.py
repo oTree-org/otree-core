@@ -1,5 +1,5 @@
 from django import forms
-import templatetags.ptreefilters
+import ptree.common
 import ptree.models.common
 import ptree.sequence_of_experiments.models
 from django.db import models
@@ -27,7 +27,7 @@ class FormMixin(object):
         """Make any customizations to your field forms that are not covered by the other methods"""
 
     def currency_choices(self, amounts):
-        return [(None, '--------')] + [(amount, templatetags.ptreefilters.currency(amount)) for amount in amounts]
+        return [(None, '--------')] + [(amount, ptree.common.currency(amount)) for amount in amounts]
 
     def __init__(self, *args, **kwargs):
         self.process_kwargs(kwargs)

@@ -5,7 +5,7 @@ from django.utils.importlib import import_module
 import boto
 from boto.mturk.connection import MTurkConnection
 from boto.mturk.price import Price
-from ptree.templatetags.ptreefilters import currency
+from ptree.common import currency
 import sys
 
 def cents_to_dollars(num_cents):

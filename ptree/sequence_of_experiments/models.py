@@ -7,7 +7,6 @@ from django.contrib.contenttypes.models import ContentType
 
 class StubModel(models.Model):
     """To be used as the model for an empty form, so that form_class can be omitted."""
-    stub_field = models.BooleanField(default=True)
 
 class SequenceOfExperiments(models.Model):
     name = models.CharField(max_length = 300, null = True, blank = True)
