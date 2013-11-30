@@ -4,15 +4,22 @@ from django.conf.urls import patterns
 from django.shortcuts import render_to_response
 import ptree.constants
 from django.http import HttpResponse, HttpResponseBadRequest
-from urlparse import urljoin
-import datetime
 from django.contrib.staticfiles.templatetags.staticfiles import static as static_template_tag
 import ptree.sequence_of_experiments.models
 from collections import defaultdict
-import itertools
-import random
-import string
-from django.db import models
+import babel.numbers
+from django.conf import settings
+from decimal import Decimal
+
+def currency(value):
+    """Takes in a number of cents (int) and returns a formatted currency amount.
+    """
+
+    if value == None:
+        return '?'
+    value_in_major_units = Decimal(value)/(10**settings.CURRENCY_DECIMAL_PLACES)
+    return babel.numbers.format_currency(value_in_major_units, settings.CURRENCY_CODE, locale=settings.CURRENCY_LOCALE)
+
 
 def new_tab_link(url, label):
     return '<a href="{}" target="_blank">{}</a>'.format(url, label)
@@ -200,11 +207,11 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
         participants = []
         for k,v in OrderedDict(payments).items():
             total_payments += v
-            participants.append(ParticipantInSequenceOfExperiments(k, v))
+            participants.append(ParticipantInSequenceOfExperiments(k, currency(v)))
 
         return render_to_response('admin/PaymentsForSequenceOfExperiments.html',
                                   {'participants': participants,
-                                  'total_payments': total_payments,
+                                  'total_payments': currency(total_payments),
                                   'sequence_of_experiments_code': sequence_of_experiments.code,
                                   'sequence_of_experiments_name': sequence_of_experiments.name,
                                   })

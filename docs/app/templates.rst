@@ -40,22 +40,6 @@ This is useful when you want to customize the appearance or functionality (e.g. 
 or customize the structure of HTML headings. This is easily done.
 Just follow the instructions `here <https://docs.djangoproject.com/en/dev/topics/templates/#template-inheritance>`__.
 
-Custom filters
---------------
-
-The following line will load ptree's filter module::
-    
-    {% load ptreefilters %}
-    
-Currently, the main filter in this module is the ``currency`` filter,
-which formats integers as currency amounts.
-
-For example, if you pass to your template a variable called ``some_number`` that is equal to ``142``,
-``{{ some_number|currency }}`` would display it to the participant as "$1.42".
-
-You can customize this behavior or even create your own tags and filters,
-by following the documentation `here <https://docs.djangoproject.com/en/dev/howto/custom-template-tags/>`__.
-
 Static files
 ------------
 

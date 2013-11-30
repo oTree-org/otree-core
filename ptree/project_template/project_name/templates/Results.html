@@ -1,8 +1,9 @@
 {% extends "Base.html" %}
-{% load ptreefilters %}
 {% load i18n %}
 {% load static %}
+
 {% block title %}Task complete{% endblock %}
+
 {% block content %}
 
 <div class="alert alert-success">
@@ -10,7 +11,7 @@
 </div>
 
 <p>
-You have made {{ base_pay|currency }} for participating. 
+You have made {{ base_pay }} for participating.
 </p>
 
 {% block bonus_explanation %}
@@ -18,8 +19,8 @@ You have made {{ base_pay|currency }} for participating.
     {% if bonus == None %}
         You may receive an additional bonus.
     {% else %}
-        As a result of the task, you made an additional bonus of {{ bonus|currency }}.
-        So, your total reward is {{ total_pay|currency }}.
+        As a result of the task, you made an additional bonus of {{ bonus }}.
+        So, your total reward is {{ total_pay }}.
     {% endif %}
     </p>
 {% endblock %}

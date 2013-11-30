@@ -4,6 +4,7 @@ import {{ app_name }}.forms as forms
 from {{ app_name }}.utilities import ViewInThisApp
 from django.utils.translation import ugettext as _
 from django.conf import settings
+from ptree.common import currency
 
 class GetTreatmentOrParticipant(ViewInThisApp, ptree.views.GetTreatmentOrParticipant):
     pass
@@ -33,7 +34,7 @@ class Results(ViewInThisApp, ptree.views.UpdateView):
 
     def variables_for_template(self):
         return {'redemption_code': self.participant.code,
-                'base_pay': self.treatment.base_pay,
-                'bonus': self.participant.bonus(),
-                'total_pay': self.participant.total_pay(),
+                'base_pay': currency(self.treatment.base_pay),
+                'bonus': currency(self.participant.bonus()),
+                'total_pay': currency(self.participant.total_pay()),
                 'another_experiment': not self.experiment.is_last_experiment()}
