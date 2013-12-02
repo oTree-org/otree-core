@@ -338,7 +338,7 @@ class UpdateView(SequenceMixin, vanilla.UpdateView):
         form.save(commit = True)
 
     def get_object(self):
-        Cls = self.model or self.form_class.Meta.model
+        Cls = self.get_form_class().Meta.model
         if Cls == self.MatchClass:
             return self.match
         elif Cls == self.ParticipantClass:
