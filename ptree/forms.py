@@ -3,7 +3,7 @@ import ptree.common
 import ptree.models.common
 import ptree.sequence_of_experiments.models
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
 
 class FormMixin(object):
 

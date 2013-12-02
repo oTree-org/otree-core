@@ -1,16 +1,19 @@
 {% load staticfiles %}
+{% load i18n %}
+
 {% if time_limit_seconds %}
     <div id="clock" class="alert alert-info">
+        <p>{% blocktrans %}Time left to complete this page:{% endblocktrans %}</p>
         <span class="glyphicon glyphicon-time"></span>
         <span id="minutes" style="font-weight: bold"></span>:<span id="seconds" style="font-weight: bold"></span>
-        left to complete this page.
+
         {% if timer_message %}
         <p>
             {{ timer_message }}
         </p>
         {% endif %}
         <p style="display:none;" id="time_out_message">
-            Time ran out. Please fill out any form fields and continue.
+            {% blocktrans %}Time ran out. Please fill out any form fields and continue.{% endblocktrans %}
         </p>
     </div>
 

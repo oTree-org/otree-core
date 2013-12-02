@@ -33,7 +33,7 @@ class Results(ViewInThisApp, ptree.views.UpdateView):
     template_name = 'Results.html'
 
     def variables_for_template(self):
-        return {'redemption_code': self.participant.code,
+        return {'redemption_code': self.participant.external_id or self.participant.code,
                 'base_pay': currency(self.treatment.base_pay),
                 'bonus': currency(self.participant.bonus()),
                 'total_pay': currency(self.participant.total_pay()),

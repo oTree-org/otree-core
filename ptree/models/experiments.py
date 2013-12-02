@@ -13,7 +13,10 @@ class BaseExperiment(models.Model):
     Base class for all Experiments.
     """
 
-    name = models.CharField(max_length = 500, null = True, blank = True)
+    name = models.CharField(max_length = 500,
+                            null = True,
+                            blank = True,
+                            )
     code = RandomCharField(length=8)
     experimenter_access_code = RandomCharField(length=8)
     sequence_of_experiments_access_code = RandomCharField(length=8)

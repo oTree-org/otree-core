@@ -19,7 +19,7 @@ from ptree.forms import StubModelForm
 from ptree.sequence_of_experiments.models import StubModel
 import urllib
 import urlparse
-
+from django.utils.translation import ugettext as _
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -418,7 +418,7 @@ class GetTreatmentOrParticipant(vanilla.View):
                 try:
                     self.assign_participant_with_mturk_parameters()
                 except AssertionError:
-                    return HttpResponse('To participate, you need to first accept this Mechanical Turk HIT and then re-click the link (refreshing this page will not work).')
+                    return HttpResponse(_('To participate, you need to first accept this Mechanical Turk HIT and then re-click the link (refreshing this page will not work).'))
             else:
                 self.participant = self.get_next_participant_in_experiment()
 
@@ -526,7 +526,7 @@ class StartTreatment(UpdateView):
         if self.request.session.test_cookie_worked():
             self.request.session.delete_test_cookie()
         else:
-            raise HttpResponse("Your browser does not support this site's cookies.")
+            raise HttpResponse(_("Your browser does not support this site's cookies."))
 
         self.configure_match()
 
