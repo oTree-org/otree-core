@@ -274,25 +274,12 @@ class SequenceMixin(PTreeMixin):
         arguments, and returns a form.
         """
         kwargs.update(self.get_extra_form_kwargs())
-
         cls = self.get_form_class()
 
         if self.request.method == 'POST' and self.time_limit_was_exceeded:
-            # ignore the user's submission and go with defaults
-            "data = {}"
-        form = cls(data=data, files=files, **kwargs)
+            initial = self
 
-        """
-        if self.request.method == 'GET' and self.has_time_limit():
-            # have to fake the form being bound
-            #form.is_bound = True
-            form._clean_fields()
-            form._clean_form()
-            form._post_clean()
-            if form.errors:
-                raise Exception('Form has time limit but default values are not valid.\n{}'.format(form.errors.items()))
-                """
-        return form
+        return cls(data=data, files=files, **kwargs)
 
 
     def after_valid_form_submission(self):
@@ -347,11 +334,26 @@ class SequenceTemplateView(SequenceMixin, vanilla.TemplateView):
     """
     pass
 
-
 class UpdateView(SequenceMixin, vanilla.UpdateView):
 
     # if form_class is not provided, we use an empty form based on StubModel.
-    model = StubModel
+    #model = StubModelForm
+    form_class = StubModel
+
+    """
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.time_limit_was_exceeded = self.get_time_limit_was_exceeded()
+        if self.time_limit_was_exceeded:
+            # ignore the user's input.
+            form = self.get_form(instance=self.object)
+            return self.form_valid(form)
+        else:
+            form = self.get_form(data=request.POST, files=request.FILES, instance=self.object)
+            if form.is_valid():
+                return self.form_valid(form)
+            return self.form_invalid(form)
+    """
 
     def post_processing_on_valid_form(self, form):
         # form.save will also get called by the super() method, so this is technically redundant.
@@ -360,7 +362,7 @@ class UpdateView(SequenceMixin, vanilla.UpdateView):
         form.save(commit = True)
 
     def get_object(self):
-        Cls = self.model or self.form_class.Meta.model
+        Cls = self.get_form_class().Meta.model
         if Cls == self.MatchClass:
             return self.match
         elif Cls == self.ParticipantClass:
