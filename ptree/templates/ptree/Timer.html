@@ -1,57 +1,56 @@
 {% load staticfiles %}
 {% load i18n %}
 
-{% if time_limit_seconds %}
-    <div id="clock" class="alert alert-info">
-        <p>{% blocktrans %}Time left to complete this page:{% endblocktrans %}</p>
-        <span class="glyphicon glyphicon-time"></span>
-        <span id="minutes" style="font-weight: bold"></span>:<span id="seconds" style="font-weight: bold"></span>
 
-        {% if timer_message %}
-        <p>
-            {{ timer_message }}
-        </p>
-        {% endif %}
-        <p style="display:none;" id="time_out_message">
-            {% blocktrans %}Time ran out. Please fill out any form fields and continue.{% endblocktrans %}
-        </p>
-    </div>
+<div id="clock" class="alert alert-info">
+    <p>{% blocktrans %}Time left to complete this page:{% endblocktrans %}</p>
+    <span class="glyphicon glyphicon-time"></span>
+    <span id="minutes" style="font-weight: bold"></span>:<span id="seconds" style="font-weight: bold"></span>
 
-    <script type="text/javascript" src="{% static 'ptree/js/jquery.countdown.js' %}"></script>
+    {% if timer_message %}
+    <p>
+        {{ timer_message }}
+    </p>
+    {% endif %}
+    <p style="display:none;" id="time_out_message">
+        {% blocktrans %}Time ran out. Please fill out any form fields and continue.{% endblocktrans %}
+    </p>
+</div>
 
-    <script type="text/javascript">
-        $(function() {
-            var currentDate = new Date();
-            var milliseconds = {{ time_limit_seconds }}*1000;
-            $('div#clock').countdown(currentDate.valueOf() + milliseconds, function(event) {
+<script type="text/javascript" src="{% static 'ptree/js/jquery.countdown.js' %}"></script>
 
-                switch(event.type) {
-                    case "seconds":
-                    case "minutes":
-                    case "hours":
-                    case "days":
-                    case "weeks":
-                    case "daysLeft":
-                        $(this).find('span#'+event.type).html(event.value);
-                        break;
-                    case "finished":
-                        $('#time_out_message').show();
-                        break;
-                }
+<script type="text/javascript">
+    $(function() {
+        var currentDate = new Date();
+        var milliseconds = {{ time_limit_seconds }}*1000;
+        $('div#clock').countdown(currentDate.valueOf() + milliseconds, function(event) {
 
-                if (event.lasting.hours == 0) {
-                    if (event.lasting.minutes <= 2) {
-                        var alert_class;
-                        if (event.lasting.minutes == 0 && event.lasting.seconds < 30) {
-                            alert_class = 'alert-danger';
-                        }
-                        else {
-                            alert_class = 'alert-warning';
-                        }
-                        $('div#clock').attr('class', 'alert ' + alert_class);
+            switch(event.type) {
+                case "seconds":
+                case "minutes":
+                case "hours":
+                case "days":
+                case "weeks":
+                case "daysLeft":
+                    $(this).find('span#'+event.type).html(event.value);
+                    break;
+                case "finished":
+                    $('#{{ form_element_id }}').submit();
+                    break;
+            }
+
+            if (event.lasting.hours == 0) {
+                if (event.lasting.minutes <= 2) {
+                    var alert_class;
+                    if (event.lasting.minutes == 0 && event.lasting.seconds < 30) {
+                        alert_class = 'alert-danger';
                     }
+                    else {
+                        alert_class = 'alert-warning';
+                    }
+                    $('div#clock').attr('class', 'alert ' + alert_class);
                 }
-            });
+            }
         });
-    </script>
-{% endif %}
+    });
+</script>

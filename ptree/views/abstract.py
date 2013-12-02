@@ -142,6 +142,9 @@ class SequenceMixin(PTreeMixin):
     def time_limit_seconds(self):
         return None
 
+    def has_time_limit(self):
+        return bool(self.time_limit_seconds())
+
     def set_time_limit(self, context):
         page_expiration_times = self.request.session[constants.page_time_limits]
         if page_expiration_times.has_key(self.index_in_sequence_of_views):
@@ -234,6 +237,8 @@ class SequenceMixin(PTreeMixin):
         context.update(self.variables_for_template())
         context.update(csrf(self.request))
         context['timer_message'] = self.timer_message()
+        context['form_element_id'] = constants.form_element_id
+
 
         if settings.DEBUG:
             context[constants.debug_values] = self.get_debug_values()
@@ -271,7 +276,24 @@ class SequenceMixin(PTreeMixin):
         kwargs.update(self.get_extra_form_kwargs())
 
         cls = self.get_form_class()
-        return cls(data=data, files=files, **kwargs)
+
+        if self.request.method == 'POST' and self.time_limit_was_exceeded:
+            # ignore the user's submission and go with defaults
+            "data = {}"
+        form = cls(data=data, files=files, **kwargs)
+
+        """
+        if self.request.method == 'GET' and self.has_time_limit():
+            # have to fake the form being bound
+            #form.is_bound = True
+            form._clean_fields()
+            form._clean_form()
+            form._post_clean()
+            if form.errors:
+                raise Exception('Form has time limit but default values are not valid.\n{}'.format(form.errors.items()))
+                """
+        return form
+
 
     def after_valid_form_submission(self):
         """Should be implemented by subclasses as necessary"""

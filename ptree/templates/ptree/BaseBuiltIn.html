@@ -19,7 +19,9 @@
 
             <div>
 
-            {% include 'ptree/Timer.html' %}
+            {% if time_limit_seconds %}
+                {% include 'ptree/Timer.html' %}
+            {% endif %}
 
             {% if form.errors %}
                 <div class="alert alert-danger">

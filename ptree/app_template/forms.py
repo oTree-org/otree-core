@@ -35,6 +35,13 @@ class MyForm(ModelForm):
         
         return my_field
 
-    # You may want to define methods field_choices, field_labels, field_initial_values, ...
+    def field_choices(self):
+        return {}
+
+    def field_labels(self):
+        return {}
+
+    def field_initial_values(self):
+        return {}
 
 # add more forms as you wish...
