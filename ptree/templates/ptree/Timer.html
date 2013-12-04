@@ -1,11 +1,21 @@
 {% load staticfiles %}
 {% load i18n %}
 
-{% if time_limit_seconds %}
-    <div id="clock" class="alert alert-info">
-        <p>{% blocktrans %}Time left to complete this page:{% endblocktrans %}</p>
-        <span class="glyphicon glyphicon-time"></span>
-        <span id="minutes" style="font-weight: bold"></span>:<span id="seconds" style="font-weight: bold"></span>
+{% if time_limit_in_seconds %}
+    <div id="time-limit" class="alert alert-info">
+
+        <div id="static-time-limit-message">
+            <span class="glyphicon glyphicon-time"></span>
+            <p>The time limit for this page is {{ time_limit_minutes_component }} minutes and {{ time_limit_seconds_component }} seconds.</p>
+        </div>
+
+        <div id="clock" style="display: none">
+            <p>{% blocktrans %}Time left to complete this page:{% endblocktrans %}</p>
+            <span style="font-weight: bold">
+                <span class="glyphicon glyphicon-time"></span>
+                <span id="minutes"></span>:<span id="seconds"></span>
+            </span>
+        </div>
 
         {% if timer_message %}
         <p>
@@ -22,7 +32,7 @@
     <script type="text/javascript">
         $(function() {
             var currentDate = new Date();
-            var milliseconds = {{ time_limit_seconds }}*1000;
+            var milliseconds = {{ time_limit_in_seconds }}*1000;
             $('div#clock').countdown(currentDate.valueOf() + milliseconds, function(event) {
 
                 switch(event.type) {
@@ -36,6 +46,7 @@
                         break;
                     case "finished":
                         $('#time_out_message').show();
+                        $('#{{ form_element_id }}').submit();
                         break;
                 }
 
@@ -47,6 +58,8 @@
                         }
                         else {
                             alert_class = 'alert-warning';
+                            $('#static-time-limit-message').hide();
+                            $('#clock').show(duration=0);
                         }
                         $('div#clock').attr('class', 'alert ' + alert_class);
                     }

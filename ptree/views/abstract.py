@@ -139,7 +139,7 @@ class SequenceMixin(PTreeMixin):
     def wait_message(self):
         pass
 
-    def time_limit_seconds(self):
+    def time_limit_in_seconds(self):
         return None
 
     def set_time_limit(self, context):
@@ -151,7 +151,7 @@ class SequenceMixin(PTreeMixin):
             else:
                 remaining_seconds = max(0, int(page_expiration_times[self.index_in_sequence_of_views] - time.time()))
         else:
-            remaining_seconds = self.time_limit_seconds()
+            remaining_seconds = self.time_limit_in_seconds()
 
             if remaining_seconds is None:
                 page_expiration_times[self.index_in_sequence_of_views] = None
@@ -163,7 +163,16 @@ class SequenceMixin(PTreeMixin):
         # TODO: this doesn't seem to have any effect. remove?
         # I had to turn on 'save session on every request' in settings anyway.
         self.request.session.modified = True
-        context[constants.time_limit_seconds] = remaining_seconds
+
+        minutes_component, seconds_component = divmod(remaining_seconds, 60)
+
+        time_limit_parameters = {
+            constants.time_limit_minutes_component: minutes_component,
+            constants.time_limit_seconds_component: seconds_component,
+            constants.time_limit_in_seconds: remaining_seconds,
+        }
+
+        context.update(time_limit_parameters)
 
     time_limit_was_exceeded = False
 

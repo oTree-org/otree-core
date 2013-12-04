@@ -86,7 +86,7 @@ time_limit_was_exceeded: boolean
 ---------------------------------
 
 Only available on POST (i.e., after the user submits the form).
-Indicates whether the participant exceeded the time limit specified in ``time_limit_seconds()``.
+Indicates whether the participant exceeded the time limit specified in ``time_limit_in_seconds()``.
     
 Methods
 ________    
@@ -144,7 +144,7 @@ Here you can put anything additional that should happen after the form validates
 If you don't need anything to be done, it's OK to leave this method blank,
 or to leave it out entirely.
 
-time_limit_seconds()
+time_limit_in_seconds()
 ---------------------
 
 Your page can have a time limit, in which case the participant will see a countdown timer on the page.
