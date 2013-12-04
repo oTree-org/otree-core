@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: pTree\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-12-05 00:14+0800\n"
-"PO-Revision-Date: 2013-12-04 15:38+0100\n"
+"PO-Revision-Date: 2013-12-04 17:48+0100\n"
 "Last-Translator: Raphael <raphael.nehmer@gess.ethz.ch>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: de\n"
@@ -38,7 +38,7 @@ msgstr "Bitte korrigieren Sie die Fehler im Formular."
 
 #: .\templates\ptree\Form.html:9
 msgid "Next"
-msgstr ""
+msgstr "Weiter"
 
 # incomplete sentence
 #: .\templates\ptree\Timer.html:6
