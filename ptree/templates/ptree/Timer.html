@@ -2,17 +2,7 @@
 {% load i18n %}
 
 <div id="time-limit" class="alert alert-info">
-
-    <div id="static-time-limit-message">
-        <span class="glyphicon glyphicon-time"></span>
-        {% if time_limit_seconds_component %}
-            <p>{% blocktrans %}The time limit for this page is {{ time_limit_minutes_component }} minutes and {{ time_limit_seconds_component }} seconds.{% endblocktrans %}</p>
-        {% else %}
-            <p>{% blocktrans %}The time limit for this page is {{ time_limit_minutes_component }} minutes.{% endblocktrans %}</p>
-        {% endif %}
-    </div>
-
-    <div id="clock" style="display: none">
+    <div id="clock" style="display: none;">
         <p>{% blocktrans %}Time left to complete this page:{% endblocktrans %}</p>
         <span style="font-weight: bold">
             <span class="glyphicon glyphicon-time"></span>
@@ -34,8 +24,10 @@
 
 <script type="text/javascript">
     $(function() {
+        {% if time_limit_in_seconds > 0 %}
         var currentDate = new Date();
         var milliseconds = {{ time_limit_in_seconds }}*1000;
+        $('div#clock').show(0);
         $('div#clock').countdown(currentDate.valueOf() + milliseconds, function(event) {
 
             switch(event.type) {
@@ -48,7 +40,8 @@
                     $(this).find('span#'+event.type).html(event.value);
                     break;
                 case "finished":
-                    $('#time_out_message').show();
+                    $('#clock').hide(duration=0);
+                    $('#time_out_message').show(duration=0);
                     $('#{{ form_element_id }}').submit();
                     break;
             }
@@ -61,12 +54,14 @@
                     }
                     else {
                         alert_class = 'alert-warning';
-                        $('#static-time-limit-message').hide();
-                        $('#clock').show(duration=0);
                     }
-                    $('div#clock').attr('class', 'alert ' + alert_class);
+                    $('div#time-limit').attr('class', 'alert ' + alert_class);
                 }
             }
         });
+        {% else %}
+        $('div#time-limit').attr('class', 'alert ' + 'alert-danger');
+        $('#time_out_message').show();
+        {% endif %}
     });
 </script>

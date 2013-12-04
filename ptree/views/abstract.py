@@ -348,7 +348,7 @@ class SequenceTemplateView(SequenceMixin, vanilla.TemplateView):
 class UpdateView(SequenceMixin, vanilla.UpdateView):
 
     # if form_class is not provided, we use an empty form based on StubModel.
-    model = StubModel
+    form_class = StubModelForm
 
     def post_processing_on_valid_form(self, form):
         # form.save will also get called by the super() method, so this is technically redundant.
