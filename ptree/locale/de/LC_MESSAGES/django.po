@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-11-30 15:25+0800\n"
+"POT-Creation-Date: 2013-12-04 16:24+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,15 +30,22 @@ msgstr ""
 msgid "Task"
 msgstr ""
 
-#: .\templates\ptree\BaseBuiltIn.html:26
+#: .\templates\ptree\BaseBuiltIn.html:28
 msgid "Please fix the errors in the form."
 msgstr ""
 
 #: .\templates\ptree\Timer.html:8
-msgid "left to complete this page."
+#, python-format
+msgid ""
+"The time limit for this page is %(time_limit_minutes_component)s minutes and "
+"%(time_limit_seconds_component)s seconds."
 msgstr ""
 
-#: .\templates\ptree\Timer.html:15
+#: .\templates\ptree\Timer.html:12
+msgid "Time left to complete this page:"
+msgstr ""
+
+#: .\templates\ptree\Timer.html:25
 msgid "Time ran out. Please fill out any form fields and continue."
 msgstr ""
 
@@ -46,12 +53,12 @@ msgstr ""
 msgid "Please wait"
 msgstr ""
 
-#: .\views\abstract.py:421
+#: .\views\abstract.py:434
 msgid ""
 "To participate, you need to first accept this Mechanical Turk HIT and then "
 "re-click the link (refreshing this page will not work)."
 msgstr ""
 
-#: .\views\abstract.py:529
+#: .\views\abstract.py:542
 msgid "Your browser does not support this site's cookies."
 msgstr ""

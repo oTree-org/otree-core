@@ -1,70 +1,72 @@
 {% load staticfiles %}
 {% load i18n %}
 
-{% if time_limit_in_seconds %}
-    <div id="time-limit" class="alert alert-info">
+<div id="time-limit" class="alert alert-info">
 
-        <div id="static-time-limit-message">
-            <span class="glyphicon glyphicon-time"></span>
-            <p>The time limit for this page is {{ time_limit_minutes_component }} minutes and {{ time_limit_seconds_component }} seconds.</p>
-        </div>
-
-        <div id="clock" style="display: none">
-            <p>{% blocktrans %}Time left to complete this page:{% endblocktrans %}</p>
-            <span style="font-weight: bold">
-                <span class="glyphicon glyphicon-time"></span>
-                <span id="minutes"></span>:<span id="seconds"></span>
-            </span>
-        </div>
-
-        {% if timer_message %}
-        <p>
-            {{ timer_message }}
-        </p>
+    <div id="static-time-limit-message">
+        <span class="glyphicon glyphicon-time"></span>
+        {% if time_limit_seconds_component %}
+            <p>{% blocktrans %}The time limit for this page is {{ time_limit_minutes_component }} minutes and {{ time_limit_seconds_component }} seconds.{% endblocktrans %}</p>
+        {% else %}
+            <p>{% blocktrans %}The time limit for this page is {{ time_limit_minutes_component }} minutes.{% endblocktrans %}</p>
         {% endif %}
-        <p style="display:none;" id="time_out_message">
-            {% blocktrans %}Time ran out. Please fill out any form fields and continue.{% endblocktrans %}
-        </p>
     </div>
 
-    <script type="text/javascript" src="{% static 'ptree/js/jquery.countdown.js' %}"></script>
+    <div id="clock" style="display: none">
+        <p>{% blocktrans %}Time left to complete this page:{% endblocktrans %}</p>
+        <span style="font-weight: bold">
+            <span class="glyphicon glyphicon-time"></span>
+            <span id="minutes"></span>:<span id="seconds"></span>
+        </span>
+    </div>
 
-    <script type="text/javascript">
-        $(function() {
-            var currentDate = new Date();
-            var milliseconds = {{ time_limit_in_seconds }}*1000;
-            $('div#clock').countdown(currentDate.valueOf() + milliseconds, function(event) {
+    {% if timer_message %}
+    <p>
+        {{ timer_message }}
+    </p>
+    {% endif %}
+    <p style="display:none;" id="time_out_message">
+        {% blocktrans %}Time ran out. Please fill out any form fields and continue.{% endblocktrans %}
+    </p>
+</div>
 
-                switch(event.type) {
-                    case "seconds":
-                    case "minutes":
-                    case "hours":
-                    case "days":
-                    case "weeks":
-                    case "daysLeft":
-                        $(this).find('span#'+event.type).html(event.value);
-                        break;
-                    case "finished":
-                        $('#time_out_message').show();
-                        $('#{{ form_element_id }}').submit();
-                        break;
-                }
+<script type="text/javascript" src="{% static 'ptree/js/jquery.countdown.js' %}"></script>
 
-                if (event.lasting.hours == 0) {
-                    if (event.lasting.minutes <= 2) {
-                        var alert_class;
-                        if (event.lasting.minutes == 0 && event.lasting.seconds < 30) {
-                            alert_class = 'alert-danger';
-                        }
-                        else {
-                            alert_class = 'alert-warning';
-                            $('#static-time-limit-message').hide();
-                            $('#clock').show(duration=0);
-                        }
-                        $('div#clock').attr('class', 'alert ' + alert_class);
+<script type="text/javascript">
+    $(function() {
+        var currentDate = new Date();
+        var milliseconds = {{ time_limit_in_seconds }}*1000;
+        $('div#clock').countdown(currentDate.valueOf() + milliseconds, function(event) {
+
+            switch(event.type) {
+                case "seconds":
+                case "minutes":
+                case "hours":
+                case "days":
+                case "weeks":
+                case "daysLeft":
+                    $(this).find('span#'+event.type).html(event.value);
+                    break;
+                case "finished":
+                    $('#time_out_message').show();
+                    $('#{{ form_element_id }}').submit();
+                    break;
+            }
+
+            if (event.lasting.hours == 0) {
+                if (event.lasting.minutes <= 2) {
+                    var alert_class;
+                    if (event.lasting.minutes == 0 && event.lasting.seconds < 30) {
+                        alert_class = 'alert-danger';
                     }
+                    else {
+                        alert_class = 'alert-warning';
+                        $('#static-time-limit-message').hide();
+                        $('#clock').show(duration=0);
+                    }
+                    $('div#clock').attr('class', 'alert ' + alert_class);
                 }
-            });
+            }
         });
-    </script>
-{% endif %}
+    });
+</script>

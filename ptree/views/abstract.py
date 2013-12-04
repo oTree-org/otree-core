@@ -142,6 +142,9 @@ class SequenceMixin(PTreeMixin):
     def time_limit_in_seconds(self):
         return None
 
+    def has_time_limit(self):
+        return bool(self.time_limit_seconds())
+
     def set_time_limit(self, context):
         page_expiration_times = self.request.session[constants.page_time_limits]
         if page_expiration_times.has_key(self.index_in_sequence_of_views):
@@ -164,7 +167,10 @@ class SequenceMixin(PTreeMixin):
         # I had to turn on 'save session on every request' in settings anyway.
         self.request.session.modified = True
 
-        minutes_component, seconds_component = divmod(remaining_seconds, 60)
+        if remaining_seconds is not None:
+            minutes_component, seconds_component = divmod(remaining_seconds, 60)
+        else:
+            minutes_component, seconds_component = None, None
 
         time_limit_parameters = {
             constants.time_limit_minutes_component: minutes_component,
@@ -174,7 +180,7 @@ class SequenceMixin(PTreeMixin):
 
         context.update(time_limit_parameters)
 
-    time_limit_was_exceeded = False
+
 
     def get_time_limit_was_exceeded(self):
         page_expiration_time = self.request.session[constants.page_time_limits][self.index_in_sequence_of_views]
@@ -193,6 +199,9 @@ class SequenceMixin(PTreeMixin):
         self.index_in_sequence_of_views = int(args[0])
         # remove it since post() may not be able to accept args.
         args = args[1:]
+
+        # by default it's false (e.g. for GET requests), but can be set to True in post() method
+        self.time_limit_was_exceeded = False
 
         ssw = self.show_skip_wait()
         if not ssw in [self.PageActions.show, self.PageActions.skip, self.PageActions.wait]:
@@ -243,6 +252,8 @@ class SequenceMixin(PTreeMixin):
         context.update(self.variables_for_template())
         context.update(csrf(self.request))
         context['timer_message'] = self.timer_message()
+        context['form_element_id'] = constants.form_element_id
+
 
         if settings.DEBUG:
             context[constants.debug_values] = self.get_debug_values()
@@ -278,9 +289,9 @@ class SequenceMixin(PTreeMixin):
         arguments, and returns a form.
         """
         kwargs.update(self.get_extra_form_kwargs())
-
         cls = self.get_form_class()
         return cls(data=data, files=files, **kwargs)
+
 
     def after_valid_form_submission(self):
         """Should be implemented by subclasses as necessary"""
@@ -333,7 +344,6 @@ class SequenceTemplateView(SequenceMixin, vanilla.TemplateView):
     A sequence template view.
     """
     pass
-
 
 class UpdateView(SequenceMixin, vanilla.UpdateView):
 
