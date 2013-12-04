@@ -3,55 +3,63 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: pTree\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-11-30 15:25+0800\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2013-12-04 15:38+0100\n"
+"Last-Translator: Raphael <raphael.nehmer@gess.ethz.ch>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 1.6\n"
 
 #: .\forms.py:60
 msgid "This field is required."
-msgstr ""
+msgstr "Dieses Feld ist erforderlich."
 
 #: .\templates\data_exports\ptree.html:56
 msgid "No columns where defined for this export, so there's no data to display"
 msgstr ""
+"Für diesen Export wurden keine Spalten definiert, es können also keine Daten "
+"angezeigt werden"
 
 #: .\templates\ptree\BaseBuiltIn.html:7
 msgid "Task"
-msgstr ""
+msgstr "Aufgabe"
 
 #: .\templates\ptree\BaseBuiltIn.html:26
 msgid "Please fix the errors in the form."
-msgstr ""
+msgstr "Bitte korrigieren Sie die Fehler im Formular."
 
+# incomplete sentence
 #: .\templates\ptree\Timer.html:8
+#, fuzzy
 msgid "left to complete this page."
-msgstr ""
+msgstr "Es bleibt diese Seite auszufüllen."
 
 #: .\templates\ptree\Timer.html:15
 msgid "Time ran out. Please fill out any form fields and continue."
 msgstr ""
+"Die Zeit ist abgelaufen. Bitte füllen Sie die Formularfelder aus und fahren "
+"Sie fort."
 
 #: .\templates\ptree\WaitPage.html:5 .\templates\ptree\WaitPage.html.py:14
 msgid "Please wait"
-msgstr ""
+msgstr "Bitte warten Sie"
 
 #: .\views\abstract.py:421
 msgid ""
 "To participate, you need to first accept this Mechanical Turk HIT and then "
 "re-click the link (refreshing this page will not work)."
 msgstr ""
+"Um teizunehmen, akzeptieren Sie bitte zuerst diesen Mechanical Turk HIT und "
+"klicken Sie dann auf den Link (aktualisieren der Seite funktioniert nicht)."
 
 #: .\views\abstract.py:529
 msgid "Your browser does not support this site's cookies."
-msgstr ""
+msgstr "Ihr Browser unterstützt keine Cookies dieser Seite."
