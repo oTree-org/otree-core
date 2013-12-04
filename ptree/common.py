@@ -51,7 +51,7 @@ def get_participant_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields(['link', 'bonus_display'], fields_specific_to_this_subclass)
 
 def get_participant_list_display(Participant, readonly_fields, first_fields=None):
-    first_fields = ['id', 'experiment', 'treatment', 'match', 'has_visited'] + (first_fields or [])
+    first_fields = ['id', 'experiment', 'treatment', 'match', 'visited'] + (first_fields or [])
     fields_to_exclude = ['ip_address',
                          'mturk_assignment_id',
                          'mturk_worker_id']

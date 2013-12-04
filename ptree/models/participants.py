@@ -14,7 +14,8 @@ class BaseParticipant(models.Model):
 
     ip_address = models.IPAddressField(null = True)
 
-    has_visited = models.BooleanField(default=False)
+    visited = models.BooleanField(default=False)
+    was_terminated = models.BooleanField(default=False)
 
     index_among_participants_in_match = models.PositiveIntegerField(null = True)
 

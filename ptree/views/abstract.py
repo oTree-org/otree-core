@@ -409,7 +409,7 @@ class GetTreatmentOrParticipant(vanilla.View):
     def get_next_participant_in_experiment(self):
         try:
             return self.ParticipantClass.objects.filter(experiment=self.experiment,
-                                                        has_visited=False)[0]
+                                                        visited=False)[0]
         except IndexError:
             raise IndexError("No Participant objects left in the database to assign to new visitor.")
 
@@ -446,8 +446,8 @@ class GetTreatmentOrParticipant(vanilla.View):
             self.experiment = self.participant.experiment
 
         if self.participant and self.experiment:
-            if self.participant.match:
-                self.treatment = self.participant.match.treatment
+            if self.participant.treatment:
+                self.treatment = self.participant.treatment
             else:
                 self.treatment = self.experiment.pick_treatment_for_incoming_participant()
 
@@ -460,8 +460,12 @@ class GetTreatmentOrParticipant(vanilla.View):
         external_id = self.request.GET.get(constants.external_id)
         if external_id is not None:
             self.participant.external_id = external_id
-        self.participant.has_visited = True
+        self.participant.visited = True
         self.participant.treatment = self.treatment
+
+        if not self.experiment.configure_match_after_start_page:
+            self.configure_match()
+
         self.participant.save()
         self.request.session[constants.participant_code] = self.participant.code
         self.request.session[constants.treatment_code] = self.treatment.code
@@ -513,9 +517,10 @@ class StartTreatment(UpdateView):
         """Don't want to load from cookies"""
 
     def load_objects(self):
-        self.match = None # match not created yet.
         self.participant = get_object_or_404(self.ParticipantClass,
                                              code = self.request.session[constants.participant_code])
+        # may or may not be None, depending on the value of
+        self.match = self.participant.match
         self.treatment = get_object_or_404(self.TreatmentClass,
                                            code = self.request.session[constants.treatment_code])
         self.experiment = self.participant.experiment
@@ -547,7 +552,8 @@ class StartTreatment(UpdateView):
         else:
             raise HttpResponse(_("Your browser does not support this site's cookies."))
 
-        self.configure_match()
+        if self.experiment.configure_match_after_start_page:
+            self.configure_match()
 
     def configure_match(self):
         """
