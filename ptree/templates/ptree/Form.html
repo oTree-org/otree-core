@@ -6,5 +6,5 @@
     {% elif formset %}
         {{ formset|crispy }}
     {% endif %}
-    <input type="submit" class="btn btn-large btn-primary" value="{{ submit_button_text|default:"Next"}}" />
+    <input type="submit" class="btn btn-large btn-primary" value="{{ submit_button_text|default:_("Next")}}" />
 </form>
