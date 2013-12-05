@@ -16,7 +16,7 @@ if sys.argv[-1] == 'publish':
 
 setup(
     name='django-ptree',
-    version='0.1.55',
+    version='0.1.59',
     packages=['ptree',
               'ptree.models',
               'ptree.management',
@@ -38,8 +38,12 @@ setup(
                         'django-data-exports==0.6',
                         'django-vanilla-views==1.0.2',
                         'Babel==1.3',
+                        'raven==3.5.2',
 
                         ],
+    dependency_links = [
+        'http://github.com/tomchristie/django-extra-views/tarball/master#egg=django-extra-views',
+    ],
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
