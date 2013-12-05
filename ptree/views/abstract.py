@@ -30,7 +30,7 @@ class PTreeMixin(object):
     """Base mixin class for pTree views.
     Takes care of:
     - retrieving model classes and objects automatically,
-    so you can access self.treatment, self.match, self.participant, etc.
+    so you can access view.treatment, self.match, self.participant, etc.
     """
 
     def load_classes(self):
@@ -397,6 +397,22 @@ class CreateMultipleView(extra_views.ModelFormSetView, CreateView):
 class UpdateMultipleView(extra_views.ModelFormSetView, UpdateView):
     pass
 
+def create_match(MatchClass, treatment):
+    match = MatchClass(treatment = treatment,
+                       experiment = treatment.experiment)
+    # need to save it before you assign the participant.match ForeignKey
+    match.save()
+    return match
+
+def add_participant_to_match(participant, match):
+    participant.index_among_participants_in_match = match.participants().count()
+    participant.match = match
+
+def configure_match(MatchClass, participant):
+    if not participant.match:
+        match = participant.treatment.next_open_match() or create_match(MatchClass, participant.treatment)
+        add_participant_to_match(participant, match)
+
 class GetTreatmentOrParticipant(vanilla.View):
     """
     The first View when participants visit a site.
@@ -462,9 +478,6 @@ class GetTreatmentOrParticipant(vanilla.View):
             self.participant.external_id = external_id
         self.participant.visited = True
         self.participant.treatment = self.treatment
-
-        if not self.experiment.configure_match_after_start_page:
-            self.configure_match()
 
         self.participant.save()
         self.request.session[constants.participant_code] = self.participant.code
@@ -552,30 +565,6 @@ class StartTreatment(UpdateView):
         else:
             raise HttpResponse(_("Your browser does not support this site's cookies."))
 
-        if self.experiment.configure_match_after_start_page:
-            self.configure_match()
+        if not self.experiment.sequence_of_experiments.pregenerate_matches:
+            configure_match(self.MatchClass, self.participant)
 
-    def configure_match(self):
-        """
-        Find the participant and associate him with an existing or new match.
-        """
-
-        if self.participant.match:
-            self.match = self.participant.match
-        else:
-            self.match = self.treatment.next_open_match() or self.create_match()
-            self.add_participant_to_match()
-            
-        assert self.match
-        assert self.match.treatment
-
-    def create_match(self):
-        match = self.MatchClass(treatment = self.treatment,
-                                experiment = self.experiment)
-        # need to save it before you assign the participant.match ForeignKey
-        match.save()
-        return match
-
-    def add_participant_to_match(self):
-        self.participant.index_among_participants_in_match = self.match.participant_set.count()
-        self.participant.match = self.match

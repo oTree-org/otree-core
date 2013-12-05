@@ -16,7 +16,7 @@ if sys.argv[-1] == 'publish':
 
 setup(
     name='django-ptree',
-    version='0.1.53',
+    version='0.1.55',
     packages=['ptree',
               'ptree.models',
               'ptree.management',

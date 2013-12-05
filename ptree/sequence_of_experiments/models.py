@@ -20,7 +20,7 @@ class SequenceOfExperiments(models.Model):
 
     is_for_mturk = models.BooleanField(verbose_name='Is for MTurk', default=True)
     payment_was_sent = models.BooleanField(default=False)
-
+    pregenerate_matches = models.BooleanField(default=False)
 
 
     def unicode(self):
@@ -48,7 +48,7 @@ class SequenceOfExperiments(models.Model):
 
 
     def __unicode__(self):
-        return unicode(self)
+        return self.unicode()
 
     def add_experiments(self, experiments):
         self.first_experiment = experiments[0]
