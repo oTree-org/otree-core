@@ -44,7 +44,7 @@ msgstr "Weiter"
 #: .\templates\ptree\Timer.html:6
 #, fuzzy
 msgid "Time left to complete this page:"
-msgstr "Es bleibt diese Seite auszufüllen."
+msgstr "Verbleibende Zeit für diese Seite."
 
 #: .\templates\ptree\Timer.html:19
 msgid "Time ran out. Please fill out any form fields and continue."
