@@ -1,6 +1,6 @@
 import os
 import sys
-from setuptools import setup
+from setuptools import setup, find_packages
 
 README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 
@@ -14,19 +14,14 @@ if sys.argv[-1] == 'publish':
     print("  git push --tags")
     sys.exit()
 
+
 setup(
     name='django-ptree',
-    version='0.1.59',
-    packages=['ptree',
-              'ptree.models',
-              'ptree.management',
-              'ptree.sequence_of_experiments',
-              'ptree.views',
-              'ptree.questionnaires',
-              'ptree.questionnaires.life_orientation_test',
-              'ptree.management.commands'],
+    version='0.1.72',
     include_package_data=True,
     license='MIT License',
+    packages=find_packages(exclude=['ptree.app_template',
+                                    'ptree.project_template']),
     description='pTree is a Django toolset that makes it easy to create and administer social science experiments to online participants.',
     long_description=README,
     url='http://ptree.org/',
@@ -39,6 +34,7 @@ setup(
                         'django-vanilla-views==1.0.2',
                         'Babel==1.3',
                         'raven==3.5.2',
+                        'django-extra-views',
 
                         ],
     dependency_links = [
@@ -59,3 +55,4 @@ setup(
     ],
     scripts = ['bin/ptree'],
 )
+

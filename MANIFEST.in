@@ -3,3 +3,6 @@ include README.rst
 recursive-include ptree/static *
 recursive-include ptree/templates *
 recursive-include docs *
+recursive-include ptree/locale *
+recursive-include ptree/app_template *
+recursive-include ptree/project_template *

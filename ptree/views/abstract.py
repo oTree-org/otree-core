@@ -20,6 +20,7 @@ from ptree.sequence_of_experiments.models import StubModel
 import urllib
 import urlparse
 from django.utils.translation import ugettext as _
+from django.db.models import Q
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -422,10 +423,12 @@ class GetTreatmentOrParticipant(vanilla.View):
     and redirects to that Treatment.
     """
 
-    def get_next_participant_in_experiment(self):
+    def get_next_participant_in_experiment(self, treatment):
         try:
-            return self.ParticipantClass.objects.filter(experiment=self.experiment,
-                                                        visited=False)[0]
+            return self.ParticipantClass.objects.filter(
+                Q(treatment=None) | Q(treatment=treatment),
+                experiment=self.experiment,
+                visited=False)[0]
         except IndexError:
             raise IndexError("No Participant objects left in the database to assign to new visitor.")
 
@@ -462,10 +465,7 @@ class GetTreatmentOrParticipant(vanilla.View):
             self.experiment = self.participant.experiment
 
         if self.participant and self.experiment:
-            if self.participant.treatment:
-                self.treatment = self.participant.treatment
-            else:
-                self.treatment = self.experiment.pick_treatment_for_incoming_participant()
+            self.treatment = self.participant.treatment or self.experiment.pick_treatment_for_incoming_participant()
 
         elif treatment_code:
             # demo mode
@@ -551,20 +551,13 @@ class StartTreatment(UpdateView):
         self.request.session[constants.ParticipantClass] = self.ParticipantClass
         self.request.session[constants.MatchClass] = self.MatchClass
 
-    def variables_for_template(self):
-        self.request.session.set_test_cookie()
+    def form_valid(self, form):
         self.persist_classes()
-        return {}
-
-    def after_valid_form_submission(self):
         if self.participant.ip_address == None:
             self.participant.ip_address = self.request.META['REMOTE_ADDR']
 
-        if self.request.session.test_cookie_worked():
-            self.request.session.delete_test_cookie()
-        else:
-            raise HttpResponse(_("Your browser does not support this site's cookies."))
-
         if not self.experiment.sequence_of_experiments.pregenerate_matches:
             configure_match(self.MatchClass, self.participant)
+        return super(StartTreatment, self).form_valid(form)
+
 

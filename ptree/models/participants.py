@@ -24,7 +24,9 @@ class BaseParticipant(models.Model):
     mturk_assignment_id = models.CharField(max_length = 50, null = True)
     mturk_worker_id = models.CharField(max_length = 50, null = True)
 
-    external_id = models.CharField(max_length = 50, null = True)
+    external_id = models.CharField(max_length = 50,
+                                   null = True,
+                                   unique=True)
 
     def __unicode__(self):
         return str(self.pk)

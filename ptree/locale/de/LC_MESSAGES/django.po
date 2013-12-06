@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pTree\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-12-05 00:14+0800\n"
+"POT-Creation-Date: 2013-12-06 12:47+0800\n"
 "PO-Revision-Date: 2013-12-04 17:48+0100\n"
 "Last-Translator: Raphael <raphael.nehmer@gess.ethz.ch>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -36,7 +36,7 @@ msgstr "Aufgabe"
 msgid "Please fix the errors in the form."
 msgstr "Bitte korrigieren Sie die Fehler im Formular."
 
-#: .\templates\ptree\Form.html:9
+#: .\templates\ptree\Form.html:12
 msgid "Next"
 msgstr "Weiter"
 
@@ -56,7 +56,7 @@ msgstr ""
 msgid "Please wait"
 msgstr "Bitte warten Sie"
 
-#: .\views\abstract.py:440
+#: .\views\abstract.py:459
 msgid ""
 "To participate, you need to first accept this Mechanical Turk HIT and then "
 "re-click the link (refreshing this page will not work)."
@@ -64,6 +64,5 @@ msgstr ""
 "Um teizunehmen, akzeptieren Sie bitte zuerst diesen Mechanical Turk HIT und "
 "klicken Sie dann auf den Link (aktualisieren der Seite funktioniert nicht)."
 
-#: .\views\abstract.py:548
-msgid "Your browser does not support this site's cookies."
-msgstr "Ihr Browser unterstützt keine Cookies dieser Seite."
+#~ msgid "Your browser does not support this site's cookies."
+#~ msgstr "Ihr Browser unterstützt keine Cookies dieser Seite."

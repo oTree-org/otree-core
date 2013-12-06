@@ -118,6 +118,8 @@ class MatchAdmin(admin.ModelAdmin):
 
 class TreatmentAdmin(admin.ModelAdmin):
     def link(self, instance):
+        if instance.experiment.sequence_of_experiments.pregenerate_matches:
+            return 'Not available (--pregenerate-matches was set)'
         url = instance.start_url()
         return new_tab_link(url, 'Link')
 
