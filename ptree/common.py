@@ -51,12 +51,14 @@ def get_participant_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields(['link', 'bonus_display'], fields_specific_to_this_subclass)
 
 def get_participant_list_display(Participant, readonly_fields, first_fields=None):
-    first_fields = ['id', 'experiment', 'treatment', 'match', 'visited'] + (first_fields or [])
-    fields_to_exclude = ['ip_address',
-                         'mturk_assignment_id',
-                         'mturk_worker_id']
+    first_fields = ['id',
+                    'participant_in_sequence_of_experiments',
+                    'experiment',
+                    'treatment',
+                    'match',
+                    'visited'] + (first_fields or [])
 
-    return get_list_display(Participant, readonly_fields, first_fields, fields_to_exclude)
+    return get_list_display(Participant, readonly_fields, first_fields, [])
 
 def get_match_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields([], fields_specific_to_this_subclass)
@@ -92,7 +94,10 @@ def get_experiment_list_display(Experiment, readonly_fields, first_fields=None):
     return get_list_display(Experiment, readonly_fields, first_fields, fields_to_exclude)
 
 def get_sequence_of_experiments_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields(['start_urls_link', 'mturk_snippet_link', 'payments_link'], fields_specific_to_this_subclass)
+    return get_readonly_fields(['start_urls_link',
+                                'global_start_link',
+                                'mturk_snippet_link',
+                                'payments_link'], fields_specific_to_this_subclass)
 
 def get_sequence_of_experiments_list_display(SequenceOfExperiments, readonly_fields, first_fields=None):
     first_fields = ['unicode'] + (first_fields or [])
@@ -101,6 +106,16 @@ def get_sequence_of_experiments_list_display(SequenceOfExperiments, readonly_fie
                          'first_experiment_object_id',
                          'first_experiment']
     return get_list_display(SequenceOfExperiments, readonly_fields, first_fields, fields_to_exclude)
+
+def get_participant_in_sequence_of_experiments_readonly_fields(fields_specific_to_this_subclass):
+    return get_readonly_fields([], fields_specific_to_this_subclass)
+
+def get_participant_in_sequence_of_experiments_list_display(Participant, readonly_fields, first_fields=None):
+    first_fields = ['unicode'] + (first_fields or [])
+    fields_to_exclude = []
+
+    return get_list_display(Participant, readonly_fields, first_fields, fields_to_exclude)
+
 
 class ParticipantAdmin(admin.ModelAdmin):
 
@@ -135,6 +150,16 @@ class ExperimentAdmin(admin.ModelAdmin):
 
     experimenter_input_link.short_description = 'Link for experimenter input during gameplay'
     experimenter_input_link.allow_tags = True
+
+class ParticipantInSequenceOfExperimentsAdmin(admin.ModelAdmin):
+    list_filter = ['sequence_of_experiments']
+
+    readonly_fields = get_participant_in_sequence_of_experiments_readonly_fields([])
+    list_display = get_participant_in_sequence_of_experiments_list_display(ptree.sequence_of_experiments.models.Participant,
+                                                                           readonly_fields=readonly_fields)
+
+    #TODO: add start link from ParticipantAdmin. Just need a way of getting the participant in the 1st experiment.
+
 
 class ParticipantInSequenceOfExperiments(object):
     def __init__(self, external_id, total_pay):
@@ -202,12 +227,11 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
 
         for experiment in sequence_of_experiments.experiments():
             for participant in experiment.participants():
-                if participant.external_id:
-                    payments[participant.external_id] += participant.total_pay() or 0
+                payments[str(participant.participant_in_sequence_of_experiments)] += participant.total_pay() or 0
 
         total_payments = 0
         participants = []
-        for k,v in OrderedDict(payments).items():
+        for k,v in OrderedDict(sorted(payments.items(), key=lambda t: t[0])).items():
             total_payments += v
             participants.append(ParticipantInSequenceOfExperiments(k, currency(v)))
 
@@ -215,7 +239,7 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
                                   {'participants': participants,
                                   'total_payments': currency(total_payments),
                                   'sequence_of_experiments_code': sequence_of_experiments.code,
-                                  'sequence_of_experiments_name': sequence_of_experiments.name,
+                                  'sequence_of_experiments_name': sequence_of_experiments,
                                   })
 
     def payments_link(self, instance):

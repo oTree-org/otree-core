@@ -17,7 +17,7 @@ if sys.argv[-1] == 'publish':
 
 setup(
     name='django-ptree',
-    version='0.1.72',
+    version='0.1.75',
     include_package_data=True,
     license='MIT License',
     packages=find_packages(exclude=['ptree.app_template',
@@ -54,5 +54,8 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
     scripts = ['bin/ptree'],
+    exclude_package_data = {'': ['ptree/app_template/*', 'ptree/project_template/*'],
+                            'ptree': ['ptree/app_template/*', 'ptree/project_template/*']}
+
 )
 

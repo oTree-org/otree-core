@@ -48,9 +48,10 @@ def augment_settings(settings):
         [os.path.join(settings['BASE_DIR'], 'static')])
 
     new_middleware_classes = collapse_to_unique_list(
-        ['django.middleware.common.CommonMiddleware',
+        [
         'django.contrib.sessions.middleware.SessionMiddleware',
-        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        #'django.middleware.locale.LocaleMiddleware',
+        'django.middleware.common.CommonMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'django.contrib.messages.middleware.MessageMiddleware',],
         settings.get('MIDDLEWARE_CLASSES')

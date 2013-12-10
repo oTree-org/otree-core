@@ -2,7 +2,7 @@ import ptree.common
 from django.utils.importlib import import_module
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
-from ptree.sequence_of_experiments.models import SequenceOfExperiments
+import ptree.sequence_of_experiments.models
 from optparse import make_option
 import ptree.views.abstract
 import random
@@ -34,13 +34,20 @@ class Command(BaseCommand):
         if len(args) < 2:
             raise CommandError("Wrong number of arguments (expecting '{}')".format(self.args))
 
-        seq = SequenceOfExperiments(is_for_mturk = options['is_for_mturk'],
+        seq = ptree.sequence_of_experiments.models.SequenceOfExperiments(is_for_mturk = options['is_for_mturk'],
                                     pregenerate_matches = options['pregenerate_matches'],
                                     name = options['name'])
         seq.save()
 
 
         num_participants = int(args[0])
+
+        participants_in_sequence_of_experiments = []
+        for i in range(num_participants):
+            participant = ptree.sequence_of_experiments.models.Participant(sequence_of_experiments = seq)
+            participant.save()
+            participants_in_sequence_of_experiments.append(participant)
+
         app_names = args[1:]
         experiments = []
         for app_name in app_names:
@@ -52,9 +59,9 @@ class Command(BaseCommand):
             models_module = import_module('{}.models'.format(app_name))
             experiment = models_module.create_experiment_and_treatments()
             for i in range(num_participants):
-                participant = models_module.Participant(experiment = experiment)
+                participant = models_module.Participant(experiment = experiment,
+                                                        participant_in_sequence_of_experiments = participants_in_sequence_of_experiments[i])
                 participant.save()
-
 
             if seq.pregenerate_matches:
                 participants = list(experiment.participants())

@@ -138,7 +138,7 @@ class ExperimenterUpdateView(ExperimenterSequenceMixin, vanilla.UpdateView):
     form_class = StubModelForm
 
     def get_object(self):
-        Cls = self.form_class.Meta.model
+        Cls = self.get_form_class().Meta.model
         if Cls == self.ExperimentClass:
             return self.experiment
         elif Cls == StubModel:
@@ -155,6 +155,7 @@ class ExperimenterModelFormSetView(ExperimenterSequenceMixin, extra_views.ModelF
     def get_extra_form_kwargs(self):
         return {'experiment': self.experiment,
                 'request': self.request}
+
 
     def after_valid_formset_submission(self, formset):
         for form in formset:

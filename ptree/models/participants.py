@@ -3,6 +3,7 @@ from ptree.fields import RandomCharField
 import ptree.constants as constants
 from django.conf import settings
 from ptree.common import currency
+import ptree.sequence_of_experiments.models
 
 class BaseParticipant(models.Model):
     """
@@ -12,21 +13,18 @@ class BaseParticipant(models.Model):
     # the participant's unique ID (and redemption code) that gets passed in the URL.
     code = RandomCharField(length = 8)
 
-    ip_address = models.IPAddressField(null = True)
-
     visited = models.BooleanField(default=False)
-    was_terminated = models.BooleanField(default=False)
+
+    participant_in_sequence_of_experiments = models.ForeignKey(ptree.sequence_of_experiments.models.Participant,
+                                                               related_name = '%(app_label)s_%(class)s')
 
     index_among_participants_in_match = models.PositiveIntegerField(null = True)
 
     index_in_sequence_of_views = models.PositiveIntegerField(default=0)
 
-    mturk_assignment_id = models.CharField(max_length = 50, null = True)
-    mturk_worker_id = models.CharField(max_length = 50, null = True)
-
-    external_id = models.CharField(max_length = 50,
-                                   null = True,
-                                   unique=True)
+    @property
+    def external_id(self):
+        return self.participant_in_sequence_of_experiments.external_id
 
     def __unicode__(self):
         return str(self.pk)

@@ -27,7 +27,7 @@ class FormMixin(object):
         """Make any customizations to your field forms that are not covered by the other methods"""
 
     def currency_choices(self, amounts):
-        return [(None, '--------')] + [(amount, ptree.common.currency(amount)) for amount in amounts]
+        return [(None, '---------')] + [(amount, ptree.common.currency(amount)) for amount in amounts]
 
     def __init__(self, *args, **kwargs):
         self.process_kwargs(kwargs)
@@ -39,6 +39,13 @@ class FormMixin(object):
 
         for field_name, label in self.field_labels().items():
             self.fields[field_name].label = label
+
+        # Django displays NullBooleanField "None" value as "Unknown", which is undesired.
+        # it should display as '---------' to indicate a choice must be made
+        for field_name in self.null_boolean_field_names():
+            self.fields[field_name].widget = forms.Select(choices = ((None, '---------'),
+                                                                    (True, _('Yes')),
+                                                                    (False, _('No'))))
 
         for field_name, choices in self.field_choices().items():
             field = self.fields[field_name]

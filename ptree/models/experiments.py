@@ -19,7 +19,6 @@ class BaseExperiment(models.Model):
                             )
     code = RandomCharField(length=8)
     experimenter_access_code = RandomCharField(length=8)
-    sequence_of_experiments_access_code = RandomCharField(length=8)
 
     sequence_of_experiments = models.ForeignKey(SequenceOfExperiments,
                                                 null=True,
@@ -65,6 +64,8 @@ class BaseExperiment(models.Model):
         url = '/{}/GetTreatmentOrParticipant/?{}={}'.format(self.url_base,
                                                              constants.experiment_code_obfuscated,
                                                              self.code)
+
+        # maybe don't need this anymore.
         if in_sequence_of_experiments:
             url += '&{}={}'.format(constants.sequence_of_experiments_access_code,
                                    self.sequence_of_experiments_access_code)

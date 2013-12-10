@@ -60,5 +60,33 @@ class SequenceOfExperiments(models.Model):
             experiment.save()
         self.save()
 
+    def participants(self):
+        return self.participant_set.all()
+
     class Meta:
         verbose_name_plural = 'sequences of experiments'
+
+class Participant(models.Model):
+
+    sequence_of_experiments = models.ForeignKey(SequenceOfExperiments)
+
+    was_terminated = models.BooleanField(default=False)
+    mturk_assignment_id = models.CharField(max_length = 50, null = True)
+    mturk_worker_id = models.CharField(max_length = 50, null = True)
+    ip_address = models.IPAddressField(null = True)
+
+    # unique=True can't be set, because the same external ID could be reused in multiple sequences.
+    # however, it should be unique within the sequence.
+    external_id = models.CharField(max_length = 50,
+                               null = True,
+                               )
+
+    def unicode(self):
+        return self.external_id or str(self.pk)
+
+    def __unicode__(self):
+        return self.unicode()
+
+    class Meta:
+        ordering = ['pk']
+
