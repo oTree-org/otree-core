@@ -193,17 +193,16 @@ class SequenceMixin(PTreeMixin):
         # by default it's false (e.g. for GET requests), but can be set to True in post() method
         self.time_limit_was_exceeded = False
 
-        ssw = self.show_skip_wait()
-        if not ssw in [self.PageActions.show, self.PageActions.skip, self.PageActions.wait]:
+        page_action = self.show_skip_wait()
+        if not page_action in [self.PageActions.show, self.PageActions.skip, self.PageActions.wait]:
             raise ValueError('show_skip_wait() must return one of the following: [self.PageActions.show, self.PageActions.skip, self.PageActions.wait]')
 
-        # should also add GET parameter like check_if_prerequisite_is_satisfied, to be explicit.
         if self.request.is_ajax() and self.request.GET[constants.check_if_wait_is_over] == constants.get_param_truth_value:
-            no_more_wait = ssw != self.PageActions.wait
+            no_more_wait = page_action != self.PageActions.wait
             return HttpResponse(int(no_more_wait))
 
         # if the participant shouldn't see this view, skip to the next
-        if ssw == self.PageActions.skip:
+        if page_action == self.PageActions.skip:
             self.participant.index_in_sequence_of_views += 1
             self.participant.save()
             return self.redirect_to_page_the_user_should_be_on()
@@ -214,7 +213,7 @@ class SequenceMixin(PTreeMixin):
             # then bring them back to where they should be
             return self.redirect_to_page_the_user_should_be_on()
 
-        if ssw == self.PageActions.wait:
+        if page_action == self.PageActions.wait:
             return render_to_response(self.wait_page_template,
                 {'SequenceViewURL': '{}?{}={}'.format(self.request.path,
                                                    constants.check_if_wait_is_over,
@@ -506,7 +505,7 @@ class GetTreatmentOrParticipant(vanilla.View):
         """URL pattern regular expression, as required by urls.py"""
         return r'^{}/{}/$'.format(cls.get_url_base(), cls.__name__)
 
-class StartTreatment(UpdateView):
+class Start(UpdateView):
     """Start page. Each game should have a Start view that inherits from this.
     This is not a modelform, because it can be used with many models.
     """
@@ -545,5 +544,3 @@ class StartTreatment(UpdateView):
         if not self.experiment.sequence_of_experiments.pregenerate_matches:
             configure_match(self.MatchClass, self.participant)
         return super(StartTreatment, self).form_valid(form)
-
-
