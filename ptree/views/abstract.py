@@ -512,7 +512,9 @@ class StartTreatment(UpdateView):
     """
 
     def load_classes(self):
-        """Don't want to load from cookies"""
+        """Don't want to load from cookies. Instead, we actually persist classes,
+        so that load_classes works in the upcoming Views."""
+        self.persist_classes()
 
     def load_objects(self):
         self.participant = get_object_or_404(self.ParticipantClass,
@@ -537,7 +539,6 @@ class StartTreatment(UpdateView):
         self.request.session[constants.MatchClass] = self.MatchClass
 
     def form_valid(self, form):
-        self.persist_classes()
         if self.participant.participant_in_sequence_of_experiments.ip_address == None:
             self.participant.participant_in_sequence_of_experiments.ip_address = self.request.META['REMOTE_ADDR']
 
