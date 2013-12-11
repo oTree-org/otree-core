@@ -48,7 +48,7 @@ class PTreeMixin(object):
         self.experiment = self.treatment.experiment
 
     def save_objects(self):
-        for obj in [self.match, self.participant]:
+        for obj in [self.match, self.participant, self.participant.participant_in_sequence_of_experiments]:
             if obj:
                 obj.save()
 
@@ -464,10 +464,11 @@ class GetTreatmentOrParticipant(vanilla.View):
         self.participant.treatment = self.treatment
 
         self.participant.save()
+        self.participant.participant_in_sequence_of_experiments.save()
         self.request.session[constants.participant_code] = self.participant.code
         self.request.session[constants.treatment_code] = self.treatment.code
 
-        return HttpResponseRedirect('/{}/StartTreatment/{}/'.format(self.experiment.url_base, 0))
+        return HttpResponseRedirect('/{}/Start/{}/'.format(self.experiment.url_base, 0))
 
     def assign_participant_with_mturk_parameters(self):
         try:
@@ -486,6 +487,7 @@ class GetTreatmentOrParticipant(vanilla.View):
             self.get_next_participant_in_experiment()
             self.participant.participant_in_sequence_of_experiments.mturk_worker_id = mturk_worker_id
             self.participant.participant_in_sequence_of_experiments.mturk_assignment_id = mturk_assignment_id
+
 
 
 
@@ -543,4 +545,4 @@ class Start(UpdateView):
 
         if not self.experiment.sequence_of_experiments.pregenerate_matches:
             configure_match(self.MatchClass, self.participant)
-        return super(StartTreatment, self).form_valid(form)
+        return super(Start, self).form_valid(form)

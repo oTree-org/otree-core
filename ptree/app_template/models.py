@@ -20,7 +20,7 @@ class Treatment(ptree.models.BaseTreatment):
     def sequence_of_views(self):
     
         import {{ app_name }}.views as views
-        return [views.StartTreatment,
+        return [views.Start,
                 views.MyView, # insert your views here
                 views.Results]
                 

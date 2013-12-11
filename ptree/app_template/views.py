@@ -9,7 +9,7 @@ from ptree.common import currency
 class GetTreatmentOrParticipant(ViewInThisApp, ptree.views.GetTreatmentOrParticipant):
     pass
 
-class StartTreatment(ViewInThisApp, ptree.views.StartTreatment):
+class Start(ViewInThisApp, ptree.views.Start):
     template_name = 'Start.html'
     form_class = forms.StartForm
 

@@ -28,7 +28,7 @@ def start_urls_for_experiment(experiment, request):
     if request.GET.get(ptree.constants.experimenter_access_code) != experiment.experimenter_access_code:
         return HttpResponseBadRequest('{} parameter missing or incorrect'.format(ptree.constants.experimenter_access_code))
     participants = experiment.participants()
-    urls = [request.build_absolute_uri(participant.start_url()) for participant in participants]
+    urls = [request.build_absolute_uri(participant.start_url() + '&external_id={}'.format(i+1)) for i, participant in enumerate(participants)]
     return HttpResponse('\n'.join(urls), content_type="text/plain")
 
 def remove_duplicates(lst):

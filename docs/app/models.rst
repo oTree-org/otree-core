@@ -286,7 +286,7 @@ sequence_of_views(): list
     
 Very important. Returns a list of all the View classes that the participant gets routed through sequentially.
 (Not all pages have to be displayed for all participants; see the ``show_skip_wait()`` method).
-Must start with your app's ``StartTreatment``, and usually ends the Redemption Code view.
+Must start with your app's ``Start``, and usually ends the Redemption Code view.
 The rest is up to you.
 
 Inside the method, you should import the modules containing the views you want to use.
@@ -296,7 +296,7 @@ Example::
     def sequence_of_views(self):
         import donation.views as views
         import ptree.views.concrete
-        return [views.StartTreatment,
+        return [views.Start,
                 ptree.views.concrete.AssignParticipantAndMatch,
                 views.IntroPage,
                 views.EnterOffer, 

@@ -131,25 +131,20 @@ def create_export_for_experiments(app_label, Experiment):
                        'experiments',
                        list_display)
 
-
-def try_create_export_for_model(model):
-    app_label = model._meta.app_label
-    if issubclass(model, ptree.models.BaseMatch):
-        create_export_for_matches(app_label, model)
-    elif issubclass(model, ptree.models.BaseParticipant):
-        create_export_for_participants(app_label, model)
-    elif issubclass(model, ptree.models.BaseTreatment):
-        create_export_for_treatments(app_label, model)
-    elif issubclass(model, ptree.models.BaseExperiment):
-        create_export_for_experiments(app_label, model)
-
 def create_all_data_exports(sender, **kwargs):
-    update_all_contenttypes()
-    create_html_export_format(sender)
-    create_csv_export_format(sender)
-    created_models = kwargs['created_models']
-    for model in created_models:
-        try_create_export_for_model(model)
+    # only do it for 1 sender, so that these lines don't get repeated for every app
+    if sender.__name__ == 'django.contrib.auth.models':
+        update_all_contenttypes()
+        create_html_export_format(sender)
+        create_csv_export_format(sender)
+        for app_label in settings.INSTALLED_PTREE_APPS:
+            print 'Creating data exports for {}'.format(app_label)
+            models_module = import_module('{}.models'.format(app_label))
+            # this assumes they all exist, which is a core part of pTree design
+            create_export_for_matches(app_label, models_module.Match)
+            create_export_for_participants(app_label, models_module.Participant)
+            create_export_for_treatments(app_label, models_module.Treatment)
+            create_export_for_experiments(app_label, models_module.Experiment)
     StubModel().save()
 
 signals.post_syncdb.connect(create_all_data_exports)

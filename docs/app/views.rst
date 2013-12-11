@@ -153,10 +153,10 @@ If the user exceeds the time limit, they can still submit the form, but once the
 the ``time_limit_was_exceeded`` attribute will be set to ``True``, which you can use to do anything you want.
     
 
-StartTreatment
+Start
 +++++++++++++++
     
-Every app needs to define a ``StartTreatment`` view that inherits from ``ptree.views.StartTreatment``.
+Every app needs to define a ``Start`` view that inherits from ``ptree.views.Start``.
 This view displays a welcome page to users,
 followed by a "Next" button if they wish to start.
 This page gives users a chance to drop out *before* we assign them to a match, 
