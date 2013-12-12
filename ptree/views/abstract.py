@@ -163,8 +163,8 @@ class SequenceMixin(PTreeMixin):
             minutes_component, seconds_component = None, None
 
         time_limit_parameters = {
-            constants.time_limit_minutes_component: minutes_component,
-            constants.time_limit_seconds_component: seconds_component,
+            constants.time_limit_minutes_component: str(minutes_component),
+            constants.time_limit_seconds_component: str(seconds_component).zfill(2),
             constants.time_limit_in_seconds: remaining_seconds,
         }
 
