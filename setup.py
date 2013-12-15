@@ -1,6 +1,7 @@
 import os
 import sys
 from setuptools import setup, find_packages
+import shutil
 
 README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 
@@ -14,10 +15,13 @@ if sys.argv[-1] == 'publish':
     print("  git push --tags")
     sys.exit()
 
+if 'sdist' in sys.argv:
+    shutil.make_archive('ptree/app_template', 'zip', 'ptree/app_template')
+    shutil.make_archive('ptree/project_template', 'zip', 'ptree/project_template')
 
 setup(
     name='django-ptree',
-    version='0.1.80',
+    version='0.1.82',
     include_package_data=True,
     license='MIT License',
     packages=find_packages(exclude=['ptree.app_template',
@@ -54,8 +58,6 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
     scripts = ['bin/ptree'],
-    exclude_package_data = {'': ['ptree/app_template/*', 'ptree/project_template/*'],
-                            'ptree': ['ptree/app_template/*', 'ptree/project_template/*']}
 
 )
 

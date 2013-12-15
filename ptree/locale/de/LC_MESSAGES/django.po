@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pTree\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-12-13 00:13+0800\n"
-"PO-Revision-Date: 2013-12-04 17:48+0100\n"
+"POT-Creation-Date: 2013-12-13 13:41+0800\n"
+"PO-Revision-Date: 2013-12-13 13:40+0800\n"
 "Last-Translator: Raphael <raphael.nehmer@gess.ethz.ch>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: de\n"
@@ -48,17 +48,12 @@ msgstr "Bitte korrigieren Sie die Fehler im Formular."
 msgid "Next"
 msgstr "Weiter"
 
-#: .\templates\ptree\Timer.html:7
-msgid "Time limit for this page (minutes:seconds):"
-msgstr ""
-
 # incomplete sentence
-#: .\templates\ptree\Timer.html:16
-#, fuzzy
+#: .\templates\ptree\Timer.html:6
 msgid "Time left to complete this page:"
 msgstr "Verbleibende Zeit für diese Seite."
 
-#: .\templates\ptree\Timer.html:30
+#: .\templates\ptree\Timer.html:20
 msgid "Time ran out. Please fill out any form fields and continue."
 msgstr ""
 "Die Zeit ist abgelaufen. Bitte füllen Sie die Formularfelder aus und fahren "

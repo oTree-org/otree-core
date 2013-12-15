@@ -15,10 +15,10 @@ if __name__ == "__main__":
     project_or_app_name = sys.argv[2]
 
     if command == STARTPROJECT:
-        project_template = os.path.join(os.path.dirname(ptree.__file__), 'project_template')
+        project_template = os.path.join(os.path.dirname(ptree.__file__), 'project_template.zip')
         argv = ['', STARTPROJECT, '--template={}'.format(project_template), project_or_app_name]
     elif command == STARTAPP:
-        app_template = os.path.join(os.path.dirname(ptree.__file__), 'app_template')
+        app_template = os.path.join(os.path.dirname(ptree.__file__), 'app_template.zip')
         argv = ['', STARTAPP, '--template={}'.format(app_template), project_or_app_name]
     else:
         print 'Available commands are: {}'.format(', '.join([STARTAPP, STARTPROJECT]))
