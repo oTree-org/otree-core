@@ -127,7 +127,7 @@ Example::
             return self.PageActions.wait
         return self.PageActions.show
     
-wait_message()
+wait_page_body_text()
 -------------------
 
 The message to display to users on the waiting page.

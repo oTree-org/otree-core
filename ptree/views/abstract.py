@@ -126,7 +126,10 @@ class SequenceMixin(PTreeMixin):
     # but maybe have one in pTree core as a fallback in case the user doesn't have it.
     wait_page_template = 'ptree/WaitPage.html'
 
-    def wait_message(self):
+    def wait_page_body_text(self):
+        pass
+
+    def wait_page_title_text(self):
         pass
 
     def time_limit_in_seconds(self):
@@ -219,7 +222,8 @@ class SequenceMixin(PTreeMixin):
                                                    constants.check_if_wait_is_over,
                                                    constants.get_param_truth_value),
                 'debug_values': self.get_debug_values() if settings.DEBUG else None,
-                'wait_message': self.wait_message()})
+                'wait_page_body_text': self.wait_page_body_text(),
+                'wait_page_title_text': self.wait_page_title_text()})
         return super(SequenceMixin, self).dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):

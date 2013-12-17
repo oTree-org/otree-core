@@ -56,7 +56,8 @@ def get_participant_list_display(Participant, readonly_fields, first_fields=None
                     'experiment',
                     'treatment',
                     'match',
-                    'visited'] + (first_fields or [])
+                    'visited',
+                    'index_in_sequence_of_views'] + (first_fields or [])
 
     return get_list_display(Participant, readonly_fields, first_fields, [])
 
@@ -126,10 +127,12 @@ class ParticipantAdmin(admin.ModelAdmin):
 
     link.short_description = "Participant link"
     link.allow_tags = True
-    list_filter = ['match', 'treatment', 'experiment']
+    list_filter = ['experiment', 'treatment', 'match']
+    list_per_page = 30
 
 class MatchAdmin(admin.ModelAdmin):
-    list_filter = ['treatment', 'experiment']
+    list_filter = ['experiment', 'treatment']
+    list_per_page = 10
 
 class TreatmentAdmin(admin.ModelAdmin):
     def link(self, instance):
@@ -141,6 +144,7 @@ class TreatmentAdmin(admin.ModelAdmin):
     link.short_description = "Demo link"
     link.allow_tags = True
     list_filter = ['experiment']
+    list_per_page = 10
 
 class ExperimentAdmin(admin.ModelAdmin):
 
@@ -150,6 +154,7 @@ class ExperimentAdmin(admin.ModelAdmin):
 
     experimenter_input_link.short_description = 'Link for experimenter input during gameplay'
     experimenter_input_link.allow_tags = True
+    list_per_page = 10
 
 class ParticipantInSequenceOfExperimentsAdmin(admin.ModelAdmin):
     list_filter = ['sequence_of_experiments']

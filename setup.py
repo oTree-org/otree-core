@@ -21,7 +21,7 @@ if 'sdist' in sys.argv:
 
 setup(
     name='django-ptree',
-    version='0.1.82',
+    version='0.1.83',
     include_package_data=True,
     license='MIT License',
     packages=find_packages(exclude=['ptree.app_template',

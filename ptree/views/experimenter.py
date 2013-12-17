@@ -43,7 +43,7 @@ class ExperimenterSequenceMixin(ExperimenterMixin):
 
     wait_page_template = 'ptree/WaitPage.html'
 
-    def wait_message(self):
+    def wait_page_body_text(self):
         return None
 
     def get_success_url(self):
@@ -67,7 +67,7 @@ class ExperimenterSequenceMixin(ExperimenterMixin):
 
         if ssw == self.PageActions.wait:
             return render_to_response(self.wait_page_template, {'SequenceViewURL': self.request.path,
-                                                                'wait_message': self.wait_message()})
+                                                                'wait_page_body_text': self.wait_page_body_text()})
         return super(ExperimenterSequenceMixin, self).dispatch(request, *args, **kwargs)
 
     def variables_for_template(self):
