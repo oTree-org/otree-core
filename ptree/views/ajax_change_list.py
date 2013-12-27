@@ -79,10 +79,11 @@ class FakeGET(dict):
         return urllib.urlencode(self)
 
 class FakeRequest:
-    def __init__(self, resolver_match, get_params):
+    def __init__(self, resolver_match, get_params, user):
         self.GET = FakeGET()
         self.GET.update(get_params)
         self.resolver_match = resolver_match
+        self.user = user
 
 
 # TODO 
@@ -108,7 +109,7 @@ def ajax_ptree_change_list_results(request):
         parsed_qs[key] = parsed_qs[key][0]
     model_admin = get_model_admin_from(url_name)
     resolver_match = FakeResolverMatch(app_name="admin", url_name=url_name)
-    fake_request = FakeRequest(resolver_match, parsed_qs)
+    fake_request = FakeRequest(resolver_match, parsed_qs, request.user)
     cl = get_cl(fake_request, model_admin)
     _, results_json = ajax_admin_list.prepare_results_json(cl)
     return HttpResponse(results_json)
