@@ -92,11 +92,11 @@
       {% endif %}
 
       {% block result_list %}
-          {% if action_form and actions_on_top and cl.full_result_count %}{% admin_actions %}{% endif %}
+          {% if action_form and actions_on_top and cl.full_result_count %}{% ajax_admin_actions %}{% endif %}
           {% ajax_result_list cl request %}
-          {% if action_form and actions_on_bottom and cl.full_result_count %}{% admin_actions %}{% endif %}
+          {% if action_form and actions_on_bottom and cl.full_result_count %}{% ajax_admin_actions %}{% endif %}
       {% endblock %}
-      {% block pagination %}{% pagination cl %}{% endblock %}
+      {% block pagination %}{% ajax_pagination cl %}{% endblock %}
       </form>
     </div>
   </div>

@@ -4,7 +4,6 @@
 {% for item in result_hidden_fields %}{{ item }}{% endfor %}
 </div>
 {% endif %}
-{% if results %}
 <div class="results">
 <table id="result_list">
 <thead>
@@ -142,6 +141,8 @@ function updateResultsDisplay(new_results_json) {
     }
     $("#results_tbody").html(html);
 
+    $("#result-count-2").html("" + new_results_json["results_ids"].length);
+
     var results_delta = get_results_delta(results_json, new_results_json);
     mark_changed_cells(new_results_json, results_delta);
 
@@ -175,4 +176,3 @@ function fetchAndUpdateResults() {
 
 </script>
 
-{% endif %}
