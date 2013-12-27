@@ -19,7 +19,7 @@ if __name__ == "__main__":
         argv = ['', STARTPROJECT, '--template={}'.format(project_template), project_or_app_name]
     elif command == STARTAPP:
         app_template = os.path.join(os.path.dirname(ptree.__file__), 'app_template.zip')
-        argv = ['', STARTAPP, '--template={}'.format(app_template), project_or_app_name]
+        argv = ['', STARTAPP, '--template={}'.format(app_template), '--name=field_descriptions.rst',  project_or_app_name]
     else:
         print 'Available commands are: {}'.format(', '.join([STARTAPP, STARTPROJECT]))
         sys.exit(1)

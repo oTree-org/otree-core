@@ -188,6 +188,8 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
 
     def start_urls_link(self, instance):
         experiment = instance.first_experiment
+        if not experiment:
+            return 'No experiments in sequence'
         return new_tab_link('{}/start_urls/?{}={}'.format(instance.pk,
                                                           ptree.constants.experimenter_access_code,
                                                           experiment.experimenter_access_code), 'Link')
@@ -206,6 +208,8 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
                                   content_type='text/plain')
 
     def mturk_snippet_link(self, instance):
+        if not instance.first_experiment:
+            return 'No experiments in sequence'
         if instance.is_for_mturk:
             return new_tab_link('{}/mturk_snippet/'.format(instance.pk), 'Link')
         else:
@@ -217,6 +221,8 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
     def global_start_link(self, instance):
         if instance.is_for_mturk:
             return 'N/A (is_for_mturk = True)'
+        if not instance.first_experiment:
+            return 'No experiments in sequence'
         else:
             url = instance.first_experiment.start_url()
             return new_tab_link(url, 'Link')

@@ -32,7 +32,9 @@ class SequenceOfExperiments(models.Model):
 
         for experiment in self.experiments():
             experiment_names.append('{} {}'.format(experiment._meta.app_label, experiment))
-        return ', '.join(experiment_names)
+        if experiment_names:
+            return ', '.join(experiment_names)
+        return '(Empty sequence)'
 
     unicode.short_description = 'Name'
 
@@ -40,10 +42,10 @@ class SequenceOfExperiments(models.Model):
         lst = []
         experiment = self.first_experiment
         while True:
-            lst.append(experiment)
-            experiment = experiment.next_experiment
             if not experiment:
                 break
+            lst.append(experiment)
+            experiment = experiment.next_experiment
         return lst
 
 
