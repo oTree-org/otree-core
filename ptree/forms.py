@@ -2,8 +2,11 @@ from django import forms
 import ptree.common
 import ptree.models.common
 import ptree.sequence_of_experiments.models
+import ptree.constants
 from django.db import models
 from django.utils.translation import ugettext as _
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit
 
 class FormMixin(object):
 
@@ -23,18 +26,19 @@ class FormMixin(object):
     def field_labels(self):
         return {}
 
-    def customize(self):
-        """Make any customizations to your field forms that are not covered by the other methods"""
-
     def currency_choices(self, amounts):
         return [(None, '---------')] + [(amount, ptree.common.currency(amount)) for amount in amounts]
 
+    def layout(self):
+        """Child classes can override this to customize form layout using crispy-forms"""
+        return None
+
     def __init__(self, *args, **kwargs):
         self.process_kwargs(kwargs)
-
         initial = kwargs.get('initial', {})
         initial.update(self.field_initial_values())
         kwargs['initial'] = initial
+
         super(FormMixin, self).__init__(*args, **kwargs)
 
         for field_name, label in self.field_labels().items():
@@ -54,7 +58,15 @@ class FormMixin(object):
             # if the current widget can't accept a choices arg, fall back to using a Select widget
             except TypeError:
                 field.widget = forms.Select(choices=choices)
-        self.customize()
+
+        # crispy forms
+        self.helper = FormHelper()
+        self.helper.form_id = ptree.constants.form_element_id
+        self.helper.form_class = 'form'
+        self.helper.add_input(Submit('submit',
+                                     _('Next'), #TODO: make this customizable
+                                     css_class='btn-large btn-primary'))
+        self.helper.layout = self.layout()
 
     def null_boolean_field_names(self):
         null_boolean_fields_in_model = [field.name for field in self.Meta.model._meta.fields if field.__class__ == models.NullBooleanField]
