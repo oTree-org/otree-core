@@ -124,7 +124,6 @@ function get_results_delta(old_results_json, new_results_json) {
 function updateResultsDisplay(new_results_json) {
     var $ = django.jQuery;
     var results_ids = new_results_json["results_ids"];
-    var html = "";
     for (var res_id_idx in results_ids) {
         var res_id = results_ids[res_id_idx];
         var tr_content = new_results_json["results_map"][res_id];
@@ -132,15 +131,16 @@ function updateResultsDisplay(new_results_json) {
         if ((res_id_idx % 2) == 1) {
             row_class = "row2";
         }
-        html += '<tr id="res-row-' + res_id + '" class="' + row_class + '">';
+        var tr_elem = $($.parseHTML('<tr id="res-row-' + res_id + '" class="' + row_class + '"></tr>')[0]);
+
         for (var cell_idx in tr_content) {
             var cell_content = tr_content[cell_idx];
-            html += cell_content;
+            var cell_elem = $($.parseHTML(cell_content)[0]);
+            cell_elem.attr("title", cell_elem.text());
+            tr_elem.append(cell_elem);
         }
-        html += "</td></tr>";
-        //alert(html);
+        $("#results_tbody").append(tr_elem);
     }
-    $("#results_tbody").html(html);
 
     $("#result-count-2").html("" + new_results_json["results_ids"].length);
 
