@@ -4,6 +4,7 @@ import datetime
 import json
 import urllib
 
+from django.conf import settings
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
 from django.contrib.admin.util import (lookup_field, display_for_field,
     display_for_value, label_for_field)
@@ -154,6 +155,10 @@ def result_headers(cl):
                             if th_classes else '',
         }
 
+def wrap_in_div(text):
+    return '<div style="clear: both;width:%s; height: 1.2em; overflow: hidden">' % settings.PTREE_CHANGE_LIST_FIXED_WIDTH \
+                + text + '</div>'
+
 def items_for_result(cl, result, form):
     """
     Generates the actual list of data.
@@ -215,7 +220,7 @@ def items_for_result(cl, result, form):
                 attr = pk
             value = result.serializable_value(attr)
             result_id = escapejs(value)
-            yield format_html('<{0}{1}><div style="clear: both;width:5em; height: 1.2em; overflow: hidden"><a href="{2}"{3}>{4}</a></div></{5}>',
+            yield format_html('<{0}{1}>' + wrap_in_div('<a href="{2}"{3}>{4}</a>') + '</div></{5}>',
                               table_tag,
                               row_class,
                               url,
@@ -232,10 +237,10 @@ def items_for_result(cl, result, form):
                         form[cl.model._meta.pk.name].is_hidden)):
                 bf = form[field_name]
                 result_repr = mark_safe(force_text(bf.errors) + force_text(bf))
-            yield format_html('<td{0} style="padding: 0px;"><div style="clear: both; width:5em; height: 1.2em; overflow: hidden">{1}</div></td>', row_class, result_repr)
+            yield format_html('<td{0} style="padding: 0px;">' + wrap_in_div('{1}') + '</div></td>', row_class, result_repr)
     if form and not form[cl.model._meta.pk.name].is_hidden:
         val_txt = force_text(form[cl.model._meta.pk.name])
-        yield format_html('<td style="padding: 0px;"><div style="clear: both;width:5em; height: 1.2em; overflow: hidden">{0}</div></td>', val_txt)
+        yield format_html('<td style="padding: 0px;">' + wrap_in_div('{0}') + '</div></td>', val_txt)
 
 class ResultList(list):
     # Wrapper class used to return items in a list_editable
@@ -286,6 +291,7 @@ def ajax_result_list(cl, request):
     the_results, results_json = prepare_results_json(cl)
     # TODO: results_json
     return {'cl': cl,
+            'settings': settings,
             'result_hidden_fields': list(result_hidden_fields(cl)),
             'result_headers': headers,
             'num_sorted_fields': num_sorted_fields,

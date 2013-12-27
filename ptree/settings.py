@@ -3,6 +3,7 @@ from collections import OrderedDict
 import os
 import django.conf
 import django.contrib.sessions.serializers
+from django.conf import global_settings
 
 def remove_duplicates(lst):
     return list(OrderedDict.fromkeys(lst))
@@ -85,7 +86,12 @@ def augment_settings(settings):
         'TIME_ZONE': 'UTC',
         'SESSION_SERIALIZER': 'django.contrib.sessions.serializers.PickleSerializer',
         'ALLOWED_HOSTS': ['*'],
+        'PTREE_CHANGE_LIST_FIXED_WIDTH': '5em',
+        'PTREE_CHANGE_LIST_UPDATE_INTERVAL': '10000', # default to 10 seconds(10000 miliseconds)
     }
+
+    # NOTE: if you override this settings variable in your projects, please also add "django.core.context_processors.request" there
+    overridable_settings["TEMPLATE_CONTEXT_PROCESSORS"] = global_settings.TEMPLATE_CONTEXT_PROCESSORS + ("django.core.context_processors.request",)
 
 
     settings.update(augmented_settings)

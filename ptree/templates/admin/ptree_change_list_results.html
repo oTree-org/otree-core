@@ -10,7 +10,7 @@
 <tr>
 {% for header in result_headers %}
 <th scope="col" {{ header.class_attrib }} title='{{ header.text }}'{% if forloop.last %}style="width: 100%;"{% endif %}>
-<div  style="width: 5em; overflow: hidden;">
+<div  style="width: {{settings.PTREE_CHANGE_LIST_FIXED_WIDTH}}; overflow: hidden;">
    {% if header.sortable %}
      {% if header.sort_priority > 0 %}
        <div class="sortoptions">
@@ -35,6 +35,7 @@
 results_json = null;
 url_name = '{{ url_name }}';
 var get_params_str = "{{ get_params_str }}";
+var PTREE_CHANGE_LIST_UPDATE_INTERVAL = {{ settings.PTREE_CHANGE_LIST_UPDATE_INTERVAL }};
 
 /*function changeCell(res_id, idx, content) {
     var $ = django.jQuery;
@@ -159,12 +160,12 @@ function fetchAndUpdateResults() {
         dataType: "json",
         error: function(jqXHR, textStatus) {
             // TODO: update the status line
-            window.setTimeout(fetchAndUpdateResults, 10000);
+            window.setTimeout(fetchAndUpdateResults, PTREE_CHANGE_LIST_UPDATE_INTERVAL);
         },
         success: function(data) {
             var new_results_json = data;
             updateResultsDisplay(new_results_json);
-            window.setTimeout(fetchAndUpdateResults, 10000);
+            window.setTimeout(fetchAndUpdateResults, PTREE_CHANGE_LIST_UPDATE_INTERVAL);
         },
         timeout: 50000
     });
