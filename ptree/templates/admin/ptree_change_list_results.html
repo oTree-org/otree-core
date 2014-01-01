@@ -66,7 +66,6 @@ function mark_changed_cells(new_results_json, results_delta) {
 
 }
 
-
 function compare_result_row(old_row, new_row) {
     var changed_cells = [];
     for (var cell_idx in old_row) {
@@ -89,8 +88,8 @@ function get_results_delta(old_results_json, new_results_json) {
     var changed_rows = {};
 
     if (old_results_json != null) {
-        old_results_ids = old_results_json["results_ids"];
-        new_results_ids = new_results_json["results_ids"];
+        var old_results_ids = old_results_json["results_ids"];
+        var new_results_ids = new_results_json["results_ids"];
 
         for (var old_id_idx in old_results_ids) {
             var old_result_id = old_results_ids[old_id_idx];
@@ -115,6 +114,13 @@ function get_results_delta(old_results_json, new_results_json) {
             }
         }
     }
+    else {
+        var new_results_ids = new_results_json["results_ids"];
+        for (var result_id_idx in new_results_ids) {
+            var result_id = new_results_ids[result_id_idx];
+            added_ids.push(result_id);
+        }
+    }
 
     return {"added_ids": added_ids, "deleted_ids": deleted_ids, "changed_rows": changed_rows};
 
@@ -123,31 +129,59 @@ function get_results_delta(old_results_json, new_results_json) {
 
 function updateResultsDisplay(new_results_json) {
     var $ = django.jQuery;
+    var results_delta = get_results_delta(results_json, new_results_json);
     var results_ids = new_results_json["results_ids"];
-    $("#results_tbody").empty();
+    
+    //$("#results_tbody").empty();
     for (var res_id_idx in results_ids) {
         var res_id = results_ids[res_id_idx];
-        var tr_content = new_results_json["results_map"][res_id];
-        var row_class = "row1";
-        if ((res_id_idx % 2) == 1) {
-            row_class = "row2";
-        }
 
-        var tr_elem = $($.parseHTML('<tr id="res-row-' + res_id + '" class="' + row_class + '"></tr>')[0]);
+        if ($.inArray(res_id, results_delta.added_ids) > - 1) {
+            var tr_content = new_results_json["results_map"][res_id];
+            var row_class = "row1";
+            if ((res_id_idx % 2) == 1) {
+                row_class = "row2";
+            }
+            var tr_elem = $($.parseHTML('<tr id="res-row-' + res_id + '" class="' + row_class + '"></tr>')[0]);
 
-        for (var cell_idx in tr_content) {
-            var cell_content = tr_content[cell_idx];
-            var cell_elem = $($.parseHTML(cell_content)[0]);
-            cell_elem.attr("title", cell_elem.text());
-            tr_elem.append(cell_elem);
+            for (var cell_idx in tr_content) {
+                var cell_content = tr_content[cell_idx];
+                var cell_elem = $($.parseHTML(cell_content)[0]);
+                cell_elem.attr("title", cell_elem.text());
+                tr_elem.append(cell_elem);
+            }
+
+            $("#results_tbody").append(tr_elem);
         }
-        $("#results_tbody").append(tr_elem);
+        else {
+            if (results_delta.changed_rows.hasOwnProperty(res_id)) {
+                console.log(res_id, "changed");
+                var tr_elem = $("#res-row-" + res_id);
+                var tr_content = new_results_json["results_map"][res_id];
+                tr_elem.each(function(cell_idx, elem) {
+                    console.log("Update cell" + cell_idx);
+                    var cell_content = tr_content[cell_idx];
+                    if ($.inArray(cell_idx, results_delta.changed_rows[res_id]) > -1) {
+                        elem.replaceWith(cell_content);
+                    }
+                });
+            }
+            $("#res-row-" + res_id).appendTo("#results_tbody");
+        }
     }
+    for (var deleted_id_idx in results_delta.deleted_ids) {
+        deleted_id = results_delta.deleted_ids[deleted_id_idx];
+        $("#res-row-" + deleted_id).remove();
+    }
+
+    //$("#res-row-1").appendTo("#results_tbody");
 
     $("#result-count-2").html("" + new_results_json["results_ids"].length);
 
-    var results_delta = get_results_delta(results_json, new_results_json);
-    mark_changed_cells(new_results_json, results_delta);
+    //var results_delta = get_results_delta(results_json, new_results_json);
+    if (results_json != null) {
+        mark_changed_cells(new_results_json, results_delta);
+    }
 
     results_json = new_results_json;
 }
@@ -162,12 +196,12 @@ function fetchAndUpdateResults() {
         dataType: "json",
         error: function(jqXHR, textStatus) {
             // TODO: update the status line
-            //window.setTimeout(fetchAndUpdateResults, PTREE_CHANGE_LIST_UPDATE_INTERVAL);
+            window.setTimeout(fetchAndUpdateResults, PTREE_CHANGE_LIST_UPDATE_INTERVAL);
         },
         success: function(data) {
             var new_results_json = data;
             updateResultsDisplay(new_results_json);
-            //window.setTimeout(fetchAndUpdateResults, PTREE_CHANGE_LIST_UPDATE_INTERVAL);
+            window.setTimeout(fetchAndUpdateResults, PTREE_CHANGE_LIST_UPDATE_INTERVAL);
         },
         timeout: 50000
     });
