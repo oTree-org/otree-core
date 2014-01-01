@@ -31,23 +31,34 @@
 </tbody>
 </table>
 </div>
+<style>
+    /* The pencil is from http://findicons.com/icon/118480/pencil?id=407138# */
+    .pencil {
+        background: url({% static "pencil.png" %}) no-repeat right center;
+    }
+</style>
+
 <script>
 results_json = null;
 url_name = '{{ url_name }}';
 var get_params_str = "{{ get_params_str }}";
 var PTREE_CHANGE_LIST_UPDATE_INTERVAL = {{ settings.PTREE_CHANGE_LIST_UPDATE_INTERVAL }};
 
+var changed_cells = {};
 
 function mark_changed_cells(new_results_json, results_delta) {
     var changed_rows = results_delta["changed_rows"];
     for (var result_id in changed_rows) {
-        var changed_cells = changed_rows[result_id];
-        for (var idx in changed_cells) {
-            var changed_cell_idx = changed_cells[idx];
-            var the_cell = $($("#res-row-" + result_id).children()[changed_cell_idx]);
-            var the_cell_bg = the_cell.css("background-color");
-            the_cell.css("background-color", "yellow");
-            the_cell.animate({backgroundColor: the_cell_bg}, PTREE_CHANGE_LIST_UPDATE_INTERVAL)
+        var changed_cells_in_row = changed_rows[result_id];
+        for (var idx in changed_cells_in_row) {
+            var changed_cell_idx = changed_cells_in_row[idx];
+
+            if (!changed_cells.hasOwnProperty("" + result_id + ":" + changed_cell_idx)) {
+                var the_cell = $($("#res-row-" + result_id).children()[changed_cell_idx]);
+                var the_cell_bg = the_cell.css("background-color");
+                the_cell.css("background-color", "yellow");
+                the_cell.animate({backgroundColor: the_cell_bg}, PTREE_CHANGE_LIST_UPDATE_INTERVAL)
+            }
         }
     }
 
@@ -121,6 +132,14 @@ function get_results_delta(old_results_json, new_results_json) {
 
 }
 
+function bind_change_evt(cell_elem, res_id, cell_idx) {
+cell_elem.find("input").change(function() {
+    //alert("" + res_id + ":" + cell_idx);
+    changed_cells["" + res_id + ":" + cell_idx] = 1;
+    cell_elem.addClass("pencil");
+});
+}
+
 
 function updateResultsDisplay(new_results_json) {
     var results_delta = get_results_delta(results_json, new_results_json);
@@ -142,6 +161,7 @@ function updateResultsDisplay(new_results_json) {
                 var cell_content = tr_content[cell_idx];
                 var cell_elem = $($.parseHTML(cell_content)[0]);
                 cell_elem.attr("title", cell_elem.text());
+                bind_change_evt(cell_elem, res_id, cell_idx);
                 tr_elem.append(cell_elem);
             }
 
@@ -152,9 +172,14 @@ function updateResultsDisplay(new_results_json) {
                 var tr_elem = $("#res-row-" + res_id);
                 var tr_content = new_results_json["results_map"][res_id];
                 tr_elem.children().each(function(cell_idx, elem) {
-                    var cell_content = tr_content[cell_idx];
-                    if ($.inArray("" + cell_idx, results_delta.changed_rows[res_id]) > -1) {
-                        $(elem).replaceWith(cell_content);
+                    if (!changed_cells.hasOwnProperty("" + res_id + ":" + cell_idx)) {
+                        var cell_content = tr_content[cell_idx];
+                        if ($.inArray("" + cell_idx, results_delta.changed_rows[res_id]) > -1) {
+                            var new_cell_elem = $($.parseHTML(cell_content));
+                            new_cell_elem.attr("title", new_cell_elem.text());
+                            bind_change_evt(new_cell_elem, res_id, cell_idx);
+                            $(elem).replaceWith(new_cell_elem);
+                        }
                     }
                 });
             }
