@@ -26,6 +26,9 @@
 {% block extrahead %}
 {{ block.super }}
 {{ media.js }}
+
+<script type="text/javascript" src="{% static "jquery.min.js" %}"></script>
+<script type="text/javascript" src="{% static "jquery.animate-colors.js" %}"></script>
 {% if action_form %}{% if actions_on_top or actions_on_bottom %}
 <script type="text/javascript">
 (function($) {
@@ -35,6 +38,7 @@
 })(django.jQuery);
 </script>
 {% endif %}{% endif %}
+
 {% endblock %}
 
 {% block bodyclass %}change-list{% endblock %}

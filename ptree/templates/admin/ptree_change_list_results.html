@@ -37,31 +37,27 @@ url_name = '{{ url_name }}';
 var get_params_str = "{{ get_params_str }}";
 var PTREE_CHANGE_LIST_UPDATE_INTERVAL = {{ settings.PTREE_CHANGE_LIST_UPDATE_INTERVAL }};
 
-/*function changeCell(res_id, idx, content) {
-    var $ = django.jQuery;
-    var new_element = $($("#res-row-" + res_id).children()[idx]).replaceWith(content);
-    
-    # TODO: should add a css
-    $($("#res-row-" + res_id).children()[idx]).css("background-color", "gray");
-    updated_cell_hints["" + res_id + "_" + idx] = new Date().getTime();
-} */
 
 function mark_changed_cells(new_results_json, results_delta) {
-    var $ = django.jQuery;
     var changed_rows = results_delta["changed_rows"];
     for (var result_id in changed_rows) {
         var changed_cells = changed_rows[result_id];
         for (var idx in changed_cells) {
             var changed_cell_idx = changed_cells[idx];
-            $($("#res-row-" + result_id).children()[changed_cell_idx]).css("background-color", "yellow");
+            var the_cell = $($("#res-row-" + result_id).children()[changed_cell_idx]);
+            var the_cell_bg = the_cell.css("background-color");
+            the_cell.css("background-color", "yellow");
+            the_cell.animate({backgroundColor: the_cell_bg}, PTREE_CHANGE_LIST_UPDATE_INTERVAL)
         }
     }
 
     var added_ids = results_delta["added_ids"];
     for (var added_ids_idx in added_ids) {
         var added_id = added_ids[added_ids_idx];
-        //$("#res-row-" + result_id).children().css("background-color", "gray");
-        $("#res-row-" + added_id).css("background-color", "yellow");
+        var the_row = $("#res-row-" + added_id);
+        var the_row_bg = the_row.css("background-color");
+        the_row.css("background-color", "yellow");
+        the_row.animate({backgroundColor: the_row_bg},PTREE_CHANGE_LIST_UPDATE_INTERVAL);
     }
 
 }
@@ -80,7 +76,6 @@ function compare_result_row(old_row, new_row) {
 
 
 function get_results_delta(old_results_json, new_results_json) {
-    var $ = django.jQuery;
     // TODO added rows/ deleted rows
     // changed cells
     var added_ids = [];
@@ -128,7 +123,6 @@ function get_results_delta(old_results_json, new_results_json) {
 
 
 function updateResultsDisplay(new_results_json) {
-    var $ = django.jQuery;
     var results_delta = get_results_delta(results_json, new_results_json);
     var results_ids = new_results_json["results_ids"];
     
@@ -155,14 +149,12 @@ function updateResultsDisplay(new_results_json) {
         }
         else {
             if (results_delta.changed_rows.hasOwnProperty(res_id)) {
-                console.log(res_id, "changed");
                 var tr_elem = $("#res-row-" + res_id);
                 var tr_content = new_results_json["results_map"][res_id];
-                tr_elem.each(function(cell_idx, elem) {
-                    console.log("Update cell" + cell_idx);
+                tr_elem.children().each(function(cell_idx, elem) {
                     var cell_content = tr_content[cell_idx];
-                    if ($.inArray(cell_idx, results_delta.changed_rows[res_id]) > -1) {
-                        elem.replaceWith(cell_content);
+                    if ($.inArray("" + cell_idx, results_delta.changed_rows[res_id]) > -1) {
+                        $(elem).replaceWith(cell_content);
                     }
                 });
             }
@@ -189,7 +181,6 @@ function updateResultsDisplay(new_results_json) {
 
 // TODO: the failure should also be handled.
 function fetchAndUpdateResults() {
-    var $ = django.jQuery;
     $.ajax({
         url: "/ajax/ptree-change-list-results/",
         data: {"url_name": url_name, "get_params": get_params_str},
@@ -207,9 +198,7 @@ function fetchAndUpdateResults() {
     });
 }
 
-(function($) {
-    fetchAndUpdateResults();
-})(django.jQuery);
+fetchAndUpdateResults();
 
 </script>
 
