@@ -53,7 +53,7 @@ function mark_changed_cells(new_results_json, results_delta) {
         var changed_cells = changed_rows[result_id];
         for (var idx in changed_cells) {
             var changed_cell_idx = changed_cells[idx];
-            $($("#res-row-" + result_id).children()[changed_cell_idx]).css("background-color", "#BBB");
+            $($("#res-row-" + result_id).children()[changed_cell_idx]).css("background-color", "yellow");
         }
     }
 
@@ -61,7 +61,7 @@ function mark_changed_cells(new_results_json, results_delta) {
     for (var added_ids_idx in added_ids) {
         var added_id = added_ids[added_ids_idx];
         //$("#res-row-" + result_id).children().css("background-color", "gray");
-        $("#res-row-" + added_id).css("background-color", "#BBB");
+        $("#res-row-" + added_id).css("background-color", "yellow");
     }
 
 }
@@ -162,12 +162,12 @@ function fetchAndUpdateResults() {
         dataType: "json",
         error: function(jqXHR, textStatus) {
             // TODO: update the status line
-            window.setTimeout(fetchAndUpdateResults, PTREE_CHANGE_LIST_UPDATE_INTERVAL);
+            //window.setTimeout(fetchAndUpdateResults, PTREE_CHANGE_LIST_UPDATE_INTERVAL);
         },
         success: function(data) {
             var new_results_json = data;
             updateResultsDisplay(new_results_json);
-            window.setTimeout(fetchAndUpdateResults, PTREE_CHANGE_LIST_UPDATE_INTERVAL);
+            //window.setTimeout(fetchAndUpdateResults, PTREE_CHANGE_LIST_UPDATE_INTERVAL);
         },
         timeout: 50000
     });
