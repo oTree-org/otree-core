@@ -11,6 +11,12 @@ import babel.numbers
 from django.conf import settings
 from decimal import Decimal
 
+def id_label_name(id, label):
+    if label:
+        return '{} (label: {})'.format(id, label)
+    return '{}'.format(id)
+
+
 def currency(value):
     """Takes in a number of cents (int) and returns a formatted currency amount.
     """
