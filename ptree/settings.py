@@ -86,7 +86,7 @@ def augment_settings(settings):
         'TIME_ZONE': 'UTC',
         'SESSION_SERIALIZER': 'django.contrib.sessions.serializers.PickleSerializer',
         'ALLOWED_HOSTS': ['*'],
-        'PTREE_CHANGE_LIST_FIXED_WIDTH': '5em',
+        'PTREE_CHANGE_LIST_COLUMN_MIN_WIDTH': 50, # In pixels
         'PTREE_CHANGE_LIST_UPDATE_INTERVAL': '10000', # default to 10 seconds(10000 miliseconds)
     }
 

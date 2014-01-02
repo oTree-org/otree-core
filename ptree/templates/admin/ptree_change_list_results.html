@@ -10,7 +10,7 @@
 <tr>
 {% for header in result_headers %}
 <th scope="col" {{ header.class_attrib }} title='{{ header.text }}'{% if forloop.last %}style="width: 100%;"{% endif %}>
-<div  style="width: {{settings.PTREE_CHANGE_LIST_FIXED_WIDTH}}; overflow: hidden;">
+<div  class="cell-trunc-div" style="overflow: hidden; width: {{ settings.PTREE_CHANGE_LIST_COLUMN_MIN_WIDTH}}px">
    {% if header.sortable %}
      {% if header.sort_priority > 0 %}
        <div class="sortoptions">
@@ -87,8 +87,6 @@ function compare_result_row(old_row, new_row) {
 
 
 function get_results_delta(old_results_json, new_results_json) {
-    // TODO added rows/ deleted rows
-    // changed cells
     var added_ids = [];
     var deleted_ids = [];
     var changed_rows = {};
@@ -204,14 +202,12 @@ function updateResultsDisplay(new_results_json) {
 }
 
 
-// TODO: the failure should also be handled.
 function fetchAndUpdateResults() {
     $.ajax({
         url: "/ajax/ptree-change-list-results/",
         data: {"url_name": url_name, "get_params": get_params_str},
         dataType: "json",
         error: function(jqXHR, textStatus) {
-            // TODO: update the status line
             window.setTimeout(fetchAndUpdateResults, PTREE_CHANGE_LIST_UPDATE_INTERVAL);
         },
         success: function(data) {
@@ -224,6 +220,19 @@ function fetchAndUpdateResults() {
 }
 
 fetchAndUpdateResults();
+
+function fixTableLayout() {
+    var table_width = $("#result_list").width();
+    var column_num = $("#result_list thead tr th").length;
+    var td_padding = 5 * 2; // TODO get padding from somewhere
+    var border_size = 1;
+    var cell_width = (table_width - column_num * td_padding - border_size * (column_num + 1)) / column_num;
+    cell_width = Math.max(cell_width, {{ settings.PTREE_CHANGE_LIST_COLUMN_MIN_WIDTH}});
+    $(".cell-trunc-div").width(cell_width - 2);
+}
+fixTableLayout();
+
+$(window).resize(fixTableLayout);
 
 </script>
 
