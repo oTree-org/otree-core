@@ -5,8 +5,6 @@ class BaseMatch(models.Model):
     Base class for all Matches.
     """
 
-    time_started = models.DateTimeField(auto_now_add = True)
-
     def __unicode__(self):
         return str(self.pk)
 

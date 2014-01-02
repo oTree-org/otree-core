@@ -2,14 +2,15 @@ from django.db import models
 from ptree.fields import RandomCharField
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-
+from ptree.common import id_label_name
 
 
 class StubModel(models.Model):
     """To be used as the model for an empty form, so that form_class can be omitted."""
 
 class SequenceOfExperiments(models.Model):
-    name = models.CharField(max_length = 300, null = True, blank = True)
+    label = models.CharField(max_length = 300, null = True, blank = True)
+    time_created = models.DateTimeField(auto_now_add = True)
     code = RandomCharField(length=8)
     first_experiment_content_type = models.ForeignKey(ContentType,
                                                       null=True,
@@ -23,18 +24,18 @@ class SequenceOfExperiments(models.Model):
     pregenerate_matches = models.BooleanField(default=False)
 
 
-    def unicode(self):
+    def name(self):
         """Define this because Django-Inspect-Model (django-inspect-model.rtfd.org/en/latest/#usage)
         doesn't recognize the __unicode__ method, and Django-data-exports relies on this."""
-        if self.name:
-            return self.name
-        experiment_names = []
 
-        for experiment in self.experiments():
-            experiment_names.append('{} {}'.format(experiment._meta.app_label, experiment))
-        return ', '.join(experiment_names)
-
-    unicode.short_description = 'Name'
+        if self.label:
+            postfix = self.label
+        else:
+            experiment_names = []
+            for experiment in self.experiments():
+                experiment_names.append('{} {}'.format(experiment._meta.app_label, experiment))
+            postfix = ', '.join(experiment_names)
+        return '{}: {}'.format(self.pk, postfix)
 
     def experiments(self):
         lst = []
@@ -46,9 +47,8 @@ class SequenceOfExperiments(models.Model):
                 break
         return lst
 
-
     def __unicode__(self):
-        return self.unicode()
+        return self.name()
 
     def add_experiments(self, experiments):
         self.first_experiment = experiments[0]
@@ -70,6 +70,7 @@ class Participant(models.Model):
 
     sequence_of_experiments = models.ForeignKey(SequenceOfExperiments)
 
+
     was_terminated = models.BooleanField(default=False)
     mturk_assignment_id = models.CharField(max_length = 50, null = True)
     mturk_worker_id = models.CharField(max_length = 50, null = True)
@@ -77,15 +78,14 @@ class Participant(models.Model):
 
     # unique=True can't be set, because the same external ID could be reused in multiple sequences.
     # however, it should be unique within the sequence.
-    external_id = models.CharField(max_length = 50,
-                               null = True,
-                               )
+    label = models.CharField(max_length = 50,
+                                   null = True)
 
-    def unicode(self):
-        return self.external_id or str(self.pk)
+    def name(self):
+        return id_label_name(self.pk, self.label)
 
     def __unicode__(self):
-        return self.unicode()
+        return self.name()
 
     class Meta:
         ordering = ['pk']

@@ -24,11 +24,10 @@ class BaseParticipant(models.Model):
 
     @property
     def external_id(self):
-        return self.participant_in_sequence_of_experiments.external_id
+        return self.participant_in_sequence_of_experiments.label
 
     def __unicode__(self):
-        return str(self.pk)
-
+        return self.participant_in_sequence_of_experiments.__unicode__()
 
     def start_url(self):
         return '/{}/GetTreatmentOrParticipant/?{}={}'.format(self.experiment.url_base,

@@ -11,6 +11,11 @@ import babel.numbers
 from django.conf import settings
 from decimal import Decimal
 
+def id_label_name(id, label):
+    if label:
+        return '{} (label: {})'.format(id, label)
+    return '{}'.format(id)
+
 def currency(value):
     """Takes in a number of cents (int) and returns a formatted currency amount.
     """
@@ -72,16 +77,17 @@ def get_treatment_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields(['link'], fields_specific_to_this_subclass)
 
 def get_treatment_list_display(Treatment, readonly_fields, first_fields=None):
-    first_fields = ['unicode', 'experiment'] + (first_fields or [])
-    fields_to_exclude = []
+    first_fields = ['name', 'experiment'] + (first_fields or [])
+    fields_to_exclude = ['id', 'label']
     return get_list_display(Treatment, readonly_fields, first_fields, fields_to_exclude)
 
 def get_experiment_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields(['experimenter_input_link'], fields_specific_to_this_subclass)
 
 def get_experiment_list_display(Experiment, readonly_fields, first_fields=None):
-    first_fields = ['unicode'] + (first_fields or [])
-    fields_to_exclude = ['name',
+    first_fields = ['name'] + (first_fields or [])
+    fields_to_exclude = ['id',
+                         'label',
                          'sequence_of_experiments_access_code',
                          'next_experiment_content_type',
                          'next_experiment_object_id',
@@ -100,8 +106,9 @@ def get_sequence_of_experiments_readonly_fields(fields_specific_to_this_subclass
                                 'payments_link'], fields_specific_to_this_subclass)
 
 def get_sequence_of_experiments_list_display(SequenceOfExperiments, readonly_fields, first_fields=None):
-    first_fields = ['unicode'] + (first_fields or [])
-    fields_to_exclude = ['name',
+    first_fields = ['name'] + (first_fields or [])
+    fields_to_exclude = ['id',
+                         'label',
                          'first_experiment_content_type',
                          'first_experiment_object_id',
                          'first_experiment']
@@ -111,7 +118,7 @@ def get_participant_in_sequence_of_experiments_readonly_fields(fields_specific_t
     return get_readonly_fields([], fields_specific_to_this_subclass)
 
 def get_participant_in_sequence_of_experiments_list_display(Participant, readonly_fields, first_fields=None):
-    first_fields = ['unicode'] + (first_fields or [])
+    first_fields = ['name'] + (first_fields or [])
     fields_to_exclude = []
 
     return get_list_display(Participant, readonly_fields, first_fields, fields_to_exclude)
@@ -169,8 +176,8 @@ class ParticipantInSequenceOfExperimentsAdmin(admin.ModelAdmin):
 
 
 class ParticipantInSequenceOfExperiments(object):
-    def __init__(self, external_id, total_pay):
-        self.external_id = external_id
+    def __init__(self, name, total_pay):
+        self.name = name
         self.total_pay = total_pay
 
 class SequenceOfExperimentsAdmin(admin.ModelAdmin):
@@ -235,13 +242,16 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
 
         for experiment in sequence_of_experiments.experiments():
             for participant in experiment.participants():
-                payments[str(participant.participant_in_sequence_of_experiments)] += participant.total_pay() or 0
+                payments[participant.participant_in_sequence_of_experiments.id] += participant.total_pay() or 0
 
         total_payments = 0
+
+        participant_names = {p.id: p.name() for p in sequence_of_experiments.participants()}
+
         participants = []
         for k,v in OrderedDict(sorted(payments.items(), key=lambda t: t[0])).items():
             total_payments += v
-            participants.append(ParticipantInSequenceOfExperiments(k, currency(v)))
+            participants.append(ParticipantInSequenceOfExperiments(participant_names[k], currency(v)))
 
         return render_to_response('admin/PaymentsForSequenceOfExperiments.html',
                                   {'participants': participants,

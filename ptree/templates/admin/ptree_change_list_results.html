@@ -53,15 +53,19 @@ function mark_changed_cells(new_results_json, results_delta) {
         var changed_cells = changed_rows[result_id];
         for (var idx in changed_cells) {
             var changed_cell_idx = changed_cells[idx];
-            $($("#res-row-" + result_id).children()[changed_cell_idx]).css("background-color", "#BBB");
+            //$($("#res-row-" + result_id).children()[changed_cell_idx]).css("background-color", "#BBB");
+            $($("#res-row-" + result_id).children()[changed_cell_idx]).animate({'background-color': '#FF0000'}, 'slow');
         }
+
     }
 
     var added_ids = results_delta["added_ids"];
     for (var added_ids_idx in added_ids) {
         var added_id = added_ids[added_ids_idx];
         //$("#res-row-" + result_id).children().css("background-color", "gray");
-        $("#res-row-" + added_id).css("background-color", "#BBB");
+        //$("#res-row-" + added_id).css("background-color", "#BBB");
+        //$($("#res-row-" + result_id).children()[changed_cell_idx]).effect("highlight", {}, 10*1000);
+        $($("#res-row-" + result_id).children()[changed_cell_idx]).animate({backgroundColor: '#FF0000'}, 'slow');
     }
 
 }
