@@ -193,7 +193,7 @@ or their name.
 
 You can have users fill this out themselves by making it a form field, or you can automatically pass it as a ``GET`` parameter in the start URL. For example::
 
-    http://mysite/..../GetTreatmentOrParticipant?[other parameters here]&external_id=42
+    http://mysite/..../Initialize?[other parameters here]&external_id=42
 
 If pTree sees a ``external_id`` parameter in this URL, it will automatically assign it to the participant.
 

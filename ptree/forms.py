@@ -89,6 +89,12 @@ class ParticipantFormMixin(FormMixin):
         self.request = kwargs.pop('request')
         self.time_limit_was_exceeded = kwargs.pop('time_limit_was_exceeded')
 
+class ParticipantInSequenceOfExperimentsFormMixin(FormMixin):
+    def process_kwargs(self, kwargs):
+        self.participant_in_sequence_of_experiments = kwargs.pop('participant_in_sequence_of_experiments')
+        self.sequence_of_experiments = kwargs.pop('sequence_of_experiments'),
+        self.request = kwargs.pop('request')
+
 class ExperimenterFormMixin(FormMixin):
     def process_kwargs(self, kwargs):
         self.experiment = kwargs.pop('experiment')
@@ -102,6 +108,8 @@ class ModelForm(ParticipantFormMixin, forms.ModelForm):
     since they take care of saving to the database,
     and they require less code to write and validate.
     """
+
+class ParticipantInSequenceOfExperimentsModelForm(ParticipantInSequenceOfExperimentsFormMixin, forms.ModelForm)
 
 class ExperimenterModelForm(ExperimenterFormMixin, forms.ModelForm):
     pass

@@ -7,13 +7,14 @@ from django.conf import settings
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from ptree.sequence_of_experiments.models import SequenceOfExperiments
+from ptree.common import id_label_name
 
 class BaseExperiment(models.Model):
     """
     Base class for all Experiments.
     """
 
-    name = models.CharField(max_length = 500,
+    label = models.CharField(max_length = 500,
                             null = True,
                             blank = True,
                             )
@@ -41,35 +42,24 @@ class BaseExperiment(models.Model):
     def is_last_experiment(self):
         return not self.next_experiment
 
-    def unicode(self):
-        """Define this because Django-Inspect-Model (django-inspect-model.rtfd.org/en/latest/#usage)
-        doesn't recognize the __unicode__ method, and Django-data-exports relies on this."""
-        return self.name or str(self.pk)
-
-    unicode.short_description = 'name'
+    def name(self):
+        return id_label_name(self.pk, self.label)
 
     def __unicode__(self):
-        return self.unicode()
+        return self.name()
 
     def experimenter_input_url(self):
         return '/{}/ExperimenterLaunch/?{}={}&{}={}'.format(self.url_base,
                                                           constants.experiment_code,
                                                           self.code,
                                                           constants.experimenter_access_code,
-                                                          self.experimenter_access_code
-                                                          )
+                                                          self.experimenter_access_code)
 
-    def start_url(self, in_sequence_of_experiments = False):
+    def start_url(self):
         """The URL that a user is redirected to in order to start a treatment"""
-        url = '/{}/GetTreatmentOrParticipant/?{}={}'.format(self.url_base,
-                                                             constants.experiment_code_obfuscated,
-                                                             self.code)
-
-        # maybe don't need this anymore.
-        if in_sequence_of_experiments:
-            url += '&{}={}'.format(constants.sequence_of_experiments_access_code,
-                                   self.sequence_of_experiments_access_code)
-        return url
+        return '/{}/Initialize/?{}={}'.format(self.url_base,
+                                              constants.experiment_code_obfuscated,
+                                              self.code)
 
 
     def pick_treatment_for_incoming_participant(self):

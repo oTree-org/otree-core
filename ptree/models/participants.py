@@ -4,6 +4,7 @@ import ptree.constants as constants
 from django.conf import settings
 from ptree.common import currency
 import ptree.sequence_of_experiments.models
+from ptree.common import add_params_to_url
 
 class BaseParticipant(models.Model):
     """
@@ -22,18 +23,11 @@ class BaseParticipant(models.Model):
 
     index_in_sequence_of_views = models.PositiveIntegerField(default=0)
 
-    @property
-    def external_id(self):
-        return self.participant_in_sequence_of_experiments.external_id
-
     def __unicode__(self):
-        return str(self.pk)
-
+        return self.participant_in_sequence_of_experiments.__unicode__()
 
     def start_url(self):
-        return '/{}/GetTreatmentOrParticipant/?{}={}'.format(self.experiment.url_base,
-                                                          constants.participant_code,
-                                                          self.code)
+        return add_params_to_url(self.experiment.start_url(), {constants.participant_code: self.code})
 
     def bonus(self):
         """

@@ -1,0 +1,185 @@
+{% load i18n admin_static %}{% load cycle from future %}
+{% if result_hidden_fields %}
+<div class="hiddenfields">{# DIV for HTML validation #}
+{% for item in result_hidden_fields %}{{ item }}{% endfor %}
+</div>
+{% endif %}
+<div class="results">
+<table id="result_list">
+<thead>
+<tr>
+{% for header in result_headers %}
+<th scope="col" {{ header.class_attrib }} title='{{ header.text }}'{% if forloop.last %}style="width: 100%;"{% endif %}>
+<div  style="width: {{settings.PTREE_CHANGE_LIST_FIXED_WIDTH}}; overflow: hidden;">
+   {% if header.sortable %}
+     {% if header.sort_priority > 0 %}
+       <div class="sortoptions">
+         <a class="sortremove" href="{{ header.url_remove }}" title="{% trans "Remove from sorting" %}"></a>
+         {% if num_sorted_fields > 1 %}<span class="sortpriority" title="{% blocktrans with priority_number=header.sort_priority %}Sorting priority: {{ priority_number }}{% endblocktrans %}">{{ header.sort_priority }}</span>{% endif %}
+         <a href="{{ header.url_toggle }}" class="toggle {% if header.ascending %}ascending{% else %}descending{% endif %}" title="{% trans "Toggle sorting" %}"></a>
+       </div>
+     {% endif %}
+   {% endif %}
+   <div class="text">{% if header.sortable %}<a href="{{ header.url_primary }}">{{ header.text|capfirst }}</a>{% else %}<span>{{ header.text|capfirst }}</span>{% endif %}</div>
+   <div class="clear"></div>
+</div>
+</th>{% endfor %}
+</tr>
+</thead>
+<tbody id="results_tbody">
+
+</tbody>
+</table>
+</div>
+<script>
+results_json = null;
+url_name = '{{ url_name }}';
+var get_params_str = "{{ get_params_str }}";
+var PTREE_CHANGE_LIST_UPDATE_INTERVAL = {{ settings.PTREE_CHANGE_LIST_UPDATE_INTERVAL }};
+
+/*function changeCell(res_id, idx, content) {
+    var $ = django.jQuery;
+    var new_element = $($("#res-row-" + res_id).children()[idx]).replaceWith(content);
+    
+    # TODO: should add a css
+    $($("#res-row-" + res_id).children()[idx]).css("background-color", "gray");
+    updated_cell_hints["" + res_id + "_" + idx] = new Date().getTime();
+} */
+
+function mark_changed_cells(new_results_json, results_delta) {
+    var $ = django.jQuery;
+    var changed_rows = results_delta["changed_rows"];
+    for (var result_id in changed_rows) {
+        var changed_cells = changed_rows[result_id];
+        for (var idx in changed_cells) {
+            var changed_cell_idx = changed_cells[idx];
+            //$($("#res-row-" + result_id).children()[changed_cell_idx]).css("background-color", "#BBB");
+            $($("#res-row-" + result_id).children()[changed_cell_idx]).animate({'background-color': '#FF0000'}, 'slow');
+        }
+
+    }
+
+    var added_ids = results_delta["added_ids"];
+    for (var added_ids_idx in added_ids) {
+        var added_id = added_ids[added_ids_idx];
+        //$("#res-row-" + result_id).children().css("background-color", "gray");
+        //$("#res-row-" + added_id).css("background-color", "#BBB");
+        //$($("#res-row-" + result_id).children()[changed_cell_idx]).effect("highlight", {}, 10*1000);
+        $($("#res-row-" + result_id).children()[changed_cell_idx]).animate({backgroundColor: '#FF0000'}, 'slow');
+    }
+
+}
+
+
+function compare_result_row(old_row, new_row) {
+    var changed_cells = [];
+    for (var cell_idx in old_row) {
+        old_cell = old_row[cell_idx];
+        new_cell = new_row[cell_idx];
+        if (old_cell != new_cell) {
+            changed_cells.push(cell_idx);
+        }
+    }
+    return changed_cells;
+}
+
+
+function get_results_delta(old_results_json, new_results_json) {
+    var $ = django.jQuery;
+    // TODO added rows/ deleted rows
+    // changed cells
+    var added_ids = [];
+    var deleted_ids = [];
+    var changed_rows = {};
+
+    if (old_results_json != null) {
+        old_results_ids = old_results_json["results_ids"];
+        new_results_ids = new_results_json["results_ids"];
+
+        for (var old_id_idx in old_results_ids) {
+            var old_result_id = old_results_ids[old_id_idx];
+            if ($.inArray(old_result_id, new_results_ids) < 0) {
+                deleted_ids.push(old_result_id);
+            }
+            else {
+                var old_row = old_results_json["results_map"][old_result_id];
+                var new_row = new_results_json["results_map"][old_result_id];
+                var changed_cells = compare_result_row(old_row, new_row);
+                if (changed_cells.length > 0) {
+                    changed_rows[old_result_id] = changed_cells;
+                }
+            }
+        }
+
+        for (var new_id_idx in new_results_ids) {
+            var new_result_id = new_results_ids[new_id_idx];
+
+            if ($.inArray(new_result_id, old_results_ids) < 0) {
+                added_ids.push(new_result_id);
+            }
+        }
+    }
+
+    return {"added_ids": added_ids, "deleted_ids": deleted_ids, "changed_rows": changed_rows};
+
+}
+
+
+function updateResultsDisplay(new_results_json) {
+    var $ = django.jQuery;
+    var results_ids = new_results_json["results_ids"];
+    $("#results_tbody").empty();
+    for (var res_id_idx in results_ids) {
+        var res_id = results_ids[res_id_idx];
+        var tr_content = new_results_json["results_map"][res_id];
+        var row_class = "row1";
+        if ((res_id_idx % 2) == 1) {
+            row_class = "row2";
+        }
+
+        var tr_elem = $($.parseHTML('<tr id="res-row-' + res_id + '" class="' + row_class + '"></tr>')[0]);
+
+        for (var cell_idx in tr_content) {
+            var cell_content = tr_content[cell_idx];
+            var cell_elem = $($.parseHTML(cell_content)[0]);
+            cell_elem.attr("title", cell_elem.text());
+            tr_elem.append(cell_elem);
+        }
+        $("#results_tbody").append(tr_elem);
+    }
+
+    $("#result-count-2").html("" + new_results_json["results_ids"].length);
+
+    var results_delta = get_results_delta(results_json, new_results_json);
+    mark_changed_cells(new_results_json, results_delta);
+
+    results_json = new_results_json;
+}
+
+
+// TODO: the failure should also be handled.
+function fetchAndUpdateResults() {
+    var $ = django.jQuery;
+    $.ajax({
+        url: "/ajax/ptree-change-list-results/",
+        data: {"url_name": url_name, "get_params": get_params_str},
+        dataType: "json",
+        error: function(jqXHR, textStatus) {
+            // TODO: update the status line
+            window.setTimeout(fetchAndUpdateResults, PTREE_CHANGE_LIST_UPDATE_INTERVAL);
+        },
+        success: function(data) {
+            var new_results_json = data;
+            updateResultsDisplay(new_results_json);
+            window.setTimeout(fetchAndUpdateResults, PTREE_CHANGE_LIST_UPDATE_INTERVAL);
+        },
+        timeout: 50000
+    });
+}
+
+(function($) {
+    fetchAndUpdateResults();
+})(django.jQuery);
+
+</script>
+

@@ -10,6 +10,16 @@ from collections import defaultdict
 import babel.numbers
 from django.conf import settings
 from decimal import Decimal
+import urllib
+import urlparse
+
+
+def add_params_to_url(url, params):
+    url_parts = list(urlparse.urlparse(url))
+    query = dict(urlparse.parse_qsl(url_parts[4]))
+    query.update(params)
+    url_parts[4] = urllib.urlencode(query)
+    return urlparse.urlunparse(url_parts)
 
 def id_label_name(id, label):
     if label:
@@ -34,7 +44,7 @@ def start_urls_for_experiment(experiment, request):
     if request.GET.get(ptree.constants.experimenter_access_code) != experiment.experimenter_access_code:
         return HttpResponseBadRequest('{} parameter missing or incorrect'.format(ptree.constants.experimenter_access_code))
     participants = experiment.participants()
-    urls = [request.build_absolute_uri(participant.start_url() + '&external_id={}'.format(i+1)) for i, participant in enumerate(participants)]
+    urls = [request.build_absolute_uri(participant.start_url()) for participant in participants]
     return HttpResponse('\n'.join(urls), content_type="text/plain")
 
 def remove_duplicates(lst):
@@ -79,16 +89,17 @@ def get_treatment_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields(['link'], fields_specific_to_this_subclass)
 
 def get_treatment_list_display(Treatment, readonly_fields, first_fields=None):
-    first_fields = ['unicode', 'experiment'] + (first_fields or [])
-    fields_to_exclude = []
+    first_fields = ['name', 'experiment'] + (first_fields or [])
+    fields_to_exclude = ['id', 'label']
     return get_list_display(Treatment, readonly_fields, first_fields, fields_to_exclude)
 
 def get_experiment_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields(['experimenter_input_link'], fields_specific_to_this_subclass)
 
 def get_experiment_list_display(Experiment, readonly_fields, first_fields=None):
-    first_fields = ['unicode'] + (first_fields or [])
-    fields_to_exclude = ['name',
+    first_fields = ['name'] + (first_fields or [])
+    fields_to_exclude = ['id',
+                         'label',
                          'sequence_of_experiments_access_code',
                          'next_experiment_content_type',
                          'next_experiment_object_id',
@@ -107,8 +118,9 @@ def get_sequence_of_experiments_readonly_fields(fields_specific_to_this_subclass
                                 'payments_link'], fields_specific_to_this_subclass)
 
 def get_sequence_of_experiments_list_display(SequenceOfExperiments, readonly_fields, first_fields=None):
-    first_fields = ['unicode'] + (first_fields or [])
-    fields_to_exclude = ['name',
+    first_fields = ['name'] + (first_fields or [])
+    fields_to_exclude = ['id',
+                         'label',
                          'first_experiment_content_type',
                          'first_experiment_object_id',
                          'first_experiment']
@@ -118,13 +130,14 @@ def get_participant_in_sequence_of_experiments_readonly_fields(fields_specific_t
     return get_readonly_fields([], fields_specific_to_this_subclass)
 
 def get_participant_in_sequence_of_experiments_list_display(Participant, readonly_fields, first_fields=None):
-    first_fields = ['unicode'] + (first_fields or [])
+    first_fields = ['name'] + (first_fields or [])
     fields_to_exclude = []
 
     return get_list_display(Participant, readonly_fields, first_fields, fields_to_exclude)
 
 
 class ParticipantAdmin(admin.ModelAdmin):
+    change_list_template = "admin/ptree_change_list.html"
 
 
     def link(self, instance):
@@ -137,10 +150,15 @@ class ParticipantAdmin(admin.ModelAdmin):
     list_per_page = 30
 
 class MatchAdmin(admin.ModelAdmin):
+    change_list_template = "admin/ptree_change_list.html"
+
+    list_filter = ['treatment', 'experiment']
     list_filter = ['experiment', 'treatment']
     list_per_page = 10
 
 class TreatmentAdmin(admin.ModelAdmin):
+    change_list_template = "admin/ptree_change_list.html"
+
     def link(self, instance):
         if instance.experiment.sequence_of_experiments.pregenerate_matches:
             return 'Not available (--pregenerate-matches was set)'
@@ -150,9 +168,9 @@ class TreatmentAdmin(admin.ModelAdmin):
     link.short_description = "Demo link"
     link.allow_tags = True
     list_filter = ['experiment']
-    list_per_page = 10
 
 class ExperimentAdmin(admin.ModelAdmin):
+    change_list_template = "admin/ptree_change_list.html"
 
     def experimenter_input_link(self, instance):
         url = instance.experimenter_input_url()
@@ -160,9 +178,10 @@ class ExperimentAdmin(admin.ModelAdmin):
 
     experimenter_input_link.short_description = 'Link for experimenter input during gameplay'
     experimenter_input_link.allow_tags = True
-    list_per_page = 10
 
 class ParticipantInSequenceOfExperimentsAdmin(admin.ModelAdmin):
+    change_list_template = "admin/ptree_change_list.html"
+
     list_filter = ['sequence_of_experiments']
 
     readonly_fields = get_participant_in_sequence_of_experiments_readonly_fields([])
@@ -173,11 +192,12 @@ class ParticipantInSequenceOfExperimentsAdmin(admin.ModelAdmin):
 
 
 class ParticipantInSequenceOfExperiments(object):
-    def __init__(self, external_id, total_pay):
-        self.external_id = external_id
+    def __init__(self, name, total_pay):
+        self.name = name
         self.total_pay = total_pay
 
 class SequenceOfExperimentsAdmin(admin.ModelAdmin):
+    change_list_template = "admin/ptree_change_list.html"
 
     def get_urls(self):
         urls = super(SequenceOfExperimentsAdmin, self).get_urls()
@@ -190,7 +210,15 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
 
     def start_urls(self, request, pk):
         sequence_of_experiments = self.model.objects.get(pk=pk)
-        return start_urls_for_experiment(sequence_of_experiments.first_experiment, request)
+
+        if request.GET.get(ptree.constants.experimenter_access_code) != sequence_of_experiments.experimenter_access_code:
+            return HttpResponseBadRequest('{} parameter missing or incorrect'.format(ptree.constants.experimenter_access_code))
+        participants = sequence_of_experiments.participants()
+        urls = [request.build_absolute_uri(participant.start_url()) for participant in participants]
+        return HttpResponse('\n'.join(urls), content_type="text/plain")
+
+
+
 
     def start_urls_link(self, instance):
         experiment = instance.first_experiment
@@ -244,13 +272,16 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
 
         for experiment in sequence_of_experiments.experiments():
             for participant in experiment.participants():
-                payments[str(participant.participant_in_sequence_of_experiments)] += participant.total_pay() or 0
+                payments[participant.participant_in_sequence_of_experiments.id] += participant.total_pay() or 0
 
         total_payments = 0
+
+        participant_names = {p.id: p.name() for p in sequence_of_experiments.participants()}
+
         participants = []
         for k,v in OrderedDict(sorted(payments.items(), key=lambda t: t[0])).items():
             total_payments += v
-            participants.append(ParticipantInSequenceOfExperiments(k, currency(v)))
+            participants.append(ParticipantInSequenceOfExperiments(participant_names[k], currency(v)))
 
         return render_to_response('admin/PaymentsForSequenceOfExperiments.html',
                                   {'participants': participants,
