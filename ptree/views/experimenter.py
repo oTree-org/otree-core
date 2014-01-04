@@ -154,6 +154,11 @@ class ExperimenterCreateView(ExperimenterSequenceMixin, vanilla.CreateView):
 class ExperimenterModelFormSetView(ExperimenterSequenceMixin, extra_views.ModelFormSetView):
     extra = 0
 
+    def get_context_data(self, **kwargs):
+        context = super(ExperimenterModelFormSetView, self).get_context_data(**kwargs)
+        context['helper'] = FormHelper()
+        return context
+
     def get_extra_form_kwargs(self):
         return {'experiment': self.experiment,
                 'request': self.request}
