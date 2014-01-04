@@ -90,6 +90,7 @@ class ExperimenterSequenceMixin(ExperimenterMixin):
         context.update(super(ExperimenterSequenceMixin, self).get_context_data(**kwargs))
         context.update(self.variables_for_template())
 
+        print context
         return context
 
     def get_form(self, data=None, files=None, **kwargs):
