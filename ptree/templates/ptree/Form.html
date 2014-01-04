@@ -4,5 +4,5 @@
 {% if form %}
     {% crispy form %}
 {% else %}
-    {% crispy formset %}
+   {% crispy formset formset.form.helper %}
 {% endif %}
