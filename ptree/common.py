@@ -119,7 +119,7 @@ def get_participant_in_sequence_of_experiments_list_display(Participant, readonl
 
 
 class ParticipantAdmin(admin.ModelAdmin):
-
+    change_list_template = "admin/ptree_change_list.html"
 
     def link(self, instance):
         url = instance.start_url()
@@ -132,9 +132,12 @@ class ParticipantAdmin(admin.ModelAdmin):
 
 class MatchAdmin(admin.ModelAdmin):
     list_filter = ['experiment', 'treatment']
-    list_per_page = 10
+    list_per_page = 30
+    change_list_template = "admin/ptree_change_list.html"
 
 class TreatmentAdmin(admin.ModelAdmin):
+    change_list_template = "admin/ptree_change_list.html"
+
     def link(self, instance):
         if instance.experiment.sequence_of_experiments.pregenerate_matches:
             return 'Not available (--pregenerate-matches was set)'
@@ -144,9 +147,10 @@ class TreatmentAdmin(admin.ModelAdmin):
     link.short_description = "Demo link"
     link.allow_tags = True
     list_filter = ['experiment']
-    list_per_page = 10
+    list_per_page = 30
 
 class ExperimentAdmin(admin.ModelAdmin):
+    change_list_template = "admin/ptree_change_list.html"
 
     def experimenter_input_link(self, instance):
         url = instance.experimenter_input_url()
@@ -154,9 +158,11 @@ class ExperimentAdmin(admin.ModelAdmin):
 
     experimenter_input_link.short_description = 'Link for experimenter input during gameplay'
     experimenter_input_link.allow_tags = True
-    list_per_page = 10
+    list_per_page = 30
 
 class ParticipantInSequenceOfExperimentsAdmin(admin.ModelAdmin):
+    change_list_template = "admin/ptree_change_list.html"
+
     list_filter = ['sequence_of_experiments']
 
     readonly_fields = get_participant_in_sequence_of_experiments_readonly_fields([])
@@ -172,6 +178,7 @@ class ParticipantInSequenceOfExperiments(object):
         self.total_pay = total_pay
 
 class SequenceOfExperimentsAdmin(admin.ModelAdmin):
+    change_list_template = "admin/ptree_change_list.html"
 
     def get_urls(self):
         urls = super(SequenceOfExperimentsAdmin, self).get_urls()

@@ -46,5 +46,9 @@ def augment_urlpatterns(urlpatterns):
         views_module_name = '{}.views'.format(app_name)
         urlpatterns += url_patterns_from_module(views_module_name)
     urlpatterns += url_patterns_from_module('ptree.views.concrete')
+    #urlpatterns += url_patterns_from_module('ptree.views.ajax_change_list')
+    urlpatterns += patterns('ptree.views.ajax_change_list',
+                            url(r'^ajax/ptree-change-list-results/$', 'ajax_ptree_change_list_results', name='ajax_ptree_change_list_results'),
+                            )
 
     return urlpatterns
