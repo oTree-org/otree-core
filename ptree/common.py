@@ -160,8 +160,8 @@ class TreatmentAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
     def link(self, instance):
-        if instance.experiment.sequence_of_experiments.pregenerate_matches:
-            return 'Not available (--pregenerate-matches was set)'
+        if instance.experiment.sequence_of_experiments.preassign_matches:
+            return 'Not available (--preassign-matches was set)'
         url = instance.start_url()
         return new_tab_link(url, 'Link')
 
@@ -216,9 +216,6 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
         participants = sequence_of_experiments.participants()
         urls = [request.build_absolute_uri(participant.start_url()) for participant in participants]
         return HttpResponse('\n'.join(urls), content_type="text/plain")
-
-
-
 
     def start_urls_link(self, instance):
         experiment = instance.first_experiment

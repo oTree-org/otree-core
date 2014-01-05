@@ -16,7 +16,7 @@ import logging
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache, cache_control
 from ptree.forms import StubModelForm
-from ptree.sequence_of_experiments.models import StubModel
+import ptree.sequence_of_experiments.models as seq_models
 import ptree.sequence_of_experiments.models
 import urllib
 import urlparse
@@ -79,9 +79,7 @@ class ExperimentMixin(object):
     def page_the_user_should_be_on(self):
         if self.participant.index_in_sequence_of_views >= len(self.treatment.sequence_as_urls()):
             if self.experiment.next_experiment:
-                # get this participant in the next experiment
-                this_participant_in_next_experiment = self.experiment.next_experiment.participants().get(participant_in_sequence_of_experiments = self.participant.participant_in_sequence_of_experiments)
-                return this_participant_in_next_experiment.start_url()
+                return self.participant.me_in_next_experiment.start_url()
 
         return self.treatment.sequence_as_urls()[self.participant.index_in_sequence_of_views]
 
@@ -348,8 +346,8 @@ class UpdateView(SequenceMixin, vanilla.UpdateView):
             return self.match
         elif Cls == self.ParticipantClass:
             return self.participant
-        elif Cls == StubModel:
-            return StubModel.objects.all()[0]
+        elif Cls == seq_models.StubModel:
+            return seq_models.StubModel.objects.all()[0]
         else:
             # For AuxiliaryModels
             return Cls.objects.get(object_id=self.participant.id,
@@ -399,47 +397,16 @@ def configure_match(MatchClass, participant):
         match = participant.treatment.next_open_match() or create_match(MatchClass, participant.treatment)
         add_participant_to_match(participant, match)
 
-class SequenceOfExperimentsMixin(object):
-
-    def variables_for_template(self):
-        return {}
-
-    def get_context_data(self, **kwargs):
-        context = {}
-        context.update(self.variables_for_template())
-        return context
-
-    @classmethod
-    def url(cls):
-        return '/{}/{}/'.format(cls.get_url_base(), cls.__name__)
+class InitializeSequence(SequenceOfExperimentsMixin, vanilla.UpdateView):
 
     @classmethod
     def url_pattern(cls):
-        return r'^{}/{}/$'.format(cls.get_url_base(), cls.__name__)
-
-    @classmethod
-    def get_url_base(cls):
-        return cls.url_base
-
-class FinishSequenceOfExperiments(SequenceOfExperimentsMixin, vanilla.View):
-    pass
-
-class StartSequenceOfExperiments(SequenceOfExperimentsMixin, vanilla.UpdateView):
-
-    def load_objects(self):
-        self.participant_in_sequence_of_experiments = get_object_or_404(ptree.sequence_of_experiments.models.Participant,
-            id = self.request.session.get(constants.participant_in_sequence_of_experiments_id))
-        self.sequence_of_experiments = self.participant_in_sequence_of_experiments.sequence_of_experiments
-
-    def post(self, request, *args, **kwargs):
-        self.load_objects()
-        return super(StartSequenceOfExperiments, self).post(request, *args, **kwargs)
+        return r'^InitializeSequence/$'
 
     def get(self):
         self.request.session.clear()
 
-        # get sequence of experiments
-        sequence_of_experiments = ptree.sequence_of_experiments.models.SequenceOfExperiments.objects.get(self.request.GET[constants.sequence_of_experiments])
+        sequence_of_experiments = get_object_or_404(SequenceOfExperiments, code=self.request.GET[constants.sequence_of_experiments])
 
         if sequence_of_experiments.is_for_mturk:
             try:
@@ -451,90 +418,36 @@ class StartSequenceOfExperiments(SequenceOfExperimentsMixin, vanilla.UpdateView)
                 print 'This URL only works if clicked from a MTurk job posting with the JavaScript snippet embedded'
                 return HttpResponse(_('To participate, you need to first accept this Mechanical Turk HIT and then re-click the link (refreshing this page will not work).'))
             try:
-                participant_in_sequence = ptree.sequence_of_experiments.models.Participant.objects.get(mturk_worker_id = mturk_worker_id,
-                                                                                                       sequence_of_experiments = sequence_of_experiments)
+                participant_in_sequence = seq_models.Participant.objects.get(mturk_worker_id = mturk_worker_id,
+                                                                  sequence_of_experiments = sequence_of_experiments)
             except self.ParticipantClass.DoesNotExist:
                 try:
-                    participant_in_sequence = ptree.sequence_of_experiments.models.Participant.objects.filter(sequence_of_experiments = sequence_of_experiments,
-                                                                                                              visited=False)[0]
+                    participant_in_sequence = seq_models.Participant.objects.filter(sequence_of_experiments = sequence_of_experiments,
+                                                                         visited=False)[0]
                 except IndexError:
                     raise IndexError("No Participant objects left in the database to assign to new visitor.")
 
                 participant_in_sequence.mturk_worker_id = mturk_worker_id
                 participant_in_sequence.mturk_assignment_id = mturk_assignment_id
         else:
-            participant_in_sequence = ptree.sequence_of_experiments.models.Participant.objects.get(self.request.GET[constants.participant_in_sequence_of_experiments])
+            participant_in_sequence = get_object_or_404(seq_models.Participant, code=constants.participant_in_sequence_of_experiments_code)
 
         participant_in_sequence.visited = True
 
         participant_label = self.request.GET.get(constants.participant_label)
         if participant_label is not None:
-            self.participant.participant_in_sequence_of_experiments.label = participant_label
+            participant_in_sequence.label = participant_label
 
-        if self.participant.participant_in_sequence_of_experiments.ip_address == None:
-            self.participant.participant_in_sequence_of_experiments.ip_address = self.request.META['REMOTE_ADDR']
+        if participant_in_sequence.ip_address == None:
+            participant_in_sequence.ip_address = self.request.META['REMOTE_ADDR']
 
         participant_in_sequence.save()
 
         self.request.session[constants.participant_in_sequence_of_experiments_id] = participant_in_sequence.id
-        self.participant_in_sequence_of_experiments = self.participant_in_sequence
+        self.participant_in_sequence_of_experiments = participant_in_sequence
         self.sequence_of_experiments = sequence_of_experiments
 
-        return super(StartSequenceOfExperiments, self).get(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-
-        context = {'form': kwargs['form']}
-        context.update(self.variables_for_template())
-
-        if settings.DEBUG:
-            context[constants.debug_values] = self.get_debug_values()
-
-        self.participant_in_sequence_of_experiments.save()
-        return context
-
-
-    def get_debug_values(self):
-        try:
-            match_id = self.match.pk
-        except:
-            match_id = ''
-        return [('Participant in sequence of experiments', self.participant_in_sequence_of_experiments.id),
-                ('Sequence of experiments', self.sequence_of_experiments.code)]
-
-    def get_extra_form_kwargs(self):
-        return {'participant_in_sequence_of_experiments': self.participant_in_sequence_of_experiments,
-                'sequence_of_experiments': self.sequence_of_experiments,
-                'request': self.request}
-
-    def get_form(self, data=None, files=None, **kwargs):
-        """
-        Given `data` and `files` QueryDicts, and optionally other named
-        arguments, and returns a form.
-        """
-        kwargs.update(self.get_extra_form_kwargs())
-        cls = self.get_form_class()
-        return cls(data=data, files=files, **kwargs)
-
-    def after_valid_form_submission(self):
-        """Should be implemented by subclasses as necessary"""
-        pass
-
-    def post_processing_on_valid_form(self, form):
-        pass
-
-    def form_valid(self, form):
-        self.form = form
-        self.after_valid_form_submission()
-        self.post_processing_on_valid_form(form)
-        self.participant_in_sequence_of_experiments.save()
-        return super(StartSequenceOfExperiments, self).form_valid(form)
-
-    def form_invalid(self, form):
-        """
-
-        """
-        return self.render_to_response(self.get_context_data(form=form, form_invalid = True ))
+        return HttpResponseRedirect(participant_in_sequence.me_in_first_experiment.start_url())
 
 class Initialize(vanilla.View):
     """
@@ -559,25 +472,17 @@ class Initialize(vanilla.View):
 
         participant_code = self.request.GET.get(constants.participant_code)
         treatment_code = self.request.GET.get(constants.treatment_code)
-        experiment_code = self.request.GET.get(constants.experiment_code_obfuscated)
 
-        assert participant_code or treatment_code or experiment_code
+        assert participant_code or treatment_code
 
         self.participant = None
         self.experiment = None
         self.treatment = None
 
-        if experiment_code:
-            self.experiment = get_object_or_404(self.ExperimentClass, code = experiment_code)
-            self.participant = self.get_next_participant_in_experiment()
-
         if participant_code:
             self.participant = get_object_or_404(self.ParticipantClass, code = participant_code)
             self.experiment = self.participant.experiment
-
-        if self.participant and self.experiment:
             self.treatment = self.participant.treatment or self.experiment.pick_treatment_for_incoming_participant()
-
         elif treatment_code:
             # demo mode
             self.treatment = get_object_or_404(self.TreatmentClass, code=treatment_code)
@@ -587,7 +492,7 @@ class Initialize(vanilla.View):
         self.participant.visited = True
         self.participant.treatment = self.treatment
 
-        if not self.experiment.sequence_of_experiments.pregenerate_matches:
+        if not self.experiment.sequence_of_experiments.preassign_matches:
             configure_match(self.MatchClass, self.participant)
 
         self.participant.save()

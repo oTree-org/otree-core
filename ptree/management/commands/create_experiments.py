@@ -17,9 +17,9 @@ class Command(BaseCommand):
             dest='is_for_mturk',
             default=False,
             help='Whether the experiment will be run on Amazon Mechanical Turk'),
-        make_option('--pregenerate-matches',
+        make_option('--preassign-matches',
             action='store_true',
-            dest='pregenerate_matches',
+            dest='preassign_matches',
             default=False,
             help='Whether to pre-generate Matches and assign Participants to them on creation'),
         make_option('--name',
@@ -35,7 +35,7 @@ class Command(BaseCommand):
             raise CommandError("Wrong number of arguments (expecting '{}')".format(self.args))
 
         seq = ptree.sequence_of_experiments.models.SequenceOfExperiments(is_for_mturk = options['is_for_mturk'],
-                                    pregenerate_matches = options['pregenerate_matches'],
+                                    preassign_matches = options['preassign_matches'],
                                     name = options['name'])
         seq.save()
 
@@ -63,7 +63,7 @@ class Command(BaseCommand):
                                                         participant_in_sequence_of_experiments = participants_in_sequence_of_experiments[i])
                 participant.save()
 
-            if seq.pregenerate_matches:
+            if seq.preassign_matches:
                 participants = list(experiment.participants())
                 random.shuffle(participants)
                 for participant in participants:
@@ -76,3 +76,4 @@ class Command(BaseCommand):
 
 
         seq.add_experiments(experiments)
+        seq.connect_participants_between_experiments()
