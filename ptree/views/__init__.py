@@ -7,5 +7,4 @@ from ptree.views.abstract import (
     TemplateView,
     Initialize,
     InitializeSequence,
-    SequenceTemplateView,
 )

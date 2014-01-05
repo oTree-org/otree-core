@@ -22,6 +22,7 @@ import urllib
 import urlparse
 from django.utils.translation import ugettext as _
 from django.db.models import Q
+from ptree.common import configure_match
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -381,21 +382,6 @@ class CreateMultipleView(extra_views.ModelFormSetView, CreateView):
 class UpdateMultipleView(extra_views.ModelFormSetView, UpdateView):
     pass
 
-def create_match(MatchClass, treatment):
-    match = MatchClass(treatment = treatment,
-                       experiment = treatment.experiment)
-    # need to save it before you assign the participant.match ForeignKey
-    match.save()
-    return match
-
-def add_participant_to_match(participant, match):
-    participant.index_among_participants_in_match = match.participants().count()
-    participant.match = match
-
-def configure_match(MatchClass, participant):
-    if not participant.match:
-        match = participant.treatment.next_open_match() or create_match(MatchClass, participant.treatment)
-        add_participant_to_match(participant, match)
 
 class InitializeSequence(SequenceOfExperimentsMixin, vanilla.UpdateView):
 
@@ -478,6 +464,7 @@ class Initialize(vanilla.View):
         self.participant = None
         self.experiment = None
         self.treatment = None
+
 
         self.participant = get_object_or_404(self.ParticipantClass, code = participant_code)
         self.experiment = self.participant.experiment

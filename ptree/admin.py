@@ -8,8 +8,14 @@ from data_exports.admin import ExportAdmin
 import ptree.common
 import ptree.sequence_of_experiments.models
 
+class SequenceOfExperimentsAdmin(ptree.common.SequenceOfExperimentsAdmin):
+    readonly_fields = ptree.common.get_sequence_of_experiments_readonly_fields([])
+    list_display = ptree.common.get_sequence_of_experiments_list_display(ptree.sequence_of_experiments.models.SequenceOfExperiments,
+                                                          readonly_fields=readonly_fields)
+
+
 admin.site.register(ptree.sequence_of_experiments.models.SequenceOfExperiments,
-                    ptree.common.SequenceOfExperimentsAdmin)
+                    )
 
 admin.site.register(ptree.sequence_of_experiments.models.Participant,
                     ptree.common.ParticipantInSequenceOfExperimentsAdmin)

@@ -27,14 +27,14 @@ class BaseParticipant(models.Model):
 
     me_in_previous_experiment_content_type = models.ForeignKey(ContentType,
                                                       null=True,
-                                                      related_name = '%(app_label)s_%(class)s')
+                                                      related_name = '%(app_label)s_%(class)s_previous')
     me_in_previous_experiment_object_id = models.PositiveIntegerField(null=True)
     me_in_previous_experiment = generic.GenericForeignKey('me_in_previous_experiment_content_type',
                                                 'me_in_previous_experiment_object_id',)
 
     me_in_next_experiment_content_type = models.ForeignKey(ContentType,
                                                       null=True,
-                                                      related_name = '%(app_label)s_%(class)s')
+                                                      related_name = '%(app_label)s_%(class)s_next')
     me_in_next_experiment_object_id = models.PositiveIntegerField(null=True)
     me_in_next_experiment = generic.GenericForeignKey('me_in_next_experiment_content_type',
                                                 'me_in_next_experiment_object_id',)

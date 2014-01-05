@@ -5,6 +5,10 @@ from django.contrib.contenttypes.models import ContentType
 from ptree.common import id_label_name, add_params_to_url
 from ptree import constants
 from ptree.common import currency
+from django.conf import settings
+import random
+import ptree.common
+from django.utils.importlib import import_module
 
 class StubModel(models.Model):
     """To be used as the model for an empty form, so that form_class can be omitted."""
@@ -45,8 +49,6 @@ class SequenceOfExperiments(models.Model):
             else:
                 postfix = '[empty sequence]'
         return '{}: {}'.format(self.pk, postfix)
-
-    unicode.short_description = 'Name'
 
     def start_url(self):
         """The URL that a user is redirected to in order to start a treatment"""
@@ -109,6 +111,7 @@ class Participant(models.Model):
                                                       null=True,
                                                       related_name = '%(app_label)s_%(class)s')
     me_in_first_experiment_object_id = models.PositiveIntegerField(null=True)
+    code = RandomCharField(length = 8)
     me_in_first_experiment = generic.GenericForeignKey('me_in_first_experiment_content_type',
                                                 'me_in_first_experiment_object_id',)
 
@@ -165,8 +168,11 @@ class Participant(models.Model):
         return '/InitializeSequence/?{}={}'.format(constants.participant_in_sequence_of_experiments_code,
                                            self.code)
 
-def create_sequence(label, num_participants, is_for_mturk, preassign_matches, app_names):
-    seq = SequenceOfExperiments(label, num_participants, is_for_mturk, preassign_matches)
+def create_sequence(label, is_for_mturk, preassign_matches, app_names, base_pay, num_participants):
+    seq = SequenceOfExperiments(label=label,
+                                is_for_mturk=is_for_mturk,
+                                preassign_matches=preassign_matches,
+                                base_pay=base_pay)
 
     seq.save()
 
@@ -195,7 +201,7 @@ def create_sequence(label, num_participants, is_for_mturk, preassign_matches, ap
             random.shuffle(participants)
             for participant in participants:
                 participant.treatment = experiment.pick_treatment_for_incoming_participant()
-                ptree.views.abstract.configure_match(models_module.Match, participant)
+                ptree.common.configure_match(models_module.Match, participant)
                 participant.save()
 
         print 'Created objects for {}'.format(app_name)
