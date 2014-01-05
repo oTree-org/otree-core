@@ -406,7 +406,7 @@ class InitializeSequence(SequenceOfExperimentsMixin, vanilla.UpdateView):
     def get(self):
         self.request.session.clear()
 
-        sequence_of_experiments = get_object_or_404(SequenceOfExperiments, code=self.request.GET[constants.sequence_of_experiments])
+        sequence_of_experiments = get_object_or_404(SequenceOfExperiments, code=self.request.GET[constants.sequence_of_experiments_code])
 
         if sequence_of_experiments.is_for_mturk:
             try:
@@ -473,24 +473,18 @@ class Initialize(vanilla.View):
         participant_code = self.request.GET.get(constants.participant_code)
         treatment_code = self.request.GET.get(constants.treatment_code)
 
-        assert participant_code or treatment_code
+        assert participant_code
 
         self.participant = None
         self.experiment = None
         self.treatment = None
 
-        if participant_code:
-            self.participant = get_object_or_404(self.ParticipantClass, code = participant_code)
-            self.experiment = self.participant.experiment
-            self.treatment = self.participant.treatment or self.experiment.pick_treatment_for_incoming_participant()
-        elif treatment_code:
-            # demo mode
-            self.treatment = get_object_or_404(self.TreatmentClass, code=treatment_code)
-            self.experiment = self.treatment.experiment
-            self.participant = self.get_next_participant_in_experiment()
+        self.participant = get_object_or_404(self.ParticipantClass, code = participant_code)
+        self.experiment = self.participant.experiment
+        self.treatment = self.participant.treatment or self.experiment.pick_treatment_for_incoming_participant()
+        self.participant.treatment = self.treatment
 
         self.participant.visited = True
-        self.participant.treatment = self.treatment
 
         if not self.experiment.sequence_of_experiments.preassign_matches:
             configure_match(self.MatchClass, self.participant)

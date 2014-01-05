@@ -9,71 +9,13 @@ import random
 
 class Command(BaseCommand):
     help = "pTree: Create a sequence of experiments."
-    args = 'num_participants app_name [app_name] ...'
-
-    option_list = BaseCommand.option_list + (
-        make_option('--is-for-mturk',
-            action='store_true',
-            dest='is_for_mturk',
-            default=False,
-            help='Whether the experiment will be run on Amazon Mechanical Turk'),
-        make_option('--preassign-matches',
-            action='store_true',
-            dest='preassign_matches',
-            default=False,
-            help='Whether to pre-generate Matches and assign Participants to them on creation'),
-        make_option('--name',
-            action='store',
-            dest='name',
-            default=None,
-            help='The name of the sequence of experiments'),
-    )
+    args = 'name'
 
     def handle(self, *args, **options):
         print 'Creating sequence of experiments...'
-        if len(args) < 2:
+        if len(args) != 1:
             raise CommandError("Wrong number of arguments (expecting '{}')".format(self.args))
 
-        seq = ptree.sequence_of_experiments.models.SequenceOfExperiments(is_for_mturk = options['is_for_mturk'],
-                                    preassign_matches = options['preassign_matches'],
-                                    name = options['name'])
-        seq.save()
+        sequence_module = import_module('{}.{}'.format(settings.PROJECT_DIRECTORY), 'sequence_of_experiments')
 
 
-        num_participants = int(args[0])
-
-        participants_in_sequence_of_experiments = []
-        for i in range(num_participants):
-            participant = ptree.sequence_of_experiments.models.Participant(sequence_of_experiments = seq)
-            participant.save()
-            participants_in_sequence_of_experiments.append(participant)
-
-        app_names = args[1:]
-        experiments = []
-        for app_name in app_names:
-            if app_name not in settings.INSTALLED_PTREE_APPS:
-
-                print 'Before running this command you need to add "{}" to INSTALLED_PTREE_APPS.'.format(app_name)
-                return
-
-            models_module = import_module('{}.models'.format(app_name))
-            experiment = models_module.create_experiment_and_treatments()
-            for i in range(num_participants):
-                participant = models_module.Participant(experiment = experiment,
-                                                        participant_in_sequence_of_experiments = participants_in_sequence_of_experiments[i])
-                participant.save()
-
-            if seq.preassign_matches:
-                participants = list(experiment.participants())
-                random.shuffle(participants)
-                for participant in participants:
-                    participant.treatment = experiment.pick_treatment_for_incoming_participant()
-                    ptree.views.abstract.configure_match(models_module.Match, participant)
-                    participant.save()
-
-            print 'Created objects for {}'.format(app_name)
-            experiments.append(experiment)
-
-
-        seq.add_experiments(experiments)
-        seq.connect_participants_between_experiments()

@@ -14,9 +14,6 @@ class BaseTreatment(models.Model):
     # the treatment code in the URL. This is generated automatically.
     code = RandomCharField(length=8)
 
-    # how much people are getting paid to perform it
-    base_pay = models.PositiveIntegerField()
-
     participants_per_match = models.PositiveIntegerField(default=1)
 
     def start_url(self):

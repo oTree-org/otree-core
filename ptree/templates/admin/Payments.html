@@ -33,13 +33,15 @@
     {% for p in participants %}
     <tr>
         <td style="font-family: 'Courier New'">{{ p.name }}</td>
-        <td>{{ p.total_pay }}</td>
+        <td>{{ p.bonus_display }}</td>
+        <td>{{ p.total_pay_display }}</td>
         <td></td>
     </tr>
     {% endfor %}
 
     <tr class="success">
         <th>Total</th>
+        <th></th>
         <th>{{ total_payments }}</th>
         <th></th>
     </tr>

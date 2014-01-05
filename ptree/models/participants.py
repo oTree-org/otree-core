@@ -55,12 +55,6 @@ class BaseParticipant(models.Model):
         """
         raise NotImplementedError()
 
-    def base_pay_display(self):
-        if not self.treatment:
-            return currency(None)
-        else:
-            return currency(self.treatment.base_pay)
-
     def bonus_display(self):
         """printable version of the bonus"""
         try:
@@ -69,19 +63,6 @@ class BaseParticipant(models.Model):
             return currency(None)
 
     bonus_display.short_description = 'Bonus'
-
-    def total_pay_display(self):
-        return currency(self.total_pay())
-
-    def total_pay(self):
-        try:
-            bonus = self.bonus()
-        except:
-            bonus = None
-        if bonus is None:
-            return None
-        else:
-            return self.match.treatment.base_pay + bonus
 
     class Meta:
         abstract = True

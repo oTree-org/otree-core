@@ -255,32 +255,18 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
         if not instance.first_experiment:
             return 'No experiments in sequence'
         else:
-            url = instance.first_experiment.start_url()
+            url = instance.start_url()
             return new_tab_link(url, 'Link')
 
     global_start_link.allow_tags = True
     global_start_link.short_description = "Global start URL (only if you can't use regular start URLs)"
 
-
     def payments(self, request, pk):
         sequence_of_experiments = self.model.objects.get(pk=pk)
+        participants = sequence_of_experiments.participants()
+        total_payments = sum(participant.bonus() or 0 for participant in sequence_of_experiments.participants())
 
-        payments = defaultdict(int)
-
-        for experiment in sequence_of_experiments.experiments():
-            for participant in experiment.participants():
-                payments[participant.participant_in_sequence_of_experiments.id] += participant.total_pay() or 0
-
-        total_payments = 0
-
-        participant_names = {p.id: p.name() for p in sequence_of_experiments.participants()}
-
-        participants = []
-        for k,v in OrderedDict(sorted(payments.items(), key=lambda t: t[0])).items():
-            total_payments += v
-            participants.append(ParticipantInSequenceOfExperiments(participant_names[k], currency(v)))
-
-        return render_to_response('admin/PaymentsForSequenceOfExperiments.html',
+        return render_to_response('admin/Payments.html',
                                   {'participants': participants,
                                   'total_payments': currency(total_payments),
                                   'sequence_of_experiments_code': sequence_of_experiments.code,
