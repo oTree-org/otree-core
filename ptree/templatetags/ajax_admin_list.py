@@ -156,8 +156,10 @@ def result_headers(cl):
         }
 
 def wrap_in_div(text):
-    return '<div style="clear: both;width:%s; height: 1.2em; overflow: hidden">' % settings.PTREE_CHANGE_LIST_FIXED_WIDTH \
-                + text + '</div>'
+    return ('<div class="cell-trunc-div" '
+            'style="clear: both; height: 1.2em; width: %dpx;'
+            ' overflow: hidden">%s</div>' % (settings.PTREE_CHANGE_LIST_COLUMN_MIN_WIDTH, text))
+    #return text
 
 def items_for_result(cl, result, form):
     """
@@ -237,10 +239,10 @@ def items_for_result(cl, result, form):
                         form[cl.model._meta.pk.name].is_hidden)):
                 bf = form[field_name]
                 result_repr = mark_safe(force_text(bf.errors) + force_text(bf))
-            yield format_html('<td{0} style="padding: 0px;">' + wrap_in_div('{1}') + '</div></td>', row_class, result_repr)
+            yield format_html('<td{0}>' + wrap_in_div('{1}') + '</div></td>', row_class, result_repr)
     if form and not form[cl.model._meta.pk.name].is_hidden:
         val_txt = force_text(form[cl.model._meta.pk.name])
-        yield format_html('<td style="padding: 0px;">' + wrap_in_div('{0}') + '</div></td>', val_txt)
+        yield format_html('<td>' + wrap_in_div('{0}') + '</div></td>', val_txt)
 
 class ResultList(list):
     # Wrapper class used to return items in a list_editable
