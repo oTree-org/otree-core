@@ -88,10 +88,8 @@ def augment_settings(settings):
         'ALLOWED_HOSTS': ['*'],
         'PTREE_CHANGE_LIST_COLUMN_MIN_WIDTH': 50, # In pixels
         'PTREE_CHANGE_LIST_UPDATE_INTERVAL': '10000', # default to 10 seconds(10000 miliseconds)
+        'TEMPLATE_CONTEXT_PROCESSORS': global_settings.TEMPLATE_CONTEXT_PROCESSORS + ("django.core.context_processors.request",),
     }
-
-    # NOTE: if you override this settings variable in your projects, please also add "django.core.context_processors.request" there
-    overridable_settings["TEMPLATE_CONTEXT_PROCESSORS"] = global_settings.TEMPLATE_CONTEXT_PROCESSORS + ("django.core.context_processors.request",)
 
 
     settings.update(augmented_settings)

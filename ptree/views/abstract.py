@@ -143,7 +143,7 @@ class SequenceMixin(ExperimentMixin):
         return bool(self.time_limit_seconds())
 
     def set_time_limit(self, context):
-        page_expiration_times = self.request.session[constants.page_time_limits]
+        page_expiration_times = self.request.session[constants.page_expiration_times]
         if page_expiration_times.has_key(self.index_in_sequence_of_views):
             page_expiration_time = page_expiration_times[self.index_in_sequence_of_views]
             if page_expiration_time is None:
@@ -160,10 +160,7 @@ class SequenceMixin(ExperimentMixin):
             else:
                 raise ValueError("Time limit must be None or a positive number.")
 
-        # TODO: this doesn't seem to have any effect. remove?
-        # I had to turn on 'save session on every request' in settings anyway.
-        self.request.session.modified = True
-
+        print 'set: {}'.format(page_expiration_times)
         if remaining_seconds is not None:
             minutes_component, seconds_component = divmod(remaining_seconds, 60)
         else:
@@ -180,7 +177,10 @@ class SequenceMixin(ExperimentMixin):
 
 
     def get_time_limit_was_exceeded(self):
-        page_expiration_time = self.request.session[constants.page_time_limits][self.index_in_sequence_of_views]
+        page_expiration_times = self.request.session[constants.page_expiration_times]
+        print 'get: {}'.format(page_expiration_times)
+        page_expiration_time = page_expiration_times[self.index_in_sequence_of_views]
+
         if page_expiration_time is None:
             return False
         return time.time() > (page_expiration_time + settings.TIME_LIMIT_GRACE_PERIOD_SECONDS)
@@ -383,7 +383,7 @@ class UpdateMultipleView(extra_views.ModelFormSetView, UpdateView):
     pass
 
 
-class InitializeSequence(SequenceOfExperimentsMixin, vanilla.UpdateView):
+class InitializeSequence(vanilla.UpdateView):
 
     @classmethod
     def url_pattern(cls):
@@ -454,7 +454,7 @@ class Initialize(vanilla.View):
 
     def get(self, request, *args, **kwargs):
         self.request.session.clear()
-        self.request.session[constants.page_time_limits] = {}
+        self.request.session[constants.page_expiration_times] = {}
 
         participant_code = self.request.GET.get(constants.participant_code)
         treatment_code = self.request.GET.get(constants.treatment_code)

@@ -1,4 +1,8 @@
 {% load crispy_forms_tags %}
 {% load i18n %}
 
-{% crispy form %}
+{% if form %}
+    {% crispy form %}
+{% else %}
+   {% crispy formset helper %}
+{% endif %}

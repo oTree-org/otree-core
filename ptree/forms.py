@@ -5,8 +5,19 @@ import ptree.sequence_of_experiments.models
 import ptree.constants
 from django.db import models
 from django.utils.translation import ugettext as _
-from crispy_forms.helper import FormHelper
+import crispy_forms.helper
 from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit
+
+class FormHelper(crispy_forms.helper.FormHelper):
+    def __init__(self, *args, **kwargs):
+        super(FormHelper, self).__init__(*args, **kwargs)
+        self.form_id = ptree.constants.form_element_id
+        self.form_class = 'form'
+        self.add_input(Submit('submit',
+                     _('Next'), #TODO: make this customizable
+                     css_class='btn-large btn-primary'))
+
+
 
 class FormMixin(object):
 
@@ -61,11 +72,6 @@ class FormMixin(object):
 
         # crispy forms
         self.helper = FormHelper()
-        self.helper.form_id = ptree.constants.form_element_id
-        self.helper.form_class = 'form'
-        self.helper.add_input(Submit('submit',
-                                     _('Next'), #TODO: make this customizable
-                                     css_class='btn-large btn-primary'))
         self.helper.layout = self.layout()
 
     def null_boolean_field_names(self):

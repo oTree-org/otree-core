@@ -35,8 +35,6 @@ class SequenceOfExperiments(models.Model):
     def name(self):
         """Define this because Django-Inspect-Model (django-inspect-model.rtfd.org/en/latest/#usage)
         doesn't recognize the __unicode__ method, and Django-data-exports relies on this."""
-        if self.name:
-            return self.name
 
         if self.label:
             postfix = self.label
@@ -67,7 +65,7 @@ class SequenceOfExperiments(models.Model):
 
 
     def __unicode__(self):
-        return self.unicode()
+        return self.name()
 
     def add_experiments(self, experiments):
         self.first_experiment = experiments[0]

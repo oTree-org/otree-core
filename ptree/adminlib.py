@@ -52,7 +52,7 @@ def get_match_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields([], fields_specific_to_this_subclass)
 
 def get_match_list_display(Match, readonly_fields, first_fields=None):
-    first_fields = ['id', 'experiment', 'treatment', 'time_started'] + (first_fields or [])
+    first_fields = ['id', 'experiment', 'treatment'] + (first_fields or [])
     fields_to_exclude = []
     return get_list_display(Match, readonly_fields, first_fields, fields_to_exclude)
 
@@ -158,7 +158,10 @@ class ParticipantInSequenceOfExperimentsAdmin(admin.ModelAdmin):
     list_display = get_participant_in_sequence_of_experiments_list_display(ptree.sequence_of_experiments.models.Participant,
                                                                            readonly_fields=readonly_fields)
 
-    #TODO: add start link from ParticipantAdmin. Just need a way of getting the participant in the 1st experiment.
+    def link(self, instance):
+        url = instance.start_url()
+        return new_tab_link(url, 'Link')
+
 
 class SequenceOfExperimentsAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
@@ -243,6 +246,9 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
     payments_link.short_description = "Payments page"
     payments_link.allow_tags = True
 
+    readonly_fields = [] #get_sequence_of_experiments_readonly_fields([])
+    list_display = [] #get_sequence_of_experiments_list_display(ptree.sequence_of_experiments.models.SequenceOfExperiments,
+                      #                                    readonly_fields=readonly_fields,)
 
 
 
