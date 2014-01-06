@@ -55,7 +55,7 @@ function mark_changed_cells(new_results_json, results_delta) {
 
             if (!changed_cells.hasOwnProperty("" + result_id + ":" + changed_cell_idx)) {
                 var the_cell = $($("#res-row-" + result_id).children()[changed_cell_idx]);
-                var the_cell_bg = the_cell.css("background-color");
+                var the_cell_bg = the_cell.parent().css("background-color");
                 the_cell.css("background-color", "yellow");
                 the_cell.animate({backgroundColor: the_cell_bg}, PTREE_CHANGE_LIST_UPDATE_INTERVAL)
             }
@@ -68,7 +68,7 @@ function mark_changed_cells(new_results_json, results_delta) {
         var the_row = $("#res-row-" + added_id);
         var the_row_bg = the_row.css("background-color");
         the_row.css("background-color", "yellow");
-        the_row.animate({backgroundColor: the_row_bg},PTREE_CHANGE_LIST_UPDATE_INTERVAL);
+        the_row.animate({backgroundColor: the_row_bg}, PTREE_CHANGE_LIST_UPDATE_INTERVAL);
     }
 
 }
