@@ -24,6 +24,8 @@ from django.template import Library
 from django.template.loader import get_template
 from django.template.context import Context
 
+DOT = '.'
+
 register = Library()
 
 @register.inclusion_tag('admin/ajax_pagination.html')
