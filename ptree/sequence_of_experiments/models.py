@@ -80,9 +80,16 @@ class SequenceOfExperiments(models.Model):
     def connect_participants_between_experiments(self):
         """Should be called after add_experiments"""
 
-        num_participants = len(self.participants())
+        seq_participants = self.participants()
+        num_participants = len(seq_participants)
 
         experiments = self.experiments()
+
+        first_experiment_participants = self.first_experiment.participants()
+
+        for i in range(num_participants):
+            seq_participants[i].me_in_first_experiment = first_experiment_participants[i]
+            seq_participants[i].save()
 
         for experiment_index in range(len(experiments) - 1):
             participants_left = experiments[experiment_index].participants()

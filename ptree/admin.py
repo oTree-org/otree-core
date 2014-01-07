@@ -9,6 +9,7 @@ import ptree.adminlib
 import ptree.sequence_of_experiments.models
 
 admin.site.register(ptree.sequence_of_experiments.models.SequenceOfExperiments,
+                    ptree.adminlib.SequenceOfExperimentsAdmin
                     )
 
 admin.site.register(ptree.sequence_of_experiments.models.Participant,

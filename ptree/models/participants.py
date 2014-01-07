@@ -40,9 +40,11 @@ class BaseParticipant(models.Model):
                                                 'me_in_next_experiment_object_id',)
 
 
+    def name(self):
+        return self.participant_in_sequence_of_experiments.__unicode__()
 
     def __unicode__(self):
-        return self.participant_in_sequence_of_experiments.__unicode__()
+        return self.name()
 
     def start_url(self):
         return add_params_to_url(self.experiment.start_url(), {constants.participant_code: self.code})

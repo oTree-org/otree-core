@@ -389,34 +389,43 @@ class InitializeSequence(vanilla.UpdateView):
     def url_pattern(cls):
         return r'^InitializeSequence/$'
 
-    def get(self):
+    def get(self, *args, **kwargs):
         self.request.session.clear()
 
-        sequence_of_experiments = get_object_or_404(SequenceOfExperiments, code=self.request.GET[constants.sequence_of_experiments_code])
+        sequence_code = self.request.GET.get(constants.sequence_of_experiments_code)
+        participant_code = self.request.GET.get(constants.participant_in_sequence_of_experiments_code)
 
-        if sequence_of_experiments.is_for_mturk:
-            try:
-                mturk_worker_id = self.request.GET[constants.mturk_worker_id]
-                mturk_assignment_id = self.request.GET[constants.mturk_assignment_id]
-                assert mturk_assignment_id != 'ASSIGNMENT_ID_NOT_AVAILABLE'
-            except:
-                print 'A visitor to this experiment was turned away because they did not have the MTurk parameters in their URL.'
-                print 'This URL only works if clicked from a MTurk job posting with the JavaScript snippet embedded'
-                return HttpResponse(_('To participate, you need to first accept this Mechanical Turk HIT and then re-click the link (refreshing this page will not work).'))
-            try:
-                participant_in_sequence = seq_models.Participant.objects.get(mturk_worker_id = mturk_worker_id,
-                                                                  sequence_of_experiments = sequence_of_experiments)
-            except self.ParticipantClass.DoesNotExist:
-                try:
-                    participant_in_sequence = seq_models.Participant.objects.filter(sequence_of_experiments = sequence_of_experiments,
-                                                                         visited=False)[0]
-                except IndexError:
-                    raise IndexError("No Participant objects left in the database to assign to new visitor.")
+        if not participant_code or sequence_code:
+            return HttpResponse('Missing parameter in URL')
+        if participant_code and sequence_code:
+            return HttpResponse('Redundant parameters in URL')
 
-                participant_in_sequence.mturk_worker_id = mturk_worker_id
-                participant_in_sequence.mturk_assignment_id = mturk_assignment_id
+        if participant_code:
+            participant_in_sequence = get_object_or_404(seq_models.Participant, code=participant_code)
+            sequence_of_experiments = participant_in_sequence.sequence_of_experiments
         else:
-            participant_in_sequence = get_object_or_404(seq_models.Participant, code=constants.participant_in_sequence_of_experiments_code)
+            sequence_of_experiments = get_object_or_404(seq_models.SequenceOfExperiments, )
+            if sequence_of_experiments.is_for_mturk:
+                try:
+                    mturk_worker_id = self.request.GET[constants.mturk_worker_id]
+                    mturk_assignment_id = self.request.GET[constants.mturk_assignment_id]
+                    assert mturk_assignment_id != 'ASSIGNMENT_ID_NOT_AVAILABLE'
+                except:
+                    print 'A visitor to this experiment was turned away because they did not have the MTurk parameters in their URL.'
+                    print 'This URL only works if clicked from a MTurk job posting with the JavaScript snippet embedded'
+                    return HttpResponse(_('To participate, you need to first accept this Mechanical Turk HIT and then re-click the link (refreshing this page will not work).'))
+                try:
+                    participant_in_sequence = seq_models.Participant.objects.get(mturk_worker_id = mturk_worker_id,
+                                                                      sequence_of_experiments = sequence_of_experiments)
+                except self.ParticipantClass.DoesNotExist:
+                    try:
+                        participant_in_sequence = seq_models.Participant.objects.filter(sequence_of_experiments = sequence_of_experiments,
+                                                                             visited=False)[0]
+                    except IndexError:
+                        raise IndexError("No Participant objects left in the database to assign to new visitor.")
+
+                    participant_in_sequence.mturk_worker_id = mturk_worker_id
+                    participant_in_sequence.mturk_assignment_id = mturk_assignment_id
 
         participant_in_sequence.visited = True
 

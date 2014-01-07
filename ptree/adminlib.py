@@ -35,18 +35,24 @@ def get_readonly_fields(fields_common_to_all_models, fields_specific_to_this_sub
     return remove_duplicates(fields_common_to_all_models + fields_specific_to_this_subclass)
 
 def get_participant_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields(['link', 'bonus_display'], fields_specific_to_this_subclass)
+    return get_readonly_fields(['name', 'link', 'bonus_display'], fields_specific_to_this_subclass)
 
 def get_participant_list_display(Participant, readonly_fields, first_fields=None):
-    first_fields = ['id',
-                    'participant_in_sequence_of_experiments',
+    first_fields = ['name',
                     'experiment',
                     'treatment',
                     'match',
                     'visited',
                     'index_in_sequence_of_views'] + (first_fields or [])
+    exclude_fields = ['id',
+                      'me_in_previous_experiment_content_type',
+                      'me_in_previous_experiment_object_id',
+                      'me_in_next_experiment_content_type',
+                      'me_in_next_experiment_object_id',
+                      'participant_in_sequence_of_experiments',
+                      ]
 
-    return get_list_display(Participant, readonly_fields, first_fields, [])
+    return get_list_display(Participant, readonly_fields, first_fields, exclude_fields)
 
 def get_match_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields([], fields_specific_to_this_subclass)
@@ -98,11 +104,14 @@ def get_sequence_of_experiments_list_display(SequenceOfExperiments, readonly_fie
     return get_list_display(SequenceOfExperiments, readonly_fields, first_fields, fields_to_exclude)
 
 def get_participant_in_sequence_of_experiments_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields([], fields_specific_to_this_subclass)
+    return get_readonly_fields(['bonus_display', 'start_link'], fields_specific_to_this_subclass)
 
 def get_participant_in_sequence_of_experiments_list_display(Participant, readonly_fields, first_fields=None):
     first_fields = ['name'] + (first_fields or [])
-    fields_to_exclude = []
+    fields_to_exclude = ['id',
+                         'label',
+                         'me_in_first_experiment_content_type',
+                         'me_in_first_experiment_object_id']
 
     return get_list_display(Participant, readonly_fields, first_fields, fields_to_exclude)
 
@@ -115,7 +124,7 @@ class ParticipantAdmin(admin.ModelAdmin):
         url = instance.start_url()
         return new_tab_link(url, 'Link')
 
-    link.short_description = "Participant link"
+    link.short_description = "Start link"
     link.allow_tags = True
     list_filter = ['experiment', 'treatment', 'match']
     list_per_page = 30
@@ -158,9 +167,11 @@ class ParticipantInSequenceOfExperimentsAdmin(admin.ModelAdmin):
     list_display = get_participant_in_sequence_of_experiments_list_display(ptree.sequence_of_experiments.models.Participant,
                                                                            readonly_fields=readonly_fields)
 
-    def link(self, instance):
+    def start_link(self, instance):
         url = instance.start_url()
         return new_tab_link(url, 'Link')
+    start_link.allow_tags = True
+
 
 
 class SequenceOfExperimentsAdmin(admin.ModelAdmin):
@@ -238,6 +249,7 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
                                   'total_payments': currency(total_payments),
                                   'sequence_of_experiments_code': sequence_of_experiments.code,
                                   'sequence_of_experiments_name': sequence_of_experiments,
+                                  'base_pay': currency(sequence_of_experiments.base_pay),
                                   })
 
     def payments_link(self, instance):
@@ -246,9 +258,9 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
     payments_link.short_description = "Payments page"
     payments_link.allow_tags = True
 
-    readonly_fields = [] #get_sequence_of_experiments_readonly_fields([])
-    list_display = [] #get_sequence_of_experiments_list_display(ptree.sequence_of_experiments.models.SequenceOfExperiments,
-                      #                                    readonly_fields=readonly_fields,)
+    readonly_fields = get_sequence_of_experiments_readonly_fields([])
+    list_display = get_sequence_of_experiments_list_display(ptree.sequence_of_experiments.models.SequenceOfExperiments,
+                                        readonly_fields=readonly_fields)
 
 
 
