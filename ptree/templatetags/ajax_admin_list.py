@@ -51,13 +51,13 @@ def ajax_pagination(cl):
             page_range = []
             if page_num > (ON_EACH_SIDE + ON_ENDS):
                 page_range.extend(range(0, ON_ENDS))
-                page_range.append(DOT)
+                page_range.append(admin_list.DOT)
                 page_range.extend(range(page_num - ON_EACH_SIDE, page_num + 1))
             else:
                 page_range.extend(range(0, page_num + 1))
             if page_num < (paginator.num_pages - ON_EACH_SIDE - ON_ENDS - 1):
                 page_range.extend(range(page_num + 1, page_num + ON_EACH_SIDE + 1))
-                page_range.append(DOT)
+                page_range.append(admin_list.DOT)
                 page_range.extend(range(paginator.num_pages - ON_ENDS, paginator.num_pages))
             else:
                 page_range.extend(range(page_num + 1, paginator.num_pages))
