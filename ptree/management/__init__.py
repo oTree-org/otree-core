@@ -139,10 +139,8 @@ def create_all_data_exports(sender, **kwargs):
         create_html_export_format(sender)
         create_csv_export_format(sender)
         for app_label in settings.INSTALLED_PTREE_APPS:
-
-            models_module = import_module('{}.models'.format(app_label))
-            class_names = ['Participant', 'Match', 'Treatment', 'Experiment']
-            if all(hasattr(models_module, ClassName) for ClassName in class_names):
+            if ptree.common.is_experiment_app(app_label):
+                models_module = import_module('{}.models'.format(app_label))
                 print 'Creating data exports for {}'.format(app_label)
                 create_export_for_matches(app_label, models_module.Match)
                 create_export_for_participants(app_label, models_module.Participant)

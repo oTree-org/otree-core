@@ -22,8 +22,8 @@ class BaseExperiment(models.Model):
     experimenter_access_code = RandomCharField(length=8)
 
     sequence_of_experiments = models.ForeignKey(SequenceOfExperiments,
-                                                null=True,
-                                                related_name = '%(app_label)s_%(class)s')
+                                                related_name = '%(app_label)s_%(class)s',
+                                                null=True)
 
     next_experiment_content_type = models.ForeignKey(ContentType,
                                                      null=True,

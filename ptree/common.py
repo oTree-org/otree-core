@@ -3,6 +3,7 @@ from django.conf import settings
 from decimal import Decimal
 import urllib
 import urlparse
+from django.utils.importlib import import_module
 
 def add_params_to_url(url, params):
     url_parts = list(urlparse.urlparse(url))
@@ -27,7 +28,8 @@ def currency(value):
 
 def create_match(MatchClass, treatment):
     match = MatchClass(treatment = treatment,
-                       experiment = treatment.experiment)
+                       experiment = treatment.experiment,
+                       sequence_of_experiments = treatment.sequence_of_experiments)
     # need to save it before you assign the participant.match ForeignKey
     match.save()
     return match
@@ -40,3 +42,8 @@ def configure_match(MatchClass, participant):
     if not participant.match:
         match = participant.treatment.next_open_match() or create_match(MatchClass, participant.treatment)
         add_participant_to_match(participant, match)
+
+def is_experiment_app(app_label):
+    models_module = import_module('{}.models'.format(app_label))
+    class_names = ['Participant', 'Match', 'Treatment', 'Experiment']
+    return all(hasattr(models_module, ClassName) for ClassName in class_names)

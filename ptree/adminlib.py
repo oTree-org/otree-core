@@ -35,16 +35,22 @@ def get_readonly_fields(fields_common_to_all_models, fields_specific_to_this_sub
     return remove_duplicates(fields_common_to_all_models + fields_specific_to_this_subclass)
 
 def get_participant_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields(['name', 'link', 'bonus_display'], fields_specific_to_this_subclass)
+    return get_readonly_fields(['name',
+                                'link',
+                                'bonus_display',
+                                'progress'],
+                               fields_specific_to_this_subclass)
 
 def get_participant_list_display(Participant, readonly_fields, first_fields=None):
     first_fields = ['name',
+                    'sequence_of_experiments',
                     'experiment',
                     'treatment',
                     'match',
                     'visited',
-                    'index_in_sequence_of_views'] + (first_fields or [])
+                    'progress'] + (first_fields or [])
     exclude_fields = ['id',
+                      'index_in_sequence_of_views',
                       'me_in_previous_experiment_content_type',
                       'me_in_previous_experiment_object_id',
                       'me_in_next_experiment_content_type',
@@ -104,11 +110,12 @@ def get_sequence_of_experiments_list_display(SequenceOfExperiments, readonly_fie
     return get_list_display(SequenceOfExperiments, readonly_fields, first_fields, fields_to_exclude)
 
 def get_participant_in_sequence_of_experiments_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields(['bonus_display', 'start_link'], fields_specific_to_this_subclass)
+    return get_readonly_fields(['bonus_display', 'start_link', 'progress'], fields_specific_to_this_subclass)
 
 def get_participant_in_sequence_of_experiments_list_display(Participant, readonly_fields, first_fields=None):
-    first_fields = ['name'] + (first_fields or [])
+    first_fields = ['name', 'progress'] + (first_fields or [])
     fields_to_exclude = ['id',
+                         'index_in_sequence_of_experiments',
                          'label',
                          'me_in_first_experiment_content_type',
                          'me_in_first_experiment_object_id']
@@ -126,13 +133,13 @@ class ParticipantAdmin(admin.ModelAdmin):
 
     link.short_description = "Start link"
     link.allow_tags = True
-    list_filter = ['experiment', 'treatment', 'match']
+    list_filter = ['sequence_of_experiments', 'experiment', 'treatment', 'match']
     list_per_page = 30
 
 class MatchAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
-    list_filter = ['experiment', 'treatment']
+    list_filter = ['sequence_of_experiments', 'experiment', 'treatment']
     list_per_page = 30
 
 class TreatmentAdmin(admin.ModelAdmin):
@@ -146,7 +153,7 @@ class TreatmentAdmin(admin.ModelAdmin):
 
     link.short_description = "Demo link"
     link.allow_tags = True
-    list_filter = ['experiment']
+    list_filter = ['sequence_of_experiments', 'experiment']
 
 class ExperimentAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
@@ -157,6 +164,7 @@ class ExperimentAdmin(admin.ModelAdmin):
 
     experimenter_input_link.short_description = 'Link for experimenter input during gameplay'
     experimenter_input_link.allow_tags = True
+    list_filter = ['sequence_of_experiments']
 
 class ParticipantInSequenceOfExperimentsAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
@@ -242,7 +250,8 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
     def payments(self, request, pk):
         sequence_of_experiments = self.model.objects.get(pk=pk)
         participants = sequence_of_experiments.participants()
-        total_payments = sum(participant.bonus() or 0 for participant in sequence_of_experiments.participants())
+        total_payments = sum(participant.total_pay() or 0 for participant in sequence_of_experiments.participants())
+
 
         return render_to_response('admin/Payments.html',
                                   {'participants': participants,
@@ -253,7 +262,11 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
                                   })
 
     def payments_link(self, instance):
-        return new_tab_link('{}/payments/'.format(instance.pk), 'Link')
+        if instance.payments_file_is_ready():
+            link_text = 'Ready'
+        else:
+            link_text = 'Not ready'
+        return new_tab_link('{}/payments/'.format(instance.pk), link_text)
 
     payments_link.short_description = "Payments page"
     payments_link.allow_tags = True

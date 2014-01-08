@@ -80,6 +80,8 @@ class ExperimentMixin(object):
     def page_the_user_should_be_on(self):
         if self.participant.index_in_sequence_of_views >= len(self.treatment.sequence_as_urls()):
             if self.experiment.next_experiment:
+                self.participant.participant_in_sequence_of_experiments.index_in_sequence_of_experiments += 1
+                self.participant.participant_in_sequence_of_experiments.save()
                 return self.participant.me_in_next_experiment.start_url()
 
         return self.treatment.sequence_as_urls()[self.participant.index_in_sequence_of_views]

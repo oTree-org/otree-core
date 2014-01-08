@@ -75,6 +75,9 @@ class SequenceOfExperiments(models.Model):
         for experiment in experiments:
             experiment.sequence_of_experiments = self
             experiment.save()
+            for treatment in experiment.treatments():
+                treatment.sequence_of_experiments = self
+                treatment.save()
         self.save()
 
     def connect_participants_between_experiments(self):
@@ -102,15 +105,29 @@ class SequenceOfExperiments(models.Model):
                 participant_left.save()
                 participant_right.save()
 
+    def delete(self, using=None):
+        for experiment in self.experiments():
+            experiment.delete()
+        super(SequenceOfExperiments, self).delete(using)
+
     def participants(self):
         return self.participant_set.all()
 
+    def payments_file_is_ready(self):
+        for participant in self.participants():
+            if not participant.bonus_is_complete():
+                return False
+        return True
+
     class Meta:
         verbose_name_plural = 'sequences of experiments'
+        ordering = ['pk']
 
 class Participant(models.Model):
 
     sequence_of_experiments = models.ForeignKey(SequenceOfExperiments)
+
+    index_in_sequence_of_experiments = models.PositiveIntegerField(default=0)
 
     me_in_first_experiment_content_type = models.ForeignKey(ContentType,
                                                       null=True,
@@ -130,11 +147,11 @@ class Participant(models.Model):
             me_in_next_experiment = me_in_next_experiment.me_in_next_experiment
         return lst
 
+    def progress(self):
+        return '{}/{}'.format(self.index_in_sequence_of_experiments, len(self.sequence_of_experiments.experiments()))
+
     def bonus(self):
-        try:
-            return sum(participant.bonus() for participant in self.participants())
-        except:
-            return None
+        return sum(participant.bonus() or 0 for participant in self.participants())
 
     def total_pay(self):
         try:
@@ -143,10 +160,20 @@ class Participant(models.Model):
             return None
 
     def bonus_display(self):
-        return currency(self.bonus())
+        if self.bonus_is_complete():
+            return currency(self.bonus())
+        return '{} (incomplete)'.format(currency(self.bonus()))
+
+    def bonus_is_complete(self):
+        for p in self.participants():
+            if p.bonus() is None:
+                return False
+        return True
 
     def total_pay_display(self):
-        return currency(self.total_pay())
+        if self.bonus_is_complete():
+            return currency(self.total_pay())
+        return '{} (incomplete)'.format(currency(self.total_pay()))
 
     visited = models.BooleanField(default=False)
     was_terminated = models.BooleanField(default=False)
@@ -162,6 +189,7 @@ class Participant(models.Model):
 
     def name(self):
         return id_label_name(self.pk, self.label)
+
 
     def __unicode__(self):
         return self.name()
@@ -181,37 +209,42 @@ def create_sequence(label, is_for_mturk, preassign_matches, app_names, base_pay,
 
     seq.save()
 
-    participants_in_sequence_of_experiments = []
-    for i in range(num_participants):
-        participant = Participant(sequence_of_experiments = seq)
-        participant.save()
-        participants_in_sequence_of_experiments.append(participant)
-
-
-    experiments = []
-    for app_name in app_names:
-        if app_name not in settings.INSTALLED_PTREE_APPS:
-            print 'Before running this command you need to add "{}" to INSTALLED_PTREE_APPS.'.format(app_name)
-            return
-
-        models_module = import_module('{}.models'.format(app_name))
-        experiment = models_module.create_experiment_and_treatments()
+    try:
+        participants_in_sequence_of_experiments = []
         for i in range(num_participants):
-            participant = models_module.Participant(experiment = experiment,
-                                                    participant_in_sequence_of_experiments = participants_in_sequence_of_experiments[i])
+            participant = Participant(sequence_of_experiments = seq)
             participant.save()
+            participants_in_sequence_of_experiments.append(participant)
 
-        if seq.preassign_matches:
-            participants = list(experiment.participants())
-            random.shuffle(participants)
-            for participant in participants:
-                participant.treatment = experiment.pick_treatment_for_incoming_participant()
-                ptree.common.configure_match(models_module.Match, participant)
+
+        experiments = []
+        for app_name in app_names:
+            if app_name not in settings.INSTALLED_PTREE_APPS:
+                print 'Before running this command you need to add "{}" to INSTALLED_PTREE_APPS.'.format(app_name)
+                return
+
+            models_module = import_module('{}.models'.format(app_name))
+            experiment = models_module.create_experiment_and_treatments()
+            for i in range(num_participants):
+                participant = models_module.Participant(experiment = experiment,
+                                                        sequence_of_experiments = seq,
+                                                        participant_in_sequence_of_experiments = participants_in_sequence_of_experiments[i])
                 participant.save()
 
-        print 'Created objects for {}'.format(app_name)
-        experiments.append(experiment)
+            if seq.preassign_matches:
+                participants = list(experiment.participants())
+                random.shuffle(participants)
+                for participant in participants:
+                    participant.treatment = experiment.pick_treatment_for_incoming_participant()
+                    ptree.common.configure_match(models_module.Match, participant)
+                    participant.save()
+
+            print 'Created objects for {}'.format(app_name)
+            experiments.append(experiment)
 
 
-    seq.add_experiments(experiments)
-    seq.connect_participants_between_experiments()
+        seq.add_experiments(experiments)
+        seq.connect_participants_between_experiments()
+    except:
+        seq.delete()
+        raise

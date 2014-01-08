@@ -21,6 +21,10 @@ class BaseParticipant(models.Model):
     participant_in_sequence_of_experiments = models.ForeignKey(ptree.sequence_of_experiments.models.Participant,
                                                                related_name = '%(app_label)s_%(class)s')
 
+    sequence_of_experiments = models.ForeignKey(ptree.sequence_of_experiments.models.SequenceOfExperiments,
+                                                related_name = '%(app_label)s_%(class)s')
+
+
     index_among_participants_in_match = models.PositiveIntegerField(null = True)
 
     index_in_sequence_of_views = models.PositiveIntegerField(default=0)
@@ -39,6 +43,9 @@ class BaseParticipant(models.Model):
     me_in_next_experiment = generic.GenericForeignKey('me_in_next_experiment_content_type',
                                                 'me_in_next_experiment_object_id',)
 
+
+    def progress(self):
+        return '{}/{}'.format(self.index_in_sequence_of_views, len(self.treatment.sequence_of_views()))
 
     def name(self):
         return self.participant_in_sequence_of_experiments.__unicode__()
