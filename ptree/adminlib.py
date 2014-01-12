@@ -50,6 +50,7 @@ def get_participant_list_display(Participant, readonly_fields, first_fields=None
                     'visited',
                     'progress'] + (first_fields or [])
     exclude_fields = ['id',
+                      'code',
                       'index_in_sequence_of_views',
                       'me_in_previous_experiment_content_type',
                       'me_in_previous_experiment_object_id',
@@ -64,7 +65,10 @@ def get_match_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields([], fields_specific_to_this_subclass)
 
 def get_match_list_display(Match, readonly_fields, first_fields=None):
-    first_fields = ['id', 'experiment', 'treatment'] + (first_fields or [])
+    first_fields = ['id',
+                    'sequence_of_experiments',
+                    'experiment',
+                    'treatment'] + (first_fields or [])
     fields_to_exclude = []
     return get_list_display(Match, readonly_fields, first_fields, fields_to_exclude)
 
@@ -72,7 +76,9 @@ def get_treatment_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields(['link'], fields_specific_to_this_subclass)
 
 def get_treatment_list_display(Treatment, readonly_fields, first_fields=None):
-    first_fields = ['name', 'experiment'] + (first_fields or [])
+    first_fields = ['name',
+                    'sequence_of_experiments',
+                    'experiment'] + (first_fields or [])
     fields_to_exclude = ['id', 'label']
     return get_list_display(Treatment, readonly_fields, first_fields, fields_to_exclude)
 
@@ -80,7 +86,7 @@ def get_experiment_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields(['experimenter_input_link'], fields_specific_to_this_subclass)
 
 def get_experiment_list_display(Experiment, readonly_fields, first_fields=None):
-    first_fields = ['name'] + (first_fields or [])
+    first_fields = ['name', 'sequence_of_experiments'] + (first_fields or [])
     fields_to_exclude = ['id',
                          'label',
                          'sequence_of_experiments_access_code',
@@ -95,7 +101,8 @@ def get_experiment_list_display(Experiment, readonly_fields, first_fields=None):
     return get_list_display(Experiment, readonly_fields, first_fields, fields_to_exclude)
 
 def get_sequence_of_experiments_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields(['start_urls_link',
+    return get_readonly_fields(['experiment_names',
+                                'start_urls_link',
                                 'global_start_link',
                                 'mturk_snippet_link',
                                 'payments_link'], fields_specific_to_this_subclass)
@@ -204,12 +211,11 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
         return HttpResponse('\n'.join(urls), content_type="text/plain")
 
     def start_urls_link(self, instance):
-        experiment = instance.first_experiment
-        if not experiment:
+        if not instance.first_experiment:
             return 'No experiments in sequence'
         return new_tab_link('{}/start_urls/?{}={}'.format(instance.pk,
                                                           ptree.constants.experimenter_access_code,
-                                                          experiment.experimenter_access_code), 'Link')
+                                                          instance.experimenter_access_code), 'Link')
 
     start_urls_link.short_description = 'Start URLs'
     start_urls_link.allow_tags = True

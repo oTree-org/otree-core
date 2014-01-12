@@ -34,14 +34,14 @@ def create_match(MatchClass, treatment):
     match.save()
     return match
 
-def add_participant_to_match(participant, match):
+def add_participant_to_existing_match(participant, match):
     participant.index_among_participants_in_match = match.participants().count()
     participant.match = match
 
-def configure_match(MatchClass, participant):
+def assign_participant_to_match(MatchClass, participant):
     if not participant.match:
         match = participant.treatment.next_open_match() or create_match(MatchClass, participant.treatment)
-        add_participant_to_match(participant, match)
+        add_participant_to_existing_match(participant, match)
 
 def is_experiment_app(app_label):
     models_module = import_module('{}.models'.format(app_label))

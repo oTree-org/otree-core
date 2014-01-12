@@ -29,24 +29,22 @@ class SequenceOfExperiments(models.Model):
     payment_was_sent = models.BooleanField(default=False)
     preassign_matches = models.BooleanField(default=False)
 
+    hidden = models.BooleanField(default=False)
+
     # how much people are getting paid to perform it
     base_pay = models.PositiveIntegerField()
 
     def name(self):
-        """Define this because Django-Inspect-Model (django-inspect-model.rtfd.org/en/latest/#usage)
-        doesn't recognize the __unicode__ method, and Django-data-exports relies on this."""
+        return id_label_name(self.pk, self.label)
 
-        if self.label:
-            postfix = self.label
+    def experiment_names(self):
+        names = []
+        for experiment in self.experiments():
+            names.append('{} {}'.format(experiment._meta.app_label, experiment))
+        if names:
+            return ', '.join(names)
         else:
-            experiment_names = []
-            for experiment in self.experiments():
-                experiment_names.append('{} {}'.format(experiment._meta.app_label, experiment))
-            if experiment_names:
-                postfix = ', '.join(experiment_names)
-            else:
-                postfix = '[empty sequence]'
-        return '{}: {}'.format(self.pk, postfix)
+            return '[empty sequence]'
 
     def start_url(self):
         """The URL that a user is redirected to in order to start a treatment"""
@@ -67,20 +65,16 @@ class SequenceOfExperiments(models.Model):
     def __unicode__(self):
         return self.name()
 
-    def add_experiments(self, experiments):
+    def chain_experiments(self, experiments):
         self.first_experiment = experiments[0]
         for i in range(len(experiments) - 1):
             experiments[i].next_experiment = experiments[i + 1]
             experiments[i + 1].previous_experiment = experiments[i]
         for experiment in experiments:
-            experiment.sequence_of_experiments = self
             experiment.save()
-            for treatment in experiment.treatments():
-                treatment.sequence_of_experiments = self
-                treatment.save()
         self.save()
 
-    def connect_participants_between_experiments(self):
+    def chain_participants(self):
         """Should be called after add_experiments"""
 
         seq_participants = self.participants()
@@ -104,6 +98,13 @@ class SequenceOfExperiments(models.Model):
                 participant_right.me_in_previous_experiment = participant_left
                 participant_left.save()
                 participant_right.save()
+
+    def add_experiment(self, experiment):
+        experiment.sequence_of_experiments = self
+        experiment.save()
+        for treatment in experiment.treatments():
+            treatment.sequence_of_experiments = self
+            treatment.save()
 
     def delete(self, using=None):
         for experiment in self.experiments():
@@ -148,7 +149,7 @@ class Participant(models.Model):
         return lst
 
     def progress(self):
-        return '{}/{}'.format(self.index_in_sequence_of_experiments, len(self.sequence_of_experiments.experiments()))
+        return '{}/{} experiments'.format(self.index_in_sequence_of_experiments, len(self.sequence_of_experiments.experiments()))
 
     def bonus(self):
         return sum(participant.bonus() or 0 for participant in self.participants())
@@ -162,7 +163,7 @@ class Participant(models.Model):
     def bonus_display(self):
         if self.bonus_is_complete():
             return currency(self.bonus())
-        return '{} (incomplete)'.format(currency(self.bonus()))
+        return u'{} (incomplete)'.format(currency(self.bonus()))
 
     def bonus_is_complete(self):
         for p in self.participants():
@@ -225,6 +226,7 @@ def create_sequence(label, is_for_mturk, preassign_matches, app_names, base_pay,
 
             models_module = import_module('{}.models'.format(app_name))
             experiment = models_module.create_experiment_and_treatments()
+            seq.add_experiment(experiment)
             for i in range(num_participants):
                 participant = models_module.Participant(experiment = experiment,
                                                         sequence_of_experiments = seq,
@@ -236,15 +238,15 @@ def create_sequence(label, is_for_mturk, preassign_matches, app_names, base_pay,
                 random.shuffle(participants)
                 for participant in participants:
                     participant.treatment = experiment.pick_treatment_for_incoming_participant()
-                    ptree.common.configure_match(models_module.Match, participant)
+                    ptree.common.assign_participant_to_match(models_module.Match, participant)
                     participant.save()
 
             print 'Created objects for {}'.format(app_name)
             experiments.append(experiment)
 
 
-        seq.add_experiments(experiments)
-        seq.connect_participants_between_experiments()
+        seq.chain_experiments(experiments)
+        seq.chain_participants()
     except:
         seq.delete()
         raise

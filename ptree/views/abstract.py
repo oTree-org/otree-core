@@ -22,7 +22,7 @@ import urllib
 import urlparse
 from django.utils.translation import ugettext as _
 from django.db.models import Q
-from ptree.common import configure_match
+from ptree.common import assign_participant_to_match
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -103,6 +103,8 @@ class ExperimentMixin(object):
         context.update(self.variables_for_template())
         return context
 
+    def assign_participant_to_match(self):
+        return assign_participant_to_match(self.MatchClass, self.participant)
 
 class SequenceMixin(ExperimentMixin):
     """
@@ -483,9 +485,6 @@ class Initialize(vanilla.View):
         self.participant.treatment = self.treatment
 
         self.participant.visited = True
-
-        if not self.experiment.sequence_of_experiments.preassign_matches:
-            configure_match(self.MatchClass, self.participant)
 
         self.participant.save()
         self.request.session[constants.participant_code] = self.participant.code

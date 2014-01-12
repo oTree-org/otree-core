@@ -45,7 +45,7 @@ class BaseParticipant(models.Model):
 
 
     def progress(self):
-        return '{}/{}'.format(self.index_in_sequence_of_views, len(self.treatment.sequence_of_views()))
+        return '{}/{} pages'.format(self.index_in_sequence_of_views, len(self.treatment.sequence_of_views()))
 
     def name(self):
         return self.participant_in_sequence_of_experiments.__unicode__()
