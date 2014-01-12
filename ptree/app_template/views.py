@@ -6,7 +6,7 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 from ptree.common import currency
 
-class GetTreatmentOrParticipant(ViewInThisApp, ptree.views.GetTreatmentOrParticipant):
+class Initialize(ViewInThisApp, ptree.views.Initialize):
     pass
 
 class Start(ViewInThisApp, ptree.views.Start):

@@ -5,14 +5,15 @@ from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 from data_exports.models import Export, Format
 from data_exports.admin import ExportAdmin
-import ptree.common
+import ptree.adminlib
 import ptree.sequence_of_experiments.models
 
 admin.site.register(ptree.sequence_of_experiments.models.SequenceOfExperiments,
-                    ptree.common.SequenceOfExperimentsAdmin)
+                    ptree.adminlib.SequenceOfExperimentsAdmin
+                    )
 
 admin.site.register(ptree.sequence_of_experiments.models.Participant,
-                    ptree.common.ParticipantInSequenceOfExperimentsAdmin)
+                    ptree.adminlib.ParticipantInSequenceOfExperimentsAdmin)
 
 admin.site.unregister(Export)
 
