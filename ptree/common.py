@@ -44,6 +44,9 @@ def assign_participant_to_match(MatchClass, participant):
         add_participant_to_existing_match(participant, match)
 
 def is_experiment_app(app_label):
-    models_module = import_module('{}.models'.format(app_label))
+    try:
+        models_module = import_module('{}.models'.format(app_label))
+    except ImportError:
+        return False
     class_names = ['Participant', 'Match', 'Treatment', 'Experiment']
     return all(hasattr(models_module, ClassName) for ClassName in class_names)
