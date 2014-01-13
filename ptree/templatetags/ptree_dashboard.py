@@ -2,7 +2,6 @@ from django.template import Library
 from ptree import common
 
 
-
 register = Library()
 
 
@@ -27,5 +26,10 @@ def is_experiment_app(app):
     return common.is_experiment_app(app["app_label"])
 
 
+def app_name_format(app_name):
+    return app_name.replace("_", " ")
+
+
 register.filter('fix_experiment_app_models_order', fix_experiment_app_models_order)
 register.filter('is_experiment_app', is_experiment_app)
+register.filter('app_name_format', app_name_format)
