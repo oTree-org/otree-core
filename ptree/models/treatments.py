@@ -2,37 +2,36 @@ from django.http import HttpResponseRedirect
 from django.db import models
 from ptree.fields import RandomCharField
 import ptree.constants as constants
+from ptree.common import id_label_name
+import ptree.sequence_of_experiments.models
 
 class BaseTreatment(models.Model):
     """
     Base class for all Treatments.
     """
 
-    name = models.CharField(max_length = 300, null = True, blank = True)
+    label = models.CharField(max_length = 300, null = True, blank = True)
 
     # the treatment code in the URL. This is generated automatically.
     code = RandomCharField(length=8)
 
-    # how much people are getting paid to perform it
-    base_pay = models.PositiveIntegerField()
-
     participants_per_match = models.PositiveIntegerField(default=1)
+
+    sequence_of_experiments = models.ForeignKey(ptree.sequence_of_experiments.models.SequenceOfExperiments,
+                                                null=True,
+                                                related_name = '%(app_label)s_%(class)s')
 
     def start_url(self):
         """The URL that a user is redirected to in order to start a treatment"""
-        return '/{}/GetTreatmentOrParticipant/?{}={}'.format(self.experiment.url_base,
+        return '/{}/Initialize/?{}={}'.format(self.experiment.url_base,
                                       constants.treatment_code,
                                       self.code)
 
-    def unicode(self):
-        """Define this because Django-Inspect-Model (django-inspect-model.rtfd.org/en/latest/#usage)
-        doesn't recognize the __unicode__ method, and Django-data-exports relies on this."""
-        return self.name or str(self.pk)
-
-    unicode.short_description = 'name'
+    def name(self):
+        return id_label_name(self.pk, self.label)
 
     def __unicode__(self):
-        return self.unicode()
+        return self.name()
 
     def matches(self):
         return self.match_set.all()

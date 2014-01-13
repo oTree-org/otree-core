@@ -5,7 +5,6 @@ from ptree.views.abstract import (
     CreateMultipleView,
     UpdateMultipleView,
     TemplateView,
-    GetTreatmentOrParticipant,
-    Start,
-    SequenceTemplateView,
+    Initialize,
+    InitializeSequence,
 )

@@ -1,14 +1,15 @@
 import {{ app_name }}.models as models
 from django import forms
-from {{ app_name }}.utilities import ModelForm
+from {{ app_name }}.utilities import ModelFormInThisApp
 from django.utils.translation import ugettext_lazy as _
+import ptree.forms
 
-class StartForm(ModelForm):
+class StartForm(ModelFormInThisApp, ptree.forms.ModelForm):
     class Meta:
         model = models.Participant
         fields = []
 
-class MyForm(ModelForm):
+class MyForm(ModelFormInThisApp, ptree.forms.ModelForm):
 
     class Meta:
         # What model does this Form modify? It's usually either Match or Participant.

@@ -17,6 +17,7 @@ import ptree.models
 from django.contrib import admin
 from django.contrib.contenttypes.management import update_all_contenttypes
 from ptree.sequence_of_experiments.models import StubModel
+import ptree.adminlib
 
 def create_default_superuser(app, created_models, verbosity, **kwargs):
     """
@@ -101,32 +102,32 @@ def create_export(content_type, export_name, fields, format_name="CSV"):
 
 def create_export_for_participants(app_label, Participant):
     participant_content_type = ContentType.objects.get(app_label=app_label, model='participant')
-    list_display = ptree.common.get_participant_list_display(Participant,
-                                                      ptree.common.get_participant_readonly_fields([]))
+    list_display = ptree.adminlib.get_participant_list_display(Participant,
+                                                      ptree.adminlib.get_participant_readonly_fields([]))
     create_export(participant_content_type,
                        'participants',
                        list_display)
 
 def create_export_for_matches(app_label, Match):
     match_content_type = ContentType.objects.get(app_label=app_label, model='match')
-    list_display = ptree.common.get_match_list_display(Match,
-                                                      ptree.common.get_match_readonly_fields([]))
+    list_display = ptree.adminlib.get_match_list_display(Match,
+                                                      ptree.adminlib.get_match_readonly_fields([]))
     create_export(match_content_type,
                        'matches',
                        list_display)
 
 def create_export_for_treatments(app_label, Treatment):
     treatment_content_type = ContentType.objects.get(app_label=app_label, model='treatment')
-    list_display = ptree.common.get_treatment_list_display(Treatment,
-                                                      ptree.common.get_treatment_readonly_fields([]))
+    list_display = ptree.adminlib.get_treatment_list_display(Treatment,
+                                                      ptree.adminlib.get_treatment_readonly_fields([]))
     create_export(treatment_content_type,
                        'treatments',
                        list_display)
 
 def create_export_for_experiments(app_label, Experiment):
     experiment_content_type = ContentType.objects.get(app_label=app_label, model='experiment')
-    list_display = ptree.common.get_experiment_list_display(Experiment,
-                                                      ptree.common.get_experiment_readonly_fields([]))
+    list_display = ptree.adminlib.get_experiment_list_display(Experiment,
+                                                      ptree.adminlib.get_experiment_readonly_fields([]))
     create_export(experiment_content_type,
                        'experiments',
                        list_display)
@@ -138,10 +139,8 @@ def create_all_data_exports(sender, **kwargs):
         create_html_export_format(sender)
         create_csv_export_format(sender)
         for app_label in settings.INSTALLED_PTREE_APPS:
-
-            models_module = import_module('{}.models'.format(app_label))
-            class_names = ['Participant', 'Match', 'Treatment', 'Experiment']
-            if all(hasattr(models_module, ClassName) for ClassName in class_names):
+            if ptree.common.is_experiment_app(app_label):
+                models_module = import_module('{}.models'.format(app_label))
                 print 'Creating data exports for {}'.format(app_label)
                 create_export_for_matches(app_label, models_module.Match)
                 create_export_for_participants(app_label, models_module.Participant)

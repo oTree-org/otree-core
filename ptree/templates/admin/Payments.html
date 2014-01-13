@@ -20,26 +20,34 @@
         <th>Code</th>
         <td style="font-family: 'Courier New'">{{ sequence_of_experiments_code }}</td>
     </tr>
+    <tr>
+        <th>Base pay</th>
+        <td>{{ base_pay }}</td>
+    </tr>
+
 </table>
 
 <h3>Participants</h3>
 <table class="table table-striped">
     <tr>
-        <th>External ID</th>
+        <th>Name</th>
+        <th>Bonus</th>
         <th>Total pay</th>
         <th>Notes</th>
     </tr>
 
     {% for p in participants %}
     <tr>
-        <td style="font-family: 'Courier New'">{{ p.external_id }}</td>
-        <td>{{ p.total_pay }}</td>
+        <td style="font-family: 'Courier New'">{{ p.name }}</td>
+        <td>{{ p.bonus_display }}</td>
+        <td>{{ p.total_pay_display }}</td>
         <td></td>
     </tr>
     {% endfor %}
 
     <tr class="success">
         <th>Total</th>
+        <th></th>
         <th>{{ total_payments }}</th>
         <th></th>
     </tr>

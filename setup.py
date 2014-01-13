@@ -8,6 +8,8 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
+version='0.2.0'
+
 if sys.argv[-1] == 'publish':
     os.system("python setup.py sdist upload")
     print("You probably want to also tag the version now:")
@@ -15,13 +17,14 @@ if sys.argv[-1] == 'publish':
     print("  git push --tags")
     sys.exit()
 
+# FIXME: what if the user cloned from github and ran 'python setup.py install'?
 if 'sdist' in sys.argv:
     shutil.make_archive('ptree/app_template', 'zip', 'ptree/app_template')
     shutil.make_archive('ptree/project_template', 'zip', 'ptree/project_template')
 
 setup(
     name='django-ptree',
-    version='0.1.82',
+    version=version,
     include_package_data=True,
     license='MIT License',
     packages=find_packages(exclude=['ptree.app_template',
@@ -33,12 +36,13 @@ setup(
     author_email='c.wickens+ptree@googlemail.com',
     install_requires = ['boto==2.13.3',
                         'django-crispy-forms==1.4.0',
-                        'Django == 1.6.0',
+                        'Django == 1.6.1',
                         'django-data-exports==0.6',
                         'django-vanilla-views==1.0.2',
                         'Babel==1.3',
                         'raven==3.5.2',
                         'django-extra-views',
+                        'sphinx==1.2',
 
                         ],
     dependency_links = [

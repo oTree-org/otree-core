@@ -8,3 +8,4 @@ docs/app/Thumbs.db
 django_ptree.egg-info/
 myapp*
 *.pyc
+.idea/

@@ -23,7 +23,21 @@ class ViewInThisApp(object):
         self.match = {{ app_name }}.models.Match()
         self.participant = {{ app_name }}.models.Participant()
 
-class ModelForm(ptree.forms.ModelForm):
+class ModelFormInThisApp(object):
+    def for_IDE_autocomplete(self):
+        """
+        never actually gets called :)
+        only exists to declare frequently used instance vars,
+        so that the IDE's IntelliSense/code completion finds these attributes
+        to make writing code faster.
+        """
+
+        self.experiment = {{ app_name }}.models.Experiment()
+        self.treatment = {{ app_name }}.models.Treatment()
+        self.match = {{ app_name }}.models.Match()
+        self.participant = {{ app_name }}.models.Participant()
+
+class ModelForm():
     def for_IDE_autocomplete(self):
         self.experiment = {{ app_name }}.models.Experiment()
         self.treatment = {{ app_name }}.models.Treatment()

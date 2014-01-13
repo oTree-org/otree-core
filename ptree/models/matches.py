@@ -1,11 +1,14 @@
 from django.db import models
+import ptree.sequence_of_experiments.models
 
 class BaseMatch(models.Model):
     """
     Base class for all Matches.
     """
 
-    time_started = models.DateTimeField(auto_now_add = True)
+    sequence_of_experiments = models.ForeignKey(ptree.sequence_of_experiments.models.SequenceOfExperiments,
+                                                related_name = '%(app_label)s_%(class)s')
+
 
     def __unicode__(self):
         return str(self.pk)

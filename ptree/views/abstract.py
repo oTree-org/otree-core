@@ -16,18 +16,20 @@ import logging
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache, cache_control
 from ptree.forms import StubModelForm
-from ptree.sequence_of_experiments.models import StubModel
+import ptree.sequence_of_experiments.models as seq_models
+import ptree.sequence_of_experiments.models
 import urllib
 import urlparse
 from django.utils.translation import ugettext as _
 from django.db.models import Q
+from ptree.common import assign_participant_to_match
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 REDIRECT_TO_PAGE_USER_SHOULD_BE_ON_URL = '/shared/RedirectToPageUserShouldBeOn/'
 
-class PTreeMixin(object):
+class ExperimentMixin(object):
     """Base mixin class for pTree views.
     Takes care of:
     - retrieving model classes and objects automatically,
@@ -55,7 +57,7 @@ class PTreeMixin(object):
     def dispatch(self, request, *args, **kwargs):
         self.load_classes()
         self.load_objects()
-        return super(PTreeMixin, self).dispatch(request, *args, **kwargs)
+        return super(ExperimentMixin, self).dispatch(request, *args, **kwargs)
 
     @classmethod
     def get_url_base(cls):
@@ -72,12 +74,16 @@ class PTreeMixin(object):
     def url_pattern(cls):
         return r'^{}/{}/$'.format(cls.get_url_base(), cls.__name__)
 
+    def last_page_in_sequence_url(self):
+        return 'last'
+
     def page_the_user_should_be_on(self):
         if self.participant.index_in_sequence_of_views >= len(self.treatment.sequence_as_urls()):
             if self.experiment.next_experiment:
-                # get this participant in the next experiment
-                this_participant_in_next_experiment = self.experiment.next_experiment.participants().get(participant_in_sequence_of_experiments = self.participant.participant_in_sequence_of_experiments)
-                return this_participant_in_next_experiment.start_url()
+                self.participant.participant_in_sequence_of_experiments.index_in_sequence_of_experiments += 1
+                self.participant.participant_in_sequence_of_experiments.save()
+                return self.participant.me_in_next_experiment.start_url()
+
         return self.treatment.sequence_as_urls()[self.participant.index_in_sequence_of_views]
 
     def redirect_to_page_the_user_should_be_on(self):
@@ -97,8 +103,10 @@ class PTreeMixin(object):
         context.update(self.variables_for_template())
         return context
 
+    def assign_participant_to_match(self):
+        return assign_participant_to_match(self.MatchClass, self.participant)
 
-class SequenceMixin(PTreeMixin):
+class SequenceMixin(ExperimentMixin):
     """
     View that manages its position in the match sequence.
     """
@@ -126,7 +134,10 @@ class SequenceMixin(PTreeMixin):
     # but maybe have one in pTree core as a fallback in case the user doesn't have it.
     wait_page_template = 'ptree/WaitPage.html'
 
-    def wait_message(self):
+    def wait_page_body_text(self):
+        pass
+
+    def wait_page_title_text(self):
         pass
 
     def time_limit_in_seconds(self):
@@ -136,7 +147,7 @@ class SequenceMixin(PTreeMixin):
         return bool(self.time_limit_seconds())
 
     def set_time_limit(self, context):
-        page_expiration_times = self.request.session[constants.page_time_limits]
+        page_expiration_times = self.request.session[constants.page_expiration_times]
         if page_expiration_times.has_key(self.index_in_sequence_of_views):
             page_expiration_time = page_expiration_times[self.index_in_sequence_of_views]
             if page_expiration_time is None:
@@ -153,10 +164,7 @@ class SequenceMixin(PTreeMixin):
             else:
                 raise ValueError("Time limit must be None or a positive number.")
 
-        # TODO: this doesn't seem to have any effect. remove?
-        # I had to turn on 'save session on every request' in settings anyway.
-        self.request.session.modified = True
-
+        print 'set: {}'.format(page_expiration_times)
         if remaining_seconds is not None:
             minutes_component, seconds_component = divmod(remaining_seconds, 60)
         else:
@@ -173,7 +181,10 @@ class SequenceMixin(PTreeMixin):
 
 
     def get_time_limit_was_exceeded(self):
-        page_expiration_time = self.request.session[constants.page_time_limits][self.index_in_sequence_of_views]
+        page_expiration_times = self.request.session[constants.page_expiration_times]
+        print 'get: {}'.format(page_expiration_times)
+        page_expiration_time = page_expiration_times[self.index_in_sequence_of_views]
+
         if page_expiration_time is None:
             return False
         return time.time() > (page_expiration_time + settings.TIME_LIMIT_GRACE_PERIOD_SECONDS)
@@ -219,30 +230,19 @@ class SequenceMixin(PTreeMixin):
                                                    constants.check_if_wait_is_over,
                                                    constants.get_param_truth_value),
                 'debug_values': self.get_debug_values() if settings.DEBUG else None,
-                'wait_message': self.wait_message()})
+                'wait_page_body_text': self.wait_page_body_text(),
+                'wait_page_title_text': self.wait_page_title_text()})
         return super(SequenceMixin, self).dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         self.time_limit_was_exceeded = self.get_time_limit_was_exceeded()
         return super(SequenceMixin, self).post(request, *args, **kwargs)
 
-    def variables_for_template(self):
-        """
-        Should be implemented by subclasses
-        Return a dictionary that contains the template context variables (see Django documentation)
-        You don't need to include the form here; that is taken care of automatically.
-        """
-
-        return {}
-
     def get_context_data(self, **kwargs):
 
         context = {'form': kwargs['form']}
         context.update(self.variables_for_template())
-        context.update(csrf(self.request))
         context['timer_message'] = self.timer_message()
-        context['form_element_id'] = constants.form_element_id
-
 
         if settings.DEBUG:
             context[constants.debug_values] = self.get_debug_values()
@@ -316,13 +316,13 @@ class SequenceMixin(PTreeMixin):
         return self.request.path == self.page_the_user_should_be_on()
 
 
-class BaseView(PTreeMixin, vanilla.View):
+class BaseView(ExperimentMixin, vanilla.View):
     """
     A basic view that provides no method implementations.
     """
     pass
 
-class TemplateView(PTreeMixin, vanilla.TemplateView):
+class TemplateView(ExperimentMixin, vanilla.TemplateView):
     """
     A template view.
     """
@@ -351,8 +351,8 @@ class UpdateView(SequenceMixin, vanilla.UpdateView):
             return self.match
         elif Cls == self.ParticipantClass:
             return self.participant
-        elif Cls == StubModel:
-            return StubModel.objects.all()[0]
+        elif Cls == seq_models.StubModel:
+            return seq_models.StubModel.objects.all()[0]
         else:
             # For AuxiliaryModels
             return Cls.objects.get(object_id=self.participant.id,
@@ -386,23 +386,69 @@ class CreateMultipleView(extra_views.ModelFormSetView, CreateView):
 class UpdateMultipleView(extra_views.ModelFormSetView, UpdateView):
     pass
 
-def create_match(MatchClass, treatment):
-    match = MatchClass(treatment = treatment,
-                       experiment = treatment.experiment)
-    # need to save it before you assign the participant.match ForeignKey
-    match.save()
-    return match
 
-def add_participant_to_match(participant, match):
-    participant.index_among_participants_in_match = match.participants().count()
-    participant.match = match
+class InitializeSequence(vanilla.UpdateView):
 
-def configure_match(MatchClass, participant):
-    if not participant.match:
-        match = participant.treatment.next_open_match() or create_match(MatchClass, participant.treatment)
-        add_participant_to_match(participant, match)
+    @classmethod
+    def url_pattern(cls):
+        return r'^InitializeSequence/$'
 
-class GetTreatmentOrParticipant(vanilla.View):
+    def get(self, *args, **kwargs):
+        self.request.session.clear()
+
+        sequence_code = self.request.GET.get(constants.sequence_of_experiments_code)
+        participant_code = self.request.GET.get(constants.participant_in_sequence_of_experiments_code)
+
+        if not participant_code or sequence_code:
+            return HttpResponse('Missing parameter in URL')
+        if participant_code and sequence_code:
+            return HttpResponse('Redundant parameters in URL')
+
+        if participant_code:
+            participant_in_sequence = get_object_or_404(seq_models.Participant, code=participant_code)
+            sequence_of_experiments = participant_in_sequence.sequence_of_experiments
+        else:
+            sequence_of_experiments = get_object_or_404(seq_models.SequenceOfExperiments, )
+            if sequence_of_experiments.is_for_mturk:
+                try:
+                    mturk_worker_id = self.request.GET[constants.mturk_worker_id]
+                    mturk_assignment_id = self.request.GET[constants.mturk_assignment_id]
+                    assert mturk_assignment_id != 'ASSIGNMENT_ID_NOT_AVAILABLE'
+                except:
+                    print 'A visitor to this experiment was turned away because they did not have the MTurk parameters in their URL.'
+                    print 'This URL only works if clicked from a MTurk job posting with the JavaScript snippet embedded'
+                    return HttpResponse(_('To participate, you need to first accept this Mechanical Turk HIT and then re-click the link (refreshing this page will not work).'))
+                try:
+                    participant_in_sequence = seq_models.Participant.objects.get(mturk_worker_id = mturk_worker_id,
+                                                                      sequence_of_experiments = sequence_of_experiments)
+                except self.ParticipantClass.DoesNotExist:
+                    try:
+                        participant_in_sequence = seq_models.Participant.objects.filter(sequence_of_experiments = sequence_of_experiments,
+                                                                             visited=False)[0]
+                    except IndexError:
+                        raise IndexError("No Participant objects left in the database to assign to new visitor.")
+
+                    participant_in_sequence.mturk_worker_id = mturk_worker_id
+                    participant_in_sequence.mturk_assignment_id = mturk_assignment_id
+
+        participant_in_sequence.visited = True
+
+        participant_label = self.request.GET.get(constants.participant_label)
+        if participant_label is not None:
+            participant_in_sequence.label = participant_label
+
+        if participant_in_sequence.ip_address == None:
+            participant_in_sequence.ip_address = self.request.META['REMOTE_ADDR']
+
+        participant_in_sequence.save()
+
+        self.request.session[constants.participant_in_sequence_of_experiments_id] = participant_in_sequence.id
+        self.participant_in_sequence_of_experiments = participant_in_sequence
+        self.sequence_of_experiments = sequence_of_experiments
+
+        return HttpResponseRedirect(participant_in_sequence.me_in_first_experiment.start_url())
+
+class Initialize(vanilla.View):
     """
     The first View when participants visit a site.
     Doesn't have any UI.
@@ -421,75 +467,31 @@ class GetTreatmentOrParticipant(vanilla.View):
 
     def get(self, request, *args, **kwargs):
         self.request.session.clear()
-        self.request.session[constants.page_time_limits] = {}
+        self.request.session[constants.page_expiration_times] = {}
 
         participant_code = self.request.GET.get(constants.participant_code)
         treatment_code = self.request.GET.get(constants.treatment_code)
-        experiment_code = self.request.GET.get(constants.experiment_code_obfuscated)
 
-        assert participant_code or treatment_code or experiment_code
+        assert participant_code
 
         self.participant = None
         self.experiment = None
         self.treatment = None
 
-        if experiment_code:
-            self.experiment = get_object_or_404(self.ExperimentClass, code = experiment_code)
 
-            if self.experiment.sequence_of_experiments.is_for_mturk:
-                try:
-                    self.assign_participant_with_mturk_parameters()
-                except AssertionError:
-                    return HttpResponse(_('To participate, you need to first accept this Mechanical Turk HIT and then re-click the link (refreshing this page will not work).'))
-            else:
-                self.participant = self.get_next_participant_in_experiment()
-
-        if participant_code:
-            self.participant = get_object_or_404(self.ParticipantClass, code = participant_code)
-            self.experiment = self.participant.experiment
-
-        if self.participant and self.experiment:
-            self.treatment = self.participant.treatment or self.experiment.pick_treatment_for_incoming_participant()
-
-        elif treatment_code:
-            # demo mode
-            self.treatment = get_object_or_404(self.TreatmentClass, code=treatment_code)
-            self.experiment = self.treatment.experiment
-            self.participant = self.get_next_participant_in_experiment()
-
-        external_id = self.request.GET.get(constants.external_id)
-        if external_id is not None:
-            self.participant.participant_in_sequence_of_experiments.external_id = external_id
-        self.participant.visited = True
+        self.participant = get_object_or_404(self.ParticipantClass, code = participant_code)
+        self.experiment = self.participant.experiment
+        self.treatment = self.participant.treatment or self.experiment.pick_treatment_for_incoming_participant()
         self.participant.treatment = self.treatment
 
+        self.participant.visited = True
+
         self.participant.save()
-        self.participant.participant_in_sequence_of_experiments.save()
         self.request.session[constants.participant_code] = self.participant.code
         self.request.session[constants.treatment_code] = self.treatment.code
+        self.persist_classes()
 
-        return HttpResponseRedirect('/{}/Start/{}/'.format(self.experiment.url_base, 0))
-
-    def assign_participant_with_mturk_parameters(self):
-        try:
-            mturk_worker_id = self.request.GET[constants.mturk_worker_id]
-            mturk_assignment_id = self.request.GET[constants.mturk_assignment_id]
-            assert mturk_assignment_id != 'ASSIGNMENT_ID_NOT_AVAILABLE'
-        except:
-            print 'A visitor to this experiment was turned away because they did not have the MTurk parameters in their URL.'
-            print 'This URL only works if clicked from a MTurk job posting with the JavaScript snippet embedded'
-            raise AssertionError()
-
-        try:
-            self.participant = self.ParticipantClass.objects.get(experiment=self.experiment,
-                                                                 mturk_worker_id = mturk_worker_id)
-        except self.ParticipantClass.DoesNotExist:
-            self.get_next_participant_in_experiment()
-            self.participant.participant_in_sequence_of_experiments.mturk_worker_id = mturk_worker_id
-            self.participant.participant_in_sequence_of_experiments.mturk_assignment_id = mturk_assignment_id
-
-
-
+        return HttpResponseRedirect(self.treatment.sequence_as_urls()[0])
 
     @classmethod
     def get_url_base(cls):
@@ -507,25 +509,6 @@ class GetTreatmentOrParticipant(vanilla.View):
         """URL pattern regular expression, as required by urls.py"""
         return r'^{}/{}/$'.format(cls.get_url_base(), cls.__name__)
 
-class Start(UpdateView):
-    """Start page. Each game should have a Start view that inherits from this.
-    This is not a modelform, because it can be used with many models.
-    """
-
-    def load_classes(self):
-        """Don't want to load from cookies. Instead, we actually persist classes,
-        so that load_classes works in the upcoming Views."""
-        self.persist_classes()
-
-    def load_objects(self):
-        self.participant = get_object_or_404(self.ParticipantClass,
-                                             code = self.request.session[constants.participant_code])
-        # may or may not be None, depending on the value of
-        self.match = self.participant.match
-        self.treatment = get_object_or_404(self.TreatmentClass,
-                                           code = self.request.session[constants.treatment_code])
-        self.experiment = self.participant.experiment
-
     def persist_classes(self):
         """We need these classes so that we can load the objects.
         We need to store it in cookies,
@@ -538,11 +521,3 @@ class Start(UpdateView):
         self.request.session[constants.TreatmentClass] = self.TreatmentClass
         self.request.session[constants.ParticipantClass] = self.ParticipantClass
         self.request.session[constants.MatchClass] = self.MatchClass
-
-    def form_valid(self, form):
-        if self.participant.participant_in_sequence_of_experiments.ip_address == None:
-            self.participant.participant_in_sequence_of_experiments.ip_address = self.request.META['REMOTE_ADDR']
-
-        if not self.experiment.sequence_of_experiments.pregenerate_matches:
-            configure_match(self.MatchClass, self.participant)
-        return super(Start, self).form_valid(form)
