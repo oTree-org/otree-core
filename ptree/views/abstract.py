@@ -23,6 +23,7 @@ import urlparse
 from django.utils.translation import ugettext as _
 from django.db.models import Q
 from ptree.common import assign_participant_to_match
+from datetime import datetime
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -431,7 +432,7 @@ class InitializeSequence(vanilla.UpdateView):
                     participant_in_sequence.mturk_worker_id = mturk_worker_id
                     participant_in_sequence.mturk_assignment_id = mturk_assignment_id
 
-        participant_in_sequence.visited = True
+        participant_in_sequence.time_started = datetime.now()
 
         participant_label = self.request.GET.get(constants.participant_label)
         if participant_label is not None:
@@ -484,7 +485,7 @@ class Initialize(vanilla.View):
         self.treatment = self.participant.treatment or self.experiment.pick_treatment_for_incoming_participant()
         self.participant.treatment = self.treatment
 
-        self.participant.visited = True
+        self.participant.time_started = datetime.now()
 
         self.participant.save()
         self.request.session[constants.participant_code] = self.participant.code

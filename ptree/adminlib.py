@@ -101,7 +101,8 @@ def get_experiment_list_display(Experiment, readonly_fields, first_fields=None):
     return get_list_display(Experiment, readonly_fields, first_fields, fields_to_exclude)
 
 def get_sequence_of_experiments_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields(['experiment_names',
+    return get_readonly_fields(['time_started',
+                                'experiment_names',
                                 'start_urls_link',
                                 'global_start_link',
                                 'mturk_snippet_link',
@@ -117,7 +118,9 @@ def get_sequence_of_experiments_list_display(SequenceOfExperiments, readonly_fie
     return get_list_display(SequenceOfExperiments, readonly_fields, first_fields, fields_to_exclude)
 
 def get_participant_in_sequence_of_experiments_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields(['bonus_display', 'start_link', 'progress'], fields_specific_to_this_subclass)
+    return get_readonly_fields(['bonus_display',
+                                'start_link',
+                                'progress'], fields_specific_to_this_subclass)
 
 def get_participant_in_sequence_of_experiments_list_display(Participant, readonly_fields, first_fields=None):
     first_fields = ['name', 'progress'] + (first_fields or [])
@@ -271,7 +274,7 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
         if instance.payments_file_is_ready():
             link_text = 'Ready'
         else:
-            link_text = 'Not ready'
+            link_text = 'Incomplete'
         return new_tab_link('{}/payments/'.format(instance.pk), link_text)
 
     payments_link.short_description = "Payments page"
@@ -281,6 +284,7 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
     list_display = get_sequence_of_experiments_list_display(ptree.sequence_of_experiments.models.SequenceOfExperiments,
                                         readonly_fields=readonly_fields)
 
+    list_editable = ['hidden']
 
 
 

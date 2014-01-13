@@ -34,6 +34,8 @@ class SequenceOfExperiments(models.Model):
     # how much people are getting paid to perform it
     base_pay = models.PositiveIntegerField()
 
+    comment = models.TextField()
+
     def name(self):
         return id_label_name(self.pk, self.label)
 
@@ -120,6 +122,12 @@ class SequenceOfExperiments(models.Model):
                 return False
         return True
 
+    def time_started(self):
+        try:
+            return sorted(p.time_started for p in self.participants())[0]
+        except IndexError:
+            return None
+
     class Meta:
         verbose_name_plural = 'sequences of experiments'
         ordering = ['pk']
@@ -176,7 +184,7 @@ class Participant(models.Model):
             return currency(self.total_pay())
         return '{} (incomplete)'.format(currency(self.total_pay()))
 
-    visited = models.BooleanField(default=False)
+    time_started = models.DateTimeField(null=True)
     was_terminated = models.BooleanField(default=False)
     mturk_assignment_id = models.CharField(max_length = 50, null = True)
     mturk_worker_id = models.CharField(max_length = 50, null = True)
@@ -190,6 +198,7 @@ class Participant(models.Model):
 
     def name(self):
         return id_label_name(self.pk, self.label)
+
 
 
     def __unicode__(self):
