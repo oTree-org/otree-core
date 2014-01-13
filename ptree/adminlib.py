@@ -130,6 +130,33 @@ def get_participant_in_sequence_of_experiments_list_display(Participant, readonl
     return get_list_display(Participant, readonly_fields, first_fields, fields_to_exclude)
 
 
+class NonHiddenSequenceOfExperimentsListFilter(admin.SimpleListFilter):
+    title = "sequence of experiments"
+
+    parameter_name = "sequence_of_experiments"
+
+    def lookups(self, request, model_admin):
+        """
+        Returns a list of tuples. The first element in each
+        tuple is the coded value for the option that will
+        appear in the URL query. The second element is the
+        human-readable name for the option that will appear
+        in the right sidebar.
+        """
+        return [(sequence_of_experiment.id, sequence_of_experiment.id) for sequence_of_experiment 
+                in ptree.sequence_of_experiments.models.SequenceOfExperiments.objects.filter(hidden=False)]
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value
+        provided in the query string and retrievable via
+        `self.value()`.
+        """
+        if self.value() is not None:
+            return queryset.filter(sequence_of_experiments__pk=self.value())
+        else:
+            return queryset
+
 class ParticipantAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
@@ -140,14 +167,24 @@ class ParticipantAdmin(admin.ModelAdmin):
 
     link.short_description = "Start link"
     link.allow_tags = True
-    list_filter = ['sequence_of_experiments', 'experiment', 'treatment', 'match']
+    list_filter = [NonHiddenSequenceOfExperimentsListFilter, 'experiment', 'treatment', 'match']
     list_per_page = 30
+
+    def queryset(self, request):
+        qs = super(ParticipantAdmin, self).queryset(request)
+        return qs.filter(sequence_of_experiments__hidden=False)
+
 
 class MatchAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
-    list_filter = ['sequence_of_experiments', 'experiment', 'treatment']
+    list_filter = [NonHiddenSequenceOfExperimentsListFilter, 'experiment', 'treatment']
     list_per_page = 30
+
+    def queryset(self, request):
+        qs = super(MatchAdmin, self).queryset(request)
+        return qs.filter(sequence_of_experiments__hidden=False)
+
 
 class TreatmentAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
@@ -160,7 +197,12 @@ class TreatmentAdmin(admin.ModelAdmin):
 
     link.short_description = "Demo link"
     link.allow_tags = True
-    list_filter = ['sequence_of_experiments', 'experiment']
+    list_filter = [NonHiddenSequenceOfExperimentsListFilter, 'experiment']
+
+    def queryset(self, request):
+        qs = super(TreatmentAdmin, self).queryset(request)
+        return qs.filter(sequence_of_experiments__hidden=False)
+
 
 class ExperimentAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
@@ -169,9 +211,18 @@ class ExperimentAdmin(admin.ModelAdmin):
         url = instance.experimenter_input_url()
         return new_tab_link(url, 'Link')
 
+    def queryset(self, request):
+        qs = super(ExperimentAdmin, self).queryset(request)
+        return qs.filter(sequence_of_experiments__hidden=False)
+
     experimenter_input_link.short_description = 'Link for experimenter input during gameplay'
     experimenter_input_link.allow_tags = True
-    list_filter = ['sequence_of_experiments']
+    list_filter = [NonHiddenSequenceOfExperimentsListFilter]
+
+    def queryset(self, request):
+        qs = super(ExperimentAdmin, self).queryset(request)
+        return qs.filter(sequence_of_experiments__hidden=False)
+
 
 class ParticipantInSequenceOfExperimentsAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
