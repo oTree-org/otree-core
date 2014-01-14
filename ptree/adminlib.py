@@ -45,12 +45,17 @@ class FieldLinkToForeignKey:
     def __name__(self):
         return self.list_display_field
 
+    def __repr__(self):
+        return self.list_display_field
+
+    def __str__(self):
+        return self.list_display_field
+
     def __call__(self, instance):
         object = getattr(instance, self.list_display_field)
         if object is None:
             return "(None)"
         else:
-            print 'admin:%s_%s_change' %(object._meta.app_label,  object._meta.module_name)
             url = reverse('admin:%s_%s_change' %(object._meta.app_label,  object._meta.module_name),  
                             args=[object.id])
             return '<a href="%s">%s</a>' % (url, object.pk)
