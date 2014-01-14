@@ -6,7 +6,7 @@ import random
 from django.conf import settings
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-from ptree.sequence_of_experiments.models import SequenceOfExperiments
+from ptree.session.models import Session
 from ptree.common import id_label_name
 
 class BaseExperiment(models.Model):
@@ -21,7 +21,7 @@ class BaseExperiment(models.Model):
     code = RandomCharField(length=8)
     experimenter_access_code = RandomCharField(length=8)
 
-    sequence_of_experiments = models.ForeignKey(SequenceOfExperiments,
+    session = models.ForeignKey(Session,
                                                 related_name = '%(app_label)s_%(class)s',
                                                 null=True)
 

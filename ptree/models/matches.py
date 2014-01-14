@@ -1,12 +1,12 @@
 from django.db import models
-import ptree.sequence_of_experiments.models
+import ptree.session.models
 
 class BaseMatch(models.Model):
     """
     Base class for all Matches.
     """
 
-    sequence_of_experiments = models.ForeignKey(ptree.sequence_of_experiments.models.SequenceOfExperiments,
+    session = models.ForeignKey(ptree.session.models.Session,
                                                 related_name = '%(app_label)s_%(class)s')
 
 

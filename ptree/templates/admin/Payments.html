@@ -14,11 +14,11 @@
 <table class="table">
     <tr>
         <th>Name</th>
-        <td>{{ sequence_of_experiments_name|default_if_none:"" }}</td>
+        <td>{{ session_name|default_if_none:"" }}</td>
     </tr>
     <tr>
         <th>Code</th>
-        <td style="font-family: 'Courier New'">{{ sequence_of_experiments_code }}</td>
+        <td style="font-family: 'Courier New'">{{ session_code }}</td>
     </tr>
     <tr>
         <th>Base pay</th>

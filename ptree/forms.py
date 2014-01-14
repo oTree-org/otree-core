@@ -1,7 +1,7 @@
 from django import forms
 import ptree.common
 import ptree.models.common
-import ptree.sequence_of_experiments.models
+import ptree.session.models
 import ptree.constants
 from django.db import models
 from django.utils.translation import ugettext as _
@@ -114,5 +114,5 @@ class ExperimenterModelForm(ExperimenterFormMixin, forms.ModelForm):
 
 class StubModelForm(ParticipantFormMixin, forms.ModelForm):
     class Meta:
-        model = ptree.sequence_of_experiments.models.StubModel
+        model = ptree.session.models.StubModel
         fields = []

@@ -6,14 +6,14 @@ from django.contrib.auth.models import Group
 from data_exports.models import Export, Format
 from data_exports.admin import ExportAdmin
 import ptree.adminlib
-import ptree.sequence_of_experiments.models
+import ptree.session.models
 
-admin.site.register(ptree.sequence_of_experiments.models.SequenceOfExperiments,
-                    ptree.adminlib.SequenceOfExperimentsAdmin
+admin.site.register(ptree.session.models.Session,
+                    ptree.adminlib.SessionAdmin
                     )
 
-admin.site.register(ptree.sequence_of_experiments.models.Participant,
-                    ptree.adminlib.ParticipantInSequenceOfExperimentsAdmin)
+admin.site.register(ptree.session.models.SessionParticipant,
+                    ptree.adminlib.ParticipantInSessionAdmin)
 
 admin.site.unregister(Export)
 

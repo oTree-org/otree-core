@@ -15,5 +15,5 @@ class RedirectToPageUserShouldBeOn(ptree.views.abstract.BaseView):
     def get(self, request, *args, **kwargs):
         return self.redirect_to_page_the_user_should_be_on()
 
-class InitializeSequence(ptree.views.abstract.InitializeSequence):
+class InitializeSessionParticipant(ptree.views.abstract.InitializeSessionParticipant):
     pass

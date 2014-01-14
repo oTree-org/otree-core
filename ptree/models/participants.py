@@ -3,7 +3,7 @@ from ptree.fields import RandomCharField
 import ptree.constants as constants
 from django.conf import settings
 from ptree.common import currency
-import ptree.sequence_of_experiments.models
+import ptree.session.models
 from ptree.common import add_params_to_url
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
@@ -18,10 +18,10 @@ class BaseParticipant(models.Model):
 
     visited = models.BooleanField(default=False)
 
-    participant_in_sequence_of_experiments = models.ForeignKey(ptree.sequence_of_experiments.models.Participant,
+    session_participant = models.ForeignKey(ptree.session.models.SessionParticipant,
                                                                related_name = '%(app_label)s_%(class)s')
 
-    sequence_of_experiments = models.ForeignKey(ptree.sequence_of_experiments.models.SequenceOfExperiments,
+    session = models.ForeignKey(ptree.session.models.Session,
                                                 related_name = '%(app_label)s_%(class)s')
 
 
@@ -48,7 +48,7 @@ class BaseParticipant(models.Model):
         return '{}/{} pages'.format(self.index_in_sequence_of_views, len(self.treatment.sequence_of_views()))
 
     def name(self):
-        return self.participant_in_sequence_of_experiments.__unicode__()
+        return self.session_participant.__unicode__()
 
     def __unicode__(self):
         return self.name()

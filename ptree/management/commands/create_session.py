@@ -16,7 +16,7 @@ class Command(BaseCommand):
         else:
             name = None
 
-        sequence_module = import_module('{}.{}'.format(settings.PROJECT_DIRECTORY, 'sequence_of_experiments'))
-        sequence_module.create_sequence_of_experiments(name)
+        session_module = import_module('{}.{}'.format(settings.BASE_DIR, 'session'))
+        session_module.create_session(name)
 
 

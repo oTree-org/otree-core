@@ -5,7 +5,7 @@ from django.shortcuts import render_to_response
 import ptree.constants
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.contrib.staticfiles.templatetags.staticfiles import static as static_template_tag
-import ptree.sequence_of_experiments.models
+import ptree.session.models
 from ptree.common import currency
 
 def new_tab_link(url, label):
@@ -43,7 +43,7 @@ def get_participant_readonly_fields(fields_specific_to_this_subclass):
 
 def get_participant_list_display(Participant, readonly_fields, first_fields=None):
     first_fields = ['name',
-                    'sequence_of_experiments',
+                    'session',
                     'experiment',
                     'treatment',
                     'match',
@@ -56,7 +56,7 @@ def get_participant_list_display(Participant, readonly_fields, first_fields=None
                       'me_in_previous_experiment_object_id',
                       'me_in_next_experiment_content_type',
                       'me_in_next_experiment_object_id',
-                      'participant_in_sequence_of_experiments',
+                      'session_participant',
                       ]
 
     return get_list_display(Participant, readonly_fields, first_fields, exclude_fields)
@@ -66,7 +66,7 @@ def get_match_readonly_fields(fields_specific_to_this_subclass):
 
 def get_match_list_display(Match, readonly_fields, first_fields=None):
     first_fields = ['id',
-                    'sequence_of_experiments',
+                    'session',
                     'experiment',
                     'treatment'] + (first_fields or [])
     fields_to_exclude = []
@@ -77,7 +77,7 @@ def get_treatment_readonly_fields(fields_specific_to_this_subclass):
 
 def get_treatment_list_display(Treatment, readonly_fields, first_fields=None):
     first_fields = ['name',
-                    'sequence_of_experiments',
+                    'session',
                     'experiment'] + (first_fields or [])
     fields_to_exclude = ['id', 'label']
     return get_list_display(Treatment, readonly_fields, first_fields, fields_to_exclude)
@@ -86,10 +86,10 @@ def get_experiment_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields(['experimenter_input_link'], fields_specific_to_this_subclass)
 
 def get_experiment_list_display(Experiment, readonly_fields, first_fields=None):
-    first_fields = ['name', 'sequence_of_experiments'] + (first_fields or [])
+    first_fields = ['name', 'session'] + (first_fields or [])
     fields_to_exclude = ['id',
                          'label',
-                         'sequence_of_experiments_access_code',
+                         'session_access_code',
                          'next_experiment_content_type',
                          'next_experiment_object_id',
                          'next_experiment',
@@ -100,7 +100,7 @@ def get_experiment_list_display(Experiment, readonly_fields, first_fields=None):
                          ]
     return get_list_display(Experiment, readonly_fields, first_fields, fields_to_exclude)
 
-def get_sequence_of_experiments_readonly_fields(fields_specific_to_this_subclass):
+def get_session_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields(['time_started',
                                 'experiment_names',
                                 'start_urls_link',
@@ -108,24 +108,24 @@ def get_sequence_of_experiments_readonly_fields(fields_specific_to_this_subclass
                                 'mturk_snippet_link',
                                 'payments_link'], fields_specific_to_this_subclass)
 
-def get_sequence_of_experiments_list_display(SequenceOfExperiments, readonly_fields, first_fields=None):
+def get_session_list_display(Session, readonly_fields, first_fields=None):
     first_fields = ['name'] + (first_fields or [])
     fields_to_exclude = ['id',
                          'label',
                          'first_experiment_content_type',
                          'first_experiment_object_id',
                          'first_experiment']
-    return get_list_display(SequenceOfExperiments, readonly_fields, first_fields, fields_to_exclude)
+    return get_list_display(Session, readonly_fields, first_fields, fields_to_exclude)
 
-def get_participant_in_sequence_of_experiments_readonly_fields(fields_specific_to_this_subclass):
+def get_session_participant_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields(['bonus_display',
                                 'start_link',
                                 'progress'], fields_specific_to_this_subclass)
 
-def get_participant_in_sequence_of_experiments_list_display(Participant, readonly_fields, first_fields=None):
+def get_session_participant_list_display(Participant, readonly_fields, first_fields=None):
     first_fields = ['name', 'progress'] + (first_fields or [])
     fields_to_exclude = ['id',
-                         'index_in_sequence_of_experiments',
+                         'index_in_session',
                          'label',
                          'me_in_first_experiment_content_type',
                          'me_in_first_experiment_object_id']
@@ -143,27 +143,27 @@ class ParticipantAdmin(admin.ModelAdmin):
 
     link.short_description = "Start link"
     link.allow_tags = True
-    list_filter = ['sequence_of_experiments', 'experiment', 'treatment', 'match']
+    list_filter = ['session', 'experiment', 'treatment', 'match']
     list_per_page = 30
 
 class MatchAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
-    list_filter = ['sequence_of_experiments', 'experiment', 'treatment']
+    list_filter = ['session', 'experiment', 'treatment']
     list_per_page = 30
 
 class TreatmentAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
     def link(self, instance):
-        if instance.experiment.sequence_of_experiments.preassign_matches:
+        if instance.experiment.session.preassign_matches:
             return 'Not available (--preassign-matches was set)'
         url = instance.start_url()
         return new_tab_link(url, 'Link')
 
     link.short_description = "Demo link"
     link.allow_tags = True
-    list_filter = ['sequence_of_experiments', 'experiment']
+    list_filter = ['session', 'experiment']
 
 class ExperimentAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
@@ -174,15 +174,15 @@ class ExperimentAdmin(admin.ModelAdmin):
 
     experimenter_input_link.short_description = 'Link for experimenter input during gameplay'
     experimenter_input_link.allow_tags = True
-    list_filter = ['sequence_of_experiments']
+    list_filter = ['session']
 
-class ParticipantInSequenceOfExperimentsAdmin(admin.ModelAdmin):
+class ParticipantInSessionAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
-    list_filter = ['sequence_of_experiments']
+    list_filter = ['session']
 
-    readonly_fields = get_participant_in_sequence_of_experiments_readonly_fields([])
-    list_display = get_participant_in_sequence_of_experiments_list_display(ptree.sequence_of_experiments.models.Participant,
+    readonly_fields = get_session_participant_readonly_fields([])
+    list_display = get_session_participant_list_display(ptree.session.models.SessionParticipant,
                                                                            readonly_fields=readonly_fields)
 
     def start_link(self, instance):
@@ -192,11 +192,11 @@ class ParticipantInSequenceOfExperimentsAdmin(admin.ModelAdmin):
 
 
 
-class SequenceOfExperimentsAdmin(admin.ModelAdmin):
+class SessionAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
     def get_urls(self):
-        urls = super(SequenceOfExperimentsAdmin, self).get_urls()
+        urls = super(SessionAdmin, self).get_urls()
         my_urls = patterns('',
             (r'^(?P<pk>\d+)/payments/$', self.admin_site.admin_view(self.payments)),
             (r'^(?P<pk>\d+)/mturk_snippet/$', self.admin_site.admin_view(self.mturk_snippet)),
@@ -205,11 +205,11 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
         return my_urls + urls
 
     def start_urls(self, request, pk):
-        sequence_of_experiments = self.model.objects.get(pk=pk)
+        session = self.model.objects.get(pk=pk)
 
-        if request.GET.get(ptree.constants.experimenter_access_code) != sequence_of_experiments.experimenter_access_code:
+        if request.GET.get(ptree.constants.experimenter_access_code) != session.experimenter_access_code:
             return HttpResponseBadRequest('{} parameter missing or incorrect'.format(ptree.constants.experimenter_access_code))
-        participants = sequence_of_experiments.participants()
+        participants = session.participants()
         urls = [request.build_absolute_uri(participant.start_url()) for participant in participants]
         return HttpResponse('\n'.join(urls), content_type="text/plain")
 
@@ -224,8 +224,8 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
     start_urls_link.allow_tags = True
 
     def mturk_snippet(self, request, pk):
-        sequence_of_experiments = self.model.objects.get(pk=pk)
-        experiment = sequence_of_experiments.first_experiment
+        session = self.model.objects.get(pk=pk)
+        experiment = session.first_experiment
         hit_page_js_url = request.build_absolute_uri(static_template_tag('ptree/js/mturk_hit_page.js'))
         experiment_url = request.build_absolute_uri(experiment.start_url())
         return render_to_response('admin/MTurkSnippet.html',
@@ -257,17 +257,19 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
     global_start_link.short_description = "Global start URL (only if you can't use regular start URLs)"
 
     def payments(self, request, pk):
-        sequence_of_experiments = self.model.objects.get(pk=pk)
-        participants = sequence_of_experiments.participants()
-        total_payments = sum(participant.total_pay() or 0 for participant in sequence_of_experiments.participants())
+        session = self.model.objects.get(pk=pk)
+        participants = session.participants()
+        total_payments = sum(participant.total_pay() or 0 for participant in session.participants())
+
+        # order by label if they are numbers. or should we always order by label?
 
 
         return render_to_response('admin/Payments.html',
                                   {'participants': participants,
                                   'total_payments': currency(total_payments),
-                                  'sequence_of_experiments_code': sequence_of_experiments.code,
-                                  'sequence_of_experiments_name': sequence_of_experiments,
-                                  'base_pay': currency(sequence_of_experiments.base_pay),
+                                  'session_code': session.code,
+                                  'session_name': session,
+                                  'base_pay': currency(session.base_pay),
                                   })
 
     def payments_link(self, instance):
@@ -280,8 +282,8 @@ class SequenceOfExperimentsAdmin(admin.ModelAdmin):
     payments_link.short_description = "Payments page"
     payments_link.allow_tags = True
 
-    readonly_fields = get_sequence_of_experiments_readonly_fields([])
-    list_display = get_sequence_of_experiments_list_display(ptree.sequence_of_experiments.models.SequenceOfExperiments,
+    readonly_fields = get_session_readonly_fields([])
+    list_display = get_session_list_display(ptree.session.models.Session,
                                         readonly_fields=readonly_fields)
 
     list_editable = ['hidden']

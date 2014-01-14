@@ -3,7 +3,7 @@ from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.conf import settings
 import extra_views
 from ptree.forms import StubModelForm, FormHelper
-from ptree.sequence_of_experiments.models import StubModel
+from ptree.session.models import StubModel
 import vanilla
 
 import ptree.constants as constants

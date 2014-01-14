@@ -12,7 +12,7 @@ def cents_to_dollars(num_cents):
     return round(num_cents/100.0,2)
 
 class Command(BaseCommand):
-    args = '<sequence_of_experiments_id>'
+    args = '<session_id>'
     help = "pTree: Pay all Mechanical Turk participants for this sequence of experiments."
 
     def handle(self, *args, **options):
