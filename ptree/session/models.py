@@ -114,7 +114,7 @@ class Session(models.Model):
         super(Session, self).delete(using)
 
     def participants(self):
-        return self.participant_set.all()
+        return self.sessionparticipant_set.all()
 
     def payments_file_is_ready(self):
         for participant in self.participants():
@@ -129,7 +129,6 @@ class Session(models.Model):
             return None
 
     class Meta:
-        verbose_name_plural = 'sequences of experiments'
         ordering = ['pk']
 
 class SessionParticipant(models.Model):

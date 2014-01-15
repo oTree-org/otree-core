@@ -43,6 +43,8 @@ class BaseParticipant(models.Model):
     me_in_next_experiment = generic.GenericForeignKey('me_in_next_experiment_content_type',
                                                 'me_in_next_experiment_object_id',)
 
+    exclude_from_data_analysis = models.BooleanField(default=False)
+
 
     def progress(self):
         return '{}/{} pages'.format(self.index_in_sequence_of_views, len(self.treatment.sequence_of_views()))
