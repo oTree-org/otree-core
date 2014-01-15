@@ -123,10 +123,10 @@ class Session(models.Model):
         return True
 
     def time_started(self):
-        try:
-            return sorted(p.time_started for p in self.participants())[0]
-        except IndexError:
+        start_times = [p.time_started for p in self.participants() is p.time_started is not None]
+        if len(start_times) == 0:
             return None
+        return sorted(start_times)[0]
 
     class Meta:
         ordering = ['pk']
