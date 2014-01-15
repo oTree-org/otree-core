@@ -2,6 +2,9 @@ from collections import OrderedDict
 from django.contrib import admin
 from django.conf.urls import patterns
 from django.shortcuts import render_to_response
+from django.core.urlresolvers import reverse
+import django.db.models.options
+import django.db.models.fields.related
 import ptree.constants
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.contrib.staticfiles.templatetags.staticfiles import static as static_template_tag
@@ -29,10 +32,52 @@ def get_list_display(ModelName, readonly_fields, first_fields, exclude_fields):
     #first_fields = [f for f in first_fields if f in all_field_names]
 
     list_display = first_fields + readonly_fields + all_field_names
-    return remove_duplicates(list_display)
+    return _add_links_for_foreign_keys(ModelName, remove_duplicates(list_display))
 
 def get_readonly_fields(fields_common_to_all_models, fields_specific_to_this_subclass):
     return remove_duplicates(fields_common_to_all_models + fields_specific_to_this_subclass)
+
+class FieldLinkToForeignKey:
+    def __init__(self, list_display_field):
+        self.list_display_field = list_display_field
+
+    @property
+    def __name__(self):
+        return self.list_display_field
+
+    def __repr__(self):
+        return self.list_display_field
+
+    def __str__(self):
+        return self.list_display_field
+
+    def __call__(self, instance):
+        object = getattr(instance, self.list_display_field)
+        if object is None:
+            return "(None)"
+        else:
+            url = reverse('admin:%s_%s_change' %(object._meta.app_label,  object._meta.module_name),  
+                            args=[object.id])
+            return '<a href="%s">%s</a>' % (url, object.pk)
+
+    @property
+    def allow_tags(self):
+        return True
+
+def _add_links_for_foreign_keys(model, list_display_fields):
+    
+    result = []
+    for list_display_field in list_display_fields:
+        if hasattr(model, list_display_field):
+            try:
+                if isinstance(model._meta.get_field(list_display_field), 
+                              django.db.models.fields.related.ForeignKey):
+                    result.append(FieldLinkToForeignKey(list_display_field))
+                    continue
+            except django.db.models.options.FieldDoesNotExist:
+                pass
+        result.append(list_display_field)
+    return result
 
 def get_participant_readonly_fields(fields_specific_to_this_subclass):
     return get_readonly_fields(['name',
@@ -109,7 +154,7 @@ def get_session_readonly_fields(fields_specific_to_this_subclass):
                                 'payments_link'], fields_specific_to_this_subclass)
 
 def get_session_list_display(Session, readonly_fields, first_fields=None):
-    first_fields = ['name'] + (first_fields or [])
+    first_fields = ['name', 'hidden'] + (first_fields or [])
     fields_to_exclude = ['id',
                          'label',
                          'first_experiment_content_type',
@@ -133,6 +178,33 @@ def get_session_participant_list_display(Participant, readonly_fields, first_fie
     return get_list_display(Participant, readonly_fields, first_fields, fields_to_exclude)
 
 
+class NonHiddenSessionListFilter(admin.SimpleListFilter):
+    title = "session"
+
+    parameter_name = "session"
+
+    def lookups(self, request, model_admin):
+        """
+        Returns a list of tuples. The first element in each
+        tuple is the coded value for the option that will
+        appear in the URL query. The second element is the
+        human-readable name for the option that will appear
+        in the right sidebar.
+        """
+        return [(session.id, session.id) for session
+                in ptree.session.models.Session.objects.filter(hidden=False)]
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value
+        provided in the query string and retrievable via
+        `self.value()`.
+        """
+        if self.value() is not None:
+            return queryset.filter(session__pk=self.value())
+        else:
+            return queryset
+
 class ParticipantAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
@@ -143,14 +215,24 @@ class ParticipantAdmin(admin.ModelAdmin):
 
     link.short_description = "Start link"
     link.allow_tags = True
-    list_filter = ['session', 'experiment', 'treatment', 'match']
+    list_filter = [NonHiddenSessionListFilter, 'experiment', 'treatment', 'match']
     list_per_page = 30
+
+    def queryset(self, request):
+        qs = super(ParticipantAdmin, self).queryset(request)
+        return qs.filter(session__hidden=False)
+
 
 class MatchAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
-    list_filter = ['session', 'experiment', 'treatment']
+    list_filter = [NonHiddenSessionListFilter, 'experiment', 'treatment']
     list_per_page = 30
+
+    def queryset(self, request):
+        qs = super(MatchAdmin, self).queryset(request)
+        return qs.filter(session__hidden=False)
+
 
 class TreatmentAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
@@ -163,7 +245,12 @@ class TreatmentAdmin(admin.ModelAdmin):
 
     link.short_description = "Demo link"
     link.allow_tags = True
-    list_filter = ['session', 'experiment']
+    list_filter = [NonHiddenSessionListFilter, 'experiment']
+
+    def queryset(self, request):
+        qs = super(TreatmentAdmin, self).queryset(request)
+        return qs.filter(session__hidden=False)
+
 
 class ExperimentAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
@@ -172,9 +259,13 @@ class ExperimentAdmin(admin.ModelAdmin):
         url = instance.experimenter_input_url()
         return new_tab_link(url, 'Link')
 
+    def queryset(self, request):
+        qs = super(ExperimentAdmin, self).queryset(request)
+        return qs.filter(session__hidden=False)
+
     experimenter_input_link.short_description = 'Link for experimenter input during gameplay'
     experimenter_input_link.allow_tags = True
-    list_filter = ['session']
+    list_filter = [NonHiddenSessionListFilter]
 
 class ParticipantInSessionAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"

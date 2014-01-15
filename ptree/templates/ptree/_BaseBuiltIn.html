@@ -1,0 +1,46 @@
+{% load staticfiles %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>{% block head_title %}{% endblock %}</title>
+
+        {% block head_content %}
+            {% include 'ptree/HeadContent.html' %}
+        {% endblock %}
+    </head>
+    <body>
+        {% block content_at_top_of_body %}{% endblock %}
+        <div class="container" style='max-width:970px'>
+            <div class="page-header">
+                <h2>{% block title %}{% endblock %}</h2>
+            </div>
+
+            <div>
+
+            {% if time_limit_in_seconds != None %}
+                {% include 'ptree/Timer.html' %}
+            {% endif %}
+
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                {% blocktrans %}Please fix the errors in the form.{% endblocktrans %}
+                </div>
+            {% endif %}
+
+
+            {% block content %}{% endblock %}
+            </div>
+
+            <br/>
+
+        {% include 'ptree/debug_info.html' %}
+        </div>
+
+
+        {% block content_at_bottom_of_body %}
+        {% endblock %}
+
+    </body>
+</html>
