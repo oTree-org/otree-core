@@ -123,7 +123,7 @@ class Session(models.Model):
         return True
 
     def time_started(self):
-        start_times = [p.time_started for p in self.participants() is p.time_started is not None]
+        start_times = [p.time_started for p in self.participants() if p.time_started is not None]
         if len(start_times) == 0:
             return None
         return sorted(start_times)[0]
