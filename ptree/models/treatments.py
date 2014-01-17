@@ -3,7 +3,7 @@ from django.db import models
 from ptree.fields import RandomCharField
 import ptree.constants as constants
 from ptree.common import id_label_name
-import ptree.sequence_of_experiments.models
+import ptree.session.models
 
 class BaseTreatment(models.Model):
     """
@@ -17,7 +17,7 @@ class BaseTreatment(models.Model):
 
     participants_per_match = models.PositiveIntegerField(default=1)
 
-    sequence_of_experiments = models.ForeignKey(ptree.sequence_of_experiments.models.SequenceOfExperiments,
+    session = models.ForeignKey(ptree.session.models.Session,
                                                 null=True,
                                                 related_name = '%(app_label)s_%(class)s')
 

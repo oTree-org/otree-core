@@ -6,5 +6,5 @@ from ptree.views.abstract import (
     UpdateMultipleView,
     TemplateView,
     Initialize,
-    InitializeSequence,
+    InitializeSessionParticipant,
 )

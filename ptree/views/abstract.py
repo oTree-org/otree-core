@@ -16,13 +16,14 @@ import logging
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache, cache_control
 from ptree.forms import StubModelForm
-import ptree.sequence_of_experiments.models as seq_models
-import ptree.sequence_of_experiments.models
+import ptree.session.models as seq_models
+import ptree.session.models
 import urllib
 import urlparse
 from django.utils.translation import ugettext as _
 from django.db.models import Q
 from ptree.common import assign_participant_to_match
+from datetime import datetime
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -50,7 +51,7 @@ class ExperimentMixin(object):
         self.experiment = self.treatment.experiment
 
     def save_objects(self):
-        for obj in [self.match, self.participant, self.participant.participant_in_sequence_of_experiments]:
+        for obj in [self.match, self.participant, self.participant.session_participant]:
             if obj:
                 obj.save()
 
@@ -80,8 +81,8 @@ class ExperimentMixin(object):
     def page_the_user_should_be_on(self):
         if self.participant.index_in_sequence_of_views >= len(self.treatment.sequence_as_urls()):
             if self.experiment.next_experiment:
-                self.participant.participant_in_sequence_of_experiments.index_in_sequence_of_experiments += 1
-                self.participant.participant_in_sequence_of_experiments.save()
+                self.participant.session_participant.index_in_session += 1
+                self.participant.session_participant.save()
                 return self.participant.me_in_next_experiment.start_url()
 
         return self.treatment.sequence_as_urls()[self.participant.index_in_sequence_of_views]
@@ -387,17 +388,17 @@ class UpdateMultipleView(extra_views.ModelFormSetView, UpdateView):
     pass
 
 
-class InitializeSequence(vanilla.UpdateView):
+class InitializeSessionParticipant(vanilla.UpdateView):
 
     @classmethod
     def url_pattern(cls):
-        return r'^InitializeSequence/$'
+        return r'^InitializeSessionParticipant/$'
 
     def get(self, *args, **kwargs):
         self.request.session.clear()
 
-        sequence_code = self.request.GET.get(constants.sequence_of_experiments_code)
-        participant_code = self.request.GET.get(constants.participant_in_sequence_of_experiments_code)
+        sequence_code = self.request.GET.get(constants.session_code)
+        participant_code = self.request.GET.get(constants.session_participant_code)
 
         if not participant_code or sequence_code:
             return HttpResponse('Missing parameter in URL')
@@ -405,11 +406,11 @@ class InitializeSequence(vanilla.UpdateView):
             return HttpResponse('Redundant parameters in URL')
 
         if participant_code:
-            participant_in_sequence = get_object_or_404(seq_models.Participant, code=participant_code)
-            sequence_of_experiments = participant_in_sequence.sequence_of_experiments
+            session_participant = get_object_or_404(seq_models.SessionParticipant, code=participant_code)
+            session = session_participant.session
         else:
-            sequence_of_experiments = get_object_or_404(seq_models.SequenceOfExperiments, )
-            if sequence_of_experiments.is_for_mturk:
+            session = get_object_or_404(seq_models.Session, )
+            if session.is_for_mturk:
                 try:
                     mturk_worker_id = self.request.GET[constants.mturk_worker_id]
                     mturk_assignment_id = self.request.GET[constants.mturk_assignment_id]
@@ -419,34 +420,34 @@ class InitializeSequence(vanilla.UpdateView):
                     print 'This URL only works if clicked from a MTurk job posting with the JavaScript snippet embedded'
                     return HttpResponse(_('To participate, you need to first accept this Mechanical Turk HIT and then re-click the link (refreshing this page will not work).'))
                 try:
-                    participant_in_sequence = seq_models.Participant.objects.get(mturk_worker_id = mturk_worker_id,
-                                                                      sequence_of_experiments = sequence_of_experiments)
+                    session_participant = seq_models.SessionParticipant.objects.get(mturk_worker_id = mturk_worker_id,
+                                                                      session = session)
                 except self.ParticipantClass.DoesNotExist:
                     try:
-                        participant_in_sequence = seq_models.Participant.objects.filter(sequence_of_experiments = sequence_of_experiments,
+                        session_participant = seq_models.SessionParticipant.objects.filter(session = session,
                                                                              visited=False)[0]
                     except IndexError:
                         raise IndexError("No Participant objects left in the database to assign to new visitor.")
 
-                    participant_in_sequence.mturk_worker_id = mturk_worker_id
-                    participant_in_sequence.mturk_assignment_id = mturk_assignment_id
+                    session_participant.mturk_worker_id = mturk_worker_id
+                    session_participant.mturk_assignment_id = mturk_assignment_id
 
-        participant_in_sequence.visited = True
+        session_participant.time_started = datetime.now()
 
         participant_label = self.request.GET.get(constants.participant_label)
         if participant_label is not None:
-            participant_in_sequence.label = participant_label
+            session_participant.label = participant_label
 
-        if participant_in_sequence.ip_address == None:
-            participant_in_sequence.ip_address = self.request.META['REMOTE_ADDR']
+        if session_participant.ip_address == None:
+            session_participant.ip_address = self.request.META['REMOTE_ADDR']
 
-        participant_in_sequence.save()
+        session_participant.save()
 
-        self.request.session[constants.participant_in_sequence_of_experiments_id] = participant_in_sequence.id
-        self.participant_in_sequence_of_experiments = participant_in_sequence
-        self.sequence_of_experiments = sequence_of_experiments
+        self.request.session[constants.session_participant_id] = session_participant.id
+        self.session_participant = session_participant
+        self.session = session
 
-        return HttpResponseRedirect(participant_in_sequence.me_in_first_experiment.start_url())
+        return HttpResponseRedirect(session_participant.me_in_first_experiment.start_url())
 
 class Initialize(vanilla.View):
     """
@@ -484,7 +485,7 @@ class Initialize(vanilla.View):
         self.treatment = self.participant.treatment or self.experiment.pick_treatment_for_incoming_participant()
         self.participant.treatment = self.treatment
 
-        self.participant.visited = True
+        self.participant.time_started = datetime.now()
 
         self.participant.save()
         self.request.session[constants.participant_code] = self.participant.code

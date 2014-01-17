@@ -1,12 +1,16 @@
 from django import forms
 import ptree.common
 import ptree.models.common
-import ptree.sequence_of_experiments.models
+import ptree.session.models
 import ptree.constants
 from django.db import models
 from django.utils.translation import ugettext as _
 import crispy_forms.helper
 from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit
+
+DEFAULT_NULLBOOLEAN_CHOICES = ((None, '---------'),
+                               (True, _('Yes')),
+                               (False, _('No')))
 
 class FormHelper(crispy_forms.helper.FormHelper):
     def __init__(self, *args, **kwargs):
@@ -19,7 +23,7 @@ class FormHelper(crispy_forms.helper.FormHelper):
 
 
 
-class FormMixin(object):
+class BaseModelForm(forms.ModelForm):
 
     # In general, pTree does not allow a user to go back and change their answer on a previous page,
     # since that often defeats the purpose of the game (e.g. eliciting an honest answer).
@@ -50,25 +54,33 @@ class FormMixin(object):
         initial.update(self.field_initial_values())
         kwargs['initial'] = initial
 
-        super(FormMixin, self).__init__(*args, **kwargs)
+        super(BaseModelForm, self).__init__(*args, **kwargs)
 
         for field_name, label in self.field_labels().items():
             self.fields[field_name].label = label
 
+
+
         # Django displays NullBooleanField "None" value as "Unknown", which is undesired.
         # it should display as '---------' to indicate a choice must be made
         for field_name in self.null_boolean_field_names():
-            self.fields[field_name].widget = forms.Select(choices = ((None, '---------'),
-                                                                    (True, _('Yes')),
-                                                                    (False, _('No'))))
+            # get the model field
+
+            field = self.fields[field_name]
+
+
+            if not getattr(self.instance, field_name).choices:
+                field.widget = field.widget.__class__(choices=DEFAULT_NULLBOOLEAN_CHOICES)
 
         for field_name, choices in self.field_choices().items():
-            field = self.fields[field_name]
+            #self.fields[field_name].choices = choices
+
             try:
                 field.widget = field.widget.__class__(choices=choices)
             # if the current widget can't accept a choices arg, fall back to using a Select widget
             except TypeError:
                 field.widget = forms.Select(choices=choices)
+
 
         # crispy forms
         self.helper = FormHelper()
@@ -79,14 +91,16 @@ class FormMixin(object):
         return [field_name for field_name in self.fields if field_name in null_boolean_fields_in_model]
 
     def clean(self):
-        cleaned_data = super(FormMixin, self).clean()
+        cleaned_data = super(BaseModelForm, self).clean()
         for field_name in self.null_boolean_field_names():
             if cleaned_data[field_name] == None:
                 msg = _('This field is required.')
                 self._errors[field_name] = self.error_class([msg])
         return cleaned_data
 
-class ParticipantFormMixin(FormMixin):
+class ModelForm(BaseModelForm):
+    """i.e. participant modelform."""
+
     def process_kwargs(self, kwargs):
         self.participant = kwargs.pop('participant')
         self.match = kwargs.pop('match')
@@ -95,24 +109,13 @@ class ParticipantFormMixin(FormMixin):
         self.request = kwargs.pop('request')
         self.time_limit_was_exceeded = kwargs.pop('time_limit_was_exceeded')
 
-class ExperimenterFormMixin(FormMixin):
+class ExperimenterModelForm(BaseModelForm):
     def process_kwargs(self, kwargs):
         self.experiment = kwargs.pop('experiment')
         self.request = kwargs.pop('request')
 
 
-class ModelForm(ParticipantFormMixin, forms.ModelForm):
-    """
-    Try to inherit from this class whenever you can.
-    ModelForms are ofter preferable to plain Forms,
-    since they take care of saving to the database,
-    and they require less code to write and validate.
-    """
-
-class ExperimenterModelForm(ExperimenterFormMixin, forms.ModelForm):
-    pass
-
-class StubModelForm(ParticipantFormMixin, forms.ModelForm):
+class StubModelForm(ModelForm):
     class Meta:
-        model = ptree.sequence_of_experiments.models.StubModel
+        model = ptree.session.models.StubModel
         fields = []

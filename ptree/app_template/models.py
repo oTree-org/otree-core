@@ -18,9 +18,7 @@ class Treatment(ptree.models.BaseTreatment):
     def sequence_of_views(self):
     
         import {{ app_name }}.views as views
-        return [views.Start,
-                views.MyView,
-                views.Results]
+        return [views.MyView]
                 
 class Match(ptree.models.BaseMatch):
 
@@ -51,11 +49,9 @@ def create_experiment_and_treatments():
 
     # you can create more treatments. just make a loop.
     treatment = Treatment(experiment = experiment,
-                          base_pay = 100,
                           participants_per_match = 1,
                           # other attributes here...
                           )
     treatment.save()
 
     return experiment
-

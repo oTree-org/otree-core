@@ -29,7 +29,7 @@ def currency(value):
 def create_match(MatchClass, treatment):
     match = MatchClass(treatment = treatment,
                        experiment = treatment.experiment,
-                       sequence_of_experiments = treatment.sequence_of_experiments)
+                       session = treatment.session)
     # need to save it before you assign the participant.match ForeignKey
     match.save()
     return match
