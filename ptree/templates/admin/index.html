@@ -16,73 +16,20 @@
 {% if app_list %}
     <h2>Global</h2>
     {% for app in app_list %}
-        {% if not app|is_experiment_app %}
-            <div class="app-{{ app.app_label }} module">
-            <table>
-            <caption>
-                <a href="{{ app.app_url }}" class="section" title="{% blocktrans with name=app.name %}Models in the {{ name }} application{% endblocktrans %}">
-                    {% blocktrans with name=app.name %}{{ name }}{% endblocktrans %}
-                </a>
-            </caption>
-            {% for model in app.models|fix_experiment_app_models_order %}
-                <tr class="model-{{ model.object_name|lower }}">
-                {% if model.admin_url %}
-                    <th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>
-                {% else %}
-                    <th scope="row">{{ model.name }}</th>
-                {% endif %}
-
-                {% if model.add_url %}
-                    <td><a href="{{ model.add_url }}" class="addlink">{% trans 'Add' %}</a></td>
-                {% else %}
-                    <td>&nbsp;</td>
-                {% endif %}
-
-                {% if model.admin_url %}
-                    <td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>
-                {% else %}
-                    <td>&nbsp;</td>
-                {% endif %}
-                </tr>
-            {% endfor %}
-            </table>
-            </div>
+        {% if not app|is_experiment_app and app.app_label == "session" %}
+            {% include "admin/_dashboard_app_template.html" with app_models=app.models %}
+        {% endif %}
+    {% endfor %}
+    {% for app in app_list %}
+        {% if not app|is_experiment_app and app.app_label != "session" %}
+            {% include "admin/_dashboard_app_template.html" with app_models=app.models %}
         {% endif %}
     {% endfor %}
 
     <h2>Experiments</h2>
     {% for app in app_list %}
         {% if app|is_experiment_app %}
-            <div class="app-{{ app.app_label }} module">
-            <table>
-            <caption>
-                <a href="{{ app.app_url }}" class="section" title="{% blocktrans with name=app.name|app_name_format %}Models in the {{ name }} application{% endblocktrans %}">
-                    {% blocktrans with name=app.name|app_name_format %}{{ name }}{% endblocktrans %}
-                </a>
-            </caption>
-            {% for model in app.models|fix_experiment_app_models_order %}
-                <tr class="model-{{ model.object_name|lower }}">
-                {% if model.admin_url %}
-                    <th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>
-                {% else %}
-                    <th scope="row">{{ model.name }}</th>
-                {% endif %}
-
-                {% if model.add_url %}
-                    <td><a href="{{ model.add_url }}" class="addlink">{% trans 'Add' %}</a></td>
-                {% else %}
-                    <td>&nbsp;</td>
-                {% endif %}
-
-                {% if model.admin_url %}
-                    <td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>
-                {% else %}
-                    <td>&nbsp;</td>
-                {% endif %}
-                </tr>
-            {% endfor %}
-            </table>
-            </div>
+            {% include "admin/_dashboard_app_template.html" with app_models=app.models|fix_experiment_app_models_order %}
         {% endif %}
     {% endfor %}
 {% else %}
