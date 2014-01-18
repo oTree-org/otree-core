@@ -210,7 +210,7 @@ class SessionParticipant(models.Model):
         return '/InitializeSessionParticipant/?{}={}'.format(constants.session_participant_code,
                                            self.code)
 
-def create_session(label, is_for_mturk, preassign_matches, app_names, base_pay, num_participants):
+def create_session(label, is_for_mturk, preassign_matches, sequence, base_pay, num_participants):
     session = Session(label=label,
                                 is_for_mturk=is_for_mturk,
                                 preassign_matches=preassign_matches,
@@ -227,7 +227,7 @@ def create_session(label, is_for_mturk, preassign_matches, app_names, base_pay, 
 
 
         experiments = []
-        for app_name in app_names:
+        for app_name in sequence:
             if app_name not in settings.INSTALLED_PTREE_APPS:
                 print 'Before running this command you need to add "{}" to INSTALLED_PTREE_APPS.'.format(app_name)
                 return

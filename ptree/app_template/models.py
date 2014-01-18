@@ -1,6 +1,6 @@
 """Documentation at http://django-ptree.readthedocs.org/en/latest/app.html"""
 
-from django.db import models
+from ptree.db import models
 import ptree.models
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _

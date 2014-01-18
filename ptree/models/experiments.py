@@ -63,7 +63,14 @@ class BaseExperiment(models.Model):
 
 
     def pick_treatment_for_incoming_participant(self):
-        return random.choice(self.treatments())
+        # find an open match and see what treatment it's part of.
+        try:
+            return [m for m in self.matches() if m.is_ready_for_next_participant()][0].treatment
+        except IndexError:
+            #return super(Experiment, self).pick_treatment_for_incoming_participant()
+            treatments = list(self.treatments())
+            random.shuffle(treatments)
+            return min(treatments, key=lambda treatment: len(treatment.participants()))
 
     def treatments(self):
         return self.treatment_set.all()

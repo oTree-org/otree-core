@@ -6,4 +6,4 @@ def create_session(name):
                     is_for_mturk=False,
                     preassign_matches=True,
                     num_participants=30,
-                    app_names = ['myapp'])
+                    sequence= ['myapp'])

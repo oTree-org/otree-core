@@ -27,9 +27,6 @@ class MyForm(ModelFormInThisApp, ptree.forms.ModelForm):
     def clean_my_field(self):
         my_field = self.cleaned_data['my_field']
 
-        if self.time_limit_was_exceeded:
-            """You can reject the user's input in favor of a default"""
-
         # you can raise a validation error like this:
         if not self.treatment.your_method_here(my_field):
             raise forms.ValidationError('Invalid input')

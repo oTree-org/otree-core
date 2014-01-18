@@ -59,36 +59,24 @@ class BaseModelForm(forms.ModelForm):
         for field_name, label in self.field_labels().items():
             self.fields[field_name].label = label
 
-
-
-        # Django displays NullBooleanField "None" value as "Unknown", which is undesired.
-        # it should display as '---------' to indicate a choice must be made
-        for field_name in self.null_boolean_field_names():
-            # get the model field
-
+        for field_name, choices in self.field_choices().items():
             field = self.fields[field_name]
 
-
-            if not getattr(self.instance, field_name).choices:
-                field.widget = field.widget.__class__(choices=DEFAULT_NULLBOOLEAN_CHOICES)
-
-        for field_name, choices in self.field_choices().items():
-            #self.fields[field_name].choices = choices
-
             try:
-                field.widget = field.widget.__class__(choices=choices)
-            # if the current widget can't accept a choices arg, fall back to using a Select widget
+                # the following line has no effect.
+                # it's just a test whether this field's widget can accept a choices arg.
+                # otherwise, setting field.choices will have no effect.
+                field.widget.__class__(choices=choices)
             except TypeError:
+                # if the current widget can't accept a choices arg, fall back to using a Select widget
                 field.widget = forms.Select(choices=choices)
-
+            else:
+                field.choices = choices
 
         # crispy forms
         self.helper = FormHelper()
         self.helper.layout = self.layout()
 
-    def null_boolean_field_names(self):
-        null_boolean_fields_in_model = [field.name for field in self.Meta.model._meta.fields if field.__class__ == models.NullBooleanField]
-        return [field_name for field_name in self.fields if field_name in null_boolean_fields_in_model]
 
     def clean(self):
         cleaned_data = super(BaseModelForm, self).clean()
