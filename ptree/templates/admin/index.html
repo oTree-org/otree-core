@@ -14,23 +14,25 @@
 <div id="content-main">
 
 {% if app_list %}
-    <h2>Global</h2>
-    {% for app in app_list %}
-        {% if not app|is_experiment_app and app.app_label == "session" %}
-            {% include "admin/_dashboard_app_template.html" with app_models=app.models %}
-        {% endif %}
-    {% endfor %}
-    {% for app in app_list %}
-        {% if not app|is_experiment_app and app.app_label != "session" %}
-            {% include "admin/_dashboard_app_template.html" with app_models=app.models %}
-        {% endif %}
-    {% endfor %}
+    {% with non_experiment_apps=app_list|non_experiment_apps %}
+    {% if non_experiment_apps|length != 0 %}
+        <h2>Global</h2>
+        {% for app in non_experiment_apps %}
+            {% if app.app_label == "session" %}
+                {% include "admin/_dashboard_app_template.html" with app_models=app.models %}
+            {% endif %}
+        {% endfor %}
+        {% for app in non_experiment_apps %}
+            {% if app.app_label != "session" %}
+                {% include "admin/_dashboard_app_template.html" with app_models=app.models %}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
 
     <h2>Experiments</h2>
-    {% for app in app_list %}
-        {% if app|is_experiment_app %}
-            {% include "admin/_dashboard_app_template.html" with app_models=app.models|fix_experiment_app_models_order %}
-        {% endif %}
+    {% for app in app_list|experiment_apps_only %}
+        {% include "admin/_dashboard_app_template.html" with app_models=app.models|fix_experiment_app_models_order %}
     {% endfor %}
 {% else %}
     <p>{% trans "You don't have permission to edit anything." %}</p>
