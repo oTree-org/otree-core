@@ -160,7 +160,7 @@ def result_headers(cl):
 def wrap_in_div(text):
     return ('<div class="cell-trunc-div" '
             'style="clear: both; height: 1.2em; width: %dpx;'
-            ' overflow: hidden">%s</div>' % (settings.PTREE_CHANGE_LIST_COLUMN_MIN_WIDTH, text))
+            ' overflow: hidden; white-space: nowrap;">%s</div>' % (settings.PTREE_CHANGE_LIST_COLUMN_MIN_WIDTH, text))
     #return text
 
 def items_for_result(cl, result, form):
