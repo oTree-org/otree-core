@@ -77,6 +77,9 @@ class BaseModelForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.layout = self.layout()
 
+    def null_boolean_field_names(self):
+        null_boolean_fields_in_model = [field.name for field in self.Meta.model._meta.fields if field.__class__ == models.NullBooleanField]
+        return [field_name for field_name in self.fields if field_name in null_boolean_fields_in_model]
 
     def clean(self):
         cleaned_data = super(BaseModelForm, self).clean()

@@ -5,7 +5,7 @@ from django.utils.translation import ugettext_lazy
 import django.forms.fields
 from django.utils.text import capfirst
 
-class NullBooleanSelect(django.forms.widgets.NullBooleanSelect):
+class _NullBooleanSelect(django.forms.widgets.NullBooleanSelect):
     def __init__(self, attrs=None):
         choices = (('1', ugettext_lazy('---------')),
                    ('2', ugettext_lazy('Yes')),
@@ -13,7 +13,7 @@ class NullBooleanSelect(django.forms.widgets.NullBooleanSelect):
         super(django.forms.widgets.NullBooleanSelect, self).__init__(attrs, choices)
 
 class _NullBooleanFormField(django.forms.fields.NullBooleanField):
-    widget = NullBooleanSelect
+    widget = _NullBooleanSelect
 
 class NullBooleanField(django.db.models.NullBooleanField):
     def formfield(self, **kwargs):

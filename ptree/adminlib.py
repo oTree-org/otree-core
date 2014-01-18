@@ -24,18 +24,111 @@ def start_urls_for_experiment(experiment, request):
 def remove_duplicates(lst):
     return list(OrderedDict.fromkeys(lst))
 
-def get_list_display(ModelName, readonly_fields, first_fields, exclude_fields):
-    all_field_names = [field.name for field in ModelName._meta.fields if field.name not in exclude_fields]
+def get_readonly_fields(Model, fields_specific_to_this_subclass):
 
+    fields_for_this_model_type = {
+        'Participant':
+           ['name',
+            'link',
+            'bonus_display',
+            'progress'],
+        'Match':
+            [],
+        'Treatment':
+            ['link'],
+        'Experiment':
+            ['experimenter_input_link'],
+        'Session':
+            ['time_started',
+             'experiment_names',
+             'start_urls_link',
+             'global_start_link',
+             'mturk_snippet_link',
+             'payments_link'],
+        'SessionParticipant':
+            ['bonus_display',
+            'start_link',
+            'progress'],
+    }[Model.__name__]
 
-    # make sure they're actually in the model.
-    #first_fields = [f for f in first_fields if f in all_field_names]
+    return remove_duplicates(fields_for_this_model_type + fields_specific_to_this_subclass)
 
+def get_list_display(Model, readonly_fields, first_fields=None):
+
+    first_fields = {
+        'Participant':
+            ['name',
+            'session',
+            'experiment',
+            'treatment',
+            'match',
+            'visited',
+            'progress'],
+        'Match':
+            ['id',
+            'session',
+            'experiment',
+            'treatment'],
+        'Treatment':
+            ['name',
+            'session',
+            'experiment'],
+        'Experiment':
+            ['name',
+             'session'],
+        'SessionParticipant':
+            ['name',
+             'progress'],
+        'Session':
+            ['name',
+             'hidden'],
+    }[Model.__name__]
+
+    fields_to_exclude = {
+        'Participant':
+              ['id',
+              'code',
+              'index_in_sequence_of_views',
+              'me_in_previous_experiment_content_type',
+              'me_in_previous_experiment_object_id',
+              'me_in_next_experiment_content_type',
+              'me_in_next_experiment_object_id',
+              'session_participant',
+              ],
+        'Match':
+             [],
+        'Treatment':
+            ['id',
+            'label'],
+        'Experiment':
+            ['id',
+             'label',
+             'session_access_code',
+             'next_experiment_content_type',
+             'next_experiment_object_id',
+             'next_experiment',
+             'previous_experiment_content_type',
+             'previous_experiment_object_id',
+             'previous_experiment',
+             'experimenter_access_code',
+             ],
+        'SessionParticipant':
+            ['id',
+            'index_in_session',
+            'label',
+            'me_in_first_experiment_content_type',
+            'me_in_first_experiment_object_id'],
+        'Session':
+             ['id',
+             'label',
+             'first_experiment_content_type',
+             'first_experiment_object_id',
+             'first_experiment']
+    }[Model.__name__]
+
+    all_field_names = [field.name for field in Model._meta.fields if field.name not in fields_to_exclude]
     list_display = first_fields + readonly_fields + all_field_names
-    return _add_links_for_foreign_keys(ModelName, remove_duplicates(list_display))
-
-def get_readonly_fields(fields_common_to_all_models, fields_specific_to_this_subclass):
-    return remove_duplicates(fields_common_to_all_models + fields_specific_to_this_subclass)
+    return _add_links_for_foreign_keys(Model, remove_duplicates(list_display))
 
 class FieldLinkToForeignKey:
     def __init__(self, list_display_field):
@@ -64,6 +157,9 @@ class FieldLinkToForeignKey:
     def allow_tags(self):
         return True
 
+def is_fk_link_to_parent_class(field):
+    return isinstance(field, FieldLinkToForeignKey) and field.__name__ in {'match', 'treatment', 'experiment', 'session'}
+
 def _add_links_for_foreign_keys(model, list_display_fields):
     
     result = []
@@ -78,105 +174,6 @@ def _add_links_for_foreign_keys(model, list_display_fields):
                 pass
         result.append(list_display_field)
     return result
-
-def get_participant_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields(['name',
-                                'link',
-                                'bonus_display',
-                                'progress'],
-                               fields_specific_to_this_subclass)
-
-def get_participant_list_display(Participant, readonly_fields, first_fields=None):
-    first_fields = ['name',
-                    'session',
-                    'experiment',
-                    'treatment',
-                    'match',
-                    'visited',
-                    'progress'] + (first_fields or [])
-    exclude_fields = ['id',
-                      'code',
-                      'index_in_sequence_of_views',
-                      'me_in_previous_experiment_content_type',
-                      'me_in_previous_experiment_object_id',
-                      'me_in_next_experiment_content_type',
-                      'me_in_next_experiment_object_id',
-                      'session_participant',
-                      ]
-
-    return get_list_display(Participant, readonly_fields, first_fields, exclude_fields)
-
-def get_match_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields([], fields_specific_to_this_subclass)
-
-def get_match_list_display(Match, readonly_fields, first_fields=None):
-    first_fields = ['id',
-                    'session',
-                    'experiment',
-                    'treatment'] + (first_fields or [])
-    fields_to_exclude = []
-    return get_list_display(Match, readonly_fields, first_fields, fields_to_exclude)
-
-def get_treatment_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields(['link'], fields_specific_to_this_subclass)
-
-def get_treatment_list_display(Treatment, readonly_fields, first_fields=None):
-    first_fields = ['name',
-                    'session',
-                    'experiment'] + (first_fields or [])
-    fields_to_exclude = ['id', 'label']
-    return get_list_display(Treatment, readonly_fields, first_fields, fields_to_exclude)
-
-def get_experiment_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields(['experimenter_input_link'], fields_specific_to_this_subclass)
-
-def get_experiment_list_display(Experiment, readonly_fields, first_fields=None):
-    first_fields = ['name', 'session'] + (first_fields or [])
-    fields_to_exclude = ['id',
-                         'label',
-                         'session_access_code',
-                         'next_experiment_content_type',
-                         'next_experiment_object_id',
-                         'next_experiment',
-                         'previous_experiment_content_type',
-                         'previous_experiment_object_id',
-                         'previous_experiment',
-                         'experimenter_access_code',
-                         ]
-    return get_list_display(Experiment, readonly_fields, first_fields, fields_to_exclude)
-
-def get_session_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields(['time_started',
-                                'experiment_names',
-                                'start_urls_link',
-                                'global_start_link',
-                                'mturk_snippet_link',
-                                'payments_link'], fields_specific_to_this_subclass)
-
-def get_session_list_display(Session, readonly_fields, first_fields=None):
-    first_fields = ['name', 'hidden'] + (first_fields or [])
-    fields_to_exclude = ['id',
-                         'label',
-                         'first_experiment_content_type',
-                         'first_experiment_object_id',
-                         'first_experiment']
-    return get_list_display(Session, readonly_fields, first_fields, fields_to_exclude)
-
-def get_session_participant_readonly_fields(fields_specific_to_this_subclass):
-    return get_readonly_fields(['bonus_display',
-                                'start_link',
-                                'progress'], fields_specific_to_this_subclass)
-
-def get_session_participant_list_display(Participant, readonly_fields, first_fields=None):
-    first_fields = ['name', 'progress'] + (first_fields or [])
-    fields_to_exclude = ['id',
-                         'index_in_session',
-                         'label',
-                         'me_in_first_experiment_content_type',
-                         'me_in_first_experiment_object_id']
-
-    return get_list_display(Participant, readonly_fields, first_fields, fields_to_exclude)
-
 
 class NonHiddenSessionListFilter(admin.SimpleListFilter):
     title = "session"
@@ -267,14 +264,13 @@ class ExperimentAdmin(admin.ModelAdmin):
     experimenter_input_link.allow_tags = True
     list_filter = [NonHiddenSessionListFilter]
 
-class ParticipantInSessionAdmin(admin.ModelAdmin):
+class SessionParticipantAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
     list_filter = [NonHiddenSessionListFilter]
 
-    readonly_fields = get_session_participant_readonly_fields([])
-    list_display = get_session_participant_list_display(ptree.session.models.SessionParticipant,
-                                                                           readonly_fields=readonly_fields)
+    readonly_fields = get_readonly_fields(ptree.session.models.SessionParticipant, [])
+    list_display = get_list_display(ptree.session.models.SessionParticipant, readonly_fields)
 
     def start_link(self, instance):
         url = instance.start_url()
@@ -282,7 +278,7 @@ class ParticipantInSessionAdmin(admin.ModelAdmin):
     start_link.allow_tags = True
 
     def queryset(self, request):
-        qs = super(ParticipantInSessionAdmin, self).queryset(request)
+        qs = super(SessionParticipantAdmin, self).queryset(request)
         return qs.filter(session__hidden=False)
 
 class SessionAdmin(admin.ModelAdmin):
@@ -375,9 +371,8 @@ class SessionAdmin(admin.ModelAdmin):
     payments_link.short_description = "Payments page"
     payments_link.allow_tags = True
 
-    readonly_fields = get_session_readonly_fields([])
-    list_display = get_session_list_display(ptree.session.models.Session,
-                                        readonly_fields=readonly_fields)
+    readonly_fields = get_readonly_fields(ptree.session.models.Session, [])
+    list_display = get_list_display(ptree.session.models.Session, readonly_fields)
 
     list_editable = ['hidden']
 

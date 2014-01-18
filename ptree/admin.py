@@ -13,7 +13,7 @@ admin.site.register(ptree.session.models.Session,
                     )
 
 admin.site.register(ptree.session.models.SessionParticipant,
-                    ptree.adminlib.ParticipantInSessionAdmin)
+                    ptree.adminlib.SessionParticipantAdmin)
 
 admin.site.unregister(Export)
 

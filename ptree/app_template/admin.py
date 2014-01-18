@@ -1,30 +1,24 @@
 from django.contrib import admin
 import {{ app_name }}.models as models
-import ptree.adminlib
+import ptree.adminlib as adminlib
 
-class ParticipantAdmin(ptree.adminlib.ParticipantAdmin):
-    readonly_fields = ptree.adminlib.get_participant_readonly_fields([])
-    list_display = ptree.adminlib.get_participant_list_display(models.Participant,
-                                                            readonly_fields=readonly_fields)
+class ParticipantAdmin(adminlib.ParticipantAdmin):
+    readonly_fields = adminlib.get_readonly_fields(models.Participant, [])
+    list_display = adminlib.get_list_display(models.Participant, readonly_fields)
 
-class MatchAdmin(ptree.adminlib.MatchAdmin):
-    readonly_fields = ptree.adminlib.get_match_readonly_fields([])
+class MatchAdmin(adminlib.MatchAdmin):
+    readonly_fields = adminlib.get_readonly_fields(models.Match, [])
+    list_display = adminlib.get_list_display(models.Match, readonly_fields)
 
-    list_display = ptree.adminlib.get_match_list_display(models.Match,
-                                                       readonly_fields=readonly_fields)
+class TreatmentAdmin(adminlib.TreatmentAdmin):
+    readonly_fields = adminlib.get_readonly_fields(models.Treatment, [])
+    list_display = adminlib.get_list_display(models.Treatment, readonly_fields)
 
-class TreatmentAdmin(ptree.adminlib.TreatmentAdmin):
-    readonly_fields = ptree.adminlib.get_treatment_readonly_fields([])
-    list_display = ptree.adminlib.get_treatment_list_display(models.Treatment,
-                                                          readonly_fields=readonly_fields)
-
-class ExperimentAdmin(ptree.adminlib.ExperimentAdmin):
-    readonly_fields = ptree.adminlib.get_experiment_readonly_fields([])
-    list_display = ptree.adminlib.get_experiment_list_display(models.Experiment,
-                                                          readonly_fields=readonly_fields)
+class ExperimentAdmin(adminlib.ExperimentAdmin):
+    readonly_fields = adminlib.get_readonly_fields(models.Experiment, [])
+    list_display = adminlib.get_list_display(models.Experiment, readonly_fields)
 
 admin.site.register(models.Participant, ParticipantAdmin)
 admin.site.register(models.Match, MatchAdmin)
 admin.site.register(models.Treatment, TreatmentAdmin)
 admin.site.register(models.Experiment, ExperimentAdmin)
-

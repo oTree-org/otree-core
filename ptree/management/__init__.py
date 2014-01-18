@@ -55,18 +55,6 @@ if getattr(settings, 'CREATE_DEFAULT_SUPERUSER', False):
         dispatch_uid='common.models.create_testuser'
     )
 
-def create_html_export_format(sender, **kwargs):
-    name = 'HTML'
-    try:
-        Format.objects.get(name = name)
-    except Format.DoesNotExist:
-        html_format = Format(name=name,
-                            file_ext="html",
-                            mime="text/html",
-                            template="data_exports/ptree.html")
-        html_format.save()
-
-
 def create_csv_export_format(sender, **kwargs):
     name = 'CSV'
     try:
@@ -78,59 +66,38 @@ def create_csv_export_format(sender, **kwargs):
                             template="data_exports/ptree.csv")
         csv_format.save()
 
-def create_export(content_type, export_name, fields, format_name="CSV"):
-
-    model_name = '{}: {} ({})'.format(content_type.app_label,
-                                      export_name,
-                                      format_name)
-    # delete if it already exists
-    Export.objects.filter(name = model_name).delete()
-
-    csv_format = Format.objects.get(name=format_name)
-    export = Export(name = model_name,
-                    slug = slugify(model_name),
-                    model = content_type,
-                    export_format = csv_format)
-    export.save()
-
-    for i, field in enumerate(fields):
-        column = Column(export = export,
-                        column = field,
-                        label = field,
-                        order = i)
-        column.save()
-
-def create_export_for_participants_joined_with_other_models(app_label, models_module):
+def create_export(app_label, admin_module):
     participant_content_type = ContentType.objects.get(app_label=app_label, model='participant')
 
-    models_info = (("Participant", "p_"), 
-                   ("Match", "m_"), 
-                   ("Treatment", "t_"), 
-                   ("Experiment", "e_")
+    models_info = (("Participant", None),
+                   ("Match", 'match'),
+                   ("Treatment", 'treatment'),
+                   ("Experiment", 'experiment'),
+                   ("SessionParticipant", 'session_participant'),
+                   ("Session", 'session'),
                    )
 
     export_info = []
-    for model_name, prefix in models_info:
-        model_class = getattr(models_module, model_name)
-        get_list_display_func = getattr(ptree.adminlib, "get_%s_list_display" % model_name.lower())
-        get_readonly_fields = getattr(ptree.adminlib, "get_%s_readonly_fields" % model_name.lower())
-        list_display = get_list_display_func(model_class,
-                                             get_readonly_fields([]))
+    for model_name, name_as_attribute in models_info:
+        if model_name in {'Session', 'SessionParticipant'}:
+            admin_module = import_module('ptree.adminlib')
+        list_display = getattr(admin_module, '{}Admin'.format(model_name)).list_display
+        # remove since these are redundant
+        list_display = [field for field in list_display if not ptree.adminlib.is_fk_link_to_parent_class(field)]
         if model_name == "Participant":
-            export_info += [("%s%s" % (prefix, field), field) for field in list_display]
+            export_info += [(field, field) for field in list_display]
         else:
-            export_info += [("%s%s" % (prefix, field), "%s.%s" % (model_name.lower(), field)) for field in list_display]
+            export_info += [("%s.%s" % (name_as_attribute, field), "%s.%s" % (name_as_attribute, field)) for field in list_display]
 
     format_name = "CSV"
-    full_export_name = '{}: {} ({})'.format(participant_content_type.app_label,
-                                      "participants_joined_with_other_data",
-                                      format_name)
+    export_name = '{} participants'.format(participant_content_type.app_label)
+
     # delete if it already exists
-    Export.objects.filter(name = full_export_name).delete()
+    Export.objects.filter(name = export_name).delete()
 
     csv_format = Format.objects.get(name=format_name)
-    export = Export(name = full_export_name,
-                    slug = slugify(full_export_name),
+    export = Export(name = export_name,
+                    slug = slugify(export_name),
                     model = participant_content_type,
                     export_format = csv_format)
     export.save()
@@ -143,53 +110,16 @@ def create_export_for_participants_joined_with_other_models(app_label, models_mo
                         order = i)
         column.save()
 
-def create_export_for_participants(app_label, Participant):
-    participant_content_type = ContentType.objects.get(app_label=app_label, model='participant')
-    list_display = ptree.adminlib.get_participant_list_display(Participant,
-                                                      ptree.adminlib.get_participant_readonly_fields([]))
-    create_export(participant_content_type,
-                       'participants',
-                       list_display)
-
-def create_export_for_matches(app_label, Match):
-    match_content_type = ContentType.objects.get(app_label=app_label, model='match')
-    list_display = ptree.adminlib.get_match_list_display(Match,
-                                                      ptree.adminlib.get_match_readonly_fields([]))
-    create_export(match_content_type,
-                       'matches',
-                       list_display)
-
-def create_export_for_treatments(app_label, Treatment):
-    treatment_content_type = ContentType.objects.get(app_label=app_label, model='treatment')
-    list_display = ptree.adminlib.get_treatment_list_display(Treatment,
-                                                      ptree.adminlib.get_treatment_readonly_fields([]))
-    create_export(treatment_content_type,
-                       'treatments',
-                       list_display)
-
-def create_export_for_experiments(app_label, Experiment):
-    experiment_content_type = ContentType.objects.get(app_label=app_label, model='experiment')
-    list_display = ptree.adminlib.get_experiment_list_display(Experiment,
-                                                      ptree.adminlib.get_experiment_readonly_fields([]))
-    create_export(experiment_content_type,
-                       'experiments',
-                       list_display)
-
 def create_all_data_exports(sender, **kwargs):
     # only do it for 1 sender, so that these lines don't get repeated for every app
     if sender.__name__ == 'django.contrib.auth.models':
         update_all_contenttypes()
-        create_html_export_format(sender)
         create_csv_export_format(sender)
         for app_label in settings.INSTALLED_PTREE_APPS:
             if ptree.common.is_experiment_app(app_label):
-                models_module = import_module('{}.models'.format(app_label))
+                admin_module = import_module('{}.admin'.format(app_label))
                 print 'Creating data exports for {}'.format(app_label)
-                create_export_for_matches(app_label, models_module.Match)
-                create_export_for_participants(app_label, models_module.Participant)
-                create_export_for_treatments(app_label, models_module.Treatment)
-                create_export_for_experiments(app_label, models_module.Experiment)
-                create_export_for_participants_joined_with_other_models(app_label, models_module)
+                create_export(app_label, admin_module)
     StubModel().save()
 
 signals.post_syncdb.connect(create_all_data_exports)
