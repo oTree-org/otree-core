@@ -270,7 +270,7 @@ class ExperimentAdmin(admin.ModelAdmin):
 class ParticipantInSessionAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
-    list_filter = ['session']
+    list_filter = [NonHiddenSessionListFilter]
 
     readonly_fields = get_session_participant_readonly_fields([])
     list_display = get_session_participant_list_display(ptree.session.models.SessionParticipant,
@@ -281,7 +281,9 @@ class ParticipantInSessionAdmin(admin.ModelAdmin):
         return new_tab_link(url, 'Link')
     start_link.allow_tags = True
 
-
+    def queryset(self, request):
+        qs = super(ParticipantInSessionAdmin, self).queryset(request)
+        return qs.filter(session__hidden=False)
 
 class SessionAdmin(admin.ModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
