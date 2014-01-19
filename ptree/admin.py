@@ -25,6 +25,7 @@ class PTreeExportAdmin(ExportAdmin):
     # In Django 1.7, I can set list_display_links to None and then put 'name' first
     list_display = ['get_export_link', 'name']
     ordering = ['slug']
+    list_filter = []
 
 
 admin.site.register(Export, PTreeExportAdmin)

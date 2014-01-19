@@ -24,7 +24,7 @@ def start_urls_for_experiment(experiment, request):
 def remove_duplicates(lst):
     return list(OrderedDict.fromkeys(lst))
 
-def get_readonly_fields(Model, fields_specific_to_this_subclass):
+def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
 
     fields_for_this_model_type = {
         'Participant':
@@ -51,7 +51,7 @@ def get_readonly_fields(Model, fields_specific_to_this_subclass):
             'progress'],
     }[Model.__name__]
 
-    return remove_duplicates(fields_for_this_model_type + fields_specific_to_this_subclass)
+    return remove_duplicates(fields_for_this_model_type + (fields_specific_to_this_subclass or []))
 
 def get_list_display(Model, readonly_fields, first_fields=None):
 

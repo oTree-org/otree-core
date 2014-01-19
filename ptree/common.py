@@ -4,6 +4,7 @@ from decimal import Decimal
 import urllib
 import urlparse
 from django.utils.importlib import import_module
+import subprocess
 
 def add_params_to_url(url, params):
     url_parts = list(urlparse.urlparse(url))
@@ -50,3 +51,9 @@ def is_experiment_app(app_label):
         return False
     class_names = ['Participant', 'Match', 'Treatment', 'Experiment']
     return all(hasattr(models_module, ClassName) for ClassName in class_names)
+
+def git_hash():
+    try:
+        return subprocess.check_output(['git','rev-parse','HEAD'])
+    except:
+        return None

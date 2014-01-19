@@ -24,6 +24,7 @@ from django.utils.translation import ugettext as _
 from django.db.models import Q
 from ptree.common import assign_participant_to_match
 from datetime import datetime
+import ptree.common
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -432,6 +433,12 @@ class InitializeSessionParticipant(vanilla.UpdateView):
                     session_participant.mturk_worker_id = mturk_worker_id
                     session_participant.mturk_assignment_id = mturk_assignment_id
 
+        # generate hash when the first participant starts, rather than when the session was created
+        # (since code is often updated after session created)
+        if not session.git_hash:
+            session.git_hash = ptree.common.git_hash()
+            session.save()
+        session_participant.visited = True
         session_participant.time_started = datetime.now()
 
         participant_label = self.request.GET.get(constants.participant_label)
@@ -485,6 +492,7 @@ class Initialize(vanilla.View):
         self.treatment = self.participant.treatment or self.experiment.pick_treatment_for_incoming_participant()
         self.participant.treatment = self.treatment
 
+        self.participant.visited = True
         self.participant.time_started = datetime.now()
 
         self.participant.save()

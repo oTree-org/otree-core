@@ -18,6 +18,8 @@ from django.contrib import admin
 from django.contrib.contenttypes.management import update_all_contenttypes
 from ptree.session.models import StubModel
 import ptree.adminlib
+from django.db import models
+from data_exports.compat import python_2_unicode_compatible
 
 def create_default_superuser(app, created_models, verbosity, **kwargs):
     """
@@ -111,6 +113,7 @@ def create_export(app_label, admin_module):
         column.save()
 
 def create_all_data_exports(sender, **kwargs):
+    StubModel().save()
     # only do it for 1 sender, so that these lines don't get repeated for every app
     if sender.__name__ == 'django.contrib.auth.models':
         update_all_contenttypes()
@@ -120,7 +123,7 @@ def create_all_data_exports(sender, **kwargs):
                 admin_module = import_module('{}.admin'.format(app_label))
                 print 'Creating data exports for {}'.format(app_label)
                 create_export(app_label, admin_module)
-    StubModel().save()
+
 
 signals.post_syncdb.connect(create_all_data_exports)
 

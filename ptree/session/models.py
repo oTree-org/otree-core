@@ -31,6 +31,8 @@ class Session(models.Model):
 
     hidden = models.BooleanField(default=False)
 
+    git_hash = models.CharField(max_length=200, null=True)
+
     # how much people are getting paid to perform it
     base_pay = models.PositiveIntegerField()
 
