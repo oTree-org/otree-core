@@ -203,9 +203,20 @@ class NonHiddenSessionListFilter(admin.SimpleListFilter):
         else:
             return queryset
 
-class ParticipantAdmin(admin.ModelAdmin):
-    change_list_template = "admin/ptree_change_list.html"
+class PTreeBaseModelAdmin(admin.ModelAdmin):
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(PTreeBaseModelAdmin, self).get_form(request, obj, **kwargs)
+        for key in form.base_fields.keys():
+            try:
+                model_field, _, _, _ = self.model._meta.get_field_by_name(key)
+                if model_field.null:
+                    form.base_fields[key].required = False
+            except django.db.models.options.FieldDoesNotExist:
+                pass
+        return form
 
+class ParticipantAdmin(PTreeBaseModelAdmin):
+    change_list_template = "admin/ptree_change_list.html"
 
     def link(self, instance):
         url = instance.start_url()
@@ -220,8 +231,7 @@ class ParticipantAdmin(admin.ModelAdmin):
         qs = super(ParticipantAdmin, self).queryset(request)
         return qs.filter(session__hidden=False)
 
-
-class MatchAdmin(admin.ModelAdmin):
+class MatchAdmin(PTreeBaseModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
     list_filter = [NonHiddenSessionListFilter, 'experiment', 'treatment']
@@ -232,7 +242,7 @@ class MatchAdmin(admin.ModelAdmin):
         return qs.filter(session__hidden=False)
 
 
-class TreatmentAdmin(admin.ModelAdmin):
+class TreatmentAdmin(PTreeBaseModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
     def link(self, instance):
@@ -250,7 +260,7 @@ class TreatmentAdmin(admin.ModelAdmin):
         return qs.filter(session__hidden=False)
 
 
-class ExperimentAdmin(admin.ModelAdmin):
+class ExperimentAdmin(PTreeBaseModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
     def experimenter_input_link(self, instance):
@@ -265,7 +275,7 @@ class ExperimentAdmin(admin.ModelAdmin):
     experimenter_input_link.allow_tags = True
     list_filter = [NonHiddenSessionListFilter]
 
-class SessionParticipantAdmin(admin.ModelAdmin):
+class SessionParticipantAdmin(PTreeBaseModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
     list_filter = [NonHiddenSessionListFilter]
@@ -284,7 +294,7 @@ class SessionParticipantAdmin(admin.ModelAdmin):
         qs = super(SessionParticipantAdmin, self).queryset(request)
         return qs.filter(session__hidden=False)
 
-class SessionAdmin(admin.ModelAdmin):
+class SessionAdmin(PTreeBaseModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
     def get_urls(self):
