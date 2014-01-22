@@ -78,6 +78,7 @@ def get_list_display(Model, readonly_fields, first_fields=None):
              'session'],
         'SessionParticipant':
             ['name',
+             'session',
              'progress'],
         'Session':
             ['name',
@@ -151,7 +152,7 @@ class FieldLinkToForeignKey:
         else:
             url = reverse('admin:%s_%s_change' %(object._meta.app_label,  object._meta.module_name),  
                             args=[object.id])
-            return '<a href="%s">%s</a>' % (url, object.pk)
+            return '<a href="%s">%s</a>' % (url, object.__unicode__())
 
     @property
     def allow_tags(self):
@@ -271,6 +272,8 @@ class SessionParticipantAdmin(admin.ModelAdmin):
 
     readonly_fields = get_readonly_fields(ptree.session.models.SessionParticipant, [])
     list_display = get_list_display(ptree.session.models.SessionParticipant, readonly_fields)
+    list_editable = ['exclude_from_data_analysis']
+
 
     def start_link(self, instance):
         url = instance.start_url()

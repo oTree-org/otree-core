@@ -18,12 +18,14 @@ class BaseExperiment(models.Model):
                             null = True,
                             blank = True,
                             )
-    code = RandomCharField(length=8)
-    experimenter_access_code = RandomCharField(length=8)
 
     session = models.ForeignKey(Session,
                                                 related_name = '%(app_label)s_%(class)s',
                                                 null=True)
+
+    code = RandomCharField(length=8)
+    experimenter_access_code = RandomCharField(length=8)
+
 
     next_experiment_content_type = models.ForeignKey(ContentType,
                                                      null=True,

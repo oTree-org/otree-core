@@ -54,6 +54,12 @@ def is_experiment_app(app_label):
 
 def git_hash():
     try:
-        return subprocess.check_output(['git','rev-parse','HEAD'])
+        hash = subprocess.check_output(['git rev-parse HEAD'.split()])
     except:
         return None
+    try:
+        subprocess.check_call('git diff-index --quiet HEAD')
+        return hash
+    except subprocess.CalledProcessError:
+        return '{} (plus uncommitted changes)'.format(hash)
+

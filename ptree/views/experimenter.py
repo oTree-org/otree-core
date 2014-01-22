@@ -52,6 +52,7 @@ class ExperimenterSequenceMixin(ExperimenterMixin):
     def dispatch(self, request, *args, **kwargs):
         self.ExperimentClass = self.request.session[constants.ExperimentClass]
         self.experiment = self.ExperimentClass.objects.get(code = self.request.session[constants.experiment_code])
+        self.session = self.experiment.session
 
         ssw = self.show_skip_wait()
 
@@ -96,7 +97,8 @@ class ExperimenterSequenceMixin(ExperimenterMixin):
 
     def get_form(self, data=None, files=None, **kwargs):
         kwargs.update({'experiment': self.experiment,
-                       'request': self.request})
+                       'request': self.request,
+                       'session': self.session})
 
         cls = self.get_form_class()
         return cls(data=data, files=files, **kwargs)

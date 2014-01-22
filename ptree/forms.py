@@ -25,12 +25,6 @@ class FormHelper(crispy_forms.helper.FormHelper):
 
 class BaseModelForm(forms.ModelForm):
 
-    # In general, pTree does not allow a user to go back and change their answer on a previous page,
-    # since that often defeats the purpose of the game (e.g. eliciting an honest answer).
-    # But you can put it in rewritable_fields to make it an exception.
-    ## UPDATE: deprecated for now
-    # rewritable_fields = []
-
     def field_initial_values(self):
         """Return a dict of any initial values"""
         return {}
@@ -49,6 +43,18 @@ class BaseModelForm(forms.ModelForm):
         return None
 
     def __init__(self, *args, **kwargs):
+        """
+        Special handling for 'choices' argument, NullBooleanFields, and initial choice:
+        If the user explicitly specifies a None choice (which is usually rendered as '---------', we should always respect it
+
+        Otherwise:
+        If the field is a NullBooleanField:
+            if it's rendered as a Select menu (which it is by default), it should have a None choice
+        If the field is a RadioSelect:
+            it should not have a None choice
+            If the DB field's value is None and the user did not specify an inital value, nothing should be selected by default.
+            This will conceptually match a dropdown.
+        """
         self.process_kwargs(kwargs)
         initial = kwargs.get('initial', {})
         initial.update(self.field_initial_values())
@@ -59,6 +65,9 @@ class BaseModelForm(forms.ModelForm):
         for field_name, label in self.field_labels().items():
             self.fields[field_name].label = label
 
+        # allow a user to set field_choices without having to remember to set the widget to Select.
+        # why don't we just make the user explicitly set the form widget in Meta?
+        # that would make the problem
         for field_name, choices in self.field_choices().items():
             field = self.fields[field_name]
 
@@ -69,16 +78,26 @@ class BaseModelForm(forms.ModelForm):
                 field.widget.__class__(choices=choices)
             except TypeError:
                 # if the current widget can't accept a choices arg, fall back to using a Select widget
+                # FIXME: what if there are additional args to the constructor?
                 field.widget = forms.Select(choices=choices)
             else:
                 field.choices = choices
+
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            if isinstance(field.widget, forms.RadioSelect):
+                # Fields with a RadioSelect should be rendered without the '---------' option,
+                # and with nothing selected by default, to match dropdowns conceptually.
+                # if the selected item was the None choice, by removing it, nothing is selected.
+                if field.choices[0][0] in {u'', None}:
+                    field.choices = field.choices[1:]
 
         # crispy forms
         self.helper = FormHelper()
         self.helper.layout = self.layout()
 
     def null_boolean_field_names(self):
-        null_boolean_fields_in_model = [field.name for field in self.Meta.model._meta.fields if field.__class__ == models.NullBooleanField]
+        null_boolean_fields_in_model = [field.name for field in self.Meta.model._meta.fields if isinstance(field, models.NullBooleanField)]
         return [field_name for field_name in self.fields if field_name in null_boolean_fields_in_model]
 
     def clean(self):
@@ -98,13 +117,14 @@ class ModelForm(BaseModelForm):
         self.treatment = kwargs.pop('treatment')
         self.experiment = kwargs.pop('experiment')
         self.request = kwargs.pop('request')
+        self.session = kwargs.pop('session')
         self.time_limit_was_exceeded = kwargs.pop('time_limit_was_exceeded')
 
 class ExperimenterModelForm(BaseModelForm):
     def process_kwargs(self, kwargs):
         self.experiment = kwargs.pop('experiment')
         self.request = kwargs.pop('request')
-
+        self.session = kwargs.pop('session')
 
 class StubModelForm(ModelForm):
     class Meta:

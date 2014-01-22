@@ -12,7 +12,7 @@ class ViewInThisApp(object):
 
     def for_IDE_autocomplete(self):
         """
-        never actually gets called :)
+        never actually gets called.
         only exists to declare frequently used instance vars,
         so that the IDE's IntelliSense/code completion finds these attributes
         to make writing code faster.
@@ -26,7 +26,7 @@ class ViewInThisApp(object):
 class ModelFormInThisApp(object):
     def for_IDE_autocomplete(self):
         """
-        never actually gets called :)
+        never actually gets called.
         only exists to declare frequently used instance vars,
         so that the IDE's IntelliSense/code completion finds these attributes
         to make writing code faster.

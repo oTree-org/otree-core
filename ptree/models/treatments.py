@@ -12,14 +12,15 @@ class BaseTreatment(models.Model):
 
     label = models.CharField(max_length = 300, null = True, blank = True)
 
+    session = models.ForeignKey(ptree.session.models.Session,
+                                                null=True,
+                                                related_name = '%(app_label)s_%(class)s')
+
     # the treatment code in the URL. This is generated automatically.
     code = RandomCharField(length=8)
 
     participants_per_match = models.PositiveIntegerField(default=1)
 
-    session = models.ForeignKey(ptree.session.models.Session,
-                                                null=True,
-                                                related_name = '%(app_label)s_%(class)s')
 
     def start_url(self):
         """The URL that a user is redirected to in order to start a treatment"""

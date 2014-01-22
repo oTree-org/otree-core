@@ -7,12 +7,13 @@ from boto.mturk.connection import MTurkConnection
 from boto.mturk.price import Price
 from ptree.common import currency
 import sys
+from ptree.session.models import Session
 
 def cents_to_dollars(num_cents):
     return round(num_cents/100.0,2)
 
 class Command(BaseCommand):
-    args = '<session_id>'
+    args = '<session_code>'
     help = "pTree: Pay all Mechanical Turk participants for this sequence of experiments."
 
     def handle(self, *args, **options):
@@ -34,15 +35,15 @@ class Command(BaseCommand):
         config.add_section('aws info')
         config.set('aws info','aws_validate_certs','False')
 
-        if len(args) != 2:
-            raise CommandError("Wrong number of arguments (expecting 'mturk_pay app_label experiment_id'. Example: 'mturk_pay ultimatum 3')")
+        if len(args) != 1:
+            raise CommandError("Wrong number of arguments (expecting 'mturk_pay session code'. Example: 'mturk_pay motaliho')")
         else:
-            app_label, experiment_id = args
+            session_code = args[0]
 
             self.connection = MTurkConnection(is_secure = True)
-            models = import_module('{}.models'.format(app_label))
-            self.experiment = models.Experiment.objects.get(id=int(experiment_id))
-            if self.experiment.payment_was_sent:
+
+            self.session = Session.objects.get(code=session_code)
+            if self.session.payment_was_sent:
                 print 'Error: This experiment was already paid through pTree.'
                 return
 
@@ -63,14 +64,14 @@ class Command(BaseCommand):
     def pay_hit_bonuses(self, is_confirmed):
 
         total_money_paid = 0
-        for participant in self.experiment.participants():
+        for participant in self.session.participants():
             bonus = participant.bonus()
             if bonus == None:
                 bonus = 0
             total_money_paid += bonus
 
             if not is_confirmed:
-                print 'Participant {}: {}'.format(participant.id, participant.bonus_display())
+                print 'Participant: [{}], Payment: {}'.format(participant.name, participant.bonus_display())
             if is_confirmed:
                 if bonus > 0:
                     print bonus, Price(cents_to_dollars(bonus))
@@ -82,5 +83,5 @@ class Command(BaseCommand):
             print 'Total amount to pay: {}'.format(currency(total_money_paid))
         if is_confirmed:
             print 'Total amount paid: {}'.format(currency(total_money_paid))
-            self.experiment.payment_was_sent = True
-            self.experiment.save()
+            self.session.payment_was_sent = True
+            self.session.save()

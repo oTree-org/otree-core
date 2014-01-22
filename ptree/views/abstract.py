@@ -39,6 +39,11 @@ class ExperimentMixin(object):
     """
 
     def load_classes(self):
+        """
+        FIXME: Why do we need MatchClass, TreatmentClass, and ExperimentClass,
+        if we only use ParticipantClass in load_objects?
+        Maybe for IDE autocomplete.
+        """
         self.ExperimentClass = self.request.session.get(constants.ExperimentClass)
         self.TreatmentClass = self.request.session.get(constants.TreatmentClass)
         self.ParticipantClass = self.request.session.get(constants.ParticipantClass)
@@ -50,6 +55,8 @@ class ExperimentMixin(object):
         self.match = self.participant.match
         self.treatment = self.match.treatment
         self.experiment = self.treatment.experiment
+        self.session = self.experiment.session
+
 
     def save_objects(self):
         for obj in [self.match, self.participant, self.participant.session_participant]:
@@ -272,6 +279,7 @@ class SequenceMixin(ExperimentMixin):
                'treatment': self.treatment,
                'experiment': self.experiment,
                'request': self.request,
+               'session': self.session,
                'time_limit_was_exceeded': self.time_limit_was_exceeded}
 
     def get_form(self, data=None, files=None, **kwargs):

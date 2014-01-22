@@ -147,6 +147,10 @@ class SessionParticipant(models.Model):
     me_in_first_experiment = generic.GenericForeignKey('me_in_first_experiment_content_type',
                                                 'me_in_first_experiment_object_id',)
 
+    exclude_from_data_analysis = models.BooleanField(default=False)
+
+    experimenter_comment = models.TextField()
+
     def participants(self):
         lst = []
         me_in_next_experiment = self.me_in_first_experiment
