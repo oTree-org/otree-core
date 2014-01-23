@@ -204,6 +204,7 @@ class NonHiddenSessionListFilter(admin.SimpleListFilter):
             return queryset
 
 class PTreeBaseModelAdmin(admin.ModelAdmin):
+    """Allow leaving fields blank in the admin"""
     def get_form(self, request, obj=None, **kwargs):
         form = super(PTreeBaseModelAdmin, self).get_form(request, obj, **kwargs)
         for key in form.base_fields.keys():
