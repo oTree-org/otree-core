@@ -10,6 +10,9 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.contrib.staticfiles.templatetags.staticfiles import static as static_template_tag
 import ptree.session.models
 from ptree.common import currency
+from data_exports.admin import ExportAdmin
+from django.utils.importlib import import_module
+import os
 
 def new_tab_link(url, label):
     return '<a href="{}" target="_blank">{}</a>'.format(url, label)
@@ -390,6 +393,40 @@ class SessionAdmin(PTreeBaseModelAdmin):
 
     list_editable = ['hidden']
 
+class PTreeExportAdmin(ExportAdmin):
 
+    # In Django 1.7, I can set list_display_links to None and then put 'name' first
+    list_display = ['get_export_link', 'name', 'docs_link']
+    ordering = ['slug']
+    list_filter = []
 
+    def get_urls(self):
+        urls = super(PTreeExportAdmin, self).get_urls()
+        my_urls = patterns('',
+            (r'^(?P<pk>\d+)/docs/$', self.admin_site.admin_view(self.docs)),
+        )
+        return my_urls + urls
 
+    def docs(self, request, pk):
+        export = self.model.objects.get(pk=pk)
+        docs_package_name = '{}.docs'.format(export.model.app_label)
+
+        # as a side effect, this will execute the code to make the docs
+        print docs_package_name
+        make_docs_module = import_module('{}.make_docs'.format(docs_package_name))
+
+        # find the location where the docs will be written
+        docs_dir = os.path.dirname(os.path.abspath(make_docs_module.__file__))
+        path_to_doc_file = os.path.join(docs_dir, 'field_descriptions.txt')
+        with open(path_to_doc_file, 'r') as f:
+            # use Windows-style line endings because Unix-style doesn't display right on Windows
+            text = '\r\n'.join([line.strip() for line in f])
+            response = HttpResponse(text, content_type='text/plain')
+            response['Content-Disposition'] = 'attachment; filename="field_descriptions.txt"'
+            return response
+
+    def docs_link(self, instance):
+        return new_tab_link('{}/docs/'.format(instance.pk), label='Link')
+
+    docs_link.allow_tags = True
+    docs_link.short_description = 'docs'
