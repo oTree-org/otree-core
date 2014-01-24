@@ -89,7 +89,7 @@ class ExperimentMixin(object):
     def page_the_user_should_be_on(self):
         if self.participant.index_in_sequence_of_views >= len(self.treatment.sequence_as_urls()):
             if self.experiment.next_experiment:
-                self.participant.session_participant.index_in_session += 1
+                self.participant.session_participant.index_in_sequence_of_experiments += 1
                 self.participant.session_participant.save()
                 return self.participant.me_in_next_experiment.start_url()
 
@@ -406,12 +406,12 @@ class InitializeSessionParticipant(vanilla.UpdateView):
     def get(self, *args, **kwargs):
         self.request.session.clear()
 
-        sequence_code = self.request.GET.get(constants.session_code)
+        session_code = self.request.GET.get(constants.session_code)
         participant_code = self.request.GET.get(constants.session_participant_code)
 
-        if not participant_code or sequence_code:
+        if not participant_code or session_code:
             return HttpResponse('Missing parameter in URL')
-        if participant_code and sequence_code:
+        if participant_code and session_code:
             return HttpResponse('Redundant parameters in URL')
 
         if participant_code:
@@ -449,7 +449,7 @@ class InitializeSessionParticipant(vanilla.UpdateView):
         session_participant.visited = True
         session_participant.time_started = datetime.now()
 
-        participant_label = self.request.GET.get(constants.participant_label)
+        participant_label = self.request.GET.get(constants.session_participant_label)
         if participant_label is not None:
             session_participant.label = participant_label
 

@@ -7,11 +7,11 @@ def directory_name(path):
     return os.path.basename(os.path.normpath(path))
 
 class Command(BaseCommand):
-    help = "pTree: Create a sequence of experiments."
+    help = "pTree: Create a session."
     args = '[name]'
 
     def handle(self, *args, **options):
-        print 'Creating sequence of experiments...'
+        print 'Creating session...'
         if len(args) >= 1:
             raise CommandError("Wrong number of arguments (expecting '{}')".format(self.args))
 

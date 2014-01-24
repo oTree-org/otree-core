@@ -68,28 +68,21 @@ def create_csv_export_format(sender, **kwargs):
                             template="data_exports/ptree.csv")
         csv_format.save()
 
-def create_export(app_label, admin_module):
+
+
+
+def create_export(app_label):
     participant_content_type = ContentType.objects.get(app_label=app_label, model='participant')
 
-    models_info = (("Participant", None),
-                   ("Match", 'match'),
-                   ("Treatment", 'treatment'),
-                   ("Experiment", 'experiment'),
-                   ("SessionParticipant", 'session_participant'),
-                   ("Session", 'session'),
-                   )
+    model_names_as_attributes = {
+        "Participant": None,
+        'Match': 'match',
+        'Treatment': 'treatment',
+        'Experiment': 'experiment',
+        'SessionParticipant': 'session_participant',
+        'Session': 'session',
+    }
 
-    export_info = []
-    for model_name, name_as_attribute in models_info:
-        if model_name in {'Session', 'SessionParticipant'}:
-            admin_module = import_module('ptree.adminlib')
-        list_display = getattr(admin_module, '{}Admin'.format(model_name)).list_display
-        # remove since these are redundant
-        list_display = [field for field in list_display if not ptree.adminlib.is_fk_link_to_parent_class(field)]
-        if model_name == "Participant":
-            export_info += [(field, field) for field in list_display]
-        else:
-            export_info += [("%s.%s" % (name_as_attribute, field), "%s.%s" % (name_as_attribute, field)) for field in list_display]
 
     format_name = "CSV"
     export_name = '{} participants'.format(participant_content_type.app_label)
@@ -104,11 +97,20 @@ def create_export(app_label, admin_module):
                     export_format = csv_format)
     export.save()
 
-    for i, field in enumerate(export_info):
-        field_label, field_path = field
+    export_fields = ptree.adminlib.get_data_export_fields(app_label)
+    export_field_tuples = []
+    for model_name in ptree.adminlib.MODEL_NAMES:
+        if model_name == "Participant":
+            export_field_tuples.extend((field, field) for field in export_fields[model_name])
+        else:
+            for field in export_fields[model_name]:
+                dot_path = '{}.{}'.format(model_names_as_attributes[model_name], field)
+                export_field_tuples.append((dot_path, dot_path))
+    for i, tup in enumerate(export_field_tuples):
+        path, path = tup
         column = Column(export = export,
-                        column = field_path,
-                        label = field_label,
+                        column = path,
+                        label = path,
                         order = i)
         column.save()
 
@@ -120,9 +122,8 @@ def create_all_data_exports(sender, **kwargs):
         create_csv_export_format(sender)
         for app_label in settings.INSTALLED_PTREE_APPS:
             if ptree.common.is_experiment_app(app_label):
-                admin_module = import_module('{}.admin'.format(app_label))
                 print 'Creating data exports for {}'.format(app_label)
-                create_export(app_label, admin_module)
+                create_export(app_label)
 
 
 signals.post_syncdb.connect(create_all_data_exports)

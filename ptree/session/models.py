@@ -38,13 +38,18 @@ class Session(models.Model):
 
     comment = models.TextField()
 
+    def base_pay_display(self):
+        return currency(self.base_pay)
+
+    base_pay_display.short_description = 'Base pay'
+
     def name(self):
         return id_label_name(self.pk, self.label)
 
     def experiment_names(self):
         names = []
         for experiment in self.experiments():
-            names.append('{} {}'.format(experiment._meta.app_label, experiment))
+            names.append('{} {}'.format(ptree.common.app_name_format(experiment._meta.app_label), experiment.name()))
         if names:
             return ', '.join(names)
         else:
@@ -118,11 +123,12 @@ class Session(models.Model):
     def participants(self):
         return self.sessionparticipant_set.all()
 
-    def payments_file_is_ready(self):
+    def payments_ready(self):
         for participant in self.participants():
             if not participant.bonus_is_complete():
                 return False
         return True
+    payments_ready.boolean = True
 
     def time_started(self):
         start_times = [p.time_started for p in self.participants() if p.time_started is not None]
@@ -137,7 +143,7 @@ class SessionParticipant(models.Model):
 
     session = models.ForeignKey(Session)
 
-    index_in_session = models.PositiveIntegerField(default=0)
+    index_in_sequence_of_experiments = models.PositiveIntegerField(default=0)
 
     me_in_first_experiment_content_type = models.ForeignKey(ContentType,
                                                       null=True,
@@ -150,6 +156,7 @@ class SessionParticipant(models.Model):
     exclude_from_data_analysis = models.BooleanField(default=False)
 
     experimenter_comment = models.TextField()
+    visited = models.BooleanField(default=False)
 
     def participants(self):
         lst = []
@@ -162,7 +169,15 @@ class SessionParticipant(models.Model):
         return lst
 
     def progress(self):
-        return '{}/{} experiments'.format(self.index_in_session, len(self.session.experiments()))
+        return '{}/{} experiments'.format(self.index_in_sequence_of_experiments, len(self.session.experiments()))
+
+    def current_experiment(self):
+        if not self.visited:
+            return None
+        return ptree.common.app_name_format(self.session.experiments()[self.index_in_sequence_of_experiments]._meta.app_label)
+
+    def progress_in_current_experiment(self):
+        return self.participants()[self.index_in_sequence_of_experiments].progress()
 
     def bonus(self):
         return sum(participant.bonus() or 0 for participant in self.participants())
@@ -178,6 +193,8 @@ class SessionParticipant(models.Model):
             return currency(self.bonus())
         return u'{} (incomplete)'.format(currency(self.bonus()))
 
+    bonus_display.short_description = 'bonus'
+
     def bonus_is_complete(self):
         for p in self.participants():
             if p.bonus() is None:
@@ -190,7 +207,6 @@ class SessionParticipant(models.Model):
         return u'{} (incomplete)'.format(currency(self.total_pay()))
 
     time_started = models.DateTimeField(null=True)
-    was_terminated = models.BooleanField(default=False)
     mturk_assignment_id = models.CharField(max_length = 50, null = True)
     mturk_worker_id = models.CharField(max_length = 50, null = True)
     ip_address = models.IPAddressField(null = True)

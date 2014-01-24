@@ -5,6 +5,7 @@ import urllib
 import urlparse
 from django.utils.importlib import import_module
 import subprocess
+from django.template.defaultfilters import title
 
 def add_params_to_url(url, params):
     url_parts = list(urlparse.urlparse(url))
@@ -53,6 +54,7 @@ def is_experiment_app(app_label):
     return all(hasattr(models_module, ClassName) for ClassName in class_names)
 
 def git_hash():
+    '''fixme: seems not to be working'''
     try:
         hash = subprocess.check_output(['git rev-parse HEAD'.split()])
     except:
@@ -63,3 +65,5 @@ def git_hash():
     except subprocess.CalledProcessError:
         return '{} (plus uncommitted changes)'.format(hash)
 
+def app_name_format(app_name):
+    return title(app_name.replace("_", " "))

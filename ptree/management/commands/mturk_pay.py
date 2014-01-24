@@ -14,7 +14,7 @@ def cents_to_dollars(num_cents):
 
 class Command(BaseCommand):
     args = '<session_code>'
-    help = "pTree: Pay all Mechanical Turk participants for this sequence of experiments."
+    help = "pTree: Pay all Mechanical Turk participants for this session."
 
     def handle(self, *args, **options):
         config = boto.config

@@ -95,11 +95,14 @@ class ExperimenterSequenceMixin(ExperimenterMixin):
 
         return context
 
-    def get_form(self, data=None, files=None, **kwargs):
-        kwargs.update({'experiment': self.experiment,
-                       'request': self.request,
-                       'session': self.session})
+    def get_extra_form_kwargs(self):
+        return {'experiment': self.experiment,
+                'request': self.request,
+                'session': self.session,}
 
+
+    def get_form(self, data=None, files=None, **kwargs):
+        kwargs.update(self.get_extra_form_kwargs())
         cls = self.get_form_class()
         return cls(data=data, files=files, **kwargs)
 
@@ -160,10 +163,6 @@ class ExperimenterModelFormSetView(ExperimenterSequenceMixin, extra_views.ModelF
         context = super(ExperimenterModelFormSetView, self).get_context_data(**kwargs)
         context['helper'] = FormHelper()
         return context
-
-    def get_extra_form_kwargs(self):
-        return {'experiment': self.experiment,
-                'request': self.request}
 
     def after_valid_formset_submission(self, formset):
         for form in formset:

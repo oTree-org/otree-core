@@ -9,10 +9,16 @@ import ptree.constants
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.contrib.staticfiles.templatetags.staticfiles import static as static_template_tag
 import ptree.session.models
-from ptree.common import currency
+from ptree.common import currency, app_name_format
 from data_exports.admin import ExportAdmin
 from django.utils.importlib import import_module
 import os
+from inspect_model import InspectModel
+import inspect
+import time
+
+LINE_BREAK = '\r\n'
+MODEL_NAMES = ["Participant", "Match", "Treatment", "Experiment", "SessionParticipant", "Session"]
 
 def new_tab_link(url, label):
     return '<a href="{}" target="_blank">{}</a>'.format(url, label)
@@ -45,13 +51,18 @@ def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
             ['time_started',
              'experiment_names',
              'start_urls_link',
+             'magdeburg_start_urls_link',
              'global_start_link',
              'mturk_snippet_link',
-             'payments_link'],
+             'payments_ready',
+             'payments_link',
+             'base_pay_display',],
         'SessionParticipant':
             ['bonus_display',
             'start_link',
-            'progress'],
+            'progress',
+            'current_experiment',
+            'progress_in_current_experiment'],
     }[Model.__name__]
 
     return remove_duplicates(fields_for_this_model_type + (fields_specific_to_this_subclass or []))
@@ -81,16 +92,37 @@ def get_list_display(Model, readonly_fields, first_fields=None):
              'session'],
         'SessionParticipant':
             ['name',
+             'start_link',
              'session',
-             'progress'],
+             'visited',
+             'progress',
+             'current_experiment',
+             'progress_in_current_experiment'],
         'Session':
             ['name',
              'hidden'],
     }[Model.__name__]
 
+    last_fields = {
+        'Participant': [],
+        'Match': [],
+        'Treatment': [],
+        'Experiment': [],
+        'SessionParticipant': [
+            'start_link',
+            'exclude_from_data_analysis',
+            'experimenter_comment',
+        ],
+        'Session': [
+
+            'comment',
+        ],
+    }[Model.__name__]
+
+
     fields_to_exclude = {
         'Participant':
-              ['id',
+              {'id',
               'code',
               'index_in_sequence_of_views',
               'me_in_previous_experiment_content_type',
@@ -98,14 +130,14 @@ def get_list_display(Model, readonly_fields, first_fields=None):
               'me_in_next_experiment_content_type',
               'me_in_next_experiment_object_id',
               'session_participant',
-              ],
+              },
         'Match':
-             [],
+             set(),
         'Treatment':
-            ['id',
-            'label'],
+            {'id',
+            'label'},
         'Experiment':
-            ['id',
+            {'id',
              'label',
              'session_access_code',
              'next_experiment_content_type',
@@ -115,23 +147,39 @@ def get_list_display(Model, readonly_fields, first_fields=None):
              'previous_experiment_object_id',
              'previous_experiment',
              'experimenter_access_code',
-             ],
+             },
         'SessionParticipant':
-            ['id',
-            'index_in_session',
+            {'id',
+            'index_in_sequence_of_experiments',
             'label',
             'me_in_first_experiment_content_type',
-            'me_in_first_experiment_object_id'],
+            'me_in_first_experiment_object_id',
+            'code',
+            'ip_address',
+            'mturk_assignment_id',
+            'mturk_worker_id'},
         'Session':
-             ['id',
+             {'id',
              'label',
              'first_experiment_content_type',
              'first_experiment_object_id',
-             'first_experiment']
+             'first_experiment',
+             'git_hash',
+             'experimenter_access_code',
+             'preassign_matches',
+             'is_for_mturk',
+             'base_pay',
+             # don't hide the code, since it's useful as a checksum (e.g. if you're on the payments page)
+             }
     }[Model.__name__]
+
+
+
+
 
     all_field_names = [field.name for field in Model._meta.fields if field.name not in fields_to_exclude]
     list_display = first_fields + readonly_fields + all_field_names
+    list_display = [f for f in list_display if f not in last_fields] + last_fields
     return _add_links_for_foreign_keys(Model, remove_duplicates(list_display))
 
 class FieldLinkToForeignKey:
@@ -307,16 +355,21 @@ class SessionAdmin(PTreeBaseModelAdmin):
             (r'^(?P<pk>\d+)/payments/$', self.admin_site.admin_view(self.payments)),
             (r'^(?P<pk>\d+)/mturk_snippet/$', self.admin_site.admin_view(self.mturk_snippet)),
             (r'^(?P<pk>\d+)/start_urls/$', self.start_urls),
+            (r'^(?P<pk>\d+)/magdeburg_start_urls/$', self.magdeburg_start_urls),
+
         )
         return my_urls + urls
+
+    def start_urls_list(self, request, session):
+        participants = session.participants()
+        return [request.build_absolute_uri(participant.start_url()) for participant in participants]
 
     def start_urls(self, request, pk):
         session = self.model.objects.get(pk=pk)
 
         if request.GET.get(ptree.constants.experimenter_access_code) != session.experimenter_access_code:
             return HttpResponseBadRequest('{} parameter missing or incorrect'.format(ptree.constants.experimenter_access_code))
-        participants = session.participants()
-        urls = [request.build_absolute_uri(participant.start_url()) for participant in participants]
+        urls = self.start_urls_list(request, session)
         return HttpResponse('\n'.join(urls), content_type="text/plain")
 
     def start_urls_link(self, instance):
@@ -328,6 +381,33 @@ class SessionAdmin(PTreeBaseModelAdmin):
 
     start_urls_link.short_description = 'Start URLs'
     start_urls_link.allow_tags = True
+
+    def magdeburg_start_urls(self, request, pk):
+        session = self.model.objects.get(pk=pk)
+        urls = self.start_urls_list(request, session)
+        import_file_lines = []
+        for i, url in enumerate(urls):
+            start = url.index('?')
+            params = url[start+1:]
+            import_file_lines.append('maxlab-{} | 1 | /name {}&{}&{}={}'.format(str(i+1).zfill(2),
+                                                                          i+1,
+                                                                          params,
+                                                                          ptree.constants.session_participant_label,
+                                                                          i+1))
+        response = HttpResponse('\n'.join(import_file_lines), content_type="text/plain")
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format('ptree-{}.ini'.format(time.time()))
+        return response
+
+    def magdeburg_start_urls_link(self, instance):
+        if not instance.first_experiment:
+            return 'No experiments in sequence'
+        return new_tab_link('{}/magdeburg_start_urls/?{}={}'.format(instance.pk,
+                                                          ptree.constants.experimenter_access_code,
+                                                          instance.experimenter_access_code), 'Link')
+
+    magdeburg_start_urls_link.short_description = 'Magdeburg Start URLs'
+    magdeburg_start_urls_link.allow_tags = True
+
 
     def mturk_snippet(self, request, pk):
         session = self.model.objects.get(pk=pk)
@@ -379,7 +459,7 @@ class SessionAdmin(PTreeBaseModelAdmin):
                                   })
 
     def payments_link(self, instance):
-        if instance.payments_file_is_ready():
+        if instance.payments_ready():
             link_text = 'Ready'
         else:
             link_text = 'Incomplete'
@@ -393,10 +473,78 @@ class SessionAdmin(PTreeBaseModelAdmin):
 
     list_editable = ['hidden']
 
+def get_data_export_fields(app_label):
+    admin_module = import_module('{}.admin'.format(app_label))
+    export_info = {}
+    for model_name in MODEL_NAMES:
+        if model_name == 'Session':
+            list_display = SessionAdmin.list_display
+        elif model_name == 'SessionParticipant':
+            list_display = SessionParticipantAdmin.list_display
+        else:
+            list_display = getattr(admin_module, '{}Admin'.format(model_name)).list_display
+        # remove since these are redundant
+        export_info[model_name] = [field for field in list_display if not is_fk_link_to_parent_class(field)]
+    return export_info
+
+def format_class_name(class_name):
+    return '{}\n'.format(class_name)
+
+def format_member_doc(member_name, member_doc):
+    return '\t{}\n\t\t{}\n'.format(member_name,
+                                   member_doc)
+
+def build_doc_file(app_label):
+    export_fields = get_data_export_fields(app_label)
+    app_models_module = import_module('{}.models'.format(app_label))
+
+    first_line = '{}: Field descriptions'.format(app_name_format(app_label))
+
+    docs = ['{}\n{}\n\n'.format(first_line,
+                                '*'*len(first_line))]
+
+    for model_name in MODEL_NAMES:
+        if model_name == 'SessionParticipant':
+            Model = ptree.session.models.SessionParticipant
+        elif model_name == 'Session':
+            Model = ptree.session.models.Session
+        else:
+            Model = getattr(app_models_module, model_name)
+        im = InspectModel(Model)
+        member_types = {
+            'fields': im.fields,
+            'methods': im.methods,
+            # TODO: add properties, attributes, and others
+        }
+
+
+
+        class_doc_string = inspect.getdoc(Model)
+        docs.append(format_class_name(model_name))
+
+        for member_name in export_fields[model_name]:
+
+            if member_name in member_types['methods']:
+                # check if it's a method
+                member = getattr(Model, member_name)
+                doc = inspect.getdoc(member)
+            elif member_name in member_types['fields']:
+                member = Model._meta.get_field_by_name(member_name)[0]
+                doc = inspect.getcomments(member)
+            else:
+                doc = '[not a field or method]'
+            doc = doc or ''
+            docs.append(format_member_doc(member_name, doc))
+
+    return ''.join(docs).replace('\n', LINE_BREAK).replace('\t', '    ')
+
+def doc_file_name(app_label):
+    return '{} -- field descriptions.txt'.format(app_name_format(app_label))
+
 class PTreeExportAdmin(ExportAdmin):
 
     # In Django 1.7, I can set list_display_links to None and then put 'name' first
-    list_display = ['get_export_link', 'name', 'docs_link']
+    list_display = ['get_export_link', 'docs_link', 'name']
     ordering = ['slug']
     list_filter = []
 
@@ -409,24 +557,13 @@ class PTreeExportAdmin(ExportAdmin):
 
     def docs(self, request, pk):
         export = self.model.objects.get(pk=pk)
-        docs_package_name = '{}.docs'.format(export.model.app_label)
-
-        # as a side effect, this will execute the code to make the docs
-        print docs_package_name
-        make_docs_module = import_module('{}.make_docs'.format(docs_package_name))
-
-        # find the location where the docs will be written
-        docs_dir = os.path.dirname(os.path.abspath(make_docs_module.__file__))
-        path_to_doc_file = os.path.join(docs_dir, 'field_descriptions.txt')
-        with open(path_to_doc_file, 'r') as f:
-            # use Windows-style line endings because Unix-style doesn't display right on Windows
-            text = '\r\n'.join([line.strip() for line in f])
-            response = HttpResponse(text, content_type='text/plain')
-            response['Content-Disposition'] = 'attachment; filename="field_descriptions.txt"'
-            return response
+        app_label = export.model.app_label
+        response = HttpResponse(build_doc_file(app_label))
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(doc_file_name(app_label))
+        return response
 
     def docs_link(self, instance):
-        return new_tab_link('{}/docs/'.format(instance.pk), label='Link')
+        return new_tab_link('{}/docs/'.format(instance.pk), label=doc_file_name(instance.model.app_label))
 
     docs_link.allow_tags = True
-    docs_link.short_description = 'docs'
+    docs_link.short_description = 'Field descriptions'
