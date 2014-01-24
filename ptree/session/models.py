@@ -15,7 +15,6 @@ class StubModel(models.Model):
 
 class Session(models.Model):
     label = models.CharField(max_length = 300, null = True, blank = True)
-    time_created = models.DateTimeField(auto_now_add = True)
     code = RandomCharField(length=8)
     experimenter_access_code = RandomCharField(length=8)
     first_experiment_content_type = models.ForeignKey(ContentType,

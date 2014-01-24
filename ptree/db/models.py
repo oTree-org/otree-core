@@ -3,7 +3,9 @@ import django.forms.widgets
 from django.utils.translation import ugettext_lazy
 import django.forms.fields
 from django.utils.text import capfirst
+import django.db.models
 
+# leading underscore so it doesn't show up in autocomplete
 class _NullBooleanSelect(django.forms.widgets.NullBooleanSelect):
     def __init__(self, attrs=None):
         choices = (('1', ugettext_lazy('---------')),
@@ -22,7 +24,7 @@ class NullBooleanField(NullBooleanField):
             'label': capfirst(self.verbose_name),
             'help_text': self.help_text}
         defaults.update(kwargs)
-        super(NullBooleanField, self).formfield(**defaults)
+        return super(django.db.models.NullBooleanField, self).formfield(**defaults)
 
     def __init__(self, *args,  **kwargs):
         self.documentation = kwargs.pop('documentation', '')
