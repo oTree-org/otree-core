@@ -1,4 +1,4 @@
-from django.db import models
+from ptree.db import models
 from ptree.fields import RandomCharField
 import ptree.constants as constants
 from django.template import defaultfilters

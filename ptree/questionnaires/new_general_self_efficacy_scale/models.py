@@ -1,4 +1,4 @@
-from django.db import models
+from ptree.db import models
 import ptree.models
 
 class NewGeneralSelfEfficacyScale(ptree.models.AuxiliaryModel):

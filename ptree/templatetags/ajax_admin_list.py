@@ -13,7 +13,7 @@ from django.contrib.admin.views.main import (ALL_VAR, EMPTY_CHANGELIST_VALUE,
 from django.contrib.admin.templatetags.admin_static import static
 from django.contrib.admin.templatetags import admin_list
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import models
+from ptree.db import models
 from django.utils import formats
 from django.utils.html import escapejs, format_html
 from django.utils.safestring import mark_safe

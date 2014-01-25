@@ -1,4 +1,4 @@
-from django.db import models
+from ptree.db import models
 import ptree.session.models
 
 class BaseMatch(models.Model):

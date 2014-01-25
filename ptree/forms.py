@@ -3,7 +3,7 @@ import ptree.common
 import ptree.models.common
 import ptree.session.models
 import ptree.constants
-from django.db import models
+from ptree.db import models
 from django.utils.translation import ugettext as _
 import crispy_forms.helper
 from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit

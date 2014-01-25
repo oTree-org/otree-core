@@ -1,5 +1,5 @@
 from django.http import HttpResponseRedirect
-from django.db import models
+from ptree.db import models
 from ptree.fields import RandomCharField
 import ptree.constants as constants
 from ptree.common import id_label_name

@@ -1,4 +1,4 @@
-from django.db import models
+from ptree.db import models
 from ptree.fields import RandomCharField
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType

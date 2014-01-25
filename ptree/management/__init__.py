@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.contrib.contenttypes.management import update_all_contenttypes
 from ptree.session.models import StubModel
 import ptree.adminlib
-from django.db import models
+from ptree.db import models
 from data_exports.compat import python_2_unicode_compatible
 
 def create_default_superuser(app, created_models, verbosity, **kwargs):

@@ -16,6 +16,7 @@ import os
 from inspect_model import InspectModel
 import inspect
 import time
+from textwrap import TextWrapper
 
 LINE_BREAK = '\r\n'
 MODEL_NAMES = ["Participant", "Match", "Treatment", "Experiment", "SessionParticipant", "Session"]
@@ -487,13 +488,6 @@ def get_data_export_fields(app_label):
         export_info[model_name] = [field for field in list_display if not is_fk_link_to_parent_class(field)]
     return export_info
 
-def format_class_name(class_name):
-    return '{}\n'.format(class_name)
-
-def format_member_doc(member_name, member_doc):
-    return '\t{}\n\t\t{}\n'.format(member_name,
-                                   member_doc)
-
 def build_doc_file(app_label):
     export_fields = get_data_export_fields(app_label)
     app_models_module = import_module('{}.models'.format(app_label))
@@ -502,6 +496,12 @@ def build_doc_file(app_label):
 
     docs = ['{}\n{}\n\n'.format(first_line,
                                 '*'*len(first_line))]
+
+    doc_string_wrapper = TextWrapper(
+        width=100,
+        initial_indent='\t'*2,
+        subsequent_indent='\t'*2
+    )
 
     for model_name in MODEL_NAMES:
         if model_name == 'SessionParticipant':
@@ -517,10 +517,7 @@ def build_doc_file(app_label):
             # TODO: add properties, attributes, and others
         }
 
-
-
-        class_doc_string = inspect.getdoc(Model)
-        docs.append(format_class_name(model_name))
+        docs.append('\n' + model_name)
 
         for member_name in export_fields[model_name]:
 
@@ -529,17 +526,25 @@ def build_doc_file(app_label):
                 member = getattr(Model, member_name)
                 doc = inspect.getdoc(member)
             elif member_name in member_types['fields']:
-                member = Model._meta.get_field_by_name(member_name)[0]
-                doc = inspect.getcomments(member)
+                try:
+                    member = Model._meta.get_field_by_name(member_name)[0]
+                    doc = member.documentation
+                except AttributeError:
+                    # maybe the field isn't from ptree.db
+                    doc = ''
             else:
                 doc = '[not a field or method]'
             doc = doc or ''
-            docs.append(format_member_doc(member_name, doc))
+            docs.append('\n\t' + member_name)
+            if doc:
+                docs.append('\n'.join(doc_string_wrapper.wrap(doc)))
 
-    return ''.join(docs).replace('\n', LINE_BREAK).replace('\t', '    ')
+    output = '\n'.join(docs)
+    return output.replace('\n', LINE_BREAK).replace('\t', '    ')
 
 def doc_file_name(app_label):
-    return '{} -- field descriptions.txt'.format(app_name_format(app_label))
+    return '{} -- field descriptions ({}).txt'.format(app_name_format(app_label),
+                                                      )
 
 class PTreeExportAdmin(ExportAdmin):
 
