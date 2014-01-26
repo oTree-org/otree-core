@@ -2,7 +2,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.conf import settings
 import extra_views
-from ptree.forms import StubModelForm, FormHelper
+from ptree.forms import StubModelForm, FormHelper, ExperimenterStubModelForm
 from ptree.session.models import StubModel
 import vanilla
 
@@ -142,7 +142,7 @@ class ExperimenterLaunch(ExperimenterMixin, vanilla.View):
 
 
 class ExperimenterUpdateView(ExperimenterSequenceMixin, vanilla.UpdateView):
-    form_class = StubModelForm
+    form_class = ExperimenterStubModelForm
 
     def get_object(self):
         Cls = self.get_form_class().Meta.model

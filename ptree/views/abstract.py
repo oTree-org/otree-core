@@ -50,8 +50,11 @@ class ExperimentMixin(object):
         self.MatchClass = self.request.session.get(constants.MatchClass)
 
     def load_objects(self):
-        self.participant = get_object_or_404(self.ParticipantClass,
-            code = self.request.session.get(constants.participant_code))
+        code = self.request.session.get(constants.participant_code)
+        try:
+            self.participant = get_object_or_404(self.ParticipantClass, code=code)
+        except ValueError:
+            raise Http404("This participant ({}) does not exist in the database. Maybe the database was recreated.".format(code))
         self.match = self.participant.match
         self.treatment = self.match.treatment
         self.experiment = self.treatment.experiment

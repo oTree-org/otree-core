@@ -130,3 +130,8 @@ class StubModelForm(ModelForm):
     class Meta:
         model = ptree.session.models.StubModel
         fields = []
+
+class ExperimenterStubModelForm(ExperimenterModelForm):
+    class Meta:
+        model = ptree.session.models.StubModel
+        fields = []

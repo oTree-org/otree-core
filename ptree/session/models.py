@@ -255,6 +255,7 @@ def create_session(label, is_for_mturk, preassign_matches, sequence, base_pay, n
 
             models_module = import_module('{}.models'.format(app_name))
             experiment = models_module.create_experiment_and_treatments()
+            experiment.save()
             session.add_experiment(experiment)
             for i in range(num_participants):
                 participant = models_module.Participant(experiment = experiment,
