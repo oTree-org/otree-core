@@ -92,6 +92,8 @@ class ExperimentMixin(object):
     def page_the_user_should_be_on(self):
         participant_experiment_index = self.participant.session_participant.index_in_sequence_of_experiments
         experiment_index = self.experiment.index_in_sequence_of_experiments()
+        print 'participant_experiment_index', participant_experiment_index
+        print 'experiment_index ', experiment_index
         if participant_experiment_index > experiment_index:
             participants = self.participant.session_participant.participants()
             return participants[participant_experiment_index].start_url()
@@ -307,6 +309,7 @@ class SequenceMixin(ExperimentMixin):
                 if self.experiment.index_in_sequence_of_experiments() == self.participant.session_participant.index_in_sequence_of_experiments:
                     self.participant.session_participant.index_in_sequence_of_experiments += 1
             self.participant.save()
+            self.participant.session_participant.save()
 
     def post_processing_on_valid_form(self, form):
         pass
