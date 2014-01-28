@@ -80,7 +80,8 @@ class Session(models.Model):
             experiments[i].next_experiment = experiments[i + 1]
             experiments[i + 1].previous_experiment = experiments[i]
         for i, experiment in enumerate(experiments):
-            experiment.index_in_sequence_of_experiments = i
+            # FIXME: add this field back in.
+            #experiment.index_in_sequence_of_experiments = i
             experiment.save()
         self.save()
 
@@ -294,8 +295,9 @@ def create_session(label, is_for_mturk, preassign_matches, sequence, base_pay, n
                     ptree.common.assign_participant_to_match(models_module.Match, participant)
                     participant.save()
 
-            # check that bonus calculation doesn't throw an error, to prevent downstream problems
-            for participant in experiment.participants():
+            # check that bonus calculation doesn't throw an error, to prevent downstream problems.
+            # just check the first participant, to save time.
+            for participant in list(experiment.participants())[:1]:
                 exception = False
                 wrong_type = False
                 bonus = None

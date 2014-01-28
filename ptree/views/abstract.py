@@ -91,7 +91,8 @@ class ExperimentMixin(object):
 
     def page_the_user_should_be_on(self):
         participant_experiment_index = self.participant.session_participant.index_in_sequence_of_experiments
-        if participant_experiment_index > self.experiment.index_in_sequence_of_experiments:
+        experiment_index = self.experiment.index_in_sequence_of_experiments()
+        if participant_experiment_index > experiment_index:
             participants = self.participant.session_participant.participants()
             return participants[participant_experiment_index].start_url()
         return self.treatment.sequence_as_urls()[self.participant.index_in_sequence_of_views]
@@ -303,7 +304,7 @@ class SequenceMixin(ExperimentMixin):
         if self.index_in_sequence_of_views == self.participant.index_in_sequence_of_views:
             self.participant.index_in_sequence_of_views += 1
             if self.participant.index_in_sequence_of_views >= len(self.treatment.sequence_as_urls()):
-                if self.experiment.index_in_sequence_of_experiments == self.participant.session_participant.index_in_sequence_of_experiments:
+                if self.experiment.index_in_sequence_of_experiments() == self.participant.session_participant.index_in_sequence_of_experiments:
                     self.participant.session_participant.index_in_sequence_of_experiments += 1
             self.participant.save()
 
@@ -330,8 +331,7 @@ class SequenceMixin(ExperimentMixin):
         and try typing it in so they don't have to play the whole game.
         We should block that."""
 
-        page_the_user_should_be_on = self.page_the_user_should_be_on()
-        return self.request.path == page_the_user_should_be_on
+        return self.request.path == self.page_the_user_should_be_on()
 
 
 class BaseView(ExperimentMixin, vanilla.View):
