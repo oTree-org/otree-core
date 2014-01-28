@@ -41,6 +41,8 @@ class BaseExperiment(models.Model):
     previous_experiment = generic.GenericForeignKey('previous_experiment_content_type',
                                             'previous_experiment_object_id',)
 
+    index_in_sequence_of_experiments = models.PositiveIntegerField(null=True)
+
     def is_last_experiment(self):
         return not self.next_experiment
 

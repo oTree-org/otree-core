@@ -543,8 +543,7 @@ def build_doc_file(app_label):
     return output.replace('\n', LINE_BREAK).replace('\t', '    ')
 
 def doc_file_name(app_label):
-    return '{} -- field descriptions ({}).txt'.format(app_name_format(app_label),
-                                                      )
+    return '{} -- field descriptions.txt'.format(app_name_format(app_label))
 
 class PTreeExportAdmin(ExportAdmin):
 

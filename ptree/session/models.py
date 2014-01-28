@@ -9,6 +9,7 @@ from django.conf import settings
 import random
 import ptree.common
 from django.utils.importlib import import_module
+import sys
 
 class StubModel(models.Model):
     """To be used as the model for an empty form, so that form_class can be omitted."""
@@ -78,7 +79,8 @@ class Session(models.Model):
         for i in range(len(experiments) - 1):
             experiments[i].next_experiment = experiments[i + 1]
             experiments[i + 1].previous_experiment = experiments[i]
-        for experiment in experiments:
+        for i, experiment in enumerate(experiments):
+            experiment.index_in_sequence_of_experiments = i
             experiment.save()
         self.save()
 
@@ -123,10 +125,13 @@ class Session(models.Model):
         return self.sessionparticipant_set.all()
 
     def payments_ready(self):
-        for participant in self.participants():
-            if not participant.bonus_is_complete():
-                return False
-        return True
+        try:
+            for participant in self.participants():
+                if not participant.bonus_is_complete():
+                    return False
+            return True
+        except:
+            return None
     payments_ready.boolean = True
 
     def time_started(self):
@@ -168,15 +173,23 @@ class SessionParticipant(models.Model):
         return lst
 
     def progress(self):
-        return '{}/{} experiments'.format(self.index_in_sequence_of_experiments, len(self.session.experiments()))
+        if not self.visited:
+            return None
+        return '{}/{} experiments'.format(self.index_in_sequence_of_experiments + 1, len(self.session.experiments()))
 
     def current_experiment(self):
         if not self.visited:
             return None
-        return ptree.common.app_name_format(self.session.experiments()[self.index_in_sequence_of_experiments]._meta.app_label)
+        try:
+            return ptree.common.app_name_format(self.session.experiments()[self.index_in_sequence_of_experiments]._meta.app_label)
+        except IndexError: #FIXME: understand under what conditions this occurs
+            return 'after {}'.format(ptree.common.app_name_format(self.session.experiments()[-1]._meta.app_label))
 
     def progress_in_current_experiment(self):
-        return self.participants()[self.index_in_sequence_of_experiments].progress()
+        try:
+            return self.participants()[self.index_in_sequence_of_experiments].progress()
+        except:
+            return '(Error)'
 
     def bonus(self):
         return sum(participant.bonus() or 0 for participant in self.participants())
@@ -188,9 +201,14 @@ class SessionParticipant(models.Model):
             return None
 
     def bonus_display(self):
-        if self.bonus_is_complete():
-            return currency(self.bonus())
-        return u'{} (incomplete)'.format(currency(self.bonus()))
+        try:
+            complete = self.bonus_is_complete()
+            bonus = currency(self.bonus())
+        except:
+            return 'Error in bonus calculation'
+        if complete:
+            return bonus
+        return u'{} (incomplete)'.format(bonus)
 
     bonus_display.short_description = 'bonus'
 
@@ -201,9 +219,14 @@ class SessionParticipant(models.Model):
         return True
 
     def total_pay_display(self):
-        if self.bonus_is_complete():
-            return currency(self.total_pay())
-        return u'{} (incomplete)'.format(currency(self.total_pay()))
+        try:
+            complete = self.bonus_is_complete()
+            total_pay = currency(self.total_pay())
+        except:
+            return 'Error in bonus calculation'
+        if complete:
+            return total_pay
+        return u'{} (incomplete)'.format(total_pay)
 
     time_started = models.DateTimeField(null=True)
     mturk_assignment_id = models.CharField(max_length = 50, null = True)
@@ -270,6 +293,27 @@ def create_session(label, is_for_mturk, preassign_matches, sequence, base_pay, n
                     participant.treatment = experiment.pick_treatment_for_incoming_participant()
                     ptree.common.assign_participant_to_match(models_module.Match, participant)
                     participant.save()
+
+            # check that bonus calculation doesn't throw an error, to prevent downstream problems
+            for participant in experiment.participants():
+                exception = False
+                wrong_type = False
+                bonus = None
+                try:
+                    bonus = participant.bonus()
+                except:
+                    exception = True
+                else:
+                    if (not isinstance(bonus, int)) and bonus != None:
+                        wrong_type = True
+                if exception or wrong_type:
+                    print '{}: participant.bonus() must either return an integer, or None if it cannot be calculated yet.'.format(app_name)
+                    if wrong_type:
+                        print 'Currently, the return value is {}'.format(bonus)
+                    elif exception:
+                        print 'Currently, it raises an exception.'
+                    sys.exit(1)
+
 
             print 'Created objects for {}'.format(app_name)
             experiments.append(experiment)

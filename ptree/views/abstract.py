@@ -90,12 +90,10 @@ class ExperimentMixin(object):
         return 'last'
 
     def page_the_user_should_be_on(self):
-        if self.participant.index_in_sequence_of_views >= len(self.treatment.sequence_as_urls()):
-            if self.experiment.next_experiment:
-                self.participant.session_participant.index_in_sequence_of_experiments += 1
-                self.participant.session_participant.save()
-                return self.participant.me_in_next_experiment.start_url()
-
+        participant_experiment_index = self.participant.session_participant.index_in_sequence_of_experiments
+        if participant_experiment_index > self.experiment.index_in_sequence_of_experiments:
+            participants = self.participant.session_participant.participants()
+            return participants[participant_experiment_index].start_url()
         return self.treatment.sequence_as_urls()[self.participant.index_in_sequence_of_views]
 
     def redirect_to_page_the_user_should_be_on(self):
@@ -213,6 +211,13 @@ class SequenceMixin(ExperimentMixin):
         # remove it since post() may not be able to accept args.
         args = args[1:]
 
+        # if the participant tried to skip past a part of the experiment
+        # (e.g. by typing in a future URL)
+        # or if they hit the back button to a previous experiment in the sequence.
+        if not self.user_is_on_right_page():
+            # then bring them back to where they should be
+            return self.redirect_to_page_the_user_should_be_on()
+
         # by default it's false (e.g. for GET requests), but can be set to True in post() method
         self.time_limit_was_exceeded = False
 
@@ -220,21 +225,16 @@ class SequenceMixin(ExperimentMixin):
         if not page_action in [self.PageActions.show, self.PageActions.skip, self.PageActions.wait]:
             raise ValueError('show_skip_wait() must return one of the following: [self.PageActions.show, self.PageActions.skip, self.PageActions.wait]')
 
-        if self.request.is_ajax() and self.request.GET[constants.check_if_wait_is_over] == constants.get_param_truth_value:
+        if self.request.is_ajax() and self.request.GET.get(constants.check_if_wait_is_over) == constants.get_param_truth_value:
             no_more_wait = page_action != self.PageActions.wait
             return HttpResponse(int(no_more_wait))
 
         # if the participant shouldn't see this view, skip to the next
         if page_action == self.PageActions.skip:
-            self.participant.index_in_sequence_of_views += 1
-            self.participant.save()
+            self.update_indexes_in_sequences()
             return self.redirect_to_page_the_user_should_be_on()
 
-        # if the participant tried to skip past a part of the experiment
-        # (e.g. by typing in a future URL)
-        if not self.user_is_on_right_page():
-            # then bring them back to where they should be
-            return self.redirect_to_page_the_user_should_be_on()
+
 
         if page_action == self.PageActions.wait:
             return render_to_response(self.wait_page_template,
@@ -299,9 +299,13 @@ class SequenceMixin(ExperimentMixin):
         """Should be implemented by subclasses as necessary"""
         pass
 
-    def update_index_in_sequence_of_views(self):
+    def update_indexes_in_sequences(self):
         if self.index_in_sequence_of_views == self.participant.index_in_sequence_of_views:
             self.participant.index_in_sequence_of_views += 1
+            if self.participant.index_in_sequence_of_views >= len(self.treatment.sequence_as_urls()):
+                if self.experiment.index_in_sequence_of_experiments == self.participant.session_participant.index_in_sequence_of_experiments:
+                    self.participant.session_participant.index_in_sequence_of_experiments += 1
+            self.participant.save()
 
     def post_processing_on_valid_form(self, form):
         pass
@@ -310,7 +314,7 @@ class SequenceMixin(ExperimentMixin):
         self.form = form
         self.after_valid_form_submission()
         self.post_processing_on_valid_form(form)
-        self.update_index_in_sequence_of_views()
+        self.update_indexes_in_sequences()
         self.save_objects()
         return super(SequenceMixin, self).form_valid(form)
 
@@ -326,7 +330,8 @@ class SequenceMixin(ExperimentMixin):
         and try typing it in so they don't have to play the whole game.
         We should block that."""
 
-        return self.request.path == self.page_the_user_should_be_on()
+        page_the_user_should_be_on = self.page_the_user_should_be_on()
+        return self.request.path == page_the_user_should_be_on
 
 
 class BaseView(ExperimentMixin, vanilla.View):

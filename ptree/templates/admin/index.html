@@ -30,7 +30,7 @@
     {% endif %}
     {% endwith %}
 
-    <h2>Experiments</h2>
+    <h2>Apps</h2>
     {% for app in app_list|experiment_apps_only %}
         {% include "admin/_dashboard_app_template.html" with app_models=app.models|fix_experiment_app_models_order %}
     {% endfor %}

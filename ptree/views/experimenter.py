@@ -91,9 +91,15 @@ class ExperimenterSequenceMixin(ExperimenterMixin):
         context.update(super(ExperimenterSequenceMixin, self).get_context_data(**kwargs))
         context.update(self.variables_for_template())
 
-        print context
+        self.save_objects()
 
         return context
+
+    def save_objects(self):
+        for obj in [self.experiment]:
+            if obj:
+                obj.save()
+
 
     def get_extra_form_kwargs(self):
         return {'experiment': self.experiment,
@@ -113,6 +119,7 @@ class ExperimenterSequenceMixin(ExperimenterMixin):
     def form_valid(self, form):
         self.after_valid_form_submission(form)
         self.request.session[constants.index_in_sequence_of_views] += 1
+        self.save_objects()
         return super(ExperimenterSequenceMixin, self).form_valid(form)
 
     def form_invalid(self, form):
@@ -171,4 +178,5 @@ class ExperimenterModelFormSetView(ExperimenterSequenceMixin, extra_views.ModelF
     def formset_valid(self, formset):
         self.after_valid_formset_submission(formset)
         self.request.session[constants.index_in_sequence_of_views] += 1
+        self.save_objects()
         return super(ExperimenterModelFormSetView, self).formset_valid(formset)

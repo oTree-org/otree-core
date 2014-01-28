@@ -49,7 +49,7 @@ class BaseParticipant(models.Model):
     def progress(self):
         if not self.visited:
             return None
-        return '{}/{} pages'.format(self.index_in_sequence_of_views, len(self.treatment.sequence_of_views()))
+        return '{}/{} pages'.format(self.index_in_sequence_of_views + 1, len(self.treatment.sequence_of_views()))
 
     def name(self):
         return self.session_participant.__unicode__()

@@ -12,7 +12,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         print 'Creating session...'
-        if len(args) >= 1:
+        if len(args) > 1:
             raise CommandError("Wrong number of arguments (expecting '{}')".format(self.args))
 
         if len(args) == 1:
