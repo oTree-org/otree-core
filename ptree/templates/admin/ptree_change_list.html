@@ -21,6 +21,9 @@
       #changelist table thead th:first-child {width: inherit}
     </style>
   {% endif %}
+  <style>
+      #ptree-change-list-error-messages {color: red; }
+  </style>
 {% endblock %}
 
 {% block extrahead %}
@@ -47,6 +50,7 @@
 {% block coltype %}flex{% endblock %}
 
 {% block content %}
+    <div id="ptree-change-list-error-messages"></div>
   <div id="content-main">
     {% block object-tools %}
       {% if has_add_permission %}
