@@ -188,6 +188,10 @@ class FieldLinkToForeignKey:
         self.list_display_field = list_display_field
 
     @property
+    def admin_order_field(self):
+        return self.list_display_field
+
+    @property
     def __name__(self):
         return self.list_display_field
 
