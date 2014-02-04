@@ -7,10 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 
 class Experiment(ptree.models.BaseExperiment):
 
-    # this will be in the URL users see,
-    # so you may want to change it to a code name
-    # if you don't want to reveal to users the name of the experiment.
-    url_base = '{{ app_name }}'
+    name_in_url = '{{ app_name }}'
 
 class Treatment(ptree.models.BaseTreatment):
     experiment = models.ForeignKey(Experiment)

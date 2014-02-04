@@ -10,7 +10,7 @@ import ptree.views.abstract
 import ptree.forms
 
 class RedirectToPageUserShouldBeOn(ptree.views.abstract.BaseView):
-    url_base = 'shared'
+    name_in_url = 'shared'
 
     def get(self, request, *args, **kwargs):
         return self.redirect_to_page_the_user_should_be_on()

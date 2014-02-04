@@ -24,7 +24,7 @@ class BaseTreatment(models.Model):
 
     def start_url(self):
         """The URL that a user is redirected to in order to start a treatment"""
-        return '/{}/Initialize/?{}={}'.format(self.experiment.url_base,
+        return '/{}/Initialize/?{}={}'.format(self.experiment.name_in_url,
                                       constants.treatment_code,
                                       self.code)
 

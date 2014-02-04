@@ -57,7 +57,7 @@ class BaseExperiment(models.Model):
         return self.name()
 
     def experimenter_input_url(self):
-        return '/{}/ExperimenterLaunch/?{}={}&{}={}'.format(self.url_base,
+        return '/{}/ExperimenterLaunch/?{}={}&{}={}'.format(self.name_in_url,
                                                           constants.experiment_code,
                                                           self.code,
                                                           constants.experimenter_access_code,
@@ -65,7 +65,7 @@ class BaseExperiment(models.Model):
 
     def start_url(self):
         """The URL that a user is redirected to in order to start a treatment"""
-        return '/{}/Initialize/?{}={}'.format(self.url_base,
+        return '/{}/Initialize/?{}={}'.format(self.name_in_url,
                                               constants.participant_code,
                                               self.code)
 

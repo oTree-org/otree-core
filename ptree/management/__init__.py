@@ -115,7 +115,7 @@ def create_export(app_label):
         column.save()
 
 def create_all_data_exports(sender, **kwargs):
-    StubModel().save()
+
     # only do it for 1 sender, so that these lines don't get repeated for every app
     if sender.__name__ == 'django.contrib.auth.models':
         update_all_contenttypes()
@@ -125,8 +125,13 @@ def create_all_data_exports(sender, **kwargs):
                 print 'Creating data exports for {}'.format(app_label)
                 create_export(app_label)
 
+def create_stub_model(sender, **kwargs):
+    if sender.__name__ == 'django.contrib.auth.models':
+        StubModel().save()
 
 signals.post_syncdb.connect(create_all_data_exports)
+signals.post_syncdb.connect(create_stub_model)
+
 
 # create a single instance so it can be used for empty ModelForms.
 

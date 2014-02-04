@@ -18,10 +18,10 @@ REDIRECT_TO_PAGE_USER_SHOULD_BE_ON_URL = '/shared/RedirectToPageUserShouldBeOn/'
 class ExperimenterMixin(object):
     @classmethod
     def get_url_base(cls):
-        # look for url_base attribute on ExperimentClass
+        # look for name_in_url attribute on ExperimentClass
         # if it's not part of a game, but rather a shared module etc, ExperimentClass won't exist.
-        # in that case, url_base needs to be defined on the class.
-        return getattr(cls, 'ExperimentClass', cls).url_base
+        # in that case, name_in_url needs to be defined on the class.
+        return getattr(cls, 'ExperimentClass', cls).name_in_url
 
     @classmethod
     def url(cls):
