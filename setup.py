@@ -8,13 +8,12 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version='0.2.37'
+version='0.2.38'
 
 if sys.argv[-1] == 'publish':
     os.system("python setup.py sdist upload")
-    print("You probably want to also tag the version now:")
-    print("  git tag -a %s -m 'version %s'" % (version, version))
-    print("  git push --tags")
+    os.system("git tag -a %s -m 'version %s'" % (version, version))
+    os.system("git push --tags")
     sys.exit()
 
 # FIXME: what if the user cloned from github and ran 'python setup.py install'?
