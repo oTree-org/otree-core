@@ -34,8 +34,11 @@ class Participant(ptree.models.BaseParticipant):
     treatment = models.ForeignKey(Treatment, null = True)
     experiment = models.ForeignKey(Experiment)
 
-    #: description of this field (if this line starts with "#:", it will get extracted into docs; see docs/ directory)
-    my_field = models.BooleanField(default=False)
+
+    my_field = models.BooleanField(
+        default=False,
+        doc='description of this field, for documentation'
+    )
 
     def bonus(self):
         # make sure this doesn't trigger an exception if the match isn't finished.
@@ -50,6 +53,7 @@ def create_experiment_and_treatments():
     # you can create more treatments. just make a loop.
     treatment = Treatment(experiment = experiment,
                           participants_per_match = 1,
+                          label = '',
                           # other attributes here...
                           )
     treatment.save()

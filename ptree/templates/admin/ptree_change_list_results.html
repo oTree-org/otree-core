@@ -207,11 +207,13 @@ function fetchAndUpdateResults() {
         data: {"url_name": url_name, "get_params": get_params_str},
         dataType: "json",
         error: function(jqXHR, textStatus) {
+            $("#ptree-change-list-error-messages").html("Failed to update from server.");
             window.setTimeout(fetchAndUpdateResults, PTREE_CHANGE_LIST_UPDATE_INTERVAL);
         },
         success: function(data) {
             var new_results_json = data;
             updateResultsDisplay(new_results_json);
+            $("#ptree-change-list-error-messages").html("");
             window.setTimeout(fetchAndUpdateResults, PTREE_CHANGE_LIST_UPDATE_INTERVAL);
         },
         timeout: 50000
