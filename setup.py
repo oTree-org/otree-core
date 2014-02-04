@@ -52,7 +52,7 @@ setup(
         'Babel==1.3',
         'raven==3.5.2',
         'django-extra-views',
-        ],
+    ],
     dependency_links = [
         'http://github.com/tomchristie/django-extra-views/tarball/master#egg=django-extra-views',
     ],
