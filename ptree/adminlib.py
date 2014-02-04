@@ -492,7 +492,7 @@ def build_doc_file(app_label):
     export_fields = get_data_export_fields(app_label)
     app_models_module = import_module('{}.models'.format(app_label))
 
-    first_line = '{}: Field descriptions'.format(app_name_format(app_label))
+    first_line = '{}: Documentation'.format(app_name_format(app_label))
 
     docs = ['{}\n{}\n\n'.format(first_line,
                                 '*'*len(first_line))]
@@ -528,7 +528,7 @@ def build_doc_file(app_label):
             elif member_name in member_types['fields']:
                 try:
                     member = Model._meta.get_field_by_name(member_name)[0]
-                    doc = member.documentation
+                    doc = member.doc
                 except AttributeError:
                     # maybe the field isn't from ptree.db
                     doc = ''
@@ -543,8 +543,7 @@ def build_doc_file(app_label):
     return output.replace('\n', LINE_BREAK).replace('\t', '    ')
 
 def doc_file_name(app_label):
-    return '{} -- field descriptions ({}).txt'.format(app_name_format(app_label),
-                                                      )
+    return '{} - documentation.txt'.format(app_name_format(app_label))
 
 class PTreeExportAdmin(ExportAdmin):
 
@@ -571,4 +570,4 @@ class PTreeExportAdmin(ExportAdmin):
         return new_tab_link('{}/docs/'.format(instance.pk), label=doc_file_name(instance.model.app_label))
 
     docs_link.allow_tags = True
-    docs_link.short_description = 'Field descriptions'
+    docs_link.short_description = 'Documentation'
