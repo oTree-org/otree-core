@@ -112,7 +112,6 @@ def get_list_display(Model, readonly_fields, first_fields=None):
         'SessionParticipant': [
             'start_link',
             'exclude_from_data_analysis',
-            'experimenter_comment',
         ],
         'Session': [
 

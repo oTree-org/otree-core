@@ -160,7 +160,6 @@ class SessionParticipant(models.Model):
 
     exclude_from_data_analysis = models.BooleanField(default=False)
 
-    experimenter_comment = models.TextField()
     visited = models.BooleanField(default=False)
 
     def participants(self):
