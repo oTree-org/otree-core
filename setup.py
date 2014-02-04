@@ -8,12 +8,22 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version='0.2.41'
+version='0.2.45'
 
 if sys.argv[-1] == 'publish':
-    os.system("python setup.py sdist upload")
-    os.system("git tag -a %s -m 'version %s'" % (version, version))
-    os.system("git push --tags")
+
+    cmd = "python setup.py sdist upload"
+    print(cmd)
+    os.system(cmd)
+
+    cmd = 'git tag -a %s -m "version %s"' % (version, version)
+    print cmd
+    os.system(cmd)
+
+    cmd = "git push --tags"
+    print cmd
+    os.system(cmd)
+
     sys.exit()
 
 # FIXME: what if the user cloned from github and ran 'python setup.py install'?
@@ -33,17 +43,16 @@ setup(
     url='http://ptree.org/',
     author='Chris Wickens',
     author_email='c.wickens+ptree@googlemail.com',
-    install_requires = ['boto==2.13.3',
-                        'django-crispy-forms==1.4.0',
-                        'Django == 1.6.1',
-                        'django-data-exports==0.6',
-                        'django-vanilla-views==1.0.2',
-                        'Babel==1.3',
-                        'raven==3.5.2',
-                        'django-extra-views',
-                        'sphinx==1.2',
-
-                        ],
+    install_requires = [
+        'boto==2.13.3',
+        'django-crispy-forms==1.4.0',
+        'Django == 1.6.1',
+        'django-data-exports==0.6',
+        'django-vanilla-views==1.0.2',
+        'Babel==1.3',
+        'raven==3.5.2',
+        'django-extra-views',
+        ],
     dependency_links = [
         'http://github.com/tomchristie/django-extra-views/tarball/master#egg=django-extra-views',
     ],
