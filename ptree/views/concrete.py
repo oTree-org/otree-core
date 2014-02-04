@@ -3,7 +3,7 @@ They are ready to be included in your  Just import this module,
 and include these classes in your Treatment's sequence() method."""
 
 from django.shortcuts import render_to_response
-
+from django.http import HttpResponse
 from django.conf import settings
 
 import ptree.views.abstract
@@ -17,3 +17,9 @@ class RedirectToPageUserShouldBeOn(ptree.views.abstract.BaseView):
 
 class InitializeSessionParticipant(ptree.views.abstract.InitializeSessionParticipant):
     pass
+
+class OutOfRangeNotification(ptree.views.abstract.BaseView):
+    name_in_url = 'shared'
+
+    def get(self, request, *args, **kwargs):
+        return HttpResponse('No more pages in this sequence.')

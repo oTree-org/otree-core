@@ -86,17 +86,16 @@ class ExperimentMixin(object):
     def url_pattern(cls):
         return r'^{}/{}/$'.format(cls.get_url_base(), cls.__name__)
 
-    def last_page_in_sequence_url(self):
-        return 'last'
-
     def page_the_user_should_be_on(self):
         participant_experiment_index = self.participant.session_participant.index_in_sequence_of_experiments
         experiment_index = self.experiment.index_in_sequence_of_experiments()
-        print 'participant_experiment_index', participant_experiment_index
-        print 'experiment_index ', experiment_index
         if participant_experiment_index > experiment_index:
             participants = self.participant.session_participant.participants()
-            return participants[participant_experiment_index].start_url()
+            try:
+                return participants[participant_experiment_index].start_url()
+            except IndexError:
+                from ptree.views.concrete import OutOfRangeNotification
+                return OutOfRangeNotification.url()
         return self.treatment.sequence_as_urls()[self.participant.index_in_sequence_of_views]
 
     def redirect_to_page_the_user_should_be_on(self):
