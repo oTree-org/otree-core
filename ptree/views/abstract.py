@@ -144,7 +144,7 @@ class SequenceMixin(ExperimentMixin):
 
     # TODO: this is intended to be in the user's project, not part of pTree core.
     # but maybe have one in pTree core as a fallback in case the user doesn't have it.
-    wait_page_template = 'ptree/WaitPage.html'
+    wait_page_template_name = 'ptree/WaitPage.html'
 
     def wait_page_body_text(self):
         pass
@@ -239,7 +239,7 @@ class SequenceMixin(ExperimentMixin):
 
 
         if page_action == self.PageActions.wait:
-            return render_to_response(self.wait_page_template,
+            return render_to_response(self.wait_page_template_name,
                 {'SequenceViewURL': '{}?{}={}'.format(self.request.path,
                                                    constants.check_if_wait_is_over,
                                                    constants.get_param_truth_value),

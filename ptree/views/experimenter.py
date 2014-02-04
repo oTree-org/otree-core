@@ -41,7 +41,7 @@ class ExperimenterSequenceMixin(ExperimenterMixin):
     def show_skip_wait(self):
         return self.PageActions.show
 
-    wait_page_template = 'ptree/WaitPage.html'
+    wait_page_template_name = 'ptree/WaitPage.html'
 
     def wait_page_body_text(self):
         return None
@@ -67,7 +67,7 @@ class ExperimenterSequenceMixin(ExperimenterMixin):
             return HttpResponseRedirect(self.get_success_url())
 
         if ssw == self.PageActions.wait:
-            return render_to_response(self.wait_page_template, {'SequenceViewURL': self.request.path,
+            return render_to_response(self.wait_page_template_name, {'SequenceViewURL': self.request.path,
                                                                 'wait_page_body_text': self.wait_page_body_text()})
         return super(ExperimenterSequenceMixin, self).dispatch(request, *args, **kwargs)
 
