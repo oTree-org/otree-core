@@ -160,6 +160,8 @@ class SessionParticipant(models.Model):
 
     exclude_from_data_analysis = models.BooleanField(default=False)
 
+    last_request_succeeded = models.NullBooleanField(verbose_name='Health of last server request')
+
     visited = models.BooleanField(default=False)
 
     def participants(self):

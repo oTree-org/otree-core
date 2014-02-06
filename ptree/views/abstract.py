@@ -25,6 +25,8 @@ from django.db.models import Q
 from ptree.common import assign_participant_to_match
 from datetime import datetime
 import ptree.common
+from django.forms.models import model_to_dict
+import ptree.models.participants
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -188,6 +190,7 @@ class SequenceMixin(ExperimentMixin):
             constants.time_limit_in_seconds: remaining_seconds,
         }
 
+        self.request.session[constants.page_expiration_times] = page_expiration_times
         context.update(time_limit_parameters)
 
 
@@ -207,46 +210,66 @@ class SequenceMixin(ExperimentMixin):
     @method_decorator(never_cache)
     @method_decorator(cache_control(must_revalidate=True, max_age=0, no_cache=True, no_store = True))
     def dispatch(self, request, *args, **kwargs):
-        self.load_classes()
-        self.load_objects()
-        self.index_in_sequence_of_views = int(args[0])
-        # remove it since post() may not be able to accept args.
-        args = args[1:]
+        try:
+            self.load_classes()
+            self.load_objects()
+            self.index_in_sequence_of_views = int(args[0])
+            # remove it since post() may not be able to accept args.
+            args = args[1:]
 
-        # if the participant tried to skip past a part of the experiment
-        # (e.g. by typing in a future URL)
-        # or if they hit the back button to a previous experiment in the sequence.
-        if not self.user_is_on_right_page():
-            # then bring them back to where they should be
-            return self.redirect_to_page_the_user_should_be_on()
+            # if the participant tried to skip past a part of the experiment
+            # (e.g. by typing in a future URL)
+            # or if they hit the back button to a previous experiment in the sequence.
+            if not self.user_is_on_right_page():
+                # then bring them back to where they should be
+                return self.redirect_to_page_the_user_should_be_on()
 
-        # by default it's false (e.g. for GET requests), but can be set to True in post() method
-        self.time_limit_was_exceeded = False
+            # by default it's false (e.g. for GET requests), but can be set to True in post() method
+            self.time_limit_was_exceeded = False
 
-        page_action = self.show_skip_wait()
-        if not page_action in [self.PageActions.show, self.PageActions.skip, self.PageActions.wait]:
-            raise ValueError('show_skip_wait() must return one of the following: [self.PageActions.show, self.PageActions.skip, self.PageActions.wait]')
+            page_action = self.show_skip_wait()
+            if not page_action in [self.PageActions.show, self.PageActions.skip, self.PageActions.wait]:
+                raise ValueError('show_skip_wait() must return one of the following: [self.PageActions.show, self.PageActions.skip, self.PageActions.wait]')
 
-        if self.request.is_ajax() and self.request.GET.get(constants.check_if_wait_is_over) == constants.get_param_truth_value:
-            no_more_wait = page_action != self.PageActions.wait
-            return HttpResponse(int(no_more_wait))
+            if self.request.is_ajax() and self.request.GET.get(constants.check_if_wait_is_over) == constants.get_param_truth_value:
+                no_more_wait = page_action != self.PageActions.wait
+                response = HttpResponse(int(no_more_wait))
 
-        # if the participant shouldn't see this view, skip to the next
-        if page_action == self.PageActions.skip:
-            self.update_indexes_in_sequences()
-            return self.redirect_to_page_the_user_should_be_on()
+            else:
+                # if the participant shouldn't see this view, skip to the next
+                if page_action == self.PageActions.skip:
+                    self.update_indexes_in_sequences()
+                    return self.redirect_to_page_the_user_should_be_on()
 
 
 
-        if page_action == self.PageActions.wait:
-            return render_to_response(self.wait_page_template_name,
-                {'SequenceViewURL': '{}?{}={}'.format(self.request.path,
-                                                   constants.check_if_wait_is_over,
-                                                   constants.get_param_truth_value),
-                'debug_values': self.get_debug_values() if settings.DEBUG else None,
-                'wait_page_body_text': self.wait_page_body_text(),
-                'wait_page_title_text': self.wait_page_title_text()})
-        return super(SequenceMixin, self).dispatch(request, *args, **kwargs)
+                if page_action == self.PageActions.wait:
+                    return render_to_response(self.wait_page_template_name,
+                        {'SequenceViewURL': '{}?{}={}'.format(self.request.path,
+                                                           constants.check_if_wait_is_over,
+                                                           constants.get_param_truth_value),
+                        'debug_values': self.get_debug_values() if settings.DEBUG else None,
+                        'wait_page_body_text': self.wait_page_body_text(),
+                        'wait_page_title_text': self.wait_page_title_text()})
+                response = super(SequenceMixin, self).dispatch(request, *args, **kwargs)
+            self.participant.session_participant.last_request_succeeded = True
+            self.participant.session_participant.save()
+            return response
+        except Exception, e:
+            if hasattr(self, 'participant') and isinstance(self.participant, ptree.models.participants.BaseParticipant):
+                participant_info = 'participant: {}'.format(model_to_dict(self.participant))
+                self.participant.session_participant.last_request_succeeded = False
+                self.participant.session_participant.save()
+            else:
+                participant_info = '[participant undefined]'
+
+            diagnostic_info = (
+                'is_ajax: {}'.format(self.request.is_ajax()),
+                'participant: {}'.format(participant_info),
+            )
+
+            e.args += diagnostic_info
+            raise
 
     def post(self, request, *args, **kwargs):
         self.time_limit_was_exceeded = self.get_time_limit_was_exceeded()
