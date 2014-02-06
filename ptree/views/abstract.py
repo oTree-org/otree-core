@@ -262,7 +262,6 @@ class SequenceMixin(ExperimentMixin):
                 self.participant.session_participant.save()
             else:
                 participant_info = '[participant undefined]'
-
             diagnostic_info = (
                 'is_ajax: {}'.format(self.request.is_ajax()),
                 'participant: {}'.format(participant_info),
