@@ -267,7 +267,7 @@ class SequenceMixin(ExperimentMixin):
                 'participant: {}'.format(participant_info),
             )
 
-            e.args += diagnostic_info
+            e.args += diagnostic_info 
             raise
 
     def post(self, request, *args, **kwargs):
