@@ -4,7 +4,6 @@ from ptree.views.abstract import (
     CreateView,
     CreateMultipleView,
     UpdateMultipleView,
-    TemplateView,
     Initialize,
     InitializeSessionParticipant,
 )

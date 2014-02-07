@@ -10,16 +10,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.contrib.staticfiles.templatetags.staticfiles import static as static_template_tag
 import ptree.session.models
 from ptree.common import currency, app_name_format
-from data_exports.admin import ExportAdmin
-from django.utils.importlib import import_module
-import os
-from inspect_model import InspectModel
-import inspect
 import time
-from textwrap import TextWrapper
-
-LINE_BREAK = '\r\n'
-MODEL_NAMES = ["Participant", "Match", "Treatment", "Experiment", "SessionParticipant", "Session"]
 
 def new_tab_link(url, label):
     return '<a href="{}" target="_blank">{}</a>'.format(url, label)
@@ -208,9 +199,6 @@ class FieldLinkToForeignKey:
     @property
     def allow_tags(self):
         return True
-
-def is_fk_link_to_parent_class(field):
-    return isinstance(field, FieldLinkToForeignKey) and field.__name__ in {'match', 'treatment', 'experiment', 'session'}
 
 def _add_links_for_foreign_keys(model, list_display_fields):
     
@@ -472,101 +460,3 @@ class SessionAdmin(PTreeBaseModelAdmin):
     list_display = get_list_display(ptree.session.models.Session, readonly_fields)
 
     list_editable = ['hidden']
-
-def get_data_export_fields(app_label):
-    admin_module = import_module('{}.admin'.format(app_label))
-    export_info = {}
-    for model_name in MODEL_NAMES:
-        if model_name == 'Session':
-            list_display = SessionAdmin.list_display
-        elif model_name == 'SessionParticipant':
-            list_display = SessionParticipantAdmin.list_display
-        else:
-            list_display = getattr(admin_module, '{}Admin'.format(model_name)).list_display
-        # remove since these are redundant
-        export_info[model_name] = [field for field in list_display if not is_fk_link_to_parent_class(field)]
-    return export_info
-
-def build_doc_file(app_label):
-    export_fields = get_data_export_fields(app_label)
-    app_models_module = import_module('{}.models'.format(app_label))
-
-    first_line = '{}: Documentation'.format(app_name_format(app_label))
-
-    docs = ['{}\n{}\n\n'.format(first_line,
-                                '*'*len(first_line))]
-
-    doc_string_wrapper = TextWrapper(
-        width=100,
-        initial_indent='\t'*2,
-        subsequent_indent='\t'*2
-    )
-
-    for model_name in MODEL_NAMES:
-        if model_name == 'SessionParticipant':
-            Model = ptree.session.models.SessionParticipant
-        elif model_name == 'Session':
-            Model = ptree.session.models.Session
-        else:
-            Model = getattr(app_models_module, model_name)
-        im = InspectModel(Model)
-        member_types = {
-            'fields': im.fields,
-            'methods': im.methods,
-            # TODO: add properties, attributes, and others
-        }
-
-        docs.append('\n' + model_name)
-
-        for member_name in export_fields[model_name]:
-
-            if member_name in member_types['methods']:
-                # check if it's a method
-                member = getattr(Model, member_name)
-                doc = inspect.getdoc(member)
-            elif member_name in member_types['fields']:
-                try:
-                    member = Model._meta.get_field_by_name(member_name)[0]
-                    doc = member.doc
-                except AttributeError:
-                    # maybe the field isn't from ptree.db
-                    doc = ''
-            else:
-                doc = '[not a field or method]'
-            doc = doc or ''
-            docs.append('\n\t' + member_name)
-            if doc:
-                docs.append('\n'.join(doc_string_wrapper.wrap(doc)))
-
-    output = '\n'.join(docs)
-    return output.replace('\n', LINE_BREAK).replace('\t', '    ')
-
-def doc_file_name(app_label):
-    return '{} - documentation.txt'.format(app_name_format(app_label))
-
-class PTreeExportAdmin(ExportAdmin):
-
-    # In Django 1.7, I can set list_display_links to None and then put 'name' first
-    list_display = ['get_export_link', 'docs_link', 'name']
-    ordering = ['slug']
-    list_filter = []
-
-    def get_urls(self):
-        urls = super(PTreeExportAdmin, self).get_urls()
-        my_urls = patterns('',
-            (r'^(?P<pk>\d+)/docs/$', self.admin_site.admin_view(self.docs)),
-        )
-        return my_urls + urls
-
-    def docs(self, request, pk):
-        export = self.model.objects.get(pk=pk)
-        app_label = export.model.app_label
-        response = HttpResponse(build_doc_file(app_label))
-        response['Content-Disposition'] = 'attachment; filename="{}"'.format(doc_file_name(app_label))
-        return response
-
-    def docs_link(self, instance):
-        return new_tab_link('{}/docs/'.format(instance.pk), label=doc_file_name(instance.model.app_label))
-
-    docs_link.allow_tags = True
-    docs_link.short_description = 'Documentation'

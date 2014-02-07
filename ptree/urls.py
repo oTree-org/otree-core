@@ -39,7 +39,7 @@ def augment_urlpatterns(urlpatterns):
     urlpatterns += patterns('',
                             url(r'^$', RedirectView.as_view(url='/admin')),
                             url(r'^admin/', include(admin.site.urls)),
-                            url(r'^exports/', include('data_exports.urls', namespace='data_exports')),
+                            url(r'^export/(\w+)/$', 'ptree.views.export.export'),
                             )
     urlpatterns += staticfiles_urlpatterns()
     for app_name in settings.INSTALLED_PTREE_APPS:
@@ -47,8 +47,9 @@ def augment_urlpatterns(urlpatterns):
         urlpatterns += url_patterns_from_module(views_module_name)
     urlpatterns += url_patterns_from_module('ptree.views.concrete')
     #urlpatterns += url_patterns_from_module('ptree.views.ajax_change_list')
-    urlpatterns += patterns('ptree.views.ajax_change_list',
-                            url(r'^ajax/ptree-change-list-results/$', 'ajax_ptree_change_list_results', name='ajax_ptree_change_list_results'),
-                            )
+    urlpatterns += patterns(
+        'ptree.views.ajax_change_list',
+        url(r'^ajax/ptree-change-list-results/$', 'ajax_ptree_change_list_results', name='ajax_ptree_change_list_results'),
+    )
 
     return urlpatterns
