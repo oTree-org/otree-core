@@ -332,9 +332,9 @@ class BaseSequenceMixin(PTreeMixin):
 class SequenceMixin(BaseSequenceMixin):
     """for participants"""
     def update_indexes_in_sequences(self):
-        if self.index_in_sequence_of_views == self.participant.index_in_sequence_of_views:
-            self.participant.index_in_sequence_of_views += 1
-            if self.participant.index_in_sequence_of_views >= len(self.treatment.sequence_as_urls()):
+        if self.index_in_sequence_of_views == self.user.index_in_sequence_of_views:
+            self.user.index_in_sequence_of_views += 1
+            if self.user.index_in_sequence_of_views >= len(self.user.sequence_as_urls()):
                 if self.experiment.index_in_sequence_of_experiments() == self.participant.session_participant.index_in_sequence_of_experiments:
                     self.participant.session_participant.index_in_sequence_of_experiments += 1
             self.participant.save()
