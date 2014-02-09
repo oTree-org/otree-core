@@ -80,8 +80,7 @@ class Session(models.Model):
             experiments[i].next_experiment = experiments[i + 1]
             experiments[i + 1].previous_experiment = experiments[i]
         for i, experiment in enumerate(experiments):
-            # FIXME: add this field back in.
-            #experiment.index_in_sequence_of_experiments = i
+            experiment.index_in_sequence_of_experiments = i
             experiment.save()
         self.save()
 

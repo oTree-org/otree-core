@@ -254,7 +254,7 @@ class BaseSequenceMixin(PTreeMixin):
                         'debug_values': self.get_debug_values() if settings.DEBUG else None,
                         'wait_page_body_text': self.wait_page_body_text(),
                         'wait_page_title_text': self.wait_page_title_text()})
-                response = super(BaseSequenceMixin, self).dispatch(request, *args, **kwargs)
+                response = super(SequenceMixin, self).dispatch(request, *args, **kwargs)
             self.participant.session_participant.last_request_succeeded = True
             self.participant.session_participant.save()
             return response
@@ -275,7 +275,7 @@ class BaseSequenceMixin(PTreeMixin):
 
     def post(self, request, *args, **kwargs):
         self.time_limit_was_exceeded = self.get_time_limit_was_exceeded()
-        return super(BaseSequenceMixin, self).post(request, *args, **kwargs)
+        return super(SequenceMixin, self).post(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
 
@@ -313,7 +313,7 @@ class BaseSequenceMixin(PTreeMixin):
         self.post_processing_on_valid_form(form)
         self.update_indexes_in_sequences()
         self.save_objects()
-        return super(BaseSequenceMixin, self).form_valid(form)
+        return super(SequenceMixin, self).form_valid(form)
 
     def form_invalid(self, form):
         """
