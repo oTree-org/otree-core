@@ -73,7 +73,7 @@ class BaseParticipant(models.Model):
         try:
             return currency(self.bonus())
         except:
-            return currency(None)
+            return 'Error'
 
     bonus_display.short_description = 'Bonus'
 

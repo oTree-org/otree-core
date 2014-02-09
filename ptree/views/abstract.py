@@ -97,17 +97,31 @@ class PTreeMixin(object):
 
 class ParticipantMixin(object):
     def page_the_user_should_be_on(self):
-        participant_experiment_index = self.participant.session_participant.index_in_sequence_of_experiments
-        experiment_index = self.experiment.index_in_sequence_of_experiments()
-        if participant_experiment_index > experiment_index:
-            participants = self.participant.session_participant.participants()
+        if self.user.index_in_sequence_of_experiments > self.experiment.index_in_sequence_of_experiments:
             try:
-                return participants[participant_experiment_index].start_url()
+                return self.user.next_start_url()
             except IndexError:
                 from ptree.views.concrete import OutOfRangeNotification
                 return OutOfRangeNotification.url()
                 pass
-        return self.treatment.sequence_as_urls()[self.participant.index_in_sequence_of_views]
+        return self.user.sequence_as_urls()[self.user.index_in_sequence_of_views]
+
+    def load_objects(self):
+        code = self.request.session.get(constants.participant_code)
+        try:
+            self.participant = get_object_or_404(self.ParticipantClass, code=code)
+        except ValueError:
+            raise Http404("This participant ({}) does not exist in the database. Maybe the database was recreated.".format(code))
+        self.match = self.participant.match
+        self.treatment = self.match.treatment
+        self.experiment = self.treatment.experiment
+        self.session = self.experiment.session
+
+    def objects_to_save(self):
+        return [self.match, self.participant, self.participant.session_participant]
+
+class ExperimenterMixin(object):
+
 
     def load_objects(self):
         code = self.request.session.get(constants.participant_code)
@@ -254,7 +268,7 @@ class BaseSequenceMixin(PTreeMixin):
                         'debug_values': self.get_debug_values() if settings.DEBUG else None,
                         'wait_page_body_text': self.wait_page_body_text(),
                         'wait_page_title_text': self.wait_page_title_text()})
-                response = super(SequenceMixin, self).dispatch(request, *args, **kwargs)
+                response = super(BaseSequenceMixin, self).dispatch(request, *args, **kwargs)
             self.participant.session_participant.last_request_succeeded = True
             self.participant.session_participant.save()
             return response
@@ -275,7 +289,7 @@ class BaseSequenceMixin(PTreeMixin):
 
     def post(self, request, *args, **kwargs):
         self.time_limit_was_exceeded = self.get_time_limit_was_exceeded()
-        return super(SequenceMixin, self).post(request, *args, **kwargs)
+        return super(BaseSequenceMixin, self).post(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
 
@@ -313,7 +327,7 @@ class BaseSequenceMixin(PTreeMixin):
         self.post_processing_on_valid_form(form)
         self.update_indexes_in_sequences()
         self.save_objects()
-        return super(SequenceMixin, self).form_valid(form)
+        return super(BaseSequenceMixin, self).form_valid(form)
 
     def form_invalid(self, form):
         """
@@ -335,10 +349,9 @@ class SequenceMixin(BaseSequenceMixin):
         if self.index_in_sequence_of_views == self.user.index_in_sequence_of_views:
             self.user.index_in_sequence_of_views += 1
             if self.user.index_in_sequence_of_views >= len(self.user.sequence_as_urls()):
-                if self.experiment.index_in_sequence_of_experiments() == self.participant.session_participant.index_in_sequence_of_experiments:
-                    self.participant.session_participant.index_in_sequence_of_experiments += 1
-            self.participant.save()
-            self.participant.session_participant.save()
+                if self.experiment.index_in_sequence_of_experiments == self.user.index_in_sequence_of_experiments:
+                    self.user.index_in_sequence_of_experiments += 1
+            self.user.save()
 
     def get_debug_values(self):
         try:
@@ -363,15 +376,6 @@ class SequenceMixin(BaseSequenceMixin):
 
 class ExperimenterSequenceMixin(BaseSequenceMixin):
 
-    def update_indexes_in_sequences(self):
-        if self.index_in_sequence_of_views == self.participant.index_in_sequence_of_views:
-            self.participant.index_in_sequence_of_views += 1
-            if self.participant.index_in_sequence_of_views >= len(self.treatment.sequence_as_urls()):
-                if self.experiment.index_in_sequence_of_experiments() == self.participant.session_participant.index_in_sequence_of_experiments:
-                    self.participant.session_participant.index_in_sequence_of_experiments += 1
-            self.participant.save()
-            self.participant.session_participant.save()
-
     def get_debug_values(self):
         try:
             match_id = self.match.pk
@@ -385,24 +389,10 @@ class ExperimenterSequenceMixin(BaseSequenceMixin):
 
 
     def get_extra_form_kwargs(self):
-        return {'participant': self.participant,
-               'match': self.match,
-               'treatment': self.treatment,
-               'experiment': self.experiment,
+        return {'experiment': self.experiment,
                'request': self.request,
                'session': self.session,
                'time_limit_was_exceeded': self.time_limit_was_exceeded}
-
-    def save_objects(self):
-        for obj in [self.experiment]:
-            if obj:
-                obj.save()
-
-    def get_extra_form_kwargs(self):
-        return {'experiment': self.experiment,
-                'request': self.request,
-                'session': self.session,}
-
 
 class BaseView(PTreeMixin, ParticipantMixin, vanilla.View):
     """
