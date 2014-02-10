@@ -198,7 +198,7 @@ def export(request, app_label):
         callable_flags = export_data['Participant']['callable_flags'][:]
         member_values = get_member_values(participant, member_names, callable_flags)
         for fk_name in fk_names:
-            parent_object_id = getattr(participant, fk_name).id
+            parent_object_id = getattr(participant, "%s_id" % fk_name)
             member_values += parent_object_data[fk_name][parent_object_id]
         member_values = [unicode(v).encode('UTF-8') for v in member_values]
         print member_values
