@@ -147,7 +147,7 @@ class Session(models.Model):
 class SessionUser(models.Model):
 
     index_in_sequence_of_experiments = models.PositiveIntegerField(default=0, null=True)
-    index_in_sequence_of_views = models.PositiveIntegerField(default=0, null=True)
+    index_in_pages = models.PositiveIntegerField(default=0, null=True)
 
     me_in_first_experiment_content_type = models.ForeignKey(ContentType,
                                                       null=True,

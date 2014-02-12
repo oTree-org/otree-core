@@ -101,7 +101,7 @@ class PTreeMixin(object):
             except IndexError:
                 from ptree.views.concrete import OutOfRangeNotification
                 return OutOfRangeNotification.url()
-        return self.user.sequence_as_urls()[self.user.index_in_sequence_of_views]
+        return self.user.pages_as_urls()[self.user.index_in_pages]
 
 class ParticipantMixin(object):
 
@@ -208,19 +208,19 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
 
     def set_time_limit(self, context):
         page_expiration_times = self.request.session[constants.page_expiration_times]
-        if page_expiration_times.has_key(self.index_in_sequence_of_views):
-            page_expiration_time = page_expiration_times[self.index_in_sequence_of_views]
+        if page_expiration_times.has_key(self.index_in_pages):
+            page_expiration_time = page_expiration_times[self.index_in_pages]
             if page_expiration_time is None:
                 remaining_seconds = None
             else:
-                remaining_seconds = max(0, int(page_expiration_times[self.index_in_sequence_of_views] - time.time()))
+                remaining_seconds = max(0, int(page_expiration_times[self.index_in_pages] - time.time()))
         else:
             remaining_seconds = self.time_limit_in_seconds()
 
             if remaining_seconds is None:
-                page_expiration_times[self.index_in_sequence_of_views] = None
+                page_expiration_times[self.index_in_pages] = None
             elif remaining_seconds > 0:
-                page_expiration_times[self.index_in_sequence_of_views] = time.time() + remaining_seconds
+                page_expiration_times[self.index_in_pages] = time.time() + remaining_seconds
             else:
                 raise ValueError("Time limit must be None or a positive number.")
 
@@ -244,7 +244,7 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
     def get_time_limit_was_exceeded(self):
         page_expiration_times = self.request.session[constants.page_expiration_times]
         print 'get: {}'.format(page_expiration_times)
-        page_expiration_time = page_expiration_times[self.index_in_sequence_of_views]
+        page_expiration_time = page_expiration_times[self.index_in_pages]
 
         if page_expiration_time is None:
             return False
@@ -259,13 +259,13 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
         try:
             self.load_classes()
             self.load_objects()
-            self.index_in_sequence_of_views = int(args[0])
+            self.index_in_pages = int(args[0])
             # remove it since post() may not be able to accept args.
             args = args[1:]
 
             # if the participant tried to skip past a part of the experiment
             # (e.g. by typing in a future URL)
-            # or if they hit the back button to a previous experiment in the sequence. 
+            # or if they hit the back button to a previous experiment in the sequence.
             if not self.user_is_on_right_page():
                 # then bring them back to where they should be
                 return self.redirect_to_page_the_user_should_be_on()
@@ -375,9 +375,9 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
         return self.request.path == self.page_the_user_should_be_on()
 
     def update_indexes_in_sequences(self):
-        if self.index_in_sequence_of_views == self.user.index_in_sequence_of_views:
-            self.user.index_in_sequence_of_views += 1
-            if self.user.index_in_sequence_of_views >= len(self.user.sequence_as_urls()):
+        if self.index_in_pages == self.user.index_in_pages:
+            self.user.index_in_pages += 1
+            if self.user.index_in_pages >= len(self.user.pages_as_urls()):
                 if self.experiment.index_in_sequence_of_experiments == self.session_user.index_in_sequence_of_experiments:
                     self.session_user.index_in_sequence_of_experiments += 1
             self.user.save()
@@ -482,7 +482,7 @@ class ModelFormSetView(extra_views.ModelFormSetView):
         for form in formset:
             self.after_valid_form_submission()
             self.post_processing_on_valid_form(form)
-        self.update_index_in_sequence_of_views()
+        self.update_index_in_pages()
         self.save_objects()
         return super(ModelFormSetView, self).formset_valid(formset)
 

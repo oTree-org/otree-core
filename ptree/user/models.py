@@ -17,14 +17,14 @@ class User(models.Model):
     def start_url(self):
         raise NotImplementedError()
 
-    def sequence_as_urls(self):
+    def pages_as_urls(self):
         raise NotImplementedError()
 
     session = models.ForeignKey(
         ptree.sessionlib.models.Session,
         related_name = '%(app_label)s_%(class)s')
 
-    index_in_sequence_of_views = models.PositiveIntegerField(default=0)
+    index_in_pages = models.PositiveIntegerField(default=0)
 
     # 2/12/2014: i think the previous pointer is unnecessary because i can traverse via the reverse relation of the "next" pointer
     me_in_previous_experiment_content_type = models.ForeignKey(ContentType,
@@ -45,8 +45,8 @@ class User(models.Model):
     def progress(self):
         if not self.visited:
             return None
-        return '{}/{} pages'.format(self.index_in_sequence_of_views + 1,
-                                    len(self.treatment.sequence_of_views()))
+        return '{}/{} pages'.format(self.index_in_pages + 1,
+                                    len(self.treatment.pages()))
 
     class Meta:
         abstract = True
@@ -80,5 +80,5 @@ class Experimenter(User):
             }
         )
 
-    def sequence_as_urls(self):
-        return self.experiment.experimenter_sequence_as_urls()
+    def pages_as_urls(self):
+        return self.experiment.experimenter_pages_as_urls()

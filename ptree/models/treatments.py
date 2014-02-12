@@ -39,14 +39,14 @@ class BaseTreatment(models.Model):
     def participants(self):
         return self.participant_set.all()
 
-    def sequence_of_views(self):
+    def pages(self):
         raise NotImplementedError()
 
-    def sequence_as_urls(self):
+    def pages_as_urls(self):
         # 2/11/2014: start at 1 because i added the wait page (until assigned to match)
         # maybe should clean this up.
         from ptree.views.concrete import WaitUntilAssignedToMatch
-        all_views = [WaitUntilAssignedToMatch] + self.sequence_of_views()
+        all_views = [WaitUntilAssignedToMatch] + self.pages()
         return [View.url(index) for index, View in enumerate(all_views)]
 
     def next_open_match(self):

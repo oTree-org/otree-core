@@ -12,7 +12,7 @@ class Experiment(ptree.models.BaseExperiment):
 class Treatment(ptree.models.BaseTreatment):
     experiment = models.ForeignKey(Experiment)
 
-    def sequence_of_views(self):
+    def pages(self):
     
         import {{ app_name }}.views as views
         return [views.MyView]

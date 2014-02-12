@@ -4,6 +4,6 @@ from ptree.views.abstract import (
     ParticipantCreateView,
     CreateMultipleView,
     UpdateMultipleView,
-    ExperimenterUpdateView,
+    ExperimenterUpdateView as ExperimenterPage,
     Initialize,
 )

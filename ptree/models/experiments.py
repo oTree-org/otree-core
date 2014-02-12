@@ -94,17 +94,17 @@ class BaseExperiment(models.Model):
 
 
 
-    def experimenter_sequence_of_views(self):
+    def experimenter_pages(self):
         return []
 
-    def experimenter_sequence_as_urls(self):
+    def experimenter_pages_as_urls(self):
         """Converts the sequence to URLs.
 
         e.g.:
         sequence() returns something like [views.IntroPage, ...]
-        sequence_as_urls() returns something like ['mygame/IntroPage', ...]
+        pages_as_urls() returns something like ['mygame/IntroPage', ...]
         """
-        return [View.url(index) for index, View in enumerate(self.experimenter_sequence_of_views())]
+        return [View.url(index) for index, View in enumerate(self.experimenter_pages())]
 
     class Meta:
         abstract = True

@@ -112,7 +112,7 @@ def get_list_display(Model, readonly_fields, first_fields=None):
         'Participant':
               {'id',
               'code',
-              'index_in_sequence_of_views',
+              'index_in_pages',
               'me_in_previous_experiment_content_type',
               'me_in_previous_experiment_object_id',
               'me_in_next_experiment_content_type',

@@ -49,9 +49,9 @@ class BaseParticipant(User):
 
     bonus_display.short_description = 'Bonus'
 
-    def sequence_as_urls(self):
+    def pages_as_urls(self):
         if self.treatment:
-            return self.treatment.sequence_as_urls()
+            return self.treatment.pages_as_urls()
         from ptree.views.concrete import WaitUntilAssignedToMatch
         return [WaitUntilAssignedToMatch.url(0)]
 

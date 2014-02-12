@@ -109,7 +109,7 @@ class InitializeExperimenter(InitializeParticipantOrExperimenter):
         self.user.save()
         self.request.session[constants.user_code] = self.user.code
 
-        urls = self.user.sequence_as_urls()
+        urls = self.user.pages_as_urls()
         if len(urls) > 0:
             url = urls[0]
         else:
