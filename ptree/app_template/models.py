@@ -34,7 +34,9 @@ class Participant(ptree.models.BaseParticipant):
 
     my_field = models.BooleanField(
         default=False,
-        doc='description of this field, for documentation'
+        doc="""
+        Description of this field, for documentation
+        """
     )
 
     def bonus(self):

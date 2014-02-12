@@ -2,7 +2,13 @@ __doc__ = """This module contains views that are shared across many game types.
 They are ready to be included in your  Just import this module,
 and include these classes in your Treatment's sequence() method."""
 
-from ptree.views.abstract import BaseView, UpdateView, InitializeParticipantOrExperimenter
+from ptree.views.abstract import (
+    InitializeParticipantOrExperimenter,
+    NonSequenceUrlMixin,
+    PTreeMixin,
+    ParticipantUpdateView,
+    LoadClassesAndUserMixin,
+)
 import ptree.forms
 from datetime import datetime
 from django.shortcuts import get_object_or_404, render_to_response
@@ -15,19 +21,19 @@ import ptree.common
 import ptree.models.participants
 from ptree.user.models import Experimenter
 
-class RedirectToPageUserShouldBeOn(BaseView):
+class RedirectToPageUserShouldBeOn(NonSequenceUrlMixin, LoadClassesAndUserMixin, PTreeMixin, vanilla.View):
     name_in_url = 'shared'
 
     def get(self, request, *args, **kwargs):
         return self.redirect_to_page_the_user_should_be_on()
 
-class OutOfRangeNotification(BaseView):
+class OutOfRangeNotification(NonSequenceUrlMixin, PTreeMixin, vanilla.View):
     name_in_url = 'shared'
 
-    def get(self, request, *args, **kwargs):
+    def dispatch(self, request, *args, **kwargs):
         return HttpResponse('No more pages in this sequence.')
 
-class WaitUntilAssignedToMatch(UpdateView):
+class WaitUntilAssignedToMatch(ParticipantUpdateView):
     """
     this is visited after Initialize, to make sure the participant has a match and treatment.
     the participant can be assigned at any time, but this is a safeguard,
@@ -109,10 +115,17 @@ class InitializeExperimenter(InitializeParticipantOrExperimenter):
         self.user.save()
         self.request.session[constants.user_code] = self.user.code
 
+        self.request.session[constants.UserClass] = Experimenter
+
+        self.session_user = self.user.session_user
+
         urls = self.user.pages_as_urls()
         if len(urls) > 0:
             url = urls[0]
         else:
+            if self.user.subsession.index_in_subsessions == self.session_user.index_in_subsessions:
+                self.session_user.index_in_subsessions += 1
+                self.session_user.save()
             me_in_next_subsession = self.user.me_in_next_subsession
             if me_in_next_subsession:
                 url = me_in_next_subsession.start_url()

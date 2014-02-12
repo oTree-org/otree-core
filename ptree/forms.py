@@ -127,6 +127,7 @@ class ExperimenterModelForm(BaseModelForm):
         self.subsession = kwargs.pop('subsession')
         self.request = kwargs.pop('request')
         self.session = kwargs.pop('session')
+        self.time_limit_was_exceeded = kwargs.pop('time_limit_was_exceeded')
 
 class StubModelForm(ModelForm):
     class Meta:
@@ -137,3 +138,6 @@ class ExperimenterStubModelForm(ExperimenterModelForm):
     class Meta:
         model = ptree.sessionlib.models.StubModel
         fields = []
+
+Form = ModelForm
+ExperimenterForm = ExperimenterModelForm

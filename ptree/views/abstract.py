@@ -32,8 +32,6 @@ logger = logging.getLogger(__name__)
 
 REDIRECT_TO_PAGE_USER_SHOULD_BE_ON_URL = '/shared/RedirectToPageUserShouldBeOn/'
 
-
-
 class PTreeMixin(object):
     """Base mixin class for pTree views.
     Takes care of:
@@ -50,16 +48,22 @@ class PTreeMixin(object):
         self.TreatmentClass = self.request.session.get(constants.TreatmentClass)
         self.ParticipantClass = self.request.session.get(constants.ParticipantClass)
         self.MatchClass = self.request.session.get(constants.MatchClass)
+        self.UserClass = self.request.session.get(constants.UserClass)
+
+    def load_user(self):
+        code = self.request.session.get(constants.user_code)
+        try:
+            self.user = get_object_or_404(self.UserClass, code=code)
+        except ValueError:
+            raise Http404("This user ({}) does not exist in the database. Maybe the database was recreated.".format(code))
+        self.subsession = self.user.subsession
+        self.session = self.user.session
+        self.session_user = self.user.session_user
 
     def save_objects(self):
         for obj in self.objects_to_save():
             if obj:
                 obj.save()
-
-    def dispatch(self, request, *args, **kwargs):
-        self.load_classes()
-        self.load_objects()
-        return super(PTreeMixin, self).dispatch(request, *args, **kwargs)
 
     @classmethod
     def get_name_in_url(cls):
@@ -68,13 +72,6 @@ class PTreeMixin(object):
         # in that case, name_in_url needs to be defined on the class.
         return getattr(cls, 'SubsessionClass', cls).name_in_url
 
-    @classmethod
-    def url(cls):
-        return '/{}/{}/'.format(cls.get_name_in_url(), cls.__name__)
-
-    @classmethod
-    def url_pattern(cls):
-        return r'^{}/{}/$'.format(cls.get_name_in_url(), cls.__name__)
 
     def redirect_to_page_the_user_should_be_on(self):
         """Redirect to where the participant should be,
@@ -103,22 +100,33 @@ class PTreeMixin(object):
                 return OutOfRangeNotification.url()
         return self.user.pages_as_urls()[self.user.index_in_pages]
 
+class LoadClassesAndUserMixin(object):
+
+    def dispatch(self, request, *args, **kwargs):
+        self.load_classes()
+        self.load_user()
+        return super(LoadClassesAndUserMixin, self).dispatch(request, *args, **kwargs)
+
+class NonSequenceUrlMixin(object):
+    @classmethod
+    def url(cls):
+        return '/{}/{}/'.format(cls.get_name_in_url(), cls.__name__)
+
+    @classmethod
+    def url_pattern(cls):
+        return r'^{}/{}/$'.format(cls.get_name_in_url(), cls.__name__)
+
+
 class ParticipantMixin(object):
 
     def load_objects(self):
-        code = self.request.session.get(constants.user_code)
-        try:
-            self.participant = get_object_or_404(self.ParticipantClass, code=code)
-        except ValueError:
-            raise Http404("This participant ({}) does not exist in the database. Maybe the database was recreated.".format(code))
-        self.user = self.participant
+        self.load_user()
+        self.participant = self.user
+        self.x = self.user
         self.match = self.participant.match
         # 2/11/2014: match may be undefined because the participant may be at a waiting screen
         # before experimenter assigns to a match & treatment.
         self.treatment = self.participant.treatment
-        self.subsession = self.participant.subsession
-        self.session = self.participant.session
-        self.session_user = self.user.session_user
 
     def objects_to_save(self):
         return [self.match, self.participant, self.participant.session_participant]
@@ -127,19 +135,7 @@ class ExperimenterMixin(object):
 
 
     def load_objects(self):
-        #FIXME: use regular code, not just access code
-        code = self.request.session.get(constants.user_code)
-        try:
-            self.user = get_object_or_404(
-                ptree.user.models.Experimenter,
-                code=code
-            )
-        except ValueError:
-            raise Http404("This experimenter ({}) does not exist in the database. Maybe the database was recreated.".format(code))
-        # user is a common interface that can represent either the experimenter or participant.
-        self.session_user = self.user.session_user
-        self.subsession = self.user.subsession
-        self.session = self.subsession.session
+        self.load_user()
 
     def objects_to_save(self):
         return [self.user, self.subsession, self.session_user]
@@ -281,6 +277,7 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
             else:
                 # if the participant shouldn't see this view, skip to the next
                 if page_action == self.PageActions.skip:
+                    self.z = self.user
                     self.update_indexes_in_sequences()
                     return self.redirect_to_page_the_user_should_be_on()
 
@@ -375,6 +372,7 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
         return self.request.path == self.page_the_user_should_be_on()
 
     def update_indexes_in_sequences(self):
+
         if self.index_in_pages == self.user.index_in_pages:
             self.user.index_in_pages += 1
             if self.user.index_in_pages >= len(self.user.pages_as_urls()):
@@ -418,7 +416,7 @@ class ExperimenterSequenceMixin(SequenceMixin):
                'session': self.session,
                'time_limit_was_exceeded': self.time_limit_was_exceeded}
 
-class BaseView(PTreeMixin, ParticipantMixin, vanilla.View):
+class BaseView(PTreeMixin, NonSequenceUrlMixin, vanilla.View):
     """
     A basic view that provides no method implementations.
     """
@@ -448,9 +446,6 @@ class ParticipantUpdateView(ParticipantSequenceMixin, ParticipantMixin, vanilla.
             # For AuxiliaryModels
             return Cls.objects.get(object_id=self.participant.id,
                                    content_type=ContentType.objects.get_for_model(self.participant))
-
-class UpdateView(ParticipantUpdateView):
-    pass
 
 class ExperimenterUpdateView(ExperimenterSequenceMixin, ExperimenterMixin, vanilla.UpdateView):
     form_class = ExperimenterStubModelForm
@@ -494,20 +489,10 @@ class UpdateMultipleView(extra_views.ModelFormSetView, ParticipantUpdateView):
     pass
 
 
-class InitializeParticipantOrExperimenter(vanilla.View):
+class InitializeParticipantOrExperimenter(NonSequenceUrlMixin, vanilla.View):
 
     def initialize_time_limits(self):
         self.request.session[constants.page_expiration_times] = {}
-
-    @classmethod
-    def url(cls):
-        """What the URL looks like, so we can redirect to it"""
-        return '/{}/{}/'.format(cls.get_name_in_url(), cls.__name__)
-
-    @classmethod
-    def url_pattern(cls):
-        """URL pattern regular expression, as required by urls.py"""
-        return r'^{}/{}/$'.format(cls.get_name_in_url(), cls.__name__)
 
     def persist_classes(self):
         """We need these classes so that we can load the objects.
@@ -521,6 +506,7 @@ class InitializeParticipantOrExperimenter(vanilla.View):
         self.request.session[constants.TreatmentClass] = self.TreatmentClass
         self.request.session[constants.ParticipantClass] = self.ParticipantClass
         self.request.session[constants.MatchClass] = self.MatchClass
+        self.request.session[constants.UserClass] = self.ParticipantClass
 
 class InitializeParticipant(InitializeParticipantOrExperimenter):
     """
@@ -555,6 +541,8 @@ class InitializeParticipant(InitializeParticipantOrExperimenter):
 
         self.user.save()
         self.request.session[constants.user_code] = self.user.code
+
+        self.UserClass = self.ParticipantClass
         self.persist_classes()
 
         import ptree.views.concrete
@@ -567,8 +555,4 @@ class InitializeParticipant(InitializeParticipantOrExperimenter):
                 visited=False)[0]
         except IndexError:
             raise IndexError("No Participant objects left in the database to assign to new visitor.")
-
-
-class Initialize(InitializeParticipant):
-    """Rename for public API"""
 

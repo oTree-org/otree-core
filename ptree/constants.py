@@ -2,6 +2,7 @@ SubsessionClass = 'SubsessionClass'
 TreatmentClass = 'TreatmentClass'
 MatchClass = 'MatchClass'
 ParticipantClass = 'ParticipantClass'
+UserClass = 'UserClass'
 
 match_id = 'match_id'
 

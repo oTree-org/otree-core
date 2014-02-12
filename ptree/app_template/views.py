@@ -1,15 +1,15 @@
 import ptree.views
 import ptree.views.concrete
 import {{ app_name }}.forms as forms
-from {{ app_name }}.utilities import ViewInThisApp
+from {{ app_name }}.utilities import InThisApp
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from ptree.common import currency
 
-class Initialize(ViewInThisApp, ptree.views.Initialize):
+class Initialize(InThisApp, ptree.views.Initialize):
     pass
 
-class MyView(ViewInThisApp, ptree.views.UpdateView):
+class MyPage(InThisApp, ptree.views.Page):
 
     template_name = '{{ app_name }}/MyView.html'
 
@@ -26,7 +26,7 @@ class MyView(ViewInThisApp, ptree.views.UpdateView):
         """If all you need to do is save the form to the database,
         this can be left blank or omitted."""
 
-class ExperimenterView(ViewInThisApp, ptree.views.ExperimenterUpdateView):
+class ExperimenterView(InThisApp, ptree.views.ExperimenterPage):
 
     def show_skip_wait(self):
         if all(p.visited for p in self.subsession.participants()):
