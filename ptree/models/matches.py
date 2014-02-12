@@ -1,12 +1,12 @@
 from ptree.db import models
-import ptree.session.models
+import ptree.sessionlib.models
 
 class BaseMatch(models.Model):
     """
     Base class for all Matches.
     """
 
-    session = models.ForeignKey(ptree.session.models.Session,
+    session = models.ForeignKey(ptree.sessionlib.models.Session,
                                                 related_name = '%(app_label)s_%(class)s')
 
 

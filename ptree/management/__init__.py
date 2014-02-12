@@ -2,7 +2,9 @@ from django.conf import settings
 from django.contrib.auth import models as auth_models
 from django.contrib.auth.management import create_superuser
 from django.db.models import signals
-from ptree.session.models import StubModel
+
+from ptree.sessionlib.models import StubModel
+
 
 def create_default_superuser(app, created_models, verbosity, **kwargs):
     """

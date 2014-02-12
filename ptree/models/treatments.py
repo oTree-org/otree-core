@@ -1,9 +1,8 @@
-from django.http import HttpResponseRedirect
 from ptree.db import models
 from ptree.fields import RandomCharField
 import ptree.constants as constants
 from ptree.common import id_label_name
-import ptree.session.models
+import ptree.sessionlib.models
 
 class BaseTreatment(models.Model):
     """
@@ -12,7 +11,7 @@ class BaseTreatment(models.Model):
 
     label = models.CharField(max_length = 300, null = True, blank = True)
 
-    session = models.ForeignKey(ptree.session.models.Session,
+    session = models.ForeignKey(ptree.sessionlib.models.Session,
                                                 null=True,
                                                 related_name = '%(app_label)s_%(class)s')
 
@@ -44,13 +43,11 @@ class BaseTreatment(models.Model):
         raise NotImplementedError()
 
     def sequence_as_urls(self):
-        """Converts the sequence to URLs.
-
-        e.g.:
-        sequence() returns something like [views.IntroPage, ...]
-        sequence_as_urls() returns something like ['mygame/IntroPage', ...]
-        """
-        return [View.url(index) for index, View in enumerate(self.sequence_of_views())]
+        # 2/11/2014: start at 1 because i added the wait page (until assigned to match)
+        # maybe should clean this up.
+        from ptree.views.concrete import WaitUntilAssignedToMatch
+        all_views = [WaitUntilAssignedToMatch] + self.sequence_of_views()
+        return [View.url(index) for index, View in enumerate(all_views)]
 
     def next_open_match(self):
         """Get the next match that is accepting participants.

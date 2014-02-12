@@ -1,0 +1,22 @@
+{% extends "ptree/BaseBuiltIn.html" %}
+
+{% load staticfiles %}
+{% load i18n %}
+
+{% block title %}{% blocktrans %}Start Session{% endblocktrans %}{% endblock %}
+
+
+{% block content %}
+
+<p>
+{% blocktrans %}
+    When all participants have arrived, click "Next",
+    and participants will be assigned to treatments and matches.
+{% endblocktrans %}
+</p>
+
+<form action="" method="post">
+    <input class="submit" type="submit" value="Next" />
+</form>
+
+{% endblock %}

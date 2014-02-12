@@ -1,12 +1,14 @@
 from django import forms
-import ptree.common
-import ptree.models.common
-import ptree.session.models
-import ptree.constants
-from ptree.db import models
 from django.utils.translation import ugettext as _
 import crispy_forms.helper
-from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit
+from crispy_forms.layout import Submit
+
+import ptree.common
+import ptree.models.common
+import ptree.sessionlib.models
+import ptree.constants
+from ptree.db import models
+
 
 DEFAULT_NULLBOOLEAN_CHOICES = ((None, '---------'),
                                (True, _('Yes')),
@@ -128,10 +130,10 @@ class ExperimenterModelForm(BaseModelForm):
 
 class StubModelForm(ModelForm):
     class Meta:
-        model = ptree.session.models.StubModel
+        model = ptree.sessionlib.models.StubModel
         fields = []
 
 class ExperimenterStubModelForm(ExperimenterModelForm):
     class Meta:
-        model = ptree.session.models.StubModel
+        model = ptree.sessionlib.models.StubModel
         fields = []

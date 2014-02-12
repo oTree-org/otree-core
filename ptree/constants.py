@@ -3,11 +3,9 @@ TreatmentClass = 'TreatmentClass'
 MatchClass = 'MatchClass'
 ParticipantClass = 'ParticipantClass'
 
-
-
 match_id = 'match_id'
 
-participant_code = 'participant_code'
+user_code = 'user_code'
 experiment_code = 'experiment_code'
 experiment_code_obfuscated = 'exp_code'
 treatment_code = 'treatment_code'
@@ -35,7 +33,7 @@ page_expiration_times = 'page_time_limits'
 session_participant_label = 'participant_label'
 session_access_code = 'session_access_code'
 form_element_id = 'form'
-session_participant_id = 'session_participant_id'
-session_participant_code = 'session_participant_code'
+session_user_id = 'session_user_id'
+session_user_code = 'session_user_code'
 session_id = 'session_id'
 session_code = 'session_code'

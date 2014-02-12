@@ -1,26 +1,22 @@
 from collections import OrderedDict
+import time
+
 from django.contrib import admin
 from django.conf.urls import patterns
 from django.shortcuts import render_to_response
 from django.core.urlresolvers import reverse
 import django.db.models.options
 import django.db.models.fields.related
-import ptree.constants
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.contrib.staticfiles.templatetags.staticfiles import static as static_template_tag
-import ptree.session.models
-from ptree.common import currency, app_name_format
-import time
+
+import ptree.constants
+import ptree.sessionlib.models
+from ptree.common import currency
+
 
 def new_tab_link(url, label):
     return '<a href="{}" target="_blank">{}</a>'.format(url, label)
-
-def start_urls_for_experiment(experiment, request):
-    if request.GET.get(ptree.constants.experimenter_access_code) != experiment.experimenter_access_code:
-        return HttpResponseBadRequest('{} parameter missing or incorrect'.format(ptree.constants.experimenter_access_code))
-    participants = experiment.participants()
-    urls = [request.build_absolute_uri(participant.start_url()) for participant in participants]
-    return HttpResponse('\n'.join(urls), content_type="text/plain")
 
 def remove_duplicates(lst):
     return list(OrderedDict.fromkeys(lst))
@@ -36,12 +32,13 @@ def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
         'Match':
             [],
         'Treatment':
-            ['link'],
+            [],
         'Experiment':
-            ['experimenter_input_link'],
+            [],
         'Session':
             ['time_started',
              'experiment_names',
+             'experimenter_start_link',
              'start_urls_link',
              'magdeburg_start_urls_link',
              'global_start_link',
@@ -137,7 +134,7 @@ def get_list_display(Model, readonly_fields, first_fields=None):
              'previous_experiment_content_type',
              'previous_experiment_object_id',
              'previous_experiment',
-             'experimenter_access_code',
+             'experimenter',
              },
         'SessionParticipant':
             {'id',
@@ -152,12 +149,11 @@ def get_list_display(Model, readonly_fields, first_fields=None):
         'Session':
              {'id',
              'label',
+             'session_experimenter',
              'first_experiment_content_type',
              'first_experiment_object_id',
              'first_experiment',
              'git_hash',
-             'experimenter_access_code',
-             'preassign_matches',
              'is_for_mturk',
              'base_pay',
              # don't hide the code, since it's useful as a checksum (e.g. if you're on the payments page)
@@ -229,7 +225,7 @@ class NonHiddenSessionListFilter(admin.SimpleListFilter):
         in the right sidebar.
         """
         return [(session.id, session.id) for session
-                in ptree.session.models.Session.objects.filter(hidden=False)]
+                in ptree.sessionlib.models.Session.objects.filter(hidden=False)]
 
     def queryset(self, request, queryset):
         """
@@ -281,18 +277,9 @@ class MatchAdmin(PTreeBaseModelAdmin):
         qs = super(MatchAdmin, self).queryset(request)
         return qs.filter(session__hidden=False)
 
-
 class TreatmentAdmin(PTreeBaseModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
-    def link(self, instance):
-        if instance.experiment.session.preassign_matches:
-            return 'Not available (--preassign-matches was set)'
-        url = instance.start_url()
-        return new_tab_link(url, 'Link')
-
-    link.short_description = "Demo link"
-    link.allow_tags = True
     list_filter = [NonHiddenSessionListFilter, 'experiment']
 
     def queryset(self, request):
@@ -303,16 +290,10 @@ class TreatmentAdmin(PTreeBaseModelAdmin):
 class ExperimentAdmin(PTreeBaseModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
-    def experimenter_input_link(self, instance):
-        url = instance.experimenter_input_url()
-        return new_tab_link(url, 'Link')
-
     def queryset(self, request):
         qs = super(ExperimentAdmin, self).queryset(request)
         return qs.filter(session__hidden=False)
 
-    experimenter_input_link.short_description = 'Link for experimenter input during gameplay'
-    experimenter_input_link.allow_tags = True
     list_filter = [NonHiddenSessionListFilter]
 
 class SessionParticipantAdmin(PTreeBaseModelAdmin):
@@ -320,8 +301,8 @@ class SessionParticipantAdmin(PTreeBaseModelAdmin):
 
     list_filter = [NonHiddenSessionListFilter]
 
-    readonly_fields = get_readonly_fields(ptree.session.models.SessionParticipant, [])
-    list_display = get_list_display(ptree.session.models.SessionParticipant, readonly_fields)
+    readonly_fields = get_readonly_fields(ptree.sessionlib.models.SessionParticipant, [])
+    list_display = get_list_display(ptree.sessionlib.models.SessionParticipant, readonly_fields)
     list_editable = ['exclude_from_data_analysis']
 
 
@@ -355,8 +336,8 @@ class SessionAdmin(PTreeBaseModelAdmin):
     def start_urls(self, request, pk):
         session = self.model.objects.get(pk=pk)
 
-        if request.GET.get(ptree.constants.experimenter_access_code) != session.experimenter_access_code:
-            return HttpResponseBadRequest('{} parameter missing or incorrect'.format(ptree.constants.experimenter_access_code))
+        if request.GET.get(ptree.constants.session_user_code) != session.experiment.experimenter.code:
+            return HttpResponseBadRequest('{} parameter missing or incorrect'.format(ptree.constants.session_user_code))
         urls = self.start_urls_list(request, session)
         return HttpResponse('\n'.join(urls), content_type="text/plain")
 
@@ -364,11 +345,18 @@ class SessionAdmin(PTreeBaseModelAdmin):
         if not instance.first_experiment:
             return 'No experiments in sequence'
         return new_tab_link('{}/start_urls/?{}={}'.format(instance.pk,
-                                                          ptree.constants.experimenter_access_code,
-                                                          instance.experimenter_access_code), 'Link')
+                                                          ptree.constants.session_user_code,
+                                                          instance.session_experimenter.code), 'Link')
 
     start_urls_link.short_description = 'Start URLs'
     start_urls_link.allow_tags = True
+
+    def experimenter_start_link(self, instance):
+        url = instance.session_experimenter.start_url()
+        return new_tab_link(url, 'Link')
+
+    experimenter_start_link.short_description = 'Experimenter input'
+    experimenter_start_link.allow_tags = True
 
     def magdeburg_start_urls(self, request, pk):
         session = self.model.objects.get(pk=pk)
@@ -390,8 +378,8 @@ class SessionAdmin(PTreeBaseModelAdmin):
         if not instance.first_experiment:
             return 'No experiments in sequence'
         return new_tab_link('{}/magdeburg_start_urls/?{}={}'.format(instance.pk,
-                                                          ptree.constants.experimenter_access_code,
-                                                          instance.experimenter_access_code), 'Link')
+                                                          ptree.constants.session_user_code,
+                                                          instance.session_experimenter.code), 'Link')
 
     magdeburg_start_urls_link.short_description = 'Magdeburg Start URLs'
     magdeburg_start_urls_link.allow_tags = True
@@ -456,7 +444,7 @@ class SessionAdmin(PTreeBaseModelAdmin):
     payments_link.short_description = "Payments page"
     payments_link.allow_tags = True
 
-    readonly_fields = get_readonly_fields(ptree.session.models.Session, [])
-    list_display = get_list_display(ptree.session.models.Session, readonly_fields)
+    readonly_fields = get_readonly_fields(ptree.sessionlib.models.Session, [])
+    list_display = get_list_display(ptree.sessionlib.models.Session, readonly_fields)
 
     list_editable = ['hidden']

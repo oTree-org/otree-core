@@ -1,13 +1,14 @@
+import sys
+
 from django.core.management.base import BaseCommand, CommandError
-from optparse import make_option
 from django.conf import settings
-from django.utils.importlib import import_module
 import boto
 from boto.mturk.connection import MTurkConnection
 from boto.mturk.price import Price
+
 from ptree.common import currency
-import sys
-from ptree.session.models import Session
+from ptree.sessionlib.models import Session
+
 
 def cents_to_dollars(num_cents):
     return round(num_cents/100.0,2)

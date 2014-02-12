@@ -1,18 +1,20 @@
+import csv
+import datetime
+from textwrap import TextWrapper
+import inspect
+
+from django.http import HttpResponse
+from django.utils.importlib import import_module
+from inspect_model import InspectModel
+
 import ptree.common
 import ptree.adminlib
 from ptree.common import app_name_format
 import ptree.settings
 import ptree.models
 import ptree.adminlib
-import csv
-import ptree.session.models
-from django.http import HttpResponse
-import datetime
+import ptree.sessionlib.models
 from ptree.adminlib import SessionAdmin, SessionParticipantAdmin
-from textwrap import TextWrapper
-from django.utils.importlib import import_module
-from inspect_model import InspectModel
-import inspect
 
 
 LINE_BREAK = '\r\n'
@@ -25,10 +27,10 @@ def get_data_export_fields(app_label):
     export_info = {}
     for model_name in MODEL_NAMES:
         if model_name == 'Session':
-            Model = ptree.session.models.Session
+            Model = ptree.sessionlib.models.Session
             export_member_names = SessionAdmin.list_display
         elif model_name == 'SessionParticipant':
-            Model = ptree.session.models.SessionParticipant
+            Model = ptree.sessionlib.models.SessionParticipant
             export_member_names = SessionParticipantAdmin.list_display
         else:
             export_member_names = getattr(admin_module, '{}Admin'.format(model_name)).list_display
@@ -70,9 +72,9 @@ def build_doc_file(app_label):
         members = export_fields[model_name]['member_names']
         callable_flags = export_fields[model_name]['callable_flags']
         if model_name == 'SessionParticipant':
-            Model = ptree.session.models.SessionParticipant
+            Model = ptree.sessionlib.models.SessionParticipant
         elif model_name == 'Session':
-            Model = ptree.session.models.Session
+            Model = ptree.sessionlib.models.Session
         else:
             Model = getattr(app_models_module, model_name)
 
@@ -183,7 +185,7 @@ def export(request, app_label):
         # http://stackoverflow.com/questions/2466496/select-distinct-values-from-a-table-field#comment2458913_2468620
         ids = set(Participant.objects.order_by().values_list(fk_name, flat=True).distinct())
         if fk_name in {'session', 'session_participant'}:
-            models_module = ptree.session.models
+            models_module = ptree.sessionlib.models
         else:
             models_module = app_models
         objects = getattr(models_module, model_name).objects.filter(pk__in=ids)

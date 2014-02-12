@@ -24,7 +24,8 @@ def augment_settings(settings):
         'django.contrib.sessions',
         'django.contrib.messages',
         'django.contrib.staticfiles',
-        'ptree.session',
+        'ptree.sessionlib',
+        'ptree.user',
     ]
 
     third_party_apps = ['data_exports', 'crispy_forms']

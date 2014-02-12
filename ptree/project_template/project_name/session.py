@@ -1,9 +1,8 @@
-import ptree.session.models
+import ptree.session
 
-def create_session(name):
-    ptree.session.models.create_session(label='',
+def create(name):
+    ptree.session.create(label='',
                     base_pay=0,
                     is_for_mturk=False,
-                    preassign_matches=True,
                     num_participants=30,
                     sequence= ['myapp'])

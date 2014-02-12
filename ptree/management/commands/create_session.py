@@ -22,6 +22,6 @@ class Command(BaseCommand):
 
 
         session_module = import_module('{}.{}'.format(directory_name(settings.BASE_DIR), 'session'))
-        session_module.create_session(name)
+        session_module.create(name)
 
 

@@ -1,13 +1,15 @@
+import random
+
+from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.models import ContentType
+
 from ptree.db import models
 from ptree.fields import RandomCharField
 import ptree.constants as constants
-from django.template import defaultfilters
-import random
-from django.conf import settings
-from django.contrib.contenttypes import generic
-from django.contrib.contenttypes.models import ContentType
-from ptree.session.models import Session
+from ptree.sessionlib.models import Session
 from ptree.common import id_label_name
+import ptree.user.models
+
 
 class BaseExperiment(models.Model):
     """
@@ -24,8 +26,11 @@ class BaseExperiment(models.Model):
                                                 null=True)
 
     code = RandomCharField(length=8)
-    experimenter_access_code = RandomCharField(length=8)
 
+    experimenter = models.OneToOneField(
+        ptree.user.models.Experimenter,
+        related_name = '%(app_label)s_experiment',
+        null=True)
 
     next_experiment_content_type = models.ForeignKey(ContentType,
                                                      null=True,
@@ -52,17 +57,10 @@ class BaseExperiment(models.Model):
     def __unicode__(self):
         return self.name()
 
-    def experimenter_input_url(self):
-        return '/{}/ExperimenterLaunch/?{}={}&{}={}'.format(self.name_in_url,
-                                                          constants.experiment_code,
-                                                          self.code,
-                                                          constants.experimenter_access_code,
-                                                          self.experimenter_access_code)
-
     def start_url(self):
         """The URL that a user is redirected to in order to start a treatment"""
         return '/{}/Initialize/?{}={}'.format(self.name_in_url,
-                                              constants.participant_code,
+                                              constants.user_code,
                                               self.code)
 
 
@@ -77,6 +75,14 @@ class BaseExperiment(models.Model):
             random.shuffle(treatments)
             return min(treatments, key=lambda treatment: len(treatment.participants()))
 
+    def assign_participants_to_treatments(self):
+        participants = list(self.participants())
+        random.shuffle(participants)
+        for participant in participants:
+            participant.treatment = self.pick_treatment_for_incoming_participant()
+            participant.add_to_existing_or_new_match()
+            participant.save()
+
     def treatments(self):
         return self.treatment_set.all()
 
@@ -86,8 +92,10 @@ class BaseExperiment(models.Model):
     def participants(self):
         return self.participant_set.all()
 
+
+
     def experimenter_sequence_of_views(self):
-        raise NotImplementedError()
+        return []
 
     def experimenter_sequence_as_urls(self):
         """Converts the sequence to URLs.
@@ -96,7 +104,7 @@ class BaseExperiment(models.Model):
         sequence() returns something like [views.IntroPage, ...]
         sequence_as_urls() returns something like ['mygame/IntroPage', ...]
         """
-        return [View.url() for index, View in enumerate(self.experimenter_sequence_of_views())]
+        return [View.url(index) for index, View in enumerate(self.experimenter_sequence_of_views())]
 
     class Meta:
         abstract = True
