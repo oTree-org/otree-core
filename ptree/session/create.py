@@ -25,31 +25,31 @@ def create(label, is_for_mturk, sequence, base_pay, num_participants):
             participant.save()
             session_participants.append(participant)
 
-        experiments = []
+        subsessions = []
         for app_name in sequence:
             if app_name not in settings.INSTALLED_PTREE_APPS:
                 print 'Before running this command you need to add "{}" to INSTALLED_PTREE_APPS.'.format(app_name)
                 return
 
             models_module = import_module('{}.models'.format(app_name))
-            experiment = models_module.create_experiment_and_treatments()
-            experiment.save()
-            [t.save() for t in experiment.treatments()]
+            subsession = models_module.create_subsession_and_treatments()
+            subsession.save()
+            [t.save() for t in subsession.treatments()]
 
-            session.add_experiment(experiment)
+            session.add_subsession(subsession)
             experimenter = Experimenter(session=session)
-            experimenter.experiment = experiment
-            experiment.experimenter = experimenter
+            experimenter.subsession = subsession
+            subsession.experimenter = experimenter
             experimenter.save()
             for i in range(num_participants):
-                participant = models_module.Participant(experiment = experiment,
+                participant = models_module.Participant(subsession = subsession,
                                                         session = session,
                                                         session_participant = session_participants[i])
                 participant.save()
 
             # check that bonus calculation doesn't throw an error, to prevent downstream problems.
             # just check the first participant, to save time.
-            for participant in list(experiment.participants())[:1]:
+            for participant in list(subsession.participants())[:1]:
                 exception = False
                 wrong_type = False
                 bonus = None
@@ -70,10 +70,10 @@ def create(label, is_for_mturk, sequence, base_pay, num_participants):
 
 
             print 'Created objects for {}'.format(app_name)
-            experiments.append(experiment)
+            subsessions.append(subsession)
 
 
-        session.chain_experiments(experiments)
+        session.chain_subsessions(subsessions)
         session.chain_participants()
         session.session_experimenter.chain_experimenters()
     except:

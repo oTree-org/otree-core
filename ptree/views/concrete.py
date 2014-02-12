@@ -83,10 +83,10 @@ class InitializeSessionExperimenter(vanilla.View):
             session.save()
 
         # assign participants to treatments
-        for experiment in session.experiments():
-            experiment.assign_participants_to_treatments()
+        for subsession in session.subsessions():
+            subsession.assign_participants_to_treatments()
 
-        return HttpResponseRedirect(self.session_user.me_in_first_experiment.start_url())
+        return HttpResponseRedirect(self.session_user.me_in_first_subsession.start_url())
 
 class InitializeExperimenter(InitializeParticipantOrExperimenter):
 
@@ -113,9 +113,9 @@ class InitializeExperimenter(InitializeParticipantOrExperimenter):
         if len(urls) > 0:
             url = urls[0]
         else:
-            me_in_next_experiment = self.user.me_in_next_experiment
-            if me_in_next_experiment:
-                url = me_in_next_experiment.start_url()
+            me_in_next_subsession = self.user.me_in_next_subsession
+            if me_in_next_subsession:
+                url = me_in_next_subsession.start_url()
             else:
                 url = OutOfRangeNotification.url()
         return HttpResponseRedirect(url)
@@ -151,7 +151,7 @@ class InitializeSessionParticipant(vanilla.UpdateView):
                     mturk_assignment_id = self.request.GET[constants.mturk_assignment_id]
                     assert mturk_assignment_id != 'ASSIGNMENT_ID_NOT_AVAILABLE'
                 except:
-                    print 'A visitor to this experiment was turned away because they did not have the MTurk parameters in their URL.'
+                    print 'A visitor to this subsession was turned away because they did not have the MTurk parameters in their URL.'
                     print 'This URL only works if clicked from a MTurk job posting with the JavaScript snippet embedded'
                     return HttpResponse(_('To participate, you need to first accept this Mechanical Turk HIT and then re-click the link (refreshing this page will not work).'))
                 try:
@@ -183,4 +183,4 @@ class InitializeSessionParticipant(vanilla.UpdateView):
 
         self.request.session[constants.session_user_id] = session_user.id
 
-        return HttpResponseRedirect(session_user.me_in_first_experiment.start_url())
+        return HttpResponseRedirect(session_user.me_in_first_subsession.start_url())

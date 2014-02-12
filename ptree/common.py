@@ -30,18 +30,18 @@ def currency(value):
 
 def create_match(MatchClass, treatment):
     match = MatchClass(treatment = treatment,
-                       experiment = treatment.experiment,
+                       subsession = treatment.subsession,
                        session = treatment.session)
     # need to save it before you assign the participant.match ForeignKey
     match.save()
     return match
 
-def is_experiment_app(app_label):
+def is_subsession_app(app_label):
     try:
         models_module = import_module('{}.models'.format(app_label))
     except ImportError:
         return False
-    class_names = ['Participant', 'Match', 'Treatment', 'Experiment']
+    class_names = ['Participant', 'Match', 'Treatment', 'Subsession']
     return all(hasattr(models_module, ClassName) for ClassName in class_names)
 
 def git_hash():

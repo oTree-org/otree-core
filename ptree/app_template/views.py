@@ -29,7 +29,7 @@ class MyView(ViewInThisApp, ptree.views.UpdateView):
 class ExperimenterView(ViewInThisApp, ptree.views.ExperimenterUpdateView):
 
     def show_skip_wait(self):
-        if all(p.visited for p in self.experiment.participants()):
-            self.experiment.assign_participants_to_treatments()
+        if all(p.visited for p in self.subsession.participants()):
+            self.subsession.assign_participants_to_treatments()
             return self.PageActions.skip
         return self.PageActions.wait

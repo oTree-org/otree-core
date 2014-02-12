@@ -45,7 +45,7 @@ class Command(BaseCommand):
 
             self.session = Session.objects.get(code=session_code)
             if self.session.payment_was_sent:
-                print 'Error: This experiment was already paid through pTree.'
+                print 'Error: This subsession was already paid through pTree.'
                 return
 
             if not (settings.CURRENCY_CODE == 'USD' and settings.CURRENCY_DECIMAL_PLACES == 2):

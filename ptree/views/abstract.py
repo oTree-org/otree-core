@@ -44,9 +44,9 @@ class PTreeMixin(object):
     def load_classes(self):
         """
         Even though we only use ParticipantClass in load_objects,
-        we use {Match/Treatment/Experiment}Class elsewhere.
+        we use {Match/Treatment/Subsession}Class elsewhere.
         """
-        self.ExperimentClass = self.request.session.get(constants.ExperimentClass)
+        self.SubsessionClass = self.request.session.get(constants.SubsessionClass)
         self.TreatmentClass = self.request.session.get(constants.TreatmentClass)
         self.ParticipantClass = self.request.session.get(constants.ParticipantClass)
         self.MatchClass = self.request.session.get(constants.MatchClass)
@@ -63,10 +63,10 @@ class PTreeMixin(object):
 
     @classmethod
     def get_name_in_url(cls):
-        # look for name_in_url attribute on ExperimentClass
-        # if it's not part of a game, but rather a shared module etc, ExperimentClass won't exist.
+        # look for name_in_url attribute on SubsessionClass
+        # if it's not part of a game, but rather a shared module etc, SubsessionClass won't exist.
         # in that case, name_in_url needs to be defined on the class.
-        return getattr(cls, 'ExperimentClass', cls).name_in_url
+        return getattr(cls, 'SubsessionClass', cls).name_in_url
 
     @classmethod
     def url(cls):
@@ -94,10 +94,10 @@ class PTreeMixin(object):
         return context
 
     def page_the_user_should_be_on(self):
-        if self.session_user.index_in_sequence_of_experiments > self.experiment.index_in_sequence_of_experiments:
+        if self.session_user.index_in_subsessions > self.subsession.index_in_subsessions:
             users = self.session_user.users()
             try:
-                return users[self.session_user.index_in_sequence_of_experiments].start_url()
+                return users[self.session_user.index_in_subsessions].start_url()
             except IndexError:
                 from ptree.views.concrete import OutOfRangeNotification
                 return OutOfRangeNotification.url()
@@ -116,7 +116,7 @@ class ParticipantMixin(object):
         # 2/11/2014: match may be undefined because the participant may be at a waiting screen
         # before experimenter assigns to a match & treatment.
         self.treatment = self.participant.treatment
-        self.experiment = self.participant.experiment
+        self.subsession = self.participant.subsession
         self.session = self.participant.session
         self.session_user = self.user.session_user
 
@@ -138,11 +138,11 @@ class ExperimenterMixin(object):
             raise Http404("This experimenter ({}) does not exist in the database. Maybe the database was recreated.".format(code))
         # user is a common interface that can represent either the experimenter or participant.
         self.session_user = self.user.session_user
-        self.experiment = self.user.experiment
-        self.session = self.experiment.session
+        self.subsession = self.user.subsession
+        self.session = self.subsession.session
 
     def objects_to_save(self):
-        return [self.user, self.experiment, self.session_user]
+        return [self.user, self.subsession, self.session_user]
 
 class WaitPageMixin(object):
 
@@ -263,9 +263,9 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
             # remove it since post() may not be able to accept args.
             args = args[1:]
 
-            # if the participant tried to skip past a part of the experiment
+            # if the participant tried to skip past a part of the subsession
             # (e.g. by typing in a future URL)
-            # or if they hit the back button to a previous experiment in the sequence.
+            # or if they hit the back button to a previous subsession in the sequence.
             if not self.user_is_on_right_page():
                 # then bring them back to where they should be
                 return self.redirect_to_page_the_user_should_be_on()
@@ -378,8 +378,8 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
         if self.index_in_pages == self.user.index_in_pages:
             self.user.index_in_pages += 1
             if self.user.index_in_pages >= len(self.user.pages_as_urls()):
-                if self.experiment.index_in_sequence_of_experiments == self.session_user.index_in_sequence_of_experiments:
-                    self.session_user.index_in_sequence_of_experiments += 1
+                if self.subsession.index_in_subsessions == self.session_user.index_in_subsessions:
+                    self.session_user.index_in_subsessions += 1
             self.user.save()
             self.session_user.save()
 
@@ -395,14 +395,14 @@ class ParticipantSequenceMixin(SequenceMixin):
                 ('Participant', self.participant.pk),
                 ('Match', match_id),
                 ('Treatment', self.treatment.pk),
-                ('Experiment code', self.experiment.code),]
+                ('Subsession code', self.subsession.code),]
 
 
     def get_extra_form_kwargs(self):
         return {'participant': self.participant,
                'match': self.match,
                'treatment': self.treatment,
-               'experiment': self.experiment,
+               'subsession': self.subsession,
                'request': self.request,
                'session': self.session,
                'time_limit_was_exceeded': self.time_limit_was_exceeded}
@@ -410,10 +410,10 @@ class ParticipantSequenceMixin(SequenceMixin):
 class ExperimenterSequenceMixin(SequenceMixin):
 
     def get_debug_values(self):
-        return [('Experiment code', self.experiment.code),]
+        return [('Subsession code', self.subsession.code),]
 
     def get_extra_form_kwargs(self):
-        return {'experiment': self.experiment,
+        return {'subsession': self.subsession,
                'request': self.request,
                'session': self.session,
                'time_limit_was_exceeded': self.time_limit_was_exceeded}
@@ -457,8 +457,8 @@ class ExperimenterUpdateView(ExperimenterSequenceMixin, ExperimenterMixin, vanil
 
     def get_object(self):
         Cls = self.get_form_class().Meta.model
-        if Cls == self.ExperimentClass:
-            return self.experiment
+        if Cls == self.SubsessionClass:
+            return self.subsession
         elif Cls == seq_models.StubModel:
             return seq_models.StubModel.objects.all()[0]
 
@@ -512,12 +512,12 @@ class InitializeParticipantOrExperimenter(vanilla.View):
     def persist_classes(self):
         """We need these classes so that we can load the objects.
         We need to store it in cookies,
-        rather than relying on each View knowing its Experiment, Treatment, etc.
+        rather than relying on each View knowing its Subsession, Treatment, etc.
         Although this is the case with the views in the games (which inherit from their Start view),
-        some Views are in a shared module and therefore can be bound to different Experiments, Treatments, etc.
+        some Views are in a shared module and therefore can be bound to different Subsessions, Treatments, etc.
         """
 
-        self.request.session[constants.ExperimentClass] = self.ExperimentClass
+        self.request.session[constants.SubsessionClass] = self.SubsessionClass
         self.request.session[constants.TreatmentClass] = self.TreatmentClass
         self.request.session[constants.ParticipantClass] = self.ParticipantClass
         self.request.session[constants.MatchClass] = self.MatchClass
@@ -535,7 +535,7 @@ class InitializeParticipant(InitializeParticipantOrExperimenter):
     def get_name_in_url(cls):
         """urls.py requires that each view know its own URL.
         a URL base is the first part of the path, usually the name of the game"""
-        return cls.ExperimentClass.name_in_url
+        return cls.SubsessionClass.name_in_url
 
     def get(self, request, *args, **kwargs):
         self.request.session.clear()
@@ -548,7 +548,7 @@ class InitializeParticipant(InitializeParticipantOrExperimenter):
         # they are the same thing, but we use 'user' wherever possible
         # so that the code can be copy pasted to experimenter code
         self.participant = self.user
-        self.experiment = self.participant.experiment
+        self.subsession = self.participant.subsession
 
         self.user.visited = True
         self.user.time_started = datetime.now()
@@ -560,10 +560,10 @@ class InitializeParticipant(InitializeParticipantOrExperimenter):
         import ptree.views.concrete
         return HttpResponseRedirect(ptree.views.concrete.WaitUntilAssignedToMatch.url(0))
 
-    def get_next_participant_in_experiment(self):
+    def get_next_participant_in_subsession(self):
         try:
             return self.ParticipantClass.objects.filter(
-                experiment=self.experiment,
+                subsession=self.subsession,
                 visited=False)[0]
         except IndexError:
             raise IndexError("No Participant objects left in the database to assign to new visitor.")

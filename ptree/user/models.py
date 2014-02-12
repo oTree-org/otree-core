@@ -27,19 +27,19 @@ class User(models.Model):
     index_in_pages = models.PositiveIntegerField(default=0)
 
     # 2/12/2014: i think the previous pointer is unnecessary because i can traverse via the reverse relation of the "next" pointer
-    me_in_previous_experiment_content_type = models.ForeignKey(ContentType,
+    me_in_previous_subsession_content_type = models.ForeignKey(ContentType,
                                                       null=True,
                                                       related_name = '%(app_label)s_%(class)s_previous')
-    me_in_previous_experiment_object_id = models.PositiveIntegerField(null=True)
-    me_in_previous_experiment = generic.GenericForeignKey('me_in_previous_experiment_content_type',
-                                                'me_in_previous_experiment_object_id',)
+    me_in_previous_subsession_object_id = models.PositiveIntegerField(null=True)
+    me_in_previous_subsession = generic.GenericForeignKey('me_in_previous_subsession_content_type',
+                                                'me_in_previous_subsession_object_id',)
 
-    me_in_next_experiment_content_type = models.ForeignKey(ContentType,
+    me_in_next_subsession_content_type = models.ForeignKey(ContentType,
                                                       null=True,
                                                       related_name = '%(app_label)s_%(class)s_next')
-    me_in_next_experiment_object_id = models.PositiveIntegerField(null=True)
-    me_in_next_experiment = generic.GenericForeignKey('me_in_next_experiment_content_type',
-                                                'me_in_next_experiment_object_id',)
+    me_in_next_subsession_object_id = models.PositiveIntegerField(null=True)
+    me_in_next_subsession = generic.GenericForeignKey('me_in_next_subsession_content_type',
+                                                'me_in_next_subsession_object_id',)
 
 
     def progress(self):
@@ -59,12 +59,12 @@ class Experimenter(User):
         related_name='experimenter'
     )
 
-    experiment_content_type = models.ForeignKey(ContentType,
+    subsession_content_type = models.ForeignKey(ContentType,
                                                 null=True,
                                                 related_name = 'experimenter')
-    experiment_object_id = models.PositiveIntegerField(null=True)
-    experiment = generic.GenericForeignKey('experiment_content_type',
-                                           'experiment_object_id',
+    subsession_object_id = models.PositiveIntegerField(null=True)
+    subsession = generic.GenericForeignKey('subsession_content_type',
+                                           'subsession_object_id',
                                            )
 
     @property
@@ -75,10 +75,10 @@ class Experimenter(User):
         return add_params_to_url(
             '/InitializeExperimenter/',
             {
-                constants.experiment_code: self.experiment.code,
+                constants.subsession_code: self.subsession.code,
                 constants.user_code: self.code,
             }
         )
 
     def pages_as_urls(self):
-        return self.experiment.experimenter_pages_as_urls()
+        return self.subsession.experimenter_pages_as_urls()

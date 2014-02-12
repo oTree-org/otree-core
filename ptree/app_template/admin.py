@@ -14,11 +14,11 @@ class TreatmentAdmin(adminlib.TreatmentAdmin):
     readonly_fields = adminlib.get_readonly_fields(models.Treatment)
     list_display = adminlib.get_list_display(models.Treatment, readonly_fields)
 
-class ExperimentAdmin(adminlib.ExperimentAdmin):
-    readonly_fields = adminlib.get_readonly_fields(models.Experiment)
-    list_display = adminlib.get_list_display(models.Experiment, readonly_fields)
+class SubsessionAdmin(adminlib.SubsessionAdmin):
+    readonly_fields = adminlib.get_readonly_fields(models.Subsession)
+    list_display = adminlib.get_list_display(models.Subsession, readonly_fields)
 
 admin.site.register(models.Participant, ParticipantAdmin)
 admin.site.register(models.Match, MatchAdmin)
 admin.site.register(models.Treatment, TreatmentAdmin)
-admin.site.register(models.Experiment, ExperimentAdmin)
+admin.site.register(models.Subsession, SubsessionAdmin)

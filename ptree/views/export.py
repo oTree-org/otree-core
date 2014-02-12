@@ -18,7 +18,7 @@ from ptree.adminlib import SessionAdmin, SessionParticipantAdmin
 
 
 LINE_BREAK = '\r\n'
-MODEL_NAMES = ["Participant", "Match", "Treatment", "Experiment", "SessionParticipant", "Session"]
+MODEL_NAMES = ["Participant", "Match", "Treatment", "Subsession", "SessionParticipant", "Session"]
 
 
 def get_data_export_fields(app_label):
@@ -43,7 +43,7 @@ def get_data_export_fields(app_label):
         methods = set(im.methods)
 
         export_member_names = [m for m in export_member_names if (m in exportable_members
-                                                                  and not m in {'match', 'treatment', 'experiment', 'session'})]
+                                                                  and not m in {'match', 'treatment', 'subsession', 'session'})]
         callable_flags = [member_name in methods for member_name in export_member_names]
 
         # remove since these are redundant
@@ -150,7 +150,7 @@ def export(request, app_label):
     model_names_as_fk = {
         'match': 'Match',
         'treatment': 'Treatment',
-        'experiment': 'Experiment',
+        'subsession': 'Subsession',
         'session_participant': 'SessionParticipant',
         'session': 'Session',
     }
@@ -165,7 +165,7 @@ def export(request, app_label):
     fk_names = [
         'match',
         'treatment',
-        'experiment',
+        'subsession',
         'session_participant',
         'session',
     ]

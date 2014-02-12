@@ -3,7 +3,7 @@ import ptree.constants as constants
 from ptree.common import currency
 import ptree.sessionlib.models
 from ptree.common import add_params_to_url
-import ptree.models.experiments
+import ptree.models.subsessions
 from ptree.user.models import User
 
 
@@ -30,7 +30,7 @@ class BaseParticipant(User):
         return self.name()
 
     def start_url(self):
-        return add_params_to_url(self.experiment.start_url(), {constants.user_code: self.code})
+        return add_params_to_url(self.subsession.start_url(), {constants.user_code: self.code})
 
     def bonus(self):
         """

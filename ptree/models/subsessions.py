@@ -11,9 +11,9 @@ from ptree.common import id_label_name
 import ptree.user.models
 
 
-class BaseExperiment(models.Model):
+class BaseSubsession(models.Model):
     """
-    Base class for all Experiments.
+    Base class for all Subsessions.
     """
 
     label = models.CharField(max_length = 500,
@@ -29,27 +29,27 @@ class BaseExperiment(models.Model):
 
     experimenter = models.OneToOneField(
         ptree.user.models.Experimenter,
-        related_name = '%(app_label)s_experiment',
+        related_name = '%(app_label)s_subsession',
         null=True)
 
-    next_experiment_content_type = models.ForeignKey(ContentType,
+    next_subsession_content_type = models.ForeignKey(ContentType,
                                                      null=True,
-                                                     related_name = '%(app_label)s_%(class)s_as_next_experiment')
-    next_experiment_object_id = models.PositiveIntegerField(null=True)
-    next_experiment = generic.GenericForeignKey('next_experiment_content_type',
-                                            'next_experiment_object_id',)
+                                                     related_name = '%(app_label)s_%(class)s_as_next_subsession')
+    next_subsession_object_id = models.PositiveIntegerField(null=True)
+    next_subsession = generic.GenericForeignKey('next_subsession_content_type',
+                                            'next_subsession_object_id',)
 
-    previous_experiment_content_type = models.ForeignKey(ContentType,
+    previous_subsession_content_type = models.ForeignKey(ContentType,
                                                      null=True,
-                                                     related_name = '%(app_label)s_%(class)s_as_previous_experiment')
-    previous_experiment_object_id = models.PositiveIntegerField(null=True)
-    previous_experiment = generic.GenericForeignKey('previous_experiment_content_type',
-                                            'previous_experiment_object_id',)
+                                                     related_name = '%(app_label)s_%(class)s_as_previous_subsession')
+    previous_subsession_object_id = models.PositiveIntegerField(null=True)
+    previous_subsession = generic.GenericForeignKey('previous_subsession_content_type',
+                                            'previous_subsession_object_id',)
 
-    index_in_sequence_of_experiments = models.PositiveIntegerField(null=True)
+    index_in_subsessions = models.PositiveIntegerField(null=True)
 
-    def is_last_experiment(self):
-        return not self.next_experiment
+    def is_last_subsession(self):
+        return not self.next_subsession
 
     def name(self):
         return id_label_name(self.pk, self.label)

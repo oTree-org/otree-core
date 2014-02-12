@@ -20,12 +20,12 @@ class Session(models.Model):
         related_name='session',
     )
 
-    first_experiment_content_type = models.ForeignKey(ContentType,
+    first_subsession_content_type = models.ForeignKey(ContentType,
                                                       null=True,
                                                       related_name = '%(app_label)s_%(class)s')
-    first_experiment_object_id = models.PositiveIntegerField(null=True)
-    first_experiment = generic.GenericForeignKey('first_experiment_content_type',
-                                            'first_experiment_object_id',)
+    first_subsession_object_id = models.PositiveIntegerField(null=True)
+    first_subsession = generic.GenericForeignKey('first_subsession_content_type',
+                                            'first_subsession_object_id',)
 
     is_for_mturk = models.BooleanField(verbose_name='Is for MTurk', default=True)
     payment_was_sent = models.BooleanField(default=False)
@@ -47,10 +47,10 @@ class Session(models.Model):
     def name(self):
         return id_label_name(self.pk, self.label)
 
-    def experiment_names(self):
+    def subsession_names(self):
         names = []
-        for experiment in self.experiments():
-            names.append('{} {}'.format(ptree.common.app_name_format(experiment._meta.app_label), experiment.name()))
+        for subsession in self.subsessions():
+            names.append('{} {}'.format(ptree.common.app_name_format(subsession._meta.app_label), subsession.name()))
         if names:
             return ', '.join(names)
         else:
@@ -61,65 +61,65 @@ class Session(models.Model):
         return '/InitializeSessionParticipant/?{}={}'.format(constants.session_code,
                                                    self.code)
 
-    def experiments(self):
+    def subsessions(self):
         lst = []
-        experiment = self.first_experiment
+        subsession = self.first_subsession
         while True:
-            if not experiment:
+            if not subsession:
                 break
-            lst.append(experiment)
-            experiment = experiment.next_experiment
+            lst.append(subsession)
+            subsession = subsession.next_subsession
         return lst
 
 
     def __unicode__(self):
         return self.name()
 
-    def chain_experiments(self, experiments):
-        self.first_experiment = experiments[0]
-        for i in range(len(experiments) - 1):
-            experiments[i].next_experiment = experiments[i + 1]
-            experiments[i + 1].previous_experiment = experiments[i]
-        for i, experiment in enumerate(experiments):
-            experiment.index_in_sequence_of_experiments = i
-            experiment.save()
+    def chain_subsessions(self, subsessions):
+        self.first_subsession = subsessions[0]
+        for i in range(len(subsessions) - 1):
+            subsessions[i].next_subsession = subsessions[i + 1]
+            subsessions[i + 1].previous_subsession = subsessions[i]
+        for i, subsession in enumerate(subsessions):
+            subsession.index_in_subsessions = i
+            subsession.save()
         self.save()
 
     def chain_participants(self):
-        """Should be called after add_experiments"""
+        """Should be called after add_subsessions"""
 
         seq_participants = self.participants()
         num_participants = len(seq_participants)
 
-        experiments = self.experiments()
+        subsessions = self.subsessions()
 
-        first_experiment_participants = self.first_experiment.participants()
+        first_subsession_participants = self.first_subsession.participants()
 
         for i in range(num_participants):
-            seq_participants[i].me_in_first_experiment = first_experiment_participants[i]
+            seq_participants[i].me_in_first_subsession = first_subsession_participants[i]
             seq_participants[i].save()
 
-        for experiment_index in range(len(experiments) - 1):
-            participants_left = experiments[experiment_index].participants()
-            participants_right = experiments[experiment_index + 1].participants()
+        for subsession_index in range(len(subsessions) - 1):
+            participants_left = subsessions[subsession_index].participants()
+            participants_right = subsessions[subsession_index + 1].participants()
             for participant_index in range(num_participants):
                 participant_left = participants_left[participant_index]
                 participant_right = participants_right[participant_index]
-                participant_left.me_in_next_experiment = participant_right
-                participant_right.me_in_previous_experiment = participant_left
+                participant_left.me_in_next_subsession = participant_right
+                participant_right.me_in_previous_subsession = participant_left
                 participant_left.save()
                 participant_right.save()
 
-    def add_experiment(self, experiment):
-        experiment.session = self
-        experiment.save()
-        for treatment in experiment.treatments():
+    def add_subsession(self, subsession):
+        subsession.session = self
+        subsession.save()
+        for treatment in subsession.treatments():
             treatment.session = self
             treatment.save()
 
     def delete(self, using=None):
-        for experiment in self.experiments():
-            experiment.delete()
+        for subsession in self.subsessions():
+            subsession.delete()
         super(Session, self).delete(using)
 
     def participants(self):
@@ -146,16 +146,16 @@ class Session(models.Model):
 
 class SessionUser(models.Model):
 
-    index_in_sequence_of_experiments = models.PositiveIntegerField(default=0, null=True)
+    index_in_subsessions = models.PositiveIntegerField(default=0, null=True)
     index_in_pages = models.PositiveIntegerField(default=0, null=True)
 
-    me_in_first_experiment_content_type = models.ForeignKey(ContentType,
+    me_in_first_subsession_content_type = models.ForeignKey(ContentType,
                                                       null=True,
                                                       related_name = '%(app_label)s_%(class)s')
-    me_in_first_experiment_object_id = models.PositiveIntegerField(null=True)
+    me_in_first_subsession_object_id = models.PositiveIntegerField(null=True)
     code = RandomCharField(length = 8)
-    me_in_first_experiment = generic.GenericForeignKey('me_in_first_experiment_content_type',
-                                                'me_in_first_experiment_object_id',)
+    me_in_first_subsession = generic.GenericForeignKey('me_in_first_subsession_content_type',
+                                                'me_in_first_subsession_object_id',)
 
     last_request_succeeded = models.NullBooleanField(verbose_name='Health of last server request')
 
@@ -166,28 +166,28 @@ class SessionUser(models.Model):
     def progress(self):
         if not self.visited:
             return None
-        return '{}/{} experiments'.format(self.index_in_sequence_of_experiments + 1, len(self.session.experiments()))
+        return '{}/{} subsessions'.format(self.index_in_subsessions + 1, len(self.session.subsessions()))
 
-    def progress_in_current_experiment(self):
+    def progress_in_current_subsession(self):
         try:
-            return self.users()[self.index_in_sequence_of_experiments].progress()
+            return self.users()[self.index_in_subsessions].progress()
         except:
             return '(Error)'
 
-    def current_experiment(self):
+    def current_subsession(self):
         if not self.visited:
             return None
-        return ptree.common.app_name_format(self.session.experiments()[self.index_in_sequence_of_experiments]._meta.app_label)
+        return ptree.common.app_name_format(self.session.subsessions()[self.index_in_subsessions]._meta.app_label)
 
     def users(self):
         """Used to calculate bonuses"""
         lst = []
-        me_in_next_experiment = self.me_in_first_experiment
+        me_in_next_subsession = self.me_in_first_subsession
         while True:
-            if not me_in_next_experiment:
+            if not me_in_next_subsession:
                 break
-            lst.append(me_in_next_experiment)
-            me_in_next_experiment = me_in_next_experiment.me_in_next_experiment
+            lst.append(me_in_next_subsession)
+            me_in_next_subsession = me_in_next_subsession.me_in_next_subsession
         return lst
 
     class Meta:
@@ -201,19 +201,19 @@ class SessionExperimenter(SessionUser):
         )
 
     def chain_experimenters(self):
-        experiments = self.session.experiments()
+        subsessions = self.session.subsessions()
 
-        self.me_in_first_experiment = experiments[0].experimenter
+        self.me_in_first_subsession = subsessions[0].experimenter
         self.save()
 
-        for i in range(len(experiments) - 1):
-            left_experimenter = experiments[i].experimenter
-            right_experimenter = experiments[i+1].experimenter
-            left_experimenter.me_in_next_experiment = right_experimenter
-            right_experimenter.me_in_previous_experiment = left_experimenter
-        for experiment in experiments:
-            experiment.experimenter.session_experimenter = self
-            experiment.experimenter.save()
+        for i in range(len(subsessions) - 1):
+            left_experimenter = subsessions[i].experimenter
+            right_experimenter = subsessions[i+1].experimenter
+            left_experimenter.me_in_next_subsession = right_experimenter
+            right_experimenter.me_in_previous_subsession = left_experimenter
+        for subsession in subsessions:
+            subsession.experimenter.session_experimenter = self
+            subsession.experimenter.save()
 
     def experimenters(self):
         return self.users()

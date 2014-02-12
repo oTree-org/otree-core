@@ -14,15 +14,15 @@
 <div id="content-main">
 
 {% if app_list %}
-    {% with non_experiment_apps=app_list|non_experiment_apps %}
-    {% if non_experiment_apps|length != 0 %}
+    {% with non_subsession_apps=app_list|non_subsession_apps %}
+    {% if non_subsession_apps|length != 0 %}
         <h2>Global</h2>
-        {% for app in non_experiment_apps %}
+        {% for app in non_subsession_apps %}
             {% if app.app_label == "session" %}
                 {% include "admin/_dashboard_app_template.html" with app_models=app.models|fix_session_app_models_order %}
             {% endif %}
         {% endfor %}
-        {% for app in non_experiment_apps %}
+        {% for app in non_subsession_apps %}
             {% if app.app_label != "session" %}
                 {% include "admin/_dashboard_app_template.html" with app_models=app.models %}
             {% endif %}
@@ -31,8 +31,8 @@
     {% endwith %}
 
     <h2>Apps</h2>
-    {% for app in app_list|experiment_apps_only %}
-        {% include "admin/_dashboard_app_template.html" with app_models=app.models|fix_experiment_app_models_order %}
+    {% for app in app_list|subsession_apps_only %}
+        {% include "admin/_dashboard_app_template.html" with app_models=app.models|fix_subsession_app_models_order %}
     {% endfor %}
 {% else %}
     <p>{% trans "You don't have permission to edit anything." %}</p>

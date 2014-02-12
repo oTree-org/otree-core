@@ -33,11 +33,11 @@ def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
             [],
         'Treatment':
             [],
-        'Experiment':
+        'Subsession':
             [],
         'Session':
             ['time_started',
-             'experiment_names',
+             'subsession_names',
              'experimenter_start_link',
              'start_urls_link',
              'magdeburg_start_urls_link',
@@ -50,8 +50,8 @@ def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
             ['bonus_display',
             'start_link',
             'progress',
-            'current_experiment',
-            'progress_in_current_experiment'],
+            'current_subsession',
+            'progress_in_current_subsession'],
     }[Model.__name__]
 
     return remove_duplicates(fields_for_this_model_type + (fields_specific_to_this_subclass or []))
@@ -62,7 +62,7 @@ def get_list_display(Model, readonly_fields, first_fields=None):
         'Participant':
             ['name',
             'session',
-            'experiment',
+            'subsession',
             'treatment',
             'match',
             'visited',
@@ -70,13 +70,13 @@ def get_list_display(Model, readonly_fields, first_fields=None):
         'Match':
             ['id',
             'session',
-            'experiment',
+            'subsession',
             'treatment'],
         'Treatment':
             ['name',
             'session',
-            'experiment'],
-        'Experiment':
+            'subsession'],
+        'Subsession':
             ['name',
              'session'],
         'SessionParticipant':
@@ -85,8 +85,8 @@ def get_list_display(Model, readonly_fields, first_fields=None):
              'session',
              'visited',
              'progress',
-             'current_experiment',
-             'progress_in_current_experiment'],
+             'current_subsession',
+             'progress_in_current_subsession'],
         'Session':
             ['name',
              'hidden'],
@@ -96,7 +96,7 @@ def get_list_display(Model, readonly_fields, first_fields=None):
         'Participant': [],
         'Match': [],
         'Treatment': [],
-        'Experiment': [],
+        'Subsession': [],
         'SessionParticipant': [
             'start_link',
             'exclude_from_data_analysis',
@@ -113,10 +113,10 @@ def get_list_display(Model, readonly_fields, first_fields=None):
               {'id',
               'code',
               'index_in_pages',
-              'me_in_previous_experiment_content_type',
-              'me_in_previous_experiment_object_id',
-              'me_in_next_experiment_content_type',
-              'me_in_next_experiment_object_id',
+              'me_in_previous_subsession_content_type',
+              'me_in_previous_subsession_object_id',
+              'me_in_next_subsession_content_type',
+              'me_in_next_subsession_object_id',
               'session_participant',
               },
         'Match':
@@ -124,24 +124,24 @@ def get_list_display(Model, readonly_fields, first_fields=None):
         'Treatment':
             {'id',
             'label'},
-        'Experiment':
+        'Subsession':
             {'id',
              'label',
              'session_access_code',
-             'next_experiment_content_type',
-             'next_experiment_object_id',
-             'next_experiment',
-             'previous_experiment_content_type',
-             'previous_experiment_object_id',
-             'previous_experiment',
+             'next_subsession_content_type',
+             'next_subsession_object_id',
+             'next_subsession',
+             'previous_subsession_content_type',
+             'previous_subsession_object_id',
+             'previous_subsession',
              'experimenter',
              },
         'SessionParticipant':
             {'id',
-            'index_in_sequence_of_experiments',
+            'index_in_subsessions',
             'label',
-            'me_in_first_experiment_content_type',
-            'me_in_first_experiment_object_id',
+            'me_in_first_subsession_content_type',
+            'me_in_first_subsession_object_id',
             'code',
             'ip_address',
             'mturk_assignment_id',
@@ -150,9 +150,9 @@ def get_list_display(Model, readonly_fields, first_fields=None):
              {'id',
              'label',
              'session_experimenter',
-             'first_experiment_content_type',
-             'first_experiment_object_id',
-             'first_experiment',
+             'first_subsession_content_type',
+             'first_subsession_object_id',
+             'first_subsession',
              'git_hash',
              'is_for_mturk',
              'base_pay',
@@ -260,7 +260,7 @@ class ParticipantAdmin(PTreeBaseModelAdmin):
 
     link.short_description = "Start link"
     link.allow_tags = True
-    list_filter = [NonHiddenSessionListFilter, 'experiment', 'treatment', 'match']
+    list_filter = [NonHiddenSessionListFilter, 'subsession', 'treatment', 'match']
     list_per_page = 30
 
     def queryset(self, request):
@@ -270,7 +270,7 @@ class ParticipantAdmin(PTreeBaseModelAdmin):
 class MatchAdmin(PTreeBaseModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
-    list_filter = [NonHiddenSessionListFilter, 'experiment', 'treatment']
+    list_filter = [NonHiddenSessionListFilter, 'subsession', 'treatment']
     list_per_page = 30
 
     def queryset(self, request):
@@ -280,18 +280,18 @@ class MatchAdmin(PTreeBaseModelAdmin):
 class TreatmentAdmin(PTreeBaseModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
-    list_filter = [NonHiddenSessionListFilter, 'experiment']
+    list_filter = [NonHiddenSessionListFilter, 'subsession']
 
     def queryset(self, request):
         qs = super(TreatmentAdmin, self).queryset(request)
         return qs.filter(session__hidden=False)
 
 
-class ExperimentAdmin(PTreeBaseModelAdmin):
+class SubsessionAdmin(PTreeBaseModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
     def queryset(self, request):
-        qs = super(ExperimentAdmin, self).queryset(request)
+        qs = super(SubsessionAdmin, self).queryset(request)
         return qs.filter(session__hidden=False)
 
     list_filter = [NonHiddenSessionListFilter]
@@ -336,14 +336,14 @@ class SessionAdmin(PTreeBaseModelAdmin):
     def start_urls(self, request, pk):
         session = self.model.objects.get(pk=pk)
 
-        if request.GET.get(ptree.constants.session_user_code) != session.experiment.experimenter.code:
+        if request.GET.get(ptree.constants.session_user_code) != session.subsession.experimenter.code:
             return HttpResponseBadRequest('{} parameter missing or incorrect'.format(ptree.constants.session_user_code))
         urls = self.start_urls_list(request, session)
         return HttpResponse('\n'.join(urls), content_type="text/plain")
 
     def start_urls_link(self, instance):
-        if not instance.first_experiment:
-            return 'No experiments in sequence'
+        if not instance.first_subsession:
+            return 'No subsessions in sequence'
         return new_tab_link('{}/start_urls/?{}={}'.format(instance.pk,
                                                           ptree.constants.session_user_code,
                                                           instance.session_experimenter.code), 'Link')
@@ -375,8 +375,8 @@ class SessionAdmin(PTreeBaseModelAdmin):
         return response
 
     def magdeburg_start_urls_link(self, instance):
-        if not instance.first_experiment:
-            return 'No experiments in sequence'
+        if not instance.first_subsession:
+            return 'No subsessions in sequence'
         return new_tab_link('{}/magdeburg_start_urls/?{}={}'.format(instance.pk,
                                                           ptree.constants.session_user_code,
                                                           instance.session_experimenter.code), 'Link')
@@ -387,17 +387,17 @@ class SessionAdmin(PTreeBaseModelAdmin):
 
     def mturk_snippet(self, request, pk):
         session = self.model.objects.get(pk=pk)
-        experiment = session.first_experiment
+        subsession = session.first_subsession
         hit_page_js_url = request.build_absolute_uri(static_template_tag('ptree/js/mturk_hit_page.js'))
-        experiment_url = request.build_absolute_uri(experiment.start_url())
+        subsession_url = request.build_absolute_uri(subsession.start_url())
         return render_to_response('admin/MTurkSnippet.html',
                                   {'hit_page_js_url': hit_page_js_url,
-                                   'experiment_url': experiment_url,},
+                                   'subsession_url': subsession_url,},
                                   content_type='text/plain')
 
     def mturk_snippet_link(self, instance):
-        if not instance.first_experiment:
-            return 'No experiments in sequence'
+        if not instance.first_subsession:
+            return 'No subsessions in sequence'
         if instance.is_for_mturk:
             return new_tab_link('{}/mturk_snippet/'.format(instance.pk), 'Link')
         else:
@@ -409,8 +409,8 @@ class SessionAdmin(PTreeBaseModelAdmin):
     def global_start_link(self, instance):
         if instance.is_for_mturk:
             return 'N/A (is_for_mturk = True)'
-        if not instance.first_experiment:
-            return 'No experiments in sequence'
+        if not instance.first_subsession:
+            return 'No subsessions in sequence'
         else:
             url = instance.start_url()
             return new_tab_link(url, 'Link')

@@ -1,4 +1,4 @@
-ExperimentClass = 'ExperimentClass'
+SubsessionClass = 'SubsessionClass'
 TreatmentClass = 'TreatmentClass'
 MatchClass = 'MatchClass'
 ParticipantClass = 'ParticipantClass'
@@ -6,8 +6,8 @@ ParticipantClass = 'ParticipantClass'
 match_id = 'match_id'
 
 user_code = 'user_code'
-experiment_code = 'experiment_code'
-experiment_code_obfuscated = 'exp_code'
+subsession_code = 'subsession_code'
+subsession_code_obfuscated = 'exp_code'
 treatment_code = 'treatment_code'
 demo_code = 'demo_code'
 

@@ -38,7 +38,7 @@ setup(
     license='MIT License',
     packages=find_packages(exclude=['ptree.app_template',
                                     'ptree.project_template']),
-    description='pTree is a Django toolset that makes it easy to create and administer social science experiments to online participants.',
+    description='pTree is a Django toolset that makes it easy to create and administer social science subsessions to online participants.',
     long_description=README,
     url='http://ptree.org/',
     author='Chris Wickens',

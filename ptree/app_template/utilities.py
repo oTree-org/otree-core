@@ -8,7 +8,7 @@ class ViewInThisApp(object):
     TreatmentClass = {{ app_name }}.models.Treatment
     MatchClass = {{ app_name }}.models.Match
     ParticipantClass = {{ app_name }}.models.Participant
-    ExperimentClass = {{ app_name }}.models.Experiment
+    SubsessionClass = {{ app_name }}.models.Subsession
 
     def for_IDE_autocomplete(self):
         """
@@ -18,7 +18,7 @@ class ViewInThisApp(object):
         to make writing code faster.
         """
 
-        self.experiment = {{ app_name }}.models.Experiment()
+        self.subsession = {{ app_name }}.models.Subsession()
         self.treatment = {{ app_name }}.models.Treatment()
         self.match = {{ app_name }}.models.Match()
         self.participant = {{ app_name }}.models.Participant()
@@ -32,14 +32,14 @@ class ModelFormInThisApp(object):
         to make writing code faster.
         """
 
-        self.experiment = {{ app_name }}.models.Experiment()
+        self.subsession = {{ app_name }}.models.Subsession()
         self.treatment = {{ app_name }}.models.Treatment()
         self.match = {{ app_name }}.models.Match()
         self.participant = {{ app_name }}.models.Participant()
 
 class ModelForm():
     def for_IDE_autocomplete(self):
-        self.experiment = {{ app_name }}.models.Experiment()
+        self.subsession = {{ app_name }}.models.Subsession()
         self.treatment = {{ app_name }}.models.Treatment()
         self.match = {{ app_name }}.models.Match()
         self.participant = {{ app_name }}.models.Participant()
