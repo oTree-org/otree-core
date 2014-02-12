@@ -265,7 +265,7 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
 
             # if the participant tried to skip past a part of the experiment
             # (e.g. by typing in a future URL)
-            # or if they hit the back button to a previous experiment in the sequence.
+            # or if they hit the back button to a previous experiment in the sequence. 
             if not self.user_is_on_right_page():
                 # then bring them back to where they should be
                 return self.redirect_to_page_the_user_should_be_on()
