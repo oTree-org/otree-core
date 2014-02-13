@@ -6,13 +6,15 @@ from django.utils.importlib import import_module
 from ptree.sessionlib.models import Session, SessionExperimenter, SessionParticipant
 from ptree.user.models import Experimenter
 
-def create(label, is_for_mturk, sequence, base_pay, num_participants):
+def create(label, is_for_mturk, subsession_names, base_pay, num_participants):
     session = Session(label=label,
                                 is_for_mturk=is_for_mturk,
                                 base_pay=base_pay)
 
     session.save()
 
+    if len(subsession_names) == 0:
+        raise ValueError('Need at least one subsession.')
 
     try:
         session_experimenter = SessionExperimenter()
@@ -26,7 +28,7 @@ def create(label, is_for_mturk, sequence, base_pay, num_participants):
             session_participants.append(participant)
 
         subsessions = []
-        for app_name in sequence:
+        for app_name in subsession_names:
             if app_name not in settings.INSTALLED_PTREE_APPS:
                 print 'Before running this command you need to add "{}" to INSTALLED_PTREE_APPS.'.format(app_name)
                 return

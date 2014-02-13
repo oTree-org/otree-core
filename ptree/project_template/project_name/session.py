@@ -6,5 +6,5 @@ def create(name):
         base_pay=0,
         is_for_mturk=False,
         num_participants=30,
-        sequence= ['myapp']
+        subsession_names= ['myapp']
     )
