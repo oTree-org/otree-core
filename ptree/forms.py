@@ -110,6 +110,7 @@ class BaseModelForm(forms.ModelForm):
                 self._errors[field_name] = self.error_class([msg])
         return cleaned_data
 
+
 class ModelForm(BaseModelForm):
     """i.e. participant modelform."""
 
