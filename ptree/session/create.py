@@ -49,28 +49,6 @@ def create(label, is_for_mturk, subsession_names, base_pay, num_participants):
                                                         session_participant = session_participants[i])
                 participant.save()
 
-            # check that bonus calculation doesn't throw an error, to prevent downstream problems.
-            # just check the first participant, to save time.
-            for participant in list(subsession.participants())[:1]:
-                exception = False
-                wrong_type = False
-                bonus = None
-                try:
-                    bonus = participant.bonus()
-                except:
-                    exception = True
-                else:
-                    if (not isinstance(bonus, int)) and bonus != None:
-                        wrong_type = True
-                if exception or wrong_type:
-                    print '{}: participant.bonus() must either return an integer, or None if it cannot be calculated yet.'.format(app_name)
-                    if wrong_type:
-                        print 'Currently, the return value is {}'.format(bonus)
-                    elif exception:
-                        print 'Currently, it raises an exception.'
-                    sys.exit(1)
-
-
             print 'Created objects for {}'.format(app_name)
             subsessions.append(subsession)
 

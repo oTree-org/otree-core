@@ -242,11 +242,8 @@ class SessionParticipant(SessionUser):
             return None
 
     def bonus_display(self):
-        try:
-            complete = self.bonus_is_complete()
-            bonus = currency(self.bonus())
-        except:
-            return 'Error in bonus calculation'
+        complete = self.bonus_is_complete()
+        bonus = currency(self.bonus())
         if complete:
             return bonus
         return u'{} (incomplete)'.format(bonus)
