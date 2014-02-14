@@ -31,18 +31,12 @@ class Participant(ptree.models.BaseParticipant):
     treatment = models.ForeignKey(Treatment, null = True)
     subsession = models.ForeignKey(Subsession)
 
-
     my_field = models.BooleanField(
         default=False,
         doc="""
         Description of this field, for documentation
         """
     )
-
-    def bonus(self):
-        # make sure this doesn't trigger an exception if the match isn't finished.
-        # return None if the bonus cannot be calculated yet.
-        return None
 
 def create_subsession_and_treatments():
 

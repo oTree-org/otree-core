@@ -27,7 +27,6 @@ def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
         'Participant':
            ['name',
             'link',
-            'bonus_display',
             'progress'],
         'Match':
             [],
@@ -47,7 +46,7 @@ def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
              'payments_link',
              'base_pay_display',],
         'SessionParticipant':
-            ['bonus_display',
+            ['bonus',
             'start_link',
             'progress',
             'current_subsession',

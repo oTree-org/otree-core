@@ -233,7 +233,7 @@ class SessionParticipant(SessionUser):
         return self.users()
 
     def bonus(self):
-        return sum(participant.bonus() or 0 for participant in self.participants())
+        return sum(participant.bonus or 0 for participant in self.participants())
 
     def total_pay(self):
         try:
@@ -255,7 +255,7 @@ class SessionParticipant(SessionUser):
 
     def bonus_is_complete(self):
         for p in self.participants():
-            if p.bonus() is None:
+            if p.bonus is None:
                 return False
         return True
 

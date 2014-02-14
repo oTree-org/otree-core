@@ -66,7 +66,7 @@ class Command(BaseCommand):
 
         total_money_paid = 0
         for participant in self.session.participants():
-            bonus = participant.bonus()
+            bonus = participant.bonus
             if bonus == None:
                 bonus = 0
             total_money_paid += bonus

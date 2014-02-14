@@ -13,6 +13,7 @@ class BaseParticipant(User):
     """
 
     index_among_participants_in_match = models.PositiveIntegerField(null = True)
+    bonus = models.PositiveIntegerField(null=True)
 
     session_participant = models.ForeignKey(
         ptree.sessionlib.models.SessionParticipant,
@@ -31,23 +32,6 @@ class BaseParticipant(User):
 
     def start_url(self):
         return add_params_to_url(self.subsession.start_url(), {constants.user_code: self.code})
-
-    def bonus(self):
-        """
-        The bonus the participant gets paid, in addition to their base pay.
-
-        Should return None if the bonus cannot yet be determined.
-        """
-        raise NotImplementedError()
-
-    def bonus_display(self):
-        """printable version of the bonus"""
-        try:
-            return currency(self.bonus())
-        except:
-            return 'Error'
-
-    bonus_display.short_description = 'Bonus'
 
     def pages_as_urls(self):
         if self.treatment:
