@@ -23,6 +23,7 @@ from django.utils.encoding import force_text
 from django.template import Library
 from django.template.loader import get_template
 from django.template.context import Context
+from ptree import common
 
 DOT = '.'
 
@@ -313,3 +314,4 @@ def ajax_admin_actions(context):
     """
     context['action_index'] = context.get('action_index', -1) + 1
     return context
+

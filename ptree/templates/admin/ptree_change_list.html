@@ -1,9 +1,10 @@
 {% extends "admin/base_site.html" %}
 {% load i18n admin_urls admin_static admin_list %}
 {% load ajax_admin_list %}
+{% load ptree_dashboard %}
 
 {% block title %}
-{{ cl.opts.verbose_name_plural|capfirst }} ({{ app_label|capfirst|escape }})
+{{ cl.opts.verbose_name_plural|capfirst }} ({{ app_label|app_name_format|escape }})
 {% endblock %}
 
 {% block extrastyle %}
@@ -41,7 +42,7 @@
 {% block breadcrumbs %}
 <div class="breadcrumbs">
 <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
-&rsaquo; <a href="{% url 'admin:app_list' app_label=cl.opts.app_label %}">{{ app_label|capfirst|escape }}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=cl.opts.app_label %}">{{ app_label|app_name_format|escape }}</a>
 &rsaquo; {{ cl.opts.verbose_name_plural|capfirst }}
 </div>
 {% endblock %}

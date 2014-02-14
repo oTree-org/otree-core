@@ -159,7 +159,7 @@ def export_list(request):
     app_labels.sort()
     # Filter out non subsession apps
     app_labels = [app_label for app_label in app_labels if ptree.common.is_subsession_app(app_label)]
-    apps = [{"name": app_label.title().replace("_", " "), "app_label": app_label} for app_label in app_labels]
+    apps = [{"name": app_name_format(app_label), "app_label": app_label} for app_label in app_labels]
     return render_to_response("admin/ptree_data_export_list.html", {"apps": apps})
 
 
