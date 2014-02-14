@@ -150,10 +150,6 @@ class URLField(URLField):
         self.doc = kwargs.pop('doc', None)
         super(URLField, self).__init__(*args, **kwargs)
 
-class ForeignKey(ForeignKey):
-    def __init__(self, *args,  **kwargs):
-        self.doc = kwargs.pop('doc', None)
-        super(ForeignKey, self).__init__(*args, **kwargs)
 
 class ManyToManyField(ManyToManyField):
     def __init__(self, *args,  **kwargs):
