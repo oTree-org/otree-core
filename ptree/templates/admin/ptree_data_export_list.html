@@ -1,0 +1,60 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls admin_static admin_list %}
+
+{% block title %}
+{% trans 'Data Export' %}
+{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static "admin/css/changelists.css" %}" />
+  {{ media.css }}
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+{{ media.js }}
+
+<script type="text/javascript" src="{% static "jquery.min.js" %}"></script>
+
+{% endblock %}
+
+{% block bodyclass %}change-list{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo; {% trans 'Utilities' %}
+&rsaquo; {% trans 'Data Export' %}
+</div>
+{% endblock %}
+
+{% block coltype %}flex{% endblock %}
+
+{% block content %}
+  <div id="content-main">
+
+    <div class="module" id="changelist">
+      {% block result_list %}
+          <div class="results">
+              <table id="result_list">
+              <thead>
+              <tr>
+                <th scope="col" title="">{% trans 'App' %}</th>
+                <th scope="col" title="">{% trans 'Data' %}</th>
+                <th scope="col" title="">{% trans 'Documentation' %}</th>
+              </tr>
+              </thead>
+              <tbody>
+                  {% for app in apps %}
+                  <tr class="{% cycle 'row1' 'row2' %}"><td>{{ app.name }}</td><td><a href="{% url "ptree_views_export_export" app.app_label %}">{%trans "Download" %}</a></td><td><a href="{% url "ptree_views_export_export_docs" app.app_label %}">{%trans "Download" %}</a></td></tr>
+                  {% endfor %}
+              </tbody>
+              </table>
+           </div>
+      {% endblock %}
+      {% block pagination %}{% endblock %}
+    </div>
+  </div>
+
+{% endblock %}

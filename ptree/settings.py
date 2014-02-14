@@ -28,7 +28,7 @@ def augment_settings(settings):
         'ptree.user',
     ]
 
-    third_party_apps = ['data_exports', 'crispy_forms']
+    third_party_apps = ['crispy_forms']
 
     # order is important:
     # ptree unregisters User & Group, which are installed by auth.

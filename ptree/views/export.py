@@ -5,6 +5,10 @@ import inspect
 
 from django.http import HttpResponse
 from django.utils.importlib import import_module
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import user_passes_test
+from django.contrib.admin import sites
+from django.shortcuts import render_to_response
 from inspect_model import InspectModel
 
 import ptree.common
@@ -81,19 +85,19 @@ def build_doc_file(app_label):
         docs.append('\n' + model_name)
 
         for i in range(len(members)):
-            member = members[i]
+            member_name = members[i]
             is_callable = callable_flags[i]
             if is_callable:
-                member = getattr(Model, member)
+                member = getattr(Model, member_name)
                 doc = inspect.getdoc(member)
             else:
                 try:
-                    member = Model._meta.get_field_by_name(member)[0]
+                    member = Model._meta.get_field_by_name(member_name)[0]
                     doc = member.doc
                 except AttributeError:
                     # maybe the field isn't from ptree.db
                     doc = '[error]'
-            docs.append('\n\t' + member)
+            docs.append('\n\t%s' % member_name)
             if doc:
                 docs.append('\n'.join(doc_string_wrapper.wrap(doc)))
 
@@ -145,6 +149,32 @@ def get_member_values(object, member_names, callable_flags):
     return member_values
 
 
+@user_passes_test(lambda u: u.is_staff)
+@login_required
+def export_list(request):
+    # Get unique app_labels
+    app_labels = [model._meta.app_label for model, model_admin in sites.site._registry.items()]
+    app_labels = list(set(app_labels))
+    # Sort the apps alphabetically.
+    app_labels.sort()
+    # Filter out non subsession apps
+    app_labels = [app_label for app_label in app_labels if ptree.common.is_subsession_app(app_label)]
+    apps = [{"name": app_label.title().replace("_", " "), "app_label": app_label} for app_label in app_labels]
+    return render_to_response("admin/ptree_data_export_list.html", {"apps": apps})
+
+
+@user_passes_test(lambda u: u.is_staff)
+@login_required
+def export_docs(request, app_label):
+    #export = self.model.objects.get(pk=pk)
+    #app_label = export.model.app_label
+    response = HttpResponse(build_doc_file(app_label))
+    response['Content-Disposition'] = 'attachment; filename="{}"'.format(doc_file_name(app_label))
+    return response
+
+
+@user_passes_test(lambda u: u.is_staff)
+@login_required
 def export(request, app_label):
 
     model_names_as_fk = {
