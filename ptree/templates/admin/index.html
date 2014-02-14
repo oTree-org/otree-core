@@ -17,6 +17,8 @@
     {% with non_subsession_apps=app_list|non_subsession_apps %}
     {% if non_subsession_apps|length != 0 %}
         <h2>Global</h2>
+        {% mock_data_export_app %}
+
         {% for app in non_subsession_apps %}
             {% if app.app_label == "session" %}
                 {% include "admin/_dashboard_app_template.html" with app_models=app.models|fix_session_app_models_order %}
@@ -29,6 +31,7 @@
         {% endfor %}
     {% endif %}
     {% endwith %}
+
 
     <h2>Apps</h2>
     {% for app in app_list|subsession_apps_only %}

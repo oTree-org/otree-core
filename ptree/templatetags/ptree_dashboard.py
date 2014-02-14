@@ -1,4 +1,6 @@
 from django.template import Library
+from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext_lazy as _
 from ptree import common
 
 
@@ -40,6 +42,19 @@ def subsession_apps_only(apps):
 
 def non_subsession_apps(apps):
     return [app for app in apps if not common.is_subsession_app(app["app_label"])]
+
+@register.inclusion_tag('admin/_dashboard_app_template.html', takes_context=True)
+def mock_data_export_app(context):
+    context["app"] = {"app_label": "utilities", "app_url": "", "name": _("Utilities"),
+            "dont_link_app_name": True,
+            "models": [
+                {"object_name": "dataexport",
+                 "name": _("Data Export"),
+                 "admin_url": reverse("ptree_views_export_export_list")}
+            ]
+            }
+    context["app_models"] = context["app"]["models"]
+    return context
 
 register.filter('fix_subsession_app_models_order', fix_subsession_app_models_order)
 register.filter('fix_session_app_models_order', fix_session_app_models_order)
