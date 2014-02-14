@@ -84,6 +84,7 @@ def augment_settings(settings):
         'CURRENCY_LOCALE': 'en_US',
         'CURRENCY_DECIMAL_PLACES': 2,
         'TIME_ZONE': 'UTC',
+        'USE_TZ': True,
         'SESSION_SERIALIZER': 'django.contrib.sessions.serializers.PickleSerializer',
         'ALLOWED_HOSTS': ['*'],
         'PTREE_CHANGE_LIST_COLUMN_MIN_WIDTH': 50, # In pixels
