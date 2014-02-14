@@ -8,7 +8,7 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version='0.2.55'
+version='0.2.56'
 
 if sys.argv[-1] == 'publish':
 
@@ -47,7 +47,6 @@ setup(
         'boto==2.13.3',
         'django-crispy-forms==1.4.0',
         'Django == 1.6.1',
-        'django-data-exports==0.6',
         'django-vanilla-views==1.0.2',
         'Babel==1.3',
         'raven==3.5.2',

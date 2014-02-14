@@ -104,37 +104,18 @@ def build_doc_file(app_label):
     output = '\n'.join(docs)
     return output.replace('\n', LINE_BREAK).replace('\t', '    ')
 
+def data_file_name(app_label):
+    return '{} ({}).csv'.format(
+        ptree.common.app_name_format(app_label),
+        datetime.date.today().isoformat(),
+    )
+
 def doc_file_name(app_label):
-    return '{} - documentation.txt'.format(app_name_format(app_label))
+    return '{} - documentation ({}).txt'.format(
+        ptree.common.app_name_format(app_label),
+        datetime.date.today().isoformat()
+    )
 
-nyi = """
-class PTreeExportAdmin(ExportAdmin):
-
-    # In Django 1.7, I can set list_display_links to None and then put 'name' first
-    list_display = ['get_export_link', 'docs_link', 'name']
-    ordering = ['slug']
-    list_filter = []
-
-    def get_urls(self):
-        urls = super(PTreeExportAdmin, self).get_urls()
-        my_urls = patterns('',
-            (r'^(?P<pk>\d+)/docs/$', self.admin_site.admin_view(self.docs)),
-        )
-        return my_urls + urls
-
-    def docs(self, request, pk):
-        export = self.model.objects.get(pk=pk)
-        app_label = export.model.app_label
-        response = HttpResponse(build_doc_file(app_label))
-        response['Content-Disposition'] = 'attachment; filename="{}"'.format(doc_file_name(app_label))
-        return response
-
-    def docs_link(self, instance):
-        return new_tab_link('{}/docs/'.format(instance.pk), label=doc_file_name(instance.model.app_label))
-
-    docs_link.allow_tags = True
-    docs_link.short_description = 'Documentation'
-"""
 
 def get_member_values(object, member_names, callable_flags):
     member_values = []
@@ -185,9 +166,6 @@ def export(request, app_label):
         'session': 'Session',
     }
 
-    format_name = "CSV"
-    export_name = '{} participants'.format(app_label)
-
     app_models = import_module('{}.models'.format(app_label))
 
     Participant = app_models.Participant
@@ -237,8 +215,7 @@ def export(request, app_label):
         rows.append(member_values)
 
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="{} ({}).csv"'.format(ptree.common.app_name_format(app_label),
-                                                                             datetime.date.today().isoformat())
+    response['Content-Disposition'] = 'attachment; filename="{}"'.format(data_file_name(app_label))
     writer = csv.writer(response)
 
     writer.writerows(rows)

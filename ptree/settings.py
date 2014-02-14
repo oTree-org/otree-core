@@ -33,7 +33,6 @@ def augment_settings(settings):
     # order is important:
     # ptree unregisters User & Group, which are installed by auth.
     # ptree templates need to get loaded before the admin.
-    # but ptree also unregisters data_exports, which comes afterwards?
     new_installed_apps = collapse_to_unique_list(['django.contrib.auth',
                                                   'ptree',
                                                   'django.contrib.admin',],
