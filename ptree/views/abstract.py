@@ -347,12 +347,18 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
         pass
 
     def post_processing_on_valid_form(self, form):
-        pass
+        # form.save will also get called by the super() method, so this is technically redundant.
+        # but it means that you don't need to access cleaned_data in after_valid_form_submission,
+        # which is a little more user friendly.
+        form.save(commit = True)
 
     def form_valid(self, form):
         self.form = form
-        self.after_valid_form_submission()
+        # 2/17/2014: moved post_processing before after_valid_form_submission.
+        # that way, the object is up to date before the user's code is run.
+        # otherwise, i don't see the point of saving twice.
         self.post_processing_on_valid_form(form)
+        self.after_valid_form_submission()
         self.update_indexes_in_sequences()
         self.save_objects()
         return super(SequenceMixin, self).form_valid(form)
@@ -428,12 +434,6 @@ class ParticipantUpdateView(ParticipantSequenceMixin, ParticipantMixin, vanilla.
     # if form_class is not provided, we use an empty form based on StubModel.
     form_class = StubModelForm
 
-    def post_processing_on_valid_form(self, form):
-        # form.save will also get called by the super() method, so this is technically redundant.
-        # but it means that you don't need to access cleaned_data in after_valid_form_submission,
-        # which is a little more user friendly.
-        form.save(commit = True)
-
     def get_object(self):
         Cls = self.get_form_class().Meta.model
         if Cls == self.MatchClass:
@@ -470,17 +470,43 @@ class ParticipantCreateView(ParticipantSequenceMixin, vanilla.CreateView):
 class CreateView(ParticipantCreateView):
     pass
 
-class ModelFormSetView(extra_views.ModelFormSetView):
+class ModelFormSetMixin(object):
     extra = 0
 
+    def after_valid_form_submission(self, instance):
+        """2/17/2014: this needs to take an extra argument of either the form or the instance,
+        since it needs somehow to access the particular instance.
+        (we can't use self.form because there are multiple forms)
+        we could either pass the form or the instance.
+        the instance is the one that will get used most frequently,
+        but you can get form.instance but not vice versa.
+        or have both args? (self, form, instance)
+        will people ever want the form?
+        hmmm, i don't know why someone would want the form rather than the instance.
+        so for now, i will try just the instance.
+        """
+
     def formset_valid(self, formset):
+        formset.save()
         for form in formset:
-            self.after_valid_form_submission()
             self.post_processing_on_valid_form(form)
+            self.after_valid_form_submission(form.instance)
+            form.instance.save()
+        # 2/17/2014: I think there should be both a after_valid_formset_submission
+        # (for more global actions)
+        # and after_valid_form_submission (for items specific to the form)
+        # but people are going to confuse the name, and write global code in after_valid_form_submission
+        # i should give it a more distinct name.
+        # or maybe tell people to iterate through self.object_list in after_valid_formset_submission?
+        # (they will have to remember to save the objects)
+        # for now, just rely on object_list until there is a need for a special method.
+        self.after_valid_formset_submission()
         self.update_index_in_pages()
         self.save_objects()
-        return super(ModelFormSetView, self).formset_valid(formset)
+        return super(ModelFormSetMixin, self).formset_valid(formset)
 
+    def after_valid_formset_submission(self):
+        pass
 
 class CreateMultipleView(extra_views.ModelFormSetView, ParticipantCreateView):
     pass
@@ -488,6 +514,8 @@ class CreateMultipleView(extra_views.ModelFormSetView, ParticipantCreateView):
 class UpdateMultipleView(extra_views.ModelFormSetView, ParticipantUpdateView):
     pass
 
+class ExperimenterUpdateMultipleView(ModelFormSetMixin, ExperimenterSequenceMixin, extra_views.ModelFormSetView):
+    pass
 
 class InitializeParticipantOrExperimenter(NonSequenceUrlMixin, vanilla.View):
 
