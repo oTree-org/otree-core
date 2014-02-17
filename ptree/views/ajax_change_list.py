@@ -104,7 +104,7 @@ def ajax_ptree_change_list_results(request):
     #TODO
     url_name = request.GET["url_name"]
     get_params_str = request.GET["get_params"]
-    parsed_qs = cgi.parse_qs(get_params_str)
+    parsed_qs = cgi.parse_qs(get_params_str, keep_blank_values=True)
     for key in parsed_qs.keys():
         parsed_qs[key] = parsed_qs[key][0]
     model_admin = get_model_admin_from(url_name)
