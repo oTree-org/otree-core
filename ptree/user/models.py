@@ -43,7 +43,7 @@ class User(models.Model):
 
 
     def progress(self):
-        if not self.visited:
+        if not (self.treatment and self.visited):
             return None
         return '{}/{} pages'.format(self.index_in_pages + 1,
                                     len(self.treatment.pages()))
@@ -73,7 +73,7 @@ class Experimenter(User):
 
     def start_url(self):
         return add_params_to_url(
-            '/InitializeExperimenter/',
+            '/{}/InitializeExperimenter/'.format(self.subsession.name_in_url),
             {
                 constants.subsession_code: self.subsession.code,
                 constants.user_code: self.code,

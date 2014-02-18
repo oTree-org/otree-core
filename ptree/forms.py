@@ -103,6 +103,7 @@ class BaseModelForm(forms.ModelForm):
         return [field_name for field_name in self.fields if field_name in null_boolean_fields_in_model]
 
     def clean(self):
+        """2/17/2014: why don't i do this in the model field definition"""
         cleaned_data = super(BaseModelForm, self).clean()
         for field_name in self.null_boolean_field_names():
             if cleaned_data[field_name] == None:

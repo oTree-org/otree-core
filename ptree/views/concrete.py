@@ -19,7 +19,7 @@ import ptree.constants as constants
 import ptree.sessionlib.models
 import ptree.common
 import ptree.models.participants
-from ptree.user.models import Experimenter
+
 
 class RedirectToPageUserShouldBeOn(NonSequenceUrlMixin, LoadClassesAndUserMixin, PTreeMixin, vanilla.View):
     name_in_url = 'shared'
@@ -94,44 +94,6 @@ class InitializeSessionExperimenter(vanilla.View):
 
         return HttpResponseRedirect(self.session_user.me_in_first_subsession.start_url())
 
-class InitializeExperimenter(InitializeParticipantOrExperimenter):
-
-    @classmethod
-    def url_pattern(cls):
-        return r'^InitializeExperimenter/$'
-
-
-    def get(self, request, *args, **kwargs):
-        self.request.session.clear()
-        self.initialize_time_limits()
-
-        user_code = self.request.GET[constants.user_code]
-
-        self.user = get_object_or_404(Experimenter, code = user_code)
-
-        self.user.visited = True
-        self.user.time_started = datetime.now()
-
-        self.user.save()
-        self.request.session[constants.user_code] = self.user.code
-
-        self.request.session[constants.UserClass] = Experimenter
-
-        self.session_user = self.user.session_user
-
-        urls = self.user.pages_as_urls()
-        if len(urls) > 0:
-            url = urls[0]
-        else:
-            if self.user.subsession.index_in_subsessions == self.session_user.index_in_subsessions:
-                self.session_user.index_in_subsessions += 1
-                self.session_user.save()
-            me_in_next_subsession = self.user.me_in_next_subsession
-            if me_in_next_subsession:
-                url = me_in_next_subsession.start_url()
-            else:
-                url = OutOfRangeNotification.url()
-        return HttpResponseRedirect(url)
 
 class InitializeSessionParticipant(vanilla.UpdateView):
 
