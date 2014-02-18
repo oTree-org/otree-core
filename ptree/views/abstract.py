@@ -25,7 +25,8 @@ import ptree.sessionlib.models
 import ptree.common
 import ptree.models.participants
 import ptree.user.models
-
+import ptree.forms
+from ptree.user.models import Experimenter
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -51,7 +52,7 @@ class PTreeMixin(object):
         self.UserClass = self.request.session.get(constants.UserClass)
 
     def load_user(self):
-        code = self.request.session.get(constants.user_code)
+        code = self.request.session[constants.user_code]
         try:
             self.user = get_object_or_404(self.UserClass, code=code)
         except ValueError:
@@ -122,7 +123,6 @@ class ParticipantMixin(object):
     def load_objects(self):
         self.load_user()
         self.participant = self.user
-        self.x = self.user
         self.match = self.participant.match
         # 2/11/2014: match may be undefined because the participant may be at a waiting screen
         # before experimenter assigns to a match & treatment.
@@ -132,7 +132,6 @@ class ParticipantMixin(object):
         return [self.match, self.participant, self.participant.session_participant]
 
 class ExperimenterMixin(object):
-
 
     def load_objects(self):
         self.load_user()
@@ -220,7 +219,6 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
             else:
                 raise ValueError("Time limit must be None or a positive number.")
 
-        print 'set: {}'.format(page_expiration_times)
         if remaining_seconds is not None:
             minutes_component, seconds_component = divmod(remaining_seconds, 60)
         else:
@@ -239,7 +237,6 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
 
     def get_time_limit_was_exceeded(self):
         page_expiration_times = self.request.session[constants.page_expiration_times]
-        print 'get: {}'.format(page_expiration_times)
         page_expiration_time = page_expiration_times[self.index_in_pages]
 
         if page_expiration_time is None:
@@ -277,7 +274,6 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
             else:
                 # if the participant shouldn't see this view, skip to the next
                 if page_action == self.PageActions.skip:
-                    self.z = self.user
                     self.update_indexes_in_sequences()
                     return self.redirect_to_page_the_user_should_be_on()
 
@@ -314,14 +310,12 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
             }
         )
 
-
     def post(self, request, *args, **kwargs):
         self.time_limit_was_exceeded = self.get_time_limit_was_exceeded()
         return super(SequenceMixin, self).post(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-
-        context = {'form': kwargs['form']}
+        context = {'form_or_formset': kwargs.get('form') or kwargs.get('formset') or kwargs.get('form_or_formset')}
         context.update(self.variables_for_template())
         context['timer_message'] = self.timer_message()
 
@@ -342,32 +336,8 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
         return cls(data=data, files=files, **kwargs)
 
 
-    def after_valid_form_submission(self):
-        """Should be implemented by subclasses as necessary"""
-        pass
-
     def post_processing_on_valid_form(self, form):
-        # form.save will also get called by the super() method, so this is technically redundant.
-        # but it means that you don't need to access cleaned_data in after_valid_form_submission,
-        # which is a little more user friendly.
-        form.save(commit = True)
-
-    def form_valid(self, form):
-        self.form = form
-        # 2/17/2014: moved post_processing before after_valid_form_submission.
-        # that way, the object is up to date before the user's code is run.
-        # otherwise, i don't see the point of saving twice.
-        self.post_processing_on_valid_form(form)
-        self.after_valid_form_submission()
-        self.update_indexes_in_sequences()
-        self.save_objects()
-        return super(SequenceMixin, self).form_valid(form)
-
-    def form_invalid(self, form):
-        """
-
-        """
-        return self.render_to_response(self.get_context_data(form=form, form_invalid = True ))
+        pass
 
     def user_is_on_right_page(self):
         """Will detect if a participant tried to access a page they didn't reach yet,
@@ -386,6 +356,59 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
                     self.session_user.index_in_subsessions += 1
             self.user.save()
             self.session_user.save()
+
+class ModelFormMixin(object):
+    """mixin rather than subclass because we want these methods only to be first in MRO"""
+
+    def after_valid_form_submission(self):
+        """Should be implemented by subclasses as necessary"""
+        pass
+
+    def form_valid(self, form):
+        self.form = form
+        self.object = form.save()
+        # 2/17/2014: moved post_processing before after_valid_form_submission.
+        # that way, the object is up to date before the user's code is run.
+        # otherwise, i don't see the point of saving twice.
+        self.post_processing_on_valid_form(form)
+        self.after_valid_form_submission()
+        self.update_indexes_in_sequences()
+        self.save_objects()
+        return HttpResponseRedirect(self.get_success_url())
+
+class ModelFormSetMixin(object):
+    """mixin rather than subclass because we want these methods only to be first in MRO"""
+    extra = 0
+
+    def get_formset(self, data=None, files=None, **kwargs):
+        formset = super(ModelFormSetMixin, self).get_formset(data=None, files=None, **kwargs)
+        # crispy forms: get the helper from the first form in the formset, and assign it to the whole formset
+        if len(formset.forms) >= 1:
+            formset.helper = formset.forms[0].helper
+        else:
+            formset.helper = ptree.forms.FormHelper()
+        return formset
+
+    def after_valid_formset_submission(self):
+        pass
+
+    def formset_valid(self, formset):
+        self.object_list = formset.save()
+        for form in formset:
+            self.post_processing_on_valid_form(form)
+        # 2/17/2014: I think there should be both a after_valid_formset_submission
+        # (for more global actions)
+        # and after_valid_form_submission (for items specific to the form)
+        # but people are going to confuse the name, and write global code in after_valid_form_submission
+        # i should give it a more distinct name.
+        # or maybe tell people to iterate through self.object_list in after_valid_formset_submission?
+        # (they will have to remember to save the objects)
+        # for now, just rely on object_list until there is a need for a special method.
+        self.after_valid_formset_submission()
+        self.update_indexes_in_sequences()
+        self.save_objects()
+        return HttpResponseRedirect(self.get_success_url())
+
 
 class ParticipantSequenceMixin(SequenceMixin):
     """for participants"""
@@ -428,8 +451,16 @@ class BaseView(PTreeMixin, NonSequenceUrlMixin, vanilla.View):
     """
     pass
 
+class CreateAuxModelMixin(object):
+    def post_processing_on_valid_form(self, form):
+        instance = form.save(commit=False)
+        if hasattr(instance, 'participant'):
+            instance.participant = self.participant
+        if hasattr(instance, 'match'):
+            instance.match = self.match
+        instance.save()
 
-class ParticipantUpdateView(ParticipantSequenceMixin, ParticipantMixin, vanilla.UpdateView):
+class ParticipantUpdateView(ModelFormMixin, ParticipantSequenceMixin, ParticipantMixin, vanilla.UpdateView):
 
     # if form_class is not provided, we use an empty form based on StubModel.
     form_class = StubModelForm
@@ -447,7 +478,7 @@ class ParticipantUpdateView(ParticipantSequenceMixin, ParticipantMixin, vanilla.
             return Cls.objects.get(object_id=self.participant.id,
                                    content_type=ContentType.objects.get_for_model(self.participant))
 
-class ExperimenterUpdateView(ExperimenterSequenceMixin, ExperimenterMixin, vanilla.UpdateView):
+class ExperimenterUpdateView(ModelFormMixin, ExperimenterSequenceMixin, ExperimenterMixin, vanilla.UpdateView):
     form_class = ExperimenterStubModelForm
 
     def get_object(self):
@@ -458,66 +489,33 @@ class ExperimenterUpdateView(ExperimenterSequenceMixin, ExperimenterMixin, vanil
             return seq_models.StubModel.objects.all()[0]
 
 
-class ParticipantCreateView(ParticipantSequenceMixin, vanilla.CreateView):
-    def post_processing_on_valid_form(self, form):
-        instance = form.save(commit=False)
-        if hasattr(instance, 'participant'):
-            instance.participant = self.participant
-        if hasattr(instance, 'match'):
-            instance.match = self.match
-        instance.save()
-
-class CreateView(ParticipantCreateView):
+class ParticipantCreateView(ModelFormMixin, ParticipantSequenceMixin, ParticipantMixin, CreateAuxModelMixin, vanilla.CreateView):
+    """use case?"""
     pass
 
-class ModelFormSetMixin(object):
-    extra = 0
+class ExperimenterCreateView(ModelFormMixin, ExperimenterSequenceMixin, ExperimenterMixin, CreateAuxModelMixin, vanilla.CreateView):
+    pass
 
-    def after_valid_form_submission(self, instance):
-        """2/17/2014: this needs to take an extra argument of either the form or the instance,
-        since it needs somehow to access the particular instance.
-        (we can't use self.form because there are multiple forms)
-        we could either pass the form or the instance.
-        the instance is the one that will get used most frequently,
-        but you can get form.instance but not vice versa.
-        or have both args? (self, form, instance)
-        will people ever want the form?
-        hmmm, i don't know why someone would want the form rather than the instance.
-        so for now, i will try just the instance.
-        """
+class ParticipantCreateMultipleView(ModelFormSetMixin, ParticipantSequenceMixin, ParticipantMixin, CreateAuxModelMixin, extra_views.ModelFormSetView):
+    """incomplete. i need something like get_queryset"""
 
-    def formset_valid(self, formset):
-        formset.save()
-        for form in formset:
-            self.post_processing_on_valid_form(form)
-            self.after_valid_form_submission(form.instance)
-            form.instance.save()
-        # 2/17/2014: I think there should be both a after_valid_formset_submission
-        # (for more global actions)
-        # and after_valid_form_submission (for items specific to the form)
-        # but people are going to confuse the name, and write global code in after_valid_form_submission
-        # i should give it a more distinct name.
-        # or maybe tell people to iterate through self.object_list in after_valid_formset_submission?
-        # (they will have to remember to save the objects)
-        # for now, just rely on object_list until there is a need for a special method.
-        self.after_valid_formset_submission()
-        self.update_index_in_pages()
-        self.save_objects()
-        return super(ModelFormSetMixin, self).formset_valid(formset)
+class ExperimenterCreateMultipleView(ModelFormSetMixin, ExperimenterSequenceMixin, ExperimenterMixin, CreateAuxModelMixin, extra_views.ModelFormSetView):
+    """incomplete. i need something like get_queryset"""
 
-    def after_valid_formset_submission(self):
+class ParticipantUpdateMultipleView(ModelFormSetMixin, ParticipantSequenceMixin, ParticipantMixin, extra_views.ModelFormSetView):
+    def post(self, request, *args, **kwargs):
         pass
 
-class CreateMultipleView(extra_views.ModelFormSetView, ParticipantCreateView):
-    pass
-
-class UpdateMultipleView(extra_views.ModelFormSetView, ParticipantUpdateView):
-    pass
-
-class ExperimenterUpdateMultipleView(ModelFormSetMixin, ExperimenterSequenceMixin, extra_views.ModelFormSetView):
+class ExperimenterUpdateMultipleView(ModelFormSetMixin, ExperimenterSequenceMixin, ExperimenterMixin, extra_views.ModelFormSetView):
     pass
 
 class InitializeParticipantOrExperimenter(NonSequenceUrlMixin, vanilla.View):
+
+    @classmethod
+    def get_name_in_url(cls):
+        """urls.py requires that each view know its own URL.
+        a URL base is the first part of the path, usually the name of the game"""
+        return cls.SubsessionClass.name_in_url
 
     def initialize_time_limits(self):
         self.request.session[constants.page_expiration_times] = {}
@@ -534,7 +532,6 @@ class InitializeParticipantOrExperimenter(NonSequenceUrlMixin, vanilla.View):
         self.request.session[constants.TreatmentClass] = self.TreatmentClass
         self.request.session[constants.ParticipantClass] = self.ParticipantClass
         self.request.session[constants.MatchClass] = self.MatchClass
-        self.request.session[constants.UserClass] = self.ParticipantClass
 
 class InitializeParticipant(InitializeParticipantOrExperimenter):
     """
@@ -544,12 +541,6 @@ class InitializeParticipant(InitializeParticipantOrExperimenter):
     decides what Treatment to randomize them to,
     and redirects to that Treatment.
     """
-
-    @classmethod
-    def get_name_in_url(cls):
-        """urls.py requires that each view know its own URL.
-        a URL base is the first part of the path, usually the name of the game"""
-        return cls.SubsessionClass.name_in_url
 
     def get(self, request, *args, **kwargs):
         self.request.session.clear()
@@ -570,7 +561,6 @@ class InitializeParticipant(InitializeParticipantOrExperimenter):
         self.user.save()
         self.request.session[constants.user_code] = self.user.code
 
-        self.UserClass = self.ParticipantClass
         self.persist_classes()
 
         import ptree.views.concrete
@@ -584,3 +574,49 @@ class InitializeParticipant(InitializeParticipantOrExperimenter):
         except IndexError:
             raise IndexError("No Participant objects left in the database to assign to new visitor.")
 
+    def persist_classes(self):
+        super(InitializeParticipant, self).persist_classes()
+        self.request.session[constants.UserClass] = self.ParticipantClass
+
+class InitializeExperimenter(InitializeParticipantOrExperimenter):
+    """
+    this needs to be abstract because experimenters also need to access self.ParticipantClass, etc.
+    for example, in get_object, it checks if it's self.SubsessionClass
+    """
+
+    def persist_classes(self):
+        super(InitializeExperimenter, self).persist_classes()
+        self.request.session[constants.UserClass] = Experimenter
+
+    def get(self, request, *args, **kwargs):
+        self.request.session.clear()
+        self.initialize_time_limits()
+
+        user_code = self.request.GET[constants.user_code]
+
+        self.user = get_object_or_404(Experimenter, code = user_code)
+
+        self.user.visited = True
+        self.user.time_started = datetime.now()
+
+        self.user.save()
+        self.request.session[constants.user_code] = self.user.code
+
+        self.session_user = self.user.session_user
+
+        self.persist_classes()
+
+        urls = self.user.pages_as_urls()
+        if len(urls) > 0:
+            url = urls[0]
+        else:
+            if self.user.subsession.index_in_subsessions == self.session_user.index_in_subsessions:
+                self.session_user.index_in_subsessions += 1
+                self.session_user.save()
+            me_in_next_subsession = self.user.me_in_next_subsession
+            if me_in_next_subsession:
+                url = me_in_next_subsession.start_url()
+            else:
+                from ptree.views.concrete import OutOfRangeNotification
+                url = OutOfRangeNotification.url()
+        return HttpResponseRedirect(url)
