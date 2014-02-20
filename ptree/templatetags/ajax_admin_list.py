@@ -183,6 +183,8 @@ def items_for_result(cl, result, form):
             f, attr, value = lookup_field(field_name, result, cl.model_admin)
         except ObjectDoesNotExist:
             result_repr = EMPTY_CHANGELIST_VALUE
+        except:
+            result_repr = "(Error)"
         else:
             if f is None:
                 if field_name == 'action_checkbox':
