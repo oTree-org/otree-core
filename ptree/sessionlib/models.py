@@ -177,7 +177,10 @@ class SessionUser(models.Model):
     def current_subsession(self):
         if not self.visited:
             return None
-        return ptree.common.app_name_format(self.session.subsessions()[self.index_in_subsessions]._meta.app_label)
+        try:
+            return ptree.common.app_name_format(self.session.subsessions()[self.index_in_subsessions]._meta.app_label)
+        except IndexError:
+            return '(Error)'
 
     def users(self):
         """Used to calculate bonuses"""

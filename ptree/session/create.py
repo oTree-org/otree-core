@@ -56,6 +56,7 @@ def create(label, is_for_mturk, subsession_names, base_pay, num_participants):
         session.chain_subsessions(subsessions)
         session.chain_participants()
         session.session_experimenter.chain_experimenters()
+        return session
     except:
         session.delete()
         raise

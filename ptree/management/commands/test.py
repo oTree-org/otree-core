@@ -1,18 +1,16 @@
 from django.utils.importlib import import_module
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
+from ptree.management.commands.create_session import create_session
 import os.path
+import ptree.test.run
 
 def directory_name(path):
     return os.path.basename(os.path.normpath(path))
 
-def create_session(name):
-    session_module = import_module('{}.{}'.format(directory_name(settings.BASE_DIR), 'session'))
-    return session_module.create(name)
-
 class Command(BaseCommand):
     help = "pTree: Create a session."
-    args = '[name]'
+    args = '[session_name]'
 
     def handle(self, *args, **options):
         print 'Creating session...'
@@ -24,6 +22,14 @@ class Command(BaseCommand):
         else:
             name = None
 
-        create_session(name)
+        session = create_session(name)
+        session.label = '{} [test]'.format(session.label)
+        session.save()
+
+        ptree.test.run.run(session)
+
+
+
+
 
 

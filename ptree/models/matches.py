@@ -14,11 +14,7 @@ class BaseMatch(models.Model):
         return str(self.pk)
 
     def is_ready_for_next_participant(self):
-        """
-        Needs to be implemented by child classes.
-        Whether the game is ready for another participant to be added.
-        """
-        raise NotImplementedError()
+        return len(self.participants()) < self.treatment.participants_per_match
 
     def participants(self):
         return self.participant_set.order_by('index_among_participants_in_match')

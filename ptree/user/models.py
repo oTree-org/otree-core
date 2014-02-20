@@ -45,7 +45,7 @@ class User(models.Model):
     def progress(self):
         if not (self.treatment and self.visited):
             return None
-        return '{}/{} pages'.format(self.index_in_pages + 1,
+        return '{}/{} pages'.format(self.index_in_pages,
                                     len(self.treatment.pages()))
 
     class Meta:

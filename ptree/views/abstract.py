@@ -300,7 +300,7 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
             raise
 
     def wait_page_response(self):
-        return render_to_response(
+        response = render_to_response(
             self.wait_page_template_name,
             {
                 'SequenceViewURL': self.wait_page_request_url(),
@@ -309,6 +309,8 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
                 'wait_page_title_text': self.wait_page_title_text()
             }
         )
+        response[constants.wait_page_http_header] = constants.get_param_truth_value
+        return response
 
     def post(self, request, *args, **kwargs):
         self.time_limit_was_exceeded = self.get_time_limit_was_exceeded()

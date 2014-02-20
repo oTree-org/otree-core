@@ -1,7 +1,7 @@
 import ptree.session
 
 def create(name):
-    ptree.session.create(
+    return ptree.session.create(
         label='',
         base_pay=0,
         is_for_mturk=False,

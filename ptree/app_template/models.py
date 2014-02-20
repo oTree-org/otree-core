@@ -22,9 +22,6 @@ class Match(ptree.models.BaseMatch):
     treatment = models.ForeignKey(Treatment)
     subsession = models.ForeignKey(Subsession)
 
-    def is_ready_for_next_participant(self):
-        return len(self.participants()) < self.treatment.participants_per_match
-
 class Participant(ptree.models.BaseParticipant):
 
     match = models.ForeignKey(Match, null = True)
