@@ -42,11 +42,7 @@ class User(models.Model):
                                                 'me_in_next_subsession_object_id',)
 
 
-    def progress(self):
-        if not (self.treatment and self.visited):
-            return None
-        return '{}/{} pages'.format(self.index_in_pages,
-                                    len(self.treatment.pages()))
+
 
     class Meta:
         abstract = True

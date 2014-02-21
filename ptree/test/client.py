@@ -10,6 +10,7 @@ class BaseClient(django.test.client.Client):
 
     def __init__(self):
         self.response = None
+        self.path = None
         super(BaseClient, self).__init__()
 
     def play(self):
@@ -18,6 +19,7 @@ class BaseClient(django.test.client.Client):
     def start(self):
         # do i need to parse out the GET data into the data arg?
         self.response = self.get(self.user.start_url(), follow=True)
+        self.set_path()
         self.assert_200()
 
     def assert_200(self):
@@ -25,42 +27,43 @@ class BaseClient(django.test.client.Client):
             raise AssertionError('Response status code: {} (expected 200)'.format(self.response.status_code))
 
     def is_on(self, ViewClass):
-        _, _, path, _, _ = urlsplit(self.path())
+        _, _, path, _, _ = urlsplit(self.path)
         return re.match(ViewClass.url_pattern(), path.lstrip('/'))
 
     def assert_is_on(self, ViewClass):
         if not self.is_on(ViewClass):
             raise AssertionError('Expected page: {}, Actual page: {}'.format(
                 ViewClass.url_pattern(),
-                self.path()
+                self.path
         ))
 
     def submit(self, ViewClass, data=None):
-        path = self.path()
-        print path
+        print self.path
         data = data or {}
         self.assert_is_on(ViewClass)
         # if it's a waiting page, wait N seconds and retry
         while self.on_wait_page():
-            print 'on wait page. path: {}'.format(self.path())
+            print 'on wait page. path: {}'.format(self.path)
             time.sleep(1) #quicker sleep since it's bots playing the game
             self.retry_wait_page()
 
-        self.response = self.post(path, data, follow=True)
+        self.response = self.post(self.path, data, follow=True)
         self.assert_200()
+        self.set_path()
 
     def retry_wait_page(self):
-        self.response = self.get(self.path(), follow=True)
+        self.response = self.get(self.path, follow=True)
         self.assert_200()
+        self.set_path()
 
     def on_wait_page(self):
         return self.response.get(ptree.constants.wait_page_http_header) == ptree.constants.get_param_truth_value
 
-    def path(self):
+    def set_path(self):
         try:
-            return self.response.redirect_chain[-1][0]
+            self.path = self.response.redirect_chain[-1][0]
         except IndexError:
-            raise IndexError('redirect chain: {}'.format(self.response.redirect_chain))
+            pass
 
 class ParticipantBot(BaseClient):
 

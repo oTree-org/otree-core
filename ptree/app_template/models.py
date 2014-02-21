@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Documentation at http://django-ptree.readthedocs.org/en/latest/app.html"""
 
 from ptree.db import models
@@ -16,7 +17,7 @@ class Treatment(ptree.models.BaseTreatment):
     
         import {{ app_name }}.views as views
         return [views.MyView]
-                
+
 class Match(ptree.models.BaseMatch):
 
     treatment = models.ForeignKey(Treatment)
@@ -28,8 +29,10 @@ class Participant(ptree.models.BaseParticipant):
     treatment = models.ForeignKey(Treatment, null = True)
     subsession = models.ForeignKey(Subsession)
 
-    my_field = models.BooleanField(
-        default=False,
+    # example field
+    my_field = models.PositiveIntegerField(
+        null=True,
+        verbose_name="What is your age?",
         doc="""
         Description of this field, for documentation
         """

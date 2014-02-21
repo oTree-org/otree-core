@@ -53,3 +53,9 @@ class BaseParticipant(User):
             MatchClass = self._meta.get_field('match').rel.to
             match = self.treatment.next_open_match() or ptree.common.create_match(MatchClass, self.treatment)
             self.add_to_existing_match(match)
+
+    def pages_completed(self):
+        if not (self.treatment and self.visited):
+            return None
+        return '{}/{}'.format(self.index_in_pages,
+                            len(self.treatment.pages()))

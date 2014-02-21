@@ -1,15 +1,11 @@
+# -*- coding: utf-8 -*-
 import {{ app_name }}.models as models
 from django import forms
-from {{ app_name }}.utilities import InThisApp
+from {{ app_name }}.utilities import ParticipantMixin, ExperimenterMixin
 from django.utils.translation import ugettext_lazy as _
 import ptree.forms
 
-class StartForm(InThisApp, ptree.forms.ModelForm):
-    class Meta:
-        model = models.Participant
-        fields = []
-
-class MyForm(InThisApp, ptree.forms.ModelForm):
+class MyForm(ParticipantMixin, ptree.forms.Form):
 
     class Meta:
         model = models.Participant
@@ -22,9 +18,6 @@ class MyForm(InThisApp, ptree.forms.ModelForm):
             raise forms.ValidationError('Invalid input')
         
         return my_field
-
-    def field_choices(self):
-        return {}
 
     def field_labels(self):
         return {}

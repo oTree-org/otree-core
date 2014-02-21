@@ -163,14 +163,14 @@ class SessionUser(models.Model):
     ip_address = models.IPAddressField(null = True)
     time_started = models.DateTimeField(null=True)
 
-    def progress(self):
+    def subsessions_completed(self):
         if not self.visited:
             return None
-        return '{}/{} subsessions'.format(self.index_in_subsessions + 1, len(self.session.subsessions()))
+        return '{}/{} subsessions'.format(self.index_in_subsessions, len(self.session.subsessions()))
 
-    def progress_in_current_subsession(self):
+    def pages_completed_in_current_subsession(self):
         try:
-            return self.users()[self.index_in_subsessions].progress()
+            return self.users()[self.index_in_subsessions].pages_completed()
         except:
             return '(Error)'
 
@@ -192,6 +192,12 @@ class SessionUser(models.Model):
             lst.append(me_in_next_subsession)
             me_in_next_subsession = me_in_next_subsession.me_in_next_subsession
         return lst
+
+    is_on_waiting_page = models.BooleanField(default=False)
+
+    def status(self):
+        if self.is_on_waiting_page:
+            return 'Waiting'
 
     class Meta:
         abstract = True

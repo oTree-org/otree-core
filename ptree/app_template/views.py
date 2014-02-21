@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import ptree.views
 import ptree.views.concrete
 import {{ app_name }}.forms as forms

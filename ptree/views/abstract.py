@@ -267,6 +267,8 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
             self.time_limit_was_exceeded = False
 
             page_action = self.validated_show_skip_wait()
+            self.session_user.is_on_waiting_page = page_action == self.PageActions.wait
+            self.session_user.save()
 
             if self.request_is_from_wait_page():
                 response = self.response_to_wait_page(page_action)
@@ -312,9 +314,12 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
         response[constants.wait_page_http_header] = constants.get_param_truth_value
         return response
 
+
     def post(self, request, *args, **kwargs):
         self.time_limit_was_exceeded = self.get_time_limit_was_exceeded()
+        #return extra_views.ModelFormSetView.post(self, request, *args, **kwargs)
         return super(SequenceMixin, self).post(request, *args, **kwargs)
+
 
     def get_context_data(self, **kwargs):
         context = {'form_or_formset': kwargs.get('form') or kwargs.get('formset') or kwargs.get('form_or_formset')}
@@ -383,7 +388,7 @@ class ModelFormSetMixin(object):
     extra = 0
 
     def get_formset(self, data=None, files=None, **kwargs):
-        formset = super(ModelFormSetMixin, self).get_formset(data=None, files=None, **kwargs)
+        formset = super(ModelFormSetMixin, self).get_formset(data, files, **kwargs)
         # crispy forms: get the helper from the first form in the formset, and assign it to the whole formset
         if len(formset.forms) >= 1:
             formset.helper = formset.forms[0].helper

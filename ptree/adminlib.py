@@ -27,7 +27,7 @@ def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
         'Participant':
            ['name',
             'link',
-            'progress'],
+            'pages_completed'],
         'Match':
             [],
         'Treatment':
@@ -48,9 +48,10 @@ def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
         'SessionParticipant':
             ['bonus',
             'start_link',
-            'progress',
+            'subsessions_completed',
             'current_subsession',
-            'progress_in_current_subsession'],
+            'pages_completed_in_current_subsession',
+            'status'],
     }[Model.__name__]
 
     return remove_duplicates(fields_for_this_model_type + (fields_specific_to_this_subclass or []))
@@ -65,7 +66,7 @@ def get_list_display(Model, readonly_fields, first_fields=None):
             'treatment',
             'match',
             'visited',
-            'progress'],
+            'pages_completed'],
         'Match':
             ['id',
             'session',
@@ -83,9 +84,10 @@ def get_list_display(Model, readonly_fields, first_fields=None):
              'start_link',
              'session',
              'visited',
-             'progress',
+             'subsessions_completed',
              'current_subsession',
-             'progress_in_current_subsession'],
+             'pages_completed_in_current_subsession',
+             'status'],
         'Session':
             ['name',
              'hidden'],
