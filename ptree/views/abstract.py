@@ -33,12 +33,37 @@ logger = logging.getLogger(__name__)
 
 REDIRECT_TO_PAGE_USER_SHOULD_BE_ON_URL = '/shared/RedirectToPageUserShouldBeOn/'
 
+def url(cls, session_user, index=None):
+    u = '/{}/{}/{}/{}/{}'.format(
+        session_user.name_in_url,
+        session_user.code,
+        cls.get_name_in_url(),
+        cls.__name__,
+    )
+
+    if index is not None:
+        u += '{}/'.format(index)
+    return u
+
+def url_pattern(cls, is_sequence_url=False):
+    p = r'(?P<{}>\w)/(?P<{}>[a-z]+)/{}/'.format(
+        constants.experimenter_or_participant,
+        constants.session_user_code,
+        cls.get_name_in_url(),
+        cls.__name__,
+        index_part)
+    if is_sequence_url:
+        p += '\d+/'
+    p = '^{}$'.format(p)
+    return p
+
 class PTreeMixin(object):
     """Base mixin class for pTree views.
     Takes care of:
     - retrieving model classes and objects automatically,
     so you can access view.treatment, self.match, self.participant, etc.
     """
+
 
     def load_classes(self):
         """
@@ -101,6 +126,17 @@ class PTreeMixin(object):
                 return OutOfRangeNotification.url()
         return self.user.pages_as_urls()[self.user.index_in_pages]
 
+class LoadSessionUserMixin(object):
+
+    def dispatch(self, request, *args, **kwargs):
+        session_user_code = kwargs[constants.session_user_code]
+        if kwargs[constants.experimenter_or_participant] == constants.experimenter_or_participant_participant:
+            SessionUserClass = ptree.sessionlib.models.SessionParticipant
+        else:
+            SessionUserClass = ptree.sessionlib.models.SessionExperimenter
+        self.session_user = get_object_or_404(SessionUserClass, code = session_user_code)
+        return super(LoadSessionUserMixin, self).dispatch(request, *args, **kwargs)
+
 class LoadClassesAndUserMixin(object):
 
     def dispatch(self, request, *args, **kwargs):
@@ -110,12 +146,16 @@ class LoadClassesAndUserMixin(object):
 
 class NonSequenceUrlMixin(object):
     @classmethod
-    def url(cls):
-        return '/{}/{}/'.format(cls.get_name_in_url(), cls.__name__)
+    def url(cls, session_user):
+        return '/{}/{}/{}/{}/'.format(
+            experimenter_or_participant,
+            session_user_code,
+            cls.get_name_in_url(),
+            cls.__name__)
 
     @classmethod
     def url_pattern(cls):
-        return r'^{}/{}/$'.format(cls.get_name_in_url(), cls.__name__)
+        return r'^\w/([a-z]+)/{}/{}/$'.format(cls.get_name_in_url(), cls.__name__)
 
 
 class ParticipantMixin(object):
@@ -186,12 +226,17 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
     """
 
     @classmethod
-    def url(cls, index):
-        return '/{}/{}/{}/'.format(cls.get_name_in_url(), cls.__name__, index)
+    def url(cls, experimenter_or_participant, session_user_code, index):
+        url = NonSequenceUrlMixin.url(
+            cls=cls,
+            experimenter_or_participant=experimenter_or_participant,
+            session_user_code=session_user_code
+        )
+        return '{}{}/'.format(url, index)
 
     @classmethod
     def url_pattern(cls):
-        return r'^{}/{}/(\d+)/$'.format(cls.get_name_in_url(), cls.__name__)
+        return r'^(\w)/{}/{}/(\d+)/$'.format(cls.get_name_in_url(), cls.__name__)
 
     success_url = REDIRECT_TO_PAGE_USER_SHOULD_BE_ON_URL
 
@@ -510,8 +555,7 @@ class ExperimenterCreateMultipleView(ModelFormSetMixin, ExperimenterSequenceMixi
     """incomplete. i need something like get_queryset"""
 
 class ParticipantUpdateMultipleView(ModelFormSetMixin, ParticipantSequenceMixin, ParticipantMixin, extra_views.ModelFormSetView):
-    def post(self, request, *args, **kwargs):
-        pass
+    pass
 
 class ExperimenterUpdateMultipleView(ModelFormSetMixin, ExperimenterSequenceMixin, ExperimenterMixin, extra_views.ModelFormSetView):
     pass

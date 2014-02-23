@@ -42,16 +42,6 @@ class BaseTreatment(models.Model):
     def pages(self):
         raise NotImplementedError()
 
-    def pages_as_urls(self):
-        # 2/11/2014: start at 1 because i added the wait page (until assigned to match)
-        # maybe should clean this up.
-        # 2/22/2014: i shouldn't have WaitUntilAssignedToMatch because if they were assigned to a match & treatment,
-        # they wouldn't access this in the first place.
-        # but this must still work if you look up an element.
-        from ptree.views.concrete import WaitUntilAssignedToMatch
-        all_views = [WaitUntilAssignedToMatch] + self.pages()
-        return [View.url(index) for index, View in enumerate(all_views)]
-
     def next_open_match(self):
         """Get the next match that is accepting participants.
         (or none if it does not exist)

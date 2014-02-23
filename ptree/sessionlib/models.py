@@ -227,11 +227,15 @@ class SessionExperimenter(SessionUser):
     def experimenters(self):
         return self.users()
 
+    name_in_url = constants.experimenter_or_participant_experimenter
+
 class SessionParticipant(SessionUser):
 
     exclude_from_data_analysis = models.BooleanField(default=False)
 
     session = models.ForeignKey(Session)
+
+    name_in_url = constants.experimenter_or_participant_participant
 
     def start_url(self):
         return '/InitializeSessionParticipant/?{}={}'.format(constants.session_user_code,
