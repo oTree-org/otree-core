@@ -256,6 +256,10 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
             # remove it since post() may not be able to accept args.
             args = args[1:]
 
+            if self.subsession.skip:
+                self.update_index_in_subsessions()
+                return self.redirect_to_page_the_user_should_be_on()
+
             # if the participant tried to skip past a part of the subsession
             # (e.g. by typing in a future URL)
             # or if they hit the back button to a previous subsession in the sequence.
@@ -354,16 +358,18 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
 
         return self.request.path == self.page_the_user_should_be_on()
 
-    def update_indexes_in_sequences(self):
+    def update_index_in_subsessions(self):
+        if self.subsession.index_in_subsessions == self.session_user.index_in_subsessions:
+            self.session_user.index_in_subsessions += 1
+            self.session_user.save()
 
+    def update_indexes_in_sequences(self):
         if self.index_in_pages == self.user.index_in_pages:
             self.user.index_in_pages += 1
             if self.user.index_in_pages >= len(self.user.pages_as_urls()):
-                if self.subsession.index_in_subsessions == self.session_user.index_in_subsessions:
-                    self.session_user.index_in_subsessions += 1
+                self.update_index_in_subsessions()
             self.user.save()
-            self.session_user.save()
-
+            
 class ModelFormMixin(object):
     """mixin rather than subclass because we want these methods only to be first in MRO"""
 

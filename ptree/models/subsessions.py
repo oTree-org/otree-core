@@ -48,6 +48,8 @@ class BaseSubsession(models.Model):
 
     index_in_subsessions = models.PositiveIntegerField(null=True)
 
+    skip = models.BooleanField(default=False)
+
     def is_last_subsession(self):
         return not self.next_subsession
 
