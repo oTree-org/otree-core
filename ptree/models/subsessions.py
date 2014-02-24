@@ -85,6 +85,17 @@ class BaseSubsession(models.Model):
             participant.add_to_existing_or_new_match()
             participant.save()
 
+
+    def treatments(self):
+        return list(self.treatment_set.all())
+
+    def matches(self):
+        return list(self.match_set.all())
+
+    def participants(self):
+        return list(self.participant_set.all())
+
+    """
     def treatments(self):
         if hasattr(self, '_treatments'):
             return self._treatments
@@ -102,7 +113,7 @@ class BaseSubsession(models.Model):
             return self._participants
         self._participants = list(self.participant_set.all())
         return self._participants
-
+    """
 
     def experimenter_pages(self):
         return []
