@@ -44,11 +44,12 @@ def create_subsession_and_treatments():
     subsession.save()
 
     # you can create more treatments. just make a loop.
-    treatment = Treatment(subsession = subsession,
-                          participants_per_match = 1,
-                          label = '',
-                          # other attributes here...
-                          )
+    treatment = Treatment(
+        subsession = subsession,
+        participants_per_match = 1,
+        label = '',
+        # other attributes here...
+    )
     treatment.save()
 
     return subsession

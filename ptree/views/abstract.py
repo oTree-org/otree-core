@@ -140,7 +140,8 @@ class ExperimenterMixin(object):
         return (
             [self.user, self.subsession, self.session_user] +
             [p for p in self.subsession.participants()] +
-            [m for m in self.subsession.matches()]
+            [m for m in self.subsession.matches()] +
+            [t for t in self.subsession.treatments()]
         )
 
 class WaitPageMixin(object):
@@ -405,7 +406,7 @@ class ModelFormSetMixin(object):
             formset.helper = ptree.forms.FormHelper()
         return formset
 
-    def after_valid_formset_submission(self):
+    def after_valid_form_submission(self):
         pass
 
     def formset_valid(self, formset):
@@ -420,7 +421,7 @@ class ModelFormSetMixin(object):
         # or maybe tell people to iterate through self.object_list in after_valid_formset_submission?
         # (they will have to remember to save the objects)
         # for now, just rely on object_list until there is a need for a special method.
-        self.after_valid_formset_submission()
+        self.after_valid_form_submission()
         self.update_indexes_in_sequences()
         self.save_objects()
         return HttpResponseRedirect(self.get_success_url())
