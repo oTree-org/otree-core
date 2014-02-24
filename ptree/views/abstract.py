@@ -321,7 +321,6 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
 
     def post(self, request, *args, **kwargs):
         self.time_limit_was_exceeded = self.get_time_limit_was_exceeded()
-        #return extra_views.ModelFormSetView.post(self, request, *args, **kwargs)
         return super(SequenceMixin, self).post(request, *args, **kwargs)
 
 
@@ -369,7 +368,7 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
             if self.user.index_in_pages >= len(self.user.pages_as_urls()):
                 self.update_index_in_subsessions()
             self.user.save()
-            
+
 class ModelFormMixin(object):
     """mixin rather than subclass because we want these methods only to be first in MRO"""
 
