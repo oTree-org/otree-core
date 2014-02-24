@@ -337,7 +337,7 @@ class SessionAdmin(PTreeBaseModelAdmin):
     def start_urls(self, request, pk):
         session = self.model.objects.get(pk=pk)
 
-        if request.GET.get(ptree.constants.session_user_code) != session.subsession.experimenter.code:
+        if request.GET.get(ptree.constants.session_user_code) != session.session_experimenter.code:
             return HttpResponseBadRequest('{} parameter missing or incorrect'.format(ptree.constants.session_user_code))
         urls = self.start_urls_list(request, session)
         return HttpResponse('\n'.join(urls), content_type="text/plain")
