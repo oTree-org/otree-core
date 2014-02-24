@@ -2,15 +2,18 @@
 import ptree.views
 import ptree.views.concrete
 import {{ app_name }}.forms as forms
-from {{ app_name }}.utilities import InThisApp
+from {{ app_name }}.utilities import ParticipantMixin, ExperimenterMixin
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from ptree.common import currency
 
-class Initialize(InThisApp, ptree.views.Initialize):
+class Initialize(ParticipantMixin, ptree.views.Initialize):
     pass
 
-class MyPage(InThisApp, ptree.views.Page):
+class InitializeExperimenter(ExperimenterMixin, ptree.views.InitializeExperimenter):
+    pass
+
+class MyPage(ParticipantMixin, ptree.views.Page):
 
     template_name = '{{ app_name }}/MyView.html'
 
@@ -27,10 +30,6 @@ class MyPage(InThisApp, ptree.views.Page):
         """If all you need to do is save the form to the database,
         this can be left blank or omitted."""
 
-class ExperimenterView(InThisApp, ptree.views.ExperimenterPage):
+class ExperimenterPage(ExperimenterMixin, ptree.views.ExperimenterPage):
 
-    def show_skip_wait(self):
-        if all(p.visited for p in self.subsession.participants()):
-            self.subsession.assign_participants_to_treatments()
-            return self.PageActions.skip
-        return self.PageActions.wait
+    pass

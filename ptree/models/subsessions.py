@@ -78,7 +78,7 @@ class BaseSubsession(models.Model):
             return min(treatments, key=lambda treatment: len(treatment.participants()))
 
     def assign_participants_to_treatments(self):
-        participants = list(self.participants())
+        participants = self.participants()[:]
         random.shuffle(participants)
         for participant in participants:
             participant.treatment = self.pick_treatment_for_incoming_participant()
@@ -86,14 +86,22 @@ class BaseSubsession(models.Model):
             participant.save()
 
     def treatments(self):
-        return self.treatment_set.all()
+        if hasattr(self, '_treatments'):
+            return self._treatments
+        self._treatments = list(self.treatment_set.all())
+        return self._treatments
 
     def matches(self):
-        return self.match_set.all()
+        if hasattr(self, '_matches'):
+            return self._matches
+        self._matches = list(self.match_set.all())
+        return self._matches
 
     def participants(self):
-        return self.participant_set.all()
-
+        if hasattr(self, '_participants'):
+            return self._participants
+        self._participants = list(self.participant_set.all())
+        return self._participants
 
 
     def experimenter_pages(self):

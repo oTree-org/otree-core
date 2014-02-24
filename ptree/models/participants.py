@@ -44,7 +44,7 @@ class BaseParticipant(User):
         ordering = ['pk']
 
     def add_to_existing_match(self, match):
-        self.index_among_participants_in_match = match.participants().count()
+        self.index_among_participants_in_match = match.participant_set.count()
         self.match = match
         self.save()
 
