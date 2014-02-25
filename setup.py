@@ -57,11 +57,10 @@ setup(
         'django-vanilla-views==1.0.2',
         'Babel==1.3',
         'raven==3.5.2',
-        'django-extra-views',
         'django-inspect-model',
     ],
     dependency_links = [
-        'http://github.com/tomchristie/django-extra-views/tarball/master#egg=django-extra-views',
+        'http://github.com/tomchristie/django-extra-views/tarball/master#egg',
     ],
     classifiers=[
         'Environment :: Web Environment',
