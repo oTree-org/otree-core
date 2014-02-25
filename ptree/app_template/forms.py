@@ -40,7 +40,7 @@ class MyForm(ParticipantMixin, ptree.forms.Form):
         return my_field
 
     def field_labels(self):
-        return {}
+        return {'my_field': 'What is your age?'}
 
     def field_initial_values(self):
         return {}

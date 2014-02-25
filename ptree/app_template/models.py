@@ -32,7 +32,6 @@ class Participant(ptree.models.BaseParticipant):
     # example field
     my_field = models.PositiveIntegerField(
         null=True,
-        verbose_name="What is your age?",
         doc="""
         Description of this field, for documentation
         """
