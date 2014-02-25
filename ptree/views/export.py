@@ -151,6 +151,7 @@ def export_docs(request, app_label):
     #app_label = export.model.app_label
     response = HttpResponse(build_doc_file(app_label))
     response['Content-Disposition'] = 'attachment; filename="{}"'.format(doc_file_name(app_label))
+    response['Content-Type'] = 'text/plain'
     return response
 
 
