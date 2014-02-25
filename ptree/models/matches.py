@@ -9,6 +9,7 @@ class BaseMatch(models.Model):
     session = models.ForeignKey(ptree.sessionlib.models.Session,
                                                 related_name = '%(app_label)s_%(class)s')
 
+
     def __unicode__(self):
         return str(self.pk)
 
