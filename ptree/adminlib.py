@@ -347,8 +347,6 @@ class SessionAdmin(PTreeBaseModelAdmin):
         return HttpResponse('\n'.join(urls), content_type="text/plain")
 
     def start_urls_link(self, instance):
-        if not instance.first_subsession:
-            return 'No subsessions in sequence'
         return new_tab_link('{}/start_urls/?{}={}'.format(instance.pk,
                                                           ptree.constants.session_user_code,
                                                           instance.session_experimenter.code), 'Link')
@@ -420,8 +418,6 @@ class SessionAdmin(PTreeBaseModelAdmin):
         return response
 
     def magdeburg_start_urls_link(self, instance):
-        if not instance.first_subsession:
-            return 'No subsessions in sequence'
         return new_tab_link('{}/magdeburg_start_urls/?{}={}'.format(instance.pk,
                                                           ptree.constants.session_user_code,
                                                           instance.session_experimenter.code), 'Link')
@@ -441,8 +437,6 @@ class SessionAdmin(PTreeBaseModelAdmin):
                                   content_type='text/plain')
 
     def mturk_snippet_link(self, instance):
-        if not instance.first_subsession:
-            return 'No subsessions in sequence'
         if instance.is_for_mturk:
             return new_tab_link('{}/mturk_snippet/'.format(instance.pk), 'Link')
         else:
@@ -454,8 +448,6 @@ class SessionAdmin(PTreeBaseModelAdmin):
     def global_start_link(self, instance):
         if instance.is_for_mturk:
             return 'N/A (is_for_mturk = True)'
-        if not instance.first_subsession:
-            return 'No subsessions in sequence'
         else:
             url = instance.start_url()
             return new_tab_link(url, 'Link')
