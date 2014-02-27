@@ -8,7 +8,7 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version='0.2.66'
+version='0.2.69'
 
 if sys.argv[-1] == 'publish':
 
@@ -58,9 +58,7 @@ setup(
         'Babel==1.3',
         'raven==3.5.2',
         'django-inspect-model',
-    ],
-    dependency_links = [
-        'http://github.com/tomchristie/django-extra-views/tarball/master#egg',
+        'django-ptree-extra-views',
     ],
     classifiers=[
         'Environment :: Web Environment',

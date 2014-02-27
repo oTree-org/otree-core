@@ -90,7 +90,7 @@ class InitializeSessionExperimenter(vanilla.View):
 
         # assign participants to treatments
         for subsession in session.subsessions():
-            subsession.assign_participants_to_treatments()
+            subsession.assign_participants_to_treatments_and_matches()
 
         return HttpResponseRedirect(self.session_user.me_in_first_subsession.start_url())
 

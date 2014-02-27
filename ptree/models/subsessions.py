@@ -77,7 +77,7 @@ class BaseSubsession(models.Model):
             random.shuffle(treatments)
             return min(treatments, key=lambda treatment: len(treatment.participants()))
 
-    def assign_participants_to_treatments(self):
+    def assign_participants_to_treatments_and_matches(self):
         participants = self.participants()[:]
         random.shuffle(participants)
         for participant in participants:
@@ -85,6 +85,25 @@ class BaseSubsession(models.Model):
             participant.add_to_existing_or_new_match()
             participant.save()
 
+    def previous_subsession_is_in_same_app(self):
+        previous_subsession = self.previous_subsession
+        return previous_subsession and previous_subsession._meta.app_label == self._meta.app_label
+
+    def assign_participants_to_same_treatment_as_previous_subsession(self):
+        previous_subsession = self.previous_subsession
+        assert self.previous_subsession_is_in_same_app()
+        treatments = self.treatments()
+        previous_treatments = previous_subsession.treatments()
+        old_to_new_treatments = dict(zip(previous_treatments, treatments))
+
+        previous_participants = previous_subsession.participants()
+        participants = self.participants()
+        for i, participant in enumerate(participants):
+            previous_participant = previous_participants[i]
+            previous_treatment = previous_participant.treatment
+            participant.treatment = old_to_new_treatments[previous_treatment]
+            participant.add_to_existing_or_new_match()
+            participant.save()
 
     def treatments(self):
         return list(self.treatment_set.all())

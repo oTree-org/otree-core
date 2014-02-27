@@ -15,13 +15,13 @@ class InitializeExperimenter(ExperimenterMixin, ptree.views.InitializeExperiment
 
 class MyPage(ParticipantMixin, ptree.views.Page):
 
+    def show_skip_wait(self):
+        return self.PageActions.show
+
     template_name = '{{ app_name }}/MyView.html'
 
     def get_form_class(self):
         return forms.MyForm
-
-    def show_skip_wait(self):
-        return self.PageActions.show
 
     def variables_for_template(self):
         return {}
