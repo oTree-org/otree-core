@@ -40,8 +40,8 @@
 
 <script>
 results_json = null;
-url_name = '{{ url_name }}';
-var get_params_str = "{{ get_params_str|safe }}";
+url_name = {{ url_name|safe }};
+var get_params_str = {{ get_params_str|safe }};
 var PTREE_CHANGE_LIST_UPDATE_INTERVAL = {{ settings.PTREE_CHANGE_LIST_UPDATE_INTERVAL }};
 
 var changed_cells = {};
