@@ -33,11 +33,25 @@ class BaseTreatment(models.Model):
     def __unicode__(self):
         return self.name()
 
+    """
     def matches(self):
-        return self.match_set.all()
+        if hasattr(self, '_matches'):
+            return self._matches
+        self._matches = list(self.match_set.all())
+        return self._matches
 
     def participants(self):
-        return self.participant_set.all()
+        if hasattr(self, '_participants'):
+            return self._participants
+        self._participants = list(self.participant_set.all())
+        return self._participants
+    """
+
+    def matches(self):
+        return list(self.match_set.all())
+
+    def participants(self):
+        return list(self.participant_set.all())
 
     def pages(self):
         raise NotImplementedError()

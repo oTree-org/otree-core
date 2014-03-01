@@ -10,6 +10,10 @@ class Subsession(ptree.models.BaseSubsession):
 
     name_in_url = '{{ app_name }}'
 
+    def experimenter_pages(self):
+        import {{ app_name }}.views as views
+        return []
+
 class Treatment(ptree.models.BaseTreatment):
     subsession = models.ForeignKey(Subsession)
 
@@ -32,7 +36,6 @@ class Participant(ptree.models.BaseParticipant):
     # example field
     my_field = models.PositiveIntegerField(
         null=True,
-        verbose_name="What is your age?",
         doc="""
         Description of this field, for documentation
         """
@@ -44,11 +47,12 @@ def create_subsession_and_treatments():
     subsession.save()
 
     # you can create more treatments. just make a loop.
-    treatment = Treatment(subsession = subsession,
-                          participants_per_match = 1,
-                          label = '',
-                          # other attributes here...
-                          )
+    treatment = Treatment(
+        subsession = subsession,
+        participants_per_match = 1,
+        label = '',
+        # other attributes here...
+    )
     treatment.save()
 
     return subsession

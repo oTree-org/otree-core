@@ -77,24 +77,62 @@ class BaseSubsession(models.Model):
             random.shuffle(treatments)
             return min(treatments, key=lambda treatment: len(treatment.participants()))
 
-    def assign_participants_to_treatments(self):
-        participants = list(self.participants())
+    def assign_participants_to_treatments_and_matches(self):
+        participants = self.participants()[:]
         random.shuffle(participants)
         for participant in participants:
             participant.treatment = self.pick_treatment_for_incoming_participant()
             participant.add_to_existing_or_new_match()
             participant.save()
 
+    def previous_subsession_is_in_same_app(self):
+        previous_subsession = self.previous_subsession
+        return previous_subsession and previous_subsession._meta.app_label == self._meta.app_label
+
+    def assign_participants_to_same_treatment_as_previous_subsession(self):
+        previous_subsession = self.previous_subsession
+        assert self.previous_subsession_is_in_same_app()
+        treatments = self.treatments()
+        previous_treatments = previous_subsession.treatments()
+        old_to_new_treatments = dict(zip(previous_treatments, treatments))
+
+        previous_participants = previous_subsession.participants()
+        participants = self.participants()
+        for i, participant in enumerate(participants):
+            previous_participant = previous_participants[i]
+            previous_treatment = previous_participant.treatment
+            participant.treatment = old_to_new_treatments[previous_treatment]
+            participant.add_to_existing_or_new_match()
+            participant.save()
+
     def treatments(self):
-        return self.treatment_set.all()
+        return list(self.treatment_set.all())
 
     def matches(self):
-        return self.match_set.all()
+        return list(self.match_set.all())
 
     def participants(self):
-        return self.participant_set.all()
+        return list(self.participant_set.all())
 
+    """
+    def treatments(self):
+        if hasattr(self, '_treatments'):
+            return self._treatments
+        self._treatments = list(self.treatment_set.all())
+        return self._treatments
 
+    def matches(self):
+        if hasattr(self, '_matches'):
+            return self._matches
+        self._matches = list(self.match_set.all())
+        return self._matches
+
+    def participants(self):
+        if hasattr(self, '_participants'):
+            return self._participants
+        self._participants = list(self.participant_set.all())
+        return self._participants
+    """
 
     def experimenter_pages(self):
         return []

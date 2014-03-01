@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 REDIRECT_TO_PAGE_USER_SHOULD_BE_ON_URL = '/shared/RedirectToPageUserShouldBeOn/'
 
 def url(cls, session_user, index=None):
-    u = '/{}/{}/{}/{}/{}'.format(
+    u = '/{}/{}/{}/{}/'.format(
         session_user.name_in_url,
         session_user.code,
         cls.get_name_in_url(),
@@ -46,12 +46,12 @@ def url(cls, session_user, index=None):
     return u
 
 def url_pattern(cls, is_sequence_url=False):
-    p = r'(?P<{}>\w)/(?P<{}>[a-z]+)/{}/'.format(
-        constants.experimenter_or_participant,
+    p = r'(?P<{}>\w)/(?P<{}>[a-z]+)/{}/{}/'.format(
+        constants.user_type,
         constants.session_user_code,
         cls.get_name_in_url(),
         cls.__name__,
-        index_part)
+    )
     if is_sequence_url:
         p += '\d+/'
     p = '^{}$'.format(p)
@@ -70,14 +70,14 @@ class PTreeMixin(object):
         Even though we only use ParticipantClass in load_objects,
         we use {Match/Treatment/Subsession}Class elsewhere.
         """
-        self.SubsessionClass = self.request.session.get(constants.SubsessionClass)
-        self.TreatmentClass = self.request.session.get(constants.TreatmentClass)
-        self.ParticipantClass = self.request.session.get(constants.ParticipantClass)
-        self.MatchClass = self.request.session.get(constants.MatchClass)
-        self.UserClass = self.request.session.get(constants.UserClass)
+        self.SubsessionClass = self.request_session.get(constants.SubsessionClass)
+        self.TreatmentClass = self.request_session.get(constants.TreatmentClass)
+        self.ParticipantClass = self.request_session.get(constants.ParticipantClass)
+        self.MatchClass = self.request_session.get(constants.MatchClass)
+        self.UserClass = self.request_session.get(constants.UserClass)
 
     def load_user(self):
-        code = self.request.session[constants.user_code]
+        code = self.request_session[constants.user_code]
         try:
             self.user = get_object_or_404(self.UserClass, code=code)
         except ValueError:
@@ -130,11 +130,12 @@ class LoadSessionUserMixin(object):
 
     def dispatch(self, request, *args, **kwargs):
         session_user_code = kwargs[constants.session_user_code]
-        if kwargs[constants.experimenter_or_participant] == constants.experimenter_or_participant_participant:
+        if kwargs[constants.user_type] == constants.user_type_participant:
             SessionUserClass = ptree.sessionlib.models.SessionParticipant
         else:
             SessionUserClass = ptree.sessionlib.models.SessionExperimenter
         self.session_user = get_object_or_404(SessionUserClass, code = session_user_code)
+        self.request_session = self.request.session[self.session_user.code]
         return super(LoadSessionUserMixin, self).dispatch(request, *args, **kwargs)
 
 class LoadClassesAndUserMixin(object):
@@ -147,16 +148,11 @@ class LoadClassesAndUserMixin(object):
 class NonSequenceUrlMixin(object):
     @classmethod
     def url(cls, session_user):
-        return '/{}/{}/{}/{}/'.format(
-            experimenter_or_participant,
-            session_user_code,
-            cls.get_name_in_url(),
-            cls.__name__)
+        return url(cls, session_user)
 
     @classmethod
     def url_pattern(cls):
-        return r'^\w/([a-z]+)/{}/{}/$'.format(cls.get_name_in_url(), cls.__name__)
-
+        return url_pattern(cls, False)
 
 class ParticipantMixin(object):
 
@@ -177,7 +173,9 @@ class ExperimenterMixin(object):
         self.load_user()
 
     def objects_to_save(self):
-        return [self.user, self.subsession, self.session_user]
+        return (
+            [self.user, self.subsession, self.session_user]
+        )
 
 class WaitPageMixin(object):
 
@@ -226,17 +224,12 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
     """
 
     @classmethod
-    def url(cls, experimenter_or_participant, session_user_code, index):
-        url = NonSequenceUrlMixin.url(
-            cls=cls,
-            experimenter_or_participant=experimenter_or_participant,
-            session_user_code=session_user_code
-        )
-        return '{}{}/'.format(url, index)
+    def url(cls, session_user, index):
+        return url(cls, session_user, index)
 
     @classmethod
     def url_pattern(cls):
-        return r'^(\w)/{}/{}/(\d+)/$'.format(cls.get_name_in_url(), cls.__name__)
+        return url_pattern(cls, True)
 
     success_url = REDIRECT_TO_PAGE_USER_SHOULD_BE_ON_URL
 
@@ -247,7 +240,7 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
         return bool(self.time_limit_in_seconds())
 
     def set_time_limit(self, context):
-        page_expiration_times = self.request.session[constants.page_expiration_times]
+        page_expiration_times = self.request_session[constants.page_expiration_times]
         if page_expiration_times.has_key(self.index_in_pages):
             page_expiration_time = page_expiration_times[self.index_in_pages]
             if page_expiration_time is None:
@@ -275,13 +268,13 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
             constants.time_limit_in_seconds: remaining_seconds,
         }
 
-        self.request.session[constants.page_expiration_times] = page_expiration_times
+        self.request_session[constants.page_expiration_times] = page_expiration_times
         context.update(time_limit_parameters)
 
 
 
     def get_time_limit_was_exceeded(self):
-        page_expiration_times = self.request.session[constants.page_expiration_times]
+        page_expiration_times = self.request_session[constants.page_expiration_times]
         page_expiration_time = page_expiration_times[self.index_in_pages]
 
         if page_expiration_time is None:
@@ -367,7 +360,6 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
 
     def post(self, request, *args, **kwargs):
         self.time_limit_was_exceeded = self.get_time_limit_was_exceeded()
-        #return extra_views.ModelFormSetView.post(self, request, *args, **kwargs)
         return super(SequenceMixin, self).post(request, *args, **kwargs)
 
 
@@ -416,7 +408,6 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
                 self.update_index_in_subsessions()
             self.user.save()
 
-
 class ModelFormMixin(object):
     """mixin rather than subclass because we want these methods only to be first in MRO"""
 
@@ -449,7 +440,7 @@ class ModelFormSetMixin(object):
             formset.helper = ptree.forms.FormHelper()
         return formset
 
-    def after_valid_formset_submission(self):
+    def after_valid_form_submission(self):
         pass
 
     def formset_valid(self, formset):
@@ -464,7 +455,7 @@ class ModelFormSetMixin(object):
         # or maybe tell people to iterate through self.object_list in after_valid_formset_submission?
         # (they will have to remember to save the objects)
         # for now, just rely on object_list until there is a need for a special method.
-        self.after_valid_formset_submission()
+        self.after_valid_form_submission()
         self.update_indexes_in_sequences()
         self.save_objects()
         return HttpResponseRedirect(self.get_success_url())
@@ -577,7 +568,7 @@ class InitializeParticipantOrExperimenter(NonSequenceUrlMixin, vanilla.View):
         return cls.SubsessionClass.name_in_url
 
     def initialize_time_limits(self):
-        self.request.session[constants.page_expiration_times] = {}
+        self.request_session[constants.page_expiration_times] = {}
 
     def persist_classes(self):
         """We need these classes so that we can load the objects.
@@ -587,10 +578,10 @@ class InitializeParticipantOrExperimenter(NonSequenceUrlMixin, vanilla.View):
         some Views are in a shared module and therefore can be bound to different Subsessions, Treatments, etc.
         """
 
-        self.request.session[constants.SubsessionClass] = self.SubsessionClass
-        self.request.session[constants.TreatmentClass] = self.TreatmentClass
-        self.request.session[constants.ParticipantClass] = self.ParticipantClass
-        self.request.session[constants.MatchClass] = self.MatchClass
+        self.request_session[constants.SubsessionClass] = self.SubsessionClass
+        self.request_session[constants.TreatmentClass] = self.TreatmentClass
+        self.request_session[constants.ParticipantClass] = self.ParticipantClass
+        self.request_session[constants.MatchClass] = self.MatchClass
 
 class InitializeParticipant(InitializeParticipantOrExperimenter):
     """
@@ -602,7 +593,7 @@ class InitializeParticipant(InitializeParticipantOrExperimenter):
     """
 
     def get(self, request, *args, **kwargs):
-        self.request.session.clear()
+        self.request.session = {}
         self.initialize_time_limits()
 
         user_code = self.request.GET.get(constants.user_code)

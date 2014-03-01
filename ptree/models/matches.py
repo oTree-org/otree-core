@@ -16,8 +16,16 @@ class BaseMatch(models.Model):
     def is_ready_for_next_participant(self):
         return len(self.participants()) < self.treatment.participants_per_match
 
+    """
     def participants(self):
-        return self.participant_set.order_by('index_among_participants_in_match')
+        if hasattr(self, '_participants'):
+            return self._participants
+        self._participants = list(self.participant_set.order_by('index_among_participants_in_match'))
+        return self._participants
+    """
+
+    def participants(self):
+        return list(self.participant_set.all())
 
     class Meta:
         abstract = True

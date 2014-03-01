@@ -227,7 +227,7 @@ class SessionExperimenter(SessionUser):
     def experimenters(self):
         return self.users()
 
-    name_in_url = constants.experimenter_or_participant_experimenter
+    name_in_url = constants.user_type_experimenter
 
 class SessionParticipant(SessionUser):
 
@@ -235,7 +235,7 @@ class SessionParticipant(SessionUser):
 
     session = models.ForeignKey(Session)
 
-    name_in_url = constants.experimenter_or_participant_participant
+    name_in_url = constants.user_type_participant
 
     def start_url(self):
         return '/InitializeSessionParticipant/?{}={}'.format(constants.session_user_code,

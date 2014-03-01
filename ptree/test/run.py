@@ -18,7 +18,7 @@ def run_subsession(subsession):
     t = threading.Thread(target=experimenter_bot.play)
     thread_list = [t]
 
-    for participant in subsession.participants():
+    for participant in subsession.participant_set.all():
         bot = tests_module.ParticipantBot(participant)
         bot.start()
         t = threading.Thread(target=bot.play)

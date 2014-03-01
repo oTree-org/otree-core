@@ -8,7 +8,7 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version='0.2.59'
+version='0.2.69'
 
 if sys.argv[-1] == 'publish':
 
@@ -25,6 +25,13 @@ if sys.argv[-1] == 'publish':
     os.system(cmd)
 
     sys.exit()
+
+ptree_script = 'bin/ptree'
+with open(ptree_script, 'r') as f:
+    t = f.read()
+with open(ptree_script, 'w') as f:
+    f.write(t.replace('\r', ''))
+
 
 # FIXME: what if the user cloned from github and ran 'python setup.py install'?
 if 'sdist' in sys.argv:
@@ -50,11 +57,8 @@ setup(
         'django-vanilla-views==1.0.2',
         'Babel==1.3',
         'raven==3.5.2',
-        'django-extra-views',
         'django-inspect-model',
-    ],
-    dependency_links = [
-        'http://github.com/tomchristie/django-extra-views/tarball/master#egg=django-extra-views',
+        'django-ptree-extra-views',
     ],
     classifiers=[
         'Environment :: Web Environment',

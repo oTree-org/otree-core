@@ -8,6 +8,8 @@ from ptree.views.abstract import (
     PTreeMixin,
     ParticipantUpdateView,
     LoadClassesAndUserMixin,
+    url,
+    url_pattern,
 )
 import ptree.forms
 from datetime import datetime
@@ -90,7 +92,7 @@ class InitializeSessionExperimenter(vanilla.View):
 
         # assign participants to treatments
         for subsession in session.subsessions():
-            subsession.assign_participants_to_treatments()
+            subsession.assign_participants_to_treatments_and_matches()
 
         return HttpResponseRedirect(self.session_user.me_in_first_subsession.start_url())
 
@@ -100,8 +102,6 @@ class InitializeSessionParticipant(vanilla.UpdateView):
     @classmethod
     def url_pattern(cls):
         return r'^InitializeSessionParticipant/$'
-
-
 
     def get(self, *args, **kwargs):
         self.request.session.clear()

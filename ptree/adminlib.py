@@ -37,6 +37,8 @@ def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
         'Session':
             ['time_started',
              'subsession_names',
+             'launch_script_link_osx',
+             'launch_script_link_mswin',
              'experimenter_start_link',
              'start_urls_link',
              'magdeburg_start_urls_link',
@@ -326,6 +328,8 @@ class SessionAdmin(PTreeBaseModelAdmin):
             (r'^(?P<pk>\d+)/mturk_snippet/$', self.admin_site.admin_view(self.mturk_snippet)),
             (r'^(?P<pk>\d+)/start_urls/$', self.start_urls),
             (r'^(?P<pk>\d+)/magdeburg_start_urls/$', self.magdeburg_start_urls),
+            (r'^(?P<pk>\d+)/launch_script_mswin/$', self.launch_script_mswin),
+            (r'^(?P<pk>\d+)/launch_script_osx/$', self.launch_script_osx),
 
         )
         return my_urls + urls
@@ -337,20 +341,58 @@ class SessionAdmin(PTreeBaseModelAdmin):
     def start_urls(self, request, pk):
         session = self.model.objects.get(pk=pk)
 
-        if request.GET.get(ptree.constants.session_user_code) != session.subsession.experimenter.code:
+        if request.GET.get(ptree.constants.session_user_code) != session.session_experimenter.code:
             return HttpResponseBadRequest('{} parameter missing or incorrect'.format(ptree.constants.session_user_code))
         urls = self.start_urls_list(request, session)
         return HttpResponse('\n'.join(urls), content_type="text/plain")
 
     def start_urls_link(self, instance):
-        if not instance.first_subsession:
-            return 'No subsessions in sequence'
         return new_tab_link('{}/start_urls/?{}={}'.format(instance.pk,
                                                           ptree.constants.session_user_code,
                                                           instance.session_experimenter.code), 'Link')
 
     start_urls_link.short_description = 'Start URLs'
     start_urls_link.allow_tags = True
+
+    def experimenter_and_participant_urls(self, request, pk):
+        session = self.model.objects.get(pk=pk)
+
+        experimenter_url = request.build_absolute_uri(session.session_experimenter.start_url())
+        participant_urls = self.start_urls_list(request, session)
+
+        return [experimenter_url] + participant_urls
+
+    def launch_script(self, request, pk, cmd_format, file_extension):
+        urls = self.experimenter_and_participant_urls(request, pk)
+
+
+        script_lines = []
+        for i, url in enumerate(urls):
+
+            # don't use default profile since we reserve that for the admin interface
+            cmd = cmd_format.format(url, 'Profile {}'.format(i + 1))
+            script_lines.append(cmd)
+
+        filename = 'ptree-test.{}'.format(file_extension)
+        response = HttpResponse('\n'.join(script_lines), content_type="text/plain")
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
+        return response
+
+    def launch_script_mswin(self, request, pk):
+        return self.launch_script(request, pk, 'start chrome "{}" --profile-directory="{}"', 'bat')
+
+    def launch_script_osx(self, request, pk):
+        return self.launch_script(request, pk, 'open -a "Google Chrome" {} --args --profile-directory="{}"', 'command')
+
+    def launch_script_link_mswin(self, instance):
+        return new_tab_link('{}/launch_script_mswin/'.format(instance.pk), 'Download')
+    launch_script_link_mswin.short_description = 'Windows Test Script'
+    launch_script_link_mswin.allow_tags = True
+
+    def launch_script_link_osx(self, instance):
+        return new_tab_link('{}/launch_script_osx/'.format(instance.pk), 'Download')
+    launch_script_link_osx.short_description = 'Mac OSX Test Script'
+    launch_script_link_osx.allow_tags = True
 
     def experimenter_start_link(self, instance):
         url = instance.session_experimenter.start_url()
@@ -376,8 +418,6 @@ class SessionAdmin(PTreeBaseModelAdmin):
         return response
 
     def magdeburg_start_urls_link(self, instance):
-        if not instance.first_subsession:
-            return 'No subsessions in sequence'
         return new_tab_link('{}/magdeburg_start_urls/?{}={}'.format(instance.pk,
                                                           ptree.constants.session_user_code,
                                                           instance.session_experimenter.code), 'Link')
@@ -397,8 +437,6 @@ class SessionAdmin(PTreeBaseModelAdmin):
                                   content_type='text/plain')
 
     def mturk_snippet_link(self, instance):
-        if not instance.first_subsession:
-            return 'No subsessions in sequence'
         if instance.is_for_mturk:
             return new_tab_link('{}/mturk_snippet/'.format(instance.pk), 'Link')
         else:
@@ -410,8 +448,6 @@ class SessionAdmin(PTreeBaseModelAdmin):
     def global_start_link(self, instance):
         if instance.is_for_mturk:
             return 'N/A (is_for_mturk = True)'
-        if not instance.first_subsession:
-            return 'No subsessions in sequence'
         else:
             url = instance.start_url()
             return new_tab_link(url, 'Link')
