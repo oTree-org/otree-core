@@ -31,13 +31,7 @@ class BaseParticipant(User):
     def __unicode__(self):
         return self.name()
 
-    def start_url(self):
-        url = '/{}/{}/{}/Initialize/'.format(
-            self.session_user.user_type_in_url,
-            self.session_user.code,
-            self.subsession.name_in_url,
-        )
-        return add_params_to_url(url, {constants.user_code: self.code})
+    init_view_name = 'InitializeParticipant'
 
     def pages_as_urls(self):
         from ptree.views.concrete import WaitUntilAssignedToMatch

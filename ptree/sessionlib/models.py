@@ -56,11 +56,6 @@ class Session(models.Model):
         else:
             return '[empty sequence]'
 
-    def start_url(self):
-        """The URL that a user is redirected to in order to start a treatment"""
-        return '/InitializeSessionParticipant/?{}={}'.format(constants.session_code,
-                                                   self.code)
-
     def subsessions(self):
         lst = []
         subsession = self.first_subsession
@@ -197,13 +192,17 @@ class SessionUser(models.Model):
         if self.is_on_waiting_page:
             return 'Waiting'
 
+    def get_success_url(self):
+        from ptree.views.concrete import RedirectToPageUserShouldBeOn
+        return RedirectToPageUserShouldBeOn.url(self)
+
+
     class Meta:
         abstract = True
 
 class SessionExperimenter(SessionUser):
     def start_url(self):
-        return '/InitializeSessionExperimenter/?{}={}'.format(
-            constants.session_user_code,
+        return '/InitializeSessionExperimenter/{}/'.format(
             self.code
         )
 
@@ -236,8 +235,9 @@ class SessionParticipant(SessionUser):
     user_type_in_url = constants.user_type_participant
 
     def start_url(self):
-        return '/InitializeSessionParticipant/?{}={}'.format(constants.session_user_code,
-                                           self.code)
+        return '/InitializeSessionParticipant/{}'.format(
+            self.code
+        )
 
 
     def participants(self):

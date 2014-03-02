@@ -42,18 +42,16 @@ def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
              'experimenter_start_link',
              'start_urls_link',
              'magdeburg_start_urls_link',
-             'global_start_link',
-             'mturk_snippet_link',
              'payments_ready',
              'payments_link',
              'base_pay_display',],
-        'SessionParticipant':
-            ['bonus',
-            'start_link',
-            'subsessions_completed',
-            'current_subsession',
-            'pages_completed_in_current_subsession',
-            'status'],
+        'SessionParticipant': [
+                'start_link',
+                'subsessions_completed',
+                'current_subsession',
+                'pages_completed_in_current_subsession',
+                'status'
+            ],
     }[Model.__name__]
 
     return remove_duplicates(fields_for_this_model_type + (fields_specific_to_this_subclass or []))
@@ -325,7 +323,6 @@ class SessionAdmin(PTreeBaseModelAdmin):
         urls = super(SessionAdmin, self).get_urls()
         my_urls = patterns('',
             (r'^(?P<pk>\d+)/payments/$', self.admin_site.admin_view(self.payments)),
-            (r'^(?P<pk>\d+)/mturk_snippet/$', self.admin_site.admin_view(self.mturk_snippet)),
             (r'^(?P<pk>\d+)/start_urls/$', self.start_urls),
             (r'^(?P<pk>\d+)/magdeburg_start_urls/$', self.magdeburg_start_urls),
             (r'^(?P<pk>\d+)/launch_script_mswin/$', self.launch_script_mswin),
@@ -424,36 +421,6 @@ class SessionAdmin(PTreeBaseModelAdmin):
 
     magdeburg_start_urls_link.short_description = 'Magdeburg Start URLs'
     magdeburg_start_urls_link.allow_tags = True
-
-
-    def mturk_snippet(self, request, pk):
-        session = self.model.objects.get(pk=pk)
-        subsession = session.first_subsession
-        hit_page_js_url = request.build_absolute_uri(static_template_tag('ptree/js/mturk_hit_page.js'))
-        subsession_url = request.build_absolute_uri(subsession.start_url())
-        return render_to_response('admin/MTurkSnippet.html',
-                                  {'hit_page_js_url': hit_page_js_url,
-                                   'subsession_url': subsession_url,},
-                                  content_type='text/plain')
-
-    def mturk_snippet_link(self, instance):
-        if instance.is_for_mturk:
-            return new_tab_link('{}/mturk_snippet/'.format(instance.pk), 'Link')
-        else:
-            return 'N/A (is_for_mturk = False)'
-
-    mturk_snippet_link.allow_tags = True
-    mturk_snippet_link.short_description = "HTML snippet for MTurk HIT page"
-
-    def global_start_link(self, instance):
-        if instance.is_for_mturk:
-            return 'N/A (is_for_mturk = True)'
-        else:
-            url = instance.start_url()
-            return new_tab_link(url, 'Link')
-
-    global_start_link.allow_tags = True
-    global_start_link.short_description = "Global start URL (only if you can't use regular start URLs)"
 
     def payments(self, request, pk):
         session = self.model.objects.get(pk=pk)

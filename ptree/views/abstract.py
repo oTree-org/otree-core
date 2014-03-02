@@ -33,9 +33,6 @@ from ptree.user.models import Experimenter
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
-REDIRECT_TO_PAGE_USER_SHOULD_BE_ON_URL = '/shared/RedirectToPageUserShouldBeOn/'
-
-
 class PTreeMixin(object):
     """Base mixin class for pTree views.
     Takes care of:
@@ -104,19 +101,22 @@ class PTreeMixin(object):
                 return OutOfRangeNotification.url(self.session_user)
         return self.user.pages_as_urls()[self.user.index_in_pages]
 
-class LoadSessionUserMixin(object):
+    def get_request_session(self):
+        return self.request.session[self.session_user.code]
 
-    def dispatch(self, request, *args, **kwargs):
+def load_session_user(dispatch_method):
+    def wrapped(self, request, *args, **kwargs):
         session_user_code = kwargs[constants.session_user_code]
         if kwargs[constants.user_type] == constants.user_type_participant:
             SessionUserClass = ptree.sessionlib.models.SessionParticipant
         else:
             SessionUserClass = ptree.sessionlib.models.SessionExperimenter
         self.session_user = get_object_or_404(SessionUserClass, code = session_user_code)
-        self.request_session = self.request.session[self.session_user.code]
-        response = super(LoadSessionUserMixin, self).dispatch(request, *args, **kwargs)
+        self.request_session = self.get_request_session()
+        response = dispatch_method(self, request, *args, **kwargs)
         self.request.session[self.session_user.code] = self.request_session
         return response
+    return wrapped
 
 class LoadClassesAndUserMixin(object):
 
@@ -197,7 +197,7 @@ class WaitPageMixin(object):
             constants.get_param_truth_value
         )
 
-class SequenceMixin(LoadSessionUserMixin, PTreeMixin, WaitPageMixin):
+class SequenceMixin(PTreeMixin, WaitPageMixin):
     """
     View that manages its position in the match sequence.
     for both participants and experimenters
@@ -210,8 +210,6 @@ class SequenceMixin(LoadSessionUserMixin, PTreeMixin, WaitPageMixin):
     @classmethod
     def url_pattern(cls):
         return ptree.common.url_pattern(cls, True)
-
-    success_url = REDIRECT_TO_PAGE_USER_SHOULD_BE_ON_URL
 
     def time_limit_in_seconds(self):
         return None
@@ -266,6 +264,7 @@ class SequenceMixin(LoadSessionUserMixin, PTreeMixin, WaitPageMixin):
 
     @method_decorator(never_cache)
     @method_decorator(cache_control(must_revalidate=True, max_age=0, no_cache=True, no_store = True))
+    @load_session_user
     def dispatch(self, request, *args, **kwargs):
         try:
             self.load_classes()
@@ -275,9 +274,7 @@ class SequenceMixin(LoadSessionUserMixin, PTreeMixin, WaitPageMixin):
                 self.update_index_in_subsessions()
                 return self.redirect_to_page_the_user_should_be_on()
 
-            self.index_in_pages = int(args[0])
-            # remove it since post() may not be able to accept args.
-            args = args[1:]
+            self.index_in_pages = int(kwargs.pop(constants.index_in_pages))
 
             # if the participant tried to skip past a part of the subsession
             # (e.g. by typing in a future URL)
@@ -405,7 +402,7 @@ class ModelFormMixin(object):
         self.after_valid_form_submission()
         self.update_indexes_in_sequences()
         self.save_objects()
-        return HttpResponseRedirect(self.get_success_url())
+        return HttpResponseRedirect(self.session_user.get_success_url())
 
 class ModelFormSetMixin(object):
     """mixin rather than subclass because we want these methods only to be first in MRO"""
@@ -438,7 +435,7 @@ class ModelFormSetMixin(object):
         self.after_valid_form_submission()
         self.update_indexes_in_sequences()
         self.save_objects()
-        return HttpResponseRedirect(self.get_success_url())
+        return HttpResponseRedirect(self.session_user.get_success_url())
 
 
 class ParticipantSequenceMixin(SequenceMixin):
@@ -539,7 +536,7 @@ class ParticipantUpdateMultipleView(ModelFormSetMixin, ParticipantSequenceMixin,
 class ExperimenterUpdateMultipleView(ModelFormSetMixin, ExperimenterSequenceMixin, ExperimenterMixin, extra_views.ModelFormSetView):
     pass
 
-class InitializeParticipantOrExperimenter(LoadSessionUserMixin, NonSequenceUrlMixin, vanilla.View):
+class InitializeParticipantOrExperimenter(NonSequenceUrlMixin, vanilla.View):
 
     @classmethod
     def get_name_in_url(cls):
@@ -562,6 +559,13 @@ class InitializeParticipantOrExperimenter(LoadSessionUserMixin, NonSequenceUrlMi
         self.request_session[constants.TreatmentClass] = self.TreatmentClass
         self.request_session[constants.ParticipantClass] = self.ParticipantClass
         self.request_session[constants.MatchClass] = self.MatchClass
+
+    def get_request_session(self):
+        return {}
+
+    @load_session_user
+    def dispatch(self, request, *args, **kwargs):
+        return super(InitializeParticipantOrExperimenter, self).dispatch(request, *args, **kwargs)
 
 class InitializeParticipant(InitializeParticipantOrExperimenter):
     """

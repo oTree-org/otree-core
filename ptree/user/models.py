@@ -14,9 +14,6 @@ class User(models.Model):
 
     visited = models.BooleanField(default=False)
 
-    def start_url(self):
-        raise NotImplementedError()
-
     def pages_as_urls(self):
         raise NotImplementedError()
 
@@ -42,7 +39,14 @@ class User(models.Model):
                                                 'me_in_next_subsession_object_id',)
 
 
-
+    def start_url(self):
+        url = '/{}/{}/{}/{}/'.format(
+            self.session_user.user_type_in_url,
+            self.session_user.code,
+            self.subsession.name_in_url,
+            self.init_view_name,
+        )
+        return add_params_to_url(url, {constants.user_code: self.code})
 
     class Meta:
         abstract = True
@@ -63,18 +67,11 @@ class Experimenter(User):
                                            'subsession_object_id',
                                            )
 
+    init_view_name = 'InitializeExperimenter'
+
     @property
     def session_user(self):
         return self.session_experimenter
-
-    def start_url(self):
-        return add_params_to_url(
-            '/{}/InitializeExperimenter/'.format(self.subsession.name_in_url),
-            {
-                constants.subsession_code: self.subsession.code,
-                constants.user_code: self.code,
-            }
-        )
 
     def pages_as_urls(self):
         return self.subsession.experimenter_pages_as_urls()

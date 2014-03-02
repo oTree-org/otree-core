@@ -3,7 +3,7 @@ from ptree.views.abstract import (
     PTreeMixin,
     ParticipantUpdateView,
     LoadClassesAndUserMixin,
-    LoadSessionUserMixin,
+    load_session_user,
 )
 import ptree.forms
 from datetime import datetime
@@ -17,8 +17,7 @@ import ptree.common
 import ptree.models.participants
 
 
-class RedirectToPageUserShouldBeOn(LoadSessionUserMixin,
-                                   NonSequenceUrlMixin,
+class RedirectToPageUserShouldBeOn(NonSequenceUrlMixin,
                                    LoadClassesAndUserMixin,
                                    PTreeMixin,
                                    vanilla.View):
@@ -27,8 +26,13 @@ class RedirectToPageUserShouldBeOn(LoadSessionUserMixin,
     def get(self, request, *args, **kwargs):
         return self.redirect_to_page_the_user_should_be_on()
 
+    @load_session_user
+    def dispatch(self, request, *args, **kwargs):
+        return super(RedirectToPageUserShouldBeOn, self).dispatch(request, *args, **kwargs)
+
 class OutOfRangeNotification(NonSequenceUrlMixin, PTreeMixin, vanilla.View):
     name_in_url = 'shared'
+
 
     def dispatch(self, request, *args, **kwargs):
         return HttpResponse('No more pages in this sequence.')
