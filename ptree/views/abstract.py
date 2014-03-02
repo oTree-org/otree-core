@@ -23,39 +23,18 @@ from ptree.forms import StubModelForm, ExperimenterStubModelForm
 import ptree.sessionlib.models as seq_models
 import ptree.sessionlib.models
 import ptree.common
+
 import ptree.models.participants
 import ptree.user.models
 import ptree.forms
 from ptree.user.models import Experimenter
+
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 REDIRECT_TO_PAGE_USER_SHOULD_BE_ON_URL = '/shared/RedirectToPageUserShouldBeOn/'
 
-def url(cls, session_user, index=None):
-    u = '/{}/{}/{}/{}/'.format(
-        session_user.name_in_url,
-        session_user.code,
-        cls.get_name_in_url(),
-        cls.__name__,
-    )
-
-    if index is not None:
-        u += '{}/'.format(index)
-    return u
-
-def url_pattern(cls, is_sequence_url=False):
-    p = r'(?P<{}>\w)/(?P<{}>[a-z]+)/{}/{}/'.format(
-        constants.user_type,
-        constants.session_user_code,
-        cls.get_name_in_url(),
-        cls.__name__,
-    )
-    if is_sequence_url:
-        p += '\d+/'
-    p = '^{}$'.format(p)
-    return p
 
 class PTreeMixin(object):
     """Base mixin class for pTree views.
@@ -84,7 +63,6 @@ class PTreeMixin(object):
             raise Http404("This user ({}) does not exist in the database. Maybe the database was recreated.".format(code))
         self.subsession = self.user.subsession
         self.session = self.user.session
-        self.session_user = self.user.session_user
 
     def save_objects(self):
         for obj in self.objects_to_save():
@@ -123,7 +101,7 @@ class PTreeMixin(object):
                 return users[self.session_user.index_in_subsessions].start_url()
             except IndexError:
                 from ptree.views.concrete import OutOfRangeNotification
-                return OutOfRangeNotification.url()
+                return OutOfRangeNotification.url(self.session_user)
         return self.user.pages_as_urls()[self.user.index_in_pages]
 
 class LoadSessionUserMixin(object):
@@ -136,7 +114,9 @@ class LoadSessionUserMixin(object):
             SessionUserClass = ptree.sessionlib.models.SessionExperimenter
         self.session_user = get_object_or_404(SessionUserClass, code = session_user_code)
         self.request_session = self.request.session[self.session_user.code]
-        return super(LoadSessionUserMixin, self).dispatch(request, *args, **kwargs)
+        response = super(LoadSessionUserMixin, self).dispatch(request, *args, **kwargs)
+        self.request.session[self.session_user.code] = self.request_session
+        return response
 
 class LoadClassesAndUserMixin(object):
 
@@ -148,11 +128,11 @@ class LoadClassesAndUserMixin(object):
 class NonSequenceUrlMixin(object):
     @classmethod
     def url(cls, session_user):
-        return url(cls, session_user)
+        return ptree.common.url(cls, session_user)
 
     @classmethod
     def url_pattern(cls):
-        return url_pattern(cls, False)
+        return ptree.common.url_pattern(cls, False)
 
 class ParticipantMixin(object):
 
@@ -217,7 +197,7 @@ class WaitPageMixin(object):
             constants.get_param_truth_value
         )
 
-class SequenceMixin(PTreeMixin, WaitPageMixin):
+class SequenceMixin(LoadSessionUserMixin, PTreeMixin, WaitPageMixin):
     """
     View that manages its position in the match sequence.
     for both participants and experimenters
@@ -225,11 +205,11 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
 
     @classmethod
     def url(cls, session_user, index):
-        return url(cls, session_user, index)
+        return ptree.common.url(cls, session_user, index)
 
     @classmethod
     def url_pattern(cls):
-        return url_pattern(cls, True)
+        return ptree.common.url_pattern(cls, True)
 
     success_url = REDIRECT_TO_PAGE_USER_SHOULD_BE_ON_URL
 
@@ -559,7 +539,7 @@ class ParticipantUpdateMultipleView(ModelFormSetMixin, ParticipantSequenceMixin,
 class ExperimenterUpdateMultipleView(ModelFormSetMixin, ExperimenterSequenceMixin, ExperimenterMixin, extra_views.ModelFormSetView):
     pass
 
-class InitializeParticipantOrExperimenter(NonSequenceUrlMixin, vanilla.View):
+class InitializeParticipantOrExperimenter(LoadSessionUserMixin, NonSequenceUrlMixin, vanilla.View):
 
     @classmethod
     def get_name_in_url(cls):
@@ -585,15 +565,11 @@ class InitializeParticipantOrExperimenter(NonSequenceUrlMixin, vanilla.View):
 
 class InitializeParticipant(InitializeParticipantOrExperimenter):
     """
-    The first View when participants visit a site.
-    Doesn't have any UI.
-    Just looks up the participant,
-    decides what Treatment to randomize them to,
-    and redirects to that Treatment.
+    What if I merged this with WaitUntilAssigned?
     """
 
     def get(self, request, *args, **kwargs):
-        self.request.session = {}
+        self.request_session = {}
         self.initialize_time_limits()
 
         user_code = self.request.GET.get(constants.user_code)
@@ -609,12 +585,10 @@ class InitializeParticipant(InitializeParticipantOrExperimenter):
         self.user.time_started = datetime.now()
 
         self.user.save()
-        self.request.session[constants.user_code] = self.user.code
+        self.request_session[constants.user_code] = self.user.code
 
         self.persist_classes()
-
-        import ptree.views.concrete
-        return HttpResponseRedirect(ptree.views.concrete.WaitUntilAssignedToMatch.url(0))
+        return HttpResponseRedirect(self.user.pages_as_urls()[0])
 
     def get_next_participant_in_subsession(self):
         try:
@@ -626,7 +600,7 @@ class InitializeParticipant(InitializeParticipantOrExperimenter):
 
     def persist_classes(self):
         super(InitializeParticipant, self).persist_classes()
-        self.request.session[constants.UserClass] = self.ParticipantClass
+        self.request_session[constants.UserClass] = self.ParticipantClass
 
 class InitializeExperimenter(InitializeParticipantOrExperimenter):
     """
@@ -636,10 +610,10 @@ class InitializeExperimenter(InitializeParticipantOrExperimenter):
 
     def persist_classes(self):
         super(InitializeExperimenter, self).persist_classes()
-        self.request.session[constants.UserClass] = Experimenter
+        self.request_session[constants.UserClass] = Experimenter
 
     def get(self, request, *args, **kwargs):
-        self.request.session.clear()
+        self.request_session = {}
         self.initialize_time_limits()
 
         user_code = self.request.GET[constants.user_code]
@@ -650,9 +624,7 @@ class InitializeExperimenter(InitializeParticipantOrExperimenter):
         self.user.time_started = datetime.now()
 
         self.user.save()
-        self.request.session[constants.user_code] = self.user.code
-
-        self.session_user = self.user.session_user
+        self.request_session[constants.user_code] = self.user.code
 
         self.persist_classes()
 
@@ -668,5 +640,5 @@ class InitializeExperimenter(InitializeParticipantOrExperimenter):
                 url = me_in_next_subsession.start_url()
             else:
                 from ptree.views.concrete import OutOfRangeNotification
-                url = OutOfRangeNotification.url()
+                url = OutOfRangeNotification.url(self.session_user)
         return HttpResponseRedirect(url)

@@ -5,6 +5,7 @@ import ptree.sessionlib.models
 from ptree.common import add_params_to_url
 import ptree.models.subsessions
 from ptree.user.models import User
+import ptree.common
 
 
 class BaseParticipant(User):
@@ -31,11 +32,15 @@ class BaseParticipant(User):
         return self.name()
 
     def start_url(self):
-        return add_params_to_url(self.subsession.start_url(), {constants.user_code: self.code})
+        url = '/{}/{}/{}/Initialize/'.format(
+            self.session_user.user_type_in_url,
+            self.session_user.code,
+            self.subsession.name_in_url,
+        )
+        return add_params_to_url(url, {constants.user_code: self.code})
 
     def pages_as_urls(self):
         from ptree.views.concrete import WaitUntilAssignedToMatch
-        code = self.session_user.code
         if self.treatment:
             # 2/11/2014: start at 1 because i added the wait page (until assigned to match)
             # maybe should clean this up.
@@ -43,8 +48,8 @@ class BaseParticipant(User):
             # they wouldn't access this in the first place.
             # but this must still work if you look up an element.
             all_views = [WaitUntilAssignedToMatch] + self.treatment.pages()
-            return [View.url(index, code) for index, View in enumerate(all_views)]
-        return [WaitUntilAssignedToMatch.url(0, code)]
+            return [View.url(self.session_user, index) for index, View in enumerate(all_views)]
+        return [WaitUntilAssignedToMatch.url(self.session_user, 0)]
 
     class Meta:
         abstract = True

@@ -126,16 +126,14 @@ class Session(models.Model):
         return self.sessionparticipant_set.all()
 
     def payments_ready(self):
-        try:
-            for participant in self.participants():
-                if not participant.bonus_is_complete():
-                    return False
-            return True
-        except:
-            return None
+        for participant in self.participants():
+            if not participant.bonus_is_complete():
+                return False
+        return True
     payments_ready.boolean = True
 
     def time_started(self):
+        """should get rid of this and set time_started in the experimenter page"""
         start_times = [p.time_started for p in self.participants() if p.time_started is not None]
         if len(start_times) == 0:
             return None
@@ -227,7 +225,7 @@ class SessionExperimenter(SessionUser):
     def experimenters(self):
         return self.users()
 
-    name_in_url = constants.user_type_experimenter
+    user_type_in_url = constants.user_type_experimenter
 
 class SessionParticipant(SessionUser):
 
@@ -235,7 +233,7 @@ class SessionParticipant(SessionUser):
 
     session = models.ForeignKey(Session)
 
-    name_in_url = constants.user_type_participant
+    user_type_in_url = constants.user_type_participant
 
     def start_url(self):
         return '/InitializeSessionParticipant/?{}={}'.format(constants.session_user_code,

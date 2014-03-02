@@ -6,6 +6,7 @@ import urlparse
 from django.utils.importlib import import_module
 import subprocess
 from django.template.defaultfilters import title
+from ptree import constants
 
 def add_params_to_url(url, params):
     url_parts = list(urlparse.urlparse(url))
@@ -58,3 +59,27 @@ def git_hash():
 
 def app_name_format(app_name):
     return title(app_name.replace("_", " "))
+
+def url(cls, session_user, index=None):
+    u = '/{}/{}/{}/{}/'.format(
+        session_user.user_type_in_url,
+        session_user.code,
+        cls.get_name_in_url(),
+        cls.__name__,
+    )
+
+    if index is not None:
+        u += '{}/'.format(index)
+    return u
+
+def url_pattern(cls, is_sequence_url=False):
+    p = r'(?P<{}>\w)/(?P<{}>[a-z]+)/{}/{}/'.format(
+        constants.user_type,
+        constants.session_user_code,
+        cls.get_name_in_url(),
+        cls.__name__,
+    )
+    if is_sequence_url:
+        p += '\d+/'
+    p = '^{}$'.format(p)
+    return p

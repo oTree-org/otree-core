@@ -60,7 +60,9 @@ class BaseSubsession(models.Model):
         return self.name()
 
     def start_url(self):
-        """The URL that a user is redirected to in order to start a treatment"""
+        """The URL that a user is redirected to in order to start a treatment.
+        3/2/2014: is this still used for anything? i think i am moving towards deprecating it.
+        """
         return '/{}/Initialize/?{}={}'.format(self.name_in_url,
                                               constants.user_code,
                                               self.code)

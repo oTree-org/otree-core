@@ -1,15 +1,9 @@
-__doc__ = """This module contains views that are shared across many game types. 
-They are ready to be included in your  Just import this module,
-and include these classes in your Treatment's sequence() method."""
-
 from ptree.views.abstract import (
-    InitializeParticipantOrExperimenter,
     NonSequenceUrlMixin,
     PTreeMixin,
     ParticipantUpdateView,
     LoadClassesAndUserMixin,
-    url,
-    url_pattern,
+    LoadSessionUserMixin,
 )
 import ptree.forms
 from datetime import datetime
@@ -23,7 +17,11 @@ import ptree.common
 import ptree.models.participants
 
 
-class RedirectToPageUserShouldBeOn(NonSequenceUrlMixin, LoadClassesAndUserMixin, PTreeMixin, vanilla.View):
+class RedirectToPageUserShouldBeOn(LoadSessionUserMixin,
+                                   NonSequenceUrlMixin,
+                                   LoadClassesAndUserMixin,
+                                   PTreeMixin,
+                                   vanilla.View):
     name_in_url = 'shared'
 
     def get(self, request, *args, **kwargs):
@@ -70,25 +68,27 @@ class InitializeSessionExperimenter(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r'^InitializeSessionExperimenter/$'
+        return r'^InitializeSessionExperimenter/(?P<{}>[a-z]+)/$'.format(constants.session_user_code)
 
     def get(self, *args, **kwargs):
-        self.request.session.clear()
-        self.request.session[constants.session_user_code] = self.request.GET[constants.session_user_code]
+        session_user_code = kwargs[constants.session_user_code]
+        self.request.session[session_user_code] = {}
         return render_to_response('ptree/experimenter/StartSession.html', {})
 
     def post(self, request, *args, **kwargs):
         self.session_user = get_object_or_404(
             ptree.sessionlib.models.SessionExperimenter,
-            code=self.request.session[constants.session_user_code]
+            code=kwargs[constants.session_user_code]
         )
 
-        # generate hash when the first participant starts, rather than when the session was created
+        # generate hash when the experimenter starts, rather than when the session was created
         # (since code is often updated after session created)
         session = self.session_user.session
         if not session.git_hash:
             session.git_hash = ptree.common.git_hash()
             session.save()
+
+
 
         # assign participants to treatments
         for subsession in session.subsessions():
@@ -101,48 +101,14 @@ class InitializeSessionParticipant(vanilla.UpdateView):
 
     @classmethod
     def url_pattern(cls):
-        return r'^InitializeSessionParticipant/$'
+        return r'^InitializeSessionParticipant/(?P<{}>[a-z]+)/$'.format(constants.session_user_code)
 
     def get(self, *args, **kwargs):
-        self.request.session.clear()
 
-        # session code for mturk only? don't think there are any other scenarios currently.
-        session_code = self.request.GET.get(constants.session_code)
-        session_user_code = self.request.GET.get(constants.session_user_code)
+        session_user_code = kwargs[constants.session_user_code]
+        self.request.session[session_user_code] = {}
 
-        if not session_user_code or session_code:
-            return HttpResponse('Missing parameter in URL')
-        if session_user_code and session_code:
-            return HttpResponse('Redundant parameters in URL')
-
-        if session_user_code:
-            session_user = get_object_or_404(ptree.sessionlib.models.SessionParticipant, code=session_user_code)
-            session = session_user.session
-        else:
-            session = get_object_or_404(ptree.sessionlib.models.Session, )
-            if session.is_for_mturk:
-                try:
-                    mturk_worker_id = self.request.GET[constants.mturk_worker_id]
-                    mturk_assignment_id = self.request.GET[constants.mturk_assignment_id]
-                    assert mturk_assignment_id != 'ASSIGNMENT_ID_NOT_AVAILABLE'
-                except:
-                    print 'A visitor to this subsession was turned away because they did not have the MTurk parameters in their URL.'
-                    print 'This URL only works if clicked from a MTurk job posting with the JavaScript snippet embedded'
-                    return HttpResponse(_('To participate, you need to first accept this Mechanical Turk HIT and then re-click the link (refreshing this page will not work).'))
-                try:
-                    session_user = ptree.sessionlib.models.SessionParticipant.objects.get(mturk_worker_id = mturk_worker_id,
-                                                                      session = session)
-                except self.ParticipantClass.DoesNotExist:
-                    try:
-                        session_user = ptree.sessionlib.models.SessionParticipant.objects.filter(session = session,
-                                                                             visited=False)[0]
-                    except IndexError:
-                        raise IndexError("No Participant objects left in the database to assign to new visitor.")
-
-                    session_user.mturk_worker_id = mturk_worker_id
-                    session_user.mturk_assignment_id = mturk_assignment_id
-            else:
-                raise NotImplementedError()
+        session_user = get_object_or_404(ptree.sessionlib.models.SessionParticipant, code=session_user_code)
 
         session_user.visited = True
         session_user.time_started = datetime.now()
@@ -155,7 +121,5 @@ class InitializeSessionParticipant(vanilla.UpdateView):
             session_user.ip_address = self.request.META['REMOTE_ADDR']
 
         session_user.save()
-
-        self.request.session[constants.session_user_id] = session_user.id
 
         return HttpResponseRedirect(session_user.me_in_first_subsession.start_url())
