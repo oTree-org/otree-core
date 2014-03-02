@@ -302,9 +302,9 @@ def ajax_result_list(cl, request):
             'result_hidden_fields': list(result_hidden_fields(cl)),
             'result_headers': headers,
             'num_sorted_fields': num_sorted_fields,
-            'url_name': request.resolver_match.url_name,
+            'url_name': json.dumps(request.resolver_match.url_name),
             'results_json': results_json,
-            'get_params_str': get_params_str,
+            'get_params_str': json.dumps(get_params_str),
             'results': the_results}
 
 
