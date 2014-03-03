@@ -37,10 +37,8 @@ def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
         'Session':
             ['time_started',
              'subsession_names',
-             'launch_script_link_osx',
-             'launch_script_link_mswin',
-             'experimenter_start_link',
-             'start_urls_link',
+             'start_links_link',
+             'raw_participant_urls_link',
              'magdeburg_start_urls_link',
              'payments_ready',
              'payments_link',
@@ -323,76 +321,60 @@ class SessionAdmin(PTreeBaseModelAdmin):
         urls = super(SessionAdmin, self).get_urls()
         my_urls = patterns('',
             (r'^(?P<pk>\d+)/payments/$', self.admin_site.admin_view(self.payments)),
-            (r'^(?P<pk>\d+)/start_urls/$', self.start_urls),
+            (r'^(?P<pk>\d+)/raw_participant_urls/$', self.raw_participant_urls),
+            (r'^(?P<pk>\d+)/start_links/$', self.start_links),
             (r'^(?P<pk>\d+)/magdeburg_start_urls/$', self.magdeburg_start_urls),
-            (r'^(?P<pk>\d+)/launch_script_mswin/$', self.launch_script_mswin),
-            (r'^(?P<pk>\d+)/launch_script_osx/$', self.launch_script_osx),
-
         )
         return my_urls + urls
 
-    def start_urls_list(self, request, session):
+    def participant_urls(self, request, session):
         participants = session.participants()
         return [request.build_absolute_uri(participant.start_url()) for participant in participants]
 
-    def start_urls(self, request, pk):
+    def start_links(self, request, pk):
+        session = self.model.objects.get(pk=pk)
+
+        return render_to_response(
+            'admin/StartLinks.html',
+            {
+                'experimenter_url': session.session_experimenter.start_url(),
+                'participant_urls': self.participant_urls(request, session),
+            }
+        )
+
+    def start_links_link(self, instance):
+        return new_tab_link(
+            '{}/start_links/?{}={}'.format(
+                instance.pk,
+                ptree.constants.session_user_code,
+                instance.session_experimenter.code
+            ),
+            'Link'
+        )
+
+    start_links_link.short_description = 'Start links'
+    start_links_link.allow_tags = True
+
+
+    def raw_participant_urls(self, request, pk):
         session = self.model.objects.get(pk=pk)
 
         if request.GET.get(ptree.constants.session_user_code) != session.session_experimenter.code:
             return HttpResponseBadRequest('{} parameter missing or incorrect'.format(ptree.constants.session_user_code))
-        urls = self.start_urls_list(request, session)
+        urls = self.participant_urls(request, session)
         return HttpResponse('\n'.join(urls), content_type="text/plain")
 
-    def start_urls_link(self, instance):
-        return new_tab_link('{}/start_urls/?{}={}'.format(instance.pk,
+
+    def raw_participant_urls_link(self, instance):
+        return new_tab_link('{}/raw_participant_urls/?{}={}'.format(instance.pk,
                                                           ptree.constants.session_user_code,
                                                           instance.session_experimenter.code), 'Link')
 
-    start_urls_link.short_description = 'Start URLs'
-    start_urls_link.allow_tags = True
-
-    def experimenter_and_participant_urls(self, request, pk):
-        session = self.model.objects.get(pk=pk)
-
-        experimenter_url = request.build_absolute_uri(session.session_experimenter.start_url())
-        participant_urls = self.start_urls_list(request, session)
-
-        return [experimenter_url] + participant_urls
-
-    def launch_script(self, request, pk, cmd_format, file_extension):
-        urls = self.experimenter_and_participant_urls(request, pk)
-
-
-        script_lines = []
-        for i, url in enumerate(urls):
-
-            # don't use default profile since we reserve that for the admin interface
-            cmd = cmd_format.format(url, 'Profile {}'.format(i + 1))
-            script_lines.append(cmd)
-
-        filename = 'ptree-test.{}'.format(file_extension)
-        response = HttpResponse('\n'.join(script_lines), content_type="text/plain")
-        response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
-        return response
-
-    def launch_script_mswin(self, request, pk):
-        return self.launch_script(request, pk, 'start chrome "{}" --profile-directory="{}"', 'bat')
-
-    def launch_script_osx(self, request, pk):
-        return self.launch_script(request, pk, 'open -a "Google Chrome" {} --args --profile-directory="{}"', 'command')
-
-    def launch_script_link_mswin(self, instance):
-        return new_tab_link('{}/launch_script_mswin/'.format(instance.pk), 'Download')
-    launch_script_link_mswin.short_description = 'Windows Test Script'
-    launch_script_link_mswin.allow_tags = True
-
-    def launch_script_link_osx(self, instance):
-        return new_tab_link('{}/launch_script_osx/'.format(instance.pk), 'Download')
-    launch_script_link_osx.short_description = 'Mac OSX Test Script'
-    launch_script_link_osx.allow_tags = True
+    raw_participant_urls_link.short_description = 'Participant URLs'
+    raw_participant_urls_link.allow_tags = True
 
     def experimenter_start_link(self, instance):
-        url = instance.session_experimenter.start_url()
+        url = instance
         return new_tab_link(url, 'Link')
 
     experimenter_start_link.short_description = 'Experimenter input'
@@ -400,7 +382,7 @@ class SessionAdmin(PTreeBaseModelAdmin):
 
     def magdeburg_start_urls(self, request, pk):
         session = self.model.objects.get(pk=pk)
-        urls = self.start_urls_list(request, session)
+        urls = self.participant_urls(request, session)
         import_file_lines = []
         for i, url in enumerate(urls):
             start = url.index('?')
