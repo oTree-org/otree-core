@@ -41,8 +41,10 @@ def create(label, is_for_mturk, subsession_names, base_pay, num_participants):
             session.add_subsession(subsession)
             experimenter = Experimenter(session=session)
             experimenter.subsession = subsession
-            subsession.experimenter = experimenter
             experimenter.save()
+
+            subsession.experimenter = experimenter
+            subsession.save()
             for i in range(num_participants):
                 participant = models_module.Participant(subsession = subsession,
                                                         session = session,

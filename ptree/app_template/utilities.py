@@ -24,3 +24,9 @@ class ExperimenterMixin(object):
 
     def for_IDE_autocomplete(self):
         self.subsession = models.Subsession()
+
+class InitializeParticipant(ParticipantMixin, ptree.views.InitializeParticipant):
+    pass
+
+class InitializeExperimenter(ExperimenterMixin, ptree.views.InitializeExperimenter):
+    pass

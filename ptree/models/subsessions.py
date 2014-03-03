@@ -21,9 +21,11 @@ class BaseSubsession(models.Model):
                             blank = True,
                             )
 
-    session = models.ForeignKey(Session,
-                                                related_name = '%(app_label)s_%(class)s',
-                                                null=True)
+    session = models.ForeignKey(
+        Session,
+        related_name = '%(app_label)s_%(class)s',
+        null=True
+    )
 
     code = RandomCharField(length=8)
 
@@ -146,7 +148,7 @@ class BaseSubsession(models.Model):
         sequence() returns something like [views.IntroPage, ...]
         pages_as_urls() returns something like ['mygame/IntroPage', ...]
         """
-        return [View.url(index) for index, View in enumerate(self.experimenter_pages())]
+        return [View.url(self.experimenter.session_experimenter, index) for index, View in enumerate(self.experimenter_pages())]
 
     class Meta:
         abstract = True

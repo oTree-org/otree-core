@@ -28,7 +28,7 @@ import ptree.models.participants
 import ptree.user.models
 import ptree.forms
 from ptree.user.models import Experimenter
-
+import copy
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -88,7 +88,7 @@ class PTreeMixin(object):
 
     def get_context_data(self, **kwargs):
         context = {}
-        context.update(self.variables_for_template())
+        context.update(self.variables_for_template() or {})
         return context
 
     def page_the_user_should_be_on(self):
@@ -106,15 +106,17 @@ class PTreeMixin(object):
 
 def load_session_user(dispatch_method):
     def wrapped(self, request, *args, **kwargs):
-        session_user_code = kwargs[constants.session_user_code]
-        if kwargs[constants.user_type] == constants.user_type_participant:
+        session_user_code = kwargs.pop(constants.session_user_code)
+        user_type = kwargs.pop(constants.user_type)
+        if user_type == constants.user_type_participant:
             SessionUserClass = ptree.sessionlib.models.SessionParticipant
         else:
             SessionUserClass = ptree.sessionlib.models.SessionExperimenter
+
         self.session_user = get_object_or_404(SessionUserClass, code = session_user_code)
-        self.request_session = self.get_request_session()
+        self.request_session = self.get_request_session().copy()
         response = dispatch_method(self, request, *args, **kwargs)
-        self.request.session[self.session_user.code] = self.request_session
+        self.request.session[self.session_user.code] = copy.deepcopy(self.request_session)
         return response
     return wrapped
 
@@ -336,13 +338,14 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
 
 
     def post(self, request, *args, **kwargs):
-        self.time_limit_was_exceeded = self.get_time_limit_was_exceeded()
+        # workaround to bug #18
+        self.time_limit_was_exceeded = False #self.get_time_limit_was_exceeded()
         return super(SequenceMixin, self).post(request, *args, **kwargs)
 
 
     def get_context_data(self, **kwargs):
         context = {'form_or_formset': kwargs.get('form') or kwargs.get('formset') or kwargs.get('form_or_formset')}
-        context.update(self.variables_for_template())
+        context.update(self.variables_for_template() or {})
         context['timer_message'] = self.timer_message()
 
         if settings.DEBUG:
