@@ -337,18 +337,14 @@ class SessionAdmin(PTreeBaseModelAdmin):
         return render_to_response(
             'admin/StartLinks.html',
             {
-                'experimenter_url': session.session_experimenter.start_url(),
+                'experimenter_url': request.build_absolute_uri(session.session_experimenter.start_url()),
                 'participant_urls': self.participant_urls(request, session),
             }
         )
 
     def start_links_link(self, instance):
         return new_tab_link(
-            '{}/start_links/?{}={}'.format(
-                instance.pk,
-                ptree.constants.session_user_code,
-                instance.session_experimenter.code
-            ),
+            '{}/start_links/'.format(instance.pk),
             'Link'
         )
 
@@ -372,13 +368,6 @@ class SessionAdmin(PTreeBaseModelAdmin):
 
     raw_participant_urls_link.short_description = 'Participant URLs'
     raw_participant_urls_link.allow_tags = True
-
-    def experimenter_start_link(self, instance):
-        url = instance
-        return new_tab_link(url, 'Link')
-
-    experimenter_start_link.short_description = 'Experimenter input'
-    experimenter_start_link.allow_tags = True
 
     def magdeburg_start_urls(self, request, pk):
         session = self.model.objects.get(pk=pk)
