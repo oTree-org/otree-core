@@ -141,7 +141,7 @@ def get_list_display(Model, readonly_fields, first_fields=None):
             'label',
             'me_in_first_subsession_content_type',
             'me_in_first_subsession_object_id',
-            'code',
+
             'ip_address',
             'mturk_assignment_id',
             'mturk_worker_id'},

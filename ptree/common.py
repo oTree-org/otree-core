@@ -48,7 +48,7 @@ def is_subsession_app(app_label):
 def git_hash():
     '''fixme: seems not to be working'''
     try:
-        hash = subprocess.check_output(['git rev-parse HEAD'.split()])
+        hash = subprocess.check_output('git rev-parse HEAD'.split())
     except:
         return None
     try:
@@ -80,6 +80,6 @@ def url_pattern(cls, is_sequence_url=False):
         cls.__name__,
     )
     if is_sequence_url:
-        p += '(?P<{}>[\d+])/'.format(constants.index_in_pages,)
-    p = '^{}$'.format(p)
+        p += r'(?P<{}>\d+)/'.format(constants.index_in_pages,)
+    p = r'^{}$'.format(p)
     return p

@@ -1,64 +1,78 @@
-{% extends "Base.html" %}
+{% load staticfiles %}
 {% load i18n %}
 
-{% block title %}pTree Payments{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>pTree Payments</title>
 
-{% block content %}
+        {% block head_content %}
+            {% include 'ptree/HeadContent.html' %}
+        {% endblock %}
+    </head>
+    <body>
+        <div class="container" style='max-width:970px'>
+            <div class="page-header">
+                <h2>pTree Payments</h2>
+            </div>
 
-<p>
-    <strong>{% now "DATE_FORMAT" %}</strong>
-</p>
+            <p>
+                <strong>{% now "DATE_FORMAT" %}</strong>
+            </p>
 
 
-<h3>Session</h3>
-<table class="table">
-    <tr>
-        <th>Name</th>
-        <td>{{ session_name|default_if_none:"" }}</td>
-    </tr>
-    <tr>
-        <th>Code</th>
-        <td style="font-family: 'Courier New'">{{ session_code }}</td>
-    </tr>
-    <tr>
-        <th>Base pay</th>
-        <td>{{ base_pay }}</td>
-    </tr>
+            <h3>Session</h3>
+            <table class="table">
+                <tr>
+                    <th>Name</th>
+                    <td>{{ session_name|default_if_none:"" }}</td>
+                </tr>
+                <tr>
+                    <th>Code</th>
+                    <td style="font-family: 'Courier New'">{{ session_code }}</td>
+                </tr>
+                <tr>
+                    <th>Base pay</th>
+                    <td>{{ base_pay }}</td>
+                </tr>
 
-</table>
+            </table>
 
-<h3>Participants</h3>
-<table class="table table-striped">
-    <tr>
-        <th>Name</th>
-        <th>Bonus</th>
-        <th>Total pay</th>
-        <th>Notes</th>
-    </tr>
+            <h3>Participants</h3>
+            <table class="table table-striped">
+                <tr>
+                    <th>Name</th>
+                    <th>Bonus</th>
+                    <th>Total pay</th>
+                    <th>Notes</th>
+                </tr>
 
-    {% for p in participants %}
-    <tr>
-        <td style="font-family: 'Courier New'">{{ p.name }}</td>
-        <td>{{ p.bonus_display }}</td>
-        <td>{{ p.total_pay_display }}</td>
-        <td></td>
-    </tr>
-    {% endfor %}
+                {% for p in participants %}
+                <tr>
+                    <td style="font-family: 'Courier New'">{{ p.name }}</td>
+                    <td>{{ p.bonus_display }}</td>
+                    <td>{{ p.total_pay_display }}</td>
+                    <td></td>
+                </tr>
+                {% endfor %}
 
-    <tr class="success">
-        <th>Total</th>
-        <th></th>
-        <th>{{ total_payments }}</th>
-        <th></th>
-    </tr>
+                <tr class="success">
+                    <th>Total</th>
+                    <th></th>
+                    <th>{{ total_payments }}</th>
+                    <th></th>
+                </tr>
 
-</table>
+            </table>
 
-<h3>Notes/Signature</h3>
-<div class="well well-lg">
-    <br/>
-    <br/>
-    <br/>
-</div>
+            <h3>Notes/Signature</h3>
+            <div class="well well-lg">
+                <br/>
+                <br/>
+                <br/>
+            </div>
 
-{% endblock %}
+
+        </div>
+    </body>
+</html>
