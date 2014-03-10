@@ -140,7 +140,6 @@ class Session(models.Model):
 class SessionUser(models.Model):
 
     index_in_subsessions = models.PositiveIntegerField(default=0, null=True)
-    index_in_pages = models.PositiveIntegerField(default=0, null=True)
 
     me_in_first_subsession_content_type = models.ForeignKey(ContentType,
                                                       null=True,
@@ -156,24 +155,22 @@ class SessionUser(models.Model):
     ip_address = models.IPAddressField(null = True)
     time_started = models.DateTimeField(null=True)
 
+    is_on_wait_page = models.BooleanField(default=False)
+
+    current_page = models.CharField(max_length=200,null=True)
+
     def subsessions_completed(self):
         if not self.visited:
             return None
         return '{}/{} subsessions'.format(self.index_in_subsessions, len(self.session.subsessions()))
 
     def pages_completed_in_current_subsession(self):
-        try:
-            return self.users()[self.index_in_subsessions].pages_completed()
-        except:
-            return '(Error)'
+        return self.users()[self.index_in_subsessions].pages_completed()
 
     def current_subsession(self):
         if not self.visited:
             return None
-        try:
-            return ptree.common.app_name_format(self.session.subsessions()[self.index_in_subsessions]._meta.app_label)
-        except IndexError:
-            return '(Error)'
+        return ptree.common.app_name_format(self.session.subsessions()[self.index_in_subsessions]._meta.app_label)
 
     def users(self):
         """Used to calculate bonuses"""
@@ -186,10 +183,8 @@ class SessionUser(models.Model):
             me_in_next_subsession = me_in_next_subsession.me_in_next_subsession
         return lst
 
-    is_on_waiting_page = models.BooleanField(default=False)
-
     def status(self):
-        if self.is_on_waiting_page:
+        if self.is_on_wait_page:
             return 'Waiting'
 
     def get_success_url(self):

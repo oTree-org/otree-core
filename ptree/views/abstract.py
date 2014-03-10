@@ -285,11 +285,13 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
                 # then bring them back to where they should be
                 return self.redirect_to_page_the_user_should_be_on()
 
+            self.session_user.current_page = self.__class__.__name__
+
             # by default it's false (e.g. for GET requests), but can be set to True in post() method
             self.time_limit_was_exceeded = False
 
             page_action = self.validated_show_skip_wait()
-            self.session_user.is_on_waiting_page = page_action == self.PageActions.wait
+            self.session_user.is_on_wait_page = page_action == self.PageActions.wait
             self.session_user.save()
 
             if self.request_is_from_wait_page():

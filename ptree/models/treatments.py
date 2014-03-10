@@ -20,7 +20,11 @@ class BaseTreatment(models.Model):
 
     participants_per_match = models.PositiveIntegerField(default=1)
 
+    @classmethod
+    def create(cls, *args, **kwargs):
+        return cls(*args, **kwargs)
 
+    # 3/7/2014: get rid of this? we don't have URLs for treatments anymore.
     def start_url(self):
         """The URL that a user is redirected to in order to start a treatment"""
         return '/{}/Initialize/?{}={}'.format(self.subsession.name_in_url,

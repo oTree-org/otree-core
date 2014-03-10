@@ -6,3 +6,5 @@ recursive-include ptree/static *
 recursive-include ptree/templates *
 recursive-include docs *
 recursive-include ptree/locale *
+recursive-exclude ptree/app_template *
+recursive-exclude ptree/project_template *

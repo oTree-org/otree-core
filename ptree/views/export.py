@@ -19,7 +19,7 @@ import ptree.models
 import ptree.adminlib
 import ptree.sessionlib.models
 from ptree.adminlib import SessionAdmin, SessionParticipantAdmin
-
+from collections import OrderedDict
 
 LINE_BREAK = '\r\n'
 MODEL_NAMES = ["Participant", "Match", "Treatment", "Subsession", "SessionParticipant", "Session"]
@@ -58,19 +58,23 @@ def get_data_export_fields(app_label):
     return export_info
 
 def build_doc_file(app_label):
+    doc_dict = get_doc_dict(app_label)
+    return get_docs_as_string(app_label, doc_dict)
+
+def choices_readable(choices):
+    lines = []
+    for value, name in choices:
+        # unicode() call is for lazy translation strings
+        lines.append(u'{}: {}'.format(value, unicode(name)))
+
+    return lines
+
+def get_doc_dict(app_label):
     export_fields = get_data_export_fields(app_label)
     app_models_module = import_module('{}.models'.format(app_label))
 
-    first_line = '{}: Documentation'.format(app_name_format(app_label))
+    doc_dict = OrderedDict()
 
-    docs = ['{}\n{}\n\n'.format(first_line,
-                                '*'*len(first_line))]
-
-    doc_string_wrapper = TextWrapper(
-        width=100,
-        initial_indent='\t'*2,
-        subsequent_indent='\t'*2
-    )
 
     for model_name in MODEL_NAMES:
         members = export_fields[model_name]['member_names']
@@ -82,27 +86,61 @@ def build_doc_file(app_label):
         else:
             Model = getattr(app_models_module, model_name)
 
-        docs.append('\n' + model_name)
+        doc_dict[model_name] = OrderedDict()
 
         for i in range(len(members)):
             member_name = members[i]
+            doc_dict[model_name][member_name] = OrderedDict()
             is_callable = callable_flags[i]
             if is_callable:
                 member = getattr(Model, member_name)
-                doc = inspect.getdoc(member)
+                doc_dict[model_name][member_name]['doc'] = [inspect.getdoc(member)]
             else:
-                try:
-                    member = Model._meta.get_field_by_name(member_name)[0]
-                    doc = member.doc
-                except AttributeError:
-                    # maybe the field isn't from ptree.db
-                    doc = '[error]'
-            docs.append('\n\t%s' % member_name)
-            if doc:
-                docs.append('\n'.join(doc_string_wrapper.wrap(doc)))
+                member = Model._meta.get_field_by_name(member_name)[0]
 
-    output = '\n'.join(docs)
+                doc_dict[model_name][member_name]['type'] = [member.get_internal_type()]
+
+                # flag error if the model doesn't have a doc attribute, which it should
+                # unless the field is a 3rd party field
+                doc = getattr(member, 'doc', '[error]') or ''
+                doc_dict[model_name][member_name]['doc'] = [line.strip() for line in doc.splitlines() if line.strip()]
+
+                choices = getattr(member, 'choices', None)
+                if choices:
+                    doc_dict[model_name][member_name]['choices'] = choices_readable(choices)
+
+    return doc_dict
+
+def get_docs_as_string(app_label, doc_dict):
+
+    first_line = '{}: Documentation'.format(app_name_format(app_label))
+    second_line = '*' * len(first_line)
+
+    lines = [
+        first_line,
+        second_line,
+        '',
+        'Accessed: {}'.format(datetime.date.today().isoformat()),
+        '',
+    ]
+
+    for model_name in doc_dict:
+        lines.append(model_name)
+
+        for member in doc_dict[model_name]:
+            lines.append('\t{}'.format(member))
+            for info_type in doc_dict[model_name][member]:
+                #if info_type == 'doc':
+                #    info_line_indentation_level = 2
+                #else:
+                lines.append('\t\t{}'.format(info_type))
+                info_line_indentation_level = 3
+                for info_line in doc_dict[model_name][member][info_type]:
+                    lines.append(u'{}{}'.format('\t'*info_line_indentation_level, info_line))
+
+    output = u'\n'.join(lines)
     return output.replace('\n', LINE_BREAK).replace('\t', '    ')
+
 
 def data_file_name(app_label):
     return '{} ({}).csv'.format(

@@ -29,14 +29,6 @@ def currency(value):
     value_in_major_units = Decimal(value)/(10**settings.CURRENCY_DECIMAL_PLACES)
     return babel.numbers.format_currency(value_in_major_units, settings.CURRENCY_CODE, locale=settings.CURRENCY_LOCALE)
 
-def create_match(MatchClass, treatment):
-    match = MatchClass(treatment = treatment,
-                       subsession = treatment.subsession,
-                       session = treatment.session)
-    # need to save it before you assign the participant.match ForeignKey
-    match.save()
-    return match
-
 def is_subsession_app(app_label):
     try:
         models_module = import_module('{}.models'.format(app_label))

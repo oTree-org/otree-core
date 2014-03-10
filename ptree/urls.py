@@ -36,13 +36,14 @@ def url_patterns_from_module(module_name):
 
 def augment_urlpatterns(urlpatterns):
 
-    urlpatterns += patterns('',
-                            url(r'^$', RedirectView.as_view(url='/admin')),
-                            url(r'^admin/', include(admin.site.urls)),
-                            url(r'^export/(\w+)/$', 'ptree.views.export.export', name='ptree_views_export_export'),
-                            url(r'^export-list/$', 'ptree.views.export.export_list', name='ptree_views_export_export_list'),
-                            url(r'^export-docs/(\w+)/$', 'ptree.views.export.export_docs', name='ptree_views_export_export_docs'),
-                            )
+    urlpatterns += patterns(
+        '',
+        url(r'^$', RedirectView.as_view(url='/admin')),
+        url(r'^admin/', include(admin.site.urls)),
+        url(r'^export/(\w+)/$', 'ptree.views.export.export', name='ptree_views_export_export'),
+        url(r'^export-list/$', 'ptree.views.export.export_list', name='ptree_views_export_export_list'),
+        url(r'^export-docs/(\w+)/$', 'ptree.views.export.export_docs', name='ptree_views_export_export_docs'),
+    )
     urlpatterns += staticfiles_urlpatterns()
     for app_name in settings.INSTALLED_PTREE_APPS:
         views_module_name = '{}.views'.format(app_name)

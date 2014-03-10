@@ -7,9 +7,11 @@ from ptree.sessionlib.models import Session, SessionExperimenter, SessionPartici
 from ptree.user.models import Experimenter
 
 def create(label, is_for_mturk, subsession_names, base_pay, num_participants):
-    session = Session(label=label,
-                                is_for_mturk=is_for_mturk,
-                                base_pay=base_pay)
+    session = Session(
+        label=label,
+        is_for_mturk=is_for_mturk,
+        base_pay=base_pay
+    )
 
     session.save()
 
@@ -34,9 +36,12 @@ def create(label, is_for_mturk, subsession_names, base_pay, num_participants):
                 return
 
             models_module = import_module('{}.models'.format(app_name))
-            subsession = models_module.create_subsession_and_treatments()
+            treatments = models_module.create_treatments()
+            subsession = models_module.Subsession()
             subsession.save()
-            [t.save() for t in subsession.treatments()]
+            for t in treatments:
+                t.subsession = subsession
+                t.save()
 
             session.add_subsession(subsession)
             experimenter = Experimenter(session=session)
@@ -46,9 +51,11 @@ def create(label, is_for_mturk, subsession_names, base_pay, num_participants):
             subsession.experimenter = experimenter
             subsession.save()
             for i in range(num_participants):
-                participant = models_module.Participant(subsession = subsession,
-                                                        session = session,
-                                                        session_participant = session_participants[i])
+                participant = models_module.Participant(
+                    subsession = subsession,
+                    session = session,
+                    session_participant = session_participants[i]
+                )
                 participant.save()
 
             print 'Created objects for {}'.format(app_name)

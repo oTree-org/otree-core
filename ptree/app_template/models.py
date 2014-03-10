@@ -41,18 +41,16 @@ class Participant(ptree.models.BaseParticipant):
         """
     )
 
-def create_subsession_and_treatments():
+def create_treatments():
 
-    subsession = Subsession()
-    subsession.save()
+    treatments = []
 
-    # you can create more treatments. just make a loop.
     treatment = Treatment(
-        subsession = subsession,
         participants_per_match = 1,
         label = '',
         # other attributes here...
     )
-    treatment.save()
 
-    return subsession
+    treatments.append(treatment)
+
+    return treatments

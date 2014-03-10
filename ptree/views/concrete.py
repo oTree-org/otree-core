@@ -88,9 +88,11 @@ class InitializeSessionExperimenter(vanilla.View):
         # generate hash when the experimenter starts, rather than when the session was created
         # (since code is often updated after session created)
         session = self.session_user.session
-        if not session.git_hash:
-            session.git_hash = ptree.common.git_hash()
-            session.save()
+
+        #FIXME: this causes an error OSError child_exception
+        #if not session.git_hash:
+        #    session.git_hash = ptree.common.git_hash()
+        #    session.save()
 
 
 

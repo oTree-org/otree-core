@@ -27,6 +27,17 @@ class BaseMatch(models.Model):
     def participants(self):
         return list(self.participant_set.all())
 
+    @classmethod
+    def create(cls, treatment):
+        match = cls(
+            treatment = treatment,
+            subsession = treatment.subsession,
+            session = treatment.session
+        )
+        # need to save it before you assign the participant.match ForeignKey
+        match.save()
+        return match
+
     class Meta:
         abstract = True
         verbose_name_plural = "matches"

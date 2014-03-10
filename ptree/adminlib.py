@@ -14,7 +14,6 @@ import ptree.constants
 import ptree.sessionlib.models
 from ptree.common import currency
 
-
 def new_tab_link(url, label):
     return '<a href="{}" target="_blank">{}</a>'.format(url, label)
 
@@ -85,7 +84,10 @@ def get_list_display(Model, readonly_fields, first_fields=None):
              'subsessions_completed',
              'current_subsession',
              'pages_completed_in_current_subsession',
-             'status'],
+             'current_page',
+             'status',
+             'last_request_succeeded',
+            ],
         'Session':
             ['name',
              'hidden'],
@@ -141,7 +143,7 @@ def get_list_display(Model, readonly_fields, first_fields=None):
             'label',
             'me_in_first_subsession_content_type',
             'me_in_first_subsession_object_id',
-
+            'is_on_wait_page',
             'ip_address',
             'mturk_assignment_id',
             'mturk_worker_id'},
@@ -423,3 +425,41 @@ class SessionAdmin(PTreeBaseModelAdmin):
     list_display = get_list_display(ptree.sessionlib.models.Session, readonly_fields)
 
     list_editable = ['hidden']
+
+def autodiscover():
+    """
+    This function is copied from django 1.6's django/contrib/admin/__init__.py
+    I'm modifying it to look instead for utilities.admin.
+    In Django 1.7, I will want to use django.utils.module_loading.autodiscover_modules,
+    which is better abstracted.
+    """
+
+    from django.contrib.admin.sites import site
+    import copy
+    from django.conf import settings
+    from django.utils.importlib import import_module
+    from django.utils.module_loading import module_has_submodule
+
+    for app in settings.INSTALLED_APPS:
+        if app in settings.INSTALLED_PTREE_APPS:
+            admin_module_dotted_path = 'utilities.admin'
+        else:
+            admin_module_dotted_path = 'admin'
+
+        mod = import_module(app)
+        # Attempt to import the app's admin module.
+        try:
+            before_import_registry = copy.copy(site._registry)
+            import_module('{}.{}'.format(app, admin_module_dotted_path))
+        except:
+            # Reset the model registry to the state before the last import as
+            # this import will have to reoccur on the next request and this
+            # could raise NotRegistered and AlreadyRegistered exceptions
+            # (see #8245).
+            site._registry = before_import_registry
+
+            # Decide whether to bubble up this error. If the app just
+            # doesn't have an admin module, we can ignore the error
+            # attempting to import it, otherwise we want it to bubble up.
+            if module_has_submodule(mod, admin_module_dotted_path):
+                raise
