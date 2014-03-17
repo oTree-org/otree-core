@@ -186,6 +186,7 @@ class SessionUser(models.Model):
     def status(self):
         if self.is_on_wait_page:
             return 'Waiting'
+        return ''
 
     def get_success_url(self):
         from ptree.views.concrete import RedirectToPageUserShouldBeOn

@@ -26,7 +26,7 @@ MODEL_NAMES = ["Participant", "Match", "Treatment", "Subsession", "SessionPartic
 
 
 def get_data_export_fields(app_label):
-    admin_module = import_module('{}.admin'.format(app_label))
+    admin_module = import_module('{}.utilities.admin'.format(app_label))
     app_models_module = import_module('{}.models'.format(app_label))
     export_info = {}
     for model_name in MODEL_NAMES:

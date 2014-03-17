@@ -86,8 +86,10 @@ class FakeRequest:
         self.user = user
 
 
-# TODO 
-admin.autodiscover()
+# TODO
+# 2014-3-11: chris changed this to use ptree's custom autodiscover
+from ptree.adminlib import autodiscover
+autodiscover()
 url_name2model_admin = None
 def get_model_admin_from(url_name):
     # TODO error handling

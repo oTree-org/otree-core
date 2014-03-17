@@ -126,16 +126,17 @@ def get_list_display(Model, readonly_fields, first_fields=None):
             {'id',
             'label'},
         'Subsession':
-            {'id',
-             'label',
-             'session_access_code',
-             'next_subsession_content_type',
-             'next_subsession_object_id',
-             'next_subsession',
-             'previous_subsession_content_type',
-             'previous_subsession_object_id',
-             'previous_subsession',
-             'experimenter',
+            {
+                'id',
+                'label',
+                'session_access_code',
+                'next_subsession_content_type',
+                'next_subsession_object_id',
+                'next_subsession',
+                'previous_subsession_content_type',
+                'previous_subsession_object_id',
+                'previous_subsession',
+                'experimenter',
              },
         'SessionParticipant':
             {'id',
@@ -262,7 +263,7 @@ class ParticipantAdmin(PTreeBaseModelAdmin):
     link.short_description = "Start link"
     link.allow_tags = True
     list_filter = [NonHiddenSessionListFilter, 'subsession', 'treatment', 'match']
-    list_per_page = 30
+    list_per_page = 40
 
     def queryset(self, request):
         qs = super(ParticipantAdmin, self).queryset(request)
@@ -272,7 +273,7 @@ class MatchAdmin(PTreeBaseModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
 
     list_filter = [NonHiddenSessionListFilter, 'subsession', 'treatment']
-    list_per_page = 30
+    list_per_page = 40
 
     def queryset(self, request):
         qs = super(MatchAdmin, self).queryset(request)
@@ -296,6 +297,7 @@ class SubsessionAdmin(PTreeBaseModelAdmin):
         return qs.filter(session__hidden=False)
 
     list_filter = [NonHiddenSessionListFilter]
+    list_editable = ['skip']
 
 class SessionParticipantAdmin(PTreeBaseModelAdmin):
     change_list_template = "admin/ptree_change_list.html"
@@ -400,12 +402,16 @@ class SessionAdmin(PTreeBaseModelAdmin):
         participants = session.participants()
         total_payments = sum(participant.total_pay() or 0 for participant in session.participants())
 
-        # order by label if they are numbers. or should we always order by label?
+        try:
+            mean_payment = total_payments/len(participants)
+        except ZeroDivisionError:
+            mean_payment = 0
 
 
         return render_to_response('admin/Payments.html',
                                   {'participants': participants,
                                   'total_payments': currency(total_payments),
+                                  'mean_payment': currency(mean_payment),
                                   'session_code': session.code,
                                   'session_name': session,
                                   'base_pay': currency(session.base_pay),
