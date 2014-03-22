@@ -7,20 +7,14 @@
 
 import sys
 import os
-import copy_ptree
-import commit_and_push
-import sys
-
-# use this when you've made changes to the code (on the dev site) that affected the database schema.
-# it will drop the dev DB and recreate it, thus providing a blank slate.
-
-import sys, os
 import commit_and_push
 
 # replace the below app names with your heroku app names
-heroku_apps = {'dev': 'heroku-app-name-dev',
-               'staging': 'heroku-app-name-staging',
-               'production': 'heroku-app-name-production'}
+heroku_apps = {
+    'dev': 'heroku-app-name-dev',
+    'staging': 'heroku-app-name-staging',
+    'production': 'heroku-app-name-production'
+}
 
 def main():
     environment = sys.argv[1]

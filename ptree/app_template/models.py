@@ -20,7 +20,9 @@ class Treatment(ptree.models.BaseTreatment):
     def pages(self):
     
         import {{ app_name }}.views as views
-        return [views.MyView]
+        return [
+            views.MyView
+        ]
 
 class Match(ptree.models.BaseMatch):
 
@@ -40,6 +42,9 @@ class Participant(ptree.models.BaseParticipant):
         Description of this field, for documentation
         """
     )
+
+    def set_bonus(self):
+        self.bonus = 0 # change to whatever the bonus should be
 
 def create_treatments():
 

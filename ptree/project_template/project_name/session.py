@@ -4,7 +4,6 @@ def create(name):
     return ptree.session.create(
         label='',
         base_pay=0,
-        is_for_mturk=False,
-        num_participants=30,
+        num_participants=3,
         subsession_names= ['myapp']
     )

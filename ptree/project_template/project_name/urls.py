@@ -1,9 +1,8 @@
 from django.conf.urls import *
 import ptree.urls
-from django.contrib import admin
+from ptree.adminlib import autodiscover
 
-
-admin.autodiscover()
+autodiscover()
 
 urlpatterns = patterns('',)
 

@@ -9,18 +9,16 @@
     Experimenter link
 </h3>
 
-<p>
-    <a href="{{ experimenter_url }}" class="experimenter-link" target="_blank">{{ experimenter_url }}</a>
-</p>
+    <a href="{{ experimenter_url }}" class="experimenter-link" target="_blank">{{ experimenter_url }}</a><br/>
+
 
 <h3>
     Participant links
 </h3>
 
 {% for participant_url in participant_urls %}
-    <p>
         <a href="{{ participant_url }}" class="participant-link" target="_blank">{{ participant_url }}</a>
-    </p>
+        <br/>
 {% endfor %}
 
 </body>

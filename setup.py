@@ -8,7 +8,7 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version='0.2.82'
+version='0.2.85'
 
 if sys.argv[-1] == 'publish':
 
@@ -60,6 +60,7 @@ setup(
         'raven==3.5.2',
         'django-inspect-model',
         'django-ptree-extra-views',
+        'dj-static==0.0.5',
     ],
     classifiers=[
         'Environment :: Web Environment',

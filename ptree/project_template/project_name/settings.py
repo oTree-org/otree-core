@@ -24,6 +24,7 @@ settings = {
         'ptree',
     ],
     'INSTALLED_PTREE_APPS': [
+
     ],
     # don't share this with anybody.
     # Change this to something unique (e.g. mash your keyboard), and then delete this comment.

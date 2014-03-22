@@ -6,7 +6,7 @@ from django.utils.importlib import import_module
 from ptree.sessionlib.models import Session, SessionExperimenter, SessionParticipant
 from ptree.user.models import Experimenter
 
-def create(label, is_for_mturk, subsession_names, base_pay, num_participants):
+def create(label, subsession_names, base_pay, num_participants, is_for_mturk=False):
     session = Session(
         label=label,
         is_for_mturk=is_for_mturk,
@@ -32,7 +32,7 @@ def create(label, is_for_mturk, subsession_names, base_pay, num_participants):
         subsessions = []
         for app_name in subsession_names:
             if app_name not in settings.INSTALLED_PTREE_APPS:
-                print 'Before running this command you need to add "{}" to INSTALLED_PTREE_APPS.'.format(app_name)
+                print 'Your session contains a subsession app named "{}". You need to add this to INSTALLED_PTREE_APPS in settings.py.'.format(app_name)
                 return
 
             models_module = import_module('{}.models'.format(app_name))

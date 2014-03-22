@@ -19,7 +19,7 @@ class MyPage(ParticipantMixin, ptree.views.Page):
 
     def variables_for_template(self):
         return {
-
+            'my_variable_here': 1,
         }
 
     def after_valid_form_submission(self):
