@@ -27,14 +27,14 @@ class FormHelper(crispy_forms.helper.FormHelper):
 
 class BaseModelForm(forms.ModelForm):
 
-    def field_initial_values(self):
+    def initial_values(self):
         """Return a dict of any initial values"""
         return {}
 
-    def field_choices(self):
+    def choices(self):
         return {}
 
-    def field_labels(self):
+    def labels(self):
         return {}
 
     def currency_choices(self, amounts):
@@ -59,18 +59,18 @@ class BaseModelForm(forms.ModelForm):
         """
         self.process_kwargs(kwargs)
         initial = kwargs.get('initial', {})
-        initial.update(self.field_initial_values())
+        initial.update(self.initial_values())
         kwargs['initial'] = initial
 
         super(BaseModelForm, self).__init__(*args, **kwargs)
 
-        for field_name, label in self.field_labels().items():
+        for field_name, label in self.labels().items():
             self.fields[field_name].label = label
 
         # allow a user to set field_choices without having to remember to set the widget to Select.
         # why don't we just make the user explicitly set the form widget in Meta?
         # that would make the problem
-        for field_name, choices in self.field_choices().items():
+        for field_name, choices in self.choices().items():
             field = self.fields[field_name]
 
             try:
