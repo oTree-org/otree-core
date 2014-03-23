@@ -39,6 +39,8 @@ class Session(models.Model):
 
     comment = models.TextField()
 
+    participants_assigned_to_treatments_and_matches = models.BooleanField(default=False)
+
     def base_pay_display(self):
         return currency(self.base_pay)
 
@@ -133,6 +135,7 @@ class Session(models.Model):
         if len(start_times) == 0:
             return None
         return sorted(start_times)[0]
+
 
     class Meta:
         ordering = ['pk']

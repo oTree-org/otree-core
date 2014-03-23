@@ -74,9 +74,20 @@ class InitializeSessionExperimenter(vanilla.View):
     def url_pattern(cls):
         return r'^InitializeSessionExperimenter/(?P<{}>[a-z]+)/$'.format(constants.session_user_code)
 
+    def redirect_to_next_page(self):
+        return HttpResponseRedirect(self.session_user.me_in_first_subsession.start_url())
+
     def get(self, *args, **kwargs):
         session_user_code = kwargs[constants.session_user_code]
         self.request.session[session_user_code] = {}
+
+        self.session_user = get_object_or_404(
+            ptree.sessionlib.models.SessionExperimenter,
+            code=kwargs[constants.session_user_code]
+        )
+
+        if self.session_user.session.participants_assigned_to_treatments_and_matches:
+            return self.redirect_to_next_page()
         return render_to_response('ptree/experimenter/StartSession.html', {})
 
     def post(self, request, *args, **kwargs):
@@ -95,12 +106,14 @@ class InitializeSessionExperimenter(vanilla.View):
         #    session.save()
 
 
-
         # assign participants to treatments
         for subsession in session.subsessions():
             subsession.assign_participants_to_treatments_and_matches()
+        session.participants_assigned_to_treatments_and_matches = True
+        session.save()
+        return self.redirect_to_next_page()
 
-        return HttpResponseRedirect(self.session_user.me_in_first_subsession.start_url())
+
 
 
 class InitializeSessionParticipant(vanilla.UpdateView):
