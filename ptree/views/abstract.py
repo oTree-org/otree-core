@@ -301,13 +301,14 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
                 # if the participant shouldn't see this view, skip to the next
                 if page_action == self.PageActions.skip:
                     self.update_indexes_in_sequences()
-                    return self.redirect_to_page_the_user_should_be_on()
-
-                if page_action == self.PageActions.wait:
-                    return self.wait_page_response()
-                response = super(SequenceMixin, self).dispatch(request, *args, **kwargs)
+                    response = self.redirect_to_page_the_user_should_be_on()
+                elif page_action == self.PageActions.wait:
+                    response = self.wait_page_response()
+                else:
+                    response = super(SequenceMixin, self).dispatch(request, *args, **kwargs)
             self.session_user.last_request_succeeded = True
             self.session_user.save()
+            self.save_objects()
             return response
         except Exception, e:
             if hasattr(self, 'user'):
@@ -354,7 +355,6 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
             context[constants.debug_values] = self.get_debug_values()
 
         self.set_time_limit(context)
-        self.save_objects()
         return context
 
     def get_form(self, data=None, files=None, **kwargs):
@@ -406,7 +406,6 @@ class ModelFormMixin(object):
         self.post_processing_on_valid_form(form)
         self.after_valid_form_submission()
         self.update_indexes_in_sequences()
-        self.save_objects()
         return HttpResponseRedirect(self.session_user.get_success_url())
 
 class ModelFormSetMixin(object):
@@ -439,7 +438,6 @@ class ModelFormSetMixin(object):
         # for now, just rely on object_list until there is a need for a special method.
         self.after_valid_form_submission()
         self.update_indexes_in_sequences()
-        self.save_objects()
         return HttpResponseRedirect(self.session_user.get_success_url())
 
 
