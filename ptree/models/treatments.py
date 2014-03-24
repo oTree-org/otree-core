@@ -57,6 +57,8 @@ class BaseTreatment(models.Model):
     def participants(self):
         return list(self.participant_set.all())
 
+    def pages(self):
+        raise NotImplementedError()
 
 
     def next_open_match(self):

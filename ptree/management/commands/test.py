@@ -5,9 +5,6 @@ from ptree.management.commands.create_session import create_session
 import os.path
 import ptree.test.run
 
-def directory_name(path):
-    return os.path.basename(os.path.normpath(path))
-
 class Command(BaseCommand):
     help = "pTree: Create a session."
     args = '[session_name]'

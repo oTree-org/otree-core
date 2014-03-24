@@ -390,6 +390,11 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
                 self.update_index_in_subsessions()
             self.user.save()
 
+    def form_invalid(self, form):
+        response = super(SequenceMixin, self).form_invalid(form)
+        response[constants.redisplay_with_errors_http_header] = constants.get_param_truth_value
+        return response
+
 class ModelFormMixin(object):
     """mixin rather than subclass because we want these methods only to be first in MRO"""
 
@@ -508,6 +513,8 @@ class ParticipantUpdateView(ModelFormMixin, ParticipantSequenceMixin, Participan
             # For AuxiliaryModels
             return Cls.objects.get(object_id=self.participant.id,
                                    content_type=ContentType.objects.get_for_model(self.participant))
+
+
 
 class ExperimenterUpdateView(ModelFormMixin, ExperimenterSequenceMixin, ExperimenterMixin, vanilla.UpdateView):
     form_class = ExperimenterStubModelForm

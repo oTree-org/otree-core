@@ -35,13 +35,15 @@ class BaseParticipant(User):
 
     def pages_as_urls(self):
         from ptree.views.concrete import WaitUntilAssignedToMatch
-        # 2/11/2014: start at 1 because i added the wait page (until assigned to match)
-        # maybe should clean this up.
-        # 2/22/2014: i shouldn't have WaitUntilAssignedToMatch because if they were assigned to a match & treatment,
-        # they wouldn't access this in the first place.
-        # but this must still work if you look up an element.
-        all_views = [WaitUntilAssignedToMatch] + self.subsession.pages()
-        return [View.url(self.session_user, index) for index, View in enumerate(all_views)]
+        if self.treatment:
+            # 2/11/2014: start at 1 because i added the wait page (until assigned to match)
+            # maybe should clean this up.
+            # 2/22/2014: i shouldn't have WaitUntilAssignedToMatch because if they were assigned to a match & treatment,
+            # they wouldn't access this in the first place.
+            # but this must still work if you look up an element.
+            all_views = [WaitUntilAssignedToMatch] + self.treatment.pages()
+            return [View.url(self.session_user, index) for index, View in enumerate(all_views)]
+        return [WaitUntilAssignedToMatch.url(self.session_user, 0)]
 
     class Meta:
         abstract = True
@@ -61,7 +63,5 @@ class BaseParticipant(User):
     def pages_completed(self):
         if not (self.treatment and self.visited):
             return None
-        return '{}/{} pages'.format(
-            self.index_in_pages,
-            len(self.subsession.pages())
-        )
+        return '{}/{} pages'.format(self.index_in_pages,
+                            len(self.treatment.pages()))
