@@ -375,16 +375,20 @@ class SessionAdmin(PTreeBaseModelAdmin):
 
     def magdeburg_start_urls(self, request, pk):
         session = self.model.objects.get(pk=pk)
-        urls = self.participant_urls(request, session)
+        codes = [session_participant.code for session_participant in session.participants()]
+
         import_file_lines = []
-        for i, url in enumerate(urls):
-            start = url.index('?')
-            params = url[start+1:]
-            import_file_lines.append('maxlab-{} | 1 | /name {}&{}&{}={}'.format(str(i+1).zfill(2),
-                                                                          i+1,
-                                                                          params,
-                                                                          ptree.constants.session_participant_label,
-                                                                          i+1))
+        for i, code in enumerate(codes):
+            import_file_lines.append(
+                'maxlab-{} | 1 | /name {}&{}={}&{}={}'.format(
+                    str(i+1).zfill(2),
+                    i+1,
+                    ptree.constants.session_user_code,
+                    code,
+                    ptree.constants.session_participant_label,
+                    i+1
+                )
+            )
         response = HttpResponse('\n'.join(import_file_lines), content_type="text/plain")
         response['Content-Disposition'] = 'attachment; filename="{}"'.format('ptree-{}.ini'.format(time.time()))
         return response

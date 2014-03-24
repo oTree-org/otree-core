@@ -238,7 +238,6 @@ class SessionParticipant(SessionUser):
             self.code
         )
 
-
     def participants(self):
         return self.users()
 

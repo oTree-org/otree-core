@@ -113,6 +113,18 @@ class InitializeSessionExperimenter(vanilla.View):
         session.save()
         return self.redirect_to_next_page()
 
+class InitializeSessionParticipantMagdeburg(vanilla.View):
+    """since magdeburg doesn't let you pass distinct URLs to each PC"""
+
+    @classmethod
+    def url_pattern(cls):
+        return r'^InitializeSessionParticipantMagdeburg/$'
+
+    def get(self, *args, **kwargs):
+        session_user_code = self.request.GET[constants.session_user_code]
+        session_user = get_object_or_404(ptree.sessionlib.models.SessionParticipant, code=session_user_code)
+
+        return HttpResponseRedirect(session_user.start_url())
 
 
 
