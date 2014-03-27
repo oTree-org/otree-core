@@ -248,9 +248,18 @@ def export(request, app_label):
         member_values = get_member_values(participant, member_names, callable_flags)
         for fk_name in fk_names:
             parent_object_id = getattr(participant, "%s_id" % fk_name)
-            member_values += parent_object_data[fk_name][parent_object_id]
+            if parent_object_id is None:
+                model_name = model_names_as_fk[fk_name]
+                member_names = export_data[model_name]['member_names']
+                member_values += [''] * len(member_names)
+            else:
+                member_values += parent_object_data[fk_name][parent_object_id]
+
+        for i in range(len(member_values)):
+            if member_values[i] is None:
+                member_values[i] = ''
         member_values = [unicode(v).encode('UTF-8') for v in member_values]
-        print member_values
+
         rows.append(member_values)
 
     response = HttpResponse(content_type='text/csv')
