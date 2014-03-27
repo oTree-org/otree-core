@@ -11,14 +11,14 @@ class BaseClient(django.test.client.Client):
         self.path = None
         super(BaseClient, self).__init__()
 
-    def _play(self, q):
+    def _play(self, completion_queue, settings_queue):
 
         try:
             self.play()
         except:
-            q.put(ptree.constants.failure)
+            completion_queue.put(ptree.constants.failure)
         else:
-            q.put(ptree.constants.success)
+            completion_queue.put(ptree.constants.success)
 
     def play(self):
         raise NotImplementedError()

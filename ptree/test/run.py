@@ -15,19 +15,20 @@ def run_subsession(subsession):
     jobs = [j]
 
 
-    q = multiprocessing.Queue()
+    completion_queue = multiprocessing.Queue()
+    settings_queue = multiprocessing.Queue()
 
     for participant in subsession.participant_set.all():
         bot = tests_module.ParticipantBot(participant)
         bot.start()
-        j = multiprocessing.Process(target=bot._play, args=(q,))
+        j = multiprocessing.Process(target=bot._play, args=(completion_queue, settings_queue))
         jobs.append(j)
 
     for job in jobs:
         job.start()
 
     for i in range(len(jobs)):
-        success = q.get() == ptree.constants.success
+        success = completion_queue.get() == ptree.constants.success
         if not success:
             print 'error in bot code'
             for job in jobs:
