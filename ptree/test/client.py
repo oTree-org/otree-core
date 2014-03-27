@@ -4,14 +4,21 @@ import time
 import ptree.constants
 from urlparse import urlsplit
 
-# should also implement experimenter client
-
 class BaseClient(django.test.client.Client):
 
     def __init__(self):
         self.response = None
         self.path = None
         super(BaseClient, self).__init__()
+
+    def _play(self, completion_queue, settings_queue):
+
+        try:
+            self.play()
+        except:
+            completion_queue.put(ptree.constants.failure)
+        else:
+            completion_queue.put(ptree.constants.success)
 
     def play(self):
         raise NotImplementedError()
@@ -24,7 +31,7 @@ class BaseClient(django.test.client.Client):
 
     def assert_200(self):
         if self.response.status_code != 200:
-            raise AssertionError('Response status code: {} (expected 200)'.format(self.response.status_code))
+            raise Exception('Response status code: {} (expected 200)'.format(self.response.status_code))
 
     def is_on(self, ViewClass):
         _, _, path, _, _ = urlsplit(self.path)
@@ -32,7 +39,7 @@ class BaseClient(django.test.client.Client):
 
     def assert_is_on(self, ViewClass):
         if not self.is_on(ViewClass):
-            raise AssertionError('Expected page: {}, Actual page: {}'.format(
+            raise Exception('Expected page: {}, Actual page: {}'.format(
                 ViewClass.url_pattern(),
                 self.path
         ))
@@ -51,6 +58,12 @@ class BaseClient(django.test.client.Client):
         self.assert_200()
         self.set_path()
 
+    def submit_with_invalid_input(self, ViewClass, data=None):
+        self.submit(ViewClass, data)
+
+        if not self.page_redisplayed_with_errors():
+            raise Exception('Expected invalid input to be rejected, but instead input was accepted: {}'.format(self.path))
+
     def retry_wait_page(self):
         self.response = self.get(self.path, follow=True)
         self.assert_200()
@@ -58,6 +71,9 @@ class BaseClient(django.test.client.Client):
 
     def on_wait_page(self):
         return self.response.get(ptree.constants.wait_page_http_header) == ptree.constants.get_param_truth_value
+
+    def page_redisplayed_with_errors(self):
+        return self.response.get(ptree.constants.redisplay_with_errors_http_header) == ptree.constants.get_param_truth_value
 
     def set_path(self):
         try:

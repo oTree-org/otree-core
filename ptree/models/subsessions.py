@@ -138,6 +138,9 @@ class BaseSubsession(models.Model):
         return self._participants
     """
 
+    def pages(self):
+        raise NotImplementedError()
+
     def experimenter_pages(self):
         return []
 

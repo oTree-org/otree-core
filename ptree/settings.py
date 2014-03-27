@@ -81,7 +81,7 @@ def augment_settings(settings):
         'STATIC_ROOT': 'staticfiles',
         'STATIC_URL': '/static/',
         'CURRENCY_CODE': 'USD',
-        'CURRENCY_LOCALE': 'en_US',
+        'CURRENCY_LOCALE': (settings.get('LANGUAGE_CODE') or global_settings.LANGUAGE_CODE)[:2],
         'CURRENCY_DECIMAL_PLACES': 2,
         'TIME_ZONE': 'UTC',
         'USE_TZ': True,

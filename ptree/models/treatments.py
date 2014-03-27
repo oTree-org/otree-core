@@ -60,6 +60,7 @@ class BaseTreatment(models.Model):
     def pages(self):
         raise NotImplementedError()
 
+
     def next_open_match(self):
         """Get the next match that is accepting participants.
         (or none if it does not exist)

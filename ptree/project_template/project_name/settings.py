@@ -18,6 +18,8 @@ settings = {
     'ADMIN_PASSWORD': 'ptree',
     'AWS_ACCESS_KEY_ID': os.environ.get('AWS_ACCESS_KEY_ID'),
     'AWS_SECRET_ACCESS_KEY': os.environ.get('AWS_SECRET_ACCESS_KEY'),
+    'CURRENCY_CODE': 'USD',
+    'LANGUAGE_CODE': 'en-us',
     'DEBUG': DEBUG,
     'DATABASES': DATABASES,
     'INSTALLED_APPS': [
