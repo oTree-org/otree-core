@@ -4,6 +4,7 @@ from ptree.views.abstract import (
     ParticipantUpdateView,
     LoadClassesAndUserMixin,
     load_session_user,
+    WaitPageMixin,
 )
 import ptree.forms
 from datetime import datetime
@@ -16,8 +17,7 @@ import ptree.sessionlib.models
 import ptree.common
 import ptree.models.participants
 import django.utils.timezone
-from rq import Queue
-from ptree.worker import conn
+import threading
 
 class RedirectToPageUserShouldBeOn(NonSequenceUrlMixin,
                                    LoadClassesAndUserMixin,
@@ -58,7 +58,7 @@ class WaitUntilAssignedToMatch(ParticipantUpdateView):
     def wait_page_body_text(self):
         return 'Waiting until participant is assigned to match and treatment.'
 
-    def wait_page_response(self):
+    def get_wait_page(self):
         """2/11/2014: same as parent method, but remove debug_values, which are not valid if the participant doesn't have
          a treatment assigned yet"""
         return render_to_response(
@@ -70,14 +70,54 @@ class WaitUntilAssignedToMatch(ParticipantUpdateView):
             }
         )
 
+class SessionExperimenterWaitUntilParticipantsAreAssigned(NonSequenceUrlMixin, WaitPageMixin, vanilla.View):
+
+    def wait_page_title_text(self):
+        return 'Please wait'
+
+    def wait_page_body_text(self):
+        return 'Assigning participants to matches and treatments'
+
+    def show_skip_wait(self):
+        if self.session.participants_assigned_to_treatments_and_matches:
+            return self.PageActions.skip
+        return self.PageActions.wait
+
+    @classmethod
+    def get_name_in_url(cls):
+        return 'shared'
+
+
+    def dispatch(self, request, *args, **kwargs):
+        session_user_code = kwargs[constants.session_user_code]
+        self.request.session[session_user_code] = {}
+
+        self.session_user = get_object_or_404(
+            ptree.sessionlib.models.SessionExperimenter,
+            code=kwargs[constants.session_user_code]
+        )
+
+        self.session = self.session_user.session
+        page_action = self.validated_show_skip_wait()
+
+        if self.request_is_from_wait_page():
+            return self.response_to_wait_page(page_action)
+        else:
+            # if the participant shouldn't see this view, skip to the next
+            if page_action == self.PageActions.skip:
+                return HttpResponseRedirect(self.session_user.me_in_first_subsession.start_url())
+            elif page_action == self.PageActions.wait:
+                return self.get_wait_page()
+
 class InitializeSessionExperimenter(vanilla.View):
+
 
     @classmethod
     def url_pattern(cls):
         return r'^InitializeSessionExperimenter/(?P<{}>[a-z]+)/$'.format(constants.session_user_code)
 
     def redirect_to_next_page(self):
-        return HttpResponseRedirect(self.session_user.me_in_first_subsession.start_url())
+        return HttpResponseRedirect(SessionExperimenterWaitUntilParticipantsAreAssigned.url(self.session_user))
 
     def get(self, *args, **kwargs):
         session_user_code = kwargs[constants.session_user_code]
@@ -109,9 +149,8 @@ class InitializeSessionExperimenter(vanilla.View):
 
         self.session_user.time_started = django.utils.timezone.now()
 
-        #q = Queue(connection=conn)
-        #q.enqueue(session.assign_participants_to_treatments_and_matches)
-        session.assign_participants_to_treatments_and_matches()
+        t = threading.Thread(target=session.assign_participants_to_treatments_and_matches)
+        t.start()
         return self.redirect_to_next_page()
 
 class InitializeSessionParticipantMagdeburg(vanilla.View):

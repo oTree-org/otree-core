@@ -200,6 +200,23 @@ class WaitPageMixin(object):
             constants.get_param_truth_value
         )
 
+    def get_debug_values(self):
+        pass
+
+    def get_wait_page(self):
+        response = render_to_response(
+            self.wait_page_template_name,
+            {
+                'SequenceViewURL': self.wait_page_request_url(),
+                'debug_values': self.get_debug_values() if settings.DEBUG else None,
+                'wait_page_body_text': self.wait_page_body_text(),
+                'wait_page_title_text': self.wait_page_title_text()
+            }
+        )
+        response[constants.wait_page_http_header] = constants.get_param_truth_value
+        return response
+
+
 class SequenceMixin(PTreeMixin, WaitPageMixin):
     """
     View that manages its position in the match sequence.
@@ -303,7 +320,7 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
                     self.update_indexes_in_sequences()
                     response = self.redirect_to_page_the_user_should_be_on()
                 elif page_action == self.PageActions.wait:
-                    response = self.wait_page_response()
+                    response = self.get_wait_page()
                 else:
                     response = super(SequenceMixin, self).dispatch(request, *args, **kwargs)
             self.session_user.last_request_succeeded = True
@@ -325,18 +342,6 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
             e.args += diagnostic_info
             raise
 
-    def wait_page_response(self):
-        response = render_to_response(
-            self.wait_page_template_name,
-            {
-                'SequenceViewURL': self.wait_page_request_url(),
-                'debug_values': self.get_debug_values() if settings.DEBUG else None,
-                'wait_page_body_text': self.wait_page_body_text(),
-                'wait_page_title_text': self.wait_page_title_text()
-            }
-        )
-        response[constants.wait_page_http_header] = constants.get_param_truth_value
-        return response
 
 
     def post(self, request, *args, **kwargs):
