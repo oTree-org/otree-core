@@ -15,7 +15,9 @@ import ptree.constants as constants
 import ptree.sessionlib.models
 import ptree.common
 import ptree.models.participants
-
+import django.utils.timezone
+from rq import Queue
+from ptree.worker import conn
 
 class RedirectToPageUserShouldBeOn(NonSequenceUrlMixin,
                                    LoadClassesAndUserMixin,
@@ -105,12 +107,11 @@ class InitializeSessionExperimenter(vanilla.View):
         #    session.git_hash = ptree.common.git_hash()
         #    session.save()
 
+        self.session_user.time_started = django.utils.timezone.now()
 
-        # assign participants to treatments
-        for subsession in session.subsessions():
-            subsession.assign_participants_to_treatments_and_matches()
-        session.participants_assigned_to_treatments_and_matches = True
-        session.save()
+        #q = Queue(connection=conn)
+        #q.enqueue(session.assign_participants_to_treatments_and_matches)
+        session.assign_participants_to_treatments_and_matches()
         return self.redirect_to_next_page()
 
 class InitializeSessionParticipantMagdeburg(vanilla.View):
@@ -142,7 +143,7 @@ class InitializeSessionParticipant(vanilla.UpdateView):
         session_user = get_object_or_404(ptree.sessionlib.models.SessionParticipant, code=session_user_code)
 
         session_user.visited = True
-        session_user.time_started = datetime.now()
+        session_user.time_started = django.utils.timezone.now()
 
         participant_label = self.request.GET.get(constants.session_participant_label)
         if participant_label is not None:

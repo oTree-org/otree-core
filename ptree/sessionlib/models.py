@@ -41,6 +41,8 @@ class Session(models.Model):
 
     participants_assigned_to_treatments_and_matches = models.BooleanField(default=False)
 
+    time_started = models.DateTimeField(null=True)
+
     def base_pay_display(self):
         return currency(self.base_pay)
 
@@ -129,13 +131,11 @@ class Session(models.Model):
         return True
     payments_ready.boolean = True
 
-    def time_started(self):
-        """should get rid of this and set time_started in the experimenter page"""
-        start_times = [p.time_started for p in self.participants() if p.time_started is not None]
-        if len(start_times) == 0:
-            return None
-        return sorted(start_times)[0]
-
+    def assign_participants_to_treatments_and_matches(self):
+        for subsession in self.subsessions():
+            subsession.assign_participants_to_treatments_and_matches()
+        self.participants_assigned_to_treatments_and_matches = True
+        self.save()
 
     class Meta:
         ordering = ['pk']

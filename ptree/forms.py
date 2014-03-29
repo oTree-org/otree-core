@@ -9,11 +9,6 @@ import ptree.sessionlib.models
 import ptree.constants
 from ptree.db import models
 
-
-DEFAULT_NULLBOOLEAN_CHOICES = ((None, '---------'),
-                               (True, _('Yes')),
-                               (False, _('No')))
-
 class FormHelper(crispy_forms.helper.FormHelper):
     def __init__(self, *args, **kwargs):
         super(FormHelper, self).__init__(*args, **kwargs)
@@ -36,9 +31,6 @@ class BaseModelForm(forms.ModelForm):
 
     def labels(self):
         return {}
-
-    def currency_choices(self, amounts):
-        return [(None, '---------')] + [(amount, ptree.common.currency(amount)) for amount in amounts]
 
     def layout(self):
         """Child classes can override this to customize form layout using crispy-forms"""
@@ -72,6 +64,7 @@ class BaseModelForm(forms.ModelForm):
         # that would make the problem
         for field_name, choices in self.choices().items():
             field = self.fields[field_name]
+            choices = [(None, '---------')] + list(choices)
 
             try:
                 # the following line has no effect.
@@ -91,8 +84,11 @@ class BaseModelForm(forms.ModelForm):
                 # Fields with a RadioSelect should be rendered without the '---------' option,
                 # and with nothing selected by default, to match dropdowns conceptually.
                 # if the selected item was the None choice, by removing it, nothing is selected.
+
+
                 if field.choices[0][0] in {u'', None}:
                     field.choices = field.choices[1:]
+
 
         # crispy forms
         self.helper = FormHelper()
@@ -103,7 +99,11 @@ class BaseModelForm(forms.ModelForm):
         return [field_name for field_name in self.fields if field_name in null_boolean_fields_in_model]
 
     def clean(self):
-        """2/17/2014: why don't i do this in the model field definition"""
+        """
+        2/17/2014: why don't i do this in the model field definition
+        maybe because None is not a valid value for a submitted value,
+        but it's OK for an initial value
+        """
         cleaned_data = super(BaseModelForm, self).clean()
         for field_name in self.null_boolean_field_names():
             if cleaned_data[field_name] == None:
@@ -111,6 +111,30 @@ class BaseModelForm(forms.ModelForm):
                 self._errors[field_name] = self.error_class([msg])
         return cleaned_data
 
+    def _clean_fields(self):
+        """2014/3/28: this method is copied from django ModelForm source code. I am adding a validate_%s method that is a bit
+        simpler than clean_%s"""
+        for name, field in self.fields.items():
+            # value_from_datadict() gets the data from the data dictionaries.
+            # Each widget type knows how to retrieve its own data, because some
+            # widgets split data over several HTML fields.
+            value = field.widget.value_from_datadict(self.data, self.files, self.add_prefix(name))
+            try:
+                if isinstance(field, forms.FileField):
+                    initial = self.initial.get(name, field.initial)
+                    value = field.clean(value, initial)
+                else:
+                    value = field.clean(value)
+                self.cleaned_data[name] = value
+                if hasattr(self, 'validate_%s' % name):
+                    getattr(self, 'validate_%s' % name)(value)
+                if hasattr(self, 'clean_%s' % name):
+                    value = getattr(self, 'clean_%s' % name)()
+                    self.cleaned_data[name] = value
+            except forms.ValidationError as e:
+                self._errors[name] = self.error_class(e.messages)
+                if name in self.cleaned_data:
+                    del self.cleaned_data[name]
 
 class ModelForm(BaseModelForm):
     """i.e. participant modelform."""

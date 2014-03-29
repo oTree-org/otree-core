@@ -29,6 +29,7 @@ import ptree.user.models
 import ptree.forms
 from ptree.user.models import Experimenter
 import copy
+import django.utils.timezone
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -147,7 +148,7 @@ class ParticipantMixin(object):
         self.treatment = self.participant.treatment
 
     def objects_to_save(self):
-        return [self.match, self.participant, self.participant.session_participant]
+        return [self.match, self.user, self.session_user]
 
 class ExperimenterMixin(object):
 
@@ -292,7 +293,6 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
 
             page_action = self.validated_show_skip_wait()
             self.session_user.is_on_wait_page = page_action == self.PageActions.wait
-            self.session_user.save()
 
             if self.request_is_from_wait_page():
                 response = self.response_to_wait_page(page_action)
@@ -307,7 +307,6 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
                 else:
                     response = super(SequenceMixin, self).dispatch(request, *args, **kwargs)
             self.session_user.last_request_succeeded = True
-            self.session_user.save()
             self.save_objects()
             return response
         except Exception, e:
@@ -381,14 +380,12 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
     def update_index_in_subsessions(self):
         if self.subsession.index_in_subsessions == self.session_user.index_in_subsessions:
             self.session_user.index_in_subsessions += 1
-            self.session_user.save()
 
     def update_indexes_in_sequences(self):
         if self.index_in_pages == self.user.index_in_pages:
             self.user.index_in_pages += 1
             if self.user.index_in_pages >= len(self.user.pages_as_urls()):
                 self.update_index_in_subsessions()
-            self.user.save()
 
     def form_invalid(self, form):
         response = super(SequenceMixin, self).form_invalid(form)
@@ -596,7 +593,7 @@ class InitializeParticipant(InitializeParticipantOrExperimenter):
         self.subsession = self.participant.subsession
 
         self.user.visited = True
-        self.user.time_started = datetime.now()
+        self.user.time_started = django.utils.timezone.now()
 
         self.user.save()
         self.request_session[constants.user_code] = self.user.code
@@ -635,7 +632,7 @@ class InitializeExperimenter(InitializeParticipantOrExperimenter):
         self.user = get_object_or_404(Experimenter, code = user_code)
 
         self.user.visited = True
-        self.user.time_started = datetime.now()
+        self.user.time_started = django.utils.timezone.now()
 
         self.user.save()
         self.request_session[constants.user_code] = self.user.code

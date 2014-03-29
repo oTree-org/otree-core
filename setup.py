@@ -8,7 +8,7 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version='0.2.88'
+version='0.2.94'
 
 if sys.argv[-1] == 'publish':
 
@@ -46,7 +46,7 @@ setup(
     # this was not working right. did not exclude ptree.app_template.utilities for some reason.
     # so instead i use recursive-exclude in MANIFEST.in
     packages=find_packages(),
-    description='pTree is a Django toolset that makes it easy to create and administer social science subsessions to online participants.',
+    description='pTree is a Django toolset that makes it easy to create and administer web-based social science experiments.',
     long_description=README,
     url='http://ptree.org/',
     author='Chris Wickens',
@@ -61,6 +61,7 @@ setup(
         'django-inspect-model',
         'django-ptree-extra-views',
         'dj-static==0.0.5',
+        'rq==0.3.13',
     ],
     classifiers=[
         'Environment :: Web Environment',

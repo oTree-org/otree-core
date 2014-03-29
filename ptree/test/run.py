@@ -1,43 +1,44 @@
 from django.test import Client
 from django.utils.importlib import import_module
 import os.path
-import multiprocessing
+from threading import Thread
 import sys
 import ptree.constants
+from Queue import Queue
 
 def run_subsession(subsession):
     app_label = subsession._meta.app_label
-    tests_module = import_module('{}.tests'.format(app_label))
+
+    try:
+        tests_module = import_module('{}.tests'.format(app_label))
+    except ImportError:
+        print '{} has no tests.py module. Exiting.'.format(app_label)
+        sys.exit(0)
 
     experimenter_bot = tests_module.ExperimenterBot(subsession)
     experimenter_bot.start()
-    j = multiprocessing.Process(target=experimenter_bot.play)
-    jobs = [j]
+    t = Thread(target=experimenter_bot.play)
+    jobs = [t]
 
 
-    completion_queue = multiprocessing.Queue()
-    settings_queue = multiprocessing.Queue()
+    failure_queue = Queue()
 
     for participant in subsession.participant_set.all():
         bot = tests_module.ParticipantBot(participant)
         bot.start()
-        j = multiprocessing.Process(target=bot._play, args=(completion_queue, settings_queue))
-        jobs.append(j)
+        t = Thread(target=bot._play, args=(failure_queue,))
+        jobs.append(t)
 
     for job in jobs:
         job.start()
 
-    for i in range(len(jobs)):
-        success = completion_queue.get() == ptree.constants.success
-        if not success:
-            print 'error in bot code'
-            for job in jobs:
-                job.terminate()
-            sys.exit(-1)
+    for job in jobs:
+        job.join()
 
-    # at this point all jobs should have succeeded
-
-    print '{}: tests completed successfully'.format(app_label)
+    if failure_queue.qsize() > 0:
+        print '{}: tests failed'.format(app_label)
+    else:
+        print '{}: tests completed successfully'.format(app_label)
     # assert that everyone's finished
 
 def run(session):

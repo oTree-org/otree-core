@@ -33,15 +33,15 @@ def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
             [],
         'Subsession':
             [],
-        'Session':
-            ['time_started',
+        'Session': [
              'subsession_names',
              'start_links_link',
              'raw_participant_urls_link',
              'magdeburg_start_urls_link',
              'payments_ready',
              'payments_link',
-             'base_pay_display',],
+             'base_pay_display',
+        ],
         'SessionParticipant': [
                 'start_link',
                 'subsessions_completed',

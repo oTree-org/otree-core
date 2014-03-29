@@ -3,6 +3,9 @@ import re
 import time
 import ptree.constants
 from urlparse import urlsplit
+import sys
+
+MAX_SECONDS_TO_WAIT = 10
 
 class BaseClient(django.test.client.Client):
 
@@ -11,14 +14,13 @@ class BaseClient(django.test.client.Client):
         self.path = None
         super(BaseClient, self).__init__()
 
-    def _play(self, completion_queue, settings_queue):
-
+    def _play(self, failure_queue):
+        self.failure_queue = failure_queue
         try:
             self.play()
         except:
-            completion_queue.put(ptree.constants.failure)
-        else:
-            completion_queue.put(ptree.constants.success)
+            self.failure_queue.put(ptree.constants.failure)
+            raise
 
     def play(self):
         raise NotImplementedError()
@@ -45,26 +47,43 @@ class BaseClient(django.test.client.Client):
         ))
 
     def submit(self, ViewClass, data=None):
-        print self.path
+
         data = data or {}
         self.assert_is_on(ViewClass)
         # if it's a waiting page, wait N seconds and retry
+        first_wait_page_try_time = time.time()
         while self.on_wait_page():
-            print 'on wait page. path: {}'.format(self.path)
+            print '{} (wait page)'.format(self.path)
             time.sleep(1) #quicker sleep since it's bots playing the game
             self.retry_wait_page()
-
+            if time.time() - first_wait_page_try_time > MAX_SECONDS_TO_WAIT:
+                raise Exception('Participant appears to be stuck on waiting page (waiting for over {} seconds)'.format(MAX_SECONDS_TO_WAIT))
+        if data:
+            print '{}, {}'.format(self.path, data)
+        else:
+            print self.path
         self.response = self.post(self.path, data, follow=True)
         self.assert_200()
         self.set_path()
+
+        if self.page_redisplayed_with_errors():
+            errors = ['{}: {}'.format(key, repr(value)) for key, value in self.response.context_data['form_or_formset'].errors.items()]
+            raise Exception(
+                ('Input was rejected.\n'
+                'Path: {}\n'
+                'Errors: {}\n').format(self.path, errors))
+
 
     def submit_with_invalid_input(self, ViewClass, data=None):
         self.submit(ViewClass, data)
 
         if not self.page_redisplayed_with_errors():
-            raise Exception('Expected invalid input to be rejected, but instead input was accepted: {}'.format(self.path))
+            raise Exception('Invalid input was accepted. Path: {}, data: {}'.format(self.path, data))
 
     def retry_wait_page(self):
+        # check if another thread has failed.
+        if self.failure_queue.qsize() > 0:
+            sys.exit(0)
         self.response = self.get(self.path, follow=True)
         self.assert_200()
         self.set_path()
@@ -80,6 +99,7 @@ class BaseClient(django.test.client.Client):
             self.path = self.response.redirect_chain[-1][0]
         except IndexError:
             pass
+
 
 class ParticipantBot(BaseClient):
 

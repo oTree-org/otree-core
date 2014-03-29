@@ -5,29 +5,19 @@ import django.forms.fields
 from django.utils.text import capfirst
 import django.db.models
 
-# leading underscore so it doesn't show up in autocomplete
-class _NullBooleanSelect(django.forms.widgets.NullBooleanSelect):
-    def __init__(self, attrs=None):
-        choices = (('1', ugettext_lazy('---------')),
-                   ('2', ugettext_lazy('Yes')),
-                   ('3', ugettext_lazy('No')))
-        super(django.forms.widgets.NullBooleanSelect, self).__init__(attrs, choices)
 
-class _NullBooleanFormField(django.forms.fields.NullBooleanField):
-    widget = _NullBooleanSelect
 
 class NullBooleanField(NullBooleanField):
-    def formfield(self, **kwargs):
-        defaults = {
-            'form_class': _NullBooleanFormField,
-            'required': not self.blank,
-            'label': capfirst(self.verbose_name),
-            'help_text': self.help_text}
-        defaults.update(kwargs)
-        return super(django.db.models.NullBooleanField, self).formfield(**defaults)
+    # 2014/3/28: i just define the allowable choices on the model field, instead of customizing the widget
+    # since then it works for any widget
 
     def __init__(self, *args,  **kwargs):
         self.doc = kwargs.pop('doc', None)
+        if not kwargs.has_key('choices'):
+            kwargs['choices'] = (
+                (True, ugettext_lazy('Yes')),
+                (False, ugettext_lazy('No'))
+            )
         super(NullBooleanField, self).__init__(*args, **kwargs)
 
 class AutoField(AutoField):
