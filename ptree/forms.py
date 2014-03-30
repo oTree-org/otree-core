@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.translation import ugettext as _
 import crispy_forms.helper
-from crispy_forms.layout import Submit
+from crispy_forms.layout import Submit, Layout, Fieldset
 
 import ptree.common
 import ptree.models.common
@@ -32,9 +32,20 @@ class BaseModelForm(forms.ModelForm):
     def labels(self):
         return {}
 
+    def order(self):
+        pass
+
     def layout(self):
         """Child classes can override this to customize form layout using crispy-forms"""
-        return None
+        order = self.order()
+
+        if order:
+            return Layout(
+                Fieldset(
+                    '',
+                    *order
+                )
+            )
 
     def __init__(self, *args, **kwargs):
         """

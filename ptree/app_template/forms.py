@@ -5,6 +5,7 @@ from django.forms import ValidationError
 from {{ app_name }}.utilities import ParticipantMixin, ExperimenterMixin
 from django.utils.translation import ugettext_lazy as _
 import ptree.forms
+from crispy_forms.layout import HTML
 
 class MyForm(ParticipantMixin, ptree.forms.Form):
 
@@ -21,3 +22,6 @@ class MyForm(ParticipantMixin, ptree.forms.Form):
 
     def initial_values(self):
         return {}
+
+    def order(self):
+        pass
