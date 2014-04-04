@@ -66,6 +66,14 @@ def augment_settings(settings):
     }
 
 
+    LANGUAGE_CODE = settings.get('LANGUAGE_CODE') or global_settings.LANGUAGE_CODE
+    CURRENCY_LOCALE = settings.get('CURRENCY_LOCALE')
+    if not CURRENCY_LOCALE:
+        # favor en_GB currency formatting since it represents negative amounts with minus signs rather than parentheses
+        if LANGUAGE_CODE[:2] == 'en':
+            CURRENCY_LOCALE = 'en_GB'
+        else:
+            CURRENCY_LOCALE = LANGUAGE_CODE.replace('-','_')
 
     overridable_settings = {
         'CRISPY_TEMPLATE_PACK': 'bootstrap3',
@@ -81,7 +89,8 @@ def augment_settings(settings):
         'STATIC_ROOT': 'staticfiles',
         'STATIC_URL': '/static/',
         'CURRENCY_CODE': 'USD',
-        'CURRENCY_LOCALE': (settings.get('LANGUAGE_CODE') or global_settings.LANGUAGE_CODE)[:2],
+        'CURRENCY_LOCALE': CURRENCY_LOCALE,
+        'LANGUAGE_CODE': LANGUAGE_CODE,
         'CURRENCY_DECIMAL_PLACES': 2,
         'TIME_ZONE': 'UTC',
         'USE_TZ': True,

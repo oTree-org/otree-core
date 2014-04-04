@@ -52,9 +52,6 @@ class BaseSubsession(models.Model):
 
     skip = models.BooleanField(default=False)
 
-    def is_last_subsession(self):
-        return not self.next_subsession
-
     def name(self):
         return id_label_name(self.pk, self.label)
 
@@ -152,6 +149,10 @@ class BaseSubsession(models.Model):
         pages_as_urls() returns something like ['mygame/IntroPage', ...]
         """
         return [View.url(self.experimenter.session_experimenter, index) for index, View in enumerate(self.experimenter_pages())]
+
+    @property
+    def app_label(self):
+        return self._meta.app_label
 
     class Meta:
         abstract = True

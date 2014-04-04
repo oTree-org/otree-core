@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Documentation at http://django-ptree.readthedocs.org/en/latest/app.html"""
+"""Documentation at https://github.com/wickens/django-ptree-docs/wiki"""
 
 from ptree.db import models
 import ptree.models
