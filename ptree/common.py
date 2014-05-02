@@ -7,6 +7,7 @@ from django.utils.importlib import import_module
 import subprocess
 from django.template.defaultfilters import title
 from ptree import constants
+import os
 
 def add_params_to_url(url, params):
     url_parts = list(urlparse.urlparse(url))
@@ -41,6 +42,8 @@ def git_hash():
     '''fixme: seems not to be working'''
     try:
         hash = subprocess.check_output('git rev-parse HEAD'.split())
+        # take the first 10 chars, like GitHub, since it's more readable
+        hash = hash[:10]
     except:
         return None
     try:
@@ -75,3 +78,6 @@ def url_pattern(cls, is_sequence_url=False):
         p += r'(?P<{}>\d+)/'.format(constants.index_in_pages,)
     p = r'^{}$'.format(p)
     return p
+
+def directory_name(path):
+    return os.path.basename(os.path.normpath(path))

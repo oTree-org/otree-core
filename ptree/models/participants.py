@@ -13,7 +13,9 @@ class BaseParticipant(User):
     Base class for all participants.
     """
 
+    # starts from 1, not 0.
     index_among_participants_in_match = models.PositiveIntegerField(null = True)
+
     bonus = models.PositiveIntegerField(null=True)
 
     session_participant = models.ForeignKey(
@@ -50,8 +52,9 @@ class BaseParticipant(User):
         ordering = ['pk']
 
     def add_to_existing_match(self, match):
-        self.index_among_participants_in_match = match.participant_set.count()
         self.match = match
+        self.save()
+        self.index_among_participants_in_match = match.participant_set.count()
         self.save()
 
     def add_to_existing_or_new_match(self):

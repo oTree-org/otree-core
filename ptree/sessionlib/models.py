@@ -6,11 +6,23 @@ from ptree.common import id_label_name, add_params_to_url
 from ptree import constants
 from ptree.common import currency
 import ptree.common
+from ptree.common import directory_name
 
 class StubModel(models.Model):
     """To be used as the model for an empty form, so that form_class can be omitted."""
 
+class GlobalData(models.Model):
+    """object that can hold site-wide properties. There should only be one GlobalData object.
+    not yet used for anything.
+    """
+
+
 class Session(models.Model):
+
+    # the session type, as defined in the programmer's session.py.
+    type = models.CharField(max_length = 300, null = True, blank = True)
+
+    # label of this session instance
     label = models.CharField(max_length = 300, null = True, blank = True)
     code = RandomCharField(length=8)
 
@@ -19,6 +31,8 @@ class Session(models.Model):
         null=True,
         related_name='session',
     )
+
+
 
     first_subsession_content_type = models.ForeignKey(ContentType,
                                                       null=True,
@@ -47,6 +61,15 @@ class Session(models.Model):
         return currency(self.base_pay)
 
     base_pay_display.short_description = 'Base pay'
+
+    # whether it's a test session, demo session, etc.
+    special_category = models.CharField(max_length=20, null=True)
+
+    # whether someone already viewed this session's demo links
+    demo_already_used = models.BooleanField(default=False)
+
+    # indicates whether a session has been fully created (not only has the model itself been created, but also the other models in the hierarchy)
+    ready = models.BooleanField(default=False)
 
     def name(self):
         return id_label_name(self.pk, self.label)
@@ -138,6 +161,7 @@ class Session(models.Model):
         self.save()
 
     class Meta:
+        # if i don't set this, it could be in an unpredictable order
         ordering = ['pk']
 
 class SessionUser(models.Model):
@@ -260,10 +284,7 @@ class SessionParticipant(SessionUser):
     bonus_display.short_description = 'bonus'
 
     def bonus_is_complete(self):
-        for p in self.participants():
-            if p.bonus is None:
-                return False
-        return True
+        return all(p.bonus is not None for p in self.participants())
 
     def total_pay_display(self):
         try:
@@ -292,5 +313,4 @@ class SessionParticipant(SessionUser):
 
     class Meta:
         ordering = ['pk']
-
 

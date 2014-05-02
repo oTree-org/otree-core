@@ -2,8 +2,9 @@ from django.conf import settings
 from django.contrib.auth import models as auth_models
 from django.contrib.auth.management import create_superuser
 from django.db.models import signals
-
-from ptree.sessionlib.models import StubModel
+import ptree.constants
+from ptree.sessionlib.models import StubModel, GlobalData, Session
+from ptree.session import create_session, demo_enabled_session_types
 
 
 def create_default_superuser(app, created_models, verbosity, **kwargs):
@@ -42,8 +43,12 @@ if getattr(settings, 'CREATE_DEFAULT_SUPERUSER', False):
         dispatch_uid='common.models.create_testuser'
     )
 
-def create_stub_model(sender, **kwargs):
+def create_singleton_objects(sender, **kwargs):
     if sender.__name__ == 'django.contrib.auth.models':
-        StubModel().save()
+        for ModelClass in [StubModel, GlobalData]:
+            # if it doesn't already exist, create one.
+            if not ModelClass.objects.all().exists():
+                ModelClass().save()
 
-signals.post_syncdb.connect(create_stub_model)
+signals.post_syncdb.connect(create_singleton_objects)
+

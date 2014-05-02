@@ -10,7 +10,6 @@ user_code = 'user_code'
 subsession_code = 'subsession_code'
 subsession_code_obfuscated = 'exp_code'
 treatment_code = 'treatment_code'
-demo_code = 'demo_code'
 
 nickname = 'nickname'
 
@@ -45,3 +44,5 @@ user_type_participant = 'p'
 user_type_experimenter = 'e'
 success = True
 failure = False
+special_category_bots = 'bots'
+special_category_demo = 'demo'

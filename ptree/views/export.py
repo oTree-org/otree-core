@@ -242,6 +242,15 @@ def export(request, app_label):
             parent_object_data[fk_name][object.id] = get_member_values(object, member_names, callable_flags)
 
     rows = [column_headers[:]]
+
+    # make the CSV output look nicer and easier to work with in other apps
+    values_to_replace = {
+        None: '',
+        True: 1,
+        False: 0,
+    }
+    values_to_replace_keys = values_to_replace.keys()
+
     for participant in Participant.objects.all():
         member_names = export_data['Participant']['member_names'][:]
         callable_flags = export_data['Participant']['callable_flags'][:]
@@ -255,9 +264,15 @@ def export(request, app_label):
             else:
                 member_values += parent_object_data[fk_name][parent_object_id]
 
+
         for i in range(len(member_values)):
-            if member_values[i] is None:
-                member_values[i] = ''
+            if member_values[i] in values_to_replace_keys:
+                member_values[i] = values_to_replace[member_values[i]]
+
+        # replace line breaks since CSV does not handle line breaks well
+        member_values = [v.replace('\n',' ').replace('\r',' ') for v in member_values]
+
+
         member_values = [unicode(v).encode('UTF-8') for v in member_values]
 
         rows.append(member_values)

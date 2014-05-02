@@ -9,7 +9,7 @@ from ptree.views.abstract import (
 import ptree.forms
 from datetime import datetime
 from django.shortcuts import get_object_or_404, render_to_response
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
 import vanilla
 from django.utils.translation import ugettext as _
 import ptree.constants as constants
@@ -194,3 +194,4 @@ class InitializeSessionParticipant(vanilla.UpdateView):
         session_user.save()
 
         return HttpResponseRedirect(session_user.me_in_first_subsession.start_url())
+

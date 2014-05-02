@@ -1,12 +1,16 @@
 from django.utils.importlib import import_module
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
-from ptree.session import create_session
+from ptree.sessionlib.models import create_session
 import os.path
 import ptree.test.run
+import os
+from django.core.management import call_command
+from threading import Thread
+
 
 class Command(BaseCommand):
-    help = "pTree: Run the test bots for a session."
+    help = "pTree: Run the test bots for a session and take screenshots"
     args = '[session_name]'
 
     def handle(self, *args, **options):
@@ -19,11 +23,17 @@ class Command(BaseCommand):
         else:
             name = None
 
+        # need to run the web server so that we can generate screenshots
+        # not sure if this will terminate properly when the tests finish running. also, will the server run in time
+        # to take the screenshot?
+        t = Thread(target=call_command, args=('runserver',))
+        t.start()
+
         session = create_session(name)
         session.label = '{} [test]'.format(session.label)
         session.save()
 
-        ptree.test.run.run(session)
+        ptree.test.run.run(session, take_screenshots=True)
 
 
 

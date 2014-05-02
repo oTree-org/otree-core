@@ -2,11 +2,13 @@ from django.conf.urls import *
 from django.utils.importlib import import_module
 import inspect
 import vanilla
-from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.contrib import admin
-from django.core.urlresolvers import reverse
 from django.views.generic.base import RedirectView
+from django.conf import settings
+import ptree.constants
+from ptree.sessionlib.models import Session
+from ptree.session import create_session, demo_enabled_session_types
 
 
 
@@ -51,10 +53,12 @@ def augment_urlpatterns(urlpatterns):
         urlpatterns += url_patterns_from_module(views_module_name)
         urlpatterns += url_patterns_from_module(utilities_module_name)
     urlpatterns += url_patterns_from_module('ptree.views.concrete')
-    #urlpatterns += url_patterns_from_module('ptree.views.ajax_change_list')
+    urlpatterns += url_patterns_from_module('ptree.views.demo')
+
     urlpatterns += patterns(
         'ptree.views.ajax_change_list',
         url(r'^ajax/ptree-change-list-results/$', 'ajax_ptree_change_list_results', name='ajax_ptree_change_list_results'),
     )
 
     return urlpatterns
+

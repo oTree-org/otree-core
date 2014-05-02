@@ -2,17 +2,42 @@ import django.test.client
 import re
 import time
 import ptree.constants
-from urlparse import urlsplit
+from urlparse import urlsplit, urljoin
 import sys
+from selenium import webdriver
+import os.path
+import csv
 
 MAX_SECONDS_TO_WAIT = 10
 
+SERVER_URL = 'http://127.0.0.1:8000'
+
 class BaseClient(django.test.client.Client):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.response = None
+        self.url = None
         self.path = None
+        self.take_screenshots = kwargs['take_screenshots']
+        self.screenshot_dir = kwargs.get('screenshot_dir')
+        if self.take_screenshots:
+            self.launch_browser_for_screenshots()
+            csv_file = open(os.path.join(self.screenshot_dir, 'Index.csv'))
+            csv_fields = [
+                'filename',
+                'participant',
+                'app_label',
+                'subsession_id',
+                'page_name',
+                #'page_index'
+            ]
+            self.screenshot_csv_writer = csv.DictWriter(csv_file, csv_fields)
+            self.index_of_current_screenshot = 0
         super(BaseClient, self).__init__()
+
+    def launch_browser_for_screenshots(self):
+        self.browser = webdriver.Firefox()
+        self.browser.get(urljoin(SERVER_URL, self.user.start_url()))
 
     def _play(self, failure_queue):
         self.failure_queue = failure_queue
@@ -36,8 +61,7 @@ class BaseClient(django.test.client.Client):
             raise Exception('Response status code: {} (expected 200)'.format(self.response.status_code))
 
     def is_on(self, ViewClass):
-        _, _, path, _, _ = urlsplit(self.path)
-        return re.match(ViewClass.url_pattern(), path.lstrip('/'))
+        return re.match(ViewClass.url_pattern(), self.path.lstrip('/'))
 
     def assert_is_on(self, ViewClass):
         if not self.is_on(ViewClass):
@@ -46,8 +70,27 @@ class BaseClient(django.test.client.Client):
                 self.path
         ))
 
-    def submit(self, ViewClass, data=None):
 
+    def screenshot(self, ViewClass):
+
+        self.browser.get(urljoin(SERVER_URL, self.path))
+        self.index_of_current_screenshot += 1
+
+        filename = '{} - {}.png'.format(self.user.code, self.index_of_current_screenshot)
+
+        csv_row = {
+            'filename': filename,
+            'user': self.user.session_user.code,
+            'app_label': self.subsession.app_label,
+            'subsession_id': self.subsession.id,
+            'page_name': ViewClass.__name__,
+            # how do i get page index? do i even need it?
+            #'page_index': 1,
+        }
+
+        self.browser.save_screenshot(os.path.join(self.screenshot_dir, filename))
+
+    def _submit_core(self, ViewClass, data=None):
         data = data or {}
         self.assert_is_on(ViewClass)
         # if it's a waiting page, wait N seconds and retry
@@ -62,9 +105,17 @@ class BaseClient(django.test.client.Client):
             print '{}, {}'.format(self.path, data)
         else:
             print self.path
-        self.response = self.post(self.path, data, follow=True)
+        if self.take_screenshots:
+            self.screenshot(ViewClass)
+        self.response = self.post(self.url, data, follow=True)
         self.assert_200()
         self.set_path()
+
+    def submit(self, ViewClass, data=None):
+        self._submit_with_valid_input(ViewClass, data)
+
+    def _submit_with_valid_input(self, ViewClass, data=None):
+        self._submit_core(ViewClass, data)
 
         if self.page_redisplayed_with_errors():
             errors = ['{}: {}'.format(key, repr(value)) for key, value in self.response.context_data['form_or_formset'].errors.items()]
@@ -72,7 +123,6 @@ class BaseClient(django.test.client.Client):
                 ('Input was rejected.\n'
                 'Path: {}\n'
                 'Errors: {}\n').format(self.path, errors))
-
 
     def submit_with_invalid_input(self, ViewClass, data=None):
         self.submit(ViewClass, data)
@@ -84,7 +134,7 @@ class BaseClient(django.test.client.Client):
         # check if another thread has failed.
         if self.failure_queue.qsize() > 0:
             sys.exit(0)
-        self.response = self.get(self.path, follow=True)
+        self.response = self.get(self.url, follow=True)
         self.assert_200()
         self.set_path()
 
@@ -96,14 +146,15 @@ class BaseClient(django.test.client.Client):
 
     def set_path(self):
         try:
-            self.path = self.response.redirect_chain[-1][0]
+            self.url = self.response.redirect_chain[-1][0]
+            self.path = urlsplit(self.url).path
         except IndexError:
             pass
 
 
 class ParticipantBot(BaseClient):
 
-    def __init__(self, user):
+    def __init__(self, user, **kwargs):
         self.user = user
         self.participant = user
         self.match = self.participant.match
@@ -111,11 +162,11 @@ class ParticipantBot(BaseClient):
         # we assume the experimenter has assigned everyone to a treatment
         assert self.match and self.treatment
         self.subsession = self.participant.subsession
-        super(ParticipantBot, self).__init__()
+        super(ParticipantBot, self).__init__(**kwargs)
 
 class ExperimenterBot(BaseClient):
 
-    def __init__(self, subsession):
+    def __init__(self, subsession, **kwargs):
         self.user = subsession.experimenter
         self.subsession = subsession
-        super(ExperimenterBot, self).__init__()
+        super(ExperimenterBot, self).__init__(**kwargs)

@@ -1,14 +1,5 @@
-from django.utils.importlib import import_module
 from django.core.management.base import BaseCommand, CommandError
-from django.conf import settings
-import os.path
-
-def directory_name(path):
-    return os.path.basename(os.path.normpath(path))
-
-def create_session(name):
-    session_module = import_module('{}.{}'.format(directory_name(settings.BASE_DIR), 'session'))
-    return session_module.create(name)
+from ptree.session import create_session
 
 class Command(BaseCommand):
     help = "pTree: Create a session."
@@ -25,5 +16,3 @@ class Command(BaseCommand):
             name = None
 
         create_session(name)
-
-

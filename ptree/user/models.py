@@ -3,7 +3,6 @@ from django.contrib.contenttypes.models import ContentType
 
 from ptree.fields import RandomCharField
 from ptree.db import models
-import ptree.sessionlib.models
 import ptree.constants as constants
 from ptree.common import add_params_to_url
 
@@ -18,7 +17,7 @@ class User(models.Model):
         raise NotImplementedError()
 
     session = models.ForeignKey(
-        ptree.sessionlib.models.Session,
+        'sessionlib.Session',
         related_name = '%(app_label)s_%(class)s')
 
     index_in_pages = models.PositiveIntegerField(default=0)
@@ -54,7 +53,7 @@ class User(models.Model):
 class Experimenter(User):
 
     session_experimenter = models.ForeignKey(
-        ptree.sessionlib.models.SessionExperimenter,
+        'sessionlib.SessionExperimenter',
         null=True,
         related_name='experimenter'
     )
