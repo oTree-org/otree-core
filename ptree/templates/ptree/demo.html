@@ -6,6 +6,8 @@
 
 {% block content %}
 
+<p><i>(To login to the admin page, click <a href="/admin">here</a>.)</i></p>
+
 {% for s in session_info %}
 
         <h3><a href="{{ s.url }}" target="_blank">{{ s.type }}</a></h3>

@@ -37,7 +37,6 @@ def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
              'subsession_names',
              'start_links_link',
              'raw_participant_urls_link',
-             'magdeburg_start_urls_link',
              'payments_ready',
              'payments_link',
              'base_pay_display',
@@ -89,8 +88,11 @@ def get_list_display(Model, readonly_fields, first_fields=None):
              'last_request_succeeded',
             ],
         'Session':
-            ['name',
-             'hidden'],
+            [
+                'name',
+                'hidden',
+                'type',
+            ],
     }[Model.__name__]
 
     last_fields = {
@@ -158,6 +160,8 @@ def get_list_display(Model, readonly_fields, first_fields=None):
              'git_hash',
              'is_for_mturk',
              'base_pay',
+             'demo_already_used',
+             'ready',
              # don't hide the code, since it's useful as a checksum (e.g. if you're on the payments page)
              }
     }[Model.__name__]

@@ -40,7 +40,7 @@ def augment_urlpatterns(urlpatterns):
 
     urlpatterns += patterns(
         '',
-        url(r'^$', RedirectView.as_view(url='/admin')),
+        url(r'^$', RedirectView.as_view(url='/demo')),
         url(r'^admin/', include(admin.site.urls)),
         url(r'^export/(\w+)/$', 'ptree.views.export.export', name='ptree_views_export_export'),
         url(r'^export-list/$', 'ptree.views.export.export_list', name='ptree_views_export_export_list'),
