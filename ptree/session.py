@@ -74,7 +74,7 @@ def create_session(type, label='', special_category=None):
             experimenter.subsession = subsession
             experimenter.save()
 
-            subsession.experimenter = experimenter
+            subsession._experimenter = experimenter
             subsession.save()
             for i in range(session_type.num_participants):
                 participant = models_module.Participant(

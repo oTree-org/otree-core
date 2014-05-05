@@ -47,8 +47,8 @@ def run_subsession(subsession, take_screenshots, screenshot_dir):
 
 def run(session, take_screenshots=False):
     session_experimenter_bot = Client()
-    session_experimenter_bot.get(session.session_experimenter.start_url(), follow=True)
-    session_experimenter_bot.post(session.session_experimenter.start_url(), follow=True)
+    session_experimenter_bot.get(session.session_experimenter._start_url(), follow=True)
+    session_experimenter_bot.post(session.session_experimenter._start_url(), follow=True)
 
     if take_screenshots:
         time_stamp = datetime.now().strftime('%Y-%m-%d_%HH-%MM-%SS')
@@ -58,7 +58,7 @@ def run(session, take_screenshots=False):
 
     for participant in session.participants():
         bot = Client()
-        bot.get(participant.start_url(), follow=True)
+        bot.get(participant._start_url(), follow=True)
 
     for subsession in session.subsessions():
         run_subsession(subsession, take_screenshots, screenshot_dir)

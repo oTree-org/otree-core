@@ -37,7 +37,7 @@ class BaseClient(django.test.client.Client):
 
     def launch_browser_for_screenshots(self):
         self.browser = webdriver.Firefox()
-        self.browser.get(urljoin(SERVER_URL, self.user.start_url()))
+        self.browser.get(urljoin(SERVER_URL, self.user._start_url()))
 
     def _play(self, failure_queue):
         self.failure_queue = failure_queue
@@ -52,7 +52,7 @@ class BaseClient(django.test.client.Client):
 
     def start(self):
         # do i need to parse out the GET data into the data arg?
-        self.response = self.get(self.user.start_url(), follow=True)
+        self.response = self.get(self.user._start_url(), follow=True)
         self.set_path()
         self.assert_200()
 
@@ -80,7 +80,7 @@ class BaseClient(django.test.client.Client):
 
         csv_row = {
             'filename': filename,
-            'user': self.user.session_user.code,
+            'user': self.user._session_user.code,
             'app_label': self.subsession.app_label,
             'subsession_id': self.subsession.id,
             'page_name': ViewClass.__name__,
@@ -167,6 +167,6 @@ class ParticipantBot(BaseClient):
 class ExperimenterBot(BaseClient):
 
     def __init__(self, subsession, **kwargs):
-        self.user = subsession.experimenter
+        self.user = subsession._experimenter
         self.subsession = subsession
         super(ExperimenterBot, self).__init__(**kwargs)

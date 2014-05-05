@@ -78,10 +78,10 @@ class Demo(vanilla.View):
 
 
             return render_to_response(
-                'admin/StartLinks.html',
+                'ptree/admin/StartLinks.html',
                 {
-                    'experimenter_url': self.request.build_absolute_uri(session.session_experimenter.start_url()),
-                    'participant_urls': [self.request.build_absolute_uri(participant.start_url()) for participant in session.participants()],
+                    'experimenter_url': self.request.build_absolute_uri(session.session_experimenter._start_url()),
+                    'participant_urls': [self.request.build_absolute_uri(participant._start_url()) for participant in session.participants()],
                 }
             )
         else:

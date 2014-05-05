@@ -38,12 +38,12 @@ class User(models.Model):
                                                 'me_in_next_subsession_object_id',)
 
 
-    def start_url(self):
+    def _start_url(self):
         url = '/{}/{}/{}/{}/'.format(
-            self.session_user.user_type_in_url,
-            self.session_user.code,
+            self._session_user.user_type_in_url,
+            self._session_user.code,
             self.subsession.name_in_url,
-            self.init_view_name,
+            self._init_view_name,
         )
         return add_params_to_url(url, {constants.user_code: self.code})
 
@@ -66,11 +66,11 @@ class Experimenter(User):
                                            'subsession_object_id',
                                            )
 
-    init_view_name = 'InitializeExperimenter'
+    _init_view_name = 'InitializeExperimenter'
 
     @property
-    def session_user(self):
+    def _session_user(self):
         return self.session_experimenter
 
     def pages_as_urls(self):
-        return self.subsession.experimenter_pages_as_urls()
+        return self.subsession._experimenter_pages_as_urls()

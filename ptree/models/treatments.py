@@ -3,33 +3,31 @@ from ptree.fields import RandomCharField
 import ptree.constants as constants
 from ptree.common import id_label_name
 import ptree.sessionlib.models
+from importlib import import_module
 
-class BaseTreatment(models.Model):
+django_models = import_module('django.db.models')
+
+class BaseTreatment(django_models.Model):
     """
     Base class for all Treatments.
     """
 
-    label = models.CharField(max_length = 300, null = True, blank = True)
-
-    session = models.ForeignKey(ptree.sessionlib.models.Session,
-                                                null=True,
-                                                related_name = '%(app_label)s_%(class)s')
-
     # the treatment code in the URL. This is generated automatically.
-    code = RandomCharField(length=8)
+    _code = RandomCharField(length=8)
 
-    participants_per_match = models.PositiveIntegerField(default=1)
+
 
     @classmethod
     def create(cls, *args, **kwargs):
+        """public API, used in models.py"""
         return cls(*args, **kwargs)
 
     # 3/7/2014: get rid of this? we don't have URLs for treatments anymore.
-    def start_url(self):
+    def _start_url(self):
         """The URL that a user is redirected to in order to start a treatment"""
         return '/{}/Initialize/?{}={}'.format(self.subsession.name_in_url,
                                       constants.treatment_code,
-                                      self.code)
+                                      self._code)
 
     def name(self):
         return id_label_name(self.pk, self.label)
@@ -51,22 +49,13 @@ class BaseTreatment(models.Model):
         return self._participants
     """
 
-    def matches(self):
-        return list(self.match_set.all())
 
-    def participants(self):
-        return list(self.participant_set.all())
-
-    def pages(self):
-        raise NotImplementedError()
-
-
-    def next_open_match(self):
+    def _next_open_match(self):
         """Get the next match that is accepting participants.
         (or none if it does not exist)
         """
         try:
-            return (m for m in self.matches() if m.is_ready_for_next_participant()).next()
+            return (m for m in self.matches() if m._is_ready_for_next_participant()).next()
         except StopIteration:
             return None
 

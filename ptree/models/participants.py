@@ -13,27 +13,18 @@ class BaseParticipant(User):
     Base class for all participants.
     """
 
-    # starts from 1, not 0.
-    index_among_participants_in_match = models.PositiveIntegerField(null = True)
-
-    bonus = models.PositiveIntegerField(null=True)
-
-    session_participant = models.ForeignKey(
-        ptree.sessionlib.models.SessionParticipant,
-        related_name = '%(app_label)s_%(class)s'
-    )
-
     @property
-    def session_user(self):
+    def _session_user(self):
         return self.session_participant
 
+    # change this to _name? but do we think people will need to refer to names?
     def name(self):
         return self.session_participant.__unicode__()
 
     def __unicode__(self):
         return self.name()
 
-    init_view_name = 'InitializeParticipant'
+    _init_view_name = 'InitializeParticipant'
 
     def pages_as_urls(self):
         from ptree.views.concrete import WaitUntilAssignedToMatch
@@ -44,26 +35,26 @@ class BaseParticipant(User):
             # they wouldn't access this in the first place.
             # but this must still work if you look up an element.
             all_views = [WaitUntilAssignedToMatch] + self.treatment.pages()
-            return [View.url(self.session_user, index) for index, View in enumerate(all_views)]
-        return [WaitUntilAssignedToMatch.url(self.session_user, 0)]
+            return [View.url(self._session_user, index) for index, View in enumerate(all_views)]
+        return [WaitUntilAssignedToMatch.url(self._session_user, 0)]
 
     class Meta:
         abstract = True
         ordering = ['pk']
 
-    def add_to_existing_match(self, match):
+    def _add_to_existing_match(self, match):
         self.match = match
         self.save()
         self.index_among_participants_in_match = match.participant_set.count()
         self.save()
 
-    def add_to_existing_or_new_match(self):
+    def _add_to_existing_or_new_match(self):
         if not self.match:
             MatchClass = self._meta.get_field('match').rel.to
-            match = self.treatment.next_open_match() or MatchClass.create(self.treatment)
-            self.add_to_existing_match(match)
+            match = self.treatment._next_open_match() or MatchClass._create(self.treatment)
+            self._add_to_existing_match(match)
 
-    def pages_completed(self):
+    def _pages_completed(self):
         if not (self.treatment and self.visited):
             return None
         return '{}/{} pages'.format(self.index_in_pages,

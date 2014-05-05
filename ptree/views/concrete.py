@@ -92,12 +92,12 @@ class SessionExperimenterWaitUntilParticipantsAreAssigned(NonSequenceUrlMixin, W
         session_user_code = kwargs[constants.session_user_code]
         self.request.session[session_user_code] = {}
 
-        self.session_user = get_object_or_404(
+        self._session_user = get_object_or_404(
             ptree.sessionlib.models.SessionExperimenter,
             code=kwargs[constants.session_user_code]
         )
 
-        self.session = self.session_user.session
+        self.session = self._session_user.session
         page_action = self.validated_show_skip_wait()
 
         if self.request_is_from_wait_page():
@@ -105,7 +105,7 @@ class SessionExperimenterWaitUntilParticipantsAreAssigned(NonSequenceUrlMixin, W
         else:
             # if the participant shouldn't see this view, skip to the next
             if page_action == self.PageActions.skip:
-                return HttpResponseRedirect(self.session_user.me_in_first_subsession.start_url())
+                return HttpResponseRedirect(self._session_user.me_in_first_subsession._start_url())
             elif page_action == self.PageActions.wait:
                 return self.get_wait_page()
 
@@ -117,39 +117,39 @@ class InitializeSessionExperimenter(vanilla.View):
         return r'^InitializeSessionExperimenter/(?P<{}>[a-z]+)/$'.format(constants.session_user_code)
 
     def redirect_to_next_page(self):
-        return HttpResponseRedirect(SessionExperimenterWaitUntilParticipantsAreAssigned.url(self.session_user))
+        return HttpResponseRedirect(SessionExperimenterWaitUntilParticipantsAreAssigned.url(self._session_user))
 
     def get(self, *args, **kwargs):
         session_user_code = kwargs[constants.session_user_code]
         self.request.session[session_user_code] = {}
 
-        self.session_user = get_object_or_404(
+        self._session_user = get_object_or_404(
             ptree.sessionlib.models.SessionExperimenter,
             code=kwargs[constants.session_user_code]
         )
 
-        if self.session_user.session.participants_assigned_to_treatments_and_matches:
+        if self._session_user.session.participants_assigned_to_treatments_and_matches:
             return self.redirect_to_next_page()
         return render_to_response('ptree/experimenter/StartSession.html', {})
 
     def post(self, request, *args, **kwargs):
-        self.session_user = get_object_or_404(
+        self._session_user = get_object_or_404(
             ptree.sessionlib.models.SessionExperimenter,
             code=kwargs[constants.session_user_code]
         )
 
         # generate hash when the experimenter starts, rather than when the session was created
         # (since code is often updated after session created)
-        session = self.session_user.session
+        session = self._session_user.session
 
         #FIXME: this causes an error OSError child_exception
         #if not session.git_hash:
         #    session.git_hash = ptree.common.git_hash()
         #    session.save()
 
-        self.session_user.time_started = django.utils.timezone.now()
+        self._session_user.time_started = django.utils.timezone.now()
 
-        t = threading.Thread(target=session.assign_participants_to_treatments_and_matches)
+        t = threading.Thread(target=session._assign_participants_to_treatments_and_matches)
         t.start()
         return self.redirect_to_next_page()
 
@@ -164,7 +164,7 @@ class InitializeSessionParticipantMagdeburg(vanilla.View):
         session_user_code = self.request.GET[constants.session_user_code]
         session_user = get_object_or_404(ptree.sessionlib.models.SessionParticipant, code=session_user_code)
 
-        return HttpResponseRedirect(session_user.start_url())
+        return HttpResponseRedirect(session_user._start_url())
 
 
 
@@ -193,5 +193,5 @@ class InitializeSessionParticipant(vanilla.UpdateView):
 
         session_user.save()
 
-        return HttpResponseRedirect(session_user.me_in_first_subsession.start_url())
+        return HttpResponseRedirect(session_user.me_in_first_subsession._start_url())
 

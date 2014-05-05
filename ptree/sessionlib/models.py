@@ -103,7 +103,7 @@ class Session(models.Model):
             subsessions[i].next_subsession = subsessions[i + 1]
             subsessions[i + 1].previous_subsession = subsessions[i]
         for i, subsession in enumerate(subsessions):
-            subsession.index_in_subsessions = i
+            subsession._index_in_subsessions = i
             subsession.save()
         self.save()
 
@@ -154,9 +154,9 @@ class Session(models.Model):
         return True
     payments_ready.boolean = True
 
-    def assign_participants_to_treatments_and_matches(self):
+    def _assign_participants_to_treatments_and_matches(self):
         for subsession in self.subsessions():
-            subsession.assign_participants_to_treatments_and_matches()
+            subsession._assign_participants_to_treatments_and_matches()
         self.participants_assigned_to_treatments_and_matches = True
         self.save()
 
@@ -166,7 +166,7 @@ class Session(models.Model):
 
 class SessionUser(models.Model):
 
-    index_in_subsessions = models.PositiveIntegerField(default=0, null=True)
+    _index_in_subsessions = models.PositiveIntegerField(default=0, null=True)
 
     me_in_first_subsession_content_type = models.ForeignKey(ContentType,
                                                       null=True,
@@ -189,15 +189,15 @@ class SessionUser(models.Model):
     def subsessions_completed(self):
         if not self.visited:
             return None
-        return '{}/{} subsessions'.format(self.index_in_subsessions, len(self.session.subsessions()))
+        return '{}/{} subsessions'.format(self._index_in_subsessions, len(self.session.subsessions()))
 
-    def pages_completed_in_current_subsession(self):
-        return self.users()[self.index_in_subsessions].pages_completed()
+    def _pages_completed_in_current_subsession(self):
+        return self.users()[self._index_in_subsessions]._pages_completed()
 
     def current_subsession(self):
         if not self.visited:
             return None
-        return ptree.common.app_name_format(self.session.subsessions()[self.index_in_subsessions]._meta.app_label)
+        return ptree.common.app_name_format(self.session.subsessions()[self._index_in_subsessions]._meta.app_label)
 
     def users(self):
         """Used to calculate bonuses"""
@@ -224,7 +224,7 @@ class SessionUser(models.Model):
         abstract = True
 
 class SessionExperimenter(SessionUser):
-    def start_url(self):
+    def _start_url(self):
         return '/InitializeSessionExperimenter/{}/'.format(
             self.code
         )
@@ -232,17 +232,17 @@ class SessionExperimenter(SessionUser):
     def chain_experimenters(self):
         subsessions = self.session.subsessions()
 
-        self.me_in_first_subsession = subsessions[0].experimenter
+        self.me_in_first_subsession = subsessions[0]._experimenter
         self.save()
 
         for i in range(len(subsessions) - 1):
-            left_experimenter = subsessions[i].experimenter
-            right_experimenter = subsessions[i+1].experimenter
+            left_experimenter = subsessions[i]._experimenter
+            right_experimenter = subsessions[i+1]._experimenter
             left_experimenter.me_in_next_subsession = right_experimenter
             right_experimenter.me_in_previous_subsession = left_experimenter
         for subsession in subsessions:
-            subsession.experimenter.session_experimenter = self
-            subsession.experimenter.save()
+            subsession._experimenter.session_experimenter = self
+            subsession._experimenter.save()
 
     def experimenters(self):
         return self.users()
@@ -257,7 +257,7 @@ class SessionParticipant(SessionUser):
 
     user_type_in_url = constants.user_type_participant
 
-    def start_url(self):
+    def _start_url(self):
         return '/InitializeSessionParticipant/{}'.format(
             self.code
         )

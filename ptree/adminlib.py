@@ -26,7 +26,7 @@ def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
         'Participant':
            ['name',
             'link',
-            'pages_completed'],
+            '_pages_completed'],
         'Match':
             [],
         'Treatment':
@@ -45,7 +45,7 @@ def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
                 'start_link',
                 'subsessions_completed',
                 'current_subsession',
-                'pages_completed_in_current_subsession',
+                '_pages_completed_in_current_subsession',
                 'status'
             ],
     }[Model.__name__]
@@ -62,7 +62,7 @@ def get_list_display(Model, readonly_fields, first_fields=None):
             'treatment',
             'match',
             'visited',
-            'pages_completed'],
+            '_pages_completed'],
         'Match':
             ['id',
             'session',
@@ -82,7 +82,7 @@ def get_list_display(Model, readonly_fields, first_fields=None):
              'visited',
              'subsessions_completed',
              'current_subsession',
-             'pages_completed_in_current_subsession',
+             '_pages_completed_in_current_subsession',
              'current_page',
              'status',
              'last_request_succeeded',
@@ -138,11 +138,11 @@ def get_list_display(Model, readonly_fields, first_fields=None):
                 'previous_subsession_content_type',
                 'previous_subsession_object_id',
                 'previous_subsession',
-                'experimenter',
+                '_experimenter',
              },
         'SessionParticipant':
             {'id',
-            'index_in_subsessions',
+            '_index_in_subsessions',
             'label',
             'me_in_first_subsession_content_type',
             'me_in_first_subsession_object_id',
@@ -257,11 +257,13 @@ class PTreeBaseModelAdmin(admin.ModelAdmin):
                 pass
         return form
 
+CHANGE_LIST_TEMPLATE = "admin/ptree_change_list.html"
+
 class ParticipantAdmin(PTreeBaseModelAdmin):
-    change_list_template = "admin/ptree_change_list.html"
+    change_list_template = CHANGE_LIST_TEMPLATE
 
     def link(self, instance):
-        url = instance.start_url()
+        url = instance._start_url()
         return new_tab_link(url, 'Link')
 
     link.short_description = "Start link"
@@ -274,7 +276,7 @@ class ParticipantAdmin(PTreeBaseModelAdmin):
         return qs.filter(session__hidden=False)
 
 class MatchAdmin(PTreeBaseModelAdmin):
-    change_list_template = "admin/ptree_change_list.html"
+    change_list_template = CHANGE_LIST_TEMPLATE
 
     list_filter = [NonHiddenSessionListFilter, 'subsession', 'treatment']
     list_per_page = 40
@@ -284,7 +286,7 @@ class MatchAdmin(PTreeBaseModelAdmin):
         return qs.filter(session__hidden=False)
 
 class TreatmentAdmin(PTreeBaseModelAdmin):
-    change_list_template = "admin/ptree_change_list.html"
+    change_list_template = CHANGE_LIST_TEMPLATE
 
     list_filter = [NonHiddenSessionListFilter, 'subsession']
 
@@ -294,17 +296,17 @@ class TreatmentAdmin(PTreeBaseModelAdmin):
 
 
 class SubsessionAdmin(PTreeBaseModelAdmin):
-    change_list_template = "admin/ptree_change_list.html"
+    change_list_template = CHANGE_LIST_TEMPLATE
 
     def queryset(self, request):
         qs = super(SubsessionAdmin, self).queryset(request)
         return qs.filter(session__hidden=False)
 
     list_filter = [NonHiddenSessionListFilter]
-    list_editable = ['skip']
+    list_editable = ['_skip']
 
 class SessionParticipantAdmin(PTreeBaseModelAdmin):
-    change_list_template = "admin/ptree_change_list.html"
+    change_list_template = CHANGE_LIST_TEMPLATE
 
     list_filter = [NonHiddenSessionListFilter]
 
@@ -314,7 +316,7 @@ class SessionParticipantAdmin(PTreeBaseModelAdmin):
 
 
     def start_link(self, instance):
-        url = instance.start_url()
+        url = instance._start_url()
         return new_tab_link(url, 'Link')
     start_link.allow_tags = True
 
@@ -323,7 +325,7 @@ class SessionParticipantAdmin(PTreeBaseModelAdmin):
         return qs.filter(session__hidden=False)
 
 class SessionAdmin(PTreeBaseModelAdmin):
-    change_list_template = "admin/ptree_change_list.html"
+    change_list_template = CHANGE_LIST_TEMPLATE
 
     def get_urls(self):
         urls = super(SessionAdmin, self).get_urls()
@@ -337,15 +339,15 @@ class SessionAdmin(PTreeBaseModelAdmin):
 
     def participant_urls(self, request, session):
         participants = session.participants()
-        return [request.build_absolute_uri(participant.start_url()) for participant in participants]
+        return [request.build_absolute_uri(participant._start_url()) for participant in participants]
 
     def start_links(self, request, pk):
         session = self.model.objects.get(pk=pk)
 
         return render_to_response(
-            'admin/StartLinks.html',
+            'ptree/admin/StartLinks.html',
             {
-                'experimenter_url': request.build_absolute_uri(session.session_experimenter.start_url()),
+                'experimenter_url': request.build_absolute_uri(session.session_experimenter._start_url()),
                 'participant_urls': self.participant_urls(request, session),
             }
         )
@@ -416,7 +418,7 @@ class SessionAdmin(PTreeBaseModelAdmin):
             mean_payment = 0
 
 
-        return render_to_response('admin/Payments.html',
+        return render_to_response('ptree/admin/Payments.html',
                                   {'participants': participants,
                                   'total_payments': currency(total_payments),
                                   'mean_payment': currency(mean_payment),

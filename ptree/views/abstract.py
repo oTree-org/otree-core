@@ -93,17 +93,17 @@ class PTreeMixin(object):
         return context
 
     def page_the_user_should_be_on(self):
-        if self.session_user.index_in_subsessions > self.subsession.index_in_subsessions:
-            users = self.session_user.users()
+        if self._session_user._index_in_subsessions > self.subsession._index_in_subsessions:
+            users = self._session_user.users()
             try:
-                return users[self.session_user.index_in_subsessions].start_url()
+                return users[self._session_user._index_in_subsessions]._start_url()
             except IndexError:
                 from ptree.views.concrete import OutOfRangeNotification
-                return OutOfRangeNotification.url(self.session_user)
+                return OutOfRangeNotification.url(self._session_user)
         return self.user.pages_as_urls()[self.user.index_in_pages]
 
     def get_request_session(self):
-        return self.request.session[self.session_user.code]
+        return self.request.session[self._session_user.code]
 
 def load_session_user(dispatch_method):
     def wrapped(self, request, *args, **kwargs):
@@ -114,10 +114,10 @@ def load_session_user(dispatch_method):
         else:
             SessionUserClass = ptree.sessionlib.models.SessionExperimenter
 
-        self.session_user = get_object_or_404(SessionUserClass, code = session_user_code)
+        self._session_user = get_object_or_404(SessionUserClass, code = session_user_code)
         self.request_session = self.get_request_session().copy()
         response = dispatch_method(self, request, *args, **kwargs)
-        self.request.session[self.session_user.code] = copy.deepcopy(self.request_session)
+        self.request.session[self._session_user.code] = copy.deepcopy(self.request_session)
         return response
     return wrapped
 
@@ -148,7 +148,7 @@ class ParticipantMixin(object):
         self.treatment = self.participant.treatment
 
     def objects_to_save(self):
-        return [self.match, self.user, self.session_user]
+        return [self.match, self.user, self._session_user]
 
 class ExperimenterMixin(object):
 
@@ -157,7 +157,7 @@ class ExperimenterMixin(object):
 
     def objects_to_save(self):
         return (
-            [self.user, self.subsession, self.session_user]
+            [self.user, self.subsession, self._session_user]
         )
 
 class WaitPageMixin(object):
@@ -290,7 +290,7 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
             self.load_classes()
             self.load_objects()
 
-            if self.subsession.skip:
+            if self.subsession._skip:
                 self.update_index_in_subsessions()
                 return self.redirect_to_page_the_user_should_be_on()
 
@@ -303,13 +303,13 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
                 # then bring them back to where they should be
                 return self.redirect_to_page_the_user_should_be_on()
 
-            self.session_user.current_page = self.__class__.__name__
+            self._session_user.current_page = self.__class__.__name__
 
             # by default it's false (e.g. for GET requests), but can be set to True in post() method
             self.time_limit_was_exceeded = False
 
             page_action = self.validated_show_skip_wait()
-            self.session_user.is_on_wait_page = page_action == self.PageActions.wait
+            self._session_user.is_on_wait_page = page_action == self.PageActions.wait
 
             if self.request_is_from_wait_page():
                 response = self.response_to_wait_page(page_action)
@@ -323,15 +323,15 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
                     response = self.get_wait_page()
                 else:
                     response = super(SequenceMixin, self).dispatch(request, *args, **kwargs)
-            self.session_user.last_request_succeeded = True
+            self._session_user.last_request_succeeded = True
             self.save_objects()
             return response
         except Exception, e:
             if hasattr(self, 'user'):
                 user_info = 'user: {}'.format(model_to_dict(self.user))
-                if hasattr(self, 'session_user'):
-                    self.session_user.last_request_succeeded = False
-                    self.session_user.save()
+                if hasattr(self, '_session_user'):
+                    self._session_user.last_request_succeeded = False
+                    self._session_user.save()
             else:
                 user_info = '[user undefined]'
             diagnostic_info = (
@@ -383,8 +383,8 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
         return self.request.path == self.page_the_user_should_be_on()
 
     def update_index_in_subsessions(self):
-        if self.subsession.index_in_subsessions == self.session_user.index_in_subsessions:
-            self.session_user.index_in_subsessions += 1
+        if self.subsession._index_in_subsessions == self._session_user._index_in_subsessions:
+            self._session_user._index_in_subsessions += 1
 
     def update_indexes_in_sequences(self):
         if self.index_in_pages == self.user.index_in_pages:
@@ -413,7 +413,7 @@ class ModelFormMixin(object):
         self.post_processing_on_valid_form(form)
         self.after_valid_form_submission()
         self.update_indexes_in_sequences()
-        return HttpResponseRedirect(self.session_user.get_success_url())
+        return HttpResponseRedirect(self._session_user.get_success_url())
 
 class ModelFormSetMixin(object):
     """mixin rather than subclass because we want these methods only to be first in MRO"""
@@ -445,7 +445,7 @@ class ModelFormSetMixin(object):
         # for now, just rely on object_list until there is a need for a special method.
         self.after_valid_form_submission()
         self.update_indexes_in_sequences()
-        return HttpResponseRedirect(self.session_user.get_success_url())
+        return HttpResponseRedirect(self._session_user.get_success_url())
 
 
 class ParticipantSequenceMixin(SequenceMixin):
@@ -648,13 +648,13 @@ class InitializeExperimenter(InitializeParticipantOrExperimenter):
         if len(urls) > 0:
             url = urls[0]
         else:
-            if self.user.subsession.index_in_subsessions == self.session_user.index_in_subsessions:
-                self.session_user.index_in_subsessions += 1
-                self.session_user.save()
+            if self.user.subsession._index_in_subsessions == self._session_user._index_in_subsessions:
+                self._session_user._index_in_subsessions += 1
+                self._session_user.save()
             me_in_next_subsession = self.user.me_in_next_subsession
             if me_in_next_subsession:
-                url = me_in_next_subsession.start_url()
+                url = me_in_next_subsession._start_url()
             else:
                 from ptree.views.concrete import OutOfRangeNotification
-                url = OutOfRangeNotification.url(self.session_user)
+                url = OutOfRangeNotification.url(self._session_user)
         return HttpResponseRedirect(url)
