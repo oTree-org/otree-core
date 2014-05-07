@@ -1,11 +1,4 @@
-from ptree.db import models
-import ptree.constants as constants
-from ptree.common import currency
-import ptree.sessionlib.models
-from ptree.common import add_params_to_url
-import ptree.models.subsessions
 from ptree.user.models import User
-import ptree.common
 
 
 class BaseParticipant(User):
@@ -40,7 +33,6 @@ class BaseParticipant(User):
 
     class Meta:
         abstract = True
-        ordering = ['pk']
 
     def _add_to_existing_match(self, match):
         self.match = match

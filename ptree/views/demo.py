@@ -5,6 +5,7 @@ import ptree.constants as constants
 from ptree.sessionlib.models import Session
 from ptree.session import create_session, demo_enabled_session_types, session_types_as_dict
 import threading
+import time
 
 class DemoIndex(vanilla.View):
 
@@ -26,6 +27,7 @@ class DemoIndex(vanilla.View):
         return render_to_response('ptree/demo.html', {'session_info': session_info})
 
 def ensure_enough_spare_sessions(type):
+    time.sleep(5)
     DESIRED_SPARE_SESSIONS = 3
 
     spare_sessions = Session.objects.filter(
@@ -33,6 +35,7 @@ def ensure_enough_spare_sessions(type):
         type=type,
         demo_already_used=False,
     ).count()
+
 
     # fill in whatever gap exists. want at least 3 sessions waiting.
     for i in range(DESIRED_SPARE_SESSIONS - spare_sessions):
@@ -43,6 +46,7 @@ def ensure_enough_spare_sessions(type):
         )
 
 def get_session(type):
+
     sessions = Session.objects.filter(
         special_category=constants.special_category_demo,
         type=type,

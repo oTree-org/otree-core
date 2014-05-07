@@ -130,6 +130,7 @@ class BaseClient(django.test.client.Client):
         if not self.page_redisplayed_with_errors():
             raise Exception('Invalid input was accepted. Path: {}, data: {}'.format(self.path, data))
 
+
     def retry_wait_page(self):
         # check if another thread has failed.
         if self.failure_queue.qsize() > 0:

@@ -1,29 +1,31 @@
 from importlib import import_module
 forms_internal = import_module('ptree.forms_internal')
 
-
-class _FormsPublicApiMixin(object):
+class Form(forms_internal.ParticipantModelForm):
 
     def initial_values(self):
-        """Return a dict of any initial values"""
-        return {}
+        return super(Form, self).initial_values()
 
     def choices(self):
-        return {}
+        return super(Form, self).choices()
 
     def labels(self):
-        return {}
+        return super(Form, self).labels()
 
     def order(self):
-        pass
+        return super(Form, self).order()
 
-class Form(_FormsPublicApiMixin, forms_internal.ParticipantModelForm):
-    pass
 
-class ExperimenterForm(_FormsPublicApiMixin, forms_internal.ExperimenterModelForm):
-    pass
+class ExperimenterForm(forms_internal.ExperimenterModelForm):
 
-__all__ = (
-    'Form',
-    'ExperimenterForm',
-)
+    def initial_values(self):
+        return super(ExperimenterForm, self).initial_values()
+
+    def choices(self):
+        return super(ExperimenterForm, self).choices()
+
+    def labels(self):
+        return super(ExperimenterForm, self).labels()
+
+    def order(self):
+        return super(ExperimenterForm, self).order()

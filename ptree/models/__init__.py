@@ -1,7 +1,6 @@
-from ptree.db import models
 from django.contrib.contenttypes import generic
 from ptree.sessionlib.models import Session, SessionParticipant
-
+from ptree.db import models
 from importlib import import_module
 
 subsessions = import_module('ptree.models.subsessions')
@@ -42,6 +41,7 @@ class BaseSubsession(subsessions.BaseSubsession):
 
     class Meta:
         abstract = True
+        ordering = ['pk']
 
 class BaseTreatment(treatments.BaseTreatment):
 
@@ -66,6 +66,7 @@ class BaseTreatment(treatments.BaseTreatment):
 
     class Meta:
         abstract = True
+        ordering = ['pk']
 
 class BaseMatch(matches.BaseMatch):
     session = models.ForeignKey(
@@ -76,6 +77,12 @@ class BaseMatch(matches.BaseMatch):
     def participants(self):
         return list(self.participant_set.all())
 
+    class Meta:
+        abstract = True
+        verbose_name_plural = "matches"
+        ordering = ['pk']
+
+class BaseParticipant(participants.BaseParticipant):
     # starts from 1, not 0.
     index_among_participants_in_match = models.PositiveIntegerField(null = True)
 
@@ -85,3 +92,7 @@ class BaseMatch(matches.BaseMatch):
         SessionParticipant,
         related_name = '%(app_label)s_%(class)s'
     )
+
+    class Meta:
+        abstract = True
+        ordering = ['pk']

@@ -4,12 +4,9 @@ import ptree.views
 import ptree.forms
 
 class ParticipantMixin(object):
-    TreatmentClass = models.Treatment
-    MatchClass = models.Match
-    ParticipantClass = models.Participant
-    SubsessionClass = models.Subsession
+    z_models = models
 
-    def for_IDE_autocomplete(self):
+    def z_autocomplete(self):
         self.subsession = models.Subsession()
         self.treatment = models.Treatment()
         self.match = models.Match()
@@ -17,12 +14,9 @@ class ParticipantMixin(object):
 
 class ExperimenterMixin(object):
 
-    TreatmentClass = models.Treatment
-    MatchClass = models.Match
-    ParticipantClass = models.Participant
-    SubsessionClass = models.Subsession
+    z_models = models
 
-    def for_IDE_autocomplete(self):
+    def z_autocomplete(self):
         self.subsession = models.Subsession()
 
 class InitializeParticipant(ParticipantMixin, ptree.views.InitializeParticipant):

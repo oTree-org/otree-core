@@ -6,7 +6,7 @@ from ptree.views.abstract import (
     load_session_user,
     WaitPageMixin,
 )
-import ptree.forms
+
 from datetime import datetime
 from django.shortcuts import get_object_or_404, render_to_response
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
@@ -15,7 +15,6 @@ from django.utils.translation import ugettext as _
 import ptree.constants as constants
 import ptree.sessionlib.models
 import ptree.common
-import ptree.models.participants
 import django.utils.timezone
 import threading
 

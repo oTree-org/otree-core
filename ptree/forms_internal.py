@@ -32,6 +32,20 @@ class BaseModelForm(forms.ModelForm):
                 )
             )
 
+    def initial_values(self):
+        """Return a dict of any initial values"""
+        return {}
+
+    def choices(self):
+        return {}
+
+    def labels(self):
+        return {}
+
+    def order(self):
+        pass
+
+
     def __init__(self, *args, **kwargs):
         """
         Special handling for 'choices' argument, NullBooleanFields, and initial choice:

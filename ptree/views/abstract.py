@@ -19,14 +19,13 @@ from django.utils.translation import ugettext as _
 from django.forms.models import model_to_dict
 
 import ptree.constants as constants
-from ptree.forms import StubModelForm, ExperimenterStubModelForm
+from ptree.forms_internal import StubModelForm, ExperimenterStubModelForm
 import ptree.sessionlib.models as seq_models
 import ptree.sessionlib.models
 import ptree.common
 
-import ptree.models.participants
 import ptree.user.models
-import ptree.forms
+import ptree.forms_internal
 from ptree.user.models import Experimenter
 import copy
 import django.utils.timezone
@@ -41,12 +40,14 @@ class PTreeMixin(object):
     so you can access view.treatment, self.match, self.participant, etc.
     """
 
-
     def load_classes(self):
         """
         Even though we only use ParticipantClass in load_objects,
         we use {Match/Treatment/Subsession}Class elsewhere.
+        We don't need this as long as people have the correct mixins,
+        but it's likely that people will forget to put the mixin.
         """
+
         self.SubsessionClass = self.request_session.get(constants.SubsessionClass)
         self.TreatmentClass = self.request_session.get(constants.TreatmentClass)
         self.ParticipantClass = self.request_session.get(constants.ParticipantClass)
@@ -72,8 +73,9 @@ class PTreeMixin(object):
         # look for name_in_url attribute on SubsessionClass
         # if it's not part of a game, but rather a shared module etc, SubsessionClass won't exist.
         # in that case, name_in_url needs to be defined on the class.
-        return getattr(cls, 'SubsessionClass', cls).name_in_url
-
+        if hasattr(cls, 'z_models'):
+            return cls.z_models.Subsession.name_in_url
+        return cls.name_in_url
 
     def redirect_to_page_the_user_should_be_on(self):
         """Redirect to where the participant should be,
@@ -425,7 +427,7 @@ class ModelFormSetMixin(object):
         if len(formset.forms) >= 1:
             formset.helper = formset.forms[0].helper
         else:
-            formset.helper = ptree.forms.FormHelper()
+            formset.helper = ptree.forms_internal.FormHelper()
         return formset
 
     def after_valid_form_submission(self):
@@ -554,7 +556,7 @@ class InitializeParticipantOrExperimenter(NonSequenceUrlMixin, vanilla.View):
     def get_name_in_url(cls):
         """urls.py requires that each view know its own URL.
         a URL base is the first part of the path, usually the name of the game"""
-        return cls.SubsessionClass.name_in_url
+        return cls.z_models.Subsession.name_in_url
 
     def initialize_time_limits(self):
         self.request_session[constants.page_expiration_times] = {}
@@ -567,10 +569,10 @@ class InitializeParticipantOrExperimenter(NonSequenceUrlMixin, vanilla.View):
         some Views are in a shared module and therefore can be bound to different Subsessions, Treatments, etc.
         """
 
-        self.request_session[constants.SubsessionClass] = self.SubsessionClass
-        self.request_session[constants.TreatmentClass] = self.TreatmentClass
-        self.request_session[constants.ParticipantClass] = self.ParticipantClass
-        self.request_session[constants.MatchClass] = self.MatchClass
+        self.request_session[constants.SubsessionClass] = self.z_models.Subsession
+        self.request_session[constants.TreatmentClass] = self.z_models.Treatment
+        self.request_session[constants.ParticipantClass] = self.z_models.Participant
+        self.request_session[constants.MatchClass] = self.z_models.Match
 
     def get_request_session(self):
         return {}
@@ -590,7 +592,7 @@ class InitializeParticipant(InitializeParticipantOrExperimenter):
 
         user_code = self.request.GET.get(constants.user_code)
 
-        self.user = get_object_or_404(self.ParticipantClass, code = user_code)
+        self.user = get_object_or_404(self.z_models.Participant, code = user_code)
         # self.user is a generic name for self.participant
         # they are the same thing, but we use 'user' wherever possible
         # so that the code can be copy pasted to experimenter code
@@ -608,7 +610,7 @@ class InitializeParticipant(InitializeParticipantOrExperimenter):
 
     def get_next_participant_in_subsession(self):
         try:
-            return self.ParticipantClass.objects.filter(
+            return self.z_models.Participant.objects.filter(
                 subsession=self.subsession,
                 visited=False)[0]
         except IndexError:
@@ -616,7 +618,7 @@ class InitializeParticipant(InitializeParticipantOrExperimenter):
 
     def persist_classes(self):
         super(InitializeParticipant, self).persist_classes()
-        self.request_session[constants.UserClass] = self.ParticipantClass
+        self.request_session[constants.UserClass] = self.z_models.Participant
 
 class InitializeExperimenter(InitializeParticipantOrExperimenter):
     """

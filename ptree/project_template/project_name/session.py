@@ -1,10 +1,16 @@
-import ptree.session
+from ptree.session import SessionType
 
-#FIXME: this needs to change to the new SessionType format
-def create(name):
-    return ptree.session.create(
-        label='',
+session_types = [
+    SessionType(
+        name='Magdeburg_Jan_2014',
         base_pay=0,
         num_participants=3,
-        subsession_names= ['myapp']
-    )
+        subsession_apps=[
+            'myapp',
+        ],
+        enable_demo=True,
+        doc="""
+        Description of this session type.
+        """
+    ),
+]

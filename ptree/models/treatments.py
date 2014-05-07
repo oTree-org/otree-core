@@ -62,4 +62,3 @@ class BaseTreatment(django_models.Model):
 
     class Meta:
         abstract = True
-        ordering = ['pk']
