@@ -11,7 +11,9 @@ class User(models.Model):
     # the participant's unique ID (and redemption code) that gets passed in the URL.
     code = RandomCharField(length = 8)
 
-    visited = models.BooleanField(default=False)
+    visited = models.BooleanField(default=False,
+          doc="""Whether this user's start URL was opened"""
+                                  )
 
     def pages_as_urls(self):
         raise NotImplementedError()
@@ -22,21 +24,15 @@ class User(models.Model):
 
     index_in_pages = models.PositiveIntegerField(default=0)
 
-    # 2/12/2014: i think the previous pointer is unnecessary because i can traverse via the reverse relation of the "next" pointer
     me_in_previous_subsession_content_type = models.ForeignKey(ContentType,
                                                       null=True,
                                                       related_name = '%(app_label)s_%(class)s_previous')
     me_in_previous_subsession_object_id = models.PositiveIntegerField(null=True)
-    me_in_previous_subsession = generic.GenericForeignKey('me_in_previous_subsession_content_type',
-                                                'me_in_previous_subsession_object_id',)
 
     me_in_next_subsession_content_type = models.ForeignKey(ContentType,
                                                       null=True,
                                                       related_name = '%(app_label)s_%(class)s_next')
     me_in_next_subsession_object_id = models.PositiveIntegerField(null=True)
-    me_in_next_subsession = generic.GenericForeignKey('me_in_next_subsession_content_type',
-                                                'me_in_next_subsession_object_id',)
-
 
     def _start_url(self):
         url = '/{}/{}/{}/{}/'.format(
@@ -65,6 +61,14 @@ class Experimenter(User):
     subsession = generic.GenericForeignKey('subsession_content_type',
                                            'subsession_object_id',
                                            )
+
+    # me_in_previous_subsession and me_in_next_subsession are duplicated between this model and BaseParticipant model,
+    # to make autocomplete work
+    me_in_previous_subsession = generic.GenericForeignKey('me_in_previous_subsession_content_type',
+                                                'me_in_previous_subsession_object_id',)
+
+    me_in_next_subsession = generic.GenericForeignKey('me_in_next_subsession_content_type',
+                                                'me_in_next_subsession_object_id',)
 
     _init_view_name = 'InitializeExperimenter'
 

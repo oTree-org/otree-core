@@ -84,14 +84,28 @@ class BaseMatch(matches.BaseMatch):
 
 class BaseParticipant(participants.BaseParticipant):
     # starts from 1, not 0.
-    index_among_participants_in_match = models.PositiveIntegerField(null = True)
+    index_among_participants_in_match = models.PositiveIntegerField(
+        null = True,
+        doc="Index starting from 1. In multiplayer games, indicates whether this is participant 1, participant 2, etc."
+    )
 
-    bonus = models.PositiveIntegerField(null=True)
+    bonus = models.PositiveIntegerField(
+        null=True,
+        doc="""The bonus the participant made in this subsession, in cents"""
+    )
 
     session_participant = models.ForeignKey(
         SessionParticipant,
         related_name = '%(app_label)s_%(class)s'
     )
+
+    # me_in_previous_subsession and me_in_next_subsession are duplicated between this model and experimenter model,
+    # to make autocomplete work
+    me_in_previous_subsession = generic.GenericForeignKey('me_in_previous_subsession_content_type',
+                                                'me_in_previous_subsession_object_id',)
+
+    me_in_next_subsession = generic.GenericForeignKey('me_in_next_subsession_content_type',
+                                                'me_in_next_subsession_object_id',)
 
     class Meta:
         abstract = True

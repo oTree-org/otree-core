@@ -19,8 +19,10 @@ class GlobalData(models.Model):
 
 class Session(models.Model):
 
-    # the session type, as defined in the programmer's session.py.
-    type = models.CharField(max_length = 300, null = True, blank = True)
+    #
+    type = models.CharField(max_length = 300, null = True, blank = True,
+        doc="""the session type, as defined in the programmer's session.py."""
+    )
 
     # label of this session instance
     label = models.CharField(max_length = 300, null = True, blank = True)
@@ -48,8 +50,10 @@ class Session(models.Model):
 
     git_hash = models.CharField(max_length=200, null=True)
 
-    # how much people are getting paid to perform it
-    base_pay = models.PositiveIntegerField()
+    #
+    base_pay = models.PositiveIntegerField(
+        doc="""Show-up fee, in cents"""
+    )
 
     comment = models.TextField()
 
@@ -62,8 +66,10 @@ class Session(models.Model):
 
     base_pay_display.short_description = 'Base pay'
 
-    # whether it's a test session, demo session, etc.
-    special_category = models.CharField(max_length=20, null=True)
+    #
+    special_category = models.CharField(max_length=20, null=True,
+        doc="""whether it's a test session, demo session, etc."""
+    )
 
     # whether someone already viewed this session's demo links
     demo_already_used = models.BooleanField(default=False)
@@ -178,7 +184,10 @@ class SessionUser(models.Model):
 
     last_request_succeeded = models.NullBooleanField(verbose_name='Health of last server request')
 
-    visited = models.BooleanField(default=False)
+    visited = models.BooleanField(default=False,
+        doc="""Whether this user's start URL was opened"""
+    )
+
     ip_address = models.IPAddressField(null = True)
     time_started = models.DateTimeField(null=True)
 

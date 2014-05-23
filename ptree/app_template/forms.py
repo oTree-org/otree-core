@@ -13,9 +13,9 @@ class MyForm(ParticipantMixin, ptree.forms.Form):
         model = models.Participant
         fields = ['my_field']
 
-    def validate_my_field(self, value):
+    def my_field_error(self, value):
         if not self.treatment.your_method_here(value):
-            raise ValidationError('Invalid input')
+            return 'Error message goes here'
 
     def labels(self):
         return {}

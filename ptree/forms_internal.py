@@ -136,11 +136,19 @@ class BaseModelForm(forms.ModelForm):
                 else:
                     value = field.clean(value)
                 self.cleaned_data[name] = value
+                if hasattr(self, '%s_error_message' % name):
+                    error_string = getattr(self, '%s_error_message' % name)(value)
+                    if error_string:
+                        self._errors[name] = self.error_class([error_string])
+                        if name in self.cleaned_data:
+                            del self.cleaned_data[name]
+                # TODO: this is deprecated, since I added %s_error_message. remove it as soon as possible.
                 if hasattr(self, 'validate_%s' % name):
                     getattr(self, 'validate_%s' % name)(value)
                 if hasattr(self, 'clean_%s' % name):
                     value = getattr(self, 'clean_%s' % name)()
                     self.cleaned_data[name] = value
+
             except forms.ValidationError as e:
                 self._errors[name] = self.error_class(e.messages)
                 if name in self.cleaned_data:

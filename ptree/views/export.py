@@ -269,11 +269,14 @@ def export(request, app_label):
             if member_values[i] in values_to_replace_keys:
                 member_values[i] = values_to_replace[member_values[i]]
 
-        # replace line breaks since CSV does not handle line breaks well
-        member_values = [v.replace('\n',' ').replace('\r',' ') for v in member_values]
+
+
 
 
         member_values = [unicode(v).encode('UTF-8') for v in member_values]
+
+        # replace line breaks since CSV does not handle line breaks well
+        member_values = [v.replace('\n',' ').replace('\r',' ') for v in member_values]
 
         rows.append(member_values)
 

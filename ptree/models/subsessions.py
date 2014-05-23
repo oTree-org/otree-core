@@ -42,7 +42,7 @@ class BaseSubsession(models.Model):
     _skip = models.BooleanField(default=False)
 
     def name(self):
-        return id_label_name(self.pk, self.label)
+        return str(self.pk)
 
     def __unicode__(self):
         return self.name()
