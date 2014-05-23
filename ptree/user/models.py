@@ -15,12 +15,13 @@ class User(models.Model):
           doc="""Whether this user's start URL was opened"""
                                   )
 
-    def pages_as_urls(self):
+    def _pages_as_urls(self):
         raise NotImplementedError()
 
     session = models.ForeignKey(
         'sessionlib.Session',
         related_name = '%(app_label)s_%(class)s')
+
 
     index_in_pages = models.PositiveIntegerField(default=0)
 
@@ -76,5 +77,5 @@ class Experimenter(User):
     def _session_user(self):
         return self.session_experimenter
 
-    def pages_as_urls(self):
+    def _pages_as_urls(self):
         return self.subsession._experimenter_pages_as_urls()

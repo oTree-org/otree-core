@@ -19,17 +19,16 @@ class BaseParticipant(User):
 
     _init_view_name = 'InitializeParticipant'
 
-    def pages_as_urls(self):
+    def _pages(self):
+        """if a user really wants to make the pages dynamic, more than is possible with show_skip_wait, they can override this method.
+        """
+        views_module = self.subsession._views_module()
+        return views_module.pages()
+
+    def _pages_as_urls(self):
         from ptree.views.concrete import WaitUntilAssignedToMatch
-        if self.treatment:
-            # 2/11/2014: start at 1 because i added the wait page (until assigned to match)
-            # maybe should clean this up.
-            # 2/22/2014: i shouldn't have WaitUntilAssignedToMatch because if they were assigned to a match & treatment,
-            # they wouldn't access this in the first place.
-            # but this must still work if you look up an element.
-            all_views = [WaitUntilAssignedToMatch] + self.treatment.pages()
-            return [View.url(self._session_user, index) for index, View in enumerate(all_views)]
-        return [WaitUntilAssignedToMatch.url(self._session_user, 0)]
+        all_views = [WaitUntilAssignedToMatch] + self._pages()
+        return [View.url(self._session_user, index) for index, View in enumerate(all_views)]
 
     class Meta:
         abstract = True
@@ -49,5 +48,7 @@ class BaseParticipant(User):
     def _pages_completed(self):
         if not (self.treatment and self.visited):
             return None
-        return '{}/{} pages'.format(self.index_in_pages,
-                            len(self.treatment.pages()))
+        return '{}/{} pages'.format(
+            self.index_in_pages,
+            len(self._pages())
+        )

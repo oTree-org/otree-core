@@ -10,19 +10,8 @@ class Subsession(ptree.models.BaseSubsession):
 
     name_in_url = '{{ app_name }}'
 
-    def experimenter_pages(self):
-        import {{ app_name }}.views as views
-        return []
-
 class Treatment(ptree.models.BaseTreatment):
     subsession = models.ForeignKey(Subsession)
-
-    def pages(self):
-    
-        import {{ app_name }}.views as views
-        return [
-            views.MyView
-        ]
 
 class Match(ptree.models.BaseMatch):
 

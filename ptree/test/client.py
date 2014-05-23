@@ -81,7 +81,7 @@ class BaseClient(django.test.client.Client):
         csv_row = {
             'filename': filename,
             'user': self.user._session_user.code,
-            'app_label': self.subsession.app_label,
+            'app_name': self.subsession.app_name,
             'subsession_id': self.subsession.id,
             'page_name': ViewClass.__name__,
             # how do i get page index? do i even need it?

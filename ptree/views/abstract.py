@@ -102,7 +102,7 @@ class PTreeMixin(object):
             except IndexError:
                 from ptree.views.concrete import OutOfRangeNotification
                 return OutOfRangeNotification.url(self._session_user)
-        return self.user.pages_as_urls()[self.user.index_in_pages]
+        return self.user._pages_as_urls()[self.user.index_in_pages]
 
     def get_request_session(self):
         return self.request.session[self._session_user.code]
@@ -391,7 +391,7 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
     def update_indexes_in_sequences(self):
         if self.index_in_pages == self.user.index_in_pages:
             self.user.index_in_pages += 1
-            if self.user.index_in_pages >= len(self.user.pages_as_urls()):
+            if self.user.index_in_pages >= len(self.user._pages_as_urls()):
                 self.update_index_in_subsessions()
 
     def form_invalid(self, form):
@@ -606,7 +606,7 @@ class InitializeParticipant(InitializeParticipantOrExperimenter):
         self.request_session[constants.user_code] = self.user.code
 
         self.persist_classes()
-        return HttpResponseRedirect(self.user.pages_as_urls()[0])
+        return HttpResponseRedirect(self.user._pages_as_urls()[0])
 
     def get_next_participant_in_subsession(self):
         try:
@@ -646,7 +646,7 @@ class InitializeExperimenter(InitializeParticipantOrExperimenter):
 
         self.persist_classes()
 
-        urls = self.user.pages_as_urls()
+        urls = self.user._pages_as_urls()
         if len(urls) > 0:
             url = urls[0]
         else:

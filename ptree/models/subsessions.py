@@ -10,7 +10,7 @@ import ptree.constants as constants
 
 from ptree.common import id_label_name
 import ptree.user.models
-
+from django.utils.importlib import import_module
 
 class BaseSubsession(models.Model):
     """
@@ -40,6 +40,9 @@ class BaseSubsession(models.Model):
     _index_in_subsessions = models.PositiveIntegerField(null=True)
 
     _skip = models.BooleanField(default=False)
+
+    def _views_module(self):
+        return import_module('{}.views'.format(self.app_name))
 
     def name(self):
         return str(self.pk)
@@ -95,36 +98,20 @@ class BaseSubsession(models.Model):
             participant._add_to_existing_or_new_match()
             participant.save()
 
-
-    """
-    def treatments(self):
-        if hasattr(self, '_treatments'):
-            return self._treatments
-        self._treatments = list(self.treatment_set.all())
-        return self._treatments
-
-    def matches(self):
-        if hasattr(self, '_matches'):
-            return self._matches
-        self._matches = list(self.match_set.all())
-        return self._matches
-
-    def participants(self):
-        if hasattr(self, '_participants'):
-            return self._participants
-        self._participants = list(self.participant_set.all())
-        return self._participants
-    """
-
+    def _experimenter_pages(self):
+        views_module = self._views_module()
+        if hasattr(views_module, 'experimenter_pages'):
+            return views_module.experimenter_pages()
+        return []
 
     def _experimenter_pages_as_urls(self):
         """Converts the sequence to URLs.
 
         e.g.:
-        sequence() returns something like [views.IntroPage, ...]
+        pages() returns something like [views.IntroPage, ...]
         pages_as_urls() returns something like ['mygame/IntroPage', ...]
         """
-        return [View.url(self._experimenter.session_experimenter, index) for index, View in enumerate(self.experimenter_pages())]
+        return [View.url(self._experimenter.session_experimenter, index) for index, View in enumerate(self._experimenter_pages())]
 
     class Meta:
         abstract = True

@@ -27,5 +27,9 @@ class MyPage(ParticipantMixin, ptree.views.Page):
         this can be left blank or omitted."""
 
 class ExperimenterPage(ExperimenterMixin, ptree.views.ExperimenterPage):
-
     pass
+
+def pages():
+    return [
+        MyPage
+    ]

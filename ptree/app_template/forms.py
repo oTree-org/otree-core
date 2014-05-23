@@ -13,7 +13,7 @@ class MyForm(ParticipantMixin, ptree.forms.Form):
         model = models.Participant
         fields = ['my_field']
 
-    def my_field_error(self, value):
+    def my_field_error_message(self, value):
         if not self.treatment.your_method_here(value):
             return 'Error message goes here'
 

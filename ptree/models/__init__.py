@@ -16,6 +16,9 @@ class BaseSubsession(subsessions.BaseSubsession):
         null=True
     )
 
+    participants_per_match = 1
+    name_in_url = None
+
     next_subsession = generic.GenericForeignKey('_next_subsession_content_type',
                                             '_next_subsession_object_id',)
 
@@ -32,11 +35,8 @@ class BaseSubsession(subsessions.BaseSubsession):
     def participants(self):
         return list(self.participant_set.all())
 
-    def experimenter_pages(self):
-        return []
-
     @property
-    def app_label(self):
+    def app_name(self):
         return self._meta.app_label
 
     class Meta:
@@ -44,9 +44,6 @@ class BaseSubsession(subsessions.BaseSubsession):
         ordering = ['pk']
 
 class BaseTreatment(treatments.BaseTreatment):
-
-    def pages(self):
-        raise NotImplementedError()
 
     def matches(self):
         return list(self.match_set.all())
@@ -61,8 +58,6 @@ class BaseTreatment(treatments.BaseTreatment):
         null=True,
         related_name = '%(app_label)s_%(class)s'
     )
-
-    participants_per_match = models.PositiveIntegerField(default=1)
 
     class Meta:
         abstract = True
