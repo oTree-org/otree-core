@@ -62,7 +62,7 @@ def create_session(type, label='', special_category=None):
                 return
 
             models_module = import_module('{}.models'.format(app_label))
-            treatments = models_module.create_treatments()
+            treatments = models_module.treatments()
             subsession = models_module.Subsession()
             subsession.save()
             for t in treatments:

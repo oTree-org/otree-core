@@ -9,6 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 class Subsession(ptree.models.BaseSubsession):
 
     name_in_url = '{{ app_name }}'
+    participants_per_match = 1
 
 class Treatment(ptree.models.BaseTreatment):
     subsession = models.ForeignKey(Subsession)
@@ -35,16 +36,15 @@ class Participant(ptree.models.BaseParticipant):
     def set_bonus(self):
         self.bonus = 0 # change to whatever the bonus should be
 
-def create_treatments():
+def treatments():
 
-    treatments = []
+    treatment_list = []
 
     treatment = Treatment(
-        participants_per_match = 1,
         label = '',
         # other attributes here...
     )
 
-    treatments.append(treatment)
+    treatment_list.append(treatment)
 
-    return treatments
+    return treatment_list
