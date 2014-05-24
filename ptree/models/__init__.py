@@ -102,6 +102,9 @@ class BaseParticipant(participants.BaseParticipant):
     me_in_next_subsession = generic.GenericForeignKey('me_in_next_subsession_content_type',
                                                 'me_in_next_subsession_object_id',)
 
+    def other_participants_in_match(self):
+        return [p for p in self.match.participants() if p != self]
+
     class Meta:
         abstract = True
         ordering = ['pk']

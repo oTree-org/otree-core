@@ -462,7 +462,7 @@ class ParticipantSequenceMixin(SequenceMixin):
                 ('Participant', self.participant.pk),
                 ('Match', match_id),
                 ('Treatment', self.treatment.pk),
-                ('Subsession code', self.subsession.code),]
+                ('Session code', self.session.code),]
 
 
     def get_extra_form_kwargs(self):
