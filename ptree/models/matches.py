@@ -10,7 +10,7 @@ class BaseMatch(models.Model):
         return str(self.pk)
 
     def _is_ready_for_next_participant(self):
-        return len(self.participants()) < self.subsession.participants_per_match
+        return len(self.participants()) < self.participants_per_match
 
     """
     def participants(self):

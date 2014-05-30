@@ -75,6 +75,17 @@ def get_doc_dict(app_label):
 
     doc_dict = OrderedDict()
 
+    data_types_readable = {
+        'PositiveIntegerField': 'positive integer',
+        'IntegerField': 'integer',
+        'BooleanField': 'boolean',
+        'NullBooleanField': 'boolean',
+        'CharField': 'text',
+        'TextField': 'text',
+        'FloatField': 'decimal',
+        'DecimalField': 'decimal',
+    }
+
 
     for model_name in MODEL_NAMES:
         members = export_fields[model_name]['member_names']
@@ -98,7 +109,11 @@ def get_doc_dict(app_label):
             else:
                 member = Model._meta.get_field_by_name(member_name)[0]
 
-                doc_dict[model_name][member_name]['type'] = [member.get_internal_type()]
+
+                internal_type = member.get_internal_type()
+                data_type = data_types_readable.get(internal_type, internal_type)
+
+                doc_dict[model_name][member_name]['type'] = [data_type]
 
                 # flag error if the model doesn't have a doc attribute, which it should
                 # unless the field is a 3rd party field

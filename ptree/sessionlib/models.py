@@ -155,7 +155,7 @@ class Session(models.Model):
 
     def payments_ready(self):
         for participant in self.participants():
-            if not participant.bonus_is_complete():
+            if not participant.payoff_from_subsessions_is_complete():
                 return False
         return True
     payments_ready.boolean = True
@@ -209,7 +209,7 @@ class SessionUser(models.Model):
         return ptree.common.app_name_format(self.session.subsessions()[self._index_in_subsessions]._meta.app_label)
 
     def users(self):
-        """Used to calculate bonuses"""
+        """Used to calculate payoffs"""
         lst = []
         me_in_next_subsession = self.me_in_first_subsession
         while True:
@@ -274,33 +274,33 @@ class SessionParticipant(SessionUser):
     def participants(self):
         return self.users()
 
-    def bonus(self):
-        return sum(participant.bonus or 0 for participant in self.participants())
+    def payoff_from_subsessions(self):
+        return sum(participant.payoff or 0 for participant in self.participants())
 
     def total_pay(self):
         try:
-            return self.session.base_pay + self.bonus()
+            return self.session.base_pay + self.payoff_from_subsessions()
         except:
             return None
 
-    def bonus_display(self):
-        complete = self.bonus_is_complete()
-        bonus = currency(self.bonus())
+    def payoff_from_subsessions_display(self):
+        complete = self.payoff_from_subsessions_is_complete()
+        payoff_from_subsessions = currency(self.payoff_from_subsessions())
         if complete:
-            return bonus
-        return u'{} (incomplete)'.format(bonus)
+            return payoff_from_subsessions
+        return u'{} (incomplete)'.format(payoff_from_subsessions)
 
-    bonus_display.short_description = 'bonus'
+    payoff_from_subsessions_display.short_description = 'payoff from subsessions'
 
-    def bonus_is_complete(self):
-        return all(p.bonus is not None for p in self.participants())
+    def payoff_from_subsessions_is_complete(self):
+        return all(p.payoff is not None for p in self.participants())
 
     def total_pay_display(self):
         try:
-            complete = self.bonus_is_complete()
+            complete = self.payoff_from_subsessions_is_complete()
             total_pay = currency(self.total_pay())
         except:
-            return 'Error in bonus calculation'
+            return 'Error in payoff calculation'
         if complete:
             return total_pay
         return u'{} (incomplete)'.format(total_pay)

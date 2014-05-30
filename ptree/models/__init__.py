@@ -16,7 +16,7 @@ class BaseSubsession(subsessions.BaseSubsession):
         null=True
     )
 
-    participants_per_match = 1
+
     name_in_url = None
 
     next_subsession = generic.GenericForeignKey('_next_subsession_content_type',
@@ -64,6 +64,9 @@ class BaseTreatment(treatments.BaseTreatment):
         ordering = ['pk']
 
 class BaseMatch(matches.BaseMatch):
+
+    participants_per_match = 1
+
     session = models.ForeignKey(
         Session,
         related_name = '%(app_label)s_%(class)s'
@@ -84,9 +87,9 @@ class BaseParticipant(participants.BaseParticipant):
         doc="Index starting from 1. In multiplayer games, indicates whether this is participant 1, participant 2, etc."
     )
 
-    bonus = models.PositiveIntegerField(
+    payoff = models.PositiveIntegerField(
         null=True,
-        doc="""The bonus the participant made in this subsession, in cents"""
+        doc="""The payoff the participant made in this subsession, in cents"""
     )
 
     session_participant = models.ForeignKey(

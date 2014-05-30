@@ -341,7 +341,7 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
                 'user: {}'.format(user_info),
             )
 
-            e.args += diagnostic_info
+            e.args = (e.args[0] + '\nDiagnostic info: {}'.format(diagnostic_info),) + e.args[1:]
             raise
 
 
