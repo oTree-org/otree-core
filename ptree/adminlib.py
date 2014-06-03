@@ -305,6 +305,20 @@ class SubsessionAdmin(PTreeBaseModelAdmin):
     list_filter = [NonHiddenSessionListFilter]
     list_editable = ['_skip']
 
+class GlobalDataAdmin(PTreeBaseModelAdmin):
+    list_display = ['id', 'open_session', 'lab_url_link', 'mturk_url_link']
+    list_editable = ['open_session']
+
+    def lab_url_link(self, instance):
+        from ptree.views.concrete import AssignVisitorToOpenSessionLab
+        return new_tab_link(AssignVisitorToOpenSessionLab.url(), 'Link')
+    lab_url_link.allow_tags = True
+
+    def mturk_url_link(self, instance):
+        from ptree.views.concrete import AssignVisitorToOpenSessionMTurk
+        return new_tab_link(AssignVisitorToOpenSessionMTurk.url(), 'Link')
+    mturk_url_link.allow_tags = True
+
 class SessionParticipantAdmin(PTreeBaseModelAdmin):
     change_list_template = CHANGE_LIST_TEMPLATE
 
@@ -441,6 +455,8 @@ class SessionAdmin(PTreeBaseModelAdmin):
     list_display = get_list_display(ptree.sessionlib.models.Session, readonly_fields)
 
     list_editable = ['hidden']
+
+
 
 def autodiscover():
     """

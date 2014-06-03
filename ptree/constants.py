@@ -46,3 +46,4 @@ success = True
 failure = False
 special_category_bots = 'bots'
 special_category_demo = 'demo'
+access_code_for_open_session = 'access_code_for_open_session'

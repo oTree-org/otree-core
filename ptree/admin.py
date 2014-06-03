@@ -8,6 +8,8 @@ import ptree.adminlib
 import ptree.sessionlib.models
 
 
+admin.site.register(ptree.sessionlib.models.GlobalData, ptree.adminlib.GlobalDataAdmin)
+
 admin.site.register(ptree.sessionlib.models.Session,
                     ptree.adminlib.SessionAdmin
                     )

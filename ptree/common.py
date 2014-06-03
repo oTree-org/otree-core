@@ -8,6 +8,7 @@ import subprocess
 from django.template.defaultfilters import title
 from ptree import constants
 import os
+import hashlib
 
 def add_params_to_url(url, params):
     url_parts = list(urlparse.urlparse(url))
@@ -81,3 +82,8 @@ def url_pattern(cls, is_sequence_url=False):
 
 def directory_name(path):
     return os.path.basename(os.path.normpath(path))
+
+def access_code_for_open_session():
+    hash = hashlib.sha1()
+    hash.update(settings.SECRET_KEY)
+    return hash.hexdigest()

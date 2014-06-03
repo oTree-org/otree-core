@@ -8,15 +8,6 @@ from ptree.common import currency
 import ptree.common
 from ptree.common import directory_name
 
-class StubModel(models.Model):
-    """To be used as the model for an empty form, so that form_class can be omitted."""
-
-class GlobalData(models.Model):
-    """object that can hold site-wide properties. There should only be one GlobalData object.
-    not yet used for anything.
-    """
-
-
 class Session(models.Model):
 
     #
@@ -323,3 +314,12 @@ class SessionParticipant(SessionUser):
     class Meta:
         ordering = ['pk']
 
+class GlobalData(models.Model):
+    """object that can hold site-wide properties. There should only be one GlobalData object.
+    """
+    open_session = models.ForeignKey(Session, null=True)
+
+class StubModel(models.Model):
+    """To be used as the model for an empty form, so that form_class can be omitted.
+    Consider using SingletonModel for this. Right now, I'm not sure we need it.
+    """

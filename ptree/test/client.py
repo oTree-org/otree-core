@@ -111,8 +111,8 @@ class BaseClient(django.test.client.Client):
         self.assert_200()
         self.set_path()
 
-    def submit(self, ViewClass, data=None):
-        self._submit_with_valid_input(ViewClass, data)
+    def submit(self, ViewClass, param_dict=None):
+        self._submit_with_valid_input(ViewClass, param_dict)
 
     def _submit_with_valid_input(self, ViewClass, data=None):
         self._submit_core(ViewClass, data)
@@ -124,11 +124,11 @@ class BaseClient(django.test.client.Client):
                 'Path: {}\n'
                 'Errors: {}\n').format(self.path, errors))
 
-    def submit_with_invalid_input(self, ViewClass, data=None):
-        self.submit(ViewClass, data)
+    def submit_with_invalid_input(self, ViewClass, param_dict=None):
+        self.submit(ViewClass, param_dict)
 
         if not self.page_redisplayed_with_errors():
-            raise Exception('Invalid input was accepted. Path: {}, data: {}'.format(self.path, data))
+            raise Exception('Invalid input was accepted. Path: {}, params: {}'.format(self.path, param_dict))
 
 
     def retry_wait_page(self):

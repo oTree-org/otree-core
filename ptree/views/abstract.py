@@ -30,6 +30,13 @@ from ptree.user.models import Experimenter
 import copy
 import django.utils.timezone
 
+from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
+import vanilla
+from django.utils.translation import ugettext as _
+import ptree.sessionlib.models
+from ptree.sessionlib.models import SessionParticipant
+
+
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
@@ -660,3 +667,53 @@ class InitializeExperimenter(InitializeParticipantOrExperimenter):
                 from ptree.views.concrete import OutOfRangeNotification
                 url = OutOfRangeNotification.url(self._session_user)
         return HttpResponseRedirect(url)
+
+class AssignVisitorToOpenSession(vanilla.View):
+
+    def incorrect_parameters_in_url_message(self):
+        # A visitor to this experiment was turned away because they did not have the MTurk parameters in their URL.
+        # This URL only works if clicked from a MTurk job posting with the JavaScript snippet embedded
+        return """To participate, you need to first accept this Mechanical Turk HIT and then re-click the link (refreshing this page will not work)."""
+
+    def url_has_correct_parameters(self):
+        for _, get_param_name in self.required_params.items():
+            if not self.request.GET.has_key(get_param_name):
+                return False
+        return True
+
+    def retrieve_existing_participant_with_these_params(self, open_session):
+        params = {field_name: self.request.GET[get_param_name] for field_name, get_param_name in self.required_params.items()}
+        return SessionParticipant.objects.get(
+            session = open_session,
+            **params
+        )
+
+    def set_external_params_on_participant(self, session_participant):
+        for field_name, get_param_name in self.required_params.items():
+            setattr(session_participant, field_name, self.request.GET[get_param_name])
+
+    def get(self, *args, **kwargs):
+        if not self.request.GET[constants.access_code_for_open_session] == ptree.common.access_code_for_open_session():
+            return HttpResponseNotFound('Incorrect access code for open session')
+
+        global_data = ptree.sessionlib.models.GlobalData.objects.get()
+        open_session = global_data.open_session
+
+        if not open_session:
+            return HttpResponseNotFound('No active session.')
+        if not self.url_has_correct_parameters():
+            return HttpResponseNotFound(self.incorrect_parameters_in_url_message())
+        try:
+            session_participant = self.retrieve_existing_participant_with_these_params(open_session)
+        except SessionParticipant.DoesNotExist:
+            try:
+                session_participant = SessionParticipant.objects.filter(
+                    session = open_session,
+                    visited=False)[0]
+                self.set_external_params_on_participant(session_participant)
+                session_participant.save()
+            except IndexError:
+                return HttpResponseNotFound("No Participant objects left in the database to assign to new visitor.")
+
+        return HttpResponseRedirect(session_participant._start_url())
+

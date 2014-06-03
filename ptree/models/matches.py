@@ -22,11 +22,11 @@ class BaseMatch(models.Model):
 
 
     @classmethod
-    def _create(cls, treatment):
+    def _create(cls, treatment, subsession):
         match = cls(
             treatment = treatment,
-            subsession = treatment.subsession,
-            session = treatment.session
+            subsession = subsession,
+            session = subsession.session
         )
         # need to save it before you assign the participant.match ForeignKey
         match.save()

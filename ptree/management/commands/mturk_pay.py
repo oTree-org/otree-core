@@ -2,13 +2,9 @@ import sys
 
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
-import boto
-from boto.mturk.connection import MTurkConnection
-from boto.mturk.price import Price
-
+from mturk import mturk
 from ptree.common import currency
 from ptree.sessionlib.models import Session
-
 
 def cents_to_dollars(num_cents):
     return round(num_cents/100.0,2)
@@ -18,68 +14,74 @@ class Command(BaseCommand):
     help = "pTree: Pay all Mechanical Turk participants for this session."
 
     def handle(self, *args, **options):
-        config = boto.config
-        config.add_section('Credentials')
+        if len(args) != 1:
+            raise CommandError("Wrong number of arguments (expecting 'mturk_pay session_code'. Example: 'mturk_pay motaliho')")
 
-        AWS_ACCESS_KEY_ID = getattr(settings, 'AWS_ACCESS_KEY_ID')
-        AWS_SECRET_ACCESS_KEY = getattr(settings, 'AWS_SECRET_ACCESS_KEY')
-
-        if not AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
-            print_function('You need to set your Amazon credentials in settings.py (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)')
+        try:
+            config = {
+                "use_sandbox" : False,
+                "stdout_log" : True,
+                "aws_key" : settings.AWS_ACCESS_KEY_ID,
+                "aws_secret_key" : settings.AWS_SECRET_ACCESS_KEY,
+            }
+        except AttributeError:
+            print 'You need to set your Amazon credentials in settings.py (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)'
             sys.exit(0)
 
-        config.set('Credentials', 'aws_access_key_id', AWS_ACCESS_KEY_ID)
-        config.set('Credentials', 'aws_secret_access_key', AWS_SECRET_ACCESS_KEY)
 
-        config.add_section('boto')
-        config.set('boto','https_validate_certificates', 'False')
-        config.add_section('aws info')
-        config.set('aws info','aws_validate_certs','False')
+        self.mturk_connection = mturk.MechanicalTurk(config)
+        response = self.mturk_connection.request('GetAccountBalance')
+        print response.get_response_element("AvailableBalance")
 
-        if len(args) != 1:
-            raise CommandError("Wrong number of arguments (expecting 'mturk_pay session code'. Example: 'mturk_pay motaliho')")
+        session_code = args[0]
+
+        self.session = Session.objects.get(code=session_code)
+        if self.session.payment_was_sent:
+            print 'Error: This subsession was already paid through pTree.'
+            return
+
+        if not (settings.CURRENCY_CODE == 'USD' and settings.CURRENCY_DECIMAL_PLACES == 2):
+            print 'Error. CURRENCY_CODE must be set to USD and CURRENCY_DECIMAL_PLACES must be set to 2'
+            return
         else:
-            session_code = args[0]
+            self.pay_hit_bonuses(is_confirmed=False)
 
-            self.connection = MTurkConnection(is_secure = True)
-
-            self.session = Session.objects.get(code=session_code)
-            if self.session.payment_was_sent:
-                print 'Error: This subsession was already paid through pTree.'
-                return
-
-            if not (settings.CURRENCY_CODE == 'USD' and settings.CURRENCY_DECIMAL_PLACES == 2):
-                print 'Error. CURRENCY_CODE must be set to USD and CURRENCY_DECIMAL_PLACES must be set to 2'
-                return
+            confirmed = raw_input('Enter "Y" to perform transaction:\n') == 'Y'
+            if confirmed:
+                self.pay_hit_bonuses(is_confirmed=True)
             else:
-                self.pay_hit_bonuses(is_confirmed=False)
+                print 'Exit. Did not pay bonuses.'
+                return
+            print 'Done.'
 
-                confirmed = raw_input('Enter "Y" to perform transaction:\n') == 'Y'
-                if confirmed:
-                    self.pay_hit_bonuses(is_confirmed=True)
-                else:
-                    print 'Exit. Did not pay bonuses.'
-                    return
-                print 'Done.'
+        response = self.mturk_connection.request('GetAccountBalance')
+        print response.get_response_element("AvailableBalance")
+
 
     def pay_hit_bonuses(self, is_confirmed):
-
         total_money_paid = 0
-        for participant in self.session.participants():
-            bonus = participant.bonus
+        for session_participant in self.session.participants():
+            bonus = session_participant.payoff_from_subsessions()
             if bonus == None:
                 bonus = 0
             total_money_paid += bonus
 
             if not is_confirmed:
-                print 'Participant: [{}], Payment: {}'.format(participant.name, participant.bonus_display())
+                print 'Participant: [{}], Payment: {}'.format(session_participant.name(), session_participant.payoff_from_subsessions_display())
             if is_confirmed:
                 if bonus > 0:
-                    print bonus, Price(cents_to_dollars(bonus))
-                    self.connection.grant_bonus(worker_id=participant.mturk_worker_id,
-                                     assignment_id=participant.mturk_assignment_id,
-                                     bonus_price = Price(cents_to_dollars(bonus)),
-                                     reason='Thanks!')
+                    resp = self.mturk_connection.request(
+                        'GrantBonus',
+                        {
+                            'WorkerId': session_participant.mturk_worker_id,
+                            'AssignmentId': session_participant.mturk_assignment_id,
+                            'BonusAmount': {
+                                'Amount': str(cents_to_dollars(bonus)),
+                                'CurrencyCode': 'USD'
+                            },
+                            'Reason': 'Thanks!',
+                        }
+                    )
         if not is_confirmed:
             print 'Total amount to pay: {}'.format(currency(total_money_paid))
         if is_confirmed:

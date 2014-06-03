@@ -5,6 +5,7 @@ from ptree.views.abstract import (
     LoadClassesAndUserMixin,
     load_session_user,
     WaitPageMixin,
+    AssignVisitorToOpenSession
 )
 
 from datetime import datetime
@@ -14,6 +15,7 @@ import vanilla
 from django.utils.translation import ugettext as _
 import ptree.constants as constants
 import ptree.sessionlib.models
+from ptree.sessionlib.models import SessionParticipant
 import ptree.common
 import django.utils.timezone
 import threading
@@ -153,7 +155,7 @@ class InitializeSessionExperimenter(vanilla.View):
         return self.redirect_to_next_page()
 
 class InitializeSessionParticipantMagdeburg(vanilla.View):
-    """since magdeburg doesn't let you pass distinct URLs to each PC"""
+    """since magdeburg doesn't let you pass distinct URLs to each PC, but you can pass different params"""
 
     @classmethod
     def url_pattern(cls):
@@ -164,8 +166,6 @@ class InitializeSessionParticipantMagdeburg(vanilla.View):
         session_user = get_object_or_404(ptree.sessionlib.models.SessionParticipant, code=session_user_code)
 
         return HttpResponseRedirect(session_user._start_url())
-
-
 
 class InitializeSessionParticipant(vanilla.UpdateView):
 
@@ -194,3 +194,52 @@ class InitializeSessionParticipant(vanilla.UpdateView):
 
         return HttpResponseRedirect(session_user.me_in_first_subsession._start_url())
 
+#TODO: surface these URLs in the UI somewhere
+class AssignVisitorToOpenSessionMTurk(AssignVisitorToOpenSession):
+
+    @classmethod
+    def url(cls):
+        return ptree.common.add_params_to_url(
+            '/{}'.format(cls.__name__),
+            {
+                ptree.constants.access_code_for_open_session: ptree.common.access_code_for_open_session()
+            }
+        )
+
+    @classmethod
+    def url_pattern(cls):
+        return r'^{}/$'.format(cls.__name__)
+
+    required_params = {
+        'mturk_worker_id': ptree.constants.mturk_worker_id,
+        'mturk_assignment_id': ptree.constants.mturk_assignment_id,
+    }
+
+    def url_has_correct_parameters(self):
+        return (
+            super(AssignVisitorToOpenSessionMTurk, self).url_has_correct_parameters()
+            and self.request.GET[constants.mturk_assignment_id] != 'ASSIGNMENT_ID_NOT_AVAILABLE'
+        )
+
+
+class AssignVisitorToOpenSessionLab(AssignVisitorToOpenSession):
+
+    def incorrect_parameters_in_url_message(self):
+        'Missing parameter(s) in URL: {}'.format(self.required_params.values())
+
+    @classmethod
+    def url(cls):
+        return ptree.common.add_params_to_url(
+            '/{}'.format(cls.__name__),
+            {
+                ptree.constants.access_code_for_open_session: ptree.common.access_code_for_open_session()
+            }
+        )
+
+    @classmethod
+    def url_pattern(cls):
+        return r'^{}/$'.format(cls.__name__)
+
+    required_params = {
+        'label': ptree.constants.session_participant_label,
+    }
