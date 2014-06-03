@@ -26,8 +26,7 @@ class BaseSubsession(subsessions.BaseSubsession):
                                             '_previous_subsession_object_id',)
 
 
-    def treatments(self):
-        return list(self.treatment_set.all())
+    # took out subsession.treatments(), because now a treatment is not part of a
 
     def matches(self):
         return list(self.match_set.all())
@@ -45,11 +44,7 @@ class BaseSubsession(subsessions.BaseSubsession):
 
 class BaseTreatment(treatments.BaseTreatment):
 
-    def matches(self):
-        return list(self.match_set.all())
-
-    def participants(self):
-        return list(self.participant_set.all())
+    # 2014-6-3: removed matches() and participants() because a treatment is no longer specific to a subsession.
 
     label = models.CharField(max_length = 300, null = True, blank = True)
 
@@ -107,6 +102,10 @@ class BaseParticipant(participants.BaseParticipant):
 
     def other_participants_in_match(self):
         return [p for p in self.match.participants() if p != self]
+
+    def other_participants_in_subsession(self):
+        return [p for p in self.subsession.participants() if p != self]
+
 
     class Meta:
         abstract = True

@@ -16,7 +16,6 @@ class BaseTreatment(django_models.Model):
     _code = RandomCharField(length=8)
 
 
-
     @classmethod
     def create(cls, **kwargs):
         """public API, used in models.py. if a treatment instance already exists with the same properties, don't need to create a new treatment."""
