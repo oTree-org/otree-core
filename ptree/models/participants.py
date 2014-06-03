@@ -42,7 +42,7 @@ class BaseParticipant(User):
     def _add_to_existing_or_new_match(self):
         if not self.match:
             MatchClass = self._meta.get_field('match').rel.to
-            match = self.treatment._next_open_match() or MatchClass._create(self.treatment, self.subsession)
+            match = self.treatment._next_open_match() or MatchClass._create(self.treatment)
             self._add_to_existing_match(match)
 
     def _pages_completed(self):

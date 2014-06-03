@@ -68,7 +68,7 @@ class BaseSubsession(models.Model):
         except IndexError:
             treatments = list(self.treatments())
             random.shuffle(treatments)
-            return min(treatments, key=lambda treatment: len([p for p in self.participants() if p.treatment == treatment]))
+            return min(treatments, key=lambda treatment: len(treatment.participants()))
 
     def _assign_participants_to_treatments_and_matches(self):
         participants = self.participants()[:]

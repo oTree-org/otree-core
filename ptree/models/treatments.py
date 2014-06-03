@@ -16,10 +16,11 @@ class BaseTreatment(django_models.Model):
     _code = RandomCharField(length=8)
 
 
+
     @classmethod
-    def create(cls, **kwargs):
-        """public API, used in models.py. if a treatment instance already exists with the same properties, don't need to create a new treatment."""
-        return cls.objects.get_or_create(**kwargs)
+    def create(cls, *args, **kwargs):
+        """public API, used in models.py"""
+        return cls(*args, **kwargs)
 
     # 3/7/2014: get rid of this? we don't have URLs for treatments anymore.
     def _start_url(self):
