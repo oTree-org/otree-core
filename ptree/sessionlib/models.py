@@ -16,8 +16,13 @@ class Session(models.Model):
     )
 
     # label of this session instance
-    label = models.CharField(max_length = 300, null = True, blank = True)
-    code = RandomCharField(length=8)
+    label = models.CharField(max_length = 300, null = True, blank = True,
+        doc="""Label assigned by the experimenter. Can be assigned by passing a GET param called "participant_label" to the participant's start URL"""
+    )
+    code = RandomCharField(
+        length=8,
+        doc='Randomly generated code'
+    )
 
     session_experimenter = models.OneToOneField(
         'SessionExperimenter',
@@ -25,7 +30,10 @@ class Session(models.Model):
         related_name='session',
     )
 
-
+    time_started = models.DateTimeField(
+        null=True,
+        doc="""The time at which the experimenter started the experimenter"""
+    )
 
     first_subsession_content_type = models.ForeignKey(ContentType,
                                                       null=True,
@@ -35,11 +43,19 @@ class Session(models.Model):
                                             'first_subsession_object_id',)
 
     is_for_mturk = models.BooleanField(verbose_name='Is for MTurk', default=True)
-    payment_was_sent = models.BooleanField(default=False)
+    mturk_payment_was_sent = models.BooleanField(default=False)
 
     hidden = models.BooleanField(default=False)
 
-    git_hash = models.CharField(max_length=200, null=True)
+    git_commit_timestamp = models.CharField(
+        max_length=200,
+        null=True,
+        doc="""
+        Indicates the version of the code (as recorded by Git) that was used to run the session, so that the session can be replicated later.
+        Search through the Git commit log to find a commit that was made at this time.
+        """
+
+    )
 
     #
     base_pay = models.PositiveIntegerField(
@@ -49,8 +65,6 @@ class Session(models.Model):
     comment = models.TextField()
 
     participants_assigned_to_treatments_and_matches = models.BooleanField(default=False)
-
-    time_started = models.DateTimeField(null=True)
 
     def base_pay_display(self):
         return currency(self.base_pay)
@@ -169,7 +183,7 @@ class SessionUser(models.Model):
                                                       null=True,
                                                       related_name = '%(app_label)s_%(class)s')
     me_in_first_subsession_object_id = models.PositiveIntegerField(null=True)
-    code = RandomCharField(length = 8)
+    code = RandomCharField(length = 8, doc='Randomly generated code')
     me_in_first_subsession = generic.GenericForeignKey('me_in_first_subsession_content_type',
                                                 'me_in_first_subsession_object_id',)
 
@@ -180,7 +194,7 @@ class SessionUser(models.Model):
     )
 
     ip_address = models.IPAddressField(null = True)
-    time_started = models.DateTimeField(null=True)
+
 
     is_on_wait_page = models.BooleanField(default=False)
 
@@ -251,9 +265,16 @@ class SessionExperimenter(SessionUser):
 
 class SessionParticipant(SessionUser):
 
-    exclude_from_data_analysis = models.BooleanField(default=False)
+    exclude_from_data_analysis = models.BooleanField(default=False,
+        doc="""
+        if set to 1, the experimenter indicated that this session participant's data points should be excluded from
+        the data analysis (e.g. a problem took place during the experiment)"""
+
+    )
 
     session = models.ForeignKey(Session)
+
+    time_started = models.DateTimeField(null=True)
 
     user_type_in_url = constants.user_type_participant
 

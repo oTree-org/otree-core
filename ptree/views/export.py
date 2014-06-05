@@ -18,11 +18,14 @@ import ptree.settings
 import ptree.models
 import ptree.adminlib
 import ptree.sessionlib.models
-from ptree.adminlib import SessionAdmin, SessionParticipantAdmin
+from ptree.sessionlib.models import Session, SessionParticipant
+from ptree.adminlib import SessionAdmin, SessionParticipantAdmin, get_callables, get_all_fields_for_table
 from collections import OrderedDict
 
 LINE_BREAK = '\r\n'
-MODEL_NAMES = ["Participant", "Match", "Treatment", "Subsession", "SessionParticipant", "Session"]
+MODEL_NAMES = ["SessionParticipant", "Participant", "Match", "Treatment", "Subsession", "Session"]
+
+
 
 
 def get_data_export_fields(app_label):
@@ -32,28 +35,20 @@ def get_data_export_fields(app_label):
     for model_name in MODEL_NAMES:
         if model_name == 'Session':
             Model = ptree.sessionlib.models.Session
-            export_member_names = SessionAdmin.list_display
         elif model_name == 'SessionParticipant':
             Model = ptree.sessionlib.models.SessionParticipant
-            export_member_names = SessionParticipantAdmin.list_display
         else:
-            export_member_names = getattr(admin_module, '{}Admin'.format(model_name)).list_display
             Model = getattr(app_models_module, model_name)
 
+        callables = get_callables(Model, fields_specific_to_this_subclass=None, for_export=True)
+        export_member_names = get_all_fields_for_table(Model, callables, first_fields=None, for_export=True)
+
         # remove anything that isn't a field or method on the model.
-
-        im = InspectModel(Model)
-        exportable_members = set(im.fields + im.methods)
-        methods = set(im.methods)
-
-        export_member_names = [m for m in export_member_names if (m in exportable_members
-                                                                  and not m in {'match', 'treatment', 'subsession', 'session'})]
-        callable_flags = [member_name in methods for member_name in export_member_names]
 
         # remove since these are redundant
         export_info[model_name] = {
             'member_names': export_member_names,
-            'callable_flags': callable_flags
+            'callables': set(callables)
         }
     return export_info
 
@@ -89,7 +84,7 @@ def get_doc_dict(app_label):
 
     for model_name in MODEL_NAMES:
         members = export_fields[model_name]['member_names']
-        callable_flags = export_fields[model_name]['callable_flags']
+        callables = export_fields[model_name]['callables']
         if model_name == 'SessionParticipant':
             Model = ptree.sessionlib.models.SessionParticipant
         elif model_name == 'Session':
@@ -102,8 +97,7 @@ def get_doc_dict(app_label):
         for i in range(len(members)):
             member_name = members[i]
             doc_dict[model_name][member_name] = OrderedDict()
-            is_callable = callable_flags[i]
-            if is_callable:
+            if member_name in callables:
                 member = getattr(Model, member_name)
                 doc_dict[model_name][member_name]['doc'] = [inspect.getdoc(member)]
             else:
@@ -158,7 +152,7 @@ def get_docs_as_string(app_label, doc_dict):
 
 
 def data_file_name(app_label):
-    return '{} ({}).csv'.format(
+    return '{} (accessed {}).csv'.format(
         ptree.common.app_name_format(app_label),
         datetime.date.today().isoformat(),
     )
@@ -170,13 +164,12 @@ def doc_file_name(app_label):
     )
 
 
-def get_member_values(object, member_names, callable_flags):
+def get_member_values(object, member_names, callables):
     member_values = []
     for i in range(len(member_names)):
         member_name = member_names[i]
-        is_callable = callable_flags[i]
         attr = getattr(object, member_name)
-        if is_callable:
+        if member_name in callables:
             member_values.append(attr())
         else:
             member_values.append(attr)
@@ -225,10 +218,10 @@ def export(request, app_label):
     Participant = app_models.Participant
 
     fk_names = [
+        'session_participant',
         'match',
         'treatment',
         'subsession',
-        'session_participant',
         'session',
     ]
 
@@ -236,12 +229,12 @@ def export(request, app_label):
 
     parent_object_data = {fk_name:{} for fk_name in fk_names}
 
-    column_headers = export_data['Participant']['member_names'][:]
+    column_headers = ['participant.{}'.format(member_name) for member_name in export_data['Participant']['member_names']]
 
     for fk_name in fk_names:
         model_name = model_names_as_fk[fk_name]
         member_names = export_data[model_name]['member_names']
-        callable_flags = export_data[model_name]['callable_flags']
+        callables = export_data[model_name]['callables']
         column_headers += ['{}.{}'.format(fk_name, member_name) for member_name in member_names]
 
         # http://stackoverflow.com/questions/2466496/select-distinct-values-from-a-table-field#comment2458913_2468620
@@ -254,7 +247,7 @@ def export(request, app_label):
 
         for object in objects:
 
-            parent_object_data[fk_name][object.id] = get_member_values(object, member_names, callable_flags)
+            parent_object_data[fk_name][object.id] = get_member_values(object, member_names, callables)
 
     rows = [column_headers[:]]
 
@@ -268,8 +261,8 @@ def export(request, app_label):
 
     for participant in Participant.objects.all():
         member_names = export_data['Participant']['member_names'][:]
-        callable_flags = export_data['Participant']['callable_flags'][:]
-        member_values = get_member_values(participant, member_names, callable_flags)
+        callables = export_data['Participant']['callables']
+        member_values = get_member_values(participant, member_names, callables)
         for fk_name in fk_names:
             parent_object_id = getattr(participant, "%s_id" % fk_name)
             if parent_object_id is None:

@@ -6,7 +6,7 @@ from threading import Thread
 import sys
 import ptree.constants
 from Queue import Queue
-from ptree.common import git_hash
+from ptree.common import git_commit_timestamp
 from datetime import datetime
 
 

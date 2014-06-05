@@ -20,9 +20,20 @@ def new_tab_link(url, label):
 def remove_duplicates(lst):
     return list(OrderedDict.fromkeys(lst))
 
-def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
+def get_callables(Model, fields_specific_to_this_subclass=None, for_export=False):
 
-    fields_for_this_model_type = {
+    fields_specific_to_this_subclass = fields_specific_to_this_subclass or []
+
+    export_and_changelist = {
+        'Participant': [],
+        'Match': [],
+        'Treatment': [],
+        'Subsession': [],
+        'Session': [],
+        'SessionParticipant': [],
+    }[Model.__name__]
+
+    changelist_but_not_export = {
         'Participant':
            ['name',
             'link',
@@ -42,32 +53,54 @@ def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
              'base_pay_display',
         ],
         'SessionParticipant': [
-                'start_link',
                 'subsessions_completed',
                 'current_subsession',
                 '_pages_completed_in_current_subsession',
-                'status'
+                'status',
+                'start_link',
             ],
     }[Model.__name__]
 
-    return remove_duplicates(fields_for_this_model_type + (fields_specific_to_this_subclass or []))
+    export_but_not_changelist = {
+        'Participant': [],
+        'Match': [],
+        'Treatment': [],
+        'Subsession': [],
+        'Session': [],
+        'SessionParticipant': [],
+    }[Model.__name__]
 
-def get_list_display(Model, readonly_fields, first_fields=None):
+    if for_export:
+        callables = export_and_changelist + export_but_not_changelist
+    else:
+        callables = export_and_changelist + changelist_but_not_export
+
+    return remove_duplicates(callables + fields_specific_to_this_subclass)
+
+def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
+    return get_callables(Model, fields_specific_to_this_subclass)
+
+def get_all_fields_for_table(Model, callables, first_fields=None, for_export=False):
 
     first_fields = {
         'Participant':
-            ['name',
-            'session',
-            'subsession',
-            'treatment',
-            'match',
-            'visited',
-            '_pages_completed'],
+            [
+                'id',
+                'name',
+                'session',
+                'subsession',
+                'treatment',
+                'match',
+                'visited',
+                '_pages_completed'
+            ],
         'Match':
-            ['id',
-            'session',
-            'subsession',
-            'treatment'],
+            [
+                'id',
+                'session',
+                'subsession',
+                'treatment'
+            ],
         'Treatment':
             ['name',
             'session',
@@ -76,19 +109,23 @@ def get_list_display(Model, readonly_fields, first_fields=None):
             ['name',
              'session'],
         'SessionParticipant':
-            ['name',
-             'start_link',
-             'session',
-             'visited',
-             'subsessions_completed',
-             'current_subsession',
-             '_pages_completed_in_current_subsession',
-             'current_page',
-             'status',
-             'last_request_succeeded',
+            [
+                'code',
+                'label',
+                'name',
+                'start_link',
+                'session',
+                'visited',
+                'subsessions_completed',
+                'current_subsession',
+                '_pages_completed_in_current_subsession',
+                'current_page',
+                'status',
+                'last_request_succeeded',
             ],
         'Session':
             [
+                'code',
                 'name',
                 'hidden',
                 'type',
@@ -110,10 +147,54 @@ def get_list_display(Model, readonly_fields, first_fields=None):
         ],
     }[Model.__name__]
 
+    fields_for_export_but_not_changelist = {
+        'Participant': {'id', 'label'},
+        'Match': {'id'},
+        'Treatment': {'label'},
+        'Subsession': {'id'},
+        'Session': {
+            'label',
+            'git_commit_timestamp',
+            'base_pay',
+        },
+        'SessionParticipant': {
+            'label',
+            'ip_address',
+        },
+    }[Model.__name__]
 
-    fields_to_exclude = {
+    fields_for_changelist_but_not_export = {
+        'Participant': {'match', 'treatment', 'subsession', 'session', 'session_participant'},
+        'Match': {'treatment', 'subsession', 'session'},
+        'Treatment': {'subsession', 'session'},
+        'Subsession': {'session'},
+        'Session': {
+            'mturk_payment_was_sent',
+            'participants_assigned_to_treatments_and_matches',
+            'hidden',
+        },
+        'SessionParticipant': {
+            'session',
+            'name',
+            'start_link',
+            'session',
+            'visited',
+            # the following fields are useful for telling if the participant actually finished
+            #'subsessions_completed',
+            #'current_subsession',
+            #'_pages_completed_in_current_subsession',
+            #'current_page',
+            'status',
+            'last_request_succeeded',
+        },
+    }[Model.__name__]
+
+    fields_to_exclude_from_export_and_changelist = {
         'Participant':
-              {'id',
+              {
+              # we should only have session_participant code and session code. because those are real world concepts.
+              # person/session.
+              # also, people might confuse participant/subsession code with session_participant/session code
               'code',
               'index_in_pages',
               'me_in_previous_subsession_content_type',
@@ -125,55 +206,67 @@ def get_list_display(Model, readonly_fields, first_fields=None):
         'Match':
              set(),
         'Treatment':
-            {'id',
-            'label'},
+            {
+                'label',
+                '_code',
+                'id',
+            },
         'Subsession':
             {
-                'id',
+                'code',
                 'label',
                 'session_access_code',
-                'next_subsession_content_type',
-                'next_subsession_object_id',
+                '_next_subsession_content_type',
+                '_next_subsession_object_id',
                 'next_subsession',
-                'previous_subsession_content_type',
-                'previous_subsession_object_id',
+                '_previous_subsession_content_type',
+                '_previous_subsession_object_id',
                 'previous_subsession',
                 '_experimenter',
              },
         'SessionParticipant':
-            {'id',
-            '_index_in_subsessions',
-            'label',
-            'me_in_first_subsession_content_type',
-            'me_in_first_subsession_object_id',
-            'is_on_wait_page',
-            'ip_address',
-            'mturk_assignment_id',
-            'mturk_worker_id'},
+            {
+                'id',
+                '_index_in_subsessions',
+                'me_in_first_subsession_content_type',
+                'me_in_first_subsession_object_id',
+                'is_on_wait_page',
+                'mturk_assignment_id',
+                'mturk_worker_id'
+            },
         'Session':
-             {'id',
-             'label',
+             {
+             'id',
              'session_experimenter',
              'first_subsession_content_type',
              'first_subsession_object_id',
              'first_subsession',
-             'git_hash',
              'is_for_mturk',
-             'base_pay',
              'demo_already_used',
              'ready',
              # don't hide the code, since it's useful as a checksum (e.g. if you're on the payments page)
              }
     }[Model.__name__]
 
-
-
-
+    if for_export:
+        fields_to_exclude = fields_to_exclude_from_export_and_changelist.union(fields_for_changelist_but_not_export)
+    else:
+        fields_to_exclude = fields_to_exclude_from_export_and_changelist.union(fields_for_export_but_not_changelist)
 
     all_field_names = [field.name for field in Model._meta.fields if field.name not in fields_to_exclude]
-    list_display = first_fields + readonly_fields + all_field_names
-    list_display = [f for f in list_display if f not in last_fields] + last_fields
-    return _add_links_for_foreign_keys(Model, remove_duplicates(list_display))
+    all_member_names = set(callables + all_field_names)
+    first_fields = [f for f in first_fields if f in all_member_names]
+    last_fields = [f for f in last_fields if f in all_member_names]
+    table_columns = first_fields + callables + all_field_names
+    table_columns = [f for f in table_columns if f not in last_fields] + last_fields
+
+    if for_export:
+        return remove_duplicates(table_columns)
+    else:
+        return _add_links_for_foreign_keys(Model, remove_duplicates(table_columns))
+
+def get_list_display(Model, readonly_fields, first_fields=None):
+    return get_all_fields_for_table(Model, callables=readonly_fields, first_fields=first_fields, for_export=False)
 
 class FieldLinkToForeignKey:
     def __init__(self, list_display_field):
@@ -324,8 +417,8 @@ class SessionParticipantAdmin(PTreeBaseModelAdmin):
 
     list_filter = [NonHiddenSessionListFilter]
 
-    readonly_fields = get_readonly_fields(ptree.sessionlib.models.SessionParticipant, [])
-    list_display = get_list_display(ptree.sessionlib.models.SessionParticipant, readonly_fields)
+    readonly_fields = get_callables(ptree.sessionlib.models.SessionParticipant, [])
+    list_display = get_all_fields_for_table(ptree.sessionlib.models.SessionParticipant, readonly_fields)
     list_editable = ['exclude_from_data_analysis']
 
 
@@ -451,8 +544,8 @@ class SessionAdmin(PTreeBaseModelAdmin):
     payments_link.short_description = "Payments page"
     payments_link.allow_tags = True
 
-    readonly_fields = get_readonly_fields(ptree.sessionlib.models.Session, [])
-    list_display = get_list_display(ptree.sessionlib.models.Session, readonly_fields)
+    readonly_fields = get_callables(ptree.sessionlib.models.Session, [])
+    list_display = get_all_fields_for_table(ptree.sessionlib.models.Session, readonly_fields)
 
     list_editable = ['hidden']
 

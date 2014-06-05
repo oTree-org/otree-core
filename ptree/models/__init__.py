@@ -108,6 +108,10 @@ class BaseParticipant(participants.BaseParticipant):
     def other_participants_in_match(self):
         return [p for p in self.match.participants() if p != self]
 
+    def other_participants_in_subsession(self):
+        return [p for p in self.subsession.participants() if p != self]
+
+
     class Meta:
         abstract = True
         ordering = ['pk']

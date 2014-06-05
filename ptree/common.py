@@ -9,6 +9,8 @@ from django.template.defaultfilters import title
 from ptree import constants
 import os
 import hashlib
+from os.path import dirname, abspath, join
+
 
 def add_params_to_url(url, params):
     url_parts = list(urlparse.urlparse(url))
@@ -39,19 +41,13 @@ def is_subsession_app(app_label):
     class_names = ['Participant', 'Match', 'Treatment', 'Subsession']
     return all(hasattr(models_module, ClassName) for ClassName in class_names)
 
-def git_hash():
-    '''fixme: seems not to be working'''
+def git_commit_timestamp():
+    root_dir = dirname(settings.BASE_DIR)
     try:
-        hash = subprocess.check_output('git rev-parse HEAD'.split())
-        # take the first 10 chars, like GitHub, since it's more readable
-        hash = hash[:10]
-    except:
-        return None
-    try:
-        subprocess.check_call('git diff-index --quiet HEAD')
-        return hash
-    except subprocess.CalledProcessError:
-        return '{} (plus uncommitted changes)'.format(hash)
+        with open(join(root_dir, 'git_commit_timestamp'), 'r') as f:
+            return f.read().strip()
+    except IOError:
+        return ''
 
 def app_name_format(app_name):
     return title(app_name.replace("_", " "))

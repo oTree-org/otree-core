@@ -37,9 +37,15 @@ class BaseSubsession(models.Model):
 
 
     #FIXME: this should start at 1, to be consistent with index_among_participants_in_match
-    _index_in_subsessions = models.PositiveIntegerField(null=True)
+    _index_in_subsessions = models.PositiveIntegerField(
+        null=True,
+        doc="starts from 0. indicates the position of this subsession among other subsessions in the session."
+    )
 
-    _skip = models.BooleanField(default=False)
+    _skip = models.BooleanField(
+        default=False,
+        doc="""whether the experimenter made the participants skip this subsession"""
+    )
 
     def _views_module(self):
         return import_module('{}.views'.format(self.app_name))

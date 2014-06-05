@@ -139,16 +139,14 @@ class InitializeSessionExperimenter(vanilla.View):
             code=kwargs[constants.session_user_code]
         )
 
-        # generate hash when the experimenter starts, rather than when the session was created
-        # (since code is often updated after session created)
         session = self._session_user.session
 
-        #FIXME: this causes an error OSError child_exception
-        #if not session.git_hash:
-        #    session.git_hash = ptree.common.git_hash()
-        #    session.save()
-
-        self._session_user.time_started = django.utils.timezone.now()
+        if not session.time_started:
+            # get timestamp when the experimenter starts, rather than when the session was created
+            # (since code is often updated after session created)
+            session.git_commit_timestamp = ptree.common.git_commit_timestamp()
+            session.time_started = django.utils.timezone.now()
+            session.save()
 
         t = threading.Thread(target=session._assign_participants_to_treatments_and_matches)
         t.start()

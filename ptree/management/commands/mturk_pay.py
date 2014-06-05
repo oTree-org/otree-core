@@ -36,7 +36,7 @@ class Command(BaseCommand):
         session_code = args[0]
 
         self.session = Session.objects.get(code=session_code)
-        if self.session.payment_was_sent:
+        if self.session.mturk_payment_was_sent:
             print 'Error: This subsession was already paid through pTree.'
             return
 
@@ -86,5 +86,5 @@ class Command(BaseCommand):
             print 'Total amount to pay: {}'.format(currency(total_money_paid))
         if is_confirmed:
             print 'Total amount paid: {}'.format(currency(total_money_paid))
-            self.session.payment_was_sent = True
+            self.session.mturk_payment_was_sent = True
             self.session.save()
