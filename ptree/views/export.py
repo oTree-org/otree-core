@@ -25,7 +25,52 @@ from collections import OrderedDict
 LINE_BREAK = '\r\n'
 MODEL_NAMES = ["SessionParticipant", "Participant", "Match", "Treatment", "Subsession", "Session"]
 
+CONCEPTUAL_OVERVIEW_TEXT = """
+pTree data is exported in CSV (comma-separated values) format.
 
+Each field is prefixed by the name of the model it belongs to.
+
+Here is an explanation of these terms:
+
+Session
+=======
+
+Refers to an event where a group of people spend time taking part in pTree experiments.
+
+An example of a session would be: "On Tuesday at 3PM, 30 people will come to the lab for 1 hour,
+during which time they will play a trust game, followed by 2 ultimatum games, followed by a questionnaire.
+Participants get paid EUR 10.00 for showing up, plus bonus amounts for participating.
+
+Subsession
+==========
+
+A session can be broken down into "subsessions".
+These are interchangeable units or modules that come one after another.
+Each subsession has a sequence of one or more pages the participant must interact with.
+The session in the above example had 4 subsessions:
+
+Trust game
+Ultimatum game 1
+Ultimatum game 2
+Questionnaire
+
+"Participant"
+=============
+
+Each subsession has data fields for a
+
+and "Session Participant"
+========================================
+
+Each session has a number of participants. They are referred to as "session participants".
+
+Each subsession has its own "subsession participant" (or just "participant" for short) objects that are independent of the other subsessions.
+
+If a session has 4 subsessions, for each person there will be 1 sess
+
+
+
+"""
 
 
 def get_data_export_fields(app_label):
@@ -97,7 +142,10 @@ def get_doc_dict(app_label):
         for i in range(len(members)):
             member_name = members[i]
             doc_dict[model_name][member_name] = OrderedDict()
-            if member_name in callables:
+            if member_name == 'id':
+                doc_dict[model_name][member_name]['type'] = ['positive integer']
+                doc_dict[model_name][member_name]['doc'] = ['Unique ID']
+            elif member_name in callables:
                 member = getattr(Model, member_name)
                 doc_dict[model_name][member_name]['doc'] = [inspect.getdoc(member)]
             else:

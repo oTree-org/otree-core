@@ -60,7 +60,7 @@ class Demo(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r'^demo/(?P<session_type>\w+)/$'
+        return r'^demo/(?P<session_type>[\w -]+)/$'
 
     def get(self, *args, **kwargs):
         type=kwargs['session_type']

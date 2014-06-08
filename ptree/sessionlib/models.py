@@ -7,6 +7,7 @@ from ptree import constants
 from ptree.common import currency
 import ptree.common
 from ptree.common import directory_name
+from django_extensions.db.fields.json import JSONField
 
 class Session(models.Model):
 
@@ -17,11 +18,13 @@ class Session(models.Model):
 
     # label of this session instance
     label = models.CharField(max_length = 300, null = True, blank = True,
-        doc="""Label assigned by the experimenter. Can be assigned by passing a GET param called "participant_label" to the participant's start URL"""
     )
+
     code = RandomCharField(
         length=8,
-        doc='Randomly generated code'
+        doc="""
+        Randomly generated unique identifier for the session.
+        """
     )
 
     session_experimenter = models.OneToOneField(
@@ -32,7 +35,7 @@ class Session(models.Model):
 
     time_started = models.DateTimeField(
         null=True,
-        doc="""The time at which the experimenter started the experimenter"""
+        doc="""The time at which the experimenter started the session"""
     )
 
     first_subsession_content_type = models.ForeignKey(ContentType,
@@ -183,7 +186,14 @@ class SessionUser(models.Model):
                                                       null=True,
                                                       related_name = '%(app_label)s_%(class)s')
     me_in_first_subsession_object_id = models.PositiveIntegerField(null=True)
-    code = RandomCharField(length = 8, doc='Randomly generated code')
+
+    code = RandomCharField(
+        length = 8,
+        doc="""Randomly generated unique identifier for the session participant.
+        If you would like to merge this dataset with those from another subsession in the same session,
+        you should join on this field, which will be the same across subsessions."""
+    )
+
     me_in_first_subsession = generic.GenericForeignKey('me_in_first_subsession_content_type',
                                                 'me_in_first_subsession_object_id',)
 
@@ -199,6 +209,8 @@ class SessionUser(models.Model):
     is_on_wait_page = models.BooleanField(default=False)
 
     current_page = models.CharField(max_length=200,null=True)
+
+    vars = JSONField()
 
     def subsessions_completed(self):
         if not self.visited:
@@ -323,8 +335,11 @@ class SessionParticipant(SessionUser):
 
     # unique=True can't be set, because the same external ID could be reused in multiple sequences.
     # however, it should be unique within the sequence.
-    label = models.CharField(max_length = 50,
-                                   null = True)
+    label = models.CharField(
+        max_length = 50,
+        null = True,
+        doc="""Label assigned by the experimenter. Can be assigned by passing a GET param called "participant_label" to the participant's start URL"""
+    )
 
     def name(self):
         return id_label_name(self.pk, self.label)

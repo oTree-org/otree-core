@@ -7,6 +7,8 @@ import sys
 from selenium import webdriver
 import os.path
 import csv
+from django.utils.importlib import import_module
+from ptree.user.models import Experimenter
 
 MAX_SECONDS_TO_WAIT = 10
 
@@ -35,9 +37,15 @@ class BaseClient(django.test.client.Client):
             self.index_of_current_screenshot = 0
         super(BaseClient, self).__init__()
 
+    def get(self, path, data={}, follow=False, **extra):
+        response = super(BaseClient, self).get(path, data, follow, **extra)
+        if response.status_code == 500:
+            print 'hello'
+        return response
+
     def launch_browser_for_screenshots(self):
         self.browser = webdriver.Firefox()
-        self.browser.get(urljoin(SERVER_URL, self.user._start_url()))
+        self.browser.get(urljoin(SERVER_URL, self._user._start_url()))
 
     def _play(self, failure_queue):
         self.failure_queue = failure_queue
@@ -52,7 +60,7 @@ class BaseClient(django.test.client.Client):
 
     def start(self):
         # do i need to parse out the GET data into the data arg?
-        self.response = self.get(self.user._start_url(), follow=True)
+        self.response = self.get(self._user._start_url(), follow=True)
         self.set_path()
         self.assert_200()
 
@@ -76,11 +84,11 @@ class BaseClient(django.test.client.Client):
         self.browser.get(urljoin(SERVER_URL, self.path))
         self.index_of_current_screenshot += 1
 
-        filename = '{} - {}.png'.format(self.user.code, self.index_of_current_screenshot)
+        filename = '{} - {}.png'.format(self._user.code, self.index_of_current_screenshot)
 
         csv_row = {
             'filename': filename,
-            'user': self.user._session_user.code,
+            'user': self._user._session_user.code,
             'app_name': self.subsession.app_name,
             'subsession_id': self.subsession.id,
             'page_name': ViewClass.__name__,
@@ -155,19 +163,63 @@ class BaseClient(django.test.client.Client):
 
 class ParticipantBot(BaseClient):
 
+    @property
+    def participant(self):
+        """this needs to be a property because asserts require refreshing from the DB"""
+        return self._ParticipantClass.objects.get(id=self._participant_id)
+
+    @property
+    def _user(self):
+        return self.participant
+
+    @property
+    def match(self):
+        return self._MatchClass.objects.get(id=self._match_id)
+
+    @property
+    def treatment(self):
+        return self._TreatmentClass.objects.get(id=self._treatment_id)
+
+    @property
+    def subsession(self):
+        return self._SubsessionClass.objects.get(id=self._subsession_id)
+
+
+
     def __init__(self, user, **kwargs):
-        self.user = user
-        self.participant = user
-        self.match = self.participant.match
-        self.treatment = self.participant.treatment
+        participant = user
+        app_label = user.subsession.app_name
+        models_module = import_module('{}.models'.format(app_label))
+
+        self._ParticipantClass = models_module.Participant
+        self._MatchClass = models_module.Match
+        self._TreatmentClass = models_module.Treatment
+        self._SubsessionClass = models_module.Subsession
+        self._UserClass = self._ParticipantClass
+
         # we assume the experimenter has assigned everyone to a treatment
-        assert self.match and self.treatment
-        self.subsession = self.participant.subsession
+        assert participant.match and participant.treatment
+
+        self._participant_id = participant.id
+        self._match_id = participant.match.id
+        self._treatment_id = participant.treatment.id
+        self._subsession_id = participant.subsession.id
+
         super(ParticipantBot, self).__init__(**kwargs)
 
 class ExperimenterBot(BaseClient):
 
+    @property
+    def subsession(self):
+        return self._SubsessionClass.objects.get(id=self._subsession_id)
+
+    @property
+    def _user(self):
+        return Experimenter.objects.get(id=self._experimenter_id)
+
     def __init__(self, subsession, **kwargs):
-        self.user = subsession._experimenter
-        self.subsession = subsession
+        self._SubsessionClass = type(subsession)()
+        self._subsession_id = subsession.id
+        self._experimenter_id = subsession._experimenter.id
+
         super(ExperimenterBot, self).__init__(**kwargs)

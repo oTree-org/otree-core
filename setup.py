@@ -64,6 +64,7 @@ setup(
         'selenium==2.41.0',
         'xmltodict==0.9.0',
         'django-ptree-mturk',
+        'django-extensions',
     ],
     classifiers=[
         'Environment :: Web Environment',

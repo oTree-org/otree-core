@@ -232,7 +232,8 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
                 'me_in_first_subsession_object_id',
                 'is_on_wait_page',
                 'mturk_assignment_id',
-                'mturk_worker_id'
+                'mturk_worker_id',
+                'vars',
             },
         'Session':
              {

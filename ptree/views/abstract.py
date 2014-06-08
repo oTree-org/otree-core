@@ -70,6 +70,12 @@ class PTreeMixin(object):
         self.subsession = self.user.subsession
         self.session = self.user.session
 
+        # at this point, _session_user already exists, but we reassign this variable
+        # the reason is that if we don't do this, there will be self._session_user, and
+        # self.user._session_user, which will be 2 separate queries, and thus changes made to 1 object
+        # will not be reflected in the other.
+        self._session_user = self.user._session_user
+
     def save_objects(self):
         for obj in self.objects_to_save():
             if obj:
@@ -336,6 +342,7 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
             self.save_objects()
             return response
         except Exception, e:
+
             if hasattr(self, 'user'):
                 user_info = 'user: {}'.format(model_to_dict(self.user))
                 if hasattr(self, '_session_user'):
