@@ -5,8 +5,9 @@ from ptree.fields import RandomCharField
 from ptree.db import models
 import ptree.constants as constants
 from ptree.common import add_params_to_url
+from save_the_change.mixins import SaveTheChange
 
-class User(models.Model):
+class User(SaveTheChange, models.Model):
     """represents experimenter or participants"""
     # the participant's unique ID (and redemption code) that gets passed in the URL.
     code = RandomCharField(length = 8)

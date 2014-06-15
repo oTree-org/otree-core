@@ -4,13 +4,11 @@ import time
 import ptree.constants
 from urlparse import urlsplit, urljoin
 import sys
-from selenium import webdriver
-import os.path
-import csv
 from django.utils.importlib import import_module
 from ptree.user.models import Experimenter
+import random
 
-MAX_SECONDS_TO_WAIT = 30
+MAX_SECONDS_TO_WAIT = 10
 
 SERVER_URL = 'http://127.0.0.1:8000'
 
@@ -20,21 +18,6 @@ class BaseClient(django.test.client.Client):
         self.response = None
         self.url = None
         self.path = None
-        self.take_screenshots = kwargs['take_screenshots']
-        self.screenshot_dir = kwargs.get('screenshot_dir')
-        if self.take_screenshots:
-            self.launch_browser_for_screenshots()
-            csv_file = open(os.path.join(self.screenshot_dir, 'Index.csv'))
-            csv_fields = [
-                'filename',
-                'participant',
-                'app_label',
-                'subsession_id',
-                'page_name',
-                #'page_index'
-            ]
-            self.screenshot_csv_writer = csv.DictWriter(csv_file, csv_fields)
-            self.index_of_current_screenshot = 0
         super(BaseClient, self).__init__()
 
     def get(self, path, data={}, follow=False, **extra):
@@ -42,10 +25,6 @@ class BaseClient(django.test.client.Client):
         if response.status_code == 500:
             print 'hello'
         return response
-
-    def launch_browser_for_screenshots(self):
-        self.browser = webdriver.Firefox()
-        self.browser.get(urljoin(SERVER_URL, self._user._start_url()))
 
     def _play(self, failure_queue):
         self.failure_queue = failure_queue
@@ -79,25 +58,6 @@ class BaseClient(django.test.client.Client):
         ))
 
 
-    def screenshot(self, ViewClass):
-
-        self.browser.get(urljoin(SERVER_URL, self.path))
-        self.index_of_current_screenshot += 1
-
-        filename = '{} - {}.png'.format(self._user.code, self.index_of_current_screenshot)
-
-        csv_row = {
-            'filename': filename,
-            'user': self._user._session_user.code,
-            'app_name': self.subsession.app_name,
-            'subsession_id': self.subsession.id,
-            'page_name': ViewClass.__name__,
-            # how do i get page index? do i even need it?
-            #'page_index': 1,
-        }
-
-        self.browser.save_screenshot(os.path.join(self.screenshot_dir, filename))
-
     def _submit_core(self, ViewClass, data=None):
         data = data or {}
         self.assert_is_on(ViewClass)
@@ -113,8 +73,6 @@ class BaseClient(django.test.client.Client):
             print '{}, {}'.format(self.path, data)
         else:
             print self.path
-        if self.take_screenshots:
-            self.screenshot(ViewClass)
         self.response = self.post(self.url, data, follow=True)
         self.assert_200()
         self.set_path()

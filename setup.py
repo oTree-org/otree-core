@@ -65,6 +65,7 @@ setup(
         'xmltodict==0.9.0',
         'django-ptree-mturk',
         'django-extensions',
+        'django-save-the-change==1.0.0',
     ],
     classifiers=[
         'Environment :: Web Environment',

@@ -1,7 +1,8 @@
 from ptree.db import models
 import ptree.sessionlib.models
+from save_the_change.mixins import SaveTheChange
 
-class BaseMatch(models.Model):
+class BaseMatch(SaveTheChange, models.Model):
     """
     Base class for all Matches.
     """
