@@ -10,7 +10,7 @@ import csv
 from django.utils.importlib import import_module
 from ptree.user.models import Experimenter
 
-MAX_SECONDS_TO_WAIT = 10
+MAX_SECONDS_TO_WAIT = 30
 
 SERVER_URL = 'http://127.0.0.1:8000'
 

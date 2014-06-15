@@ -107,7 +107,7 @@ class BaseSubsession(models.Model):
     def _experimenter_pages(self):
         views_module = self._views_module()
         if hasattr(views_module, 'experimenter_pages'):
-            return views_module.experimenter_pages()
+            return views_module.experimenter_pages() or []
         return []
 
     def _experimenter_pages_as_urls(self):

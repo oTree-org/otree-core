@@ -36,9 +36,9 @@ class RedirectToPageUserShouldBeOn(NonSequenceUrlMixin,
 class OutOfRangeNotification(NonSequenceUrlMixin, PTreeMixin, vanilla.View):
     name_in_url = 'shared'
 
-
     def dispatch(self, request, *args, **kwargs):
-        return HttpResponse('No more pages in this sequence.')
+        return render_to_response('ptree/OutOfRangeNotification.html')
+
 
 class WaitUntilAssignedToMatch(ParticipantUpdateView):
     """

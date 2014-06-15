@@ -67,13 +67,14 @@ def augment_settings(settings):
 
 
     LANGUAGE_CODE = settings.get('LANGUAGE_CODE') or global_settings.LANGUAGE_CODE
-    CURRENCY_LOCALE = settings.get('CURRENCY_LOCALE')
+    CURRENCY_LOCALE = settings.get('CURRENCY_LOCALE', '')
     if not CURRENCY_LOCALE:
         # favor en_GB currency formatting since it represents negative amounts with minus signs rather than parentheses
         if LANGUAGE_CODE[:2] == 'en':
             CURRENCY_LOCALE = 'en_GB'
         else:
-            CURRENCY_LOCALE = LANGUAGE_CODE.replace('-','_')
+            CURRENCY_LOCALE = LANGUAGE_CODE
+    CURRENCY_LOCALE = CURRENCY_LOCALE.replace('-','_')
 
     overridable_settings = {
         'CRISPY_TEMPLATE_PACK': 'bootstrap3',
