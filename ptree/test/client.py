@@ -53,7 +53,7 @@ class BaseClient(django.test.client.Client):
     def assert_is_on(self, ViewClass):
         if not self.is_on(ViewClass):
             raise Exception('Expected page: {}, Actual page: {}'.format(
-                ViewClass.url_pattern(),
+                ViewClass.__name__,
                 self.path
         ))
 
@@ -142,6 +142,11 @@ class ParticipantBot(BaseClient):
     def subsession(self):
         return self._SubsessionClass.objects.get(id=self._subsession_id)
 
+    def _play(self, failure_queue):
+        super(ParticipantBot, self)._play(failure_queue)
+        if self.participant.payoff is None:
+            self.failure_queue.put(ptree.constants.failure)
+            raise Exception('Participant "{}": payoff is still None at the end of the subsession.')
 
 
     def __init__(self, user, **kwargs):

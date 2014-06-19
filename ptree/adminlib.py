@@ -9,6 +9,7 @@ import django.db.models.options
 import django.db.models.fields.related
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.contrib.staticfiles.templatetags.staticfiles import static as static_template_tag
+from ptree.session import session_types_as_dict
 
 import ptree.constants
 import ptree.sessionlib.models
@@ -169,7 +170,6 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
         'Treatment': {'subsession', 'session'},
         'Subsession': {'session'},
         'Session': {
-            'mturk_payment_was_sent',
             'participants_assigned_to_treatments_and_matches',
             'hidden',
         },
@@ -237,6 +237,7 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
             },
         'Session':
              {
+             'mturk_payment_was_sent',
              'id',
              'session_experimenter',
              'first_subsession_content_type',
@@ -455,6 +456,8 @@ class SessionAdmin(PTreeBaseModelAdmin):
         return render_to_response(
             'ptree/admin/StartLinks.html',
             {
+                'session_type_name': session.type,
+                'doc': session_types_as_dict()[session.type].doc,
                 'experimenter_url': request.build_absolute_uri(session.session_experimenter._start_url()),
                 'participant_urls': self.participant_urls(request, session),
             }

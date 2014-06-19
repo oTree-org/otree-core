@@ -8,7 +8,6 @@ from django.views.generic.base import RedirectView
 from django.conf import settings
 import ptree.constants
 from ptree.sessionlib.models import Session
-from ptree.session import create_session, demo_enabled_session_types
 
 
 

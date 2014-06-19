@@ -77,7 +77,7 @@ class SessionExperimenterWaitUntilParticipantsAreAssigned(NonSequenceUrlMixin, W
         return 'Please wait'
 
     def wait_page_body_text(self):
-        return 'Assigning participants to matches and treatments'
+        return 'Assigning participants to matches and treatments.'
 
     def show_skip_wait(self):
         if self.session.participants_assigned_to_treatments_and_matches:

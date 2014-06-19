@@ -83,3 +83,6 @@ def access_code_for_open_session():
     hash = hashlib.sha1()
     hash.update(settings.SECRET_KEY)
     return hash.hexdigest()
+
+def get_session_module():
+    return import_module('{}.{}'.format(directory_name(settings.BASE_DIR), 'session'))

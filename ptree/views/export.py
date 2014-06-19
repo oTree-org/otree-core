@@ -181,19 +181,23 @@ def get_docs_as_string(app_label, doc_dict):
         '',
     ]
 
+    models_module = import_module('{}.models'.format(app_label))
+    app_doc = getattr(models_module, 'doc')
+    if app_doc:
+        lines += [
+            app_doc,
+            '',
+        ]
+
     for model_name in doc_dict:
         lines.append(model_name)
 
         for member in doc_dict[model_name]:
             lines.append('\t{}'.format(member))
             for info_type in doc_dict[model_name][member]:
-                #if info_type == 'doc':
-                #    info_line_indentation_level = 2
-                #else:
                 lines.append('\t\t{}'.format(info_type))
-                info_line_indentation_level = 3
                 for info_line in doc_dict[model_name][member][info_type]:
-                    lines.append(u'{}{}'.format('\t'*info_line_indentation_level, info_line))
+                    lines.append(u'{}{}'.format('\t'*3, info_line))
 
     output = u'\n'.join(lines)
     return output.replace('\n', LINE_BREAK).replace('\t', '    ')

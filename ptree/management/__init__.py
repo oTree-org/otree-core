@@ -4,7 +4,6 @@ from django.contrib.auth.management import create_superuser
 from django.db.models import signals
 import ptree.constants
 from ptree.sessionlib.models import StubModel, GlobalData, Session
-from ptree.session import create_session, demo_enabled_session_types
 
 
 def create_default_superuser(app, created_models, verbosity, **kwargs):

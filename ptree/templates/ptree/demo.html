@@ -8,6 +8,12 @@
 
 <p><i>(To login to the admin page, click <a href="/admin">here</a>.)</i></p>
 
+{% if intro_text %}
+    <p>
+        {{ intro_text }}
+    </p>
+{% endif %}
+
 {% for s in session_info %}
 
         <h3><a href="{{ s.url }}" target="_blank">{{ s.type }}</a></h3>

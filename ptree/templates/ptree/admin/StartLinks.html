@@ -1,12 +1,23 @@
 {% extends "ptree/BaseBuiltIn.html" %}
 
 {% block title %}
-    Start Links
+    Start Links: {{ session_type_name }}
 {% endblock %}
 
 {% block content %}
 
-    <p>To play, open all links, each in its own browser tab. Refresh this page to generate new links.</p>
+    {% if doc %}
+        <p>{{ doc }}</p>
+    {% endif %}
+
+    <p>To play, open all links, each in its own browser tab.</p>
+
+    {% if is_demo_page %}
+        <p>
+            To get new start links, refresh this page. This will let you simulate a new set of participants,
+            who will be reassigned to treatment groups and match groups.
+        </p>
+    {% endif %}
 
     <h3>
         Experimenter link
