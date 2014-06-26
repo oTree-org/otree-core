@@ -85,4 +85,7 @@ def access_code_for_open_session():
     return hash.hexdigest()
 
 def get_session_module():
-    return import_module('{}.{}'.format(directory_name(settings.BASE_DIR), 'session'))
+    return import_module('{}.session'.format(directory_name(settings.BASE_DIR)))
+
+def get_models_module(app_name):
+    return import_module('{}.models'.format(app_name))

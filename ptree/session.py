@@ -14,7 +14,7 @@ class SessionType(object):
         self.base_pay = base_pay
         self.num_participants = num_participants
         self.is_for_mturk = is_for_mturk
-        self.doc = doc
+        self.doc = doc.strip()
 
 def get_session_types():
     return get_session_module().session_types()

@@ -171,9 +171,7 @@ class ExperimenterMixin(object):
         self.load_user()
 
     def objects_to_save(self):
-        return (
-            [self.user, self.subsession, self._session_user]
-        )
+        return [self.user, self.subsession, self._session_user] #+ self.subsession.participants() + self.subsession.matches() + self.subsession.treatments()
 
 class WaitPageMixin(object):
 

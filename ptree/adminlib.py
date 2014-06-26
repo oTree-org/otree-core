@@ -10,6 +10,7 @@ import django.db.models.fields.related
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.contrib.staticfiles.templatetags.staticfiles import static as static_template_tag
 from ptree.session import session_types_as_dict
+from ptree.views.demo import render_to_start_links_page
 
 import ptree.constants
 import ptree.sessionlib.models
@@ -452,16 +453,7 @@ class SessionAdmin(PTreeBaseModelAdmin):
 
     def start_links(self, request, pk):
         session = self.model.objects.get(pk=pk)
-
-        return render_to_response(
-            'ptree/admin/StartLinks.html',
-            {
-                'session_type_name': session.type,
-                'doc': session_types_as_dict()[session.type].doc,
-                'experimenter_url': request.build_absolute_uri(session.session_experimenter._start_url()),
-                'participant_urls': self.participant_urls(request, session),
-            }
-        )
+        return render_to_start_links_page(request, session, is_demo_page=False)
 
     def start_links_link(self, instance):
         return new_tab_link(

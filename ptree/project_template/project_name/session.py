@@ -3,7 +3,7 @@ from ptree.session import SessionType
 def session_types():
     return [
         SessionType(
-            name='My App',
+            name="My App",
             base_pay=0,
             num_participants=2,
             subsession_apps=[
