@@ -6,6 +6,9 @@ import ptree.constants
 from Queue import Queue
 import time
 from ptree.sessionlib.models import Session
+import coverage
+
+cov = coverage.coverage()
 
 def run_subsession(subsession):
     app_label = subsession._meta.app_label
@@ -32,11 +35,15 @@ def run_subsession(subsession):
         t = Thread(target=bot._play, args=(failure_queue,))
         jobs.append(t)
 
+
+    #cov.start()
     for job in jobs:
         job.start()
 
     for job in jobs:
         job.join()
+    #cov.stop()
+    #print cov.html_report(directory='covhtml')
 
     if failure_queue.qsize() > 0:
         print '{}: tests failed'.format(app_label)
