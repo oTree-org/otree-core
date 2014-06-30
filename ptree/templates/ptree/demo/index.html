@@ -8,11 +8,10 @@
 
 <p><i>(To login to the admin page, click <a href="/admin">here</a>.)</i></p>
 
-{% if intro_text %}
-    <p>
-        {{ intro_text }}
-    </p>
-{% endif %}
+<div>
+    {{ intro_text|safe }}
+</div>
+
 
 {% for s in session_info %}
 

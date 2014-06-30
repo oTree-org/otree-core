@@ -6,6 +6,7 @@ import ptree.constants
 from Queue import Queue
 import time
 from ptree.sessionlib.models import Session
+import coverage
 
 def run_subsession(subsession):
     app_label = subsession._meta.app_label

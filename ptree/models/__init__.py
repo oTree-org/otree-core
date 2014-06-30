@@ -27,22 +27,13 @@ class BaseSubsession(subsessions.BaseSubsession):
 
 
     def treatments(self):
-        if hasattr(self, '_treatments'):
-            return self._treatments
-        self._treatments = list(self.treatment_set.all())
-        return self._treatments
+        return list(self.treatment_set.all())
 
     def matches(self):
-        if hasattr(self, '_matches'):
-            return self._matches
-        self._matches = list(self.match_set.all())
-        return self._matches
+        return list(self.match_set.all())
 
     def participants(self):
-        if hasattr(self, '_participants'):
-            return self._participants
-        self._participants = list(self.participant_set.all())
-        return self._participants
+        return list(self.participant_set.all())
 
     @property
     def app_name(self):
@@ -55,16 +46,10 @@ class BaseSubsession(subsessions.BaseSubsession):
 class BaseTreatment(treatments.BaseTreatment):
 
     def matches(self):
-        if hasattr(self, '_matches'):
-            return self._matches
-        self._matches = list(self.match_set.all())
-        return self._matches
+        return list(self.match_set.all())
 
     def participants(self):
-        if hasattr(self, '_participants'):
-            return self._participants
-        self._participants = list(self.participant_set.all())
-        return self._participants
+        return list(self.participant_set.all())
 
     label = models.CharField(max_length = 300, null = True, blank = True)
 
@@ -88,10 +73,7 @@ class BaseMatch(matches.BaseMatch):
     )
 
     def participants(self):
-        if hasattr(self, '_participants'):
-            return self._participants
-        self._participants = list(self.participant_set.all())
-        return self._participants
+        return list(self.participant_set.all())
 
     class Meta:
         abstract = True

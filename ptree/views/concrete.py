@@ -39,6 +39,12 @@ class OutOfRangeNotification(NonSequenceUrlMixin, PTreeMixin, vanilla.View):
     def dispatch(self, request, *args, **kwargs):
         return render_to_response('ptree/OutOfRangeNotification.html')
 
+class OutOfRangeNotificationExperimenter(NonSequenceUrlMixin, PTreeMixin, vanilla.View):
+    name_in_url = 'shared'
+
+    def dispatch(self, request, *args, **kwargs):
+        return render_to_response('ptree/OutOfRangeNotificationExperimenter.html')
+
 
 class WaitUntilAssignedToMatch(ParticipantUpdateView):
     """
