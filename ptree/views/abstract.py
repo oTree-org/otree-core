@@ -92,7 +92,7 @@ class PTreeMixin(object):
 
     def redirect_to_page_the_user_should_be_on(self):
         """Redirect to where the participant should be,
-        according to the view index we maintain in their cookies
+        according to the view index we maintain in the DB
         Useful if the participant tried to skip ahead,
         or if they hit the back button.
         We can put them back where they belong.
@@ -113,7 +113,9 @@ class PTreeMixin(object):
             try:
                 return users[self._session_user._index_in_subsessions]._start_url()
             except IndexError:
-                return self.out_of_range_url()
+                from ptree.views.concrete import OutOfRangeNotification
+                return OutOfRangeNotification.url(self._session_user)
+
         return self.user._pages_as_urls()[self.user.index_in_pages]
 
     def get_request_session(self):
@@ -164,10 +166,6 @@ class ParticipantMixin(object):
     def objects_to_save(self):
         return [self.match, self.user, self._session_user]
 
-    def out_of_range_url(self):
-        from ptree.views.concrete import OutOfRangeNotification
-        return OutOfRangeNotification.url(self._session_user)
-
 class ExperimenterMixin(object):
 
     def load_objects(self):
@@ -175,11 +173,6 @@ class ExperimenterMixin(object):
 
     def objects_to_save(self):
         return [self.user, self.subsession, self._session_user] #+ self.subsession.participants() + self.subsession.matches() + self.subsession.treatments()
-
-    def out_of_range_url(self):
-        from ptree.views.concrete import OutOfRangeNotificationExperimenter
-        return OutOfRangeNotificationExperimenter.url(self._session_user)
-
 
 class WaitPageMixin(object):
 
@@ -677,8 +670,8 @@ class InitializeExperimenter(InitializeParticipantOrExperimenter):
             if me_in_next_subsession:
                 url = me_in_next_subsession._start_url()
             else:
-                from ptree.views.concrete import OutOfRangeNotificationExperimenter
-                url = OutOfRangeNotificationExperimenter.url(self._session_user)
+                from ptree.views.concrete import OutOfRangeNotification
+                url = OutOfRangeNotification.url(self._session_user)
         return HttpResponseRedirect(url)
 
 class AssignVisitorToOpenSession(vanilla.View):
