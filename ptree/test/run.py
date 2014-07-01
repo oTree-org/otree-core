@@ -6,11 +6,13 @@ import ptree.constants
 from Queue import Queue
 import time
 from ptree.sessionlib.models import Session
+from ptree.session import session_types_as_dict
 import coverage
 
-cov = coverage.coverage()
 
 def run_subsession(subsession):
+
+
     app_label = subsession._meta.app_label
 
     try:
@@ -36,14 +38,12 @@ def run_subsession(subsession):
         jobs.append(t)
 
 
-    #cov.start()
+
     for job in jobs:
         job.start()
 
     for job in jobs:
         job.join()
-    #cov.stop()
-    #print cov.html_report(directory='covhtml')
 
     if failure_queue.qsize() > 0:
         print '{}: tests failed'.format(app_label)
@@ -52,6 +52,7 @@ def run_subsession(subsession):
     # assert that everyone's finished
 
 def run(session):
+
     session_experimenter_bot = Client()
     session_experimenter_bot.get(session.session_experimenter._start_url(), follow=True)
     session_experimenter_bot.post(session.session_experimenter._start_url(), follow=True)
@@ -68,5 +69,12 @@ def run(session):
         bot = Client()
         bot.get(participant._start_url(), follow=True)
 
+    #package_names = session_types_as_dict()[session.type].subsession_apps
+    #cov = coverage.coverage(source=package_names)
+    #cov.start()
+
     for subsession in session.subsessions():
         run_subsession(subsession)
+
+    #cov.stop()
+    #print cov.html_report(directory='covhtml')

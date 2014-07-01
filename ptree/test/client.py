@@ -7,6 +7,7 @@ import sys
 from django.utils.importlib import import_module
 from ptree.user.models import Experimenter
 import random
+import coverage
 
 MAX_SECONDS_TO_WAIT = 10
 
@@ -27,6 +28,7 @@ class BaseClient(django.test.client.Client):
         return response
 
     def _play(self, failure_queue):
+
         self.failure_queue = failure_queue
         try:
             self.play()
