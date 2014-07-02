@@ -8,11 +8,12 @@ from django.db import transaction
 
 
 class SessionType(object):
-    def __init__(self, name, subsession_apps, base_pay, num_participants, is_for_mturk=False, doc=None):
+    def __init__(self, name, subsession_apps, base_pay, num_participants, num_bot_participants = None, is_for_mturk=False, doc=None):
         self.name = name
         self.subsession_apps = subsession_apps
         self.base_pay = base_pay
         self.num_participants = num_participants
+        self.num_bot_participants = num_participants if num_bot_participants is None else num_bot_participants
         self.is_for_mturk = is_for_mturk
         self.doc = doc.strip()
 
@@ -55,7 +56,13 @@ def create_session(type, label='', special_category=None):
     session.session_experimenter = session_experimenter
 
     session_participants = []
-    for i in range(session_type.num_participants):
+
+    if special_category == constants.special_category_bots:
+        num_participants = session_type.num_bot_participants
+    else:
+        num_participants = session_type.num_participants
+
+    for i in range(num_participants):
         participant = SessionParticipant(session = session)
         participant.save()
         session_participants.append(participant)
@@ -67,12 +74,12 @@ def create_session(type, label='', special_category=None):
 
         models_module = import_module('{}.models'.format(app_label))
 
-        if session_type.num_participants % models_module.Match.participants_per_match:
+        if num_participants % models_module.Match.participants_per_match:
             raise ValueError(
                 'App {} requires {} participants per match, which does not divide evenly into the number of participants in this session ({}).'.format(
                     app_label,
                     models_module.Match.participants_per_match,
-                    session_type.num_participants
+                    num_participants
                 )
             )
 
@@ -90,7 +97,7 @@ def create_session(type, label='', special_category=None):
 
         subsession._experimenter = experimenter
         subsession.save()
-        for i in range(session_type.num_participants):
+        for i in range(num_participants):
             participant = models_module.Participant(
                 subsession = subsession,
                 session = session,

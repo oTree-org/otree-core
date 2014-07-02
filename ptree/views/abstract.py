@@ -92,7 +92,7 @@ class PTreeMixin(object):
 
     def redirect_to_page_the_user_should_be_on(self):
         """Redirect to where the participant should be,
-        according to the view index we maintain in their cookies
+        according to the view index we maintain in the DB
         Useful if the participant tried to skip ahead,
         or if they hit the back button.
         We can put them back where they belong.
@@ -115,6 +115,7 @@ class PTreeMixin(object):
             except IndexError:
                 from ptree.views.concrete import OutOfRangeNotification
                 return OutOfRangeNotification.url(self._session_user)
+
         return self.user._pages_as_urls()[self.user.index_in_pages]
 
     def get_request_session(self):

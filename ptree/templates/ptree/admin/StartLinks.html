@@ -19,7 +19,7 @@
     {% for app in subsession_apps %}
         <tr>
             <th>{{ app.name }}</th>
-            <td>{{ app.doc }}</td>
+            <td>{{ app.doc|safe }}</td>
         </tr>
 
     {% endfor %}
@@ -29,18 +29,20 @@
         Start links
     </h3>
 
-    <p>To play, open all links, each in its own browser tab.</p>
+    <p>
+        Then, open all links, each in its own browser tab.
+    </p>
 
     <h4>
         Experimenter
     </h4>
-
         <a href="{{ experimenter_url }}" class="experimenter-link" target="_blank">{{ experimenter_url }}</a><br/>
 
     <h4>
         Participants
     </h4>
 
+    <p><b>Before participants can play, you need to click the experimenter link above and start the session.</b></p>
     {% for participant_url in participant_urls %}
             <a href="{{ participant_url }}" class="participant-link" target="_blank">{{ participant_url }}</a>
             <br/>

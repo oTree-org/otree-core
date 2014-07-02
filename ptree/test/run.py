@@ -69,12 +69,5 @@ def run(session):
         bot = Client()
         bot.get(participant._start_url(), follow=True)
 
-    #package_names = session_types_as_dict()[session.type].subsession_apps
-    #cov = coverage.coverage(source=package_names)
-    #cov.start()
-
     for subsession in session.subsessions():
         run_subsession(subsession)
-
-    #cov.stop()
-    #print cov.html_report(directory='covhtml')
