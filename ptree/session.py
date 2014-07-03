@@ -5,7 +5,7 @@ from django.utils.importlib import import_module
 from ptree.user.models import Experimenter
 from ptree.sessionlib.models import Session, SessionExperimenter, SessionParticipant
 from django.db import transaction
-
+from collections import defaultdict
 
 class SessionType(object):
     def __init__(self, name, subsession_apps, base_pay, num_participants, num_bot_participants = None, is_for_mturk=False, doc=None):
@@ -68,10 +68,12 @@ def create_session(type, label='', special_category=None):
         session_participants.append(participant)
 
     subsessions = []
+    round_counts = defaultdict(int)
     for app_label in session_type.subsession_apps:
         if app_label not in settings.INSTALLED_PTREE_APPS:
             raise ValueError('Your session contains a subsession app named "{}". You need to add this to INSTALLED_PTREE_APPS in settings.py.'.format(app_label))
 
+        round_counts[app_label] += 1
         models_module = import_module('{}.models'.format(app_label))
 
         if num_participants % models_module.Match.participants_per_match:
@@ -84,7 +86,7 @@ def create_session(type, label='', special_category=None):
             )
 
         treatments = models_module.treatments()
-        subsession = models_module.Subsession()
+        subsession = models_module.Subsession(round_number = round_counts[app_label])
         subsession.save()
         for t in treatments:
             t.subsession = subsession

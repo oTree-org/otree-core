@@ -25,6 +25,16 @@ class BaseSubsession(subsessions.BaseSubsession):
     previous_subsession = generic.GenericForeignKey('_previous_subsession_content_type',
                                             '_previous_subsession_object_id',)
 
+    round_number = models.PositiveIntegerField(
+        doc='''
+        If this subsession is repeated (i.e. has multiple rounds), this field stores the position (index) of this subsession,
+        among subsessions in the same app.
+        For example, if a session consists of the subsessions:
+        [app1, app2, app1, app1, app3]
+        Then the round numbers of these subsessions would be:
+        [1, 1, 2, 3, 1]
+        '''
+    )
 
     def treatments(self):
         return list(self.treatment_set.all())

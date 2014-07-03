@@ -148,7 +148,7 @@ class ParticipantBot(BaseClient):
         super(ParticipantBot, self)._play(failure_queue)
         if self.participant.payoff is None:
             self.failure_queue.put(ptree.constants.failure)
-            raise Exception('Participant "{}": payoff is still None at the end of the subsession.')
+            raise Exception('Participant "{}": payoff is still None at the end of the subsession.'.format(self.participant.session_participant.code))
 
 
     def __init__(self, user, **kwargs):
@@ -183,7 +183,7 @@ class ExperimenterBot(BaseClient):
         return Experimenter.objects.get(id=self._experimenter_id)
 
     def __init__(self, subsession, **kwargs):
-        self._SubsessionClass = type(subsession)()
+        self._SubsessionClass = type(subsession)
         self._subsession_id = subsession.id
         self._experimenter_id = subsession._experimenter.id
 
