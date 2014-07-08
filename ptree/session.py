@@ -8,12 +8,12 @@ from django.db import transaction
 from collections import defaultdict
 
 class SessionType(object):
-    def __init__(self, name, subsession_apps, base_pay, num_participants, num_bot_participants = None, is_for_mturk=False, doc=None):
+    def __init__(self, name, subsession_apps, base_pay, num_participants, num_demo_participants = None, is_for_mturk=False, doc=None):
         self.name = name
         self.subsession_apps = subsession_apps
         self.base_pay = base_pay
         self.num_participants = num_participants
-        self.num_bot_participants = num_participants if num_bot_participants is None else num_bot_participants
+        self.num_demo_participants = num_demo_participants
         self.is_for_mturk = is_for_mturk
         self.doc = doc.strip()
 
@@ -57,8 +57,8 @@ def create_session(type, label='', special_category=None):
 
     session_participants = []
 
-    if special_category == constants.special_category_bots:
-        num_participants = session_type.num_bot_participants
+    if special_category == constants.special_category_demo:
+        num_participants = session_type.num_demo_participants
     else:
         num_participants = session_type.num_participants
 

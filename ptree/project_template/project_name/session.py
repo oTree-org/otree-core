@@ -5,7 +5,8 @@ def session_types():
         SessionType(
             name="My App",
             base_pay=0,
-            num_participants=2,
+            num_participants=12,
+            num_demo_participants=2,
             subsession_apps=[
                 'myapp',
             ],

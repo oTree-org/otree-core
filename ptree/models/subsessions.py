@@ -64,6 +64,22 @@ class BaseSubsession(models.Model):
                                               constants.user_code,
                                               self.code)
 
+    def previous_round(self):
+        while True:
+            s = self.previous_subsession
+            if not s:
+                return None
+            if s.app_name == self.app_name:
+                return s
+
+    def pick_treatments(self, previous_round_treatments):
+        pass
+
+    def pick_match_groups(self, previous_round_match_groups):
+        pass
+
+
+
 
     def pick_treatment_with_open_match(self):
         return [m for m in self.matches() if m._is_ready_for_next_participant()][0].treatment
