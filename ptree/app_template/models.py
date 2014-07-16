@@ -46,14 +46,6 @@ class Participant(ptree.models.BaseParticipant):
 
 
 def treatments():
-
-    treatment_list = []
-
-    treatment = Treatment(
-        label = '',
-        # other attributes here...
-    )
-
-    treatment_list.append(treatment)
-
-    return treatment_list
+    # add treatment parameters as arguments to create()
+    # e.g. [Treatment.create(max_payoff=20), Treatment.create(max_payoff=20)]
+    return [Treatment.create(label = '',)]

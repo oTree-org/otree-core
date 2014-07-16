@@ -43,7 +43,7 @@ class Command(BaseCommand):
             reload(sys.modules['{}.models'.format(app_label)])
 
 
-        session = create_session(type=type, special_category=special_category_bots)
+        session = create_session(type_name=type, special_category=special_category_bots)
         session.label = '{} [test]'.format(session.label)
         session.save()
 

@@ -23,4 +23,4 @@ class Command(BaseCommand):
         label = options.get('label', '')
 
         for i in range(amount):
-            create_session(type=type, label=label)
+            create_session(type_name=type, label=label)

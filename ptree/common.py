@@ -89,3 +89,6 @@ def get_session_module():
 
 def get_models_module(app_name):
     return import_module('{}.models'.format(app_name))
+
+def flatten(list_of_lists):
+    return [item for sublist in list_of_lists for item in sublist]

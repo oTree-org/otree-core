@@ -8,7 +8,8 @@ from django.db import transaction
 from collections import defaultdict
 
 class SessionType(object):
-    def __init__(self, name, subsession_apps, base_pay, num_participants, num_demo_participants = None, is_for_mturk=False, doc=None):
+    def __init__(self, name, subsession_apps, base_pay, num_participants,
+                 num_demo_participants = None, is_for_mturk=False, doc=None, preassign_matches=False):
         self.name = name
         self.subsession_apps = subsession_apps
         self.base_pay = base_pay
@@ -16,6 +17,7 @@ class SessionType(object):
         self.num_demo_participants = num_demo_participants
         self.is_for_mturk = is_for_mturk
         self.doc = doc.strip()
+        self.preassign_matches = preassign_matches
 
 def get_session_types():
     return get_session_module().session_types()
@@ -27,15 +29,15 @@ def demo_enabled_session_types():
     return [session_type for session_type in get_session_types() if get_session_module().show_on_demo_page(session_type.name)]
 
 @transaction.atomic
-def create_session(type, label='', special_category=None):
+def create_session(type_name, label='', special_category=None):
     """2014-5-2: i could implement this by overriding the __init__ on the Session model, but I don't really know how that works,
     and it seems to be a bit discouraged:
     https://docs.djangoproject.com/en/1.4/ref/models/instances/#django.db.models.Model
     """
     try:
-        session_type = session_types_as_dict()[type]
+        session_type = session_types_as_dict()[type_name]
     except KeyError:
-        raise ValueError('Session type "{}" not found in session.py'.format(type))
+        raise ValueError('Session type "{}" not found in session.py'.format(type_name))
     session = Session(
         type=session_type.name,
         label=label,
@@ -85,7 +87,11 @@ def create_session(type, label='', special_category=None):
                 )
             )
 
+        #FIXME: make sure this returns the same thing each time, so that you can reassign to the same treatment
         treatments = models_module.treatments()
+        for t_index, t in enumerate(treatments):
+            t._index_within_subsession = t_index
+            t.save()
         subsession = models_module.Subsession(round_number = round_counts[app_label])
         subsession.save()
         for t in treatments:

@@ -26,7 +26,7 @@ class DemoIndex(vanilla.View):
         for session_type in demo_enabled_session_types():
             session_info.append(
                 {
-                    'type': session_type.name,
+                    'type_name': session_type.name,
                     'url': escaped_start_link_url(session_type.name),
                     'doc': session_type.doc or '',
                     'subsession_apps': ', '.join([app_name_format(app_name) for app_name in session_type.subsession_apps]),
@@ -34,13 +34,13 @@ class DemoIndex(vanilla.View):
             )
         return render_to_response('ptree/demo/index.html', {'session_info': session_info, 'intro_text': intro_text})
 
-def ensure_enough_spare_sessions(type):
+def ensure_enough_spare_sessions(type_name):
     time.sleep(5)
     DESIRED_SPARE_SESSIONS = 3
 
     spare_sessions = Session.objects.filter(
         special_category=constants.special_category_demo,
-        type=type,
+        type_name=type_name,
         demo_already_used=False,
     ).count()
 
@@ -49,14 +49,14 @@ def ensure_enough_spare_sessions(type):
     for i in range(DESIRED_SPARE_SESSIONS - spare_sessions):
         create_session(
             special_category=constants.special_category_demo,
-            type=type
+            type_name=type_name
         )
 
-def get_session(type):
+def get_session(type_name):
 
     sessions = Session.objects.filter(
         special_category=constants.special_category_demo,
-        type=type,
+        type_name=type_name,
         demo_already_used=False,
         ready=True,
     )
@@ -83,13 +83,13 @@ def info_about_session_type(session_type_name):
 def render_to_start_links_page(request, session, is_demo_page):
 
     context_data = {
-            'session_type_name': session.type,
+            'session_type_name': session.type_name,
             'experimenter_url': request.build_absolute_uri(session.session_experimenter._start_url()),
             'participant_urls': [request.build_absolute_uri(participant._start_url()) for participant in session.participants()],
             'is_demo_page': is_demo_page,
     }
 
-    context_data.update(info_about_session_type(session.type))
+    context_data.update(info_about_session_type(session.type_name))
 
     return render_to_response(
         'ptree/admin/StartLinks.html',

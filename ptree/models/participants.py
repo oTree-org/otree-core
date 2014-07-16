@@ -6,6 +6,11 @@ class BaseParticipant(User):
     Base class for all participants.
     """
 
+    def _me_in_other_subsession(self, other_subsession):
+        for p in other_subsession.participant_set.all():
+            if p.session_participant == self.session_participant:
+                return p
+
     @property
     def _session_user(self):
         return self.session_participant
@@ -33,17 +38,17 @@ class BaseParticipant(User):
     class Meta:
         abstract = True
 
-    def _add_to_existing_match(self, match):
+    def _assign_to_match(self, match=None):
+        if not match:
+            match = self.subsession._next_open_match()
         self.match = match
+        self.treatment = match.treatment
         self.save()
         self.index_among_participants_in_match = match.participant_set.count()
         self.save()
 
-    def _add_to_existing_or_new_match(self):
-        if not self.match:
-            MatchClass = self._meta.get_field('match').rel.to
-            match = self.treatment._next_open_match() or MatchClass._create(self.treatment)
-            self._add_to_existing_match(match)
+    def _MatchClass(self):
+        return self._meta.get_field('match').rel.to
 
     def _pages_completed(self):
         if not (self.treatment and self.visited):

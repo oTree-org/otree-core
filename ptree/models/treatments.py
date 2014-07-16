@@ -15,7 +15,9 @@ class BaseTreatment(django_models.Model):
     # the treatment code in the URL. This is generated automatically.
     _code = RandomCharField(length=8)
 
-
+    _index_within_subsession = models.PositiveIntegerField(
+        null=True,
+    )
 
     @classmethod
     def create(cls, *args, **kwargs):
@@ -50,14 +52,6 @@ class BaseTreatment(django_models.Model):
     """
 
 
-    def _next_open_match(self):
-        """Get the next match that is accepting participants.
-        (or none if it does not exist)
-        """
-        try:
-            return (m for m in self.matches() if m._is_ready_for_next_participant()).next()
-        except StopIteration:
-            return None
 
 
     class Meta:

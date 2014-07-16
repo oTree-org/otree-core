@@ -12,9 +12,13 @@ from django_extensions.db.fields.json import JSONField
 class Session(models.Model):
 
     #
-    type = models.CharField(max_length = 300, null = True, blank = True,
+    type_name = models.CharField(max_length = 300, null = True, blank = True,
         doc="""the session type, as defined in the programmer's session.py."""
     )
+
+    def type(self):
+        from ptree.session import session_types_as_dict
+        return session_types_as_dict()[self.type_name]
 
     # label of this session instance
     label = models.CharField(max_length = 300, null = True, blank = True,
@@ -329,6 +333,9 @@ class SessionParticipant(SessionUser):
             return total_pay
         return u'{} (incomplete)'.format(total_pay)
 
+    def _assign_to_matches(self):
+        for p in self.participants():
+            p._assign_to_match()
 
     mturk_assignment_id = models.CharField(max_length = 50, null = True)
     mturk_worker_id = models.CharField(max_length = 50, null = True)

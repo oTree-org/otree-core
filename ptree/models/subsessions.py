@@ -7,10 +7,12 @@ from ptree.db import models
 
 from ptree.fields import RandomCharField
 import ptree.constants as constants
-
-from ptree.common import id_label_name
+import math
+from ptree.common import flatten
 import ptree.user.models
 from django.utils.importlib import import_module
+import itertools
+
 
 class BaseSubsession(models.Model):
     """
@@ -73,52 +75,82 @@ class BaseSubsession(models.Model):
                 return s
 
     def pick_treatments(self, previous_round_treatments):
-        pass
+        return previous_round_treatments
 
     def pick_match_groups(self, previous_round_match_groups):
-        pass
+        return previous_round_match_groups
 
-
-
-
-    def pick_treatment_with_open_match(self):
-        return [m for m in self.matches() if m._is_ready_for_next_participant()][0].treatment
-
-    def pick_treatment_for_incoming_participant(self):
+    def _next_open_match(self):
+        """Get the next match that is accepting participants.
+        (or none if it does not exist)
+        """
         try:
-            return self.pick_treatment_with_open_match()
-        except IndexError:
-            treatments = list(self.treatments())
-            random.shuffle(treatments)
-            return min(treatments, key=lambda treatment: len(treatment.participants()))
+            return (m for m in self.match_set.all() if m._is_ready_for_next_participant()).next()
+        except StopIteration:
+            return None
 
-    def _assign_participants_to_treatments_and_matches(self):
-        participants = self.participants()[:]
+    def _num_matches(self):
+        """number of matches in this subsession"""
+        return self.participant_set.count()/self.participants_per_match
+
+    def _random_treatments(self):
+        num_matches = self._num_matches()
+        treatments = list(self.treatment_set.all())
+        random.shuffle(treatments)
+        iterator = itertools.cycle(treatments)
+        random_treatments = []
+        for i in range(num_matches):
+            random_treatments.append(iterator.next())
+        return random_treatments
+
+    def _random_match_groups(self):
+        participants = list(self.participant_set.all())
         random.shuffle(participants)
-        for participant in participants:
-            participant.treatment = self.pick_treatment_for_incoming_participant()
-            participant._add_to_existing_or_new_match()
-            participant.save()
+        match_groups = []
+        for i in range(0, self._num_matches(), self.participants_per_match):
+            match_groups.append(participants[i:i+self.participants_per_match])
+
+    def _corresponding_treatments(self, earlier_round):
+        earlier_treatment_indexes = [t._index_within_subsession for t in earlier_round.treatment_set.all()]
+        current_treatments = list(self.treatment_set.all())
+        return [current_treatments[i] for i in earlier_treatment_indexes]
+
+    def _match_groups(self):
+        return [list(m.participant_set.all()) for m in self.match_set.all()]
+
+    def _corresponding_match_groups(self, earlier_round):
+        current_participant_dict = {p.session_participant.pk: p for p in self.participant_set.all()}
+        match_groups = earlier_round._match_groups()
+        for m_index, m in enumerate(match_groups):
+            for p_index, p in enumerate(m):
+                match_groups[m_index][p_index] = current_participant_dict[p.session_participant.pk]
+
+    def _create_empty_matches(self):
+        previous_round = self.previous_round()
+        if previous_round:
+            treatments = self._corresponding_treatments(previous_round)
+        else:
+            treatments = self._random_treatments()
+        treatments = self.pick_treatments(treatments)
+        #FIXME: how do i get MatchClass?
+        for t in treatments:
+            MatchClass._create(t)
+
+    def _assign_participants_to_matches(self):
+        previous_round = self.previous_round()
+        if previous_round:
+            match_groups = self._corresponding_match_groups(previous_round)
+        else:
+            match_groups = self._random_match_groups()
+        match_groups = self.pick_match_groups(match_groups)
+        for match_group in match_groups:
+            match = self._next_open_match()
+            for participant in match_group:
+                participant._assign_to_match(match)
 
     def previous_subsession_is_in_same_app(self):
         previous_subsession = self.previous_subsession
         return previous_subsession and previous_subsession._meta.app_label == self._meta.app_label
-
-    def _assign_participants_to_same_treatment_as_previous_subsession(self):
-        previous_subsession = self.previous_subsession
-        assert self.previous_subsession_is_in_same_app()
-        treatments = self.treatments()
-        previous_treatments = previous_subsession.treatments()
-        old_to_new_treatments = dict(zip(previous_treatments, treatments))
-
-        previous_participants = previous_subsession.participants()
-        participants = self.participants()
-        for i, participant in enumerate(participants):
-            previous_participant = previous_participants[i]
-            previous_treatment = previous_participant.treatment
-            participant.treatment = old_to_new_treatments[previous_treatment]
-            participant._add_to_existing_or_new_match()
-            participant.save()
 
     def _experimenter_pages(self):
         views_module = self._views_module()

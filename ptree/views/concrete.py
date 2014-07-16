@@ -181,6 +181,11 @@ class InitializeSessionParticipant(vanilla.UpdateView):
 
         session_user = get_object_or_404(ptree.sessionlib.models.SessionParticipant, code=session_user_code)
 
+        session = session_user.session
+        if not session.type().preassign_matches:
+            session_user._assign_to_matches()
+            # assign to matches on the fly
+
         session_user.visited = True
         session_user.time_started = django.utils.timezone.now()
 
