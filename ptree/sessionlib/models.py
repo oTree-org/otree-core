@@ -71,7 +71,8 @@ class Session(models.Model):
 
     comment = models.TextField()
 
-    participants_assigned_to_treatments_and_matches = models.BooleanField(default=False)
+    _participants_assigned_to_matches = models.BooleanField(default=False)
+    _empty_matches_created = models.BooleanField(default=False)
 
     def base_pay_display(self):
         return currency(self.base_pay)
@@ -172,10 +173,17 @@ class Session(models.Model):
         return True
     payments_ready.boolean = True
 
-    def _assign_participants_to_treatments_and_matches(self):
+    def _create_empty_matches(self):
         for subsession in self.subsessions():
-            subsession._assign_participants_to_treatments_and_matches()
-        self.participants_assigned_to_treatments_and_matches = True
+            subsession._create_empty_matches()
+        self._empty_matches_created = True
+        self.save()
+
+
+    def _assign_participants_to_matches(self):
+        for subsession in self.subsessions():
+            subsession._assign_participants_to_matches()
+        self._participants_assigned_to_matches = True
         self.save()
 
     class Meta:

@@ -83,7 +83,7 @@ class SessionExperimenterWaitUntilParticipantsAreAssigned(NonSequenceUrlMixin, W
         return 'Assigning participants to matches and treatments.'
 
     def show_skip_wait(self):
-        if self.session.participants_assigned_to_treatments_and_matches:
+        if self.session._participants_assigned_to_matches or not self.session.type().preassign_participants:
             return self.PageActions.skip
         return self.PageActions.wait
 
@@ -132,7 +132,8 @@ class InitializeSessionExperimenter(vanilla.View):
             code=kwargs[constants.session_user_code]
         )
 
-        if self._session_user.session.participants_assigned_to_treatments_and_matches:
+        session = self._session_user.session
+        if session._participants_assigned_to_matches or not session.type().preassign_participants:
             return self.redirect_to_next_page()
         return render_to_response('ptree/experimenter/StartSession.html', {})
 

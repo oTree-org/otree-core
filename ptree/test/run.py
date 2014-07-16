@@ -61,7 +61,7 @@ def run(session):
     # we need to wait for that to complete.
     while True:
         session = Session.objects.get(id=session.id)
-        if session.participants_assigned_to_treatments_and_matches:
+        if session._participants_assigned_to_matches:
             break
         time.sleep(1)
 
