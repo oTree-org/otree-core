@@ -1,6 +1,6 @@
 
 from ptree.db import models
-
+from ast import literal_eval
 
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
@@ -24,8 +24,5 @@ class AuxiliaryModel(models.Model):
 
     class Meta:
         abstract = True
-
-
-
 
 

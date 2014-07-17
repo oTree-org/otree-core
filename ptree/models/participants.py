@@ -1,5 +1,5 @@
 from ptree.user.models import User
-
+import ptree.common
 
 class BaseParticipant(User):
     """
@@ -25,9 +25,11 @@ class BaseParticipant(User):
     _init_view_name = 'InitializeParticipant'
 
     def _pages(self):
-        """if a user really wants to make the pages dynamic, more than is possible with show_skip_wait, they can override this method.
         """
-        views_module = self.subsession._views_module()
+        FIXME: deprecate and remove.
+        if a user really wants to make the pages dynamic, more than is possible with show_skip_wait, they can override this method.
+        """
+        views_module = ptree.common._views_module(self)
         return views_module.pages()
 
     def _pages_as_urls(self):

@@ -412,6 +412,12 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
         response[constants.redisplay_with_errors_http_header] = constants.get_param_truth_value
         return response
 
+class CheckpointMixin(object):
+
+    def validated_show_skip_wait(self):
+        # check the "passed checkpoints" JSON field, as well as the participant_distribution
+        pass
+
 class ModelFormMixin(object):
     """mixin rather than subclass because we want these methods only to be first in MRO"""
 
@@ -428,6 +434,7 @@ class ModelFormMixin(object):
         self.post_processing_on_valid_form(form)
         self.after_valid_form_submission()
         self.update_indexes_in_sequences()
+        self._final_participant_actions()
         return HttpResponseRedirect(self._session_user.get_success_url())
 
 class ModelFormSetMixin(object):
@@ -487,6 +494,17 @@ class ParticipantSequenceMixin(SequenceMixin):
                'session': self.session,
                'time_limit_was_exceeded': self.time_limit_was_exceeded}
 
+    def _final_participant_actions(self):
+        # increment position
+        #FIXME: use select_for_update
+        last_in_match = self.match._increment_participant_progress_distribution(self, self.index_in_pages)
+        last_in_subsession = self.subsession._increment_participant_progress_distribution(self, self.index_in_pages)
+
+        if last_in_match:
+            self.final_participant_from_match()
+        if last_in_subsession:
+            self.final_participant_from_subsession()
+
 class ExperimenterSequenceMixin(SequenceMixin):
 
     def get_debug_values(self):
@@ -497,6 +515,10 @@ class ExperimenterSequenceMixin(SequenceMixin):
                'request': self.request,
                'session': self.session,
                'time_limit_was_exceeded': self.time_limit_was_exceeded}
+
+    def _final_participant_actions(self):
+        pass
+
 
 class BaseView(PTreeMixin, NonSequenceUrlMixin, vanilla.View):
     """

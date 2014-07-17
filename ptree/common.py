@@ -10,7 +10,7 @@ from ptree import constants
 import os
 import hashlib
 from os.path import dirname, abspath, join
-
+from ast import literal_eval
 
 def add_params_to_url(url, params):
     url_parts = list(urlparse.urlparse(url))
@@ -92,3 +92,35 @@ def get_models_module(app_name):
 
 def flatten(list_of_lists):
     return [item for sublist in list_of_lists for item in sublist]
+
+def _views_module(model_instance):
+    return import_module('{}.views'.format(model_instance._meta.app_label))
+
+class ParticipantProgressDistributionMixin(object):
+    @property
+    def _participant_progress_distribution(self):
+        f = self._participant_progress_distribution_field
+        if f == '':
+            return []
+        return f.split(',')
+
+    @_participant_progress_distribution.setter
+    def _participant_progress_distribution(self, value):
+        self._participant_progress_distribution_field = ','.join(value)
+
+
+    def _initialize_participant_progress_distribution(self):
+        # this needs to be called at the beginning of the subsession
+        num_pages = len(_views_module(self).pages())
+        distn = [0 for i in range(num_pages)]
+        distn[0] = self.participant_set.count()
+        self._participant_progress_distribution = distn
+
+    def _increment_participant_progress_distribution(self, new_index):
+        """increments and returns whether this was the last participant"""
+        distn = self._participant_progress_distribution
+        distn[new_index - 1] -= 1
+        assert distn[new_index - 1] >= 0
+        distn[new_index] += 1
+        self._participant_progress_distribution = distn
+        return sum(distn[:new_index]) == 0

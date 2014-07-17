@@ -8,13 +8,13 @@ from ptree.db import models
 from ptree.fields import RandomCharField
 import ptree.constants as constants
 import math
-from ptree.common import flatten
+from ptree.common import flatten, ParticipantProgressDistributionMixin
 import ptree.user.models
 from django.utils.importlib import import_module
 import itertools
 
 
-class BaseSubsession(models.Model):
+class BaseSubsession(models.Model, ParticipantProgressDistributionMixin):
     """
     Base class for all Subsessions.
     """
@@ -49,8 +49,7 @@ class BaseSubsession(models.Model):
         doc="""whether the experimenter made the participants skip this subsession"""
     )
 
-    def _views_module(self):
-        return import_module('{}.views'.format(self.app_name))
+    _participant_progress_distribution_field = models.CommaSeparatedIntegerField(default='')
 
     def name(self):
         return str(self.pk)
@@ -126,6 +125,7 @@ class BaseSubsession(models.Model):
                 match_groups[m_index][p_index] = current_participant_dict[p.session_participant.pk]
 
     def _create_empty_matches(self):
+        self._initialize_participant_progress_distribution()
         previous_round = self.previous_round()
         if previous_round:
             treatments = self._corresponding_treatments(previous_round)
@@ -134,7 +134,7 @@ class BaseSubsession(models.Model):
         treatments = self.pick_treatments(treatments)
         #FIXME: how do i get MatchClass?
         for t in treatments:
-            MatchClass._create(t)
+            m = MatchClass._create(t)
 
     def _assign_participants_to_matches(self):
         previous_round = self.previous_round()

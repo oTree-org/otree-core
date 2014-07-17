@@ -1,11 +1,14 @@
 from ptree.db import models
 import ptree.sessionlib.models
 from save_the_change.mixins import SaveTheChange
+from ptree.common import ParticipantProgressDistributionMixin
 
 class BaseMatch(SaveTheChange, models.Model):
     """
     Base class for all Matches.
     """
+
+    _participant_progress_distribution_field = models.CommaSeparatedIntegerField(default='')
 
     def __unicode__(self):
         return str(self.pk)
@@ -22,6 +25,7 @@ class BaseMatch(SaveTheChange, models.Model):
     """
 
 
+
     @classmethod
     def _create(cls, treatment):
         match = cls(
@@ -30,6 +34,7 @@ class BaseMatch(SaveTheChange, models.Model):
             session = treatment.session
         )
         # need to save it before you assign the participant.match ForeignKey
+        match._initialize_participant_progress_distribution()
         match.save()
         return match
 
