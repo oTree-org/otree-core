@@ -487,38 +487,6 @@ class ModelFormMixin(object):
         self._final_participant_actions()
         return HttpResponseRedirect(self._session_user.get_success_url())
 
-class ModelFormSetMixin(object):
-    """mixin rather than subclass because we want these methods only to be first in MRO"""
-    extra = 0
-
-    def get_formset(self, data=None, files=None, **kwargs):
-        formset = super(ModelFormSetMixin, self).get_formset(data, files, **kwargs)
-        # crispy forms: get the helper from the first form in the formset, and assign it to the whole formset
-        if len(formset.forms) >= 1:
-            formset.helper = formset.forms[0].helper
-        else:
-            formset.helper = ptree.forms_internal.FormHelper()
-        return formset
-
-    def after_valid_form_submission(self):
-        pass
-
-    def formset_valid(self, formset):
-        self.object_list = formset.save()
-        for form in formset:
-            self.post_processing_on_valid_form(form)
-        # 2/17/2014: I think there should be both a after_valid_formset_submission
-        # (for more global actions)
-        # and after_valid_form_submission (for items specific to the form)
-        # but people are going to confuse the name, and write global code in after_valid_form_submission
-        # i should give it a more distinct name.
-        # or maybe tell people to iterate through self.object_list in after_valid_formset_submission?
-        # (they will have to remember to save the objects)
-        # for now, just rely on object_list until there is a need for a special method.
-        self.after_valid_form_submission()
-        self.update_indexes_in_sequences()
-        return HttpResponseRedirect(self._session_user.get_success_url())
-
 
 class ParticipantSequenceMixin(SequenceMixin):
     """for participants"""
@@ -576,14 +544,7 @@ class BaseView(PTreeMixin, NonSequenceUrlMixin, vanilla.View):
     """
     pass
 
-class CreateAuxModelMixin(object):
-    def post_processing_on_valid_form(self, form):
-        instance = form.save(commit=False)
-        if hasattr(instance, 'participant'):
-            instance.participant = self.participant
-        if hasattr(instance, 'match'):
-            instance.match = self.match
-        instance.save()
+
 
 class ParticipantUpdateView(ModelFormMixin, ParticipantSequenceMixin, ParticipantMixin, vanilla.UpdateView):
 
@@ -621,25 +582,6 @@ class ExperimenterUpdateView(ModelFormMixin, ExperimenterSequenceMixin, Experime
         elif Cls == seq_models.StubModel:
             return seq_models.StubModel.objects.all()[0]
 
-
-class ParticipantCreateView(ModelFormMixin, ParticipantSequenceMixin, ParticipantMixin, CreateAuxModelMixin, vanilla.CreateView):
-    """use case?"""
-    pass
-
-class ExperimenterCreateView(ModelFormMixin, ExperimenterSequenceMixin, ExperimenterMixin, CreateAuxModelMixin, vanilla.CreateView):
-    pass
-
-class ParticipantCreateMultipleView(ModelFormSetMixin, ParticipantSequenceMixin, ParticipantMixin, CreateAuxModelMixin, extra_views.ModelFormSetView):
-    """incomplete. i need something like get_queryset"""
-
-class ExperimenterCreateMultipleView(ModelFormSetMixin, ExperimenterSequenceMixin, ExperimenterMixin, CreateAuxModelMixin, extra_views.ModelFormSetView):
-    """incomplete. i need something like get_queryset"""
-
-class ParticipantUpdateMultipleView(ModelFormSetMixin, ParticipantSequenceMixin, ParticipantMixin, extra_views.ModelFormSetView):
-    pass
-
-class ExperimenterUpdateMultipleView(ModelFormSetMixin, ExperimenterSequenceMixin, ExperimenterMixin, extra_views.ModelFormSetView):
-    pass
 
 class InitializeParticipantOrExperimenter(NonSequenceUrlMixin, vanilla.View):
 

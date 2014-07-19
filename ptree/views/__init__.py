@@ -71,30 +71,3 @@ class ExperimenterPage(abstract.ExperimenterUpdateView):
         return super(ExperimenterPage, self).wait_page_title_text()
 
     template_name = None
-
-class ExperimenterUpdateMultiplePage(abstract.ExperimenterUpdateMultipleView):
-
-    def variables_for_template(self):
-        return super(ExperimenterUpdateMultiplePage, self).variables_for_template()
-
-    def after_valid_form_submission(self):
-        return super(ExperimenterUpdateMultiplePage, self).after_valid_form_submission()
-
-    def get_form_class(self):
-        return super(ExperimenterUpdateMultiplePage, self).get_form_class()
-
-    def is_shown(self):
-        return super(ExperimenterUpdateMultiplePage, self).is_shown()
-
-    def wait_page_body_text(self):
-        return super(ExperimenterUpdateMultiplePage, self).wait_page_body_text()
-
-    def wait_page_title_text(self):
-        return super(ExperimenterUpdateMultiplePage, self).wait_page_title_text()
-
-    def get_queryset(self):
-        return super(ExperimenterUpdateMultiplePage, self).get_queryset()
-
-    template_name = None
-
-
