@@ -8,18 +8,20 @@ from ptree.db import models
 from ptree.fields import RandomCharField
 import ptree.constants as constants
 import math
-from ptree.common import flatten, ParticipantProgressDistributionMixin
+from ptree.common import flatten, ModelWithCheckpointMixin
 import ptree.user.models
 from django.utils.importlib import import_module
 import itertools
+from django_extensions.db.fields.json import JSONField
 
-
-class BaseSubsession(models.Model, ParticipantProgressDistributionMixin):
+class BaseSubsession(models.Model, ModelWithCheckpointMixin):
     """
     Base class for all Subsessions.
     """
 
     code = RandomCharField(length=8)
+
+    _incomplete_checkpoints = JSONField()
 
     _experimenter = models.OneToOneField(
         ptree.user.models.Experimenter,
@@ -48,8 +50,6 @@ class BaseSubsession(models.Model, ParticipantProgressDistributionMixin):
         default=False,
         doc="""whether the experimenter made the participants skip this subsession"""
     )
-
-    _participant_progress_distribution_field = models.CommaSeparatedIntegerField(default='')
 
     def name(self):
         return str(self.pk)
@@ -124,17 +124,19 @@ class BaseSubsession(models.Model, ParticipantProgressDistributionMixin):
             for p_index, p in enumerate(m):
                 match_groups[m_index][p_index] = current_participant_dict[p.session_participant.pk]
 
+    def _MatchClass(self):
+        return import_module('{}.models'.format(self._meta.app_label)).Match
+
     def _create_empty_matches(self):
-        self._initialize_participant_progress_distribution()
+        self._initialize_checkpoints()
         previous_round = self.previous_round()
         if previous_round:
             treatments = self._corresponding_treatments(previous_round)
         else:
             treatments = self._random_treatments()
         treatments = self.pick_treatments(treatments)
-        #FIXME: how do i get MatchClass?
         for t in treatments:
-            m = MatchClass._create(t)
+            m = self._MatchClass._create(t)
 
     def _assign_participants_to_matches(self):
         previous_round = self.previous_round()
@@ -147,6 +149,7 @@ class BaseSubsession(models.Model, ParticipantProgressDistributionMixin):
             match = self._next_open_match()
             for participant in match_group:
                 participant._assign_to_match(match)
+            match._initialize_checkpoints()
 
     def previous_subsession_is_in_same_app(self):
         previous_subsession = self.previous_subsession
@@ -166,6 +169,11 @@ class BaseSubsession(models.Model, ParticipantProgressDistributionMixin):
         pages_as_urls() returns something like ['mygame/IntroPage', ...]
         """
         return [View.url(self._experimenter.session_experimenter, index) for index, View in enumerate(self._experimenter_pages())]
+
+    def _CheckpointMixinClass(self):
+        from ptree.views.abstract import MatchCheckpointMixin
+        return MatchCheckpointMixin
+
 
     class Meta:
         abstract = True

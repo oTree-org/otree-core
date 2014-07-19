@@ -4,7 +4,6 @@ from ptree.views.abstract import (
     ParticipantUpdateView,
     LoadClassesAndUserMixin,
     load_session_user,
-    WaitPageMixin,
     AssignVisitorToOpenSession
 )
 
@@ -27,7 +26,7 @@ class RedirectToPageUserShouldBeOn(NonSequenceUrlMixin,
     name_in_url = 'shared'
 
     def get(self, request, *args, **kwargs):
-        return self.redirect_to_page_the_user_should_be_on()
+        return self._redirect_to_page_the_user_should_be_on()
 
     @load_session_user
     def dispatch(self, request, *args, **kwargs):
@@ -73,45 +72,6 @@ class WaitUntilAssignedToMatch(ParticipantUpdateView):
                 'wait_page_title_text': self.wait_page_title_text()
             }
         )
-
-class SessionExperimenterWaitUntilParticipantsAreAssigned(NonSequenceUrlMixin, WaitPageMixin, vanilla.View):
-
-    def wait_page_title_text(self):
-        return 'Please wait'
-
-    def wait_page_body_text(self):
-        return 'Assigning participants to matches and treatments.'
-
-    def show_skip_wait(self):
-        if self.session._participants_assigned_to_matches or not self.session.type().preassign_participants:
-            return self.PageActions.skip
-        return self.PageActions.wait
-
-    @classmethod
-    def get_name_in_url(cls):
-        return 'shared'
-
-
-    def dispatch(self, request, *args, **kwargs):
-        session_user_code = kwargs[constants.session_user_code]
-        self.request.session[session_user_code] = {}
-
-        self._session_user = get_object_or_404(
-            ptree.sessionlib.models.SessionExperimenter,
-            code=kwargs[constants.session_user_code]
-        )
-
-        self.session = self._session_user.session
-        page_action = self.validated_show_skip_wait()
-
-        if self.request_is_from_wait_page():
-            return self.response_to_wait_page(page_action)
-        else:
-            # if the participant shouldn't see this view, skip to the next
-            if page_action == self.PageActions.skip:
-                return HttpResponseRedirect(self._session_user.me_in_first_subsession._start_url())
-            elif page_action == self.PageActions.wait:
-                return self.get_wait_page()
 
 class InitializeSessionExperimenter(vanilla.View):
 

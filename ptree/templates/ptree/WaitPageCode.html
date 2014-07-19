@@ -2,7 +2,7 @@
 <script type="text/javascript">
     var checkIfReady = function() {
 
-    var args = { type: "GET", url: "{{ SequenceViewURL }}", complete: redirectToSequenceView};
+    var args = { type: "GET", url: "{{ wait_page_url }}", complete: redirectToSequenceView};
     $.ajax(args);
 
     }
@@ -11,7 +11,7 @@
         if (status == "success") {
             var response = res.responseText;
             if (response == "1") {
-                document.location.href = '{{ SequenceViewURL }}';
+                document.location.href = '{{ wait_page_url }}';
             }
         // work in progress ,,this is supposed to display errors
         //else{

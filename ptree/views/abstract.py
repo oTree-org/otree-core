@@ -3,6 +3,7 @@ The view classes in this module are just base classes, and cannot be called from
 You should inherit from these classes and put your view class in your game directory (under "games/")
 Or in the other view file in this directory, which stores shared concrete views that have URLs."""
 
+from threading import Thread
 import time
 import logging
 from datetime import datetime
@@ -90,7 +91,7 @@ class PTreeMixin(object):
             return cls.z_models.Subsession.name_in_url
         return cls.name_in_url
 
-    def redirect_to_page_the_user_should_be_on(self):
+    def _redirect_to_page_the_user_should_be_on(self):
         """Redirect to where the participant should be,
         according to the view index we maintain in the DB
         Useful if the participant tried to skip ahead,
@@ -176,36 +177,18 @@ class ExperimenterMixin(object):
 
 class WaitPageMixin(object):
 
-    class PageActions:
-        show = 'show'
-        skip = 'skip'
-        wait = 'wait'
-
-    def show_skip_wait(self):
-        return self.PageActions.show
-
-    def validated_show_skip_wait(self):
-        page_action = self.show_skip_wait()
-        if not page_action in [self.PageActions.show, self.PageActions.skip, self.PageActions.wait]:
-            raise ValueError('show_skip_wait() must return one of the following: [self.PageActions.show, self.PageActions.skip, self.PageActions.wait]')
-        return page_action
-
     # TODO: this is intended to be in the user's project, not part of pTree core.
     # but maybe have one in pTree core as a fallback in case the user doesn't have it.
     wait_page_template_name = 'ptree/WaitPage.html'
 
-    def wait_page_body_text(self):
-        pass
-
     def wait_page_title_text(self):
+        return 'Please wait'
+
+    def wait_page_body_text(self):
         pass
 
     def request_is_from_wait_page(self):
         return self.request.is_ajax() and self.request.GET.get(constants.check_if_wait_is_over) == constants.get_param_truth_value
-
-    def response_to_wait_page(self, page_action):
-        no_more_wait = page_action != self.PageActions.wait
-        return HttpResponse(int(no_more_wait))
 
     def wait_page_request_url(self):
         return '{}?{}={}'.format(
@@ -217,11 +200,14 @@ class WaitPageMixin(object):
     def get_debug_values(self):
         pass
 
+    def _response_to_wait_page(self):
+        return HttpResponse(int(self._is_complete()))
+
     def get_wait_page(self):
         response = render_to_response(
             self.wait_page_template_name,
             {
-                'SequenceViewURL': self.wait_page_request_url(),
+                'wait_page_url': self.wait_page_request_url(),
                 'debug_values': self.get_debug_values() if settings.DEBUG else None,
                 'wait_page_body_text': self.wait_page_body_text(),
                 'wait_page_title_text': self.wait_page_title_text()
@@ -230,8 +216,89 @@ class WaitPageMixin(object):
         response[constants.wait_page_http_header] = constants.get_param_truth_value
         return response
 
+class CheckpointMixin(object):
 
-class SequenceMixin(PTreeMixin, WaitPageMixin):
+    def _is_complete(self):
+        # check the "passed checkpoints" JSON field
+        return self._checkpoint_is_complete(self.index_in_pages)
+
+    def _record_visit(self):
+        """record that this participant visited"""
+        # lock the match/subsession to avoid race conditions
+        self._match_or_subsession = self._match_or_subsession.__class__._default_manager.select_for_update().get(pk=self.pk)
+        return self._match_or_subsession._record_checkpoint_visit(self._user.pk, self.index_in_pages)
+
+    def _run_action_in_thread(self):
+        t = Thread(target=self._action)
+        t.start()
+
+    def _action(self):
+        '''do in a background thread and lock the DB'''
+        self.action()
+        self._match_or_subsession._mark_checkpoint_complete(self.index_in_pages)
+
+    def dispatch(self, request, *args, **kwargs):
+        if self.request_is_from_wait_page():
+            return self._response_to_wait_page()
+        else:
+            if self._is_complete():
+                return self._redirect_to_page_the_user_should_be_on()
+            run_action_now = self._record_visit()
+            if run_action_now:
+                self._run_action_in_thread()
+            return self.get_wait_page()
+
+    def is_shown(self):
+        return True
+
+class MatchCheckpointMixin(CheckpointMixin):
+
+    def dispatch(self, request, *args, **kwargs):
+        self._match_or_subsession = self.match
+        return super(MatchCheckpointMixin, self).dispatch(request, *args, **kwargs)
+
+class SubsessionCheckpointMixin(CheckpointMixin):
+
+    def dispatch(self, request, *args, **kwargs):
+        self._match_or_subsession = self.subsession
+        return super(SubsessionCheckpointMixin, self).dispatch(request, *args, **kwargs)
+
+class SessionExperimenterWaitUntilParticipantsAreAssigned(NonSequenceUrlMixin, WaitPageMixin, vanilla.View):
+
+    def wait_page_title_text(self):
+        return 'Please wait'
+
+    def wait_page_body_text(self):
+        return 'Assigning participants to matches and treatments.'
+
+    def show_skip_wait(self):
+        if self.session._participants_assigned_to_matches or not self.session.type().preassign_participants:
+            return self.PageActions.skip
+        return self.PageActions.wait
+
+    @classmethod
+    def get_name_in_url(cls):
+        return 'shared'
+
+    def dispatch(self, request, *args, **kwargs):
+        session_user_code = kwargs[constants.session_user_code]
+        self.request.session[session_user_code] = {}
+
+        self._session_user = get_object_or_404(
+            ptree.sessionlib.models.SessionExperimenter,
+            code=kwargs[constants.session_user_code]
+        )
+
+        self.session = self._session_user.session
+
+        if self.request_is_from_wait_page():
+            return self._response_to_wait_page()
+        else:
+            # if the participant shouldn't see this view, skip to the next
+            return HttpResponseRedirect(self._session_user.me_in_first_subsession._start_url())
+            return self.get_wait_page()
+
+class SequenceMixin(PTreeMixin):
     """
     View that manages its position in the match sequence.
     for both participants and experimenters
@@ -306,7 +373,7 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
 
             if self.subsession._skip:
                 self.update_index_in_subsessions()
-                return self.redirect_to_page_the_user_should_be_on()
+                return self._redirect_to_page_the_user_should_be_on()
 
             self.index_in_pages = int(kwargs.pop(constants.index_in_pages))
 
@@ -315,28 +382,16 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
             # or if they hit the back button to a previous subsession in the sequence.
             if not self.user_is_on_right_page():
                 # then bring them back to where they should be
-                return self.redirect_to_page_the_user_should_be_on()
+                return self._redirect_to_page_the_user_should_be_on()
 
-            self._session_user.current_page = self.__class__.__name__
-
-            # by default it's false (e.g. for GET requests), but can be set to True in post() method
-            self.time_limit_was_exceeded = False
-
-            page_action = self.validated_show_skip_wait()
-            self._session_user.is_on_wait_page = page_action == self.PageActions.wait
-
-            if self.request_is_from_wait_page():
-                response = self.response_to_wait_page(page_action)
-
+            if not self.is_shown():
+                self.update_indexes_in_sequences()
+                response = self._redirect_to_page_the_user_should_be_on()
             else:
-                # if the participant shouldn't see this view, skip to the next
-                if page_action == self.PageActions.skip:
-                    self.update_indexes_in_sequences()
-                    response = self.redirect_to_page_the_user_should_be_on()
-                elif page_action == self.PageActions.wait:
-                    response = self.get_wait_page()
-                else:
-                    response = super(SequenceMixin, self).dispatch(request, *args, **kwargs)
+                self._session_user.current_page = self.__class__.__name__
+                # by default it's false (e.g. for GET requests), but can be set to True in post() method
+                self.time_limit_was_exceeded = False
+                response = super(SequenceMixin, self).dispatch(request, *args, **kwargs)
             self._session_user.last_request_succeeded = True
             self.save_objects()
             return response
@@ -412,11 +467,6 @@ class SequenceMixin(PTreeMixin, WaitPageMixin):
         response[constants.redisplay_with_errors_http_header] = constants.get_param_truth_value
         return response
 
-class CheckpointMixin(object):
-
-    def validated_show_skip_wait(self):
-        # check the "passed checkpoints" JSON field, as well as the participant_distribution
-        pass
 
 class ModelFormMixin(object):
     """mixin rather than subclass because we want these methods only to be first in MRO"""
@@ -553,6 +603,12 @@ class ParticipantUpdateView(ModelFormMixin, ParticipantSequenceMixin, Participan
             return Cls.objects.get(object_id=self.participant.id,
                                    content_type=ContentType.objects.get_for_model(self.participant))
 
+
+class MatchCheckpoint(ParticipantSequenceMixin, MatchCheckpointMixin, vanilla.UpdateView):
+    pass
+
+class SubsessionCheckpoint(ParticipantSequenceMixin, SubsessionCheckpointMixin, vanilla.UpdateView):
+    pass
 
 
 class ExperimenterUpdateView(ModelFormMixin, ExperimenterSequenceMixin, ExperimenterMixin, vanilla.UpdateView):

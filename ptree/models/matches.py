@@ -1,14 +1,15 @@
 from ptree.db import models
 import ptree.sessionlib.models
 from save_the_change.mixins import SaveTheChange
-from ptree.common import ParticipantProgressDistributionMixin
+from ptree.common import ModelWithCheckpointMixin
+from django_extensions.db.fields.json import JSONField
 
-class BaseMatch(SaveTheChange, models.Model):
+class BaseMatch(SaveTheChange, ModelWithCheckpointMixin, models.Model):
     """
     Base class for all Matches.
     """
 
-    _participant_progress_distribution_field = models.CommaSeparatedIntegerField(default='')
+    _incomplete_checkpoints = JSONField()
 
     def __unicode__(self):
         return str(self.pk)
@@ -25,6 +26,9 @@ class BaseMatch(SaveTheChange, models.Model):
     """
 
 
+    def _CheckpointMixinClass(self):
+        from ptree.views.abstract import MatchCheckpointMixin
+        return MatchCheckpointMixin
 
     @classmethod
     def _create(cls, treatment):
@@ -34,7 +38,6 @@ class BaseMatch(SaveTheChange, models.Model):
             session = treatment.session
         )
         # need to save it before you assign the participant.match ForeignKey
-        match._initialize_participant_progress_distribution()
         match.save()
         return match
 

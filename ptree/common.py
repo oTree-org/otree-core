@@ -96,7 +96,7 @@ def flatten(list_of_lists):
 def _views_module(model_instance):
     return import_module('{}.views'.format(model_instance._meta.app_label))
 
-class ParticipantProgressDistributionMixin(object):
+class ModelWithCheckpointMixin(object):
     @property
     def _participant_progress_distribution(self):
         f = self._participant_progress_distribution_field
@@ -108,19 +108,25 @@ class ParticipantProgressDistributionMixin(object):
     def _participant_progress_distribution(self, value):
         self._participant_progress_distribution_field = ','.join(value)
 
+    def _initialize_checkpoints(self):
+        views_module = _views_module(self)
+        CheckpointMixinClass = self._CheckpointMixinClass()
+        participant_ids = {pk:True for pk in self.participant_set.all()}
+        self._incomplete_checkpoints = {i:participant_ids for i, C in enumerate(views_module.pages()) if issubclass(C, CheckpointMixinClass)}
 
-    def _initialize_participant_progress_distribution(self):
-        # this needs to be called at the beginning of the subsession
-        num_pages = len(_views_module(self).pages())
-        distn = [0 for i in range(num_pages)]
-        distn[0] = self.participant_set.count()
-        self._participant_progress_distribution = distn
 
-    def _increment_participant_progress_distribution(self, new_index):
-        """increments and returns whether this was the last participant"""
-        distn = self._participant_progress_distribution
-        distn[new_index - 1] -= 1
-        assert distn[new_index - 1] >= 0
-        distn[new_index] += 1
-        self._participant_progress_distribution = distn
-        return sum(distn[:new_index]) == 0
+    def _record_checkpoint_visit(self, index_in_pages, participant_id):
+        '''returns whether to take the action'''
+        if self._incomplete_checkpoints.has_key(index_in_pages):
+            remaining_visits = self._incomplete_checkpoints[index_in_pages]
+            if remaining_visits.has_key(participant_id):
+                remaining_visits.pop(participant_id, None)
+                if not remaining_visits:
+                    return True
+        return False
+
+    def _mark_checkpoint_complete(self, index_in_pages):
+        self._incomplete_checkpoints.pop(index_in_pages)
+
+    def _checkpoint_is_complete(self, index_in_pages):
+        return self._incomplete_checkpoints.has_key(index_in_pages)
