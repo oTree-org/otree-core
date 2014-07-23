@@ -9,7 +9,7 @@ from collections import defaultdict
 
 class SessionType(object):
     def __init__(self, name, subsession_apps, base_pay, num_participants,
-                 num_demo_participants = None, is_for_mturk=False, doc=None, preassign_matches=False):
+                 num_demo_participants = None, is_for_mturk=False, doc=None, preassign_matches=True):
         self.name = name
         self.subsession_apps = subsession_apps
         self.base_pay = base_pay
@@ -39,7 +39,7 @@ def create_session(type_name, label='', special_category=None):
     except KeyError:
         raise ValueError('Session type "{}" not found in session.py'.format(type_name))
     session = Session(
-        type=session_type.name,
+        type_name=session_type.name,
         label=label,
         is_for_mturk=session_type.is_for_mturk,
         base_pay=session_type.base_pay,
@@ -91,12 +91,14 @@ def create_session(type_name, label='', special_category=None):
         treatments = models_module.treatments()
         for t_index, t in enumerate(treatments):
             t._index_within_subsession = t_index
-            t.save()
+
         subsession = models_module.Subsession(round_number = round_counts[app_label])
         subsession.save()
         for t in treatments:
             t.subsession = subsession
             t.save()
+
+
 
         session.add_subsession(subsession)
         experimenter = Experimenter(session=session)
@@ -112,6 +114,8 @@ def create_session(type_name, label='', special_category=None):
                 session_participant = session_participants[i]
             )
             participant.save()
+
+        subsession._create_empty_matches()
 
         print 'Created objects for {}'.format(app_label)
         subsessions.append(subsession)

@@ -2,11 +2,14 @@ from django.contrib.contenttypes import generic
 from ptree.sessionlib.models import Session, SessionParticipant
 from ptree.db import models
 from importlib import import_module
+from ptree.common import _participants, _matches
 
 subsessions = import_module('ptree.models.subsessions')
 treatments = import_module('ptree.models.treatments')
 matches = import_module('ptree.models.matches')
 participants = import_module('ptree.models.participants')
+
+
 
 class BaseSubsession(subsessions.BaseSubsession):
 
@@ -37,13 +40,16 @@ class BaseSubsession(subsessions.BaseSubsession):
     )
 
     def treatments(self):
-        return list(self.treatment_set.all())
+        if hasattr(self, '_treatments'):
+            return self._treatments
+        self._treatments = list(self.treatment_set.all())
+        return self._treatments
 
     def matches(self):
-        return list(self.match_set.all())
+        return _matches(self)
 
     def participants(self):
-        return list(self.participant_set.all())
+        return _participants(self)
 
     @property
     def app_name(self):
@@ -56,10 +62,10 @@ class BaseSubsession(subsessions.BaseSubsession):
 class BaseTreatment(treatments.BaseTreatment):
 
     def matches(self):
-        return list(self.match_set.all())
+        return _matches(self)
 
     def participants(self):
-        return list(self.participant_set.all())
+        return _participants(self)
 
     label = models.CharField(max_length = 300, null = True, blank = True)
 
@@ -83,7 +89,7 @@ class BaseMatch(matches.BaseMatch):
     )
 
     def participants(self):
-        return list(self.participant_set.all())
+        return _participants(self)
 
     class Meta:
         abstract = True

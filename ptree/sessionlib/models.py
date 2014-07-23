@@ -72,7 +72,6 @@ class Session(models.Model):
     comment = models.TextField()
 
     _participants_assigned_to_matches = models.BooleanField(default=False)
-    _empty_matches_created = models.BooleanField(default=False)
 
     def base_pay_display(self):
         return currency(self.base_pay)
@@ -173,15 +172,9 @@ class Session(models.Model):
         return True
     payments_ready.boolean = True
 
-    def _create_empty_matches(self):
-        for subsession in self.subsessions():
-            subsession._create_empty_matches()
-        self._empty_matches_created = True
-        self.save()
-
-
     def _assign_participants_to_matches(self):
         for subsession in self.subsessions():
+            subsession._create_empty_matches()
             subsession._assign_participants_to_matches()
         self._participants_assigned_to_matches = True
         self.save()
@@ -230,14 +223,14 @@ class SessionUser(models.Model):
         return '{}/{} subsessions'.format(self._index_in_subsessions, len(self.session.subsessions()))
 
     def _pages_completed_in_current_subsession(self):
-        return self.users()[self._index_in_subsessions]._pages_completed()
+        return self._users()[self._index_in_subsessions]._pages_completed()
 
     def current_subsession(self):
         if not self.visited:
             return None
         return ptree.common.app_name_format(self.session.subsessions()[self._index_in_subsessions]._meta.app_label)
 
-    def users(self):
+    def _users(self):
         """Used to calculate payoffs"""
         lst = []
         me_in_next_subsession = self.me_in_first_subsession
@@ -283,7 +276,7 @@ class SessionExperimenter(SessionUser):
             subsession._experimenter.save()
 
     def experimenters(self):
-        return self.users()
+        return self._users()
 
     user_type_in_url = constants.user_type_experimenter
 
@@ -308,7 +301,7 @@ class SessionParticipant(SessionUser):
         )
 
     def participants(self):
-        return self.users()
+        return self._users()
 
     def payoff_from_subsessions(self):
         return sum(participant.payoff or 0 for participant in self.participants())
@@ -342,7 +335,7 @@ class SessionParticipant(SessionUser):
         return u'{} (incomplete)'.format(total_pay)
 
     def _assign_to_matches(self):
-        for p in self.participants():
+        for p in self.participant_set.all():
             p._assign_to_match()
 
     mturk_assignment_id = models.CharField(max_length = 50, null = True)

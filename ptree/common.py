@@ -11,6 +11,8 @@ import os
 import hashlib
 from os.path import dirname, abspath, join
 from ast import literal_eval
+import copy
+
 
 def add_params_to_url(url, params):
     url_parts = list(urlparse.urlparse(url))
@@ -111,22 +113,48 @@ class ModelWithCheckpointMixin(object):
     def _initialize_checkpoints(self):
         views_module = _views_module(self)
         CheckpointMixinClass = self._CheckpointMixinClass()
-        participant_ids = {pk:True for pk in self.participant_set.all()}
-        self._incomplete_checkpoints = {i:participant_ids for i, C in enumerate(views_module.pages()) if issubclass(C, CheckpointMixinClass)}
+        participant_ids = {str(p.pk):True for p in self.participant_set.all()}
+        # i+1 because of WaitUntilParticipantAssignedToMatch
+        self._incomplete_checkpoints = {str(i+1):participant_ids for i, C in enumerate(views_module.pages()) if issubclass(C, CheckpointMixinClass)}
 
 
     def _record_checkpoint_visit(self, index_in_pages, participant_id):
         '''returns whether to take the action'''
-        if self._incomplete_checkpoints.has_key(index_in_pages):
-            remaining_visits = self._incomplete_checkpoints[index_in_pages]
+        _incomplete_checkpoints = copy.deepcopy(self._incomplete_checkpoints)
+        index_in_pages = str(index_in_pages)
+        participant_id = str(participant_id)
+        take_action = False
+        if _incomplete_checkpoints.has_key(index_in_pages):
+            remaining_visits = _incomplete_checkpoints[index_in_pages]
             if remaining_visits.has_key(participant_id):
                 remaining_visits.pop(participant_id, None)
                 if not remaining_visits:
-                    return True
-        return False
+                    take_action = True
+        self._incomplete_checkpoints = _incomplete_checkpoints
+        self.save()
+        return take_action
 
     def _mark_checkpoint_complete(self, index_in_pages):
-        self._incomplete_checkpoints.pop(index_in_pages)
+        index_in_pages = str(index_in_pages)
+        _incomplete_checkpoints = copy.deepcopy(self._incomplete_checkpoints)
+        _incomplete_checkpoints.pop(index_in_pages)
+        self._incomplete_checkpoints = _incomplete_checkpoints
 
     def _checkpoint_is_complete(self, index_in_pages):
-        return self._incomplete_checkpoints.has_key(index_in_pages)
+        index_in_pages = str(index_in_pages)
+        return not self._incomplete_checkpoints.has_key(index_in_pages)
+
+    def _refresh_with_lock(self):
+        return self.__class__._default_manager.select_for_update().get(pk=self.pk)
+
+def _participants(self):
+    if hasattr(self, '_participants'):
+        return self._participants
+    self._participants = list(self.participant_set.order_by('index_among_participants_in_match'))
+    return self._participants
+
+def _matches(self):
+    if hasattr(self, '_matches'):
+        return self._matches
+    self._matches = list(self.match_set.all())
+    return self._matches

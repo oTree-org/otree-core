@@ -65,17 +65,17 @@ class PTreeMixin(object):
     def load_user(self):
         code = self.request_session[constants.user_code]
         try:
-            self.user = get_object_or_404(self.UserClass, code=code)
+            self._user = get_object_or_404(self.UserClass, code=code)
         except ValueError:
             raise Http404("This user ({}) does not exist in the database. Maybe the database was recreated.".format(code))
-        self.subsession = self.user.subsession
-        self.session = self.user.session
+        self.subsession = self._user.subsession
+        self.session = self._user.session
 
         # at this point, _session_user already exists, but we reassign this variable
         # the reason is that if we don't do this, there will be self._session_user, and
-        # self.user._session_user, which will be 2 separate queries, and thus changes made to 1 object
+        # self._user._session_user, which will be 2 separate queries, and thus changes made to 1 object
         # will not be reflected in the other.
-        self._session_user = self.user._session_user
+        self._session_user = self._user._session_user
 
     def save_objects(self):
         for obj in self.objects_to_save():
@@ -110,14 +110,14 @@ class PTreeMixin(object):
 
     def page_the_user_should_be_on(self):
         if self._session_user._index_in_subsessions > self.subsession._index_in_subsessions:
-            users = self._session_user.users()
+            users = self._session_user._users()
             try:
                 return users[self._session_user._index_in_subsessions]._start_url()
             except IndexError:
                 from ptree.views.concrete import OutOfRangeNotification
                 return OutOfRangeNotification.url(self._session_user)
 
-        return self.user._pages_as_urls()[self.user.index_in_pages]
+        return self._user._pages_as_urls()[self._user.index_in_pages]
 
     def get_request_session(self):
         return self.request.session[self._session_user.code]
@@ -158,14 +158,14 @@ class ParticipantMixin(object):
 
     def load_objects(self):
         self.load_user()
-        self.participant = self.user
+        self.participant = self._user
         self.match = self.participant.match
         # 2/11/2014: match may be undefined because the participant may be at a waiting screen
         # before experimenter assigns to a match & treatment.
         self.treatment = self.participant.treatment
 
     def objects_to_save(self):
-        return [self.match, self.user, self._session_user]
+        return [self._user, self._session_user, self.match]
 
 class ExperimenterMixin(object):
 
@@ -173,7 +173,7 @@ class ExperimenterMixin(object):
         self.load_user()
 
     def objects_to_save(self):
-        return [self.user, self.subsession, self._session_user] #+ self.subsession.participants() + self.subsession.matches() + self.subsession.treatments()
+        return [self._user, self.subsession, self._session_user] + self.subsession.participants() + self.subsession.matches() #+ self.subsession.treatments()
 
 class WaitPageMixin(object):
 
@@ -201,7 +201,7 @@ class WaitPageMixin(object):
         pass
 
     def _response_to_wait_page(self):
-        return HttpResponse(int(self._is_complete()))
+        return HttpResponse(int(bool(self._is_complete())))
 
     def get_wait_page(self):
         response = render_to_response(
@@ -216,17 +216,41 @@ class WaitPageMixin(object):
         response[constants.wait_page_http_header] = constants.get_param_truth_value
         return response
 
+    def _page_request_actions(self):
+        pass
+
+    def _redirect_after_complete(self):
+        raise NotImplementedError()
+
+    def dispatch(self, request, *args, **kwargs):
+        '''this is actually for sequence pages only, because of the _redirect_to_page_the_user_should_be_on()'''
+        if self.request_is_from_wait_page():
+            return self._response_to_wait_page()
+        else:
+            if self._is_complete():
+                return self._redirect_after_complete()
+            self._page_request_actions()
+            return self.get_wait_page()
+
+
 class CheckpointMixin(object):
 
     def _is_complete(self):
         # check the "passed checkpoints" JSON field
-        return self._checkpoint_is_complete(self.index_in_pages)
+        return self._match_or_subsession._checkpoint_is_complete(self.index_in_pages)
 
     def _record_visit(self):
         """record that this participant visited"""
         # lock the match/subsession to avoid race conditions
-        self._match_or_subsession = self._match_or_subsession.__class__._default_manager.select_for_update().get(pk=self.pk)
-        return self._match_or_subsession._record_checkpoint_visit(self._user.pk, self.index_in_pages)
+        self._match_or_subsession_locked = self._match_or_subsession._refresh_with_lock()
+        run_action_now = self._match_or_subsession_locked._record_checkpoint_visit(self.index_in_pages, self._user.pk)
+        self._match_or_subsession_locked.save()
+        return run_action_now
+
+    def _page_request_actions(self):
+        run_action_now = self._record_visit()
+        if run_action_now:
+            self._run_action_in_thread()
 
     def _run_action_in_thread(self):
         t = Thread(target=self._action)
@@ -234,22 +258,23 @@ class CheckpointMixin(object):
 
     def _action(self):
         '''do in a background thread and lock the DB'''
-        self.action()
+        # don't use the locked one because we need to run the action in the user's code
+        # that refers to self.match or self.subsession
         self._match_or_subsession._mark_checkpoint_complete(self.index_in_pages)
+        self.action()
+        for p in self.participants_in_match_or_subsession():
+            p.save()
+        self._match_or_subsession.save()
 
-    def dispatch(self, request, *args, **kwargs):
-        if self.request_is_from_wait_page():
-            return self._response_to_wait_page()
-        else:
-            if self._is_complete():
-                return self._redirect_to_page_the_user_should_be_on()
-            run_action_now = self._record_visit()
-            if run_action_now:
-                self._run_action_in_thread()
-            return self.get_wait_page()
-
-    def is_shown(self):
+    def participate_condition(self):
         return True
+
+    def _redirect_after_complete(self):
+        self.update_indexes_in_sequences()
+        return self._redirect_to_page_the_user_should_be_on()
+
+    def action(self):
+        pass
 
 class MatchCheckpointMixin(CheckpointMixin):
 
@@ -257,46 +282,19 @@ class MatchCheckpointMixin(CheckpointMixin):
         self._match_or_subsession = self.match
         return super(MatchCheckpointMixin, self).dispatch(request, *args, **kwargs)
 
+    def participants_in_match_or_subsession(self):
+        return self.match.participants()
+
+
 class SubsessionCheckpointMixin(CheckpointMixin):
 
     def dispatch(self, request, *args, **kwargs):
         self._match_or_subsession = self.subsession
         return super(SubsessionCheckpointMixin, self).dispatch(request, *args, **kwargs)
 
-class SessionExperimenterWaitUntilParticipantsAreAssigned(NonSequenceUrlMixin, WaitPageMixin, vanilla.View):
+    def participants_in_match_or_subsession(self):
+        return self.subsession.participants()
 
-    def wait_page_title_text(self):
-        return 'Please wait'
-
-    def wait_page_body_text(self):
-        return 'Assigning participants to matches and treatments.'
-
-    def show_skip_wait(self):
-        if self.session._participants_assigned_to_matches or not self.session.type().preassign_participants:
-            return self.PageActions.skip
-        return self.PageActions.wait
-
-    @classmethod
-    def get_name_in_url(cls):
-        return 'shared'
-
-    def dispatch(self, request, *args, **kwargs):
-        session_user_code = kwargs[constants.session_user_code]
-        self.request.session[session_user_code] = {}
-
-        self._session_user = get_object_or_404(
-            ptree.sessionlib.models.SessionExperimenter,
-            code=kwargs[constants.session_user_code]
-        )
-
-        self.session = self._session_user.session
-
-        if self.request_is_from_wait_page():
-            return self._response_to_wait_page()
-        else:
-            # if the participant shouldn't see this view, skip to the next
-            return HttpResponseRedirect(self._session_user.me_in_first_subsession._start_url())
-            return self.get_wait_page()
 
 class SequenceMixin(PTreeMixin):
     """
@@ -380,11 +378,11 @@ class SequenceMixin(PTreeMixin):
             # if the participant tried to skip past a part of the subsession
             # (e.g. by typing in a future URL)
             # or if they hit the back button to a previous subsession in the sequence.
-            if not self.user_is_on_right_page():
+            if not self._user_is_on_right_page():
                 # then bring them back to where they should be
                 return self._redirect_to_page_the_user_should_be_on()
 
-            if not self.is_shown():
+            if not self.participate_condition():
                 self.update_indexes_in_sequences()
                 response = self._redirect_to_page_the_user_should_be_on()
             else:
@@ -398,7 +396,7 @@ class SequenceMixin(PTreeMixin):
         except Exception, e:
 
             if hasattr(self, 'user'):
-                user_info = 'user: {}'.format(model_to_dict(self.user))
+                user_info = 'user: {}'.format(model_to_dict(self._user))
                 if hasattr(self, '_session_user'):
                     self._session_user.last_request_succeeded = False
                     self._session_user.save()
@@ -444,7 +442,7 @@ class SequenceMixin(PTreeMixin):
     def post_processing_on_valid_form(self, form):
         pass
 
-    def user_is_on_right_page(self):
+    def _user_is_on_right_page(self):
         """Will detect if a participant tried to access a page they didn't reach yet,
         for example if they know the URL to the redemption code page,
         and try typing it in so they don't have to play the whole game.
@@ -457,9 +455,9 @@ class SequenceMixin(PTreeMixin):
             self._session_user._index_in_subsessions += 1
 
     def update_indexes_in_sequences(self):
-        if self.index_in_pages == self.user.index_in_pages:
-            self.user.index_in_pages += 1
-            if self.user.index_in_pages >= len(self.user._pages_as_urls()):
+        if self.index_in_pages == self._user.index_in_pages:
+            self._user.index_in_pages += 1
+            if self._user.index_in_pages >= len(self._user._pages_as_urls()):
                 self.update_index_in_subsessions()
 
     def form_invalid(self, form):
@@ -467,6 +465,8 @@ class SequenceMixin(PTreeMixin):
         response[constants.redisplay_with_errors_http_header] = constants.get_param_truth_value
         return response
 
+    def participate_condition(self):
+        return True
 
 class ModelFormMixin(object):
     """mixin rather than subclass because we want these methods only to be first in MRO"""
@@ -484,7 +484,6 @@ class ModelFormMixin(object):
         self.post_processing_on_valid_form(form)
         self.after_valid_form_submission()
         self.update_indexes_in_sequences()
-        self._final_participant_actions()
         return HttpResponseRedirect(self._session_user.get_success_url())
 
 
@@ -512,16 +511,6 @@ class ParticipantSequenceMixin(SequenceMixin):
                'session': self.session,
                'time_limit_was_exceeded': self.time_limit_was_exceeded}
 
-    def _final_participant_actions(self):
-        # increment position
-        #FIXME: use select_for_update
-        last_in_match = self.match._increment_participant_progress_distribution(self, self.index_in_pages)
-        last_in_subsession = self.subsession._increment_participant_progress_distribution(self, self.index_in_pages)
-
-        if last_in_match:
-            self.final_participant_from_match()
-        if last_in_subsession:
-            self.final_participant_from_subsession()
 
 class ExperimenterSequenceMixin(SequenceMixin):
 
@@ -534,8 +523,6 @@ class ExperimenterSequenceMixin(SequenceMixin):
                'session': self.session,
                'time_limit_was_exceeded': self.time_limit_was_exceeded}
 
-    def _final_participant_actions(self):
-        pass
 
 
 class BaseView(PTreeMixin, NonSequenceUrlMixin, vanilla.View):
@@ -565,10 +552,10 @@ class ParticipantUpdateView(ModelFormMixin, ParticipantSequenceMixin, Participan
                                    content_type=ContentType.objects.get_for_model(self.participant))
 
 
-class MatchCheckpoint(ParticipantSequenceMixin, MatchCheckpointMixin, vanilla.UpdateView):
+class MatchCheckpoint(ParticipantSequenceMixin, ParticipantMixin, MatchCheckpointMixin, WaitPageMixin, vanilla.UpdateView):
     pass
 
-class SubsessionCheckpoint(ParticipantSequenceMixin, SubsessionCheckpointMixin, vanilla.UpdateView):
+class SubsessionCheckpoint(ParticipantSequenceMixin, ParticipantMixin, SubsessionCheckpointMixin, WaitPageMixin, vanilla.UpdateView):
     pass
 
 
@@ -625,21 +612,21 @@ class InitializeParticipant(InitializeParticipantOrExperimenter):
 
         user_code = self.request.GET.get(constants.user_code)
 
-        self.user = get_object_or_404(self.z_models.Participant, code = user_code)
-        # self.user is a generic name for self.participant
+        self._user = get_object_or_404(self.z_models.Participant, code = user_code)
+        # self._user is a generic name for self.participant
         # they are the same thing, but we use 'user' wherever possible
         # so that the code can be copy pasted to experimenter code
-        self.participant = self.user
+        self.participant = self._user
         self.subsession = self.participant.subsession
 
-        self.user.visited = True
-        self.user.time_started = django.utils.timezone.now()
+        self._user.visited = True
+        self._user.time_started = django.utils.timezone.now()
 
-        self.user.save()
-        self.request_session[constants.user_code] = self.user.code
+        self._user.save()
+        self.request_session[constants.user_code] = self._user.code
 
         self.persist_classes()
-        return HttpResponseRedirect(self.user._pages_as_urls()[0])
+        return HttpResponseRedirect(self._user._pages_as_urls()[0])
 
     def get_next_participant_in_subsession(self):
         try:
@@ -669,24 +656,24 @@ class InitializeExperimenter(InitializeParticipantOrExperimenter):
 
         user_code = self.request.GET[constants.user_code]
 
-        self.user = get_object_or_404(Experimenter, code = user_code)
+        self._user = get_object_or_404(Experimenter, code = user_code)
 
-        self.user.visited = True
-        self.user.time_started = django.utils.timezone.now()
+        self._user.visited = True
+        self._user.time_started = django.utils.timezone.now()
 
-        self.user.save()
-        self.request_session[constants.user_code] = self.user.code
+        self._user.save()
+        self.request_session[constants.user_code] = self._user.code
 
         self.persist_classes()
 
-        urls = self.user._pages_as_urls()
+        urls = self._user._pages_as_urls()
         if len(urls) > 0:
             url = urls[0]
         else:
-            if self.user.subsession._index_in_subsessions == self._session_user._index_in_subsessions:
+            if self._user.subsession._index_in_subsessions == self._session_user._index_in_subsessions:
                 self._session_user._index_in_subsessions += 1
                 self._session_user.save()
-            me_in_next_subsession = self.user.me_in_next_subsession
+            me_in_next_subsession = self._user.me_in_next_subsession
             if me_in_next_subsession:
                 url = me_in_next_subsession._start_url()
             else:

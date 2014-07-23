@@ -8,7 +8,7 @@ from ptree.db import models
 from ptree.fields import RandomCharField
 import ptree.constants as constants
 import math
-from ptree.common import flatten, ModelWithCheckpointMixin
+from ptree.common import flatten, ModelWithCheckpointMixin, _views_module
 import ptree.user.models
 from django.utils.importlib import import_module
 import itertools
@@ -66,8 +66,9 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
                                               self.code)
 
     def previous_round(self):
+        s = self
         while True:
-            s = self.previous_subsession
+            s = s.previous_subsession
             if not s:
                 return None
             if s.app_name == self.app_name:
@@ -90,7 +91,7 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
 
     def _num_matches(self):
         """number of matches in this subsession"""
-        return self.participant_set.count()/self.participants_per_match
+        return self.participant_set.count()/self._MatchClass().participants_per_match
 
     def _random_treatments(self):
         num_matches = self._num_matches()
@@ -106,8 +107,10 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
         participants = list(self.participant_set.all())
         random.shuffle(participants)
         match_groups = []
-        for i in range(0, self._num_matches(), self.participants_per_match):
-            match_groups.append(participants[i:i+self.participants_per_match])
+        participants_per_match = self._MatchClass().participants_per_match
+        for i in range(0, self._num_matches(), participants_per_match):
+            match_groups.append(participants[i:i+participants_per_match])
+        return match_groups
 
     def _corresponding_treatments(self, earlier_round):
         earlier_treatment_indexes = [t._index_within_subsession for t in earlier_round.treatment_set.all()]
@@ -129,14 +132,16 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
 
     def _create_empty_matches(self):
         self._initialize_checkpoints()
+        self.save()
         previous_round = self.previous_round()
         if previous_round:
             treatments = self._corresponding_treatments(previous_round)
         else:
             treatments = self._random_treatments()
         treatments = self.pick_treatments(treatments)
+        MatchClass = self._MatchClass()
         for t in treatments:
-            m = self._MatchClass._create(t)
+            m = MatchClass._create(t)
 
     def _assign_participants_to_matches(self):
         previous_round = self.previous_round()
@@ -150,13 +155,14 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
             for participant in match_group:
                 participant._assign_to_match(match)
             match._initialize_checkpoints()
+            match.save()
 
     def previous_subsession_is_in_same_app(self):
         previous_subsession = self.previous_subsession
         return previous_subsession and previous_subsession._meta.app_label == self._meta.app_label
 
     def _experimenter_pages(self):
-        views_module = self._views_module()
+        views_module = _views_module(self)
         if hasattr(views_module, 'experimenter_pages'):
             return views_module.experimenter_pages() or []
         return []
@@ -171,8 +177,8 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
         return [View.url(self._experimenter.session_experimenter, index) for index, View in enumerate(self._experimenter_pages())]
 
     def _CheckpointMixinClass(self):
-        from ptree.views.abstract import MatchCheckpointMixin
-        return MatchCheckpointMixin
+        from ptree.views.abstract import SubsessionCheckpointMixin
+        return SubsessionCheckpointMixin
 
 
     class Meta:

@@ -4,7 +4,12 @@ from ptree.views.abstract import (
     ParticipantUpdateView,
     LoadClassesAndUserMixin,
     load_session_user,
-    AssignVisitorToOpenSession
+    AssignVisitorToOpenSession,
+    WaitPageMixin,
+    ParticipantSequenceMixin,
+    SequenceMixin,
+    ParticipantMixin
+
 )
 
 from datetime import datetime
@@ -42,7 +47,7 @@ class OutOfRangeNotification(NonSequenceUrlMixin, PTreeMixin, vanilla.View):
         else:
             return render_to_response('ptree/OutOfRangeNotification.html')
 
-class WaitUntilAssignedToMatch(ParticipantUpdateView):
+class WaitUntilAssignedToMatch(ParticipantSequenceMixin, ParticipantMixin, WaitPageMixin, vanilla.View):
     """
     this is visited after Initialize, to make sure the participant has a match and treatment.
     the participant can be assigned at any time, but this is a safeguard,
@@ -53,25 +58,54 @@ class WaitUntilAssignedToMatch(ParticipantUpdateView):
     """
     name_in_url = 'shared'
 
-    def show_skip_wait(self):
-        if self.match and self.treatment:
-            return self.PageActions.skip
-        return self.PageActions.wait
+    def _is_complete(self):
+        return self.match and self.treatment
 
     def wait_page_body_text(self):
         return 'Waiting until participant is assigned to match and treatment.'
 
-    def get_wait_page(self):
-        """2/11/2014: same as parent method, but remove debug_values, which are not valid if the participant doesn't have
-         a treatment assigned yet"""
-        return render_to_response(
-            self.wait_page_template_name,
-            {
-                'SequenceViewURL': self.wait_page_request_url(),
-                'wait_page_body_text': self.wait_page_body_text(),
-                'wait_page_title_text': self.wait_page_title_text()
-            }
+    def _redirect_after_complete(self):
+        self.update_indexes_in_sequences()
+        return self._redirect_to_page_the_user_should_be_on()
+
+    def get_debug_values(self):
+        pass
+
+
+class SessionExperimenterWaitUntilParticipantsAreAssigned(NonSequenceUrlMixin, WaitPageMixin, vanilla.View):
+
+    def wait_page_title_text(self):
+        return 'Please wait'
+
+    def wait_page_body_text(self):
+        return 'Assigning participants to matches.'
+
+    def _is_complete(self):
+        return self.session._participants_assigned_to_matches or not self.session.type().preassign_matches
+
+    @classmethod
+    def get_name_in_url(cls):
+        return 'shared'
+
+    def dispatch(self, request, *args, **kwargs):
+        session_user_code = kwargs[constants.session_user_code]
+        self.request.session[session_user_code] = {}
+
+        self._session_user = get_object_or_404(
+            ptree.sessionlib.models.SessionExperimenter,
+            code=kwargs[constants.session_user_code]
         )
+
+        self.session = self._session_user.session
+
+        if self.request_is_from_wait_page():
+            return self._response_to_wait_page()
+        else:
+            # if the participant shouldn't see this view, skip to the next
+            if self._is_complete():
+                return HttpResponseRedirect(self._session_user.me_in_first_subsession._start_url())
+            return self.get_wait_page()
+
 
 class InitializeSessionExperimenter(vanilla.View):
 
@@ -93,7 +127,7 @@ class InitializeSessionExperimenter(vanilla.View):
         )
 
         session = self._session_user.session
-        if session._participants_assigned_to_matches or not session.type().preassign_participants:
+        if session._participants_assigned_to_matches or not session.type().preassign_matches:
             return self.redirect_to_next_page()
         return render_to_response('ptree/experimenter/StartSession.html', {})
 
@@ -112,7 +146,7 @@ class InitializeSessionExperimenter(vanilla.View):
             session.time_started = django.utils.timezone.now()
             session.save()
 
-        t = threading.Thread(target=session._assign_participants_to_treatments_and_matches)
+        t = threading.Thread(target=session._assign_participants_to_matches)
         t.start()
         return self.redirect_to_next_page()
 

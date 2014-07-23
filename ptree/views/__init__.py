@@ -41,12 +41,8 @@ class Page(abstract.ParticipantUpdateView):
     def get_form_class(self):
         return super(Page, self).get_form_class()
 
-    def is_shown(self):
-        return super(Page, self).is_shown()
-
-    def show_skip_wait(self):
-        return super(Page, self).show_skip_wait()
-
+    def participate_condition(self):
+        return super(Page, self).participate_condition()
 
     template_name = None
 
@@ -61,13 +57,7 @@ class ExperimenterPage(abstract.ExperimenterUpdateView):
     def get_form_class(self):
         return super(ExperimenterPage, self).get_form_class()
 
-    def is_shown(self):
-        return super(ExperimenterPage, self).is_shown()
-
-    def wait_page_body_text(self):
-        return super(ExperimenterPage, self).wait_page_body_text()
-
-    def wait_page_title_text(self):
-        return super(ExperimenterPage, self).wait_page_title_text()
+    def participate_condition(self):
+        return super(ExperimenterPage, self).participate_condition()
 
     template_name = None
