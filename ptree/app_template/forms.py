@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 import {{ app_name }}.models as models
 from django import forms
-from django.forms import ValidationError
 from {{ app_name }}.utilities import ParticipantMixIn, ExperimenterMixIn
-from django.utils.translation import ugettext_lazy as _
 import ptree.forms
 from crispy_forms.layout import HTML
 

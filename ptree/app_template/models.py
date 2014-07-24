@@ -3,8 +3,6 @@
 
 from ptree.db import models
 import ptree.models
-from django.conf import settings
-from django.utils.translation import ugettext_lazy as _
 
 doc = """
 Description of this app.
