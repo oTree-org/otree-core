@@ -3,16 +3,16 @@ client = import_module('ptree.test.client')
 
 # public API
 
-class ParticipantBot(client.ParticipantBot):
+class Bot(client.ParticipantBot):
 
     def play(self):
-        return super(ParticipantBot, self).play()
+        return super(Bot, self).play()
 
     def submit(self, ViewClass, param_dict=None):
-        return super(ParticipantBot, self).submit(ViewClass, param_dict)
+        return super(Bot, self).submit(ViewClass, param_dict)
 
     def submit_with_invalid_input(self, ViewClass, param_dict=None):
-        return super(ParticipantBot, self).submit_with_invalid_input(ViewClass, param_dict)
+        return super(Bot, self).submit_with_invalid_input(ViewClass, param_dict)
 
 class ExperimenterBot(client.ExperimenterBot):
 

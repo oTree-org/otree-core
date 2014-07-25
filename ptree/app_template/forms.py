@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 import {{ app_name }}.models as models
 from django import forms
-from {{ app_name }}.utilities import ParticipantMixIn, ExperimenterMixIn
-import ptree.forms
+from {{ app_name }}.utilities import Form
 from crispy_forms.layout import HTML
 
-class MyForm(ParticipantMixIn, ptree.forms.Form):
+class MyForm(Form):
 
     class Meta:
         model = models.Participant

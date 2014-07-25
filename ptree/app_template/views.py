@@ -2,15 +2,17 @@
 import ptree.views
 import ptree.views.concrete
 import {{ app_name }}.forms as forms
-from {{ app_name }}.utilities import ParticipantMixIn, ExperimenterMixIn
+from {{ app_name }}.utilities import Page, MatchWaitPage, SubsessionWaitPage
 from ptree.common import currency
 
-class MyPage(ParticipantMixIn, ptree.views.Page):
+
+
+class Introduction(Page):
 
     def participate_condition(self):
         return True
 
-    template_name = '{{ app_name }}/MyView.html'
+    template_name = '{{ app_name }}/MyPage.html'
 
     def get_form_class(self):
         return forms.MyForm
@@ -24,7 +26,19 @@ class MyPage(ParticipantMixIn, ptree.views.Page):
         """If all you need to do is save the form to the database,
         this can be left blank or omitted."""
 
+class ResultsWaitPage(MatchWaitPage):
+
+    def action(self):
+        for p in self.match.participants():
+            p.set_payoff()
+
+class Results(Page):
+
+    template_name = '{{ app_name }}/Results.html'
+
 def pages():
     return [
-        MyPage
+        Introduction,
+        ResultsWaitPage,
+        Results
     ]

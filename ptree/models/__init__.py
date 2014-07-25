@@ -39,22 +39,18 @@ class BaseSubsession(subsessions.BaseSubsession):
         '''
     )
 
-    @property
     def treatments(self):
         if hasattr(self, '_treatments'):
             return self._treatments
         self._treatments = list(self.treatment_set.all())
         return self._treatments
 
-    @property
     def matches(self):
         return _matches(self)
 
-    @property
     def participants(self):
         return _participants(self)
 
-    @property
     def app_name(self):
         return self._meta.app_label
 
@@ -64,11 +60,9 @@ class BaseSubsession(subsessions.BaseSubsession):
 
 class BaseTreatment(treatments.BaseTreatment):
 
-    @property
     def matches(self):
         return _matches(self)
 
-    @property
     def participants(self):
         return _participants(self)
 
@@ -93,7 +87,6 @@ class BaseMatch(matches.BaseMatch):
         related_name = '%(app_label)s_%(class)s'
     )
 
-    @property
     def participants(self):
         return _participants(self)
 

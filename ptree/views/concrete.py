@@ -61,7 +61,7 @@ class WaitUntilAssignedToMatch(ParticipantSequenceMixin, ParticipantMixin, WaitP
     def _is_complete(self):
         return self.match and self.treatment
 
-    def wait_page_body_text(self):
+    def body_text(self):
         return 'Waiting until participant is assigned to match and treatment.'
 
     def _redirect_after_complete(self):
@@ -74,10 +74,10 @@ class WaitUntilAssignedToMatch(ParticipantSequenceMixin, ParticipantMixin, WaitP
 
 class SessionExperimenterWaitUntilParticipantsAreAssigned(NonSequenceUrlMixin, WaitPageMixin, vanilla.View):
 
-    def wait_page_title_text(self):
+    def title_text(self):
         return 'Please wait'
 
-    def wait_page_body_text(self):
+    def body_text(self):
         return 'Assigning participants to matches.'
 
     def _is_complete(self):

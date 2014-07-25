@@ -8,27 +8,27 @@ from ptree.views.abstract import (
 from importlib import import_module
 abstract = import_module('ptree.views.abstract')
 
-class MatchCheckpoint(abstract.MatchCheckpoint):
+class MatchWaitPage(abstract.MatchCheckpoint):
 
-    def wait_page_body_text(self):
-        return super(MatchCheckpoint, self).wait_page_body_text()
+    def body_text(self):
+        return super(MatchWaitPage, self).body_text()
 
-    def wait_page_title_text(self):
-        return super(MatchCheckpoint, self).wait_page_title_text()
-
-    def action(self):
-        return super(MatchCheckpoint, self).action()
-
-class SubsessionCheckpoint(abstract.SubsessionCheckpoint):
-
-    def wait_page_body_text(self):
-        return super(SubsessionCheckpoint, self).wait_page_body_text()
-
-    def wait_page_title_text(self):
-        return super(SubsessionCheckpoint, self).wait_page_title_text()
+    def title_text(self):
+        return super(MatchWaitPage, self).title_text()
 
     def action(self):
-        return super(SubsessionCheckpoint, self).action()
+        return super(MatchWaitPage, self).action()
+
+class SubsessionWaitPage(abstract.SubsessionCheckpoint):
+
+    def body_text(self):
+        return super(SubsessionWaitPage, self).body_text()
+
+    def title_text(self):
+        return super(SubsessionWaitPage, self).title_text()
+
+    def action(self):
+        return super(SubsessionWaitPage, self).action()
 
 class Page(abstract.ParticipantUpdateView):
 

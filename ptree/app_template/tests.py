@@ -1,13 +1,8 @@
 import ptree.test
 import {{ app_name }}.views as views
-from {{ app_name }}.utilities import ParticipantMixIn, ExperimenterMixIn
+from {{ app_name }}.utilities import Bot
 
-class ParticipantBot(ParticipantMixIn, ptree.test.ParticipantBot):
-
-    def play(self):
-        pass
-
-class ExperimenterBot(ExperimenterMixIn, ptree.test.ExperimenterBot):
+class ParticipantBot(Bot):
 
     def play(self):
         pass

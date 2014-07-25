@@ -133,7 +133,7 @@ class Demo(vanilla.View):
                 {
                     'SequenceViewURL': escaped_start_link_url(session_type_name),
 
-                    'wait_page_title_text': 'Please wait',
-                    'wait_page_body_text': 'Creating a session.',
+                    'title_text': 'Please wait',
+                    'body_text': 'Creating a session.',
                 }
             )

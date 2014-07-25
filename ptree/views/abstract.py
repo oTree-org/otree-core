@@ -181,10 +181,10 @@ class WaitPageMixin(object):
     # but maybe have one in pTree core as a fallback in case the user doesn't have it.
     wait_page_template_name = 'ptree/WaitPage.html'
 
-    def wait_page_title_text(self):
+    def title_text(self):
         return 'Please wait'
 
-    def wait_page_body_text(self):
+    def body_text(self):
         pass
 
     def request_is_from_wait_page(self):
@@ -209,8 +209,8 @@ class WaitPageMixin(object):
             {
                 'wait_page_url': self.wait_page_request_url(),
                 'debug_values': self.get_debug_values() if settings.DEBUG else None,
-                'wait_page_body_text': self.wait_page_body_text(),
-                'wait_page_title_text': self.wait_page_title_text()
+                'body_text': self.body_text(),
+                'title_text': self.title_text()
             }
         )
         response[constants.wait_page_http_header] = constants.get_param_truth_value
@@ -285,6 +285,11 @@ class MatchCheckpointMixin(CheckpointMixin):
     def participants_in_match_or_subsession(self):
         return self.match.participants()
 
+    def body_text(self):
+        if self.match.participants_per_match == 2:
+            return 'Waiting for the other participant.'
+        if self.match.participants_per_match > 2:
+            return 'Waiting for other participants.'
 
 class SubsessionCheckpointMixin(CheckpointMixin):
 
@@ -295,6 +300,8 @@ class SubsessionCheckpointMixin(CheckpointMixin):
     def participants_in_match_or_subsession(self):
         return self.subsession.participants()
 
+    def body_text(self):
+        return 'Waiting for other participants.'
 
 class SequenceMixin(PTreeMixin):
     """
