@@ -71,8 +71,11 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
             s = s.previous_subsession
             if not s:
                 return None
-            if s.app_name == self.app_name:
+            if s.app_name() == self.app_name():
                 return s
+
+    def _picked_treatments(self):
+        return [m.treatment for m in self.match_set.all()]
 
     def pick_treatments(self, previous_round_treatments):
         return previous_round_treatments
@@ -108,12 +111,14 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
         random.shuffle(participants)
         match_groups = []
         participants_per_match = self._MatchClass().participants_per_match
-        for i in range(0, self._num_matches(), participants_per_match):
-            match_groups.append(participants[i:i+participants_per_match])
+        for i in range(self._num_matches()):
+            start_index = i*participants_per_match
+            end_index = start_index + participants_per_match
+            match_groups.append(participants[start_index:end_index])
         return match_groups
 
     def _corresponding_treatments(self, earlier_round):
-        earlier_treatment_indexes = [t._index_within_subsession for t in earlier_round.treatment_set.all()]
+        earlier_treatment_indexes = [t._index_within_subsession for t in earlier_round._picked_treatments()]
         current_treatments = list(self.treatment_set.all())
         return [current_treatments[i] for i in earlier_treatment_indexes]
 
@@ -126,6 +131,7 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
         for m_index, m in enumerate(match_groups):
             for p_index, p in enumerate(m):
                 match_groups[m_index][p_index] = current_participant_dict[p.session_participant.pk]
+        return match_groups
 
     def _MatchClass(self):
         return import_module('{}.models'.format(self._meta.app_label)).Match

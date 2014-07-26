@@ -9,7 +9,7 @@ from collections import defaultdict
 
 class SessionType(object):
     def __init__(self, name, subsession_apps, base_pay, num_participants,
-                 num_demo_participants = None, is_for_mturk=False, doc=None, preassign_matches=True):
+                 num_demo_participants = None, is_for_mturk=False, doc=None, assign_to_matches_on_the_fly=False):
         self.name = name
         self.subsession_apps = subsession_apps
         self.base_pay = base_pay
@@ -17,7 +17,9 @@ class SessionType(object):
         self.num_demo_participants = num_demo_participants
         self.is_for_mturk = is_for_mturk
         self.doc = doc.strip()
-        self.preassign_matches = preassign_matches
+
+        # on MTurk, assign_to_matches_on_the_fly = True
+        self.assign_to_matches_on_the_fly = assign_to_matches_on_the_fly
 
 def get_session_types():
     return get_session_module().session_types()
@@ -115,7 +117,10 @@ def create_session(type_name, label='', special_category=None):
             )
             participant.save()
 
-        subsession._create_empty_matches()
+        if session.type().assign_to_matches_on_the_fly:
+            # create matches at the beginning because we will not need to delete participants
+            # unlike the lab setting, where there may be no-shows
+            subsession._create_empty_matches()
 
         print 'Created objects for {}'.format(app_label)
         subsessions.append(subsession)

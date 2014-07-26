@@ -81,7 +81,7 @@ class SessionExperimenterWaitUntilParticipantsAreAssigned(NonSequenceUrlMixin, W
         return 'Assigning participants to matches.'
 
     def _is_complete(self):
-        return self.session._participants_assigned_to_matches or not self.session.type().preassign_matches
+        return self.session._participants_assigned_to_matches or self.session.type().assign_to_matches_on_the_fly
 
     @classmethod
     def get_name_in_url(cls):
@@ -127,7 +127,7 @@ class InitializeSessionExperimenter(vanilla.View):
         )
 
         session = self._session_user.session
-        if session._participants_assigned_to_matches or not session.type().preassign_matches:
+        if session._participants_assigned_to_matches or session.type().assign_to_matches_on_the_fly:
             return self.redirect_to_next_page()
         return render_to_response('ptree/experimenter/StartSession.html', {})
 
@@ -177,7 +177,7 @@ class InitializeSessionParticipant(vanilla.UpdateView):
         session_user = get_object_or_404(ptree.sessionlib.models.SessionParticipant, code=session_user_code)
 
         session = session_user.session
-        if not session.type().preassign_matches:
+        if session.type().assign_to_matches_on_the_fly:
             session_user._assign_to_matches()
             # assign to matches on the fly
 

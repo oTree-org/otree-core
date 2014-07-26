@@ -335,7 +335,7 @@ class SessionParticipant(SessionUser):
         return u'{} (incomplete)'.format(total_pay)
 
     def _assign_to_matches(self):
-        for p in self.participant_set.all():
+        for p in self.participants():
             p._assign_to_match()
 
     mturk_assignment_id = models.CharField(max_length = 50, null = True)
