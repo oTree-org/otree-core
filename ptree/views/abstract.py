@@ -235,6 +235,17 @@ class WaitPageMixin(object):
 
 class CheckpointMixin(object):
 
+    def dispatch(self, request, *args, **kwargs):
+        '''this is actually for sequence pages only, because of the _redirect_to_page_the_user_should_be_on()'''
+        if self.request_is_from_wait_page():
+            return self._response_to_wait_page()
+        else:
+            self._page_request_actions()
+            if self._is_complete():
+                return self._redirect_after_complete()
+            return self.get_wait_page()
+
+
     def _is_complete(self):
         # check the "passed checkpoints" JSON field
         return self._match_or_subsession._checkpoint_is_complete(self.index_in_pages)
@@ -255,6 +266,7 @@ class CheckpointMixin(object):
     def _run_action_in_thread(self):
         t = Thread(target=self._action)
         t.start()
+        t.join()
 
     def _action(self):
         '''do in a background thread and lock the DB'''
