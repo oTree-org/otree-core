@@ -9,7 +9,6 @@ from ptree.sessionlib.models import Session
 from ptree.session import session_types_as_dict
 import coverage
 
-
 def run_subsession(subsession):
 
 
@@ -23,7 +22,12 @@ def run_subsession(subsession):
 
     failure_queue = Queue()
 
-    experimenter_bot = tests_module.ExperimenterBot(subsession)
+    # ExperimenterBot is optional
+    if hasattr(tests_module, 'ExperimenterBot'):
+        experimenter_bot = tests_module.ExperimenterBot(subsession)
+    else:
+        from ptree.test.client import ExperimenterBot
+        experimenter_bot = ExperimenterBot(subsession)
     experimenter_bot.start()
     t = Thread(target=experimenter_bot._play, args=(failure_queue,))
     jobs = [t]

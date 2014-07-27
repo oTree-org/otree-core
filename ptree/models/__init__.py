@@ -51,8 +51,16 @@ class BaseSubsession(subsessions.BaseSubsession):
     def participants(self):
         return _participants(self)
 
+    @property
     def app_name(self):
         return self._meta.app_label
+
+    def pick_treatments(self, previous_round_treatments):
+        return super(BaseSubsession, self).pick_treatments(previous_round_treatments)
+
+    def pick_match_groups(self, previous_round_match_groups):
+        return super(BaseSubsession, self).pick_match_groups(previous_round_match_groups)
+
 
     class Meta:
         abstract = True

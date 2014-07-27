@@ -13,11 +13,8 @@
             if (response == "1") {
                 document.location.href = '{{ wait_page_url }}';
             }
-        // work in progress ,,this is supposed to display errors
-        //else{
-          //   $(".error-notice").show();
-            // window.location.reload(true);
-            //}
+        } else{
+            $(".error-notice").show();
         }
     }
 

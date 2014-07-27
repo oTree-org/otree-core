@@ -71,7 +71,7 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
             s = s.previous_subsession
             if not s:
                 return None
-            if s.app_name() == self.app_name():
+            if s.app_name == self.app_name:
                 return s
 
     def _picked_treatments(self):

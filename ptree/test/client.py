@@ -62,7 +62,6 @@ class BaseClient(django.test.client.Client):
 
     def _submit_core(self, ViewClass, data=None):
         data = data or {}
-        self.assert_is_on(ViewClass)
         # if it's a waiting page, wait N seconds and retry
         first_wait_page_try_time = time.time()
         while self.on_wait_page():
@@ -71,6 +70,7 @@ class BaseClient(django.test.client.Client):
             self.retry_wait_page()
             if time.time() - first_wait_page_try_time > MAX_SECONDS_TO_WAIT:
                 raise Exception('Participant appears to be stuck on waiting page (waiting for over {} seconds)'.format(MAX_SECONDS_TO_WAIT))
+        self.assert_is_on(ViewClass)
         if data:
             print '{}, {}'.format(self.path, data)
         else:
@@ -177,6 +177,10 @@ class ExperimenterBot(BaseClient):
     @property
     def subsession(self):
         return self._SubsessionClass.objects.get(id=self._subsession_id)
+
+    # it's OK for play to be left blank because the experimenter might not have anything to do
+    def play(self):
+        pass
 
     @property
     def _user(self):
