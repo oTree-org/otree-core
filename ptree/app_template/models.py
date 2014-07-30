@@ -4,6 +4,8 @@
 from ptree.db import models
 import ptree.models
 
+author = 'Your name here'
+
 doc = """
 Description of this app.
 """
@@ -30,6 +32,10 @@ class Participant(ptree.models.BaseParticipant):
     match = models.ForeignKey(Match, null = True)
     treatment = models.ForeignKey(Treatment, null = True)
     subsession = models.ForeignKey(Subsession)
+
+    def other_participant(self):
+        """Returns other participant in match. Only valid for 2-player matches."""
+        return self.other_participants_in_match()[0]
 
     # example field
     my_field = models.PositiveIntegerField(
