@@ -103,9 +103,16 @@ class PTreeMixin(object):
     def variables_for_template(self):
         return {}
 
+    def _variables_for_all_templates(self):
+        views_module = ptree.common._views_module(self.subsession)
+        if hasattr(views_module, 'variables_for_all_templates'):
+            return views_module.variables_for_all_templates(self) or {}
+        return {}
+
     def get_context_data(self, **kwargs):
         context = {}
         context.update(self.variables_for_template() or {})
+        context.update(self._variables_for_all_templates())
         return context
 
     def page_the_user_should_be_on(self):
@@ -440,6 +447,7 @@ class SequenceMixin(PTreeMixin):
     def get_context_data(self, **kwargs):
         context = {'form_or_formset': kwargs.get('form') or kwargs.get('formset') or kwargs.get('form_or_formset')}
         context.update(self.variables_for_template() or {})
+        context.update(self._variables_for_all_templates())
         context['timer_message'] = self.timer_message()
 
         if settings.DEBUG:

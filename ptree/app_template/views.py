@@ -5,7 +5,11 @@ import {{ app_name }}.forms as forms
 from {{ app_name }}.utilities import Page, MatchWaitPage, SubsessionWaitPage
 from ptree.common import currency
 
-
+def variables_for_all_templates(self):
+    return {
+        # example:
+        #'my_field': self.participant.my_field,
+    }
 
 class Introduction(Page):
 
