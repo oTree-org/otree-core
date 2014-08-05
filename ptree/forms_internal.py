@@ -2,12 +2,13 @@ from django import forms
 from django.utils.translation import ugettext as _
 import crispy_forms.helper
 from crispy_forms.layout import Submit, Layout, Fieldset
-
+import copy
 import ptree.common
 import ptree.models.common
 import ptree.sessionlib.models
 import ptree.constants
 from ptree.db import models
+import easymoney
 
 class FormHelper(crispy_forms.helper.FormHelper):
     def __init__(self, *args, **kwargs):
@@ -17,6 +18,7 @@ class FormHelper(crispy_forms.helper.FormHelper):
         self.add_input(Submit('submit',
                      _('Next'), #TODO: make this customizable
                      css_class='btn-large btn-primary'))
+
 
 class BaseModelForm(forms.ModelForm):
 
@@ -60,34 +62,63 @@ class BaseModelForm(forms.ModelForm):
             This will conceptually match a dropdown.
         """
         self.process_kwargs(kwargs)
-        initial = kwargs.get('initial', {})
-        initial.update(self.initial_values())
-        kwargs['initial'] = initial
-
+        kwargs.setdefault('initial', {}).update(self.initial_values())
         super(BaseModelForm, self).__init__(*args, **kwargs)
 
-        for field_name, label in self.labels().items():
-            self.fields[field_name].label = label
 
         # allow a user to set field_choices without having to remember to set the widget to Select.
         # why don't we just make the user explicitly set the form widget in Meta?
         # that would make the problem
         for field_name, choices in self.choices().items():
+            choices = ptree.common.expand_choice_tuples(choices)
             field = self.fields[field_name]
-            choices = [(None, '---------')] + list(choices)
 
-            try:
-                # the following line has no effect.
-                # it's just a test whether this field's widget can accept a choices arg.
-                # otherwise, setting field.choices will have no effect.
-                field.widget.__class__(choices=choices)
-            except TypeError:
-                # if the current widget can't accept a choices arg, fall back to using a Select widget
+
+            # if it's a MoneyField, use MoneySelect or MoneyRadioSelect widget
+            model_field = self.instance._meta.get_field(field_name)
+            model_field_copy = copy.copy(model_field)
+            model_field_copy._choices = choices
+
+            widget = self._meta.widgets.get(field_name)
+            if isinstance(model_field, models.MoneyField):
+                if isinstance(widget, forms.RadioSelect):
+                    widget.__class__ = easymoney.MoneyRadioSelect
+                if isinstance(widget, forms.Select):
+                    widget.__class__ = easymoney.MoneySelect
+
+            self.fields[field_name] = model_field_copy.formfield(widget=widget)
+
+            '''
+            if isinstance(model_field, models.MoneyField):
+                change_widget = True
+                if isinstance(field.widget, forms.RadioSelect):
+                    NewWidgetClass = MoneyRadioSelect
+                else:
+                    NewWidgetClass = MoneySelect
+            else:
+                try:
+                    # the following line has no effect.
+                    # it's just a test whether this field's widget can accept a choices arg.
+                    # otherwise, setting field.choices will have no effect.
+                    field.widget.__class__(choices=choices)
+                except TypeError:
+                    # if the current widget can't accept a choices arg, fall back to using a Select widget
+
+                    change_widget = True
+                    NewWidgetClass = forms.Select
+                else:
+                    change_widget = False
+            if change_widget:
                 # FIXME: what if there are additional args to the constructor?
-                field.widget = forms.Select(choices=choices)
+                field.widget = NewWidgetClass(choices=choices)
             else:
                 field.choices = choices
+            '''
 
+        for field_name, label in self.labels().items():
+            self.fields[field_name].label = label
+
+        '''
         for field_name in self.fields:
             field = self.fields[field_name]
             if isinstance(field.widget, forms.RadioSelect):
@@ -98,7 +129,7 @@ class BaseModelForm(forms.ModelForm):
 
                 if field.choices[0][0] in {u'', None}:
                     field.choices = field.choices[1:]
-
+        '''
 
         # crispy forms
         self.helper = FormHelper()

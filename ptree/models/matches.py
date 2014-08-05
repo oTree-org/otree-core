@@ -17,6 +17,22 @@ class BaseMatch(SaveTheChange, ModelWithCheckpointMixin, models.Model):
     def _is_ready_for_next_participant(self):
         return len(self.participant_set.all()) < self.participants_per_match
 
+    def get_participant(self, index_or_role):
+        participants = self.participants()
+        for p in participants:
+            if p.index_among_participants_in_match == index_or_role:
+                return p
+        try:
+            for p in participants:
+                if p.role() == index_or_role:
+                    return p
+        except AttributeError:
+            pass
+        raise Exception('No participant in match with index_among_participants_in_match or role() equal to "{}"'.format(index_or_role))
+
+
+
+
 
     def _CheckpointMixinClass(self):
         from ptree.views.abstract import MatchCheckpointMixin

@@ -5,17 +5,15 @@ import django.forms.fields
 from django.utils.text import capfirst
 import django.db.models
 import easymoney
+from ptree.common import expand_choice_tuples
 
 def fix_choices_arg(kwargs):
     '''allows the programmer to define choices as a list of values rather than (value, display_value)'''
     choices = kwargs.get('choices')
     if not choices:
         return
-    # look at the first element
-    first_choice = choices[0]
-    if not isinstance(first_choice, list) or isinstance(first_choice, tuple):
-        choices = [(value, value) for value in choices]
-        kwargs['choices'] = choices
+    choices = expand_choice_tuples(choices)
+    kwargs['choices'] = choices
 
 class PtreeModelFieldMixin(object):
     def __init__(self, *args,  **kwargs):

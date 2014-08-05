@@ -8,6 +8,7 @@ from ptree.common import currency
 import ptree.common
 from ptree.common import directory_name
 from django_extensions.db.fields.json import JSONField
+from easymoney import Money
 
 class Session(models.Model):
 
@@ -304,7 +305,7 @@ class SessionParticipant(SessionUser):
         return self._users()
 
     def payoff_from_subsessions(self):
-        return sum(participant.payoff or 0 for participant in self.participants())
+        return sum(participant.payoff or Money(0) for participant in self.participants())
 
     def total_pay(self):
         try:

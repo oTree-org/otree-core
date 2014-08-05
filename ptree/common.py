@@ -12,7 +12,7 @@ import hashlib
 from os.path import dirname, abspath, join
 from ast import literal_eval
 import copy
-
+from easymoney import Money
 
 def add_params_to_url(url, params):
     url_parts = list(urlparse.urlparse(url))
@@ -158,3 +158,24 @@ def _matches(self):
         return self._matches
     self._matches = list(self.match_set.all())
     return self._matches
+
+def money_range(first, last, increment=Money(0.01)):
+    assert last >= first
+    assert increment >= 0
+    values = []
+    current_value = Money(first)
+    while True:
+        if current_value > last:
+            return values
+        values.append(current_value)
+        current_value += increment
+
+def expand_choice_tuples(choices):
+    '''allows the programmer to define choices as a list of values rather than (value, display_value)'''
+    if not choices:
+        return
+    # look at the first element
+    first_choice = choices[0]
+    if not isinstance(first_choice, (list, tuple)):
+        choices = [(value, value) for value in choices]
+    return choices

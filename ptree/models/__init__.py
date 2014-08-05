@@ -98,6 +98,9 @@ class BaseMatch(matches.BaseMatch):
     def participants(self):
         return _participants(self)
 
+    def get_participant(self, index_or_role):
+        return super(BaseMatch, self).get_participant(index_or_role)
+
     class Meta:
         abstract = True
         verbose_name_plural = "matches"
@@ -110,7 +113,7 @@ class BaseParticipant(participants.BaseParticipant):
         doc="Index starting from 1. In multiplayer games, indicates whether this is participant 1, participant 2, etc."
     )
 
-    payoff = models.PositiveIntegerField(
+    payoff = models.MoneyField(
         null=True,
         doc="""The payoff the participant made in this subsession, in cents"""
     )
