@@ -73,13 +73,14 @@ class BaseModelForm(forms.ModelForm):
             choices = ptree.common.expand_choice_tuples(choices)
             field = self.fields[field_name]
 
-
-            # if it's a MoneyField, use MoneySelect or MoneyRadioSelect widget
             model_field = self.instance._meta.get_field(field_name)
             model_field_copy = copy.copy(model_field)
             model_field_copy._choices = choices
 
-            widget = self._meta.widgets.get(field_name)
+            try:
+                widget = self._meta.widgets.get(field_name)
+            except AttributeError:
+                widget = None
             if isinstance(model_field, models.MoneyField):
                 if isinstance(widget, forms.RadioSelect):
                     widget.__class__ = easymoney.MoneyRadioSelect
@@ -88,48 +89,9 @@ class BaseModelForm(forms.ModelForm):
 
             self.fields[field_name] = model_field_copy.formfield(widget=widget)
 
-            '''
-            if isinstance(model_field, models.MoneyField):
-                change_widget = True
-                if isinstance(field.widget, forms.RadioSelect):
-                    NewWidgetClass = MoneyRadioSelect
-                else:
-                    NewWidgetClass = MoneySelect
-            else:
-                try:
-                    # the following line has no effect.
-                    # it's just a test whether this field's widget can accept a choices arg.
-                    # otherwise, setting field.choices will have no effect.
-                    field.widget.__class__(choices=choices)
-                except TypeError:
-                    # if the current widget can't accept a choices arg, fall back to using a Select widget
-
-                    change_widget = True
-                    NewWidgetClass = forms.Select
-                else:
-                    change_widget = False
-            if change_widget:
-                # FIXME: what if there are additional args to the constructor?
-                field.widget = NewWidgetClass(choices=choices)
-            else:
-                field.choices = choices
-            '''
 
         for field_name, label in self.labels().items():
             self.fields[field_name].label = label
-
-        '''
-        for field_name in self.fields:
-            field = self.fields[field_name]
-            if isinstance(field.widget, forms.RadioSelect):
-                # Fields with a RadioSelect should be rendered without the '---------' option,
-                # and with nothing selected by default, to match dropdowns conceptually.
-                # if the selected item was the None choice, by removing it, nothing is selected.
-
-
-                if field.choices[0][0] in {u'', None}:
-                    field.choices = field.choices[1:]
-        '''
 
         # crispy forms
         self.helper = FormHelper()

@@ -66,7 +66,8 @@ setup(
         'django-extensions',
         'django-save-the-change==1.0.0',
         'pytz==2013.9',
-        'coverage==3.7.1'
+        'coverage==3.7.1',
+        'django-easymoney',
     ],
     classifiers=[
         'Environment :: Web Environment',
