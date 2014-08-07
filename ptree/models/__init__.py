@@ -98,8 +98,11 @@ class BaseMatch(matches.BaseMatch):
     def participants(self):
         return _participants(self)
 
-    def get_participant(self, index_or_role):
-        return super(BaseMatch, self).get_participant(index_or_role)
+    def get_participant_by_role(self, role):
+        return super(BaseMatch, self).get_participant_by_role(role)
+
+    def get_participant_by_index(self, index_among_participants_in_match):
+        return super(BaseMatch, self).get_participant_by_role(index_among_participants_in_match)
 
     class Meta:
         abstract = True

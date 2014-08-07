@@ -5,7 +5,7 @@ import django.forms.fields
 from django.utils.text import capfirst
 import django.db.models
 import easymoney
-from ptree.common import expand_choice_tuples
+from ptree.common import expand_choice_tuples, MoneyInput
 
 def fix_choices_arg(kwargs):
     '''allows the programmer to define choices as a list of values rather than (value, display_value)'''
@@ -23,7 +23,9 @@ class PtreeModelFieldMixin(object):
 
 
 class MoneyField(PtreeModelFieldMixin, easymoney.MoneyField):
-    pass
+    widget = MoneyInput
+
+
 
 class NullBooleanField(PtreeModelFieldMixin, NullBooleanField):
     # 2014/3/28: i just define the allowable choices on the model field, instead of customizing the widget

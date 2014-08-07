@@ -10,6 +10,8 @@ import ptree.constants
 from ptree.db import models
 import easymoney
 
+
+
 class FormHelper(crispy_forms.helper.FormHelper):
     def __init__(self, *args, **kwargs):
         super(FormHelper, self).__init__(*args, **kwargs)
@@ -92,6 +94,17 @@ class BaseModelForm(forms.ModelForm):
 
         for field_name, label in self.labels().items():
             self.fields[field_name].label = label
+
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            if isinstance(field.widget, forms.RadioSelect):
+                # Fields with a RadioSelect should be rendered without the '---------' option,
+                # and with nothing selected by default, to match dropdowns conceptually.
+                # if the selected item was the None choice, by removing it, nothing is selected.
+
+
+                if field.choices[0][0] in {u'', None}:
+                    field.choices = field.choices[1:]
 
         # crispy forms
         self.helper = FormHelper()

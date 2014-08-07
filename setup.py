@@ -3,12 +3,12 @@ import sys
 from setuptools import setup, find_packages
 import shutil
 
-README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
+README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
 
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version='0.2.144'
+version='0.2.145'
 
 if sys.argv[-1] == 'publish':
 
@@ -85,4 +85,5 @@ setup(
     scripts = ['bin/ptree'],
 
 )
+
 

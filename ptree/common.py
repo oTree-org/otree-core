@@ -13,6 +13,14 @@ from os.path import dirname, abspath, join
 from ast import literal_eval
 import copy
 from easymoney import Money
+from django import forms
+
+from decimal import Decimal
+
+class MoneyInput(forms.NumberInput):
+     def _format_value(self, value):
+         return str(Decimal(value))
+
 
 def add_params_to_url(url, params):
     url_parts = list(urlparse.urlparse(url))
