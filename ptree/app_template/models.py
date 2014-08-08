@@ -48,6 +48,9 @@ class Participant(ptree.models.BaseParticipant):
     def set_payoff(self):
         self.payoff = 0 # change to whatever the payoff should be
 
+    def role(self):
+        # you can make this depend of self.index_among_participants_in_match
+        return ''
 
 def treatments():
     # add treatment parameters as arguments to create()

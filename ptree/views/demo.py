@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.shortcuts import get_object_or_404, render_to_response
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
 import vanilla
@@ -65,13 +66,25 @@ def get_session(type_name):
 
 def info_about_session_type(session_type_name):
     session_type = session_types_as_dict()[session_type_name]
+
+    # collapse repeated subsessions, encode as follows: [[app_name, num_occurrences], [app_name2, num_occurrences2], ...]
+    subsession_app_counts = [[session_type.subsession_apps[0], 1]]
+    for i in range(1, len(session_type.subsession_apps)):
+        if session_type.subsession_apps[i] == session_type.subsession_apps[i-1]:
+            subsession_app_counts[-1][1] += 1
+        else:
+            subsession_app_counts.append([session_type.subsession_apps[i], 1])
+
     subsession_apps = []
-    for app_name in session_type.subsession_apps:
+    for app_name, num_occurrences in subsession_app_counts:
         models_module = get_models_module(app_name)
         doc = getattr(models_module, 'doc', '')
+        formatted_app_name = app_name_format(app_name)
+        if num_occurrences > 1:
+            formatted_app_name = '{} ({} rounds)'.format(formatted_app_name, num_occurrences)
         subsession_apps.append(
             {
-                'name': app_name_format(app_name),
+                'name': formatted_app_name,
                 'doc': doc,
             }
         )

@@ -3,8 +3,8 @@ forms_internal = import_module('ptree.forms_internal')
 
 class Form(forms_internal.ParticipantModelForm):
 
-    def initial_values(self):
-        return super(Form, self).initial_values()
+    def defaults(self):
+        return super(Form, self).defaults()
 
     def choices(self):
         return super(Form, self).choices()
@@ -18,8 +18,8 @@ class Form(forms_internal.ParticipantModelForm):
 
 class ExperimenterForm(forms_internal.ExperimenterModelForm):
 
-    def initial_values(self):
-        return super(ExperimenterForm, self).initial_values()
+    def defaults(self):
+        return super(ExperimenterForm, self).defaults()
 
     def choices(self):
         return super(ExperimenterForm, self).choices()

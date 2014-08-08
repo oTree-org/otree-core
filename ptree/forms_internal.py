@@ -36,7 +36,7 @@ class BaseModelForm(forms.ModelForm):
                 )
             )
 
-    def initial_values(self):
+    def defaults(self):
         """Return a dict of any initial values"""
         return {}
 
@@ -64,7 +64,7 @@ class BaseModelForm(forms.ModelForm):
             This will conceptually match a dropdown.
         """
         self.process_kwargs(kwargs)
-        kwargs.setdefault('initial', {}).update(self.initial_values())
+        kwargs.setdefault('initial', {}).update(self.defaults())
         super(BaseModelForm, self).__init__(*args, **kwargs)
 
 

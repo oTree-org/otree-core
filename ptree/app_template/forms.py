@@ -17,7 +17,7 @@ class MyForm(Form):
     def labels(self):
         return {}
 
-    def initial_values(self):
+    def defaults(self):
         return {}
 
     def order(self):
