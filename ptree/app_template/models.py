@@ -3,6 +3,7 @@
 
 from ptree.db import models
 import ptree.models
+from ptree.common import Money, money_range
 
 author = 'Your name here'
 
@@ -38,7 +39,7 @@ class Participant(ptree.models.BaseParticipant):
         return self.other_participants_in_match()[0]
 
     # example field
-    my_field = models.PositiveIntegerField(
+    my_field = models.MoneyField(
         null=True,
         doc="""
         Description of this field, for documentation

@@ -83,7 +83,7 @@ class FakeRequest:
         self.GET = FakeGET()
         self.GET.update(get_params)
         self.resolver_match = resolver_match
-        self._user = user
+        self.user = user
 
 
 # TODO

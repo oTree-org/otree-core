@@ -67,29 +67,14 @@ class BaseModelForm(forms.ModelForm):
         kwargs.setdefault('initial', {}).update(self.defaults())
         super(BaseModelForm, self).__init__(*args, **kwargs)
 
-
-        # allow a user to set field_choices without having to remember to set the widget to Select.
-        # why don't we just make the user explicitly set the form widget in Meta?
-        # that would make the problem
         for field_name, choices in self.choices().items():
             choices = ptree.common.expand_choice_tuples(choices)
-            field = self.fields[field_name]
 
             model_field = self.instance._meta.get_field(field_name)
             model_field_copy = copy.copy(model_field)
             model_field_copy._choices = choices
 
-            try:
-                widget = self._meta.widgets.get(field_name)
-            except AttributeError:
-                widget = None
-            if isinstance(model_field, models.MoneyField):
-                if isinstance(widget, forms.RadioSelect):
-                    widget.__class__ = easymoney.MoneyRadioSelect
-                if isinstance(widget, forms.Select):
-                    widget.__class__ = easymoney.MoneySelect
-
-            self.fields[field_name] = model_field_copy.formfield(widget=widget)
+            self.fields[field_name] = model_field_copy.formfield()
 
 
         for field_name, label in self.labels().items():
@@ -101,7 +86,6 @@ class BaseModelForm(forms.ModelForm):
                 # Fields with a RadioSelect should be rendered without the '---------' option,
                 # and with nothing selected by default, to match dropdowns conceptually.
                 # if the selected item was the None choice, by removing it, nothing is selected.
-
 
                 if field.choices[0][0] in {u'', None}:
                     field.choices = field.choices[1:]

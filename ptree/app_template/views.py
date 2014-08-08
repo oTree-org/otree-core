@@ -3,7 +3,7 @@ import ptree.views
 import ptree.views.concrete
 import {{ app_name }}.forms as forms
 from {{ app_name }}.utilities import Page, MatchWaitPage, SubsessionWaitPage
-from ptree.common import currency
+from ptree.common import Money, money_range
 
 def variables_for_all_templates(self):
     return {
