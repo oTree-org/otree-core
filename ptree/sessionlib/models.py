@@ -66,8 +66,8 @@ class Session(models.Model):
     )
 
     #
-    base_pay = models.PositiveIntegerField(
-        doc="""Show-up fee, in cents"""
+    base_pay = models.MoneyField(
+        doc="""Show-up fee"""
     )
 
     comment = models.TextField()

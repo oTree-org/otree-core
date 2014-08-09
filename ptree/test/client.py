@@ -8,6 +8,8 @@ from django.utils.importlib import import_module
 from ptree.user.models import Experimenter
 import random
 import coverage
+from easymoney import Money
+from decimal import Decimal
 
 MAX_SECONDS_TO_WAIT = 10
 
@@ -62,6 +64,9 @@ class BaseClient(django.test.client.Client):
 
     def _submit_core(self, ViewClass, data=None):
         data = data or {}
+        for key in data:
+            if isinstance(data[key], Money):
+                data[key] = Decimal(data[key])
         # if it's a waiting page, wait N seconds and retry
         first_wait_page_try_time = time.time()
         while self.on_wait_page():

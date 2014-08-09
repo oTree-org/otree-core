@@ -2,7 +2,7 @@ import csv
 import datetime
 from textwrap import TextWrapper
 import inspect
-
+from decimal import Decimal
 from django.http import HttpResponse
 from django.utils.importlib import import_module
 from django.contrib.auth.decorators import login_required
@@ -21,6 +21,8 @@ import ptree.sessionlib.models
 from ptree.sessionlib.models import Session, SessionParticipant
 from ptree.adminlib import SessionAdmin, SessionParticipantAdmin, get_callables, get_all_fields_for_table
 from collections import OrderedDict
+from ptree.db import models
+import easymoney
 
 LINE_BREAK = '\r\n'
 MODEL_NAMES = ["SessionParticipant", "Participant", "Match", "Treatment", "Subsession", "Session"]
@@ -124,6 +126,7 @@ def get_doc_dict(app_label):
         'TextField': 'text',
         'FloatField': 'decimal',
         'DecimalField': 'decimal',
+        'MoneyField': 'money',
     }
 
 
@@ -252,7 +255,6 @@ def export_docs(request, app_label):
     response['Content-Type'] = 'text/plain'
     return response
 
-
 @user_passes_test(lambda u: u.is_staff)
 @login_required
 def export(request, app_label):
@@ -328,8 +330,9 @@ def export(request, app_label):
         for i in range(len(member_values)):
             if member_values[i] in values_to_replace_keys:
                 member_values[i] = values_to_replace[member_values[i]]
-
-
+            elif isinstance(member_values[i], easymoney.Money):
+                # remove currency formatting for easier analysis
+                member_values[i] = easymoney.to_dec(member_values[i])
 
 
 
