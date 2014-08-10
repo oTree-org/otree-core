@@ -8,13 +8,13 @@ from django.db import transaction
 from collections import defaultdict
 
 class SessionType(object):
-    def __init__(self, name, subsession_apps, base_pay, num_participants,
-                 num_demo_participants = None, is_for_mturk=False, doc=None, assign_to_matches_on_the_fly=False):
+    def __init__(self, name, subsession_apps, base_pay, participants_per_session,
+                 participants_per_demo_session = None, is_for_mturk=False, doc=None, assign_to_matches_on_the_fly=False):
         self.name = name
         self.subsession_apps = subsession_apps
         self.base_pay = base_pay
-        self.num_participants = num_participants
-        self.num_demo_participants = num_demo_participants
+        self.participants_per_session = participants_per_session
+        self.participants_per_demo_session = participants_per_demo_session
         self.is_for_mturk = is_for_mturk
         self.doc = doc.strip()
 
@@ -62,11 +62,11 @@ def create_session(type_name, label='', special_category=None):
     session_participants = []
 
     if special_category == constants.special_category_demo:
-        num_participants = session_type.num_demo_participants
+        participants_per_session = session_type.participants_per_demo_session
     else:
-        num_participants = session_type.num_participants
+        participants_per_session = session_type.participants_per_session
 
-    for i in range(num_participants):
+    for i in range(participants_per_session):
         participant = SessionParticipant(session = session)
         participant.save()
         session_participants.append(participant)
@@ -80,12 +80,12 @@ def create_session(type_name, label='', special_category=None):
         round_counts[app_label] += 1
         models_module = import_module('{}.models'.format(app_label))
 
-        if num_participants % models_module.Match.participants_per_match:
+        if participants_per_session % models_module.Match.participants_per_match:
             raise ValueError(
                 'App {} requires {} participants per match, which does not divide evenly into the number of participants in this session ({}).'.format(
                     app_label,
                     models_module.Match.participants_per_match,
-                    num_participants
+                    participants_per_session
                 )
             )
 
@@ -109,7 +109,7 @@ def create_session(type_name, label='', special_category=None):
 
         subsession._experimenter = experimenter
         subsession.save()
-        for i in range(num_participants):
+        for i in range(participants_per_session):
             participant = models_module.Participant(
                 subsession = subsession,
                 session = session,
