@@ -17,22 +17,26 @@ class Subsession(ptree.models.BaseSubsession):
 
 
 class Treatment(ptree.models.BaseTreatment):
+    # <built-in>
     subsession = models.ForeignKey(Subsession)
+    # </built-in>
 
 
 class Match(ptree.models.BaseMatch):
-
+    # <built-in>
     treatment = models.ForeignKey(Treatment)
     subsession = models.ForeignKey(Subsession)
+    # </built-in>
 
     participants_per_match = 1
 
 
 class Participant(ptree.models.BaseParticipant):
-
+    # <built-in>
     match = models.ForeignKey(Match, null = True)
     treatment = models.ForeignKey(Treatment, null = True)
     subsession = models.ForeignKey(Subsession)
+    # </built-in>
 
     def other_participant(self):
         """Returns other participant in match. Only valid for 2-player matches."""
@@ -40,7 +44,7 @@ class Participant(ptree.models.BaseParticipant):
 
     # example field
     my_field = models.MoneyField(
-        null=True,
+        default=None,
         doc="""
         Description of this field, for documentation
         """
@@ -54,6 +58,4 @@ class Participant(ptree.models.BaseParticipant):
         return ''
 
 def treatments():
-    # add treatment parameters as arguments to create()
-    # e.g. [Treatment.create(max_payoff=20), Treatment.create(max_payoff=20)]
-    return [Treatment.create(label = '',)]
+    return [Treatment.create()]
