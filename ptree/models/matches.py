@@ -14,16 +14,16 @@ class BaseMatch(SaveTheChange, ModelWithCheckpointMixin, models.Model):
     def __unicode__(self):
         return str(self.pk)
 
-    def _is_ready_for_next_participant(self):
-        return len(self.participant_set.all()) < self.participants_per_match
+    def _is_ready_for_next_player(self):
+        return len(self.player_set.all()) < self.players_per_match
 
-    def get_participant_by_index(self, index_among_participants_in_match):
-        for p in self.participants():
-            if p.index_among_participants_in_match == index_among_participants_in_match:
+    def get_player_by_index(self, index_among_players_in_match):
+        for p in self.players():
+            if p.index_among_players_in_match == index_among_players_in_match:
                 return p
 
-    def get_participant_by_role(self, role):
-        for p in self.participants():
+    def get_player_by_role(self, role):
+        for p in self.players():
             if p.role() == role:
                 return p
 
@@ -38,7 +38,7 @@ class BaseMatch(SaveTheChange, ModelWithCheckpointMixin, models.Model):
             subsession = treatment.subsession,
             session = treatment.session
         )
-        # need to save it before you assign the participant.match ForeignKey
+        # need to save it before you assign the player.match ForeignKey
         match.save()
         return match
 

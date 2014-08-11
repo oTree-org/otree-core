@@ -39,19 +39,19 @@
         <a href="{{ experimenter_url }}" class="experimenter-link" target="_blank">{{ experimenter_url }}</a><br/>
 
     <h4>
-        Participants
+        SessionParticipanRENAMEts
     </h4>
 
-    <p><b>Before participants can play, you need to click the experimenter link above and start the session.</b></p>
-    {% for participant_url in participant_urls %}
-            <a href="{{ participant_url }}" class="participant-link" target="_blank">{{ participant_url }}</a>
+    <p><b>Before session_participanRENAMEts can play, you need to click the experimenter link above and start the session.</b></p>
+    {% for session_participanRENAMEt_url in session_participanRENAMEt_urls %}
+            <a href="{{ session_participanRENAMEt_url }}" class="session_participanRENAMEt-link" target="_blank">{{ session_participanRENAMEt_url }}</a>
             <br/>
     {% endfor %}
 
     {% if is_demo_page %}
         <br/>
         <p>
-            These are single-use links. To get new start links, refresh this page. This will let you simulate a new set of participants,
+            These are single-use links. To get new start links, refresh this page. This will let you simulate a new set of session_participanRENAMEts,
             who will be reassigned to treatment groups and match groups.
         </p>
     {% endif %}

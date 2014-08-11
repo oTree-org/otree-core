@@ -8,7 +8,7 @@ from ptree.common import Money, money_range
 class MyForm(Form):
 
     class Meta:
-        model = models.Participant
+        model = models.Player
         fields = ['my_field']
 
     def my_field_error_message(self, value):

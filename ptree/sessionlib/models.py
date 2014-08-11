@@ -72,7 +72,7 @@ class Session(models.Model):
 
     comment = models.TextField()
 
-    _participants_assigned_to_matches = models.BooleanField(default=False)
+    _players_assigned_to_matches = models.BooleanField(default=False)
 
     def base_pay_display(self):
         return currency(self.base_pay)
@@ -126,30 +126,30 @@ class Session(models.Model):
             subsession.save()
         self.save()
 
-    def chain_participants(self):
+    def chain_players(self):
         """Should be called after add_subsessions"""
 
-        seq_participants = self.participants()
-        num_participants = len(seq_participants)
+        session_participanRENAMEts = self.session_participanRENAMEts()
+        num_session_participanRENAMEts = len(session_participanRENAMEts)
 
         subsessions = self.subsessions()
 
-        first_subsession_participants = self.first_subsession.participants()
+        first_subsession_participanRENAMEts = self.first_subsession.session_participanRENAMEts()
 
-        for i in range(num_participants):
-            seq_participants[i].me_in_first_subsession = first_subsession_participants[i]
-            seq_participants[i].save()
+        for i in range(num_session_participanRENAMEts):
+            session_participanRENAMEts[i].me_in_first_subsession = first_subsession_participanRENAMEts[i]
+            session_participanRENAMEts[i].save()
 
         for subsession_index in range(len(subsessions) - 1):
-            participants_left = subsessions[subsession_index].participants()
-            participants_right = subsessions[subsession_index + 1].participants()
-            for participant_index in range(num_participants):
-                participant_left = participants_left[participant_index]
-                participant_right = participants_right[participant_index]
-                participant_left.me_in_next_subsession = participant_right
-                participant_right.me_in_previous_subsession = participant_left
-                participant_left.save()
-                participant_right.save()
+            players_left = subsessions[subsession_index].players()
+            players_right = subsessions[subsession_index + 1].players()
+            for player_index in range(num_session_participanRENAMEts):
+                player_left = players_left[player_index]
+                player_right = players_right[player_index]
+                player_left.me_in_next_subsession = player_right
+                player_right.me_in_previous_subsession = player_left
+                player_left.save()
+                player_right.save()
 
     def add_subsession(self, subsession):
         subsession.session = self
@@ -163,21 +163,21 @@ class Session(models.Model):
             subsession.delete()
         super(Session, self).delete(using)
 
-    def participants(self):
-        return self.sessionparticipant_set.all()
+    def session_participanRENAMEts(self):
+        return self.SessionParticipanRENAMEt_set.all()
 
     def payments_ready(self):
-        for participant in self.participants():
-            if not participant.payoff_from_subsessions_is_complete():
+        for session_participanRENAMEts in self.session_participanRENAMEts():
+            if not session_participanRENAMEts.payoff_from_subsessions_is_complete():
                 return False
         return True
     payments_ready.boolean = True
 
-    def _assign_participants_to_matches(self):
+    def _assign_players_to_matches(self):
         for subsession in self.subsessions():
             subsession._create_empty_matches()
-            subsession._assign_participants_to_matches()
-        self._participants_assigned_to_matches = True
+            subsession._assign_players_to_matches()
+        self._players_assigned_to_matches = True
         self.save()
 
     class Meta:
@@ -195,7 +195,7 @@ class SessionUser(models.Model):
 
     code = RandomCharField(
         length = 8,
-        doc="""Randomly generated unique identifier for the session participant.
+        doc="""Randomly generated unique identifier for the session_participanRENAMEt.
         If you would like to merge this dataset with those from another subsession in the same session,
         you should join on this field, which will be the same across subsessions."""
     )
@@ -281,11 +281,11 @@ class SessionExperimenter(SessionUser):
 
     user_type_in_url = constants.user_type_experimenter
 
-class SessionParticipant(SessionUser):
+class SessionParticipanRENAMEt(SessionUser):
 
     exclude_from_data_analysis = models.BooleanField(default=False,
         doc="""
-        if set to 1, the experimenter indicated that this session participant's data points should be excluded from
+        if set to 1, the experimenter indicated that this session_participanRENAMEt's data points should be excluded from
         the data analysis (e.g. a problem took place during the experiment)"""
 
     )
@@ -294,18 +294,18 @@ class SessionParticipant(SessionUser):
 
     time_started = models.DateTimeField(null=True)
 
-    user_type_in_url = constants.user_type_participant
+    user_type_in_url = constants.user_type_session_participanRENAMEt
 
     def _start_url(self):
-        return '/InitializeSessionParticipant/{}'.format(
+        return '/InitializeSessionParticipanRENAMEt/{}'.format(
             self.code
         )
 
-    def participants(self):
+    def players(self):
         return self._users()
 
     def payoff_from_subsessions(self):
-        return sum(participant.payoff or Money(0) for participant in self.participants())
+        return sum(player.payoff or Money(0) for player in self.players())
 
     def total_pay(self):
         try:
@@ -323,7 +323,7 @@ class SessionParticipant(SessionUser):
     payoff_from_subsessions_display.short_description = 'payoff from subsessions'
 
     def payoff_from_subsessions_is_complete(self):
-        return all(p.payoff is not None for p in self.participants())
+        return all(p.payoff is not None for p in self.players())
 
     def total_pay_display(self):
         try:
@@ -336,7 +336,7 @@ class SessionParticipant(SessionUser):
         return u'{} (incomplete)'.format(total_pay)
 
     def _assign_to_matches(self):
-        for p in self.participants():
+        for p in self.players():
             p._assign_to_match()
 
     mturk_assignment_id = models.CharField(max_length = 50, null = True)
@@ -347,7 +347,7 @@ class SessionParticipant(SessionUser):
     label = models.CharField(
         max_length = 50,
         null = True,
-        doc="""Label assigned by the experimenter. Can be assigned by passing a GET param called "participant_label" to the participant's start URL"""
+        doc="""Label assigned by the experimenter. Can be assigned by passing a GET param called "session_participanRENAMEt_label" to the session_participanRENAMEt's start URL"""
     )
 
     def name(self):

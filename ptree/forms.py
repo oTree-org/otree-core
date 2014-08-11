@@ -1,7 +1,7 @@
 from importlib import import_module
 forms_internal = import_module('ptree.forms_internal')
 
-class Form(forms_internal.ParticipantModelForm):
+class Form(forms_internal.PlayerModelForm):
 
     def defaults(self):
         return super(Form, self).defaults()

@@ -28,19 +28,19 @@ class Match(ptree.models.BaseMatch):
     subsession = models.ForeignKey(Subsession)
     # </built-in>
 
-    participants_per_match = 1
+    players_per_match = 1
 
 
-class Participant(ptree.models.BaseParticipant):
+class Player(ptree.models.BasePlayer):
     # <built-in>
     match = models.ForeignKey(Match, null = True)
     treatment = models.ForeignKey(Treatment, null = True)
     subsession = models.ForeignKey(Subsession)
     # </built-in>
 
-    def other_participant(self):
-        """Returns other participant in match. Only valid for 2-player matches."""
-        return self.other_participants_in_match()[0]
+    def other_player(self):
+        """Returns other player in match. Only valid for 2-player matches."""
+        return self.other_players_in_match()[0]
 
     # example field
     my_field = models.MoneyField(
@@ -54,7 +54,7 @@ class Participant(ptree.models.BaseParticipant):
         self.payoff = 0 # change to whatever the payoff should be
 
     def role(self):
-        # you can make this depend of self.index_among_participants_in_match
+        # you can make this depend of self.index_among_players_in_match
         return ''
 
 def treatments():

@@ -35,8 +35,8 @@ def run_subsession(subsession):
 
 
 
-    for participant in subsession.participant_set.all():
-        bot = tests_module.ParticipantBot(participant)
+    for player in subsession.player_set.all():
+        bot = tests_module.PlayerBot(player)
         bot.start()
         t = Thread(target=bot._play, args=(failure_queue,))
         jobs.append(t)
@@ -61,17 +61,17 @@ def run(session):
     session_experimenter_bot.get(session.session_experimenter._start_url(), follow=True)
     session_experimenter_bot.post(session.session_experimenter._start_url(), follow=True)
 
-    # since participants are assigned to treatments and matches in a background thread,
+    # since players are assigned to treatments and matches in a background thread,
     # we need to wait for that to complete.
     while True:
         session = Session.objects.get(id=session.id)
-        if session._participants_assigned_to_matches:
+        if session._players_assigned_to_matches:
             break
         time.sleep(1)
 
-    for participant in session.participants():
+    for session_participanRENAMEts in session.session_participanRENAMEts():
         bot = Client()
-        bot.get(participant._start_url(), follow=True)
+        bot.get(session_participanRENAMEts._start_url(), follow=True)
 
     for subsession in session.subsessions():
         run_subsession(subsession)

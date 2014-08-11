@@ -1,14 +1,14 @@
 from ptree.views.abstract import (
     NonSequenceUrlMixin,
     PTreeMixin,
-    ParticipantUpdateView,
+    PlayerUpdateView,
     LoadClassesAndUserMixin,
     load_session_user,
     AssignVisitorToOpenSession,
     WaitPageMixin,
-    ParticipantSequenceMixin,
+    PlayerSequenceMixin,
     SequenceMixin,
-    ParticipantMixin
+    PlayerMixin
 
 )
 
@@ -19,7 +19,7 @@ import vanilla
 from django.utils.translation import ugettext as _
 import ptree.constants as constants
 import ptree.sessionlib.models
-from ptree.sessionlib.models import SessionParticipant
+from ptree.sessionlib.models import SessionParticipanRENAMEt
 import ptree.common
 import django.utils.timezone
 import threading
@@ -47,13 +47,13 @@ class OutOfRangeNotification(NonSequenceUrlMixin, PTreeMixin, vanilla.View):
         else:
             return render_to_response('ptree/OutOfRangeNotification.html')
 
-class WaitUntilAssignedToMatch(ParticipantSequenceMixin, ParticipantMixin, WaitPageMixin, vanilla.View):
+class WaitUntilAssignedToMatch(PlayerSequenceMixin, PlayerMixin, WaitPageMixin, vanilla.View):
     """
-    this is visited after Initialize, to make sure the participant has a match and treatment.
-    the participant can be assigned at any time, but this is a safeguard,
+    this is visited after Initialize, to make sure the player has a match and treatment.
+    the player can be assigned at any time, but this is a safeguard,
     and therefore should be at the beginning of each subsession.
-    Should it instead be called after InitializeSessionParticipant?
-    Someday, we might want to shuffle participants dynamically,
+    Should it instead be called after InitializeSessionParticipanRENAMEt?
+    Someday, we might want to shuffle players dynamically,
     e.g. based on the results of the past game.
     """
     name_in_url = 'shared'
@@ -62,7 +62,7 @@ class WaitUntilAssignedToMatch(ParticipantSequenceMixin, ParticipantMixin, WaitP
         return self.match and self.treatment
 
     def body_text(self):
-        return 'Waiting until participant is assigned to match and treatment.'
+        return 'Waiting until player is assigned to match and treatment.'
 
     def _redirect_after_complete(self):
         self.update_indexes_in_sequences()
@@ -72,16 +72,16 @@ class WaitUntilAssignedToMatch(ParticipantSequenceMixin, ParticipantMixin, WaitP
         pass
 
 
-class SessionExperimenterWaitUntilParticipantsAreAssigned(NonSequenceUrlMixin, WaitPageMixin, vanilla.View):
+class SessionExperimenterWaitUntilPlayersAreAssigned(NonSequenceUrlMixin, WaitPageMixin, vanilla.View):
 
     def title_text(self):
         return 'Please wait'
 
     def body_text(self):
-        return 'Assigning participants to matches.'
+        return 'Assigning players to matches.'
 
     def _is_complete(self):
-        return self.session._participants_assigned_to_matches or self.session.type().assign_to_matches_on_the_fly
+        return self.session._players_assigned_to_matches or self.session.type().assign_to_matches_on_the_fly
 
     @classmethod
     def get_name_in_url(cls):
@@ -101,7 +101,7 @@ class SessionExperimenterWaitUntilParticipantsAreAssigned(NonSequenceUrlMixin, W
         if self.request_is_from_wait_page():
             return self._response_to_wait_page()
         else:
-            # if the participant shouldn't see this view, skip to the next
+            # if the player shouldn't see this view, skip to the next
             if self._is_complete():
                 return HttpResponseRedirect(self._session_user.me_in_first_subsession._start_url())
             return self.get_wait_page()
@@ -115,7 +115,7 @@ class InitializeSessionExperimenter(vanilla.View):
         return r'^InitializeSessionExperimenter/(?P<{}>[a-z]+)/$'.format(constants.session_user_code)
 
     def redirect_to_next_page(self):
-        return HttpResponseRedirect(SessionExperimenterWaitUntilParticipantsAreAssigned.url(self._session_user))
+        return HttpResponseRedirect(SessionExperimenterWaitUntilPlayersAreAssigned.url(self._session_user))
 
     def get(self, *args, **kwargs):
         session_user_code = kwargs[constants.session_user_code]
@@ -127,7 +127,7 @@ class InitializeSessionExperimenter(vanilla.View):
         )
 
         session = self._session_user.session
-        if session._participants_assigned_to_matches or session.type().assign_to_matches_on_the_fly:
+        if session._players_assigned_to_matches or session.type().assign_to_matches_on_the_fly:
             return self.redirect_to_next_page()
         return render_to_response('ptree/experimenter/StartSession.html', {})
 
@@ -146,35 +146,35 @@ class InitializeSessionExperimenter(vanilla.View):
             session.time_started = django.utils.timezone.now()
             session.save()
 
-        t = threading.Thread(target=session._assign_participants_to_matches)
+        t = threading.Thread(target=session._assign_players_to_matches)
         t.start()
         return self.redirect_to_next_page()
 
-class InitializeSessionParticipantMagdeburg(vanilla.View):
+class InitializeSessionParticipanRENAMEtMagdeburg(vanilla.View):
     """since magdeburg doesn't let you pass distinct URLs to each PC, but you can pass different params"""
 
     @classmethod
     def url_pattern(cls):
-        return r'^InitializeSessionParticipantMagdeburg/$'
+        return r'^InitializeSessionParticipanRENAMEtMagdeburg/$'
 
     def get(self, *args, **kwargs):
         session_user_code = self.request.GET[constants.session_user_code]
-        session_user = get_object_or_404(ptree.sessionlib.models.SessionParticipant, code=session_user_code)
+        session_user = get_object_or_404(ptree.sessionlib.models.SessionParticipanRENAMEt, code=session_user_code)
 
         return HttpResponseRedirect(session_user._start_url())
 
-class InitializeSessionParticipant(vanilla.UpdateView):
+class InitializeSessionParticipanRENAMEt(vanilla.UpdateView):
 
     @classmethod
     def url_pattern(cls):
-        return r'^InitializeSessionParticipant/(?P<{}>[a-z]+)/$'.format(constants.session_user_code)
+        return r'^InitializeSessionParticipanRENAMEt/(?P<{}>[a-z]+)/$'.format(constants.session_user_code)
 
     def get(self, *args, **kwargs):
 
         session_user_code = kwargs[constants.session_user_code]
         self.request.session[session_user_code] = {}
 
-        session_user = get_object_or_404(ptree.sessionlib.models.SessionParticipant, code=session_user_code)
+        session_user = get_object_or_404(ptree.sessionlib.models.SessionParticipanRENAMEt, code=session_user_code)
 
         session = session_user.session
         if session.type().assign_to_matches_on_the_fly:
@@ -184,9 +184,9 @@ class InitializeSessionParticipant(vanilla.UpdateView):
         session_user.visited = True
         session_user.time_started = django.utils.timezone.now()
 
-        participant_label = self.request.GET.get(constants.session_participant_label)
-        if participant_label is not None:
-            session_user.label = participant_label
+        session_participanRENAMEt = self.request.GET.get(constants.session_participanRENAMEt_label)
+        if session_participanRENAMEt is not None:
+            session_user.label = session_participanRENAMEt
 
         if session_user.ip_address == None:
             session_user.ip_address = self.request.META['REMOTE_ADDR']
@@ -242,5 +242,5 @@ class AssignVisitorToOpenSessionLab(AssignVisitorToOpenSession):
         return r'^{}/$'.format(cls.__name__)
 
     required_params = {
-        'label': ptree.constants.session_participant_label,
+        'label': ptree.constants.session_participanRENAMEt_label,
     }

@@ -40,7 +40,7 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
     _previous_subsession_object_id = models.PositiveIntegerField(null=True)
 
 
-    #FIXME: this should start at 1, to be consistent with index_among_participants_in_match
+    #FIXME: this should start at 1, to be consistent with index_among_players_in_match
     _index_in_subsessions = models.PositiveIntegerField(
         null=True,
         doc="starts from 0. indicates the position of this subsession among other subsessions in the session."
@@ -48,7 +48,7 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
 
     _skip = models.BooleanField(
         default=False,
-        doc="""whether the experimenter made the participants skip this subsession"""
+        doc="""whether the experimenter made the players skip this subsession"""
     )
 
     def name(self):
@@ -84,17 +84,17 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
         return previous_round_match_groups
 
     def _next_open_match(self):
-        """Get the next match that is accepting participants.
+        """Get the next match that is accepting players.
         (or none if it does not exist)
         """
         try:
-            return (m for m in self.match_set.all() if m._is_ready_for_next_participant()).next()
+            return (m for m in self.match_set.all() if m._is_ready_for_next_player()).next()
         except StopIteration:
             return None
 
     def _num_matches(self):
         """number of matches in this subsession"""
-        return self.participant_set.count()/self._MatchClass().participants_per_match
+        return self.player_set.count()/self._MatchClass().players_per_match
 
     def _random_treatments(self):
         num_matches = self._num_matches()
@@ -107,14 +107,14 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
         return random_treatments
 
     def _random_match_groups(self):
-        participants = list(self.participant_set.all())
-        random.shuffle(participants)
+        players = list(self.player_set.all())
+        random.shuffle(players)
         match_groups = []
-        participants_per_match = self._MatchClass().participants_per_match
+        players_per_match = self._MatchClass().players_per_match
         for i in range(self._num_matches()):
-            start_index = i*participants_per_match
-            end_index = start_index + participants_per_match
-            match_groups.append(participants[start_index:end_index])
+            start_index = i*players_per_match
+            end_index = start_index + players_per_match
+            match_groups.append(players[start_index:end_index])
         return match_groups
 
     def _corresponding_treatments(self, earlier_round):
@@ -123,14 +123,14 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
         return [current_treatments[i] for i in earlier_treatment_indexes]
 
     def _match_groups(self):
-        return [list(m.participant_set.all()) for m in self.match_set.all()]
+        return [list(m.player_set.all()) for m in self.match_set.all()]
 
     def _corresponding_match_groups(self, earlier_round):
-        current_participant_dict = {p.session_participant.pk: p for p in self.participant_set.all()}
+        current_player_dict = {p.session_participanRENAMEt.pk: p for p in self.player_set.all()}
         match_groups = earlier_round._match_groups()
         for m_index, m in enumerate(match_groups):
             for p_index, p in enumerate(m):
-                match_groups[m_index][p_index] = current_participant_dict[p.session_participant.pk]
+                match_groups[m_index][p_index] = current_player_dict[p.session_participanRENAMEt.pk]
         return match_groups
 
     def _MatchClass(self):
@@ -149,7 +149,7 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
         for t in treatments:
             m = MatchClass._create(t)
 
-    def _assign_participants_to_matches(self):
+    def _assign_players_to_matches(self):
         previous_round = self.previous_round()
         if previous_round:
             match_groups = self._corresponding_match_groups(previous_round)
@@ -158,8 +158,8 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
         match_groups = self.pick_match_groups(match_groups)
         for match_group in match_groups:
             match = self._next_open_match()
-            for participant in match_group:
-                participant._assign_to_match(match)
+            for player in match_group:
+                player._assign_to_match(match)
             match._initialize_checkpoints()
             match.save()
 

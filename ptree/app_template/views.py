@@ -8,7 +8,7 @@ from ptree.common import Money, money_range
 def variables_for_all_templates(self):
     return {
         # example:
-        #'my_field': self.participant.my_field,
+        #'my_field': self.player.my_field,
     }
 
 class Introduction(Page):
@@ -33,7 +33,7 @@ class Introduction(Page):
 class ResultsWaitPage(MatchWaitPage):
 
     def action(self):
-        for p in self.match.participants():
+        for p in self.match.players():
             p.set_payoff()
 
 class Results(Page):

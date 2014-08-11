@@ -79,7 +79,7 @@ def augment_settings(settings):
     overridable_settings = {
         'CRISPY_TEMPLATE_PACK': 'bootstrap3',
 
-        # pages with a time limit for the participant can have a grace period
+        # pages with a time limit for the player can have a grace period
         # to compensate for network latency.
         # the timer is started and stopped server-side,
         # so this grace period should account for time spent during

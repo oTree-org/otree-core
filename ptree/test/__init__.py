@@ -3,7 +3,7 @@ client = import_module('ptree.test.client')
 
 # public API
 
-class Bot(client.ParticipantBot):
+class Bot(client.PlayerBot):
 
     def play(self):
         return super(Bot, self).play()

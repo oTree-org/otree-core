@@ -1,13 +1,13 @@
 from django.contrib.contenttypes import generic
-from ptree.sessionlib.models import Session, SessionParticipant
+from ptree.sessionlib.models import Session, SessionParticipanRENAMEt
 from ptree.db import models
 from importlib import import_module
-from ptree.common import _participants, _matches
+from ptree.common import _players, _matches
 
 subsessions = import_module('ptree.models.subsessions')
 treatments = import_module('ptree.models.treatments')
 matches = import_module('ptree.models.matches')
-participants = import_module('ptree.models.participants')
+players = import_module('ptree.models.players')
 
 
 
@@ -48,8 +48,8 @@ class BaseSubsession(subsessions.BaseSubsession):
     def matches(self):
         return _matches(self)
 
-    def participants(self):
-        return _participants(self)
+    def players(self):
+        return _players(self)
 
     @property
     def app_name(self):
@@ -71,8 +71,8 @@ class BaseTreatment(treatments.BaseTreatment):
     def matches(self):
         return _matches(self)
 
-    def participants(self):
-        return _participants(self)
+    def players(self):
+        return _players(self)
 
     label = models.CharField(max_length = 300, null = True, blank = True)
 
@@ -88,41 +88,41 @@ class BaseTreatment(treatments.BaseTreatment):
 
 class BaseMatch(matches.BaseMatch):
 
-    participants_per_match = 1
+    players_per_match = 1
 
     session = models.ForeignKey(
         Session,
         related_name = '%(app_label)s_%(class)s'
     )
 
-    def participants(self):
-        return _participants(self)
+    def players(self):
+        return _players(self)
 
-    def get_participant_by_role(self, role):
-        return super(BaseMatch, self).get_participant_by_role(role)
+    def get_player_by_role(self, role):
+        return super(BaseMatch, self).get_player_by_role(role)
 
-    def get_participant_by_index(self, index_among_participants_in_match):
-        return super(BaseMatch, self).get_participant_by_role(index_among_participants_in_match)
+    def get_player_by_index(self, index_among_players_in_match):
+        return super(BaseMatch, self).get_player_by_role(index_among_players_in_match)
 
     class Meta:
         abstract = True
         verbose_name_plural = "matches"
         ordering = ['pk']
 
-class BaseParticipant(participants.BaseParticipant):
+class BasePlayer(players.BasePlayer):
     # starts from 1, not 0.
-    index_among_participants_in_match = models.PositiveIntegerField(
+    index_among_players_in_match = models.PositiveIntegerField(
         null = True,
-        doc="Index starting from 1. In multiplayer games, indicates whether this is participant 1, participant 2, etc."
+        doc="Index starting from 1. In multiplayer games, indicates whether this is player 1, player 2, etc."
     )
 
     payoff = models.MoneyField(
         null=True,
-        doc="""The payoff the participant made in this subsession, in cents"""
+        doc="""The payoff the player made in this subsession, in cents"""
     )
 
-    session_participant = models.ForeignKey(
-        SessionParticipant,
+    session_participanRENAMEt = models.ForeignKey(
+        SessionParticipanRENAMEt,
         related_name = '%(app_label)s_%(class)s'
     )
 
@@ -134,11 +134,11 @@ class BaseParticipant(participants.BaseParticipant):
     me_in_next_subsession = generic.GenericForeignKey('me_in_next_subsession_content_type',
                                                 'me_in_next_subsession_object_id',)
 
-    def other_participants_in_match(self):
-        return [p for p in self.match.participants() if p != self]
+    def other_players_in_match(self):
+        return [p for p in self.match.players() if p != self]
 
-    def other_participants_in_subsession(self):
-        return [p for p in self.subsession.participants() if p != self]
+    def other_players_in_subsession(self):
+        return [p for p in self.subsession.players() if p != self]
 
 
     class Meta:

@@ -7,8 +7,8 @@ from ptree import common
 register = Library()
 
 
-SUBSESSION_APP_MODELS_ORDER = ["Subsession", "Treatment", "Match", "Participant"]
-SESSION_APP_MODELS_ORDER = ["Session", "SessionParticipant"]
+SUBSESSION_APP_MODELS_ORDER = ["Subsession", "Treatment", "Match", "Player"]
+SESSION_APP_MODELS_ORDER = ["Session", "SessionParticipanRENAMEt"]
 
 
 def _get_model_position(object_name, model_order_list):

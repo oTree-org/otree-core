@@ -74,7 +74,7 @@ class BaseClient(django.test.client.Client):
             time.sleep(1) #quicker sleep since it's bots playing the game
             self.retry_wait_page()
             if time.time() - first_wait_page_try_time > MAX_SECONDS_TO_WAIT:
-                raise Exception('Participant appears to be stuck on waiting page (waiting for over {} seconds)'.format(MAX_SECONDS_TO_WAIT))
+                raise Exception('Player appears to be stuck on waiting page (waiting for over {} seconds)'.format(MAX_SECONDS_TO_WAIT))
         self.assert_is_on(ViewClass)
         if data:
             print '{}, {}'.format(self.path, data)
@@ -126,16 +126,16 @@ class BaseClient(django.test.client.Client):
             pass
 
 
-class ParticipantBot(BaseClient):
+class PlayerBot(BaseClient):
 
     @property
-    def participant(self):
+    def player(self):
         """this needs to be a property because asserts require refreshing from the DB"""
-        return self._ParticipantClass.objects.get(id=self._participant_id)
+        return self._PlayerClass.objects.get(id=self._player_id)
 
     @property
     def _user(self):
-        return self.participant
+        return self.player
 
     @property
     def match(self):
@@ -150,32 +150,32 @@ class ParticipantBot(BaseClient):
         return self._SubsessionClass.objects.get(id=self._subsession_id)
 
     def _play(self, failure_queue):
-        super(ParticipantBot, self)._play(failure_queue)
-        if self.participant.payoff is None:
+        super(PlayerBot, self)._play(failure_queue)
+        if self.player.payoff is None:
             self.failure_queue.put(ptree.constants.failure)
-            raise Exception('Participant "{}": payoff is still None at the end of the subsession.'.format(self.participant.session_participant.code))
+            raise Exception('Player "{}": payoff is still None at the end of the subsession.'.format(self.player.session_participanRENAMEt.code))
 
 
     def __init__(self, user, **kwargs):
-        participant = user
+        player = user
         app_label = user.subsession.app_name
         models_module = import_module('{}.models'.format(app_label))
 
-        self._ParticipantClass = models_module.Participant
+        self._PlayerClass = models_module.Player
         self._MatchClass = models_module.Match
         self._TreatmentClass = models_module.Treatment
         self._SubsessionClass = models_module.Subsession
-        self._UserClass = self._ParticipantClass
+        self._UserClass = self._PlayerClass
 
         # we assume the experimenter has assigned everyone to a treatment
-        assert participant.match and participant.treatment
+        assert player.match and player.treatment
 
-        self._participant_id = participant.id
-        self._match_id = participant.match.id
-        self._treatment_id = participant.treatment.id
-        self._subsession_id = participant.subsession.id
+        self._player_id = player.id
+        self._match_id = player.match.id
+        self._treatment_id = player.treatment.id
+        self._subsession_id = player.subsession.id
 
-        super(ParticipantBot, self).__init__(**kwargs)
+        super(PlayerBot, self).__init__(**kwargs)
 
 class ExperimenterBot(BaseClient):
 

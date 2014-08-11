@@ -5,8 +5,8 @@ def session_types():
         SessionType(
             name="My App",
             base_pay=0,
-            participants_per_session=12,
-            participants_per_demo_session=2,
+            session_participanRENAMEts_per_session=12,
+            session_participanRENAMEts_per_demo_session=2,
             subsession_apps=[
                 'myapp',
             ],

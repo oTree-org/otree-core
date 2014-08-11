@@ -48,7 +48,7 @@ def is_subsession_app(app_label):
         models_module = import_module('{}.models'.format(app_label))
     except ImportError:
         return False
-    class_names = ['Participant', 'Match', 'Treatment', 'Subsession']
+    class_names = ['Player', 'Match', 'Treatment', 'Subsession']
     return all(hasattr(models_module, ClassName) for ClassName in class_names)
 
 def git_commit_timestamp():
@@ -108,34 +108,34 @@ def _views_module(model_instance):
 
 class ModelWithCheckpointMixin(object):
     @property
-    def _participant_progress_distribution(self):
-        f = self._participant_progress_distribution_field
+    def _player_progress_distribution(self):
+        f = self._player_progress_distribution_field
         if f == '':
             return []
         return f.split(',')
 
-    @_participant_progress_distribution.setter
-    def _participant_progress_distribution(self, value):
-        self._participant_progress_distribution_field = ','.join(value)
+    @_player_progress_distribution.setter
+    def _player_progress_distribution(self, value):
+        self._player_progress_distribution_field = ','.join(value)
 
     def _initialize_checkpoints(self):
         views_module = _views_module(self)
         CheckpointMixinClass = self._CheckpointMixinClass()
-        participant_ids = {str(p.pk):True for p in self.participant_set.all()}
-        # i+1 because of WaitUntilParticipantAssignedToMatch
-        self._incomplete_checkpoints = {str(i+1):participant_ids for i, C in enumerate(views_module.pages()) if issubclass(C, CheckpointMixinClass)}
+        player_ids = {str(p.pk):True for p in self.player_set.all()}
+        # i+1 because of WaitUntilPlayerAssignedToMatch
+        self._incomplete_checkpoints = {str(i+1):player_ids for i, C in enumerate(views_module.pages()) if issubclass(C, CheckpointMixinClass)}
 
 
-    def _record_checkpoint_visit(self, index_in_pages, participant_id):
+    def _record_checkpoint_visit(self, index_in_pages, player_id):
         '''returns whether to take the action'''
         _incomplete_checkpoints = copy.deepcopy(self._incomplete_checkpoints)
         index_in_pages = str(index_in_pages)
-        participant_id = str(participant_id)
+        player_id = str(player_id)
         take_action = False
         if _incomplete_checkpoints.has_key(index_in_pages):
             remaining_visits = _incomplete_checkpoints[index_in_pages]
-            if remaining_visits.has_key(participant_id):
-                remaining_visits.pop(participant_id, None)
+            if remaining_visits.has_key(player_id):
+                remaining_visits.pop(player_id, None)
                 if not remaining_visits:
                     take_action = True
         self._incomplete_checkpoints = _incomplete_checkpoints
@@ -155,11 +155,11 @@ class ModelWithCheckpointMixin(object):
     def _refresh_with_lock(self):
         return self.__class__._default_manager.select_for_update().get(pk=self.pk)
 
-def _participants(self):
-    if hasattr(self, '_participants'):
-        return self._participants
-    self._participants = list(self.participant_set.order_by('index_among_participants_in_match'))
-    return self._participants
+def _players(self):
+    if hasattr(self, '_players'):
+        return self._players
+    self._players = list(self.player_set.order_by('index_among_players_in_match'))
+    return self._players
 
 def _matches(self):
     if hasattr(self, '_matches'):

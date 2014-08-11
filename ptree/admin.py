@@ -14,8 +14,8 @@ admin.site.register(ptree.sessionlib.models.Session,
                     ptree.adminlib.SessionAdmin
                     )
 
-admin.site.register(ptree.sessionlib.models.SessionParticipant,
-                    ptree.adminlib.SessionParticipantAdmin)
+admin.site.register(ptree.sessionlib.models.SessionParticipanRENAMEt,
+                    ptree.adminlib.SessionParticipanRENAMEtAdmin)
 
 admin.site.unregister(User)
 admin.site.unregister(Group)

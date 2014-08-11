@@ -35,7 +35,7 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpRespons
 import vanilla
 from django.utils.translation import ugettext as _
 import ptree.sessionlib.models
-from ptree.sessionlib.models import SessionParticipant
+from ptree.sessionlib.models import SessionParticipanRENAMEt
 
 
 # Get an instance of a logger
@@ -45,12 +45,12 @@ class PTreeMixin(object):
     """Base mixin class for pTree views.
     Takes care of:
     - retrieving model classes and objects automatically,
-    so you can access view.treatment, self.match, self.participant, etc.
+    so you can access view.treatment, self.match, self.player, etc.
     """
 
     def load_classes(self):
         """
-        Even though we only use ParticipantClass in load_objects,
+        Even though we only use PlayerClass in load_objects,
         we use {Match/Treatment/Subsession}Class elsewhere.
         We don't need this as long as people have the correct mixins,
         but it's likely that people will forget to put the mixin.
@@ -58,7 +58,7 @@ class PTreeMixin(object):
 
         self.SubsessionClass = self.request_session.get(constants.SubsessionClass)
         self.TreatmentClass = self.request_session.get(constants.TreatmentClass)
-        self.ParticipantClass = self.request_session.get(constants.ParticipantClass)
+        self.PlayerClass = self.request_session.get(constants.PlayerClass)
         self.MatchClass = self.request_session.get(constants.MatchClass)
         self.UserClass = self.request_session.get(constants.UserClass)
 
@@ -92,9 +92,9 @@ class PTreeMixin(object):
         return cls.name_in_url
 
     def _redirect_to_page_the_user_should_be_on(self):
-        """Redirect to where the participant should be,
+        """Redirect to where the player should be,
         according to the view index we maintain in the DB
-        Useful if the participant tried to skip ahead,
+        Useful if the player tried to skip ahead,
         or if they hit the back button.
         We can put them back where they belong.
         """
@@ -133,8 +133,8 @@ def load_session_user(dispatch_method):
     def wrapped(self, request, *args, **kwargs):
         session_user_code = kwargs.pop(constants.session_user_code)
         user_type = kwargs.pop(constants.user_type)
-        if user_type == constants.user_type_participant:
-            SessionUserClass = ptree.sessionlib.models.SessionParticipant
+        if user_type == constants.user_type_session_participanRENAMEt:
+            SessionUserClass = ptree.sessionlib.models.SessionParticipanRENAMEt
         else:
             SessionUserClass = ptree.sessionlib.models.SessionExperimenter
 
@@ -161,15 +161,15 @@ class NonSequenceUrlMixin(object):
     def url_pattern(cls):
         return ptree.common.url_pattern(cls, False)
 
-class ParticipantMixin(object):
+class PlayerMixin(object):
 
     def load_objects(self):
         self.load_user()
-        self.participant = self._user
-        self.match = self.participant.match
-        # 2/11/2014: match may be undefined because the participant may be at a waiting screen
+        self.player = self._user
+        self.match = self.player.match
+        # 2/11/2014: match may be undefined because the player may be at a waiting screen
         # before experimenter assigns to a match & treatment.
-        self.treatment = self.participant.treatment
+        self.treatment = self.player.treatment
 
     def objects_to_save(self):
         return [self._user, self._session_user, self.match]
@@ -180,7 +180,7 @@ class ExperimenterMixin(object):
         self.load_user()
 
     def objects_to_save(self):
-        return [self._user, self.subsession, self._session_user] + self.subsession.participants() + self.subsession.matches() #+ self.subsession.treatments()
+        return [self._user, self.subsession, self._session_user] + self.subsession.players() + self.subsession.matches() #+ self.subsession.treatments()
 
 class WaitPageMixin(object):
 
@@ -258,7 +258,7 @@ class CheckpointMixin(object):
         return self._match_or_subsession._checkpoint_is_complete(self.index_in_pages)
 
     def _record_visit(self):
-        """record that this participant visited"""
+        """record that this player visited"""
         # lock the match/subsession to avoid race conditions
         self._match_or_subsession_locked = self._match_or_subsession._refresh_with_lock()
         run_action_now = self._match_or_subsession_locked._record_checkpoint_visit(self.index_in_pages, self._user.pk)
@@ -281,7 +281,7 @@ class CheckpointMixin(object):
         # that refers to self.match or self.subsession
         self._match_or_subsession._mark_checkpoint_complete(self.index_in_pages)
         self.action()
-        for p in self.participants_in_match_or_subsession():
+        for p in self.players_in_match_or_subsession():
             p.save()
         self._match_or_subsession.save()
 
@@ -301,14 +301,14 @@ class MatchCheckpointMixin(CheckpointMixin):
         self._match_or_subsession = self.match
         return super(MatchCheckpointMixin, self).dispatch(request, *args, **kwargs)
 
-    def participants_in_match_or_subsession(self):
-        return self.match.participants()
+    def players_in_match_or_subsession(self):
+        return self.match.players()
 
     def body_text(self):
-        if self.match.participants_per_match == 2:
-            return 'Waiting for the other participant.'
-        if self.match.participants_per_match > 2:
-            return 'Waiting for other participants.'
+        if self.match.players_per_match == 2:
+            return 'Waiting for the other player.'
+        if self.match.players_per_match > 2:
+            return 'Waiting for other players.'
 
 class SubsessionCheckpointMixin(CheckpointMixin):
 
@@ -316,16 +316,16 @@ class SubsessionCheckpointMixin(CheckpointMixin):
         self._match_or_subsession = self.subsession
         return super(SubsessionCheckpointMixin, self).dispatch(request, *args, **kwargs)
 
-    def participants_in_match_or_subsession(self):
-        return self.subsession.participants()
+    def players_in_match_or_subsession(self):
+        return self.subsession.players()
 
     def body_text(self):
-        return 'Waiting for other participants.'
+        return 'Waiting for other players.'
 
 class SequenceMixin(PTreeMixin):
     """
     View that manages its position in the match sequence.
-    for both participants and experimenters
+    for both players and experimenters
     """
 
     @classmethod
@@ -401,7 +401,7 @@ class SequenceMixin(PTreeMixin):
 
             self.index_in_pages = int(kwargs.pop(constants.index_in_pages))
 
-            # if the participant tried to skip past a part of the subsession
+            # if the player tried to skip past a part of the subsession
             # (e.g. by typing in a future URL)
             # or if they hit the back button to a previous subsession in the sequence.
             if not self._user_is_on_right_page():
@@ -470,7 +470,7 @@ class SequenceMixin(PTreeMixin):
         pass
 
     def _user_is_on_right_page(self):
-        """Will detect if a participant tried to access a page they didn't reach yet,
+        """Will detect if a player tried to access a page they didn't reach yet,
         for example if they know the URL to the redemption code page,
         and try typing it in so they don't have to play the whole game.
         We should block that."""
@@ -514,23 +514,23 @@ class ModelFormMixin(object):
         return HttpResponseRedirect(self._session_user.get_success_url())
 
 
-class ParticipantSequenceMixin(SequenceMixin):
-    """for participants"""
+class PlayerSequenceMixin(SequenceMixin):
+    """for players"""
 
     def get_debug_values(self):
         try:
             match_id = self.match.pk
         except:
             match_id = ''
-        return [('Index among participants in match', self.participant.index_among_participants_in_match),
-                ('Participant', self.participant.pk),
+        return [('Index among players in match', self.player.index_among_players_in_match),
+                ('Player', self.player.pk),
                 ('Match', match_id),
                 ('Treatment', self.treatment.pk),
                 ('Session code', self.session.code),]
 
 
     def get_extra_form_kwargs(self):
-        return {'participant': self.participant,
+        return {'player': self.player,
                'match': self.match,
                'treatment': self.treatment,
                'subsession': self.subsession,
@@ -560,7 +560,7 @@ class BaseView(PTreeMixin, NonSequenceUrlMixin, vanilla.View):
 
 
 
-class ParticipantUpdateView(ModelFormMixin, ParticipantSequenceMixin, ParticipantMixin, vanilla.UpdateView):
+class PlayerUpdateView(ModelFormMixin, PlayerSequenceMixin, PlayerMixin, vanilla.UpdateView):
 
     # if form_class is not provided, we use an empty form based on StubModel.
     form_class = StubModelForm
@@ -569,20 +569,20 @@ class ParticipantUpdateView(ModelFormMixin, ParticipantSequenceMixin, Participan
         Cls = self.get_form_class().Meta.model
         if Cls == self.MatchClass:
             return self.match
-        elif Cls == self.ParticipantClass:
-            return self.participant
+        elif Cls == self.PlayerClass:
+            return self.player
         elif Cls == seq_models.StubModel:
             return seq_models.StubModel.objects.all()[0]
         else:
             # For AuxiliaryModels
-            return Cls.objects.get(object_id=self.participant.id,
-                                   content_type=ContentType.objects.get_for_model(self.participant))
+            return Cls.objects.get(object_id=self.player.id,
+                                   content_type=ContentType.objects.get_for_model(self.player))
 
 
-class MatchCheckpoint(ParticipantSequenceMixin, ParticipantMixin, MatchCheckpointMixin, WaitPageMixin, vanilla.UpdateView):
+class MatchCheckpoint(PlayerSequenceMixin, PlayerMixin, MatchCheckpointMixin, WaitPageMixin, vanilla.UpdateView):
     pass
 
-class SubsessionCheckpoint(ParticipantSequenceMixin, ParticipantMixin, SubsessionCheckpointMixin, WaitPageMixin, vanilla.UpdateView):
+class SubsessionCheckpoint(PlayerSequenceMixin, PlayerMixin, SubsessionCheckpointMixin, WaitPageMixin, vanilla.UpdateView):
     pass
 
 
@@ -597,7 +597,7 @@ class ExperimenterUpdateView(ModelFormMixin, ExperimenterSequenceMixin, Experime
             return seq_models.StubModel.objects.all()[0]
 
 
-class InitializeParticipantOrExperimenter(NonSequenceUrlMixin, vanilla.View):
+class InitializePlayerOrExperimenter(NonSequenceUrlMixin, vanilla.View):
 
     @classmethod
     def get_name_in_url(cls):
@@ -618,7 +618,7 @@ class InitializeParticipantOrExperimenter(NonSequenceUrlMixin, vanilla.View):
 
         self.request_session[constants.SubsessionClass] = self.z_models.Subsession
         self.request_session[constants.TreatmentClass] = self.z_models.Treatment
-        self.request_session[constants.ParticipantClass] = self.z_models.Participant
+        self.request_session[constants.PlayerClass] = self.z_models.Player
         self.request_session[constants.MatchClass] = self.z_models.Match
 
     def get_request_session(self):
@@ -626,9 +626,9 @@ class InitializeParticipantOrExperimenter(NonSequenceUrlMixin, vanilla.View):
 
     @load_session_user
     def dispatch(self, request, *args, **kwargs):
-        return super(InitializeParticipantOrExperimenter, self).dispatch(request, *args, **kwargs)
+        return super(InitializePlayerOrExperimenter, self).dispatch(request, *args, **kwargs)
 
-class InitializeParticipant(InitializeParticipantOrExperimenter):
+class InitializePlayer(InitializePlayerOrExperimenter):
     """
     What if I merged this with WaitUntilAssigned?
     """
@@ -639,12 +639,12 @@ class InitializeParticipant(InitializeParticipantOrExperimenter):
 
         user_code = self.request.GET.get(constants.user_code)
 
-        self._user = get_object_or_404(self.z_models.Participant, code = user_code)
-        # self._user is a generic name for self.participant
+        self._user = get_object_or_404(self.z_models.Player, code = user_code)
+        # self._user is a generic name for self.player
         # they are the same thing, but we use 'user' wherever possible
         # so that the code can be copy pasted to experimenter code
-        self.participant = self._user
-        self.subsession = self.participant.subsession
+        self.player = self._user
+        self.subsession = self.player.subsession
 
         self._user.visited = True
         self._user.time_started = django.utils.timezone.now()
@@ -655,21 +655,21 @@ class InitializeParticipant(InitializeParticipantOrExperimenter):
         self.persist_classes()
         return HttpResponseRedirect(self._user._pages_as_urls()[0])
 
-    def get_next_participant_in_subsession(self):
+    def get_next_player_in_subsession(self):
         try:
-            return self.z_models.Participant.objects.filter(
+            return self.z_models.Player.objects.filter(
                 subsession=self.subsession,
                 visited=False)[0]
         except IndexError:
-            raise IndexError("No Participant objects left in the database to assign to new visitor.")
+            raise IndexError("No Player objects left in the database to assign to new visitor.")
 
     def persist_classes(self):
-        super(InitializeParticipant, self).persist_classes()
-        self.request_session[constants.UserClass] = self.z_models.Participant
+        super(InitializePlayer, self).persist_classes()
+        self.request_session[constants.UserClass] = self.z_models.Player
 
-class InitializeExperimenter(InitializeParticipantOrExperimenter):
+class InitializeExperimenter(InitializePlayerOrExperimenter):
     """
-    this needs to be abstract because experimenters also need to access self.ParticipantClass, etc.
+    this needs to be abstract because experimenters also need to access self.PlayerClass, etc.
     for example, in get_object, it checks if it's self.SubsessionClass
     """
 
@@ -721,16 +721,16 @@ class AssignVisitorToOpenSession(vanilla.View):
                 return False
         return True
 
-    def retrieve_existing_participant_with_these_params(self, open_session):
+    def retrieve_existing_session_participanRENAMEt_with_these_params(self, open_session):
         params = {field_name: self.request.GET[get_param_name] for field_name, get_param_name in self.required_params.items()}
-        return SessionParticipant.objects.get(
+        return SessionParticipanRENAMEt.objects.get(
             session = open_session,
             **params
         )
 
-    def set_external_params_on_participant(self, session_participant):
+    def set_external_params_on_session_participanRENAMEt(self, session_participanRENAMEt):
         for field_name, get_param_name in self.required_params.items():
-            setattr(session_participant, field_name, self.request.GET[get_param_name])
+            setattr(session_participanRENAMEt, field_name, self.request.GET[get_param_name])
 
     def get(self, *args, **kwargs):
         if not self.request.GET[constants.access_code_for_open_session] == ptree.common.access_code_for_open_session():
@@ -744,16 +744,16 @@ class AssignVisitorToOpenSession(vanilla.View):
         if not self.url_has_correct_parameters():
             return HttpResponseNotFound(self.incorrect_parameters_in_url_message())
         try:
-            session_participant = self.retrieve_existing_participant_with_these_params(open_session)
-        except SessionParticipant.DoesNotExist:
+            session_participanRENAMEt = self.retrieve_existing_session_participanRENAMEt_with_these_params(open_session)
+        except SessionParticipanRENAMEt.DoesNotExist:
             try:
-                session_participant = SessionParticipant.objects.filter(
+                session_participanRENAMEt = SessionParticipanRENAMEt.objects.filter(
                     session = open_session,
                     visited=False)[0]
-                self.set_external_params_on_participant(session_participant)
-                session_participant.save()
+                self.set_external_params_on_session_participanRENAMEt(session_participanRENAMEt)
+                session_participanRENAMEt.save()
             except IndexError:
-                return HttpResponseNotFound("No Participant objects left in the database to assign to new visitor.")
+                return HttpResponseNotFound("No Player objects left in the database to assign to new visitor.")
 
-        return HttpResponseRedirect(session_participant._start_url())
+        return HttpResponseRedirect(session_participanRENAMEt._start_url())
 

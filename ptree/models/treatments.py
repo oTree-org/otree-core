@@ -44,11 +44,11 @@ class BaseTreatment(django_models.Model):
         self._matches = list(self.match_set.all())
         return self._matches
 
-    def participants(self):
-        if hasattr(self, '_participants'):
-            return self._participants
-        self._participants = list(self.participant_set.all())
-        return self._participants
+    def players(self):
+        if hasattr(self, '_players'):
+            return self._players
+        self._players = list(self.player_set.all())
+        return self._players
     """
 
 

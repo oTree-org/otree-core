@@ -11,7 +11,7 @@ class Page(ptree.views.Page):
         self.subsession = models.Subsession()
         self.treatment = models.Treatment()
         self.match = models.Match()
-        self.participant = models.Participant()
+        self.player = models.Player()
 
 
 class SubsessionWaitPage(ptree.views.SubsessionWaitPage):
@@ -37,7 +37,7 @@ class Form(ptree.forms.Form):
         self.subsession = models.Subsession()
         self.treatment = models.Treatment()
         self.match = models.Match()
-        self.participant = models.Participant()
+        self.player = models.Player()
 
 class Bot(ptree.test.Bot):
 
@@ -45,10 +45,10 @@ class Bot(ptree.test.Bot):
         self.subsession = models.Subsession()
         self.treatment = models.Treatment()
         self.match = models.Match()
-        self.participant = models.Participant()
+        self.player = models.Player()
 
 
-class InitializeParticipant(ptree.views.InitializeParticipant):
+class InitializePlayer(ptree.views.InitializePlayer):
     z_models = models
 
 

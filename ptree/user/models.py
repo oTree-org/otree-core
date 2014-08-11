@@ -8,8 +8,8 @@ from ptree.common import add_params_to_url
 from save_the_change.mixins import SaveTheChange
 
 class User(SaveTheChange, models.Model):
-    """represents experimenter or participants"""
-    # the participant's unique ID (and redemption code) that gets passed in the URL.
+    """represents experimenter or players"""
+    # the player's unique ID that gets passed in the URL.
     code = RandomCharField(length = 8)
 
     visited = models.BooleanField(default=False,
@@ -64,7 +64,7 @@ class Experimenter(User):
                                            'subsession_object_id',
                                            )
 
-    # me_in_previous_subsession and me_in_next_subsession are duplicated between this model and BaseParticipant model,
+    # me_in_previous_subsession and me_in_next_subsession are duplicated between this model and BasePlayer model,
     # to make autocomplete work
     me_in_previous_subsession = generic.GenericForeignKey('me_in_previous_subsession_content_type',
                                                 'me_in_previous_subsession_object_id',)

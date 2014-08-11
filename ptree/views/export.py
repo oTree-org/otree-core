@@ -18,14 +18,14 @@ import ptree.settings
 import ptree.models
 import ptree.adminlib
 import ptree.sessionlib.models
-from ptree.sessionlib.models import Session, SessionParticipant
-from ptree.adminlib import SessionAdmin, SessionParticipantAdmin, get_callables, get_all_fields_for_table
+from ptree.sessionlib.models import Session, SessionParticipanRENAMEt
+from ptree.adminlib import SessionAdmin, SessionParticipanRENAMEtAdmin, get_callables, get_all_fields_for_table
 from collections import OrderedDict
 from ptree.db import models
 import easymoney
 
 LINE_BREAK = '\r\n'
-MODEL_NAMES = ["SessionParticipant", "Participant", "Match", "Treatment", "Subsession", "Session"]
+MODEL_NAMES = ["SessionParticipanRENAMEt", "Player", "Match", "Treatment", "Subsession", "Session"]
 
 CONCEPTUAL_OVERVIEW_TEXT = """
 pTree data is exported in CSV (comma-separated values) format.
@@ -41,14 +41,14 @@ Refers to an event where a group of people spend time taking part in pTree exper
 
 An example of a session would be: "On Tuesday at 3PM, 30 people will come to the lab for 1 hour,
 during which time they will play a trust game, followed by 2 ultimatum games, followed by a questionnaire.
-Participants get paid EUR 10.00 for showing up, plus bonus amounts for participating.
+SessionParticipanRENAMEts get paid EUR 10.00 for showing up, plus bonus amounts for participating.
 
 Subsession
 ==========
 
 A session can be broken down into "subsessions".
 These are interchangeable units or modules that come one after another.
-Each subsession has a sequence of one or more pages the participant must interact with.
+Each subsession has a sequence of one or more pages the player must interact with.
 The session in the above example had 4 subsessions:
 
 Trust game
@@ -56,17 +56,17 @@ Ultimatum game 1
 Ultimatum game 2
 Questionnaire
 
-"Participant"
+"Player"
 =============
 
 Each subsession has data fields for a
 
-and "Session Participant"
+and "SessionParticipanRENAMEt"
 ========================================
 
-Each session has a number of participants. They are referred to as "session participants".
+Each session has a number of players. They are referred to as "session_participanRENAMEts".
 
-Each subsession has its own "subsession participant" (or just "participant" for short) objects that are independent of the other subsessions.
+Each subsession has its own "subsession player" (or just "player" for short) objects that are independent of the other subsessions.
 
 If a session has 4 subsessions, for each person there will be 1 sess
 
@@ -82,8 +82,8 @@ def get_data_export_fields(app_label):
     for model_name in MODEL_NAMES:
         if model_name == 'Session':
             Model = ptree.sessionlib.models.Session
-        elif model_name == 'SessionParticipant':
-            Model = ptree.sessionlib.models.SessionParticipant
+        elif model_name == 'SessionParticipanRENAMEt':
+            Model = ptree.sessionlib.models.SessionParticipanRENAMEt
         else:
             Model = getattr(app_models_module, model_name)
 
@@ -133,8 +133,8 @@ def get_doc_dict(app_label):
     for model_name in MODEL_NAMES:
         members = export_fields[model_name]['member_names']
         callables = export_fields[model_name]['callables']
-        if model_name == 'SessionParticipant':
-            Model = ptree.sessionlib.models.SessionParticipant
+        if model_name == 'SessionParticipanRENAMEt':
+            Model = ptree.sessionlib.models.SessionParticipanRENAMEt
         elif model_name == 'Session':
             Model = ptree.sessionlib.models.Session
         else:
@@ -263,16 +263,16 @@ def export(request, app_label):
         'match': 'Match',
         'treatment': 'Treatment',
         'subsession': 'Subsession',
-        'session_participant': 'SessionParticipant',
+        'session_participanRENAMEt': 'SessionParticipanRENAMEt',
         'session': 'Session',
     }
 
     app_models = import_module('{}.models'.format(app_label))
 
-    Participant = app_models.Participant
+    Player = app_models.Player
 
     fk_names = [
-        'session_participant',
+        'session_participanRENAMEt',
         'match',
         'treatment',
         'subsession',
@@ -283,7 +283,7 @@ def export(request, app_label):
 
     parent_object_data = {fk_name:{} for fk_name in fk_names}
 
-    column_headers = ['participant.{}'.format(member_name) for member_name in export_data['Participant']['member_names']]
+    column_headers = ['player.{}'.format(member_name) for member_name in export_data['Player']['member_names']]
 
     for fk_name in fk_names:
         model_name = model_names_as_fk[fk_name]
@@ -292,8 +292,8 @@ def export(request, app_label):
         column_headers += ['{}.{}'.format(fk_name, member_name) for member_name in member_names]
 
         # http://stackoverflow.com/questions/2466496/select-distinct-values-from-a-table-field#comment2458913_2468620
-        ids = set(Participant.objects.order_by().values_list(fk_name, flat=True).distinct())
-        if fk_name in {'session', 'session_participant'}:
+        ids = set(Player.objects.order_by().values_list(fk_name, flat=True).distinct())
+        if fk_name in {'session', 'session_participanRENAMEt'}:
             models_module = ptree.sessionlib.models
         else:
             models_module = app_models
@@ -313,12 +313,12 @@ def export(request, app_label):
     }
     values_to_replace_keys = values_to_replace.keys()
 
-    for participant in Participant.objects.all():
-        member_names = export_data['Participant']['member_names'][:]
-        callables = export_data['Participant']['callables']
-        member_values = get_member_values(participant, member_names, callables)
+    for player in Player.objects.all():
+        member_names = export_data['Player']['member_names'][:]
+        callables = export_data['Player']['callables']
+        member_values = get_member_values(player, member_names, callables)
         for fk_name in fk_names:
-            parent_object_id = getattr(participant, "%s_id" % fk_name)
+            parent_object_id = getattr(player, "%s_id" % fk_name)
             if parent_object_id is None:
                 model_name = model_names_as_fk[fk_name]
                 member_names = export_data[model_name]['member_names']

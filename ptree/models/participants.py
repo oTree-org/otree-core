@@ -1,28 +1,28 @@
 from ptree.user.models import User
 import ptree.common
 
-class BaseParticipant(User):
+class BasePlayer(User):
     """
-    Base class for all participants.
+    Base class for all players.
     """
 
     def _me_in_other_subsession(self, other_subsession):
-        for p in other_subsession.participant_set.all():
-            if p.session_participant == self.session_participant:
+        for p in other_subsession.player_set.all():
+            if p.session_participanRENAMEt == self.session_participanRENAMEt:
                 return p
 
     @property
     def _session_user(self):
-        return self.session_participant
+        return self.session_participanRENAMEt
 
     # change this to _name? but do we think people will need to refer to names?
     def name(self):
-        return self.session_participant.__unicode__()
+        return self.session_participanRENAMEt.__unicode__()
 
     def __unicode__(self):
         return self.name()
 
-    _init_view_name = 'InitializeParticipant'
+    _init_view_name = 'InitializePlayer'
 
     def _pages(self):
         """
@@ -46,7 +46,7 @@ class BaseParticipant(User):
         self.match = match
         self.treatment = match.treatment
         self.save()
-        self.index_among_participants_in_match = match.participant_set.count()
+        self.index_among_players_in_match = match.player_set.count()
         self.save()
 
     def _MatchClass(self):

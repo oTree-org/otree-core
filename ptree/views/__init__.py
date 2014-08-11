@@ -1,7 +1,7 @@
 """public api"""
 
 from ptree.views.abstract import (
-    InitializeParticipant,
+    InitializePlayer,
     InitializeExperimenter,
 )
 
@@ -30,7 +30,7 @@ class SubsessionWaitPage(abstract.SubsessionCheckpoint):
     def action(self):
         return super(SubsessionWaitPage, self).action()
 
-class Page(abstract.ParticipantUpdateView):
+class Page(abstract.PlayerUpdateView):
 
     def variables_for_template(self):
         return super(Page, self).variables_for_template()

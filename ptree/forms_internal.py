@@ -141,11 +141,11 @@ class BaseModelForm(forms.ModelForm):
                 if name in self.cleaned_data:
                     del self.cleaned_data[name]
 
-class ParticipantModelForm(BaseModelForm):
-    """i.e. participant modelform."""
+class PlayerModelForm(BaseModelForm):
+    """i.e. player modelform."""
 
     def process_kwargs(self, kwargs):
-        self.participant = kwargs.pop('participant')
+        self.player = kwargs.pop('player')
         self.match = kwargs.pop('match')
         self.treatment = kwargs.pop('treatment')
         self.subsession = kwargs.pop('subsession')
@@ -160,7 +160,7 @@ class ExperimenterModelForm(BaseModelForm):
         self.session = kwargs.pop('session')
         self.time_limit_was_exceeded = kwargs.pop('time_limit_was_exceeded')
 
-class StubModelForm(ParticipantModelForm):
+class StubModelForm(PlayerModelForm):
     class Meta:
         model = ptree.sessionlib.models.StubModel
         fields = []
