@@ -3,18 +3,18 @@ from ptree.common import get_session_module
 from django.conf import settings
 from django.utils.importlib import import_module
 from ptree.user.models import Experimenter
-from ptree.sessionlib.models import Session, SessionExperimenter, SessionParticipanRENAMEt
+from ptree.sessionlib.models import Session, SessionExperimenter, Participant
 from django.db import transaction
 from collections import defaultdict
 
 class SessionType(object):
-    def __init__(self, name, subsession_apps, base_pay, session_participanRENAMEts_per_session,
-                 session_participanRENAMEts_per_demo_session = None, is_for_mturk=False, doc=None, assign_to_matches_on_the_fly=False):
+    def __init__(self, name, subsession_apps, base_pay, participants_per_session,
+                 participants_per_demo_session = None, is_for_mturk=False, doc=None, assign_to_matches_on_the_fly=False):
         self.name = name
         self.subsession_apps = subsession_apps
         self.base_pay = base_pay
-        self.session_participanRENAMEts_per_session = session_participanRENAMEts_per_session
-        self.session_participanRENAMEts_per_demo_session = session_participanRENAMEts_per_demo_session
+        self.participants_per_session = participants_per_session
+        self.participants_per_demo_session = participants_per_demo_session
         self.is_for_mturk = is_for_mturk
         self.doc = doc.strip()
 
@@ -59,17 +59,17 @@ def create_session(type_name, label='', special_category=None):
     session_experimenter.save()
     session.session_experimenter = session_experimenter
 
-    session_participanRENAMEts = []
+    participants = []
 
     if special_category == constants.special_category_demo:
-        session_participanRENAMEts_per_session = session_type.session_participanRENAMEts_per_demo_session
+        participants_per_session = session_type.participants_per_demo_session
     else:
-        session_participanRENAMEts_per_session = session_type.session_participanRENAMEts_per_session
+        participants_per_session = session_type.participants_per_session
 
-    for i in range(session_participanRENAMEts_per_session):
-        session_participanRENAMEt = SessionParticipanRENAMEt(session = session)
-        session_participanRENAMEt.save()
-        session_participanRENAMEts.append(session_participanRENAMEt)
+    for i in range(participants_per_session):
+        participant = Participant(session = session)
+        participant.save()
+        participants.append(participant)
 
     subsessions = []
     round_counts = defaultdict(int)
@@ -80,12 +80,12 @@ def create_session(type_name, label='', special_category=None):
         round_counts[app_label] += 1
         models_module = import_module('{}.models'.format(app_label))
 
-        if session_participanRENAMEts_per_session % models_module.Match.players_per_match:
+        if participants_per_session % models_module.Match.players_per_match:
             raise ValueError(
                 'App {} requires {} players per match, which does not divide evenly into the number of players in this session ({}).'.format(
                     app_label,
                     models_module.Match.players_per_match,
-                    session_participanRENAMEts_per_session
+                    participants_per_session
                 )
             )
 
@@ -109,13 +109,13 @@ def create_session(type_name, label='', special_category=None):
 
         subsession._experimenter = experimenter
         subsession.save()
-        for i in range(session_participanRENAMEts_per_session):
-            session_participanRENAMEt = models_module.Player(
+        for i in range(participants_per_session):
+            participant = models_module.Player(
                 subsession = subsession,
                 session = session,
-                session_participanRENAMEt = session_participanRENAMEts[i]
+                participant = participants[i]
             )
-            session_participanRENAMEt.save()
+            participant.save()
 
         if session.type().assign_to_matches_on_the_fly:
             # create matches at the beginning because we will not need to delete players

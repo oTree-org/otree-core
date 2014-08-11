@@ -126,11 +126,11 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
         return [list(m.player_set.all()) for m in self.match_set.all()]
 
     def _corresponding_match_groups(self, earlier_round):
-        current_player_dict = {p.session_participanRENAMEt.pk: p for p in self.player_set.all()}
+        current_player_dict = {p.participant.pk: p for p in self.player_set.all()}
         match_groups = earlier_round._match_groups()
         for m_index, m in enumerate(match_groups):
             for p_index, p in enumerate(m):
-                match_groups[m_index][p_index] = current_player_dict[p.session_participanRENAMEt.pk]
+                match_groups[m_index][p_index] = current_player_dict[p.participant.pk]
         return match_groups
 
     def _MatchClass(self):

@@ -153,7 +153,7 @@ class PlayerBot(BaseClient):
         super(PlayerBot, self)._play(failure_queue)
         if self.player.payoff is None:
             self.failure_queue.put(ptree.constants.failure)
-            raise Exception('Player "{}": payoff is still None at the end of the subsession.'.format(self.player.session_participanRENAMEt.code))
+            raise Exception('Player "{}": payoff is still None at the end of the subsession.'.format(self.player.participant.code))
 
 
     def __init__(self, user, **kwargs):

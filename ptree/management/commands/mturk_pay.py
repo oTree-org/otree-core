@@ -11,7 +11,7 @@ def cents_to_dollars(num_cents):
 
 class Command(BaseCommand):
     args = '<session_code>'
-    help = "pTree: Pay all Mechanical Turk session_participanRENAMEts for this session."
+    help = "pTree: Pay all Mechanical Turk participants for this session."
 
     def handle(self, *args, **options):
         if len(args) != 1:
@@ -60,21 +60,21 @@ class Command(BaseCommand):
 
     def pay_hit_bonuses(self, is_confirmed):
         total_money_paid = 0
-        for session_participanRENAMEt in self.session.session_participanRENAMEts():
-            bonus = session_participanRENAMEt.payoff_from_subsessions()
+        for participant in self.session.participants():
+            bonus = participant.payoff_from_subsessions()
             if bonus == None:
                 bonus = 0
             total_money_paid += bonus
 
             if not is_confirmed:
-                print 'SessionParticipanRENAMEt: [{}], Payment: {}'.format(session_participanRENAMEt.name(), session_participanRENAMEt.payoff_from_subsessions_display())
+                print 'Participant: [{}], Payment: {}'.format(participant.name(), participant.payoff_from_subsessions_display())
             if is_confirmed:
                 if bonus > 0:
                     resp = self.mturk_connection.request(
                         'GrantBonus',
                         {
-                            'WorkerId': session_participanRENAMEt.mturk_worker_id,
-                            'AssignmentId': session_participanRENAMEt.mturk_assignment_id,
+                            'WorkerId': participant.mturk_worker_id,
+                            'AssignmentId': participant.mturk_assignment_id,
                             'BonusAmount': {
                                 'Amount': str(cents_to_dollars(bonus)),
                                 'CurrencyCode': 'USD'

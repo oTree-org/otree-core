@@ -18,14 +18,14 @@ import ptree.settings
 import ptree.models
 import ptree.adminlib
 import ptree.sessionlib.models
-from ptree.sessionlib.models import Session, SessionParticipanRENAMEt
-from ptree.adminlib import SessionAdmin, SessionParticipanRENAMEtAdmin, get_callables, get_all_fields_for_table
+from ptree.sessionlib.models import Session, Participant
+from ptree.adminlib import SessionAdmin, ParticipantAdmin, get_callables, get_all_fields_for_table
 from collections import OrderedDict
 from ptree.db import models
 import easymoney
 
 LINE_BREAK = '\r\n'
-MODEL_NAMES = ["SessionParticipanRENAMEt", "Player", "Match", "Treatment", "Subsession", "Session"]
+MODEL_NAMES = ["Participant", "Player", "Match", "Treatment", "Subsession", "Session"]
 
 CONCEPTUAL_OVERVIEW_TEXT = """
 pTree data is exported in CSV (comma-separated values) format.
@@ -41,7 +41,7 @@ Refers to an event where a group of people spend time taking part in pTree exper
 
 An example of a session would be: "On Tuesday at 3PM, 30 people will come to the lab for 1 hour,
 during which time they will play a trust game, followed by 2 ultimatum games, followed by a questionnaire.
-SessionParticipanRENAMEts get paid EUR 10.00 for showing up, plus bonus amounts for participating.
+Participants get paid EUR 10.00 for showing up, plus bonus amounts for participating.
 
 Subsession
 ==========
@@ -61,10 +61,10 @@ Questionnaire
 
 Each subsession has data fields for a
 
-and "SessionParticipanRENAMEt"
+and "Participant"
 ========================================
 
-Each session has a number of players. They are referred to as "session_participanRENAMEts".
+Each session has a number of players. They are referred to as "participants".
 
 Each subsession has its own "subsession player" (or just "player" for short) objects that are independent of the other subsessions.
 
@@ -82,8 +82,8 @@ def get_data_export_fields(app_label):
     for model_name in MODEL_NAMES:
         if model_name == 'Session':
             Model = ptree.sessionlib.models.Session
-        elif model_name == 'SessionParticipanRENAMEt':
-            Model = ptree.sessionlib.models.SessionParticipanRENAMEt
+        elif model_name == 'Participant':
+            Model = ptree.sessionlib.models.Participant
         else:
             Model = getattr(app_models_module, model_name)
 
@@ -133,8 +133,8 @@ def get_doc_dict(app_label):
     for model_name in MODEL_NAMES:
         members = export_fields[model_name]['member_names']
         callables = export_fields[model_name]['callables']
-        if model_name == 'SessionParticipanRENAMEt':
-            Model = ptree.sessionlib.models.SessionParticipanRENAMEt
+        if model_name == 'Participant':
+            Model = ptree.sessionlib.models.Participant
         elif model_name == 'Session':
             Model = ptree.sessionlib.models.Session
         else:
@@ -263,7 +263,7 @@ def export(request, app_label):
         'match': 'Match',
         'treatment': 'Treatment',
         'subsession': 'Subsession',
-        'session_participanRENAMEt': 'SessionParticipanRENAMEt',
+        'participant': 'Participant',
         'session': 'Session',
     }
 
@@ -272,7 +272,7 @@ def export(request, app_label):
     Player = app_models.Player
 
     fk_names = [
-        'session_participanRENAMEt',
+        'participant',
         'match',
         'treatment',
         'subsession',
@@ -293,7 +293,7 @@ def export(request, app_label):
 
         # http://stackoverflow.com/questions/2466496/select-distinct-values-from-a-table-field#comment2458913_2468620
         ids = set(Player.objects.order_by().values_list(fk_name, flat=True).distinct())
-        if fk_name in {'session', 'session_participanRENAMEt'}:
+        if fk_name in {'session', 'participant'}:
             models_module = ptree.sessionlib.models
         else:
             models_module = app_models

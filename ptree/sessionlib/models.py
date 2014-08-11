@@ -129,21 +129,21 @@ class Session(models.Model):
     def chain_players(self):
         """Should be called after add_subsessions"""
 
-        session_participanRENAMEts = self.session_participanRENAMEts()
-        num_session_participanRENAMEts = len(session_participanRENAMEts)
+        participants = self.participants()
+        num_participants = len(participants)
 
         subsessions = self.subsessions()
 
-        first_subsession_participanRENAMEts = self.first_subsession.session_participanRENAMEts()
+        first_subparticipants = self.first_subsession.participants()
 
-        for i in range(num_session_participanRENAMEts):
-            session_participanRENAMEts[i].me_in_first_subsession = first_subsession_participanRENAMEts[i]
-            session_participanRENAMEts[i].save()
+        for i in range(num_participants):
+            participants[i].me_in_first_subsession = first_subparticipants[i]
+            participants[i].save()
 
         for subsession_index in range(len(subsessions) - 1):
             players_left = subsessions[subsession_index].players()
             players_right = subsessions[subsession_index + 1].players()
-            for player_index in range(num_session_participanRENAMEts):
+            for player_index in range(num_participants):
                 player_left = players_left[player_index]
                 player_right = players_right[player_index]
                 player_left.me_in_next_subsession = player_right
@@ -163,12 +163,12 @@ class Session(models.Model):
             subsession.delete()
         super(Session, self).delete(using)
 
-    def session_participanRENAMEts(self):
-        return self.SessionParticipanRENAMEt_set.all()
+    def participants(self):
+        return self.Participant_set.all()
 
     def payments_ready(self):
-        for session_participanRENAMEts in self.session_participanRENAMEts():
-            if not session_participanRENAMEts.payoff_from_subsessions_is_complete():
+        for participants in self.participants():
+            if not participants.payoff_from_subsessions_is_complete():
                 return False
         return True
     payments_ready.boolean = True
@@ -195,7 +195,7 @@ class SessionUser(models.Model):
 
     code = RandomCharField(
         length = 8,
-        doc="""Randomly generated unique identifier for the session_participanRENAMEt.
+        doc="""Randomly generated unique identifier for the participant.
         If you would like to merge this dataset with those from another subsession in the same session,
         you should join on this field, which will be the same across subsessions."""
     )
@@ -281,11 +281,11 @@ class SessionExperimenter(SessionUser):
 
     user_type_in_url = constants.user_type_experimenter
 
-class SessionParticipanRENAMEt(SessionUser):
+class Participant(SessionUser):
 
     exclude_from_data_analysis = models.BooleanField(default=False,
         doc="""
-        if set to 1, the experimenter indicated that this session_participanRENAMEt's data points should be excluded from
+        if set to 1, the experimenter indicated that this participant's data points should be excluded from
         the data analysis (e.g. a problem took place during the experiment)"""
 
     )
@@ -294,10 +294,10 @@ class SessionParticipanRENAMEt(SessionUser):
 
     time_started = models.DateTimeField(null=True)
 
-    user_type_in_url = constants.user_type_session_participanRENAMEt
+    user_type_in_url = constants.user_type_participant
 
     def _start_url(self):
-        return '/InitializeSessionParticipanRENAMEt/{}'.format(
+        return '/InitializeParticipant/{}'.format(
             self.code
         )
 
@@ -347,7 +347,7 @@ class SessionParticipanRENAMEt(SessionUser):
     label = models.CharField(
         max_length = 50,
         null = True,
-        doc="""Label assigned by the experimenter. Can be assigned by passing a GET param called "session_participanRENAMEt_label" to the session_participanRENAMEt's start URL"""
+        doc="""Label assigned by the experimenter. Can be assigned by passing a GET param called "participant_label" to the participant's start URL"""
     )
 
     def name(self):

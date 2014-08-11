@@ -8,16 +8,16 @@ class BasePlayer(User):
 
     def _me_in_other_subsession(self, other_subsession):
         for p in other_subsession.player_set.all():
-            if p.session_participanRENAMEt == self.session_participanRENAMEt:
+            if p.participant == self.participant:
                 return p
 
     @property
     def _session_user(self):
-        return self.session_participanRENAMEt
+        return self.participant
 
     # change this to _name? but do we think people will need to refer to names?
     def name(self):
-        return self.session_participanRENAMEt.__unicode__()
+        return self.participant.__unicode__()
 
     def __unicode__(self):
         return self.name()

@@ -32,7 +32,7 @@ def get_callables(Model, fields_specific_to_this_subclass=None, for_export=False
         'Treatment': [],
         'Subsession': [],
         'Session': [],
-        'SessionParticipanRENAMEt': [],
+        'Participant': [],
     }[Model.__name__]
 
     changelist_but_not_export = {
@@ -49,12 +49,12 @@ def get_callables(Model, fields_specific_to_this_subclass=None, for_export=False
         'Session': [
              'subsession_names',
              'start_links_link',
-             'raw_session_participanRENAMEt_urls_link',
+             'raw_participant_urls_link',
              'payments_ready',
              'payments_link',
              'base_pay_display',
         ],
-        'SessionParticipanRENAMEt': [
+        'Participant': [
                 'subsessions_completed',
                 'current_subsession',
                 '_pages_completed_in_current_subsession',
@@ -69,7 +69,7 @@ def get_callables(Model, fields_specific_to_this_subclass=None, for_export=False
         'Treatment': [],
         'Subsession': [],
         'Session': [],
-        'SessionParticipanRENAMEt': [],
+        'Participant': [],
     }[Model.__name__]
 
     if for_export:
@@ -110,7 +110,7 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
         'Subsession':
             ['name',
              'session'],
-        'SessionParticipanRENAMEt':
+        'Participant':
             [
                 'code',
                 'label',
@@ -139,7 +139,7 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
         'Match': [],
         'Treatment': [],
         'Subsession': [],
-        'SessionParticipanRENAMEt': [
+        'Participant': [
             'start_link',
             'exclude_from_data_analysis',
         ],
@@ -159,14 +159,14 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
             'git_commit_timestamp',
             'base_pay',
         },
-        'SessionParticipanRENAMEt': {
+        'Participant': {
             'label',
             'ip_address',
         },
     }[Model.__name__]
 
     fields_for_changelist_but_not_export = {
-        'Player': {'match', 'treatment', 'subsession', 'session', 'session_participanRENAMEt'},
+        'Player': {'match', 'treatment', 'subsession', 'session', 'participant'},
         'Match': {'treatment', 'subsession', 'session'},
         'Treatment': {'subsession', 'session'},
         'Subsession': {'session'},
@@ -174,13 +174,13 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
             'players_assigned_to_treatments_and_matches',
             'hidden',
         },
-        'SessionParticipanRENAMEt': {
+        'Participant': {
             'session',
             'name',
             'start_link',
             'session',
             'visited',
-            # the following fields are useful for telling if the session_participanRENAMEt actually finished
+            # the following fields are useful for telling if the participant actually finished
             #'subsessions_completed',
             #'current_subsession',
             #'_pages_completed_in_current_subsession',
@@ -193,16 +193,16 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
     fields_to_exclude_from_export_and_changelist = {
         'Player':
               {
-              # we should only have session_participanRENAMEt code and session code. because those are real world concepts.
+              # we should only have participant code and session code. because those are real world concepts.
               # person/session.
-              # also, people might confuse player/subsession code with session_participanRENAMEt/session code
+              # also, people might confuse player/subsession code with participant/session code
               'code',
               'index_in_pages',
               'me_in_previous_subsession_content_type',
               'me_in_previous_subsession_object_id',
               'me_in_next_subsession_content_type',
               'me_in_next_subsession_object_id',
-              'session_participanRENAMEt',
+              'participant',
               },
         'Match':
              set(),
@@ -225,7 +225,7 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
                 'previous_subsession',
                 '_experimenter',
              },
-        'SessionParticipanRENAMEt':
+        'Participant':
             {
                 'id',
                 '_index_in_subsessions',
@@ -415,13 +415,13 @@ class GlobalDataAdmin(PTreeBaseModelAdmin):
         return new_tab_link(AssignVisitorToOpenSessionMTurk.url(), 'Link')
     mturk_url_link.allow_tags = True
 
-class SessionParticipanRENAMEtAdmin(PTreeBaseModelAdmin):
+class ParticipantAdmin(PTreeBaseModelAdmin):
     change_list_template = CHANGE_LIST_TEMPLATE
 
     list_filter = [NonHiddenSessionListFilter]
 
-    readonly_fields = get_callables(ptree.sessionlib.models.SessionParticipanRENAMEt, [])
-    list_display = get_all_fields_for_table(ptree.sessionlib.models.SessionParticipanRENAMEt, readonly_fields)
+    readonly_fields = get_callables(ptree.sessionlib.models.Participant, [])
+    list_display = get_all_fields_for_table(ptree.sessionlib.models.Participant, readonly_fields)
     list_editable = ['exclude_from_data_analysis']
 
 
@@ -431,7 +431,7 @@ class SessionParticipanRENAMEtAdmin(PTreeBaseModelAdmin):
     start_link.allow_tags = True
 
     def queryset(self, request):
-        qs = super(SessionParticipanRENAMEtAdmin, self).queryset(request)
+        qs = super(ParticipantAdmin, self).queryset(request)
         return qs.filter(session__hidden=False)
 
 class SessionAdmin(PTreeBaseModelAdmin):
@@ -441,15 +441,15 @@ class SessionAdmin(PTreeBaseModelAdmin):
         urls = super(SessionAdmin, self).get_urls()
         my_urls = patterns('',
             (r'^(?P<pk>\d+)/payments/$', self.admin_site.admin_view(self.payments)),
-            (r'^(?P<pk>\d+)/raw_session_participanRENAMEt_urls/$', self.raw_session_participanRENAMEt_urls),
+            (r'^(?P<pk>\d+)/raw_participant_urls/$', self.raw_participant_urls),
             (r'^(?P<pk>\d+)/start_links/$', self.start_links),
             (r'^(?P<pk>\d+)/magdeburg_start_urls/$', self.magdeburg_start_urls),
         )
         return my_urls + urls
 
-    def session_participanRENAMEt_urls(self, request, session):
-        session_participanRENAMEts = session.session_participanRENAMEts()
-        return [request.build_absolute_uri(session_participanRENAMEt._start_url()) for session_participanRENAMEt in session_participanRENAMEts]
+    def participant_urls(self, request, session):
+        participants = session.participants()
+        return [request.build_absolute_uri(participant._start_url()) for participant in participants]
 
     def start_links(self, request, pk):
         session = self.model.objects.get(pk=pk)
@@ -465,26 +465,26 @@ class SessionAdmin(PTreeBaseModelAdmin):
     start_links_link.allow_tags = True
 
 
-    def raw_session_participanRENAMEt_urls(self, request, pk):
+    def raw_participant_urls(self, request, pk):
         session = self.model.objects.get(pk=pk)
 
         if request.GET.get(ptree.constants.session_user_code) != session.session_experimenter.code:
             return HttpResponseBadRequest('{} parameter missing or incorrect'.format(ptree.constants.session_user_code))
-        urls = self.session_participanRENAMEt_urls(request, session)
+        urls = self.participant_urls(request, session)
         return HttpResponse('\n'.join(urls), content_type="text/plain")
 
 
-    def raw_session_participanRENAMEt_urls_link(self, instance):
-        return new_tab_link('{}/raw_session_participanRENAMEt_urls/?{}={}'.format(instance.pk,
+    def raw_participant_urls_link(self, instance):
+        return new_tab_link('{}/raw_participant_urls/?{}={}'.format(instance.pk,
                                                           ptree.constants.session_user_code,
                                                           instance.session_experimenter.code), 'Link')
 
-    raw_session_participanRENAMEt_urls_link.short_description = 'SessionParticipanRENAMEt URLs'
-    raw_session_participanRENAMEt_urls_link.allow_tags = True
+    raw_participant_urls_link.short_description = 'Participant URLs'
+    raw_participant_urls_link.allow_tags = True
 
     def magdeburg_start_urls(self, request, pk):
         session = self.model.objects.get(pk=pk)
-        codes = [session_participanRENAMEt.code for session_participanRENAMEt in session.session_participanRENAMEts()]
+        codes = [participant.code for participant in session.participants()]
 
         import_file_lines = []
         for i, code in enumerate(codes):
@@ -494,7 +494,7 @@ class SessionAdmin(PTreeBaseModelAdmin):
                     i+1,
                     ptree.constants.session_user_code,
                     code,
-                    ptree.constants.session_participanRENAMEt_label,
+                    ptree.constants.participant_label,
                     i+1
                 )
             )
@@ -512,17 +512,17 @@ class SessionAdmin(PTreeBaseModelAdmin):
 
     def payments(self, request, pk):
         session = self.model.objects.get(pk=pk)
-        session_participanRENAMEt = session.session_participanRENAMEts()
-        total_payments = sum(session_participanRENAMEt.total_pay() or 0 for session_participanRENAMEt in session.session_participanRENAMEts())
+        participant = session.participants()
+        total_payments = sum(participant.total_pay() or 0 for participant in session.participants())
 
         try:
-            mean_payment = total_payments/len(session_participanRENAMEt)
+            mean_payment = total_payments/len(participant)
         except ZeroDivisionError:
             mean_payment = 0
 
 
         return render_to_response('ptree/admin/Payments.html',
-                                  {'session_participanRENAMEt': session_participanRENAMEt,
+                                  {'participant': participant,
                                   'total_payments': currency(total_payments),
                                   'mean_payment': currency(mean_payment),
                                   'session_code': session.code,

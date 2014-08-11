@@ -69,9 +69,9 @@ def run(session):
             break
         time.sleep(1)
 
-    for session_participanRENAMEts in session.session_participanRENAMEts():
+    for participants in session.participants():
         bot = Client()
-        bot.get(session_participanRENAMEts._start_url(), follow=True)
+        bot.get(participants._start_url(), follow=True)
 
     for subsession in session.subsessions():
         run_subsession(subsession)

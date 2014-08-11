@@ -1,5 +1,5 @@
 from django.contrib.contenttypes import generic
-from ptree.sessionlib.models import Session, SessionParticipanRENAMEt
+from ptree.sessionlib.models import Session, Participant
 from ptree.db import models
 from importlib import import_module
 from ptree.common import _players, _matches
@@ -121,8 +121,8 @@ class BasePlayer(players.BasePlayer):
         doc="""The payoff the player made in this subsession, in cents"""
     )
 
-    session_participanRENAMEt = models.ForeignKey(
-        SessionParticipanRENAMEt,
+    participant = models.ForeignKey(
+        Participant,
         related_name = '%(app_label)s_%(class)s'
     )
 

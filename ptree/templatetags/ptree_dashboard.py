@@ -8,7 +8,7 @@ register = Library()
 
 
 SUBSESSION_APP_MODELS_ORDER = ["Subsession", "Treatment", "Match", "Player"]
-SESSION_APP_MODELS_ORDER = ["Session", "SessionParticipanRENAMEt"]
+SESSION_APP_MODELS_ORDER = ["Session", "Participant"]
 
 
 def _get_model_position(object_name, model_order_list):

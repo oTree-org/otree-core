@@ -35,7 +35,7 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpRespons
 import vanilla
 from django.utils.translation import ugettext as _
 import ptree.sessionlib.models
-from ptree.sessionlib.models import SessionParticipanRENAMEt
+from ptree.sessionlib.models import Participant
 
 
 # Get an instance of a logger
@@ -133,8 +133,8 @@ def load_session_user(dispatch_method):
     def wrapped(self, request, *args, **kwargs):
         session_user_code = kwargs.pop(constants.session_user_code)
         user_type = kwargs.pop(constants.user_type)
-        if user_type == constants.user_type_session_participanRENAMEt:
-            SessionUserClass = ptree.sessionlib.models.SessionParticipanRENAMEt
+        if user_type == constants.user_type_participant:
+            SessionUserClass = ptree.sessionlib.models.Participant
         else:
             SessionUserClass = ptree.sessionlib.models.SessionExperimenter
 
@@ -721,16 +721,16 @@ class AssignVisitorToOpenSession(vanilla.View):
                 return False
         return True
 
-    def retrieve_existing_session_participanRENAMEt_with_these_params(self, open_session):
+    def retrieve_existing_participant_with_these_params(self, open_session):
         params = {field_name: self.request.GET[get_param_name] for field_name, get_param_name in self.required_params.items()}
-        return SessionParticipanRENAMEt.objects.get(
+        return Participant.objects.get(
             session = open_session,
             **params
         )
 
-    def set_external_params_on_session_participanRENAMEt(self, session_participanRENAMEt):
+    def set_external_params_on_participant(self, participant):
         for field_name, get_param_name in self.required_params.items():
-            setattr(session_participanRENAMEt, field_name, self.request.GET[get_param_name])
+            setattr(participant, field_name, self.request.GET[get_param_name])
 
     def get(self, *args, **kwargs):
         if not self.request.GET[constants.access_code_for_open_session] == ptree.common.access_code_for_open_session():
@@ -744,16 +744,16 @@ class AssignVisitorToOpenSession(vanilla.View):
         if not self.url_has_correct_parameters():
             return HttpResponseNotFound(self.incorrect_parameters_in_url_message())
         try:
-            session_participanRENAMEt = self.retrieve_existing_session_participanRENAMEt_with_these_params(open_session)
-        except SessionParticipanRENAMEt.DoesNotExist:
+            participant = self.retrieve_existing_participant_with_these_params(open_session)
+        except Participant.DoesNotExist:
             try:
-                session_participanRENAMEt = SessionParticipanRENAMEt.objects.filter(
+                participant = Participant.objects.filter(
                     session = open_session,
                     visited=False)[0]
-                self.set_external_params_on_session_participanRENAMEt(session_participanRENAMEt)
-                session_participanRENAMEt.save()
+                self.set_external_params_on_participant(participant)
+                participant.save()
             except IndexError:
                 return HttpResponseNotFound("No Player objects left in the database to assign to new visitor.")
 
-        return HttpResponseRedirect(session_participanRENAMEt._start_url())
+        return HttpResponseRedirect(participant._start_url())
 
