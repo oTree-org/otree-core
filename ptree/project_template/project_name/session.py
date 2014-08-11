@@ -1,4 +1,4 @@
-from ptree.session import SessionType
+from otree.session import SessionType
 
 def session_types():
     return [

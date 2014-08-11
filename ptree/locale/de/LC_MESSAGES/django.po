@@ -5,7 +5,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: pTree\n"
+"Project-Id-Version: oTree\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-12-13 13:41+0800\n"
 "PO-Revision-Date: 2013-12-13 13:40+0800\n"
@@ -30,36 +30,36 @@ msgstr ""
 msgid "This field is required."
 msgstr "Dieses Feld ist erforderlich."
 
-#: .\templates\data_exports\ptree.html:56
+#: .\templates\data_exports\otree.html:56
 msgid "No columns where defined for this export, so there's no data to display"
 msgstr ""
 "Für diesen Export wurden keine Spalten definiert, es können also keine Daten "
 "angezeigt werden"
 
-#: .\templates\ptree\BaseBuiltIn.html:7
+#: .\templates\otree\BaseBuiltIn.html:7
 msgid "Task"
 msgstr "Aufgabe"
 
-#: .\templates\ptree\BaseBuiltIn.html:28
+#: .\templates\otree\BaseBuiltIn.html:28
 msgid "Please fix the errors in the form."
 msgstr "Bitte korrigieren Sie die Fehler im Formular."
 
-#: .\templates\ptree\Form.html:10
+#: .\templates\otree\Form.html:10
 msgid "Next"
 msgstr "Weiter"
 
 # incomplete sentence
-#: .\templates\ptree\Timer.html:6
+#: .\templates\otree\Timer.html:6
 msgid "Time left to complete this page:"
 msgstr "Verbleibende Zeit für diese Seite."
 
-#: .\templates\ptree\Timer.html:20
+#: .\templates\otree\Timer.html:20
 msgid "Time ran out. Please fill out any form fields and continue."
 msgstr ""
 "Die Zeit ist abgelaufen. Bitte füllen Sie die Formularfelder aus und fahren "
 "Sie fort."
 
-#: .\templates\ptree\WaitPage.html:5 .\templates\ptree\WaitPage.html.py:14
+#: .\templates\otree\WaitPage.html:5 .\templates\otree\WaitPage.html.py:14
 msgid "Please wait"
 msgstr "Bitte warten Sie"
 

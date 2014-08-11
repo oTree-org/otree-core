@@ -1,10 +1,10 @@
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 
-from ptree.fields import RandomCharField
-from ptree.db import models
-import ptree.constants as constants
-from ptree.common import add_params_to_url
+from otree.fields import RandomCharField
+from otree.db import models
+import otree.constants as constants
+from otree.common import add_params_to_url
 from save_the_change.mixins import SaveTheChange
 
 class User(SaveTheChange, models.Model):

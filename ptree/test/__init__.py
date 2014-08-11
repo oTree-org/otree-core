@@ -1,5 +1,5 @@
 from importlib import import_module
-client = import_module('ptree.test.client')
+client = import_module('otree.test.client')
 
 # public API
 

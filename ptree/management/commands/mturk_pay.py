@@ -3,15 +3,15 @@ import sys
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from mturk import mturk
-from ptree.common import currency
-from ptree.sessionlib.models import Session
+from otree.common import currency
+from otree.sessionlib.models import Session
 
 def cents_to_dollars(num_cents):
     return round(num_cents/100.0,2)
 
 class Command(BaseCommand):
     args = '<session_code>'
-    help = "pTree: Pay all Mechanical Turk participants for this session."
+    help = "oTree: Pay all Mechanical Turk participants for this session."
 
     def handle(self, *args, **options):
         if len(args) != 1:
@@ -37,7 +37,7 @@ class Command(BaseCommand):
 
         self.session = Session.objects.get(code=session_code)
         if self.session.mturk_payment_was_sent:
-            print 'Error: This subsession was already paid through pTree.'
+            print 'Error: This subsession was already paid through oTree.'
             return
 
         if not (settings.CURRENCY_CODE == 'USD' and settings.CURRENCY_DECIMAL_PLACES == 2):

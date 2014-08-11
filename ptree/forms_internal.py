@@ -3,11 +3,11 @@ from django.utils.translation import ugettext as _
 import crispy_forms.helper
 from crispy_forms.layout import Submit, Layout, Fieldset
 import copy
-import ptree.common
-import ptree.models.common
-import ptree.sessionlib.models
-import ptree.constants
-from ptree.db import models
+import otree.common
+import otree.models.common
+import otree.sessionlib.models
+import otree.constants
+from otree.db import models
 import easymoney
 
 
@@ -15,7 +15,7 @@ import easymoney
 class FormHelper(crispy_forms.helper.FormHelper):
     def __init__(self, *args, **kwargs):
         super(FormHelper, self).__init__(*args, **kwargs)
-        self.form_id = ptree.constants.form_element_id
+        self.form_id = otree.constants.form_element_id
         self.form_class = 'form'
         self.add_input(Submit('submit',
                      _('Next'), #TODO: make this customizable
@@ -68,7 +68,7 @@ class BaseModelForm(forms.ModelForm):
         super(BaseModelForm, self).__init__(*args, **kwargs)
 
         for field_name, choices in self.choices().items():
-            choices = ptree.common.expand_choice_tuples(choices)
+            choices = otree.common.expand_choice_tuples(choices)
 
             model_field = self.instance._meta.get_field(field_name)
             model_field_copy = copy.copy(model_field)
@@ -162,11 +162,11 @@ class ExperimenterModelForm(BaseModelForm):
 
 class StubModelForm(PlayerModelForm):
     class Meta:
-        model = ptree.sessionlib.models.StubModel
+        model = otree.sessionlib.models.StubModel
         fields = []
 
 class ExperimenterStubModelForm(ExperimenterModelForm):
     class Meta:
-        model = ptree.sessionlib.models.StubModel
+        model = otree.sessionlib.models.StubModel
         fields = []
 

@@ -24,22 +24,22 @@ def augment_settings(settings):
         'django.contrib.sessions',
         'django.contrib.messages',
         'django.contrib.staticfiles',
-        'ptree.sessionlib',
-        'ptree.user',
+        'otree.sessionlib',
+        'otree.user',
     ]
 
     third_party_apps = ['crispy_forms']
 
     # order is important:
-    # ptree unregisters User & Group, which are installed by auth.
-    # ptree templates need to get loaded before the admin.
+    # otree unregisters User & Group, which are installed by auth.
+    # otree templates need to get loaded before the admin.
     new_installed_apps = collapse_to_unique_list(['django.contrib.auth',
-                                                  'ptree',
+                                                  'otree',
                                                   'django.contrib.admin',],
                                                  default_installed_apps,
                                                  third_party_apps,
                                                  settings['INSTALLED_APPS'],
-                                                 settings['INSTALLED_PTREE_APPS'])
+                                                 settings['INSTALLED_OTREE_APPS'])
 
     new_template_dirs = collapse_to_unique_list(
         [os.path.join(settings['BASE_DIR'], 'templates/')],
@@ -97,8 +97,8 @@ def augment_settings(settings):
         'USE_TZ': True,
         'SESSION_SERIALIZER': 'django.contrib.sessions.serializers.PickleSerializer',
         'ALLOWED_HOSTS': ['*'],
-        'PTREE_CHANGE_LIST_COLUMN_MIN_WIDTH': 50, # In pixels
-        'PTREE_CHANGE_LIST_UPDATE_INTERVAL': '10000', # default to 10 seconds(10000 miliseconds)
+        'OTREE_CHANGE_LIST_COLUMN_MIN_WIDTH': 50, # In pixels
+        'OTREE_CHANGE_LIST_UPDATE_INTERVAL': '10000', # default to 10 seconds(10000 miliseconds)
         'TEMPLATE_CONTEXT_PROCESSORS': global_settings.TEMPLATE_CONTEXT_PROCESSORS + ("django.core.context_processors.request",),
     }
 

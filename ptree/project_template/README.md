@@ -1,4 +1,4 @@
-django-ptree-project-template
+django-otree-project-template
 =============================
 
-Template for pTree projects
+Template for oTree projects

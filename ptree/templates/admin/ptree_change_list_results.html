@@ -10,7 +10,7 @@
 <tr>
 {% for header in result_headers %}
 <th scope="col" {{ header.class_attrib }} title='{{ header.text }}'{% if forloop.last %}style="width: 100%;"{% endif %}>
-<div  class="cell-trunc-div" style="overflow: hidden; width: {{ settings.PTREE_CHANGE_LIST_COLUMN_MIN_WIDTH}}px">
+<div  class="cell-trunc-div" style="overflow: hidden; width: {{ settings.OTREE_CHANGE_LIST_COLUMN_MIN_WIDTH}}px">
    {% if header.sortable %}
      {% if header.sort_priority > 0 %}
        <div class="sortoptions">
@@ -42,7 +42,7 @@
 results_json = null;
 url_name = {{ url_name|safe }};
 var get_params_str = {{ get_params_str|safe }};
-var PTREE_CHANGE_LIST_UPDATE_INTERVAL = {{ settings.PTREE_CHANGE_LIST_UPDATE_INTERVAL }};
+var OTREE_CHANGE_LIST_UPDATE_INTERVAL = {{ settings.OTREE_CHANGE_LIST_UPDATE_INTERVAL }};
 
 var changed_cells = {};
 
@@ -57,7 +57,7 @@ function mark_changed_cells(new_results_json, results_delta) {
                 var the_cell = $($("#res-row-" + result_id).children()[changed_cell_idx]);
                 var the_cell_bg = the_cell.parent().css("background-color");
                 the_cell.css("background-color", "yellow");
-                the_cell.animate({backgroundColor: the_cell_bg}, PTREE_CHANGE_LIST_UPDATE_INTERVAL)
+                the_cell.animate({backgroundColor: the_cell_bg}, OTREE_CHANGE_LIST_UPDATE_INTERVAL)
             }
         }
     }
@@ -68,7 +68,7 @@ function mark_changed_cells(new_results_json, results_delta) {
         var the_row = $("#res-row-" + added_id);
         var the_row_bg = the_row.css("background-color");
         the_row.css("background-color", "yellow");
-        the_row.animate({backgroundColor: the_row_bg}, PTREE_CHANGE_LIST_UPDATE_INTERVAL);
+        the_row.animate({backgroundColor: the_row_bg}, OTREE_CHANGE_LIST_UPDATE_INTERVAL);
     }
 
 }
@@ -203,18 +203,18 @@ function updateResultsDisplay(new_results_json) {
 
 function fetchAndUpdateResults() {
     $.ajax({
-        url: "/ajax/ptree-change-list-results/",
+        url: "/ajax/otree-change-list-results/",
         data: {"url_name": url_name, "get_params": get_params_str},
         dataType: "json",
         error: function(jqXHR, textStatus) {
-            $("#ptree-change-list-error-messages").html("Failed to update from server.");
-            window.setTimeout(fetchAndUpdateResults, PTREE_CHANGE_LIST_UPDATE_INTERVAL);
+            $("#otree-change-list-error-messages").html("Failed to update from server.");
+            window.setTimeout(fetchAndUpdateResults, OTREE_CHANGE_LIST_UPDATE_INTERVAL);
         },
         success: function(data) {
             var new_results_json = data;
             updateResultsDisplay(new_results_json);
-            $("#ptree-change-list-error-messages").html("");
-            window.setTimeout(fetchAndUpdateResults, PTREE_CHANGE_LIST_UPDATE_INTERVAL);
+            $("#otree-change-list-error-messages").html("");
+            window.setTimeout(fetchAndUpdateResults, OTREE_CHANGE_LIST_UPDATE_INTERVAL);
         },
         timeout: 50000
     });
@@ -228,7 +228,7 @@ function fixTableLayout() {
     var td_padding = 5 * 2; // TODO get padding from somewhere
     var border_size = 1;
     var cell_width = (table_width - column_num * td_padding - border_size * (column_num + 1)) / column_num;
-    cell_width = Math.max(cell_width, {{ settings.PTREE_CHANGE_LIST_COLUMN_MIN_WIDTH}});
+    cell_width = Math.max(cell_width, {{ settings.OTREE_CHANGE_LIST_COLUMN_MIN_WIDTH}});
     $(".cell-trunc-div").width(cell_width - 2);
 }
 fixTableLayout();

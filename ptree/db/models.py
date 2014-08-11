@@ -5,7 +5,7 @@ import django.forms.fields
 from django.utils.text import capfirst
 import django.db.models
 import easymoney
-from ptree.common import expand_choice_tuples, _MoneyInput
+from otree.common import expand_choice_tuples, _MoneyInput
 
 def fix_choices_arg(kwargs):
     '''allows the programmer to define choices as a list of values rather than (value, display_value)'''
@@ -16,7 +16,7 @@ def fix_choices_arg(kwargs):
     kwargs['choices'] = choices
 
 
-class _PtreeModelFieldMixin(object):
+class _OtreeModelFieldMixin(object):
     def __init__(self, *args,  **kwargs):
         self.doc = kwargs.pop('doc', None)
         fix_choices_arg(kwargs)
@@ -24,26 +24,26 @@ class _PtreeModelFieldMixin(object):
 
         # if default=None, Django will omit the blank choice from form widget
         # https://code.djangoproject.com/ticket/10792
-        # that is contrary to the way pTree views blank/None values, so to correct for this,
+        # that is contrary to the way oTree views blank/None values, so to correct for this,
         # we get rid of default=None args.
         # setting null=True already should make the field null
         if kwargs.has_key('default') and kwargs['default'] is None:
             kwargs.pop('default')
-        super(_PtreeModelFieldMixin, self).__init__(*args, **kwargs)
+        super(_OtreeModelFieldMixin, self).__init__(*args, **kwargs)
 
-class _PtreeNotNullableModelFieldMixin(object):
+class _OtreeNotNullableModelFieldMixin(object):
     def __init__(self, *args,  **kwargs):
         self.doc = kwargs.pop('doc', None)
         fix_choices_arg(kwargs)
-        super(_PtreeNotNullableModelFieldMixin, self).__init__(*args, **kwargs)
+        super(_OtreeNotNullableModelFieldMixin, self).__init__(*args, **kwargs)
 
 
-class MoneyField(_PtreeModelFieldMixin, easymoney.MoneyField):
+class MoneyField(_OtreeModelFieldMixin, easymoney.MoneyField):
     widget = _MoneyInput
 
 
 
-class NullBooleanField(_PtreeModelFieldMixin, NullBooleanField):
+class NullBooleanField(_OtreeModelFieldMixin, NullBooleanField):
     # 2014/3/28: i just define the allowable choices on the model field, instead of customizing the widget
     # since then it works for any widget
 
@@ -55,99 +55,99 @@ class NullBooleanField(_PtreeModelFieldMixin, NullBooleanField):
             )
         super(NullBooleanField, self).__init__(*args, **kwargs)
 
-class AutoField(_PtreeModelFieldMixin, AutoField):
+class AutoField(_OtreeModelFieldMixin, AutoField):
     pass
 
-class BigIntegerField(_PtreeModelFieldMixin, BigIntegerField):
+class BigIntegerField(_OtreeModelFieldMixin, BigIntegerField):
     pass
 
-class BinaryField(_PtreeModelFieldMixin, BinaryField):
+class BinaryField(_OtreeModelFieldMixin, BinaryField):
     pass
 
-class BooleanField(_PtreeNotNullableModelFieldMixin, BooleanField):
+class BooleanField(_OtreeNotNullableModelFieldMixin, BooleanField):
     pass
 
-class CharField(_PtreeModelFieldMixin, CharField):
+class CharField(_OtreeModelFieldMixin, CharField):
     def __init__(self, *args,  **kwargs):
         kwargs.setdefault('max_length',500)
         super(CharField, self).__init__(*args, **kwargs)
 
 
-class CommaSeparatedIntegerField(_PtreeModelFieldMixin, CommaSeparatedIntegerField):
+class CommaSeparatedIntegerField(_OtreeModelFieldMixin, CommaSeparatedIntegerField):
     pass
 
-class DateField(_PtreeModelFieldMixin, DateField):
+class DateField(_OtreeModelFieldMixin, DateField):
     pass
 
-class DateTimeField(_PtreeModelFieldMixin, DateTimeField):
+class DateTimeField(_OtreeModelFieldMixin, DateTimeField):
     pass
 
-class DecimalField(_PtreeModelFieldMixin, DecimalField):
+class DecimalField(_OtreeModelFieldMixin, DecimalField):
     pass
 
-class EmailField(_PtreeModelFieldMixin, EmailField):
+class EmailField(_OtreeModelFieldMixin, EmailField):
     pass
 
-class FileField(_PtreeModelFieldMixin, FileField):
+class FileField(_OtreeModelFieldMixin, FileField):
     pass
 
-class FilePathField(_PtreeModelFieldMixin, FilePathField):
-    pass
-
-
-class FloatField(_PtreeModelFieldMixin, FloatField):
+class FilePathField(_OtreeModelFieldMixin, FilePathField):
     pass
 
 
-class ImageField(_PtreeModelFieldMixin, ImageField):
+class FloatField(_OtreeModelFieldMixin, FloatField):
     pass
 
 
-class IntegerField(_PtreeModelFieldMixin, IntegerField):
+class ImageField(_OtreeModelFieldMixin, ImageField):
     pass
 
 
-class IPAddressField(_PtreeModelFieldMixin, IPAddressField):
+class IntegerField(_OtreeModelFieldMixin, IntegerField):
     pass
 
 
-class GenericIPAddressField(_PtreeModelFieldMixin, GenericIPAddressField):
+class IPAddressField(_OtreeModelFieldMixin, IPAddressField):
     pass
 
 
-class PositiveIntegerField(_PtreeModelFieldMixin, PositiveIntegerField):
+class GenericIPAddressField(_OtreeModelFieldMixin, GenericIPAddressField):
     pass
 
 
-class PositiveSmallIntegerField(_PtreeModelFieldMixin, PositiveSmallIntegerField):
+class PositiveIntegerField(_OtreeModelFieldMixin, PositiveIntegerField):
     pass
 
 
-class SlugField(_PtreeModelFieldMixin, SlugField):
+class PositiveSmallIntegerField(_OtreeModelFieldMixin, PositiveSmallIntegerField):
     pass
 
 
-class SmallIntegerField(_PtreeModelFieldMixin, SmallIntegerField):
+class SlugField(_OtreeModelFieldMixin, SlugField):
     pass
 
 
-class TextField(_PtreeModelFieldMixin, TextField):
+class SmallIntegerField(_OtreeModelFieldMixin, SmallIntegerField):
     pass
 
 
-class TimeField(_PtreeModelFieldMixin, TimeField):
+class TextField(_OtreeModelFieldMixin, TextField):
     pass
 
 
-class URLField(_PtreeModelFieldMixin, URLField):
+class TimeField(_OtreeModelFieldMixin, TimeField):
+    pass
+
+
+class URLField(_OtreeModelFieldMixin, URLField):
     pass
 
 
 
-class ManyToManyField(_PtreeModelFieldMixin, ManyToManyField):
+class ManyToManyField(_OtreeModelFieldMixin, ManyToManyField):
     pass
 
 
-class OneToOneField(_PtreeModelFieldMixin, OneToOneField):
+class OneToOneField(_OtreeModelFieldMixin, OneToOneField):
     pass
 

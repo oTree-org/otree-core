@@ -11,7 +11,7 @@ from django.contrib import admin
 from django.contrib.admin import options
 from django.http import HttpResponse
 
-from ptree.templatetags import ajax_admin_list
+from otree.templatetags import ajax_admin_list
 
 
 # NOTE: this function has been adapted from django.contrib.admin.options.ModelAdmin.changelist_view of Django 1.6. 
@@ -87,8 +87,8 @@ class FakeRequest:
 
 
 # TODO
-# 2014-3-11: chris changed this to use ptree's custom autodiscover
-from ptree.adminlib import autodiscover
+# 2014-3-11: chris changed this to use otree's custom autodiscover
+from otree.adminlib import autodiscover
 autodiscover()
 url_name2model_admin = None
 def get_model_admin_from(url_name):
@@ -102,7 +102,7 @@ def get_model_admin_from(url_name):
 
 
 # TODO: admin priveledge only
-def ajax_ptree_change_list_results(request):
+def ajax_otree_change_list_results(request):
     #TODO
     url_name = request.GET["url_name"]
     get_params_str = request.GET["get_params"]

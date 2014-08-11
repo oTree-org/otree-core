@@ -13,7 +13,7 @@ from django.contrib.admin.views.main import (ALL_VAR, EMPTY_CHANGELIST_VALUE,
 from django.contrib.admin.templatetags.admin_static import static
 from django.contrib.admin.templatetags import admin_list
 from django.core.exceptions import ObjectDoesNotExist
-from ptree.db import models
+from otree.db import models
 from django.utils import formats
 from django.utils.html import escapejs, format_html
 from django.utils.safestring import mark_safe
@@ -23,7 +23,7 @@ from django.utils.encoding import force_text
 from django.template import Library
 from django.template.loader import get_template
 from django.template.context import Context
-from ptree import common
+from otree import common
 
 DOT = '.'
 
@@ -280,7 +280,7 @@ def prepare_results_json(cl):
     result_ids = [str(result.res.pk) for result in the_results]
     return the_results, json.dumps({"results_map": results_map, "results_ids": result_ids})
 
-@register.inclusion_tag("admin/ptree_change_list_results.html")
+@register.inclusion_tag("admin/otree_change_list_results.html")
 def ajax_result_list(cl, request):
     """
     Displays the headers and data list together

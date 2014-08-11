@@ -4,18 +4,18 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 
-import ptree.adminlib
-import ptree.sessionlib.models
+import otree.adminlib
+import otree.sessionlib.models
 
 
-admin.site.register(ptree.sessionlib.models.GlobalData, ptree.adminlib.GlobalDataAdmin)
+admin.site.register(otree.sessionlib.models.GlobalData, otree.adminlib.GlobalDataAdmin)
 
-admin.site.register(ptree.sessionlib.models.Session,
-                    ptree.adminlib.SessionAdmin
+admin.site.register(otree.sessionlib.models.Session,
+                    otree.adminlib.SessionAdmin
                     )
 
-admin.site.register(ptree.sessionlib.models.Participant,
-                    ptree.adminlib.ParticipantAdmin)
+admin.site.register(otree.sessionlib.models.Participant,
+                    otree.adminlib.ParticipantAdmin)
 
 admin.site.unregister(User)
 admin.site.unregister(Group)

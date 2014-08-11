@@ -47,7 +47,7 @@
               </thead>
               <tbody>
                   {% for app in apps %}
-                  <tr class="{% cycle 'row1' 'row2' %}"><td>{{ app.name }}</td><td><a href="{% url "ptree_views_export_export" app.app_label %}">{%trans "Download" %}</a></td><td><a href="{% url "ptree_views_export_export_docs" app.app_label %}">{%trans "Download" %}</a></td></tr>
+                  <tr class="{% cycle 'row1' 'row2' %}"><td>{{ app.name }}</td><td><a href="{% url "otree_views_export_export" app.app_label %}">{%trans "Download" %}</a></td><td><a href="{% url "otree_views_export_export_docs" app.app_label %}">{%trans "Download" %}</a></td></tr>
                   {% endfor %}
               </tbody>
               </table>

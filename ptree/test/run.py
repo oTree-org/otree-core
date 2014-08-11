@@ -2,11 +2,11 @@ from django.test import Client
 from django.utils.importlib import import_module
 from threading import Thread
 import sys
-import ptree.constants
+import otree.constants
 from Queue import Queue
 import time
-from ptree.sessionlib.models import Session
-from ptree.session import session_types_as_dict
+from otree.sessionlib.models import Session
+from otree.session import session_types_as_dict
 import coverage
 
 def run_subsession(subsession):
@@ -26,7 +26,7 @@ def run_subsession(subsession):
     if hasattr(tests_module, 'ExperimenterBot'):
         experimenter_bot = tests_module.ExperimenterBot(subsession)
     else:
-        from ptree.test.client import ExperimenterBot
+        from otree.test.client import ExperimenterBot
         experimenter_bot = ExperimenterBot(subsession)
     experimenter_bot.start()
     t = Thread(target=experimenter_bot._play, args=(failure_queue,))

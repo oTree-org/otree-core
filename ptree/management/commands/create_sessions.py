@@ -1,8 +1,8 @@
 from django.core.management.base import BaseCommand, CommandError, make_option
-from ptree.session import create_session
+from otree.session import create_session
 
 class Command(BaseCommand):
-    help = "pTree: Create a session."
+    help = "oTree: Create a session."
     args = 'type [amount]'
     option_list = BaseCommand.option_list + (
         make_option("-l", "--label", action="store", type="string", dest="label"),

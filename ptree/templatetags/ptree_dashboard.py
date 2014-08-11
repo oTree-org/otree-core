@@ -1,7 +1,7 @@
 from django.template import Library
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
-from ptree import common
+from otree import common
 
 
 register = Library()
@@ -50,7 +50,7 @@ def mock_data_export_app(context):
             "models": [
                 {"object_name": "dataexport",
                  "name": _("Data Export"),
-                 "admin_url": reverse("ptree_views_export_export_list")}
+                 "admin_url": reverse("otree_views_export_export_list")}
             ]
             }
     context["app_models"] = context["app"]["models"]

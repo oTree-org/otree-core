@@ -1,8 +1,8 @@
-from ptree.db import models
-from ptree.fields import RandomCharField
-import ptree.constants as constants
-from ptree.common import id_label_name
-import ptree.sessionlib.models
+from otree.db import models
+from otree.fields import RandomCharField
+import otree.constants as constants
+from otree.common import id_label_name
+import otree.sessionlib.models
 from importlib import import_module
 
 django_models = import_module('django.db.models')

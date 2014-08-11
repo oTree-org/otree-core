@@ -1,7 +1,7 @@
-from ptree.db import models
-import ptree.sessionlib.models
+from otree.db import models
+import otree.sessionlib.models
 from save_the_change.mixins import SaveTheChange
-from ptree.common import ModelWithCheckpointMixin
+from otree.common import ModelWithCheckpointMixin
 from django_extensions.db.fields.json import JSONField
 
 class BaseMatch(SaveTheChange, ModelWithCheckpointMixin, models.Model):
@@ -28,7 +28,7 @@ class BaseMatch(SaveTheChange, ModelWithCheckpointMixin, models.Model):
                 return p
 
     def _CheckpointMixinClass(self):
-        from ptree.views.abstract import MatchCheckpointMixin
+        from otree.views.abstract import MatchCheckpointMixin
         return MatchCheckpointMixin
 
     @classmethod

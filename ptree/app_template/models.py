@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Documentation at https://github.com/wickens/django-ptree-docs/wiki"""
+"""Documentation at https://github.com/wickens/django-otree-docs/wiki"""
 
-from ptree.db import models
-import ptree.models
-from ptree.common import Money, money_range
+from otree.db import models
+import otree.models
+from otree.common import Money, money_range
 
 author = 'Your name here'
 
@@ -11,18 +11,18 @@ doc = """
 Description of this app.
 """
 
-class Subsession(ptree.models.BaseSubsession):
+class Subsession(otree.models.BaseSubsession):
 
     name_in_url = '{{ app_name }}'
 
 
-class Treatment(ptree.models.BaseTreatment):
+class Treatment(otree.models.BaseTreatment):
     # <built-in>
     subsession = models.ForeignKey(Subsession)
     # </built-in>
 
 
-class Match(ptree.models.BaseMatch):
+class Match(otree.models.BaseMatch):
     # <built-in>
     treatment = models.ForeignKey(Treatment)
     subsession = models.ForeignKey(Subsession)
@@ -31,7 +31,7 @@ class Match(ptree.models.BaseMatch):
     players_per_match = 1
 
 
-class Player(ptree.models.BasePlayer):
+class Player(otree.models.BasePlayer):
     # <built-in>
     match = models.ForeignKey(Match, null = True)
     treatment = models.ForeignKey(Treatment, null = True)

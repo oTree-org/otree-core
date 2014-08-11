@@ -1,16 +1,16 @@
 from django.utils.importlib import import_module
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
-from ptree.sessionlib.models import create_session
+from otree.sessionlib.models import create_session
 import os.path
-import ptree.test.run
+import otree.test.run
 import os
 from django.core.management import call_command
 from threading import Thread
 
 
 class Command(BaseCommand):
-    help = "pTree: Run the test bots for a session and take screenshots"
+    help = "oTree: Run the test bots for a session and take screenshots"
     args = '[session_name]'
 
     def handle(self, *args, **options):
@@ -33,7 +33,7 @@ class Command(BaseCommand):
         session.label = '{} [test]'.format(session.label)
         session.save()
 
-        ptree.test.run.run(session, take_screenshots=True)
+        otree.test.run.run(session, take_screenshots=True)
 
 
 

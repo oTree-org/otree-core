@@ -7,7 +7,7 @@
         <title>{% block head_title %}{% endblock %}</title>
 
         {% block head_content %}
-            {% include 'ptree/HeadContent.html' %}
+            {% include 'otree/HeadContent.html' %}
 
             <style type="text/css">
                 .asteriskField {
@@ -35,7 +35,7 @@
             <div>
 
             {% if time_limit_in_seconds != None %}
-                {% include 'ptree/Timer.html' %}
+                {% include 'otree/Timer.html' %}
             {% endif %}
 
             {% if form.errors %}
@@ -55,7 +55,7 @@
 
             <br/>
 
-        {% include 'ptree/debug_info.html' %}
+        {% include 'otree/debug_info.html' %}
         </div>
 
 

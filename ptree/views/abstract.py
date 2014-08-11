@@ -1,4 +1,4 @@
-__doc__ = """This module contains many of pTree's internals.
+__doc__ = """This module contains many of oTree's internals.
 The view classes in this module are just base classes, and cannot be called from a URL.
 You should inherit from these classes and put your view class in your game directory (under "games/")
 Or in the other view file in this directory, which stores shared concrete views that have URLs."""
@@ -19,30 +19,30 @@ from django.views.decorators.cache import never_cache, cache_control
 from django.utils.translation import ugettext as _
 from django.forms.models import model_to_dict
 
-import ptree.constants as constants
-from ptree.forms_internal import StubModelForm, ExperimenterStubModelForm
-import ptree.sessionlib.models as seq_models
-import ptree.sessionlib.models
-import ptree.common
+import otree.constants as constants
+from otree.forms_internal import StubModelForm, ExperimenterStubModelForm
+import otree.sessionlib.models as seq_models
+import otree.sessionlib.models
+import otree.common
 
-import ptree.user.models
-import ptree.forms_internal
-from ptree.user.models import Experimenter
+import otree.user.models
+import otree.forms_internal
+from otree.user.models import Experimenter
 import copy
 import django.utils.timezone
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
 import vanilla
 from django.utils.translation import ugettext as _
-import ptree.sessionlib.models
-from ptree.sessionlib.models import Participant
+import otree.sessionlib.models
+from otree.sessionlib.models import Participant
 
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
-class PTreeMixin(object):
-    """Base mixin class for pTree views.
+class OTreeMixin(object):
+    """Base mixin class for oTree views.
     Takes care of:
     - retrieving model classes and objects automatically,
     so you can access view.treatment, self.match, self.player, etc.
@@ -104,7 +104,7 @@ class PTreeMixin(object):
         return {}
 
     def _variables_for_all_templates(self):
-        views_module = ptree.common._views_module(self.subsession)
+        views_module = otree.common._views_module(self.subsession)
         if hasattr(views_module, 'variables_for_all_templates'):
             return views_module.variables_for_all_templates(self) or {}
         return {}
@@ -121,7 +121,7 @@ class PTreeMixin(object):
             try:
                 return users[self._session_user._index_in_subsessions]._start_url()
             except IndexError:
-                from ptree.views.concrete import OutOfRangeNotification
+                from otree.views.concrete import OutOfRangeNotification
                 return OutOfRangeNotification.url(self._session_user)
 
         return self._user._pages_as_urls()[self._user.index_in_pages]
@@ -134,9 +134,9 @@ def load_session_user(dispatch_method):
         session_user_code = kwargs.pop(constants.session_user_code)
         user_type = kwargs.pop(constants.user_type)
         if user_type == constants.user_type_participant:
-            SessionUserClass = ptree.sessionlib.models.Participant
+            SessionUserClass = otree.sessionlib.models.Participant
         else:
-            SessionUserClass = ptree.sessionlib.models.SessionExperimenter
+            SessionUserClass = otree.sessionlib.models.SessionExperimenter
 
         self._session_user = get_object_or_404(SessionUserClass, code = session_user_code)
         self.request_session = self.get_request_session().copy()
@@ -155,11 +155,11 @@ class LoadClassesAndUserMixin(object):
 class NonSequenceUrlMixin(object):
     @classmethod
     def url(cls, session_user):
-        return ptree.common.url(cls, session_user)
+        return otree.common.url(cls, session_user)
 
     @classmethod
     def url_pattern(cls):
-        return ptree.common.url_pattern(cls, False)
+        return otree.common.url_pattern(cls, False)
 
 class PlayerMixin(object):
 
@@ -184,9 +184,9 @@ class ExperimenterMixin(object):
 
 class WaitPageMixin(object):
 
-    # TODO: this is intended to be in the user's project, not part of pTree core.
-    # but maybe have one in pTree core as a fallback in case the user doesn't have it.
-    wait_page_template_name = 'ptree/WaitPage.html'
+    # TODO: this is intended to be in the user's project, not part of oTree core.
+    # but maybe have one in oTree core as a fallback in case the user doesn't have it.
+    wait_page_template_name = 'otree/WaitPage.html'
 
     def title_text(self):
         return 'Please wait'
@@ -322,7 +322,7 @@ class SubsessionCheckpointMixin(CheckpointMixin):
     def body_text(self):
         return 'Waiting for other players.'
 
-class SequenceMixin(PTreeMixin):
+class SequenceMixin(OTreeMixin):
     """
     View that manages its position in the match sequence.
     for both players and experimenters
@@ -330,11 +330,11 @@ class SequenceMixin(PTreeMixin):
 
     @classmethod
     def url(cls, session_user, index):
-        return ptree.common.url(cls, session_user, index)
+        return otree.common.url(cls, session_user, index)
 
     @classmethod
     def url_pattern(cls):
-        return ptree.common.url_pattern(cls, True)
+        return otree.common.url_pattern(cls, True)
 
     def time_limit_in_seconds(self):
         return None
@@ -552,7 +552,7 @@ class ExperimenterSequenceMixin(SequenceMixin):
 
 
 
-class BaseView(PTreeMixin, NonSequenceUrlMixin, vanilla.View):
+class BaseView(OTreeMixin, NonSequenceUrlMixin, vanilla.View):
     """
     A basic view that provides no method implementations.
     """
@@ -704,7 +704,7 @@ class InitializeExperimenter(InitializePlayerOrExperimenter):
             if me_in_next_subsession:
                 url = me_in_next_subsession._start_url()
             else:
-                from ptree.views.concrete import OutOfRangeNotification
+                from otree.views.concrete import OutOfRangeNotification
                 url = OutOfRangeNotification.url(self._session_user)
         return HttpResponseRedirect(url)
 
@@ -733,10 +733,10 @@ class AssignVisitorToOpenSession(vanilla.View):
             setattr(participant, field_name, self.request.GET[get_param_name])
 
     def get(self, *args, **kwargs):
-        if not self.request.GET[constants.access_code_for_open_session] == ptree.common.access_code_for_open_session():
+        if not self.request.GET[constants.access_code_for_open_session] == otree.common.access_code_for_open_session():
             return HttpResponseNotFound('Incorrect access code for open session')
 
-        global_data = ptree.sessionlib.models.GlobalData.objects.get()
+        global_data = otree.sessionlib.models.GlobalData.objects.get()
         open_session = global_data.open_session
 
         if not open_session:

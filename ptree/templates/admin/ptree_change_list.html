@@ -1,7 +1,7 @@
 {% extends "admin/base_site.html" %}
 {% load i18n admin_urls admin_static admin_list %}
 {% load ajax_admin_list %}
-{% load ptree_dashboard %}
+{% load otree_dashboard %}
 
 {% block title %}
 {{ cl.opts.verbose_name_plural|capfirst }} ({{ app_label|app_name_format|escape }})
@@ -23,7 +23,7 @@
     </style>
   {% endif %}
   <style>
-      #ptree-change-list-error-messages {color: red; }
+      #otree-change-list-error-messages {color: red; }
   </style>
 {% endblock %}
 
@@ -51,7 +51,7 @@
 {% block coltype %}flex{% endblock %}
 
 {% block content %}
-    <div id="ptree-change-list-error-messages"></div>
+    <div id="otree-change-list-error-messages"></div>
   <div id="content-main">
     {% block object-tools %}
       {% if has_add_permission %}

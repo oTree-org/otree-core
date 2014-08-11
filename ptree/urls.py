@@ -6,8 +6,8 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.contrib import admin
 from django.views.generic.base import RedirectView
 from django.conf import settings
-import ptree.constants
-from ptree.sessionlib.models import Session
+import otree.constants
+from otree.sessionlib.models import Session
 
 
 
@@ -41,22 +41,22 @@ def augment_urlpatterns(urlpatterns):
         '',
         url(r'^$', RedirectView.as_view(url='/demo')),
         url(r'^admin/', include(admin.site.urls)),
-        url(r'^export/(\w+)/$', 'ptree.views.export.export', name='ptree_views_export_export'),
-        url(r'^export-list/$', 'ptree.views.export.export_list', name='ptree_views_export_export_list'),
-        url(r'^export-docs/(\w+)/$', 'ptree.views.export.export_docs', name='ptree_views_export_export_docs'),
+        url(r'^export/(\w+)/$', 'otree.views.export.export', name='otree_views_export_export'),
+        url(r'^export-list/$', 'otree.views.export.export_list', name='otree_views_export_export_list'),
+        url(r'^export-docs/(\w+)/$', 'otree.views.export.export_docs', name='otree_views_export_export_docs'),
     )
     urlpatterns += staticfiles_urlpatterns()
-    for app_name in settings.INSTALLED_PTREE_APPS:
+    for app_name in settings.INSTALLED_OTREE_APPS:
         views_module_name = '{}.views'.format(app_name)
         utilities_module_name = '{}.utilities'.format(app_name)
         urlpatterns += url_patterns_from_module(views_module_name)
         urlpatterns += url_patterns_from_module(utilities_module_name)
-    urlpatterns += url_patterns_from_module('ptree.views.concrete')
-    urlpatterns += url_patterns_from_module('ptree.views.demo')
+    urlpatterns += url_patterns_from_module('otree.views.concrete')
+    urlpatterns += url_patterns_from_module('otree.views.demo')
 
     urlpatterns += patterns(
-        'ptree.views.ajax_change_list',
-        url(r'^ajax/ptree-change-list-results/$', 'ajax_ptree_change_list_results', name='ajax_ptree_change_list_results'),
+        'otree.views.ajax_change_list',
+        url(r'^ajax/otree-change-list-results/$', 'ajax_otree_change_list_results', name='ajax_otree_change_list_results'),
     )
 
     return urlpatterns

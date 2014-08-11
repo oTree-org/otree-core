@@ -1,5 +1,5 @@
 
-from ptree.db import models
+from otree.db import models
 from ast import literal_eval
 
 from django.contrib.contenttypes import generic

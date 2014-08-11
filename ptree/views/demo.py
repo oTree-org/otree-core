@@ -2,13 +2,13 @@
 from django.shortcuts import get_object_or_404, render_to_response
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
 import vanilla
-import ptree.constants as constants
-from ptree.sessionlib.models import Session
-from ptree.session import create_session, session_types_as_dict, demo_enabled_session_types
+import otree.constants as constants
+from otree.sessionlib.models import Session
+from otree.session import create_session, session_types_as_dict, demo_enabled_session_types
 import threading
 import time
 import urllib
-from ptree.common import get_session_module, get_models_module, app_name_format
+from otree.common import get_session_module, get_models_module, app_name_format
 
 def escaped_start_link_url(session_type_name):
     return '/demo/{}/'.format(urllib.quote_plus(session_type_name))
@@ -33,7 +33,7 @@ class DemoIndex(vanilla.View):
                     'subsession_apps': ', '.join([app_name_format(app_name) for app_name in session_type.subsession_apps]),
                 }
             )
-        return render_to_response('ptree/demo/index.html', {'session_info': session_info, 'intro_text': intro_text})
+        return render_to_response('otree/demo/index.html', {'session_info': session_info, 'intro_text': intro_text})
 
 def ensure_enough_spare_sessions(type_name):
     time.sleep(5)
@@ -105,7 +105,7 @@ def render_to_start_links_page(request, session, is_demo_page):
     context_data.update(info_about_session_type(session.type_name))
 
     return render_to_response(
-        'ptree/admin/StartLinks.html',
+        'otree/admin/StartLinks.html',
         context_data
     )
 
@@ -142,7 +142,7 @@ class Demo(vanilla.View):
             return render_to_start_links_page(self.request, session, is_demo_page=True)
         else:
             return render_to_response(
-                'ptree/WaitPage.html',
+                'otree/WaitPage.html',
                 {
                     'SequenceViewURL': escaped_start_link_url(session_type_name),
 

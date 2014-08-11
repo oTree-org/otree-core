@@ -1,13 +1,13 @@
 from django.contrib.contenttypes import generic
-from ptree.sessionlib.models import Session, Participant
-from ptree.db import models
+from otree.sessionlib.models import Session, Participant
+from otree.db import models
 from importlib import import_module
-from ptree.common import _players, _matches
+from otree.common import _players, _matches
 
-subsessions = import_module('ptree.models.subsessions')
-treatments = import_module('ptree.models.treatments')
-matches = import_module('ptree.models.matches')
-players = import_module('ptree.models.players')
+subsessions = import_module('otree.models.subsessions')
+treatments = import_module('otree.models.treatments')
+matches = import_module('otree.models.matches')
+players = import_module('otree.models.players')
 
 
 

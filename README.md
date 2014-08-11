@@ -1,3 +1,3 @@
-[Homepage](http://www.ptree.org/)
+[Homepage](http://www.otree.org/)
 
-[Documentation](https://github.com/wickens/django-ptree-docs/wiki)
+[Documentation](https://github.com/wickens/django-otree-docs/wiki)

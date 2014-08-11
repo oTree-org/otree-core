@@ -6,7 +6,7 @@ import urlparse
 from django.utils.importlib import import_module
 import subprocess
 from django.template.defaultfilters import title
-from ptree import constants
+from otree import constants
 import os
 import hashlib
 from os.path import dirname, abspath, join

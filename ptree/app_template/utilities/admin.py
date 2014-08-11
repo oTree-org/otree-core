@@ -1,6 +1,6 @@
 from django.contrib import admin
 import {{ app_name }}.models as models
-import ptree.adminlib as adminlib
+import otree.adminlib as adminlib
 
 class PlayerAdmin(adminlib.PlayerAdmin):
     readonly_fields = adminlib.get_callables(models.Player)

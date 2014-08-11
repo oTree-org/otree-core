@@ -1,7 +1,7 @@
 import itertools
 import random
 import string
-from ptree.db import models
+from otree.db import models
 from django import forms
 from django.utils.translation import ugettext as _
 

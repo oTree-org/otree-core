@@ -1,5 +1,5 @@
 from importlib import import_module
-forms_internal = import_module('ptree.forms_internal')
+forms_internal = import_module('otree.forms_internal')
 
 class Form(forms_internal.PlayerModelForm):
 

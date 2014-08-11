@@ -26,31 +26,31 @@ if sys.argv[-1] == 'publish':
 
     sys.exit()
 
-ptree_script = 'bin/ptree'
-with open(ptree_script, 'r') as f:
+otree_script = 'bin/otree'
+with open(otree_script, 'r') as f:
     t = f.read()
-with open(ptree_script, 'w') as f:
+with open(otree_script, 'w') as f:
     f.write(t.replace('\r', ''))
 
 
 # FIXME: what if the user cloned from github and ran 'python setup.py install'?
 if 'sdist' in sys.argv:
-    shutil.make_archive('ptree/app_template', 'zip', 'ptree/app_template')
-    shutil.make_archive('ptree/project_template', 'zip', 'ptree/project_template')
+    shutil.make_archive('otree/app_template', 'zip', 'otree/app_template')
+    shutil.make_archive('otree/project_template', 'zip', 'otree/project_template')
 
 setup(
-    name='django-ptree',
+    name='django-otree',
     version=version,
     include_package_data=True,
     license='MIT License',
-    # this was not working right. did not exclude ptree.app_template.utilities for some reason.
+    # this was not working right. did not exclude otree.app_template.utilities for some reason.
     # so instead i use recursive-exclude in MANIFEST.in
     packages=find_packages(),
-    description='pTree is a Django toolset that makes it easy to create and administer web-based social science experiments.',
+    description='oTree is a Django toolset that makes it easy to create and administer web-based social science experiments.',
     long_description=README,
-    url='http://ptree.org/',
+    url='http://otree.org/',
     author='Chris Wickens',
-    author_email='c.wickens+ptree@googlemail.com',
+    author_email='c.wickens+otree@googlemail.com',
     install_requires = [
         'django-crispy-forms==1.4.0',
         'Django == 1.6.1',
@@ -58,11 +58,11 @@ setup(
         'Babel==1.3',
         'raven==3.5.2',
         'django-inspect-model',
-        'django-ptree-extra-views',
+        'django-otree-extra-views',
         'dj-static==0.0.5',
         'selenium==2.41.0',
         'xmltodict==0.9.0',
-        'django-ptree-mturk',
+        'django-otree-mturk',
         'django-extensions',
         'django-save-the-change==1.0.0',
         'pytz==2013.9',
@@ -82,7 +82,7 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
-    scripts = ['bin/ptree'],
+    scripts = ['bin/otree'],
 
 )
 

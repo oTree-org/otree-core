@@ -2,18 +2,18 @@ from django.utils.importlib import import_module
 import sys
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
-from ptree.session import create_session, session_types_as_dict
+from otree.session import create_session, session_types_as_dict
 import os.path
-import ptree.test.run
+import otree.test.run
 import coverage
 import itertools
 from django.core.management import call_command
-from ptree.constants import special_category_bots
+from otree.constants import special_category_bots
 
 modules_to_include_in_coverage = ['models', 'tests', 'views', 'forms']
 
 class Command(BaseCommand):
-    help = "pTree: Run the test bots for a session."
+    help = "oTree: Run the test bots for a session."
     args = '[session_type]'
 
     def handle(self, *args, **options):
@@ -47,7 +47,7 @@ class Command(BaseCommand):
         session.label = '{} [test]'.format(session.label)
         session.save()
 
-        ptree.test.run.run(session)
+        otree.test.run.run(session)
 
         cov.stop()
         html_coverage_results_dir = '_coverage_results'

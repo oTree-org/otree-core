@@ -1,9 +1,9 @@
-from ptree import constants
-from ptree.common import get_session_module
+from otree import constants
+from otree.common import get_session_module
 from django.conf import settings
 from django.utils.importlib import import_module
-from ptree.user.models import Experimenter
-from ptree.sessionlib.models import Session, SessionExperimenter, Participant
+from otree.user.models import Experimenter
+from otree.sessionlib.models import Session, SessionExperimenter, Participant
 from django.db import transaction
 from collections import defaultdict
 
@@ -74,8 +74,8 @@ def create_session(type_name, label='', special_category=None):
     subsessions = []
     round_counts = defaultdict(int)
     for app_label in session_type.subsession_apps:
-        if app_label not in settings.INSTALLED_PTREE_APPS:
-            raise ValueError('Your session contains a subsession app named "{}". You need to add this to INSTALLED_PTREE_APPS in settings.py.'.format(app_label))
+        if app_label not in settings.INSTALLED_OTREE_APPS:
+            raise ValueError('Your session contains a subsession app named "{}". You need to add this to INSTALLED_OTREE_APPS in settings.py.'.format(app_label))
 
         round_counts[app_label] += 1
         models_module = import_module('{}.models'.format(app_label))

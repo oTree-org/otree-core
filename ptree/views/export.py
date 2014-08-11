@@ -11,24 +11,24 @@ from django.contrib.admin import sites
 from django.shortcuts import render_to_response
 from inspect_model import InspectModel
 
-import ptree.common
-import ptree.adminlib
-from ptree.common import app_name_format
-import ptree.settings
-import ptree.models
-import ptree.adminlib
-import ptree.sessionlib.models
-from ptree.sessionlib.models import Session, Participant
-from ptree.adminlib import SessionAdmin, ParticipantAdmin, get_callables, get_all_fields_for_table
+import otree.common
+import otree.adminlib
+from otree.common import app_name_format
+import otree.settings
+import otree.models
+import otree.adminlib
+import otree.sessionlib.models
+from otree.sessionlib.models import Session, Participant
+from otree.adminlib import SessionAdmin, ParticipantAdmin, get_callables, get_all_fields_for_table
 from collections import OrderedDict
-from ptree.db import models
+from otree.db import models
 import easymoney
 
 LINE_BREAK = '\r\n'
 MODEL_NAMES = ["Participant", "Player", "Match", "Treatment", "Subsession", "Session"]
 
 CONCEPTUAL_OVERVIEW_TEXT = """
-pTree data is exported in CSV (comma-separated values) format.
+oTree data is exported in CSV (comma-separated values) format.
 
 Each field is prefixed by the name of the model it belongs to.
 
@@ -37,7 +37,7 @@ Here is an explanation of these terms:
 Session
 =======
 
-Refers to an event where a group of people spend time taking part in pTree experiments.
+Refers to an event where a group of people spend time taking part in oTree experiments.
 
 An example of a session would be: "On Tuesday at 3PM, 30 people will come to the lab for 1 hour,
 during which time they will play a trust game, followed by 2 ultimatum games, followed by a questionnaire.
@@ -81,9 +81,9 @@ def get_data_export_fields(app_label):
     export_info = {}
     for model_name in MODEL_NAMES:
         if model_name == 'Session':
-            Model = ptree.sessionlib.models.Session
+            Model = otree.sessionlib.models.Session
         elif model_name == 'Participant':
-            Model = ptree.sessionlib.models.Participant
+            Model = otree.sessionlib.models.Participant
         else:
             Model = getattr(app_models_module, model_name)
 
@@ -134,9 +134,9 @@ def get_doc_dict(app_label):
         members = export_fields[model_name]['member_names']
         callables = export_fields[model_name]['callables']
         if model_name == 'Participant':
-            Model = ptree.sessionlib.models.Participant
+            Model = otree.sessionlib.models.Participant
         elif model_name == 'Session':
-            Model = ptree.sessionlib.models.Session
+            Model = otree.sessionlib.models.Session
         else:
             Model = getattr(app_models_module, model_name)
 
@@ -208,13 +208,13 @@ def get_docs_as_string(app_label, doc_dict):
 
 def data_file_name(app_label):
     return '{} (accessed {}).csv'.format(
-        ptree.common.app_name_format(app_label),
+        otree.common.app_name_format(app_label),
         datetime.date.today().isoformat(),
     )
 
 def doc_file_name(app_label):
     return '{} - documentation ({}).txt'.format(
-        ptree.common.app_name_format(app_label),
+        otree.common.app_name_format(app_label),
         datetime.date.today().isoformat()
     )
 
@@ -240,9 +240,9 @@ def export_list(request):
     # Sort the apps alphabetically.
     app_labels.sort()
     # Filter out non subsession apps
-    app_labels = [app_label for app_label in app_labels if ptree.common.is_subsession_app(app_label)]
+    app_labels = [app_label for app_label in app_labels if otree.common.is_subsession_app(app_label)]
     apps = [{"name": app_name_format(app_label), "app_label": app_label} for app_label in app_labels]
-    return render_to_response("admin/ptree_data_export_list.html", {"apps": apps})
+    return render_to_response("admin/otree_data_export_list.html", {"apps": apps})
 
 
 @user_passes_test(lambda u: u.is_staff)
@@ -294,7 +294,7 @@ def export(request, app_label):
         # http://stackoverflow.com/questions/2466496/select-distinct-values-from-a-table-field#comment2458913_2468620
         ids = set(Player.objects.order_by().values_list(fk_name, flat=True).distinct())
         if fk_name in {'session', 'participant'}:
-            models_module = ptree.sessionlib.models
+            models_module = otree.sessionlib.models
         else:
             models_module = app_models
         objects = getattr(models_module, model_name).objects.filter(pk__in=ids)

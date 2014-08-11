@@ -1,11 +1,11 @@
 build/
 database.db
 dist/
-django_ptree/
+django_otree/
 docs/_build/doctrees
 docs/_build/html/_sources/
 docs/app/Thumbs.db
-django_ptree.egg-info/
+django_otree.egg-info/
 myapp*
 .idea/
 *.pyc

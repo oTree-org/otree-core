@@ -1,12 +1,12 @@
-from ptree.db import models
-from ptree.fields import RandomCharField
+from otree.db import models
+from otree.fields import RandomCharField
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-from ptree.common import id_label_name, add_params_to_url
-from ptree import constants
-from ptree.common import currency
-import ptree.common
-from ptree.common import directory_name
+from otree.common import id_label_name, add_params_to_url
+from otree import constants
+from otree.common import currency
+import otree.common
+from otree.common import directory_name
 from django_extensions.db.fields.json import JSONField
 from easymoney import Money
 
@@ -18,7 +18,7 @@ class Session(models.Model):
     )
 
     def type(self):
-        from ptree.session import session_types_as_dict
+        from otree.session import session_types_as_dict
         return session_types_as_dict()[self.type_name]
 
     # label of this session instance
@@ -96,7 +96,7 @@ class Session(models.Model):
     def subsession_names(self):
         names = []
         for subsession in self.subsessions():
-            names.append('{} {}'.format(ptree.common.app_name_format(subsession._meta.app_label), subsession.name()))
+            names.append('{} {}'.format(otree.common.app_name_format(subsession._meta.app_label), subsession.name()))
         if names:
             return ', '.join(names)
         else:
@@ -229,7 +229,7 @@ class SessionUser(models.Model):
     def current_subsession(self):
         if not self.visited:
             return None
-        return ptree.common.app_name_format(self.session.subsessions()[self._index_in_subsessions]._meta.app_label)
+        return otree.common.app_name_format(self.session.subsessions()[self._index_in_subsessions]._meta.app_label)
 
     def _users(self):
         """Used to calculate payoffs"""
@@ -248,7 +248,7 @@ class SessionUser(models.Model):
         return ''
 
     def get_success_url(self):
-        from ptree.views.concrete import RedirectToPageUserShouldBeOn
+        from otree.views.concrete import RedirectToPageUserShouldBeOn
         return RedirectToPageUserShouldBeOn.url(self)
 
 

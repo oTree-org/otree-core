@@ -1,11 +1,11 @@
 import django.test.client
 import re
 import time
-import ptree.constants
+import otree.constants
 from urlparse import urlsplit, urljoin
 import sys
 from django.utils.importlib import import_module
-from ptree.user.models import Experimenter
+from otree.user.models import Experimenter
 import random
 import coverage
 from easymoney import Money
@@ -35,7 +35,7 @@ class BaseClient(django.test.client.Client):
         try:
             self.play()
         except:
-            self.failure_queue.put(ptree.constants.failure)
+            self.failure_queue.put(otree.constants.failure)
             raise
 
     def play(self):
@@ -113,10 +113,10 @@ class BaseClient(django.test.client.Client):
         self.set_path()
 
     def on_wait_page(self):
-        return self.response.get(ptree.constants.wait_page_http_header) == ptree.constants.get_param_truth_value
+        return self.response.get(otree.constants.wait_page_http_header) == otree.constants.get_param_truth_value
 
     def page_redisplayed_with_errors(self):
-        return self.response.get(ptree.constants.redisplay_with_errors_http_header) == ptree.constants.get_param_truth_value
+        return self.response.get(otree.constants.redisplay_with_errors_http_header) == otree.constants.get_param_truth_value
 
     def set_path(self):
         try:
@@ -152,7 +152,7 @@ class PlayerBot(BaseClient):
     def _play(self, failure_queue):
         super(PlayerBot, self)._play(failure_queue)
         if self.player.payoff is None:
-            self.failure_queue.put(ptree.constants.failure)
+            self.failure_queue.put(otree.constants.failure)
             raise Exception('Player "{}": payoff is still None at the end of the subsession.'.format(self.player.participant.code))
 
 

@@ -1,10 +1,10 @@
 include LICENSE
 include README.md
-include ptree/app_template.zip
-include ptree/project_template.zip
-recursive-include ptree/static *
-recursive-include ptree/templates *
+include otree/app_template.zip
+include otree/project_template.zip
+recursive-include otree/static *
+recursive-include otree/templates *
 recursive-include docs *
-recursive-include ptree/locale *
-recursive-exclude ptree/app_template *
-recursive-exclude ptree/project_template *
+recursive-include otree/locale *
+recursive-exclude otree/app_template *
+recursive-exclude otree/project_template *

@@ -1,6 +1,6 @@
-from ptree.views.abstract import (
+from otree.views.abstract import (
     NonSequenceUrlMixin,
-    PTreeMixin,
+    OTreeMixin,
     PlayerUpdateView,
     LoadClassesAndUserMixin,
     load_session_user,
@@ -17,16 +17,16 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
 import vanilla
 from django.utils.translation import ugettext as _
-import ptree.constants as constants
-import ptree.sessionlib.models
-from ptree.sessionlib.models import Participant
-import ptree.common
+import otree.constants as constants
+import otree.sessionlib.models
+from otree.sessionlib.models import Participant
+import otree.common
 import django.utils.timezone
 import threading
 
 class RedirectToPageUserShouldBeOn(NonSequenceUrlMixin,
                                    LoadClassesAndUserMixin,
-                                   PTreeMixin,
+                                   OTreeMixin,
                                    vanilla.View):
     name_in_url = 'shared'
 
@@ -37,15 +37,15 @@ class RedirectToPageUserShouldBeOn(NonSequenceUrlMixin,
     def dispatch(self, request, *args, **kwargs):
         return super(RedirectToPageUserShouldBeOn, self).dispatch(request, *args, **kwargs)
 
-class OutOfRangeNotification(NonSequenceUrlMixin, PTreeMixin, vanilla.View):
+class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
     name_in_url = 'shared'
 
     def dispatch(self, request, *args, **kwargs):
         user_type = kwargs.pop(constants.user_type)
         if user_type == constants.user_type_experimenter:
-            return render_to_response('ptree/OutOfRangeNotificationExperimenter.html')
+            return render_to_response('otree/OutOfRangeNotificationExperimenter.html')
         else:
-            return render_to_response('ptree/OutOfRangeNotification.html')
+            return render_to_response('otree/OutOfRangeNotification.html')
 
 class WaitUntilAssignedToMatch(PlayerSequenceMixin, PlayerMixin, WaitPageMixin, vanilla.View):
     """
@@ -92,7 +92,7 @@ class SessionExperimenterWaitUntilPlayersAreAssigned(NonSequenceUrlMixin, WaitPa
         self.request.session[session_user_code] = {}
 
         self._session_user = get_object_or_404(
-            ptree.sessionlib.models.SessionExperimenter,
+            otree.sessionlib.models.SessionExperimenter,
             code=kwargs[constants.session_user_code]
         )
 
@@ -122,18 +122,18 @@ class InitializeSessionExperimenter(vanilla.View):
         self.request.session[session_user_code] = {}
 
         self._session_user = get_object_or_404(
-            ptree.sessionlib.models.SessionExperimenter,
+            otree.sessionlib.models.SessionExperimenter,
             code=kwargs[constants.session_user_code]
         )
 
         session = self._session_user.session
         if session._players_assigned_to_matches or session.type().assign_to_matches_on_the_fly:
             return self.redirect_to_next_page()
-        return render_to_response('ptree/experimenter/StartSession.html', {})
+        return render_to_response('otree/experimenter/StartSession.html', {})
 
     def post(self, request, *args, **kwargs):
         self._session_user = get_object_or_404(
-            ptree.sessionlib.models.SessionExperimenter,
+            otree.sessionlib.models.SessionExperimenter,
             code=kwargs[constants.session_user_code]
         )
 
@@ -142,7 +142,7 @@ class InitializeSessionExperimenter(vanilla.View):
         if not session.time_started:
             # get timestamp when the experimenter starts, rather than when the session was created
             # (since code is often updated after session created)
-            session.git_commit_timestamp = ptree.common.git_commit_timestamp()
+            session.git_commit_timestamp = otree.common.git_commit_timestamp()
             session.time_started = django.utils.timezone.now()
             session.save()
 
@@ -159,7 +159,7 @@ class InitializeParticipantMagdeburg(vanilla.View):
 
     def get(self, *args, **kwargs):
         session_user_code = self.request.GET[constants.session_user_code]
-        session_user = get_object_or_404(ptree.sessionlib.models.Participant, code=session_user_code)
+        session_user = get_object_or_404(otree.sessionlib.models.Participant, code=session_user_code)
 
         return HttpResponseRedirect(session_user._start_url())
 
@@ -174,7 +174,7 @@ class InitializeParticipant(vanilla.UpdateView):
         session_user_code = kwargs[constants.session_user_code]
         self.request.session[session_user_code] = {}
 
-        session_user = get_object_or_404(ptree.sessionlib.models.Participant, code=session_user_code)
+        session_user = get_object_or_404(otree.sessionlib.models.Participant, code=session_user_code)
 
         session = session_user.session
         if session.type().assign_to_matches_on_the_fly:
@@ -200,10 +200,10 @@ class AssignVisitorToOpenSessionMTurk(AssignVisitorToOpenSession):
 
     @classmethod
     def url(cls):
-        return ptree.common.add_params_to_url(
+        return otree.common.add_params_to_url(
             '/{}'.format(cls.__name__),
             {
-                ptree.constants.access_code_for_open_session: ptree.common.access_code_for_open_session()
+                otree.constants.access_code_for_open_session: otree.common.access_code_for_open_session()
             }
         )
 
@@ -212,8 +212,8 @@ class AssignVisitorToOpenSessionMTurk(AssignVisitorToOpenSession):
         return r'^{}/$'.format(cls.__name__)
 
     required_params = {
-        'mturk_worker_id': ptree.constants.mturk_worker_id,
-        'mturk_assignment_id': ptree.constants.mturk_assignment_id,
+        'mturk_worker_id': otree.constants.mturk_worker_id,
+        'mturk_assignment_id': otree.constants.mturk_assignment_id,
     }
 
     def url_has_correct_parameters(self):
@@ -230,10 +230,10 @@ class AssignVisitorToOpenSessionLab(AssignVisitorToOpenSession):
 
     @classmethod
     def url(cls):
-        return ptree.common.add_params_to_url(
+        return otree.common.add_params_to_url(
             '/{}'.format(cls.__name__),
             {
-                ptree.constants.access_code_for_open_session: ptree.common.access_code_for_open_session()
+                otree.constants.access_code_for_open_session: otree.common.access_code_for_open_session()
             }
         )
 
@@ -242,5 +242,5 @@ class AssignVisitorToOpenSessionLab(AssignVisitorToOpenSession):
         return r'^{}/$'.format(cls.__name__)
 
     required_params = {
-        'label': ptree.constants.participant_label,
+        'label': otree.constants.participant_label,
     }

@@ -3,7 +3,7 @@ import {{ app_name }}.models as models
 from django import forms
 from {{ app_name }}.utilities import Form
 from crispy_forms.layout import HTML
-from ptree.common import Money, money_range
+from otree.common import Money, money_range
 
 class MyForm(Form):
 

@@ -3,13 +3,13 @@ import random
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 
-from ptree.db import models
+from otree.db import models
 
-from ptree.fields import RandomCharField
-import ptree.constants as constants
+from otree.fields import RandomCharField
+import otree.constants as constants
 import math
-from ptree.common import flatten, ModelWithCheckpointMixin, _views_module
-import ptree.user.models
+from otree.common import flatten, ModelWithCheckpointMixin, _views_module
+import otree.user.models
 from django.utils.importlib import import_module
 import itertools
 from django_extensions.db.fields.json import JSONField
@@ -24,7 +24,7 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
     _incomplete_checkpoints = JSONField()
 
     _experimenter = models.OneToOneField(
-        ptree.user.models.Experimenter,
+        otree.user.models.Experimenter,
         related_name = '%(app_label)s_subsession',
         null=True)
 
@@ -183,7 +183,7 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
         return [View.url(self._experimenter.session_experimenter, index) for index, View in enumerate(self._experimenter_pages())]
 
     def _CheckpointMixinClass(self):
-        from ptree.views.abstract import SubsessionCheckpointMixin
+        from otree.views.abstract import SubsessionCheckpointMixin
         return SubsessionCheckpointMixin
 
 

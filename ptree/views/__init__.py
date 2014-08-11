@@ -1,12 +1,12 @@
 """public api"""
 
-from ptree.views.abstract import (
+from otree.views.abstract import (
     InitializePlayer,
     InitializeExperimenter,
 )
 
 from importlib import import_module
-abstract = import_module('ptree.views.abstract')
+abstract = import_module('otree.views.abstract')
 
 class MatchWaitPage(abstract.MatchCheckpoint):
 

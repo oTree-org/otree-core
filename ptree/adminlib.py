@@ -9,12 +9,12 @@ import django.db.models.options
 import django.db.models.fields.related
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.contrib.staticfiles.templatetags.staticfiles import static as static_template_tag
-from ptree.session import session_types_as_dict
-from ptree.views.demo import render_to_start_links_page
+from otree.session import session_types_as_dict
+from otree.views.demo import render_to_start_links_page
 
-import ptree.constants
-import ptree.sessionlib.models
-from ptree.common import currency
+import otree.constants
+import otree.sessionlib.models
+from otree.common import currency
 
 def new_tab_link(url, label):
     return '<a href="{}" target="_blank">{}</a>'.format(url, label)
@@ -327,7 +327,7 @@ class NonHiddenSessionListFilter(admin.SimpleListFilter):
         in the right sidebar.
         """
         return [(session.id, session.id) for session
-                in ptree.sessionlib.models.Session.objects.filter(hidden=False)]
+                in otree.sessionlib.models.Session.objects.filter(hidden=False)]
 
     def queryset(self, request, queryset):
         """
@@ -340,10 +340,10 @@ class NonHiddenSessionListFilter(admin.SimpleListFilter):
         else:
             return queryset
 
-class PTreeBaseModelAdmin(admin.ModelAdmin):
+class OTreeBaseModelAdmin(admin.ModelAdmin):
     """Allow leaving fields blank in the admin"""
     def get_form(self, request, obj=None, **kwargs):
-        form = super(PTreeBaseModelAdmin, self).get_form(request, obj, **kwargs)
+        form = super(OTreeBaseModelAdmin, self).get_form(request, obj, **kwargs)
         for key in form.base_fields.keys():
             try:
                 model_field, _, _, _ = self.model._meta.get_field_by_name(key)
@@ -353,9 +353,9 @@ class PTreeBaseModelAdmin(admin.ModelAdmin):
                 pass
         return form
 
-CHANGE_LIST_TEMPLATE = "admin/ptree_change_list.html"
+CHANGE_LIST_TEMPLATE = "admin/otree_change_list.html"
 
-class PlayerAdmin(PTreeBaseModelAdmin):
+class PlayerAdmin(OTreeBaseModelAdmin):
     change_list_template = CHANGE_LIST_TEMPLATE
 
     def link(self, instance):
@@ -371,7 +371,7 @@ class PlayerAdmin(PTreeBaseModelAdmin):
         qs = super(PlayerAdmin, self).queryset(request)
         return qs.filter(session__hidden=False)
 
-class MatchAdmin(PTreeBaseModelAdmin):
+class MatchAdmin(OTreeBaseModelAdmin):
     change_list_template = CHANGE_LIST_TEMPLATE
 
     list_filter = [NonHiddenSessionListFilter, 'subsession', 'treatment']
@@ -381,7 +381,7 @@ class MatchAdmin(PTreeBaseModelAdmin):
         qs = super(MatchAdmin, self).queryset(request)
         return qs.filter(session__hidden=False)
 
-class TreatmentAdmin(PTreeBaseModelAdmin):
+class TreatmentAdmin(OTreeBaseModelAdmin):
     change_list_template = CHANGE_LIST_TEMPLATE
 
     list_filter = [NonHiddenSessionListFilter, 'subsession']
@@ -391,7 +391,7 @@ class TreatmentAdmin(PTreeBaseModelAdmin):
         return qs.filter(session__hidden=False)
 
 
-class SubsessionAdmin(PTreeBaseModelAdmin):
+class SubsessionAdmin(OTreeBaseModelAdmin):
     change_list_template = CHANGE_LIST_TEMPLATE
 
     def queryset(self, request):
@@ -401,27 +401,27 @@ class SubsessionAdmin(PTreeBaseModelAdmin):
     list_filter = [NonHiddenSessionListFilter]
     list_editable = ['_skip']
 
-class GlobalDataAdmin(PTreeBaseModelAdmin):
+class GlobalDataAdmin(OTreeBaseModelAdmin):
     list_display = ['id', 'open_session', 'lab_url_link', 'mturk_url_link']
     list_editable = ['open_session']
 
     def lab_url_link(self, instance):
-        from ptree.views.concrete import AssignVisitorToOpenSessionLab
+        from otree.views.concrete import AssignVisitorToOpenSessionLab
         return new_tab_link(AssignVisitorToOpenSessionLab.url(), 'Link')
     lab_url_link.allow_tags = True
 
     def mturk_url_link(self, instance):
-        from ptree.views.concrete import AssignVisitorToOpenSessionMTurk
+        from otree.views.concrete import AssignVisitorToOpenSessionMTurk
         return new_tab_link(AssignVisitorToOpenSessionMTurk.url(), 'Link')
     mturk_url_link.allow_tags = True
 
-class ParticipantAdmin(PTreeBaseModelAdmin):
+class ParticipantAdmin(OTreeBaseModelAdmin):
     change_list_template = CHANGE_LIST_TEMPLATE
 
     list_filter = [NonHiddenSessionListFilter]
 
-    readonly_fields = get_callables(ptree.sessionlib.models.Participant, [])
-    list_display = get_all_fields_for_table(ptree.sessionlib.models.Participant, readonly_fields)
+    readonly_fields = get_callables(otree.sessionlib.models.Participant, [])
+    list_display = get_all_fields_for_table(otree.sessionlib.models.Participant, readonly_fields)
     list_editable = ['exclude_from_data_analysis']
 
 
@@ -434,7 +434,7 @@ class ParticipantAdmin(PTreeBaseModelAdmin):
         qs = super(ParticipantAdmin, self).queryset(request)
         return qs.filter(session__hidden=False)
 
-class SessionAdmin(PTreeBaseModelAdmin):
+class SessionAdmin(OTreeBaseModelAdmin):
     change_list_template = CHANGE_LIST_TEMPLATE
 
     def get_urls(self):
@@ -468,15 +468,15 @@ class SessionAdmin(PTreeBaseModelAdmin):
     def raw_participant_urls(self, request, pk):
         session = self.model.objects.get(pk=pk)
 
-        if request.GET.get(ptree.constants.session_user_code) != session.session_experimenter.code:
-            return HttpResponseBadRequest('{} parameter missing or incorrect'.format(ptree.constants.session_user_code))
+        if request.GET.get(otree.constants.session_user_code) != session.session_experimenter.code:
+            return HttpResponseBadRequest('{} parameter missing or incorrect'.format(otree.constants.session_user_code))
         urls = self.participant_urls(request, session)
         return HttpResponse('\n'.join(urls), content_type="text/plain")
 
 
     def raw_participant_urls_link(self, instance):
         return new_tab_link('{}/raw_participant_urls/?{}={}'.format(instance.pk,
-                                                          ptree.constants.session_user_code,
+                                                          otree.constants.session_user_code,
                                                           instance.session_experimenter.code), 'Link')
 
     raw_participant_urls_link.short_description = 'Participant URLs'
@@ -492,19 +492,19 @@ class SessionAdmin(PTreeBaseModelAdmin):
                 'maxlab-{} | 1 | /name {}&{}={}&{}={}'.format(
                     str(i+1).zfill(2),
                     i+1,
-                    ptree.constants.session_user_code,
+                    otree.constants.session_user_code,
                     code,
-                    ptree.constants.participant_label,
+                    otree.constants.participant_label,
                     i+1
                 )
             )
         response = HttpResponse('\n'.join(import_file_lines), content_type="text/plain")
-        response['Content-Disposition'] = 'attachment; filename="{}"'.format('ptree-{}.ini'.format(time.time()))
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format('otree-{}.ini'.format(time.time()))
         return response
 
     def magdeburg_start_urls_link(self, instance):
         return new_tab_link('{}/magdeburg_start_urls/?{}={}'.format(instance.pk,
-                                                          ptree.constants.session_user_code,
+                                                          otree.constants.session_user_code,
                                                           instance.session_experimenter.code), 'Link')
 
     magdeburg_start_urls_link.short_description = 'Magdeburg Start URLs'
@@ -521,7 +521,7 @@ class SessionAdmin(PTreeBaseModelAdmin):
             mean_payment = 0
 
 
-        return render_to_response('ptree/admin/Payments.html',
+        return render_to_response('otree/admin/Payments.html',
                                   {'participant': participant,
                                   'total_payments': currency(total_payments),
                                   'mean_payment': currency(mean_payment),
@@ -540,8 +540,8 @@ class SessionAdmin(PTreeBaseModelAdmin):
     payments_link.short_description = "Payments page"
     payments_link.allow_tags = True
 
-    readonly_fields = get_callables(ptree.sessionlib.models.Session, [])
-    list_display = get_all_fields_for_table(ptree.sessionlib.models.Session, readonly_fields)
+    readonly_fields = get_callables(otree.sessionlib.models.Session, [])
+    list_display = get_all_fields_for_table(otree.sessionlib.models.Session, readonly_fields)
 
     list_editable = ['hidden']
 
@@ -562,7 +562,7 @@ def autodiscover():
     from django.utils.module_loading import module_has_submodule
 
     for app in settings.INSTALLED_APPS:
-        if app in settings.INSTALLED_PTREE_APPS:
+        if app in settings.INSTALLED_OTREE_APPS:
             admin_module_dotted_path = 'utilities.admin'
         else:
             admin_module_dotted_path = 'admin'

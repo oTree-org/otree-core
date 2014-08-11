@@ -1,5 +1,5 @@
-from ptree.user.models import User
-import ptree.common
+from otree.user.models import User
+import otree.common
 
 class BasePlayer(User):
     """
@@ -29,11 +29,11 @@ class BasePlayer(User):
         FIXME: deprecate and remove.
         if a user really wants to make the pages dynamic, more than is possible with show_skip_wait, they can override this method.
         """
-        views_module = ptree.common._views_module(self)
+        views_module = otree.common._views_module(self)
         return views_module.pages()
 
     def _pages_as_urls(self):
-        from ptree.views.concrete import WaitUntilAssignedToMatch
+        from otree.views.concrete import WaitUntilAssignedToMatch
         all_views = [WaitUntilAssignedToMatch] + self._pages()
         return [View.url(self._session_user, index) for index, View in enumerate(all_views)]
 
