@@ -17,6 +17,7 @@ from django import forms
 
 from decimal import Decimal
 
+# R: Should not be needed
 class _MoneyInput(forms.NumberInput):
      def _format_value(self, value):
          return str(Decimal(value))

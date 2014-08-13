@@ -31,6 +31,7 @@ class SubsessionWaitPage(abstract.SubsessionCheckpoint):
         return super(SubsessionWaitPage, self).action()
 
 class Page(abstract.PlayerUpdateView):
+    # R: This methods do nothing, could be just deleted
 
     def variables_for_template(self):
         return super(Page, self).variables_for_template()
