@@ -36,6 +36,13 @@ class User(SaveTheChange, models.Model):
                                                       related_name = '%(app_label)s_%(class)s_next')
     me_in_next_subsession_object_id = models.PositiveIntegerField(null=True)
 
+    me_in_previous_subsession = generic.GenericForeignKey('me_in_previous_subsession_content_type',
+                                                'me_in_previous_subsession_object_id',)
+
+    me_in_next_subsession = generic.GenericForeignKey('me_in_next_subsession_content_type',
+                                                'me_in_next_subsession_object_id',)
+
+
     def _start_url(self):
         url = '/{}/{}/{}/{}/'.format(
             self._session_user.user_type_in_url,
@@ -63,14 +70,6 @@ class Experimenter(User):
     subsession = generic.GenericForeignKey('subsession_content_type',
                                            'subsession_object_id',
                                            )
-
-    # me_in_previous_subsession and me_in_next_subsession are duplicated between this model and BasePlayer model,
-    # to make autocomplete work
-    me_in_previous_subsession = generic.GenericForeignKey('me_in_previous_subsession_content_type',
-                                                'me_in_previous_subsession_object_id',)
-
-    me_in_next_subsession = generic.GenericForeignKey('me_in_next_subsession_content_type',
-                                                'me_in_next_subsession_object_id',)
 
     _init_view_name = 'InitializeExperimenter'
 

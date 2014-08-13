@@ -35,7 +35,7 @@ class BaseClient(django.test.client.Client):
         try:
             self.play()
         except:
-            self.failure_queue.put(otree.constants.failure)
+            self.failure_queue.put(True)
             raise
 
     def play(self):
@@ -152,7 +152,7 @@ class PlayerBot(BaseClient):
     def _play(self, failure_queue):
         super(PlayerBot, self)._play(failure_queue)
         if self.player.payoff is None:
-            self.failure_queue.put(otree.constants.failure)
+            self.failure_queue.put(True)
             raise Exception('Player "{}": payoff is still None at the end of the subsession.'.format(self.player.participant.code))
 
 

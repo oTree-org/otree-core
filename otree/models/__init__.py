@@ -39,15 +39,18 @@ class BaseSubsession(subsessions.BaseSubsession):
         '''
     )
 
+    @property
     def treatments(self):
         if hasattr(self, '_treatments'):
             return self._treatments
         self._treatments = list(self.treatment_set.all())
         return self._treatments
 
+    @property
     def matches(self):
         return _matches(self)
 
+    @property
     def players(self):
         return _players(self)
 
@@ -68,9 +71,11 @@ class BaseSubsession(subsessions.BaseSubsession):
 
 class BaseTreatment(treatments.BaseTreatment):
 
+    @property
     def matches(self):
         return _matches(self)
 
+    @property
     def players(self):
         return _players(self)
 
@@ -95,14 +100,19 @@ class BaseMatch(matches.BaseMatch):
         related_name = '%(app_label)s_%(class)s'
     )
 
+    @property
     def players(self):
         return _players(self)
+
+    @players.setter
+    def players(self, value):
+        raise NotImplementedError()
 
     def get_player_by_role(self, role):
         return super(BaseMatch, self).get_player_by_role(role)
 
-    def get_player_by_index(self, index_among_players_in_match):
-        return super(BaseMatch, self).get_player_by_role(index_among_players_in_match)
+    def get_player_by_index(self, index):
+        return super(BaseMatch, self).get_player_by_index(index)
 
     class Meta:
         abstract = True
@@ -126,19 +136,12 @@ class BasePlayer(players.BasePlayer):
         related_name = '%(app_label)s_%(class)s'
     )
 
-    # me_in_previous_subsession and me_in_next_subsession are duplicated between this model and experimenter model,
-    # to make autocomplete work
-    me_in_previous_subsession = generic.GenericForeignKey('me_in_previous_subsession_content_type',
-                                                'me_in_previous_subsession_object_id',)
-
-    me_in_next_subsession = generic.GenericForeignKey('me_in_next_subsession_content_type',
-                                                'me_in_next_subsession_object_id',)
 
     def other_players_in_match(self):
-        return [p for p in self.match.players() if p != self]
+        return [p for p in self.match.players if p != self]
 
     def other_players_in_subsession(self):
-        return [p for p in self.subsession.players() if p != self]
+        return [p for p in self.subsession.players if p != self]
 
 
     class Meta:

@@ -2,7 +2,7 @@ __doc__ = """This module contains many of oTree's internals.
 The view classes in this module are just base classes, and cannot be called from a URL.
 You should inherit from these classes and put your view class in your game directory (under "games/")
 Or in the other view file in this directory, which stores shared concrete views that have URLs."""
-
+import os.path
 from threading import Thread
 import time
 import logging
@@ -36,8 +36,8 @@ import vanilla
 from django.utils.translation import ugettext as _
 import otree.sessionlib.models
 from otree.sessionlib.models import Participant
-
-
+from Queue import Queue
+import sys
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
@@ -180,7 +180,7 @@ class ExperimenterMixin(object):
         self.load_user()
 
     def objects_to_save(self):
-        return [self._user, self.subsession, self._session_user] + self.subsession.players() + self.subsession.matches() #+ self.subsession.treatments()
+        return [self._user, self.subsession, self._session_user] + self.subsession.players + self.subsession.matches #+ self.subsession.treatments
 
 class WaitPageMixin(object):
 
@@ -271,19 +271,34 @@ class CheckpointMixin(object):
             self._run_action_in_thread()
 
     def _run_action_in_thread(self):
-        t = Thread(target=self._action)
+        failure_queue = Queue()
+        t = Thread(target=self._action, args=(failure_queue,))
         t.start()
         t.join()
+        if failure_queue.qsize() > 0:
+            exc = failure_queue.get()
+            # from 'http://stackoverflow.com/a/1278740'
+            exc_type, exc_obj, exc_tb = exc
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            error_message = '{}, {}, {}'.format(exc_type.__name__, fname, exc_tb.tb_lineno)
+            raise Exception(error_message)
 
-    def _action(self):
+    def _action(self, failure_queue):
         '''do in a background thread and lock the DB'''
         # don't use the locked one because we need to run the action in the user's code
         # that refers to self.match or self.subsession
-        self._match_or_subsession._mark_checkpoint_complete(self.index_in_pages)
-        self.action()
-        for p in self.players_in_match_or_subsession():
-            p.save()
-        self._match_or_subsession.save()
+        try:
+            self.action()
+            for p in self.players_in_match_or_subsession():
+                p.save()
+            # need to mark complete after the action, in case the action fails
+            # and the thread throws an exception
+            # before action is complete
+            self._match_or_subsession._mark_checkpoint_complete(self.index_in_pages)
+            self._match_or_subsession.save()
+        except:
+            failure_queue.put(sys.exc_info())
+            raise
 
     def participate_condition(self):
         return True
@@ -302,7 +317,7 @@ class MatchCheckpointMixin(CheckpointMixin):
         return super(MatchCheckpointMixin, self).dispatch(request, *args, **kwargs)
 
     def players_in_match_or_subsession(self):
-        return self.match.players()
+        return self.match.players
 
     def body_text(self):
         if self.match.players_per_match == 2:
@@ -317,7 +332,7 @@ class SubsessionCheckpointMixin(CheckpointMixin):
         return super(SubsessionCheckpointMixin, self).dispatch(request, *args, **kwargs)
 
     def players_in_match_or_subsession(self):
-        return self.subsession.players()
+        return self.subsession.players
 
     def body_text(self):
         return 'Waiting for other players.'

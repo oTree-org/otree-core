@@ -17,13 +17,13 @@ class BaseMatch(SaveTheChange, ModelWithCheckpointMixin, models.Model):
     def _is_ready_for_next_player(self):
         return len(self.player_set.all()) < self.players_per_match
 
-    def get_player_by_index(self, index_among_players_in_match):
-        for p in self.players():
-            if p.index_among_players_in_match == index_among_players_in_match:
+    def get_player_by_index(self, index):
+        for p in self.players:
+            if p.index_among_players_in_match == index:
                 return p
 
     def get_player_by_role(self, role):
-        for p in self.players():
+        for p in self.players:
             if p.role() == role:
                 return p
 

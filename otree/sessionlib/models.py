@@ -134,15 +134,15 @@ class Session(models.Model):
 
         subsessions = self.subsessions()
 
-        first_subparticipants = self.first_subsession.participants()
+        first_subsession_players = self.first_subsession.players
 
         for i in range(num_participants):
-            participants[i].me_in_first_subsession = first_subparticipants[i]
+            participants[i].me_in_first_subsession = first_subsession_players[i]
             participants[i].save()
 
         for subsession_index in range(len(subsessions) - 1):
-            players_left = subsessions[subsession_index].players()
-            players_right = subsessions[subsession_index + 1].players()
+            players_left = subsessions[subsession_index].players
+            players_right = subsessions[subsession_index + 1].players
             for player_index in range(num_participants):
                 player_left = players_left[player_index]
                 player_right = players_right[player_index]
@@ -154,7 +154,7 @@ class Session(models.Model):
     def add_subsession(self, subsession):
         subsession.session = self
         subsession.save()
-        for treatment in subsession.treatments():
+        for treatment in subsession.treatments:
             treatment.session = self
             treatment.save()
 
@@ -164,7 +164,7 @@ class Session(models.Model):
         super(Session, self).delete(using)
 
     def participants(self):
-        return self.Participant_set.all()
+        return self.participant_set.all()
 
     def payments_ready(self):
         for participants in self.participants():
@@ -323,7 +323,7 @@ class Participant(SessionUser):
     payoff_from_subsessions_display.short_description = 'payoff from subsessions'
 
     def payoff_from_subsessions_is_complete(self):
-        return all(p.payoff is not None for p in self.players())
+        return all(p.payoff is not None for p in self.players)
 
     def total_pay_display(self):
         try:
@@ -336,7 +336,7 @@ class Participant(SessionUser):
         return u'{} (incomplete)'.format(total_pay)
 
     def _assign_to_matches(self):
-        for p in self.players():
+        for p in self.players:
             p._assign_to_match()
 
     mturk_assignment_id = models.CharField(max_length = 50, null = True)

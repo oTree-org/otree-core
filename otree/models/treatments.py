@@ -37,22 +37,5 @@ class BaseTreatment(django_models.Model):
     def __unicode__(self):
         return self.name()
 
-    """
-    def matches(self):
-        if hasattr(self, '_matches'):
-            return self._matches
-        self._matches = list(self.match_set.all())
-        return self._matches
-
-    def players(self):
-        if hasattr(self, '_players'):
-            return self._players
-        self._players = list(self.player_set.all())
-        return self._players
-    """
-
-
-
-
     class Meta:
         abstract = True

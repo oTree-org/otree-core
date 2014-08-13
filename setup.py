@@ -8,7 +8,7 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version='0.2.151'
+version='0.2.153'
 
 if sys.argv[-1] == 'publish':
 
@@ -39,14 +39,14 @@ if 'sdist' in sys.argv:
     shutil.make_archive('otree/project_template', 'zip', 'otree/project_template')
 
 setup(
-    name='django-otree',
+    name='otree-core',
     version=version,
     include_package_data=True,
     license='MIT License',
     # this was not working right. did not exclude otree.app_template.utilities for some reason.
     # so instead i use recursive-exclude in MANIFEST.in
     packages=find_packages(),
-    description='oTree is a Django toolset that makes it easy to create and administer web-based social science experiments.',
+    description='oTree is a toolset that makes it easy to create and administer web-based social science experiments.',
     long_description=README,
     url='http://otree.org/',
     author='Chris Wickens',
@@ -58,11 +58,13 @@ setup(
         'Babel==1.3',
         'raven==3.5.2',
         'django-inspect-model',
-        'django-otree-extra-views',
+        #FIXME: rename this package to otree
+        'django-ptree-extra-views',
         'dj-static==0.0.5',
         'selenium==2.41.0',
         'xmltodict==0.9.0',
-        'django-otree-mturk',
+        #FIXME: rename this package to otree
+        'django-ptree-mturk',
         'django-extensions',
         'django-save-the-change==1.0.0',
         'pytz==2013.9',
