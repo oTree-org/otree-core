@@ -172,7 +172,7 @@ class PlayerMixin(object):
         self.treatment = self.player.treatment
 
     def objects_to_save(self):
-        return [self._user, self._session_user, self.match]
+        return [self._user, self._session_user, self.match, self.subsession.session]
 
 class ExperimenterMixin(object):
 

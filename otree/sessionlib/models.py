@@ -1,3 +1,6 @@
+import copy
+import collections
+
 from otree.db import models
 from otree.fields import RandomCharField
 from django.contrib.contenttypes import generic
@@ -7,10 +10,37 @@ from otree import constants
 from otree.common import currency
 import otree.common
 from otree.common import directory_name
-from django_extensions.db.fields.json import JSONField
 from easymoney import Money
+from handy.models import PickleField
 
-class Session(models.Model):
+
+class VarsField(PickleField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('default', lambda: collections.defaultdict(list))
+        super(VarsField, self).__init__(*args, **kwargs)
+
+
+# R: You really need this only if you are using save_the_change,
+#    which is not used for Session and SessionUser,
+#    Otherwise you can just
+class ModelWithVars(models.Model):
+    vars = VarsField()
+
+    class Meta:
+        abstract = True
+
+    def __init__(self, *args, **kwargs):
+        super(ModelWithVars, self).__init__(*args, **kwargs)
+        self._old_vars = copy.deepcopy(self.vars)
+
+    def save(self, *args, **kwargs):
+        # Trick save_the_change to update vars
+        if hasattr(self, '_changed_fields') and self.vars != self._old_vars:
+            self._changed_fields['vars'] = self._old_vars
+        super(ModelWithVars, self).save(*args, **kwargs)
+
+
+class Session(ModelWithVars):
 
     #
     type_name = models.CharField(max_length = 300, null = True, blank = True,
@@ -184,7 +214,7 @@ class Session(models.Model):
         # if i don't set this, it could be in an unpredictable order
         ordering = ['pk']
 
-class SessionUser(models.Model):
+class SessionUser(ModelWithVars):
 
     _index_in_subsessions = models.PositiveIntegerField(default=0, null=True)
 
@@ -215,8 +245,6 @@ class SessionUser(models.Model):
     is_on_wait_page = models.BooleanField(default=False)
 
     current_page = models.CharField(max_length=200,null=True)
-
-    vars = JSONField()
 
     def subsessions_completed(self):
         if not self.visited:
