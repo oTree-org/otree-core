@@ -1,0 +1,239 @@
+{% load i18n admin_static %}{% load cycle from future %}
+{% if result_hidden_fields %}
+<div class="hiddenfields">{# DIV for HTML validation #}
+{% for item in result_hidden_fields %}{{ item }}{% endfor %}
+</div>
+{% endif %}
+<div class="results">
+<table id="result_list">
+<thead>
+<tr>
+{% for header in result_headers %}
+<th scope="col" {{ header.class_attrib }} title='{{ header.text }}'{% if forloop.last %}style="width: 100%;"{% endif %}>
+<div  class="cell-trunc-div" style="overflow: hidden; width: {{ settings.OTREE_CHANGE_LIST_COLUMN_MIN_WIDTH}}px">
+   {% if header.sortable %}
+     {% if header.sort_priority > 0 %}
+       <div class="sortoptions">
+         <a class="sortremove" href="{{ header.url_remove }}" title="{% trans "Remove from sorting" %}"></a>
+         {% if num_sorted_fields > 1 %}<span class="sortpriority" title="{% blocktrans with priority_number=header.sort_priority %}Sorting priority: {{ priority_number }}{% endblocktrans %}">{{ header.sort_priority }}</span>{% endif %}
+         <a href="{{ header.url_toggle }}" class="toggle {% if header.ascending %}ascending{% else %}descending{% endif %}" title="{% trans "Toggle sorting" %}"></a>
+       </div>
+     {% endif %}
+   {% endif %}
+   <div class="text">{% if header.sortable %}<a href="{{ header.url_primary }}">{{ header.text|capfirst }}</a>{% else %}<span>{{ header.text|capfirst }}</span>{% endif %}</div>
+   <div class="clear"></div>
+</div>
+</th>{% endfor %}
+</tr>
+</thead>
+<tbody id="results_tbody">
+
+</tbody>
+</table>
+</div>
+<style>
+    /* The pencil is from http://findicons.com/icon/118480/pencil?id=407138# */
+    .pencil {
+        background: url({% static "pencil.png" %}) no-repeat right center;
+    }
+</style>
+
+<script>
+results_json = null;
+url_name = {{ url_name|safe }};
+var get_params_str = {{ get_params_str|safe }};
+var OTREE_CHANGE_LIST_UPDATE_INTERVAL = {{ settings.OTREE_CHANGE_LIST_UPDATE_INTERVAL }};
+
+var changed_cells = {};
+
+function mark_changed_cells(new_results_json, results_delta) {
+    var changed_rows = results_delta["changed_rows"];
+    for (var result_id in changed_rows) {
+        var changed_cells_in_row = changed_rows[result_id];
+        for (var idx in changed_cells_in_row) {
+            var changed_cell_idx = changed_cells_in_row[idx];
+
+            if (!changed_cells.hasOwnProperty("" + result_id + ":" + changed_cell_idx)) {
+                var the_cell = $($("#res-row-" + result_id).children()[changed_cell_idx]);
+                var the_cell_bg = the_cell.parent().css("background-color");
+                the_cell.css("background-color", "yellow");
+                the_cell.animate({backgroundColor: the_cell_bg}, OTREE_CHANGE_LIST_UPDATE_INTERVAL)
+            }
+        }
+    }
+
+    var added_ids = results_delta["added_ids"];
+    for (var added_ids_idx in added_ids) {
+        var added_id = added_ids[added_ids_idx];
+        var the_row = $("#res-row-" + added_id);
+        var the_row_bg = the_row.css("background-color");
+        the_row.css("background-color", "yellow");
+        the_row.animate({backgroundColor: the_row_bg}, OTREE_CHANGE_LIST_UPDATE_INTERVAL);
+    }
+
+}
+
+function compare_result_row(old_row, new_row) {
+    var changed_cells = [];
+    for (var cell_idx in old_row) {
+        old_cell = old_row[cell_idx];
+        new_cell = new_row[cell_idx];
+        if (old_cell != new_cell) {
+            changed_cells.push(cell_idx);
+        }
+    }
+    return changed_cells;
+}
+
+
+function get_results_delta(old_results_json, new_results_json) {
+    var added_ids = [];
+    var deleted_ids = [];
+    var changed_rows = {};
+
+    if (old_results_json != null) {
+        var old_results_ids = old_results_json["results_ids"];
+        var new_results_ids = new_results_json["results_ids"];
+
+        for (var old_id_idx in old_results_ids) {
+            var old_result_id = old_results_ids[old_id_idx];
+            if ($.inArray(old_result_id, new_results_ids) < 0) {
+                deleted_ids.push(old_result_id);
+            }
+            else {
+                var old_row = old_results_json["results_map"][old_result_id];
+                var new_row = new_results_json["results_map"][old_result_id];
+                var changed_cells = compare_result_row(old_row, new_row);
+                if (changed_cells.length > 0) {
+                    changed_rows[old_result_id] = changed_cells;
+                }
+            }
+        }
+
+        for (var new_id_idx in new_results_ids) {
+            var new_result_id = new_results_ids[new_id_idx];
+
+            if ($.inArray(new_result_id, old_results_ids) < 0) {
+                added_ids.push(new_result_id);
+            }
+        }
+    }
+    else {
+        var new_results_ids = new_results_json["results_ids"];
+        for (var result_id_idx in new_results_ids) {
+            var result_id = new_results_ids[result_id_idx];
+            added_ids.push(result_id);
+        }
+    }
+
+    return {"added_ids": added_ids, "deleted_ids": deleted_ids, "changed_rows": changed_rows};
+
+}
+
+function bind_change_evt(cell_elem, res_id, cell_idx) {
+cell_elem.find("input").change(function() {
+    //alert("" + res_id + ":" + cell_idx);
+    changed_cells["" + res_id + ":" + cell_idx] = 1;
+    cell_elem.addClass("pencil");
+});
+}
+
+
+function updateResultsDisplay(new_results_json) {
+    var results_delta = get_results_delta(results_json, new_results_json);
+    var results_ids = new_results_json["results_ids"];
+    
+    //$("#results_tbody").empty();
+    for (var res_id_idx in results_ids) {
+        var res_id = results_ids[res_id_idx];
+
+        if ($.inArray(res_id, results_delta.added_ids) > - 1) {
+            var tr_content = new_results_json["results_map"][res_id];
+            var row_class = "row1";
+            if ((res_id_idx % 2) == 1) {
+                row_class = "row2";
+            }
+            var tr_elem = $($.parseHTML('<tr id="res-row-' + res_id + '" class="' + row_class + '"></tr>')[0]);
+
+            for (var cell_idx in tr_content) {
+                var cell_content = tr_content[cell_idx];
+                var cell_elem = $($.parseHTML(cell_content)[0]);
+                cell_elem.attr("title", cell_elem.text());
+                bind_change_evt(cell_elem, res_id, cell_idx);
+                tr_elem.append(cell_elem);
+            }
+
+            $("#results_tbody").append(tr_elem);
+        }
+        else {
+            if (results_delta.changed_rows.hasOwnProperty(res_id)) {
+                var tr_elem = $("#res-row-" + res_id);
+                var tr_content = new_results_json["results_map"][res_id];
+                tr_elem.children().each(function(cell_idx, elem) {
+                    if (!changed_cells.hasOwnProperty("" + res_id + ":" + cell_idx)) {
+                        var cell_content = tr_content[cell_idx];
+                        if ($.inArray("" + cell_idx, results_delta.changed_rows[res_id]) > -1) {
+                            var new_cell_elem = $($.parseHTML(cell_content));
+                            new_cell_elem.attr("title", new_cell_elem.text());
+                            bind_change_evt(new_cell_elem, res_id, cell_idx);
+                            $(elem).replaceWith(new_cell_elem);
+                        }
+                    }
+                });
+            }
+            $("#res-row-" + res_id).appendTo("#results_tbody");
+        }
+    }
+    for (var deleted_id_idx in results_delta.deleted_ids) {
+        deleted_id = results_delta.deleted_ids[deleted_id_idx];
+        $("#res-row-" + deleted_id).remove();
+    }
+
+    $("#result-count-2").html("" + new_results_json["results_ids"].length);
+
+    django.jQuery("tr input.action-select").actions();
+
+    if (results_json != null) {
+        mark_changed_cells(new_results_json, results_delta);
+    }
+
+    results_json = new_results_json;
+}
+
+
+function fetchAndUpdateResults() {
+    $.ajax({
+        url: "/ajax/otree-change-list-results/",
+        data: {"url_name": url_name, "get_params": get_params_str},
+        dataType: "json",
+        error: function(jqXHR, textStatus) {
+            $("#otree-change-list-error-messages").html("Failed to update from server.");
+            window.setTimeout(fetchAndUpdateResults, OTREE_CHANGE_LIST_UPDATE_INTERVAL);
+        },
+        success: function(data) {
+            var new_results_json = data;
+            updateResultsDisplay(new_results_json);
+            $("#otree-change-list-error-messages").html("");
+            window.setTimeout(fetchAndUpdateResults, OTREE_CHANGE_LIST_UPDATE_INTERVAL);
+        },
+        timeout: 50000
+    });
+}
+
+fetchAndUpdateResults();
+
+function fixTableLayout() {
+    var table_width = $("#result_list").width();
+    var column_num = $("#result_list thead tr th").length;
+    var td_padding = 5 * 2; // TODO get padding from somewhere
+    var border_size = 1;
+    var cell_width = (table_width - column_num * td_padding - border_size * (column_num + 1)) / column_num;
+    cell_width = Math.max(cell_width, {{ settings.OTREE_CHANGE_LIST_COLUMN_MIN_WIDTH}});
+    $(".cell-trunc-div").width(cell_width - 2);
+}
+fixTableLayout();
+
+$(window).resize(fixTableLayout);
+
+</script>
+
