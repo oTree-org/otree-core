@@ -108,16 +108,6 @@ def _views_module(model_instance):
     return import_module('{}.views'.format(model_instance._meta.app_label))
 
 class ModelWithCheckpointMixin(object):
-    @property
-    def _player_progress_distribution(self):
-        f = self._player_progress_distribution_field
-        if f == '':
-            return []
-        return f.split(',')
-
-    @_player_progress_distribution.setter
-    def _player_progress_distribution(self, value):
-        self._player_progress_distribution_field = ','.join(value)
 
     def _initialize_checkpoints(self):
         views_module = _views_module(self)
