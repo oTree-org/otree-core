@@ -176,8 +176,8 @@ class Session(ModelWithVars):
             for player_index in range(num_participants):
                 player_left = players_left[player_index]
                 player_right = players_right[player_index]
-                player_left.me_in_next_subsession = player_right
-                player_right.me_in_previous_subsession = player_left
+                player_left._me_in_next_subsession = player_right
+                player_right._me_in_previous_subsession = player_left
                 player_left.save()
                 player_right.save()
 
@@ -267,7 +267,7 @@ class SessionUser(ModelWithVars):
             if not me_in_next_subsession:
                 break
             lst.append(me_in_next_subsession)
-            me_in_next_subsession = me_in_next_subsession.me_in_next_subsession
+            me_in_next_subsession = me_in_next_subsession._me_in_next_subsession
         return lst
 
     def status(self):
@@ -298,8 +298,8 @@ class SessionExperimenter(SessionUser):
         for i in range(len(subsessions) - 1):
             left_experimenter = subsessions[i]._experimenter
             right_experimenter = subsessions[i+1]._experimenter
-            left_experimenter.me_in_next_subsession = right_experimenter
-            right_experimenter.me_in_previous_subsession = left_experimenter
+            left_experimenter._me_in_next_subsession = right_experimenter
+            right_experimenter._me_in_previous_subsession = left_experimenter
         for subsession in subsessions:
             subsession._experimenter.session_experimenter = self
             subsession._experimenter.save()

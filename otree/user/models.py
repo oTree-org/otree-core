@@ -26,21 +26,21 @@ class User(SaveTheChange, models.Model):
 
     index_in_pages = models.PositiveIntegerField(default=0)
 
-    me_in_previous_subsession_content_type = models.ForeignKey(ContentType,
+    _me_in_previous_subsession_content_type = models.ForeignKey(ContentType,
                                                       null=True,
                                                       related_name = '%(app_label)s_%(class)s_previous')
-    me_in_previous_subsession_object_id = models.PositiveIntegerField(null=True)
+    _me_in_previous_subsession_object_id = models.PositiveIntegerField(null=True)
 
-    me_in_next_subsession_content_type = models.ForeignKey(ContentType,
+    _me_in_next_subsession_content_type = models.ForeignKey(ContentType,
                                                       null=True,
                                                       related_name = '%(app_label)s_%(class)s_next')
-    me_in_next_subsession_object_id = models.PositiveIntegerField(null=True)
+    _me_in_next_subsession_object_id = models.PositiveIntegerField(null=True)
 
-    me_in_previous_subsession = generic.GenericForeignKey('me_in_previous_subsession_content_type',
-                                                'me_in_previous_subsession_object_id',)
+    _me_in_previous_subsession = generic.GenericForeignKey('_me_in_previous_subsession_content_type',
+                                                '_me_in_previous_subsession_object_id',)
 
-    me_in_next_subsession = generic.GenericForeignKey('me_in_next_subsession_content_type',
-                                                'me_in_next_subsession_object_id',)
+    _me_in_next_subsession = generic.GenericForeignKey('_me_in_next_subsession_content_type',
+                                                '_me_in_next_subsession_object_id',)
 
 
     def _start_url(self):

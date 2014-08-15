@@ -715,7 +715,7 @@ class InitializeExperimenter(InitializePlayerOrExperimenter):
             if self._user.subsession._index_in_subsessions == self._session_user._index_in_subsessions:
                 self._session_user._index_in_subsessions += 1
                 self._session_user.save()
-            me_in_next_subsession = self._user.me_in_next_subsession
+            me_in_next_subsession = self._user._me_in_next_subsession
             if me_in_next_subsession:
                 url = me_in_next_subsession._start_url()
             else:
