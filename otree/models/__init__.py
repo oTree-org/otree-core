@@ -137,6 +137,9 @@ class BasePlayer(players.BasePlayer):
     )
 
 
+    def previous_players(self):
+        return super(BasePlayer, self).previous_players()
+
     def other_players_in_match(self):
         return [p for p in self.match.players if p != self]
 

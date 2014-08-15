@@ -19,6 +19,19 @@ class BasePlayer(User):
     def name(self):
         return self.participant.__unicode__()
 
+    def previous_players(self):
+        players = []
+        current_player = self
+        while True:
+            current_player = current_player.me_in_previous_subsession
+            if current_player is None or current_player._meta.app_label != self._meta.app_label:
+                break
+            players.append(current_player)
+        # return starting with round 1
+        players.reverse()
+        return players
+
+
     def __unicode__(self):
         return self.name()
 
