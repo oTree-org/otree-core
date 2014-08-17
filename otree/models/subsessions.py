@@ -51,6 +51,18 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
         doc="""whether the experimenter made the players skip this subsession"""
     )
 
+    def previous_rounds(self):
+
+        rounds = []
+        current_round = self
+        for i in range(self.round_number-1):
+            current_round = current_round._me_in_previous_subsession
+            rounds.append(current_round)
+        # return starting with round 1
+        rounds.reverse()
+        return rounds
+
+
     def name(self):
         return str(self.pk)
 

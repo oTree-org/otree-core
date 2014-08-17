@@ -16,6 +16,7 @@ from easymoney import Money
 from django import forms
 
 from decimal import Decimal
+from itertools import groupby
 
 # R: Should not be needed
 class _MoneyInput(forms.NumberInput):
@@ -178,3 +179,4 @@ def expand_choice_tuples(choices):
     if not isinstance(first_choice, (list, tuple)):
         choices = [(value, value) for value in choices]
     return choices
+

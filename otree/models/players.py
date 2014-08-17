@@ -20,12 +20,11 @@ class BasePlayer(User):
         return self.participant.__unicode__()
 
     def me_in_previous_rounds(self):
+
         players = []
         current_player = self
-        while True:
+        for i in range(self.subsession.round_number-1):
             current_player = current_player._me_in_previous_subsession
-            if current_player is None or current_player._meta.app_label != self._meta.app_label:
-                break
             players.append(current_player)
         # return starting with round 1
         players.reverse()

@@ -268,37 +268,18 @@ class CheckpointMixin(object):
     def _page_request_actions(self):
         run_action_now = self._record_visit()
         if run_action_now:
-            self._run_action_in_thread()
+            self._action()
 
-    def _run_action_in_thread(self):
-        failure_queue = Queue()
-        t = Thread(target=self._action, args=(failure_queue,))
-        t.start()
-        t.join()
-        if failure_queue.qsize() > 0:
-            exc = failure_queue.get()
-            # from 'http://stackoverflow.com/a/1278740'
-            exc_type, exc_obj, exc_tb = exc
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            error_message = '{}, {}, {}'.format(exc_type.__name__, fname, exc_tb.tb_lineno)
-            raise Exception(error_message)
-
-    def _action(self, failure_queue):
+    def _action(self):
         '''do in a background thread and lock the DB'''
-        # don't use the locked one because we need to run the action in the user's code
-        # that refers to self.match or self.subsession
-        try:
-            self.action()
-            for p in self.players_in_match_or_subsession():
-                p.save()
-            # need to mark complete after the action, in case the action fails
-            # and the thread throws an exception
-            # before action is complete
-            self._match_or_subsession._mark_checkpoint_complete(self.index_in_pages)
-            self._match_or_subsession.save()
-        except:
-            failure_queue.put(sys.exc_info())
-            raise
+        self._match_or_subsession._mark_checkpoint_complete(self.index_in_pages)
+        self.action()
+        for p in self.players_in_match_or_subsession():
+            p.save()
+        # need to mark complete after the action, in case the action fails
+        # and the thread throws an exception
+        # before action is complete
+        self._match_or_subsession.save()
 
     def participate_condition(self):
         return True

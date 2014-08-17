@@ -1,16 +1,5 @@
-from django.utils.importlib import import_module
-import sys
+from otree.test.run import run_session_with_coverage
 from django.core.management.base import BaseCommand, CommandError
-from django.conf import settings
-from otree.session import create_session, session_types_as_dict
-import os.path
-import otree.test.run
-import coverage
-import itertools
-from django.core.management import call_command
-from otree.constants import special_category_bots
-
-modules_to_include_in_coverage = ['models', 'tests', 'views', 'forms']
 
 class Command(BaseCommand):
     help = "oTree: Run the test bots for a session."
@@ -18,44 +7,16 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        print 'Creating session...'
         if len(args) > 1:
             raise CommandError("Wrong number of arguments (expecting '{}')".format(self.args))
 
         if len(args) == 1:
-            type = args[0]
+            session_type_name = args[0]
         else:
-            type = None
+            session_type_name = None
 
-        app_labels = session_types_as_dict()[type].subsession_apps
+        run_session_with_coverage(session_type_name)
 
-        package_names = []
-        for app_label in app_labels:
-            for module_name in modules_to_include_in_coverage:
-                package_names.append('{}.{}'.format(app_label, module_name))
-        package_names = itertools.chain(package_names)
-
-        cov = coverage.coverage(source=package_names)
-        cov.start()
-
-        # force models.py to get loaded for coverage
-        for app_label in app_labels:
-            reload(sys.modules['{}.models'.format(app_label)])
-
-
-        session = create_session(type_name=type, special_category=special_category_bots)
-        session.label = '{} [test]'.format(session.label)
-        session.save()
-
-        otree.test.run.run(session)
-
-        cov.stop()
-        html_coverage_results_dir = '_coverage_results'
-        percent_coverage = cov.html_report(directory=html_coverage_results_dir)
-        print 'Tests ran with {}% coverage. See "{}/index.html" for detailed results.'.format(
-            int(percent_coverage),
-            html_coverage_results_dir
-        )
 
 
 

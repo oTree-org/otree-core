@@ -6,6 +6,7 @@ from otree.user.models import Experimenter
 from otree.sessionlib.models import Session, SessionExperimenter, Participant
 from django.db import transaction
 from collections import defaultdict
+from itertools import groupby
 
 class SessionType(object):
     def __init__(self, name, subsession_apps, base_pay, participants_per_session,
@@ -21,11 +22,19 @@ class SessionType(object):
         # on MTurk, assign_to_matches_on_the_fly = True
         self.assign_to_matches_on_the_fly = assign_to_matches_on_the_fly
 
+    def subsession_app_counts(self):
+        '''collapses repetition in a list of subsession apps into counts'''
+        return [[k,len(list(g))] for k, g in groupby(self.subsession_apps)]
+
 def get_session_types():
     return get_session_module().session_types()
 
-def session_types_as_dict():
-    return {session_type.name: session_type for session_type in get_session_types()}
+class SessionTypeDirectory(object):
+    def __init__(self):
+        self.session_types_as_dict = {session_type.name.lower(): session_type for session_type in get_session_types()}
+
+    def get_item(self, session_type_name):
+        return self.session_types_as_dict[session_type_name.lower()]
 
 def demo_enabled_session_types():
     return [session_type for session_type in get_session_types() if get_session_module().show_on_demo_page(session_type.name)]
@@ -37,7 +46,7 @@ def create_session(type_name, label='', special_category=None):
     https://docs.djangoproject.com/en/1.4/ref/models/instances/#django.db.models.Model
     """
     try:
-        session_type = session_types_as_dict()[type_name]
+        session_type = SessionTypeDirectory().get_item(type_name)
     except KeyError:
         raise ValueError('Session type "{}" not found in session.py'.format(type_name))
     session = Session(
@@ -72,12 +81,10 @@ def create_session(type_name, label='', special_category=None):
         participants.append(participant)
 
     subsessions = []
-    round_counts = defaultdict(int)
-    for app_label in session_type.subsession_apps:
+    for app_label, number_of_rounds in session_type.subsession_app_counts():
         if app_label not in settings.INSTALLED_OTREE_APPS:
             raise ValueError('Your session contains a subsession app named "{}". You need to add this to INSTALLED_OTREE_APPS in settings.py.'.format(app_label))
 
-        round_counts[app_label] += 1
         models_module = import_module('{}.models'.format(app_label))
 
         if participants_per_session % models_module.Match.players_per_match:
@@ -89,42 +96,44 @@ def create_session(type_name, label='', special_category=None):
                 )
             )
 
-        #FIXME: make sure this returns the same thing each time, so that you can reassign to the same treatment
-        treatments = models_module.treatments()
-        for t_index, t in enumerate(treatments):
-            t._index_within_subsession = t_index
+        for round_number in range(1, number_of_rounds+1):
+            subsession = models_module.Subsession(
+                round_number = round_number,
+                number_of_rounds = number_of_rounds
+                )
+            subsession.save()
 
-        subsession = models_module.Subsession(round_number = round_counts[app_label])
-        subsession.save()
-        for t in treatments:
-            t.subsession = subsession
-            t.save()
+            #FIXME: make sure this returns the same thing each time, so that you can reassign to the same treatment
+            treatments = models_module.treatments()
+            for t_index, t in enumerate(treatments):
+                t._index_within_subsession = t_index
+                t.subsession = subsession
+                t.save()
 
+            session.add_subsession(subsession)
 
+            experimenter = Experimenter(session=session)
+            experimenter.subsession = subsession
+            experimenter.save()
+            subsession._experimenter = experimenter
 
-        session.add_subsession(subsession)
-        experimenter = Experimenter(session=session)
-        experimenter.subsession = subsession
-        experimenter.save()
+            subsession.save()
 
-        subsession._experimenter = experimenter
-        subsession.save()
-        for i in range(participants_per_session):
-            participant = models_module.Player(
-                subsession = subsession,
-                session = session,
-                participant = participants[i]
-            )
-            participant.save()
+            for i in range(participants_per_session):
+                participant = models_module.Player(
+                    subsession = subsession,
+                    session = session,
+                    participant = participants[i]
+                )
+                participant.save()
 
-        if session.type().assign_to_matches_on_the_fly:
-            # create matches at the beginning because we will not need to delete players
-            # unlike the lab setting, where there may be no-shows
-            subsession._create_empty_matches()
+            if session.type().assign_to_matches_on_the_fly:
+                # create matches at the beginning because we will not need to delete players
+                # unlike the lab setting, where there may be no-shows
+                subsession._create_empty_matches()
 
-        print 'Created objects for {}'.format(app_label)
-        subsessions.append(subsession)
-
+            print 'Created objects for {}'.format(app_label)
+            subsessions.append(subsession)
 
     session.chain_subsessions(subsessions)
     session.chain_players()

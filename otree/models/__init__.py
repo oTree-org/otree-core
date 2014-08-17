@@ -39,6 +39,10 @@ class BaseSubsession(subsessions.BaseSubsession):
         '''
     )
 
+    number_of_rounds = models.PositiveIntegerField(
+        doc='Number of rounds for which this subsession is played'
+    )
+
     @property
     def treatments(self):
         if hasattr(self, '_treatments'):
@@ -64,6 +68,8 @@ class BaseSubsession(subsessions.BaseSubsession):
     def pick_match_groups(self, previous_round_match_groups):
         return super(BaseSubsession, self).pick_match_groups(previous_round_match_groups)
 
+    def previous_rounds(self):
+        return super(BaseSubsession, self).previous_rounds()
 
     class Meta:
         abstract = True

@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpRespons
 import vanilla
 import otree.constants as constants
 from otree.sessionlib.models import Session
-from otree.session import create_session, session_types_as_dict, demo_enabled_session_types
+from otree.session import create_session, SessionTypeDirectory, demo_enabled_session_types
 import threading
 import time
 import urllib
@@ -65,23 +65,19 @@ def get_session(type_name):
         return sessions[:1].get()
 
 def info_about_session_type(session_type_name):
-    session_type = session_types_as_dict()[session_type_name]
+    session_type = SessionTypeDirectory().get_item(session_type_name)
 
-    # collapse repeated subsessions, encode as follows: [[app_name, num_occurrences], [app_name2, num_occurrences2], ...]
-    subsession_app_counts = [[session_type.subsession_apps[0], 1]]
-    for i in range(1, len(session_type.subsession_apps)):
-        if session_type.subsession_apps[i] == session_type.subsession_apps[i-1]:
-            subsession_app_counts[-1][1] += 1
-        else:
-            subsession_app_counts.append([session_type.subsession_apps[i], 1])
+    # collapse repeated subsessions, encode as follows: [[app_name, num_rounds], [app_name2, num_occurrences2], ...]
+
+    subsession_app_counts = session_type.subsession_app_counts()
 
     subsession_apps = []
-    for app_name, num_occurrences in subsession_app_counts:
+    for app_name, num_rounds in subsession_app_counts:
         models_module = get_models_module(app_name)
         doc = getattr(models_module, 'doc', '')
         formatted_app_name = app_name_format(app_name)
-        if num_occurrences > 1:
-            formatted_app_name = '{} ({} rounds)'.format(formatted_app_name, num_occurrences)
+        if num_rounds > 1:
+            formatted_app_name = '{} ({} rounds)'.format(formatted_app_name, num_rounds)
         subsession_apps.append(
             {
                 'name': formatted_app_name,
@@ -118,11 +114,14 @@ class Demo(vanilla.View):
     def get(self, *args, **kwargs):
         session_type_name=urllib.unquote_plus(kwargs['session_type'])
 
-        if session_type_name in session_types_as_dict().keys():
+        try:
+            SessionTypeDirectory().get_item(session_type_name)
+        except KeyError:
+            return HttpResponseNotFound('Session type "{}" not found'.format(session_type_name))
+        else:
             if not session_type_name in [st.name for st in demo_enabled_session_types()]:
                 return HttpResponseNotFound('Session type "{}" not enabled for demo'.format(session_type_name))
-        else:
-            return HttpResponseNotFound('Session type "{}" not found'.format(session_type_name))
+
 
         if self.request.is_ajax():
             session = get_session(session_type_name)
