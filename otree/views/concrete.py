@@ -118,8 +118,6 @@ class InitializeSessionExperimenter(vanilla.View):
         return HttpResponseRedirect(SessionExperimenterWaitUntilPlayersAreAssigned.url(self._session_user))
 
     def get(self, *args, **kwargs):
-        session_user_code = kwargs[constants.session_user_code]
-        self.request.session[session_user_code] = {}
 
         self._session_user = get_object_or_404(
             otree.sessionlib.models.SessionExperimenter,
@@ -171,10 +169,10 @@ class InitializeParticipant(vanilla.UpdateView):
 
     def get(self, *args, **kwargs):
 
-        session_user_code = kwargs[constants.session_user_code]
-        self.request.session[session_user_code] = {}
-
-        session_user = get_object_or_404(otree.sessionlib.models.Participant, code=session_user_code)
+        session_user = get_object_or_404(
+            otree.sessionlib.models.Participant,
+            code=kwargs[constants.session_user_code]
+        )
 
         session = session_user.session
         if session.type().assign_to_matches_on_the_fly:
@@ -183,10 +181,7 @@ class InitializeParticipant(vanilla.UpdateView):
 
         session_user.visited = True
         session_user.time_started = django.utils.timezone.now()
-
-        participant = self.request.GET.get(constants.participant_label)
-        if participant is not None:
-            session_user.label = participant
+        session_user.label = self.request.GET.get(constants.participant_label)
 
         if session_user.ip_address == None:
             session_user.ip_address = self.request.META['REMOTE_ADDR']

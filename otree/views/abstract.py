@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 from django.core.urlresolvers import resolve
 
 def get_app_name(request):
-    return request.resolver_match.app_name
+    return request.resolver_match.url_name.split('.')[0]
 
 class OTreeMixin(object):
     """Base mixin class for oTree views.
@@ -57,24 +57,20 @@ class OTreeMixin(object):
         """
         Even though we only use PlayerClass in load_objects,
         we use {Match/Treatment/Subsession}Class elsewhere.
-        We don't need this as long as people have the correct mixins,
-        but it's likely that people will forget to put the mixin.
         """
 
-        app_name = get_app_name(self.request)
+        app_name = self._session_user._current_app_name
         models_module = otree.common.get_models_module(app_name)
         self.SubsessionClass = models_module.Subsession
         self.TreatmentClass = models_module.Treatment
         self.MatchClass = models_module.Match
         self.PlayerClass = models_module.Player
 
-        #FIXME: figure out what to do with this
-        self.UserClass = self.request_session.get(constants.UserClass)
-
     def load_user(self):
-        code = self._session_user.current_user_code
+        code = self._session_user._current_user_code
+        UserClass = self._session_user.vars['UserClass']
         try:
-            self._user = get_object_or_404(self.UserClass, code=code)
+            self._user = get_object_or_404(UserClass, code=code)
         except ValueError:
             raise Http404("This user ({}) does not exist in the database. Maybe the database was recreated.".format(code))
         self.subsession = self._user.subsession
@@ -166,6 +162,9 @@ class NonSequenceUrlMixin(object):
 
 class PlayerMixin(object):
 
+    def get_UserClass(self):
+        return self.PlayerClass
+
     def load_objects(self):
         self.load_user()
         self.player = self._user
@@ -178,6 +177,9 @@ class PlayerMixin(object):
         return [self._user, self._session_user, self.match, self.subsession.session]
 
 class ExperimenterMixin(object):
+
+    def get_UserClass(self):
+        return Experimenter
 
     def load_objects(self):
         self.load_user()
@@ -491,15 +493,6 @@ class ExperimenterSequenceMixin(SequenceMixin):
                'session': self.session}
 
 
-
-class BaseView(OTreeMixin, NonSequenceUrlMixin, vanilla.View):
-    """
-    A basic view that provides no method implementations.
-    """
-    pass
-
-
-
 class PlayerUpdateView(ModelFormMixin, PlayerSequenceMixin, PlayerMixin, vanilla.UpdateView):
 
     # if form_class is not provided, we use an empty form based on StubModel.
@@ -547,38 +540,43 @@ class InitializePlayerOrExperimenter(NonSequenceUrlMixin, vanilla.View):
 
     @load_session_user
     def dispatch(self, request, *args, **kwargs):
+        self.app_name = get_app_name(request)
         return super(InitializePlayerOrExperimenter, self).dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+
+        user_code = self.request.GET.get(constants.user_code)
+
+        UserClass = self.get_UserClass()
+        self._user = get_object_or_404(UserClass, code = user_code)
+        # self._user is a generic name for self.player
+        # they are the same thing, but we use 'user' wherever possible
+        # so that the code can be copy pasted to experimenter code
+
+        self._user.visited = True
+        self._user.time_started = django.utils.timezone.now()
+        self._user.save()
+
+        self._session_user._current_app_name = self.app_name
+        self._session_user.vars['UserClass'] = UserClass
+        self._session_user._current_user_code = user_code
+        self._session_user.save()
+
+        return self.redirect()
+
 
 class InitializePlayer(InitializePlayerOrExperimenter):
     """
     What if I merged this with WaitUntilAssigned?
     """
 
-    def get(self, request, *args, **kwargs):
+    def get_UserClass(self):
+        models_module = otree.common.get_models_module(self.app_name)
+        return models_module.Player
 
-        user_code = self.request.GET.get(constants.user_code)
-
-        self._user = get_object_or_404(self.z_models.Player, code = user_code)
-        # self._user is a generic name for self.player
-        # they are the same thing, but we use 'user' wherever possible
-        # so that the code can be copy pasted to experimenter code
-        self.player = self._user
-        self.subsession = self.player.subsession
-
-        self._user.visited = True
-        self._user.time_started = django.utils.timezone.now()
-
-        self._user.save()
-
+    def redirect(self):
         return HttpResponseRedirect(self._user._pages_as_urls()[0])
 
-    def get_next_player_in_subsession(self):
-        try:
-            return self.z_models.Player.objects.filter(
-                subsession=self.subsession,
-                visited=False)[0]
-        except IndexError:
-            raise IndexError("No Player objects left in the database to assign to new visitor.")
 
 class InitializeExperimenter(InitializePlayerOrExperimenter):
     """
@@ -586,16 +584,10 @@ class InitializeExperimenter(InitializePlayerOrExperimenter):
     for example, in get_object, it checks if it's self.SubsessionClass
     """
 
-    def get(self, request, *args, **kwargs):
-        user_code = self.request.GET[constants.user_code]
+    def get_UserClass(self):
+        return Experimenter
 
-        self._user = get_object_or_404(Experimenter, code = user_code)
-
-        self._user.visited = True
-        self._user.time_started = django.utils.timezone.now()
-
-        self._user.save()
-
+    def redirect(self):
         urls = self._user._pages_as_urls()
         if len(urls) > 0:
             url = urls[0]

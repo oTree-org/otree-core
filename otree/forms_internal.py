@@ -151,14 +151,12 @@ class PlayerModelForm(BaseModelForm):
         self.subsession = kwargs.pop('subsession')
         self.request = kwargs.pop('request')
         self.session = kwargs.pop('session')
-        self.time_limit_was_exceeded = kwargs.pop('time_limit_was_exceeded')
 
 class ExperimenterModelForm(BaseModelForm):
     def process_kwargs(self, kwargs):
         self.subsession = kwargs.pop('subsession')
         self.request = kwargs.pop('request')
         self.session = kwargs.pop('session')
-        self.time_limit_was_exceeded = kwargs.pop('time_limit_was_exceeded')
 
 class StubModelForm(PlayerModelForm):
     class Meta:

@@ -246,6 +246,9 @@ class SessionUser(ModelWithVars):
 
     current_page = models.CharField(max_length=200,null=True)
 
+    _current_user_code = models.CharField()
+    _current_app_name = models.CharField()
+
     def subsessions_completed(self):
         if not self.visited:
             return None
