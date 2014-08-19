@@ -26,6 +26,7 @@ otree/management/commands/create_sessions.py
 otree/management/commands/mturk_pay.py
 otree/management/commands/screenshots.py
 otree/management/commands/test.py
+otree/management/commands/test_all.py
 otree/models/__init__.py
 otree/models/common.py
 otree/models/matches.py

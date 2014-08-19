@@ -26,10 +26,6 @@ class Introduction(Page):
             'my_variable_here': 1,
         }
 
-    def after_valid_form_submission(self):
-        """If all you need to do is save the form to the database,
-        this can be left blank or omitted."""
-
 class ResultsWaitPage(MatchWaitPage):
 
     def after_all_players_arrive(self):

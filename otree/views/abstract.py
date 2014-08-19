@@ -278,7 +278,7 @@ class CheckpointMixin(object):
     def _action(self):
         '''do in a background thread and lock the DB'''
         self._match_or_subsession._mark_checkpoint_complete(self.index_in_pages)
-        self.action()
+        self.after_all_players_arrive()
         for p in self.players_in_match_or_subsession():
             p.save()
         # need to mark complete after the action, in case the action fails
@@ -293,7 +293,7 @@ class CheckpointMixin(object):
         self.update_indexes_in_sequences()
         return self._redirect_to_page_the_user_should_be_on()
 
-    def action(self):
+    def after_all_players_arrive(self):
         pass
 
 class MatchCheckpointMixin(CheckpointMixin):

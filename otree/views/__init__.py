@@ -16,8 +16,8 @@ class MatchWaitPage(abstract.MatchCheckpoint):
     def title_text(self):
         return super(MatchWaitPage, self).title_text()
 
-    def action(self):
-        return super(MatchWaitPage, self).action()
+    def after_all_players_arrive(self):
+        return super(MatchWaitPage, self).after_all_players_arrive()
 
 class SubsessionWaitPage(abstract.SubsessionCheckpoint):
 
@@ -27,8 +27,8 @@ class SubsessionWaitPage(abstract.SubsessionCheckpoint):
     def title_text(self):
         return super(SubsessionWaitPage, self).title_text()
 
-    def action(self):
-        return super(SubsessionWaitPage, self).action()
+    def after_all_players_arrive(self):
+        return super(SubsessionWaitPage, self).after_all_players_arrive()
 
 class Page(abstract.PlayerUpdateView):
     # R: This methods do nothing, could be just deleted
