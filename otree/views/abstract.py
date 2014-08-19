@@ -41,6 +41,11 @@ import sys
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
+from django.core.urlresolvers import resolve
+
+def get_app_name(request):
+    return request.resolver_match.app_name
+
 class OTreeMixin(object):
     """Base mixin class for oTree views.
     Takes care of:
@@ -56,14 +61,18 @@ class OTreeMixin(object):
         but it's likely that people will forget to put the mixin.
         """
 
-        self.SubsessionClass = self.request_session.get(constants.SubsessionClass)
-        self.TreatmentClass = self.request_session.get(constants.TreatmentClass)
-        self.PlayerClass = self.request_session.get(constants.PlayerClass)
-        self.MatchClass = self.request_session.get(constants.MatchClass)
+        app_name = get_app_name(self.request)
+        models_module = otree.common.get_models_module(app_name)
+        self.SubsessionClass = models_module.Subsession
+        self.TreatmentClass = models_module.Treatment
+        self.MatchClass = models_module.Match
+        self.PlayerClass = models_module.Player
+
+        #FIXME: figure out what to do with this
         self.UserClass = self.request_session.get(constants.UserClass)
 
     def load_user(self):
-        code = self.request_session[constants.user_code]
+        code = self._session_user.current_user_code
         try:
             self._user = get_object_or_404(self.UserClass, code=code)
         except ValueError:
@@ -126,9 +135,6 @@ class OTreeMixin(object):
 
         return self._user._pages_as_urls()[self._user.index_in_pages]
 
-    def get_request_session(self):
-        return self.request.session[self._session_user.code]
-
 def load_session_user(dispatch_method):
     def wrapped(self, request, *args, **kwargs):
         session_user_code = kwargs.pop(constants.session_user_code)
@@ -139,10 +145,7 @@ def load_session_user(dispatch_method):
             SessionUserClass = otree.sessionlib.models.SessionExperimenter
 
         self._session_user = get_object_or_404(SessionUserClass, code = session_user_code)
-        self.request_session = self.get_request_session().copy()
-        response = dispatch_method(self, request, *args, **kwargs)
-        self.request.session[self._session_user.code] = copy.deepcopy(self.request_session)
-        return response
+        return dispatch_method(self, request, *args, **kwargs)
     return wrapped
 
 class LoadClassesAndUserMixin(object):
@@ -332,57 +335,6 @@ class SequenceMixin(OTreeMixin):
     def url_pattern(cls):
         return otree.common.url_pattern(cls, True)
 
-    def time_limit_in_seconds(self):
-        return None
-
-    def has_time_limit(self):
-        return bool(self.time_limit_in_seconds())
-
-    def set_time_limit(self, context):
-        page_expiration_times = self.request_session[constants.page_expiration_times]
-        if page_expiration_times.has_key(self.index_in_pages):
-            page_expiration_time = page_expiration_times[self.index_in_pages]
-            if page_expiration_time is None:
-                remaining_seconds = None
-            else:
-                remaining_seconds = max(0, int(page_expiration_times[self.index_in_pages] - time.time()))
-        else:
-            remaining_seconds = self.time_limit_in_seconds()
-
-            if remaining_seconds is None:
-                page_expiration_times[self.index_in_pages] = None
-            elif remaining_seconds > 0:
-                page_expiration_times[self.index_in_pages] = time.time() + remaining_seconds
-            else:
-                raise ValueError("Time limit must be None or a positive number.")
-
-        if remaining_seconds is not None:
-            minutes_component, seconds_component = divmod(remaining_seconds, 60)
-        else:
-            minutes_component, seconds_component = None, None
-
-        time_limit_parameters = {
-            constants.time_limit_minutes_component: str(minutes_component),
-            constants.time_limit_seconds_component: str(seconds_component).zfill(2),
-            constants.time_limit_in_seconds: remaining_seconds,
-        }
-
-        self.request_session[constants.page_expiration_times] = page_expiration_times
-        context.update(time_limit_parameters)
-
-
-
-    def get_time_limit_was_exceeded(self):
-        page_expiration_times = self.request_session[constants.page_expiration_times]
-        page_expiration_time = page_expiration_times[self.index_in_pages]
-
-        if page_expiration_time is None:
-            return False
-        return time.time() > (page_expiration_time + settings.TIME_LIMIT_GRACE_PERIOD_SECONDS)
-
-    def timer_message(self):
-        pass
-
     @method_decorator(never_cache)
     @method_decorator(cache_control(must_revalidate=True, max_age=0, no_cache=True, no_store = True))
     @load_session_user
@@ -409,8 +361,6 @@ class SequenceMixin(OTreeMixin):
                 response = self._redirect_to_page_the_user_should_be_on()
             else:
                 self._session_user.current_page = self.__class__.__name__
-                # by default it's false (e.g. for GET requests), but can be set to True in post() method
-                self.time_limit_was_exceeded = False
                 response = super(SequenceMixin, self).dispatch(request, *args, **kwargs)
             self._session_user.last_request_succeeded = True
             self.save_objects()
@@ -435,8 +385,6 @@ class SequenceMixin(OTreeMixin):
 
 
     def post(self, request, *args, **kwargs):
-        # workaround to bug #18
-        self.time_limit_was_exceeded = False #self.get_time_limit_was_exceeded()
         return super(SequenceMixin, self).post(request, *args, **kwargs)
 
 
@@ -444,12 +392,10 @@ class SequenceMixin(OTreeMixin):
         context = {'form_or_formset': kwargs.get('form') or kwargs.get('formset') or kwargs.get('form_or_formset')}
         context.update(self.variables_for_template() or {})
         context.update(self._variables_for_all_templates())
-        context['timer_message'] = self.timer_message()
 
         if settings.DEBUG:
             context[constants.debug_values] = self.get_debug_values()
 
-        self.set_time_limit(context)
         return context
 
     def get_form(self, data=None, files=None, **kwargs):
@@ -531,8 +477,7 @@ class PlayerSequenceMixin(SequenceMixin):
                'treatment': self.treatment,
                'subsession': self.subsession,
                'request': self.request,
-               'session': self.session,
-               'time_limit_was_exceeded': self.time_limit_was_exceeded}
+               'session': self.session}
 
 
 class ExperimenterSequenceMixin(SequenceMixin):
@@ -543,8 +488,7 @@ class ExperimenterSequenceMixin(SequenceMixin):
     def get_extra_form_kwargs(self):
         return {'subsession': self.subsession,
                'request': self.request,
-               'session': self.session,
-               'time_limit_was_exceeded': self.time_limit_was_exceeded}
+               'session': self.session}
 
 
 
@@ -601,25 +545,6 @@ class InitializePlayerOrExperimenter(NonSequenceUrlMixin, vanilla.View):
         a URL base is the first part of the path, usually the name of the game"""
         return cls.z_models.Subsession.name_in_url
 
-    def initialize_time_limits(self):
-        self.request_session[constants.page_expiration_times] = {}
-
-    def persist_classes(self):
-        """We need these classes so that we can load the objects.
-        We need to store it in cookies,
-        rather than relying on each View knowing its Subsession, Treatment, etc.
-        Although this is the case with the views in the games (which inherit from their Start view),
-        some Views are in a shared module and therefore can be bound to different Subsessions, Treatments, etc.
-        """
-
-        self.request_session[constants.SubsessionClass] = self.z_models.Subsession
-        self.request_session[constants.TreatmentClass] = self.z_models.Treatment
-        self.request_session[constants.PlayerClass] = self.z_models.Player
-        self.request_session[constants.MatchClass] = self.z_models.Match
-
-    def get_request_session(self):
-        return {}
-
     @load_session_user
     def dispatch(self, request, *args, **kwargs):
         return super(InitializePlayerOrExperimenter, self).dispatch(request, *args, **kwargs)
@@ -630,8 +555,6 @@ class InitializePlayer(InitializePlayerOrExperimenter):
     """
 
     def get(self, request, *args, **kwargs):
-        self.request_session = {}
-        self.initialize_time_limits()
 
         user_code = self.request.GET.get(constants.user_code)
 
@@ -646,9 +569,7 @@ class InitializePlayer(InitializePlayerOrExperimenter):
         self._user.time_started = django.utils.timezone.now()
 
         self._user.save()
-        self.request_session[constants.user_code] = self._user.code
 
-        self.persist_classes()
         return HttpResponseRedirect(self._user._pages_as_urls()[0])
 
     def get_next_player_in_subsession(self):
@@ -659,24 +580,13 @@ class InitializePlayer(InitializePlayerOrExperimenter):
         except IndexError:
             raise IndexError("No Player objects left in the database to assign to new visitor.")
 
-    def persist_classes(self):
-        super(InitializePlayer, self).persist_classes()
-        self.request_session[constants.UserClass] = self.z_models.Player
-
 class InitializeExperimenter(InitializePlayerOrExperimenter):
     """
     this needs to be abstract because experimenters also need to access self.PlayerClass, etc.
     for example, in get_object, it checks if it's self.SubsessionClass
     """
 
-    def persist_classes(self):
-        super(InitializeExperimenter, self).persist_classes()
-        self.request_session[constants.UserClass] = Experimenter
-
     def get(self, request, *args, **kwargs):
-        self.request_session = {}
-        self.initialize_time_limits()
-
         user_code = self.request.GET[constants.user_code]
 
         self._user = get_object_or_404(Experimenter, code = user_code)
@@ -685,9 +595,6 @@ class InitializeExperimenter(InitializePlayerOrExperimenter):
         self._user.time_started = django.utils.timezone.now()
 
         self._user.save()
-        self.request_session[constants.user_code] = self._user.code
-
-        self.persist_classes()
 
         urls = self._user._pages_as_urls()
         if len(urls) > 0:
