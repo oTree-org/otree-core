@@ -8,7 +8,7 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version='0.2.162'
+version='0.2.166'
 
 if sys.argv[-1] == 'publish':
 
@@ -43,13 +43,13 @@ setup(
     version=version,
     include_package_data=True,
     license='MIT License',
-    # this was not working right. did not exclude otree.app_template.utilities for some reason.
+    # this was not working right. did not exclude otree.app_template._builtin for some reason.
     # so instead i use recursive-exclude in MANIFEST.in
     packages=find_packages(),
     description='oTree is a toolset that makes it easy to create and administer web-based social science experiments.',
     long_description=README,
     url='http://otree.org/',
-    author='Chris Wickens',
+    author='C. Wickens',
     author_email='c.wickens+otree@googlemail.com',
     install_requires = [
         'django-crispy-forms==1.4.0',
@@ -69,7 +69,7 @@ setup(
         'django-save-the-change==1.0.0',
         'pytz==2013.9',
         'coverage==3.7.1',
-        'django-easymoney==0.3.6',
+        'django-easymoney==0.4',
         'handy==0.3',
     ],
     classifiers=[

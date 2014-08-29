@@ -2,7 +2,7 @@
 import otree.views
 import otree.views.concrete
 import {{ app_name }}.forms as forms
-from {{ app_name }}.utilities import Page, MatchWaitPage, SubsessionWaitPage
+from {{ app_name }}._builtin import Page, MatchWaitPage, SubsessionWaitPage
 from otree.common import Money, money_range
 
 def variables_for_all_templates(self):

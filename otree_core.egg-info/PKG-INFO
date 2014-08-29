@@ -1,14 +1,12 @@
 Metadata-Version: 1.1
 Name: otree-core
-Version: 0.2.162
+Version: 0.2.165
 Summary: oTree is a toolset that makes it easy to create and administer web-based social science experiments.
 Home-page: http://otree.org/
-Author: Chris Wickens
+Author: C. Wickens
 Author-email: c.wickens+otree@googlemail.com
 License: MIT License
 Description: [Homepage](http://www.otree.org/)
-        
-        [Documentation](https://github.com/wickens/django-otree-docs/wiki)
         
 Platform: UNKNOWN
 Classifier: Environment :: Web Environment

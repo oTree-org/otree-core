@@ -162,6 +162,7 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
         'Participant': {
             'label',
             'ip_address',
+            #'_time_spent_on_each_page',
         },
     }[Model.__name__]
 
@@ -550,7 +551,7 @@ class SessionAdmin(OTreeBaseModelAdmin):
 def autodiscover():
     """
     This function is copied from django 1.6's django/contrib/admin/__init__.py
-    I'm modifying it to look instead for utilities.admin.
+    I'm modifying it to look instead for _builtin.admin.
     In Django 1.7, I will want to use django.utils.module_loading.autodiscover_modules,
     which is better abstracted.
     """
@@ -563,7 +564,7 @@ def autodiscover():
 
     for app in settings.INSTALLED_APPS:
         if app in settings.INSTALLED_OTREE_APPS:
-            admin_module_dotted_path = 'utilities.admin'
+            admin_module_dotted_path = '_builtin.admin'
         else:
             admin_module_dotted_path = 'admin'
 

@@ -45,7 +45,7 @@ def non_subsession_apps(apps):
 
 @register.inclusion_tag('admin/_dashboard_app_template.html', takes_context=True)
 def mock_data_export_app(context):
-    context["app"] = {"app_label": "utilities", "app_url": "", "name": _("Utilities"),
+    context["app"] = {"app_label": "_builtin", "app_url": "", "name": _("_builtin"),
             "dont_link_app_name": True,
             "models": [
                 {"object_name": "dataexport",

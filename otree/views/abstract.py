@@ -427,6 +427,7 @@ class SequenceMixin(OTreeMixin):
 
     def update_indexes_in_sequences(self):
         if self.index_in_pages == self._user.index_in_pages:
+            self._record_page_visit_time()
             self._user.index_in_pages += 1
             if self._user.index_in_pages >= len(self._user._pages_as_urls()):
                 self.update_index_in_subsessions()
@@ -438,6 +439,25 @@ class SequenceMixin(OTreeMixin):
 
     def participate_condition(self):
         return True
+
+    def _record_page_visit_time(self):
+        page_visit_times = self._session_user._time_spent_on_each_page
+        now = django.utils.timezone.now()
+
+
+        time_on_this_page = int((now - self._session_user._last_page_timestamp).total_seconds())
+        self._session_user._last_page_timestamp = now
+
+        app_name = self.subsession.app_name,
+        round_number = self.subsession.round_number
+        page_name = self.__class__.__name__
+
+        if self._user.subsession.number_of_rounds > 1:
+            page_description = '{} round {}: {}'.format(app_name, round_number, page_name)
+        else:
+            page_description = '{}: {}'.format(app_name, page_name)
+
+        page_visit_times.append((page_description, '{}sec'.format(time_on_this_page)))
 
 class ModelFormMixin(object):
     """mixin rather than subclass because we want these methods only to be first in MRO"""
@@ -554,7 +574,6 @@ class InitializePlayerOrExperimenter(NonSequenceUrlMixin, vanilla.View):
         # so that the code can be copy pasted to experimenter code
 
         self._user.visited = True
-        self._user.time_started = django.utils.timezone.now()
         self._user.save()
 
         self._session_user._current_app_name = self.app_name

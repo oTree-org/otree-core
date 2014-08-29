@@ -48,7 +48,7 @@ def augment_urlpatterns(urlpatterns):
     urlpatterns += staticfiles_urlpatterns()
     for app_name in settings.INSTALLED_OTREE_APPS:
         views_module_name = '{}.views'.format(app_name)
-        utilities_module_name = '{}.utilities'.format(app_name)
+        utilities_module_name = '{}._builtin'.format(app_name)
         urlpatterns += url_patterns_from_module(views_module_name)
         urlpatterns += url_patterns_from_module(utilities_module_name)
     urlpatterns += url_patterns_from_module('otree.views.concrete')

@@ -76,7 +76,7 @@ If a session has 4 subsessions, for each person there will be 1 sess
 
 
 def get_data_export_fields(app_label):
-    admin_module = import_module('{}.utilities.admin'.format(app_label))
+    admin_module = import_module('{}._builtin.admin'.format(app_label))
     app_models_module = import_module('{}.models'.format(app_label))
     export_info = {}
     for model_name in MODEL_NAMES:

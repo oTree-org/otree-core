@@ -62,7 +62,7 @@ class WaitUntilAssignedToMatch(PlayerSequenceMixin, PlayerMixin, WaitPageMixin, 
         return self.match and self.treatment
 
     def body_text(self):
-        return 'Waiting until player is assigned to match and treatment.'
+        return 'Waiting until other participants and/or the experimenter are ready.'
 
     def _redirect_after_complete(self):
         self.update_indexes_in_sequences()
@@ -186,6 +186,9 @@ class InitializeParticipant(vanilla.UpdateView):
         if session_user.ip_address == None:
             session_user.ip_address = self.request.META['REMOTE_ADDR']
 
+        now = django.utils.timezone.now()
+        session_user.time_started = now
+        session_user._last_page_timestamp = now
         session_user.save()
 
         return HttpResponseRedirect(session_user.me_in_first_subsession._start_url())
