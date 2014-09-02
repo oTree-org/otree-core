@@ -7,19 +7,32 @@ import django.db.models
 import easymoney
 from otree.common import expand_choice_tuples, _MoneyInput
 
-def fix_choices_arg(kwargs):
-    '''allows the programmer to define choices as a list of values rather than (value, display_value)'''
-    choices = kwargs.get('choices')
-    if not choices:
-        return
-    choices = expand_choice_tuples(choices)
-    kwargs['choices'] = choices
 
 
-class _OtreeModelFieldMixin(object):
-    def __init__(self, *args,  **kwargs):
+class _BOtreeModelFieldMixin(object):
+    def fix_choices_arg(self, kwargs):
+        '''allows the programmer to define choices as a list of values rather than (value, display_value)'''
+        choices = kwargs.get('choices')
+        if not choices:
+            return
+        choices = expand_choice_tuples(choices)
+        kwargs['choices'] = choices
+
+    def set_otree_properties(self, kwargs):
         self.doc = kwargs.pop('doc', None)
-        fix_choices_arg(kwargs)
+
+        # for quiz questions
+        self.correct_answer = kwargs.pop('correct_answer', None)
+        self.correct_answer_explanation = kwargs.pop('correct_answer_explanation', None)
+
+    def __init__(self, *args,  **kwargs):
+        self.set_otree_properties(kwargs)
+        self.fix_choices_arg(kwargs)
+        super(_BOtreeModelFieldMixin, self).__init__(*args, **kwargs)
+
+
+class _OtreeNullableModelFieldMixin(_BOtreeModelFieldMixin):
+    def __init__(self, *args,  **kwargs):
         kwargs.setdefault('null',True)
 
         # if default=None, Django will omit the blank choice from form widget
@@ -29,21 +42,18 @@ class _OtreeModelFieldMixin(object):
         # setting null=True already should make the field null
         if kwargs.has_key('default') and kwargs['default'] is None:
             kwargs.pop('default')
-        super(_OtreeModelFieldMixin, self).__init__(*args, **kwargs)
-
-class _OtreeNotNullableModelFieldMixin(object):
-    def __init__(self, *args,  **kwargs):
-        self.doc = kwargs.pop('doc', None)
-        fix_choices_arg(kwargs)
-        super(_OtreeNotNullableModelFieldMixin, self).__init__(*args, **kwargs)
+        super(_OtreeNullableModelFieldMixin, self).__init__(*args, **kwargs)
 
 
-class MoneyField(_OtreeModelFieldMixin, easymoney.MoneyField):
+class _OtreeNotNullableModelFieldMixin(_BOtreeModelFieldMixin):
+    pass
+
+class MoneyField(_OtreeNullableModelFieldMixin, easymoney.MoneyField):
     widget = _MoneyInput
 
 
 
-class NullBooleanField(_OtreeModelFieldMixin, NullBooleanField):
+class NullBooleanField(_OtreeNullableModelFieldMixin, NullBooleanField):
     # 2014/3/28: i just define the allowable choices on the model field, instead of customizing the widget
     # since then it works for any widget
 
@@ -55,99 +65,99 @@ class NullBooleanField(_OtreeModelFieldMixin, NullBooleanField):
             )
         super(NullBooleanField, self).__init__(*args, **kwargs)
 
-class AutoField(_OtreeModelFieldMixin, AutoField):
+class AutoField(_OtreeNullableModelFieldMixin, AutoField):
     pass
 
-class BigIntegerField(_OtreeModelFieldMixin, BigIntegerField):
+class BigIntegerField(_OtreeNullableModelFieldMixin, BigIntegerField):
     pass
 
-class BinaryField(_OtreeModelFieldMixin, BinaryField):
+class BinaryField(_OtreeNullableModelFieldMixin, BinaryField):
     pass
 
 class BooleanField(_OtreeNotNullableModelFieldMixin, BooleanField):
     pass
 
-class CharField(_OtreeModelFieldMixin, CharField):
+class CharField(_OtreeNullableModelFieldMixin, CharField):
     def __init__(self, *args,  **kwargs):
         kwargs.setdefault('max_length',500)
         super(CharField, self).__init__(*args, **kwargs)
 
 
-class CommaSeparatedIntegerField(_OtreeModelFieldMixin, CommaSeparatedIntegerField):
+class CommaSeparatedIntegerField(_OtreeNullableModelFieldMixin, CommaSeparatedIntegerField):
     pass
 
-class DateField(_OtreeModelFieldMixin, DateField):
+class DateField(_OtreeNullableModelFieldMixin, DateField):
     pass
 
-class DateTimeField(_OtreeModelFieldMixin, DateTimeField):
+class DateTimeField(_OtreeNullableModelFieldMixin, DateTimeField):
     pass
 
-class DecimalField(_OtreeModelFieldMixin, DecimalField):
+class DecimalField(_OtreeNullableModelFieldMixin, DecimalField):
     pass
 
-class EmailField(_OtreeModelFieldMixin, EmailField):
+class EmailField(_OtreeNullableModelFieldMixin, EmailField):
     pass
 
-class FileField(_OtreeModelFieldMixin, FileField):
+class FileField(_OtreeNullableModelFieldMixin, FileField):
     pass
 
-class FilePathField(_OtreeModelFieldMixin, FilePathField):
-    pass
-
-
-class FloatField(_OtreeModelFieldMixin, FloatField):
+class FilePathField(_OtreeNullableModelFieldMixin, FilePathField):
     pass
 
 
-class ImageField(_OtreeModelFieldMixin, ImageField):
+class FloatField(_OtreeNullableModelFieldMixin, FloatField):
     pass
 
 
-class IntegerField(_OtreeModelFieldMixin, IntegerField):
+class ImageField(_OtreeNullableModelFieldMixin, ImageField):
     pass
 
 
-class IPAddressField(_OtreeModelFieldMixin, IPAddressField):
+class IntegerField(_OtreeNullableModelFieldMixin, IntegerField):
     pass
 
 
-class GenericIPAddressField(_OtreeModelFieldMixin, GenericIPAddressField):
+class IPAddressField(_OtreeNullableModelFieldMixin, IPAddressField):
     pass
 
 
-class PositiveIntegerField(_OtreeModelFieldMixin, PositiveIntegerField):
+class GenericIPAddressField(_OtreeNullableModelFieldMixin, GenericIPAddressField):
     pass
 
 
-class PositiveSmallIntegerField(_OtreeModelFieldMixin, PositiveSmallIntegerField):
+class PositiveIntegerField(_OtreeNullableModelFieldMixin, PositiveIntegerField):
     pass
 
 
-class SlugField(_OtreeModelFieldMixin, SlugField):
+class PositiveSmallIntegerField(_OtreeNullableModelFieldMixin, PositiveSmallIntegerField):
     pass
 
 
-class SmallIntegerField(_OtreeModelFieldMixin, SmallIntegerField):
+class SlugField(_OtreeNullableModelFieldMixin, SlugField):
     pass
 
 
-class TextField(_OtreeModelFieldMixin, TextField):
+class SmallIntegerField(_OtreeNullableModelFieldMixin, SmallIntegerField):
     pass
 
 
-class TimeField(_OtreeModelFieldMixin, TimeField):
+class TextField(_OtreeNullableModelFieldMixin, TextField):
     pass
 
 
-class URLField(_OtreeModelFieldMixin, URLField):
+class TimeField(_OtreeNullableModelFieldMixin, TimeField):
+    pass
+
+
+class URLField(_OtreeNullableModelFieldMixin, URLField):
     pass
 
 
 
-class ManyToManyField(_OtreeModelFieldMixin, ManyToManyField):
+class ManyToManyField(_OtreeNullableModelFieldMixin, ManyToManyField):
     pass
 
 
-class OneToOneField(_OtreeModelFieldMixin, OneToOneField):
+class OneToOneField(_OtreeNullableModelFieldMixin, OneToOneField):
     pass
 
