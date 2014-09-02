@@ -152,6 +152,9 @@ class BasePlayer(players.BasePlayer):
     def other_players_in_subsession(self):
         return [p for p in self.subsession.players if p != self]
 
+    def get_quiz_question(self, field_name):
+        return super(BasePlayer, self).get_quiz_question(field_name)
+
 
     class Meta:
         abstract = True

@@ -1,6 +1,15 @@
 from otree.user.models import User
 import otree.common
 
+class _QuizResult(object):
+
+    def __init__(self, verbose_name, player_answer, correct_answer, correct_answer_explanation):
+        self.verbose_name = verbose_name
+        self.player_answer = player_answer
+        self.correct_answer = correct_answer
+        self.correct_answer_explanation = correct_answer_explanation
+        self.is_correct = player_answer == correct_answer
+
 class BasePlayer(User):
     """
     Base class for all players.
@@ -70,4 +79,14 @@ class BasePlayer(User):
         return '{}/{} pages'.format(
             self.index_in_pages,
             len(self._pages())
+        )
+
+    def get_quiz_question(self, field_name):
+        field = self._meta.get_field_by_name(field_name)[0]
+        player_answer = getattr(self, field_name)
+        return _QuizResult(
+            verbose_name = field.verbose_name,
+            player_answer = player_answer,
+            correct_answer = field.correct_answer,
+            correct_answer_explanation = field.correct_answer_explanation
         )
