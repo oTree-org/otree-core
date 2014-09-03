@@ -15,6 +15,8 @@ class BasePlayer(User):
     Base class for all players.
     """
 
+
+
     def _me_in_other_subsession(self, other_subsession):
         for p in other_subsession.player_set.all():
             if p.participant == self.participant:

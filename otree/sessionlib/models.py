@@ -11,14 +11,9 @@ from otree.common import currency
 import otree.common
 from otree.common import directory_name
 from easymoney import Money
-from handy.models import PickleField
+
 from django_extensions.db.fields.json import JSONField
 
-
-class VarsField(PickleField):
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault('default', lambda: collections.defaultdict(list))
-        super(VarsField, self).__init__(*args, **kwargs)
 
 
 # R: You really need this only if you are using save_the_change,

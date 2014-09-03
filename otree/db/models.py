@@ -7,9 +7,14 @@ import django.db.models
 import easymoney
 from otree.common import expand_choice_tuples, _MoneyInput
 
+from handy.models import PickleField
+class VarsField(PickleField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('default', lambda: collections.defaultdict(list))
+        super(VarsField, self).__init__(*args, **kwargs)
 
 
-class _BOtreeModelFieldMixin(object):
+class _OtreeModelFieldMixin(object):
     def fix_choices_arg(self, kwargs):
         '''allows the programmer to define choices as a list of values rather than (value, display_value)'''
         choices = kwargs.get('choices')
@@ -28,10 +33,10 @@ class _BOtreeModelFieldMixin(object):
     def __init__(self, *args,  **kwargs):
         self.set_otree_properties(kwargs)
         self.fix_choices_arg(kwargs)
-        super(_BOtreeModelFieldMixin, self).__init__(*args, **kwargs)
+        super(_OtreeModelFieldMixin, self).__init__(*args, **kwargs)
 
 
-class _OtreeNullableModelFieldMixin(_BOtreeModelFieldMixin):
+class _OtreeNullableModelFieldMixin(_OtreeModelFieldMixin):
     def __init__(self, *args,  **kwargs):
         kwargs.setdefault('null',True)
 
@@ -45,7 +50,7 @@ class _OtreeNullableModelFieldMixin(_BOtreeModelFieldMixin):
         super(_OtreeNullableModelFieldMixin, self).__init__(*args, **kwargs)
 
 
-class _OtreeNotNullableModelFieldMixin(_BOtreeModelFieldMixin):
+class _OtreeNotNullableModelFieldMixin(_OtreeModelFieldMixin):
     pass
 
 class MoneyField(_OtreeNullableModelFieldMixin, easymoney.MoneyField):
