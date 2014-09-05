@@ -91,7 +91,7 @@ class BaseClient(django.test.client.Client):
         self._submit_core(ViewClass, data)
 
         if self.page_redisplayed_with_errors():
-            errors = ['{}: {}'.format(key, repr(value)) for key, value in self.response.context_data['form_or_formset'].errors.items()]
+            errors = ['{}: {}'.format(key, repr(value)) for key, value in self.response.context_data['form'].errors.items()]
             raise Exception(
                 ('Input was rejected.\n'
                 'Path: {}\n'

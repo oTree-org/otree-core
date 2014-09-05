@@ -1,7 +1,5 @@
-from django import forms
+import floppyforms.__future__ as forms
 from django.utils.translation import ugettext as _
-import crispy_forms.helper
-from crispy_forms.layout import Submit, Layout, Fieldset
 import copy
 import otree.common
 import otree.models.common
@@ -11,7 +9,8 @@ from otree.db import models
 import easymoney
 
 
-
+#FIXME: port these to floppyforms
+'''
 class FormHelper(crispy_forms.helper.FormHelper):
     def __init__(self, *args, **kwargs):
         super(FormHelper, self).__init__(*args, **kwargs)
@@ -20,21 +19,9 @@ class FormHelper(crispy_forms.helper.FormHelper):
         self.add_input(Submit('submit',
                      _('Next'), #TODO: make this customizable
                      css_class='btn-large btn-primary'))
-
+'''
 
 class BaseModelForm(forms.ModelForm):
-
-    def layout(self):
-        """Child classes can override this to customize form layout using crispy-forms"""
-        order = self.order()
-
-        if order:
-            return Layout(
-                Fieldset(
-                    '',
-                    *order
-                )
-            )
 
     def defaults(self):
         """Return a dict of any initial values"""
@@ -45,9 +32,6 @@ class BaseModelForm(forms.ModelForm):
 
     def labels(self):
         return {}
-
-    def order(self):
-        pass
 
 
     def __init__(self, *args, **kwargs):
@@ -63,19 +47,19 @@ class BaseModelForm(forms.ModelForm):
             If the DB field's value is None and the user did not specify an inital value, nothing should be selected by default.
             This will conceptually match a dropdown.
         """
-        self.process_kwargs(kwargs)
         kwargs.setdefault('initial', {}).update(self.defaults())
         super(BaseModelForm, self).__init__(*args, **kwargs)
 
-        for field_name, choices in self.choices().items():
-            choices = otree.common.expand_choice_tuples(choices)
+        for field_name in self.fields:
+            if hasattr(self.instance, '%s_choices' % field_name):
+                choices = getattr(self.instance, '%s_choices' % field_name)()
+                choices = otree.common.expand_choice_tuples(choices)
 
-            model_field = self.instance._meta.get_field(field_name)
-            model_field_copy = copy.copy(model_field)
-            model_field_copy._choices = choices
+                model_field = self.instance._meta.get_field(field_name)
+                model_field_copy = copy.copy(model_field)
+                model_field_copy._choices = choices
 
-            self.fields[field_name] = model_field_copy.formfield()
-
+                self.fields[field_name] = model_field_copy.formfield()
 
         for field_name, label in self.labels().items():
             self.fields[field_name].label = label
@@ -90,9 +74,6 @@ class BaseModelForm(forms.ModelForm):
                 if field.choices[0][0] in {u'', None}:
                     field.choices = field.choices[1:]
 
-        # crispy forms
-        self.helper = FormHelper()
-        self.helper.layout = self.layout()
 
     def null_boolean_field_names(self):
         null_boolean_fields_in_model = [field.name for field in self.Meta.model._meta.fields if isinstance(field, models.NullBooleanField)]
@@ -126,8 +107,8 @@ class BaseModelForm(forms.ModelForm):
                 else:
                     value = field.clean(value)
                 self.cleaned_data[name] = value
-                if hasattr(self, '%s_error_message' % name):
-                    error_string = getattr(self, '%s_error_message' % name)(value)
+                if hasattr(self.instance, '%s_error_message' % name):
+                    error_string = getattr(self.instance, '%s_error_message' % name)(value)
                     if error_string:
                         self._errors[name] = self.error_class([error_string])
                         if name in self.cleaned_data:
@@ -140,31 +121,4 @@ class BaseModelForm(forms.ModelForm):
                 self._errors[name] = self.error_class(e.messages)
                 if name in self.cleaned_data:
                     del self.cleaned_data[name]
-
-class PlayerModelForm(BaseModelForm):
-    """i.e. player modelform."""
-
-    def process_kwargs(self, kwargs):
-        self.player = kwargs.pop('player')
-        self.match = kwargs.pop('match')
-        self.treatment = kwargs.pop('treatment')
-        self.subsession = kwargs.pop('subsession')
-        self.request = kwargs.pop('request')
-        self.session = kwargs.pop('session')
-
-class ExperimenterModelForm(BaseModelForm):
-    def process_kwargs(self, kwargs):
-        self.subsession = kwargs.pop('subsession')
-        self.request = kwargs.pop('request')
-        self.session = kwargs.pop('session')
-
-class StubModelForm(PlayerModelForm):
-    class Meta:
-        model = otree.sessionlib.models.StubModel
-        fields = []
-
-class ExperimenterStubModelForm(ExperimenterModelForm):
-    class Meta:
-        model = otree.sessionlib.models.StubModel
-        fields = []
 
