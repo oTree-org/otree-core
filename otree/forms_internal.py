@@ -23,17 +23,6 @@ class FormHelper(crispy_forms.helper.FormHelper):
 
 class BaseModelForm(forms.ModelForm):
 
-    def defaults(self):
-        """Return a dict of any initial values"""
-        return {}
-
-    def choices(self):
-        return {}
-
-    def labels(self):
-        return {}
-
-
     def __init__(self, *args, **kwargs):
         """
         Special handling for 'choices' argument, NullBooleanFields, and initial choice:
@@ -47,8 +36,9 @@ class BaseModelForm(forms.ModelForm):
             If the DB field's value is None and the user did not specify an inital value, nothing should be selected by default.
             This will conceptually match a dropdown.
         """
-        kwargs.setdefault('initial', {}).update(self.defaults())
+
         super(BaseModelForm, self).__init__(*args, **kwargs)
+
 
         for field_name in self.fields:
             if hasattr(self.instance, '%s_choices' % field_name):
@@ -60,9 +50,9 @@ class BaseModelForm(forms.ModelForm):
                 model_field_copy._choices = choices
 
                 self.fields[field_name] = model_field_copy.formfield()
+            if hasattr(self.instance, '%s_label' % field_name):
+                self.fields[field_name].label = getattr(self.instance, '%s_label' % field_name)()
 
-        for field_name, label in self.labels().items():
-            self.fields[field_name].label = label
 
         for field_name in self.fields:
             field = self.fields[field_name]

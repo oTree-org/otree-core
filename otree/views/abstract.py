@@ -468,7 +468,7 @@ class ModelFormMixin(object):
     fields = []
 
     def get_form_class(self):
-        return floppyforms.__future__.models.modelform_factory(self.form_model, fields=self.form_fields, form=BaseModelForm, formfield_callback=floppyforms.__future__.models.formfield_callback)
+        return model_forms.modelform_factory(self.form_model, fields=self.form_fields, form=BaseModelForm)
 
 
     def after_valid_form_submission(self):

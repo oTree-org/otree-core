@@ -51,8 +51,8 @@ class Page(abstract.PlayerUpdateView):
 
     # prefix with "form_" so that it's clear these refer to the form
     # otherwise someone might confuse 'fields' with variables_for_template
-    form_model = Page.model
-    form_fields = Page.fields
+    form_model = abstract.PlayerUpdateView.model
+    form_fields = abstract.PlayerUpdateView.fields
 
 class ExperimenterPage(abstract.ExperimenterUpdateView):
 
