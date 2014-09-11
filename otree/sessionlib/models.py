@@ -20,7 +20,7 @@ from django_extensions.db.fields.json import JSONField
 #    which is not used for Session and SessionUser,
 #    Otherwise you can just
 class ModelWithVars(models.Model):
-    vars = VarsField()
+    vars = models.PickleField(default=lambda:{})
 
     class Meta:
         abstract = True
@@ -163,8 +163,10 @@ class Session(ModelWithVars):
         first_subsession_players = self.first_subsession.players
 
         for i in range(num_participants):
-            participants[i].me_in_first_subsession = first_subsession_players[i]
-            participants[i].save()
+            player = first_subsession_players[i]
+            participant = player.participant
+            participant.me_in_first_subsession = player
+            participant.save()
 
         for subsession_index in range(len(subsessions) - 1):
             players_left = subsessions[subsession_index].players
@@ -238,7 +240,7 @@ class SessionUser(ModelWithVars):
     ip_address = models.IPAddressField(null = True)
 
     # stores when the page was first visited
-    _time_spent_on_each_page = PickleField(default=lambda:[])
+    _time_spent_on_each_page = models.PickleField(default=lambda:[])
     _last_page_timestamp = models.DateTimeField(null=True)
 
     is_on_wait_page = models.BooleanField(default=False)

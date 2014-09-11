@@ -191,7 +191,15 @@ class InitializeParticipant(vanilla.UpdateView):
         session_user._last_page_timestamp = now
         session_user.save()
 
-        return HttpResponseRedirect(session_user.me_in_first_subsession._start_url())
+
+        print 'in InitializeParticipant. code: {}'.format(session_user.code)
+        print 'in InitializeParticipant. pk: {}'.format(session_user.pk)
+        print 'in InitializeParticipant, last time stamp: {}'.format(session_user._last_page_timestamp)
+
+        start_url = session_user.me_in_first_subsession._start_url()
+        print 'in InitializeParticipant, start url: {}'.format(start_url)
+
+        return HttpResponseRedirect(start_url)
 
 #TODO: surface these URLs in the UI somewhere
 class AssignVisitorToOpenSessionMTurk(AssignVisitorToOpenSession):

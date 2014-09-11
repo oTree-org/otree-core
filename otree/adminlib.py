@@ -513,7 +513,6 @@ class SessionAdmin(OTreeBaseModelAdmin):
 
     def payments(self, request, pk):
         session = self.model.objects.get(pk=pk)
-        participant = session.participants()
         total_payments = sum(participant.total_pay() or 0 for participant in session.participants())
 
         try:

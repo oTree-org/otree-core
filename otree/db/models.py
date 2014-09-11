@@ -6,13 +6,7 @@ from django.utils.text import capfirst
 import django.db.models
 import easymoney
 from otree.common import expand_choice_tuples, _MoneyInput
-
 from handy.models import PickleField
-class VarsField(PickleField):
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault('default', lambda: collections.defaultdict(list))
-        super(VarsField, self).__init__(*args, **kwargs)
-
 
 class _OtreeModelFieldMixin(object):
     def fix_choices_arg(self, kwargs):

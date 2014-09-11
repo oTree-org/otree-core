@@ -580,7 +580,9 @@ class InitializePlayerOrExperimenter(NonSequenceUrlMixin, vanilla.View):
         self._session_user.vars['UserClass'] = UserClass
         self._session_user._current_user_code = user_code
         self._session_user.save()
-
+        print 'in InitializePlayer. code: {}'.format(self._session_user.code)
+        print 'in InitializePlayer. pk: {}'.format(self._session_user.pk)
+        print 'in InitializePlayer, last time stamp: {}'.format(self._session_user._last_page_timestamp)
         return self.redirect()
 
 

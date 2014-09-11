@@ -120,12 +120,12 @@ def create_session(type_name, label='', special_category=None):
             subsession.save()
 
             for i in range(participants_per_session):
-                participant = models_module.Player(
+                player = models_module.Player(
                     subsession = subsession,
                     session = session,
                     participant = participants[i]
                 )
-                participant.save()
+                player.save()
 
             if session.type().assign_to_matches_on_the_fly:
                 # create matches at the beginning because we will not need to delete players
