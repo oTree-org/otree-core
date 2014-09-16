@@ -52,7 +52,7 @@ setup(
     author='C. Wickens',
     author_email='c.wickens+otree@googlemail.com',
     install_requires = [
-        'django-floppyforms'
+        'django-floppyforms',
         'Django == 1.6.1',
         'django-vanilla-views==1.0.2',
         'Babel==1.3',
