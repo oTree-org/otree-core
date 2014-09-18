@@ -5,6 +5,7 @@ from django.forms import models as django_model_forms
 from django.utils.translation import ugettext as _
 import copy
 import otree.common
+import otree.formfields
 import otree.models.common
 import otree.sessionlib.models
 import otree.constants
@@ -110,6 +111,10 @@ FORMFIELD_OVERRIDES.update({
 
     RandomCharField: {
         'form_class': forms.CharField,
+        'choices_form_class': forms.TypedChoiceField},
+
+    models.MoneyField: {
+        'form_class': otree.formfields.MoneyField,
         'choices_form_class': forms.TypedChoiceField},
 
 })
@@ -237,4 +242,3 @@ class BaseModelForm(forms.ModelForm):
                 self._errors[name] = self.error_class(e.messages)
                 if name in self.cleaned_data:
                     del self.cleaned_data[name]
-

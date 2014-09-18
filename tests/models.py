@@ -1,3 +1,4 @@
+from otree.common import money_range
 from otree.db import models
 import otree.models
 
@@ -9,7 +10,6 @@ class SimpleModel(otree.models.BaseMatch):
 
 
 class FormFieldModel(otree.models.BaseMatch):
-    money = models.MoneyField()
     null_boolean = models.NullBooleanField()
     big_integer = models.BigIntegerField()
     boolean = models.BooleanField()
@@ -35,4 +35,7 @@ class FormFieldModel(otree.models.BaseMatch):
     many_to_many = models.ManyToManyField('SimpleModel')
     one_to_one = models.OneToOneField('SimpleModel')
 
+    money = models.MoneyField()
     random_char = RandomCharField()
+
+    sent_amount = models.MoneyField(choices=money_range(0, 0.75))
