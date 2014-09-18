@@ -1,6 +1,8 @@
 from otree.db import models
 import otree.models
 
+from otree.fields import RandomCharField
+
 
 class SimpleModel(otree.models.BaseMatch):
     name = models.CharField()
@@ -32,3 +34,5 @@ class FormFieldModel(otree.models.BaseMatch):
     url = models.URLField()
     many_to_many = models.ManyToManyField('SimpleModel')
     one_to_one = models.OneToOneField('SimpleModel')
+
+    random_char = RandomCharField()

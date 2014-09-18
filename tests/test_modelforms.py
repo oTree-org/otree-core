@@ -38,3 +38,6 @@ class UseFloppyformWidgetsTests(TestCase):
         self.assertEqual(TestModelForm.base_fields['url'].__class__, floppyforms.URLField)
         self.assertEqual(TestModelForm.base_fields['many_to_many'].__class__, floppyforms.ModelMultipleChoiceField)
         self.assertEqual(TestModelForm.base_fields['one_to_one'].__class__, floppyforms.ModelChoiceField)
+
+    def test_custom_fields(self):
+        self.assertEqual(TestModelForm.base_fields['random_char'].__class__, floppyforms.CharField)

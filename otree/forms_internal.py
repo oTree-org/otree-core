@@ -8,6 +8,7 @@ import otree.models.common
 import otree.sessionlib.models
 import otree.constants
 from otree.db import models
+from otree.fields import RandomCharField
 import easymoney
 
 
@@ -27,6 +28,8 @@ class FormHelper(crispy_forms.helper.FormHelper):
 FORMFIELD_OVERRIDES = FLOPPYFORMS_FORMFIELD_OVERRIDES.copy()
 
 FORMFIELD_OVERRIDES.update({
+    # Overrides from fields defined in otree.db.models
+
     models.NullBooleanField: {
         'form_class': forms.NullBooleanField,
         'choices_form_class': forms.TypedChoiceField},
@@ -101,6 +104,13 @@ FORMFIELD_OVERRIDES.update({
     models.OneToOneField: {
         'form_class': forms.ModelChoiceField,
         'choices_form_class': forms.TypedChoiceField},
+
+    # Other custom db fields used in otree.
+
+    RandomCharField: {
+        'form_class': forms.CharField,
+        'choices_form_class': forms.TypedChoiceField},
+
 })
 
 
