@@ -1,12 +1,10 @@
 from django.db.models import *
-from django.db import models as django_models
 import django.forms.widgets
 from django.utils.translation import ugettext_lazy
 import django.forms.fields
 from django.utils.text import capfirst
 import django.db.models
 import easymoney
-import floppyforms.__future__ as forms
 from otree.common import expand_choice_tuples, _MoneyInput
 
 
@@ -79,14 +77,10 @@ class BinaryField(_OtreeNullableModelFieldMixin, BinaryField):
 class BooleanField(_OtreeNotNullableModelFieldMixin, BooleanField):
     pass
 
-class CharField(_OtreeNullableModelFieldMixin, django_models.CharField):
+class CharField(_OtreeNullableModelFieldMixin, CharField):
     def __init__(self, *args,  **kwargs):
         kwargs.setdefault('max_length',500)
         super(CharField, self).__init__(*args, **kwargs)
-
-    def formfield(self, **kwargs):
-        kwargs.setdefault('form_class', forms.CharField)
-        return super(CharField, self).formfield(**kwargs)
 
 
 class CommaSeparatedIntegerField(_OtreeNullableModelFieldMixin, CommaSeparatedIntegerField):
