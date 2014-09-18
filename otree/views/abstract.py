@@ -7,7 +7,7 @@ from threading import Thread
 import time
 import logging
 from datetime import datetime
-from otree.forms_internal import BaseModelForm
+from otree.forms_internal import BaseModelForm, formfield_callback
 from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
@@ -37,7 +37,6 @@ import otree.sessionlib.models
 from otree.sessionlib.models import Participant
 from Queue import Queue
 import sys
-from django.forms import models as model_forms
 import floppyforms.__future__.models
 
 # Get an instance of a logger
@@ -468,7 +467,10 @@ class ModelFormMixin(object):
     fields = []
 
     def get_form_class(self):
-        return model_forms.modelform_factory(self.form_model, fields=self.form_fields, form=BaseModelForm)
+        form_class = otree.forms_internal.modelform_factory(
+            self.form_model, fields=self.form_fields, form=BaseModelForm,
+            formfield_callback=formfield_callback)
+        return form_class
 
 
     def after_valid_form_submission(self):

@@ -1,6 +1,7 @@
 import floppyforms.__future__ as forms
 from floppyforms.__future__.models import FORMFIELD_OVERRIDES as FLOPPYFORMS_FORMFIELD_OVERRIDES
 from floppyforms.__future__.models import ModelFormMetaclass as FloppyformsModelFormMetaclass
+from django.forms import models as django_model_forms
 from django.utils.translation import ugettext as _
 import copy
 import otree.common
@@ -120,6 +121,19 @@ def formfield_callback(db_field, **kwargs):
     return db_field.formfield(**defaults)
 
 
+def modelform_factory(*args, **kwargs):
+    """
+    This custom modelform_factory must be used in all places instead of the
+    default django implemention in order to use the correct
+    `formfield_callback` function.
+
+    Otherwise the created modelform will not use the floppyfied fields defined
+    in FORMFIELD_OVERRIDES.
+    """
+    kwargs.setdefault('formfield_callback', formfield_callback)
+    return django_model_forms.modelform_factory(*args, **kwargs)
+
+
 class BaseModelFormMetaclass(FloppyformsModelFormMetaclass):
     """
     Metaclass for BaseModelForm in order to inject our custom implementation of
@@ -161,7 +175,7 @@ class BaseModelForm(forms.ModelForm):
                 model_field_copy = copy.copy(model_field)
                 model_field_copy._choices = choices
 
-                self.fields[field_name] = model_field_copy.formfield()
+                self.fields[field_name] = formfield_callback(model_field_copy)
             if hasattr(self.instance, '%s_label' % field_name):
                 self.fields[field_name].label = getattr(self.instance, '%s_label' % field_name)()
 
