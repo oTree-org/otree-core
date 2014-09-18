@@ -1,4 +1,6 @@
 import floppyforms.__future__ as forms
+from floppyforms.__future__.models import FORMFIELD_OVERRIDES as FLOPPYFORMS_FORMFIELD_OVERRIDES
+from floppyforms.__future__.models import ModelFormMetaclass as FloppyformsModelFormMetaclass
 from django.utils.translation import ugettext as _
 import copy
 import otree.common
@@ -21,7 +23,107 @@ class FormHelper(crispy_forms.helper.FormHelper):
                      css_class='btn-large btn-primary'))
 '''
 
+
+FORMFIELD_OVERRIDES = FLOPPYFORMS_FORMFIELD_OVERRIDES.copy()
+
+FORMFIELD_OVERRIDES.update({
+    models.NullBooleanField: {
+        'form_class': forms.NullBooleanField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.BigIntegerField: {
+        'form_class': forms.IntegerField,
+        'choices_form_class': forms.TypedChoiceField},
+    # Binary field is never editable, so we don't need to convert it.
+    models.BooleanField: {
+        'form_class': forms.BooleanField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.CharField: {
+        'form_class': forms.CharField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.CommaSeparatedIntegerField: {
+        'form_class': forms.CharField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.DateField: {
+        'form_class': forms.DateField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.DateTimeField: {
+        'form_class': forms.DateTimeField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.DecimalField: {
+        'form_class': forms.DecimalField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.EmailField: {
+        'form_class': forms.EmailField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.FileField: {
+        'form_class': forms.FileField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.FilePathField: {
+        'form_class': forms.FilePathField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.FloatField: {
+        'form_class': forms.FloatField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.ImageField: {
+        'form_class': forms.ImageField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.IPAddressField: {
+        'form_class': forms.IPAddressField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.GenericIPAddressField: {
+        'form_class': forms.GenericIPAddressField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.PositiveIntegerField: {
+        'form_class': forms.IntegerField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.PositiveSmallIntegerField: {
+        'form_class': forms.IntegerField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.SlugField: {
+        'form_class': forms.SlugField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.SmallIntegerField: {
+        'form_class': forms.IntegerField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.TextField: {
+        'form_class': forms.CharField,
+        'widget': forms.Textarea,
+        'choices_form_class': forms.TypedChoiceField},
+    models.TimeField: {
+        'form_class': forms.TimeField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.URLField: {
+        'form_class': forms.URLField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.ManyToManyField: {
+        'form_class': forms.ModelMultipleChoiceField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.OneToOneField: {
+        'form_class': forms.ModelChoiceField,
+        'choices_form_class': forms.TypedChoiceField},
+})
+
+
+def formfield_callback(db_field, **kwargs):
+    defaults = FORMFIELD_OVERRIDES.get(db_field.__class__, {}).copy()
+    defaults.update(kwargs)
+    return db_field.formfield(**defaults)
+
+
+class BaseModelFormMetaclass(FloppyformsModelFormMetaclass):
+    """
+    Metaclass for BaseModelForm in order to inject our custom implementation of
+    `formfield_callback`.
+    """
+    def __new__(mcs, name, bases, attrs):
+        if 'formfield_callback' not in attrs:
+            attrs['formfield_callback'] = formfield_callback
+        return super(BaseModelFormMetaclass, mcs).__new__(
+            mcs, name, bases, attrs)
+
+
 class BaseModelForm(forms.ModelForm):
+    __metaclass__ = BaseModelFormMetaclass
 
     def __init__(self, *args, **kwargs):
         """
