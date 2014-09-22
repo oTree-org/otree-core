@@ -14,6 +14,38 @@ class BasicWidgetTests(TestCase):
                                 widget_name))
 
 
+class CheckboxSelectMultipleHorizontalTests(TestCase):
+    maxDiff = None
+
+    class CheckboxForm(forms.Form):
+        numbers = forms.MultipleChoiceField(choices=(
+            ('1', '1'),
+            ('2', '2'),
+            ('3', '3'),
+        ), widget=otree.widgets.CheckboxSelectMultipleHorizontal)
+
+    def test_widget(self):
+        form = self.CheckboxForm()
+
+        rendered = force_text(form['numbers'])
+        self.assertHTMLEqual(
+            rendered,
+            """
+            <label class="checkbox-inline" for="id_numbers_1">
+                <input type="checkbox" id="id_numbers_1" name="numbers"
+                    value="1" /> 1
+            </label>
+            <label class="checkbox-inline" for="id_numbers_2">
+                <input type="checkbox" id="id_numbers_2" name="numbers"
+                    value="2" /> 2
+            </label>
+            <label class="checkbox-inline" for="id_numbers_3">
+                <input type="checkbox" id="id_numbers_3" name="numbers"
+                    value="3" /> 3
+            </label>
+            """)
+
+
 class RadioSelectHorizontalTests(TestCase):
     maxDiff = None
 
