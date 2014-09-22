@@ -15,6 +15,7 @@ DATABASES = {
 
 
 INSTALLED_APPS = (
+    'floppyforms',
     'otree',
     'raven.contrib.django.raven_compat',
 )

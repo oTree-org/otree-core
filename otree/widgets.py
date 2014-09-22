@@ -1,3 +1,4 @@
+import floppyforms.__future__ as forms
 import floppyforms.widgets
 
 
@@ -32,3 +33,7 @@ MultiWidget = floppyforms.widgets.MultiWidget
 SplitDateTimeWidget = floppyforms.widgets.SplitDateTimeWidget
 SplitHiddenDateTimeWidget = floppyforms.widgets.SplitHiddenDateTimeWidget
 SelectDateWidget = floppyforms.widgets.SelectDateWidget
+
+
+class RadioSelectHorizontal(forms.RadioSelect):
+    template_name = 'floppyforms/radio_select_horizontal.html'
