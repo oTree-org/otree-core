@@ -7,7 +7,7 @@ from threading import Thread
 import time
 import logging
 from datetime import datetime
-
+from otree.forms_internal import BaseModelForm, formfield_callback
 from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect
@@ -20,7 +20,6 @@ from django.utils.translation import ugettext as _
 from django.forms.models import model_to_dict
 
 import otree.constants as constants
-from otree.forms_internal import StubModelForm, ExperimenterStubModelForm
 import otree.sessionlib.models as seq_models
 import otree.sessionlib.models
 import otree.common
@@ -38,6 +37,8 @@ import otree.sessionlib.models
 from otree.sessionlib.models import Participant
 from Queue import Queue
 import sys
+import floppyforms.__future__.models
+
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
@@ -391,7 +392,7 @@ class SequenceMixin(OTreeMixin):
 
 
     def get_context_data(self, **kwargs):
-        context = {'form_or_formset': kwargs.get('form') or kwargs.get('formset') or kwargs.get('form_or_formset')}
+        context = {'form': kwargs.get('form') or kwargs.get('formset') or kwargs.get('form')}
         context.update(self.variables_for_template() or {})
         context.update(self._variables_for_all_templates())
 
@@ -405,7 +406,6 @@ class SequenceMixin(OTreeMixin):
         Given `data` and `files` QueryDicts, and optionally other named
         arguments, and returns a form.
         """
-        kwargs.update(self.get_extra_form_kwargs())
         cls = self.get_form_class()
         return cls(data=data, files=files, **kwargs)
 
@@ -476,6 +476,17 @@ class SequenceMixin(OTreeMixin):
 class ModelFormMixin(object):
     """mixin rather than subclass because we want these methods only to be first in MRO"""
 
+    # if a model is not specified, use empty "StubModel"
+    model = otree.sessionlib.models.StubModel
+    fields = []
+
+    def get_form_class(self):
+        form_class = otree.forms_internal.modelform_factory(
+            self.form_model, fields=self.form_fields, form=BaseModelForm,
+            formfield_callback=formfield_callback)
+        return form_class
+
+
     def after_valid_form_submission(self):
         """Should be implemented by subclasses as necessary"""
         pass
@@ -507,44 +518,22 @@ class PlayerSequenceMixin(SequenceMixin):
                 ('Session code', self.session.code),]
 
 
-    def get_extra_form_kwargs(self):
-        return {'player': self.player,
-               'match': self.match,
-               'treatment': self.treatment,
-               'subsession': self.subsession,
-               'request': self.request,
-               'session': self.session}
-
-
 class ExperimenterSequenceMixin(SequenceMixin):
 
     def get_debug_values(self):
         return [('Subsession code', self.subsession.code),]
 
-    def get_extra_form_kwargs(self):
-        return {'subsession': self.subsession,
-               'request': self.request,
-               'session': self.session}
-
 
 class PlayerUpdateView(ModelFormMixin, PlayerSequenceMixin, PlayerMixin, vanilla.UpdateView):
 
-    # if form_class is not provided, we use an empty form based on StubModel.
-    form_class = StubModelForm
-
     def get_object(self):
-        Cls = self.get_form_class().Meta.model
+        Cls = self.form_model
         if Cls == self.MatchClass:
             return self.match
         elif Cls == self.PlayerClass:
             return self.player
         elif Cls == seq_models.StubModel:
             return seq_models.StubModel.objects.all()[0]
-        else:
-            # For AuxiliaryModels
-            return Cls.objects.get(object_id=self.player.id,
-                                   content_type=ContentType.objects.get_for_model(self.player))
-
 
 class MatchCheckpoint(PlayerSequenceMixin, PlayerMixin, MatchCheckpointMixin, WaitPageMixin, vanilla.UpdateView):
     pass
@@ -554,15 +543,15 @@ class SubsessionCheckpoint(PlayerSequenceMixin, PlayerMixin, SubsessionCheckpoin
 
 
 class ExperimenterUpdateView(ModelFormMixin, ExperimenterSequenceMixin, ExperimenterMixin, vanilla.UpdateView):
-    form_class = ExperimenterStubModelForm
+    # 2014-9-14: commenting out as i figure out getting rid of forms.py
+    #form_class = ExperimenterStubModelForm
 
     def get_object(self):
-        Cls = self.get_form_class().Meta.model
+        Cls = self.form_model
         if Cls == self.SubsessionClass:
             return self.subsession
         elif Cls == seq_models.StubModel:
             return seq_models.StubModel.objects.all()[0]
-
 
 class InitializePlayerOrExperimenter(NonSequenceUrlMixin, vanilla.View):
 

@@ -1,5 +1,6 @@
 {% load staticfiles %}
 {% load i18n %}
+{% load floppyforms %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -44,12 +45,15 @@
                 </div>
             {% endif %}
 
-
+            <form action="" method="post" role="form" class="form">
+            {% form form using  %}
+            {% formconfig row using "floppyforms/rows/bootstrap.html" %}
             {% block content %}{% endblock %}
+                <input class="btn btn-primary btn-large btn-primary" type="submit" value="Next" />
+            {% endform %}
+            </form>
 
-            {% block form %}{% endblock %}
 
-            {% block content_below_submit_button %}{% endblock %}
 
             </div>
 

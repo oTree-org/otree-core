@@ -1,5 +1,7 @@
 """public api"""
 
+import otree.sessionlib.models
+
 from otree.views.abstract import (
     InitializePlayer,
     InitializeExperimenter,
@@ -46,6 +48,11 @@ class Page(abstract.PlayerUpdateView):
         return super(Page, self).participate_condition()
 
     template_name = None
+
+    # prefix with "form_" so that it's clear these refer to the form
+    # otherwise someone might confuse 'fields' with variables_for_template
+    form_model = abstract.PlayerUpdateView.model
+    form_fields = abstract.PlayerUpdateView.fields
 
 class ExperimenterPage(abstract.ExperimenterUpdateView):
 

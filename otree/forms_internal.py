@@ -1,17 +1,24 @@
-from django import forms
+import floppyforms.__future__ as forms
+from floppyforms.__future__.models import FORMFIELD_OVERRIDES as FLOPPYFORMS_FORMFIELD_OVERRIDES
+from floppyforms.__future__.models import ModelFormMetaclass as FloppyformsModelFormMetaclass
+from django.forms import models as django_model_forms
 from django.utils.translation import ugettext as _
-import crispy_forms.helper
-from crispy_forms.layout import Submit, Layout, Fieldset
 import copy
 import otree.common
+import otree.formfields
 import otree.models.common
 import otree.sessionlib.models
 import otree.constants
 from otree.db import models
+from otree.fields import RandomCharField
 import easymoney
 
 
+__all__ = ('formfield_callback', 'modelform_factory', 'BaseModelForm',)
 
+
+#FIXME: port these to floppyforms
+'''
 class FormHelper(crispy_forms.helper.FormHelper):
     def __init__(self, *args, **kwargs):
         super(FormHelper, self).__init__(*args, **kwargs)
@@ -20,35 +27,140 @@ class FormHelper(crispy_forms.helper.FormHelper):
         self.add_input(Submit('submit',
                      _('Next'), #TODO: make this customizable
                      css_class='btn-large btn-primary'))
+'''
+
+
+FORMFIELD_OVERRIDES = FLOPPYFORMS_FORMFIELD_OVERRIDES.copy()
+
+FORMFIELD_OVERRIDES.update({
+    # Overrides from fields defined in otree.db.models
+
+    models.NullBooleanField: {
+        'form_class': forms.NullBooleanField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.BigIntegerField: {
+        'form_class': forms.IntegerField,
+        'choices_form_class': forms.TypedChoiceField},
+    # Binary field is never editable, so we don't need to convert it.
+    models.BooleanField: {
+        'form_class': forms.BooleanField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.CharField: {
+        'form_class': forms.CharField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.CommaSeparatedIntegerField: {
+        'form_class': forms.CharField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.DateField: {
+        'form_class': forms.DateField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.DateTimeField: {
+        'form_class': forms.DateTimeField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.DecimalField: {
+        'form_class': forms.DecimalField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.EmailField: {
+        'form_class': forms.EmailField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.FileField: {
+        'form_class': forms.FileField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.FilePathField: {
+        'form_class': forms.FilePathField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.FloatField: {
+        'form_class': forms.FloatField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.ImageField: {
+        'form_class': forms.ImageField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.IPAddressField: {
+        'form_class': forms.IPAddressField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.GenericIPAddressField: {
+        'form_class': forms.GenericIPAddressField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.PositiveIntegerField: {
+        'form_class': forms.IntegerField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.PositiveSmallIntegerField: {
+        'form_class': forms.IntegerField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.SlugField: {
+        'form_class': forms.SlugField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.SmallIntegerField: {
+        'form_class': forms.IntegerField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.TextField: {
+        'form_class': forms.CharField,
+        'widget': forms.Textarea,
+        'choices_form_class': forms.TypedChoiceField},
+    models.TimeField: {
+        'form_class': forms.TimeField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.URLField: {
+        'form_class': forms.URLField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.ManyToManyField: {
+        'form_class': forms.ModelMultipleChoiceField,
+        'choices_form_class': forms.TypedChoiceField},
+    models.OneToOneField: {
+        'form_class': forms.ModelChoiceField,
+        'choices_form_class': forms.TypedChoiceField},
+
+    # Other custom db fields used in otree.
+
+    RandomCharField: {
+        'form_class': forms.CharField,
+        'choices_form_class': forms.TypedChoiceField},
+
+    models.MoneyField: {
+        'form_class': otree.formfields.MoneyField,
+        'choices_form_class': forms.TypedChoiceField},
+
+})
+
+
+def formfield_callback(db_field, **kwargs):
+    defaults = FORMFIELD_OVERRIDES.get(db_field.__class__, {}).copy()
+    # Take the `widget` attribute into account that might be set for a db
+    # field. We want to override the widget given by FORMFIELD_OVERRIDES.
+    widget = getattr(db_field, 'widget', None)
+    if widget:
+        defaults['widget'] = widget
+    defaults.update(kwargs)
+    return db_field.formfield(**defaults)
+
+
+def modelform_factory(*args, **kwargs):
+    """
+    This custom modelform_factory must be used in all places instead of the
+    default django implemention in order to use the correct
+    `formfield_callback` function.
+
+    Otherwise the created modelform will not use the floppyfied fields defined
+    in FORMFIELD_OVERRIDES.
+    """
+    kwargs.setdefault('formfield_callback', formfield_callback)
+    return django_model_forms.modelform_factory(*args, **kwargs)
+
+
+class BaseModelFormMetaclass(FloppyformsModelFormMetaclass):
+    """
+    Metaclass for BaseModelForm in order to inject our custom implementation of
+    `formfield_callback`.
+    """
+    def __new__(mcs, name, bases, attrs):
+        if 'formfield_callback' not in attrs:
+            attrs['formfield_callback'] = formfield_callback
+        return super(BaseModelFormMetaclass, mcs).__new__(
+            mcs, name, bases, attrs)
 
 
 class BaseModelForm(forms.ModelForm):
-
-    def layout(self):
-        """Child classes can override this to customize form layout using crispy-forms"""
-        order = self.order()
-
-        if order:
-            return Layout(
-                Fieldset(
-                    '',
-                    *order
-                )
-            )
-
-    def defaults(self):
-        """Return a dict of any initial values"""
-        return {}
-
-    def choices(self):
-        return {}
-
-    def labels(self):
-        return {}
-
-    def order(self):
-        pass
-
+    __metaclass__ = BaseModelFormMetaclass
 
     def __init__(self, *args, **kwargs):
         """
@@ -63,22 +175,23 @@ class BaseModelForm(forms.ModelForm):
             If the DB field's value is None and the user did not specify an inital value, nothing should be selected by default.
             This will conceptually match a dropdown.
         """
-        self.process_kwargs(kwargs)
-        kwargs.setdefault('initial', {}).update(self.defaults())
+
         super(BaseModelForm, self).__init__(*args, **kwargs)
 
-        for field_name, choices in self.choices().items():
-            choices = otree.common.expand_choice_tuples(choices)
 
-            model_field = self.instance._meta.get_field(field_name)
-            model_field_copy = copy.copy(model_field)
-            model_field_copy._choices = choices
+        for field_name in self.fields:
+            if hasattr(self.instance, '%s_choices' % field_name):
+                choices = getattr(self.instance, '%s_choices' % field_name)()
+                choices = otree.common.expand_choice_tuples(choices)
 
-            self.fields[field_name] = model_field_copy.formfield()
+                model_field = self.instance._meta.get_field(field_name)
+                model_field_copy = copy.copy(model_field)
+                model_field_copy._choices = choices
 
+                self.fields[field_name] = formfield_callback(model_field_copy)
+            if hasattr(self.instance, '%s_label' % field_name):
+                self.fields[field_name].label = getattr(self.instance, '%s_label' % field_name)()
 
-        for field_name, label in self.labels().items():
-            self.fields[field_name].label = label
 
         for field_name in self.fields:
             field = self.fields[field_name]
@@ -90,9 +203,6 @@ class BaseModelForm(forms.ModelForm):
                 if field.choices[0][0] in {u'', None}:
                     field.choices = field.choices[1:]
 
-        # crispy forms
-        self.helper = FormHelper()
-        self.helper.layout = self.layout()
 
     def null_boolean_field_names(self):
         null_boolean_fields_in_model = [field.name for field in self.Meta.model._meta.fields if isinstance(field, models.NullBooleanField)]
@@ -126,8 +236,8 @@ class BaseModelForm(forms.ModelForm):
                 else:
                     value = field.clean(value)
                 self.cleaned_data[name] = value
-                if hasattr(self, '%s_error_message' % name):
-                    error_string = getattr(self, '%s_error_message' % name)(value)
+                if hasattr(self.instance, '%s_error_message' % name):
+                    error_string = getattr(self.instance, '%s_error_message' % name)(value)
                     if error_string:
                         self._errors[name] = self.error_class([error_string])
                         if name in self.cleaned_data:
@@ -140,31 +250,3 @@ class BaseModelForm(forms.ModelForm):
                 self._errors[name] = self.error_class(e.messages)
                 if name in self.cleaned_data:
                     del self.cleaned_data[name]
-
-class PlayerModelForm(BaseModelForm):
-    """i.e. player modelform."""
-
-    def process_kwargs(self, kwargs):
-        self.player = kwargs.pop('player')
-        self.match = kwargs.pop('match')
-        self.treatment = kwargs.pop('treatment')
-        self.subsession = kwargs.pop('subsession')
-        self.request = kwargs.pop('request')
-        self.session = kwargs.pop('session')
-
-class ExperimenterModelForm(BaseModelForm):
-    def process_kwargs(self, kwargs):
-        self.subsession = kwargs.pop('subsession')
-        self.request = kwargs.pop('request')
-        self.session = kwargs.pop('session')
-
-class StubModelForm(PlayerModelForm):
-    class Meta:
-        model = otree.sessionlib.models.StubModel
-        fields = []
-
-class ExperimenterStubModelForm(ExperimenterModelForm):
-    class Meta:
-        model = otree.sessionlib.models.StubModel
-        fields = []
-

@@ -6,9 +6,10 @@ from django.utils.text import capfirst
 import django.db.models
 import easymoney
 from otree.common import expand_choice_tuples, _MoneyInput
-from handy.models import PickleField
 
-class _OtreeModelFieldMixin(object):
+
+
+class _BOtreeModelFieldMixin(object):
     def fix_choices_arg(self, kwargs):
         '''allows the programmer to define choices as a list of values rather than (value, display_value)'''
         choices = kwargs.get('choices')
@@ -27,10 +28,27 @@ class _OtreeModelFieldMixin(object):
     def __init__(self, *args,  **kwargs):
         self.set_otree_properties(kwargs)
         self.fix_choices_arg(kwargs)
-        super(_OtreeModelFieldMixin, self).__init__(*args, **kwargs)
+        super(_BOtreeModelFieldMixin, self).__init__(*args, **kwargs)
+
+    def formfield(self, *args, **kwargs):
+        return super(_BOtreeModelFieldMixin, self).formfield(*args, **kwargs)
 
 
-class _OtreeNullableModelFieldMixin(_OtreeModelFieldMixin):
+class _OtreeWidgetForModelFieldMixin(object):
+    """
+    Give a `widget` argument to a model field in order to override the default
+    widget used for this field in a model form.
+
+    The given widget will only be used when you subclass your model form from
+    otree.forms_internal.BaseModelForm.
+    """
+
+    def __init__(self, *args, **kwargs):
+        self.widget = kwargs.pop('widget', None)
+        super(_OtreeWidgetForModelFieldMixin, self).__init__(*args, **kwargs)
+
+
+class _OtreeNullableModelFieldMixin(_BOtreeModelFieldMixin, _OtreeWidgetForModelFieldMixin):
     def __init__(self, *args,  **kwargs):
         kwargs.setdefault('null',True)
 
@@ -44,7 +62,7 @@ class _OtreeNullableModelFieldMixin(_OtreeModelFieldMixin):
         super(_OtreeNullableModelFieldMixin, self).__init__(*args, **kwargs)
 
 
-class _OtreeNotNullableModelFieldMixin(_OtreeModelFieldMixin):
+class _OtreeNotNullableModelFieldMixin(_BOtreeModelFieldMixin):
     pass
 
 class MoneyField(_OtreeNullableModelFieldMixin, easymoney.MoneyField):

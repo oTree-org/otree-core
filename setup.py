@@ -52,7 +52,7 @@ setup(
     author='C. Wickens',
     author_email='c.wickens+otree@googlemail.com',
     install_requires = [
-        'django-crispy-forms==1.4.0',
+        'django-floppyforms',
         'Django == 1.6.1',
         'django-vanilla-views==1.0.2',
         'Babel==1.3',
@@ -71,6 +71,8 @@ setup(
         'coverage==3.7.1',
         'django-easymoney==0.4',
         'handy==0.3',
+
+
     ],
     classifiers=[
         'Environment :: Web Environment',

@@ -28,16 +28,17 @@ def augment_settings(settings):
         'otree.user',
     ]
 
-    third_party_apps = ['crispy_forms']
+    #third_party_apps = ['floppyforms']
 
     # order is important:
     # otree unregisters User & Group, which are installed by auth.
     # otree templates need to get loaded before the admin.
     new_installed_apps = collapse_to_unique_list(['django.contrib.auth',
                                                   'otree',
+                                                  'floppyforms',
                                                   'django.contrib.admin',],
                                                  default_installed_apps,
-                                                 third_party_apps,
+
                                                  settings['INSTALLED_APPS'],
                                                  settings['INSTALLED_OTREE_APPS'])
 
@@ -77,7 +78,6 @@ def augment_settings(settings):
     CURRENCY_LOCALE = CURRENCY_LOCALE.replace('-','_')
 
     overridable_settings = {
-        'CRISPY_TEMPLATE_PACK': 'bootstrap3',
 
         # pages with a time limit for the player can have a grace period
         # to compensate for network latency.
