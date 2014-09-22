@@ -122,6 +122,11 @@ FORMFIELD_OVERRIDES.update({
 
 def formfield_callback(db_field, **kwargs):
     defaults = FORMFIELD_OVERRIDES.get(db_field.__class__, {}).copy()
+    # Take the `widget` attribute into account that might be set for a db
+    # field. We want to override the widget given by FORMFIELD_OVERRIDES.
+    widget = getattr(db_field, 'widget', None)
+    if widget:
+        defaults['widget'] = widget
     defaults.update(kwargs)
     return db_field.formfield(**defaults)
 

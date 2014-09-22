@@ -1,6 +1,7 @@
 from otree.common import money_range
 from otree.db import models
 import otree.models
+import otree.widgets
 
 from otree.fields import RandomCharField
 
@@ -17,6 +18,7 @@ class FormFieldModel(otree.models.BaseMatch):
     comma_separated_integer = models.CommaSeparatedIntegerField()
     date = models.DateField()
     date_time = models.DateTimeField()
+    alt_date_time = models.DateTimeField(widget=otree.widgets.SplitDateTimeWidget)
     decimal = models.DecimalField()
     email = models.EmailField()
     file = models.FileField()
@@ -30,6 +32,7 @@ class FormFieldModel(otree.models.BaseMatch):
     slug = models.SlugField()
     small_integer = models.SmallIntegerField()
     text = models.TextField()
+    alt_text = models.TextField(widget=otree.widgets.TextInput)
     time = models.TimeField()
     url = models.URLField()
     many_to_many = models.ManyToManyField('SimpleModel')

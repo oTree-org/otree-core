@@ -30,8 +30,25 @@ class _BOtreeModelFieldMixin(object):
         self.fix_choices_arg(kwargs)
         super(_BOtreeModelFieldMixin, self).__init__(*args, **kwargs)
 
+    def formfield(self, *args, **kwargs):
+        return super(_BOtreeModelFieldMixin, self).formfield(*args, **kwargs)
 
-class _OtreeNullableModelFieldMixin(_BOtreeModelFieldMixin):
+
+class _OtreeWidgetForModelFieldMixin(object):
+    """
+    Give a `widget` argument to a model field in order to override the default
+    widget used for this field in a model form.
+
+    The given widget will only be used when you subclass your model form from
+    otree.forms_internal.BaseModelForm.
+    """
+
+    def __init__(self, *args, **kwargs):
+        self.widget = kwargs.pop('widget', None)
+        super(_OtreeWidgetForModelFieldMixin, self).__init__(*args, **kwargs)
+
+
+class _OtreeNullableModelFieldMixin(_BOtreeModelFieldMixin, _OtreeWidgetForModelFieldMixin):
     def __init__(self, *args,  **kwargs):
         kwargs.setdefault('null',True)
 
