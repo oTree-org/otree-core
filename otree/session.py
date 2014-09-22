@@ -40,10 +40,11 @@ def demo_enabled_session_types():
     return [session_type for session_type in get_session_types() if get_session_module().show_on_demo_page(session_type.name)]
 
 @transaction.atomic
-def create_session(type_name, label='', special_category=None):
+def create_session(type_name, label='', special_category=None, preassign_players_to_matches=False):
     """2014-5-2: i could implement this by overriding the __init__ on the Session model, but I don't really know how that works,
     and it seems to be a bit discouraged:
     https://docs.djangoproject.com/en/1.4/ref/models/instances/#django.db.models.Model
+    2014-9-22: preassign to matches for demo mode.
     """
     try:
         session_type = SessionTypeDirectory().get_item(type_name)
@@ -138,6 +139,8 @@ def create_session(type_name, label='', special_category=None):
     session.chain_subsessions(subsessions)
     session.chain_players()
     session.session_experimenter.chain_experimenters()
+    if preassign_players_to_matches:
+        session._assign_players_to_matches()
     session.ready = True
     session.save()
     return session

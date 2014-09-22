@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
 """Documentation at https://github.com/oTree-org/otree/wiki"""
 
 from otree.db import models
 import otree.models
 from otree.common import Money, money_range
+
 
 author = 'Your name here'
 

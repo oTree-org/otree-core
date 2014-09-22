@@ -30,30 +30,38 @@
     </h3>
 
     <p>
-        Then, open all links, each in its own browser tab.
+        Open all links, each in its own browser tab.
     </p>
 
-    <h4>
-        Experimenter
-    </h4>
-        <a href="{{ experimenter_url }}" class="experimenter-link" target="_blank">{{ experimenter_url }}</a><br/>
-
-    <h4>
-        Participants
-    </h4>
-
-    <p><b>Before participants can play, you need to click the experimenter link above and start the session.</b></p>
-    {% for participant_url in participant_urls %}
-            <a href="{{ participant_url }}" class="participant-link" target="_blank">{{ participant_url }}</a>
-            <br/>
-    {% endfor %}
-
+    {# in demo mode, experimenter link is omitted #}
     {% if is_demo_page %}
+        {% for participant_url in participant_urls %}
+                <a href="{{ participant_url }}" class="participant-link" target="_blank">{{ participant_url }}</a>
+                <br/>
+        {% endfor %}
         <br/>
         <p>
             These are single-use links. To get new start links, refresh this page. This will let you simulate a new set of participants,
             who will be reassigned to treatment groups and match groups.
         </p>
+
+    {% else %}
+        <h4>
+            Experimenter
+        </h4>
+            <a href="{{ experimenter_url }}" class="experimenter-link" target="_blank">{{ experimenter_url }}</a><br/>
+
+        <h4>
+            Participants
+        </h4>
+
+        {% for participant_url in participant_urls %}
+            <a href="{{ participant_url }}" class="participant-link" target="_blank">{{ participant_url }}</a>
+            <br/>
+        {% endfor %}
+
+        <p><b>Before participants can play, you need to click the experimenter link above and start the session.</b></p>
+
     {% endif %}
 
 

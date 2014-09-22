@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
 import {{ app_name }}.models as models
 from django import forms
 from {{ app_name }}._builtin import Form

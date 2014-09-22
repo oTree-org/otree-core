@@ -50,8 +50,10 @@ def ensure_enough_spare_sessions(type_name):
     for i in range(DESIRED_SPARE_SESSIONS - spare_sessions):
         create_session(
             special_category=constants.special_category_demo,
-            type_name=type_name
+            type_name=type_name,
+            preassign_players_to_matches=True,
         )
+
 
 def get_session(type_name):
 

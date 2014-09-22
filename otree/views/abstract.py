@@ -428,9 +428,23 @@ class SequenceMixin(OTreeMixin):
     def update_indexes_in_sequences(self):
         if self.index_in_pages == self._user.index_in_pages:
             self._record_page_visit_time()
-            self._user.index_in_pages += 1
-            if self._user.index_in_pages >= len(self._user._pages_as_urls()):
-                self.update_index_in_subsessions()
+            pages = self._user._pages()
+            for target_index in range(self.index_in_pages+1, len(pages)):
+                Page = pages[target_index]
+                # we skip any page that is a sequence page where participate_condition evaluates to true
+                if hasattr(Page, 'participate_condition'):
+                    #FIXME: just a prototype. there might be other attributes. also, not valid for experimenter pages
+                    page = Page()
+                    page.player = self.player
+                    page.match = self.match
+                    page.treatment = self.treatment
+                    page.subsession = self.subsession
+                    if not page.participate_condition():
+                        continue
+                self._user.index_in_pages = target_index
+                return
+            # if there are no more pages, go to next subsession
+            self.update_index_in_subsessions()
 
     def form_invalid(self, form):
         response = super(SequenceMixin, self).form_invalid(form)
@@ -580,9 +594,6 @@ class InitializePlayerOrExperimenter(NonSequenceUrlMixin, vanilla.View):
         self._session_user.vars['UserClass'] = UserClass
         self._session_user._current_user_code = user_code
         self._session_user.save()
-        print 'in InitializePlayer. code: {}'.format(self._session_user.code)
-        print 'in InitializePlayer. pk: {}'.format(self._session_user.pk)
-        print 'in InitializePlayer, last time stamp: {}'.format(self._session_user._last_page_timestamp)
         return self.redirect()
 
 
