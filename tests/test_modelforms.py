@@ -1,6 +1,7 @@
 from django.test import TestCase
 import floppyforms
 import otree.formfields
+import otree.widgets
 from otree.forms_internal import BaseModelForm
 
 from .models import FormFieldModel
@@ -46,4 +47,4 @@ class UseFloppyformWidgetsTests(TestCase):
 
     def test_money_field(self):
         self.assertEqual(TestModelForm.base_fields['money'].__class__, otree.formfields.MoneyField)
-        self.assertEqual(TestModelForm.base_fields['money'].widget.__class__, otree.formfields.MoneyInput)
+        self.assertEqual(TestModelForm.base_fields['money'].widget.__class__, otree.widgets.MoneyInput)
