@@ -1,5 +1,4 @@
-import floppyforms.__future__ as forms
-import otree.widgets
+from otree import forms
 
 
 default_choices = (
@@ -14,13 +13,13 @@ default_choices = (
 class WidgetDemoForm(forms.Form):
     radio_select = forms.ChoiceField(
         choices=default_choices,
-        widget=otree.widgets.RadioSelect)
+        widget=forms.RadioSelect)
     radio_select_horizontal = forms.ChoiceField(
         choices=default_choices,
-        widget=otree.widgets.RadioSelectHorizontal)
+        widget=forms.RadioSelectHorizontal)
     checkbox_select = forms.MultipleChoiceField(
         choices=default_choices,
-        widget=otree.widgets.CheckboxSelectMultiple)
+        widget=forms.CheckboxSelectMultiple)
     checkbox_select_horizontal = forms.MultipleChoiceField(
         choices=default_choices,
-        widget=otree.widgets.CheckboxSelectMultipleHorizontal)
+        widget=forms.CheckboxSelectMultipleHorizontal)

@@ -3,6 +3,7 @@ from django.utils.encoding import force_text
 import floppyforms.__future__ as forms
 import floppyforms.widgets
 
+import otree.forms
 import otree.widgets
 
 
@@ -22,7 +23,7 @@ class CheckboxSelectMultipleHorizontalTests(TestCase):
             ('1', '1'),
             ('2', '2'),
             ('3', '3'),
-        ), widget=otree.widgets.CheckboxSelectMultipleHorizontal)
+        ), widget=otree.forms.CheckboxSelectMultipleHorizontal)
 
     def test_widget(self):
         form = self.CheckboxForm()
@@ -54,7 +55,7 @@ class RadioSelectHorizontalTests(TestCase):
             ('1', '1'),
             ('2', '2'),
             ('3', '3'),
-        ), widget=otree.widgets.RadioSelectHorizontal)
+        ), widget=otree.forms.RadioSelectHorizontal)
 
     def test_widget(self):
         form = self.RadioForm()
