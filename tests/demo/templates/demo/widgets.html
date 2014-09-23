@@ -2,6 +2,7 @@
 {% load staticfiles %}
 {% load i18n %}
 {% load floppyforms %}
+{% load otree %}
 
 
 {% block title %}Widgets{% endblock %}
@@ -9,22 +10,24 @@
 
 {% block content %}
 
-    <h3><code>RadioSelect</code></h3>
+    <h3><code>otree.forms.RadioSelect</code></h3>
     {% formrow form.radio_select %}
 
-    <h3><code>RadioSelectHorizontal</code></h3>
+    <h3><code>otree.forms.RadioSelectHorizontal</code></h3>
     {% formrow form.radio_select_horizontal %}
 
-    <h3><code>CheckboxSelectMultiple</code></h3>
+    <h3><code>otree.forms.CheckboxSelectMultiple</code></h3>
     {% formrow form.checkbox_select %}
 
-    <h3><code>CheckboxSelectMultipleHorizontal</code></h3>
+    <h3><code>otree.forms.CheckboxSelectMultipleHorizontal</code></h3>
     {% formrow form.checkbox_select_horizontal %}
 
-    <h3><code>MoneyField</code></h3>
+    <h3><code>otree.forms.MoneyField</code></h3>
     {% formrow form.money %}
 
-    <h3><code>MoneyChoiceField</code></h3>
+    <h3><code>otree.forms.MoneyChoiceField</code></h3>
     {% formrow form.money_choice %}
+
+    {% next_button %}
 
 {% endblock %}
