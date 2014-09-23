@@ -11,7 +11,6 @@ import otree.sessionlib.models
 import otree.constants
 from otree.db import models
 from otree.fields import RandomCharField
-import easymoney
 
 
 __all__ = ('formfield_callback', 'modelform_factory', 'BaseModelForm',)
@@ -118,7 +117,7 @@ FORMFIELD_OVERRIDES.update({
 
     models.MoneyField: {
         'form_class': otree.formfields.MoneyField,
-        'choices_form_class': forms.TypedChoiceField},
+        'choices_form_class': otree.formfields.MoneyChoiceField},
 
 })
 

@@ -39,6 +39,10 @@ class FormFieldModel(otree.models.BaseMatch):
     one_to_one = models.OneToOneField('SimpleModel')
 
     money = models.MoneyField()
+    money_choice = models.MoneyField(choices=(
+        ('0.01', '0.01'),
+        ('1.20', '1.20'),
+    ))
     random_char = RandomCharField()
 
     sent_amount = models.MoneyField(choices=money_range(0, 0.75))

@@ -43,8 +43,10 @@ class UseFloppyformWidgetsTests(TestCase):
 
     def test_custom_fields(self):
         self.assertEqual(TestModelForm.base_fields['random_char'].__class__, floppyforms.CharField)
-        self.assertEqual(TestModelForm.base_fields['sent_amount'].__class__, floppyforms.TypedChoiceField)
+        self.assertEqual(TestModelForm.base_fields['sent_amount'].__class__, otree.formfields.MoneyChoiceField)
 
     def test_money_field(self):
         self.assertEqual(TestModelForm.base_fields['money'].__class__, otree.formfields.MoneyField)
         self.assertEqual(TestModelForm.base_fields['money'].widget.__class__, otree.widgets.MoneyInput)
+        self.assertEqual(TestModelForm.base_fields['money_choice'].__class__, otree.formfields.MoneyChoiceField)
+        self.assertEqual(TestModelForm.base_fields['money_choice'].widget.__class__, otree.widgets.Select)
