@@ -35,24 +35,22 @@
 
             <div>
 
-            {% if time_limit_in_seconds != None %}
-                {% include 'otree/Timer.html' %}
-            {% endif %}
+                {% if time_limit_in_seconds != None %}
+                    {% include 'otree/Timer.html' %}
+                {% endif %}
 
-            {% if form.errors %}
-                <div class="alert alert-danger">
-                {% blocktrans %}Please fix the errors in the form.{% endblocktrans %}
-                </div>
-            {% endif %}
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                    {% blocktrans %}Please fix the errors in the form.{% endblocktrans %}
+                    </div>
+                {% endif %}
 
-            <form action="" method="post" role="form" class="form">
-            {% form form using %}
-            {% formconfig row using "floppyforms/rows/bootstrap.html" %}
-            {% block content %}{% endblock %}
-            {% endform %}
-            </form>
-
-
+                <form action="" method="post" role="form" class="form">{% csrf_token %}
+                    {% form form using %}
+                        {% formconfig row using "floppyforms/rows/bootstrap.html" %}
+                        {% block content %}{% endblock %}
+                    {% endform %}
+                </form>
 
             </div>
 
