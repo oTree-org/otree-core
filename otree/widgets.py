@@ -37,7 +37,7 @@ SplitHiddenDateTimeWidget = floppyforms.widgets.SplitHiddenDateTimeWidget
 SelectDateWidget = floppyforms.widgets.SelectDateWidget
 
 
-class CheckboxSelectMultipleHorizontal(forms.RadioSelect):
+class CheckboxSelectMultipleHorizontal(forms.CheckboxSelectMultiple):
     template_name = 'floppyforms/checkbox_select_horizontal.html'
 
 
