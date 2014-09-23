@@ -46,10 +46,9 @@
             {% endif %}
 
             <form action="" method="post" role="form" class="form">
-            {% form form using  %}
+            {% form form using %}
             {% formconfig row using "floppyforms/rows/bootstrap.html" %}
             {% block content %}{% endblock %}
-                <input class="btn btn-primary btn-large btn-primary" type="submit" value="Next" />
             {% endform %}
             </form>
 

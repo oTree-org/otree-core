@@ -62,7 +62,7 @@ class WaitUntilAssignedToMatch(PlayerSequenceMixin, PlayerMixin, WaitPageMixin, 
         return self.match and self.treatment
 
     def body_text(self):
-        return 'Waiting until other participants and/or the experimenter are ready.'
+        return 'Waiting until other participants and/or the study supervisor are ready.'
 
     def _redirect_after_complete(self):
         self.update_indexes_in_sequences()
