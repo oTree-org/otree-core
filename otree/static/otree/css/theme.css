@@ -1,6 +1,27 @@
+/* Checkbox and radio button lists shall not have bullet points for every
+   item. */
 .controls > ul {
     list-style-type: none;
     padding-left: 2em;
+}
+
+/* Input fields should only take up to 400px width and not stretch over the
+   whole screen */
+.input-group,
+input.form-control,
+select.form-control,
+textarea.form-control {
+    max-width: 400px;
+}
+
+/* This allows the number field to contain around 7 digits. */
+input[type=number].form-control {
+    width: 100px;
+}
+
+/* Dropdowns shall occupy only the needed space. */
+select.form-control {
+    width: auto;
 }
 
 .form-control-errors {

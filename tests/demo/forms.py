@@ -12,6 +12,10 @@ default_choices = (
 
 
 class WidgetDemoForm(forms.Form):
+    char = forms.CharField(required=False)
+
+    text = forms.CharField(required=False, widget=forms.Textarea)
+
     radio_select = forms.ChoiceField(
         choices=default_choices,
         widget=forms.RadioSelect)
