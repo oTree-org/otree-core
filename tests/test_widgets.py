@@ -14,6 +14,15 @@ class BasicWidgetTests(TestCase):
                             'otree.widgets is missing the widget {0}'.format(
                                 widget_name))
 
+    def test_attrs_yield_form_control_class(self):
+        class Form(otree.forms.Form):
+            first_name = otree.forms.CharField()
+
+        rendered = force_text(Form()['first_name'])
+        self.assertHTMLEqual(rendered, '''
+            <input type="text" name="first_name" required class="form-control" id="id_first_name" />
+        ''')
+
 
 class CheckboxSelectMultipleHorizontalTests(TestCase):
     maxDiff = None

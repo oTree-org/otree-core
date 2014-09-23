@@ -1,3 +1,10 @@
+import os
+
+
+BASE_DIR = os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__)))
+
+
 DEBUG = True
 
 
@@ -22,9 +29,12 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'floppyforms',
 
     'otree',
+
+    # floppyforms need to come after 'otree' in order to load the correct
+    # form templates.
+    'floppyforms',
 
     'raven.contrib.django.raven_compat',
     'tests.demo',
