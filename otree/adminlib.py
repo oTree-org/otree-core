@@ -4,6 +4,7 @@ import time
 from django.contrib import admin
 from django.conf.urls import patterns
 from django.shortcuts import render_to_response
+from django.template.loader import render_to_string
 from django.core.urlresolvers import reverse
 import django.db.models.options
 import django.db.models.fields.related
@@ -403,18 +404,39 @@ class SubsessionAdmin(OTreeBaseModelAdmin):
     list_editable = ['_skip']
 
 class GlobalDataAdmin(OTreeBaseModelAdmin):
-    list_display = ['id', 'open_session', 'lab_url_link', 'mturk_url_link']
+    list_display = ['id', 'open_session', 'lab_url_link', 'mturk_snippet_link']
     list_editable = ['open_session']
+
+    def get_urls(self):
+        urls = super(GlobalDataAdmin, self).get_urls()
+        my_urls = patterns('',
+            (r'^(?P<pk>\d+)/mturk_snippet/$', self.admin_site.admin_view(self.mturk_snippet)),
+        )
+        return my_urls + urls
 
     def lab_url_link(self, instance):
         from otree.views.concrete import AssignVisitorToOpenSessionLab
         return new_tab_link(AssignVisitorToOpenSessionLab.url(), 'Link')
     lab_url_link.allow_tags = True
 
-    def mturk_url_link(self, instance):
+    def mturk_snippet_link(self, instance):
+        return new_tab_link('{}/mturk_snippet/'.format(instance.pk), 'Link')
+
+    mturk_snippet_link.allow_tags = True
+    mturk_snippet_link.short_description = "HTML snippet for MTurk HIT page"
+
+    def mturk_snippet(self, request, pk):
+        hit_page_js_url = request.build_absolute_uri(static_template_tag('otree/js/mturk_hit_page.js'))
         from otree.views.concrete import AssignVisitorToOpenSessionMTurk
-        return new_tab_link(AssignVisitorToOpenSessionMTurk.url(), 'Link')
-    mturk_url_link.allow_tags = True
+        open_session_url = request.build_absolute_uri(AssignVisitorToOpenSessionMTurk.url())
+
+        return render_to_response('otree/admin/MTurkSnippet.html',
+                                  {'hit_page_js_url': hit_page_js_url,
+                                   'open_session_url': open_session_url,},
+                                  content_type='text/plain')
+
+
+
 
 class ParticipantAdmin(OTreeBaseModelAdmin):
     change_list_template = CHANGE_LIST_TEMPLATE
@@ -444,7 +466,6 @@ class SessionAdmin(OTreeBaseModelAdmin):
             (r'^(?P<pk>\d+)/payments/$', self.admin_site.admin_view(self.payments)),
             (r'^(?P<pk>\d+)/raw_participant_urls/$', self.raw_participant_urls),
             (r'^(?P<pk>\d+)/start_links/$', self.start_links),
-            (r'^(?P<pk>\d+)/magdeburg_start_urls/$', self.magdeburg_start_urls),
         )
         return my_urls + urls
 
@@ -483,37 +504,10 @@ class SessionAdmin(OTreeBaseModelAdmin):
     raw_participant_urls_link.short_description = 'Participant URLs'
     raw_participant_urls_link.allow_tags = True
 
-    def magdeburg_start_urls(self, request, pk):
-        session = self.model.objects.get(pk=pk)
-        codes = [participant.code for participant in session.participants()]
 
-        import_file_lines = []
-        for i, code in enumerate(codes):
-            import_file_lines.append(
-                'maxlab-{} | 1 | /name {}&{}={}&{}={}'.format(
-                    str(i+1).zfill(2),
-                    i+1,
-                    otree.constants.session_user_code,
-                    code,
-                    otree.constants.participant_label,
-                    i+1
-                )
-            )
-        response = HttpResponse('\n'.join(import_file_lines), content_type="text/plain")
-        response['Content-Disposition'] = 'attachment; filename="{}"'.format('otree-{}.ini'.format(time.time()))
-        return response
-
-    def magdeburg_start_urls_link(self, instance):
-        return new_tab_link('{}/magdeburg_start_urls/?{}={}'.format(instance.pk,
-                                                          otree.constants.session_user_code,
-                                                          instance.session_experimenter.code), 'Link')
-
-    magdeburg_start_urls_link.short_description = 'Magdeburg Start URLs'
-    magdeburg_start_urls_link.allow_tags = True
 
     def payments(self, request, pk):
         session = self.model.objects.get(pk=pk)
-        participant = session.participants()
         total_payments = sum(participant.total_pay() or 0 for participant in session.participants())
 
         try:

@@ -16,6 +16,8 @@ class User(SaveTheChange, models.Model):
           doc="""Whether this user's start URL was opened"""
                                   )
 
+
+
     def _pages_as_urls(self):
         raise NotImplementedError()
 

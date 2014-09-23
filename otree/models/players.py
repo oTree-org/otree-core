@@ -15,6 +15,8 @@ class BasePlayer(User):
     Base class for all players.
     """
 
+
+
     def _me_in_other_subsession(self, other_subsession):
         for p in other_subsession.player_set.all():
             if p.participant == self.participant:
@@ -46,17 +48,12 @@ class BasePlayer(User):
     _init_view_name = 'InitializePlayer'
 
     def _pages(self):
-        """
-        FIXME: deprecate and remove.
-        if a user really wants to make the pages dynamic, more than is possible with show_skip_wait, they can override this method.
-        """
+        from otree.views.concrete import WaitUntilAssignedToMatch
         views_module = otree.common._views_module(self)
-        return views_module.pages()
+        return [WaitUntilAssignedToMatch] + views_module.pages()
 
     def _pages_as_urls(self):
-        from otree.views.concrete import WaitUntilAssignedToMatch
-        all_views = [WaitUntilAssignedToMatch] + self._pages()
-        return [View.url(self._session_user, index) for index, View in enumerate(all_views)]
+        return [View.url(self._session_user, index) for index, View in enumerate(self._pages())]
 
     class Meta:
         abstract = True

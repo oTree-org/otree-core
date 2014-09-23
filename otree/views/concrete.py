@@ -180,7 +180,7 @@ class InitializeParticipant(vanilla.UpdateView):
             # assign to matches on the fly
 
         session_user.visited = True
-        session_user.time_started = django.utils.timezone.now()
+
         session_user.label = self.request.GET.get(constants.participant_label)
 
         if session_user.ip_address == None:
@@ -190,10 +190,10 @@ class InitializeParticipant(vanilla.UpdateView):
         session_user.time_started = now
         session_user._last_page_timestamp = now
         session_user.save()
+        start_url = session_user.me_in_first_subsession._start_url()
+        return HttpResponseRedirect(start_url)
 
-        return HttpResponseRedirect(session_user.me_in_first_subsession._start_url())
 
-#TODO: surface these URLs in the UI somewhere
 class AssignVisitorToOpenSessionMTurk(AssignVisitorToOpenSession):
 
     @classmethod
