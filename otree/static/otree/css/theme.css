@@ -2,3 +2,8 @@
     list-style-type: none;
     padding-left: 2em;
 }
+
+.form-control-errors {
+    margin-top: 5px;
+    color: #b94a48;
+}
