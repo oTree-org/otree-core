@@ -382,7 +382,7 @@ class SequenceMixin(OTreeMixin):
                 'user: {}'.format(user_info),
             )
 
-            e.args = (e.args[0] + '\nDiagnostic info: {}'.format(diagnostic_info),) + e.args[1:]
+            e.args = ('{}\nDiagnostic info: {}'.format(e.args[0], diagnostic_info)) + e.args[1:]
             raise
 
 
