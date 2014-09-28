@@ -22,7 +22,7 @@ class WaitPage(otree.views.WaitPage):
         self.subsession = models.Subsession()
         self.treatment = models.Treatment()
         self.match = models.Match()
-        
+
 class Form(otree.forms.Form):
 
     def z_autocomplete(self):

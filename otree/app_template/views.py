@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 import otree.views
-import otree.views.concrete
-import {{ app_name }}.forms as forms
-from {{ app_name }}._builtin import Page, MatchWaitPage, SubsessionWaitPage
+import {{ app_name }}.models as models
+from {{ app_name }}._builtin import Page, WaitPage
 from otree.common import Money, money_range
 
 def variables_for_all_templates(self):
@@ -14,13 +13,13 @@ def variables_for_all_templates(self):
 
 class Introduction(Page):
 
+    form_model = models.Player
+    form_fields = ['my_field']
+
     def participate_condition(self):
         return True
 
     template_name = '{{ app_name }}/MyPage.html'
-
-    def get_form_class(self):
-        return forms.MyForm
 
     def variables_for_template(self):
         return {
