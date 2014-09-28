@@ -13,6 +13,7 @@ otree/fields.py
 otree/formfields.py
 otree/forms.py
 otree/forms_internal.py
+otree/models_concrete.py
 otree/project_template.zip
 otree/session.py
 otree/settings.py
