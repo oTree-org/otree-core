@@ -26,6 +26,7 @@ def augment_settings(settings):
         'django.contrib.staticfiles',
         'otree.sessionlib',
         'otree.user',
+        'otree.models_concrete',
     ]
 
     #third_party_apps = ['floppyforms']

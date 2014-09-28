@@ -8,20 +8,18 @@ from otree.db import models
 from otree.fields import RandomCharField
 import otree.constants as constants
 import math
-from otree.common import flatten, ModelWithCheckpointMixin, _views_module
+from otree.common import flatten, _views_module
 import otree.user.models
 from django.utils.importlib import import_module
 import itertools
 from django_extensions.db.fields.json import JSONField
 
-class BaseSubsession(models.Model, ModelWithCheckpointMixin):
+class BaseSubsession(models.Model):
     """
     Base class for all Subsessions.
     """
 
     code = RandomCharField(length=8)
-
-    _incomplete_checkpoints = JSONField()
 
     _experimenter = models.OneToOneField(
         otree.user.models.Experimenter,
@@ -149,7 +147,6 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
         return import_module('{}.models'.format(self._meta.app_label)).Match
 
     def _create_empty_matches(self):
-        self._initialize_checkpoints()
         self.save()
         previous_round = self.previous_round()
         if previous_round:
@@ -172,7 +169,6 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
             match = self._next_open_match()
             for player in match_group:
                 player._assign_to_match(match)
-            match._initialize_checkpoints()
             match.save()
 
     def previous_subsession_is_in_same_app(self):
@@ -193,10 +189,6 @@ class BaseSubsession(models.Model, ModelWithCheckpointMixin):
         pages_as_urls() returns something like ['mygame/IntroPage', ...]
         """
         return [View.url(self._experimenter.session_experimenter, index) for index, View in enumerate(self._experimenter_pages())]
-
-    def _CheckpointMixinClass(self):
-        from otree.views.abstract import SubsessionCheckpointMixin
-        return SubsessionCheckpointMixin
 
 
     class Meta:

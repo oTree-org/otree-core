@@ -108,45 +108,6 @@ def flatten(list_of_lists):
 def _views_module(model_instance):
     return import_module('{}.views'.format(model_instance._meta.app_label))
 
-class ModelWithCheckpointMixin(object):
-
-    def _initialize_checkpoints(self):
-        views_module = _views_module(self)
-        CheckpointMixinClass = self._CheckpointMixinClass()
-        player_ids = {str(p.pk):True for p in self.player_set.all()}
-        # i+1 because of WaitUntilPlayerAssignedToMatch
-        self._incomplete_checkpoints = {str(i+1):player_ids for i, C in enumerate(views_module.pages()) if issubclass(C, CheckpointMixinClass)}
-
-
-    def _record_checkpoint_visit(self, index_in_pages, player_id):
-        '''returns whether to take the action'''
-        _incomplete_checkpoints = copy.deepcopy(self._incomplete_checkpoints)
-        index_in_pages = str(index_in_pages)
-        player_id = str(player_id)
-        take_action = False
-        if _incomplete_checkpoints.has_key(index_in_pages):
-            remaining_visits = _incomplete_checkpoints[index_in_pages]
-            if remaining_visits.has_key(player_id):
-                remaining_visits.pop(player_id, None)
-                if not remaining_visits:
-                    take_action = True
-        self._incomplete_checkpoints = _incomplete_checkpoints
-        self.save()
-        return take_action
-
-    def _mark_checkpoint_complete(self, index_in_pages):
-        index_in_pages = str(index_in_pages)
-        _incomplete_checkpoints = copy.deepcopy(self._incomplete_checkpoints)
-        _incomplete_checkpoints.pop(index_in_pages)
-        self._incomplete_checkpoints = _incomplete_checkpoints
-
-    def _checkpoint_is_complete(self, index_in_pages):
-        index_in_pages = str(index_in_pages)
-        return not self._incomplete_checkpoints.has_key(index_in_pages)
-
-    def _refresh_with_lock(self):
-        return self.__class__._default_manager.select_for_update().get(pk=self.pk)
-
 def _players(self):
     if hasattr(self, '_players'):
         return self._players

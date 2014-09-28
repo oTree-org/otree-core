@@ -1,15 +1,12 @@
 from otree.db import models
 import otree.sessionlib.models
 from save_the_change.mixins import SaveTheChange
-from otree.common import ModelWithCheckpointMixin
 from django_extensions.db.fields.json import JSONField
 
-class BaseMatch(SaveTheChange, ModelWithCheckpointMixin, models.Model):
+class BaseMatch(SaveTheChange, models.Model):
     """
     Base class for all Matches.
     """
-
-    _incomplete_checkpoints = JSONField()
 
     def __unicode__(self):
         return str(self.pk)
@@ -26,10 +23,6 @@ class BaseMatch(SaveTheChange, ModelWithCheckpointMixin, models.Model):
         for p in self.players:
             if p.role() == role:
                 return p
-
-    def _CheckpointMixinClass(self):
-        from otree.views.abstract import MatchCheckpointMixin
-        return MatchCheckpointMixin
 
     @classmethod
     def _create(cls, treatment):

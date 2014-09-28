@@ -38,6 +38,8 @@ from otree.sessionlib.models import Participant
 from Queue import Queue
 import sys
 import floppyforms.__future__.models
+import otree.models
+import otree.models_concrete
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -198,7 +200,7 @@ class WaitPageMixin(object):
         return 'Please wait'
 
     def body_text(self):
-        pass
+        return
 
     def request_is_from_wait_page(self):
         return self.request.is_ajax() and self.request.GET.get(constants.check_if_wait_is_over) == constants.get_param_truth_value
@@ -250,26 +252,65 @@ class CheckpointMixin(object):
 
     def dispatch(self, request, *args, **kwargs):
         '''this is actually for sequence pages only, because of the _redirect_to_page_the_user_should_be_on()'''
+        if self._group_is_match():
+            self._match_or_subsession = self.match
+        else:
+            self._match_or_subsession = self.subsession
         if self.request_is_from_wait_page():
             return self._response_to_wait_page()
         else:
-            self._page_request_actions()
+            self._record_visit()
+            if self._all_players_have_visited():
+                #FIXME: this could get run for multiple users
+                self._mark_complete()
+                self._action()
             if self._is_complete():
                 return self._redirect_after_complete()
             return self.get_wait_page()
 
+    def _group_is_match(self):
+        '''returns True for match, False for subsession'''
+        if issubclass(self.group, otree.models.BaseMatch):
+            return True
+        elif issubclass(self.group, otree.models.BaseSubsession):
+            return False
+        raise ValueError('group must be set to either Match or Subsession')
 
     def _is_complete(self):
         # check the "passed checkpoints" JSON field
-        return self._match_or_subsession._checkpoint_is_complete(self.index_in_pages)
+        if self._group_is_match():
+            return otree.models_concrete.CompletedMatchWaitPage.objects.filter(
+                app_name = self.subsession.app_name,
+                wait_page_index = self.index_in_pages,
+                match_pk = self.match.pk
+            ).exists()
+        else:
+            return otree.models_concrete.CompletedSubsessionWaitPage.objects.filter(
+                app_name = self.subsession.app_name,
+                wait_page_index = self.index_in_pages,
+                subsession_pk = self.subsession.pk
+            ).exists()
+
+    def _all_players_have_visited(self):
+        pks_to_wait_for = [p.pk for p in self._match_or_subsession.players]
+        pks_that_have_visited = otree.models_concrete.WaitPageVisit.objects.filter(
+            app_name = self.subsession.app_name,
+            wait_page_index = self.index_in_pages
+        ).values_list('player_pk', flat=True)
+
+        return set(pks_to_wait_for) <= set(pks_that_have_visited)
 
     def _record_visit(self):
         """record that this player visited"""
-        # lock the match/subsession to avoid race conditions
-        self._match_or_subsession_locked = self._match_or_subsession._refresh_with_lock()
-        run_action_now = self._match_or_subsession_locked._record_checkpoint_visit(self.index_in_pages, self._user.pk)
-        self._match_or_subsession_locked.save()
-        return run_action_now
+        visit, _ = otree.models_concrete.WaitPageVisit.objects.get_or_create(
+            app_name = self.subsession.app_name,
+            wait_page_index = self.index_in_pages,
+            player_pk = self._user.pk, #FIXME: what about experimenter?
+        )
+        visit.save()
+
+        if self._all_players_have_visited():
+            self._action()
 
     def _page_request_actions(self):
         run_action_now = self._record_visit()
@@ -277,14 +318,9 @@ class CheckpointMixin(object):
             self._action()
 
     def _action(self):
-        '''do in a background thread and lock the DB'''
-        self._match_or_subsession._mark_checkpoint_complete(self.index_in_pages)
         self.after_all_players_arrive()
-        for p in self.players_in_match_or_subsession():
+        for p in self._match_or_subsession.players:
             p.save()
-        # need to mark complete after the action, in case the action fails
-        # and the thread throws an exception
-        # before action is complete
         self._match_or_subsession.save()
 
     def participate_condition(self):
@@ -297,32 +333,31 @@ class CheckpointMixin(object):
     def after_all_players_arrive(self):
         pass
 
-class MatchCheckpointMixin(CheckpointMixin):
-
-    def dispatch(self, request, *args, **kwargs):
-        self._match_or_subsession = self.match
-        return super(MatchCheckpointMixin, self).dispatch(request, *args, **kwargs)
-
-    def players_in_match_or_subsession(self):
-        return self.match.players
-
     def body_text(self):
-        if self.match.players_per_match == 2:
+        num_other_players = len(self._match_or_subsession.players) - 1
+        if num_other_players > 1:
+            return 'Waiting for the other players.'
+        elif num_other_players == 1:
             return 'Waiting for the other player.'
-        if self.match.players_per_match > 2:
-            return 'Waiting for other players.'
+        elif num_other_players == 0:
+            return 'Waiting'
 
-class SubsessionCheckpointMixin(CheckpointMixin):
+    def _mark_complete(self):
+        if self._group_is_match():
+            completion, _ = otree.models_concrete.CompletedMatchWaitPage.objects.get_or_create(
+                app_name = self.subsession.app_name,
+                wait_page_index = self.index_in_pages,
+                match_pk = self.match.pk
+            )
+            completion.save()
+        else:
+            completion, _ = otree.models_concrete.CompletedSubsessionWaitPage.objects.get_or_create(
+                app_name = self.subsession.app_name,
+                wait_page_index = self.index_in_pages,
+                subsession_pk = self.subsession.pk
+            )
+            completion.save()
 
-    def dispatch(self, request, *args, **kwargs):
-        self._match_or_subsession = self.subsession
-        return super(SubsessionCheckpointMixin, self).dispatch(request, *args, **kwargs)
-
-    def players_in_match_or_subsession(self):
-        return self.subsession.players
-
-    def body_text(self):
-        return 'Waiting for other players.'
 
 class SequenceMixin(OTreeMixin):
     """
@@ -382,7 +417,7 @@ class SequenceMixin(OTreeMixin):
                 'user: {}'.format(user_info),
             )
 
-            e.args = ('{}\nDiagnostic info: {}'.format(e.args[0], diagnostic_info)) + e.args[1:]
+            e.args = ('{}\nDiagnostic info: {}'.format(e.args[0], diagnostic_info),) + e.args[1:]
             raise
 
 
@@ -535,10 +570,7 @@ class PlayerUpdateView(ModelFormMixin, PlayerSequenceMixin, PlayerMixin, vanilla
         elif Cls == seq_models.StubModel:
             return seq_models.StubModel.objects.all()[0]
 
-class MatchCheckpoint(PlayerSequenceMixin, PlayerMixin, MatchCheckpointMixin, WaitPageMixin, vanilla.UpdateView):
-    pass
-
-class SubsessionCheckpoint(PlayerSequenceMixin, PlayerMixin, SubsessionCheckpointMixin, WaitPageMixin, vanilla.UpdateView):
+class WaitPage(PlayerSequenceMixin, PlayerMixin, CheckpointMixin, WaitPageMixin, vanilla.UpdateView):
     pass
 
 

@@ -43,7 +43,7 @@ class CheckboxSelectMultipleHorizontal(forms.CheckboxSelectMultiple):
 
 class MoneyInput(forms.NumberInput):
     currency_code = getattr(settings, 'CURRENCY_CODE', 'USD')
-    step = '0.05'
+    step = '0.01'
     template_name = 'floppyforms/moneyinput.html'
 
     def __init__(self, *args, **kwargs):

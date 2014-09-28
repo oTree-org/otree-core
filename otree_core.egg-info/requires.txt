@@ -1,4 +1,4 @@
-django-crispy-forms==1.4.0
+django-floppyforms
 Django == 1.6.1
 django-vanilla-views==1.0.2
 Babel==1.3

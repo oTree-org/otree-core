@@ -10,30 +10,20 @@ from otree.views.abstract import (
 from importlib import import_module
 abstract = import_module('otree.views.abstract')
 
-class MatchWaitPage(abstract.MatchCheckpoint):
+class WaitPage(abstract.WaitPage):
 
     def body_text(self):
-        return super(MatchWaitPage, self).body_text()
+        return super(WaitPage, self).body_text()
 
     def title_text(self):
-        return super(MatchWaitPage, self).title_text()
+        return super(WaitPage, self).title_text()
+
+    group = None
 
     def after_all_players_arrive(self):
-        return super(MatchWaitPage, self).after_all_players_arrive()
-
-class SubsessionWaitPage(abstract.SubsessionCheckpoint):
-
-    def body_text(self):
-        return super(SubsessionWaitPage, self).body_text()
-
-    def title_text(self):
-        return super(SubsessionWaitPage, self).title_text()
-
-    def after_all_players_arrive(self):
-        return super(SubsessionWaitPage, self).after_all_players_arrive()
+        return super(WaitPage, self).after_all_players_arrive()
 
 class Page(abstract.PlayerUpdateView):
-    # R: This methods do nothing, could be just deleted
 
     def variables_for_template(self):
         return super(Page, self).variables_for_template()
