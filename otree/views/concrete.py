@@ -24,18 +24,6 @@ import otree.common
 import django.utils.timezone
 import threading
 
-class RedirectToPageUserShouldBeOn(NonSequenceUrlMixin,
-                                   LoadClassesAndUserMixin,
-                                   OTreeMixin,
-                                   vanilla.View):
-    name_in_url = 'shared'
-
-    def get(self, request, *args, **kwargs):
-        return self._redirect_to_page_the_user_should_be_on()
-
-    @load_session_user
-    def dispatch(self, request, *args, **kwargs):
-        return super(RedirectToPageUserShouldBeOn, self).dispatch(request, *args, **kwargs)
 
 class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
     name_in_url = 'shared'

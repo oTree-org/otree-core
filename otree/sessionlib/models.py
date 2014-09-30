@@ -278,13 +278,6 @@ class SessionUser(ModelWithVars):
             return 'Waiting'
         return ''
 
-    def get_success_url(self):
-        # 2014-9-30: why do we have this? where does it get called?
-        # why not just use _redirect_to_page_user_should_be_on?
-        from otree.views.concrete import RedirectToPageUserShouldBeOn
-        return RedirectToPageUserShouldBeOn.url(self)
-
-
     class Meta:
         abstract = True
 

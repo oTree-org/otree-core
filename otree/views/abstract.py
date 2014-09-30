@@ -589,14 +589,10 @@ class ModelFormMixin(object):
     def form_valid(self, form):
         self.form = form
         self.object = form.save()
-        # 2/17/2014: moved post_processing before after_valid_form_submission.
-        # that way, the object is up to date before the user's code is run.
-        # otherwise, i don't see the point of saving twice.
         self.post_processing_on_valid_form(form)
         self.after_valid_form_submission()
         self.update_indexes_in_sequences()
-        # 2014-9-30: why not just use redirect_to_page_user_should_be_on?
-        return HttpResponseRedirect(self._session_user.get_success_url())
+        return self._redirect_to_page_the_user_should_be_on(self)
 
 
 class PlayerSequenceMixin(SequenceMixin):
