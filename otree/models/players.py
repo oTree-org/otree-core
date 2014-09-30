@@ -41,6 +41,8 @@ class BasePlayer(User):
         players.reverse()
         return players
 
+    def me_in_all_rounds(self):
+        return self.me_in_previous_rounds() + self
 
     def __unicode__(self):
         return self.name()

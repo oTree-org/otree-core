@@ -240,7 +240,6 @@ class SessionUser(ModelWithVars):
     ip_address = models.IPAddressField(null = True)
 
     # stores when the page was first visited
-    _time_spent_on_each_page = models.PickleField(default=lambda:[])
     _last_page_timestamp = models.DateTimeField(null=True)
 
     is_on_wait_page = models.BooleanField(default=False)
@@ -280,6 +279,8 @@ class SessionUser(ModelWithVars):
         return ''
 
     def get_success_url(self):
+        # 2014-9-30: why do we have this? where does it get called?
+        # why not just use _redirect_to_page_user_should_be_on?
         from otree.views.concrete import RedirectToPageUserShouldBeOn
         return RedirectToPageUserShouldBeOn.url(self)
 

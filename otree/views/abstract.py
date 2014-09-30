@@ -39,7 +39,7 @@ from Queue import Queue
 import sys
 import floppyforms.__future__.models
 import otree.models
-import otree.models_concrete
+from otree.models_concrete import PageVisit, WaitPageVisit, CompletedSubsessionWaitPage, CompletedMatchWaitPage, PageExpirationTime
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -279,13 +279,13 @@ class CheckpointMixin(object):
     def _is_complete(self):
         # check the "passed checkpoints" JSON field
         if self._group_is_match():
-            return otree.models_concrete.CompletedMatchWaitPage.objects.filter(
+            return CompletedMatchWaitPage.objects.filter(
                 app_name = self.subsession.app_name,
                 wait_page_index = self.index_in_pages,
                 match_pk = self.match.pk
             ).exists()
         else:
-            return otree.models_concrete.CompletedSubsessionWaitPage.objects.filter(
+            return CompletedSubsessionWaitPage.objects.filter(
                 app_name = self.subsession.app_name,
                 wait_page_index = self.index_in_pages,
                 subsession_pk = self.subsession.pk
@@ -293,16 +293,17 @@ class CheckpointMixin(object):
 
     def _all_players_have_visited(self):
         pks_to_wait_for = [p.pk for p in self._match_or_subsession.players]
-        pks_that_have_visited = otree.models_concrete.WaitPageVisit.objects.filter(
+        pks_that_have_visited = WaitPageGet.objects.filter(
             app_name = self.subsession.app_name,
-            wait_page_index = self.index_in_pages
+            page_index = self.index_in_pages,
+            subsession_pk = self.subsession.pk
         ).values_list('player_pk', flat=True)
 
         return set(pks_to_wait_for) <= set(pks_that_have_visited)
 
     def _record_visit(self):
         """record that this player visited"""
-        visit, _ = otree.models_concrete.WaitPageVisit.objects.get_or_create(
+        visit, _ = WaitPageVisit.objects.get_or_create(
             app_name = self.subsession.app_name,
             wait_page_index = self.index_in_pages,
             player_pk = self._user.pk, #FIXME: what about experimenter?
@@ -344,14 +345,14 @@ class CheckpointMixin(object):
 
     def _mark_complete(self):
         if self._group_is_match():
-            completion, _ = otree.models_concrete.CompletedMatchWaitPage.objects.get_or_create(
+            completion, _ = CompletedMatchWaitPage.objects.get_or_create(
                 app_name = self.subsession.app_name,
                 wait_page_index = self.index_in_pages,
                 match_pk = self.match.pk
             )
             completion.save()
         else:
-            completion, _ = otree.models_concrete.CompletedSubsessionWaitPage.objects.get_or_create(
+            completion, _ = CompletedSubsessionWaitPage.objects.get_or_create(
                 app_name = self.subsession.app_name,
                 wait_page_index = self.index_in_pages,
                 subsession_pk = self.subsession.pk
@@ -399,6 +400,7 @@ class SequenceMixin(OTreeMixin):
                 response = self._redirect_to_page_the_user_should_be_on()
             else:
                 self._session_user.current_page = self.__class__.__name__
+                self.time_limit_was_exceeded = False
                 response = super(SequenceMixin, self).dispatch(request, *args, **kwargs)
             self._session_user.last_request_succeeded = True
             self.save_objects()
@@ -423,6 +425,7 @@ class SequenceMixin(OTreeMixin):
 
 
     def post(self, request, *args, **kwargs):
+        self.get_time_limit_was_exceeded()
         return super(SequenceMixin, self).post(request, *args, **kwargs)
 
 
@@ -430,6 +433,7 @@ class SequenceMixin(OTreeMixin):
         context = {'form': kwargs.get('form') or kwargs.get('formset') or kwargs.get('form')}
         context.update(self.variables_for_template() or {})
         context.update(self._variables_for_all_templates())
+        context.update(self._set_time_limit())
 
         if settings.DEBUG:
             context[constants.debug_values] = self.get_debug_values()
@@ -490,23 +494,79 @@ class SequenceMixin(OTreeMixin):
         return True
 
     def _record_page_visit_time(self):
-        page_visit_times = self._session_user._time_spent_on_each_page
+
         now = django.utils.timezone.now()
 
-
-        time_on_this_page = int((now - self._session_user._last_page_timestamp).total_seconds())
+        seconds_on_page = int((now - self._session_user._last_page_timestamp).total_seconds())
         self._session_user._last_page_timestamp = now
 
         app_name = self.subsession.app_name,
         round_number = self.subsession.round_number
         page_name = self.__class__.__name__
 
-        if self._user.subsession.number_of_rounds > 1:
-            page_description = '{} round {}: {}'.format(app_name, round_number, page_name)
-        else:
-            page_description = '{}: {}'.format(app_name, page_name)
+        # FIXME: what about experimenter visits?
+        visit = PageVisit(
+            app_name=self.subsession.app_name,
+            page_index=self.index_in_pages,
+            page_name=page_name,
+            completion_time_stamp = now,
+            seconds_on_page = seconds_on_page,
+            player_pk = self._user.pk,
+            subsession_pk = self.subsession.pk,
+            participant_pk = self._session_user.pk,
+            session_pk = self.subsession.session.pk,
+        )
 
-        page_visit_times.append((page_description, '{}sec'.format(time_on_this_page)))
+        visit.save()
+        self._session_user.save()
+
+    def time_limit_in_seconds(self):
+        return None
+
+
+    def _set_time_limit(self):
+        time_limit = self.time_limit_in_seconds()
+        if not (time_limit is None or time_limit > 0):
+            raise ValueError("Time limit must be None or a positive number.")
+
+        if time_limit is None:
+            return
+
+        now = time.time()
+        page_expiration_time = now + time_limit
+
+        expiration_info, created = PageExpirationTimes.objects.get_or_create(
+            app_name = self.subsession.app_name,
+            page_index = self.index_in_pages,
+            player_pk = self._user.pk,
+            defaults = {'expiration_time_stamp': page_expiration_time}
+        )
+        expiration_info.save()
+
+        page_expiration_time = expiration_info.expiration_time_stamp
+        remaining_seconds = max(0, int(page_expiration_time - time.time()))
+
+        minutes_component, seconds_component = divmod(remaining_seconds, 60)
+
+        return {
+            constants.time_limit_minutes_component: str(minutes_component),
+            constants.time_limit_seconds_component: str(seconds_component).zfill(2),
+            constants.time_limit_in_seconds: remaining_seconds,
+        }
+
+    def _get_time_limit_was_exceeded(self):
+        expiration_info = PageExpirationTimes.objects.filter(
+            app_name = self.subsession.app_name,
+            page_index = self.index_in_pages,
+            player_pk = self._user.pk,
+        )
+
+        if not expiration_info:
+            return False
+        return time.time() > (expiration_info.expiration_time_stamp + settings.TIME_LIMIT_LATENCY_ALLOWANCE_SECONDS)
+
+
+
 
 class ModelFormMixin(object):
     """mixin rather than subclass because we want these methods only to be first in MRO"""
@@ -535,6 +595,7 @@ class ModelFormMixin(object):
         self.post_processing_on_valid_form(form)
         self.after_valid_form_submission()
         self.update_indexes_in_sequences()
+        # 2014-9-30: why not just use redirect_to_page_user_should_be_on?
         return HttpResponseRedirect(self._session_user.get_success_url())
 
 

@@ -44,6 +44,11 @@ class Page(abstract.PlayerUpdateView):
     form_model = abstract.PlayerUpdateView.model
     form_fields = abstract.PlayerUpdateView.fields
 
+    time_limit_auto_advance = True
+
+    def time_limit_in_seconds(self):
+        return super(Page, self).time_limit_in_seconds()
+
 class ExperimenterPage(abstract.ExperimenterUpdateView):
 
     def variables_for_template(self):

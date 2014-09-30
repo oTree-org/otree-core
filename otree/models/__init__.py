@@ -146,6 +146,9 @@ class BasePlayer(players.BasePlayer):
     def me_in_previous_rounds(self):
         return super(BasePlayer, self).me_in_previous_rounds()
 
+    def me_in_all_rounds(self):
+        return super(BasePlayer, self).me_in_all_rounds()
+
     def other_players_in_match(self):
         return [p for p in self.match.players if p != self]
 

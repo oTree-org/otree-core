@@ -8,7 +8,7 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version='0.2.182'
+version='0.2.184'
 
 if sys.argv[-1] == 'publish':
 
@@ -34,7 +34,7 @@ with open(otree_script, 'w') as f:
 
 
 # FIXME: what if the user cloned from github and ran 'python setup.py install'?
-if 'sdist' in sys.argv:
+if 'sdist' in sys.argv or 'publish' in sys.argv:
     shutil.make_archive('otree/app_template', 'zip', 'otree/app_template')
     shutil.make_archive('otree/project_template', 'zip', 'otree/project_template')
 

@@ -158,12 +158,15 @@ class BaseSubsession(models.Model):
         for t in treatments:
             m = MatchClass._create(t)
 
+    def first_round_match_groups(self):
+        return self._random_match_groups()
+
     def _assign_players_to_matches(self):
         previous_round = self.previous_round()
         if previous_round:
             match_groups = self._corresponding_match_groups(previous_round)
         else:
-            match_groups = self._random_match_groups()
+            match_groups = self.first_round_match_groups()
         match_groups = self.pick_match_groups(match_groups)
         for match_group in match_groups:
             match = self._next_open_match()

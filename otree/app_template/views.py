@@ -11,7 +11,7 @@ def variables_for_all_templates(self):
         #'my_field': self.player.my_field,
     }
 
-class Introduction(Page):
+class MyPage(Page):
 
     form_model = models.Player
     form_fields = ['my_field']
@@ -26,7 +26,9 @@ class Introduction(Page):
             'my_variable_here': 1,
         }
 
-class ResultsWaitPage(MatchWaitPage):
+class ResultsWaitPage(WaitPage):
+
+    group = models.Match
 
     def after_all_players_arrive(self):
         self.match.set_payoffs()
@@ -37,7 +39,7 @@ class Results(Page):
 
 def pages():
     return [
-        Introduction,
+        MyPage,
         ResultsWaitPage,
         Results
     ]
