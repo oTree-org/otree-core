@@ -31,12 +31,14 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     'otree',
+    'otree.sessionlib',
 
     # floppyforms need to come after 'otree' in order to load the correct
     # form templates.
     'floppyforms',
 
     'raven.contrib.django.raven_compat',
+    'tests',
     'tests.demo',
 )
 
