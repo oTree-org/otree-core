@@ -2,11 +2,12 @@ from otree.db import models
 
 class PageVisit(models.Model):
     app_name = models.CharField(max_length=300)
+    player_pk = models.PositiveIntegerField()
     page_index = models.PositiveIntegerField()
     page_name = models.CharField(max_length=300)
     completion_time_stamp = models.DateTimeField()
     seconds_on_page = models.PositiveIntegerField()
-    player_pk = models.PositiveIntegerField()
+
     subsession_pk = models.PositiveIntegerField()
     participant_pk = models.PositiveIntegerField()
     session_pk = models.PositiveIntegerField()

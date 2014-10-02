@@ -54,7 +54,7 @@ class BaseSubsession(models.Model):
         rounds = []
         current_round = self
         for i in range(self.round_number-1):
-            current_round = current_round._me_in_previous_subsession
+            current_round = current_round.previous_subsession
             rounds.append(current_round)
         # return starting with round 1
         rounds.reverse()
@@ -135,14 +135,6 @@ class BaseSubsession(models.Model):
     def _match_groups(self):
         return [list(m.player_set.all()) for m in self.match_set.all()]
 
-    def _corresponding_match_groups(self, earlier_round):
-        current_player_dict = {p.participant.pk: p for p in self.player_set.all()}
-        match_groups = earlier_round._match_groups()
-        for m_index, m in enumerate(match_groups):
-            for p_index, p in enumerate(m):
-                match_groups[m_index][p_index] = current_player_dict[p.participant.pk]
-        return match_groups
-
     def _MatchClass(self):
         return import_module('{}.models'.format(self._meta.app_label)).Match
 
@@ -163,11 +155,14 @@ class BaseSubsession(models.Model):
 
     def _assign_players_to_matches(self):
         previous_round = self.previous_round()
-        if previous_round:
-            match_groups = self._corresponding_match_groups(previous_round)
-        else:
+        if not previous_round:
             match_groups = self.first_round_match_groups()
-        match_groups = self.pick_match_groups(match_groups)
+        else:
+            previous_round_match_groups = previous_round._match_groups()
+            match_groups = self.pick_match_groups(previous_round_match_groups)
+            for match_group in match_groups:
+                for player in match_group:
+                    player = player._me_in_next_subsession()
         for match_group in match_groups:
             match = self._next_open_match()
             for player in match_group:
