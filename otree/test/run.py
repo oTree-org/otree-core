@@ -10,7 +10,7 @@ from otree.session import create_session, SessionTypeDirectory, get_session_type
 import itertools
 from otree.constants import special_category_bots
 
-modules_to_include_in_coverage = ['models', 'tests', 'views', 'forms']
+modules_to_include_in_coverage = ['models', 'tests', 'views']
 
 
 def run_subsession(subsession):

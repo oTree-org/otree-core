@@ -15,17 +15,17 @@ class PageVisit(models.Model):
 class WaitPageVisit(models.Model):
     '''difference between this and PageVisit model is that this is run when the player first loads the page, rather than when they leave'''
     app_name = models.CharField(max_length=300)
-    wait_page_index = models.PositiveIntegerField()
+    page_index = models.PositiveIntegerField()
     player_pk = models.PositiveIntegerField()
 
 class CompletedMatchWaitPage(models.Model):
     app_name = models.CharField(max_length=300)
-    wait_page_index = models.PositiveIntegerField()
+    page_index = models.PositiveIntegerField()
     match_pk = models.PositiveIntegerField()
 
 class CompletedSubsessionWaitPage(models.Model):
     app_name = models.CharField(max_length=300)
-    wait_page_index = models.PositiveIntegerField()
+    page_index = models.PositiveIntegerField()
     match_pk = models.PositiveIntegerField()
 
 class PageExpirationTime(models.Model):
@@ -33,4 +33,4 @@ class PageExpirationTime(models.Model):
     app_name = models.CharField(max_length=300)
     page_index = models.PositiveIntegerField()
     player_pk = models.PositiveIntegerField()
-    expiration_time_stamp = models.DateTimeField()
+    expiration_time = models.PositiveIntegerField()

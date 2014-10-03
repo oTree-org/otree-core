@@ -281,13 +281,13 @@ class CheckpointMixin(object):
         if self._group_is_match():
             return CompletedMatchWaitPage.objects.filter(
                 app_name = self.subsession.app_name,
-                wait_page_index = self.index_in_pages,
+                page_index = self.index_in_pages,
                 match_pk = self.match.pk
             ).exists()
         else:
             return CompletedSubsessionWaitPage.objects.filter(
                 app_name = self.subsession.app_name,
-                wait_page_index = self.index_in_pages,
+                page_index = self.index_in_pages,
                 subsession_pk = self.subsession.pk
             ).exists()
 
@@ -296,7 +296,6 @@ class CheckpointMixin(object):
         pks_that_have_visited = WaitPageVisit.objects.filter(
             app_name = self.subsession.app_name,
             page_index = self.index_in_pages,
-            subsession_pk = self.subsession.pk
         ).values_list('player_pk', flat=True)
 
         return set(pks_to_wait_for) <= set(pks_that_have_visited)
@@ -305,7 +304,7 @@ class CheckpointMixin(object):
         """record that this player visited"""
         visit, _ = WaitPageVisit.objects.get_or_create(
             app_name = self.subsession.app_name,
-            wait_page_index = self.index_in_pages,
+            page_index = self.index_in_pages,
             player_pk = self._user.pk, #FIXME: what about experimenter?
         )
         visit.save()
@@ -347,14 +346,14 @@ class CheckpointMixin(object):
         if self._group_is_match():
             completion, _ = CompletedMatchWaitPage.objects.get_or_create(
                 app_name = self.subsession.app_name,
-                wait_page_index = self.index_in_pages,
+                page_index = self.index_in_pages,
                 match_pk = self.match.pk
             )
             completion.save()
         else:
             completion, _ = CompletedSubsessionWaitPage.objects.get_or_create(
                 app_name = self.subsession.app_name,
-                wait_page_index = self.index_in_pages,
+                page_index = self.index_in_pages,
                 subsession_pk = self.subsession.pk
             )
             completion.save()
@@ -432,7 +431,7 @@ class SequenceMixin(OTreeMixin):
         context = {'form': kwargs.get('form') or kwargs.get('formset')}
         context.update(self.variables_for_template() or {})
         context.update(self._variables_for_all_templates())
-        context.update(self._set_time_limit())
+        context.update(self._get_time_limit_context())
 
         if settings.DEBUG:
             context[constants.debug_values] = self.get_debug_values()
@@ -523,27 +522,27 @@ class SequenceMixin(OTreeMixin):
         return None
 
 
-    def _set_time_limit(self):
+    def _get_time_limit_context(self):
         time_limit = self.time_limit_in_seconds()
         if not (time_limit is None or time_limit > 0):
             raise ValueError("Time limit must be None or a positive number.")
 
         if time_limit is None:
-            return
+            return {}
 
-        now = time.time()
-        page_expiration_time = now + time_limit
+        now = int(time.time())
+        page_expiration_time_if_start_now = now + time_limit
 
         expiration_info, created = PageExpirationTime.objects.get_or_create(
             app_name = self.subsession.app_name,
             page_index = self.index_in_pages,
             player_pk = self._user.pk,
-            defaults = {'expiration_time_stamp': page_expiration_time}
+            defaults = {'expiration_time': page_expiration_time_if_start_now}
         )
         expiration_info.save()
 
-        page_expiration_time = expiration_info.expiration_time_stamp
-        remaining_seconds = max(0, int(page_expiration_time - time.time()))
+        page_expiration_time = expiration_info.expiration_time
+        remaining_seconds = max(0, page_expiration_time - now)
 
         minutes_component, seconds_component = divmod(remaining_seconds, 60)
 
@@ -556,10 +555,10 @@ class SequenceMixin(OTreeMixin):
 
     def _get_time_limit_was_exceeded(self, POST):
         # TODO: add hidden field to forms
-        if POST['client_side_time_limit_exceeded']:
+        if POST.get('client_side_time_limit_exceeded'):
            return True
 
-        expiration_info = PageExpirationTimes.objects.filter(
+        expiration_info = PageExpirationTime.objects.filter(
             app_name = self.subsession.app_name,
             page_index = self.index_in_pages,
             player_pk = self._user.pk,
@@ -569,7 +568,7 @@ class SequenceMixin(OTreeMixin):
             return False
         # first (and only) result from query set
         expiration_info = expiration_info[0]
-        return time.time() > (expiration_info.expiration_time_stamp + settings.TIME_LIMIT_LATENCY_ALLOWANCE_SECONDS)
+        return time.time() > (expiration_info.expiration_time + settings.TIME_LIMIT_LATENCY_ALLOWANCE_SECONDS)
 
 
 
@@ -598,7 +597,7 @@ class ModelFormMixin(object):
         self.post_processing_on_valid_form(form)
         self.after_valid_form_submission()
         self.update_indexes_in_sequences()
-        return self._redirect_to_page_the_user_should_be_on(self)
+        return self._redirect_to_page_the_user_should_be_on()
 
 
 class PlayerSequenceMixin(SequenceMixin):
