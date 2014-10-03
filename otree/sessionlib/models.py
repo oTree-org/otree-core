@@ -239,8 +239,6 @@ class SessionUser(ModelWithVars):
 
     ip_address = models.IPAddressField(null = True)
 
-    # stores when the page was first visited
-    _time_spent_on_each_page = models.PickleField(default=lambda:[])
     _last_page_timestamp = models.DateTimeField(null=True)
 
     is_on_wait_page = models.BooleanField(default=False)
