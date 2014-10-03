@@ -1,22 +1,19 @@
-import babel.numbers
-from django.conf import settings
-from decimal import Decimal
+import hashlib
+import os
 import urllib
 import urlparse
-from django.utils.importlib import import_module
-import subprocess
-from django.template.defaultfilters import title
-from otree import constants
-import os
-import hashlib
-from os.path import dirname, abspath, join
-from ast import literal_eval
-import copy
-from easymoney import Money
-from django import forms
-
 from decimal import Decimal
-from itertools import groupby
+from os.path import dirname, join
+
+import babel.numbers
+from django import forms
+from django.conf import settings
+from django.template.defaultfilters import title
+from django.utils.importlib import import_module
+from easymoney import Money
+
+from otree import constants
+
 
 # R: Should not be needed
 class _MoneyInput(forms.NumberInput):

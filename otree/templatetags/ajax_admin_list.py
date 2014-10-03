@@ -1,5 +1,5 @@
+# CW 2014-10-3: renamed this module from otree to otree_tags because "import otree" was importing this module instead of top-level otree module
 from __future__ import unicode_literals
-
 import datetime
 import json
 import urllib
@@ -10,20 +10,16 @@ from django.contrib.admin.util import (lookup_field, display_for_field,
     display_for_value, label_for_field)
 from django.contrib.admin.views.main import (ALL_VAR, EMPTY_CHANGELIST_VALUE,
     ORDER_VAR, PAGE_VAR, SEARCH_VAR)
-from django.contrib.admin.templatetags.admin_static import static
 from django.contrib.admin.templatetags import admin_list
 from django.core.exceptions import ObjectDoesNotExist
-from otree.db import models
-from django.utils import formats
 from django.utils.html import escapejs, format_html
 from django.utils.safestring import mark_safe
-from django.utils.text import capfirst
 from django.utils.translation import ugettext as _
 from django.utils.encoding import force_text
 from django.template import Library
-from django.template.loader import get_template
-from django.template.context import Context
-from otree import common
+
+from ..db import models
+
 
 DOT = '.'
 
