@@ -6,7 +6,7 @@ from Queue import Queue
 import time
 from otree.sessionlib.models import Session
 import coverage
-from otree.session import create_session, SessionTypeDirectory, get_session_types
+from otree.session import create_session, SessionTypeDirectory
 import itertools
 from otree.constants import special_category_bots
 
@@ -128,7 +128,7 @@ def run_all_sessions_without_coverage():
     '''2014-8-17: having trouble getting coverage.py to report correct numbers
      when i test multiple sessions with coverage. so removing coverage from test_all'''
     successes = []
-    for session_type in get_session_types():
+    for session_type in SessionTypeDirectory.select():
         session_type_name = session_type.name
         success = run_session(session_type_name)
         successes.append((session_type_name, success))

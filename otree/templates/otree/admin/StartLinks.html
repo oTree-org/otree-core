@@ -6,24 +6,7 @@
 
 {% block content %}
 
-    {% if doc %}
-        <h3>Session description</h3>
-        <p>
-        {{ doc }}
-        </p>
-    {% endif %}
-
-    <h3>Description</h3>
-    <table class="table">
-
-    {% for app in subsession_apps %}
-        <tr>
-            <th>{{ app.name }}</th>
-            <td>{{ app.doc|safe }}</td>
-        </tr>
-
-    {% endfor %}
-    </table>
+    {% include 'otree/SessionInfo.html' %}
 
     <h3>
         Start links

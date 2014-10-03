@@ -163,7 +163,6 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
         'Participant': {
             'label',
             'ip_address',
-            #'_time_spent_on_each_page',
         },
     }[Model.__name__]
 

@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpRespons
 import vanilla
 import otree.constants as constants
 from otree.sessionlib.models import Session
-from otree.session import create_session, SessionTypeDirectory, demo_enabled_session_types
+from otree.session import create_session, SessionTypeDirectory
 import threading
 import time
 import urllib
@@ -24,7 +24,7 @@ class DemoIndex(vanilla.View):
         intro_text = getattr(get_session_module(), 'demo_page_intro_text', '')
 
         session_info = []
-        for session_type in demo_enabled_session_types():
+        for session_type in SessionTypeDirectory(demo_only=True).select():
             session_info.append(
                 {
                     'type_name': session_type.name,
@@ -66,8 +66,7 @@ def get_session(type_name):
     if sessions.exists():
         return sessions[:1].get()
 
-def info_about_session_type(session_type_name):
-    session_type = SessionTypeDirectory().get_item(session_type_name)
+def info_about_session_type(session_type):
 
     # collapse repeated subsessions, encode as follows: [[app_name, num_rounds], [app_name2, num_occurrences2], ...]
 
@@ -100,7 +99,8 @@ def render_to_start_links_page(request, session, is_demo_page):
             'is_demo_page': is_demo_page,
     }
 
-    context_data.update(info_about_session_type(session.type_name))
+    session_type = SessionTypeDirectory(demo_only=True).get_item(session.type_name)
+    context_data.update(info_about_session_type(session_type))
 
     return render_to_response(
         'otree/admin/StartLinks.html',
@@ -116,12 +116,14 @@ class Demo(vanilla.View):
     def get(self, *args, **kwargs):
         session_type_name=urllib.unquote_plus(kwargs['session_type'])
 
+
+        session_dir = SessionTypeDirectory(demo_only=True)
         try:
-            SessionTypeDirectory().get_item(session_type_name)
+            session_dir.get_item(session_type_name)
         except KeyError:
             return HttpResponseNotFound('Session type "{}" not found'.format(session_type_name))
         else:
-            if not session_type_name in [st.name for st in demo_enabled_session_types()]:
+            if not session_type_name in [st.name for st in session_dir.select()]:
                 return HttpResponseNotFound('Session type "{}" not enabled for demo'.format(session_type_name))
 
 
