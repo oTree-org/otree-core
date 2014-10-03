@@ -44,7 +44,7 @@ class SessionType(object):
         return [[k,len(list(g))] for k, g in groupby(self.subsession_apps)]
 
 
-    def participants_lowest_common_multiple(self):
+    def lcm(self):
         participants_per_match_list = []
         for app_label, number_of_rounds in self.subsession_app_counts():
             models_module = import_module('{}.models'.format(app_label))
@@ -89,7 +89,7 @@ def create_session(type_name, num_participants, label='', special_category=None,
     session.save()
 
     # check that it divides evenly
-    if num_participants % session_type.lowest_common_multiple_participants():
+    if num_participants % session_type.lcm():
         raise ValueError('Number of participants does not divide evenly')
 
     session_experimenter = SessionExperimenter()

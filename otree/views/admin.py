@@ -38,14 +38,17 @@ class SessionTypes(vanilla.View):
 
 class CreateSessionForm(forms.Form):
 
-    
+    def __init__(self, *args, **kwargs):
+        session_type_name = kwargs.pop('session_type_name')
+        self.session_type = SessionTypeDirectory().get_item(session_type_name)
+        super(CreateSessionForm, self).__init__(*args, **kwargs)
 
     num_participants = forms.IntegerField()
     base_pay = forms.MoneyField()
 
     def clean_num_participants(self, cleaned_data):
-        session_type
-        if not cleaned_data['num_participants'] %
+        if not cleaned_data['num_participants'] % self.session_type.lcm():
+            raise ValueError('Number of participants does not divide evenly')
 
 
 @user_passes_test(lambda u: u.is_staff)
@@ -72,9 +75,9 @@ class CreateSession(vanilla.FormView):
 
 
     def form_valid(self, form):
-        num_participants = self.request.POST['num_participants']
         session = create_session(
-
-            num_participants
+            num_participants = self.request.POST['num_participants'],
+            base_pay = self.request.POST['base_pay']
         )
+        
         return HttpResponseRedirect(self.get_success_url())
