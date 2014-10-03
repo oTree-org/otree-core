@@ -1,5 +1,5 @@
+# CW 2014-10-3: renamed this module from otree to otree_tags because "import otree" was importing this module instead of top-level otree module
 from __future__ import unicode_literals
-
 import datetime
 import json
 import urllib
