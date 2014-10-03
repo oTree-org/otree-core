@@ -12,7 +12,7 @@ from otree.common import get_session_module, get_models_module, app_name_format
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
 from otree.views.demo import escaped_start_link_url, info_about_session_type
-from django import forms
+from otree import forms
 
 @user_passes_test(lambda u: u.is_staff)
 @login_required
@@ -38,9 +38,13 @@ class SessionTypes(vanilla.View):
 
 class CreateSessionForm(forms.Form):
 
-    def
+    
+
+    num_participants = forms.IntegerField()
+    base_pay = forms.MoneyField()
 
     def clean_num_participants(self, cleaned_data):
+        session_type
         if not cleaned_data['num_participants'] %
 
 

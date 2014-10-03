@@ -26,6 +26,10 @@ class SessionType(object):
     def __init__(self, name, subsession_apps, base_pay, participants_per_session,
                  participants_per_demo_session = None, is_for_mturk=False, doc=None, assign_to_matches_on_the_fly=False):
         self.name = name
+
+        if len(session_type.subsession_apps) == 0:
+            raise ValueError('Need at least one subsession.')
+
         self.subsession_apps = subsession_apps
         self.base_pay = base_pay
         self.participants_per_demo_session = participants_per_demo_session
@@ -40,7 +44,7 @@ class SessionType(object):
         return [[k,len(list(g))] for k, g in groupby(self.subsession_apps)]
 
 
-    def lowest_common_multiple_participants(self):
+    def participants_lowest_common_multiple(self):
         participants_per_match_list = []
         for app_label, number_of_rounds in self.subsession_app_counts():
             models_module = import_module('{}.models'.format(app_label))
@@ -84,10 +88,9 @@ def create_session(type_name, num_participants, label='', special_category=None,
 
     session.save()
 
-    if len(session_type.subsession_apps) == 0:
-        raise ValueError('Need at least one subsession.')
-
     # check that it divides evenly
+    if num_participants % session_type.lowest_common_multiple_participants():
+        raise ValueError('Number of participants does not divide evenly')
 
     session_experimenter = SessionExperimenter()
     session_experimenter.save()
