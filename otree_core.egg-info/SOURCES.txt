@@ -90,8 +90,8 @@ otree/templates/otree/experimenter/StartSession.html
 otree/templates/otree/experimenter/WaitUntilParticipantsAreAssigned.html
 otree/templatetags/__init__.py
 otree/templatetags/ajax_admin_list.py
-otree/templatetags/otree.py
 otree/templatetags/otree_dashboard.py
+otree/templatetags/otree_tags.py
 otree/test/__init__.py
 otree/test/client.py
 otree/test/run.py
