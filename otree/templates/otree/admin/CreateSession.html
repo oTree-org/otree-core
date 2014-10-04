@@ -1,4 +1,6 @@
+{% load otree_tags floppyforms %}
 {% extends "otree/BaseBuiltIn.html" %}
+
 
 {% block title %}
     {{ session_type_name }}
@@ -8,6 +10,10 @@
 
     {% include 'otree/SessionInfo.html' %}
 
+    {% formrow form.num_participants with label="Number of participants" %}
 
+    {% formrow form.base_pay with label="Base pay" %}
+
+    {% next_button %}
 
 {% endblock %}

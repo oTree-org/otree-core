@@ -13,6 +13,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
 from otree.views.demo import escaped_start_link_url, info_about_session_type
 from otree import forms
+from django.core.urlresolvers import reverse
 
 @user_passes_test(lambda u: u.is_staff)
 @login_required
@@ -25,7 +26,7 @@ class SessionTypes(vanilla.View):
     def get(self, *args, **kwargs):
 
         session_types_info = []
-        for session_type in SessionTypeDirectory.select():
+        for session_type in SessionTypeDirectory().select():
             session_types_info.append(
                 {
                     'type_name': session_type.name,
@@ -39,24 +40,21 @@ class SessionTypes(vanilla.View):
 class CreateSessionForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
-        session_type_name = kwargs.pop('session_type_name')
-        self.session_type = SessionTypeDirectory().get_item(session_type_name)
+        self.session_type = kwargs.pop('session_type')
         super(CreateSessionForm, self).__init__(*args, **kwargs)
 
     num_participants = forms.IntegerField()
     base_pay = forms.MoneyField()
 
     def clean_num_participants(self, cleaned_data):
-        if not cleaned_data['num_participants'] % self.session_type.lcm():
-            raise ValueError('Number of participants does not divide evenly')
+        lcm = self.session_type.lcm()
+        if not cleaned_data['num_participants'] % lcm:
+            raise ValueError('Number of participants must be a multiple of {}'.format(lcm))
 
 
 @user_passes_test(lambda u: u.is_staff)
 @login_required
 class CreateSession(vanilla.FormView):
-
-    def get_success_url(self):
-
 
     @classmethod
     def url_pattern(cls):
@@ -67,17 +65,17 @@ class CreateSession(vanilla.FormView):
         self.session_type = SessionTypeDirectory().get_item(session_type_name)
 
     def get(self, *args, **kwargs):
-
-        context = info_about_session_type(session_type)
+        context = info_about_session_type(self.session_type)
         return render_to_response('otree/admin/CreateSession.html', context)
 
-    def post(self, request, *args, **kwargs):
-
+    def get_form(self, data=None, files=None, **kwargs):
+        kwargs['session_type'] = self.session_type
+        return super(CreateSession, self).get_form(data, files, **kwargs)
 
     def form_valid(self, form):
         session = create_session(
             num_participants = self.request.POST['num_participants'],
             base_pay = self.request.POST['base_pay']
         )
-        
-        return HttpResponseRedirect(self.get_success_url())
+        admin_url = reverse('admin:%s_%s_change' % (session._meta.app_label, session._meta.module_name), args=(session.pk,))
+        return HttpResponseRedirect(admin_url)
