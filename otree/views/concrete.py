@@ -37,7 +37,7 @@ class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
 
 class WaitUntilAssignedToMatch(PlayerSequenceMixin, PlayerMixin, WaitPageMixin, vanilla.View):
     """
-    this is visited after Initialize, to make sure the player has a match and treatment.
+    this is visited after Initialize, to make sure the player has a match
     the player can be assigned at any time, but this is a safeguard,
     and therefore should be at the beginning of each subsession.
     Should it instead be called after InitializeParticipant?
@@ -47,7 +47,7 @@ class WaitUntilAssignedToMatch(PlayerSequenceMixin, PlayerMixin, WaitPageMixin, 
     name_in_url = 'shared'
 
     def _is_complete(self):
-        return self.match and self.treatment
+        return self.match
 
     def body_text(self):
         return 'Waiting until other participants and/or the study supervisor are ready.'

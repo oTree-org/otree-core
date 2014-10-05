@@ -25,11 +25,10 @@ class BaseMatch(SaveTheChange, models.Model):
                 return p
 
     @classmethod
-    def _create(cls, treatment):
+    def _create(cls, subsession):
         match = cls(
-            treatment = treatment,
-            subsession = treatment.subsession,
-            session = treatment.session
+            subsession = subsession,
+            session = subsession.session
         )
         # need to save it before you assign the player.match ForeignKey
         match.save()

@@ -104,13 +104,6 @@ def create_session(type_name, label='', special_category=None, preassign_players
                 )
             subsession.save()
 
-            #FIXME: make sure this returns the same thing each time, so that you can reassign to the same treatment
-            treatments = models_module.treatments()
-            for t_index, t in enumerate(treatments):
-                t._index_within_subsession = t_index
-                t.subsession = subsession
-                t.save()
-
             session.add_subsession(subsession)
 
             experimenter = Experimenter(session=session)

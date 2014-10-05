@@ -1,5 +1,4 @@
 SubsessionClass = 'SubsessionClass'
-TreatmentClass = 'TreatmentClass'
 MatchClass = 'MatchClass'
 PlayerClass = 'PlayerClass'
 UserClass = 'UserClass'
@@ -9,7 +8,6 @@ match_id = 'match_id'
 user_code = 'user_code'
 subsession_code = 'subsession_code'
 subsession_code_obfuscated = 'exp_code'
-treatment_code = 'treatment_code'
 
 nickname = 'nickname'
 

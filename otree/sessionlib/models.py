@@ -182,9 +182,6 @@ class Session(ModelWithVars):
     def add_subsession(self, subsession):
         subsession.session = self
         subsession.save()
-        for treatment in subsession.treatments:
-            treatment.session = self
-            treatment.save()
 
     def delete(self, using=None):
         for subsession in self.subsessions():

@@ -18,16 +18,9 @@ class Subsession(otree.models.BaseSubsession):
     name_in_url = '{{ app_name }}'
 
 
-class Treatment(otree.models.BaseTreatment):
-    # <built-in>
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
-
-
 class Match(otree.models.BaseMatch):
     # <built-in>
     subsession = models.ForeignKey(Subsession)
-    treatment = models.ForeignKey(Treatment)
     # </built-in>
 
     players_per_match = 1
@@ -40,7 +33,6 @@ class Match(otree.models.BaseMatch):
 class Player(otree.models.BasePlayer):
     # <built-in>
     subsession = models.ForeignKey(Subsession)
-    treatment = models.ForeignKey(Treatment, null = True)
     match = models.ForeignKey(Match, null = True)
     # </built-in>
 
@@ -64,6 +56,3 @@ class Player(otree.models.BasePlayer):
     def role(self):
         # you can make this depend of self.index_among_players_in_match
         return ''
-
-def treatments():
-    return [Treatment.create()]

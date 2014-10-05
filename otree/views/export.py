@@ -25,7 +25,7 @@ from otree.db import models
 import easymoney
 
 LINE_BREAK = '\r\n'
-MODEL_NAMES = ["Participant", "Player", "Match", "Treatment", "Subsession", "Session"]
+MODEL_NAMES = ["Participant", "Player", "Match", "Subsession", "Session"]
 
 CONCEPTUAL_OVERVIEW_TEXT = """
 oTree data is exported in CSV (comma-separated values) format.
@@ -261,7 +261,6 @@ def export(request, app_label):
 
     model_names_as_fk = {
         'match': 'Match',
-        'treatment': 'Treatment',
         'subsession': 'Subsession',
         'participant': 'Participant',
         'session': 'Session',
@@ -274,7 +273,6 @@ def export(request, app_label):
     fk_names = [
         'participant',
         'match',
-        'treatment',
         'subsession',
         'session',
     ]

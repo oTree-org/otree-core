@@ -47,7 +47,7 @@ def is_subsession_app(app_label):
         models_module = import_module('{}.models'.format(app_label))
     except ImportError:
         return False
-    class_names = ['Player', 'Match', 'Treatment', 'Subsession']
+    class_names = ['Player', 'Match', 'Subsession']
     return all(hasattr(models_module, ClassName) for ClassName in class_names)
 
 def git_commit_timestamp():

@@ -53,19 +53,18 @@ class OTreeMixin(object):
     """Base mixin class for oTree views.
     Takes care of:
     - retrieving model classes and objects automatically,
-    so you can access view.treatment, self.match, self.player, etc.
+    so you can access self.match, self.player, etc.
     """
 
     def load_classes(self):
         """
         Even though we only use PlayerClass in load_objects,
-        we use {Match/Treatment/Subsession}Class elsewhere.
+        we use {Match/Subsession}Class elsewhere.
         """
 
         app_name = self._session_user._current_app_name
         models_module = otree.common.get_models_module(app_name)
         self.SubsessionClass = models_module.Subsession
-        self.TreatmentClass = models_module.Treatment
         self.MatchClass = models_module.Match
         self.PlayerClass = models_module.Player
 
@@ -174,7 +173,7 @@ class PlayerMixin(object):
         self.match = self.player.match
         # 2/11/2014: match may be undefined because the player may be at a waiting screen
         # before experimenter assigns to a match & treatment.
-        self.treatment = self.player.treatment
+
 
     def objects_to_save(self):
         return [self._user, self._session_user, self.match, self.subsession.session]
@@ -188,7 +187,7 @@ class ExperimenterMixin(object):
         self.load_user()
 
     def objects_to_save(self):
-        return [self._user, self.subsession, self._session_user] + self.subsession.players + self.subsession.matches #+ self.subsession.treatments
+        return [self._user, self.subsession, self._session_user] + self.subsession.players + self.subsession.matches
 
 class WaitPageMixin(object):
 
@@ -474,7 +473,6 @@ class SequenceMixin(OTreeMixin):
                     page = Page()
                     page.player = self.player
                     page.match = self.match
-                    page.treatment = self.treatment
                     page.subsession = self.subsession
                     if not page.participate_condition():
                         continue
@@ -611,7 +609,6 @@ class PlayerSequenceMixin(SequenceMixin):
         return [('Index among players in match', self.player.index_among_players_in_match),
                 ('Player', self.player.pk),
                 ('Match', match_id),
-                ('Treatment', self.treatment.pk),
                 ('Session code', self.session.code),]
 
 

@@ -5,7 +5,6 @@ from importlib import import_module
 from otree.common import _players, _matches
 
 subsessions = import_module('otree.models.subsessions')
-treatments = import_module('otree.models.treatments')
 matches = import_module('otree.models.matches')
 players = import_module('otree.models.players')
 
@@ -44,13 +43,6 @@ class BaseSubsession(subsessions.BaseSubsession):
     )
 
     @property
-    def treatments(self):
-        if hasattr(self, '_treatments'):
-            return self._treatments
-        self._treatments = list(self.treatment_set.all())
-        return self._treatments
-
-    @property
     def matches(self):
         return _matches(self)
 
@@ -62,36 +54,11 @@ class BaseSubsession(subsessions.BaseSubsession):
     def app_name(self):
         return self._meta.app_label
 
-    def pick_treatments(self, previous_round_treatments):
-        return super(BaseSubsession, self).pick_treatments(previous_round_treatments)
-
     def pick_match_groups(self, previous_round_match_groups):
         return super(BaseSubsession, self).pick_match_groups(previous_round_match_groups)
 
     def previous_rounds(self):
         return super(BaseSubsession, self).previous_rounds()
-
-    class Meta:
-        abstract = True
-        ordering = ['pk']
-
-class BaseTreatment(treatments.BaseTreatment):
-
-    @property
-    def matches(self):
-        return _matches(self)
-
-    @property
-    def players(self):
-        return _players(self)
-
-    label = models.CharField(max_length = 300, null = True, blank = True)
-
-    session = models.ForeignKey(
-        Session,
-        null=True,
-        related_name = '%(app_label)s_%(class)s'
-    )
 
     class Meta:
         abstract = True

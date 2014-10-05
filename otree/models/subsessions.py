@@ -84,12 +84,6 @@ class BaseSubsession(models.Model):
             if s.app_name == self.app_name:
                 return s
 
-    def _picked_treatments(self):
-        return [m.treatment for m in self.match_set.all()]
-
-    def pick_treatments(self, previous_round_treatments):
-        return previous_round_treatments
-
     def pick_match_groups(self, previous_round_match_groups):
         return previous_round_match_groups
 
@@ -106,16 +100,6 @@ class BaseSubsession(models.Model):
         """number of matches in this subsession"""
         return self.player_set.count()/self._MatchClass().players_per_match
 
-    def _random_treatments(self):
-        num_matches = self._num_matches()
-        treatments = list(self.treatment_set.all())
-        random.shuffle(treatments)
-        iterator = itertools.cycle(treatments)
-        random_treatments = []
-        for i in range(num_matches):
-            random_treatments.append(iterator.next())
-        return random_treatments
-
     def _random_match_groups(self):
         players = list(self.player_set.all())
         random.shuffle(players)
@@ -127,11 +111,6 @@ class BaseSubsession(models.Model):
             match_groups.append(players[start_index:end_index])
         return match_groups
 
-    def _corresponding_treatments(self, earlier_round):
-        earlier_treatment_indexes = [t._index_within_subsession for t in earlier_round._picked_treatments()]
-        current_treatments = list(self.treatment_set.all())
-        return [current_treatments[i] for i in earlier_treatment_indexes]
-
     def _match_groups(self):
         return [list(m.player_set.all()) for m in self.match_set.all()]
 
@@ -139,16 +118,9 @@ class BaseSubsession(models.Model):
         return import_module('{}.models'.format(self._meta.app_label)).Match
 
     def _create_empty_matches(self):
-        self.save()
-        previous_round = self.previous_round()
-        if previous_round:
-            treatments = self._corresponding_treatments(previous_round)
-        else:
-            treatments = self._random_treatments()
-        treatments = self.pick_treatments(treatments)
         MatchClass = self._MatchClass()
-        for t in treatments:
-            m = MatchClass._create(t)
+        for i in range(len(self.players)/MatchClass.players_per_match):
+            m = MatchClass._create(self)
 
     def first_round_match_groups(self):
         return self._random_match_groups()
@@ -162,7 +134,7 @@ class BaseSubsession(models.Model):
             match_groups = self.pick_match_groups(previous_round_match_groups)
             for match_group in match_groups:
                 for player in match_group:
-                    player = player._me_in_next_subsession()
+                    player = player._me_in_next_subsession
         for match_group in match_groups:
             match = self._next_open_match()
             for player in match_group:

@@ -64,7 +64,6 @@ class BasePlayer(User):
         if not match:
             match = self.subsession._next_open_match()
         self.match = match
-        self.treatment = match.treatment
         self.save()
         self.index_among_players_in_match = match.player_set.count()
         self.save()
@@ -73,7 +72,7 @@ class BasePlayer(User):
         return self._meta.get_field('match').rel.to
 
     def _pages_completed(self):
-        if not (self.treatment and self.visited):
+        if not self.visited:
             return None
         return '{}/{} pages'.format(
             self.index_in_pages,
