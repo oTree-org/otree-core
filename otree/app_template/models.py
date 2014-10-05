@@ -54,5 +54,5 @@ class Player(otree.models.BasePlayer):
 
 
     def role(self):
-        # you can make this depend of self.index_among_players_in_match
+        # you can make this depend of self.id_in_match
         return ''

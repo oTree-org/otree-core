@@ -16,7 +16,7 @@ class BaseMatch(SaveTheChange, models.Model):
 
     def get_player_by_index(self, index):
         for p in self.players:
-            if p.index_among_players_in_match == index:
+            if p.id_in_match == index:
                 return p
 
     def get_player_by_role(self, role):

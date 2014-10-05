@@ -108,7 +108,7 @@ def _views_module(model_instance):
 def _players(self):
     if hasattr(self, '_players'):
         return self._players
-    self._players = list(self.player_set.order_by('index_among_players_in_match'))
+    self._players = list(self.player_set.order_by('id_in_match'))
     return self._players
 
 def _matches(self):

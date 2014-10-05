@@ -38,7 +38,7 @@ class BaseSubsession(models.Model):
     _previous_subsession_object_id = models.PositiveIntegerField(null=True)
 
 
-    #FIXME: this should start at 1, to be consistent with index_among_players_in_match
+    #FIXME: this should start at 1, to be consistent with id_in_match
     _index_in_subsessions = models.PositiveIntegerField(
         null=True,
         doc="starts from 0. indicates the position of this subsession among other subsessions in the session."

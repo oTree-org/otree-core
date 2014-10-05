@@ -606,7 +606,7 @@ class PlayerSequenceMixin(SequenceMixin):
             match_id = self.match.pk
         except:
             match_id = ''
-        return [('Index among players in match', self.player.index_among_players_in_match),
+        return [('Index among players in match', self.player.id_in_match),
                 ('Player', self.player.pk),
                 ('Match', match_id),
                 ('Session code', self.session.code),]

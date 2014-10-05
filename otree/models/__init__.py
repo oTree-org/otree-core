@@ -94,7 +94,7 @@ class BaseMatch(matches.BaseMatch):
 
 class BasePlayer(players.BasePlayer):
     # starts from 1, not 0.
-    index_among_players_in_match = models.PositiveIntegerField(
+    id_in_match = models.PositiveIntegerField(
         null = True,
         doc="Index starting from 1. In multiplayer games, indicates whether this is player 1, player 2, etc."
     )

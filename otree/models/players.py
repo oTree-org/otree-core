@@ -65,7 +65,7 @@ class BasePlayer(User):
             match = self.subsession._next_open_match()
         self.match = match
         self.save()
-        self.index_among_players_in_match = match.player_set.count()
+        self.id_in_match = match.player_set.count()
         self.save()
 
     def _MatchClass(self):
