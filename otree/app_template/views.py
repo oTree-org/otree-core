@@ -26,7 +26,9 @@ class Introduction(Page):
             'my_variable_here': 1,
         }
 
-class ResultsWaitPage(MatchWaitPage):
+class ResultsWaitPage(WaitPage):
+
+    group = models.Match
 
     def after_all_players_arrive(self):
         self.match.set_payoffs()
