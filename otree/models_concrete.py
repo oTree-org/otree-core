@@ -26,7 +26,7 @@ class CompletedMatchWaitPage(models.Model):
 class CompletedSubsessionWaitPage(models.Model):
     app_name = models.CharField(max_length=300)
     page_index = models.PositiveIntegerField()
-    match_pk = models.PositiveIntegerField()
+    subsession_pk = models.PositiveIntegerField()
 
 class PageExpirationTime(models.Model):
     '''is calculated on GET'''

@@ -84,8 +84,8 @@ class BaseSubsession(models.Model):
             if s.app_name == self.app_name:
                 return s
 
-    def pick_match_groups(self, previous_round_match_groups):
-        return previous_round_match_groups
+    def pick_groups(self, previous_round_groups):
+        return previous_round_groups
 
     def _next_open_match(self):
         """Get the next match that is accepting players.
@@ -100,18 +100,18 @@ class BaseSubsession(models.Model):
         """number of matches in this subsession"""
         return self.player_set.count()/self._MatchClass().players_per_match
 
-    def _random_match_groups(self):
+    def _random_groups(self):
         players = list(self.player_set.all())
         random.shuffle(players)
-        match_groups = []
+        groups = []
         players_per_match = self._MatchClass().players_per_match
         for i in range(self._num_matches()):
             start_index = i*players_per_match
             end_index = start_index + players_per_match
-            match_groups.append(players[start_index:end_index])
-        return match_groups
+            groups.append(players[start_index:end_index])
+        return groups
 
-    def _match_groups(self):
+    def _groups(self):
         return [list(m.player_set.all()) for m in self.match_set.all()]
 
     def _MatchClass(self):
@@ -122,22 +122,22 @@ class BaseSubsession(models.Model):
         for i in range(len(self.players)/MatchClass.players_per_match):
             m = MatchClass._create(self)
 
-    def first_round_match_groups(self):
-        return self._random_match_groups()
+    def first_round_groups(self):
+        return self._random_groups()
 
     def _assign_players_to_matches(self):
         previous_round = self.previous_round()
         if not previous_round:
-            match_groups = self.first_round_match_groups()
+            groups = self.first_round_groups()
         else:
-            previous_round_match_groups = previous_round._match_groups()
-            match_groups = self.pick_match_groups(previous_round_match_groups)
-            for match_group in match_groups:
-                for player in match_group:
+            previous_round_groups = previous_round._groups()
+            groups = self.pick_groups(previous_round_groups)
+            for group in groups:
+                for player in group:
                     player = player._me_in_next_subsession
-        for match_group in match_groups:
+        for group in groups:
             match = self._next_open_match()
-            for player in match_group:
+            for player in group:
                 player._assign_to_match(match)
             match.save()
 

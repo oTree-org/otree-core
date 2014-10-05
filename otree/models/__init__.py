@@ -54,8 +54,8 @@ class BaseSubsession(subsessions.BaseSubsession):
     def app_name(self):
         return self._meta.app_label
 
-    def pick_match_groups(self, previous_round_match_groups):
-        return super(BaseSubsession, self).pick_match_groups(previous_round_match_groups)
+    def pick_groups(self, previous_round_groups):
+        return super(BaseSubsession, self).pick_groups(previous_round_groups)
 
     def previous_rounds(self):
         return super(BaseSubsession, self).previous_rounds()

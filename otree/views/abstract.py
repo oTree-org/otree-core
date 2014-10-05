@@ -269,11 +269,11 @@ class CheckpointMixin(object):
 
     def _group_is_match(self):
         '''returns True for match, False for subsession'''
-        if issubclass(self.group, otree.models.BaseMatch):
+        if issubclass(self.scope, otree.models.BaseMatch):
             return True
-        elif issubclass(self.group, otree.models.BaseSubsession):
+        elif issubclass(self.scope, otree.models.BaseSubsession):
             return False
-        raise ValueError('group must be set to either Match or Subsession')
+        raise ValueError('scope must be set to either Match or Subsession')
 
     def _is_complete(self):
         # check the "passed checkpoints" JSON field

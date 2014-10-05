@@ -28,7 +28,7 @@ class MyPage(Page):
 
 class ResultsWaitPage(WaitPage):
 
-    group = models.Match
+    scope = models.Match
 
     def after_all_players_arrive(self):
         self.match.set_payoffs()
