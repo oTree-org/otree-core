@@ -84,8 +84,8 @@ class BaseGroup(groups.BaseGroup):
     def get_player_by_role(self, role):
         return super(BaseGroup, self).get_player_by_role(role)
 
-    def get_player_by_index(self, index):
-        return super(BaseGroup, self).get_player_by_index(index)
+    def get_player_by_id(self, index):
+        return super(BaseGroup, self).get_player_by_id(index)
 
     class Meta:
         abstract = True

@@ -14,7 +14,7 @@ class BaseGroup(SaveTheChange, models.Model):
     def _is_ready_for_next_player(self):
         return len(self.player_set.all()) < self.players_per_group
 
-    def get_player_by_index(self, index):
+    def get_player_by_id(self, index):
         for p in self.players:
             if p.id_in_group == index:
                 return p
