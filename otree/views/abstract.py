@@ -39,7 +39,7 @@ from Queue import Queue
 import sys
 import floppyforms.__future__.models
 import otree.models
-from otree.models_concrete import PageVisit, WaitPageVisit, CompletedSubsessionWaitPage, CompletedMatchWaitPage, PageExpirationTime
+from otree.models_concrete import PageVisit, WaitPageVisit, CompletedSubsessionWaitPage, CompletedGroupWaitPage, PageExpirationTime
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -53,19 +53,19 @@ class OTreeMixin(object):
     """Base mixin class for oTree views.
     Takes care of:
     - retrieving model classes and objects automatically,
-    so you can access self.match, self.player, etc.
+    so you can access self.group, self.player, etc.
     """
 
     def load_classes(self):
         """
         Even though we only use PlayerClass in load_objects,
-        we use {Match/Subsession}Class elsewhere.
+        we use {Group/Subsession}Class elsewhere.
         """
 
         app_name = self._session_user._current_app_name
         models_module = otree.common.get_models_module(app_name)
         self.SubsessionClass = models_module.Subsession
-        self.MatchClass = models_module.Match
+        self.GroupClass = models_module.Group
         self.PlayerClass = models_module.Player
 
     def load_user(self):
@@ -170,13 +170,13 @@ class PlayerMixin(object):
     def load_objects(self):
         self.load_user()
         self.player = self._user
-        self.match = self.player.match
-        # 2/11/2014: match may be undefined because the player may be at a waiting screen
-        # before experimenter assigns to a match & treatment.
+        self.group = self.player.group
+        # 2/11/2014: group may be undefined because the player may be at a waiting screen
+        # before experimenter assigns to a group & treatment.
 
 
     def objects_to_save(self):
-        return [self._user, self._session_user, self.match, self.subsession.session]
+        return [self._user, self._session_user, self.group, self.subsession.session]
 
 class ExperimenterMixin(object):
 
@@ -187,7 +187,7 @@ class ExperimenterMixin(object):
         self.load_user()
 
     def objects_to_save(self):
-        return [self._user, self.subsession, self._session_user] + self.subsession.players + self.subsession.matches
+        return [self._user, self.subsession, self._session_user] + self.subsession.players + self.subsession.groups
 
 class WaitPageMixin(object):
 
@@ -251,10 +251,10 @@ class CheckpointMixin(object):
 
     def dispatch(self, request, *args, **kwargs):
         '''this is actually for sequence pages only, because of the _redirect_to_page_the_user_should_be_on()'''
-        if self._group_is_match():
-            self._match_or_subsession = self.match
+        if self._scope_is_group():
+            self._group_or_subsession = self.group
         else:
-            self._match_or_subsession = self.subsession
+            self._group_or_subsession = self.subsession
         if self.request_is_from_wait_page():
             return self._response_to_wait_page()
         else:
@@ -267,21 +267,21 @@ class CheckpointMixin(object):
                 return self._redirect_after_complete()
             return self.get_wait_page()
 
-    def _group_is_match(self):
+    def _scope_is_group(self):
         '''returns True for match, False for subsession'''
-        if issubclass(self.scope, otree.models.BaseMatch):
+        if issubclass(self.scope, otree.models.BaseGroup):
             return True
         elif issubclass(self.scope, otree.models.BaseSubsession):
             return False
-        raise ValueError('scope must be set to either Match or Subsession')
+        raise ValueError('scope must be set to either Group or Subsession')
 
     def _is_complete(self):
         # check the "passed checkpoints" JSON field
-        if self._group_is_match():
-            return CompletedMatchWaitPage.objects.filter(
+        if self._scope_is_group():
+            return CompletedGroupWaitPage.objects.filter(
                 app_name = self.subsession.app_name,
                 page_index = self.index_in_pages,
-                match_pk = self.match.pk
+                group_pk = self.group.pk
             ).exists()
         else:
             return CompletedSubsessionWaitPage.objects.filter(
@@ -291,7 +291,7 @@ class CheckpointMixin(object):
             ).exists()
 
     def _all_players_have_visited(self):
-        pks_to_wait_for = [p.pk for p in self._match_or_subsession.players]
+        pks_to_wait_for = [p.pk for p in self._group_or_subsession.players]
         pks_that_have_visited = WaitPageVisit.objects.filter(
             app_name = self.subsession.app_name,
             page_index = self.index_in_pages,
@@ -318,9 +318,9 @@ class CheckpointMixin(object):
 
     def _action(self):
         self.after_all_players_arrive()
-        for p in self._match_or_subsession.players:
+        for p in self._group_or_subsession.players:
             p.save()
-        self._match_or_subsession.save()
+        self._group_or_subsession.save()
 
     def participate_condition(self):
         return True
@@ -333,7 +333,7 @@ class CheckpointMixin(object):
         pass
 
     def body_text(self):
-        num_other_players = len(self._match_or_subsession.players) - 1
+        num_other_players = len(self._group_or_subsession.players) - 1
         if num_other_players > 1:
             return 'Waiting for the other players.'
         elif num_other_players == 1:
@@ -342,11 +342,11 @@ class CheckpointMixin(object):
             return 'Waiting'
 
     def _mark_complete(self):
-        if self._group_is_match():
-            completion, _ = CompletedMatchWaitPage.objects.get_or_create(
+        if self._scope_is_group():
+            completion, _ = CompletedGroupWaitPage.objects.get_or_create(
                 app_name = self.subsession.app_name,
                 page_index = self.index_in_pages,
-                match_pk = self.match.pk
+                group_pk = self.group.pk
             )
             completion.save()
         else:
@@ -360,7 +360,7 @@ class CheckpointMixin(object):
 
 class SequenceMixin(OTreeMixin):
     """
-    View that manages its position in the match sequence.
+    View that manages its position in the group sequence.
     for both players and experimenters
     """
 
@@ -472,7 +472,7 @@ class SequenceMixin(OTreeMixin):
                     #FIXME: just a prototype. there might be other attributes. also, not valid for experimenter pages
                     page = Page()
                     page.player = self.player
-                    page.match = self.match
+                    page.group = self.group
                     page.subsession = self.subsession
                     if not page.participate_condition():
                         continue
@@ -603,12 +603,12 @@ class PlayerSequenceMixin(SequenceMixin):
 
     def get_debug_values(self):
         try:
-            match_id = self.match.pk
+            group_id = self.group.pk
         except:
-            match_id = ''
-        return [('Index among players in match', self.player.id_in_match),
+            group_id = ''
+        return [('Index among players in group', self.player.id_in_group),
                 ('Player', self.player.pk),
-                ('Match', match_id),
+                ('Group', group_id),
                 ('Session code', self.session.code),]
 
 
@@ -622,8 +622,8 @@ class PlayerUpdateView(ModelFormMixin, PlayerSequenceMixin, PlayerMixin, vanilla
 
     def get_object(self):
         Cls = self.form_model
-        if Cls == self.MatchClass:
-            return self.match
+        if Cls == self.GroupClass:
+            return self.group
         elif Cls == self.PlayerClass:
             return self.player
         elif Cls == seq_models.StubModel:

@@ -1,9 +1,9 @@
 SubsessionClass = 'SubsessionClass'
-MatchClass = 'MatchClass'
+GroupClass = 'GroupClass'
 PlayerClass = 'PlayerClass'
 UserClass = 'UserClass'
 
-match_id = 'match_id'
+group_id = 'group_id'
 
 user_code = 'user_code'
 subsession_code = 'subsession_code'

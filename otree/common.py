@@ -47,7 +47,7 @@ def is_subsession_app(app_label):
         models_module = import_module('{}.models'.format(app_label))
     except ImportError:
         return False
-    class_names = ['Player', 'Match', 'Subsession']
+    class_names = ['Player', 'Group', 'Subsession']
     return all(hasattr(models_module, ClassName) for ClassName in class_names)
 
 def git_commit_timestamp():
@@ -108,14 +108,14 @@ def _views_module(model_instance):
 def _players(self):
     if hasattr(self, '_players'):
         return self._players
-    self._players = list(self.player_set.order_by('id_in_match'))
+    self._players = list(self.player_set.order_by('id_in_group'))
     return self._players
 
-def _matches(self):
-    if hasattr(self, '_matches'):
-        return self._matches
-    self._matches = list(self.match_set.all())
-    return self._matches
+def _groups(self):
+    if hasattr(self, '_groups'):
+        return self._groups
+    self._groups = list(self.group_set.all())
+    return self._groups
 
 def money_range(first, last, increment=Money(0.01)):
     assert last >= first

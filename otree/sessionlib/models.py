@@ -98,7 +98,7 @@ class Session(ModelWithVars):
 
     comment = models.TextField()
 
-    _players_assigned_to_matches = models.BooleanField(default=False)
+    _players_assigned_to_groups = models.BooleanField(default=False)
 
     def base_pay_display(self):
         return currency(self.base_pay)
@@ -198,11 +198,11 @@ class Session(ModelWithVars):
         return True
     payments_ready.boolean = True
 
-    def _assign_players_to_matches(self):
+    def _assign_players_to_groups(self):
         for subsession in self.subsessions():
-            subsession._create_empty_matches()
-            subsession._assign_players_to_matches()
-        self._players_assigned_to_matches = True
+            subsession._create_empty_groups()
+            subsession._assign_players_to_groups()
+        self._players_assigned_to_groups = True
         self.save()
 
     class Meta:
@@ -358,9 +358,9 @@ class Participant(SessionUser):
             return total_pay
         return u'{} (incomplete)'.format(total_pay)
 
-    def _assign_to_matches(self):
+    def _assign_to_groups(self):
         for p in self.players:
-            p._assign_to_match()
+            p._assign_to_group()
 
     mturk_assignment_id = models.CharField(max_length = 50, null = True)
     mturk_worker_id = models.CharField(max_length = 50, null = True)

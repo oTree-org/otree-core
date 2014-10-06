@@ -71,11 +71,11 @@ def run_session(session_type_name):
     session_experimenter_bot.get(session.session_experimenter._start_url(), follow=True)
     session_experimenter_bot.post(session.session_experimenter._start_url(), follow=True)
 
-    # since players are assigned to treatments and matches in a background thread,
+    # since players are assigned to treatments and groups in a background thread,
     # we need to wait for that to complete.
     while True:
         session = Session.objects.get(id=session.id)
-        if session._players_assigned_to_matches:
+        if session._players_assigned_to_groups:
             break
         time.sleep(1)
 

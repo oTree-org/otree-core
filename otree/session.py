@@ -10,7 +10,7 @@ from itertools import groupby
 
 class SessionType(object):
     def __init__(self, name, subsession_apps, base_pay, participants_per_session,
-                 participants_per_demo_session = None, is_for_mturk=False, doc=None, assign_to_matches_on_the_fly=False):
+                 participants_per_demo_session = None, is_for_mturk=False, doc=None, assign_to_groups_on_the_fly=False):
         self.name = name
         self.subsession_apps = subsession_apps
         self.base_pay = base_pay
@@ -19,8 +19,8 @@ class SessionType(object):
         self.is_for_mturk = is_for_mturk
         self.doc = doc.strip()
 
-        # on MTurk, assign_to_matches_on_the_fly = True
-        self.assign_to_matches_on_the_fly = assign_to_matches_on_the_fly
+        # on MTurk, assign_to_groups_on_the_fly = True
+        self.assign_to_groups_on_the_fly = assign_to_groups_on_the_fly
 
     def subsession_app_counts(self):
         '''collapses repetition in a list of subsession apps into counts'''
@@ -40,11 +40,11 @@ def demo_enabled_session_types():
     return [session_type for session_type in get_session_types() if get_session_module().show_on_demo_page(session_type.name)]
 
 @transaction.atomic
-def create_session(type_name, label='', special_category=None, preassign_players_to_matches=False):
+def create_session(type_name, label='', special_category=None, preassign_players_to_groups=False):
     """2014-5-2: i could implement this by overriding the __init__ on the Session model, but I don't really know how that works,
     and it seems to be a bit discouraged:
     https://docs.djangoproject.com/en/1.4/ref/models/instances/#django.db.models.Model
-    2014-9-22: preassign to matches for demo mode.
+    2014-9-22: preassign to groups for demo mode.
     """
     try:
         session_type = SessionTypeDirectory().get_item(type_name)
@@ -88,11 +88,11 @@ def create_session(type_name, label='', special_category=None, preassign_players
 
         models_module = import_module('{}.models'.format(app_label))
 
-        if participants_per_session % models_module.Match.players_per_match:
+        if participants_per_session % models_module.Group.players_per_group:
             raise ValueError(
-                'App {} requires {} players per match, which does not divide evenly into the number of players in this session ({}).'.format(
+                'App {} requires {} players per group, which does not divide evenly into the number of players in this session ({}).'.format(
                     app_label,
-                    models_module.Match.players_per_match,
+                    models_module.Group.players_per_group,
                     participants_per_session
                 )
             )
@@ -121,10 +121,10 @@ def create_session(type_name, label='', special_category=None, preassign_players
                 )
                 player.save()
 
-            if session.type().assign_to_matches_on_the_fly:
-                # create matches at the beginning because we will not need to delete players
+            if session.type().assign_to_groups_on_the_fly:
+                # create groups at the beginning because we will not need to delete players
                 # unlike the lab setting, where there may be no-shows
-                subsession._create_empty_matches()
+                subsession._create_empty_groups()
 
             print 'Created objects for {}'.format(app_label)
             subsessions.append(subsession)
@@ -132,8 +132,8 @@ def create_session(type_name, label='', special_category=None, preassign_players
     session.chain_subsessions(subsessions)
     session.chain_players()
     session.session_experimenter.chain_experimenters()
-    if preassign_players_to_matches:
-        session._assign_players_to_matches()
+    if preassign_players_to_groups:
+        session._assign_players_to_groups()
     session.ready = True
     session.save()
     return session

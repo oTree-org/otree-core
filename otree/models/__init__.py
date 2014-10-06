@@ -2,10 +2,10 @@ from django.contrib.contenttypes import generic
 from otree.sessionlib.models import Session, Participant
 from otree.db import models
 from importlib import import_module
-from otree.common import _players, _matches
+from otree.common import _players, _groups
 
 subsessions = import_module('otree.models.subsessions')
-matches = import_module('otree.models.matches')
+groups = import_module('otree.models.groups')
 players = import_module('otree.models.players')
 
 
@@ -43,8 +43,8 @@ class BaseSubsession(subsessions.BaseSubsession):
     )
 
     @property
-    def matches(self):
-        return _matches(self)
+    def groups(self):
+        return _groups(self)
 
     @property
     def players(self):
@@ -54,8 +54,8 @@ class BaseSubsession(subsessions.BaseSubsession):
     def app_name(self):
         return self._meta.app_label
 
-    def pick_groups(self, previous_round_groups):
-        return super(BaseSubsession, self).pick_groups(previous_round_groups)
+    def next_round_groups(self, previous_round_groups):
+        return super(BaseSubsession, self).next_round_groups(previous_round_groups)
 
     def previous_rounds(self):
         return super(BaseSubsession, self).previous_rounds()
@@ -64,9 +64,9 @@ class BaseSubsession(subsessions.BaseSubsession):
         abstract = True
         ordering = ['pk']
 
-class BaseMatch(matches.BaseMatch):
+class BaseGroup(groups.BaseGroup):
 
-    players_per_match = 1
+    players_per_group = 1
 
     session = models.ForeignKey(
         Session,
@@ -82,19 +82,19 @@ class BaseMatch(matches.BaseMatch):
         raise NotImplementedError()
 
     def get_player_by_role(self, role):
-        return super(BaseMatch, self).get_player_by_role(role)
+        return super(BaseGroup, self).get_player_by_role(role)
 
     def get_player_by_index(self, index):
-        return super(BaseMatch, self).get_player_by_index(index)
+        return super(BaseGroup, self).get_player_by_index(index)
 
     class Meta:
         abstract = True
-        verbose_name_plural = "matches"
+        verbose_name_plural = "groups"
         ordering = ['pk']
 
 class BasePlayer(players.BasePlayer):
     # starts from 1, not 0.
-    id_in_match = models.PositiveIntegerField(
+    id_in_group = models.PositiveIntegerField(
         null = True,
         doc="Index starting from 1. In multiplayer games, indicates whether this is player 1, player 2, etc."
     )
@@ -116,8 +116,8 @@ class BasePlayer(players.BasePlayer):
     def me_in_all_rounds(self):
         return super(BasePlayer, self).me_in_all_rounds()
 
-    def other_players_in_match(self):
-        return [p for p in self.match.players if p != self]
+    def other_players_in_group(self):
+        return [p for p in self.group.players if p != self]
 
     def other_players_in_subsession(self):
         return [p for p in self.subsession.players if p != self]
