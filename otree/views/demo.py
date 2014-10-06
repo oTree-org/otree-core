@@ -51,7 +51,7 @@ def ensure_enough_spare_sessions(type_name):
         create_session(
             special_category=constants.special_category_demo,
             type_name=type_name,
-            preassign_players_to_matches=True,
+            preassign_players_to_groups=True,
         )
 
 

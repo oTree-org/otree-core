@@ -10,7 +10,7 @@ from otree.session import create_session, SessionTypeDirectory, get_session_type
 import itertools
 from otree.constants import special_category_bots
 
-modules_to_include_in_coverage = ['models', 'tests', 'views', 'forms']
+modules_to_include_in_coverage = ['models', 'tests', 'views']
 
 
 def run_subsession(subsession):
@@ -71,11 +71,11 @@ def run_session(session_type_name):
     session_experimenter_bot.get(session.session_experimenter._start_url(), follow=True)
     session_experimenter_bot.post(session.session_experimenter._start_url(), follow=True)
 
-    # since players are assigned to treatments and matches in a background thread,
+    # since players are assigned to groups in a background thread,
     # we need to wait for that to complete.
     while True:
         session = Session.objects.get(id=session.id)
-        if session._players_assigned_to_matches:
+        if session._players_assigned_to_groups:
             break
         time.sleep(1)
 

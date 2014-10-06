@@ -24,18 +24,6 @@ import otree.common
 import django.utils.timezone
 import threading
 
-class RedirectToPageUserShouldBeOn(NonSequenceUrlMixin,
-                                   LoadClassesAndUserMixin,
-                                   OTreeMixin,
-                                   vanilla.View):
-    name_in_url = 'shared'
-
-    def get(self, request, *args, **kwargs):
-        return self._redirect_to_page_the_user_should_be_on()
-
-    @load_session_user
-    def dispatch(self, request, *args, **kwargs):
-        return super(RedirectToPageUserShouldBeOn, self).dispatch(request, *args, **kwargs)
 
 class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
     name_in_url = 'shared'
@@ -47,9 +35,9 @@ class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
         else:
             return render_to_response('otree/OutOfRangeNotification.html')
 
-class WaitUntilAssignedToMatch(PlayerSequenceMixin, PlayerMixin, WaitPageMixin, vanilla.View):
+class WaitUntilAssignedToGroup(PlayerSequenceMixin, PlayerMixin, WaitPageMixin, vanilla.View):
     """
-    this is visited after Initialize, to make sure the player has a match and treatment.
+    this is visited after Initialize, to make sure the player has a group
     the player can be assigned at any time, but this is a safeguard,
     and therefore should be at the beginning of each subsession.
     Should it instead be called after InitializeParticipant?
@@ -59,7 +47,7 @@ class WaitUntilAssignedToMatch(PlayerSequenceMixin, PlayerMixin, WaitPageMixin, 
     name_in_url = 'shared'
 
     def _is_complete(self):
-        return self.match and self.treatment
+        return self.group
 
     def body_text(self):
         return 'Waiting until other participants and/or the study supervisor are ready.'
@@ -78,10 +66,10 @@ class SessionExperimenterWaitUntilPlayersAreAssigned(NonSequenceUrlMixin, WaitPa
         return 'Please wait'
 
     def body_text(self):
-        return 'Assigning players to matches.'
+        return 'Assigning players to groups.'
 
     def _is_complete(self):
-        return self.session._players_assigned_to_matches or self.session.type().assign_to_matches_on_the_fly
+        return self.session._players_assigned_to_groups or self.session.type().assign_to_groups_on_the_fly
 
     @classmethod
     def get_name_in_url(cls):
@@ -125,7 +113,7 @@ class InitializeSessionExperimenter(vanilla.View):
         )
 
         session = self._session_user.session
-        if session._players_assigned_to_matches or session.type().assign_to_matches_on_the_fly:
+        if session._players_assigned_to_groups or session.type().assign_to_groups_on_the_fly:
             return self.redirect_to_next_page()
         return render_to_response('otree/experimenter/StartSession.html', {})
 
@@ -144,7 +132,7 @@ class InitializeSessionExperimenter(vanilla.View):
             session.time_started = django.utils.timezone.now()
             session.save()
 
-        t = threading.Thread(target=session._assign_players_to_matches)
+        t = threading.Thread(target=session._assign_players_to_groups)
         t.start()
         return self.redirect_to_next_page()
 
@@ -175,9 +163,9 @@ class InitializeParticipant(vanilla.UpdateView):
         )
 
         session = session_user.session
-        if session.type().assign_to_matches_on_the_fly:
-            session_user._assign_to_matches()
-            # assign to matches on the fly
+        if session.type().assign_to_groups_on_the_fly:
+            session_user._assign_to_groups()
+            # assign to groups on the fly
 
         session_user.visited = True
 

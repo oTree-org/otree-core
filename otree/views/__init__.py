@@ -18,7 +18,7 @@ class WaitPage(abstract.WaitPage):
     def title_text(self):
         return super(WaitPage, self).title_text()
 
-    group = None
+    scope = None
 
     def after_all_players_arrive(self):
         return super(WaitPage, self).after_all_players_arrive()
@@ -43,6 +43,11 @@ class Page(abstract.PlayerUpdateView):
     # otherwise someone might confuse 'fields' with variables_for_template
     form_model = abstract.PlayerUpdateView.model
     form_fields = abstract.PlayerUpdateView.fields
+
+    time_limit_auto_advance = True
+
+    def time_limit_in_seconds(self):
+        return super(Page, self).time_limit_in_seconds()
 
 class ExperimenterPage(abstract.ExperimenterUpdateView):
 

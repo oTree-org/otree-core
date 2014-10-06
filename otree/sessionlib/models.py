@@ -98,7 +98,7 @@ class Session(ModelWithVars):
 
     comment = models.TextField()
 
-    _players_assigned_to_matches = models.BooleanField(default=False)
+    _players_assigned_to_groups = models.BooleanField(default=False)
 
     def base_pay_display(self):
         return currency(self.base_pay)
@@ -182,9 +182,6 @@ class Session(ModelWithVars):
     def add_subsession(self, subsession):
         subsession.session = self
         subsession.save()
-        for treatment in subsession.treatments:
-            treatment.session = self
-            treatment.save()
 
     def delete(self, using=None):
         for subsession in self.subsessions():
@@ -201,11 +198,11 @@ class Session(ModelWithVars):
         return True
     payments_ready.boolean = True
 
-    def _assign_players_to_matches(self):
+    def _assign_players_to_groups(self):
         for subsession in self.subsessions():
-            subsession._create_empty_matches()
-            subsession._assign_players_to_matches()
-        self._players_assigned_to_matches = True
+            subsession._create_empty_groups()
+            subsession._assign_players_to_groups()
+        self._players_assigned_to_groups = True
         self.save()
 
     class Meta:
@@ -239,6 +236,7 @@ class SessionUser(ModelWithVars):
 
     ip_address = models.IPAddressField(null = True)
 
+    # stores when the page was first visited
     _last_page_timestamp = models.DateTimeField(null=True)
 
     is_on_wait_page = models.BooleanField(default=False)
@@ -276,11 +274,6 @@ class SessionUser(ModelWithVars):
         if self.is_on_wait_page:
             return 'Waiting'
         return ''
-
-    def get_success_url(self):
-        from otree.views.concrete import RedirectToPageUserShouldBeOn
-        return RedirectToPageUserShouldBeOn.url(self)
-
 
     class Meta:
         abstract = True
@@ -365,9 +358,9 @@ class Participant(SessionUser):
             return total_pay
         return u'{} (incomplete)'.format(total_pay)
 
-    def _assign_to_matches(self):
+    def _assign_to_groups(self):
         for p in self.players:
-            p._assign_to_match()
+            p._assign_to_group()
 
     mturk_assignment_id = models.CharField(max_length = 50, null = True)
     mturk_worker_id = models.CharField(max_length = 50, null = True)

@@ -3,20 +3,20 @@ import otree.sessionlib.models
 from save_the_change.mixins import SaveTheChange
 from django_extensions.db.fields.json import JSONField
 
-class BaseMatch(SaveTheChange, models.Model):
+class BaseGroup(SaveTheChange, models.Model):
     """
-    Base class for all Matches.
+    Base class for all Groupes.
     """
 
     def __unicode__(self):
         return str(self.pk)
 
     def _is_ready_for_next_player(self):
-        return len(self.player_set.all()) < self.players_per_match
+        return len(self.player_set.all()) < self.players_per_group
 
     def get_player_by_index(self, index):
         for p in self.players:
-            if p.index_among_players_in_match == index:
+            if p.id_in_group == index:
                 return p
 
     def get_player_by_role(self, role):
@@ -25,15 +25,14 @@ class BaseMatch(SaveTheChange, models.Model):
                 return p
 
     @classmethod
-    def _create(cls, treatment):
-        match = cls(
-            treatment = treatment,
-            subsession = treatment.subsession,
-            session = treatment.session
+    def _create(cls, subsession):
+        group = cls(
+            subsession = subsession,
+            session = subsession.session
         )
-        # need to save it before you assign the player.match ForeignKey
-        match.save()
-        return match
+        # need to save it before you assign the player.group ForeignKey
+        group.save()
+        return group
 
     class Meta:
         abstract = True
