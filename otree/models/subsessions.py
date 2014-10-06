@@ -38,7 +38,7 @@ class BaseSubsession(models.Model):
     _previous_subsession_object_id = models.PositiveIntegerField(null=True)
 
 
-    #FIXME: this should start at 1, to be consistent with index_among_players_in_match
+    #FIXME: this should start at 1, to be consistent with id_in_group
     _index_in_subsessions = models.PositiveIntegerField(
         null=True,
         doc="starts from 0. indicates the position of this subsession among other subsessions in the session."
@@ -84,90 +84,62 @@ class BaseSubsession(models.Model):
             if s.app_name == self.app_name:
                 return s
 
-    def _picked_treatments(self):
-        return [m.treatment for m in self.match_set.all()]
+    def next_round_groups(self, previous_round_groups):
+        return previous_round_groups
 
-    def pick_treatments(self, previous_round_treatments):
-        return previous_round_treatments
-
-    def pick_match_groups(self, previous_round_match_groups):
-        return previous_round_match_groups
-
-    def _next_open_match(self):
-        """Get the next match that is accepting players.
+    def _next_open_group(self):
+        """Get the next group that is accepting players.
         (or none if it does not exist)
         """
         try:
-            return (m for m in self.match_set.all() if m._is_ready_for_next_player()).next()
+            return (m for m in self.group_set.all() if m._is_ready_for_next_player()).next()
         except StopIteration:
             return None
 
-    def _num_matches(self):
-        """number of matches in this subsession"""
-        return self.player_set.count()/self._MatchClass().players_per_match
+    def _num_groups(self):
+        """number of groups in this subsession"""
+        return self.player_set.count()/self._GroupClass().players_per_group
 
-    def _random_treatments(self):
-        num_matches = self._num_matches()
-        treatments = list(self.treatment_set.all())
-        random.shuffle(treatments)
-        iterator = itertools.cycle(treatments)
-        random_treatments = []
-        for i in range(num_matches):
-            random_treatments.append(iterator.next())
-        return random_treatments
-
-    def _random_match_groups(self):
+    def _random_groups(self):
         players = list(self.player_set.all())
         random.shuffle(players)
-        match_groups = []
-        players_per_match = self._MatchClass().players_per_match
-        for i in range(self._num_matches()):
-            start_index = i*players_per_match
-            end_index = start_index + players_per_match
-            match_groups.append(players[start_index:end_index])
-        return match_groups
+        groups = []
+        players_per_group = self._GroupClass().players_per_group
+        for i in range(self._num_groups()):
+            start_index = i*players_per_group
+            end_index = start_index + players_per_group
+            groups.append(players[start_index:end_index])
+        return groups
 
-    def _corresponding_treatments(self, earlier_round):
-        earlier_treatment_indexes = [t._index_within_subsession for t in earlier_round._picked_treatments()]
-        current_treatments = list(self.treatment_set.all())
-        return [current_treatments[i] for i in earlier_treatment_indexes]
+    def _group_lists(self):
+        return [list(m.player_set.all()) for m in self.group_set.all()]
 
-    def _match_groups(self):
-        return [list(m.player_set.all()) for m in self.match_set.all()]
+    def _GroupClass(self):
+        return import_module('{}.models'.format(self._meta.app_label)).Group
 
-    def _MatchClass(self):
-        return import_module('{}.models'.format(self._meta.app_label)).Match
+    def _create_empty_groups(self):
+        GroupClass = self._GroupClass()
+        for i in range(len(self.players)/GroupClass.players_per_group):
+            m = GroupClass._create(self)
 
-    def _create_empty_matches(self):
-        self.save()
-        previous_round = self.previous_round()
-        if previous_round:
-            treatments = self._corresponding_treatments(previous_round)
-        else:
-            treatments = self._random_treatments()
-        treatments = self.pick_treatments(treatments)
-        MatchClass = self._MatchClass()
-        for t in treatments:
-            m = MatchClass._create(t)
+    def first_round_groups(self):
+        return self._random_groups()
 
-    def first_round_match_groups(self):
-        return self._random_match_groups()
-
-    def _assign_players_to_matches(self):
+    def _assign_players_to_groups(self):
         previous_round = self.previous_round()
         if not previous_round:
-            match_groups = self.first_round_match_groups()
+            group_lists = self.first_round_groups()
         else:
-            previous_round_match_groups = previous_round._match_groups()
-            match_groups = self.pick_match_groups(previous_round_match_groups)
-            for match_group in match_groups:
-                for player in match_group:
-                    player = player._me_in_next_subsession()
-        for match_group in match_groups:
-            match = self._next_open_match()
-            for player in match_group:
-                player._assign_to_match(match)
-            match.save()
+            previous_round_group_lists = previous_round._group_lists()
+            group_lists = self.next_round_groups(previous_round_group_lists)
+            for i, group_list in enumerate(group_lists):
+                for j, player in enumerate(group_list):
+                    group_lists[i][j] = player._me_in_next_subsession
+        for group_list in group_lists:
+            group = self._next_open_group()
+            for player in group_list:
+                player._assign_to_group(group)
+            group.save()
 
     def previous_subsession_is_in_same_app(self):
         previous_subsession = self.previous_subsession

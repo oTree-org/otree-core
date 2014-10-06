@@ -29,8 +29,7 @@ def get_callables(Model, fields_specific_to_this_subclass=None, for_export=False
 
     export_and_changelist = {
         'Player': [],
-        'Match': [],
-        'Treatment': [],
+        'Group': [],
         'Subsession': [],
         'Session': [],
         'Participant': [],
@@ -41,9 +40,7 @@ def get_callables(Model, fields_specific_to_this_subclass=None, for_export=False
            ['name',
             'link',
             '_pages_completed'],
-        'Match':
-            [],
-        'Treatment':
+        'Group':
             [],
         'Subsession':
             [],
@@ -66,8 +63,7 @@ def get_callables(Model, fields_specific_to_this_subclass=None, for_export=False
 
     export_but_not_changelist = {
         'Player': [],
-        'Match': [],
-        'Treatment': [],
+        'Group': [],
         'Subsession': [],
         'Session': [],
         'Participant': [],
@@ -92,22 +88,16 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
                 'name',
                 'session',
                 'subsession',
-                'treatment',
-                'match',
+                'group',
                 'visited',
                 '_pages_completed'
             ],
-        'Match':
+        'Group':
             [
                 'id',
                 'session',
                 'subsession',
-                'treatment'
             ],
-        'Treatment':
-            ['name',
-            'session',
-            'subsession'],
         'Subsession':
             ['name',
              'session'],
@@ -137,8 +127,7 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
 
     last_fields = {
         'Player': [],
-        'Match': [],
-        'Treatment': [],
+        'Group': [],
         'Subsession': [],
         'Participant': [
             'start_link',
@@ -152,8 +141,7 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
 
     fields_for_export_but_not_changelist = {
         'Player': {'id', 'label'},
-        'Match': {'id'},
-        'Treatment': {'label'},
+        'Group': {'id'},
         'Subsession': {'id'},
         'Session': {
             'label',
@@ -167,12 +155,11 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
     }[Model.__name__]
 
     fields_for_changelist_but_not_export = {
-        'Player': {'match', 'treatment', 'subsession', 'session', 'participant'},
-        'Match': {'treatment', 'subsession', 'session'},
-        'Treatment': {'subsession', 'session'},
+        'Player': {'group', 'subsession', 'session', 'participant'},
+        'Group': {'subsession', 'session'},
         'Subsession': {'session'},
         'Session': {
-            'players_assigned_to_treatments_and_matches',
+            'players_assigned_to_groups',
             'hidden',
         },
         'Participant': {
@@ -205,14 +192,8 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
               '_me_in_next_subsession_object_id',
               'participant',
               },
-        'Match':
+        'Group':
              set(),
-        'Treatment':
-            {
-                'label',
-                '_code',
-                'id',
-            },
         'Subsession':
             {
                 'code',
@@ -365,32 +346,22 @@ class PlayerAdmin(OTreeBaseModelAdmin):
 
     link.short_description = "Start link"
     link.allow_tags = True
-    list_filter = [NonHiddenSessionListFilter, 'subsession', 'treatment', 'match']
+    list_filter = [NonHiddenSessionListFilter, 'subsession', 'group']
     list_per_page = 40
 
     def queryset(self, request):
         qs = super(PlayerAdmin, self).queryset(request)
         return qs.filter(session__hidden=False)
 
-class MatchAdmin(OTreeBaseModelAdmin):
-    change_list_template = CHANGE_LIST_TEMPLATE
-
-    list_filter = [NonHiddenSessionListFilter, 'subsession', 'treatment']
-    list_per_page = 40
-
-    def queryset(self, request):
-        qs = super(MatchAdmin, self).queryset(request)
-        return qs.filter(session__hidden=False)
-
-class TreatmentAdmin(OTreeBaseModelAdmin):
+class GroupAdmin(OTreeBaseModelAdmin):
     change_list_template = CHANGE_LIST_TEMPLATE
 
     list_filter = [NonHiddenSessionListFilter, 'subsession']
+    list_per_page = 40
 
     def queryset(self, request):
-        qs = super(TreatmentAdmin, self).queryset(request)
+        qs = super(GroupAdmin, self).queryset(request)
         return qs.filter(session__hidden=False)
-
 
 class SubsessionAdmin(OTreeBaseModelAdmin):
     change_list_template = CHANGE_LIST_TEMPLATE

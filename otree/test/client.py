@@ -138,12 +138,8 @@ class PlayerBot(BaseClient):
         return self.player
 
     @property
-    def match(self):
-        return self._MatchClass.objects.get(id=self._match_id)
-
-    @property
-    def treatment(self):
-        return self._TreatmentClass.objects.get(id=self._treatment_id)
+    def group(self):
+        return self._GroupClass.objects.get(id=self._group_id)
 
     @property
     def subsession(self):
@@ -162,17 +158,15 @@ class PlayerBot(BaseClient):
         models_module = import_module('{}.models'.format(app_label))
 
         self._PlayerClass = models_module.Player
-        self._MatchClass = models_module.Match
-        self._TreatmentClass = models_module.Treatment
+        self._GroupClass = models_module.Group
         self._SubsessionClass = models_module.Subsession
         self._UserClass = self._PlayerClass
 
         # we assume the experimenter has assigned everyone to a treatment
-        assert player.match and player.treatment
+        assert player.group
 
         self._player_id = player.id
-        self._match_id = player.match.id
-        self._treatment_id = player.treatment.id
+        self._group_id = player.group.id
         self._subsession_id = player.subsession.id
 
         super(PlayerBot, self).__init__(**kwargs)

@@ -50,9 +50,9 @@ class BasePlayer(User):
     _init_view_name = 'InitializePlayer'
 
     def _pages(self):
-        from otree.views.concrete import WaitUntilAssignedToMatch
+        from otree.views.concrete import WaitUntilAssignedToGroup
         views_module = otree.common._views_module(self)
-        return [WaitUntilAssignedToMatch] + views_module.pages()
+        return [WaitUntilAssignedToGroup] + views_module.pages()
 
     def _pages_as_urls(self):
         return [View.url(self._session_user, index) for index, View in enumerate(self._pages())]
@@ -60,20 +60,19 @@ class BasePlayer(User):
     class Meta:
         abstract = True
 
-    def _assign_to_match(self, match=None):
-        if not match:
-            match = self.subsession._next_open_match()
-        self.match = match
-        self.treatment = match.treatment
+    def _assign_to_group(self, group=None):
+        if not group:
+            group = self.subsession._next_open_group()
+        self.group = group
         self.save()
-        self.index_among_players_in_match = match.player_set.count()
+        self.id_in_group = group.player_set.count()
         self.save()
 
-    def _MatchClass(self):
-        return self._meta.get_field('match').rel.to
+    def _GroupClass(self):
+        return self._meta.get_field('group').rel.to
 
     def _pages_completed(self):
-        if not (self.treatment and self.visited):
+        if not self.visited:
             return None
         return '{}/{} pages'.format(
             self.index_in_pages,

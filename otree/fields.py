@@ -10,7 +10,7 @@ def string_generator(size=6, chars=string.ascii_uppercase + string.digits):
 
 class RandomCharField(models.CharField):
     """
-    We use this for player code, treatment code, subsession code
+    We use this for player code, subsession code
     generates gibberish pronounceable words, like 'satonoha' or 'gimoradi'
 
     # See https://derrickpetzold.com/p/auto-random-character-field-django/

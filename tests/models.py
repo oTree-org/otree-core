@@ -6,11 +6,11 @@ import otree.forms
 from otree.fields import RandomCharField
 
 
-class SimpleModel(otree.models.BaseMatch):
+class SimpleModel(otree.models.BaseGroup):
     name = models.CharField()
 
 
-class FormFieldModel(otree.models.BaseMatch):
+class FormFieldModel(otree.models.BaseGroup):
     null_boolean = models.NullBooleanField()
     big_integer = models.BigIntegerField()
     boolean = models.BooleanField()

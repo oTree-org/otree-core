@@ -7,7 +7,7 @@ from .. import common
 register = Library()
 
 
-SUBSESSION_APP_MODELS_ORDER = ["Subsession", "Treatment", "Match", "Player"]
+SUBSESSION_APP_MODELS_ORDER = ["Subsession", "Group", "Player"]
 SESSION_APP_MODELS_ORDER = ["Session", "Participant"]
 
 
