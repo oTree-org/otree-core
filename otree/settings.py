@@ -90,6 +90,7 @@ def augment_settings(settings):
         'TEMPLATE_DEBUG': settings['DEBUG'],
         'STATIC_ROOT': 'staticfiles',
         'STATIC_URL': '/static/',
+        'ROOT_URLCONF': 'otree.default_urls',
         'CURRENCY_CODE': 'USD',
         'CURRENCY_LOCALE': CURRENCY_LOCALE,
         'LANGUAGE_CODE': LANGUAGE_CODE,
