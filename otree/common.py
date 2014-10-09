@@ -94,7 +94,10 @@ def access_code_for_open_session():
     return hash.hexdigest()
 
 def get_session_module():
-    return import_module('{}.session'.format(directory_name(settings.BASE_DIR)))
+    base_dir_name = directory_name(settings.BASE_DIR)
+    module_name = getattr(settings, 'SESSION_MODULE',
+                          '{}.session'.format(base_dir_name))
+    return import_module(module_name)
 
 def get_models_module(app_name):
     return import_module('{}.models'.format(app_name))
