@@ -96,7 +96,7 @@ def render_to_start_links_page(request, session, is_demo_page):
     context_data = {
             'session_type_name': session.type_name,
             'experimenter_url': request.build_absolute_uri(session.session_experimenter._start_url()),
-            'participant_urls': [request.build_absolute_uri(participant._start_url()) for participant in session.participants()],
+            'participant_urls': [request.build_absolute_uri(participant._start_url()) for participant in session.get_participants()],
             'is_demo_page': is_demo_page,
     }
 

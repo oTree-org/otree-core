@@ -88,11 +88,6 @@ def url_pattern(cls, is_sequence_url=False):
 def directory_name(path):
     return os.path.basename(os.path.normpath(path))
 
-def access_code_for_open_session():
-    hash = hashlib.sha1()
-    hash.update(settings.SECRET_KEY)
-    return hash.hexdigest()
-
 def get_session_module():
     return import_module('{}.session'.format(directory_name(settings.BASE_DIR)))
 

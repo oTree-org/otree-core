@@ -23,7 +23,7 @@ from otree.sessionlib.models import Participant
 import otree.common
 import django.utils.timezone
 import threading
-
+from django.conf import settings
 
 class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
     name_in_url = 'shared'
@@ -189,7 +189,7 @@ class AssignVisitorToOpenSessionMTurk(AssignVisitorToOpenSession):
         return otree.common.add_params_to_url(
             '/{}'.format(cls.__name__),
             {
-                otree.constants.access_code_for_open_session: otree.common.access_code_for_open_session()
+                otree.constants.access_code_for_open_session: settings.ACCESS_CODE_FOR_OPEN_SESSION
             }
         )
 
@@ -219,7 +219,7 @@ class AssignVisitorToOpenSessionLab(AssignVisitorToOpenSession):
         return otree.common.add_params_to_url(
             '/{}'.format(cls.__name__),
             {
-                otree.constants.access_code_for_open_session: otree.common.access_code_for_open_session()
+                otree.constants.access_code_for_open_session: settings.ACCESS_CODE_FOR_OPEN_SESSION
             }
         )
 

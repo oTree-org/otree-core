@@ -121,14 +121,14 @@ class Session(ModelWithVars):
 
     def subsession_names(self):
         names = []
-        for subsession in self.subsessions():
+        for subsession in self.get_subsessions():
             names.append('{} {}'.format(otree.common.app_name_format(subsession._meta.app_label), subsession.name()))
         if names:
             return ', '.join(names)
         else:
             return '[empty sequence]'
 
-    def subsessions(self):
+    def get_subsessions(self):
         lst = []
         subsession = self.first_subsession
         while True:
@@ -155,12 +155,12 @@ class Session(ModelWithVars):
     def chain_players(self):
         """Should be called after add_subsessions"""
 
-        participants = self.participants()
+        participants = self.get_participants()
         num_participants = len(participants)
 
-        subsessions = self.subsessions()
+        subsessions = self.get_subsessions()
 
-        first_subsession_players = self.first_subsession.players
+        first_subsession_players = self.first_subsession.get_players()
 
         for i in range(num_participants):
             player = first_subsession_players[i]
@@ -169,8 +169,8 @@ class Session(ModelWithVars):
             participant.save()
 
         for subsession_index in range(len(subsessions) - 1):
-            players_left = subsessions[subsession_index].players
-            players_right = subsessions[subsession_index + 1].players
+            players_left = subsessions[subsession_index].get_players()
+            players_right = subsessions[subsession_index + 1].get_players()
             for player_index in range(num_participants):
                 player_left = players_left[player_index]
                 player_right = players_right[player_index]
@@ -184,22 +184,22 @@ class Session(ModelWithVars):
         subsession.save()
 
     def delete(self, using=None):
-        for subsession in self.subsessions():
+        for subsession in self.get_subsessions():
             subsession.delete()
         super(Session, self).delete(using)
 
-    def participants(self):
+    def get_participants(self):
         return self.participant_set.all()
 
     def payments_ready(self):
-        for participants in self.participants():
+        for participants in self.get_participants():
             if not participants.payoff_from_subsessions_is_complete():
                 return False
         return True
     payments_ready.boolean = True
 
     def _assign_players_to_groups(self):
-        for subsession in self.subsessions():
+        for subsession in self.get_subsessions():
             subsession._create_empty_groups()
             subsession._assign_players_to_groups()
         self._players_assigned_to_groups = True
@@ -249,7 +249,7 @@ class SessionUser(ModelWithVars):
     def subsessions_completed(self):
         if not self.visited:
             return None
-        return '{}/{} subsessions'.format(self._index_in_subsessions, len(self.session.subsessions()))
+        return '{}/{} subsessions'.format(self._index_in_subsessions, len(self.session.get_subsessions()))
 
     def _pages_completed_in_current_subsession(self):
         return self._users()[self._index_in_subsessions]._pages_completed()
@@ -257,7 +257,7 @@ class SessionUser(ModelWithVars):
     def current_subsession(self):
         if not self.visited:
             return None
-        return otree.common.app_name_format(self.session.subsessions()[self._index_in_subsessions]._meta.app_label)
+        return otree.common.app_name_format(self.session.get_subsessions()[self._index_in_subsessions]._meta.app_label)
 
     def _users(self):
         """Used to calculate payoffs"""
@@ -285,7 +285,7 @@ class SessionExperimenter(SessionUser):
         )
 
     def chain_experimenters(self):
-        subsessions = self.session.subsessions()
+        subsessions = self.session.get_subsessions()
 
         self.me_in_first_subsession = subsessions[0]._experimenter
         self.save()
@@ -324,11 +324,11 @@ class Participant(SessionUser):
             self.code
         )
 
-    def players(self):
+    def get_players(self):
         return self._users()
 
     def payoff_from_subsessions(self):
-        return sum(player.payoff or Money(0) for player in self.players())
+        return sum(player.payoff or Money(0) for player in self.get_players())
 
     def total_pay(self):
         try:
@@ -346,7 +346,7 @@ class Participant(SessionUser):
     payoff_from_subsessions_display.short_description = 'payoff from subsessions'
 
     def payoff_from_subsessions_is_complete(self):
-        return all(p.payoff is not None for p in self.players)
+        return all(p.payoff is not None for p in self.get_players())
 
     def total_pay_display(self):
         try:
@@ -359,7 +359,7 @@ class Participant(SessionUser):
         return u'{} (incomplete)'.format(total_pay)
 
     def _assign_to_groups(self):
-        for p in self.players:
+        for p in self.get_players():
             p._assign_to_group()
 
     mturk_assignment_id = models.CharField(max_length = 50, null = True)

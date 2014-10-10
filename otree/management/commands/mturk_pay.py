@@ -60,7 +60,7 @@ class Command(BaseCommand):
 
     def pay_hit_bonuses(self, is_confirmed):
         total_money_paid = 0
-        for participant in self.session.participants():
+        for participant in self.session.get_participants():
             bonus = participant.payoff_from_subsessions()
             if bonus == None:
                 bonus = 0

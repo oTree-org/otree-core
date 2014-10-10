@@ -187,7 +187,7 @@ class ExperimenterMixin(object):
         self.load_user()
 
     def objects_to_save(self):
-        return [self._user, self.subsession, self._session_user] + self.subsession.players + self.subsession.groups
+        return [self._user, self.subsession, self._session_user] + self.subsession.get_players() + self.subsession.groups
 
 class WaitPageMixin(object):
 
@@ -291,7 +291,7 @@ class CheckpointMixin(object):
             ).exists()
 
     def _all_players_have_visited(self):
-        pks_to_wait_for = [p.pk for p in self._group_or_subsession.players]
+        pks_to_wait_for = [p.pk for p in self._group_or_subsession.get_players()]
         pks_that_have_visited = WaitPageVisit.objects.filter(
             app_name = self.subsession.app_name,
             page_index = self.index_in_pages,
@@ -318,7 +318,7 @@ class CheckpointMixin(object):
 
     def _action(self):
         self.after_all_players_arrive()
-        for p in self._group_or_subsession.players:
+        for p in self._group_or_subsession.get_players():
             p.save()
         self._group_or_subsession.save()
 
@@ -333,11 +333,11 @@ class CheckpointMixin(object):
         pass
 
     def body_text(self):
-        num_other_players = len(self._group_or_subsession.players) - 1
+        num_other_players = len(self._group_or_subsession.get_players()) - 1
         if num_other_players > 1:
-            return 'Waiting for the other players.'
+            return 'Waiting for the other participants.'
         elif num_other_players == 1:
-            return 'Waiting for the other player.'
+            return 'Waiting for the other participant.'
         elif num_other_players == 0:
             return 'Waiting'
 
@@ -740,7 +740,7 @@ class AssignVisitorToOpenSession(vanilla.View):
             setattr(participant, field_name, self.request.GET[get_param_name])
 
     def get(self, *args, **kwargs):
-        if not self.request.GET[constants.access_code_for_open_session] == otree.common.access_code_for_open_session():
+        if not self.request.GET[constants.access_code_for_open_session] == settings.ACCESS_CODE_FOR_OPEN_SESSION:
             return HttpResponseNotFound('Incorrect access code for open session')
 
         global_data = otree.sessionlib.models.GlobalData.objects.get()
