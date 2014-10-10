@@ -51,6 +51,7 @@ def get_callables(Model, fields_specific_to_this_subclass=None, for_export=False
              'payments_ready',
              'payments_link',
              'base_pay_display',
+             'is_open',
         ],
         'Participant': [
                 'subsessions_completed',

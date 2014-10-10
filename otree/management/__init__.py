@@ -46,8 +46,7 @@ def create_singleton_objects(sender, **kwargs):
     if sender.__name__ == 'django.contrib.auth.models':
         for ModelClass in [StubModel, GlobalData]:
             # if it doesn't already exist, create one.
-            if not ModelClass.objects.all().exists():
-                ModelClass().save()
+            ModelClass.objects.get_or_create()
 
 signals.post_syncdb.connect(create_singleton_objects)
 
