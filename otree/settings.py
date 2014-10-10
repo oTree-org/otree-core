@@ -90,6 +90,7 @@ def augment_settings(settings):
         'TEMPLATE_DEBUG': settings['DEBUG'],
         'STATIC_ROOT': 'staticfiles',
         'STATIC_URL': '/static/',
+        'ROOT_URLCONF': 'otree.default_urls',
         'CURRENCY_CODE': 'USD',
         'CURRENCY_LOCALE': CURRENCY_LOCALE,
         'LANGUAGE_CODE': LANGUAGE_CODE,
@@ -102,6 +103,7 @@ def augment_settings(settings):
         'OTREE_CHANGE_LIST_UPDATE_INTERVAL': '10000', # default to 10 seconds(10000 miliseconds)
         'TEMPLATE_CONTEXT_PROCESSORS': global_settings.TEMPLATE_CONTEXT_PROCESSORS + ("django.core.context_processors.request",),
         'TIME_LIMIT_LATENCY_ALLOWANCE_SECONDS': 10,
+        'SESSION_MODULE': 'session',
     }
 
 
