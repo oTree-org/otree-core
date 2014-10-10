@@ -42,12 +42,10 @@ class BaseSubsession(subsessions.BaseSubsession):
         doc='Number of rounds for which this subsession is played'
     )
 
-    @property
-    def groups(self):
+    def get_groups(self):
         return _groups(self)
 
-    @property
-    def players(self):
+    def get_players(self):
         return _players(self)
 
     @property
@@ -73,23 +71,19 @@ class BaseGroup(groups.BaseGroup):
         related_name = '%(app_label)s_%(class)s'
     )
 
-    @property
-    def players(self):
+    def get_players(self):
         return _players(self)
-
-    @players.setter
-    def players(self, value):
-        raise NotImplementedError()
 
     def get_player_by_role(self, role):
         return super(BaseGroup, self).get_player_by_role(role)
+
+
 
     def get_player_by_id(self, index):
         return super(BaseGroup, self).get_player_by_id(index)
 
     class Meta:
         abstract = True
-        verbose_name_plural = "groups"
         ordering = ['pk']
 
 class BasePlayer(players.BasePlayer):
@@ -116,15 +110,17 @@ class BasePlayer(players.BasePlayer):
     def me_in_all_rounds(self):
         return super(BasePlayer, self).me_in_all_rounds()
 
-    def other_players_in_group(self):
-        return [p for p in self.group.players if p != self]
+    def get_others_in_group(self):
+        return [p for p in self.group.get_players() if p != self]
 
-    def other_players_in_subsession(self):
-        return [p for p in self.subsession.players if p != self]
+    def get_others_in_subsession(self):
+        return [p for p in self.subsession.get_players() if p != self]
 
     def get_quiz_question(self, field_name):
         return super(BasePlayer, self).get_quiz_question(field_name)
 
+    def role(self):
+        return super(BasePlayer, self).role()
 
     class Meta:
         abstract = True

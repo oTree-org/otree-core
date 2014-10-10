@@ -14,13 +14,13 @@ class BaseGroup(SaveTheChange, models.Model):
     def _is_ready_for_next_player(self):
         return len(self.player_set.all()) < self.players_per_group
 
-    def get_player_by_id(self, index):
-        for p in self.players:
-            if p.id_in_group == index:
+    def get_player_by_id(self, id_):
+        for p in self.get_players():
+            if p.id_in_group == id_:
                 return p
 
     def get_player_by_role(self, role):
-        for p in self.players:
+        for p in self.get_players():
             if p.role() == role:
                 return p
 

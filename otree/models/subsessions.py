@@ -119,7 +119,7 @@ class BaseSubsession(models.Model):
 
     def _create_empty_groups(self):
         GroupClass = self._GroupClass()
-        for i in range(len(self.players)/GroupClass.players_per_group):
+        for i in range(len(self.get_players())/GroupClass.players_per_group):
             m = GroupClass._create(self)
 
     def first_round_groups(self):

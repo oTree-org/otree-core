@@ -30,6 +30,10 @@ class BasePlayer(User):
     def name(self):
         return self.participant.__unicode__()
 
+    def role(self):
+        # you can make this depend of self.id_in_group
+        return ''
+
     def me_in_previous_rounds(self):
 
         players = []

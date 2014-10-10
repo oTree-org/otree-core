@@ -162,7 +162,6 @@ class PlayerBot(BaseClient):
         self._SubsessionClass = models_module.Subsession
         self._UserClass = self._PlayerClass
 
-        # we assume the experimenter has assigned everyone to a treatment
         assert player.group
 
         self._player_id = player.id

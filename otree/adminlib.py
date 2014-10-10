@@ -89,6 +89,8 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
                 'session',
                 'subsession',
                 'group',
+                'id_in_group',
+                'role',
                 'visited',
                 '_pages_completed'
             ],
@@ -440,7 +442,7 @@ class SessionAdmin(OTreeBaseModelAdmin):
         return my_urls + urls
 
     def participant_urls(self, request, session):
-        participants = session.participants()
+        participants = session.get_participants()
         return [request.build_absolute_uri(participant._start_url()) for participant in participants]
 
     def start_links(self, request, pk):
@@ -478,16 +480,17 @@ class SessionAdmin(OTreeBaseModelAdmin):
 
     def payments(self, request, pk):
         session = self.model.objects.get(pk=pk)
-        total_payments = sum(participant.total_pay() or 0 for participant in session.participants())
+        participants = session.get_participants()
+        total_payments = sum(participant.total_pay() or 0 for participant in participants)
 
         try:
-            mean_payment = total_payments/len(participant)
+            mean_payment = total_payments/len(participants)
         except ZeroDivisionError:
             mean_payment = 0
 
 
         return render_to_response('otree/admin/Payments.html',
-                                  {'participant': participant,
+                                  {'participants': participants,
                                   'total_payments': currency(total_payments),
                                   'mean_payment': currency(mean_payment),
                                   'session_code': session.code,

@@ -71,7 +71,7 @@ def run_session(session_type_name):
     session_experimenter_bot.get(session.session_experimenter._start_url(), follow=True)
     session_experimenter_bot.post(session.session_experimenter._start_url(), follow=True)
 
-    # since players are assigned to treatments and groups in a background thread,
+    # since players are assigned to groups in a background thread,
     # we need to wait for that to complete.
     while True:
         session = Session.objects.get(id=session.id)
@@ -79,12 +79,12 @@ def run_session(session_type_name):
             break
         time.sleep(1)
 
-    for participants in session.participants():
+    for participants in session.get_participants():
         bot = Client()
         bot.get(participants._start_url(), follow=True)
 
     successes = []
-    for subsession in session.subsessions():
+    for subsession in session.get_subsessions():
         success = run_subsession(subsession)
         successes.append(success)
     if all(successes):
