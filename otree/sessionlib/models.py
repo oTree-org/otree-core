@@ -15,6 +15,16 @@ from easymoney import Money
 from django_extensions.db.fields.json import JSONField
 
 
+class GlobalData(models.Model):
+    """object that can hold site-wide properties. There should only be one GlobalData object.
+    """
+    open_session = models.ForeignKey('Session', null=True)
+
+class StubModel(models.Model):
+    """To be used as the model for an empty form, so that form_class can be omitted.
+    Consider using SingletonModel for this. Right now, I'm not sure we need it.
+    """
+
 
 # R: You really need this only if you are using save_the_change,
 #    which is not used for Session and SessionUser,
@@ -115,6 +125,10 @@ class Session(ModelWithVars):
 
     # indicates whether a session has been fully created (not only has the model itself been created, but also the other models in the hierarchy)
     ready = models.BooleanField(default=False)
+
+    def is_open(self):
+        return GlobalData.objects.get().open_session == self
+    is_open.short_description = 'Is open session'
 
     def name(self):
         return id_label_name(self.pk, self.label)
@@ -382,12 +396,3 @@ class Participant(SessionUser):
     class Meta:
         ordering = ['pk']
 
-class GlobalData(models.Model):
-    """object that can hold site-wide properties. There should only be one GlobalData object.
-    """
-    open_session = models.ForeignKey(Session, null=True)
-
-class StubModel(models.Model):
-    """To be used as the model for an empty form, so that form_class can be omitted.
-    Consider using SingletonModel for this. Right now, I'm not sure we need it.
-    """
