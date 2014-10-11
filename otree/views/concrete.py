@@ -4,7 +4,7 @@ from otree.views.abstract import (
     PlayerUpdateView,
     LoadClassesAndUserMixin,
     load_session_user,
-    AssignVisitorToOpenSession,
+    AssignVisitorToOpenSessionBase,
     WaitPageMixin,
     PlayerSequenceMixin,
     SequenceMixin,
@@ -182,7 +182,12 @@ class InitializeParticipant(vanilla.UpdateView):
         return HttpResponseRedirect(start_url)
 
 
-class AssignVisitorToOpenSessionMTurk(AssignVisitorToOpenSession):
+class AssignVisitorToOpenSessionMTurk(AssignVisitorToOpenSessionBase):
+
+    def incorrect_parameters_in_url_message(self):
+        # A visitor to this experiment was turned away because they did not have the MTurk parameters in their URL.
+        # This URL only works if clicked from a MTurk job posting with the JavaScript snippet embedded
+        return """To participate, you need to first accept this Mechanical Turk HIT and then re-click the link (refreshing this page will not work)."""
 
     @classmethod
     def url(cls):
@@ -209,10 +214,10 @@ class AssignVisitorToOpenSessionMTurk(AssignVisitorToOpenSession):
         )
 
 
-class AssignVisitorToOpenSessionLab(AssignVisitorToOpenSession):
+class AssignVisitorToOpenSession(AssignVisitorToOpenSessionBase):
 
     def incorrect_parameters_in_url_message(self):
-        'Missing parameter(s) in URL: {}'.format(self.required_params.values())
+        return 'Missing parameter(s) in URL: {}'.format(self.required_params.values())
 
     @classmethod
     def url(cls):

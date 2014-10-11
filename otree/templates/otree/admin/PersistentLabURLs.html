@@ -1,0 +1,39 @@
+{% extends "otree/BaseBuiltIn.html" %}
+
+{% block title %}
+    Persistent Lab URLs
+{% endblock %}
+
+{% block content %}
+
+    <p>
+    Here is the persistent URL you can use in the lab. It will stay constant for new sessions, even if the database is recreated.
+    </p>
+
+    <p>
+    <code>{{ open_session_example_url }}</code>
+    </p>
+
+    <p>
+    You should take this link, copy it for as many participants are in your session,
+    and modify the <code>{{ participant_label }}</code> parameter of each link.
+    You can use whatever naming scheme you would like to use, e.g. <code>{{ participant_label }}=PC-1</code>, <code>{{ participant_label }}=PC-2</code>, etc.
+    </p>
+
+    <p>
+    When a user visits one of these links, they are routed to whichever session you have set as the "open session"
+    (see the "Global data" section of the admin dashboard). So, when one session is finished, you can create a new session,
+    and set it to be the open session.
+    </p>
+
+    <p>
+    Note the parameter <code>{{ access_code_for_open_session }}</code>. This is defined in your <code>settings.py</code>.
+    You can change it as frequently as you'd like, to prevent unauthorized server access.
+    </p>
+
+    <p>
+    <a href="https://github.com/oTree-org/oTree/wiki/Running-Lab-Sessions">More information</a>
+    </p>
+
+
+{% endblock %}

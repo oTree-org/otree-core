@@ -9,6 +9,7 @@ otree/adminlib.py
 otree/app_template.zip
 otree/common.py
 otree/constants.py
+otree/default_urls.py
 otree/fields.py
 otree/formfields.py
 otree/forms.py
@@ -28,6 +29,8 @@ otree/management/commands/__init__.py
 otree/management/commands/create_sessions.py
 otree/management/commands/mturk_pay.py
 otree/management/commands/screenshots.py
+otree/management/commands/startapp.py
+otree/management/commands/startproject.py
 otree/management/commands/test.py
 otree/management/commands/test_all.py
 otree/models/__init__.py

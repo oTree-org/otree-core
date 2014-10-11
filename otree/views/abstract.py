@@ -715,12 +715,10 @@ class InitializeExperimenter(InitializePlayerOrExperimenter):
                 url = OutOfRangeNotification.url(self._session_user)
         return HttpResponseRedirect(url)
 
-class AssignVisitorToOpenSession(vanilla.View):
+class AssignVisitorToOpenSessionBase(vanilla.View):
 
     def incorrect_parameters_in_url_message(self):
-        # A visitor to this experiment was turned away because they did not have the MTurk parameters in their URL.
-        # This URL only works if clicked from a MTurk job posting with the JavaScript snippet embedded
-        return """To participate, you need to first accept this Mechanical Turk HIT and then re-click the link (refreshing this page will not work)."""
+        return 'Missing or incorrect parameters in URL'
 
     def url_has_correct_parameters(self):
         for _, get_param_name in self.required_params.items():
@@ -747,7 +745,7 @@ class AssignVisitorToOpenSession(vanilla.View):
         open_session = global_data.open_session
 
         if not open_session:
-            return HttpResponseNotFound('No active session.')
+            return HttpResponseNotFound('No session is currently open. Make sure to create a session and set is as open.')
         if not self.url_has_correct_parameters():
             return HttpResponseNotFound(self.incorrect_parameters_in_url_message())
         try:

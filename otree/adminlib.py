@@ -15,7 +15,7 @@ from otree.views.demo import render_to_start_links_page
 
 import otree.constants
 import otree.sessionlib.models
-from otree.common import currency
+from otree.common import currency, add_params_to_url
 
 def new_tab_link(url, label):
     return '<a href="{}" target="_blank">{}</a>'.format(url, label)
@@ -378,23 +378,49 @@ class SubsessionAdmin(OTreeBaseModelAdmin):
     list_editable = ['_skip']
 
 class GlobalDataAdmin(OTreeBaseModelAdmin):
-    list_display = ['id', 'open_session', 'lab_url_link', 'mturk_snippet_link']
+    list_display = ['id', 'open_session', 'persistent_urls_link', 'mturk_snippet_link']
     list_editable = ['open_session']
 
     def get_urls(self):
         urls = super(GlobalDataAdmin, self).get_urls()
         my_urls = patterns('',
             (r'^(?P<pk>\d+)/mturk_snippet/$', self.admin_site.admin_view(self.mturk_snippet)),
+            (r'^(?P<pk>\d+)/persistent_urls/$', self.admin_site.admin_view(self.persistent_urls)),
         )
         return my_urls + urls
 
-    def lab_url_link(self, instance):
-        from otree.views.concrete import AssignVisitorToOpenSessionLab
-        return new_tab_link(AssignVisitorToOpenSessionLab.url(), 'Link')
-    lab_url_link.allow_tags = True
+    def persistent_urls_link(self, instance):
+        return new_tab_link('{}/persistent_urls/'.format(instance.pk), 'Link')
+    persistent_urls_link.allow_tags = True
+    persistent_urls_link.short_description = "Persistent URLs"
+
+    def persistent_urls(self, request, pk):
+        from otree.views.concrete import AssignVisitorToOpenSession
+        open_session_base_url = request.build_absolute_uri(AssignVisitorToOpenSession.url())
+        open_session_example_url = add_params_to_url(open_session_base_url, {otree.constants.participant_label: 'P1'})
+
+        return render_to_response(
+            'otree/admin/PersistentLabURLs.html',
+            {
+                'open_session_example_url': open_session_example_url,
+                'access_code_for_open_session': otree.constants.access_code_for_open_session,
+                'participant_label': otree.constants.participant_label
+            }
+        )
 
     def mturk_snippet_link(self, instance):
         return new_tab_link('{}/mturk_snippet/'.format(instance.pk), 'Link')
+
+    def mturk_snippet(self, request, pk):
+        hit_page_js_url = request.build_absolute_uri(static_template_tag('otree/js/mturk_hit_page.js'))
+        from otree.views.concrete import AssignVisitorToOpenSessionMTurk
+        open_session_url = request.build_absolute_uri(AssignVisitorToOpenSessionMTurk.url())
+
+        return render_to_response('otree/admin/MTurkSnippet.html',
+                                  {'hit_page_js_url': hit_page_js_url,
+                                   'open_session_url': open_session_url,},
+                                  content_type='text/plain')
+
 
     mturk_snippet_link.allow_tags = True
     mturk_snippet_link.short_description = "HTML snippet for MTurk HIT page"

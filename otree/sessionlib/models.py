@@ -18,7 +18,7 @@ from django_extensions.db.fields.json import JSONField
 class GlobalData(models.Model):
     """object that can hold site-wide properties. There should only be one GlobalData object.
     """
-    open_session = models.ForeignKey(Session, null=True)
+    open_session = models.ForeignKey('Session', null=True)
 
 class StubModel(models.Model):
     """To be used as the model for an empty form, so that form_class can be omitted.
@@ -128,6 +128,7 @@ class Session(ModelWithVars):
 
     def is_open(self):
         return GlobalData.objects.get().open_session == self
+    is_open.short_description = 'Is open session'
 
     def name(self):
         return id_label_name(self.pk, self.label)
