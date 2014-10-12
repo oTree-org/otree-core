@@ -741,7 +741,7 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
         if not self.request.GET[constants.access_code_for_open_session] == settings.ACCESS_CODE_FOR_OPEN_SESSION:
             return HttpResponseNotFound('Incorrect access code for open session')
 
-        global_data = otree.sessionlib.models.GlobalData.objects.get()
+        global_data = otree.sessionlib.models.GlobalSettings.objects.get()
         open_session = global_data.open_session
 
         if not open_session:

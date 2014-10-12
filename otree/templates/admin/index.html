@@ -13,6 +13,8 @@
 {% block content %}
 <div id="content-main">
 
+<p><a href="/create_session/"><b>Create a session</b></a></p>
+
 {% if app_list %}
     {% with non_subsession_apps=app_list|non_subsession_apps %}
     {% if non_subsession_apps|length != 0 %}

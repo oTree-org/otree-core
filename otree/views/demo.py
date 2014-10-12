@@ -29,8 +29,6 @@ class DemoIndex(vanilla.View):
                 {
                     'type_name': session_type.name,
                     'url': escaped_start_link_url(session_type.name),
-                    'doc': session_type.doc or '',
-                    'subsession_apps': ', '.join([app_name_format(app_name) for app_name in session_type.subsession_apps]),
                 }
             )
         return render_to_response('otree/demo/index.html', {'session_info': session_info, 'intro_text': intro_text})

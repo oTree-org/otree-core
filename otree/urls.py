@@ -53,6 +53,8 @@ def augment_urlpatterns(urlpatterns):
         urlpatterns += url_patterns_from_module(utilities_module_name)
     urlpatterns += url_patterns_from_module('otree.views.concrete')
     urlpatterns += url_patterns_from_module('otree.views.demo')
+    urlpatterns += url_patterns_from_module('otree.views.admin')
+
 
     urlpatterns += patterns(
         'otree.views.ajax_change_list',

@@ -8,7 +8,7 @@ import otree.adminlib
 import otree.sessionlib.models
 
 
-admin.site.register(otree.sessionlib.models.GlobalData, otree.adminlib.GlobalDataAdmin)
+admin.site.register(otree.sessionlib.models.GlobalSettings, otree.adminlib.GlobalSettingsAdmin)
 
 admin.site.register(otree.sessionlib.models.Session,
                     otree.adminlib.SessionAdmin

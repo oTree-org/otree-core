@@ -15,10 +15,15 @@ from easymoney import Money
 from django_extensions.db.fields.json import JSONField
 
 
-class GlobalData(models.Model):
-    """object that can hold site-wide properties. There should only be one GlobalData object.
+class GlobalSettings(models.Model):
+    """object that can hold site-wide settings. There should only be one GlobalSettings object.
     """
     open_session = models.ForeignKey('Session', null=True)
+
+    class Meta:
+        verbose_name = 'Set open session'
+        verbose_name_plural = verbose_name
+
 
 class StubModel(models.Model):
     """To be used as the model for an empty form, so that form_class can be omitted.
@@ -74,6 +79,11 @@ class Session(ModelWithVars):
         related_name='session',
     )
 
+    time_scheduled = models.DateTimeField(
+        null=True,
+        doc="""The time at which the experimenter started the session"""
+    )
+
     time_started = models.DateTimeField(
         null=True,
         doc="""The time at which the experimenter started the session"""
@@ -127,11 +137,8 @@ class Session(ModelWithVars):
     ready = models.BooleanField(default=False)
 
     def is_open(self):
-        return GlobalData.objects.get().open_session == self
-    is_open.short_description = 'Is open session'
+        return GlobalSettings.objects.get().open_session == self
 
-    def name(self):
-        return id_label_name(self.pk, self.label)
 
     def subsession_names(self):
         names = []
@@ -154,7 +161,7 @@ class Session(ModelWithVars):
 
 
     def __unicode__(self):
-        return self.name()
+        return self.code
 
     def chain_subsessions(self, subsessions):
         self.first_subsession = subsessions[0]

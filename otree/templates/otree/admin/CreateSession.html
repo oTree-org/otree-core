@@ -1,6 +1,5 @@
-{% load otree_tags floppyforms %}
 {% extends "otree/BaseBuiltIn.html" %}
-
+{% load otree_tags floppyforms %}
 
 {% block title %}
     {{ session_type_name }}
@@ -10,9 +9,9 @@
 
     {% include 'otree/SessionInfo.html' %}
 
-    {% formrow form.num_participants with label="Number of participants" %}
+    <h3>Create a new session</h3>
 
-    {% formrow form.base_pay with label="Base pay" %}
+    {% formrow form.num_participants with label="Number of participants" %}
 
     {% next_button %}
 

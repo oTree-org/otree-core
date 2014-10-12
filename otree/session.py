@@ -45,11 +45,11 @@ class SessionType(object):
 
 
     def lcm(self):
-        participants_per_match_list = []
+        participants_per_group_list = []
         for app_label, number_of_rounds in self.subsession_app_counts():
             models_module = import_module('{}.models'.format(app_label))
-            participants_per_match_list.append(models_module.Match.players_per_match)
-        return lcmm(*participants_per_match_list)
+            participants_per_group_list.append(models_module.Group.players_per_group)
+        return lcmm(*participants_per_group_list)
 
 
 class SessionTypeDirectory(object):
