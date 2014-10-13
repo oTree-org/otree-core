@@ -117,13 +117,17 @@ otree/templates/otree/HeadContent.html
 otree/templates/otree/NextButton.html
 otree/templates/otree/OutOfRangeNotification.html
 otree/templates/otree/OutOfRangeNotificationExperimenter.html
+otree/templates/otree/SessionInfo.html
 otree/templates/otree/TimeLimit.html
 otree/templates/otree/WaitPage.html
 otree/templates/otree/WaitPageCode.html
 otree/templates/otree/_BaseBuiltIn.html
 otree/templates/otree/debug_info.html
+otree/templates/otree/admin/CreateSession.html
 otree/templates/otree/admin/MTurkSnippet.html
 otree/templates/otree/admin/Payments.html
+otree/templates/otree/admin/PersistentLabURLs.html
+otree/templates/otree/admin/SessionListing.html
 otree/templates/otree/admin/StartLinks.html
 otree/templates/otree/demo/index.html
 otree/templates/otree/experimenter/StartSession.html
@@ -139,6 +143,7 @@ otree/user/__init__.py
 otree/user/models.py
 otree/views/__init__.py
 otree/views/abstract.py
+otree/views/admin.py
 otree/views/ajax_change_list.py
 otree/views/concrete.py
 otree/views/demo.py

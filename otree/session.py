@@ -88,10 +88,6 @@ def create_session(type_name, label='', num_participants=None, special_category=
 
     session.save()
 
-    # check that it divides evenly
-    if num_participants % session_type.lcm():
-        raise ValueError('Number of participants does not divide evenly')
-
     session_experimenter = SessionExperimenter()
     session_experimenter.save()
     session.session_experimenter = session_experimenter
@@ -101,8 +97,13 @@ def create_session(type_name, label='', num_participants=None, special_category=
     if special_category == constants.special_category_demo:
         participants_per_session = session_type.participants_per_demo_session
     else:
-        #FIXME
+        #FIXME: 0 vs None
         participants_per_session = num_participants or session_type.participants_per_session
+
+    # check that it divides evenly
+    if participants_per_session % session_type.lcm():
+        raise ValueError('Number of participants does not divide evenly')
+
 
     for i in range(participants_per_session):
         participant = Participant(session = session)
