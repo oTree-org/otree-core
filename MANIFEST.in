@@ -1,7 +1,5 @@
 include LICENSE
 include README.md
-include otree/app_template.zip
-include otree/project_template.zip
 recursive-include otree/static *
 recursive-include otree/templates *
 recursive-include docs *

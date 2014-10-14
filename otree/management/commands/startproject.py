@@ -6,7 +6,7 @@ import otree
 class Command(startproject.Command):
     def get_default_template(self):
         return os.path.join(
-            os.path.dirname(otree.__file__), 'project_template.zip')
+            os.path.dirname(otree.__file__), 'project_template')
 
     def handle(self, *args, **options):
         if options.get('template', None) is None:
