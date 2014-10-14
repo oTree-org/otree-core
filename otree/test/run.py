@@ -64,7 +64,7 @@ def run_subsession(subsession):
 def run_session(session_type_name):
 
     session = create_session(type_name=session_type_name, special_category=special_category_bots)
-    session.label = '{} [test]'.format(session.label)
+    session.label = '{} [bots]'.format(session.label)
     session.save()
 
     session_experimenter_bot = Client()
@@ -128,7 +128,7 @@ def run_all_sessions_without_coverage():
     '''2014-8-17: having trouble getting coverage.py to report correct numbers
      when i test multiple sessions with coverage. so removing coverage from test_all'''
     successes = []
-    for session_type in SessionTypeDirectory.select():
+    for session_type in SessionTypeDirectory().select():
         session_type_name = session_type.name
         success = run_session(session_type_name)
         successes.append((session_type_name, success))

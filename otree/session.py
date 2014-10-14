@@ -33,6 +33,7 @@ class SessionType(object):
         self.subsession_apps = subsession_apps
         self.base_pay = base_pay
         self.participants_per_demo_session = participants_per_demo_session
+        self.participants_per_session = participants_per_session
         self.is_for_mturk = is_for_mturk
         self.doc = doc.strip()
 

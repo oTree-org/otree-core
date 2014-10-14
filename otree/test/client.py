@@ -11,7 +11,7 @@ import coverage
 from easymoney import Money
 from decimal import Decimal
 
-MAX_SECONDS_TO_WAIT = 10
+MAX_SECONDS_TO_WAIT = 20
 
 SERVER_URL = 'http://127.0.0.1:8000'
 
