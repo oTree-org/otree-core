@@ -9,7 +9,8 @@ import logging
 from datetime import datetime
 from otree.forms_internal import BaseModelForm, formfield_callback
 from django.contrib.contenttypes.models import ContentType
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import get_object_or_404
+from django.template.response import TemplateResponse
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.conf import settings
 import extra_views
@@ -218,7 +219,8 @@ class WaitPageMixin(object):
         return HttpResponse(int(bool(self._is_complete())))
 
     def get_wait_page(self):
-        response = render_to_response(
+        response = TemplateResponse(
+            self.request,
             self.wait_page_template_name,
             {
                 'wait_page_url': self.wait_page_request_url(),

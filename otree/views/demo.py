@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from django.shortcuts import get_object_or_404, render_to_response
+from django.shortcuts import get_object_or_404
+from django.template.response import TemplateResponse
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
 import vanilla
 import otree.constants as constants
@@ -31,7 +32,7 @@ class DemoIndex(vanilla.View):
                     'url': escaped_start_link_url(session_type.name),
                 }
             )
-        return render_to_response('otree/demo/index.html', {'session_info': session_info, 'intro_text': intro_text})
+        return TemplateResponse(self.request, 'otree/demo/index.html', {'session_info': session_info, 'intro_text': intro_text})
 
 def ensure_enough_spare_sessions(type_name):
     time.sleep(5)
@@ -100,7 +101,8 @@ def render_to_start_links_page(request, session, is_demo_page):
     session_type = SessionTypeDirectory(demo_only=True).get_item(session.type_name)
     context_data.update(info_about_session_type(session_type))
 
-    return render_to_response(
+    return TemplateResponse(
+        request,
         'otree/admin/StartLinks.html',
         context_data
     )
@@ -142,7 +144,8 @@ class Demo(vanilla.View):
 
             return render_to_start_links_page(self.request, session, is_demo_page=True)
         else:
-            return render_to_response(
+            return TemplateResponse(
+                self.request,
                 'otree/WaitPage.html',
                 {
                     'SequenceViewURL': escaped_start_link_url(session_type_name),
