@@ -1,2 +1,0 @@
-otree_project
-otree
