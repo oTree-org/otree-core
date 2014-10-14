@@ -1,17 +1,23 @@
 # -*- coding: utf-8 -*-
+# <standard imports>
 from __future__ import division
-"""Documentation at https://github.com/oTree-org/otree/wiki"""
-
 from otree.db import models
 import otree.models
+from otree import widgets
 from otree.common import Money, money_range
+import random
+# </standard imports>
 
+
+class Constants:
+    my_constant = 1
 
 author = 'Your name here'
 
 doc = """
 Description of this app.
 """
+
 
 class Subsession(otree.models.BaseSubsession):
 

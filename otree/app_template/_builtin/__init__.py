@@ -1,5 +1,5 @@
 # This file is auto-generated. Don't change anything in this file.
-import {{ app_name }}.models as models
+from .. import models
 import otree.views
 import otree.forms
 import otree.test

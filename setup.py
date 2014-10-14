@@ -8,7 +8,7 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version='0.2.191'
+version='0.2.192'
 
 if sys.argv[-1] == 'publish':
 
@@ -71,6 +71,7 @@ setup(
         'coverage==3.7.1',
         'django-easymoney==0.4',
         'handy==0.3',
+        'Pillow',
 
 
     ],
