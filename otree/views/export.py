@@ -8,7 +8,7 @@ from django.utils.importlib import import_module
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.admin import sites
-from django.shortcuts import render_to_response
+from django.template.response import TemplateResponse
 from inspect_model import InspectModel
 
 import otree.common
@@ -242,7 +242,7 @@ def export_list(request):
     # Filter out non subsession apps
     app_labels = [app_label for app_label in app_labels if otree.common.is_subsession_app(app_label)]
     apps = [{"name": app_name_format(app_label), "app_label": app_label} for app_label in app_labels]
-    return render_to_response("admin/otree_data_export_list.html", {"apps": apps})
+    return TemplateResponse(request, "admin/otree_data_export_list.html", {"apps": apps})
 
 
 @user_passes_test(lambda u: u.is_staff)

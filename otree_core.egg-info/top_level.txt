@@ -1,3 +1,0 @@
-otree_project
-otree
-tests

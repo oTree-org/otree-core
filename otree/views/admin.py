@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from django.shortcuts import get_object_or_404, render_to_response
+from django.shortcuts import get_object_or_404
+from django.template.response import TemplateResponse
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
 import vanilla
 import otree.constants as constants
@@ -89,4 +90,6 @@ class SessionTypes(vanilla.View):
                 }
             )
 
-        return render_to_response('otree/admin/SessionListing.html', {'session_types_info': session_types_info})
+        return TemplateResponse(self.request,
+                                'otree/admin/SessionListing.html',
+                                {'session_types_info': session_types_info})

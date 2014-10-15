@@ -3,8 +3,7 @@ import time
 
 from django.contrib import admin
 from django.conf.urls import patterns
-from django.shortcuts import render_to_response
-from django.template.loader import render_to_string
+from django.template.response import TemplateResponse
 from django.core.urlresolvers import reverse
 import django.db.models.options
 import django.db.models.fields.related
@@ -167,7 +166,7 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
             'base_pay',
         },
         'Participant': {
-            'label',
+            #'label',
             'ip_address',
         },
     }[Model.__name__]
@@ -312,7 +311,7 @@ class FieldLinkToForeignKey:
         if object is None:
             return "(None)"
         else:
-            url = reverse('admin:%s_%s_change' %(object._meta.app_label,  object._meta.module_name),  
+            url = reverse('admin:%s_%s_change' %(object._meta.app_label,  object._meta.module_name),
                             args=[object.id])
             return '<a href="%s">%s</a>' % (url, object.__unicode__())
 
@@ -321,12 +320,12 @@ class FieldLinkToForeignKey:
         return True
 
 def _add_links_for_foreign_keys(model, list_display_fields):
-    
+
     result = []
     for list_display_field in list_display_fields:
         if hasattr(model, list_display_field):
             try:
-                if isinstance(model._meta.get_field(list_display_field), 
+                if isinstance(model._meta.get_field(list_display_field),
                               django.db.models.fields.related.ForeignKey):
                     result.append(FieldLinkToForeignKey(list_display_field))
                     continue
@@ -435,7 +434,8 @@ class GlobalSettingsAdmin(OTreeBaseModelAdmin):
         open_session_base_url = request.build_absolute_uri(AssignVisitorToOpenSession.url())
         open_session_example_url = add_params_to_url(open_session_base_url, {otree.constants.participant_label: 'P1'})
 
-        return render_to_response(
+        return TemplateResponse(
+            request,
             'otree/admin/PersistentLabURLs.html',
             {
                 'open_session_example_url': open_session_example_url,
@@ -452,10 +452,11 @@ class GlobalSettingsAdmin(OTreeBaseModelAdmin):
         from otree.views.concrete import AssignVisitorToOpenSessionMTurk
         open_session_url = request.build_absolute_uri(AssignVisitorToOpenSessionMTurk.url())
 
-        return render_to_response('otree/admin/MTurkSnippet.html',
-                                  {'hit_page_js_url': hit_page_js_url,
-                                   'open_session_url': open_session_url,},
-                                  content_type='text/plain')
+        return TemplateResponse(request,
+                                'otree/admin/MTurkSnippet.html',
+                                {'hit_page_js_url': hit_page_js_url,
+                                 'open_session_url': open_session_url,},
+                                content_type='text/plain')
 
 
     mturk_snippet_link.allow_tags = True
@@ -466,10 +467,10 @@ class GlobalSettingsAdmin(OTreeBaseModelAdmin):
         from otree.views.concrete import AssignVisitorToOpenSessionMTurk
         open_session_url = request.build_absolute_uri(AssignVisitorToOpenSessionMTurk.url())
 
-        return render_to_response('otree/admin/MTurkSnippet.html',
-                                  {'hit_page_js_url': hit_page_js_url,
-                                   'open_session_url': open_session_url,},
-                                  content_type='text/plain')
+        return TemplateResponse(context, 'otree/admin/MTurkSnippet.html',
+                                {'hit_page_js_url': hit_page_js_url,
+                                 'open_session_url': open_session_url,},
+                                content_type='text/plain')
 
 
 
@@ -563,14 +564,14 @@ class SessionAdmin(OTreeBaseModelAdmin):
             mean_payment = 0
 
 
-        return render_to_response('otree/admin/Payments.html',
-                                  {'participants': participants,
-                                  'total_payments': total_payments,
-                                  'mean_payment': mean_payment,
-                                  'session_code': session.code,
-                                  'session_name': session,
-                                  'base_pay': session.base_pay,
-                                  })
+        return TemplateResponse(request, 'otree/admin/Payments.html',
+                                {'participants': participants,
+                                'total_payments': total_payments,
+                                'mean_payment': mean_payment,
+                                'session_code': session.code,
+                                'session_name': session,
+                                'base_pay': session.base_pay,
+                                })
 
     def payments_link(self, instance):
         if instance.payments_ready():

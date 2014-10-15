@@ -13,7 +13,8 @@ from otree.views.abstract import (
 )
 
 from datetime import datetime
-from django.shortcuts import get_object_or_404, render_to_response
+from django.shortcuts import get_object_or_404
+from django.template.response import TemplateResponse
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
 import vanilla
 from django.utils.translation import ugettext as _
@@ -31,9 +32,9 @@ class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
     def dispatch(self, request, *args, **kwargs):
         user_type = kwargs.pop(constants.user_type)
         if user_type == constants.user_type_experimenter:
-            return render_to_response('otree/OutOfRangeNotificationExperimenter.html')
+            return TemplateResponse(request, 'otree/OutOfRangeNotificationExperimenter.html')
         else:
-            return render_to_response('otree/OutOfRangeNotification.html')
+            return TemplateResponse(request, 'otree/OutOfRangeNotification.html')
 
 class WaitUntilAssignedToGroup(PlayerSequenceMixin, PlayerMixin, WaitPageMixin, vanilla.View):
     """
@@ -115,7 +116,7 @@ class InitializeSessionExperimenter(vanilla.View):
         session = self._session_user.session
         if session._players_assigned_to_groups or session.type().assign_to_groups_on_the_fly:
             return self.redirect_to_next_page()
-        return render_to_response('otree/experimenter/StartSession.html', {})
+        return TemplateResponse(self.request, 'otree/experimenter/StartSession.html', {})
 
     def post(self, request, *args, **kwargs):
         self._session_user = get_object_or_404(
@@ -169,7 +170,8 @@ class InitializeParticipant(vanilla.UpdateView):
 
         session_user.visited = True
 
-        session_user.label = self.request.GET.get(constants.participant_label)
+        # session_user.label might already have been set by AssignToOpenSession
+        session_user.label = session_user.label or self.request.GET.get(constants.participant_label)
 
         if session_user.ip_address == None:
             session_user.ip_address = self.request.META['REMOTE_ADDR']

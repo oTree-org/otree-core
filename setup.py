@@ -1,7 +1,6 @@
 import os
 import sys
 from setuptools import setup, find_packages
-import shutil
 
 README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
 
@@ -26,17 +25,6 @@ if sys.argv[-1] == 'publish':
 
     sys.exit()
 
-otree_script = 'bin/otree'
-with open(otree_script, 'r') as f:
-    t = f.read()
-with open(otree_script, 'w') as f:
-    f.write(t.replace('\r', ''))
-
-
-# FIXME: what if the user cloned from github and ran 'python setup.py install'?
-if 'sdist' in sys.argv or 'publish' in sys.argv:
-    shutil.make_archive('otree/app_template', 'zip', 'otree/app_template')
-    shutil.make_archive('otree/project_template', 'zip', 'otree/project_template')
 
 setup(
     name='otree-core',
@@ -88,8 +76,6 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
-    scripts = ['bin/otree'],
-
 )
 
 
