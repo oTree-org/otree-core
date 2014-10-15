@@ -8,9 +8,10 @@ from otree.common import Money, money_range
 import random
 # </standard imports>
 
-
 class Constants:
     my_constant = 1
+
+
 
 author = 'Your name here'
 
@@ -48,7 +49,6 @@ class Player(otree.models.BasePlayer):
 
     # example field
     my_field = models.MoneyField(
-        default=None,
         doc="""
         Description of this field, for documentation
         """
