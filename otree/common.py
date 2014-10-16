@@ -100,8 +100,33 @@ def get_models_module(app_name):
 def flatten(list_of_lists):
     return [item for sublist in list_of_lists for item in sublist]
 
+def get_app_name_from_import_path(import_path):
+    '''
+    Return the registered otree app that contains the given module.
+
+    >>> get_app_name_from_import_path('tests.simple_game.models')
+    'tests.simple_game'
+    >>> get_app_name_from_import_path('tests.simple_game.views.mixins.FancyMixin')
+    'tests.simple_game'
+    >>> get_app_name_from_import_path('unregistered_app.models')
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in ?
+    ValueError: The module unregistered_app.models is not part of any known otree app.
+    '''
+    app_name = import_path
+    while app_name:
+        if app_name in settings.INSTALLED_OTREE_APPS:
+            return app_name
+        if '.' in app_name:
+            # Remove everything from the last dot.
+            app_name = '.'.join(app_name.split('.')[:-1])
+        else:
+            app_name = None
+    raise ValueError('The module {} is not part of any known otree app.'.format(import_path))
+
 def _views_module(model_instance):
-    return import_module('{}.views'.format(model_instance._meta.app_label))
+    app_name = get_app_name_from_import_path(model_instance.__module__)
+    return import_module('{}.views'.format(app_name))
 
 def _players(self):
     if hasattr(self, '_players'):
