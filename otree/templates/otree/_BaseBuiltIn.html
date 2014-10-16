@@ -36,7 +36,7 @@
             <div>
 
                 {% if time_limit_in_seconds != None %}
-                    {% include 'otree/TimeLimit.html' %}
+                    {% include 'otree/TimeLimit.html' with form_element_id="form" %}
                 {% endif %}
 
                 {% if form.errors %}
@@ -45,7 +45,7 @@
                     </div>
                 {% endif %}
 
-                <form action="" method="post" role="form" class="form">{% csrf_token %}
+                <form action="" method="post" role="form" class="form" id="form">{% csrf_token %}
                     {% form form using %}
                         {% formconfig row using "floppyforms/rows/bootstrap.html" %}
                         {% block content %}{% endblock %}
