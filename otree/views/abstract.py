@@ -7,6 +7,7 @@ from threading import Thread
 import time
 import logging
 from datetime import datetime
+from otree.db import models
 from otree.forms_internal import BaseModelForm, formfield_callback
 from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
@@ -48,7 +49,8 @@ logger = logging.getLogger(__name__)
 from django.core.urlresolvers import resolve
 
 def get_app_name(request):
-    return request.resolver_match.url_name.split('.')[0]
+    return otree.common.get_app_name_from_import_path(
+        request.resolver_match.url_name)
 
 class OTreeMixin(object):
     """Base mixin class for oTree views.
@@ -65,9 +67,9 @@ class OTreeMixin(object):
 
         app_name = self._session_user._current_app_name
         models_module = otree.common.get_models_module(app_name)
-        self.SubsessionClass = models_module.Subsession
-        self.GroupClass = models_module.Group
-        self.PlayerClass = models_module.Player
+        self.SubsessionClass = models.get_model(app_name, 'Subsession')
+        self.GroupClass = models.get_model(app_name, 'Group')
+        self.PlayerClass = models.get_model(app_name, 'Player')
 
     def load_user(self):
         code = self._session_user._current_user_code
