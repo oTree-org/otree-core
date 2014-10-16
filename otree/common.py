@@ -33,15 +33,6 @@ def id_label_name(id, label):
         return '{} (label: {})'.format(id, label)
     return '{}'.format(id)
 
-def currency(value):
-    """Takes in a number of cents (int) and returns a formatted currency amount.
-    """
-
-    if value == None:
-        return '?'
-    value_in_major_units = Decimal(value)/(10**settings.CURRENCY_DECIMAL_PLACES)
-    return babel.numbers.format_currency(value_in_major_units, settings.CURRENCY_CODE, locale=settings.CURRENCY_LOCALE)
-
 def is_subsession_app(app_label):
     try:
         models_module = import_module('{}.models'.format(app_label))
@@ -103,14 +94,14 @@ def flatten(list_of_lists):
 def _views_module(model_instance):
     return import_module('{}.views'.format(model_instance._meta.app_label))
 
-def _players(self):
-    if hasattr(self, '_players'):
+def _players(self, refresh_from_db=False):
+    if (not refresh_from_db) and hasattr(self, '_players'):
         return self._players
     self._players = list(self.player_set.order_by('id_in_group'))
     return self._players
 
-def _groups(self):
-    if hasattr(self, '_groups'):
+def _groups(self, refresh_from_db):
+    if (not refresh_from_db) and hasattr(self, '_groups'):
         return self._groups
     self._groups = list(self.group_set.all())
     return self._groups

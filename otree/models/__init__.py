@@ -42,11 +42,11 @@ class BaseSubsession(subsessions.BaseSubsession):
         doc='Number of rounds for which this subsession is played'
     )
 
-    def get_groups(self):
-        return _groups(self)
+    def get_groups(self, refresh_from_db=False):
+        return _groups(self, refresh_from_db)
 
-    def get_players(self):
-        return _players(self)
+    def get_players(self, refresh_from_db=False):
+        return _players(self, refresh_from_db)
 
     @property
     def app_name(self):
@@ -71,8 +71,8 @@ class BaseGroup(groups.BaseGroup):
         related_name = '%(app_label)s_%(class)s'
     )
 
-    def get_players(self):
-        return _players(self)
+    def get_players(self, refresh_from_db=False):
+        return _players(self, refresh_from_db)
 
     def get_player_by_role(self, role):
         return super(BaseGroup, self).get_player_by_role(role)
@@ -95,7 +95,7 @@ class BasePlayer(players.BasePlayer):
 
     payoff = models.MoneyField(
         null=True,
-        doc="""The payoff the player made in this subsession, in cents"""
+        doc="""The payoff the player made in this subsession"""
     )
 
     participant = models.ForeignKey(

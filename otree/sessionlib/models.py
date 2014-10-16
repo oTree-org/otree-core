@@ -7,18 +7,17 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from otree.common import id_label_name, add_params_to_url
 from otree import constants
-from otree.common import currency
 import otree.common
 from otree.common import directory_name
 from easymoney import Money
 
 from django_extensions.db.fields.json import JSONField
-
+from operator import attrgetter
 
 class GlobalSettings(models.Model):
     """object that can hold site-wide settings. There should only be one GlobalSettings object.
     """
-    open_session = models.ForeignKey('Session', null=True)
+    open_session = models.ForeignKey('Session', null=True, blank=True)
 
     class Meta:
         verbose_name = 'Set open session'
@@ -121,7 +120,7 @@ class Session(ModelWithVars):
     _players_assigned_to_groups = models.BooleanField(default=False)
 
     def base_pay_display(self):
-        return currency(self.base_pay)
+        return self.base_pay
 
     base_pay_display.short_description = 'Base pay'
 
@@ -191,10 +190,12 @@ class Session(ModelWithVars):
 
         for subsession_index in range(len(subsessions) - 1):
             players_left = subsessions[subsession_index].get_players()
-            players_right = subsessions[subsession_index + 1].get_players()
+            players_right = subsessions[subsession_index+1].get_players()
+            players_right_dict = {p.participant.pk: p for p in players_right}
             for player_index in range(num_participants):
                 player_left = players_left[player_index]
-                player_right = players_right[player_index]
+                player_right = players_right_dict[player_left.participant.pk]
+                assert player_left.participant and player_left.participant == player_right.participant
                 player_left._me_in_next_subsession = player_right
                 player_right._me_in_previous_subsession = player_left
                 player_left.save()
@@ -359,7 +360,7 @@ class Participant(SessionUser):
 
     def payoff_from_subsessions_display(self):
         complete = self.payoff_from_subsessions_is_complete()
-        payoff_from_subsessions = currency(self.payoff_from_subsessions())
+        payoff_from_subsessions = self.payoff_from_subsessions()
         if complete:
             return payoff_from_subsessions
         return u'{} (incomplete)'.format(payoff_from_subsessions)
@@ -372,7 +373,7 @@ class Participant(SessionUser):
     def total_pay_display(self):
         try:
             complete = self.payoff_from_subsessions_is_complete()
-            total_pay = currency(self.total_pay())
+            total_pay = self.total_pay()
         except:
             return 'Error in payoff calculation'
         if complete:

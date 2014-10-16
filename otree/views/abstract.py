@@ -188,7 +188,7 @@ class ExperimenterMixin(object):
         self.load_user()
 
     def objects_to_save(self):
-        return [self._user, self.subsession, self._session_user] + self.subsession.get_players() + self.subsession.groups
+        return [self._user, self.subsession, self._session_user] + self.subsession.get_players() + self.subsession.get_players()
 
 class WaitPageMixin(object):
 
@@ -260,13 +260,17 @@ class CheckpointMixin(object):
         if self.request_is_from_wait_page():
             return self._response_to_wait_page()
         else:
+            if self._is_complete():
+                return self._redirect_after_complete()
             self._record_visit()
             if self._all_players_have_visited():
                 #FIXME: this could get run for multiple users
-                self._mark_complete()
-                self._action()
-            if self._is_complete():
-                return self._redirect_after_complete()
+                # this also gets run after the wait page is finished.
+                if self._is_complete():
+                    return self._redirect_after_complete()
+                else:
+                    self._action()
+                    self._mark_action_complete()
             return self.get_wait_page()
 
     def _scope_is_group(self):
@@ -278,7 +282,6 @@ class CheckpointMixin(object):
         raise ValueError('scope must be set to either Group or Subsession')
 
     def _is_complete(self):
-        # check the "passed checkpoints" JSON field
         if self._scope_is_group():
             return CompletedGroupWaitPage.objects.filter(
                 app_name = self.subsession.app_name,
@@ -292,8 +295,25 @@ class CheckpointMixin(object):
                 subsession_pk = self.subsession.pk
             ).exists()
 
+    # use select_for_update?
+    def _mark_action_complete(self):
+        if self._scope_is_group():
+            completion = CompletedGroupWaitPage(
+                app_name = self.subsession.app_name,
+                page_index = self.index_in_pages,
+                group_pk = self.group.pk
+            )
+        else:
+            completion = CompletedSubsessionWaitPage(
+                app_name = self.subsession.app_name,
+                page_index = self.index_in_pages,
+                subsession_pk = self.subsession.pk
+            )
+        completion.save()
+
+
     def _all_players_have_visited(self):
-        pks_to_wait_for = [p.pk for p in self._group_or_subsession.get_players()]
+        pks_to_wait_for = [p.pk for p in self._group_or_subsession.player_set.all()]
         pks_that_have_visited = WaitPageVisit.objects.filter(
             app_name = self.subsession.app_name,
             page_index = self.index_in_pages,
@@ -308,17 +328,11 @@ class CheckpointMixin(object):
             page_index = self.index_in_pages,
             player_pk = self._user.pk, #FIXME: what about experimenter?
         )
-        visit.save()
 
-        if self._all_players_have_visited():
-            self._action()
-
-    def _page_request_actions(self):
-        run_action_now = self._record_visit()
-        if run_action_now:
-            self._action()
 
     def _action(self):
+        # force to refresh from DB
+        self._group_or_subsession.get_players(refresh_from_db=True)
         self.after_all_players_arrive()
         for p in self._group_or_subsession.get_players():
             p.save()
@@ -343,21 +357,6 @@ class CheckpointMixin(object):
         elif num_other_players == 0:
             return 'Waiting'
 
-    def _mark_complete(self):
-        if self._scope_is_group():
-            completion, _ = CompletedGroupWaitPage.objects.get_or_create(
-                app_name = self.subsession.app_name,
-                page_index = self.index_in_pages,
-                group_pk = self.group.pk
-            )
-            completion.save()
-        else:
-            completion, _ = CompletedSubsessionWaitPage.objects.get_or_create(
-                app_name = self.subsession.app_name,
-                page_index = self.index_in_pages,
-                subsession_pk = self.subsession.pk
-            )
-            completion.save()
 
 
 class SequenceMixin(OTreeMixin):
@@ -418,7 +417,7 @@ class SequenceMixin(OTreeMixin):
                 'user: {}'.format(user_info),
             )
 
-            e.args = ('{}\nDiagnostic info: {}'.format(e.args[0], diagnostic_info),) + e.args[1:]
+            e.args = ('{}\nDiagnostic info: {}'.format(e.args[0:1], diagnostic_info),) + e.args[1:]
             raise
 
 
@@ -539,7 +538,6 @@ class SequenceMixin(OTreeMixin):
             player_pk = self._user.pk,
             defaults = {'expiration_time': page_expiration_time_if_start_now}
         )
-        expiration_info.save()
 
         page_expiration_time = expiration_info.expiration_time
         remaining_seconds = max(0, page_expiration_time - now)
@@ -755,10 +753,13 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
             participant = self.retrieve_existing_participant_with_these_params(open_session)
         except Participant.DoesNotExist:
             try:
-                participant = Participant.objects.filter(
+                participant = Participant.objects.select_for_update().filter(
                     session = open_session,
                     visited=False)[0]
                 self.set_external_params_on_participant(participant)
+                # 2014-10-17: needs to be here even if it's also set in the next view
+                # to prevent race conditions
+                participant.visited = True
                 participant.save()
             except IndexError:
                 return HttpResponseNotFound("No Player objects left in the database to assign to new visitor.")

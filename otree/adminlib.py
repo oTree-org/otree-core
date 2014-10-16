@@ -15,7 +15,7 @@ from otree.views.demo import render_to_start_links_page
 import otree.constants
 import otree.sessionlib.models
 from otree.sessionlib.models import Participant, Session
-from otree.common import currency, add_params_to_url
+from otree.common import add_params_to_url
 
 def new_tab_link(url, label):
     return '<a href="{}" target="_blank">{}</a>'.format(url, label)
