@@ -3,7 +3,16 @@ from otree.session import SessionType
 
 
 def session_types():
-    return []
+    return [
+        SessionType(
+            name="Simple Game",
+            base_pay=0,
+            participants_per_demo_session=1,
+            participants_per_session=1,
+            subsession_apps=['tests.simple_game'],
+            doc=""""""
+        ),
+    ]
 
 
 def show_on_demo_page(session_type_name):

@@ -9,3 +9,4 @@ django_otree.egg-info/
 myapp*
 .idea/
 *.pyc
+tests/db.sqlite3

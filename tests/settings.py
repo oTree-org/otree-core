@@ -1,7 +1,6 @@
 import os
 import otree.settings
 
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 DEBUG = True
@@ -34,11 +33,15 @@ INSTALLED_APPS = [
     'tests.demo',
 ]
 
-INSTALLED_OTREE_APPS = []
+INSTALLED_OTREE_APPS = [
+    'tests.simple_game',
+]
 
-ROOT_URLCONF = 'tests.urls'
+ROOT_URLCONF = 'otree.default_urls'
 
 SESSION_MODULE = 'tests.session'
+
+ACCESS_CODE_FOR_OPEN_SESSION = 'idd1610'
 
 
 otree.settings.augment_settings(globals())
