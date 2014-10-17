@@ -412,12 +412,12 @@ class SubsessionAdmin(OTreeBaseModelAdmin):
     list_filter = [NonHiddenSessionListFilter]
     list_editable = ['_skip']
 
-class GlobalSettingsAdmin(OTreeBaseModelAdmin):
+class GlobalSingletonAdmin(OTreeBaseModelAdmin):
     list_display = ['id', 'open_session', 'persistent_urls_link', 'mturk_snippet_link']
     list_editable = ['open_session']
 
     def get_urls(self):
-        urls = super(GlobalSettingsAdmin, self).get_urls()
+        urls = super(GlobalSingletonAdmin, self).get_urls()
         my_urls = patterns('',
             (r'^(?P<pk>\d+)/mturk_snippet/$', self.admin_site.admin_view(self.mturk_snippet)),
             (r'^(?P<pk>\d+)/persistent_urls/$', self.admin_site.admin_view(self.persistent_urls)),

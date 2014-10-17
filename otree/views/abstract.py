@@ -35,12 +35,13 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpRespons
 import vanilla
 from django.utils.translation import ugettext as _
 import otree.sessionlib.models
-from otree.sessionlib.models import Participant
+from otree.sessionlib.models import Participant, GlobalSingleton
 from Queue import Queue
 import sys
 import floppyforms.__future__.models
 import otree.models
 from otree.models_concrete import PageVisit, WaitPageVisit, CompletedSubsessionWaitPage, CompletedGroupWaitPage, PageExpirationTime
+from django.db import transaction
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -264,13 +265,26 @@ class CheckpointMixin(object):
                 return self._redirect_after_complete()
             self._record_visit()
             if self._all_players_have_visited():
+                # take a lock on this singleton, so that only 1 person can be completing a wait page action at a time
+                GlobalSingleton.objects.select_for_update().get()
+
                 #FIXME: this could get run for multiple users
-                # this also gets run after the wait page is finished.
-                if self._is_complete():
-                    return self._redirect_after_complete()
+                self._action()
+                if self._scope_is_group():
+                    _, created = CompletedGroupWaitPage.objects.get_or_create(
+                        app_name = self.subsession.app_name,
+                        page_index = self.index_in_pages,
+                        group_pk = self.group.pk
+                    )
                 else:
+                    _, created = CompletedSubsessionWaitPage.objects.get_or_create(
+                        app_name = self.subsession.app_name,
+                        page_index = self.index_in_pages,
+                        subsession_pk = self.subsession.pk
+                    )
+                if created:
                     self._action()
-                    self._mark_action_complete()
+                    return self._redirect_after_complete()
             return self.get_wait_page()
 
     def _scope_is_group(self):
@@ -280,6 +294,8 @@ class CheckpointMixin(object):
         elif issubclass(self.scope, otree.models.BaseSubsession):
             return False
         raise ValueError('scope must be set to either Group or Subsession')
+
+
 
     def _is_complete(self):
         if self._scope_is_group():
@@ -295,21 +311,7 @@ class CheckpointMixin(object):
                 subsession_pk = self.subsession.pk
             ).exists()
 
-    # use select_for_update?
-    def _mark_action_complete(self):
-        if self._scope_is_group():
-            completion = CompletedGroupWaitPage(
-                app_name = self.subsession.app_name,
-                page_index = self.index_in_pages,
-                group_pk = self.group.pk
-            )
-        else:
-            completion = CompletedSubsessionWaitPage(
-                app_name = self.subsession.app_name,
-                page_index = self.index_in_pages,
-                subsession_pk = self.subsession.pk
-            )
-        completion.save()
+
 
 
     def _all_players_have_visited(self):
@@ -742,7 +744,7 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
         if not self.request.GET[constants.access_code_for_open_session] == settings.ACCESS_CODE_FOR_OPEN_SESSION:
             return HttpResponseNotFound('Incorrect access code for open session')
 
-        global_data = otree.sessionlib.models.GlobalSettings.objects.get()
+        global_data = otree.sessionlib.models.GlobalSingleton.objects.get()
         open_session = global_data.open_session
 
         if not open_session:

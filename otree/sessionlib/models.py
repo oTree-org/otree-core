@@ -14,8 +14,9 @@ from easymoney import Money
 from django_extensions.db.fields.json import JSONField
 from operator import attrgetter
 
-class GlobalSettings(models.Model):
-    """object that can hold site-wide settings. There should only be one GlobalSettings object.
+class GlobalSingleton(models.Model):
+    """object that can hold site-wide settings. There should only be one GlobalSingleton object.
+    Also used for wait page actions.
     """
     open_session = models.ForeignKey('Session', null=True, blank=True)
 
@@ -65,6 +66,10 @@ class Session(ModelWithVars):
     label = models.CharField(max_length = 300, null = True, blank = True,
     )
 
+    experimenter_name = models.CharField(max_length = 300, null = True, blank = True,
+    )
+
+
     code = RandomCharField(
         length=8,
         doc="""
@@ -80,7 +85,7 @@ class Session(ModelWithVars):
 
     time_scheduled = models.DateTimeField(
         null=True,
-        doc="""The time at which the experimenter started the session"""
+        doc="""The time at which the session is scheduled"""
     )
 
     time_started = models.DateTimeField(
@@ -136,7 +141,7 @@ class Session(ModelWithVars):
     ready = models.BooleanField(default=False)
 
     def is_open(self):
-        return GlobalSettings.objects.get().open_session == self
+        return GlobalSingleton.objects.get().open_session == self
 
 
     def subsession_names(self):
