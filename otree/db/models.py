@@ -1,4 +1,5 @@
 from django.db.models import *
+from django.db.models.base import ModelBase
 import django.forms.widgets
 from django.utils.translation import ugettext_lazy
 import django.forms.fields
@@ -7,6 +8,31 @@ import django.db.models
 import easymoney
 from otree.common import expand_choice_tuples, _MoneyInput
 from handy.models import PickleField
+
+
+class OTreeModelBase(ModelBase):
+    def __new__(cls, name, bases, attrs):
+        new_class = super(OTreeModelBase, cls).__new__(cls, name, bases, attrs)
+
+        for f in new_class._meta.fields:
+            if hasattr(new_class, f.name + '_choices'):
+                setattr(new_class, 'get_%s_display' % f.name, make_get_display(f))
+
+        return new_class
+
+def make_get_display(field):
+    def get_FIELD_display(self):
+        choices = getattr(self, field.name + '_choices')()
+        value = getattr(self, field.attname)
+        return dict(expand_choice_tuples(choices))[value]
+    return get_FIELD_display
+
+class OTreeModel(Model):
+    __metaclass__ = OTreeModelBase
+
+    class Meta:
+        abstract = True
+Model = OTreeModel
 
 
 class _OtreeModelFieldMixin(object):

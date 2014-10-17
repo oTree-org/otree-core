@@ -9,6 +9,9 @@ from otree.fields import RandomCharField
 class SimpleModel(otree.models.BaseGroup):
     name = models.CharField()
 
+    def name_choices(self):
+        return [(self.name, self.name.upper())]
+
 
 class FormFieldModel(otree.models.BaseGroup):
     null_boolean = models.NullBooleanField()
