@@ -1,13 +1,8 @@
 from django.contrib.contenttypes import generic
 from otree.sessionlib.models import Session, Participant
 from otree.db import models
-from importlib import import_module
 from otree.common import _players, _groups
-
-subsessions = import_module('otree.models.subsessions')
-groups = import_module('otree.models.groups')
-players = import_module('otree.models.players')
-
+from otree.models import subsessions, groups, players
 
 
 class BaseSubsession(subsessions.BaseSubsession):

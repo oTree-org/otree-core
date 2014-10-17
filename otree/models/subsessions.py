@@ -10,7 +10,6 @@ import otree.constants as constants
 import math
 from otree.common import flatten, _views_module
 import otree.user.models
-from django.utils.importlib import import_module
 import itertools
 from django_extensions.db.fields.json import JSONField
 
@@ -115,7 +114,7 @@ class BaseSubsession(models.Model):
         return [list(m.player_set.all()) for m in self.group_set.all()]
 
     def _GroupClass(self):
-        return import_module('{}.models'.format(self._meta.app_label)).Group
+        return models.get_model(self._meta.app_label, 'Group')
 
     def _create_empty_groups(self):
         GroupClass = self._GroupClass()
