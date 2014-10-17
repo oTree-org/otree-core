@@ -145,3 +145,5 @@ def run_all_sessions_without_coverage():
         len(unsuccessful_sessions),
         ', '.join(unsuccessful_sessions)
     )
+
+    return successful_sessions, unsuccessful_sessions
