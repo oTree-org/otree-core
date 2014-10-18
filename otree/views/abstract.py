@@ -120,11 +120,6 @@ class OTreeMixin(object):
             return views_module.variables_for_all_templates(self) or {}
         return {}
 
-    def get_context_data(self, **kwargs):
-        context = {}
-        context.update(self.variables_for_template() or {})
-        context.update(self._variables_for_all_templates())
-        return context
 
     def page_the_user_should_be_on(self):
         if self._session_user._index_in_subsessions > self.subsession._index_in_subsessions:
@@ -433,8 +428,8 @@ class SequenceMixin(OTreeMixin):
 
     def get_context_data(self, **kwargs):
         context = {'form': kwargs.get('form') or kwargs.get('formset')}
-        context.update(self.variables_for_template() or {})
         context.update(self._variables_for_all_templates())
+        context.update(self.variables_for_template() or {})
         context.update(self._get_time_limit_context())
 
         if settings.DEBUG:
@@ -610,9 +605,9 @@ class PlayerSequenceMixin(SequenceMixin):
             group_id = self.group.pk
         except:
             group_id = ''
-        return [('Index among players in group', self.player.id_in_group),
-                ('Player', self.player.pk),
+        return [('ID in group', self.player.id_in_group),
                 ('Group', group_id),
+                ('Player', self.player.pk),
                 ('Participant label', self.player.participant.label),
                 ('Session code', self.session.code),]
 

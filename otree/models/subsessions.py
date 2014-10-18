@@ -75,6 +75,7 @@ class BaseSubsession(models.Model):
                                               self.code)
 
     def previous_round(self):
+        '''finds non-contiguous rounds'''
         s = self
         while True:
             s = s.previous_subsession
@@ -86,6 +87,10 @@ class BaseSubsession(models.Model):
     def next_round_groups(self, previous_round_groups):
         return previous_round_groups
 
+    def _num_groups(self):
+        """number of groups in this subsession"""
+        return self.player_set.count()/self._GroupClass().players_per_group
+
     def _next_open_group(self):
         """Get the next group that is accepting players.
         (or none if it does not exist)
@@ -95,23 +100,24 @@ class BaseSubsession(models.Model):
         except StopIteration:
             return None
 
-    def _num_groups(self):
-        """number of groups in this subsession"""
-        return self.player_set.count()/self._GroupClass().players_per_group
-
-    def _random_groups(self):
+    def _random_group_lists(self):
         players = list(self.player_set.all())
         random.shuffle(players)
         groups = []
         players_per_group = self._GroupClass().players_per_group
-        for i in range(self._num_groups()):
-            start_index = i*players_per_group
-            end_index = start_index + players_per_group
-            groups.append(players[start_index:end_index])
+        for i in range(0, len(players), players_per_group):
+            groups.append(players[i:i+players_per_group])
         return groups
 
-    def _group_lists(self):
-        return [list(m.player_set.all()) for m in self.group_set.all()]
+    def _group_objects_to_lists(self):
+        return [list(m.player_set.order_by('id_in_group').all()) for m in self.group_set.all()]
+
+    def _group_lists_to_objects(self, group_lists):
+        for group_list in group_lists:
+            group = self._next_open_group()
+            for player in group_list:
+                player._assign_to_group(group)
+            group.save()
 
     def _GroupClass(self):
         return models.get_model(self._meta.app_label, 'Group')
@@ -122,23 +128,19 @@ class BaseSubsession(models.Model):
             m = GroupClass._create(self)
 
     def first_round_groups(self):
-        return self._random_groups()
+        return self._random_group_lists()
 
     def _assign_players_to_groups(self):
         previous_round = self.previous_round()
         if not previous_round:
             group_lists = self.first_round_groups()
         else:
-            previous_round_group_lists = previous_round._group_lists()
+            previous_round_group_lists = previous_round._group_objects_to_lists()
             group_lists = self.next_round_groups(previous_round_group_lists)
             for i, group_list in enumerate(group_lists):
                 for j, player in enumerate(group_list):
                     group_lists[i][j] = player._me_in_next_subsession
-        for group_list in group_lists:
-            group = self._next_open_group()
-            for player in group_list:
-                player._assign_to_group(group)
-            group.save()
+        self._group_lists_to_objects(group_lists)
 
     def previous_subsession_is_in_same_app(self):
         previous_subsession = self.previous_subsession

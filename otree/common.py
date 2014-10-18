@@ -122,6 +122,7 @@ def _views_module(model_instance):
 def _players(self, refresh_from_db=False):
     if (not refresh_from_db) and hasattr(self, '_players'):
         return self._players
+    # this means even subsession.players orders them by id_in_group, not necessarily optimal
     self._players = list(self.player_set.order_by('id_in_group'))
     return self._players
 
