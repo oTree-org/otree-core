@@ -130,7 +130,7 @@ class BaseSubsession(models.Model):
     def first_round_groups(self):
         return self._random_group_lists()
 
-    def _assign_players_to_groups(self):
+    def _assign_groups(self):
         previous_round = self.previous_round()
         if not previous_round:
             group_lists = self.first_round_groups()
@@ -141,6 +141,21 @@ class BaseSubsession(models.Model):
                 for j, player in enumerate(group_list):
                     group_lists[i][j] = player._me_in_next_subsession
         self._group_lists_to_objects(group_lists)
+
+    def _initialize(self):
+        self.initialize()
+        for p in self.get_players():
+            p.save()
+        for g in self.get_groups():
+            g.save()
+
+    def initialize(self):
+        '''
+        This gets called at the beginning of every subsession, before the first page is loaded.
+        3rd party programmer can put any code here, e.g. to loop through players and
+        assign treatment parameters.
+        '''
+        pass
 
     def previous_subsession_is_in_same_app(self):
         previous_subsession = self.previous_subsession

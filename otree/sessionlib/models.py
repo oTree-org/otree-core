@@ -225,12 +225,14 @@ class Session(ModelWithVars):
         return True
     payments_ready.boolean = True
 
-    def _assign_players_to_groups(self):
+    def _assign_groups_and_initialize(self):
         for subsession in self.get_subsessions():
             subsession._create_empty_groups()
-            subsession._assign_players_to_groups()
+            subsession._assign_groups()
+            subsession._initialize()
         self._players_assigned_to_groups = True
         self.save()
+
 
     class Meta:
         # if i don't set this, it could be in an unpredictable order

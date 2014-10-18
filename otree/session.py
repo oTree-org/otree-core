@@ -154,7 +154,7 @@ def create_session(type_name, label='', num_participants=None, special_category=
     session.chain_players()
     session.session_experimenter.chain_experimenters()
     if preassign_players_to_groups:
-        session._assign_players_to_groups()
+        session._assign_groups_and_initialize()
     session.ready = True
     session.save()
     return session
