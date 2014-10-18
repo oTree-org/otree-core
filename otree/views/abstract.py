@@ -265,8 +265,6 @@ class CheckpointMixin(object):
                 # take a lock on this singleton, so that only 1 person can be completing a wait page action at a time
                 GlobalSingleton.objects.select_for_update().get()
 
-                #FIXME: this could get run for multiple users
-                self._action()
                 if self._scope_is_group():
                     _, created = CompletedGroupWaitPage.objects.get_or_create(
                         app_name = self.subsession.app_name,
