@@ -59,6 +59,7 @@ setup(
         'coverage==3.7.1',
         'django-easymoney==0.4',
         'handy==0.3',
+        'Pillow',
 
 
     ],
