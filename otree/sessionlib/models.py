@@ -55,7 +55,7 @@ class Session(ModelWithVars):
 
     #
     type_name = models.CharField(max_length = 300, null = True, blank = True,
-        doc="""the session type, as defined in the programmer's session.py."""
+        doc="""the session type, as defined in the programmer's sessions.py."""
     )
 
     def type(self):

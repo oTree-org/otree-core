@@ -11,11 +11,13 @@ from django.conf import settings
 from django.template.defaultfilters import title
 from django.utils.importlib import import_module
 from easymoney import Money
+from collections import OrderedDict
+
+from django.utils.safestring import mark_safe
 
 from otree import constants
+import json
 
-
-# R: Should not be needed
 class _MoneyInput(forms.NumberInput):
      def _format_value(self, value):
          return str(Decimal(value))
@@ -23,7 +25,9 @@ class _MoneyInput(forms.NumberInput):
 
 def add_params_to_url(url, params):
     url_parts = list(urlparse.urlparse(url))
-    query = dict(urlparse.parse_qsl(url_parts[4]))
+
+    # use OrderedDict because sometimes we want certain params at end for readability/consistency
+    query = OrderedDict(urlparse.parse_qsl(url_parts[4]))
     query.update(params)
     url_parts[4] = urllib.urlencode(query)
     return urlparse.urlunparse(url_parts)
@@ -81,8 +85,8 @@ def directory_name(path):
 
 def get_session_module():
     base_dir_name = directory_name(settings.BASE_DIR)
-    module_name = getattr(settings, 'SESSION_MODULE',
-                          '{}.session'.format(base_dir_name))
+    module_name = getattr(settings, 'SESSIONS_MODULE',
+                          '{}.sessions'.format(base_dir_name))
     return import_module(module_name)
 
 def get_models_module(app_name):
@@ -153,3 +157,5 @@ def expand_choice_tuples(choices):
         choices = [(value, value) for value in choices]
     return choices
 
+def to_safe_json(obj):
+    return mark_safe(json.dumps(obj))

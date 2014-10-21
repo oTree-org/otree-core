@@ -67,8 +67,8 @@ class CreateSession(vanilla.FormView):
         admin_url = reverse('admin:%s_%s_change' % (session._meta.app_label, session._meta.module_name), args=(session.pk,))
         return HttpResponseRedirect(admin_url)
 
-def escaped_create_session_url(session_type_name):
-    return '/create_session/{}/'.format(urllib.quote_plus(session_type_name))
+def create_session_url(session_type_name):
+    return
 
 # FIXME: these decorators are not working together with issubclass?
 #@user_passes_test(lambda u: u.is_staff)
@@ -85,8 +85,8 @@ class SessionTypes(vanilla.View):
         for session_type in SessionTypeDirectory().select():
             session_types_info.append(
                 {
-                    'type_name': session_type.name,
-                    'url': escaped_create_session_url(session_type.name),
+                    'display_name': session_type.display_name,
+                    'url': '/create_session/{}/'.format(session_type.name),
                 }
             )
 

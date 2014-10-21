@@ -15,8 +15,12 @@
 
 {% for s in session_info %}
 
-        <h4><a href="{{ s.url }}" target="_blank">{{ s.type_name }}</a></h4>
+        <h4><a href="{{ s.url }}" target="_blank">{{ s.display_name }}</a></h4>
 
 {% endfor %}
+
+    {% if debug %}
+        <p>You can add entries to this list in <code>sessions.py</code>.</p>
+    {% endif %}
 
 {% endblock %}

@@ -38,7 +38,7 @@ INSTALLED_OTREE_APPS = []
 
 ROOT_URLCONF = 'tests.urls'
 
-SESSION_MODULE = 'tests.session'
+SESSIONS_MODULE = 'tests.sessions'
 
 
 otree.settings.augment_settings(globals())

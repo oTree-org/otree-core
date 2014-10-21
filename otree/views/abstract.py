@@ -186,7 +186,7 @@ class ExperimenterMixin(object):
         self.load_user()
 
     def objects_to_save(self):
-        return [self._user, self.subsession, self._session_user] + self.subsession.get_players() + self.subsession.get_players()
+        return [self._user, self.subsession, self._session_user] + self.subsession.get_players()
 
 class WaitPageMixin(object):
 
@@ -204,11 +204,11 @@ class WaitPageMixin(object):
         return self.request.is_ajax() and self.request.GET.get(constants.check_if_wait_is_over) == constants.get_param_truth_value
 
     def wait_page_request_url(self):
-        return '{}?{}={}'.format(
+        return otree.common.add_params_to_url(
             self.request.path,
-            constants.check_if_wait_is_over,
-            constants.get_param_truth_value
+            {constants.check_if_wait_is_over: constants.get_param_truth_value}
         )
+
 
     def get_debug_values(self):
         pass
@@ -305,8 +305,6 @@ class CheckpointMixin(object):
                 page_index = self.index_in_pages,
                 subsession_pk = self.subsession.pk
             ).exists()
-
-
 
 
     def _all_players_have_visited(self):

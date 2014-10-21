@@ -10,9 +10,10 @@ import threading
 import time
 import urllib
 from otree.common import get_session_module, get_models_module, app_name_format
+from django.conf import settings
 
-def escaped_start_link_url(session_type_name):
-    return '/demo/{}/'.format(urllib.quote_plus(session_type_name))
+def start_link_url(session_type_name):
+    return '/demo/{}/'.format(session_type_name)
 
 class DemoIndex(vanilla.View):
 
@@ -28,11 +29,16 @@ class DemoIndex(vanilla.View):
         for session_type in SessionTypeDirectory(demo_only=True).select():
             session_info.append(
                 {
-                    'type_name': session_type.name,
-                    'url': escaped_start_link_url(session_type.name),
+                    'name': session_type.name,
+                    'display_name': session_type.display_name,
+                    'url': start_link_url(session_type.name),
                 }
             )
-        return TemplateResponse(self.request, 'otree/demo/index.html', {'session_info': session_info, 'intro_text': intro_text})
+        return TemplateResponse(
+            self.request,
+            'otree/demo/index.html',
+            {'session_info': session_info, 'intro_text': intro_text, 'debug': settings.DEBUG}
+        )
 
 def ensure_enough_spare_sessions(type_name):
     time.sleep(5)
@@ -92,7 +98,7 @@ def info_about_session_type(session_type):
 def render_to_start_links_page(request, session, is_demo_page):
 
     context_data = {
-            'session_type_name': session.type_name,
+            'display_name': session.type().display_name,
             'experimenter_url': request.build_absolute_uri(session.session_experimenter._start_url()),
             'participant_urls': [request.build_absolute_uri(participant._start_url()) for participant in session.get_participants()],
             'is_demo_page': is_demo_page,
@@ -114,7 +120,7 @@ class Demo(vanilla.View):
         return r"^demo/(?P<session_type>.+)/$"
 
     def get(self, *args, **kwargs):
-        session_type_name=urllib.unquote_plus(kwargs['session_type'])
+        session_type_name=kwargs['session_type']
 
 
         session_dir = SessionTypeDirectory(demo_only=True)
@@ -148,7 +154,7 @@ class Demo(vanilla.View):
                 self.request,
                 'otree/WaitPage.html',
                 {
-                    'SequenceViewURL': escaped_start_link_url(session_type_name),
+                    'SequenceViewURL': start_link_url(session_type_name),
 
                     'title_text': 'Please wait',
                     'body_text': 'Creating a session.',

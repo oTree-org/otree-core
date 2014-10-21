@@ -7,6 +7,7 @@ from otree.sessionlib.models import Session, SessionExperimenter, Participant
 from django.db import transaction
 from collections import defaultdict
 from itertools import groupby
+import re
 
 def gcd(a, b):
     """Return greatest common divisor using Euclid's Algorithm."""
@@ -24,8 +25,17 @@ def lcmm(*args):
 
 class SessionType(object):
     def __init__(self, name, subsession_apps, base_pay, participants_per_session,
+                 display_name=None,
                  participants_per_demo_session = None, is_for_mturk=False, doc=None, assign_to_groups_on_the_fly=False):
+
+        if not re.match(r'^\w+$', name):
+            raise ValueError('Session "{}": name must be alphanumeric with no spaces.'.format(name))
+
         self.name = name
+
+
+
+        self.display_name = display_name or name
 
         if len(subsession_apps) == 0:
             raise ValueError('Need at least one subsession.')
@@ -78,7 +88,7 @@ def create_session(type_name, label='', num_participants=None, special_category=
     try:
         session_type = SessionTypeDirectory().get_item(type_name)
     except KeyError:
-        raise ValueError('Session type "{}" not found in session.py'.format(type_name))
+        raise ValueError('Session type "{}" not found in sessions.py'.format(type_name))
     session = Session(
         type_name=session_type.name,
         label=label,

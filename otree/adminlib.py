@@ -432,13 +432,17 @@ class GlobalSingletonAdmin(OTreeBaseModelAdmin):
     def persistent_urls(self, request, pk):
         from otree.views.concrete import AssignVisitorToOpenSession
         open_session_base_url = request.build_absolute_uri(AssignVisitorToOpenSession.url())
-        open_session_example_url = add_params_to_url(open_session_base_url, {otree.constants.participant_label: 'P1'})
+        open_session_example_urls = []
+        for i in range(1,31):
+            open_session_example_urls.append(
+                add_params_to_url(open_session_base_url, {otree.constants.participant_label: 'P{}'.format(i)})
+            )
 
         return TemplateResponse(
             request,
             'otree/admin/PersistentLabURLs.html',
             {
-                'open_session_example_url': open_session_example_url,
+                'open_session_example_urls': open_session_example_urls,
                 'access_code_for_open_session': otree.constants.access_code_for_open_session,
                 'participant_label': otree.constants.participant_label
             }
