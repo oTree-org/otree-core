@@ -12,4 +12,4 @@ before_script:
   - psql -c 'create database travis_ci_test;' -U postgres
 script:
   - python runtests.py
-  - sh -c 'export DATABASE_URL=postgres://postgres@localhost/travis_ci_test && cd otree-lib && ./otree recreate && ./otree test_all'
+  - sh -c 'export DATABASE_URL=postgres://postgres@localhost/travis_ci_test && cd otree-lib && .env/bin/python ./otree recreate && .env/bin/python ./otree test_all'
