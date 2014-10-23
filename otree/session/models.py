@@ -21,6 +21,9 @@ class GlobalSingleton(models.Model):
     open_session = models.ForeignKey('Session', null=True, blank=True)
 
     class Meta:
+        # The db_table is set manually for historical reasons. This model used
+        # to live in a app called 'sessionlib'.
+        db_table = 'sessionlib_globalsingleton'
         verbose_name = 'Set open session'
         verbose_name_plural = verbose_name
 
@@ -29,6 +32,11 @@ class StubModel(models.Model):
     """To be used as the model for an empty form, so that form_class can be omitted.
     Consider using SingletonModel for this. Right now, I'm not sure we need it.
     """
+
+    class Meta:
+        # The db_table is set manually for historical reasons. This model used
+        # to live in a app called 'sessionlib'.
+        db_table = 'sessionlib_stubmodel'
 
 
 # R: You really need this only if you are using save_the_change,
@@ -235,6 +243,10 @@ class Session(ModelWithVars):
 
 
     class Meta:
+        # The db_table is set manually for historical reasons. This model used
+        # to live in a app called 'sessionlib'.
+        db_table = 'sessionlib_session'
+
         # if i don't set this, it could be in an unpredictable order
         ordering = ['pk']
 
@@ -308,6 +320,11 @@ class SessionUser(ModelWithVars):
         abstract = True
 
 class SessionExperimenter(SessionUser):
+    class Meta:
+        # The db_table is set manually for historical reasons. This model used
+        # to live in a app called 'sessionlib'.
+        db_table = 'sessionlib_sessionexperimenter'
+
     def _start_url(self):
         return '/InitializeSessionExperimenter/{}/'.format(
             self.code
@@ -409,5 +426,8 @@ class Participant(SessionUser):
         return self.name()
 
     class Meta:
+        # The db_table is set manually for historical reasons. This model used
+        # to live in a app called 'sessionlib'.
+        db_table = 'sessionlib_participant'
         ordering = ['pk']
 

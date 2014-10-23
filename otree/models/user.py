@@ -77,6 +77,9 @@ class Experimenter(User):
 
     class Meta:
         app_label = 'otree'
+        # The db_table is set manually for historical reasons. This model used
+        # to live in a app called 'user'.
+        db_table = 'user_experimenter'
 
     @property
     def _session_user(self):
