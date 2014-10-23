@@ -1,9 +1,23 @@
+
+
 from django.contrib.contenttypes import generic
 from otree.sessionlib.models import Session, Participant
 from otree.db import models
 from otree.common import _players, _groups
-from otree.models import subsessions, groups, players
 
+# NOTE: this imports the following submodules and then subclasses several classes
+# importing is done via import_module rather than an ordinary import.
+# The only reason for this is to hide the base classes from IDEs like PyCharm,
+# so that those members/attributes don't show up in autocomplete,
+# including all the built-in django model fields that an ordinary oTree programmer will never need or want.
+# if this was a conventional Django project I wouldn't do it this way,
+# but because oTree is aimed at newcomers who may need more assistance from their IDE,
+# I want to try this approach out.
+# this module is also a form of documentation of the public API.
+
+subsessions = import_module('otree.models.subsessions')
+groups = import_module('otree.models.groups')
+players = import_module('otree.models.players')
 
 class BaseSubsession(subsessions.BaseSubsession):
 
