@@ -26,9 +26,8 @@ import otree.sessionlib.models as seq_models
 import otree.sessionlib.models
 import otree.common
 
-import otree.user.models
 import otree.forms_internal
-from otree.user.models import Experimenter
+from otree.models.user import Experimenter
 import copy
 import django.utils.timezone
 
