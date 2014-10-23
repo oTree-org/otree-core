@@ -1,5 +1,5 @@
 
-
+from importlib import import_module
 from django.contrib.contenttypes import generic
 from otree.sessionlib.models import Session, Participant
 from otree.db import models
