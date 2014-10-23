@@ -17,8 +17,8 @@ from otree.common import app_name_format
 import otree.settings
 import otree.models
 import otree.adminlib
-import otree.sessionlib.models
-from otree.sessionlib.models import Session, Participant
+import otree.session.models
+from otree.session.models import Session, Participant
 from otree.adminlib import SessionAdmin, ParticipantAdmin, get_callables, get_all_fields_for_table
 from collections import OrderedDict
 from otree.db import models
@@ -81,9 +81,9 @@ def get_data_export_fields(app_label):
     export_info = {}
     for model_name in MODEL_NAMES:
         if model_name == 'Session':
-            Model = otree.sessionlib.models.Session
+            Model = otree.session.models.Session
         elif model_name == 'Participant':
-            Model = otree.sessionlib.models.Participant
+            Model = otree.session.models.Participant
         else:
             Model = getattr(app_models_module, model_name)
 
@@ -134,9 +134,9 @@ def get_doc_dict(app_label):
         members = export_fields[model_name]['member_names']
         callables = export_fields[model_name]['callables']
         if model_name == 'Participant':
-            Model = otree.sessionlib.models.Participant
+            Model = otree.session.models.Participant
         elif model_name == 'Session':
-            Model = otree.sessionlib.models.Session
+            Model = otree.session.models.Session
         else:
             Model = getattr(app_models_module, model_name)
 
@@ -292,7 +292,7 @@ def export(request, app_label):
         # http://stackoverflow.com/questions/2466496/select-distinct-values-from-a-table-field#comment2458913_2468620
         ids = set(Player.objects.order_by().values_list(fk_name, flat=True).distinct())
         if fk_name in {'session', 'participant'}:
-            models_module = otree.sessionlib.models
+            models_module = otree.session.models
         else:
             models_module = app_models
         objects = getattr(models_module, model_name).objects.filter(pk__in=ids)

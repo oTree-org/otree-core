@@ -1,5 +1,5 @@
 from otree.db import models
-import otree.sessionlib.models
+import otree.session.models
 from save_the_change.mixins import SaveTheChange
 from django_extensions.db.fields.json import JSONField
 

@@ -3,7 +3,7 @@ from django.contrib.auth import models as auth_models
 from django.contrib.auth.management import create_superuser
 from django.db.models import signals
 import otree.constants
-from otree.sessionlib.models import StubModel, GlobalSingleton, Session
+from otree.session.models import StubModel, GlobalSingleton, Session
 
 
 def create_default_superuser(app, created_models, verbosity, **kwargs):

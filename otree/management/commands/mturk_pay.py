@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from mturk import mturk
 from otree.common import currency
-from otree.sessionlib.models import Session
+from otree.session.models import Session
 
 def cents_to_dollars(num_cents):
     return round(num_cents/100.0,2)

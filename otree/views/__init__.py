@@ -1,6 +1,6 @@
 """public api"""
 
-import otree.sessionlib.models
+import otree.session.models
 
 from otree.views.abstract import (
     InitializePlayer,

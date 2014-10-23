@@ -22,7 +22,7 @@ class User(SaveTheChange, models.Model):
         raise NotImplementedError()
 
     session = models.ForeignKey(
-        'sessionlib.Session',
+        'session.Session',
         related_name = '%(app_label)s_%(class)s')
 
 
@@ -60,7 +60,7 @@ class User(SaveTheChange, models.Model):
 class Experimenter(User):
 
     session_experimenter = models.ForeignKey(
-        'sessionlib.SessionExperimenter',
+        'session.SessionExperimenter',
         null=True,
         related_name='experimenter'
     )

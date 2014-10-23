@@ -4,7 +4,7 @@ from threading import Thread
 import sys
 from Queue import Queue
 import time
-from otree.sessionlib.models import Session
+from otree.session.models import Session
 import coverage
 from otree.session import create_session, SessionTypeDirectory
 import itertools
