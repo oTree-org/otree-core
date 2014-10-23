@@ -75,6 +75,9 @@ class Experimenter(User):
 
     _init_view_name = 'InitializeExperimenter'
 
+    class Meta:
+        app_label = 'otree'
+
     @property
     def _session_user(self):
         return self.session_experimenter
