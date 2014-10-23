@@ -1,7 +1,7 @@
 language: python
 env:
   - SCRIPT="python runtests.py"
-  - SCRIPT="cd otree-lib && ./otree recreate && ./otree test_all"
+  - DATABASE_URL=postgres://postgres@localhost/travis_ci_test SCRIPT="cd otree-lib && ./otree recreate && ./otree test_all"
 python: 2.7
 install:
   - python setup.py install
@@ -11,6 +11,7 @@ install:
   - virtualenv otree-lib/.env --no-site-packages
   - otree-lib/.env/bin/pip install -r otree-lib/requirements.txt
   - otree-lib/.env/bin/python setup.py install
-
+before_script:
+  - psql -c 'create database travis_ci_test;' -U postgres
 script:
   - $SCRIPT
