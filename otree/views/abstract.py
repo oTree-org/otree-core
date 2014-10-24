@@ -262,23 +262,24 @@ class CheckpointMixin(object):
             self._record_visit()
             if self._all_players_have_visited():
                 # take a lock on this singleton, so that only 1 person can be completing a wait page action at a time
-                GlobalSingleton.objects.select_for_update().get()
+                with transaction.atomic():
+                    GlobalSingleton.objects.select_for_update().get()
 
-                if self._scope_is_group():
-                    _, created = CompletedGroupWaitPage.objects.get_or_create(
-                        app_name = self.subsession.app_name,
-                        page_index = self.index_in_pages,
-                        group_pk = self.group.pk
-                    )
-                else:
-                    _, created = CompletedSubsessionWaitPage.objects.get_or_create(
-                        app_name = self.subsession.app_name,
-                        page_index = self.index_in_pages,
-                        subsession_pk = self.subsession.pk
-                    )
-                if created:
-                    self._action()
-                    return self._redirect_after_complete()
+                    if self._scope_is_group():
+                        _, created = CompletedGroupWaitPage.objects.get_or_create(
+                            app_name = self.subsession.app_name,
+                            page_index = self.index_in_pages,
+                            group_pk = self.group.pk
+                        )
+                    else:
+                        _, created = CompletedSubsessionWaitPage.objects.get_or_create(
+                            app_name = self.subsession.app_name,
+                            page_index = self.index_in_pages,
+                            subsession_pk = self.subsession.pk
+                        )
+                    if created:
+                        self._action()
+                        return self._redirect_after_complete()
             return self.get_wait_page()
 
     def _scope_is_group(self):
