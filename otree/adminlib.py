@@ -50,7 +50,6 @@ def get_callables(Model, fields_specific_to_this_subclass=None, for_export=False
              'raw_participant_urls_link',
              'payments_ready',
              'payments_link',
-             'base_pay_display',
              'is_open',
         ],
         'Participant': [
@@ -163,7 +162,7 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
         'Subsession': {'id'},
         'Session': {
             'git_commit_timestamp',
-            'base_pay',
+            #'base_pay',
         },
         'Participant': {
             #'label',

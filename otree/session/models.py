@@ -132,11 +132,6 @@ class Session(ModelWithVars):
 
     _players_assigned_to_groups = models.BooleanField(default=False)
 
-    def base_pay_display(self):
-        return self.base_pay
-
-    base_pay_display.short_description = 'Base pay'
-
     #
     special_category = models.CharField(max_length=20, null=True,
         doc="""whether it's a test session, demo session, etc."""
