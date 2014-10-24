@@ -59,6 +59,8 @@ class BaseSubsession(models.Model):
         rounds.reverse()
         return rounds
 
+    def all_rounds(self):
+        return self.previous_rounds() + [self]
 
     def name(self):
         return str(self.pk)
