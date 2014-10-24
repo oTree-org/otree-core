@@ -13,8 +13,8 @@ from otree.session import SessionTypeDirectory
 from otree.views.demo import render_to_start_links_page
 
 import otree.constants
-import otree.sessionlib.models
-from otree.sessionlib.models import Participant, Session
+import otree.session.models
+from otree.session.models import Participant, Session
 from otree.common import add_params_to_url
 
 def new_tab_link(url, label):
@@ -348,7 +348,7 @@ class NonHiddenSessionListFilter(admin.SimpleListFilter):
         in the right sidebar.
         """
         return [(session.id, session.id) for session
-                in otree.sessionlib.models.Session.objects.filter(hidden=False)]
+                in otree.session.models.Session.objects.filter(hidden=False)]
 
     def queryset(self, request, queryset):
         """
@@ -484,8 +484,8 @@ class ParticipantAdmin(OTreeBaseModelAdmin):
 
     list_filter = [NonHiddenSessionListFilter]
 
-    readonly_fields = get_callables(otree.sessionlib.models.Participant, [])
-    list_display = get_all_fields_for_table(otree.sessionlib.models.Participant, readonly_fields)
+    readonly_fields = get_callables(otree.session.models.Participant, [])
+    list_display = get_all_fields_for_table(otree.session.models.Participant, readonly_fields)
     list_editable = ['exclude_from_data_analysis']
 
 
@@ -530,7 +530,7 @@ class SessionAdmin(OTreeBaseModelAdmin):
 
     def start_links_link(self, instance):
         return new_tab_link(
-            '/admin/sessionlib/session/{}/start_links/'.format(instance.pk),
+            '/admin/session/session/{}/start_links/'.format(instance.pk),
             'Link'
         )
 
@@ -548,7 +548,7 @@ class SessionAdmin(OTreeBaseModelAdmin):
 
 
     def raw_participant_urls_link(self, instance):
-        return new_tab_link('/admin/sessionlib/session/{}/raw_participant_urls/?{}={}'.format(instance.pk,
+        return new_tab_link('/admin/session/session/{}/raw_participant_urls/?{}={}'.format(instance.pk,
                                                           otree.constants.session_user_code,
                                                           instance.session_experimenter.code), 'Link')
 
@@ -583,15 +583,15 @@ class SessionAdmin(OTreeBaseModelAdmin):
         else:
             link_text = 'Incomplete'
         #FIXME: use proper URL
-        return new_tab_link('/admin/sessionlib/session/{}/payments/'.format(instance.pk), link_text)
+        return new_tab_link('/admin/session/session/{}/payments/'.format(instance.pk), link_text)
 
     payments_link.short_description = "Payments page"
     payments_link.allow_tags = True
 
-    readonly_fields = get_readonly_fields(otree.sessionlib.models.Session, [])
-    list_display = get_all_fields_for_table(otree.sessionlib.models.Session, readonly_fields)
+    readonly_fields = get_readonly_fields(otree.session.models.Session, [])
+    list_display = get_all_fields_for_table(otree.session.models.Session, readonly_fields)
 
-    fields = get_all_fields_for_change_page(otree.sessionlib.models.Session, readonly_fields)
+    fields = get_all_fields_for_change_page(otree.session.models.Session, readonly_fields)
 
     list_editable = ['hidden']
 

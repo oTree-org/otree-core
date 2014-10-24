@@ -2,8 +2,8 @@ from otree import constants
 from otree.common import get_session_module
 from django.conf import settings
 from django.utils.importlib import import_module
-from otree.user.models import Experimenter
-from otree.sessionlib.models import Session, SessionExperimenter, Participant
+from otree.models.user import Experimenter
+from otree.session.models import Session, SessionExperimenter, Participant
 from django.db import transaction
 from collections import defaultdict
 from itertools import groupby

@@ -5,7 +5,7 @@ import otree.constants
 from urlparse import urlsplit, urljoin
 import sys
 from django.utils.importlib import import_module
-from otree.user.models import Experimenter
+from otree.models.user import Experimenter
 import random
 import coverage
 from easymoney import Money

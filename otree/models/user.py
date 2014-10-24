@@ -22,7 +22,7 @@ class User(SaveTheChange, models.Model):
         raise NotImplementedError()
 
     session = models.ForeignKey(
-        'sessionlib.Session',
+        'session.Session',
         related_name = '%(app_label)s_%(class)s')
 
 
@@ -60,7 +60,7 @@ class User(SaveTheChange, models.Model):
 class Experimenter(User):
 
     session_experimenter = models.ForeignKey(
-        'sessionlib.SessionExperimenter',
+        'session.SessionExperimenter',
         null=True,
         related_name='experimenter'
     )
@@ -74,6 +74,12 @@ class Experimenter(User):
                                            )
 
     _init_view_name = 'InitializeExperimenter'
+
+    class Meta:
+        app_label = 'otree'
+        # The db_table is set manually for historical reasons. This model used
+        # to live in a app called 'user'.
+        db_table = 'user_experimenter'
 
     @property
     def _session_user(self):

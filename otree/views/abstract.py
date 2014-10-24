@@ -22,21 +22,20 @@ from django.utils.translation import ugettext as _
 from django.forms.models import model_to_dict
 
 import otree.constants as constants
-import otree.sessionlib.models as seq_models
-import otree.sessionlib.models
+import otree.session.models as seq_models
+import otree.session.models
 import otree.common
 
-import otree.user.models
 import otree.forms_internal
-from otree.user.models import Experimenter
+from otree.models.user import Experimenter
 import copy
 import django.utils.timezone
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
 import vanilla
 from django.utils.translation import ugettext as _
-import otree.sessionlib.models
-from otree.sessionlib.models import Participant, GlobalSingleton
+import otree.session.models
+from otree.session.models import Participant, GlobalSingleton
 from Queue import Queue
 import sys
 import floppyforms.__future__.models
@@ -137,9 +136,9 @@ def load_session_user(dispatch_method):
         session_user_code = kwargs.pop(constants.session_user_code)
         user_type = kwargs.pop(constants.user_type)
         if user_type == constants.user_type_participant:
-            SessionUserClass = otree.sessionlib.models.Participant
+            SessionUserClass = otree.session.models.Participant
         else:
-            SessionUserClass = otree.sessionlib.models.SessionExperimenter
+            SessionUserClass = otree.session.models.SessionExperimenter
 
         self._session_user = get_object_or_404(SessionUserClass, code = session_user_code)
         return dispatch_method(self, request, *args, **kwargs)
@@ -570,7 +569,7 @@ class ModelFormMixin(object):
     """mixin rather than subclass because we want these methods only to be first in MRO"""
 
     # if a model is not specified, use empty "StubModel"
-    model = otree.sessionlib.models.StubModel
+    model = otree.session.models.StubModel
     fields = []
 
     def get_form_class(self):
@@ -737,7 +736,7 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
         if not self.request.GET[constants.access_code_for_open_session] == settings.ACCESS_CODE_FOR_OPEN_SESSION:
             return HttpResponseNotFound('Incorrect access code for open session')
 
-        global_data = otree.sessionlib.models.GlobalSingleton.objects.get()
+        global_data = otree.session.models.GlobalSingleton.objects.get()
         open_session = global_data.open_session
 
         if not open_session:

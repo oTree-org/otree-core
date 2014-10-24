@@ -1,4 +1,4 @@
-from otree.user.models import User
+from otree.models.user import User
 import otree.common
 
 class _QuizResult(object):

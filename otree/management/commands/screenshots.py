@@ -1,7 +1,7 @@
 from django.utils.importlib import import_module
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
-from otree.sessionlib.models import create_session
+from otree.session.models import create_session
 import os.path
 import otree.test.run
 import os

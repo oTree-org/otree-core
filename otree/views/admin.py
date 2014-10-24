@@ -4,7 +4,7 @@ from django.template.response import TemplateResponse
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
 import vanilla
 import otree.constants as constants
-from otree.sessionlib.models import Session
+from otree.session.models import Session
 from otree.session import create_session, SessionTypeDirectory
 import threading
 import time

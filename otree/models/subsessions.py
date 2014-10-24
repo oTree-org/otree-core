@@ -9,7 +9,6 @@ from otree.fields import RandomCharField
 import otree.constants as constants
 import math
 from otree.common import flatten, _views_module
-import otree.user.models
 import itertools
 from django_extensions.db.fields.json import JSONField
 
@@ -21,7 +20,7 @@ class BaseSubsession(models.Model):
     code = RandomCharField(length=8)
 
     _experimenter = models.OneToOneField(
-        otree.user.models.Experimenter,
+        'otree.Experimenter',
         related_name = '%(app_label)s_subsession',
         null=True)
 

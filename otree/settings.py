@@ -24,8 +24,7 @@ def augment_settings(settings):
         'django.contrib.sessions',
         'django.contrib.messages',
         'django.contrib.staticfiles',
-        'otree.sessionlib',
-        'otree.user',
+        'otree.session',
         'otree.models_concrete',
     ]
 

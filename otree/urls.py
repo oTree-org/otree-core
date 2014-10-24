@@ -7,7 +7,7 @@ from django.contrib import admin
 from django.views.generic.base import RedirectView
 from django.conf import settings
 import otree.constants
-from otree.sessionlib.models import Session
+from otree.session.models import Session
 
 
 
