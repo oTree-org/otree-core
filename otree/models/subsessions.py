@@ -89,9 +89,17 @@ class BaseSubsession(models.Model):
     def next_round_groups(self, previous_round_groups):
         return previous_round_groups
 
+    def _players_per_group(self):
+        ppg = self._Constants.players_per_group
+        if isinstance(ppg, (int, long)) and ppg > 1:
+            return ppg
+        # otherwise, the group is the whole subsession
+        return len(self.session.get_participants())
+
+
     def _num_groups(self):
         """number of groups in this subsession"""
-        return self.player_set.count()/self._Constants.players_per_group
+        return self.player_set.count()/self._players_per_group()
 
     def _next_open_group(self):
         """Get the next group that is accepting players.
@@ -106,7 +114,7 @@ class BaseSubsession(models.Model):
         players = list(self.player_set.all())
         random.shuffle(players)
         groups = []
-        players_per_group = self._Constants.players_per_group
+        players_per_group = self._players_per_group()
         for i in range(0, len(players), players_per_group):
             groups.append(players[i:i+players_per_group])
         return groups
@@ -130,7 +138,7 @@ class BaseSubsession(models.Model):
 
     def _create_empty_groups(self):
         GroupClass = self._GroupClass()
-        for i in range(len(self.get_players())/self._Constants.players_per_group):
+        for i in range(len(self.get_players())/self._players_per_group()):
             m = GroupClass._create(self)
 
     def first_round_groups(self):

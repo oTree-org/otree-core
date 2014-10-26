@@ -54,7 +54,9 @@ class SessionType(object):
         participants_per_group_list = []
         for app_label in self.subsession_apps:
             models_module = import_module('{}.models'.format(app_label))
-            participants_per_group_list.append(models_module.Constants.players_per_group)
+            # if players_per_group is None, 0, etc.
+            players_per_group = models_module.Constants.players_per_group or 1
+            participants_per_group_list.append(players_per_group)
         return lcmm(*participants_per_group_list)
 
 

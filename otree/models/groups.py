@@ -13,7 +13,7 @@ class BaseGroup(SaveTheChange, models.Model):
         return str(self.pk)
 
     def _is_ready_for_next_player(self):
-        return len(self.player_set.all()) < self._Constants.players_per_group
+        return len(self.player_set.all()) < self.subsession._players_per_group()
 
     def get_player_by_id(self, id_):
         for p in self.get_players():
