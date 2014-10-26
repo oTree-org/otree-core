@@ -8,6 +8,7 @@ from django.views.generic.base import RedirectView
 from django.conf import settings
 import otree.constants
 from otree.session.models import Session
+from otree.common import get_models_module
 
 
 
@@ -46,7 +47,16 @@ def augment_urlpatterns(urlpatterns):
         url(r'^export-docs/(\w+)/$', 'otree.views.export.export_docs', name='otree_views_export_export_docs'),
     )
     urlpatterns += staticfiles_urlpatterns()
+    used_names_in_url = set()
     for app_name in settings.INSTALLED_OTREE_APPS:
+        models_module = get_models_module(app_name)
+        name_in_url = models_module.Constants.name_in_url
+        if name_in_url in used_names_in_url:
+            raise ValueError("App {} has name_in_url='{}', which is already used by another app".format(
+                app_name,
+                name_in_url
+            ))
+        used_names_in_url.add(name_in_url)
         views_module_name = '{}.views'.format(app_name)
         utilities_module_name = '{}._builtin'.format(app_name)
         urlpatterns += url_patterns_from_module(views_module_name)
