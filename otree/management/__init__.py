@@ -48,8 +48,5 @@ def create_singleton_objects(sender, **kwargs):
             # if it doesn't already exist, create one.
             ModelClass.objects.get_or_create()
 
-def check_name_in_url_unique(sender, **kwargs):
-    for app in
-
 signals.post_syncdb.connect(create_singleton_objects)
 
