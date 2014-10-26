@@ -28,9 +28,6 @@ class BaseSubsession(subsessions.BaseSubsession):
         null=True
     )
 
-
-    name_in_url = None
-
     next_subsession = generic.GenericForeignKey('_next_subsession_content_type',
                                             '_next_subsession_object_id',)
 
@@ -46,10 +43,6 @@ class BaseSubsession(subsessions.BaseSubsession):
         Then the round numbers of these subsessions would be:
         [1, 1, 2, 3, 1]
         '''
-    )
-
-    number_of_rounds = models.PositiveIntegerField(
-        doc='Number of rounds for which this subsession is played'
     )
 
     def get_groups(self, refresh_from_db=False):
@@ -73,8 +66,6 @@ class BaseSubsession(subsessions.BaseSubsession):
         ordering = ['pk']
 
 class BaseGroup(groups.BaseGroup):
-
-    players_per_group = 1
 
     session = models.ForeignKey(
         Session,

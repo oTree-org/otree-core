@@ -42,11 +42,16 @@ import floppyforms.__future__.models
 import otree.models
 from otree.models_concrete import PageVisit, WaitPageVisit, CompletedSubsessionWaitPage, CompletedGroupWaitPage, PageExpirationTime
 from django.db import transaction
+import contextlib
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 from django.core.urlresolvers import resolve
+
+@contextlib.contextmanager
+def no_op_context_manager():
+    yield
 
 def get_app_name(request):
     return otree.common.get_app_name_from_import_path(
@@ -94,11 +99,11 @@ class OTreeMixin(object):
 
     @classmethod
     def get_name_in_url(cls):
-        # look for name_in_url attribute on SubsessionClass
+        # look for name_in_url attribute Constants
         # if it's not part of a game, but rather a shared module etc, SubsessionClass won't exist.
         # in that case, name_in_url needs to be defined on the class.
         if hasattr(cls, 'z_models'):
-            return cls.z_models.Subsession.name_in_url
+            return cls.z_models.Constants.name_in_url
         return cls.name_in_url
 
     def _redirect_to_page_the_user_should_be_on(self):
@@ -262,7 +267,13 @@ class CheckpointMixin(object):
             self._record_visit()
             if self._all_players_have_visited():
                 # take a lock on this singleton, so that only 1 person can be completing a wait page action at a time
-                with transaction.atomic():
+                # on SQLite, transaction.atomic causes database to lock, so we use no-op context manager instead
+                # this still doesn't eliminate the problems
+                if settings.DATABASES['default']['ENGINE'].endswith('sqlite3'):
+                    context_manager = no_op_context_manager
+                else:
+                    context_manager = transaction.atomic
+                with context_manager():
                     GlobalSingleton.objects.select_for_update().get()
 
                     if self._scope_is_group():
@@ -277,10 +288,12 @@ class CheckpointMixin(object):
                             page_index = self.index_in_pages,
                             subsession_pk = self.subsession.pk
                         )
-                    if created:
-                        self._action()
-                        return self._redirect_after_complete()
+                if created:
+                    self._action()
+                    return self._redirect_after_complete()
             return self.get_wait_page()
+
+
 
     def _scope_is_group(self):
         '''returns True for match, False for subsession'''
@@ -579,16 +592,15 @@ class ModelFormMixin(object):
             formfield_callback=formfield_callback)
         return form_class
 
-
-    def after_valid_form_submission(self):
-        """Should be implemented by subclasses as necessary"""
+    def after_next_button(self):
         pass
+
 
     def form_valid(self, form):
         self.form = form
         self.object = form.save()
         self.post_processing_on_valid_form(form)
-        self.after_valid_form_submission()
+        self.after_next_button()
         self.update_indexes_in_sequences()
         return self._redirect_to_page_the_user_should_be_on()
 
@@ -646,7 +658,7 @@ class InitializePlayerOrExperimenter(NonSequenceUrlMixin, vanilla.View):
     def get_name_in_url(cls):
         """urls.py requires that each view know its own URL.
         a URL base is the first part of the path, usually the name of the game"""
-        return cls.z_models.Subsession.name_in_url
+        return cls.z_models.Constants.name_in_url
 
     @load_session_user
     def dispatch(self, request, *args, **kwargs):

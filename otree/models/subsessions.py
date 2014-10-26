@@ -11,6 +11,7 @@ import math
 from otree.common import flatten, _views_module
 import itertools
 from django_extensions.db.fields.json import JSONField
+from otree.common import get_models_module
 
 class BaseSubsession(models.Model):
     """
@@ -71,7 +72,7 @@ class BaseSubsession(models.Model):
         """The URL that a user is redirected to in order to start a treatment.
         3/2/2014: is this still used for anything? i think i am moving towards deprecating it.
         """
-        return '/{}/Initialize/?{}={}'.format(self.name_in_url,
+        return '/{}/Initialize/?{}={}'.format(self._Constants.name_in_url,
                                               constants.user_code,
                                               self.code)
 
@@ -90,7 +91,7 @@ class BaseSubsession(models.Model):
 
     def _num_groups(self):
         """number of groups in this subsession"""
-        return self.player_set.count()/self._GroupClass().players_per_group
+        return self.player_set.count()/self._Constants.players_per_group
 
     def _next_open_group(self):
         """Get the next group that is accepting players.
@@ -105,7 +106,7 @@ class BaseSubsession(models.Model):
         players = list(self.player_set.all())
         random.shuffle(players)
         groups = []
-        players_per_group = self._GroupClass().players_per_group
+        players_per_group = self._Constants.players_per_group
         for i in range(0, len(players), players_per_group):
             groups.append(players[i:i+players_per_group])
         return groups
@@ -120,12 +121,16 @@ class BaseSubsession(models.Model):
                 player._assign_to_group(group)
             group.save()
 
+    @property
+    def _Constants(self):
+        return get_models_module(self._meta.app_label).Constants
+
     def _GroupClass(self):
         return models.get_model(self._meta.app_label, 'Group')
 
     def _create_empty_groups(self):
         GroupClass = self._GroupClass()
-        for i in range(len(self.get_players())/GroupClass.players_per_group):
+        for i in range(len(self.get_players())/self._Constants.players_per_group):
             m = GroupClass._create(self)
 
     def first_round_groups(self):

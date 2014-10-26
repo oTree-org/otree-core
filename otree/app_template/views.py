@@ -2,7 +2,7 @@
 from __future__ import division
 from . import models
 from ._builtin import Page, WaitPage
-from otree.common import Money, money_range
+from otree.common import Money, money_range, to_safe_json
 from .models import Constants
 
 def variables_for_all_templates(self):

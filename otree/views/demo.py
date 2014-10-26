@@ -73,13 +73,10 @@ def get_session(type_name):
 
 def info_about_session_type(session_type):
 
-    # collapse repeated subsessions, encode as follows: [[app_name, num_rounds], [app_name2, num_occurrences2], ...]
-
-    subsession_app_counts = session_type.subsession_app_counts()
-
     subsession_apps = []
-    for app_name, num_rounds in subsession_app_counts:
+    for app_name in session_type.subsession_apps:
         models_module = get_models_module(app_name)
+        num_rounds = models_module.Constants.number_of_rounds
         doc = getattr(models_module, 'doc', '')
         formatted_app_name = app_name_format(app_name)
         if num_rounds > 1:

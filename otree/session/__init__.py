@@ -50,16 +50,11 @@ class SessionType(object):
         # on MTurk, assign_to_groups_on_the_fly = True
         self.assign_to_groups_on_the_fly = assign_to_groups_on_the_fly
 
-    def subsession_app_counts(self):
-        '''collapses repetition in a list of subsession apps into counts'''
-        return [[k,len(list(g))] for k, g in groupby(self.subsession_apps)]
-
-
     def lcm(self):
         participants_per_group_list = []
-        for app_label, number_of_rounds in self.subsession_app_counts():
+        for app_label in self.subsession_apps:
             models_module = import_module('{}.models'.format(app_label))
-            participants_per_group_list.append(models_module.Group.players_per_group)
+            participants_per_group_list.append(models_module.Constants.players_per_group)
         return lcmm(*participants_per_group_list)
 
 
@@ -122,16 +117,15 @@ def create_session(type_name, label='', num_participants=None, special_category=
         participants.append(participant)
 
     subsessions = []
-    for app_label, number_of_rounds in session_type.subsession_app_counts():
+    for app_label in session_type.subsession_apps:
         if app_label not in settings.INSTALLED_OTREE_APPS:
             raise ValueError('Your session contains a subsession app named "{}". You need to add this to INSTALLED_OTREE_APPS in settings.py.'.format(app_label))
 
         models_module = import_module('{}.models'.format(app_label))
 
-        for round_number in range(1, number_of_rounds+1):
+        for round_number in range(1, models_module.Constants.number_of_rounds+1):
             subsession = models_module.Subsession(
                 round_number = round_number,
-                number_of_rounds = number_of_rounds
                 )
             subsession.save()
 
