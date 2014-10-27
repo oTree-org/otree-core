@@ -26,10 +26,7 @@ class BaseClient(django.test.client.Client):
         super(BaseClient, self).__init__()
 
     def get(self, path, data={}, follow=False, **extra):
-        response = super(BaseClient, self).get(path, data, follow, **extra)
-        if response.status_code == 500:
-            print 'hello'
-        return response
+        return super(BaseClient, self).get(path, data, follow, **extra)
 
     def _play(self, failure_queue):
 
@@ -177,6 +174,7 @@ class PlayerBot(BaseClient):
         super(PlayerBot, self).__init__(**kwargs)
 
 class ExperimenterBot(BaseClient):
+    """currently not being used, but we may start using this again soon"""
 
     @property
     def subsession(self):

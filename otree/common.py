@@ -157,5 +157,5 @@ def expand_choice_tuples(choices):
         choices = [(value, value) for value in choices]
     return choices
 
-def to_safe_json(obj):
+def safe_json(obj):
     return mark_safe(json.dumps(obj))

@@ -60,7 +60,7 @@ setup(
         'django-easymoney==0.4',
         'handy==0.3',
         'Pillow',
-        'psycopg2',
+        #'psycopg2',
 
 
     ],
