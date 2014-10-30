@@ -5,7 +5,8 @@ from otree.session import SessionType
 def session_types():
     return [
         SessionType(
-            name="Simple Game",
+            name="simple_game",
+            display_name="Simple Game",
             base_pay=0,
             participants_per_demo_session=1,
             participants_per_session=1,

@@ -9,7 +9,8 @@ import random
 # </standard imports>
 
 class Constants:
-    my_constant = 1
+    players_per_group = 1
+    number_of_rounds = 1
 
 
 
