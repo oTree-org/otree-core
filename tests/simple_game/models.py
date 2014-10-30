@@ -9,6 +9,7 @@ import random
 # </standard imports>
 
 class Constants:
+    name_in_url = 'simple_game'
     players_per_group = 1
     number_of_rounds = 1
 
