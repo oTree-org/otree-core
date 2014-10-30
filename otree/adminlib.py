@@ -470,7 +470,7 @@ class GlobalSingletonAdmin(OTreeBaseModelAdmin):
         from otree.views.concrete import AssignVisitorToOpenSessionMTurk
         open_session_url = request.build_absolute_uri(AssignVisitorToOpenSessionMTurk.url())
 
-        return TemplateResponse(context, 'otree/admin/MTurkSnippet.html',
+        return TemplateResponse(request, 'otree/admin/MTurkSnippet.html',
                                 {'hit_page_js_url': hit_page_js_url,
                                  'open_session_url': open_session_url,},
                                 content_type='text/plain')

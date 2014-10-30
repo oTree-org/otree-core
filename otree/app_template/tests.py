@@ -8,6 +8,7 @@ from .models import Constants
 
 
 class PlayerBot(Bot):
+    """Bot that plays one round"""
 
     def play(self):
         pass

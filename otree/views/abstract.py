@@ -268,7 +268,6 @@ class CheckpointMixin(object):
             if self._all_players_have_visited():
                 # take a lock on this singleton, so that only 1 person can be completing a wait page action at a time
                 # on SQLite, transaction.atomic causes database to lock, so we use no-op context manager instead
-                # this still doesn't eliminate the problems
                 if settings.DATABASES['default']['ENGINE'].endswith('sqlite3'):
                     context_manager = no_op_context_manager
                 else:
