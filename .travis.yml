@@ -6,7 +6,7 @@ install:
   # Setup integration tests.
   - git clone https://github.com/oTree-org/oTree.git otree-lib
   - virtualenv otree-lib/.env --no-site-packages
-  - otree-lib/.env/bin/pip install -r otree-lib/requirements_base.txt
+  - otree-lib/.env/bin/pip install -r otree-lib/requirements_heroku.txt
   - otree-lib/.env/bin/python setup.py install
 before_script:
   - psql -c 'create database travis_ci_test;' -U postgres
