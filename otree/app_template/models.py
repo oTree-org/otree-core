@@ -4,14 +4,9 @@ from __future__ import division
 from otree.db import models
 import otree.models
 from otree import widgets
-from otree.common import Money, money_range
+from otree.common import Money, money_range, safe_json
 import random
 # </standard imports>
-
-class Constants:
-    my_constant = 1
-
-
 
 author = 'Your name here'
 
@@ -20,17 +15,21 @@ Description of this app.
 """
 
 
-class Subsession(otree.models.BaseSubsession):
-
+class Constants:
     name_in_url = '{{ app_name }}'
+    players_per_group = 1
+    number_of_rounds = 1
 
+    # define more constants here
+
+
+class Subsession(otree.models.BaseSubsession):
+    pass
 
 class Group(otree.models.BaseGroup):
     # <built-in>
     subsession = models.ForeignKey(Subsession)
     # </built-in>
-
-    players_per_group = 1
 
     def set_payoffs(self):
         for p in self.get_players():

@@ -23,6 +23,7 @@ class CompletedGroupWaitPage(models.Model):
     page_index = models.PositiveIntegerField()
     group_pk = models.PositiveIntegerField()
 
+
 class CompletedSubsessionWaitPage(models.Model):
     app_name = models.CharField(max_length=300)
     page_index = models.PositiveIntegerField()

@@ -4,11 +4,12 @@ from threading import Thread
 import sys
 from Queue import Queue
 import time
-from otree.sessionlib.models import Session
+from otree.session.models import Session
 import coverage
 from otree.session import create_session, SessionTypeDirectory
 import itertools
 from otree.constants import special_category_bots
+import random
 
 modules_to_include_in_coverage = ['models', 'tests', 'views']
 
@@ -79,9 +80,9 @@ def run_session(session_type_name):
             break
         time.sleep(1)
 
-    for participants in session.get_participants():
+    for participant in session.get_participants():
         bot = Client()
-        bot.get(participants._start_url(), follow=True)
+        bot.get(participant._start_url(), follow=True)
 
     successes = []
     for subsession in session.get_subsessions():
@@ -128,7 +129,13 @@ def run_all_sessions_without_coverage():
     '''2014-8-17: having trouble getting coverage.py to report correct numbers
      when i test multiple sessions with coverage. so removing coverage from test_all'''
     successes = []
-    for session_type in SessionTypeDirectory().select():
+    session_types = SessionTypeDirectory().select()
+
+    # shuffle so that if you have to re-run this command because of crashes, you don't get the same output each time,
+    # but rather you get a variety of apps
+    random.shuffle(session_types)
+
+    for session_type in session_types:
         session_type_name = session_type.name
         success = run_session(session_type_name)
         successes.append((session_type_name, success))
@@ -145,3 +152,5 @@ def run_all_sessions_without_coverage():
         len(unsuccessful_sessions),
         ', '.join(unsuccessful_sessions)
     )
+
+    return successful_sessions, unsuccessful_sessions

@@ -11,11 +11,13 @@ from django.conf import settings
 from django.template.defaultfilters import title
 from django.utils.importlib import import_module
 from easymoney import Money
+from collections import OrderedDict
+
+from django.utils.safestring import mark_safe
 
 from otree import constants
+import json
 
-
-# R: Should not be needed
 class _MoneyInput(forms.NumberInput):
      def _format_value(self, value):
          return str(Decimal(value))
@@ -23,7 +25,9 @@ class _MoneyInput(forms.NumberInput):
 
 def add_params_to_url(url, params):
     url_parts = list(urlparse.urlparse(url))
-    query = dict(urlparse.parse_qsl(url_parts[4]))
+
+    # use OrderedDict because sometimes we want certain params at end for readability/consistency
+    query = OrderedDict(urlparse.parse_qsl(url_parts[4]))
     query.update(params)
     url_parts[4] = urllib.urlencode(query)
     return urlparse.urlunparse(url_parts)
@@ -32,15 +36,6 @@ def id_label_name(id, label):
     if label:
         return '{} (label: {})'.format(id, label)
     return '{}'.format(id)
-
-def currency(value):
-    """Takes in a number of cents (int) and returns a formatted currency amount.
-    """
-
-    if value == None:
-        return '?'
-    value_in_major_units = Decimal(value)/(10**settings.CURRENCY_DECIMAL_PLACES)
-    return babel.numbers.format_currency(value_in_major_units, settings.CURRENCY_CODE, locale=settings.CURRENCY_LOCALE)
 
 def is_subsession_app(app_label):
     try:
@@ -90,8 +85,8 @@ def directory_name(path):
 
 def get_session_module():
     base_dir_name = directory_name(settings.BASE_DIR)
-    module_name = getattr(settings, 'SESSION_MODULE',
-                          '{}.session'.format(base_dir_name))
+    module_name = getattr(settings, 'SESSIONS_MODULE',
+                          '{}.sessions'.format(base_dir_name))
     return import_module(module_name)
 
 def get_models_module(app_name):
@@ -128,14 +123,15 @@ def _views_module(model_instance):
     app_name = get_app_name_from_import_path(model_instance.__module__)
     return import_module('{}.views'.format(app_name))
 
-def _players(self):
-    if hasattr(self, '_players'):
+def _players(self, refresh_from_db=False):
+    if (not refresh_from_db) and hasattr(self, '_players'):
         return self._players
+    # this means even subsession.players orders them by id_in_group, not necessarily optimal
     self._players = list(self.player_set.order_by('id_in_group'))
     return self._players
 
-def _groups(self):
-    if hasattr(self, '_groups'):
+def _groups(self, refresh_from_db):
+    if (not refresh_from_db) and hasattr(self, '_groups'):
         return self._groups
     self._groups = list(self.group_set.all())
     return self._groups
@@ -161,3 +157,5 @@ def expand_choice_tuples(choices):
         choices = [(value, value) for value in choices]
     return choices
 
+def safe_json(obj):
+    return mark_safe(json.dumps(obj))

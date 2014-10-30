@@ -1,6 +1,6 @@
 """public api"""
 
-import otree.sessionlib.models
+import otree.session.models
 
 from otree.views.abstract import (
     InitializePlayer,
@@ -8,6 +8,17 @@ from otree.views.abstract import (
 )
 
 from importlib import import_module
+
+# NOTE: this imports the following submodules and then subclasses several classes
+# importing is done via import_module rather than an ordinary import.
+# The only reason for this is to hide the base classes from IDEs like PyCharm,
+# so that those members/attributes don't show up in autocomplete,
+# including all the built-in django fields that an ordinary oTree programmer will never need or want.
+# if this was a conventional Django project I wouldn't do it this way,
+# but because oTree is aimed at newcomers who may need more assistance from their IDE,
+# I want to try this approach out.
+# this module is also a form of documentation of the public API.
+
 abstract = import_module('otree.views.abstract')
 
 class WaitPage(abstract.WaitPage):
@@ -28,8 +39,8 @@ class Page(abstract.PlayerUpdateView):
     def variables_for_template(self):
         return super(Page, self).variables_for_template()
 
-    def after_valid_form_submission(self):
-        return super(Page, self).after_valid_form_submission()
+    def after_next_button(self):
+        return super(Page, self).after_next_button()
 
     def get_form_class(self):
         return super(Page, self).get_form_class()
@@ -54,8 +65,8 @@ class ExperimenterPage(abstract.ExperimenterUpdateView):
     def variables_for_template(self):
         return super(ExperimenterPage, self).variables_for_template()
 
-    def after_valid_form_submission(self):
-        return super(ExperimenterPage, self).after_valid_form_submission()
+    def after_next_button(self):
+        return super(ExperimenterPage, self).after_next_button()
 
     def get_form_class(self):
         return super(ExperimenterPage, self).get_form_class()

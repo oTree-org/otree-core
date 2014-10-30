@@ -7,18 +7,18 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from otree.common import id_label_name, add_params_to_url
 from otree import constants
-from otree.common import currency
 import otree.common
 from otree.common import directory_name
 from easymoney import Money
 
 from django_extensions.db.fields.json import JSONField
+from operator import attrgetter
 
-
-class GlobalSettings(models.Model):
-    """object that can hold site-wide settings. There should only be one GlobalSettings object.
+class GlobalSingleton(models.Model):
+    """object that can hold site-wide settings. There should only be one GlobalSingleton object.
+    Also used for wait page actions.
     """
-    open_session = models.ForeignKey('Session', null=True)
+    open_session = models.ForeignKey('Session', null=True, blank=True)
 
     class Meta:
         verbose_name = 'Set open session'
@@ -29,7 +29,6 @@ class StubModel(models.Model):
     """To be used as the model for an empty form, so that form_class can be omitted.
     Consider using SingletonModel for this. Right now, I'm not sure we need it.
     """
-
 
 # R: You really need this only if you are using save_the_change,
 #    which is not used for Session and SessionUser,
@@ -55,7 +54,7 @@ class Session(ModelWithVars):
 
     #
     type_name = models.CharField(max_length = 300, null = True, blank = True,
-        doc="""the session type, as defined in the programmer's session.py."""
+        doc="""the session type, as defined in the programmer's sessions.py."""
     )
 
     def type(self):
@@ -65,6 +64,10 @@ class Session(ModelWithVars):
     # label of this session instance
     label = models.CharField(max_length = 300, null = True, blank = True,
     )
+
+    experimenter_name = models.CharField(max_length = 300, null = True, blank = True,
+    )
+
 
     code = RandomCharField(
         length=8,
@@ -81,7 +84,7 @@ class Session(ModelWithVars):
 
     time_scheduled = models.DateTimeField(
         null=True,
-        doc="""The time at which the experimenter started the session"""
+        doc="""The time at which the session is scheduled"""
     )
 
     time_started = models.DateTimeField(
@@ -120,11 +123,6 @@ class Session(ModelWithVars):
 
     _players_assigned_to_groups = models.BooleanField(default=False)
 
-    def base_pay_display(self):
-        return currency(self.base_pay)
-
-    base_pay_display.short_description = 'Base pay'
-
     #
     special_category = models.CharField(max_length=20, null=True,
         doc="""whether it's a test session, demo session, etc."""
@@ -137,7 +135,7 @@ class Session(ModelWithVars):
     ready = models.BooleanField(default=False)
 
     def is_open(self):
-        return GlobalSettings.objects.get().open_session == self
+        return GlobalSingleton.objects.get().open_session == self
 
 
     def subsession_names(self):
@@ -191,10 +189,12 @@ class Session(ModelWithVars):
 
         for subsession_index in range(len(subsessions) - 1):
             players_left = subsessions[subsession_index].get_players()
-            players_right = subsessions[subsession_index + 1].get_players()
+            players_right = subsessions[subsession_index+1].get_players()
+            players_right_dict = {p.participant.pk: p for p in players_right}
             for player_index in range(num_participants):
                 player_left = players_left[player_index]
-                player_right = players_right[player_index]
+                player_right = players_right_dict[player_left.participant.pk]
+                assert player_left.participant and player_left.participant == player_right.participant
                 player_left._me_in_next_subsession = player_right
                 player_right._me_in_previous_subsession = player_left
                 player_left.save()
@@ -219,12 +219,14 @@ class Session(ModelWithVars):
         return True
     payments_ready.boolean = True
 
-    def _assign_players_to_groups(self):
+    def _assign_groups_and_initialize(self):
         for subsession in self.get_subsessions():
             subsession._create_empty_groups()
-            subsession._assign_players_to_groups()
+            subsession._assign_groups()
+            subsession._initialize()
         self._players_assigned_to_groups = True
         self.save()
+
 
     class Meta:
         # if i don't set this, it could be in an unpredictable order
@@ -300,6 +302,7 @@ class SessionUser(ModelWithVars):
         abstract = True
 
 class SessionExperimenter(SessionUser):
+
     def _start_url(self):
         return '/InitializeSessionExperimenter/{}/'.format(
             self.code
@@ -359,7 +362,7 @@ class Participant(SessionUser):
 
     def payoff_from_subsessions_display(self):
         complete = self.payoff_from_subsessions_is_complete()
-        payoff_from_subsessions = currency(self.payoff_from_subsessions())
+        payoff_from_subsessions = self.payoff_from_subsessions()
         if complete:
             return payoff_from_subsessions
         return u'{} (incomplete)'.format(payoff_from_subsessions)
@@ -372,7 +375,7 @@ class Participant(SessionUser):
     def total_pay_display(self):
         try:
             complete = self.payoff_from_subsessions_is_complete()
-            total_pay = currency(self.total_pay())
+            total_pay = self.total_pay()
         except:
             return 'Error in payoff calculation'
         if complete:

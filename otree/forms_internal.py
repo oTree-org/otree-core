@@ -7,7 +7,7 @@ import copy
 import otree.common
 import otree.formfields
 import otree.models.common
-import otree.sessionlib.models
+import otree.session.models
 import otree.constants
 from otree.db import models
 from otree.fields import RandomCharField

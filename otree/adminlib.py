@@ -13,9 +13,9 @@ from otree.session import SessionTypeDirectory
 from otree.views.demo import render_to_start_links_page
 
 import otree.constants
-import otree.sessionlib.models
-from otree.sessionlib.models import Participant, Session
-from otree.common import currency, add_params_to_url
+import otree.session.models
+from otree.session.models import Participant, Session
+from otree.common import add_params_to_url
 
 def new_tab_link(url, label):
     return '<a href="{}" target="_blank">{}</a>'.format(url, label)
@@ -50,7 +50,6 @@ def get_callables(Model, fields_specific_to_this_subclass=None, for_export=False
              'raw_participant_urls_link',
              'payments_ready',
              'payments_link',
-             'base_pay_display',
              'is_open',
         ],
         'Participant': [
@@ -163,7 +162,7 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
         'Subsession': {'id'},
         'Session': {
             'git_commit_timestamp',
-            'base_pay',
+            #'base_pay',
         },
         'Participant': {
             #'label',
@@ -348,7 +347,7 @@ class NonHiddenSessionListFilter(admin.SimpleListFilter):
         in the right sidebar.
         """
         return [(session.id, session.id) for session
-                in otree.sessionlib.models.Session.objects.filter(hidden=False)]
+                in otree.session.models.Session.objects.filter(hidden=False)]
 
     def queryset(self, request, queryset):
         """
@@ -412,12 +411,12 @@ class SubsessionAdmin(OTreeBaseModelAdmin):
     list_filter = [NonHiddenSessionListFilter]
     list_editable = ['_skip']
 
-class GlobalSettingsAdmin(OTreeBaseModelAdmin):
+class GlobalSingletonAdmin(OTreeBaseModelAdmin):
     list_display = ['id', 'open_session', 'persistent_urls_link', 'mturk_snippet_link']
     list_editable = ['open_session']
 
     def get_urls(self):
-        urls = super(GlobalSettingsAdmin, self).get_urls()
+        urls = super(GlobalSingletonAdmin, self).get_urls()
         my_urls = patterns('',
             (r'^(?P<pk>\d+)/mturk_snippet/$', self.admin_site.admin_view(self.mturk_snippet)),
             (r'^(?P<pk>\d+)/persistent_urls/$', self.admin_site.admin_view(self.persistent_urls)),
@@ -432,13 +431,17 @@ class GlobalSettingsAdmin(OTreeBaseModelAdmin):
     def persistent_urls(self, request, pk):
         from otree.views.concrete import AssignVisitorToOpenSession
         open_session_base_url = request.build_absolute_uri(AssignVisitorToOpenSession.url())
-        open_session_example_url = add_params_to_url(open_session_base_url, {otree.constants.participant_label: 'P1'})
+        open_session_example_urls = []
+        for i in range(1,31):
+            open_session_example_urls.append(
+                add_params_to_url(open_session_base_url, {otree.constants.participant_label: 'P{}'.format(i)})
+            )
 
         return TemplateResponse(
             request,
             'otree/admin/PersistentLabURLs.html',
             {
-                'open_session_example_url': open_session_example_url,
+                'open_session_example_urls': open_session_example_urls,
                 'access_code_for_open_session': otree.constants.access_code_for_open_session,
                 'participant_label': otree.constants.participant_label
             }
@@ -467,7 +470,7 @@ class GlobalSettingsAdmin(OTreeBaseModelAdmin):
         from otree.views.concrete import AssignVisitorToOpenSessionMTurk
         open_session_url = request.build_absolute_uri(AssignVisitorToOpenSessionMTurk.url())
 
-        return TemplateResponse(context, 'otree/admin/MTurkSnippet.html',
+        return TemplateResponse(request, 'otree/admin/MTurkSnippet.html',
                                 {'hit_page_js_url': hit_page_js_url,
                                  'open_session_url': open_session_url,},
                                 content_type='text/plain')
@@ -480,8 +483,8 @@ class ParticipantAdmin(OTreeBaseModelAdmin):
 
     list_filter = [NonHiddenSessionListFilter]
 
-    readonly_fields = get_callables(otree.sessionlib.models.Participant, [])
-    list_display = get_all_fields_for_table(otree.sessionlib.models.Participant, readonly_fields)
+    readonly_fields = get_callables(otree.session.models.Participant, [])
+    list_display = get_all_fields_for_table(otree.session.models.Participant, readonly_fields)
     list_editable = ['exclude_from_data_analysis']
 
 
@@ -526,7 +529,7 @@ class SessionAdmin(OTreeBaseModelAdmin):
 
     def start_links_link(self, instance):
         return new_tab_link(
-            '/admin/sessionlib/session/{}/start_links/'.format(instance.pk),
+            '/admin/session/session/{}/start_links/'.format(instance.pk),
             'Link'
         )
 
@@ -544,7 +547,7 @@ class SessionAdmin(OTreeBaseModelAdmin):
 
 
     def raw_participant_urls_link(self, instance):
-        return new_tab_link('/admin/sessionlib/session/{}/raw_participant_urls/?{}={}'.format(instance.pk,
+        return new_tab_link('/admin/session/session/{}/raw_participant_urls/?{}={}'.format(instance.pk,
                                                           otree.constants.session_user_code,
                                                           instance.session_experimenter.code), 'Link')
 
@@ -579,15 +582,15 @@ class SessionAdmin(OTreeBaseModelAdmin):
         else:
             link_text = 'Incomplete'
         #FIXME: use proper URL
-        return new_tab_link('/admin/sessionlib/session/{}/payments/'.format(instance.pk), link_text)
+        return new_tab_link('/admin/session/session/{}/payments/'.format(instance.pk), link_text)
 
     payments_link.short_description = "Payments page"
     payments_link.allow_tags = True
 
-    readonly_fields = get_readonly_fields(otree.sessionlib.models.Session, [])
-    list_display = get_all_fields_for_table(otree.sessionlib.models.Session, readonly_fields)
+    readonly_fields = get_readonly_fields(otree.session.models.Session, [])
+    list_display = get_all_fields_for_table(otree.session.models.Session, readonly_fields)
 
-    fields = get_all_fields_for_change_page(otree.sessionlib.models.Session, readonly_fields)
+    fields = get_all_fields_for_change_page(otree.session.models.Session, readonly_fields)
 
     list_editable = ['hidden']
 

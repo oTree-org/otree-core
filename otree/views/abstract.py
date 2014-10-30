@@ -7,6 +7,7 @@ from threading import Thread
 import time
 import logging
 from datetime import datetime
+from otree.db import models
 from otree.forms_internal import BaseModelForm, formfield_callback
 from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
@@ -21,31 +22,36 @@ from django.utils.translation import ugettext as _
 from django.forms.models import model_to_dict
 
 import otree.constants as constants
-import otree.sessionlib.models as seq_models
-import otree.sessionlib.models
+import otree.session.models as seq_models
+import otree.session.models
 import otree.common
 
-import otree.user.models
 import otree.forms_internal
-from otree.user.models import Experimenter
+from otree.models.user import Experimenter
 import copy
 import django.utils.timezone
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
 import vanilla
 from django.utils.translation import ugettext as _
-import otree.sessionlib.models
-from otree.sessionlib.models import Participant
+import otree.session.models
+from otree.session.models import Participant, GlobalSingleton
 from Queue import Queue
 import sys
 import floppyforms.__future__.models
 import otree.models
 from otree.models_concrete import PageVisit, WaitPageVisit, CompletedSubsessionWaitPage, CompletedGroupWaitPage, PageExpirationTime
+from django.db import transaction
+import contextlib
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 from django.core.urlresolvers import resolve
+
+@contextlib.contextmanager
+def no_op_context_manager():
+    yield
 
 def get_app_name(request):
     return otree.common.get_app_name_from_import_path(
@@ -93,11 +99,11 @@ class OTreeMixin(object):
 
     @classmethod
     def get_name_in_url(cls):
-        # look for name_in_url attribute on SubsessionClass
+        # look for name_in_url attribute Constants
         # if it's not part of a game, but rather a shared module etc, SubsessionClass won't exist.
         # in that case, name_in_url needs to be defined on the class.
         if hasattr(cls, 'z_models'):
-            return cls.z_models.Subsession.name_in_url
+            return cls.z_models.Constants.name_in_url
         return cls.name_in_url
 
     def _redirect_to_page_the_user_should_be_on(self):
@@ -118,11 +124,6 @@ class OTreeMixin(object):
             return views_module.variables_for_all_templates(self) or {}
         return {}
 
-    def get_context_data(self, **kwargs):
-        context = {}
-        context.update(self.variables_for_template() or {})
-        context.update(self._variables_for_all_templates())
-        return context
 
     def page_the_user_should_be_on(self):
         if self._session_user._index_in_subsessions > self.subsession._index_in_subsessions:
@@ -140,9 +141,9 @@ def load_session_user(dispatch_method):
         session_user_code = kwargs.pop(constants.session_user_code)
         user_type = kwargs.pop(constants.user_type)
         if user_type == constants.user_type_participant:
-            SessionUserClass = otree.sessionlib.models.Participant
+            SessionUserClass = otree.session.models.Participant
         else:
-            SessionUserClass = otree.sessionlib.models.SessionExperimenter
+            SessionUserClass = otree.session.models.SessionExperimenter
 
         self._session_user = get_object_or_404(SessionUserClass, code = session_user_code)
         return dispatch_method(self, request, *args, **kwargs)
@@ -189,7 +190,7 @@ class ExperimenterMixin(object):
         self.load_user()
 
     def objects_to_save(self):
-        return [self._user, self.subsession, self._session_user] + self.subsession.get_players() + self.subsession.groups
+        return [self._user, self.subsession, self._session_user] + self.subsession.get_players()
 
 class WaitPageMixin(object):
 
@@ -207,11 +208,11 @@ class WaitPageMixin(object):
         return self.request.is_ajax() and self.request.GET.get(constants.check_if_wait_is_over) == constants.get_param_truth_value
 
     def wait_page_request_url(self):
-        return '{}?{}={}'.format(
+        return otree.common.add_params_to_url(
             self.request.path,
-            constants.check_if_wait_is_over,
-            constants.get_param_truth_value
+            {constants.check_if_wait_is_over: constants.get_param_truth_value}
         )
+
 
     def get_debug_values(self):
         pass
@@ -261,14 +262,37 @@ class CheckpointMixin(object):
         if self.request_is_from_wait_page():
             return self._response_to_wait_page()
         else:
-            self._record_visit()
-            if self._all_players_have_visited():
-                #FIXME: this could get run for multiple users
-                self._mark_complete()
-                self._action()
             if self._is_complete():
                 return self._redirect_after_complete()
+            self._record_visit()
+            if self._all_players_have_visited():
+                # take a lock on this singleton, so that only 1 person can be completing a wait page action at a time
+                # on SQLite, transaction.atomic causes database to lock, so we use no-op context manager instead
+                if settings.DATABASES['default']['ENGINE'].endswith('sqlite3'):
+                    context_manager = no_op_context_manager
+                else:
+                    context_manager = transaction.atomic
+                with context_manager():
+                    GlobalSingleton.objects.select_for_update().get()
+
+                    if self._scope_is_group():
+                        _, created = CompletedGroupWaitPage.objects.get_or_create(
+                            app_name = self.subsession.app_name,
+                            page_index = self.index_in_pages,
+                            group_pk = self.group.pk
+                        )
+                    else:
+                        _, created = CompletedSubsessionWaitPage.objects.get_or_create(
+                            app_name = self.subsession.app_name,
+                            page_index = self.index_in_pages,
+                            subsession_pk = self.subsession.pk
+                        )
+                if created:
+                    self._action()
+                    return self._redirect_after_complete()
             return self.get_wait_page()
+
+
 
     def _scope_is_group(self):
         '''returns True for match, False for subsession'''
@@ -278,8 +302,9 @@ class CheckpointMixin(object):
             return False
         raise ValueError('scope must be set to either Group or Subsession')
 
+
+
     def _is_complete(self):
-        # check the "passed checkpoints" JSON field
         if self._scope_is_group():
             return CompletedGroupWaitPage.objects.filter(
                 app_name = self.subsession.app_name,
@@ -293,8 +318,9 @@ class CheckpointMixin(object):
                 subsession_pk = self.subsession.pk
             ).exists()
 
+
     def _all_players_have_visited(self):
-        pks_to_wait_for = [p.pk for p in self._group_or_subsession.get_players()]
+        pks_to_wait_for = [p.pk for p in self._group_or_subsession.player_set.all()]
         pks_that_have_visited = WaitPageVisit.objects.filter(
             app_name = self.subsession.app_name,
             page_index = self.index_in_pages,
@@ -309,17 +335,11 @@ class CheckpointMixin(object):
             page_index = self.index_in_pages,
             player_pk = self._user.pk, #FIXME: what about experimenter?
         )
-        visit.save()
 
-        if self._all_players_have_visited():
-            self._action()
-
-    def _page_request_actions(self):
-        run_action_now = self._record_visit()
-        if run_action_now:
-            self._action()
 
     def _action(self):
+        # force to refresh from DB
+        self._group_or_subsession.get_players(refresh_from_db=True)
         self.after_all_players_arrive()
         for p in self._group_or_subsession.get_players():
             p.save()
@@ -344,21 +364,6 @@ class CheckpointMixin(object):
         elif num_other_players == 0:
             return 'Waiting'
 
-    def _mark_complete(self):
-        if self._scope_is_group():
-            completion, _ = CompletedGroupWaitPage.objects.get_or_create(
-                app_name = self.subsession.app_name,
-                page_index = self.index_in_pages,
-                group_pk = self.group.pk
-            )
-            completion.save()
-        else:
-            completion, _ = CompletedSubsessionWaitPage.objects.get_or_create(
-                app_name = self.subsession.app_name,
-                page_index = self.index_in_pages,
-                subsession_pk = self.subsession.pk
-            )
-            completion.save()
 
 
 class SequenceMixin(OTreeMixin):
@@ -419,7 +424,7 @@ class SequenceMixin(OTreeMixin):
                 'user: {}'.format(user_info),
             )
 
-            e.args = ('{}\nDiagnostic info: {}'.format(e.args[0], diagnostic_info),) + e.args[1:]
+            e.args = ('{}\nDiagnostic info: {}'.format(e.args[0:1], diagnostic_info),) + e.args[1:]
             raise
 
 
@@ -431,8 +436,8 @@ class SequenceMixin(OTreeMixin):
 
     def get_context_data(self, **kwargs):
         context = {'form': kwargs.get('form') or kwargs.get('formset')}
-        context.update(self.variables_for_template() or {})
         context.update(self._variables_for_all_templates())
+        context.update(self.variables_for_template() or {})
         context.update(self._get_time_limit_context())
 
         if settings.DEBUG:
@@ -540,7 +545,6 @@ class SequenceMixin(OTreeMixin):
             player_pk = self._user.pk,
             defaults = {'expiration_time': page_expiration_time_if_start_now}
         )
-        expiration_info.save()
 
         page_expiration_time = expiration_info.expiration_time
         remaining_seconds = max(0, page_expiration_time - now)
@@ -578,7 +582,7 @@ class ModelFormMixin(object):
     """mixin rather than subclass because we want these methods only to be first in MRO"""
 
     # if a model is not specified, use empty "StubModel"
-    model = otree.sessionlib.models.StubModel
+    model = otree.session.models.StubModel
     fields = []
 
     def get_form_class(self):
@@ -587,16 +591,15 @@ class ModelFormMixin(object):
             formfield_callback=formfield_callback)
         return form_class
 
-
-    def after_valid_form_submission(self):
-        """Should be implemented by subclasses as necessary"""
+    def after_next_button(self):
         pass
+
 
     def form_valid(self, form):
         self.form = form
         self.object = form.save()
         self.post_processing_on_valid_form(form)
-        self.after_valid_form_submission()
+        self.after_next_button()
         self.update_indexes_in_sequences()
         return self._redirect_to_page_the_user_should_be_on()
 
@@ -609,9 +612,9 @@ class PlayerSequenceMixin(SequenceMixin):
             group_id = self.group.pk
         except:
             group_id = ''
-        return [('Index among players in group', self.player.id_in_group),
-                ('Player', self.player.pk),
+        return [('ID in group', self.player.id_in_group),
                 ('Group', group_id),
+                ('Player', self.player.pk),
                 ('Participant label', self.player.participant.label),
                 ('Session code', self.session.code),]
 
@@ -654,7 +657,7 @@ class InitializePlayerOrExperimenter(NonSequenceUrlMixin, vanilla.View):
     def get_name_in_url(cls):
         """urls.py requires that each view know its own URL.
         a URL base is the first part of the path, usually the name of the game"""
-        return cls.z_models.Subsession.name_in_url
+        return cls.z_models.Constants.name_in_url
 
     @load_session_user
     def dispatch(self, request, *args, **kwargs):
@@ -745,7 +748,7 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
         if not self.request.GET[constants.access_code_for_open_session] == settings.ACCESS_CODE_FOR_OPEN_SESSION:
             return HttpResponseNotFound('Incorrect access code for open session')
 
-        global_data = otree.sessionlib.models.GlobalSettings.objects.get()
+        global_data = otree.session.models.GlobalSingleton.objects.get()
         open_session = global_data.open_session
 
         if not open_session:
@@ -756,10 +759,13 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
             participant = self.retrieve_existing_participant_with_these_params(open_session)
         except Participant.DoesNotExist:
             try:
-                participant = Participant.objects.filter(
+                participant = Participant.objects.select_for_update().filter(
                     session = open_session,
                     visited=False)[0]
                 self.set_external_params_on_participant(participant)
+                # 2014-10-17: needs to be here even if it's also set in the next view
+                # to prevent race conditions
+                participant.visited = True
                 participant.save()
             except IndexError:
                 return HttpResponseNotFound("No Player objects left in the database to assign to new visitor.")

@@ -1,5 +1,6 @@
-from otree.user.models import User
+from otree.models.user import User
 import otree.common
+from otree.common import get_models_module
 
 class _QuizResult(object):
 
@@ -74,6 +75,11 @@ class BasePlayer(User):
 
     def _GroupClass(self):
         return self._meta.get_field('group').rel.to
+
+    @property
+    def _Constants(self):
+        return get_models_module(self._meta.app_label).Constants
+
 
     def _pages_completed(self):
         if not self.visited:

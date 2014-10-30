@@ -39,7 +39,7 @@ INSTALLED_OTREE_APPS = [
 
 ROOT_URLCONF = 'otree.default_urls'
 
-SESSION_MODULE = 'tests.session'
+SESSIONS_MODULE = 'tests.sessions'
 
 ACCESS_CODE_FOR_OPEN_SESSION = 'idd1610'
 

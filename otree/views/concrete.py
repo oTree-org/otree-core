@@ -19,8 +19,8 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpRespons
 import vanilla
 from django.utils.translation import ugettext as _
 import otree.constants as constants
-import otree.sessionlib.models
-from otree.sessionlib.models import Participant
+import otree.session.models
+from otree.session.models import Participant
 import otree.common
 import django.utils.timezone
 import threading
@@ -81,7 +81,7 @@ class SessionExperimenterWaitUntilPlayersAreAssigned(NonSequenceUrlMixin, WaitPa
         self.request.session[session_user_code] = {}
 
         self._session_user = get_object_or_404(
-            otree.sessionlib.models.SessionExperimenter,
+            otree.session.models.SessionExperimenter,
             code=kwargs[constants.session_user_code]
         )
 
@@ -109,7 +109,7 @@ class InitializeSessionExperimenter(vanilla.View):
     def get(self, *args, **kwargs):
 
         self._session_user = get_object_or_404(
-            otree.sessionlib.models.SessionExperimenter,
+            otree.session.models.SessionExperimenter,
             code=kwargs[constants.session_user_code]
         )
 
@@ -120,7 +120,7 @@ class InitializeSessionExperimenter(vanilla.View):
 
     def post(self, request, *args, **kwargs):
         self._session_user = get_object_or_404(
-            otree.sessionlib.models.SessionExperimenter,
+            otree.session.models.SessionExperimenter,
             code=kwargs[constants.session_user_code]
         )
 
@@ -133,7 +133,7 @@ class InitializeSessionExperimenter(vanilla.View):
             session.time_started = django.utils.timezone.now()
             session.save()
 
-        t = threading.Thread(target=session._assign_players_to_groups)
+        t = threading.Thread(target=session._assign_groups_and_initialize())
         t.start()
         return self.redirect_to_next_page()
 
@@ -146,7 +146,7 @@ class InitializeParticipantMagdeburg(vanilla.View):
 
     def get(self, *args, **kwargs):
         session_user_code = self.request.GET[constants.session_user_code]
-        session_user = get_object_or_404(otree.sessionlib.models.Participant, code=session_user_code)
+        session_user = get_object_or_404(otree.session.models.Participant, code=session_user_code)
 
         return HttpResponseRedirect(session_user._start_url())
 
@@ -159,7 +159,7 @@ class InitializeParticipant(vanilla.UpdateView):
     def get(self, *args, **kwargs):
 
         session_user = get_object_or_404(
-            otree.sessionlib.models.Participant,
+            otree.session.models.Participant,
             code=kwargs[constants.session_user_code]
         )
 

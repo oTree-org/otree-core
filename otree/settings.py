@@ -24,8 +24,7 @@ def augment_settings(settings):
         'django.contrib.sessions',
         'django.contrib.messages',
         'django.contrib.staticfiles',
-        'otree.sessionlib',
-        'otree.user',
+        'otree.session',
         'otree.models_concrete',
     ]
 
@@ -105,7 +104,7 @@ def augment_settings(settings):
         'OTREE_CHANGE_LIST_UPDATE_INTERVAL': '10000', # default to 10 seconds(10000 miliseconds)
         'TEMPLATE_CONTEXT_PROCESSORS': global_settings.TEMPLATE_CONTEXT_PROCESSORS + ("django.core.context_processors.request",),
 
-        'SESSION_MODULE': 'session',
+        'SESSIONS_MODULE': 'sessions',
     }
 
 

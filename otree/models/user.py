@@ -4,7 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from otree.fields import RandomCharField
 from otree.db import models
 import otree.constants as constants
-from otree.common import add_params_to_url
+from otree.common import add_params_to_url, get_models_module
 from save_the_change.mixins import SaveTheChange
 
 class User(SaveTheChange, models.Model):
@@ -22,7 +22,7 @@ class User(SaveTheChange, models.Model):
         raise NotImplementedError()
 
     session = models.ForeignKey(
-        'sessionlib.Session',
+        'session.Session',
         related_name = '%(app_label)s_%(class)s')
 
 
@@ -49,7 +49,7 @@ class User(SaveTheChange, models.Model):
         url = '/{}/{}/{}/{}/'.format(
             self._session_user.user_type_in_url,
             self._session_user.code,
-            self.subsession.name_in_url,
+            self.subsession._Constants.name_in_url,
             self._init_view_name,
         )
         return add_params_to_url(url, {constants.user_code: self.code})
@@ -57,10 +57,11 @@ class User(SaveTheChange, models.Model):
     class Meta:
         abstract = True
 
+
 class Experimenter(User):
 
     session_experimenter = models.ForeignKey(
-        'sessionlib.SessionExperimenter',
+        'session.SessionExperimenter',
         null=True,
         related_name='experimenter'
     )
@@ -74,6 +75,9 @@ class Experimenter(User):
                                            )
 
     _init_view_name = 'InitializeExperimenter'
+
+    class Meta:
+        app_label = 'otree'
 
     @property
     def _session_user(self):

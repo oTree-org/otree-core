@@ -1,9 +1,24 @@
+
+from importlib import import_module
 from django.contrib.contenttypes import generic
-from otree.sessionlib.models import Session, Participant
+from otree.session.models import Session, Participant
 from otree.db import models
 from otree.common import _players, _groups
-from otree.models import subsessions, groups, players
 
+# NOTE: this imports the following submodules and then subclasses several classes
+# importing is done via import_module rather than an ordinary import.
+# The only reason for this is to hide the base classes from IDEs like PyCharm,
+# so that those members/attributes don't show up in autocomplete,
+# including all the built-in django model fields that an ordinary oTree programmer will never need or want.
+# if this was a conventional Django project I wouldn't do it this way,
+# but because oTree is aimed at newcomers who may need more assistance from their IDE,
+# I want to try this approach out.
+# this module is also a form of documentation of the public API.
+
+subsessions = import_module('otree.models.subsessions')
+groups = import_module('otree.models.groups')
+players = import_module('otree.models.players')
+user = import_module('otree.models.user')
 
 class BaseSubsession(subsessions.BaseSubsession):
 
@@ -12,9 +27,6 @@ class BaseSubsession(subsessions.BaseSubsession):
         related_name = '%(app_label)s_%(class)s',
         null=True
     )
-
-
-    name_in_url = None
 
     next_subsession = generic.GenericForeignKey('_next_subsession_content_type',
                                             '_next_subsession_object_id',)
@@ -33,15 +45,11 @@ class BaseSubsession(subsessions.BaseSubsession):
         '''
     )
 
-    number_of_rounds = models.PositiveIntegerField(
-        doc='Number of rounds for which this subsession is played'
-    )
+    def get_groups(self, refresh_from_db=False):
+        return _groups(self, refresh_from_db)
 
-    def get_groups(self):
-        return _groups(self)
-
-    def get_players(self):
-        return _players(self)
+    def get_players(self, refresh_from_db=False):
+        return _players(self, refresh_from_db)
 
     @property
     def app_name(self):
@@ -59,15 +67,13 @@ class BaseSubsession(subsessions.BaseSubsession):
 
 class BaseGroup(groups.BaseGroup):
 
-    players_per_group = 1
-
     session = models.ForeignKey(
         Session,
         related_name = '%(app_label)s_%(class)s'
     )
 
-    def get_players(self):
-        return _players(self)
+    def get_players(self, refresh_from_db=False):
+        return _players(self, refresh_from_db)
 
     def get_player_by_role(self, role):
         return super(BaseGroup, self).get_player_by_role(role)
@@ -90,7 +96,7 @@ class BasePlayer(players.BasePlayer):
 
     payoff = models.MoneyField(
         null=True,
-        doc="""The payoff the player made in this subsession, in cents"""
+        doc="""The payoff the player made in this subsession"""
     )
 
     participant = models.ForeignKey(

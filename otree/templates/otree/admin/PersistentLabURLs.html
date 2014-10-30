@@ -7,16 +7,18 @@
 {% block content %}
 
     <p>
-    Here is the persistent URL you can use in the lab. It will stay constant for new sessions, even if the database is recreated.
+    Here are some example persistent URLs you can use in the lab. They will stay constant for new sessions, even if the database is recreated.
     </p>
 
-    <p>
-    <code>{{ open_session_example_url }}</code>
-    </p>
+    {% for url in open_session_example_urls %}
+        <a href="{{ url }}">{{ url }}</a>
+        <br/>
+    {% endfor %}
 
     <p>
-    You should take this link, copy it for as many participants are in your session,
+    You should take these links, copy them for as many participants are in your session,
     and modify the <code>{{ participant_label }}</code> parameter of each link.
+    The above is just an example.
     You can use whatever naming scheme you would like to use, e.g. <code>{{ participant_label }}=PC-1</code>, <code>{{ participant_label }}=PC-2</code>, etc.
     </p>
 

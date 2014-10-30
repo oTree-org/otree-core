@@ -2,11 +2,12 @@ from otree import constants
 from otree.common import get_session_module
 from django.conf import settings
 from django.utils.importlib import import_module
-from otree.user.models import Experimenter
-from otree.sessionlib.models import Session, SessionExperimenter, Participant
+from otree.models.user import Experimenter
+from otree.session.models import Session, SessionExperimenter, Participant
 from django.db import transaction
 from collections import defaultdict
 from itertools import groupby
+import re
 
 def gcd(a, b):
     """Return greatest common divisor using Euclid's Algorithm."""
@@ -24,8 +25,17 @@ def lcmm(*args):
 
 class SessionType(object):
     def __init__(self, name, subsession_apps, base_pay, participants_per_session,
+                 display_name=None,
                  participants_per_demo_session = None, is_for_mturk=False, doc=None, assign_to_groups_on_the_fly=False):
+
+        if not re.match(r'^\w+$', name):
+            raise ValueError('Session "{}": name must be alphanumeric with no spaces.'.format(name))
+
         self.name = name
+
+
+
+        self.display_name = display_name or name
 
         if len(subsession_apps) == 0:
             raise ValueError('Need at least one subsession.')
@@ -40,16 +50,13 @@ class SessionType(object):
         # on MTurk, assign_to_groups_on_the_fly = True
         self.assign_to_groups_on_the_fly = assign_to_groups_on_the_fly
 
-    def subsession_app_counts(self):
-        '''collapses repetition in a list of subsession apps into counts'''
-        return [[k,len(list(g))] for k, g in groupby(self.subsession_apps)]
-
-
     def lcm(self):
         participants_per_group_list = []
-        for app_label, number_of_rounds in self.subsession_app_counts():
+        for app_label in self.subsession_apps:
             models_module = import_module('{}.models'.format(app_label))
-            participants_per_group_list.append(models_module.Group.players_per_group)
+            # if players_per_group is None, 0, etc.
+            players_per_group = models_module.Constants.players_per_group or 1
+            participants_per_group_list.append(players_per_group)
         return lcmm(*participants_per_group_list)
 
 
@@ -78,7 +85,7 @@ def create_session(type_name, label='', num_participants=None, special_category=
     try:
         session_type = SessionTypeDirectory().get_item(type_name)
     except KeyError:
-        raise ValueError('Session type "{}" not found in session.py'.format(type_name))
+        raise ValueError('Session type "{}" not found in sessions.py'.format(type_name))
     session = Session(
         type_name=session_type.name,
         label=label,
@@ -112,16 +119,15 @@ def create_session(type_name, label='', num_participants=None, special_category=
         participants.append(participant)
 
     subsessions = []
-    for app_label, number_of_rounds in session_type.subsession_app_counts():
+    for app_label in session_type.subsession_apps:
         if app_label not in settings.INSTALLED_OTREE_APPS:
             raise ValueError('Your session contains a subsession app named "{}". You need to add this to INSTALLED_OTREE_APPS in settings.py.'.format(app_label))
 
         models_module = import_module('{}.models'.format(app_label))
 
-        for round_number in range(1, number_of_rounds+1):
+        for round_number in range(1, models_module.Constants.number_of_rounds+1):
             subsession = models_module.Subsession(
                 round_number = round_number,
-                number_of_rounds = number_of_rounds
                 )
             subsession.save()
 
@@ -154,7 +160,7 @@ def create_session(type_name, label='', num_participants=None, special_category=
     session.chain_players()
     session.session_experimenter.chain_experimenters()
     if preassign_players_to_groups:
-        session._assign_players_to_groups()
+        session._assign_groups_and_initialize()
     session.ready = True
     session.save()
     return session
