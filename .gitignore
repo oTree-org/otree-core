@@ -10,3 +10,5 @@ myapp*
 .idea/
 *.pyc
 tests/db.sqlite3
+otree_core.egg-info/
+
