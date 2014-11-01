@@ -153,7 +153,6 @@ def create_session(type_name, label='', num_participants=None, special_category=
                 # unlike the lab setting, where there may be no-shows
                 subsession._create_empty_groups()
 
-            print 'Created objects for {}'.format(app_label)
             subsessions.append(subsession)
 
     session.chain_subsessions(subsessions)

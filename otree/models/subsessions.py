@@ -86,8 +86,8 @@ class BaseSubsession(models.Model):
             if s.app_name == self.app_name:
                 return s
 
-    def next_round_groups(self, previous_round_groups):
-        return previous_round_groups
+    def next_round_groups(self, current_round_groups):
+        return current_round_groups
 
     def _players_per_group(self):
         ppg = self._Constants.players_per_group
@@ -106,7 +106,7 @@ class BaseSubsession(models.Model):
         (or none if it does not exist)
         """
         try:
-            return (m for m in self.group_set.all() if m._is_ready_for_next_player()).next()
+            return (m for m in self.group_set.all() if len(m.player_set.all()) < self._players_per_group()).next()
         except StopIteration:
             return None
 
@@ -120,9 +120,11 @@ class BaseSubsession(models.Model):
         return groups
 
     def _group_objects_to_lists(self):
+        """puts Group objects in matrix format so you can do matrix permutations"""
         return [list(m.player_set.order_by('id_in_group').all()) for m in self.group_set.all()]
 
     def _group_lists_to_objects(self, group_lists):
+        """inverse operation of _group_objects_to_lists"""
         for group_list in group_lists:
             group = self._next_open_group()
             for player in group_list:
@@ -150,7 +152,7 @@ class BaseSubsession(models.Model):
             group_lists = self.first_round_groups()
         else:
             previous_round_group_lists = previous_round._group_objects_to_lists()
-            group_lists = self.next_round_groups(previous_round_group_lists)
+            group_lists = previous_round.next_round_groups(previous_round_group_lists)
             for i, group_list in enumerate(group_lists):
                 for j, player in enumerate(group_list):
                     group_lists[i][j] = player._me_in_next_subsession
