@@ -86,8 +86,8 @@ class BaseSubsession(models.Model):
             if s.app_name == self.app_name:
                 return s
 
-    def next_round_groups(self, current_round_groups):
-        return current_round_groups
+    def next_round_groups(self, current_round_group_matrix):
+        return current_round_group_matrix
 
     def _players_per_group(self):
         ppg = self._Constants.players_per_group
@@ -139,7 +139,7 @@ class BaseSubsession(models.Model):
 
     def _create_empty_groups(self):
         GroupClass = self._GroupClass()
-        for i in range(len(self.get_players())/self._players_per_group()):
+        for i in range(self._num_groups()):
             m = GroupClass._create(self)
 
     def first_round_groups(self):
@@ -148,21 +148,16 @@ class BaseSubsession(models.Model):
     def _assign_groups(self):
         previous_round = self.previous_round()
         if not previous_round:
-            group_matrix = self.first_round_groups()
+            current_round_group_matrix = self.first_round_groups()
         else:
             previous_round_group_matrix = previous_round._group_objects_to_matrix()
-            group_matrix = previous_round.next_round_groups(previous_round_group_matrix)
-            for i, group_list in enumerate(group_matrix):
+            current_round_group_matrix = previous_round.next_round_groups(previous_round_group_matrix)
+            for i, group_list in enumerate(current_round_group_matrix):
                 for j, player in enumerate(group_list):
-                    group_matrix[i][j] = player._me_in_next_subsession
-        self._group_matrix_to_objects(group_matrix)
-
-    def _initialize(self):
-        self.initialize()
-        for p in self.get_players():
-            p.save()
-        for g in self.get_groups():
-            g.save()
+                    # for every entry (i,j) in the matrix, follow the pointer to the same person in the next round
+                    current_round_group_matrix[i][j] = player._me_in_next_subsession
+        # save to DB
+        self._group_matrix_to_objects(current_round_group_matrix)
 
     def initialize(self):
         '''
@@ -171,6 +166,15 @@ class BaseSubsession(models.Model):
         assign treatment parameters.
         '''
         pass
+
+    def _initialize(self):
+        '''wrapper method for self.initialize()'''
+        self.initialize()
+        for p in self.get_players():
+            p.save()
+        for g in self.get_groups():
+            g.save()
+
 
     def previous_subsession_is_in_same_app(self):
         previous_subsession = self.previous_subsession

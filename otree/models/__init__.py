@@ -55,8 +55,11 @@ class BaseSubsession(subsessions.BaseSubsession):
     def app_name(self):
         return self._meta.app_label
 
-    def next_round_groups(self, previous_round_groups):
-        return super(BaseSubsession, self).next_round_groups(previous_round_groups)
+    def first_round_groups(self):
+        return super(BaseSubsession, self).first_round_groups()
+
+    def next_round_groups(self, current_round_group_matrix):
+        return super(BaseSubsession, self).next_round_groups(current_round_group_matrix)
 
     def previous_rounds(self):
         return super(BaseSubsession, self).previous_rounds()
