@@ -105,12 +105,11 @@ class BaseSubsession(models.Model):
         """Get the next group that is accepting players.
         (or none if it does not exist)
         """
-        try:
-            return (m for m in self.group_set.all() if len(m.player_set.all()) < self._players_per_group()).next()
-        except StopIteration:
-            return None
+        for group in self.group_set.all():
+            if len(group.player_set.all()) < self._players_per_group():
+                return group
 
-    def _random_group_lists(self):
+    def _random_group_matrix(self):
         players = list(self.player_set.all())
         random.shuffle(players)
         groups = []
@@ -119,13 +118,13 @@ class BaseSubsession(models.Model):
             groups.append(players[i:i+players_per_group])
         return groups
 
-    def _group_objects_to_lists(self):
+    def _group_objects_to_matrix(self):
         """puts Group objects in matrix format so you can do matrix permutations"""
         return [list(m.player_set.order_by('id_in_group').all()) for m in self.group_set.all()]
 
-    def _group_lists_to_objects(self, group_lists):
-        """inverse operation of _group_objects_to_lists"""
-        for group_list in group_lists:
+    def _group_matrix_to_objects(self, group_matrix):
+        """inverse operation of _group_objects_to_matrix"""
+        for group_list in group_matrix:
             group = self._next_open_group()
             for player in group_list:
                 player._assign_to_group(group)
@@ -144,19 +143,19 @@ class BaseSubsession(models.Model):
             m = GroupClass._create(self)
 
     def first_round_groups(self):
-        return self._random_group_lists()
+        return self._random_group_matrix()
 
     def _assign_groups(self):
         previous_round = self.previous_round()
         if not previous_round:
-            group_lists = self.first_round_groups()
+            group_matrix = self.first_round_groups()
         else:
-            previous_round_group_lists = previous_round._group_objects_to_lists()
-            group_lists = previous_round.next_round_groups(previous_round_group_lists)
-            for i, group_list in enumerate(group_lists):
+            previous_round_group_matrix = previous_round._group_objects_to_matrix()
+            group_matrix = previous_round.next_round_groups(previous_round_group_matrix)
+            for i, group_list in enumerate(group_matrix):
                 for j, player in enumerate(group_list):
-                    group_lists[i][j] = player._me_in_next_subsession
-        self._group_lists_to_objects(group_lists)
+                    group_matrix[i][j] = player._me_in_next_subsession
+        self._group_matrix_to_objects(group_matrix)
 
     def _initialize(self):
         self.initialize()
