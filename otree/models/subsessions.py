@@ -114,6 +114,8 @@ class BaseSubsession(models.Model):
         random.shuffle(players)
         groups = []
         players_per_group = self._players_per_group()
+
+        # divide into equal size groups
         for i in range(0, len(players), players_per_group):
             groups.append(players[i:i+players_per_group])
         return groups
