@@ -11,7 +11,7 @@ import itertools
 from otree.constants import special_category_bots
 import random
 
-modules_to_include_in_coverage = ['models', 'tests', 'views']
+
 
 
 def run_subsession(subsession):
@@ -71,6 +71,7 @@ def run_session(session_type_name):
     session_experimenter_bot = Client()
     session_experimenter_bot.get(session.session_experimenter._start_url(), follow=True)
     session_experimenter_bot.post(session.session_experimenter._start_url(), follow=True)
+    import ipdb; ipdb.set_trace()
 
     # since players are assigned to groups in a background thread,
     # we need to wait for that to complete.
