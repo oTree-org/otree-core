@@ -97,7 +97,7 @@ class BasePlayer(players.BasePlayer):
         doc="Index starting from 1. In multiplayer games, indicates whether this is player 1, player 2, etc."
     )
 
-    payoff = models.MoneyField(
+    payoff = models.CurrencyField(
         null=True,
         doc="""The payoff the player made in this subsession"""
     )

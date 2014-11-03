@@ -4,7 +4,7 @@ from __future__ import division
 from otree.db import models
 import otree.models
 from otree import widgets
-from otree.common import Money, money_range
+from otree.common import currency, currency_range
 import random
 # </standard imports>
 
@@ -50,7 +50,7 @@ class Player(otree.models.BasePlayer):
         return self.get_others_in_group()[0]
 
     # example field
-    my_field = models.MoneyField(
+    my_field = models.currencyField(
         doc="""
         Description of this field, for documentation
         """

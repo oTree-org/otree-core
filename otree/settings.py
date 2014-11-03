@@ -78,6 +78,7 @@ def augment_settings(settings):
             CURRENCY_LOCALE = LANGUAGE_CODE
     CURRENCY_LOCALE = CURRENCY_LOCALE.replace('-','_')
 
+
     overridable_settings = {
 
         # pages with a time limit for the player can have a grace period
@@ -91,9 +92,10 @@ def augment_settings(settings):
         'TEMPLATE_DEBUG': settings['DEBUG'],
         'STATIC_ROOT': 'staticfiles',
         'STATIC_URL': '/static/',
-            'ROOT_URLCONF': 'otree.default_urls',
-        'CURRENCY_CODE': 'USD',
+        'ROOT_URLCONF': 'otree.default_urls',
+        'PAYMENT_CURRENCY_CODE': 'USD',
         'CURRENCY_LOCALE': CURRENCY_LOCALE,
+        'MONEY_PER_POINT': 1,
         'LANGUAGE_CODE': LANGUAGE_CODE,
         'CURRENCY_DECIMAL_PLACES': 2,
         'TIME_ZONE': 'UTC',
@@ -111,10 +113,13 @@ def augment_settings(settings):
     settings.update(augmented_settings)
 
     for k,v in overridable_settings.items():
-        if not settings.has_key(k):
-            settings[k] = v
+        settings.setdefault(k, v)
 
-
-
+    # FIXME: need to define 'points' currency code
+    if settings['USE_POINTS']:
+        settings['CURRENCY_CODE'] = 'points'
+        settings['CURRENCY_FORMAT'] = u'###0 \xa4' # prints '23 points'
+    else:
+        settings['CURRENCY_CODE'] = settings['PAYMENT_CURRENCY_CODE']
 
 

@@ -115,9 +115,9 @@ FORMFIELD_OVERRIDES.update({
         'form_class': forms.CharField,
         'choices_form_class': forms.TypedChoiceField},
 
-    models.MoneyField: {
-        'form_class': otree.formfields.MoneyField,
-        'choices_form_class': otree.formfields.MoneyChoiceField},
+    models.CurrencyField: {
+        'form_class': otree.formfields.CurrencyField,
+        'choices_form_class': otree.formfields.CurrencyChoiceField},
 
 })
 

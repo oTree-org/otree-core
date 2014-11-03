@@ -1,5 +1,5 @@
 from otree import forms
-from otree.common import money_range
+from otree.common import currency_range
 
 
 default_choices = (
@@ -29,5 +29,5 @@ class WidgetDemoForm(forms.Form):
         choices=default_choices,
         widget=forms.CheckboxSelectMultipleHorizontal)
 
-    money = forms.MoneyField()
-    money_choice = forms.MoneyChoiceField(choices=[(m, m) for m in money_range(0,0.75)])
+    currency = forms.currencyField()
+    currency_choice = forms.currencyChoiceField(choices=[(m, m) for m in currency_range(0,0.75)])

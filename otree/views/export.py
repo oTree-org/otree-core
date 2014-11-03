@@ -126,7 +126,7 @@ def get_doc_dict(app_label):
         'TextField': 'text',
         'FloatField': 'decimal',
         'DecimalField': 'decimal',
-        'MoneyField': 'money',
+        'CurrencyField': 'currency',
     }
 
 

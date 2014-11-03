@@ -8,7 +8,7 @@ from django.utils.importlib import import_module
 from otree.models.user import Experimenter
 import random
 import coverage
-from easymoney import Money
+from easymoney import Money as Currency
 from decimal import Decimal
 
 
@@ -67,7 +67,7 @@ class BaseClient(django.test.client.Client):
     def _submit_core(self, ViewClass, data=None):
         data = data or {}
         for key in data:
-            if isinstance(data[key], Money):
+            if isinstance(data[key], Currency):
                 data[key] = Decimal(data[key])
         # if it's a waiting page, wait N seconds and retry
         first_wait_page_try_time = time.time()

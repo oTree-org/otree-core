@@ -6,7 +6,7 @@ import django.forms.fields
 from django.utils.text import capfirst
 import django.db.models
 import easymoney
-from otree.common import expand_choice_tuples, _MoneyInput
+from otree.common import expand_choice_tuples, _CurrencyInput
 from handy.models import PickleField
 
 
@@ -91,8 +91,8 @@ class _OtreeNullableModelFieldMixin(_OtreeModelFieldMixin, _OtreeWidgetForModelF
 class _OtreeNotNullableModelFieldMixin(_OtreeModelFieldMixin):
     pass
 
-class MoneyField(_OtreeNullableModelFieldMixin, easymoney.MoneyField):
-    widget = _MoneyInput
+class CurrencyField(_OtreeNullableModelFieldMixin, easymoney.MoneyField):
+    widget = _CurrencyInput
 
 class PickleField(_OtreeNullableModelFieldMixin, PickleField):
     pass

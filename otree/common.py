@@ -10,15 +10,17 @@ from django import forms
 from django.conf import settings
 from django.template.defaultfilters import title
 from django.utils.importlib import import_module
-from easymoney import Money
+from easymoney import Money as Currency
 from collections import OrderedDict
 
 from django.utils.safestring import mark_safe
 
 from otree import constants
 import json
+from babel.numbers import format_currency
+from django.conf import settings
 
-class _MoneyInput(forms.NumberInput):
+class _CurrencyInput(forms.NumberInput):
      def _format_value(self, value):
          return str(Decimal(value))
 
@@ -136,11 +138,11 @@ def _groups(self, refresh_from_db):
     self._groups = list(self.group_set.all())
     return self._groups
 
-def money_range(first, last, increment=Money(0.01)):
+def currency_range(first, last, increment=Currency(0.01)):
     assert last >= first
     assert increment >= 0
     values = []
-    current_value = Money(first)
+    current_value = Currency(first)
     while True:
         if current_value > last:
             return values
@@ -156,6 +158,10 @@ def expand_choice_tuples(choices):
     if not isinstance(first_choice, (list, tuple)):
         choices = [(value, value) for value in choices]
     return choices
+
+def format_payment_currency(amount):
+    return format_currency(amount, settings.PAYMENT_CURRENCY_CODE, locale=settings.CURRENCY_LOCALE)
+
 
 def safe_json(obj):
     return mark_safe(json.dumps(obj))
