@@ -115,10 +115,9 @@ def augment_settings(settings):
     for k,v in overridable_settings.items():
         settings.setdefault(k, v)
 
-    # FIXME: need to define 'points' currency code
     if settings['USE_POINTS']:
         settings['CURRENCY_CODE'] = 'points'
-        settings['CURRENCY_FORMAT'] = u'###0 \xa4' # prints '23 points'
+        settings['CURRENCY_FORMAT'] = settings.get('CURRENCY_FORMAT') or u'# points'
     else:
         settings['CURRENCY_CODE'] = settings['PAYMENT_CURRENCY_CODE']
 
