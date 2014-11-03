@@ -1,6 +1,11 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import sys
-from otree.test.run import run_session_with_coverage
+from otree.test import core
+
 from django.core.management.base import BaseCommand, CommandError
+
 
 class Command(BaseCommand):
     help = "oTree: Run the test bots for a session."
@@ -9,15 +14,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         if len(args) > 1:
-            raise CommandError("Wrong number of arguments (expecting '{}')".format(self.args))
+            raise CommandError(
+                "Wrong number of arguments (expecting '{}')".format(self.args)
+            )
 
-        if len(args) == 1:
-            session_type_name = args[0]
-        else:
-            session_type_name = None
+        success, cov = core.run(args, True)
 
-        success = run_session_with_coverage(session_type_name)
-        if not success:
-            sys.exit(1)
-        else:
-            sys.exit(0)
+        exit_status = 0 if all(success.values()) else 1
+        sys.exit(exit_status)
+
