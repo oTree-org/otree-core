@@ -13,14 +13,16 @@
 # IMPORTS
 #==============================================================================
 
+import sys
 import decimal
 import random
+import logging
+import Queue as queue
 
 from django.utils.importlib import import_module
-from django.test import client
+from django import test
 
-import otree.constants
-from otree.session import create_session, SessionTypeDirectory
+from otree import constants, session
 
 import coverage
 
@@ -35,10 +37,17 @@ COVERAGE_MODELS = ['models', 'tests', 'views']
 
 
 #==============================================================================
+# LOGGER
+#==============================================================================
+
+logger = logging.getLogger(__name__)
+
+
+#==============================================================================
 # CLASS
 #==============================================================================
 
-class PlayerBot(client.Client):
+class PlayerBot(test.Client):
 
     pass
 
@@ -49,18 +58,47 @@ class PlayerBot(client.Client):
 #==============================================================================
 
 def _run_session(session_name):
+    logger.info (
+        "Creating session for experimenter on session '{}'".format(
+            session_name
+        )
+    )
+    sssn = session.create_session(
+        type_name=session_name,
+        special_category=constants.special_category_bots
+    )
+    sssn.label = '{} [bots]'.format(session_name)
+    sssn.save()
 
+    logger.info(
+        "Creating session experimenter on session '{}'".format(session_name)
+    )
+    sssn_exbot = test.Client()
+    sssn_exbot.get(sssn.session_experimenter._start_url(), follow=True)
+    rp = sssn_exbot.post(sssn.session_experimenter._start_url(), follow=True)
+
+    # since players are assigned to groups in a background thread,
+    # we need to wait for that to complete.
+    logger.info ("Adding bots on session '{}'".format(session_name))
+    while True:
+        sssn = session.models.Session.objects.get(id=sssn.pk)
+        if sssn._players_assigned_to_groups:
+            break
+        time.sleep(1)
+
+    import ipdb; ipdb.set_trace()
 
 
 def run(session_names=None, with_coverage=True):
 
-    directory = SessionTypeDirectory()
+    directory = session.SessionTypeDirectory()
     if session_names is None:
         session_names = tuple(directory.session_types_as_dict.keys())
 
     #======================================
     # COVERAGE START
     #======================================
+
     cov = None
     if with_coverage:
         app_labels = set()
@@ -85,6 +123,7 @@ def run(session_names=None, with_coverage=True):
     #======================================
     # RUN TESTS
     #======================================
+
     status_results = {}
     for session_name in session_names:
         status = _run_session(session_name)
@@ -93,7 +132,12 @@ def run(session_names=None, with_coverage=True):
     #======================================
     # COVERAGE STOP
     #======================================
+
     if with_coverage:
         cov.stop()
+
+    #======================================
+    # END
+    #======================================
 
     return status_results, cov
