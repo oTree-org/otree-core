@@ -23,6 +23,8 @@ abstract = import_module('otree.views.abstract')
 
 class WaitPage(abstract.WaitPage):
 
+    wait_for_all_groups = False
+
     def body_text(self):
         return super(WaitPage, self).body_text()
 

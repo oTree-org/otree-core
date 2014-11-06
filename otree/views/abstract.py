@@ -255,10 +255,10 @@ class CheckpointMixin(object):
 
     def dispatch(self, request, *args, **kwargs):
         '''this is actually for sequence pages only, because of the _redirect_to_page_the_user_should_be_on()'''
-        if self._scope_is_group():
-            self._group_or_subsession = self.group
-        else:
+        if self.wait_for_all_groups:
             self._group_or_subsession = self.subsession
+        else:
+            self._group_or_subsession = self.group
         if self.request_is_from_wait_page():
             return self._response_to_wait_page()
         else:
@@ -275,49 +275,38 @@ class CheckpointMixin(object):
                 with context_manager():
                     GlobalSingleton.objects.select_for_update().get()
 
-                    if self._scope_is_group():
-                        _, created = CompletedGroupWaitPage.objects.get_or_create(
-                            app_name = self.subsession.app_name,
-                            page_index = self.index_in_pages,
-                            group_pk = self.group.pk
-                        )
-                    else:
+                    if self.wait_for_all_groups:
                         _, created = CompletedSubsessionWaitPage.objects.get_or_create(
                             app_name = self.subsession.app_name,
                             page_index = self.index_in_pages,
                             subsession_pk = self.subsession.pk
                         )
-                if created:
-                    self._action()
-                    return self._redirect_after_complete()
+                    else:
+                        _, created = CompletedGroupWaitPage.objects.get_or_create(
+                            app_name = self.subsession.app_name,
+                            page_index = self.index_in_pages,
+                            group_pk = self.group.pk
+                        )
+                    # run the action inside the context manager, so that the action is completed
+                    # before the next thread does a get_or_create and sees that the action has been completed
+                    if created:
+                        self._action()
+                        return self._redirect_after_complete()
             return self.get_wait_page()
 
-
-
-    def _scope_is_group(self):
-        '''returns True for match, False for subsession'''
-        if issubclass(self.scope, otree.models.BaseGroup):
-            return True
-        elif issubclass(self.scope, otree.models.BaseSubsession):
-            return False
-        raise ValueError('scope must be set to either Group or Subsession')
-
-
-
     def _is_complete(self):
-        if self._scope_is_group():
-            return CompletedGroupWaitPage.objects.filter(
-                app_name = self.subsession.app_name,
-                page_index = self.index_in_pages,
-                group_pk = self.group.pk
-            ).exists()
-        else:
+        if self.wait_for_all_groups:
             return CompletedSubsessionWaitPage.objects.filter(
                 app_name = self.subsession.app_name,
                 page_index = self.index_in_pages,
                 subsession_pk = self.subsession.pk
             ).exists()
-
+        else:
+            return CompletedGroupWaitPage.objects.filter(
+                app_name = self.subsession.app_name,
+                page_index = self.index_in_pages,
+                group_pk = self.group.pk
+            ).exists()
 
     def _all_players_have_visited(self):
         pks_to_wait_for = [p.pk for p in self._group_or_subsession.player_set.all()]
