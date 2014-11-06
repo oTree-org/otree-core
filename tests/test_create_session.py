@@ -7,23 +7,14 @@ from tests.utils import capture_stdout
 
 
 class TestCreateSessionsCommand(TestCase):
-    def test_create_sessions_output(self):
-        with capture_stdout() as output_stream:
-            call_command('create_sessions', 'simple_game', 1)
-        output = output_stream.read()
-
-        self.assertTrue('tests.simple_game' in output)
-
     def test_create_two_sessions_output(self):
         with capture_stdout() as output_stream:
             call_command('create_sessions', 'simple_game', 2)
         output = output_stream.read()
 
         lines = output.strip().splitlines()
-        self.assertEqual(len(lines), 3)
+        self.assertEqual(len(lines), 1)
         self.assertEqual(lines[0], 'Creating sessions...')
-        self.assertTrue('tests.simple_game' in lines[1])
-        self.assertTrue('tests.simple_game' in lines[2])
 
     def test_create_one_session(self):
         with capture_stdout():
