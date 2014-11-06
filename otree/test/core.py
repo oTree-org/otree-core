@@ -54,8 +54,13 @@ class PlayerBot(test.Client):
 
 
 #==============================================================================
-# RUNNER
+# PRIVATE
 #==============================================================================
+
+def _run_subsession(subsession):
+    return random.choice((True, False))
+
+
 
 def _run_session(session_name):
     logger.info (
@@ -79,15 +84,36 @@ def _run_session(session_name):
 
     # since players are assigned to groups in a background thread,
     # we need to wait for that to complete.
-    logger.info ("Adding bots on session '{}'".format(session_name))
+    logger.info("Adding bots on session '{}'".format(session_name))
     while True:
         sssn = session.models.Session.objects.get(id=sssn.pk)
         if sssn._players_assigned_to_groups:
             break
         time.sleep(1)
 
-    import ipdb; ipdb.set_trace()
+    logger.info(
+        "'GET' over first page of all '{}' participants".format(session_name)
+    )
+    for participant in sssn.get_participants():
+        bot = test.Client()
+        r = bot.get(participant._start_url(), follow=True)
 
+    logger.info("Running subsessions of '{}'".format(session_name))
+    success = True
+    for subsession in sssn.get_subsessions():
+        success = success and _run_subsession(subsession)
+    if success:
+        logger.info(
+            "Tests in session '{}' completed successfully".format(session_name)
+        )
+    else:
+        logger.info("Some tests in session '{}' failed".format(session_name))
+    return success
+
+
+#==============================================================================
+# RUNNER
+#==============================================================================
 
 def run(session_names=None, with_coverage=True):
 
