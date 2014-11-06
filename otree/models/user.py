@@ -4,7 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from otree.fields import RandomCharField
 from otree.db import models
 import otree.constants as constants
-from otree.common import add_params_to_url, get_models_module
+from otree.common_internal import add_params_to_url, get_models_module
 from save_the_change.mixins import SaveTheChange
 
 class User(SaveTheChange, models.Model):

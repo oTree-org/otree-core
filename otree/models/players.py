@@ -1,6 +1,6 @@
 from otree.models.user import User
-import otree.common
-from otree.common import get_models_module
+import otree.common_internal
+from otree.common_internal import get_models_module
 
 class _QuizResult(object):
 
@@ -56,7 +56,7 @@ class BasePlayer(User):
 
     def _pages(self):
         from otree.views.concrete import WaitUntilAssignedToGroup
-        views_module = otree.common._views_module(self)
+        views_module = otree.common_internal._views_module(self)
         return [WaitUntilAssignedToGroup] + views_module.pages()
 
     def _pages_as_urls(self):

@@ -95,7 +95,6 @@ def augment_settings(settings):
         'ROOT_URLCONF': 'otree.default_urls',
         'PAYMENT_CURRENCY_CODE': 'USD',
         'CURRENCY_LOCALE': CURRENCY_LOCALE,
-        'MONEY_PER_POINT': 1,
         'LANGUAGE_CODE': LANGUAGE_CODE,
         'CURRENCY_DECIMAL_PLACES': 2,
         'TIME_ZONE': 'UTC',
@@ -115,7 +114,7 @@ def augment_settings(settings):
     for k,v in overridable_settings.items():
         settings.setdefault(k, v)
 
-    if settings['USE_POINTS']:
+    if settings.get('USE_POINTS'):
         settings['CURRENCY_CODE'] = 'points'
         settings['CURRENCY_FORMAT'] = settings.get('CURRENCY_FORMAT') or u'# points'
     else:

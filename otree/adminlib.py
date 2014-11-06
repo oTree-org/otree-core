@@ -17,7 +17,7 @@ from otree.views.demo import render_to_start_links_page
 import otree.constants
 import otree.session.models
 from otree.session.models import Participant, Session
-from otree.common import add_params_to_url, format_payment_currency
+from otree.common_internal import add_params_to_url, format_payment_currency
 
 def new_tab_link(url, label):
     return '<a href="{}" target="_blank">{}</a>'.format(url, label)
@@ -246,7 +246,6 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
              'first_subsession_content_type',
              'first_subsession_object_id',
              'first_subsession',
-             'is_for_mturk',
              'demo_already_used',
              'ready',
              'vars',

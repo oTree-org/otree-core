@@ -4,7 +4,7 @@ from floppyforms.__future__.models import ModelFormMetaclass as FloppyformsModel
 from django.forms import models as django_model_forms
 from django.utils.translation import ugettext as _
 import copy
-import otree.common
+import otree.common_internal
 import otree.formfields
 import otree.models.common
 import otree.session.models
@@ -181,7 +181,7 @@ class BaseModelForm(forms.ModelForm):
         for field_name in self.fields:
             if hasattr(self.instance, '%s_choices' % field_name):
                 choices = getattr(self.instance, '%s_choices' % field_name)()
-                choices = otree.common.expand_choice_tuples(choices)
+                choices = otree.common_internal.expand_choice_tuples(choices)
 
                 model_field = self.instance._meta.get_field(field_name)
                 model_field_copy = copy.copy(model_field)

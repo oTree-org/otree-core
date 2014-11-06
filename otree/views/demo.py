@@ -9,7 +9,7 @@ from otree.session import create_session, SessionTypeDirectory
 import threading
 import time
 import urllib
-from otree.common import get_session_module, get_models_module, app_name_format
+from otree.common_internal import get_session_module, get_models_module, app_name_format
 from django.conf import settings
 
 def start_link_url(session_type_name):

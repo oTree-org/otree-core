@@ -22,7 +22,7 @@ class BaseClient(django.test.client.Client):
         self.response = None
         self.url = None
         self.path = None
-        self.num_bots = self.subsession.session.type().participants_per_session
+        self.num_bots = self.subsession.session.type().num_bots
         super(BaseClient, self).__init__()
 
     def get(self, path, data={}, follow=False, **extra):

@@ -6,7 +6,7 @@ import django.forms.fields
 from django.utils.text import capfirst
 import django.db.models
 import easymoney
-from otree.common import expand_choice_tuples, _CurrencyInput
+from otree.common_internal import expand_choice_tuples, _CurrencyInput
 from handy.models import PickleField
 
 

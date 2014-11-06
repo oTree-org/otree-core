@@ -24,7 +24,7 @@ from django.forms.models import model_to_dict
 import otree.constants as constants
 import otree.session.models as seq_models
 import otree.session.models
-import otree.common
+import otree.common_internal
 
 import otree.forms_internal
 from otree.models.user import Experimenter
@@ -54,7 +54,7 @@ def no_op_context_manager():
     yield
 
 def get_app_name(request):
-    return otree.common.get_app_name_from_import_path(
+    return otree.common_internal.get_app_name_from_import_path(
         request.resolver_match.url_name)
 
 class OTreeMixin(object):
@@ -71,7 +71,7 @@ class OTreeMixin(object):
         """
 
         app_name = self._session_user._current_app_name
-        models_module = otree.common.get_models_module(app_name)
+        models_module = otree.common_internal.get_models_module(app_name)
         self.SubsessionClass = getattr(models_module, 'Subsession')
         self.GroupClass = getattr(models_module, 'Group')
         self.PlayerClass = getattr(models_module, 'Player')
@@ -119,7 +119,7 @@ class OTreeMixin(object):
         return {}
 
     def _variables_for_all_templates(self):
-        views_module = otree.common._views_module(self.subsession)
+        views_module = otree.common_internal._views_module(self.subsession)
         if hasattr(views_module, 'variables_for_all_templates'):
             return views_module.variables_for_all_templates(self) or {}
         return {}
@@ -159,11 +159,11 @@ class LoadClassesAndUserMixin(object):
 class NonSequenceUrlMixin(object):
     @classmethod
     def url(cls, session_user):
-        return otree.common.url(cls, session_user)
+        return otree.common_internal.url(cls, session_user)
 
     @classmethod
     def url_pattern(cls):
-        return otree.common.url_pattern(cls, False)
+        return otree.common_internal.url_pattern(cls, False)
 
 class PlayerMixin(object):
 
@@ -208,7 +208,7 @@ class WaitPageMixin(object):
         return self.request.is_ajax() and self.request.GET.get(constants.check_if_wait_is_over) == constants.get_param_truth_value
 
     def wait_page_request_url(self):
-        return otree.common.add_params_to_url(
+        return otree.common_internal.add_params_to_url(
             self.request.path,
             {constants.check_if_wait_is_over: constants.get_param_truth_value}
         )
@@ -374,11 +374,11 @@ class SequenceMixin(OTreeMixin):
 
     @classmethod
     def url(cls, session_user, index):
-        return otree.common.url(cls, session_user, index)
+        return otree.common_internal.url(cls, session_user, index)
 
     @classmethod
     def url_pattern(cls):
-        return otree.common.url_pattern(cls, True)
+        return otree.common_internal.url_pattern(cls, True)
 
     @method_decorator(never_cache)
     @method_decorator(cache_control(must_revalidate=True, max_age=0, no_cache=True, no_store = True))
@@ -690,7 +690,7 @@ class InitializePlayer(InitializePlayerOrExperimenter):
     """
 
     def get_UserClass(self):
-        models_module = otree.common.get_models_module(self.app_name)
+        models_module = otree.common_internal.get_models_module(self.app_name)
         return models_module.Player
 
     def redirect(self):

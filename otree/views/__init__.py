@@ -29,8 +29,6 @@ class WaitPage(abstract.WaitPage):
     def title_text(self):
         return super(WaitPage, self).title_text()
 
-    scope = None
-
     def after_all_players_arrive(self):
         return super(WaitPage, self).after_all_players_arrive()
 

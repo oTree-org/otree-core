@@ -8,8 +8,8 @@ def session_types():
             name="simple_game",
             display_name="Simple Game",
             base_pay=0,
-            participants_per_demo_session=1,
-            participants_per_session=1,
+            num_demo_participants=1,
+            num_bots=1,
             subsession_apps=['tests.simple_game'],
             doc=""""""
         ),

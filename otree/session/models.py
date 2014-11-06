@@ -5,10 +5,10 @@ from otree.db import models
 from otree.fields import RandomCharField
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-from otree.common import id_label_name, add_params_to_url
+from otree.common_internal import id_label_name, add_params_to_url
 from otree import constants
-import otree.common
-from otree.common import directory_name, format_payment_currency
+import otree.common_internal
+from otree.common_internal import directory_name, format_payment_currency
 from easymoney import Money as Currency
 from decimal import Decimal
 from django_extensions.db.fields.json import JSONField
@@ -77,6 +77,8 @@ class Session(ModelWithVars):
         """
     )
 
+    payment_per_point = models.DecimalField(max_digits=12, decimal_places=2)
+
     session_experimenter = models.OneToOneField(
         'SessionExperimenter',
         null=True,
@@ -100,7 +102,6 @@ class Session(ModelWithVars):
     first_subsession = generic.GenericForeignKey('first_subsession_content_type',
                                             'first_subsession_object_id',)
 
-    is_for_mturk = models.BooleanField(verbose_name='Is for MTurk', default=True)
     mturk_payment_was_sent = models.BooleanField(default=False)
 
     hidden = models.BooleanField(default=False)
@@ -117,7 +118,9 @@ class Session(ModelWithVars):
 
     #
     base_pay = models.DecimalField(
-        doc="""Show-up fee"""
+        doc="""Show-up fee""",
+        max_digits=12,
+        decimal_places=2
     )
 
     comment = models.TextField()
@@ -142,7 +145,7 @@ class Session(ModelWithVars):
     def subsession_names(self):
         names = []
         for subsession in self.get_subsessions():
-            names.append('{} {}'.format(otree.common.app_name_format(subsession._meta.app_label), subsession.name()))
+            names.append('{} {}'.format(otree.common_internal.app_name_format(subsession._meta.app_label), subsession.name()))
         if names:
             return ', '.join(names)
         else:
@@ -281,7 +284,7 @@ class SessionUser(ModelWithVars):
     def current_subsession(self):
         if not self.visited:
             return None
-        return otree.common.app_name_format(self.session.get_subsessions()[self._index_in_subsessions]._meta.app_label)
+        return otree.common_internal.app_name_format(self.session.get_subsessions()[self._index_in_subsessions]._meta.app_label)
 
     def _users(self):
         """Used to calculate payoffs"""
@@ -358,7 +361,7 @@ class Participant(SessionUser):
         '''
         amount = sum(player.payoff or 0 for player in self.get_players())
         if settings.USE_POINTS:
-            amount *= settings.MONEY_PER_POINT
+            amount *= self.session.payment_per_point
         return amount
 
     def total_pay(self):

@@ -8,10 +8,10 @@ from otree.db import models
 from otree.fields import RandomCharField
 import otree.constants as constants
 import math
-from otree.common import flatten, _views_module
+from otree.common_internal import flatten, _views_module
 import itertools
 from django_extensions.db.fields.json import JSONField
-from otree.common import get_models_module
+from otree.common_internal import get_models_module
 
 class BaseSubsession(models.Model):
     """

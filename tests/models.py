@@ -41,11 +41,11 @@ class FormFieldModel(otree.models.BaseGroup):
     many_to_many = models.ManyToManyField('SimpleModel', related_name='+')
     one_to_one = models.OneToOneField('SimpleModel', related_name='+')
 
-    currency = models.currencyField()
-    currency_choice = models.currencyField(choices=(
+    currency = models.CurrencyField()
+    currency_choice = models.CurrencyField(choices=(
         ('0.01', '0.01'),
         ('1.20', '1.20'),
     ))
     random_char = RandomCharField()
 
-    sent_amount = models.currencyField(choices=currency_range(0, 0.75))
+    sent_amount = models.CurrencyField(choices=currency_range(0, 0.75))

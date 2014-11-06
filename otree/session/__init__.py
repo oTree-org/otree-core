@@ -1,5 +1,5 @@
 from otree import constants
-from otree.common import get_session_module
+from otree.common_internal import get_session_module
 from django.conf import settings
 from django.utils.importlib import import_module
 from otree.models.user import Experimenter
@@ -24,16 +24,16 @@ def lcmm(*args):
     return reduce(lcm, args)
 
 class SessionType(object):
-    def __init__(self, name, subsession_apps, base_pay, participants_per_session,
-                 display_name=None,
-                 participants_per_demo_session = None, is_for_mturk=False, doc=None, assign_to_groups_on_the_fly=False):
+    def __init__(self, name, subsession_apps, base_pay, num_bots,
+                 display_name=None, payment_per_point=1,
+                 num_demo_participants = None, doc=None, assign_to_groups_on_the_fly=False):
 
         if not re.match(r'^\w+$', name):
             raise ValueError('Session "{}": name must be alphanumeric with no spaces.'.format(name))
 
         self.name = name
 
-
+        self.payment_per_point = payment_per_point
 
         self.display_name = display_name or name
 
@@ -42,9 +42,8 @@ class SessionType(object):
 
         self.subsession_apps = subsession_apps
         self.base_pay = base_pay
-        self.participants_per_demo_session = participants_per_demo_session
-        self.participants_per_session = participants_per_session
-        self.is_for_mturk = is_for_mturk
+        self.num_demo_participants = num_demo_participants
+        self.num_bots = num_bots
         self.doc = doc.strip()
 
         # on MTurk, assign_to_groups_on_the_fly = True
@@ -89,9 +88,9 @@ def create_session(type_name, label='', num_participants=None, special_category=
     session = Session(
         type_name=session_type.name,
         label=label,
-        is_for_mturk=session_type.is_for_mturk,
         base_pay=session_type.base_pay,
         special_category=special_category,
+        payment_per_point = session_type.payment_per_point,
     )
 
     session.save()
@@ -102,18 +101,18 @@ def create_session(type_name, label='', num_participants=None, special_category=
 
     participants = []
 
-    if special_category == constants.special_category_demo:
-        participants_per_session = session_type.participants_per_demo_session
-    else:
-        #FIXME: 0 vs None
-        participants_per_session = num_participants or session_type.participants_per_session
+    if num_participants is None:
+        if special_category == constants.special_category_demo:
+            num_participants = session_type.num_demo_participants
+        elif special_category == constants.special_category_bots:
+            num_participants = session_type.num_bots
 
     # check that it divides evenly
-    if participants_per_session % session_type.lcm():
-        raise ValueError('Number of participants does not divide evenly')
+    if num_participants % session_type.lcm():
+        raise ValueError('Number of participants does not divide evenly into group size')
 
 
-    for i in range(participants_per_session):
+    for i in range(num_participants):
         participant = Participant(session = session)
         participant.save()
         participants.append(participant)
@@ -140,7 +139,7 @@ def create_session(type_name, label='', num_participants=None, special_category=
 
             subsession.save()
 
-            for i in range(participants_per_session):
+            for i in range(num_participants):
                 player = models_module.Player(
                     subsession = subsession,
                     session = session,
