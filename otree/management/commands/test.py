@@ -1,25 +1,34 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
+import logging
 import sys
-from otree.test import core
 
-from django.core.management.base import BaseCommand, CommandError
+from optparse import make_option
+
+from django.conf import settings
+from django.core.management.base import BaseCommand
+
+from otree.test import core
 
 
 class Command(BaseCommand):
-    help = "oTree: Run the test bots for a session."
-    args = '[session_type]'
+    help = ('Discover and run experiment tests in the specified '
+            'modules or the current directory.')
+    args = '[experiment_name|experiment_name|experiment_name]...'
 
-    def handle(self, *args, **options):
+    requires_model_validation = False
 
-        if len(args) > 1:
-            raise CommandError(
-                "Wrong number of arguments (expecting '{}')".format(self.args)
-            )
+    def execute(self, *args, **options):
+        if int(options['verbosity']) > 0:
+            logger = logging.getLogger('py.warnings')
+            handler = logging.StreamHandler()
+            logger.addHandler(handler)
+        super(Command, self).execute(*args, **options)
+        if int(options['verbosity']) > 0:
+            logger.removeHandler(handler)
 
-        success, cov = core.run(args, True)
+    def handle(self, *test_labels, **options):
+        options['verbosity'] = int(options.get('verbosity'))
+        test_runner = core.OTreeExperimentTestRunner(**options)
+        failures = test_runner.run_tests(test_labels)
 
-        exit_status = 0 if all(success.values()) else 1
-        sys.exit(exit_status)
-
+        if failures:
+            sys.exit(bool(failures))
