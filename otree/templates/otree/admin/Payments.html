@@ -42,6 +42,7 @@
             <table class="table table-striped">
                 <tr>
                     <th>Name</th>
+                    <th>Code</th>
                     <th>Bonus</th>
                     <th>Total pay</th>
                     <th>Notes</th>
@@ -50,6 +51,7 @@
                 {% for p in participants %}
                 <tr>
                     <td style="font-family: 'Courier New'">{{ p.name }}</td>
+                    <td>{{ p.code }}</td>
                     <td>{{ p.payoff_from_subsessions_display }}</td>
                     <td>{{ p.total_pay_display }}</td>
                     <td></td>
@@ -59,12 +61,14 @@
                 <tr class="success">
                     <th>Total</th>
                     <th></th>
+                    <th></th>
                     <th>{{ total_payments }}</th>
                     <th></th>
                 </tr>
 
                 <tr class="success">
                     <th>Mean</th>
+                    <th></th>
                     <th></th>
                     <th>{{ mean_payment }}</th>
                     <th></th>

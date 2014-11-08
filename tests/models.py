@@ -48,4 +48,4 @@ class FormFieldModel(otree.models.BaseGroup):
     ))
     random_char = RandomCharField()
 
-    sent_amount = models.CurrencyField(choices=currency_range(0, 0.75))
+    sent_amount = models.CurrencyField(choices=currency_range(0, 0.75, 0.05))
