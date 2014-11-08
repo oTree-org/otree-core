@@ -419,14 +419,23 @@ class SequenceMixin(OTreeMixin):
 
 
     def post(self, request, *args, **kwargs):
-        self.time_limit_was_exceeded = self._get_time_limit_was_exceeded(request.POST)
+        self.time_limit_exceeded = self._get_time_limit_exceeded(request.POST)
         return super(SequenceMixin, self).post(request, *args, **kwargs)
 
 
     def get_context_data(self, **kwargs):
         context = {'form': kwargs.get('form') or kwargs.get('formset')}
-        context.update(self._variables_for_all_templates())
-        context.update(self.variables_for_template() or {})
+        vars_for_templates = {}
+        vars_for_templates.update(self._variables_for_all_templates() or {})
+        vars_for_templates.update(self.variables_for_template() or {})
+        for k,v in vars_for_templates.items():
+            if v is None:
+                pass
+                # should we raise an exception? what if someone put it in vars_for_all_templates?
+                # As a safeguard, oTree should not allow None to be passed to templates
+                # if a novice programmer passes None to a template, it's likely an error.
+                # raise Exception('Warning: variable "{}" passed to template must not be None\nPath: {}'.format(k, self.request.path))
+        context.update(vars_for_templates)
         context.update(self._get_time_limit_context())
 
         if settings.DEBUG:
@@ -547,8 +556,7 @@ class SequenceMixin(OTreeMixin):
         }
 
 
-    def _get_time_limit_was_exceeded(self, POST):
-        # TODO: add hidden field to forms
+    def _get_time_limit_exceeded(self, POST):
         if POST.get('client_side_time_limit_exceeded'):
            return True
 

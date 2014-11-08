@@ -25,7 +25,7 @@ def lcmm(*args):
 
 class SessionType(object):
     def __init__(self, name, subsession_apps, base_pay, num_bots,
-                 display_name=None, payment_per_point=1,
+                 display_name=None, payment_per_point=1, #FIXME: should be defined in the user's project
                  num_demo_participants = None, doc=None, assign_to_groups_on_the_fly=False):
 
         if not re.match(r'^\w+$', name):

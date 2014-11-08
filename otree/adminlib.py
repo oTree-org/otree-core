@@ -575,7 +575,7 @@ class SessionAdmin(OTreeBaseModelAdmin):
                                 'mean_payment': format_payment_currency(mean_payment),
                                 'session_code': session.code,
                                 'session_name': session,
-                                'base_pay': format_payment_currency(session.base_pay),
+                                'base_pay': session.base_pay_display(),
                                 # should only be used if USE_POINTS is True.
                                 })
 

@@ -77,7 +77,7 @@ class Session(ModelWithVars):
         """
     )
 
-    payment_per_point = models.DecimalField(max_digits=12, decimal_places=2)
+    payment_per_point = models.DecimalField(max_digits=12, decimal_places=8, null=True)
 
     session_experimenter = models.OneToOneField(
         'SessionExperimenter',
@@ -122,6 +122,9 @@ class Session(ModelWithVars):
         max_digits=12,
         decimal_places=2
     )
+
+    def base_pay_display(self):
+        return format_payment_currency(self.base_pay)
 
     comment = models.TextField()
 
@@ -365,10 +368,7 @@ class Participant(SessionUser):
         return amount
 
     def total_pay(self):
-        try:
-            return self.session.base_pay + self.payoff_from_subsessions()
-        except:
-            return None
+        return self.session.base_pay + self.payoff_from_subsessions()
 
     def payoff_from_subsessions_display(self):
         complete = self.payoff_from_subsessions_is_complete()

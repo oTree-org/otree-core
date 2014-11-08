@@ -150,9 +150,14 @@ class PlayerBot(BaseClient):
 
     def _play(self, failure_queue):
         super(PlayerBot, self)._play(failure_queue)
+        time.sleep(1)
         if self.player.payoff is None:
             self.failure_queue.put(True)
-            raise Exception('Player "{}": payoff is still None at the end of the subsession.'.format(self.player.participant.code))
+            raise Exception('App {}: Player "{}": payoff is still None at the end of the subsession. Check in tests.py if the bot completes the game.'.format(
+                self.subsession._meta.app_label,
+                self.player.participant.code,
+
+            ))
 
 
     def __init__(self, user, **kwargs):

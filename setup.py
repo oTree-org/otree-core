@@ -57,7 +57,7 @@ setup(
         'django-save-the-change==1.0.0',
         'pytz==2013.9',
         'coverage==3.7.1',
-        'django-easymoney==0.4',
+        'django-easymoney==0.4.1',
         'handy==0.3',
         'Pillow',
         #'psycopg2',
