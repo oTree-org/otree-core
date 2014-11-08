@@ -7,6 +7,7 @@ install:
   - git clone https://github.com/oTree-org/oTree.git otree-lib
   - virtualenv otree-lib/.env --no-site-packages
   - otree-lib/.env/bin/pip install -r otree-lib/requirements_base.txt
+  - otree-lib/.env/bin/pip install "psycopg2==2.5.1"
   - otree-lib/.env/bin/python setup.py install
 
   # install psycopg2 only for travis build, since we don't want to make psycopg2 a requirement for local development
