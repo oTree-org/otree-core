@@ -34,7 +34,7 @@ class BaseViewTestCase(TestCase):
         self.request = self.factory.get('/my-page/')
 
         with capture_stdout():
-            call_command('create_sessions', 'simple_game', 1)
+            call_command('create_session', 'simple_game', 1)
 
         self.session_experimenter = SessionExperimenter.objects.first()
         self.participant = Participant.objects.first()

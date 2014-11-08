@@ -3,24 +3,19 @@ from otree.session import create_session
 
 class Command(BaseCommand):
     help = "oTree: Create a session."
-    args = 'type [amount]'
+    args = 'type num_participants'
     option_list = BaseCommand.option_list + (
         make_option("-l", "--label", action="store", type="string", dest="label"),
     )
 
     def handle(self, *args, **options):
-        print 'Creating sessions...'
-        if len(args) not in {1, 2}:
+        print 'Creating session...'
+        try:
+            type, num_participants = args
+        except ValueError:
             raise CommandError("Wrong number of arguments (expecting '{}')".format(self.args))
-
-        type = args[0]
-
-        if len(args) == 2:
-            amount = int(args[1])
-        else:
-            amount = 1
+        num_participants = int(num_participants)
 
         label = options.get('label', '')
 
-        for i in range(amount):
-            create_session(type_name=type, label=label)
+        create_session(type_name=type, num_participants=num_participants, label=label)
