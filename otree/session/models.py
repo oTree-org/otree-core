@@ -63,10 +63,14 @@ class Session(ModelWithVars):
         return SessionTypeDirectory().get_item(self.type_name)
 
     # label of this session instance
-    label = models.CharField(max_length = 300, null = True, blank = True,
+    label = models.CharField(
+        max_length = 300, null = True, blank = True,
+        help_text = 'For internal record-keeping'
     )
 
-    experimenter_name = models.CharField(max_length = 300, null = True, blank = True,
+    experimenter_name = models.CharField(
+        max_length = 300, null = True, blank = True,
+        help_text = 'For internal record-keeping'
     )
 
 
@@ -77,7 +81,7 @@ class Session(ModelWithVars):
         """
     )
 
-    payment_per_point = models.DecimalField(max_digits=12, decimal_places=8, null=True)
+    money_per_point = models.DecimalField(max_digits=12, decimal_places=8, null=True)
 
     session_experimenter = models.OneToOneField(
         'SessionExperimenter',
@@ -87,12 +91,13 @@ class Session(ModelWithVars):
 
     time_scheduled = models.DateTimeField(
         null=True,
-        doc="""The time at which the session is scheduled"""
+        doc="""The time at which the session is scheduled""",
+        help_text = 'For internal record-keeping',
     )
 
     time_started = models.DateTimeField(
         null=True,
-        doc="""The time at which the experimenter started the session"""
+        doc="""The time at which the experimenter started the session""",
     )
 
     first_subsession_content_type = models.ForeignKey(ContentType,
@@ -117,14 +122,9 @@ class Session(ModelWithVars):
     )
 
     #
-    base_pay = models.DecimalField(
+    fixed_pay = models.CurrencyField(
         doc="""Show-up fee""",
-        max_digits=12,
-        decimal_places=2
     )
-
-    def base_pay_display(self):
-        return format_payment_currency(self.base_pay)
 
     comment = models.TextField()
 
@@ -362,17 +362,14 @@ class Participant(SessionUser):
         '''convert to payment currency, since often this will need to be printed on the results page
         But then again, it's easy to just do the multiplication oneself.
         '''
-        amount = sum(player.payoff or 0 for player in self.get_players())
-        if settings.USE_POINTS:
-            amount *= self.session.payment_per_point
-        return amount
+        return sum(player.payoff or 0 for player in self.get_players())
 
     def total_pay(self):
-        return self.session.base_pay + self.payoff_from_subsessions()
+        return self.session.fixed_pay + self.payoff_from_subsessions()
 
     def payoff_from_subsessions_display(self):
         complete = self.payoff_from_subsessions_is_complete()
-        payoff_from_subsessions = format_payment_currency(self.payoff_from_subsessions())
+        payoff_from_subsessions = self.payoff_from_subsessions().to_money_string()
         if complete:
             return payoff_from_subsessions
         return u'{} (incomplete)'.format(payoff_from_subsessions)
@@ -385,7 +382,7 @@ class Participant(SessionUser):
     def total_pay_display(self):
         try:
             complete = self.payoff_from_subsessions_is_complete()
-            total_pay = format_payment_currency(self.total_pay())
+            total_pay = self.total_pay().to_money_string()
         except:
             return 'Error in payoff calculation'
         if complete:

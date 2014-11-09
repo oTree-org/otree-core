@@ -4,7 +4,7 @@ def session_types():
     return [
         SessionType(
             name="My App",
-            base_pay=0,
+            fixed_pay=0,
             num_bots=12,
             num_demo_participants=2,
             subsession_apps=[

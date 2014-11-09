@@ -18,6 +18,8 @@ import otree.constants
 import otree.session.models
 from otree.session.models import Participant, Session
 from otree.common_internal import add_params_to_url, format_payment_currency
+from otree.common import Currency as c
+
 
 def new_tab_link(url, label):
     return '<a href="{}" target="_blank">{}</a>'.format(url, label)
@@ -165,7 +167,7 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
         'Subsession': {'id'},
         'Session': {
             'git_commit_timestamp',
-            #'base_pay',
+            #'fixed_pay',
         },
         'Participant': {
             #'label',
@@ -561,21 +563,21 @@ class SessionAdmin(OTreeBaseModelAdmin):
     def payments(self, request, pk):
         session = self.model.objects.get(pk=pk)
         participants = session.get_participants()
-        total_payments = sum(participant.total_pay() or 0 for participant in participants)
+        total_payments = sum(participant.total_pay() or c(0) for participant in participants)
 
         try:
             mean_payment = total_payments/len(participants)
         except ZeroDivisionError:
-            mean_payment = 0
+            mean_payment = c(0)
 
 
         return TemplateResponse(request, 'otree/admin/Payments.html',
                                 {'participants': participants,
-                                'total_payments': format_payment_currency(total_payments),
-                                'mean_payment': format_payment_currency(mean_payment),
+                                'total_payments': total_payments.to_money_string(session),
+                                'mean_payment': mean_payment.to_money_string(session),
                                 'session_code': session.code,
                                 'session_name': session,
-                                'base_pay': session.base_pay_display(),
+                                'fixed_pay': session.fixed_pay.to_money_string(),
                                 # should only be used if USE_POINTS is True.
                                 })
 
