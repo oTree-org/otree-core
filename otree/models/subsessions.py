@@ -122,7 +122,7 @@ class BaseSubsession(models.Model):
 
     def _group_objects_to_matrix(self):
         """puts Group objects in matrix format so you can do matrix permutations"""
-        return [list(m.player_set.order_by('id_in_group').all()) for m in self.group_set.all()]
+        return [g.get_players() for g in self.get_groups()]
 
     def _group_matrix_to_objects(self, group_matrix):
         """inverse operation of _group_objects_to_matrix"""

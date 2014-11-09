@@ -46,8 +46,10 @@ class _OtreeModelFieldMixin(object):
 
     def set_otree_properties(self, kwargs):
         self.doc = kwargs.pop('doc', None)
+        self.timeout_default = kwargs.pop('timeout_default', None)
 
         # for quiz questions
+        # TODO: remove this, it will probably not be used
         self.correct_answer = kwargs.pop('correct_answer', None)
         self.correct_answer_explanation = kwargs.pop('correct_answer_explanation', None)
 

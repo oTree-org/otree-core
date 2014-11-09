@@ -25,9 +25,9 @@
 
 <script type="text/javascript">
     $(function() {
-        {% if time_limit_in_seconds > 0 %}
+        {% if timeout_seconds > 0 %}
         var currentDate = new Date();
-        var milliseconds = {{ time_limit_in_seconds }}*1000;
+        var milliseconds = {{ timeout_seconds }}*1000;
         var howManyMinutesToShowCountdownTimer = 1;
         $('div#clock').countdown(currentDate.valueOf() + milliseconds, function(event) {
 
@@ -45,7 +45,7 @@
                     $('#time-out-message').show(duration=0);
                     $('<input>').attr({
                         type: 'hidden',
-                        name: 'client_side_time_limit_exceeded',
+                        name: 'client_side_timeout_occurred',
                         value: '1'
                     }).appendTo('form');
                     $('#{{ form_element_id }}').submit();

@@ -3,7 +3,7 @@ from importlib import import_module
 from django.contrib.contenttypes import generic
 from otree.session.models import Session, Participant
 from otree.db import models
-from otree.common_internal import _players, _groups
+from otree.common_internal import get_players, get_groups
 
 # NOTE: this imports the following submodules and then subclasses several classes
 # importing is done via import_module rather than an ordinary import.
@@ -45,11 +45,11 @@ class BaseSubsession(subsessions.BaseSubsession):
         '''
     )
 
-    def get_groups(self, refresh_from_db=False):
-        return _groups(self, refresh_from_db)
+    def get_groups(self):
+        return get_groups(self, refresh_from_db=False)
 
-    def get_players(self, refresh_from_db=False):
-        return _players(self, refresh_from_db)
+    def get_players(self):
+        return get_players(self, refresh_from_db=False)
 
     @property
     def app_name(self):
@@ -75,8 +75,8 @@ class BaseGroup(groups.BaseGroup):
         related_name = '%(app_label)s_%(class)s'
     )
 
-    def get_players(self, refresh_from_db=False):
-        return _players(self, refresh_from_db)
+    def get_players(self):
+        return get_players(self, refresh_from_db=False)
 
     def get_player_by_role(self, role):
         return super(BaseGroup, self).get_player_by_role(role)

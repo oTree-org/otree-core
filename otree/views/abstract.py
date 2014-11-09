@@ -40,9 +40,12 @@ from Queue import Queue
 import sys
 import floppyforms.__future__.models
 import otree.models
-from otree.models_concrete import PageVisit, WaitPageVisit, CompletedSubsessionWaitPage, CompletedGroupWaitPage, PageExpirationTime
+from otree.models_concrete import PageCompletion, WaitPageVisit, CompletedSubsessionWaitPage, CompletedGroupWaitPage
+from otree.timeout.models import PageTimeout, ensure_pages_visited
 from django.db import transaction
 import contextlib
+
+
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -291,6 +294,15 @@ class CheckpointMixin(object):
                     # before the next thread does a get_or_create and sees that the action has been completed
                     if created:
                         self._action()
+                        # in case there is a timeout on the next page, we should ensure the next pages are visited promptly
+                        # TODO: can we make this run only if next page is a wait page?
+                        t = Thread(target=ensure_pages_visited, kwargs={
+                            'app_name': self.subsession.app_name,
+                            'player_pk_set': self._pks_to_wait_for(),
+                            'page_index': self.index_in_pages,
+                        })
+                        t.start()
+
                         return self._redirect_after_complete()
             return self.get_wait_page()
 
@@ -308,14 +320,16 @@ class CheckpointMixin(object):
                 group_pk = self.group.pk
             ).exists()
 
+    def _pks_to_wait_for(self):
+        return set([p.pk for p in self._group_or_subsession.player_set.all()])
+
     def _all_players_have_visited(self):
-        pks_to_wait_for = [p.pk for p in self._group_or_subsession.player_set.all()]
         pks_that_have_visited = WaitPageVisit.objects.filter(
             app_name = self.subsession.app_name,
             page_index = self.index_in_pages,
         ).values_list('player_pk', flat=True)
 
-        return set(pks_to_wait_for) <= set(pks_that_have_visited)
+        return self._pks_to_wait_for() <= set(pks_that_have_visited)
 
     def _record_visit(self):
         """record that this player visited"""
@@ -328,7 +342,7 @@ class CheckpointMixin(object):
 
     def _action(self):
         # force to refresh from DB
-        self._group_or_subsession.get_players(refresh_from_db=True)
+        otree.common_internal._get_players(self._group_or_subsession, refresh_from_db=True)
         self.after_all_players_arrive()
         for p in self._group_or_subsession.get_players():
             p.save()
@@ -417,9 +431,25 @@ class SequenceMixin(OTreeMixin):
             raise
 
 
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.timeout_occurred = self._get_timeout_occurred(request.POST)
+
+        if self.timeout_occurred:
+            form = self.get_form(data=request.POST, files=request.FILES, instance=self.object)
+            if form.is_valid():
+                return self.form_valid(form)
+            return self.form_invalid(form)
+        else:
+            self._set_timeout_defaults()
+
+    def _set_timeout_defaults(self):
+        pass
+
 
     def post(self, request, *args, **kwargs):
-        self.time_limit_exceeded = self._get_time_limit_exceeded(request.POST)
+
+
         return super(SequenceMixin, self).post(request, *args, **kwargs)
 
 
@@ -436,7 +466,7 @@ class SequenceMixin(OTreeMixin):
                 # if a novice programmer passes None to a template, it's likely an error.
                 # raise Exception('Warning: variable "{}" passed to template must not be None\nPath: {}'.format(k, self.request.path))
         context.update(vars_for_templates)
-        context.update(self._get_time_limit_context())
+        context.update(self._get_timeout_context())
 
         if settings.DEBUG:
             context[constants.debug_values] = self.get_debug_values()
@@ -469,7 +499,7 @@ class SequenceMixin(OTreeMixin):
 
     def update_indexes_in_sequences(self):
         if self.index_in_pages == self._user.index_in_pages:
-            self._record_page_visit_time()
+            self._record_page_completion_time()
             pages = self._user._pages()
             for target_index in range(self.index_in_pages+1, len(pages)):
                 Page = pages[target_index]
@@ -495,7 +525,7 @@ class SequenceMixin(OTreeMixin):
     def participate_condition(self):
         return True
 
-    def _record_page_visit_time(self):
+    def _record_page_completion_time(self):
 
         now = django.utils.timezone.now()
 
@@ -507,11 +537,11 @@ class SequenceMixin(OTreeMixin):
         page_name = self.__class__.__name__
 
         # FIXME: what about experimenter visits?
-        visit = PageVisit(
+        completion = PageCompletion(
             app_name=self.subsession.app_name,
             page_index=self.index_in_pages,
             page_name=page_name,
-            completion_time_stamp = now,
+            time_stamp = now,
             seconds_on_page = seconds_on_page,
             player_pk = self._user.pk,
             subsession_pk = self.subsession.pk,
@@ -519,29 +549,33 @@ class SequenceMixin(OTreeMixin):
             session_pk = self.subsession.session.pk,
         )
 
-        visit.save()
+        completion.save()
         self._session_user.save()
 
-    def time_limit_in_seconds(self):
+    def timeout_seconds(self):
         return None
 
 
-    def _get_time_limit_context(self):
-        time_limit = self.time_limit_in_seconds()
-        if not (time_limit is None or time_limit > 0):
+    def _get_timeout_context(self):
+        timeout = self.timeout_seconds()
+        if not (timeout is None or timeout > 0):
             raise ValueError("Time limit must be None or a positive number.")
 
-        if time_limit is None:
+        if timeout is None:
             return {}
 
         now = int(time.time())
-        page_expiration_time_if_start_now = now + time_limit
+        page_expiration_time_if_start_now = now + timeout
 
-        expiration_info, created = PageExpirationTime.objects.get_or_create(
+        expiration_info, created = PageTimeout.objects.get_or_create(
             app_name = self.subsession.app_name,
             page_index = self.index_in_pages,
             player_pk = self._user.pk,
-            defaults = {'expiration_time': page_expiration_time_if_start_now}
+            defaults = {
+                'expiration_time': page_expiration_time_if_start_now,
+                'expiration_post_url': self.request.path,
+            }
+
         )
 
         page_expiration_time = expiration_info.expiration_time
@@ -550,17 +584,17 @@ class SequenceMixin(OTreeMixin):
         minutes_component, seconds_component = divmod(remaining_seconds, 60)
 
         return {
-            constants.time_limit_minutes_component: str(minutes_component),
-            constants.time_limit_seconds_component: str(seconds_component).zfill(2),
-            constants.time_limit_in_seconds: remaining_seconds,
+            constants.timeout_minutes_component: str(minutes_component),
+            constants.timeout_seconds_component: str(seconds_component).zfill(2),
+            constants.timeout_seconds: remaining_seconds,
         }
 
 
-    def _get_time_limit_exceeded(self, POST):
-        if POST.get('client_side_time_limit_exceeded'):
+    def _get_timeout_occurred(self, POST):
+        if POST.get('client_side_timeout_occurred'):
            return True
 
-        expiration_info = PageExpirationTime.objects.filter(
+        expiration_info = PageTimeout.objects.filter(
             app_name = self.subsession.app_name,
             page_index = self.index_in_pages,
             player_pk = self._user.pk,
@@ -570,7 +604,7 @@ class SequenceMixin(OTreeMixin):
             return False
         # first (and only) result from query set
         expiration_info = expiration_info[0]
-        return time.time() > (expiration_info.expiration_time + settings.TIME_LIMIT_LATENCY_ALLOWANCE_SECONDS)
+        return time.time() > (expiration_info.expiration_time + settings.TIMEOUT_LATENCY_ALLOWANCE_SECONDS)
 
 
 

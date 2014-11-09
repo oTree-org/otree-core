@@ -1,10 +1,11 @@
 from otree.session import SessionType
+from otree.common import Currency as c
 
 def session_types():
     return [
         SessionType(
             name="My App",
-            fixed_pay=0,
+            fixed_pay=c(0),
             num_bots=12,
             num_demo_participants=2,
             subsession_apps=[

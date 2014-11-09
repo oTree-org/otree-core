@@ -123,14 +123,14 @@ def _views_module(model_instance):
     app_name = get_app_name_from_import_path(model_instance.__module__)
     return import_module('{}.views'.format(app_name))
 
-def _players(self, refresh_from_db=False):
+def get_players(self, refresh_from_db=False):
     if (not refresh_from_db) and hasattr(self, '_players'):
         return self._players
     # this means even subsession.players orders them by id_in_group, not necessarily optimal
     self._players = list(self.player_set.order_by('id_in_group'))
     return self._players
 
-def _groups(self, refresh_from_db):
+def get_groups(self, refresh_from_db):
     if (not refresh_from_db) and hasattr(self, '_groups'):
         return self._groups
     self._groups = list(self.group_set.all())

@@ -1,11 +1,11 @@
 from otree.db import models
 
-class PageVisit(models.Model):
+class PageCompletion(models.Model):
     app_name = models.CharField(max_length=300)
     player_pk = models.PositiveIntegerField()
     page_index = models.PositiveIntegerField()
     page_name = models.CharField(max_length=300)
-    completion_time_stamp = models.DateTimeField()
+    time_stamp = models.DateTimeField()
     seconds_on_page = models.PositiveIntegerField()
 
     subsession_pk = models.PositiveIntegerField()
@@ -29,9 +29,3 @@ class CompletedSubsessionWaitPage(models.Model):
     page_index = models.PositiveIntegerField()
     subsession_pk = models.PositiveIntegerField()
 
-class PageExpirationTime(models.Model):
-    '''is calculated on GET'''
-    app_name = models.CharField(max_length=300)
-    page_index = models.PositiveIntegerField()
-    player_pk = models.PositiveIntegerField()
-    expiration_time = models.PositiveIntegerField()

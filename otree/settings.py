@@ -124,7 +124,7 @@ def augment_settings(settings):
         # the timer is started and stopped server-side,
         # so this grace period should account for time spent during
         # download, upload, page rendering, etc.
-        'TIME_LIMIT_LATENCY_ALLOWANCE_SECONDS': 10,
+        'TIMEOUT_LATENCY_ALLOWANCE_SECONDS': 10,
 
         'SESSION_SAVE_EVERY_REQUEST': True,
         'TEMPLATE_DEBUG': settings['DEBUG'],
