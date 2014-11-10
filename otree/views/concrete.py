@@ -21,7 +21,7 @@ from django.utils.translation import ugettext as _
 import otree.constants as constants
 import otree.session.models
 from otree.session.models import Participant
-import otree.common
+import otree.common_internal
 import django.utils.timezone
 import threading
 from django.conf import settings
@@ -129,7 +129,7 @@ class InitializeSessionExperimenter(vanilla.View):
         if not session.time_started:
             # get timestamp when the experimenter starts, rather than when the session was created
             # (since code is often updated after session created)
-            session.git_commit_timestamp = otree.common.git_commit_timestamp()
+            session.git_commit_timestamp = otree.common_internal.git_commit_timestamp()
             session.time_started = django.utils.timezone.now()
             session.save()
 
@@ -193,7 +193,7 @@ class AssignVisitorToOpenSessionMTurk(AssignVisitorToOpenSessionBase):
 
     @classmethod
     def url(cls):
-        return otree.common.add_params_to_url(
+        return otree.common_internal.add_params_to_url(
             '/{}'.format(cls.__name__),
             {
                 otree.constants.access_code_for_open_session: settings.ACCESS_CODE_FOR_OPEN_SESSION
@@ -223,7 +223,7 @@ class AssignVisitorToOpenSession(AssignVisitorToOpenSessionBase):
 
     @classmethod
     def url(cls):
-        return otree.common.add_params_to_url(
+        return otree.common_internal.add_params_to_url(
             '/{}'.format(cls.__name__),
             {
                 otree.constants.access_code_for_open_session: settings.ACCESS_CODE_FOR_OPEN_SESSION

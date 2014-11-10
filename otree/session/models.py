@@ -1,18 +1,19 @@
 import copy
 import collections
-
+from django.conf import settings
 from otree.db import models
 from otree.fields import RandomCharField
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-from otree.common import id_label_name, add_params_to_url
+from otree.common_internal import id_label_name, add_params_to_url
 from otree import constants
-import otree.common
-from otree.common import directory_name
-from easymoney import Money
-
+import otree.common_internal
+from otree.common_internal import directory_name, format_payment_currency
+from easymoney import Money as Currency
+from decimal import Decimal
 from django_extensions.db.fields.json import JSONField
 from operator import attrgetter
+
 
 class GlobalSingleton(models.Model):
     """object that can hold site-wide settings. There should only be one GlobalSingleton object.
@@ -76,6 +77,8 @@ class Session(ModelWithVars):
         """
     )
 
+    payment_per_point = models.DecimalField(max_digits=12, decimal_places=8, null=True)
+
     session_experimenter = models.OneToOneField(
         'SessionExperimenter',
         null=True,
@@ -99,7 +102,6 @@ class Session(ModelWithVars):
     first_subsession = generic.GenericForeignKey('first_subsession_content_type',
                                             'first_subsession_object_id',)
 
-    is_for_mturk = models.BooleanField(verbose_name='Is for MTurk', default=True)
     mturk_payment_was_sent = models.BooleanField(default=False)
 
     hidden = models.BooleanField(default=False)
@@ -115,9 +117,14 @@ class Session(ModelWithVars):
     )
 
     #
-    base_pay = models.MoneyField(
-        doc="""Show-up fee"""
+    base_pay = models.DecimalField(
+        doc="""Show-up fee""",
+        max_digits=12,
+        decimal_places=2
     )
+
+    def base_pay_display(self):
+        return format_payment_currency(self.base_pay)
 
     comment = models.TextField()
 
@@ -141,7 +148,7 @@ class Session(ModelWithVars):
     def subsession_names(self):
         names = []
         for subsession in self.get_subsessions():
-            names.append('{} {}'.format(otree.common.app_name_format(subsession._meta.app_label), subsession.name()))
+            names.append('{} {}'.format(otree.common_internal.app_name_format(subsession._meta.app_label), subsession.name()))
         if names:
             return ', '.join(names)
         else:
@@ -280,7 +287,7 @@ class SessionUser(ModelWithVars):
     def current_subsession(self):
         if not self.visited:
             return None
-        return otree.common.app_name_format(self.session.get_subsessions()[self._index_in_subsessions]._meta.app_label)
+        return otree.common_internal.app_name_format(self.session.get_subsessions()[self._index_in_subsessions]._meta.app_label)
 
     def _users(self):
         """Used to calculate payoffs"""
@@ -352,17 +359,20 @@ class Participant(SessionUser):
         return self._users()
 
     def payoff_from_subsessions(self):
-        return sum(player.payoff or Money(0) for player in self.get_players())
+        '''convert to payment currency, since often this will need to be printed on the results page
+        But then again, it's easy to just do the multiplication oneself.
+        '''
+        amount = sum(player.payoff or 0 for player in self.get_players())
+        if settings.USE_POINTS:
+            amount *= self.session.payment_per_point
+        return amount
 
     def total_pay(self):
-        try:
-            return self.session.base_pay + self.payoff_from_subsessions()
-        except:
-            return None
+        return self.session.base_pay + self.payoff_from_subsessions()
 
     def payoff_from_subsessions_display(self):
         complete = self.payoff_from_subsessions_is_complete()
-        payoff_from_subsessions = self.payoff_from_subsessions()
+        payoff_from_subsessions = format_payment_currency(self.payoff_from_subsessions())
         if complete:
             return payoff_from_subsessions
         return u'{} (incomplete)'.format(payoff_from_subsessions)
@@ -375,7 +385,7 @@ class Participant(SessionUser):
     def total_pay_display(self):
         try:
             complete = self.payoff_from_subsessions_is_complete()
-            total_pay = self.total_pay()
+            total_pay = format_payment_currency(self.total_pay())
         except:
             return 'Error in payoff calculation'
         if complete:

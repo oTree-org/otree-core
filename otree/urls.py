@@ -8,7 +8,7 @@ from django.views.generic.base import RedirectView
 from django.conf import settings
 import otree.constants
 from otree.session.models import Session
-from otree.common import get_models_module
+from otree.common_internal import get_models_module
 
 
 

@@ -24,7 +24,7 @@ from django.forms.models import model_to_dict
 import otree.constants as constants
 import otree.session.models as seq_models
 import otree.session.models
-import otree.common
+import otree.common_internal
 
 import otree.forms_internal
 from otree.models.user import Experimenter
@@ -54,7 +54,7 @@ def no_op_context_manager():
     yield
 
 def get_app_name(request):
-    return otree.common.get_app_name_from_import_path(
+    return otree.common_internal.get_app_name_from_import_path(
         request.resolver_match.url_name)
 
 class OTreeMixin(object):
@@ -71,7 +71,7 @@ class OTreeMixin(object):
         """
 
         app_name = self._session_user._current_app_name
-        models_module = otree.common.get_models_module(app_name)
+        models_module = otree.common_internal.get_models_module(app_name)
         self.SubsessionClass = getattr(models_module, 'Subsession')
         self.GroupClass = getattr(models_module, 'Group')
         self.PlayerClass = getattr(models_module, 'Player')
@@ -119,7 +119,7 @@ class OTreeMixin(object):
         return {}
 
     def _variables_for_all_templates(self):
-        views_module = otree.common._views_module(self.subsession)
+        views_module = otree.common_internal._views_module(self.subsession)
         if hasattr(views_module, 'variables_for_all_templates'):
             return views_module.variables_for_all_templates(self) or {}
         return {}
@@ -159,11 +159,11 @@ class LoadClassesAndUserMixin(object):
 class NonSequenceUrlMixin(object):
     @classmethod
     def url(cls, session_user):
-        return otree.common.url(cls, session_user)
+        return otree.common_internal.url(cls, session_user)
 
     @classmethod
     def url_pattern(cls):
-        return otree.common.url_pattern(cls, False)
+        return otree.common_internal.url_pattern(cls, False)
 
 class PlayerMixin(object):
 
@@ -208,7 +208,7 @@ class WaitPageMixin(object):
         return self.request.is_ajax() and self.request.GET.get(constants.check_if_wait_is_over) == constants.get_param_truth_value
 
     def wait_page_request_url(self):
-        return otree.common.add_params_to_url(
+        return otree.common_internal.add_params_to_url(
             self.request.path,
             {constants.check_if_wait_is_over: constants.get_param_truth_value}
         )
@@ -255,10 +255,10 @@ class CheckpointMixin(object):
 
     def dispatch(self, request, *args, **kwargs):
         '''this is actually for sequence pages only, because of the _redirect_to_page_the_user_should_be_on()'''
-        if self._scope_is_group():
-            self._group_or_subsession = self.group
-        else:
+        if self.wait_for_all_groups:
             self._group_or_subsession = self.subsession
+        else:
+            self._group_or_subsession = self.group
         if self.request_is_from_wait_page():
             return self._response_to_wait_page()
         else:
@@ -275,49 +275,38 @@ class CheckpointMixin(object):
                 with context_manager():
                     GlobalSingleton.objects.select_for_update().get()
 
-                    if self._scope_is_group():
-                        _, created = CompletedGroupWaitPage.objects.get_or_create(
-                            app_name = self.subsession.app_name,
-                            page_index = self.index_in_pages,
-                            group_pk = self.group.pk
-                        )
-                    else:
+                    if self.wait_for_all_groups:
                         _, created = CompletedSubsessionWaitPage.objects.get_or_create(
                             app_name = self.subsession.app_name,
                             page_index = self.index_in_pages,
                             subsession_pk = self.subsession.pk
                         )
-                if created:
-                    self._action()
-                    return self._redirect_after_complete()
+                    else:
+                        _, created = CompletedGroupWaitPage.objects.get_or_create(
+                            app_name = self.subsession.app_name,
+                            page_index = self.index_in_pages,
+                            group_pk = self.group.pk
+                        )
+                    # run the action inside the context manager, so that the action is completed
+                    # before the next thread does a get_or_create and sees that the action has been completed
+                    if created:
+                        self._action()
+                        return self._redirect_after_complete()
             return self.get_wait_page()
 
-
-
-    def _scope_is_group(self):
-        '''returns True for match, False for subsession'''
-        if issubclass(self.scope, otree.models.BaseGroup):
-            return True
-        elif issubclass(self.scope, otree.models.BaseSubsession):
-            return False
-        raise ValueError('scope must be set to either Group or Subsession')
-
-
-
     def _is_complete(self):
-        if self._scope_is_group():
-            return CompletedGroupWaitPage.objects.filter(
-                app_name = self.subsession.app_name,
-                page_index = self.index_in_pages,
-                group_pk = self.group.pk
-            ).exists()
-        else:
+        if self.wait_for_all_groups:
             return CompletedSubsessionWaitPage.objects.filter(
                 app_name = self.subsession.app_name,
                 page_index = self.index_in_pages,
                 subsession_pk = self.subsession.pk
             ).exists()
-
+        else:
+            return CompletedGroupWaitPage.objects.filter(
+                app_name = self.subsession.app_name,
+                page_index = self.index_in_pages,
+                group_pk = self.group.pk
+            ).exists()
 
     def _all_players_have_visited(self):
         pks_to_wait_for = [p.pk for p in self._group_or_subsession.player_set.all()]
@@ -374,11 +363,11 @@ class SequenceMixin(OTreeMixin):
 
     @classmethod
     def url(cls, session_user, index):
-        return otree.common.url(cls, session_user, index)
+        return otree.common_internal.url(cls, session_user, index)
 
     @classmethod
     def url_pattern(cls):
-        return otree.common.url_pattern(cls, True)
+        return otree.common_internal.url_pattern(cls, True)
 
     @method_decorator(never_cache)
     @method_decorator(cache_control(must_revalidate=True, max_age=0, no_cache=True, no_store = True))
@@ -430,14 +419,23 @@ class SequenceMixin(OTreeMixin):
 
 
     def post(self, request, *args, **kwargs):
-        self.time_limit_was_exceeded = self._get_time_limit_was_exceeded(request.POST)
+        self.time_limit_exceeded = self._get_time_limit_exceeded(request.POST)
         return super(SequenceMixin, self).post(request, *args, **kwargs)
 
 
     def get_context_data(self, **kwargs):
         context = {'form': kwargs.get('form') or kwargs.get('formset')}
-        context.update(self._variables_for_all_templates())
-        context.update(self.variables_for_template() or {})
+        vars_for_templates = {}
+        vars_for_templates.update(self._variables_for_all_templates() or {})
+        vars_for_templates.update(self.variables_for_template() or {})
+        for k,v in vars_for_templates.items():
+            if v is None:
+                pass
+                # should we raise an exception? what if someone put it in vars_for_all_templates?
+                # As a safeguard, oTree should not allow None to be passed to templates
+                # if a novice programmer passes None to a template, it's likely an error.
+                # raise Exception('Warning: variable "{}" passed to template must not be None\nPath: {}'.format(k, self.request.path))
+        context.update(vars_for_templates)
         context.update(self._get_time_limit_context())
 
         if settings.DEBUG:
@@ -558,8 +556,7 @@ class SequenceMixin(OTreeMixin):
         }
 
 
-    def _get_time_limit_was_exceeded(self, POST):
-        # TODO: add hidden field to forms
+    def _get_time_limit_exceeded(self, POST):
         if POST.get('client_side_time_limit_exceeded'):
            return True
 
@@ -690,7 +687,7 @@ class InitializePlayer(InitializePlayerOrExperimenter):
     """
 
     def get_UserClass(self):
-        models_module = otree.common.get_models_module(self.app_name)
+        models_module = otree.common_internal.get_models_module(self.app_name)
         return models_module.Player
 
     def redirect(self):

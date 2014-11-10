@@ -1,7 +1,7 @@
 from django.template import Library
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
-from .. import common
+from .. import common_internal
 
 
 register = Library()
@@ -33,15 +33,15 @@ def fix_session_app_models_order(models):
     return sort_models(models, SESSION_APP_MODELS_ORDER)
 
 def is_subsession_app(app):
-    return common.is_subsession_app(app["app_label"])
+    return common_internal.is_subsession_app(app["app_label"])
 
 
 def subsession_apps_only(apps):
-    return [app for app in apps if common.is_subsession_app(app["app_label"])]
+    return [app for app in apps if common_internal.is_subsession_app(app["app_label"])]
 
 
 def non_subsession_apps(apps):
-    return [app for app in apps if not common.is_subsession_app(app["app_label"])]
+    return [app for app in apps if not common_internal.is_subsession_app(app["app_label"])]
 
 @register.inclusion_tag('admin/_dashboard_app_template.html', takes_context=True)
 def mock_data_export_app(context):
@@ -60,4 +60,4 @@ register.filter('fix_subsession_app_models_order', fix_subsession_app_models_ord
 register.filter('fix_session_app_models_order', fix_session_app_models_order)
 register.filter('subsession_apps_only', subsession_apps_only)
 register.filter('non_subsession_apps', non_subsession_apps)
-register.filter('app_name_format', common.app_name_format)
+register.filter('app_name_format', common_internal.app_name_format)

@@ -3,7 +3,7 @@ import sys
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from mturk import mturk
-from otree.common import currency
+from otree.common import Currency
 from otree.session.models import Session
 
 def cents_to_dollars(num_cents):

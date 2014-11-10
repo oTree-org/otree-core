@@ -1,6 +1,8 @@
 from collections import OrderedDict
 import time
 
+from babel.numbers import format_currency
+from django.conf import settings
 from django.contrib import admin
 from django.conf.urls import patterns
 from django.template.response import TemplateResponse
@@ -15,13 +17,14 @@ from otree.views.demo import render_to_start_links_page
 import otree.constants
 import otree.session.models
 from otree.session.models import Participant, Session
-from otree.common import add_params_to_url
+from otree.common_internal import add_params_to_url, format_payment_currency
 
 def new_tab_link(url, label):
     return '<a href="{}" target="_blank">{}</a>'.format(url, label)
 
 def remove_duplicates(lst):
     return list(OrderedDict.fromkeys(lst))
+
 
 def get_callables(Model, fields_specific_to_this_subclass=None, for_export=False):
 
@@ -243,7 +246,6 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
              'first_subsession_content_type',
              'first_subsession_object_id',
              'first_subsession',
-             'is_for_mturk',
              'demo_already_used',
              'ready',
              'vars',
@@ -569,11 +571,12 @@ class SessionAdmin(OTreeBaseModelAdmin):
 
         return TemplateResponse(request, 'otree/admin/Payments.html',
                                 {'participants': participants,
-                                'total_payments': total_payments,
-                                'mean_payment': mean_payment,
+                                'total_payments': format_payment_currency(total_payments),
+                                'mean_payment': format_payment_currency(mean_payment),
                                 'session_code': session.code,
                                 'session_name': session,
-                                'base_pay': session.base_pay,
+                                'base_pay': session.base_pay_display(),
+                                # should only be used if USE_POINTS is True.
                                 })
 
     def payments_link(self, instance):

@@ -2,7 +2,7 @@ from otree.db import models
 import otree.session.models
 from save_the_change.mixins import SaveTheChange
 from django_extensions.db.fields.json import JSONField
-from otree.common import get_models_module
+from otree.common_internal import get_models_module
 
 class BaseGroup(SaveTheChange, models.Model):
     """

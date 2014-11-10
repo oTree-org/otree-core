@@ -3,7 +3,7 @@ from importlib import import_module
 from django.contrib.contenttypes import generic
 from otree.session.models import Session, Participant
 from otree.db import models
-from otree.common import _players, _groups
+from otree.common_internal import _players, _groups
 
 # NOTE: this imports the following submodules and then subclasses several classes
 # importing is done via import_module rather than an ordinary import.
@@ -97,7 +97,7 @@ class BasePlayer(players.BasePlayer):
         doc="Index starting from 1. In multiplayer games, indicates whether this is player 1, player 2, etc."
     )
 
-    payoff = models.MoneyField(
+    payoff = models.CurrencyField(
         null=True,
         doc="""The payoff the player made in this subsession"""
     )

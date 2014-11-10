@@ -1,10 +1,5 @@
 import os
-from collections import OrderedDict
-
-import django.conf
-from django.conf import settings
 from django.conf import global_settings
-import django.contrib.sessions.serializers
 
 
 def collapse_to_unique_list(*args):
@@ -136,7 +131,7 @@ def augment_settings(settings):
         'STATIC_ROOT': 'staticfiles',
         'STATIC_URL': '/static/',
         'ROOT_URLCONF': 'otree.default_urls',
-        'CURRENCY_CODE': 'USD',
+        'PAYMENT_CURRENCY_CODE': 'USD',
         'CURRENCY_LOCALE': CURRENCY_LOCALE,
         'LANGUAGE_CODE': LANGUAGE_CODE,
         'CURRENCY_DECIMAL_PLACES': 2,
@@ -163,7 +158,11 @@ def augment_settings(settings):
         if not settings.has_key(k):
             settings[k] = v
 
-
-
+    if settings.get('USE_POINTS'):
+        settings['CURRENCY_CODE'] = 'points'
+        settings['CURRENCY_FORMAT'] = settings.get('CURRENCY_FORMAT') or u'# points'
+        settings['CURRENCY_DECIMAL_PLACES'] = 0
+    else:
+        settings['CURRENCY_CODE'] = settings['PAYMENT_CURRENCY_CODE']
 
 

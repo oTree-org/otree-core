@@ -11,9 +11,9 @@ from django.contrib.admin import sites
 from django.template.response import TemplateResponse
 from inspect_model import InspectModel
 
-import otree.common
+import otree.common_internal
 import otree.adminlib
-from otree.common import app_name_format
+from otree.common_internal import app_name_format
 import otree.settings
 import otree.models
 import otree.adminlib
@@ -126,7 +126,7 @@ def get_doc_dict(app_label):
         'TextField': 'text',
         'FloatField': 'decimal',
         'DecimalField': 'decimal',
-        'MoneyField': 'money',
+        'CurrencyField': 'currency',
     }
 
 
@@ -208,13 +208,13 @@ def get_docs_as_string(app_label, doc_dict):
 
 def data_file_name(app_label):
     return '{} (accessed {}).csv'.format(
-        otree.common.app_name_format(app_label),
+        otree.common_internal.app_name_format(app_label),
         datetime.date.today().isoformat(),
     )
 
 def doc_file_name(app_label):
     return '{} - documentation ({}).txt'.format(
-        otree.common.app_name_format(app_label),
+        otree.common_internal.app_name_format(app_label),
         datetime.date.today().isoformat()
     )
 
@@ -240,7 +240,7 @@ def export_list(request):
     # Sort the apps alphabetically.
     app_labels.sort()
     # Filter out non subsession apps
-    app_labels = [app_label for app_label in app_labels if otree.common.is_subsession_app(app_label)]
+    app_labels = [app_label for app_label in app_labels if otree.common_internal.is_subsession_app(app_label)]
     apps = [{"name": app_name_format(app_label), "app_label": app_label} for app_label in app_labels]
     return TemplateResponse(request, "admin/otree_data_export_list.html", {"apps": apps})
 

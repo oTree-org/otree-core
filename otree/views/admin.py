@@ -9,7 +9,7 @@ from otree.session import create_session, SessionTypeDirectory
 import threading
 import time
 import urllib
-from otree.common import get_session_module, get_models_module, app_name_format
+from otree.common_internal import get_session_module, get_models_module, app_name_format
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
 from otree.views.demo import info_about_session_type

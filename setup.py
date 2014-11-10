@@ -7,7 +7,7 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version='0.2.215'
+version='0.2.218'
 
 if sys.argv[-1] == 'publish':
 
@@ -57,7 +57,7 @@ setup(
         'django-save-the-change==1.0.0',
         'pytz==2013.9',
         'coverage==3.7.1',
-        'django-easymoney==0.4',
+        'django-easymoney==0.4.1',
         'handy==0.3',
         'Pillow',
         #'psycopg2',
