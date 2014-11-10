@@ -37,7 +37,7 @@ class Currency(Money):
 
 class _CurrencyEncoder(json.JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, Currency):
+        if isinstance(obj, Money):
             return float(obj)
         # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, obj)
