@@ -54,7 +54,7 @@ class WaitUntilAssignedToGroup(PlayerSequenceMixin, PlayerMixin, WaitPageMixin, 
         return 'Waiting until other participants and/or the study supervisor are ready.'
 
     def _redirect_after_complete(self):
-        self.update_indexes_in_sequences()
+        self.advance_user()
         return self._redirect_to_page_the_user_should_be_on()
 
     def get_debug_values(self):

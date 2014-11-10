@@ -24,6 +24,7 @@ def augment_settings(settings):
         'django.contrib.staticfiles',
         'otree.session',
         'otree.models_concrete',
+        'otree.timeout',
     ]
 
     # order is important:

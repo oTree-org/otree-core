@@ -342,7 +342,7 @@ class CheckpointMixin(object):
 
     def _action(self):
         # force to refresh from DB
-        otree.common_internal._get_players(self._group_or_subsession, refresh_from_db=True)
+        otree.common_internal.get_players(self._group_or_subsession, refresh_from_db=True)
         self.after_all_players_arrive()
         for p in self._group_or_subsession.get_players():
             p.save()
@@ -352,7 +352,7 @@ class CheckpointMixin(object):
         return True
 
     def _redirect_after_complete(self):
-        self.update_indexes_in_sequences()
+        self.advance_user()
         return self._redirect_to_page_the_user_should_be_on()
 
     def after_all_players_arrive(self):
@@ -392,7 +392,7 @@ class SequenceMixin(OTreeMixin):
             self.load_objects()
 
             if self.subsession._skip:
-                self.update_index_in_subsessions()
+                self.advance_to_next_subsession()
                 return self._redirect_to_page_the_user_should_be_on()
 
             self.index_in_pages = int(kwargs.pop(constants.index_in_pages))
@@ -405,7 +405,7 @@ class SequenceMixin(OTreeMixin):
                 return self._redirect_to_page_the_user_should_be_on()
 
             if not self.participate_condition():
-                self.update_indexes_in_sequences()
+                self.advance_user()
                 response = self._redirect_to_page_the_user_should_be_on()
             else:
                 self._session_user.current_page = self.__class__.__name__
@@ -431,25 +431,9 @@ class SequenceMixin(OTreeMixin):
             raise
 
 
+
     def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
         self.timeout_occurred = self._get_timeout_occurred(request.POST)
-
-        if self.timeout_occurred:
-            form = self.get_form(data=request.POST, files=request.FILES, instance=self.object)
-            if form.is_valid():
-                return self.form_valid(form)
-            return self.form_invalid(form)
-        else:
-            self._set_timeout_defaults()
-
-    def _set_timeout_defaults(self):
-        pass
-
-
-    def post(self, request, *args, **kwargs):
-
-
         return super(SequenceMixin, self).post(request, *args, **kwargs)
 
 
@@ -482,9 +466,6 @@ class SequenceMixin(OTreeMixin):
         return cls(data=data, files=files, **kwargs)
 
 
-    def post_processing_on_valid_form(self, form):
-        pass
-
     def _user_is_on_right_page(self):
         """Will detect if a player tried to access a page they didn't reach yet,
         for example if they know the URL to the redemption code page,
@@ -493,11 +474,11 @@ class SequenceMixin(OTreeMixin):
 
         return self.request.path == self.page_the_user_should_be_on()
 
-    def update_index_in_subsessions(self):
+    def advance_to_next_subsession(self):
         if self.subsession._index_in_subsessions == self._session_user._index_in_subsessions:
             self._session_user._index_in_subsessions += 1
 
-    def update_indexes_in_sequences(self):
+    def advance_user(self):
         if self.index_in_pages == self._user.index_in_pages:
             self._record_page_completion_time()
             pages = self._user._pages()
@@ -515,7 +496,7 @@ class SequenceMixin(OTreeMixin):
                 self._user.index_in_pages = target_index
                 return
             # if there are no more pages, go to next subsession
-            self.update_index_in_subsessions()
+            self.advance_to_next_subsession()
 
     def form_invalid(self, form):
         response = super(SequenceMixin, self).form_invalid(form)
@@ -552,12 +533,11 @@ class SequenceMixin(OTreeMixin):
         completion.save()
         self._session_user.save()
 
-    def timeout_seconds(self):
-        return None
+    timeout_seconds = None
 
 
     def _get_timeout_context(self):
-        timeout = self.timeout_seconds()
+        timeout = self.timeout_seconds
         if not (timeout is None or timeout > 0):
             raise ValueError("Time limit must be None or a positive number.")
 
@@ -608,7 +588,6 @@ class SequenceMixin(OTreeMixin):
 
 
 
-
 class ModelFormMixin(object):
     """mixin rather than subclass because we want these methods only to be first in MRO"""
 
@@ -626,13 +605,32 @@ class ModelFormMixin(object):
         pass
 
 
-    def form_valid(self, form):
-        self.form = form
-        self.object = form.save()
-        self.post_processing_on_valid_form(form)
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.timeout_occurred = self._get_timeout_occurred(request.POST)
+
+        if self.timeout_occurred:
+            self._set_timeout_defaults()
+        else:
+            form = self.get_form(data=request.POST, files=request.FILES, instance=self.object)
+            if form.is_valid():
+                self.form = form
+                self.object = form.save()
+            else:
+                return self.form_invalid(form)
         self.after_next_button()
-        self.update_indexes_in_sequences()
+        self.advance_user()
         return self._redirect_to_page_the_user_should_be_on()
+
+
+    def _set_timeout_defaults(self):
+        for field_name in self.form_fields:
+            field = self.form_model._meta.get_field_by_name(field_name)[0]
+            if field.timeout_default is not None:
+                # FIXME: what if timeout_default is the wrong datatype or otherwise fails validation?
+                setattr(self.object, field_name, field.timeout_default)
+            else:
+                raise ValueError('A timeout was specified on this page but the field {} is missing a non-null timeout_default attribute'.format(field_name))
 
 
 class PlayerSequenceMixin(SequenceMixin):
