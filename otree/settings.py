@@ -159,11 +159,18 @@ def augment_settings(settings):
         if not settings.has_key(k):
             settings[k] = v
 
+    # payment is in Money, which is hardcoded to look at CURRENCY_CODE
+    settings['CURRENCY_CODE'] = settings['PAYMENT_CURRENCY_CODE']
+    settings['CURRENCY_FORMAT'] = settings['PAYMENT_CURRENCY_CODE']
+    settings['CURRENCY_CODE'] = settings['PAYMENT_CURRENCY_CODE']
+
     if settings.get('USE_POINTS'):
-        settings['CURRENCY_CODE'] = 'points'
-        settings['CURRENCY_FORMAT'] = settings.get('CURRENCY_FORMAT') or u'# points'
-        settings['CURRENCY_DECIMAL_PLACES'] = 0
+        settings['GAME_CURRENCY_CODE'] = 'points'
+        settings['GAME_CURRENCY_FORMAT'] = settings.get('CURRENCY_FORMAT') or u'# points'
+        settings['GAME_CURRENCY_DECIMAL_PLACES'] = 0
     else:
-        settings['CURRENCY_CODE'] = settings['PAYMENT_CURRENCY_CODE']
+        settings['GAME_CURRENCY_CODE'] = settings['PAYMENT_CURRENCY_CODE']
+        settings['GAME_CURRENCY_FORMAT'] = settings['PAYMENT_CURRENCY_CODE']
+        settings['GAME_CURRENCY_CODE'] = settings['PAYMENT_CURRENCY_CODE']
 
 

@@ -3,7 +3,7 @@ import time
 from django.test import Client
 from otree.common_internal import get_models_module
 
-class PageTimeout(models.Model):
+class UnsubmittedTimeoutPage(models.Model):
     '''is calculated on GET'''
     app_name = models.CharField(max_length=300)
     page_index = models.PositiveIntegerField()
@@ -28,17 +28,13 @@ def submit_expired_urls():
 
     GRACE_PERIOD_SECONDS = 15
 
-    # TODO: instead of filtering for auto_submitted, would be more performant to just delete the record.
     # but have to make sure this doesn't cause any circularity, where it looks like the page was never visited
     # in the first place.
-    expired_pages = PageTimeout.objects.filter(
+    expired_pages = UnsubmittedTimeoutPage.objects.filter(
         expiration_time_gt = time.time() + GRACE_PERIOD_SECONDS,
-        auto_submitted = False,
     )
     for expired_page in expired_pages:
         c.post(expired_page.expiration_post_url, follow=True)
-        expired_page.auto_submitted = True
-        expired_page.save()
 
 def ensure_pages_visited(app_name, player_pk_set, page_index):
     """
@@ -51,7 +47,7 @@ def ensure_pages_visited(app_name, player_pk_set, page_index):
 
     c = Client()
 
-    loaded_pages = PageTimeout.objects.filter(
+    loaded_pages = UnsubmittedTimeoutPage.objects.filter(
         app_name=app_name,
         page_index=page_index,
         player_pk__in=set(player_pk_set)

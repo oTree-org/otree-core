@@ -7,7 +7,7 @@ import otree.common_internal
 from django.conf import settings
 from decimal import Decimal
 import otree.session.models
-
+from babel.numbers import format_currency
 
 class Currency(Money):
 
@@ -18,20 +18,22 @@ class Currency(Money):
     def __repr__(self):
         return stdout_encode(u'Currency(%s)' % self)
 
-    def to_money_decimal(self, subsession):
+    def to_money(self, subsession):
         # subsession arg can actually be a session as well
         if isinstance(subsession, otree.session.models.Session):
             session = subsession
         else:
             session = subsession.session
 
-        amt = Decimal(self)
         if settings.USE_POINTS:
-            amt *= session.money_per_point
-        return amt
+            return Money(self * session.money_per_point)
+        else:
+            # should i convert to Money?
+            return self
 
-    def to_money_string(self, subsession):
-        return otree.common_internal.format_payment_currency(self.to_money_decimal(subsession))
+    def __unicode__(self):
+        return format_currency(Decimal(self), settings.GAME_CURRENCY_CODE,
+            locale=settings.GAME_CURRENCY_LOCALE, format=settings.GAME_CURRENCY_FORMAT)
 
 class _CurrencyEncoder(json.JSONEncoder):
     def default(self, obj):

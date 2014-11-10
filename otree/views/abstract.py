@@ -41,7 +41,7 @@ import sys
 import floppyforms.__future__.models
 import otree.models
 from otree.models_concrete import PageCompletion, WaitPageVisit, CompletedSubsessionWaitPage, CompletedGroupWaitPage
-from otree.timeout.models import PageTimeout, ensure_pages_visited
+from otree.timeout.models import UnsubmittedTimeoutPage, ensure_pages_visited
 from django.db import transaction
 import contextlib
 
@@ -465,6 +465,8 @@ class SequenceMixin(OTreeMixin):
         cls = self.get_form_class()
         return cls(data=data, files=files, **kwargs)
 
+    def delete_unsubmitted_record(self):
+
 
     def _user_is_on_right_page(self):
         """Will detect if a player tried to access a page they didn't reach yet,
@@ -478,7 +480,11 @@ class SequenceMixin(OTreeMixin):
         if self.subsession._index_in_subsessions == self._session_user._index_in_subsessions:
             self._session_user._index_in_subsessions += 1
 
+
+
     def advance_user(self):
+        if self.has_timeout():
+
         if self.index_in_pages == self._user.index_in_pages:
             self._record_page_completion_time()
             pages = self._user._pages()
@@ -535,6 +541,8 @@ class SequenceMixin(OTreeMixin):
 
     timeout_seconds = None
 
+    def has_timeout(self):
+        return self.timeout_seconds is not None and self.timeout_seconds > 0
 
     def _get_timeout_context(self):
         timeout = self.timeout_seconds
@@ -547,7 +555,7 @@ class SequenceMixin(OTreeMixin):
         now = int(time.time())
         page_expiration_time_if_start_now = now + timeout
 
-        expiration_info, created = PageTimeout.objects.get_or_create(
+        expiration_info, created = UnsubmittedTimeoutPage.objects.get_or_create(
             app_name = self.subsession.app_name,
             page_index = self.index_in_pages,
             player_pk = self._user.pk,
@@ -571,19 +579,18 @@ class SequenceMixin(OTreeMixin):
 
 
     def _get_timeout_occurred(self, POST):
+        if not self.has_timeout():
+            return False
+
         if POST.get('client_side_timeout_occurred'):
            return True
 
-        expiration_info = PageTimeout.objects.filter(
+        expiration_info = UnsubmittedTimeoutPage.objects.get(
             app_name = self.subsession.app_name,
             page_index = self.index_in_pages,
             player_pk = self._user.pk,
         )
 
-        if not expiration_info:
-            return False
-        # first (and only) result from query set
-        expiration_info = expiration_info[0]
         return time.time() > (expiration_info.expiration_time + settings.TIMEOUT_LATENCY_ALLOWANCE_SECONDS)
 
 
@@ -608,7 +615,7 @@ class ModelFormMixin(object):
     def post(self, request, *args, **kwargs):
 
         # validation. TODO: this should be checked statically, before runtime.
-        if self.timeout_seconds is not None:
+        if self.has_timeout():
             for field_name in self.form_fields:
                 field = self.form_model._meta.get_field_by_name(field_name)[0]
                 if field.timeout_default is None:
@@ -635,7 +642,6 @@ class ModelFormMixin(object):
         for field_name in self.form_fields:
             field = self.form_model._meta.get_field_by_name(field_name)[0]
             setattr(self.object, field_name, field.timeout_default)
-
 
 
 class PlayerSequenceMixin(SequenceMixin):
