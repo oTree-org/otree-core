@@ -44,7 +44,7 @@ from otree.models_concrete import PageCompletion, WaitPageVisit, CompletedSubses
 from otree.timeout.models import UnsubmittedTimeoutPage, ensure_pages_visited
 from django.db import transaction
 import contextlib
-
+import otree.timeout
 
 
 # Get an instance of a logger
@@ -545,36 +545,21 @@ class SequenceMixin(OTreeMixin):
         return self.timeout_seconds is not None and self.timeout_seconds > 0
 
     def _get_timeout_context(self):
-        timeout = self.timeout_seconds
-        if not (timeout is None or timeout > 0):
-            raise ValueError("Time limit must be None or a positive number.")
 
-        if timeout is None:
+        if not self.has_timeout():
             return {}
 
-        now = int(time.time())
-        page_expiration_time_if_start_now = now + timeout
+        # FIXME: this will display erroneous info to the user if they refresh the page. we need a DB table
+        timeout = self.timeout_seconds
 
-        expiration_info, created = UnsubmittedTimeoutPage.objects.get_or_create(
-            app_name = self.subsession.app_name,
-            page_index = self.index_in_pages,
-            player_pk = self._user.pk,
-            defaults = {
-                'expiration_time': page_expiration_time_if_start_now,
-                'expiration_post_url': self.request.path,
-            }
+        otree.timeout.queue_submit_page(self.request.path, timeout)
 
-        )
-
-        page_expiration_time = expiration_info.expiration_time
-        remaining_seconds = max(0, page_expiration_time - now)
-
-        minutes_component, seconds_component = divmod(remaining_seconds, 60)
+        minutes_component, seconds_component = divmod(timeout, 60)
 
         return {
             constants.timeout_minutes_component: str(minutes_component),
             constants.timeout_seconds_component: str(seconds_component).zfill(2),
-            constants.timeout_seconds: remaining_seconds,
+            constants.timeout_seconds: timeout,
         }
 
 
@@ -582,17 +567,8 @@ class SequenceMixin(OTreeMixin):
         if not self.has_timeout():
             return False
 
-        if POST.get('client_side_timeout_occurred'):
+        if POST.get(constants.timeout_occurred):
            return True
-
-        expiration_info = UnsubmittedTimeoutPage.objects.get(
-            app_name = self.subsession.app_name,
-            page_index = self.index_in_pages,
-            player_pk = self._user.pk,
-        )
-
-        return time.time() > (expiration_info.expiration_time + settings.TIMEOUT_LATENCY_ALLOWANCE_SECONDS)
-
 
 
 class ModelFormMixin(object):
