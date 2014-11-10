@@ -16,19 +16,6 @@ from otree.fields import RandomCharField
 __all__ = ('formfield_callback', 'modelform_factory', 'BaseModelForm',)
 
 
-#FIXME: port these to floppyforms
-'''
-class FormHelper(crispy_forms.helper.FormHelper):
-    def __init__(self, *args, **kwargs):
-        super(FormHelper, self).__init__(*args, **kwargs)
-        self.form_id = otree.constants.form_element_id
-        self.form_class = 'form'
-        self.add_input(Submit('submit',
-                     _('Next'), #TODO: make this customizable
-                     css_class='btn-large btn-primary'))
-'''
-
-
 FORMFIELD_OVERRIDES = FLOPPYFORMS_FORMFIELD_OVERRIDES.copy()
 
 FORMFIELD_OVERRIDES.update({
@@ -235,6 +222,10 @@ class BaseModelForm(forms.ModelForm):
                 else:
                     value = field.clean(value)
                 self.cleaned_data[name] = value
+                if hasattr(self.instance, '%s_bounds' % name):
+                    lower, upper = getattr(self.instance, '%s_bounds' % name)()
+                    if not lower <= value <= upper:
+                        self._errors[name] = self.error_class(['Must be between {} and {}, inclusive.'.format(lower, upper)])
                 if hasattr(self.instance, '%s_error_message' % name):
                     error_string = getattr(self.instance, '%s_error_message' % name)(value)
                     if error_string:
