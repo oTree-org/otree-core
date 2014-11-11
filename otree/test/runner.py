@@ -20,6 +20,7 @@ import time
 import logging
 import Queue
 import threading
+import contextlib
 
 from django.utils.importlib import import_module
 
@@ -181,58 +182,36 @@ class OTreeExperimentTestRunner(runner.DiscoverRunner):
 
 
 #==============================================================================
-# RUNNER
+# coverage context
 #==============================================================================
 
-def run(session_names=None, with_coverage=True):
+@contextlib.contextmanager
+def covering(test_labels=None):
 
     directory = session.SessionTypeDirectory()
-    if session_names is None:
-        session_names = tuple(directory.session_types_as_dict.keys())
+    available_sessions = directory.session_types_as_dict.keys()
+    session_names = set()
+    if test_labels:
+        session_names.update(
+            [name for name in test_labels if name in available_sessions]
+        )
+    else:
+        session_names.update(available_sessions)
 
-    #======================================
-    # COVERAGE START
-    #======================================
+    package_names = set()
+    for app_label in session_names:
+        for module_name in COVERAGE_MODELS:
+            module = '{}.{}'.format(app_label, module_name)
+            package_names.add(module)
 
-    cov = None
-    if with_coverage:
-        app_labels = set()
-        for name, session_obj in directory.session_types_as_dict.items():
-            if name in session_names:
-                apps = directory.get_item(name).subsession_apps
-                app_labels.update(apps)
+    cov = coverage.coverage(source=package_names)
+    cov.start()
 
-        package_names = set()
-        for app_label in app_labels:
-            for module_name in COVERAGE_MODELS:
-                module = '{}.{}'.format(app_label, module_name)
-                package_names.add(module)
-
-        cov = coverage.coverage(source=package_names)
-        cov.start()
-
-        for app_label in app_labels:
-            models_module = '{}.models'.format(app_label)
-            reload(sys.modules[models_module])
-
-    #======================================
-    # RUN TESTS
-    #======================================
-
-    status_results = {}
-    for session_name in session_names:
-        status = _run_session(session_name)
-        status_results[session_name] = status
-
-    #======================================
-    # COVERAGE STOP
-    #======================================
-
-    if with_coverage:
+    for app_label in session_names:
+        models_module = '{}.models'.format(app_label)
+        reload(sys.modules[models_module])
+    try:
+        yield cov
+    finally:
         cov.stop()
 
-    #======================================
-    # END
-    #======================================
-
-    return status_results, cov
