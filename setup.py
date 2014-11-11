@@ -60,6 +60,7 @@ setup(
         'django-easymoney==0.4.1',
         'handy==0.3',
         'Pillow',
+        'django-celery==3.1.15',
         #'psycopg2',
 
 

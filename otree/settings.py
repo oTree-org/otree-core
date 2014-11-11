@@ -1,6 +1,8 @@
 import os
 from django.conf import global_settings
+import djcelery
 
+djcelery.setup_loader()
 
 def collapse_to_unique_list(*args):
     """Create a new list with all elements from a given lists without reapeated
@@ -17,25 +19,24 @@ def collapse_to_unique_list(*args):
 
 def augment_settings(settings):
 
-    default_installed_apps = [
-        'django.contrib.contenttypes',
-        'django.contrib.sessions',
-        'django.contrib.messages',
-        'django.contrib.staticfiles',
-        'otree.session',
-        'otree.models_concrete',
-        'otree.timeout',
-    ]
-
     # order is important:
     # otree unregisters User & Group, which are installed by auth.
     # otree templates need to get loaded before the admin.
-    new_installed_apps = collapse_to_unique_list(
-        [
-            'django.contrib.auth', 'otree',
-            'floppyforms','django.contrib.admin'
+    new_installed_apps = collapse_to_unique_list([
+            'django.contrib.auth',
+            'otree',
+            'floppyforms',
+            'django.contrib.admin',
+            'django.contrib.contenttypes',
+            'django.contrib.sessions',
+            'django.contrib.messages',
+            'django.contrib.staticfiles',
+            'otree.session',
+            'otree.models_concrete',
+            'otree.timeout',
+            'djcelery',
         ],
-        default_installed_apps, settings['INSTALLED_APPS'],
+        settings['INSTALLED_APPS'],
         settings['INSTALLED_OTREE_APPS']
     )
 

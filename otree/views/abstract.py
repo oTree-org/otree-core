@@ -2,23 +2,14 @@ __doc__ = """This module contains many of oTree's internals.
 The view classes in this module are just base classes, and cannot be called from a URL.
 You should inherit from these classes and put your view class in your game directory (under "games/")
 Or in the other view file in this directory, which stores shared concrete views that have URLs."""
-import os.path
 from threading import Thread
-import time
 import logging
-from datetime import datetime
-from otree.db import models
 from otree.forms_internal import BaseModelForm, formfield_callback
-from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
-from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.conf import settings
-import extra_views
-import vanilla
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache, cache_control
-from django.utils.translation import ugettext as _
 from django.forms.models import model_to_dict
 
 import otree.constants as constants
@@ -28,7 +19,6 @@ import otree.common_internal
 
 import otree.forms_internal
 from otree.models.user import Experimenter
-import copy
 import django.utils.timezone
 
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
@@ -36,15 +26,11 @@ import vanilla
 from django.utils.translation import ugettext as _
 import otree.session.models
 from otree.session.models import Participant, GlobalSingleton
-from Queue import Queue
-import sys
-import floppyforms.__future__.models
 import otree.models
 from otree.models_concrete import PageCompletion, WaitPageVisit, CompletedSubsessionWaitPage, CompletedGroupWaitPage
-from otree.timeout.models import UnsubmittedTimeoutPage, ensure_pages_visited
 from django.db import transaction
 import contextlib
-import otree.timeout
+import otree.timeout.tasks
 
 
 # Get an instance of a logger
@@ -269,13 +255,15 @@ class CheckpointMixin(object):
                 return self._redirect_after_complete()
             self._record_visit()
             if self._all_players_have_visited():
-                # take a lock on this singleton, so that only 1 person can be completing a wait page action at a time
+
                 # on SQLite, transaction.atomic causes database to lock, so we use no-op context manager instead
                 if settings.DATABASES['default']['ENGINE'].endswith('sqlite3'):
                     context_manager = no_op_context_manager
                 else:
                     context_manager = transaction.atomic
                 with context_manager():
+                    # take a lock on this singleton, so that only 1 person can be completing a wait page action at a time
+                    # to avoid race conditions
                     GlobalSingleton.objects.select_for_update().get()
 
                     if self.wait_for_all_groups:
@@ -295,13 +283,16 @@ class CheckpointMixin(object):
                     if created:
                         self._action()
                         # in case there is a timeout on the next page, we should ensure the next pages are visited promptly
-                        # TODO: can we make this run only if next page is a wait page?
-                        t = Thread(target=ensure_pages_visited, kwargs={
-                            'app_name': self.subsession.app_name,
-                            'player_pk_set': self._pks_to_wait_for(),
-                            'page_index': self.index_in_pages,
-                        })
-                        t.start()
+                        # TODO: can we make this run only if next page is a timeout page?
+                        # we could instead make this request the current page URL, but it's different for each player
+                        otree.timeout.tasks.ensure_pages_visited(
+                            kwargs = {
+                                'app_name': self.subsession.app_name,
+                                'player_pk_set': self._pks_to_wait_for(),
+                                'wait_page_index': self.index_in_pages,
+                            },
+                            countdown=10,
+                        )
 
                         return self._redirect_after_complete()
             return self.get_wait_page()
@@ -552,7 +543,8 @@ class SequenceMixin(OTreeMixin):
         # FIXME: this will display erroneous info to the user if they refresh the page. we need a DB table
         timeout = self.timeout_seconds
 
-        otree.timeout.queue_submit_page(self.request.path, timeout)
+        # schedule celery job
+        otree.timeout.tasks.submit_expired_url.apply_async((self.request.path,), countdown=timeout)
 
         minutes_component, seconds_component = divmod(timeout, 60)
 
