@@ -6,7 +6,7 @@ from optparse import make_option
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from otree.test import core
+from otree.test import runner
 
 
 class Command(BaseCommand):
@@ -27,7 +27,7 @@ class Command(BaseCommand):
 
     def handle(self, *test_labels, **options):
         options['verbosity'] = int(options.get('verbosity'))
-        test_runner = core.OTreeExperimentTestRunner(**options)
+        test_runner = runner.OTreeExperimentTestRunner(**options)
         failures = test_runner.run_tests(test_labels)
 
         if failures:

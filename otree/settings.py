@@ -141,8 +141,10 @@ def augment_settings(settings):
             'django.contrib.sessions.serializers.PickleSerializer'
         ),
         'ALLOWED_HOSTS': ['*'],
-        'OTREE_CHANGE_LIST_COLUMN_MIN_WIDTH': 50, # In pixels
-        'OTREE_CHANGE_LIST_UPDATE_INTERVAL': '10000', # default to 10 seconds(10000 miliseconds)
+        'OTREE_CHANGE_LIST_COLUMN_MIN_WIDTH': 50,
+
+        # default to 10 seconds(10000 miliseconds)
+        'OTREE_CHANGE_LIST_UPDATE_INTERVAL': '10000',
         'TEMPLATE_CONTEXT_PROCESSORS': (
             global_settings.TEMPLATE_CONTEXT_PROCESSORS +
             ('django.core.context_processors.request',)
@@ -160,7 +162,9 @@ def augment_settings(settings):
 
     if settings.get('USE_POINTS'):
         settings['CURRENCY_CODE'] = 'points'
-        settings['CURRENCY_FORMAT'] = settings.get('CURRENCY_FORMAT') or u'# points'
+        settings['CURRENCY_FORMAT'] = (
+            settings.get('CURRENCY_FORMAT') or u'# points'
+        )
         settings['CURRENCY_DECIMAL_PLACES'] = 0
     else:
         settings['CURRENCY_CODE'] = settings['PAYMENT_CURRENCY_CODE']

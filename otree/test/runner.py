@@ -16,6 +16,7 @@
 import sys
 import decimal
 import random
+import time
 import logging
 import Queue as queue
 
@@ -25,6 +26,7 @@ from django import test
 from django.test import runner
 
 from otree import constants, session
+from otree.test import client
 
 import coverage
 
@@ -42,16 +44,7 @@ COVERAGE_MODELS = ['models', 'tests', 'views']
 # LOGGER
 #==============================================================================
 
-logger = logging.getLogger(__name__ )
-
-
-#==============================================================================
-# CLASS
-#==============================================================================
-
-class PlayerBot(test.Client):
-
-    pass
+logger = logging.getLogger(__name__)
 
 
 #==============================================================================
@@ -78,20 +71,18 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         logger.info("Starting subsession '{}'".format(app_label))
         try:
             test_module_name = '{}.tests'.format(app_label)
-            tests_module = import_module(test_module_name)
+            test_module = import_module(test_module_name)
             logger.info("Found test '{}'".format(test_module_name))
         except ImportError:
             self.fail("'{}' has no tests.py module".format(app_label))
 
         logger.info("Creating bots for '{}'".format(app_label))
-        import ipdb; ipdb.set_trace()
 
-        #~ # ExperimenterBot is optional
-        #~ ExperimenterBotCls = getattr(
-            #~ test_module, 'ExperimenterBot', ExperimenterBot
-        #~ )
-        #~
-        #~ experimenter_bot = ExperimenterBotCls(subsession)
+        # ExperimenterBot is optional
+        ExperimenterBotCls = getattr(
+            test_module, 'ExperimenterBot', ExperimenterBot
+        )
+        experimenter_bot = ExperimenterBotCls(subsession)
 #~
 #~
         #~ failure_queue = queue.Queue()
@@ -104,8 +95,9 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         #~ return success
 
     def runTest(self):
-        msg = "Creating session for experimenter on session '{}'"
-        logger.info (msg.format(self.session_name))
+        logger.info("Creating session for experimenter on session '{}'".format(
+            self.session_name
+        ))
         sssn = session.create_session(
             type_name=self.session_name,
             special_category=constants.special_category_bots
@@ -151,7 +143,6 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
 
 class OTreeExperimentTestRunner(runner.DiscoverRunner):
 
-
     def build_suite(self, test_labels, extra_tests, **kwargs):
 
         directory = session.SessionTypeDirectory()
@@ -171,7 +162,6 @@ class OTreeExperimentTestRunner(runner.DiscoverRunner):
         return super(OTreeExperimentTestRunner, self).build_suite(
             test_labels=(), extra_tests=tests, **kwargs
         )
-
 
 
 #==============================================================================
