@@ -14,7 +14,7 @@ class Command(BaseCommand):
             'modules or the current directory.')
     args = '[experiment_name|experiment_name|experiment_name]...'
 
-    requires_model_validation = False
+
 
     def execute(self, *args, **options):
         if int(options['verbosity']) > 0:

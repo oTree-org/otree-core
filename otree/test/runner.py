@@ -18,7 +18,8 @@ import decimal
 import random
 import time
 import logging
-import Queue as queue
+import Queue
+import threading
 
 from django.utils.importlib import import_module
 
@@ -80,19 +81,34 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
 
         # ExperimenterBot is optional
         ExperimenterBotCls = getattr(
-            test_module, 'ExperimenterBot', ExperimenterBot
+            test_module, 'ExperimenterBot', client.ExperimenterBot
         )
-        experimenter_bot = ExperimenterBotCls(subsession)
-#~
-#~
-        #~ failure_queue = queue.Queue()
-#~
-        #~ success = (failure_queue.qsize() == 0)
-        #~ if success:
-            #~ log.info("{}: tests completed successfully".format(app_label))
-        #~ else:
-            #~ log.info("{}: tests failed".format(app_label))
-        #~ return success
+        ex_bot = ExperimenterBotCls(subsession)
+
+        failure_queue = Queue.Queue()
+        jobs = []
+
+        # create the threads
+        ex_bot.start()
+        jobs.append(
+            threading.Thread(target=ex_bot._play, args=(failure_queue,))
+        )
+
+        for player in subsession.player_set.all():
+            bot = test_module.PlayerBot(player)
+            bot.start()
+            jobs.append(
+                threading.Thread(target=bot._play, args=(failure_queue,))
+            )
+
+        # run and wait
+        for job in jobs: job.start()
+        for job in jobs: job.join()
+
+        self.assertEqual(
+            failure_queue.qsize(), 0, "{}: tests failed".format(app_label)
+        )
+        log.info("{}: tests completed successfully".format(app_label))
 
     def runTest(self):
         logger.info("Creating session for experimenter on session '{}'".format(

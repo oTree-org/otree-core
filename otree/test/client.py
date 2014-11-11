@@ -33,9 +33,7 @@ from otree.models.user import Experimenter
 # CONSTANTS
 #==============================================================================
 
-SECONDS_TO_WAIT_PER_BOT = 3
-
-SERVER_URL = 'http://127.0.0.1:8000'
+SECONDS_TO_WAIT_PER_BOT = 1
 
 
 #==============================================================================
