@@ -46,12 +46,10 @@ setup(
         'Babel==1.3',
         'raven==3.5.2',
         'django-inspect-model',
-        #FIXME: rename this package to otree
         'django-ptree-extra-views',
         'dj-static==0.0.5',
         'selenium==2.41.0',
         'xmltodict==0.9.0',
-        #FIXME: rename this package to otree
         'django-ptree-mturk',
         'django-extensions',
         'django-save-the-change==1.0.0',
