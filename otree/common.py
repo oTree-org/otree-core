@@ -8,15 +8,20 @@ from django.conf import settings
 from decimal import Decimal
 import otree.session.models
 
+from easymoney import Money, MoneyField
 
 class Currency(Money):
 
-    def __new__(cls, amount):
-        """if we don't define this method, instantiating the class returns a Money object rather than a Currency object"""
-        return Decimal.__new__(Currency, _sanitize(amount))
+    CODE = getattr(settings, 'GAME_CURRENCY_CODE', 'USD')
+    FORMAT = getattr(settings, 'GAME_CURRENCY_FORMAT', None)
+    LOCALE = getattr(settings, 'GAME_CURRENCY_LOCALE', 'en_US')
+    DECIMAL_PLACES = getattr(settings, 'GAME_CURRENCY_DECIMAL_PLACES', 2)
 
-    def __repr__(self):
-        return stdout_encode(u'Currency(%s)' % self)
+    CODE = getattr(settings, '')
+    LOCALE = '...'
+    DECIMAL_PLACES = 0
+    FORMAT = '# points'
+
 
     def to_money(self, subsession):
         # subsession arg can actually be a session as well
@@ -25,13 +30,13 @@ class Currency(Money):
         else:
             session = subsession.session
 
-        amt = Decimal(self)
         if settings.USE_POINTS:
-            amt *= session.money_per_point
-        return amt
+            return Money(self * session.money_per_point)
+        else:
+            # should i convert to Money?
+            return self
 
-    def to_money_string(self, subsession):
-        return otree.common_internal.format_payment_currency(self.to_money_decimal(subsession))
+
 
 class _CurrencyEncoder(json.JSONEncoder):
     def default(self, obj):
