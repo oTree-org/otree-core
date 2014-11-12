@@ -471,8 +471,6 @@ class SequenceMixin(OTreeMixin):
 
 
     def advance_user(self):
-        if self.has_timeout():
-
         if self.index_in_pages == self._user.index_in_pages:
             self._record_page_completion_time()
             pages = self._user._pages()
