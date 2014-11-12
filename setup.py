@@ -7,7 +7,7 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version='0.2.219'
+version='0.2.220'
 
 if sys.argv[-1] == 'publish':
 
@@ -46,12 +46,10 @@ setup(
         'Babel==1.3',
         'raven==3.5.2',
         'django-inspect-model',
-        #FIXME: rename this package to otree
         'django-ptree-extra-views',
         'dj-static==0.0.5',
         'selenium==2.41.0',
         'xmltodict==0.9.0',
-        #FIXME: rename this package to otree
         'django-ptree-mturk',
         'django-extensions',
         'django-save-the-change==1.0.0',
@@ -60,6 +58,7 @@ setup(
         'django-easymoney==0.4.1',
         'handy==0.3',
         'Pillow',
+
         'django-celery==3.1.15',
         #'psycopg2',
 
