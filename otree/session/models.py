@@ -13,7 +13,7 @@ from easymoney import Money as Currency
 from decimal import Decimal
 from django_extensions.db.fields.json import JSONField
 from operator import attrgetter
-
+from otree.common import Currency as c
 
 class GlobalSingleton(models.Model):
     """object that can hold site-wide settings. There should only be one GlobalSingleton object.
@@ -81,7 +81,7 @@ class Session(ModelWithVars):
         """
     )
 
-    money_per_point = models.DecimalField(max_digits=12, decimal_places=8, null=True)
+    money_per_point = models.DecimalField(decimal_places=5, max_digits=12)
 
     session_experimenter = models.OneToOneField(
         'SessionExperimenter',
@@ -362,14 +362,14 @@ class Participant(SessionUser):
         '''convert to payment currency, since often this will need to be printed on the results page
         But then again, it's easy to just do the multiplication oneself.
         '''
-        return sum(player.payoff or 0 for player in self.get_players())
+        return sum(player.payoff or c(0) for player in self.get_players())
 
     def total_pay(self):
         return self.session.fixed_pay + self.payoff_from_subsessions()
 
     def payoff_from_subsessions_display(self):
         complete = self.payoff_from_subsessions_is_complete()
-        payoff_from_subsessions = self.payoff_from_subsessions().to_money_string()
+        payoff_from_subsessions = self.payoff_from_subsessions().to_money(self.session)
         if complete:
             return payoff_from_subsessions
         return u'{} (incomplete)'.format(payoff_from_subsessions)
@@ -382,7 +382,7 @@ class Participant(SessionUser):
     def total_pay_display(self):
         try:
             complete = self.payoff_from_subsessions_is_complete()
-            total_pay = self.total_pay().to_money_string()
+            total_pay = self.total_pay().to_money(self.session)
         except:
             return 'Error in payoff calculation'
         if complete:

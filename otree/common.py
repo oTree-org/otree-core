@@ -1,31 +1,24 @@
 """oTree Public API utilities"""
 
-from easymoney import Money, stdout_encode, _sanitize
 from django.utils.safestring import mark_safe
 import json
 import otree.common_internal
 from django.conf import settings
 from decimal import Decimal
-import otree.session.models
 
-from easymoney import Money, MoneyField
+from easymoney import Money
 
 class Currency(Money):
 
-    CODE = getattr(settings, 'GAME_CURRENCY_CODE', 'USD')
-    FORMAT = getattr(settings, 'GAME_CURRENCY_FORMAT', None)
-    LOCALE = getattr(settings, 'GAME_CURRENCY_LOCALE', 'en_US')
-    DECIMAL_PLACES = getattr(settings, 'GAME_CURRENCY_DECIMAL_PLACES', 2)
-
-    CODE = getattr(settings, '')
-    LOCALE = '...'
-    DECIMAL_PLACES = 0
-    FORMAT = '# points'
-
+    CODE = settings.GAME_CURRENCY_CODE
+    FORMAT = settings.GAME_CURRENCY_FORMAT
+    LOCALE = settings.GAME_CURRENCY_LOCALE
+    DECIMAL_PLACES = settings.GAME_CURRENCY_DECIMAL_PLACES
 
     def to_money(self, subsession):
         # subsession arg can actually be a session as well
-        if isinstance(subsession, otree.session.models.Session):
+        # can't use isinstance() to avoid circular import
+        if subsession.__class__.__name__ == 'Session':
             session = subsession
         else:
             session = subsession.session
@@ -35,7 +28,6 @@ class Currency(Money):
         else:
             # should i convert to Money?
             return self
-
 
 
 class _CurrencyEncoder(json.JSONEncoder):

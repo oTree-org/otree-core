@@ -41,26 +41,29 @@ class CheckboxSelectMultipleHorizontal(forms.CheckboxSelectMultiple):
     template_name = 'floppyforms/checkbox_select_horizontal.html'
 
 
-class CurrencyInput(forms.NumberInput):
-    currency_code = getattr(settings, 'CURRENCY_CODE', 'USD')
+class MoneyInput(forms.NumberInput):
+    currency_code = settings.PAYMENT_CURRENCY_CODE
+
     step = '0.01'
     template_name = 'floppyforms/moneyinput.html'
 
     def __init__(self, *args, **kwargs):
         self.currency_code = kwargs.pop('currency_code', None) or self.currency_code
-        super(CurrencyInput, self).__init__(*args, **kwargs)
+        super(MoneyInput, self).__init__(*args, **kwargs)
 
     def get_currency_symbol(self, currency_code):
         return babel.numbers.get_currency_symbol(
             currency_code, settings.CURRENCY_LOCALE)
 
     def get_context(self, *args, **kwargs):
-        context = super(CurrencyInput, self).get_context(*args, **kwargs)
+        context = super(MoneyInput, self).get_context(*args, **kwargs)
         currency_symbol = self.get_currency_symbol(self.currency_code)
         context.setdefault('currency', self.currency_code)
         context.setdefault('currency_symbol', currency_symbol)
         return context
 
+class CurrencyInput(MoneyInput):
+    currency_code = settings.GAME_CURRENCY_CODE
 
 class RadioSelectHorizontal(forms.RadioSelect):
     template_name = 'floppyforms/radio_select_horizontal.html'
