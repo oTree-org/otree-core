@@ -18,7 +18,7 @@ class Currency(Money):
     def __repr__(self):
         return stdout_encode(u'Currency(%s)' % self)
 
-    def to_money_decimal(self, subsession):
+    def to_money(self, subsession):
         # subsession arg can actually be a session as well
         if isinstance(subsession, otree.session.models.Session):
             session = subsession
