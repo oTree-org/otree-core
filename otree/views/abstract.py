@@ -456,9 +456,6 @@ class SequenceMixin(OTreeMixin):
         cls = self.get_form_class()
         return cls(data=data, files=files, **kwargs)
 
-    def delete_unsubmitted_record(self):
-
-
     def _user_is_on_right_page(self):
         """Will detect if a player tried to access a page they didn't reach yet,
         for example if they know the URL to the redemption code page,
