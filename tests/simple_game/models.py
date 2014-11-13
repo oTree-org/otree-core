@@ -56,6 +56,10 @@ class Player(otree.models.BasePlayer):
         """
     )
 
+    int1 = models.PositiveIntegerField()
+    int2 = models.PositiveIntegerField()
+
+
     def my_field_error_message(self, value):
         if not 0 <= value <= 10:
             return 'Value is not in allowed range'

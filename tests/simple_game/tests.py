@@ -10,4 +10,6 @@ from .models import Constants
 class PlayerBot(Bot):
 
     def play(self):
-        pass
+
+        self.submit(views.MyPage, {'int1': 1, 'int2': 99})
+        self.submit(views.Results)
