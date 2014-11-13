@@ -14,7 +14,7 @@ def variables_for_all_templates(self):
 class MyPage(Page):
 
     form_model = models.Player
-    form_fields = ['int1', 'int2']
+    form_fields = ['add100_1', 'add100_2']
 
     def participate_condition(self):
         return True
@@ -27,7 +27,7 @@ class MyPage(Page):
         }
 
     def error_message(self, values):
-        if values['int1'] + values['int2'] != 100:
+        if values['add100_1'] + values['add100_2'] != 100:
             return 'The numbers must add up to 100'
 
 class ResultsWaitPage(WaitPage):

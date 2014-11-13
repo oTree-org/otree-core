@@ -11,5 +11,5 @@ class PlayerBot(Bot):
 
     def play(self):
 
-        self.submit(views.MyPage, {'int1': 1, 'int2': 99})
+        self.submit(views.MyPage, {'add100_1': 1, 'add100_2': 99})
         self.submit(views.Results)

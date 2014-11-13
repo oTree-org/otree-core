@@ -56,8 +56,8 @@ class Player(otree.models.BasePlayer):
         """
     )
 
-    int1 = models.PositiveIntegerField()
-    int2 = models.PositiveIntegerField()
+    add100_1 = models.PositiveIntegerField()
+    add100_2 = models.PositiveIntegerField()
 
 
     def my_field_error_message(self, value):
