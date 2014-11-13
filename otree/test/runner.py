@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 # TEST CASE
 #==============================================================================
 
-class OTreeExperimentFunctionTest(test.TransactionTestCase):
+class OTreeExperimentFunctionTest(test.TestCase):
 
     def __init__(self, session_name):
         super(OTreeExperimentFunctionTest, self).__init__()
@@ -149,9 +149,6 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
 
         for subsession in sssn.get_subsessions():
             self._run_subsession(subsession)
-            #~ if not
-                #~ logger.info("Some tests in session '{}' failed".format(session_name))
-    #~ return success
 
 
 #==============================================================================
@@ -160,17 +157,11 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
 
 class OTreeExperimentTestRunner(runner.DiscoverRunner):
 
-    def build_suite(self, test_labels, extra_tests, **kwargs):
+    def build_suite(self, session_names, extra_tests, **kwargs):
 
-        directory = session.SessionTypeDirectory()
-        available_sessions = directory.session_types_as_dict.keys()
-        session_names = set()
-        if test_labels:
-            session_names.update(
-                [name for name in test_labels if name in available_sessions]
-            )
-        else:
-            session_names.update(available_sessions)
+        if not session_names:
+            directory = session.SessionTypeDirectory()
+            session_names = directory.session_types_as_dict.keys()
 
         tests = []
         for session_name in session_names:
@@ -181,25 +172,35 @@ class OTreeExperimentTestRunner(runner.DiscoverRunner):
         )
 
 
+
 #==============================================================================
-# coverage context
+# HELPER
+#==============================================================================
+
+def apps_from_sessions(session_names=None):
+    directory = session.SessionTypeDirectory()
+    if session_names:
+        session_names = frozenset(session_names)
+    else:
+        session_names = frozenset(directory.session_types_as_dict.keys())
+    apps = set()
+    for sname in session_names:
+        sssn = directory.get_item(sname)
+        apps.update(sssn.subsession_apps)
+    return apps
+
+
+#==============================================================================
+# COVERAGE CONTEXT
 #==============================================================================
 
 @contextlib.contextmanager
-def covering(test_labels=None):
+def covering(session_names=None):
 
-    directory = session.SessionTypeDirectory()
-    available_sessions = directory.session_types_as_dict.keys()
-    session_names = set()
-    if test_labels:
-        session_names.update(
-            [name for name in test_labels if name in available_sessions]
-        )
-    else:
-        session_names.update(available_sessions)
+    apps = apps_from_sessions(session_names)
 
     package_names = set()
-    for app_label in session_names:
+    for app_label in apps:
         for module_name in COVERAGE_MODELS:
             module = '{}.{}'.format(app_label, module_name)
             package_names.add(module)
@@ -207,7 +208,7 @@ def covering(test_labels=None):
     cov = coverage.coverage(source=package_names)
     cov.start()
 
-    for app_label in session_names:
+    for app_label in apps:
         models_module = '{}.models'.format(app_label)
         reload(sys.modules[models_module])
     try:

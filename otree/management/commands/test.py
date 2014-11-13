@@ -29,7 +29,7 @@ class Command(BaseCommand):
     help = ('Discover and run experiment tests in the specified '
             'modules or the current directory.')
     option_list = BaseCommand.option_list + (
-        make_option('-c', '--coverare', action='store_true', dest='coverage',
+        make_option('-c', '--coverage', action='store_true', dest='coverage',
         help='Execute code-coverage over the code of tested experiments'),
     )
     args = '[experiment_name|experiment_name|experiment_name]...'
