@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 # TEST CASE
 #==============================================================================
 
-class OTreeExperimentFunctionTest(test.TestCase):
+class OTreeExperimentFunctionTest(test.TransactionTestCase):
 
     def __init__(self, session_name):
         super(OTreeExperimentFunctionTest, self).__init__()
