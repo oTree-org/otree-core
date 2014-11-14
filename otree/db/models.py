@@ -96,6 +96,8 @@ class _OtreeNotNullableModelFieldMixin(_OtreeModelFieldMixin):
 class MoneyField(_OtreeNullableModelFieldMixin, easymoney.MoneyField):
     widget = _CurrencyInput
 
+    MONEY_CLASS = otree.common.Money
+
 class CurrencyField(_OtreeNullableModelFieldMixin, easymoney.MoneyField):
     widget = _CurrencyInput
 

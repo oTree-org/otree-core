@@ -576,7 +576,7 @@ class SessionAdmin(OTreeBaseModelAdmin):
                                 'total_payments': total_payments,
                                 'mean_payment': mean_payment,
                                 'session_code': session.code,
-                                'session_name': session,
+                                'session_type': session.type_name,
                                 'fixed_pay': session.fixed_pay.to_money(session),
                                 })
 

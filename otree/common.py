@@ -6,9 +6,19 @@ import otree.common_internal
 from django.conf import settings
 from decimal import Decimal
 
-from easymoney import Money
+import easymoney
 
-class Currency(Money):
+class Money(easymoney.Money):
+    '''payment currency'''
+
+    CODE = settings.PAYMENT_CURRENCY_CODE
+    FORMAT = settings.PAYMENT_CURRENCY_FORMAT
+    LOCALE = settings.PAYMENT_CURRENCY_LOCALE
+    DECIMAL_PLACES = settings.PAYMENT_CURRENCY_DECIMAL_PLACES
+
+
+class Currency(easymoney.Money):
+    '''game currency'''
 
     CODE = settings.GAME_CURRENCY_CODE
     FORMAT = settings.GAME_CURRENCY_FORMAT
@@ -32,7 +42,7 @@ class Currency(Money):
 
 class _CurrencyEncoder(json.JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, Money):
+        if isinstance(obj, easymoney.Money):
             return float(obj)
         # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, obj)
