@@ -19,7 +19,7 @@ from otree.templatetags import ajax_admin_list
 # It may NOT work with other version of Django.
 # note from CW to consultant: the AJAX change list feature as well as several other admin customizations were
 # created by a previous developer. if any of this code causes non-trivial problems with the upgrade to 1.7, i can
-# contact this developer and get his help in fixing it.
+# contact this developer and get his help in fixing it, since he knows the code best.
 def get_cl(request, model_admin):
     from django.contrib.admin.views.main import ERROR_FLAG
     opts = model_admin.model._meta

@@ -264,7 +264,7 @@ class SessionUser(ModelWithVars):
         doc="""Whether this user's start URL was opened"""
     )
 
-    ip_address = models.IPAddressField(null = True)
+    ip_address = models.GenericIPAddressField(null = True)
 
     # stores when the page was first visited
     _last_page_timestamp = models.DateTimeField(null=True)
