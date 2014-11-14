@@ -603,7 +603,7 @@ class SessionAdmin(OTreeBaseModelAdmin):
 
 def autodiscover():
     """
-    # 1.7migration -- will this still work?
+    # django-1.7 -- will this still work?
 
     The purpose of this function is to look for an admin.py not in an app's root directory, but rather under a _builtin
     folder. This is because it's not common for an oTree programmer to customize the admin, so it's good to get admin.py

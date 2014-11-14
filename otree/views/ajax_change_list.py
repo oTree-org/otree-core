@@ -14,7 +14,7 @@ from django.http import HttpResponse
 from otree.templatetags import ajax_admin_list
 
 
-# 1.7upgrade
+# django-1.7
 # NOTE: this function has been adapted from django.contrib.admin.options.ModelAdmin.changelist_view of Django 1.6. 
 # It may NOT work with other version of Django.
 # note from CW to consultant: the AJAX change list feature as well as several other admin customizations were
