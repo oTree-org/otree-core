@@ -17,65 +17,73 @@
             </div>
 
             <p>
-                <strong>{% now "DATE_FORMAT" %}</strong>
+                Accessed: <strong>{% now "DATE_FORMAT" %}</strong>
             </p>
 
 
             <h3>Session</h3>
             <table class="table">
                 <tr>
-                    <th>Name</th>
+                    <th>Session name</th>
                     <td>{{ session_name|default_if_none:"" }}</td>
                 </tr>
+
                 <tr>
-                    <th>Code</th>
+                    <th>Session code</th>
                     <td style="font-family: 'Courier New'">{{ session_code }}</td>
                 </tr>
+
                 <tr>
-                    <th>Base pay</th>
-                    <td>{{ base_pay }}</td>
+                    <td>Time scheduled</td>
+                    <td>{{ session.time_scheduled|default_if_none:"" }}</td>
+                </tr>
+
+
+                <tr>
+                    <th>Experimenter name</th>
+                    <td>{{ session.experimenter_name|default_if_none:"" }}</td>
                 </tr>
 
             </table>
 
             <h3>Participants</h3>
+
+
             <table class="table table-striped">
                 <tr>
-                    <th>Name</th>
-                    <th>Code</th>
-                    <th>Bonus</th>
+                    <th>Participant code</th>
+                    <th>Participant label</th>
+                    <th>Fixed pay</th>
+                    <th>Variable pay</th>
                     <th>Total pay</th>
-                    <th>Notes</th>
+                    <th>Note</th>
                 </tr>
 
                 {% for p in participants %}
                 <tr>
-                    <td style="font-family: 'Courier New'">{{ p.name }}</td>
-                    <td>{{ p.code }}</td>
+                    <td style="font-family: 'Courier New'">{{ p.code }}</td>
+                    <td>{{ p.label|default_if_none:"" }}</td>
+                    <td>{{ fixed_pay }}</td>
                     <td>{{ p.payoff_from_subsessions_display }}</td>
                     <td>{{ p.total_pay_display }}</td>
                     <td></td>
                 </tr>
                 {% endfor %}
 
-                <tr class="success">
-                    <th>Total</th>
-                    <th></th>
-                    <th></th>
-                    <th>{{ total_payments }}</th>
-                    <th></th>
-                </tr>
-
-                <tr class="success">
-                    <th>Mean</th>
-                    <th></th>
-                    <th></th>
-                    <th>{{ mean_payment }}</th>
-                    <th></th>
-                </tr>
-
-
             </table>
+
+            <h3>Summary</h3>
+            <table class="table">
+                <tr>
+                    <th>Total payments</th>
+                    <td>{{ total_payments }}</td>
+                </tr>
+                <tr>
+                    <th>Mean payment</th>
+                    <td>{{ mean_payment }}</td>
+                </tr>
+            </table>
+
 
             <h3>Notes/Signature</h3>
             <div class="well well-lg">

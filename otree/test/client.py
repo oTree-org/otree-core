@@ -22,6 +22,7 @@ import decimal
 import logging
 
 from django import test
+from django.db import transaction
 
 from easymoney import Money as Currency
 
@@ -111,13 +112,16 @@ class BaseClient(test.Client):
             raise AssertionError(msg)
 
     def _play(self, failure_queue):
-
         self.failure_queue = failure_queue
         try:
             self.play()
         except:
             self.failure_queue.put(True)
             raise
+
+    def run(self, *args, **kwargs):
+        with transaction.atomic():
+            return self._play(*args, **kwargs)
 
     def play(self):
         raise NotImplementedError()

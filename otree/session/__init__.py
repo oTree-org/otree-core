@@ -24,8 +24,8 @@ def lcmm(*args):
     return reduce(lcm, args)
 
 class SessionType(object):
-    def __init__(self, name, subsession_apps, base_pay, num_bots,
-                 display_name=None, payment_per_point=1, #FIXME: should be defined in the user's project
+    def __init__(self, name, subsession_apps, fixed_pay, num_bots,
+                 display_name=None, money_per_point=1, #FIXME: should be defined in the user's project
                  num_demo_participants = None, doc=None, assign_to_groups_on_the_fly=False):
 
         if not re.match(r'^\w+$', name):
@@ -33,7 +33,7 @@ class SessionType(object):
 
         self.name = name
 
-        self.payment_per_point = payment_per_point
+        self.money_per_point = money_per_point
 
         self.display_name = display_name or name
 
@@ -41,7 +41,7 @@ class SessionType(object):
             raise ValueError('Need at least one subsession.')
 
         self.subsession_apps = subsession_apps
-        self.base_pay = base_pay
+        self.fixed_pay = fixed_pay
         self.num_demo_participants = num_demo_participants
         self.num_bots = num_bots
         self.doc = doc.strip()
@@ -88,9 +88,9 @@ def create_session(type_name, label='', num_participants=None, special_category=
     session = Session(
         type_name=session_type.name,
         label=label,
-        base_pay=session_type.base_pay,
+        fixed_pay=session_type.fixed_pay,
         special_category=special_category,
-        payment_per_point = session_type.payment_per_point,
+        money_per_point = session_type.money_per_point,
     )
 
     session.save()

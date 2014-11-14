@@ -1,12 +1,38 @@
 """oTree Public API utilities"""
 
-from easymoney import Money as Currency, to_dec
 from django.utils.safestring import mark_safe
 import json
+import otree.common_internal
+from django.conf import settings
+from decimal import Decimal
+
+from easymoney import Money
+
+class Currency(Money):
+
+    CODE = settings.GAME_CURRENCY_CODE
+    FORMAT = settings.GAME_CURRENCY_FORMAT
+    LOCALE = settings.GAME_CURRENCY_LOCALE
+    DECIMAL_PLACES = settings.GAME_CURRENCY_DECIMAL_PLACES
+
+    def to_money(self, subsession):
+        # subsession arg can actually be a session as well
+        # can't use isinstance() to avoid circular import
+        if subsession.__class__.__name__ == 'Session':
+            session = subsession
+        else:
+            session = subsession.session
+
+        if settings.USE_POINTS:
+            return Money(self * session.money_per_point)
+        else:
+            # should i convert to Money?
+            return self
+
 
 class _CurrencyEncoder(json.JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, Currency):
+        if isinstance(obj, Money):
             return float(obj)
         # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, obj)

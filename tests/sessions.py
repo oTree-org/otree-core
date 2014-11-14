@@ -7,7 +7,7 @@ def session_types():
         SessionType(
             name="simple_game",
             display_name="Simple Game",
-            base_pay=0,
+            fixed_pay=0,
             num_demo_participants=1,
             num_bots=1,
             subsession_apps=['tests.simple_game'],
