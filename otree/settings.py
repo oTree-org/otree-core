@@ -160,12 +160,13 @@ def augment_settings(settings):
         settings.setdefault(k,v)
 
     # by default, game setting matches payment setting
-    for SETTING_NAME in ['CODE', 'FORMAT', 'LOCALE', 'DECIMAL_PLACES']:
-        CURRENCY_SETTING_NAME = 'CURRENCY_{}'.format(SETTING_NAME)
-        settings[CURRENCY_SETTING_NAME] = settings['GAME_{}'.format(CURRENCY_SETTING_NAME)] = settings['PAYMENT_{}'.format(CURRENCY_SETTING_NAME)]
-
-    # ... except if you use points, then we override
+    # except if you use points, then we override
     if settings.get('USE_POINTS'):
         settings['GAME_CURRENCY_CODE'] = 'points'
         settings['GAME_CURRENCY_FORMAT'] = u'# points'
         settings['GAME_CURRENCY_DECIMAL_PLACES'] = 0
+    else:
+        for SETTING_NAME in ['CODE', 'FORMAT', 'LOCALE', 'DECIMAL_PLACES']:
+            CURRENCY_SETTING_NAME = 'CURRENCY_{}'.format(SETTING_NAME)
+            settings['GAME_{}'.format(CURRENCY_SETTING_NAME)] = settings['PAYMENT_{}'.format(CURRENCY_SETTING_NAME)]
+
