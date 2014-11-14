@@ -1,41 +1,48 @@
 """oTree Public API utilities"""
 
-from easymoney import Money, stdout_encode, _sanitize
 from django.utils.safestring import mark_safe
 import json
 import otree.common_internal
 from django.conf import settings
 from decimal import Decimal
-import otree.session.models
+
+import easymoney
+
+class Money(easymoney.Money):
+    '''payment currency'''
+
+    CODE = settings.PAYMENT_CURRENCY_CODE
+    FORMAT = settings.PAYMENT_CURRENCY_FORMAT
+    LOCALE = settings.PAYMENT_CURRENCY_LOCALE
+    DECIMAL_PLACES = settings.PAYMENT_CURRENCY_DECIMAL_PLACES
 
 
-class Currency(Money):
+class Currency(easymoney.Money):
+    '''game currency'''
 
-    def __new__(cls, amount):
-        """if we don't define this method, instantiating the class returns a Money object rather than a Currency object"""
-        return Decimal.__new__(Currency, _sanitize(amount))
+    CODE = settings.GAME_CURRENCY_CODE
+    FORMAT = settings.GAME_CURRENCY_FORMAT
+    LOCALE = settings.GAME_CURRENCY_LOCALE
+    DECIMAL_PLACES = settings.GAME_CURRENCY_DECIMAL_PLACES
 
-    def __repr__(self):
-        return stdout_encode(u'Currency(%s)' % self)
-
-    def to_money_decimal(self, subsession):
+    def to_money(self, subsession):
         # subsession arg can actually be a session as well
-        if isinstance(subsession, otree.session.models.Session):
+        # can't use isinstance() to avoid circular import
+        if subsession.__class__.__name__ == 'Session':
             session = subsession
         else:
             session = subsession.session
 
-        amt = Decimal(self)
         if settings.USE_POINTS:
-            amt *= session.money_per_point
-        return amt
+            return Money(self * session.money_per_point)
+        else:
+            # should i convert to Money?
+            return self
 
-    def to_money_string(self, subsession):
-        return otree.common_internal.format_payment_currency(self.to_money_decimal(subsession))
 
 class _CurrencyEncoder(json.JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, Money):
+        if isinstance(obj, easymoney.Money):
             return float(obj)
         # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, obj)

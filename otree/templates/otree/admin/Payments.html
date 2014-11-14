@@ -24,8 +24,8 @@
             <h3>Session</h3>
             <table class="table">
                 <tr>
-                    <th>Session name</th>
-                    <td>{{ session_name|default_if_none:"" }}</td>
+                    <th>Session type</th>
+                    <td>{{ session_type }}</td>
                 </tr>
 
                 <tr>
@@ -34,7 +34,7 @@
                 </tr>
 
                 <tr>
-                    <td>Time scheduled</td>
+                    <th>Time scheduled</th>
                     <td>{{ session.time_scheduled|default_if_none:"" }}</td>
                 </tr>
 

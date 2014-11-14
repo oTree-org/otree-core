@@ -19,7 +19,7 @@ import otree.session.models
 from otree.session.models import Participant, Session
 from otree.common_internal import add_params_to_url, format_payment_currency
 from otree.common import Currency as c
-
+from otree.common import Money
 
 def new_tab_link(url, label):
     return '<a href="{}" target="_blank">{}</a>'.format(url, label)
@@ -563,22 +563,21 @@ class SessionAdmin(OTreeBaseModelAdmin):
     def payments(self, request, pk):
         session = self.model.objects.get(pk=pk)
         participants = session.get_participants()
-        total_payments = sum(participant.total_pay() or c(0) for participant in participants)
+        total_payments = sum(participant.total_pay() or c(0) for participant in participants).to_money(session)
 
         try:
             mean_payment = total_payments/len(participants)
         except ZeroDivisionError:
-            mean_payment = c(0)
+            mean_payment = Money(0)
 
 
         return TemplateResponse(request, 'otree/admin/Payments.html',
                                 {'participants': participants,
-                                'total_payments': total_payments.to_money_string(session),
-                                'mean_payment': mean_payment.to_money_string(session),
+                                'total_payments': total_payments,
+                                'mean_payment': mean_payment,
                                 'session_code': session.code,
-                                'session_name': session,
-                                'fixed_pay': session.fixed_pay.to_money_string(),
-                                # should only be used if USE_POINTS is True.
+                                'session_type': session.type_name,
+                                'fixed_pay': session.fixed_pay.to_money(session),
                                 })
 
     def payments_link(self, instance):
