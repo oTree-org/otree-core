@@ -41,7 +41,7 @@ setup(
     author_email='c.wickens+otree@googlemail.com',
     install_requires = [
         'django-floppyforms',
-        'Django == 1.6.1',
+        'Django == 1.7.1',
         'django-vanilla-views==1.0.2',
         'Babel==1.3',
         'raven==3.5.2',
@@ -58,9 +58,6 @@ setup(
         'django-easymoney==0.4.1',
         'handy==0.3',
         'Pillow',
-
-
-
     ],
     classifiers=[
         'Environment :: Web Environment',

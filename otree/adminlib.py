@@ -600,12 +600,23 @@ class SessionAdmin(OTreeBaseModelAdmin):
 
 
 
+
 def autodiscover():
     """
-    This function is copied from django 1.6's django/contrib/admin/__init__.py
-    I'm modifying it to look instead for _builtin.admin.
-    In Django 1.7, I will want to use django.utils.module_loading.autodiscover_modules,
-    which is better abstracted.
+    # 1.7migration -- will this still work?
+
+    The purpose of this function is to look for an admin.py not in an app's root directory, but rather under a _builtin
+    folder. This is because it's not common for an oTree programmer to customize the admin, so it's good to get admin.py
+    out of the way so the programmer can focus on other things. in fact, it may be OK to get rid of admin.py entirely,
+    and move to otree-core the code that registers the admin models.
+
+    The below function is copied from django 1.6's django/contrib/admin/__init__.py
+    I modified it to look instead for _builtin.admin.
+
+    If we keep this in Django 1.7, we may want to instead use django.utils.module_loading.autodiscover_modules,
+    which is better abstracted. But Django docs say this is now handled by AdminConfig rather than calling autodiscover()
+    explicitly: https://docs.djangoproject.com/en/dev/ref/contrib/admin/#django.contrib.admin.autodiscover.
+    i don't have any knowledge of what AdminConfig is.
     """
 
     from django.contrib.admin.sites import site
