@@ -22,7 +22,6 @@ import decimal
 import logging
 
 from django import test
-from django.db import transaction
 
 from easymoney import Money as Currency
 
@@ -120,8 +119,7 @@ class BaseClient(test.Client):
             raise
 
     def run(self, *args, **kwargs):
-        with transaction.atomic():
-            return self._play(*args, **kwargs)
+        return self._play(*args, **kwargs)
 
     def play(self):
         raise NotImplementedError()
