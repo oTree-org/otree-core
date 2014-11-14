@@ -17,7 +17,7 @@ from otree.views.demo import render_to_start_links_page
 import otree.constants
 import otree.session.models
 from otree.session.models import Participant, Session
-from otree.common_internal import add_params_to_url, format_payment_currency
+from otree.common_internal import add_params_to_url
 from otree.common import Currency as c
 from otree.common import Money
 

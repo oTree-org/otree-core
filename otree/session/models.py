@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from otree.common_internal import id_label_name, add_params_to_url
 from otree import constants
 import otree.common_internal
-from otree.common_internal import directory_name, format_payment_currency
+from otree.common_internal import directory_name
 from easymoney import Money as Currency
 from decimal import Decimal
 from django_extensions.db.fields.json import JSONField
