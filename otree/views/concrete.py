@@ -143,6 +143,8 @@ class InitializeParticipant(vanilla.UpdateView):
     """just collects data and sets properties. not essential to functionality.
     the only exception is if the participant needs to be assigned to groups on the fly,
     which is done here.
+
+    2014-11-16: also, this sets _last_page_timestamp. what if that is not set? will it still work?
     """
 
     @classmethod
