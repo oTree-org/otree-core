@@ -140,6 +140,11 @@ class InitializeSessionExperimenter(vanilla.View):
 
 class InitializeParticipant(vanilla.UpdateView):
 
+    """just collects data and sets properties. not essential to functionality.
+    the only exception is if the participant needs to be assigned to groups on the fly,
+    which is done here.
+    """
+
     @classmethod
     def url_pattern(cls):
         return r'^InitializeParticipant/(?P<{}>[a-z]+)/$'.format(constants.session_user_code)
