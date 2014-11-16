@@ -137,18 +137,6 @@ class InitializeSessionExperimenter(vanilla.View):
         t.start()
         return self.redirect_to_next_page()
 
-class InitializeParticipantMagdeburg(vanilla.View):
-    """since magdeburg doesn't let you pass distinct URLs to each PC, but you can pass different params"""
-
-    @classmethod
-    def url_pattern(cls):
-        return r'^InitializeParticipantMagdeburg/$'
-
-    def get(self, *args, **kwargs):
-        session_user_code = self.request.GET[constants.session_user_code]
-        session_user = get_object_or_404(otree.session.models.Participant, code=session_user_code)
-
-        return HttpResponseRedirect(session_user._start_url())
 
 class InitializeParticipant(vanilla.UpdateView):
 
