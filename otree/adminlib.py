@@ -353,7 +353,7 @@ class NonHiddenSessionListFilter(admin.SimpleListFilter):
         return [(session.id, session.id) for session
                 in otree.session.models.Session.objects.filter(hidden=False)]
 
-    def queryset(self, request, queryset):
+    def get_queryset(self, request, queryset):
         """
         Returns the filtered queryset based on the value
         provided in the query string and retrievable via
@@ -391,8 +391,8 @@ class PlayerAdmin(OTreeBaseModelAdmin):
     list_filter = [NonHiddenSessionListFilter, 'subsession', 'group']
     list_per_page = 40
 
-    def queryset(self, request):
-        qs = super(PlayerAdmin, self).queryset(request)
+    def get_queryset(self, request):
+        qs = super(PlayerAdmin, self).get_queryset(request)
         return qs.filter(session__hidden=False)
 
 class GroupAdmin(OTreeBaseModelAdmin):
@@ -401,15 +401,15 @@ class GroupAdmin(OTreeBaseModelAdmin):
     list_filter = [NonHiddenSessionListFilter, 'subsession']
     list_per_page = 40
 
-    def queryset(self, request):
-        qs = super(GroupAdmin, self).queryset(request)
+    def get_queryset(self, request):
+        qs = super(GroupAdmin, self).get_queryset(request)
         return qs.filter(session__hidden=False)
 
 class SubsessionAdmin(OTreeBaseModelAdmin):
     change_list_template = CHANGE_LIST_TEMPLATE
 
-    def queryset(self, request):
-        qs = super(SubsessionAdmin, self).queryset(request)
+    def get_queryset(self, request):
+        qs = super(SubsessionAdmin, self).get_queryset(request)
         return qs.filter(session__hidden=False)
 
     list_filter = [NonHiddenSessionListFilter]
@@ -497,8 +497,8 @@ class ParticipantAdmin(OTreeBaseModelAdmin):
         return new_tab_link(url, 'Link')
     start_link.allow_tags = True
 
-    def queryset(self, request):
-        qs = super(ParticipantAdmin, self).queryset(request)
+    def get_queryset(self, request):
+        qs = super(ParticipantAdmin, self).get_queryset(request)
         return qs.filter(session__hidden=False)
 
 class SessionAdmin(OTreeBaseModelAdmin):
