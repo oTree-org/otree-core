@@ -163,3 +163,5 @@ def create_session(type_name, label='', num_participants=None, special_category=
     session.save()
     return session
 
+
+default_app_config = 'otree.session.apps.OtreeSessionConfig'
