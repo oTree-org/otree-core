@@ -236,6 +236,7 @@ class Session(ModelWithVars):
 
 
     class Meta:
+        db_table = 'session_session'
         # if i don't set this, it could be in an unpredictable order
         ordering = ['pk']
 
