@@ -37,6 +37,8 @@ INSTALLED_OTREE_APPS = [
     'tests.simple_game',
 ]
 
+MIDDLEWARE_CLASSES = ()
+
 ROOT_URLCONF = 'otree.default_urls'
 
 SESSIONS_MODULE = 'tests.sessions'
