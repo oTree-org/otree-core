@@ -236,9 +236,7 @@ class Session(ModelWithVars):
         self._players_assigned_to_groups = True
         self.save()
 
-
     class Meta:
-        db_table = 'session_session'
         # if i don't set this, it could be in an unpredictable order
         ordering = ['pk']
 
