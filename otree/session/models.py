@@ -34,8 +34,10 @@ class StubModel(models.Model):
 # R: You really need this only if you are using save_the_change,
 #    which is not used for Session and SessionUser,
 #    Otherwise you can just
+def model_vars_default():
+    return {}
 class ModelWithVars(models.Model):
-    vars = models.PickleField(default=lambda:{})
+    vars = models.PickleField(default=model_vars_default)
 
     class Meta:
         abstract = True
