@@ -42,7 +42,7 @@ def get_callables(Model, fields_specific_to_this_subclass=None, for_export=False
 
     changelist_but_not_export = {
         'Player':
-           ['name',
+           [
             'link',
             '_pages_completed'],
         'Group':

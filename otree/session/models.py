@@ -121,7 +121,7 @@ class Session(ModelWithVars):
 
     )
 
-    #
+    # todo: change this to money
     fixed_pay = models.CurrencyField(
         doc="""Show-up fee""",
     )
