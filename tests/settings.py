@@ -25,7 +25,7 @@ PAYMENT_CURRENCY_CODE = 'EUR'
 USE_POINTS = False
 
 
-# e.g. en-gb, de-de, it-it, fr-fr. see: https://docs.djangoproject.com/en/1.6/topics/i18n/
+# e.g. en-gb, de-de, it-it, fr-fr. see: https://docs.djangoproject.com/en/1.7/topics/i18n/
 LANGUAGE_CODE = 'en-us'
 
 INSTALLED_APPS = [
@@ -38,6 +38,8 @@ INSTALLED_APPS = [
 INSTALLED_OTREE_APPS = [
     'tests.simple_game',
 ]
+
+MIDDLEWARE_CLASSES = ()
 
 ROOT_URLCONF = 'otree.default_urls'
 

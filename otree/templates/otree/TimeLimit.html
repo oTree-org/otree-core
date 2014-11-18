@@ -45,7 +45,7 @@
                     $('#time-out-message').show(duration=0);
                     $('<input>').attr({
                         type: 'hidden',
-                        name: 'client_side_time_limit_exceeded',
+                        name: 'timeout_occurred',
                         value: '1'
                     }).appendTo('form');
                     $('#{{ form_element_id }}').submit();

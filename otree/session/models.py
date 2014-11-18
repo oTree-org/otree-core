@@ -34,8 +34,10 @@ class StubModel(models.Model):
 # R: You really need this only if you are using save_the_change,
 #    which is not used for Session and SessionUser,
 #    Otherwise you can just
+def model_vars_default():
+    return {}
 class ModelWithVars(models.Model):
-    vars = models.PickleField(default=lambda:{})
+    vars = models.PickleField(default=model_vars_default)
 
     class Meta:
         abstract = True
@@ -234,7 +236,6 @@ class Session(ModelWithVars):
         self._players_assigned_to_groups = True
         self.save()
 
-
     class Meta:
         # if i don't set this, it could be in an unpredictable order
         ordering = ['pk']
@@ -264,7 +265,7 @@ class SessionUser(ModelWithVars):
         doc="""Whether this user's start URL was opened"""
     )
 
-    ip_address = models.IPAddressField(null = True)
+    ip_address = models.GenericIPAddressField(null = True)
 
     # stores when the page was first visited
     _last_page_timestamp = models.DateTimeField(null=True)

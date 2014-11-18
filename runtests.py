@@ -15,7 +15,10 @@ default_test_apps = [
 
 
 def runtests(*args):
+    import django
     from django.core.management.commands.test import Command
+
+    django.setup()
 
     test_command = Command()
     test_apps = list(args or default_test_apps)
