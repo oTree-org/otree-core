@@ -13,14 +13,15 @@ def variables_for_all_templates(self):
 
 class MyPage(Page):
 
+    form_model = models.Player
+    form_fields = ['add100_1', 'add100_2']
+
     timeout_seconds = 10
     timeout_defaults = {
         'add100_1': 1,
         'add100_2': 99,
     }
 
-    form_model = models.Player
-    form_fields = ['add100_1', 'add100_2']
 
     def participate_condition(self):
         return True
