@@ -5,22 +5,39 @@
 {% endblock %}
 
 {% block content %}
+<div class="row">
+    <div class="col-md-3 well">
+        <p>
+            <i>
+                (To login to the admin page, click
+                <a href="/admin" target="_blank">here</a>.)
+            </i>
+        </p>
+        <div>
+            {{ intro_text|safe }}
+        </div>
+    </div>
 
-<p><i>(To login to the admin page, click <a href="/admin" target="_blank">here</a>.)</i></p>
-
-<div>
-    {{ intro_text|safe }}
-</div>
-
-
-{% for s in session_info %}
-
-        <h4><a href="{{ s.url }}" target="_blank">{{ s.display_name }}</a></h4>
-
-{% endfor %}
+<div class="col-md-9">
+    <div class="list-group">
+    {% for s in session_info %}
+        <a href="{{ s.url }}" class="list-group-item" target="_blank">
+            {% if s.num_demo_parcitipants == 1 %}
+            <span class="label label-default pull-right">
+            {% elif s.num_demo_parcitipants == 2 %}
+            <span class="label label-info pull-right">
+            {% else %}
+            <span class="label label-danger pull-right">
+            {% endif %}
+            Participants: {{s.num_demo_parcitipants}}</span>
+            {{ s.display_name }}
+        </a>
+    {% endfor %}
+    </div>
 
     {% if debug %}
         <p>You can add entries to this list in <code>sessions.py</code>.</p>
     {% endif %}
-
+</div>
+</div>
 {% endblock %}
