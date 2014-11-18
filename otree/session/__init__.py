@@ -9,19 +9,23 @@ from collections import defaultdict
 from itertools import groupby
 import re
 
+
 def gcd(a, b):
     """Return greatest common divisor using Euclid's Algorithm."""
     while b:
         a, b = b, a % b
     return a
 
+
 def lcm(a, b):
     """Return lowest common multiple."""
     return a * b // gcd(a, b)
 
+
 def lcmm(*args):
     """Return lcm of args."""
     return reduce(lcm, args)
+
 
 class SessionType(object):
     def __init__(self, name, subsession_apps, fixed_pay, num_bots,
@@ -62,25 +66,35 @@ class SessionType(object):
 class SessionTypeDirectory(object):
     def __init__(self, demo_only=False):
         self.demo_only = demo_only
-        self.session_types_as_dict = {session_type.name.lower(): session_type for session_type in self.select(demo_only)}
+        self.session_types_as_dict = {
+            session_type.name.lower(): session_type
+            for session_type in self.select(demo_only)
+        }
 
-    def select(self, demo_only = False):
+    def select(self, demo_only=False):
         session_types = get_session_module().session_types()
         if demo_only:
-            return [session_type for session_type in session_types if get_session_module().show_on_demo_page(session_type.name)]
+            return [
+                session_type for session_type in session_types
+                if get_session_module().show_on_demo_page(session_type.name)
+            ]
         else:
             return session_types
 
     def get_item(self, session_type_name):
         return self.session_types_as_dict[session_type_name.lower()]
 
+
 @transaction.atomic
-def create_session(type_name, label='', num_participants=None, special_category=None, preassign_players_to_groups=False):
-    """2014-5-2: i could implement this by overriding the __init__ on the Session model, but I don't really know how that works,
-    and it seems to be a bit discouraged:
-    https://docs.djangoproject.com/en/1.4/ref/models/instances/#django.db.models.Model
-    2014-9-22: preassign to groups for demo mode.
-    """
+def create_session(type_name, label='', num_participants=None,
+                  special_category=None, preassign_players_to_groups=False):
+
+    #~ 2014-5-2: i could implement this by overriding the __init__ on the
+    #~ Session model, but I don't really know how that works, and it seems to
+    #~ be a bit discouraged:
+    #~ https://docs.djangoproject.com/en/1.4/ref/models/instances/#django.db.models.Model
+    #~ 2014-9-22: preassign to groups for demo mode.
+
     try:
         session_type = SessionTypeDirectory().get_item(type_name)
     except KeyError:
@@ -109,7 +123,9 @@ def create_session(type_name, label='', num_participants=None, special_category=
 
     # check that it divides evenly
     if num_participants % session_type.lcm():
-        raise ValueError('Number of participants does not divide evenly into group size')
+        raise ValueError(
+            'Number of participants does not divide evenly into group size'
+        )
 
 
     for i in range(num_participants):
@@ -120,11 +136,15 @@ def create_session(type_name, label='', num_participants=None, special_category=
     subsessions = []
     for app_label in session_type.subsession_apps:
         if app_label not in settings.INSTALLED_OTREE_APPS:
-            raise ValueError('Your session contains a subsession app named "{}". You need to add this to INSTALLED_OTREE_APPS in settings.py.'.format(app_label))
+            msg = ("Your session contains a subsession app named '{}'. "
+                   "You need to add this to INSTALLED_OTREE_APPS "
+                   "in settings.py.")
+            raise ValueError(msg.format(app_label))
 
         models_module = import_module('{}.models'.format(app_label))
 
-        for round_number in range(1, models_module.Constants.number_of_rounds+1):
+        round_numbers = range(1, models_module.Constants.number_of_rounds+1)
+        for round_number in round_numbers:
             subsession = models_module.Subsession(
                 round_number = round_number,
                 )
@@ -148,8 +168,9 @@ def create_session(type_name, label='', num_participants=None, special_category=
                 player.save()
 
             if session.type().assign_to_groups_on_the_fly:
-                # create groups at the beginning because we will not need to delete players
-                # unlike the lab setting, where there may be no-shows
+                # create groups at the beginning because we will not need to
+                # delete players unlike the lab setting, where there may be
+                # no-shows
                 subsession._create_empty_groups()
 
             subsessions.append(subsession)
