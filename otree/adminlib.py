@@ -353,7 +353,12 @@ class NonHiddenSessionListFilter(admin.SimpleListFilter):
         return [(session.id, session.id) for session
                 in otree.session.models.Session.objects.filter(hidden=False)]
 
-    def get_queryset(self, request, queryset):
+    # is queryset method still necessary in 1.7?
+    #def queryset(self, request, queryset):
+    #    return self.get_queryset(request, queryset)
+
+
+    def queryset(self, request, queryset):
         """
         Returns the filtered queryset based on the value
         provided in the query string and retrievable via
@@ -395,6 +400,8 @@ class PlayerAdmin(OTreeBaseModelAdmin):
         qs = super(PlayerAdmin, self).get_queryset(request)
         return qs.filter(session__hidden=False)
 
+
+
 class GroupAdmin(OTreeBaseModelAdmin):
     change_list_template = CHANGE_LIST_TEMPLATE
 
@@ -405,12 +412,15 @@ class GroupAdmin(OTreeBaseModelAdmin):
         qs = super(GroupAdmin, self).get_queryset(request)
         return qs.filter(session__hidden=False)
 
+
+
 class SubsessionAdmin(OTreeBaseModelAdmin):
     change_list_template = CHANGE_LIST_TEMPLATE
 
     def get_queryset(self, request):
         qs = super(SubsessionAdmin, self).get_queryset(request)
         return qs.filter(session__hidden=False)
+
 
     list_filter = [NonHiddenSessionListFilter]
     list_editable = ['_skip']
