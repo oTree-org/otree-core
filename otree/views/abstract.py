@@ -577,12 +577,6 @@ class ModelFormMixin(object):
 
     def post(self, request, *args, **kwargs):
 
-        # validation. TODO: this should be checked statically, before runtime.
-        if self.has_timeout():
-            for field_name in self.form_fields:
-                field = self.form_model._meta.get_field_by_name(field_name)[0]
-                if field.timeout_default is None:
-                    raise ValueError('timeout_seconds was specified on this page but the field {} is missing a non-null timeout_default argument'.format(field_name))
 
         self.object = self.get_object()
         self.timeout_occurred = self._get_timeout_occurred(request.POST)
@@ -603,8 +597,7 @@ class ModelFormMixin(object):
 
     def _set_timeout_defaults(self):
         for field_name in self.form_fields:
-            field = self.form_model._meta.get_field_by_name(field_name)[0]
-            setattr(self.object, field_name, field.timeout_default)
+            setattr(self.object, field_name, self.timeout_defaults[field_name])
 
 
 class PlayerSequenceMixin(SequenceMixin):

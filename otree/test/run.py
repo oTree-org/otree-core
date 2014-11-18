@@ -110,7 +110,7 @@ def run_session_with_coverage(session_type_name):
 
         # force models.py to get loaded for coverage
         for app_label in app_labels:
-            reload(sys.modules['{}.models'.format(app_label)])
+            import_module('{}.models'.format(app_label))
 
         success = run_session(session_type_name)
 

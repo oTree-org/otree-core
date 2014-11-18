@@ -7,7 +7,7 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version='0.2.220'
+version='0.2.221'
 
 if sys.argv[-1] == 'publish':
 
@@ -41,7 +41,7 @@ setup(
     author_email='c.wickens+otree@googlemail.com',
     install_requires = [
         'django-floppyforms',
-        'Django == 1.6.1',
+        'Django == 1.7.1',
         'django-vanilla-views==1.0.2',
         'Babel==1.3',
         'raven==3.5.2',

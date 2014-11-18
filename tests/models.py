@@ -16,7 +16,7 @@ class SimpleModel(otree.models.BaseGroup):
 class FormFieldModel(otree.models.BaseGroup):
     null_boolean = models.NullBooleanField()
     big_integer = models.BigIntegerField()
-    boolean = models.BooleanField()
+    boolean = models.BooleanField(default=False)
     char = models.CharField()
     comma_separated_integer = models.CommaSeparatedIntegerField(max_length=100)
     date = models.DateField()
