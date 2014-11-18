@@ -47,15 +47,12 @@ class BaseMoneyInput(forms.NumberInput):
     step = '0.01'
     template_name = 'floppyforms/moneyinput.html'
 
-    def __init__(self, *args, **kwargs):
-        super(MoneyInput, self).__init__(*args, **kwargs)
-
     def get_currency_symbol(self, currency_code):
         return babel.numbers.get_currency_symbol(
             currency_code, self.currency_locale)
 
     def get_context(self, *args, **kwargs):
-        context = super(MoneyInput, self).get_context(*args, **kwargs)
+        context = super(BaseMoneyInput, self).get_context(*args, **kwargs)
         currency_symbol = self.get_currency_symbol(self.currency_code)
         context.setdefault('currency', self.currency_code)
         context.setdefault('currency_symbol', currency_symbol)
