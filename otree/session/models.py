@@ -1,23 +1,28 @@
 import copy
 import collections
+from decimal import Decimal
+from operator import attrgetter
+
 from django.conf import settings
-from otree.db import models
-from otree.fields import RandomCharField
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from otree.common_internal import id_label_name, add_params_to_url
+
+from django_extensions.db.fields.json import JSONField
+
+from easymoney import Money as Currency
+
 from otree import constants
+from otree.db import models
+from otree.fields import RandomCharField
 import otree.common_internal
 from otree.common_internal import directory_name
-from easymoney import Money as Currency
-from decimal import Decimal
-from django_extensions.db.fields.json import JSONField
-from operator import attrgetter
 from otree.common import Currency as c
 
+
 class GlobalSingleton(models.Model):
-    """object that can hold site-wide settings. There should only be one GlobalSingleton object.
-    Also used for wait page actions.
+    """object that can hold site-wide settings. There should only be one
+    GlobalSingleton object. Also used for wait page actions.
     """
     open_session = models.ForeignKey('Session', null=True, blank=True)
 
@@ -27,8 +32,10 @@ class GlobalSingleton(models.Model):
 
 
 class StubModel(models.Model):
-    """To be used as the model for an empty form, so that form_class can be omitted.
-    Consider using SingletonModel for this. Right now, I'm not sure we need it.
+    """To be used as the model for an empty form, so that form_class can be
+    omitted. Consider using SingletonModel for this. Right now, I'm not
+    sure we need it.
+
     """
 
 # R: You really need this only if you are using save_the_change,
@@ -55,9 +62,12 @@ class ModelWithVars(models.Model):
 
 class Session(ModelWithVars):
 
-    #
+    class Meta:
+        # if i don't set this, it could be in an unpredictable order
+        ordering = ['pk']
+
     type_name = models.CharField(max_length = 300, null = True, blank = True,
-        doc="""the session type, as defined in the programmer's sessions.py."""
+        doc="the session type, as defined in the programmer's sessions.py."
     )
 
     def type(self):
@@ -77,56 +87,48 @@ class Session(ModelWithVars):
 
 
     code = RandomCharField(
-        length=8,
-        doc="""
-        Randomly generated unique identifier for the session.
-        """
+        length=8, doc="Randomly generated unique identifier for the session."
     )
 
     money_per_point = models.DecimalField(decimal_places=5, max_digits=12)
 
     session_experimenter = models.OneToOneField(
-        'SessionExperimenter',
-        null=True,
-        related_name='session',
+        'SessionExperimenter', null=True, related_name='session',
     )
 
     time_scheduled = models.DateTimeField(
-        null=True,
-        doc="""The time at which the session is scheduled""",
+        null=True, doc="The time at which the session is scheduled",
         help_text = 'For internal record-keeping',
     )
 
     time_started = models.DateTimeField(
         null=True,
-        doc="""The time at which the experimenter started the session""",
+        doc="The time at which the experimenter started the session",
     )
 
-    first_subsession_content_type = models.ForeignKey(ContentType,
-                                                      null=True,
-                                                      related_name = '%(app_label)s_%(class)s')
+    first_subsession_content_type = models.ForeignKey(
+        ContentType, null=True, related_name = '%(app_label)s_%(class)s'
+    )
     first_subsession_object_id = models.PositiveIntegerField(null=True)
-    first_subsession = generic.GenericForeignKey('first_subsession_content_type',
-                                            'first_subsession_object_id',)
+    first_subsession = generic.GenericForeignKey(
+        'first_subsession_content_type', 'first_subsession_object_id'
+    )
 
     mturk_payment_was_sent = models.BooleanField(default=False)
 
     hidden = models.BooleanField(default=False)
 
     git_commit_timestamp = models.CharField(
-        max_length=200,
-        null=True,
-        doc="""
-        Indicates the version of the code (as recorded by Git) that was used to run the session, so that the session can be replicated later.
-        Search through the Git commit log to find a commit that was made at this time.
-        """
-
+        max_length=200, null=True, doc=(
+            "Indicates the version of the code (as recorded by Git) that was "
+            "used to run the session, so that the session can be replicated "
+            "later.\n Search through the Git commit log to find a commit that "
+            "was made at this time."
+        )
     )
 
     # todo: change this to money
-    fixed_pay = models.CurrencyField(
-        doc="""Show-up fee""",
-    )
+    fixed_pay = models.CurrencyField(doc="""Show-up fee""")
 
     comment = models.TextField()
 
@@ -134,14 +136,18 @@ class Session(ModelWithVars):
 
     #
     special_category = models.CharField(max_length=20, null=True,
-        doc="""whether it's a test session, demo session, etc."""
+        doc="whether it's a test session, demo session, etc."
     )
 
     # whether someone already viewed this session's demo links
     demo_already_used = models.BooleanField(default=False)
 
-    # indicates whether a session has been fully created (not only has the model itself been created, but also the other models in the hierarchy)
+    # indicates whether a session has been fully created (not only has the
+    # model itself been created, but also the other models in the hierarchy)
     ready = models.BooleanField(default=False)
+
+    def __unicode__(self):
+        return self.code
 
     def is_open(self):
         return GlobalSingleton.objects.get().open_session == self
@@ -150,7 +156,12 @@ class Session(ModelWithVars):
     def subsession_names(self):
         names = []
         for subsession in self.get_subsessions():
-            names.append('{} {}'.format(otree.common_internal.app_name_format(subsession._meta.app_label), subsession.name()))
+            app_label = subsession._meta.app_label
+            name = '{} {}'.format(
+                otree.common_internal.app_name_format(app_label),
+                subsession.name()
+            )
+            names.append(name)
         if names:
             return ', '.join(names)
         else:
@@ -165,10 +176,6 @@ class Session(ModelWithVars):
             lst.append(subsession)
             subsession = subsession.next_subsession
         return lst
-
-
-    def __unicode__(self):
-        return self.code
 
     def chain_subsessions(self, subsessions):
         self.first_subsession = subsessions[0]
@@ -203,7 +210,10 @@ class Session(ModelWithVars):
             for player_index in range(num_participants):
                 player_left = players_left[player_index]
                 player_right = players_right_dict[player_left.participant.pk]
-                assert player_left.participant and player_left.participant == player_right.participant
+                assert (
+                    player_left.participant and
+                    player_left.participant == player_right.participant
+                )
                 player_left._me_in_next_subsession = player_right
                 player_right._me_in_previous_subsession = player_left
                 player_left.save()
@@ -236,30 +246,33 @@ class Session(ModelWithVars):
         self._players_assigned_to_groups = True
         self.save()
 
-    class Meta:
-        # if i don't set this, it could be in an unpredictable order
-        ordering = ['pk']
 
 class SessionUser(ModelWithVars):
 
     _index_in_subsessions = models.PositiveIntegerField(default=0, null=True)
 
-    me_in_first_subsession_content_type = models.ForeignKey(ContentType,
-                                                      null=True,
-                                                      related_name = '%(app_label)s_%(class)s')
+    me_in_first_subsession_content_type = models.ForeignKey(
+        ContentType, null=True, related_name = '%(app_label)s_%(class)s'
+    )
     me_in_first_subsession_object_id = models.PositiveIntegerField(null=True)
 
     code = RandomCharField(
-        length = 8,
-        doc="""Randomly generated unique identifier for the participant.
-        If you would like to merge this dataset with those from another subsession in the same session,
-        you should join on this field, which will be the same across subsessions."""
+        length = 8, doc=(
+            "Randomly generated unique identifier for the participant. If you "
+            "would like to merge this dataset with those from another "
+            "subsession in the same session, you should join on this field, "
+            "which will be the same across subsessions."
+        )
     )
 
-    me_in_first_subsession = generic.GenericForeignKey('me_in_first_subsession_content_type',
-                                                'me_in_first_subsession_object_id',)
+    me_in_first_subsession = generic.GenericForeignKey(
+        'me_in_first_subsession_content_type',
+        'me_in_first_subsession_object_id'
+    )
 
-    last_request_succeeded = models.NullBooleanField(verbose_name='Health of last server request')
+    last_request_succeeded = models.NullBooleanField(
+        verbose_name='Health of last server request'
+    )
 
     visited = models.BooleanField(default=False,
         doc="""Whether this user's start URL was opened"""
@@ -280,7 +293,9 @@ class SessionUser(ModelWithVars):
     def subsessions_completed(self):
         if not self.visited:
             return None
-        return '{}/{} subsessions'.format(self._index_in_subsessions, len(self.session.get_subsessions()))
+        return '{}/{} subsessions'.format(
+            self._index_in_subsessions, len(self.session.get_subsessions())
+        )
 
     def _pages_completed_in_current_subsession(self):
         return self._users()[self._index_in_subsessions]._pages_completed()
@@ -288,7 +303,9 @@ class SessionUser(ModelWithVars):
     def current_subsession(self):
         if not self.visited:
             return None
-        return otree.common_internal.app_name_format(self.session.get_subsessions()[self._index_in_subsessions]._meta.app_label)
+        subsssn = self.session.get_subsessions()[self._index_in_subsessions]
+        app_label = subsssn._meta.app_label
+        return otree.common_internal.app_name_format(app_label)
 
     def _users(self):
         """Used to calculate payoffs"""
@@ -298,7 +315,9 @@ class SessionUser(ModelWithVars):
             if not me_in_next_subsession:
                 break
             lst.append(me_in_next_subsession)
-            me_in_next_subsession = me_in_next_subsession._me_in_next_subsession
+            me_in_next_subsession = (
+                me_in_next_subsession._me_in_next_subsession
+            )
         return lst
 
     def status(self):
@@ -338,11 +357,15 @@ class SessionExperimenter(SessionUser):
 
 class Participant(SessionUser):
 
-    exclude_from_data_analysis = models.BooleanField(default=False,
-        doc="""
-        if set to 1, the experimenter indicated that this participant's data points should be excluded from
-        the data analysis (e.g. a problem took place during the experiment)"""
+    class Meta:
+        ordering = ['pk']
 
+    exclude_from_data_analysis = models.BooleanField(
+        default=False, doc=(
+            "if set to 1, the experimenter indicated that this participant's "
+            "data points should be excluded from the data analysis (e.g. a "
+            "problem took place during the experiment)"
+        )
     )
 
     session = models.ForeignKey(Session)
@@ -350,6 +373,26 @@ class Participant(SessionUser):
     time_started = models.DateTimeField(null=True)
 
     user_type_in_url = constants.user_type_participant
+
+    mturk_assignment_id = models.CharField(max_length = 50, null = True)
+    mturk_worker_id = models.CharField(max_length = 50, null = True)
+
+    # unique=True can't be set, because the same external ID could be reused
+    # in multiple sequences. however, it should be unique within the sequence.
+    label = models.CharField(
+        max_length = 50, null = True, doc=(
+            "Label assigned by the experimenter. Can be assigned by passing a "
+            "GET param called 'participant_label' to the participant's start "
+            "URL"
+        )
+    )
+
+    def __unicode__(self):
+        return self.name()
+
+    def _assign_to_groups(self):
+        for p in self.get_players():
+            p._assign_to_group()
 
     def _start_url(self):
         return '/InitializeParticipant/{}'.format(
@@ -360,9 +403,11 @@ class Participant(SessionUser):
         return self._users()
 
     def payoff_from_subsessions(self):
-        '''convert to payment currency, since often this will need to be printed on the results page
-        But then again, it's easy to just do the multiplication oneself.
-        '''
+        """convert to payment currency, since often this will need to be
+        printed on the results page But then again, it's easy to just do the
+        multiplication oneself.
+
+        """
         return sum(player.payoff or c(0) for player in self.get_players())
 
     def total_pay(self):
@@ -370,12 +415,16 @@ class Participant(SessionUser):
 
     def payoff_from_subsessions_display(self):
         complete = self.payoff_from_subsessions_is_complete()
-        payoff_from_subsessions = self.payoff_from_subsessions().to_money(self.session)
+        payoff_from_subsessions = self.payoff_from_subsessions().to_money(
+            self.session
+        )
         if complete:
             return payoff_from_subsessions
         return u'{} (incomplete)'.format(payoff_from_subsessions)
 
-    payoff_from_subsessions_display.short_description = 'payoff from subsessions'
+    payoff_from_subsessions_display.short_description = (
+        'payoff from subsessions'
+    )
 
     def payoff_from_subsessions_is_complete(self):
         return all(p.payoff is not None for p in self.get_players())
@@ -390,27 +439,7 @@ class Participant(SessionUser):
             return total_pay
         return u'{} (incomplete)'.format(total_pay)
 
-    def _assign_to_groups(self):
-        for p in self.get_players():
-            p._assign_to_group()
-
-    mturk_assignment_id = models.CharField(max_length = 50, null = True)
-    mturk_worker_id = models.CharField(max_length = 50, null = True)
-
-    # unique=True can't be set, because the same external ID could be reused in multiple sequences.
-    # however, it should be unique within the sequence.
-    label = models.CharField(
-        max_length = 50,
-        null = True,
-        doc="""Label assigned by the experimenter. Can be assigned by passing a GET param called "participant_label" to the participant's start URL"""
-    )
-
     def name(self):
         return id_label_name(self.pk, self.label)
 
-    def __unicode__(self):
-        return self.name()
-
-    class Meta:
-        ordering = ['pk']
 
