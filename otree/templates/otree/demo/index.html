@@ -16,28 +16,29 @@
         <div>
             {{ intro_text|safe }}
         </div>
+        {% if debug %}
+        <div>
+            You can add entries to this list in <code>sessions.py</code>.
+        </div>
+        {% endif %}
     </div>
 
-<div class="col-md-9">
-    <div class="list-group">
-    {% for s in session_info %}
-        <a href="{{ s.url }}" class="list-group-item" target="_blank">
-            {% if s.num_demo_parcitipants == 1 %}
-            <span class="label label-default pull-right">
-            {% elif s.num_demo_parcitipants == 2 %}
-            <span class="label label-info pull-right">
-            {% else %}
-            <span class="label label-danger pull-right">
-            {% endif %}
-            Participants: {{s.num_demo_parcitipants}}</span>
-            {{ s.display_name }}
-        </a>
-    {% endfor %}
+    <div class="col-md-9">
+        <div class="list-group">
+        {% for s in session_info %}
+            <a href="{{ s.url }}" class="list-group-item" target="_blank">
+                {% if s.num_demo_parcitipants == 1 %}
+                <span class="label label-default pull-right">
+                {% elif s.num_demo_parcitipants == 2 %}
+                <span class="label label-info pull-right">
+                {% else %}
+                <span class="label label-danger pull-right">
+                {% endif %}
+                Participants: {{s.num_demo_parcitipants}}</span>
+                {{ s.display_name }}
+            </a>
+        {% endfor %}
+        </div>
     </div>
-
-    {% if debug %}
-        <p>You can add entries to this list in <code>sessions.py</code>.</p>
-    {% endif %}
-</div>
 </div>
 {% endblock %}
