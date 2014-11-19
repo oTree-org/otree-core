@@ -7,7 +7,7 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version='0.2.220'
+version='0.2.221'
 
 if sys.argv[-1] == 'publish':
 
@@ -40,14 +40,14 @@ setup(
     author='C. Wickens',
     author_email='c.wickens+otree@googlemail.com',
     install_requires = [
-        'django-floppyforms',
-        'Django == 1.6.1',
+        'django-floppyforms==1.2.0',
+        'Django==1.7.1',
         'django-vanilla-views==1.0.2',
         'Babel==1.3',
         'raven==3.5.2',
         'django-inspect-model',
         'django-ptree-extra-views',
-        'dj-static==0.0.5',
+        'dj-static==0.0.6',
         'selenium==2.41.0',
         'xmltodict==0.9.0',
         'django-ptree-mturk',
@@ -58,9 +58,6 @@ setup(
         'django-easymoney==0.4.1',
         'handy==0.3',
         'Pillow',
-
-
-
     ],
     classifiers=[
         'Environment :: Web Environment',

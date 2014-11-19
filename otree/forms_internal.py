@@ -183,7 +183,8 @@ class BaseModelForm(forms.ModelForm):
             field = self.fields[field_name]
             if isinstance(field.widget, forms.RadioSelect):
                 # Fields with a RadioSelect should be rendered without the '---------' option,
-                # and with nothing selected by default, to match dropdowns conceptually.
+                # and with nothing selected by default, to match dropdowns conceptually,
+                # and because the '---------' is not necessary if no item is selected initially.
                 # if the selected item was the None choice, by removing it, nothing is selected.
 
                 if field.choices[0][0] in {u'', None}:
@@ -196,9 +197,12 @@ class BaseModelForm(forms.ModelForm):
 
     def clean(self):
         """
+        in oTree, a NullBooleaField should be null initially, but we should force the user to make a choice.
+
         2/17/2014: why don't i do this in the model field definition
         maybe because None is not a valid value for a submitted value,
         but it's OK for an initial value
+
         """
         cleaned_data = super(BaseModelForm, self).clean()
         for field_name in self.null_boolean_field_names():
@@ -208,8 +212,6 @@ class BaseModelForm(forms.ModelForm):
         return cleaned_data
 
     def _clean_fields(self):
-        """2014/3/28: this method is copied from django ModelForm source code. I am adding a validate_%s method that is a bit
-        simpler than clean_%s"""
         for name, field in self.fields.items():
             # value_from_datadict() gets the data from the data dictionaries.
             # Each widget type knows how to retrieve its own data, because some
@@ -235,8 +237,5 @@ class BaseModelForm(forms.ModelForm):
                 if hasattr(self, 'clean_%s' % name):
                     value = getattr(self, 'clean_%s' % name)()
                     self.cleaned_data[name] = value
-
             except forms.ValidationError as e:
-                self._errors[name] = self.error_class(e.messages)
-                if name in self.cleaned_data:
-                    del self.cleaned_data[name]
+                self.add_error(name, e)

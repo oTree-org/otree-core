@@ -17,7 +17,7 @@ from otree.views.demo import render_to_start_links_page
 import otree.constants
 import otree.session.models
 from otree.session.models import Participant, Session
-from otree.common_internal import add_params_to_url, format_payment_currency
+from otree.common_internal import add_params_to_url
 from otree.common import Currency as c
 from otree.common import Money
 
@@ -42,7 +42,7 @@ def get_callables(Model, fields_specific_to_this_subclass=None, for_export=False
 
     changelist_but_not_export = {
         'Player':
-           ['name',
+           [
             'link',
             '_pages_completed'],
         'Group':
@@ -353,6 +353,11 @@ class NonHiddenSessionListFilter(admin.SimpleListFilter):
         return [(session.id, session.id) for session
                 in otree.session.models.Session.objects.filter(hidden=False)]
 
+    # is queryset method still necessary in 1.7?
+    #def queryset(self, request, queryset):
+    #    return self.get_queryset(request, queryset)
+
+
     def queryset(self, request, queryset):
         """
         Returns the filtered queryset based on the value
@@ -391,9 +396,11 @@ class PlayerAdmin(OTreeBaseModelAdmin):
     list_filter = [NonHiddenSessionListFilter, 'subsession', 'group']
     list_per_page = 40
 
-    def queryset(self, request):
-        qs = super(PlayerAdmin, self).queryset(request)
+    def get_queryset(self, request):
+        qs = super(PlayerAdmin, self).get_queryset(request)
         return qs.filter(session__hidden=False)
+
+
 
 class GroupAdmin(OTreeBaseModelAdmin):
     change_list_template = CHANGE_LIST_TEMPLATE
@@ -401,16 +408,19 @@ class GroupAdmin(OTreeBaseModelAdmin):
     list_filter = [NonHiddenSessionListFilter, 'subsession']
     list_per_page = 40
 
-    def queryset(self, request):
-        qs = super(GroupAdmin, self).queryset(request)
+    def get_queryset(self, request):
+        qs = super(GroupAdmin, self).get_queryset(request)
         return qs.filter(session__hidden=False)
+
+
 
 class SubsessionAdmin(OTreeBaseModelAdmin):
     change_list_template = CHANGE_LIST_TEMPLATE
 
-    def queryset(self, request):
-        qs = super(SubsessionAdmin, self).queryset(request)
+    def get_queryset(self, request):
+        qs = super(SubsessionAdmin, self).get_queryset(request)
         return qs.filter(session__hidden=False)
+
 
     list_filter = [NonHiddenSessionListFilter]
     list_editable = ['_skip']
@@ -497,8 +507,8 @@ class ParticipantAdmin(OTreeBaseModelAdmin):
         return new_tab_link(url, 'Link')
     start_link.allow_tags = True
 
-    def queryset(self, request):
-        qs = super(ParticipantAdmin, self).queryset(request)
+    def get_queryset(self, request):
+        qs = super(ParticipantAdmin, self).get_queryset(request)
         return qs.filter(session__hidden=False)
 
 class SessionAdmin(OTreeBaseModelAdmin):
@@ -600,12 +610,23 @@ class SessionAdmin(OTreeBaseModelAdmin):
 
 
 
+
 def autodiscover():
     """
-    This function is copied from django 1.6's django/contrib/admin/__init__.py
-    I'm modifying it to look instead for _builtin.admin.
-    In Django 1.7, I will want to use django.utils.module_loading.autodiscover_modules,
-    which is better abstracted.
+    # django-1.7 -- will this still work?
+
+    The purpose of this function is to look for an admin.py not in an app's root directory, but rather under a _builtin
+    folder. This is because it's not common for an oTree programmer to customize the admin, so it's good to get admin.py
+    out of the way so the programmer can focus on other things. in fact, it may be OK to get rid of admin.py entirely,
+    and move to otree-core the code that registers the admin models.
+
+    The below function is copied from django 1.6's django/contrib/admin/__init__.py
+    I modified it to look instead for _builtin.admin.
+
+    If we keep this in Django 1.7, we may want to instead use django.utils.module_loading.autodiscover_modules,
+    which is better abstracted. But Django docs say this is now handled by AdminConfig rather than calling autodiscover()
+    explicitly: https://docs.djangoproject.com/en/dev/ref/contrib/admin/#django.contrib.admin.autodiscover.
+    i don't have any knowledge of what AdminConfig is.
     """
 
     from django.contrib.admin.sites import site

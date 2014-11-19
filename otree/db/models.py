@@ -48,9 +48,6 @@ class _OtreeModelFieldMixin(object):
     def set_otree_properties(self, kwargs):
         self.doc = kwargs.pop('doc', None)
 
-        # for quiz questions
-        self.correct_answer = kwargs.pop('correct_answer', None)
-        self.correct_answer_explanation = kwargs.pop('correct_answer_explanation', None)
 
     def __init__(self, *args,  **kwargs):
         self.set_otree_properties(kwargs)

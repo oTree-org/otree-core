@@ -14,8 +14,12 @@ from django.http import HttpResponse
 from otree.templatetags import ajax_admin_list
 
 
+# django-1.7
 # NOTE: this function has been adapted from django.contrib.admin.options.ModelAdmin.changelist_view of Django 1.6. 
 # It may NOT work with other version of Django.
+# note from CW to consultant: the AJAX change list feature as well as several other admin customizations were
+# created by a previous developer. if any of this code causes non-trivial problems with the upgrade to 1.7, i can
+# contact this developer and get his help in fixing it, since he knows the code best.
 def get_cl(request, model_admin):
     from django.contrib.admin.views.main import ERROR_FLAG
     opts = model_admin.model._meta

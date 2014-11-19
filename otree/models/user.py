@@ -1,6 +1,7 @@
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 
+from otree.session.models import Session, SessionExperimenter
 from otree.fields import RandomCharField
 from otree.db import models
 import otree.constants as constants
@@ -22,7 +23,7 @@ class User(SaveTheChange, models.Model):
         raise NotImplementedError()
 
     session = models.ForeignKey(
-        'session.Session',
+        Session,
         related_name = '%(app_label)s_%(class)s')
 
 
@@ -61,7 +62,7 @@ class User(SaveTheChange, models.Model):
 class Experimenter(User):
 
     session_experimenter = models.ForeignKey(
-        'session.SessionExperimenter',
+        SessionExperimenter,
         null=True,
         related_name='experimenter'
     )
