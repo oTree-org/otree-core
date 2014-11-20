@@ -47,6 +47,7 @@ class _OtreeModelFieldMixin(object):
 
     def set_otree_properties(self, kwargs):
         self.doc = kwargs.pop('doc', None)
+        self.timeout_default = kwargs.pop('timeout_default', None)
 
 
     def __init__(self, *args,  **kwargs):
