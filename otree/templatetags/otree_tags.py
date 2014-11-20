@@ -4,7 +4,7 @@ Template tags to for the otree template users.
 
 from django import template
 from django.template.loader import render_to_string
-
+from otree.common import Currency
 
 register = template.Library()
 
@@ -25,3 +25,6 @@ class NextButtonNode(template.Node):
 
 
 register.tag('next_button', NextButtonNode.parse)
+
+
+register.filter('c',Currency)

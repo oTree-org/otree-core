@@ -32,6 +32,7 @@ class DemoIndex(vanilla.View):
                     'name': session_type.name,
                     'display_name': session_type.display_name,
                     'url': start_link_url(session_type.name),
+                    'num_demo_parcitipants': session_type.num_demo_participants
                 }
             )
         return TemplateResponse(

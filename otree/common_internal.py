@@ -6,6 +6,7 @@ from decimal import Decimal
 from os.path import dirname, join
 
 import babel.numbers
+from babel.core import Locale
 from django import forms
 from django.conf import settings
 from django.template.defaultfilters import title
@@ -146,9 +147,4 @@ def expand_choice_tuples(choices):
     if not isinstance(first_choice, (list, tuple)):
         choices = [(value, value) for value in choices]
     return choices
-
-def format_payment_currency(amount):
-    return format_currency(amount, settings.PAYMENT_CURRENCY_CODE, locale=settings.CURRENCY_LOCALE)
-
-
 

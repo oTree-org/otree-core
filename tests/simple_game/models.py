@@ -56,10 +56,19 @@ class Player(otree.models.BasePlayer):
         """
     )
 
-    def my_field_error_message(self, value):
-        if not 0 <= value <= 10:
-            return 'Value is not in allowed range'
+    def my_field_bounds(self):
+        return [5, 10]
 
+    add100_1 = models.PositiveIntegerField()
+    add100_2 = models.PositiveIntegerField()
+
+    even_int = models.PositiveIntegerField()
+
+    after_next_button_field = models.NullBooleanField()
+
+    def even_int_error_message(self, value):
+        if value % 2:
+            return 'Must be an even number'
 
     def role(self):
         # you can make this depend of self.id_in_group

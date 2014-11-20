@@ -40,7 +40,7 @@ class Command(BaseCommand):
             print 'Error: This subsession was already paid through oTree.'
             return
 
-        if not (settings.CURRENCY_CODE == 'USD' and settings.CURRENCY_DECIMAL_PLACES == 2):
+        if not (settings.PAYMENT_CURRENCY_CODE == 'USD' and settings.CURRENCY_DECIMAL_PLACES == 2):
             print 'Error. CURRENCY_CODE must be set to USD and CURRENCY_DECIMAL_PLACES must be set to 2'
             return
         else:

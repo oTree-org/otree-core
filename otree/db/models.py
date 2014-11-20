@@ -49,11 +49,6 @@ class _OtreeModelFieldMixin(object):
         self.doc = kwargs.pop('doc', None)
         self.timeout_default = kwargs.pop('timeout_default', None)
 
-        # for quiz questions
-        # TODO: remove this, it will probably not be used
-        self.correct_answer = kwargs.pop('correct_answer', None)
-        self.correct_answer_explanation = kwargs.pop('correct_answer_explanation', None)
-
     def __init__(self, *args,  **kwargs):
         self.set_otree_properties(kwargs)
         self.fix_choices_arg(kwargs)
@@ -97,6 +92,8 @@ class _OtreeNotNullableModelFieldMixin(_OtreeModelFieldMixin):
 
 class MoneyField(_OtreeNullableModelFieldMixin, easymoney.MoneyField):
     widget = _CurrencyInput
+
+    MONEY_CLASS = otree.common.Money
 
 class CurrencyField(_OtreeNullableModelFieldMixin, easymoney.MoneyField):
     widget = _CurrencyInput
