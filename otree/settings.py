@@ -35,6 +35,7 @@ def augment_settings(settings):
             'otree.models_concrete',
             'otree.timeout',
             'djcelery',
+            'kombu.transport.django',
         ],
         settings['INSTALLED_APPS'],
         settings['INSTALLED_OTREE_APPS']
@@ -71,6 +72,9 @@ def augment_settings(settings):
         'TEMPLATE_DIRS': new_template_dirs,
         'STATICFILES_DIRS': new_staticfiles_dirs,
         'MIDDLEWARE_CLASSES': new_middleware_classes,
+
+        'BROKER_URL': 'django://',
+        'CELERY_ACCEPT_CONTENT': ['pickle', 'json', 'msgpack', 'yaml'],
     }
 
 
