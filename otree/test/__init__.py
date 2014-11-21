@@ -1,4 +1,5 @@
-from importlib import import_module
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 #==============================================================================
 # DOC
@@ -24,6 +25,8 @@ from importlib import import_module
 # IMPORTS
 #==============================================================================
 
+from importlib import import_module
+
 client = import_module('otree.test.client')
 
 
@@ -31,13 +34,7 @@ client = import_module('otree.test.client')
 # CLIENTS
 #==============================================================================
 
-class Bot(client.PlayerBot):
-
-    def play(self):
-        return super(Bot, self).play()
-
-    def validate_play(self):
-        return super(Bot, self).validate_play()
+class Bot(client.BasePlayerBot):
 
     def submit(self, ViewClass, param_dict=None):
         return super(Bot, self).submit(ViewClass, param_dict)
@@ -48,13 +45,7 @@ class Bot(client.PlayerBot):
         )
 
 
-class ExperimenterBot(client.ExperimenterBot):
-
-    def play(self):
-        return super(ExperimenterBot, self).play()
-
-    def validate_play(self):
-        return super(ExperimenterBot, self).validate_play()
+class ExperimenterBot(client.BaseExperimenterBot):
 
     def submit(self, ViewClass, param_dict=None):
         return super(ExperimenterBot, self).submit(ViewClass, param_dict)

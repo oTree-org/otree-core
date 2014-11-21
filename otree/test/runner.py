@@ -19,6 +19,7 @@ import contextlib
 import collections
 import itertools
 import time
+import random
 
 from django.utils.importlib import import_module
 
@@ -47,6 +48,19 @@ logger = logging.getLogger(__name__)
 
 
 #==============================================================================
+# DUMMY EXPERIMENTER BOT
+#==============================================================================
+
+class DummyExperimenterBot(client.BaseExperimenterBot):
+
+    def play(self):
+        pass
+
+    def validate_play(self):
+        pass
+
+
+#==============================================================================
 # TEST CASE
 #==============================================================================
 
@@ -65,6 +79,8 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         return "ExperimentTest For '{}'".format(self.session_name)
 
     def zip_submits(self, bots):
+        bots = list(bots)
+        random.shuffle(bots)
         submits = map(lambda b: b.submits, bots)
         return list(itertools.izip_longest(*submits))
 
@@ -83,7 +99,7 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
 
         # ExperimenterBot is optional
         ExperimenterBotCls = getattr(
-            test_module, 'ExperimenterBot', client.ExperimenterBot
+            test_module, 'ExperimenterBot', DummyExperimenterBot
         )
 
         # create the bots
@@ -111,12 +127,12 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
                     pending[submit] += 1
 
             # ejecutar un grupo
-            for group in (submit_groups.pop() if submit_groups else ()):
-                for submit in group:
-                    if submit is None:
-                        continue
-                    if not submit.execute():
-                        pending[submit] = 1
+            group = submit_groups.pop(0) if submit_groups else ()
+            for submit in group:
+                if submit is None:
+                    continue
+                if not submit.execute():
+                    pending[submit] = 1
 
         logger.info("Stoping bots for '{}'".format(app_label))
         for bot in bots:
@@ -206,21 +222,15 @@ def apps_from_sessions(session_names=None):
 
 @contextlib.contextmanager
 def covering(session_names=None):
-
-    apps = apps_from_sessions(session_names)
-
     package_names = set()
-    for app_label in apps:
+    for app_label in apps_from_sessions(session_names):
         for module_name in COVERAGE_MODELS:
             module = '{}.{}'.format(app_label, module_name)
             package_names.add(module)
 
     cov = coverage.coverage(source=package_names)
-    cov.start()
 
-    for app_label in apps:
-        models_module = '{}.models'.format(app_label)
-        reload(sys.modules[models_module])
+    cov.start()
     try:
         yield cov
     finally:

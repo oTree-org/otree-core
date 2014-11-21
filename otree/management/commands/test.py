@@ -12,6 +12,14 @@ from django.core.management.base import BaseCommand
 
 from otree.test import runner
 
+#==============================================================================
+# CONSTANTS
+#==============================================================================
+
+COVERAGE_CONSOLE = "console"
+COVERAGE_HTML = "HTML"
+COVERAGE_ALL = "all"
+
 
 #==============================================================================
 # LOGGER
@@ -28,8 +36,11 @@ class Command(BaseCommand):
     help = ('Discover and run experiment tests in the specified '
             'modules or the current directory.')
     option_list = BaseCommand.option_list + (
-        make_option('-c', '--coverage', action='store_true', dest='coverage',
-        help='Execute code-coverage over the code of tested experiments'),
+        make_option(
+            '-c', '--coverage', action='store', dest='coverage',
+            choices=(COVERAGE_ALL, COVERAGE_CONSOLE, COVERAGE_HTML),
+            help='Execute code-coverage over the code of tested experiments'
+        ),
     )
     args = '[experiment_name|experiment_name|experiment_name]...'
 
@@ -49,22 +60,24 @@ class Command(BaseCommand):
         test_runner = runner.OTreeExperimentTestRunner(**options)
 
         if coverage:
-            with runner.covering(test_labels) as coverage:
+            with runner.covering(test_labels) as coverage_report:
                 failures = test_runner.run_tests(test_labels)
         else:
             failures = test_runner.run_tests(test_labels)
 
         if coverage:
             logger.info("Coverage Report")
-            coverage.report()
-            html_coverage_results_dir = '_coverage_results'
-            percent_coverage = coverage.html_report(
-                directory=html_coverage_results_dir
-            )
-            msg = ("See '{}/index.html' for detailed results.").format(
-                html_coverage_results_dir
-            )
-            logger.info(msg)
+            if coverage in [COVERAGE_CONSOLE, COVERAGE_ALL]:
+                coverage_report.report()
+            if coverage in [COVERAGE_HTML, COVERAGE_ALL]:
+                html_coverage_results_dir = '_coverage_results'
+                percent_coverage = coverage_report.html_report(
+                    directory=html_coverage_results_dir
+                )
+                msg = ("See '{}/index.html' for detailed results.").format(
+                    html_coverage_results_dir
+                )
+                logger.info(msg)
 
         if failures:
             sys.exit(bool(failures))

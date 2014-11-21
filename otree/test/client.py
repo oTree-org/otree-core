@@ -64,13 +64,22 @@ class Submit(object):
             if isinstance(self.data[key], Currency):
                 self.data[key] = decimal.Decimal(data[key])
 
+    def __repr__(self):
+        return "{}, {}".format(self.ViewClass.__name__, self.data)
+
     def execute_core(self):
         """Execute the real call over the client, if it return True, the submit
         is finished
 
         """
-        while self.bot.on_wait_page():
-            return False
+        if self.bot.on_wait_page():
+            try:
+                self.bot.response = self.bot.get(self.bot.url, follow=True)
+                self.bot.check_200()
+                self.bot.set_path()
+            finally:
+                return False
+
         self.bot.assert_is_on(self.ViewClass)
         if self.data:
             logger.info('{}, {}'.format(self.bot.path, self.data))
@@ -200,7 +209,7 @@ class BaseClient(test.Client):
 # PLAYER BOT CLASS
 #==============================================================================
 
-class PlayerBot(BaseClient):
+class BasePlayerBot(BaseClient):
 
     def __init__(self, user, **kwargs):
         app_label = user.subsession.app_name
@@ -219,7 +228,7 @@ class PlayerBot(BaseClient):
         self._group_id = user.group.id
         self._subsession_id = user.subsession.id
 
-        super(PlayerBot, self).__init__(**kwargs)
+        super(BasePlayerBot, self).__init__(**kwargs)
 
     def stop(self):
         if self.player.payoff is None:
@@ -231,7 +240,7 @@ class PlayerBot(BaseClient):
                 self.player.participant.code
             )
             raise AssertionError(msg)
-        super(PlayerBot, self).run_validate()
+        super(BasePlayerBot, self).stop()
 
     @property
     def player(self):
@@ -256,14 +265,14 @@ class PlayerBot(BaseClient):
 # ESPERIMENT BOT CLASS
 #==============================================================================
 
-class ExperimenterBot(BaseClient):
+class BaseExperimenterBot(BaseClient):
 
     def __init__(self, subsession, **kwargs):
         self._SubsessionClass = type(subsession)
         self._subsession_id = subsession.id
         self._experimenter_id = subsession._experimenter.id
 
-        super(ExperimenterBot, self).__init__(**kwargs)
+        super(BaseExperimenterBot, self).__init__(**kwargs)
 
     @property
     def subsession(self):
