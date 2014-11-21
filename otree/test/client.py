@@ -13,13 +13,13 @@
 # IMPORTS
 #==============================================================================
 
-import sys
 import re
-import time
 import importlib
 import urlparse
 import decimal
 import logging
+import collections
+import abc
 
 from django import test
 
@@ -27,14 +27,6 @@ from easymoney import Money as Currency
 
 from otree import constants
 from otree.models.user import Experimenter
-
-
-#==============================================================================
-# CONSTANTS
-#==============================================================================
-
-SECONDS_TO_WAIT_PER_BOT = 1
-
 
 #==============================================================================
 # LOGGER
@@ -57,78 +49,98 @@ class ClientError(Exception):
 
 
 #==============================================================================
+# CLASS SUBMITS
+#==============================================================================
+
+class Submit(object):
+
+    def __init__(self, bot, ViewClass, valid_input, data):
+        self.bot = bot
+        self.ViewClass = ViewClass
+        self.valid_input = valid_input
+        self.data = data or {}
+
+        # clean data
+        for key in self.data:
+            if isinstance(self.data[key], Currency):
+                self.data[key] = decimal.Decimal(data[key])
+
+    def execute_core(self):
+        """Execute the real call over the client, if it return True, the submit
+        is finished
+
+        """
+        while self.bot.on_wait_page():
+            return False
+        self.bot.assert_is_on(self.ViewClass)
+        if self.data:
+            logger.info('{}, {}'.format(self.bot.path, self.data))
+        else:
+            logger.info(self.bot.path)
+        self.bot.response = self.bot.post(self.bot.url, self.data, follow=True)
+        self.bot.check_200()
+        self.bot.set_path()
+        return True
+
+    def execute(self):
+        """This method execute the submit and validate if all is ok according
+        to the configuration
+
+        """
+        end = self.execute_core()
+        has_errors = self.bot.page_redisplayed_with_errors()
+
+        if self.valid_input and has_errors:
+            form = self.bot.response.context_data['form']
+            errors = [
+                "{}: {}".format(k, repr(v)) for k, v in form.errors.items()
+            ]
+            msg = ('Input was rejected.\nPath: {}\nErrors: {}\n').format(
+                self.bot.path, errors
+            )
+            raise AssertionError(msg)
+        elif not self.valid_input and not has_errors:
+            msg = "Invalid input was accepted. Path: {}, params: {}".format(
+                self.bot.path, self.data
+            )
+            raise AssertionError(msg)
+        return end
+
+
+#==============================================================================
 # BASE CLIENT
 #==============================================================================
 
 class BaseClient(test.Client):
+
+    __metaclass__ = abc.ABCMeta
 
     def __init__(self, **kwargs):
         self.response = None
         self.url = None
         self.path = None
         self.num_bots = self.subsession.session.type().num_bots
+        self.submits = collections.deque()
         super(BaseClient, self).__init__()
 
-    def _submit_core(self, ViewClass, data=None):
-        data = data or {}
-        for key in data:
-            if isinstance(data[key], Currency):
-                data[key] = decimal.Decimal(data[key])
-
-        # if it's a waiting page, wait N seconds and retry
-        first_wait_page_try_time = time.time()
-        while self.on_wait_page():
-            logger.info('{} (wait page)'.format(self.path))
-
-            #quicker sleep since it's bots playing the game
-            time.sleep(1)
-            self.retry_wait_page()
-            seconds_to_wait = SECONDS_TO_WAIT_PER_BOT * self.num_bots
-            if time.time() - first_wait_page_try_time > seconds_to_wait:
-                msg = ("Player appears to be stuck on waiting page "
-                       "(waiting for over {} seconds)")
-                raise ClientError(msg.format(seconds_to_wait))
-        self.assert_is_on(ViewClass)
-        if data:
-            logger.info('{}, {}'.format(self.path, data))
-        else:
-            logger.info(self.path)
-        self.response = self.post(self.url, data, follow=True)
-        self.check_200()
-        self.set_path()
-
-    def _submit_with_valid_input(self, ViewClass, data=None):
-        self._submit_core(ViewClass, data)
-
-        if self.page_redisplayed_with_errors():
-            errors = [
-                "{}: {}".format(k, repr(v))
-                for k, v in self.response.context_data['form'].errors.items()
-            ]
-            msg = ('Input was rejected.\nPath: {}\nErrors: {}\n').format(
-                self.path, errors
-            )
-            raise AssertionError(msg)
-
-    def _play(self, failure_queue):
-        self.failure_queue = failure_queue
-        try:
-            self.play()
-        except:
-            self.failure_queue.put(True)
-            raise
-
-    def run(self, *args, **kwargs):
-        return self._play(*args, **kwargs)
-
-    def play(self):
-        raise NotImplementedError()
-
     def start(self):
-        # do i need to parse out the GET data into the data arg?
+        """Recolect all the submits in self.submit"""
         self.response = self.get(self._user._start_url(), follow=True)
         self.set_path()
         self.check_200()
+        self.play()
+
+    @abc.abstractmethod
+    def play(self):
+        raise NotImplementedError()
+
+    def validate_status(self):
+        """Execute the validate_play after all runs are ended"""
+        self.validate_play()
+
+    @abc.abstractmethod
+    def validate_play(self):
+        raise NotImplementedError()
 
     def check_200(self):
         # 2014-10-22: used to raise an exception here but i don't think that's
@@ -153,25 +165,6 @@ class BaseClient(test.Client):
             )
             raise AssertionError(msg)
 
-    def submit(self, ViewClass, param_dict=None):
-        self._submit_with_valid_input(ViewClass, param_dict)
-
-    def submit_with_invalid_input(self, ViewClass, param_dict=None):
-        self.submit(ViewClass, param_dict)
-        if not self.page_redisplayed_with_errors():
-            msg = "Invalid input was accepted. Path: {}, params: {}".format(
-                self.path, param_dict
-            )
-            raise AssertionError(msg)
-
-    def retry_wait_page(self):
-        # check if another thread has failed.
-        if self.failure_queue.qsize() > 0:
-            sys.exit(0)
-        self.response = self.get(self.url, follow=True)
-        self.check_200()
-        self.set_path()
-
     def on_wait_page(self):
         return (
             self.response.get(constants.wait_page_http_header) ==
@@ -191,6 +184,18 @@ class BaseClient(test.Client):
         except IndexError:
             pass
 
+    def submit(self, ViewClass, param_dict=None):
+        sbmt = Submit(
+            bot=self, ViewClass=ViewClass, valid_input=True, data=param_dict
+        )
+        self.submits.append(sbmt)
+
+    def submit_with_invalid_input(self, ViewClass, param_dict=None):
+        sbmt = Submit(
+            bot=self, ViewClass=ViewClass, valid_input=False, data=param_dict
+        )
+        self.submits.append(sbmt)
+
 
 #==============================================================================
 # PLAYER BOT CLASS
@@ -199,7 +204,6 @@ class BaseClient(test.Client):
 class PlayerBot(BaseClient):
 
     def __init__(self, user, **kwargs):
-        player = user
         app_label = user.subsession.app_name
         models_module = importlib.import_module('{}.models'.format(app_label))
 
@@ -208,21 +212,18 @@ class PlayerBot(BaseClient):
         self._SubsessionClass = models_module.Subsession
         self._UserClass = self._PlayerClass
 
-        if player.group is None:
+        if user.group is None:
             msg = "Player still not in group"
             raise AssertionError(msg)
 
-        self._player_id = player.id
-        self._group_id = player.group.id
-        self._subsession_id = player.subsession.id
+        self._player_id = user.id
+        self._group_id = user.group.id
+        self._subsession_id = user.subsession.id
 
         super(PlayerBot, self).__init__(**kwargs)
 
-    def _play(self, failure_queue):
-        super(PlayerBot, self)._play(failure_queue)
-        time.sleep(1)
+    def validate_status(self):
         if self.player.payoff is None:
-            self.failure_queue.put(True)
             msg = (
                 "App {}: Player '{}': payoff is still None at the end of the "
                 "subsession. Check in tests.py if the bot completes the game."
@@ -230,7 +231,8 @@ class PlayerBot(BaseClient):
                 self.subsession._meta.app_label,
                 self.player.participant.code
             )
-            raise ClientError(msg)
+            raise AssertionError(msg)
+        super(PlayerBot, self).run_validate()
 
     @property
     def player(self):
@@ -255,7 +257,6 @@ class PlayerBot(BaseClient):
 # ESPERIMENT BOT CLASS
 #==============================================================================
 
-# Currently not being used, but we may start using this again soon
 class ExperimenterBot(BaseClient):
 
     def __init__(self, subsession, **kwargs):
@@ -264,11 +265,6 @@ class ExperimenterBot(BaseClient):
         self._experimenter_id = subsession._experimenter.id
 
         super(ExperimenterBot, self).__init__(**kwargs)
-
-    def play(self):
-        # it's OK for play to be left blank because the experimenter might
-        # not have anything to do
-        pass
 
     @property
     def subsession(self):

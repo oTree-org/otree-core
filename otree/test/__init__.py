@@ -36,6 +36,9 @@ class Bot(client.PlayerBot):
     def play(self):
         return super(Bot, self).play()
 
+    def validate_play(self):
+        return super(Bot, self).validate_play()
+
     def submit(self, ViewClass, param_dict=None):
         return super(Bot, self).submit(ViewClass, param_dict)
 
@@ -49,6 +52,9 @@ class ExperimenterBot(client.ExperimenterBot):
 
     def play(self):
         return super(ExperimenterBot, self).play()
+
+    def validate_play(self):
+        return super(ExperimenterBot, self).validate_play()
 
     def submit(self, ViewClass, param_dict=None):
         return super(ExperimenterBot, self).submit(ViewClass, param_dict)
