@@ -1,3 +1,4 @@
+import django.forms as django_forms
 import floppyforms.__future__ as forms
 from floppyforms.__future__.models import FORMFIELD_OVERRIDES as FLOPPYFORMS_FORMFIELD_OVERRIDES
 from floppyforms.__future__.models import ModelFormMetaclass as FloppyformsModelFormMetaclass
@@ -190,6 +191,37 @@ class BaseModelForm(forms.ModelForm):
                 if field.choices[0][0] in {u'', None}:
                     field.choices = field.choices[1:]
 
+        self._setup_field_boundaries()
+
+    def _get_field_boundaries(self, field_name):
+        """
+        Get the field boundaries from a method defined on the model.
+
+        Example (will get boundaries from `amount_bounds`):
+
+            class MyModel(...):
+                amount = models.IntegerField()
+
+                def amount_bounds(self):
+                    return [1, 5]
+
+        If the method is not found, it will return ``(None, None)``.
+        """
+        method_name = '%s_bounds' % field_name
+        if hasattr(self.instance, method_name):
+            method = getattr(self.instance, method_name)
+            return method()
+        return None, None
+
+    def _setup_field_boundaries(self):
+        for field_name, field in self.fields.items():
+            # We want to support both, django and floppyforms widgets.
+            if isinstance(field.widget, (django_forms.NumberInput, forms.NumberInput)):
+                min_bound, max_bound = self._get_field_boundaries(field_name)
+                if min_bound is not None:
+                    field.widget.attrs['min'] = min_bound
+                if max_bound is not None:
+                    field.widget.attrs['max'] = max_bound
 
     def null_boolean_field_names(self):
         null_boolean_fields_in_model = [field.name for field in self.Meta.model._meta.fields if isinstance(field, models.NullBooleanField)]
