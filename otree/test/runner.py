@@ -14,13 +14,11 @@
 #==============================================================================
 
 import sys
-import decimal
-import random
-import time
 import logging
-import Queue
-import threading
 import contextlib
+import collections
+import itertools
+import time
 
 from django.utils.importlib import import_module
 
@@ -32,14 +30,13 @@ from otree.test import client
 
 import coverage
 
-import easymoney
-
-
 #==============================================================================
 # CONSTANTS
 #==============================================================================
 
 COVERAGE_MODELS = ['models', 'tests', 'views']
+
+MAX_ATTEMPTS = 100
 
 
 #==============================================================================
@@ -67,6 +64,10 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
     def __str__(self):
         return "ExperimentTest For '{}'".format(self.session_name)
 
+    def zip_submits(self, bots):
+        submits = map(lambda b: b.submits, bots)
+        return list(itertools.izip_longest(*submits))
+
     def _run_subsession(self, subsession):
         app_label = subsession.app_name
 
@@ -78,36 +79,48 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         except ImportError:
             self.fail("'{}' has no tests.py module".format(app_label))
 
-        logger.info("Creating bots for '{}'".format(app_label))
+        logger.info("Creating and staring bots for '{}'".format(app_label))
 
         # ExperimenterBot is optional
         ExperimenterBotCls = getattr(
             test_module, 'ExperimenterBot', client.ExperimenterBot
         )
+
+        # create the bots
+        bots = []
+
         ex_bot = ExperimenterBotCls(subsession)
-
-        failure_queue = Queue.Queue()
-        jobs = []
-
-        # create the threads
         ex_bot.start()
-        jobs.append(
-            threading.Thread(target=ex_bot.run, args=(failure_queue,))
-        )
+        bots.append(ex_bot)
 
         for player in subsession.player_set.all():
             bot = test_module.PlayerBot(player)
             bot.start()
-            jobs.append(
-                threading.Thread(target=bot.run, args=(failure_queue,))
-            )
+            bots.append(bot)
 
-        # run and wait
-        for job in jobs: job.start()
-        for job in jobs: job.join()
+        submit_groups = self.zip_submits(bots)
+        pending = collections.OrderedDict()
+        while pending or submit_groups:
+            for submit, attempts in tuple(pending.items()):
+                if attempts > MAX_ATTEMPTS:
+                    msg = "Max attepts reached in  submit '{}'"
+                    raise AssertionError(msg.format(submit))
+                if submit.execute():
+                    pending.pop(submit)
+                else:
+                    pending[submit] += 1
 
-        if not failure_queue.qsize():
-            logger.info("{}: tests completed successfully".format(app_label))
+            # ejecutar un grupo
+            for group in (submit_groups.pop() if submit_groups else ()):
+                for submit in group:
+                    if submit is None:
+                        continue
+                    if not submit.execute():
+                        pending[submit] = 1
+
+        logger.info("Stoping bots for '{}'".format(app_label))
+        for bot in bots:
+            bot.stop()
 
     def runTest(self):
         logger.info("Creating session for experimenter on session '{}'".format(
@@ -170,7 +183,6 @@ class OTreeExperimentTestRunner(runner.DiscoverRunner):
         )
 
 
-
 #==============================================================================
 # HELPER
 #==============================================================================
@@ -213,4 +225,3 @@ def covering(session_names=None):
         yield cov
     finally:
         cov.stop()
-

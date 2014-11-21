@@ -18,7 +18,6 @@ import importlib
 import urlparse
 import decimal
 import logging
-import collections
 import abc
 
 from django import test
@@ -120,7 +119,7 @@ class BaseClient(test.Client):
         self.url = None
         self.path = None
         self.num_bots = self.subsession.session.type().num_bots
-        self.submits = collections.deque()
+        self.submits = []
         super(BaseClient, self).__init__()
 
     def start(self):
@@ -134,7 +133,7 @@ class BaseClient(test.Client):
     def play(self):
         raise NotImplementedError()
 
-    def validate_status(self):
+    def stop(self):
         """Execute the validate_play after all runs are ended"""
         self.validate_play()
 
@@ -222,7 +221,7 @@ class PlayerBot(BaseClient):
 
         super(PlayerBot, self).__init__(**kwargs)
 
-    def validate_status(self):
+    def stop(self):
         if self.player.payoff is None:
             msg = (
                 "App {}: Player '{}': payoff is still None at the end of the "
