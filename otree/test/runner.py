@@ -91,8 +91,8 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
             test_module_name = '{}.tests'.format(app_label)
             test_module = import_module(test_module_name)
             logger.info("Found test '{}'".format(test_module_name))
-        except ImportError:
-            self.fail("'{}' has no tests.py module".format(app_label))
+        except ImportError as err:
+            self.fail(unicode(err))
 
         logger.info("Creating and staring bots for '{}'".format(app_label))
 

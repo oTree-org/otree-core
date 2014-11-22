@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 # <standard imports>
 from __future__ import division
-from otree.db import models
+
+import random
+
 import otree.models
+from otree.db import models
 from otree import widgets
 from otree.common import Currency, currency_range, safe_json
-import random
+
 # </standard imports>
 
 author = 'Your name here'
@@ -25,6 +28,7 @@ class Constants:
 
 class Subsession(otree.models.BaseSubsession):
     pass
+
 
 class Group(otree.models.BaseGroup):
     # <built-in>
