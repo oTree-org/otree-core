@@ -13,7 +13,6 @@
 # IMPORTS
 #==============================================================================
 
-import sys
 import logging
 import contextlib
 import collections
