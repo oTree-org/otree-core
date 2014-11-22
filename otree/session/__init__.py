@@ -30,7 +30,8 @@ def lcmm(*args):
 class SessionType(object):
     def __init__(self, name, subsession_apps, fixed_pay, num_bots,
                  display_name=None, money_per_point=1, #FIXME: should be defined in the user's project
-                 num_demo_participants = None, doc=None, assign_to_groups_on_the_fly=False):
+                 num_demo_participants = None, doc=None, assign_to_groups_on_the_fly=False,
+                 show_on_demo_page=True):
 
         if not re.match(r'^\w+$', name):
             raise ValueError('Session "{}": name must be alphanumeric with no spaces.'.format(name))
@@ -62,27 +63,22 @@ class SessionType(object):
             participants_per_group_list.append(players_per_group)
         return lcmm(*participants_per_group_list)
 
+def session_types_list(demo_only=False):
+    session_types = get_session_module().session_types()
+    if demo_only:
+        return [
+            session_type for session_type in session_types
+            if get_session_module().show_on_demo_page(session_type.name)
+        ]
+    else:
+        return session_types
 
-class SessionTypeDirectory(object):
-    def __init__(self, demo_only=False):
-        self.demo_only = demo_only
-        self.session_types_as_dict = {
-            session_type.name.lower(): session_type
-            for session_type in self.select(demo_only)
-        }
 
-    def select(self, demo_only=False):
-        session_types = get_session_module().session_types()
-        if demo_only:
-            return [
-                session_type for session_type in session_types
-                if get_session_module().show_on_demo_page(session_type.name)
-            ]
-        else:
-            return session_types
-
-    def get_item(self, session_type_name):
-        return self.session_types_as_dict[session_type_name.lower()]
+def session_types_dict(demo_only=False):
+    return {
+        session_type.name: session_type
+        for session_type in session_types_list(demo_only)
+    }
 
 
 @transaction.atomic
@@ -96,7 +92,7 @@ def create_session(type_name, label='', num_participants=None,
     #~ 2014-9-22: preassign to groups for demo mode.
 
     try:
-        session_type = SessionTypeDirectory().get_item(type_name)
+        session_type = session_types_dict()[type_name]
     except KeyError:
         raise ValueError('Session type "{}" not found in sessions.py'.format(type_name))
     session = Session(

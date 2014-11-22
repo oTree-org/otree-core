@@ -186,8 +186,7 @@ class OTreeExperimentTestRunner(runner.DiscoverRunner):
     def build_suite(self, session_names, extra_tests, **kwargs):
 
         if not session_names:
-            directory = session.SessionTypeDirectory()
-            session_names = directory.session_types_as_dict.keys()
+            session_names = session.session_types_dict().keys()
 
         tests = []
         for session_name in session_names:
@@ -203,14 +202,13 @@ class OTreeExperimentTestRunner(runner.DiscoverRunner):
 #==============================================================================
 
 def apps_from_sessions(session_names=None):
-    directory = session.SessionTypeDirectory()
     if session_names:
         session_names = frozenset(session_names)
     else:
-        session_names = frozenset(directory.session_types_as_dict.keys())
+        session_names = frozenset(session.session_types_dict().keys())
     apps = set()
     for sname in session_names:
-        sssn = directory.get_item(sname)
+        sssn = session.session_types_dict()[sname]
         apps.update(sssn.subsession_apps)
     return apps
 

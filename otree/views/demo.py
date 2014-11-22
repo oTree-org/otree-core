@@ -5,7 +5,7 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpRespons
 import vanilla
 import otree.constants as constants
 from otree.session.models import Session
-from otree.session import create_session, SessionTypeDirectory
+from otree.session import create_session, session_types_dict, session_types_list
 import threading
 import time
 import urllib
@@ -26,7 +26,7 @@ class DemoIndex(vanilla.View):
         intro_text = getattr(get_session_module(), 'demo_page_intro_text', '')
 
         session_info = []
-        for session_type in SessionTypeDirectory(demo_only=True).select():
+        for session_type in session_types_list(demo_only=True):
             session_info.append(
                 {
                     'name': session_type.name,
@@ -102,7 +102,7 @@ def render_to_start_links_page(request, session, is_demo_page):
             'is_demo_page': is_demo_page,
     }
 
-    session_type = SessionTypeDirectory(demo_only=True).get_item(session.type_name)
+    session_type = session_types_dict(demo_only=True)[session.type_name]
     context_data.update(info_about_session_type(session_type))
 
     return TemplateResponse(
@@ -120,16 +120,11 @@ class Demo(vanilla.View):
     def get(self, *args, **kwargs):
         session_type_name=kwargs['session_type']
 
-
-        session_dir = SessionTypeDirectory(demo_only=True)
+        session_dir = session_types_dict(demo_only=True)
         try:
-            session_dir.get_item(session_type_name)
+            session_dir[session_type_name]
         except KeyError:
-            return HttpResponseNotFound('Session type "{}" not found'.format(session_type_name))
-        else:
-            if not session_type_name in [st.name for st in session_dir.select()]:
-                return HttpResponseNotFound('Session type "{}" not enabled for demo'.format(session_type_name))
-
+            return HttpResponseNotFound('Session type "{}" not found, or not enabled for demo'.format(session_type_name))
 
         if self.request.is_ajax():
             session = get_session(session_type_name)

@@ -71,8 +71,8 @@ class Session(ModelWithVars):
     )
 
     def type(self):
-        from otree.session import SessionTypeDirectory
-        return SessionTypeDirectory().get_item(self.type_name)
+        from otree.session import session_types_dict
+        return session_types_dict()[self.type_name]
 
     # label of this session instance
     label = models.CharField(
