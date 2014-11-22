@@ -12,7 +12,8 @@ import otree.session.models
 import otree.constants
 from otree.db import models
 from otree.fields import RandomCharField
-
+from decimal import Decimal
+import easymoney
 
 __all__ = ('formfield_callback', 'modelform_factory', 'BaseModelForm',)
 
@@ -218,6 +219,10 @@ class BaseModelForm(forms.ModelForm):
             # We want to support both, django and floppyforms widgets.
             if isinstance(field.widget, (django_forms.NumberInput, forms.NumberInput)):
                 min_bound, max_bound = self._get_field_boundaries(field_name)
+                if isinstance(min_bound, easymoney.Money):
+                    min_bound = Decimal(min_bound)
+                if isinstance(max_bound, easymoney.Money):
+                    max_bound = Decimal(max_bound)
                 if min_bound is not None:
                     field.widget.attrs['min'] = min_bound
                 if max_bound is not None:

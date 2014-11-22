@@ -39,6 +39,8 @@ class Currency(easymoney.Money):
             # should i convert to Money?
             return self
 
+    def to_number(self):
+        return Decimal(self)
 
 class _CurrencyEncoder(json.JSONEncoder):
     def default(self, obj):
