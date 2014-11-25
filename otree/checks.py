@@ -110,15 +110,6 @@ class Rules(object):
                 id='otree.E004',
             )
 
-    @rule
-    def function_exists(self, module, name):
-        module = self.get_module(module)
-        if not hasattr(module, name) or isinstance(getattr(module, name), type):
-            return self.error(
-                'No class "%s" in module "%s"' % (name, module.__name__),
-                id='otree.E004',
-            )
-
 def _get_all_configs():
     return [apps.app_configs[label] for label in settings.INSTALLED_OTREE_APPS]
 
