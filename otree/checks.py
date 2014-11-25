@@ -6,7 +6,7 @@ from functools import wraps
 from django.apps import apps
 from django.conf import settings
 from django.core.checks import register, Error
-
+import otree.views.abstract
 
 class Rules(object):
     """
@@ -110,6 +110,14 @@ class Rules(object):
                 id='otree.E004',
             )
 
+    @rule
+    def function_exists(self, module, name):
+        module = self.get_module(module)
+        if not hasattr(module, name) or isinstance(getattr(module, name), type):
+            return self.error(
+                'No class "%s" in module "%s"' % (name, module.__name__),
+                id='otree.E004',
+            )
 
 def _get_all_configs():
     return [apps.app_configs[label] for label in settings.INSTALLED_OTREE_APPS]
@@ -165,4 +173,40 @@ def model_classes(rules, **kwargs):
 def constants(rules, **kwargs):
     if rules.module_exists('models') and rules.class_exists('models', 'Constants'):
         Constants = rules.get_module_attr('models', 'Constants')
-        # TODO: check constant attributes, their types, etc.
+        for attr_name in ['name_in_url', 'players_per_group', 'number_of_rounds']:
+            if not hasattr(Constants, attr_name):
+                rules.push_error(
+                    "models.py: 'Constants' class needs to define '{}'".format(attr_name),
+                    id='otree.E006'
+                )
+
+@register_rules()
+def pages_function(rules, **kwargs):
+    if rules.module_exists('views'):
+        views_module = rules.get_module('views')
+        try:
+            page_list = views_module.pages()
+        except:
+            rules.push_error(
+                'views.py: need a function pages() that returns a list of pages',
+                id='otree.E005'
+            )
+            return
+        else:
+            for ViewCls in page_list:
+                if not issubclass(ViewCls, otree.views.abstract.SequenceMixin):
+                    rules.push_error(
+                        'views.py: "{}" is not a valid page'.format(ViewCls),
+                        id='otree.E005'
+                    )
+                if issubclass(ViewCls, otree.views.Page) and not getattr(ViewCls, 'template_name'):
+                    rules.push_error(
+                        'views.py: Page class "{}" is missing a template_name attribute'.format(ViewCls),
+                        id='otree.E005'
+                    )
+
+
+# TODO: startapp should pass validation checks
+
+
+
