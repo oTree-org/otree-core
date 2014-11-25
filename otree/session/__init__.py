@@ -28,31 +28,43 @@ def lcmm(*args):
 
 
 class SessionType(object):
-    def __init__(self, name, subsession_apps, fixed_pay, num_bots,
-                 display_name=None, money_per_point=1, #FIXME: should be defined in the user's project
-                 num_demo_participants = None, doc=None, assign_to_groups_on_the_fly=False,
-                 show_on_demo_page=True):
+    def __init__(self, **kwargs):
+        """this code allows default values for these attributes to be set on the class,
+         that can then be overridden by SessionType instances.
+         sessions.py uses this.
+         """
 
-        if not re.match(r'^\w+$', name):
-            raise ValueError('Session "{}": name must be alphanumeric with no spaces.'.format(name))
+        attrs = [
+            'name',
+            'subsession_apps',
+            'fixed_pay',
+            'num_bots',
+            'display_name',
+            'money_per_point',
+            'num_demo_participants',
+            'doc',
 
-        self.name = name
+            # on MTurk, assign_to_groups_on_the_fly = True
+            'assign_to_groups_on_the_fly',
+            'show_on_demo_page',
+        ]
 
-        self.money_per_point = money_per_point
+        for attr_name in attrs:
+            attr_value = kwargs.get(attr_name)
+            if attr_value is not None:
+                setattr(self, attr_name, attr_value)
+            if attr_name != 'doc':
+                assert getattr(self, attr_name) is not None
 
-        self.display_name = display_name or name
+        if not re.match(r'^\w+$', self.name):
+            raise ValueError('Session "{}": name must be alphanumeric with no spaces (underscores allowed).'.format(name))
 
-        if len(subsession_apps) == 0:
+        if len(self.subsession_apps) == 0:
             raise ValueError('Need at least one subsession.')
 
-        self.subsession_apps = subsession_apps
-        self.fixed_pay = fixed_pay
-        self.num_demo_participants = num_demo_participants
-        self.num_bots = num_bots
-        self.doc = doc.strip()
+        self.doc = self.doc.strip()
 
-        # on MTurk, assign_to_groups_on_the_fly = True
-        self.assign_to_groups_on_the_fly = assign_to_groups_on_the_fly
+
 
     def lcm(self):
         participants_per_group_list = []
@@ -68,7 +80,7 @@ def session_types_list(demo_only=False):
     if demo_only:
         return [
             session_type for session_type in session_types
-            if get_session_module().show_on_demo_page(session_type.name)
+            if session_type.show_on_demo_page
         ]
     else:
         return session_types

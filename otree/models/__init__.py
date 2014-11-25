@@ -45,11 +45,11 @@ class BaseSubsession(subsessions.BaseSubsession):
         '''
     )
 
-    def get_groups(self, refresh_from_db=False):
-        return _groups(self, refresh_from_db)
+    def get_groups(self):
+        return _groups(self, refresh_from_db=False)
 
-    def get_players(self, refresh_from_db=False):
-        return _players(self, refresh_from_db)
+    def get_players(self):
+        return _players(self, refresh_from_db=False)
 
     @property
     def app_name(self):
@@ -75,23 +75,21 @@ class BaseGroup(groups.BaseGroup):
         related_name = '%(app_label)s_%(class)s'
     )
 
-    def get_players(self, refresh_from_db=False):
-        return _players(self, refresh_from_db)
+    def get_players(self):
+        return _players(self, refresh_from_db=False)
 
     def get_player_by_role(self, role):
         return super(BaseGroup, self).get_player_by_role(role)
 
-
-
-    def get_player_by_id(self, index):
-        return super(BaseGroup, self).get_player_by_id(index)
+    def get_player_by_id(self, id_in_group):
+        return super(BaseGroup, self).get_player_by_id(id_in_group)
 
     class Meta:
         abstract = True
         ordering = ['pk']
 
 class BasePlayer(players.BasePlayer):
-    # starts from 1, not 0.
+
     id_in_group = models.PositiveIntegerField(
         null = True,
         doc="Index starting from 1. In multiplayer games, indicates whether this is player 1, player 2, etc."
