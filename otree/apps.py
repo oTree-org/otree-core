@@ -3,6 +3,7 @@ from django.conf import settings
 from django.db.models import signals
 from django.utils.translation import ugettext_lazy as _
 from .management import create_default_superuser, create_singleton_objects
+from . import checks
 
 
 class OtreeConfig(AppConfig):
