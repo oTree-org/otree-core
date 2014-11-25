@@ -328,7 +328,7 @@ class CheckpointMixin(object):
 
     def _action(self):
         # force to refresh from DB
-        self._group_or_subsession.get_players(refresh_from_db=True)
+        otree.common_internal._players(self._group_or_subsession, refresh_from_db=True)
         self.after_all_players_arrive()
         for p in self._group_or_subsession.get_players():
             p.save()
