@@ -52,7 +52,7 @@ links = {
 
 # A list of relevant keywords for your app or an empty list. This keyword will
 # be automatically linked with duckduckgo.com anonymous search
-keywords = ("Stag Hunt", "Coordination", "Cooperation", "Social Contract")
+keywords = ("Game Theory", "Nash Equilibrium", "Economics")
 
 
 class Constants:
