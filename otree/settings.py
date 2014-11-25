@@ -117,6 +117,10 @@ def augment_settings(settings):
         }
     }
 
+    page_footer = (
+        'Powered By <a href="http://otree.org" target="_blank">oTree</a>'
+    )
+
     overridable_settings = {
 
         # pages with a time limit for the player can have a grace period
@@ -142,15 +146,23 @@ def augment_settings(settings):
         'OTREE_CHANGE_LIST_UPDATE_INTERVAL': '10000', # default to 10 seconds(10000 miliseconds)
         'TEMPLATE_CONTEXT_PROCESSORS': (
             global_settings.TEMPLATE_CONTEXT_PROCESSORS +
-            ('django.core.context_processors.request',)
+            (
+                'django.core.context_processors.request',
+                'otree.context_processors.otree_context'
+            )
         ),
+
+        # SEO AND FOOTER
+        'PAGE_FOOTER': page_footer,
+        'SEO': (),
+
         'SESSIONS_MODULE': 'sessions',
         'LOGGING': logging,
 
         'PAYMENT_CURRENCY_CODE': 'USD',
         'PAYMENT_CURRENCY_LOCALE': 'en_US',
         'PAYMENT_CURRENCY_FORMAT': None,
-        'PAYMENT_CURRENCY_DECIMAL_PLACES': 2,
+        'PAYMENT_CURRENCY_DECIMAL_PLACES': 2
     }
 
 
@@ -169,5 +181,7 @@ def augment_settings(settings):
     else:
         for SETTING_NAME in ['CODE', 'FORMAT', 'LOCALE', 'DECIMAL_PLACES']:
             CURRENCY_SETTING_NAME = 'CURRENCY_{}'.format(SETTING_NAME)
-            settings['GAME_{}'.format(CURRENCY_SETTING_NAME)] = settings['PAYMENT_{}'.format(CURRENCY_SETTING_NAME)]
+            key_from = 'PAYMENT_{}'.format(CURRENCY_SETTING_NAME)
+            key_to = 'GAME_{}'.format(CURRENCY_SETTING_NAME)
+            settings[key_to] = settings[key_from]
 

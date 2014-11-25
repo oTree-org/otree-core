@@ -7,6 +7,9 @@
     <head>
         <title>{% block head_title %}{% endblock %}</title>
 
+        <meta name="description" content="otree, game theory{% for seo in SEO %}, {{seo}}{% endfor %}{% for seo in page_seo %}, {{seo}}{% endfor %}">
+        <meta name="keywords" content="otree, game theory{% for seo in SEO %}, {{seo}}{% endfor %}{% for seo in page_seo %}, {{seo}}{% endfor %}">
+
         {% block head_content %}
             {% include 'otree/HeadContent.html' %}
 
@@ -59,9 +62,16 @@
         {% include 'otree/debug_info.html' %}
         </div>
 
-
         {% block content_at_bottom_of_body %}
         {% endblock %}
+
+        {% if PAGE_FOOTER %}
+        <footer class="row">
+            <div class="text-center">
+                {{PAGE_FOOTER|safe}}
+            </div>
+        </footer>
+        {% endif %}
 
     </body>
 </html>
