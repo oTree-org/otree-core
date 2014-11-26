@@ -57,7 +57,7 @@ class SessionType(object):
                 assert getattr(self, attr_name) is not None
 
         if not re.match(r'^\w+$', self.name):
-            raise ValueError('Session "{}": name must be alphanumeric with no spaces (underscores allowed).'.format(name))
+            raise ValueError('Session "{}": name must be alphanumeric with no spaces (underscores allowed).'.format(self.name))
 
         if len(self.subsession_apps) == 0:
             raise ValueError('Need at least one subsession.')
