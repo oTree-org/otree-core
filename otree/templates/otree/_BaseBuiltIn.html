@@ -65,13 +65,15 @@
         {% block content_at_bottom_of_body %}
         {% endblock %}
 
-        {% if PAGE_FOOTER %}
-        <footer class="row">
-            <div class="text-center">
-                {{PAGE_FOOTER|safe}}
-            </div>
-        </footer>
-        {% endif %}
+        {% block page_footer  %}
+            {% if PAGE_FOOTER %}
+            <footer class="row">
+                <div class="text-center">
+                    {{PAGE_FOOTER|safe}}
+                </div>
+            </footer>
+            {% endif %}
+        {% endblock page_footer %}
 
     </body>
 </html>
