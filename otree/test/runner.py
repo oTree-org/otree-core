@@ -60,6 +60,48 @@ class DummyExperimenterBot(client.BaseExperimenterBot):
 
 
 #==============================================================================
+# PENDING LIST
+#==============================================================================
+
+class PendingBuffer(object):
+
+    def __init__(self, app_label):
+        self.storage = collections.OrderedDict()
+        self.app_label = app_label
+
+    def __str__(self):
+        return repr(self)
+
+    def __repr__(self):
+        return "<PendingBuffer ({}) at {}>".format(
+            self.app_label, hex(id(self))
+        )
+
+    def __len__(self):
+        return len(self.storage)
+
+    def __nonzero__(self):
+        return bool(self.storage)
+
+    def __iter__(self):
+        for k, v in self.storage.items():
+            yield k, v
+            if k in self.storage:
+                self.storage[k] += 1
+
+    def add(self, submit):
+        if submit in self.storage:
+            raise ValueError("Submit already in pending list")
+        self.storage[submit] = 1
+
+    def remove(self, submit):
+        del self.storage[submit]
+
+    def is_blocked(self, submit):
+        return submit.bot in [s.bot for s in self.storage.keys()]
+
+
+#==============================================================================
 # TEST CASE
 #==============================================================================
 
@@ -114,24 +156,22 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
             bots.append(bot)
 
         submit_groups = self.zip_submits(bots)
-        pending = collections.OrderedDict()
+        pending = PendingBuffer(app_label)
         while pending or submit_groups:
-            for submit, attempts in tuple(pending.items()):
+            for submit, attempts in pending:
                 if attempts > MAX_ATTEMPTS:
                     msg = "Max attepts reached in  submit '{}'"
                     raise AssertionError(msg.format(submit))
                 if submit.execute():
-                    pending.pop(submit)
-                else:
-                    pending[submit] += 1
+                    pending.remove(submit)
 
             # ejecutar un grupo
             group = submit_groups.pop(0) if submit_groups else ()
             for submit in group:
                 if submit is None:
                     continue
-                if not submit.execute():
-                    pending[submit] = 1
+                if pending.is_blocked(submit) or not submit.execute():
+                    pending.add(submit)
 
         logger.info("Stoping bots for '{}'".format(app_label))
         for bot in bots:
