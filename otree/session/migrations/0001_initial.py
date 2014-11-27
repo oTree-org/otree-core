@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 from django.db import models, migrations
 import otree.session.models
 import otree.db.models
-import otree.fields
 
 
 class Migration(migrations.Migration):

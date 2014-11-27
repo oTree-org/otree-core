@@ -130,9 +130,14 @@ def create_session(type_name, label='', num_participants=None,
             num_participants = session_type.num_bots
 
     # check that it divides evenly
-    if num_participants % session_type.lcm():
+    session_lcm = session_type.lcm()
+    if num_participants % session_lcm:
         raise ValueError(
-            'Number of participants does not divide evenly into group size'
+            'SessionType {}: Number of participants ({}) does not divide evenly into group size ({})'.format(
+                session_type.name,
+                num_participants,
+                session_lcm
+            )
         )
 
 
