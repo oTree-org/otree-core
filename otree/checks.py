@@ -6,7 +6,9 @@ from functools import wraps
 from django.apps import apps
 from django.conf import settings
 from django.core.checks import register, Error
+
 import otree.views.abstract
+
 
 class Rules(object):
     """
@@ -28,9 +30,10 @@ class Rules(object):
             tests = rules.get_module('tests') # won't fail
             ...
     """
-    def __init__(self, config, errors):
+    def __init__(self, config, errors, id=None):
         self.config = config
         self.errors = errors
+        self.id = id
 
     def rule(meth):
         @wraps(meth)
@@ -45,6 +48,7 @@ class Rules(object):
 
     def error(self, title, **kwargs):
         kwargs.setdefault('obj', self.config.name)
+        kwargs.setdefault('id', self.id)
         return Error(title, **kwargs)
 
     def push_error(self, title, **kwargs):
@@ -68,53 +72,38 @@ class Rules(object):
     @rule
     def file_exists(self, filename):
         if not os.path.isfile(self.get_path(filename)):
-            return self.error(
-                'No "%s" file found in game folder' % filename,
-                id='otree.E001',
-            )
+            return self.error('No "%s" file found in game folder' % filename)
 
     @rule
     def dir_exists(self, filename):
         if not os.path.isdir(self.get_path(filename)):
-            return self.error(
-                'No "%s" directory found in game folder' % filename,
-                id='otree.E001',
-            )
+            return self.error('No "%s" directory found in game folder' % filename)
 
     @rule
     def model_exists(self, name):
         try:
             self.config.get_model(name)
         except LookupError:
-            return self.error(
-                'Model "%s" not found' % name,
-                id='otree.E002',
-            )
+            return self.error('Model "%s" not defined' % name)
 
     @rule
     def module_exists(self, module):
         try:
             module = self.get_module(module)
         except ImportError as e:
-            return self.error(
-                'Can\'t import module "%s": %s' % (module, e),
-                id='otree.E003',
-            )
+            return self.error('Can\'t import module "%s": %s' % (module, e))
 
     @rule
     def class_exists(self, module, name):
         module = self.get_module(module)
         if not hasattr(module, name) or isinstance(getattr(module, name), type):
-            return self.error(
-                'No class "%s" in module "%s"' % (name, module.__name__),
-                id='otree.E004',
-            )
+            return self.error('No class "%s" in module "%s"' % (name, module.__name__))
 
 def _get_all_configs():
     return [apps.app_configs[label] for label in settings.INSTALLED_OTREE_APPS]
 
 
-def register_rules(*tags):
+def register_rules(tags=(), id=None):
     """
     Transform a function based on rules, to a something django.core.checks.register takes.
     Automatically loops over all games. Passes Rules instance as first argument.
@@ -126,7 +115,7 @@ def register_rules(*tags):
             app_configs = app_configs or _get_all_configs()
             errors = []
             for config in app_configs:
-                rules = Rules(config, errors)
+                rules = Rules(config, errors, id=id)
                 func(rules, **kwargs)
             return errors
         return wrapper
@@ -135,7 +124,7 @@ def register_rules(*tags):
 
 # Checks
 
-@register_rules()
+@register_rules(id='otree.E001')
 def files(rules, **kwargs):
     rules.file_exists('models.py')
     rules.file_exists('views.py')
@@ -153,14 +142,14 @@ def files(rules, **kwargs):
             )
 
 
-@register_rules()
+@register_rules(id='otree.E002')
 def model_classes(rules, **kwargs):
     rules.model_exists('Subsession')
     rules.model_exists('Group')
     rules.model_exists('Player')
 
 
-@register_rules()
+@register_rules(id='otree.E003')
 def constants(rules, **kwargs):
     if rules.module_exists('models') and rules.class_exists('models', 'Constants'):
         Constants = rules.get_module_attr('models', 'Constants')
@@ -168,36 +157,26 @@ def constants(rules, **kwargs):
             if not hasattr(Constants, attr_name):
                 rules.push_error(
                     "models.py: 'Constants' class needs to define '{}'".format(attr_name),
-                    id='otree.E006'
                 )
 
-@register_rules()
+
+@register_rules(id='otree.E004')
 def pages_function(rules, **kwargs):
     if rules.module_exists('views'):
         views_module = rules.get_module('views')
         try:
             page_list = views_module.pages()
         except:
-            rules.push_error(
-                'views.py: need a function pages() that returns a list of pages',
-                id='otree.E005'
-            )
+            rules.push_error('views.py: need a function pages() that returns a list of pages')
             return
         else:
             for ViewCls in page_list:
                 if not issubclass(ViewCls, otree.views.abstract.SequenceMixin):
-                    rules.push_error(
-                        'views.py: "{}" is not a valid page'.format(ViewCls),
-                        id='otree.E005'
-                    )
+                    rules.push_error('views.py: "{}" is not a valid page'.format(ViewCls))
                 if issubclass(ViewCls, otree.views.Page) and not getattr(ViewCls, 'template_name'):
                     rules.push_error(
-                        'views.py: Page class "{}" is missing a template_name attribute'.format(ViewCls),
-                        id='otree.E005'
+                        'views.py: Page class "{}" is missing a template_name attribute'.format(ViewCls)
                     )
 
 
 # TODO: startapp should pass validation checks
-
-
-
