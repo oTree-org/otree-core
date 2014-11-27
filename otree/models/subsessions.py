@@ -68,13 +68,6 @@ class BaseSubsession(models.Model):
     def __unicode__(self):
         return self.name()
 
-    def _start_url(self):
-        """The URL that a user is redirected to in order to start a treatment.
-        3/2/2014: is this still used for anything? i think i am moving towards deprecating it.
-        """
-        return '/{}/Initialize/?{}={}'.format(self._Constants.name_in_url,
-                                              constants.user_code,
-                                              self.code)
 
     def previous_round(self):
         '''finds non-contiguous rounds'''

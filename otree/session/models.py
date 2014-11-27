@@ -430,11 +430,8 @@ class Participant(SessionUser):
         return all(p.payoff is not None for p in self.get_players())
 
     def total_pay_display(self):
-        try:
-            complete = self.payoff_from_subsessions_is_complete()
-            total_pay = self.total_pay().to_money(self.session)
-        except:
-            return 'Error in payoff calculation'
+        complete = self.payoff_from_subsessions_is_complete()
+        total_pay = self.total_pay().to_money(self.session)
         if complete:
             return total_pay
         return u'{} (incomplete)'.format(total_pay)
