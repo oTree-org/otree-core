@@ -67,7 +67,7 @@ class _OtreeWidgetForModelFieldMixin(object):
     widget used for this field in a model form.
 
     The given widget will only be used when you subclass your model form from
-    otree.forms_internal.BaseModelForm.
+    otree.forms.forms.BaseModelForm.
     """
 
     def __init__(self, *args, **kwargs):
