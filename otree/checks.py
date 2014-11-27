@@ -110,8 +110,12 @@ class Rules(object):
                 id='otree.E004',
             )
 
+
 def _get_all_configs():
-    return [apps.app_configs[label] for label in settings.INSTALLED_OTREE_APPS]
+    return [
+        app
+        for app in apps.get_app_configs()
+        if app.name in settings.INSTALLED_OTREE_APPS]
 
 
 def register_rules(*tags):
@@ -141,14 +145,14 @@ def files(rules, **kwargs):
     rules.file_exists('views.py')
     rules.file_exists('tests.py')
 
-    if rules.dir_exists('templates') and rules.dir_exists('templates/' + rules.config.name):
-        # check for files in templates, but not in templates/<name>
+    if rules.dir_exists('templates') and rules.dir_exists('templates/' + rules.config.label):
+        # check for files in templates, but not in templates/<label>
         misplaced_templates = set(os.listdir(rules.get_path('templates')))
-        misplaced_templates.discard(rules.config.name)
+        misplaced_templates.discard(rules.config.label)
         if misplaced_templates:
             rules.push_error(
                 "Templates files in root template directory",
-                hint='Move template files to "templates/%s"' % rules.config.name,
+                hint='Move template files to "templates/%s"' % rules.config.label,
                 id='otree.E001'
             )
 
