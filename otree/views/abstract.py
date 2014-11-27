@@ -8,7 +8,6 @@ import time
 import logging
 from datetime import datetime
 from otree.db import models
-from otree.forms_internal import BaseModelForm, formfield_callback
 from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
@@ -26,7 +25,7 @@ import otree.session.models as seq_models
 import otree.session.models
 import otree.common_internal
 
-import otree.forms_internal
+import otree.forms
 from otree.models.user import Experimenter
 import copy
 import django.utils.timezone
@@ -577,9 +576,9 @@ class ModelFormMixin(object):
     fields = []
 
     def get_form_class(self):
-        form_class = otree.forms_internal.modelform_factory(
-            self.form_model, fields=self.form_fields, form=BaseModelForm,
-            formfield_callback=formfield_callback)
+        form_class = otree.forms.modelform_factory(
+            self.form_model, fields=self.form_fields, form=otree.forms.ModelForm,
+            formfield_callback=otree.forms.formfield_callback)
         return form_class
 
     def after_next_button(self):

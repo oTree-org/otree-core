@@ -1,13 +1,13 @@
 import floppyforms.__future__ as forms
-import otree.widgets
 from easymoney import to_dec
+from . import widgets
 
 
 __all__ = ('CurrencyField', 'CurrencyChoiceField',)
 
 
 class CurrencyField(forms.DecimalField):
-    widget = otree.widgets.CurrencyInput
+    widget = widgets.CurrencyInput
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('widget', self.widget)
