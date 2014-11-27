@@ -47,7 +47,7 @@ class Rules(object):
         return wrapper
 
     def error(self, title, **kwargs):
-        kwargs.setdefault('obj', self.config.name)
+        kwargs.setdefault('obj', self.config.label)
         kwargs.setdefault('id', self.id)
         return Error(title, **kwargs)
 
@@ -100,7 +100,8 @@ class Rules(object):
             return self.error('No class "%s" in module "%s"' % (name, module.__name__))
 
 def _get_all_configs():
-    return [apps.app_configs[label] for label in settings.INSTALLED_OTREE_APPS]
+    last_word = lambda s: s.rsplit('.', -1)[-1]
+    return [apps.app_configs[last_word(label)] for label in settings.INSTALLED_OTREE_APPS]
 
 
 def register_rules(tags=(), id=None):
@@ -130,14 +131,14 @@ def files(rules, **kwargs):
     rules.file_exists('views.py')
     rules.file_exists('tests.py')
 
-    if rules.dir_exists('templates') and rules.dir_exists('templates/' + rules.config.name):
+    if rules.dir_exists('templates') and rules.dir_exists('templates/' + rules.config.label):
         # check for files in templates, but not in templates/<name>
         misplaced_templates = set(os.listdir(rules.get_path('templates')))
-        misplaced_templates.discard(rules.config.name)
+        misplaced_templates.discard(rules.config.label)
         if misplaced_templates:
             rules.push_error(
                 "Templates files in root template directory",
-                hint='Move template files to "templates/%s"' % rules.config.name,
+                hint='Move template files to "templates/%s"' % rules.config.label,
                 id='otree.E001'
             )
 
