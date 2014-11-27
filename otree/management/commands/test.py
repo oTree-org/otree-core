@@ -10,7 +10,8 @@ from optparse import make_option
 
 from django.core.management.base import BaseCommand
 
-from otree.test import runner
+from otree.test import runner, client
+
 
 #==============================================================================
 # CONSTANTS
@@ -55,6 +56,11 @@ class Command(BaseCommand):
 
     def handle(self, *test_labels, **options):
         options['verbosity'] = int(options.get('verbosity'))
+        if options['verbosity'] < 2:
+            logging.basicConfig(level=logging.WARNING)
+            runner.logger.setLevel(logging.WARNING)
+            client.logger.setLevel(logging.WARNING)
+
         coverage = options["coverage"]
 
         test_runner = runner.OTreeExperimentTestRunner(**options)
