@@ -250,6 +250,7 @@ class BasePlayerBot(BaseClient):
                 self.player.index_in_pages + 1,
                 len(self.player._pages())
             )
+            raise AssertionError(msg)
         super(BasePlayerBot, self).stop()
 
     @property
