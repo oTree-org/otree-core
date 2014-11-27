@@ -4,8 +4,6 @@ from otree.db import models
 import otree.models
 import otree.forms
 
-from otree.fields import RandomCharField
-
 
 class SimpleModel(otree.models.BaseGroup):
     name = models.CharField()
@@ -81,6 +79,6 @@ class FormFieldModel(otree.models.BaseGroup):
         ('0.01', '0.01'),
         ('1.20', '1.20'),
     ))
-    random_char = RandomCharField()
+    random_char = models.RandomCharField()
 
     sent_amount = models.CurrencyField(choices=currency_range(0, 0.75, 0.05))

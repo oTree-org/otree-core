@@ -11,7 +11,6 @@ import otree.models.common
 import otree.session.models
 import otree.constants
 from otree.db import models
-from otree.fields import RandomCharField
 from decimal import Decimal
 import easymoney
 
@@ -100,7 +99,7 @@ FORMFIELD_OVERRIDES.update({
 
     # Other custom db fields used in otree.
 
-    RandomCharField: {
+    models.RandomCharField: {
         'form_class': forms.CharField,
         'choices_form_class': forms.TypedChoiceField},
 

@@ -5,7 +5,6 @@ from django.contrib.contenttypes.models import ContentType
 
 from otree.db import models
 
-from otree.fields import RandomCharField
 import otree.constants as constants
 import math
 from otree.common_internal import flatten, _views_module
@@ -18,7 +17,7 @@ class BaseSubsession(models.Model):
     Base class for all Subsessions.
     """
 
-    code = RandomCharField(length=8)
+    code = models.RandomCharField(length=8)
 
     _experimenter = models.OneToOneField(
         'otree.Experimenter',
@@ -115,7 +114,7 @@ class BaseSubsession(models.Model):
 
     def _group_objects_to_matrix(self):
         """puts Group objects in matrix format so you can do matrix permutations"""
-        return [list(m.player_set.order_by('id_in_group').all()) for m in self.group_set.all()]
+        return [list(g.get_players()) for g in self.group_set.all()]
 
     def _group_matrix_to_objects(self, group_matrix):
         """inverse operation of _group_objects_to_matrix"""
