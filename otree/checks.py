@@ -99,6 +99,7 @@ class Rules(object):
         if not hasattr(module, name) or isinstance(getattr(module, name), type):
             return self.error('No class "%s" in module "%s"' % (name, module.__name__))
 
+
 def _get_all_configs():
     last_word = lambda s: s.rsplit('.', -1)[-1]
     return [apps.app_configs[last_word(label)] for label in settings.INSTALLED_OTREE_APPS]
@@ -132,7 +133,7 @@ def files(rules, **kwargs):
     rules.file_exists('tests.py')
 
     if rules.dir_exists('templates') and rules.dir_exists('templates/' + rules.config.label):
-        # check for files in templates, but not in templates/<name>
+        # check for files in templates, but not in templates/<label>
         misplaced_templates = set(os.listdir(rules.get_path('templates')))
         misplaced_templates.discard(rules.config.label)
         if misplaced_templates:
