@@ -8,6 +8,7 @@ import sys
 
 from optparse import make_option
 
+
 from django.core.management.base import BaseCommand
 
 from otree.test import runner, client
@@ -60,7 +61,7 @@ class Command(BaseCommand):
             logging.basicConfig(level=logging.WARNING)
             runner.logger.setLevel(logging.WARNING)
             client.logger.setLevel(logging.WARNING)
-
+        import ipdb; ipdb.set_trace()
         coverage = options["coverage"]
 
         test_runner = runner.OTreeExperimentTestRunner(**options)
