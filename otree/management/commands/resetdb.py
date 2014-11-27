@@ -16,7 +16,7 @@ class Command(NoArgsCommand):
     option_list = NoArgsCommand.option_list + (
         make_option('--noinput', action='store_false', dest='interactive',
                     default=True, help=(
-                        'Tells the recreate command to NOT prompt the user for '
+                        'Tells the resetdb command to NOT prompt the user for '
                         'input of any kind.')),
     )
 
