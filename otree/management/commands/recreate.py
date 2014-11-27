@@ -34,6 +34,21 @@ class Command(NoArgsCommand):
         db_file_name = default_db['NAME']
         # Delete DB file if it already exists.
         if os.path.exists(db_file_name):
+            if self.interactive:
+                answer = None
+                self.stdout.write(
+                    "Resetting the DB will destroy all current data. "
+                    "The DB file {0} will be deleted.\n".format(db_file_name))
+                while not answer or answer not in "yn":
+                    answer = six.moves.input("Do you wish to proceed? [yN] ")
+                    if not answer:
+                        answer = "n"
+                        break
+                    else:
+                        answer = answer[0].lower()
+                if answer != "y":
+                    return
+
             self.stdout.write("Deleting {0} ...\n".format(db_file_name))
             os.unlink(db_file_name)
 
