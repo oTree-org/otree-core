@@ -24,6 +24,7 @@ from django.utils.importlib import import_module
 
 from django import test
 from django.test import runner
+from django.template import response
 
 from otree import constants, session
 from otree.test import client
@@ -44,6 +45,44 @@ MAX_ATTEMPTS = 100
 #==============================================================================
 
 logger = logging.getLogger(__name__)
+
+#==============================================================================
+#
+#==============================================================================
+
+class MissingVarsContextProxyBase(object):
+    """
+    This is a poor-man's proxy for a context instance.
+
+    Make sure template rendering stops immediately on a KeyError.
+
+    bassed on: https://excess.org/article/2012/04/paranoid-django-templates/
+
+    """
+    CONTEXT_CLS = None
+
+    def __init__(self, *args, **kwargs):
+        self.context = self.CONTEXT_CLS(*args, **kwargs)
+        self.seen_keys = set()
+
+    def __repr__(self):
+        return "<MV ({}) at {}>".format(type(self.CONTEXT_CLS))
+
+    def __getitem__(self, key):
+        self.seen_keys.add(key)
+        try:
+            return self.context[key]
+        except KeyError:
+            raise AssertionError("Missing template var '{}'".format(key))
+
+    def __getattr__(self, name):
+        return getattr(self.context, name)
+
+    def __setitem__(self, key, value):
+        self.context[key] = value
+
+    def __delitem__(self, key):
+        del self.context[key]
 
 
 #==============================================================================
@@ -71,11 +110,6 @@ class PendingBuffer(object):
 
     def __str__(self):
         return repr(self)
-
-    def __repr__(self):
-        return "<PendingBuffer ({}) at {}>".format(
-            self.app_label, hex(id(self))
-        )
 
     def __len__(self):
         return len(self.storage)
@@ -235,6 +269,20 @@ class OTreeExperimentTestRunner(runner.DiscoverRunner):
         return super(OTreeExperimentTestRunner, self).build_suite(
             test_labels=(), extra_tests=tests, **kwargs
         )
+
+    def patch_validate_missing_template_vars(self):
+        # black magic envolved
+        ContextProxy = type(
+            "ContextProxy", (MissingVarsContextProxyBase,),
+            {"CONTEXT_CLS": response.Context}
+        )
+        setattr(response, "Context", ContextProxy)
+
+        RequestContextProxy = type(
+            "ContextProxy", (MissingVarsContextProxyBase,),
+            {"CONTEXT_CLS": response.RequestContext}
+        )
+        setattr(response, "RequestContext", RequestContextProxy)
 
 
 #==============================================================================
