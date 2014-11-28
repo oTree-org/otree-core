@@ -6,16 +6,18 @@ from django.forms import models as django_model_forms
 from django.utils.translation import ugettext as _
 import copy
 import otree.common_internal
-import otree.formfields
 import otree.models.common
 import otree.session.models
 import otree.constants
+from otree.forms import fields
 from otree.db import models
-from otree.fields import RandomCharField
 from decimal import Decimal
 import easymoney
 
-__all__ = ('formfield_callback', 'modelform_factory', 'BaseModelForm',)
+
+__all__ = (
+    'formfield_callback', 'modelform_factory', 'BaseModelForm', 'ModelForm'
+)
 
 
 FORMFIELD_OVERRIDES = FLOPPYFORMS_FORMFIELD_OVERRIDES.copy()
@@ -100,14 +102,13 @@ FORMFIELD_OVERRIDES.update({
 
     # Other custom db fields used in otree.
 
-    RandomCharField: {
+    models.RandomCharField: {
         'form_class': forms.CharField,
         'choices_form_class': forms.TypedChoiceField},
 
     models.CurrencyField: {
-        'form_class': otree.formfields.CurrencyField,
-        'choices_form_class': otree.formfields.CurrencyChoiceField},
-
+        'form_class': fields.CurrencyField,
+        'choices_form_class': fields.CurrencyChoiceField},
 })
 
 
@@ -276,3 +277,7 @@ class BaseModelForm(forms.ModelForm):
                     self.cleaned_data[name] = value
             except forms.ValidationError as e:
                 self.add_error(name, e)
+
+
+class ModelForm(BaseModelForm):
+    pass

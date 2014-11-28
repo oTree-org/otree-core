@@ -1,20 +1,9 @@
 import copy
-import collections
-from decimal import Decimal
-from operator import attrgetter
-
-from django.conf import settings
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from otree.common_internal import id_label_name, add_params_to_url
-
-from django_extensions.db.fields.json import JSONField
-
-from easymoney import Money as Currency
-
 from otree import constants
 from otree.db import models
-from otree.fields import RandomCharField
 import otree.common_internal
 from otree.common_internal import directory_name
 from otree.common import Currency as c
@@ -86,7 +75,7 @@ class Session(ModelWithVars):
     )
 
 
-    code = RandomCharField(
+    code = models.RandomCharField(
         length=8, doc="Randomly generated unique identifier for the session."
     )
 
@@ -256,7 +245,7 @@ class SessionUser(ModelWithVars):
     )
     me_in_first_subsession_object_id = models.PositiveIntegerField(null=True)
 
-    code = RandomCharField(
+    code = models.RandomCharField(
         length = 8, doc=(
             "Randomly generated unique identifier for the participant. If you "
             "would like to merge this dataset with those from another "
@@ -430,11 +419,8 @@ class Participant(SessionUser):
         return all(p.payoff is not None for p in self.get_players())
 
     def total_pay_display(self):
-        try:
-            complete = self.payoff_from_subsessions_is_complete()
-            total_pay = self.total_pay().to_money(self.session)
-        except:
-            return 'Error in payoff calculation'
+        complete = self.payoff_from_subsessions_is_complete()
+        total_pay = self.total_pay().to_money(self.session)
         if complete:
             return total_pay
         return u'{} (incomplete)'.format(total_pay)
