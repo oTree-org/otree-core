@@ -1,18 +1,58 @@
 # -*- coding: utf-8 -*-
 # <standard imports>
 from __future__ import division
-from otree.db import models
+
+import random
+
 import otree.models
+from otree.db import models
 from otree import widgets
 from otree.common import Currency, currency_range, safe_json
-import random
+
 # </standard imports>
 
 author = 'Your name here'
 
+# The description of the app support HTML tags
 doc = """
-Description of this app.
+Your <a href="http://otree.org" target="_blank">oTree</a> app description
 """
+
+# Link of the source code of your app or empty
+source_code = "https://github.com/oTree-org/oTree/"
+
+
+# List of strings of recomended literature for this app or an empty list
+bibliography = (
+    (
+        'Basar, T., Olsder, G. J., Clsder, G. J., Basar, T., Baser, T., & '
+        'Olsder, G. J. (1995). Dynamic noncooperative game theory (Vol. 200). '
+        'London: Academic press.'
+    ),
+    (
+        'Harsanyi, J. C., & Selten, R. (1988). A general theory of '
+        'equilibrium selection in games. MIT Press Books, 1.'
+    )
+)
+
+
+# Resources for understand your app, normally a wikipedia articles
+# or an empty dict (This will be sorted alphabetically)
+links = {
+    "Wikipedia": {
+        "Game Theory": "http://en.wikipedia.org/wiki/Game_theory",
+        "Nash Equilibrim": "http://en.wikipedia.org/wiki/Nash_equilibrium"
+    },
+    "Resources": {
+        "Introduction to Game Theory [Video]":
+                "https://www.youtube.com/watch?v=nM3rTU927io",
+    }
+}
+
+
+# A list of relevant keywords for your app or an empty list. This keyword will
+# be automatically linked with duckduckgo.com anonymous search
+keywords = ("Game Theory", "Nash Equilibrium", "Economics")
 
 
 class Constants:
@@ -25,6 +65,7 @@ class Constants:
 
 class Subsession(otree.models.BaseSubsession):
     pass
+
 
 class Group(otree.models.BaseGroup):
     # <built-in>

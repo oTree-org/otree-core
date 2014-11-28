@@ -5,7 +5,7 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpRespons
 import vanilla
 import otree.constants as constants
 from otree.session.models import Session
-from otree.session import create_session, SessionTypeDirectory
+from otree.session import create_session, session_types_dict, session_types_list
 import threading
 import time
 import urllib
@@ -45,7 +45,7 @@ class CreateSession(vanilla.FormView):
 
     def dispatch(self, request, *args, **kwargs):
         session_type_name=urllib.unquote_plus(kwargs.pop('session_type'))
-        self.session_type = SessionTypeDirectory().get_item(session_type_name)
+        self.session_type = session_types_dict()[session_type_name]
         return super(CreateSession, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -80,7 +80,7 @@ class SessionTypes(vanilla.View):
     def get(self, *args, **kwargs):
 
         session_types_info = []
-        for session_type in SessionTypeDirectory().select():
+        for session_type in session_types_list():
             session_types_info.append(
                 {
                     'display_name': session_type.display_name,

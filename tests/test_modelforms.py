@@ -1,13 +1,13 @@
 from django.test import TestCase
 import floppyforms
-import otree.formfields
+import otree.forms
 import otree.widgets
-from otree.forms_internal import BaseModelForm
+from otree.forms import ModelForm
 
 from .models import FormFieldModel
 
 
-class TestModelForm(BaseModelForm):
+class TestModelForm(ModelForm):
     class Meta:
         model = FormFieldModel
         exclude = ()
@@ -43,10 +43,10 @@ class UseFloppyformWidgetsTests(TestCase):
 
     def test_custom_fields(self):
         self.assertEqual(TestModelForm.base_fields['random_char'].__class__, floppyforms.CharField)
-        self.assertEqual(TestModelForm.base_fields['sent_amount'].__class__, otree.formfields.CurrencyChoiceField)
+        self.assertEqual(TestModelForm.base_fields['sent_amount'].__class__, otree.forms.CurrencyChoiceField)
 
     def test_currency_field(self):
-        self.assertEqual(TestModelForm.base_fields['currency'].__class__, otree.formfields.CurrencyField)
+        self.assertEqual(TestModelForm.base_fields['currency'].__class__, otree.forms.CurrencyField)
         self.assertEqual(TestModelForm.base_fields['currency'].widget.__class__, otree.widgets.CurrencyInput)
-        self.assertEqual(TestModelForm.base_fields['currency_choice'].__class__, otree.formfields.CurrencyChoiceField)
+        self.assertEqual(TestModelForm.base_fields['currency_choice'].__class__, otree.forms.CurrencyChoiceField)
         self.assertEqual(TestModelForm.base_fields['currency_choice'].widget.__class__, otree.widgets.Select)

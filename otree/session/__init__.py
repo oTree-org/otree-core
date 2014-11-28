@@ -28,30 +28,43 @@ def lcmm(*args):
 
 
 class SessionType(object):
-    def __init__(self, name, subsession_apps, fixed_pay, num_bots,
-                 display_name=None, money_per_point=1, #FIXME: should be defined in the user's project
-                 num_demo_participants = None, doc=None, assign_to_groups_on_the_fly=False):
+    def __init__(self, **kwargs):
+        """this code allows default values for these attributes to be set on the class,
+         that can then be overridden by SessionType instances.
+         sessions.py uses this.
+         """
 
-        if not re.match(r'^\w+$', name):
-            raise ValueError('Session "{}": name must be alphanumeric with no spaces.'.format(name))
+        attrs = [
+            'name',
+            'subsession_apps',
+            'fixed_pay',
+            'num_bots',
+            'display_name',
+            'money_per_point',
+            'num_demo_participants',
+            'doc',
 
-        self.name = name
+            # on MTurk, assign_to_groups_on_the_fly = True
+            'assign_to_groups_on_the_fly',
+            'show_on_demo_page',
+        ]
 
-        self.money_per_point = money_per_point
+        for attr_name in attrs:
+            attr_value = kwargs.get(attr_name)
+            if attr_value is not None:
+                setattr(self, attr_name, attr_value)
+            if attr_name != 'doc':
+                assert getattr(self, attr_name) is not None
 
-        self.display_name = display_name or name
+        if not re.match(r'^\w+$', self.name):
+            raise ValueError('Session "{}": name must be alphanumeric with no spaces (underscores allowed).'.format(self.name))
 
-        if len(subsession_apps) == 0:
+        if len(self.subsession_apps) == 0:
             raise ValueError('Need at least one subsession.')
 
-        self.subsession_apps = subsession_apps
-        self.fixed_pay = fixed_pay
-        self.num_demo_participants = num_demo_participants
-        self.num_bots = num_bots
-        self.doc = doc.strip()
+        self.doc = self.doc.strip()
 
-        # on MTurk, assign_to_groups_on_the_fly = True
-        self.assign_to_groups_on_the_fly = assign_to_groups_on_the_fly
+
 
     def lcm(self):
         participants_per_group_list = []
@@ -62,27 +75,22 @@ class SessionType(object):
             participants_per_group_list.append(players_per_group)
         return lcmm(*participants_per_group_list)
 
+def session_types_list(demo_only=False):
+    session_types = get_session_module().session_types()
+    if demo_only:
+        return [
+            session_type for session_type in session_types
+            if session_type.show_on_demo_page
+        ]
+    else:
+        return session_types
 
-class SessionTypeDirectory(object):
-    def __init__(self, demo_only=False):
-        self.demo_only = demo_only
-        self.session_types_as_dict = {
-            session_type.name.lower(): session_type
-            for session_type in self.select(demo_only)
-        }
 
-    def select(self, demo_only=False):
-        session_types = get_session_module().session_types()
-        if demo_only:
-            return [
-                session_type for session_type in session_types
-                if get_session_module().show_on_demo_page(session_type.name)
-            ]
-        else:
-            return session_types
-
-    def get_item(self, session_type_name):
-        return self.session_types_as_dict[session_type_name.lower()]
+def session_types_dict(demo_only=False):
+    return {
+        session_type.name: session_type
+        for session_type in session_types_list(demo_only)
+    }
 
 
 @transaction.atomic
@@ -96,7 +104,7 @@ def create_session(type_name, label='', num_participants=None,
     #~ 2014-9-22: preassign to groups for demo mode.
 
     try:
-        session_type = SessionTypeDirectory().get_item(type_name)
+        session_type = session_types_dict()[type_name]
     except KeyError:
         raise ValueError('Session type "{}" not found in sessions.py'.format(type_name))
     session = Session(
@@ -122,9 +130,14 @@ def create_session(type_name, label='', num_participants=None,
             num_participants = session_type.num_bots
 
     # check that it divides evenly
-    if num_participants % session_type.lcm():
+    session_lcm = session_type.lcm()
+    if num_participants % session_lcm:
         raise ValueError(
-            'Number of participants does not divide evenly into group size'
+            'SessionType {}: Number of participants ({}) does not divide evenly into group size ({})'.format(
+                session_type.name,
+                num_participants,
+                session_lcm
+            )
         )
 
 

@@ -1,13 +1,39 @@
 import os
 import sys
+
 from setuptools import setup, find_packages
 
+
 README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
+
+
+REQUIREMENTS = [
+    'Babel>=1.3',
+    'Django>=1.7.1',
+    'Pillow>=2.6.1',
+    'coverage>=3.7.1',
+    'dj-static>=0.0.6',
+    'django-countries>=3.0.1',
+    'django-easymoney>=0.5',
+    'django-extensions>=1.4.6',
+    'django-ptree-extra-views>=0.6.3',
+    'django-floppyforms>=1.2.0',
+    'django-inspect-model>=0.7',
+    'django-ptree-mturk>=1.0.1',
+    'django-save-the-change>=1.0.0',
+    'django-vanilla-views>=1.0.2',
+    'handy>=0.3',
+    'pytz>=2013.9',
+    'raven>=5.1.1',
+    'selenium>=2.41.0',
+    'xmltodict>=0.9.0'
+]
 
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version='0.2.222'
+version='0.2.231'
+
 
 if sys.argv[-1] == 'publish':
 
@@ -31,10 +57,15 @@ setup(
     version=version,
     include_package_data=True,
     license='MIT License',
-    # this was not working right. did not exclude otree.app_template._builtin for some reason.
-    # so instead i use recursive-exclude in MANIFEST.in
+
+    # this was not working right. did not exclude
+    # otree.app_template._builtin for some reason. so instead i use
+    # recursive-exclude in MANIFEST.in
     packages=find_packages(),
-    description='oTree is a toolset that makes it easy to create and administer web-based social science experiments.',
+    description=(
+        'oTree is a toolset that makes it easy to create and '
+        'administer web-based social science experiments.'
+    ),
     long_description=README,
     url='http://otree.org/',
     author='C. Wickens',
@@ -58,7 +89,6 @@ setup(
         'django-easymoney==0.4.1',
         'handy==0.3',
         'Pillow',
-        'django-celery==3.1.15',
     ],
     classifiers=[
         'Environment :: Web Environment',

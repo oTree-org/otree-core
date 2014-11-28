@@ -1,9 +1,8 @@
+from decimal import Decimal
 from otree.common import currency_range
 from otree.db import models
 import otree.models
 import otree.forms
-
-from otree.fields import RandomCharField
 
 
 class SimpleModel(otree.models.BaseGroup):
@@ -11,6 +10,40 @@ class SimpleModel(otree.models.BaseGroup):
 
     def name_choices(self):
         return [(self.name, self.name.upper())]
+
+
+class BoundFieldModel(otree.models.BaseGroup):
+    upper_bound = 9999
+
+    big_integer = models.BigIntegerField(null=True, blank=True)
+    currency = models.CurrencyField(null=True, blank=True)
+    decimal = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    integer = models.IntegerField(null=True, blank=True)
+    integer_no_bounds = models.IntegerField(null=True, blank=True)
+    positive_integer = models.PositiveIntegerField(null=True, blank=True)
+    small_integer = models.SmallIntegerField(null=True, blank=True)
+    small_positive_integer = models.SmallIntegerField(null=True, blank=True)
+
+    def currency_bounds(self):
+        return [0, 0.5]
+
+    def decimal_bounds(self):
+        return [0.111, Decimal('1') / Decimal('3')]
+
+    def big_integer_bounds(self):
+        return [0, 10**10]
+
+    def integer_bounds(self):
+        return [-5, self.upper_bound]
+
+    def positive_integer_bounds(self):
+        return [0, 10]
+
+    def small_integer_bounds(self):
+        return [-1, 1]
+
+    def small_positive_integer_bounds(self):
+        return [0, 1]
 
 
 class FormFieldModel(otree.models.BaseGroup):
@@ -46,6 +79,6 @@ class FormFieldModel(otree.models.BaseGroup):
         ('0.01', '0.01'),
         ('1.20', '1.20'),
     ))
-    random_char = RandomCharField()
+    random_char = models.RandomCharField()
 
     sent_amount = models.CurrencyField(choices=currency_range(0, 0.75, 0.05))

@@ -1,3 +1,4 @@
+import django.forms as django_forms
 import floppyforms.__future__ as forms
 from floppyforms.__future__.models import FORMFIELD_OVERRIDES as FLOPPYFORMS_FORMFIELD_OVERRIDES
 from floppyforms.__future__.models import ModelFormMetaclass as FloppyformsModelFormMetaclass
@@ -5,15 +6,18 @@ from django.forms import models as django_model_forms
 from django.utils.translation import ugettext as _
 import copy
 import otree.common_internal
-import otree.formfields
 import otree.models.common
 import otree.session.models
 import otree.constants
+from otree.forms import fields
 from otree.db import models
-from otree.fields import RandomCharField
+from decimal import Decimal
+import easymoney
 
 
-__all__ = ('formfield_callback', 'modelform_factory', 'BaseModelForm',)
+__all__ = (
+    'formfield_callback', 'modelform_factory', 'BaseModelForm', 'ModelForm'
+)
 
 
 FORMFIELD_OVERRIDES = FLOPPYFORMS_FORMFIELD_OVERRIDES.copy()
@@ -98,14 +102,13 @@ FORMFIELD_OVERRIDES.update({
 
     # Other custom db fields used in otree.
 
-    RandomCharField: {
+    models.RandomCharField: {
         'form_class': forms.CharField,
         'choices_form_class': forms.TypedChoiceField},
 
     models.CurrencyField: {
-        'form_class': otree.formfields.CurrencyField,
-        'choices_form_class': otree.formfields.CurrencyChoiceField},
-
+        'form_class': fields.CurrencyField,
+        'choices_form_class': fields.CurrencyChoiceField},
 })
 
 
@@ -190,6 +193,41 @@ class BaseModelForm(forms.ModelForm):
                 if field.choices[0][0] in {u'', None}:
                     field.choices = field.choices[1:]
 
+        self._setup_field_boundaries()
+
+    def _get_field_boundaries(self, field_name):
+        """
+        Get the field boundaries from a method defined on the model.
+
+        Example (will get boundaries from `amount_bounds`):
+
+            class MyModel(...):
+                amount = models.IntegerField()
+
+                def amount_bounds(self):
+                    return [1, 5]
+
+        If the method is not found, it will return ``(None, None)``.
+        """
+        method_name = '%s_bounds' % field_name
+        if hasattr(self.instance, method_name):
+            method = getattr(self.instance, method_name)
+            return method()
+        return None, None
+
+    def _setup_field_boundaries(self):
+        for field_name, field in self.fields.items():
+            # We want to support both, django and floppyforms widgets.
+            if isinstance(field.widget, (django_forms.NumberInput, forms.NumberInput)):
+                min_bound, max_bound = self._get_field_boundaries(field_name)
+                if isinstance(min_bound, easymoney.Money):
+                    min_bound = Decimal(min_bound)
+                if isinstance(max_bound, easymoney.Money):
+                    max_bound = Decimal(max_bound)
+                if min_bound is not None:
+                    field.widget.attrs['min'] = min_bound
+                if max_bound is not None:
+                    field.widget.attrs['max'] = max_bound
 
     def null_boolean_field_names(self):
         null_boolean_fields_in_model = [field.name for field in self.Meta.model._meta.fields if isinstance(field, models.NullBooleanField)]
@@ -239,3 +277,7 @@ class BaseModelForm(forms.ModelForm):
                     self.cleaned_data[name] = value
             except forms.ValidationError as e:
                 self.add_error(name, e)
+
+
+class ModelForm(BaseModelForm):
+    pass

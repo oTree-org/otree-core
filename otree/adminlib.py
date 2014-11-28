@@ -11,7 +11,6 @@ import django.db.models.options
 import django.db.models.fields.related
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.contrib.staticfiles.templatetags.staticfiles import static as static_template_tag
-from otree.session import SessionTypeDirectory
 from otree.views.demo import render_to_start_links_page
 
 import otree.constants

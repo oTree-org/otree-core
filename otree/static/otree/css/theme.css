@@ -23,6 +23,14 @@ input[type=number].form-control {
     width: 100px;
 }
 
+.input-group-narrow {
+    /* Choosing a very small value that will always be filled with the input
+     * type and input-group-addon. That way we don't allow a gap between the
+     * two. See: https://github.com/oTree-org/otree-core/issues/257
+     */
+    max-width: 10px;
+}
+
 /* Dropdowns shall occupy only the needed space. */
 select.form-control {
     width: auto;

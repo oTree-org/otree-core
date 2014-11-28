@@ -4,7 +4,9 @@ You should inherit from these classes and put your view class in your game direc
 Or in the other view file in this directory, which stores shared concrete views that have URLs."""
 from threading import Thread
 import logging
-from otree.forms_internal import BaseModelForm, formfield_callback
+from datetime import datetime
+from otree.db import models
+from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.conf import settings
@@ -17,7 +19,7 @@ import otree.session.models as seq_models
 import otree.session.models
 import otree.common_internal
 
-import otree.forms_internal
+import otree.forms
 from otree.models.user import Experimenter
 import django.utils.timezone
 
@@ -424,24 +426,19 @@ class SequenceMixin(OTreeMixin):
 
 
     def post(self, request, *args, **kwargs):
-        self.timeout_occurred = self._get_timeout_occurred(request.POST)
+        self.auto_submit = request.POST.get(constants.auto_submit)
         return super(SequenceMixin, self).post(request, *args, **kwargs)
 
 
     def get_context_data(self, **kwargs):
         context = {'form': kwargs.get('form') or kwargs.get('formset')}
-        vars_for_templates = {}
-        vars_for_templates.update(self._variables_for_all_templates() or {})
-        vars_for_templates.update(self.variables_for_template() or {})
-        for k,v in vars_for_templates.items():
-            if v is None:
-                pass
-                # should we raise an exception? what if someone put it in vars_for_all_templates?
-                # As a safeguard, oTree should not allow None to be passed to templates
-                # if a novice programmer passes None to a template, it's likely an error.
-                # raise Exception('Warning: variable "{}" passed to template must not be None\nPath: {}'.format(k, self.request.path))
-        context.update(vars_for_templates)
-        context.update(self._get_timeout_context())
+        game_context = {}
+        game_context.update(self._variables_for_all_templates() or {})
+        vars_for_template = self.variables_for_template() or {}
+        game_context.update(vars_for_template)
+        context.update(game_context)
+        context.update(self._get_time_limit_context())
+        self._user.current_page_url = self.request.path
 
         if settings.DEBUG:
             context[constants.debug_values] = self.get_debug_values()
@@ -550,14 +547,6 @@ class SequenceMixin(OTreeMixin):
         }
 
 
-    def _get_timeout_occurred(self, POST):
-        if not self.has_timeout():
-            return False
-
-        if POST.get(constants.timeout_occurred):
-           return True
-
-
 class ModelFormMixin(object):
     """mixin rather than subclass because we want these methods only to be first in MRO"""
 
@@ -566,9 +555,9 @@ class ModelFormMixin(object):
     fields = []
 
     def get_form_class(self):
-        form_class = otree.forms_internal.modelform_factory(
-            self.form_model, fields=self.form_fields, form=BaseModelForm,
-            formfield_callback=formfield_callback)
+        form_class = otree.forms.modelform_factory(
+            self.form_model, fields=self.form_fields, form=otree.forms.ModelForm,
+            formfield_callback=otree.forms.formfield_callback)
         return form_class
 
     def after_next_button(self):
@@ -577,12 +566,10 @@ class ModelFormMixin(object):
 
     def post(self, request, *args, **kwargs):
 
-
         self.object = self.get_object()
-        self.timeout_occurred = self._get_timeout_occurred(request.POST)
 
-        if self.timeout_occurred:
-            self._set_timeout_defaults()
+        if request.POST.get(constants.auto_submit):
+            self._set_auto_submit_values()
         else:
             form = self.get_form(data=request.POST, files=request.FILES, instance=self.object)
             if form.is_valid():
@@ -595,9 +582,9 @@ class ModelFormMixin(object):
         return self._redirect_to_page_the_user_should_be_on()
 
 
-    def _set_timeout_defaults(self):
+    def _set_auto_submit_values(self):
         for field_name in self.form_fields:
-            setattr(self.object, field_name, self.timeout_defaults[field_name])
+            setattr(self.object, field_name, self.auto_submit_values[field_name])
 
 
 class PlayerSequenceMixin(SequenceMixin):

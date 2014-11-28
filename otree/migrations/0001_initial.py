@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.db import models, migrations
 import save_the_change.mixins
 import otree.db.models
-import otree.fields
+
 
 
 class Migration(migrations.Migration):
@@ -45,7 +45,7 @@ class Migration(migrations.Migration):
             name='Experimenter',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('code', otree.fields.RandomCharField(max_length=8, null=True, blank=True)),
+                ('code', otree.db.models.RandomCharField(max_length=8, null=True, blank=True)),
                 ('visited', otree.db.models.BooleanField(default=False)),
                 ('index_in_pages', otree.db.models.PositiveIntegerField(default=0, null=True)),
                 ('_me_in_previous_subsession_object_id', otree.db.models.PositiveIntegerField(null=True)),

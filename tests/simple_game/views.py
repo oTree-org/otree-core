@@ -17,7 +17,7 @@ class MyPage(Page):
     form_fields = ['add100_1', 'add100_2']
 
     timeout_seconds = 10
-    timeout_defaults = {
+    auto_submit_values = {
         'add100_1': 1,
         'add100_2': 99,
     }

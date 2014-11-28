@@ -1,15 +1,17 @@
 from otree.db import models
 import time
-from django.test import Client
+
 from otree.common_internal import get_models_module
 from otree import constants
 from celery import task
+
+from django.test import Client
 
 @task()
 def submit_expired_url(url):
 
     c = Client()
-    c.post(url, data={constants.timeout_occurred: True}, follow=True)
+    c.post(url, data={constants.auto_submit: True}, follow=True)
 
 @task()
 def ensure_pages_visited(app_name, player_pk_set, wait_page_index):

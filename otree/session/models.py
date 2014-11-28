@@ -1,20 +1,9 @@
 import copy
-import collections
-from decimal import Decimal
-from operator import attrgetter
-
-from django.conf import settings
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from otree.common_internal import id_label_name, add_params_to_url
-
-from django_extensions.db.fields.json import JSONField
-
-from easymoney import Money as Currency
-
 from otree import constants
 from otree.db import models
-from otree.fields import RandomCharField
 import otree.common_internal
 from otree.common_internal import directory_name
 from otree.common import Currency as c
@@ -71,8 +60,8 @@ class Session(ModelWithVars):
     )
 
     def type(self):
-        from otree.session import SessionTypeDirectory
-        return SessionTypeDirectory().get_item(self.type_name)
+        from otree.session import session_types_dict
+        return session_types_dict()[self.type_name]
 
     # label of this session instance
     label = models.CharField(
@@ -86,7 +75,7 @@ class Session(ModelWithVars):
     )
 
 
-    code = RandomCharField(
+    code = models.RandomCharField(
         length=8, doc="Randomly generated unique identifier for the session."
     )
 
@@ -256,7 +245,7 @@ class SessionUser(ModelWithVars):
     )
     me_in_first_subsession_object_id = models.PositiveIntegerField(null=True)
 
-    code = RandomCharField(
+    code = models.RandomCharField(
         length = 8, doc=(
             "Randomly generated unique identifier for the participant. If you "
             "would like to merge this dataset with those from another "
@@ -287,8 +276,13 @@ class SessionUser(ModelWithVars):
 
     current_page = models.CharField(max_length=200,null=True)
 
+    current_page_url = models.URLField()
+
     _current_user_code = models.CharField()
     _current_app_name = models.CharField()
+
+    def _current_user(self):
+        return self._users()[self._index_in_subsessions]
 
     def subsessions_completed(self):
         if not self.visited:
@@ -298,7 +292,7 @@ class SessionUser(ModelWithVars):
         )
 
     def _pages_completed_in_current_subsession(self):
-        return self._users()[self._index_in_subsessions]._pages_completed()
+        return self._current_user()._pages_completed()
 
     def current_subsession(self):
         if not self.visited:
@@ -430,11 +424,8 @@ class Participant(SessionUser):
         return all(p.payoff is not None for p in self.get_players())
 
     def total_pay_display(self):
-        try:
-            complete = self.payoff_from_subsessions_is_complete()
-            total_pay = self.total_pay().to_money(self.session)
-        except:
-            return 'Error in payoff calculation'
+        complete = self.payoff_from_subsessions_is_complete()
+        total_pay = self.total_pay().to_money(self.session)
         if complete:
             return total_pay
         return u'{} (incomplete)'.format(total_pay)

@@ -1,7 +1,10 @@
 # This file is auto-generated. Don't change anything in this file.
-from .. import models
+
 import otree.views
 import otree.test
+
+from .. import models
+
 
 class Page(otree.views.Page):
     z_models = models

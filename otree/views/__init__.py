@@ -1,13 +1,12 @@
-"""public api"""
+"""Public API
 
-import otree.session.models
-
-from otree.views.abstract import (
-    InitializePlayer,
-    InitializeExperimenter,
-)
+"""
 
 from importlib import import_module
+
+import otree.session.models
+from otree.views.abstract import InitializePlayer, InitializeExperimenter
+
 
 # NOTE: this imports the following submodules and then subclasses several classes
 # importing is done via import_module rather than an ordinary import.
@@ -21,6 +20,7 @@ from importlib import import_module
 
 abstract = import_module('otree.views.abstract')
 
+
 class WaitPage(abstract.WaitPage):
 
     wait_for_all_groups = False
@@ -33,6 +33,7 @@ class WaitPage(abstract.WaitPage):
 
     def after_all_players_arrive(self):
         return super(WaitPage, self).after_all_players_arrive()
+
 
 class Page(abstract.PlayerUpdateView):
 
@@ -56,7 +57,8 @@ class Page(abstract.PlayerUpdateView):
     form_fields = abstract.PlayerUpdateView.fields
 
     timeout_seconds = None
-    timeout_defaults = {}
+    auto_submit_values = {}
+
 
 class ExperimenterPage(abstract.ExperimenterUpdateView):
 
@@ -75,4 +77,4 @@ class ExperimenterPage(abstract.ExperimenterUpdateView):
     template_name = None
 
     timeout_seconds = None
-    timeout_defaults = {}
+    auto_submit_values = {}

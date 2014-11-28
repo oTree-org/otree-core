@@ -2,7 +2,6 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 
 from otree.session.models import Session, SessionExperimenter
-from otree.fields import RandomCharField
 from otree.db import models
 import otree.constants as constants
 from otree.common_internal import add_params_to_url, get_models_module
@@ -11,7 +10,7 @@ from save_the_change.mixins import SaveTheChange
 class User(SaveTheChange, models.Model):
     """represents experimenter or players"""
     # the player's unique ID that gets passed in the URL.
-    code = RandomCharField(length = 8)
+    code = models.RandomCharField(length = 8)
 
     visited = models.BooleanField(default=False,
           doc="""Whether this user's start URL was opened"""
