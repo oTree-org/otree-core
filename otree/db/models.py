@@ -98,10 +98,14 @@ class MoneyField(_OtreeNullableModelFieldMixin, easymoney.MoneyField):
 
     MONEY_CLASS = otree.common.Money
 
+    auto_submit_default = otree.common.Money(0)
+
 class CurrencyField(_OtreeNullableModelFieldMixin, easymoney.MoneyField):
     widget = _CurrencyInput
 
     MONEY_CLASS = otree.common.Currency
+
+    auto_submit_default = otree.common.Currency(0)
 
 def string_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
@@ -185,23 +189,26 @@ class NullBooleanField(_OtreeNullableModelFieldMixin, NullBooleanField):
             )
         super(NullBooleanField, self).__init__(*args, **kwargs)
 
+    auto_submit_default = False
+
 class AutoField(_OtreeNullableModelFieldMixin, AutoField):
     pass
 
 class BigIntegerField(_OtreeNullableModelFieldMixin, BigIntegerField):
-    pass
+    auto_submit_default = 0
 
 class BinaryField(_OtreeNullableModelFieldMixin, BinaryField):
     pass
 
 class BooleanField(_OtreeNotNullableModelFieldMixin, BooleanField):
-    pass
+    auto_submit_default = False
 
 class CharField(_OtreeNullableModelFieldMixin, CharField):
     def __init__(self, *args,  **kwargs):
         kwargs.setdefault('max_length',500)
         super(CharField, self).__init__(*args, **kwargs)
 
+    auto_submit_default = ''
 
 class CommaSeparatedIntegerField(_OtreeNullableModelFieldMixin, CommaSeparatedIntegerField):
     pass
@@ -226,7 +233,7 @@ class FilePathField(_OtreeNullableModelFieldMixin, FilePathField):
 
 
 class FloatField(_OtreeNullableModelFieldMixin, FloatField):
-    pass
+    auto_submit_default = 0.0
 
 
 class ImageField(_OtreeNullableModelFieldMixin, ImageField):
@@ -234,7 +241,7 @@ class ImageField(_OtreeNullableModelFieldMixin, ImageField):
 
 
 class IntegerField(_OtreeNullableModelFieldMixin, IntegerField):
-    pass
+    auto_submit_default = 0
 
 
 class IPAddressField(_OtreeNullableModelFieldMixin, IPAddressField):
@@ -246,11 +253,11 @@ class GenericIPAddressField(_OtreeNullableModelFieldMixin, GenericIPAddressField
 
 
 class PositiveIntegerField(_OtreeNullableModelFieldMixin, PositiveIntegerField):
-    pass
+    auto_submit_default = 0
 
 
 class PositiveSmallIntegerField(_OtreeNullableModelFieldMixin, PositiveSmallIntegerField):
-    pass
+    auto_submit_default = 0
 
 
 class SlugField(_OtreeNullableModelFieldMixin, SlugField):
@@ -258,11 +265,11 @@ class SlugField(_OtreeNullableModelFieldMixin, SlugField):
 
 
 class SmallIntegerField(_OtreeNullableModelFieldMixin, SmallIntegerField):
-    pass
+    auto_submit_default = 0
 
 
 class TextField(_OtreeNullableModelFieldMixin, TextField):
-    pass
+    auto_submit_default = 0
 
 
 class TimeField(_OtreeNullableModelFieldMixin, TimeField):

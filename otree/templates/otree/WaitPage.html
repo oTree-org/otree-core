@@ -44,8 +44,8 @@
         </div>
     </div>
 {% endblock %}
-{% block content_at_bottom_of_body %}
-    {% include 'otree/WaitPageCode.html' %}
+{% block internal_content_at_bottom_of_body %}
+    <script type="text/javascript" src="{% static 'otree/js/poll_server_then_redirect.js' %}"></script>
 {% endblock %}
 
 {# never show footer here #}

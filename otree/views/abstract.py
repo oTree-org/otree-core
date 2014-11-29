@@ -55,6 +55,8 @@ class OTreeMixin(object):
     so you can access self.group, self.player, etc.
     """
 
+    is_debug = settings.DEBUG
+
     def load_classes(self):
         """
         Even though we only use PlayerClass in load_objects,
@@ -198,29 +200,29 @@ class WaitPageMixin(object):
     def request_is_from_wait_page(self):
         return self.request.is_ajax() and self.request.GET.get(constants.check_if_wait_is_over) == constants.get_param_truth_value
 
-    def wait_page_request_url(self):
+    def _poll_url(self):
+        '''called from template'''
         return otree.common_internal.add_params_to_url(
             self.request.path,
             {constants.check_if_wait_is_over: constants.get_param_truth_value}
         )
 
+    def _redirect_url(self):
+        '''called from template'''
+        return self.request.path
 
-    def get_debug_values(self):
-        pass
+    # called from template
+    _poll_interval_seconds = 4
 
     def _response_to_wait_page(self):
         return HttpResponse(int(bool(self._is_complete())))
+
 
     def get_wait_page(self):
         response = TemplateResponse(
             self.request,
             self.wait_page_template_name,
-            {
-                'wait_page_url': self.wait_page_request_url(),
-                'debug_values': self.get_debug_values() if settings.DEBUG else None,
-                'body_text': self.body_text(),
-                'title_text': self.title_text()
-            }
+            {}
         )
         response[constants.wait_page_http_header] = constants.get_param_truth_value
         return response
@@ -362,7 +364,7 @@ class CheckpointMixin(object):
 
 
 
-class SequenceMixin(OTreeMixin):
+class FormPageOrWaitPageMixin(OTreeMixin):
     """
     View that manages its position in the group sequence.
     for both players and experimenters
@@ -402,7 +404,8 @@ class SequenceMixin(OTreeMixin):
                 response = self._redirect_to_page_the_user_should_be_on()
             else:
                 self._session_user.current_page = self.__class__.__name__
-                response = super(SequenceMixin, self).dispatch(request, *args, **kwargs)
+                self._session_user.current_page_url = self.request.path
+                response = super(FormPageOrWaitPageMixin, self).dispatch(request, *args, **kwargs)
             self._session_user.last_request_succeeded = True
             self.save_objects()
             return response
@@ -424,35 +427,6 @@ class SequenceMixin(OTreeMixin):
             raise
 
 
-
-    def post(self, request, *args, **kwargs):
-        self.auto_submit = request.POST.get(constants.auto_submit)
-        return super(SequenceMixin, self).post(request, *args, **kwargs)
-
-
-    def get_context_data(self, **kwargs):
-        context = {'form': kwargs.get('form') or kwargs.get('formset')}
-        game_context = {}
-        game_context.update(self._variables_for_all_templates() or {})
-        vars_for_template = self.variables_for_template() or {}
-        game_context.update(vars_for_template)
-        context.update(game_context)
-        context.update(self._get_time_limit_context())
-        self._user.current_page_url = self.request.path
-
-        if settings.DEBUG:
-            context[constants.debug_values] = self.get_debug_values()
-
-        return context
-
-    def get_form(self, data=None, files=None, **kwargs):
-        """
-        Given `data` and `files` QueryDicts, and optionally other named
-        arguments, and returns a form.
-        """
-        cls = self.get_form_class()
-        return cls(data=data, files=files, **kwargs)
-
     def _user_is_on_right_page(self):
         """Will detect if a player tried to access a page they didn't reach yet,
         for example if they know the URL to the redemption code page,
@@ -460,6 +434,7 @@ class SequenceMixin(OTreeMixin):
         We should block that."""
 
         return self.request.path == self.page_the_user_should_be_on()
+
 
     def advance_to_next_subsession(self):
         if self.subsession._index_in_subsessions == self._session_user._index_in_subsessions:
@@ -486,11 +461,6 @@ class SequenceMixin(OTreeMixin):
                 return
             # if there are no more pages, go to next subsession
             self.advance_to_next_subsession()
-
-    def form_invalid(self, form):
-        response = super(SequenceMixin, self).form_invalid(form)
-        response[constants.redisplay_with_errors_http_header] = constants.get_param_truth_value
-        return response
 
     def participate_condition(self):
         return True
@@ -522,32 +492,8 @@ class SequenceMixin(OTreeMixin):
         completion.save()
         self._session_user.save()
 
-    timeout_seconds = None
 
-    def has_timeout(self):
-        return self.timeout_seconds is not None and self.timeout_seconds > 0
-
-    def _get_timeout_context(self):
-
-        if not self.has_timeout():
-            return {}
-
-        # FIXME: this will display erroneous info to the user if they refresh the page. we need a DB table
-        timeout = self.timeout_seconds
-
-        # schedule celery job
-        otree.timeout.tasks.submit_expired_url.apply_async((self.request.path,), countdown=timeout)
-
-        minutes_component, seconds_component = divmod(timeout, 60)
-
-        return {
-            constants.timeout_minutes_component: str(minutes_component),
-            constants.timeout_seconds_component: str(seconds_component).zfill(2),
-            constants.timeout_seconds: timeout,
-        }
-
-
-class ModelFormMixin(object):
+class FormPageMixin(object):
     """mixin rather than subclass because we want these methods only to be first in MRO"""
 
     # if a model is not specified, use empty "StubModel"
@@ -562,6 +508,33 @@ class ModelFormMixin(object):
 
     def after_next_button(self):
         pass
+
+    def get_context_data(self, **kwargs):
+        context = {'form': kwargs.get('form') or kwargs.get('formset')}
+        game_context = {}
+        game_context.update(self._variables_for_all_templates() or {})
+        vars_for_template = self.variables_for_template() or {}
+        game_context.update(vars_for_template)
+        context.update(game_context)
+        return context
+
+    def get_form(self, data=None, files=None, **kwargs):
+        """
+        Given `data` and `files` QueryDicts, and optionally other named
+        arguments, and returns a form.
+        """
+        cls = self.get_form_class()
+        return cls(data=data, files=files, **kwargs)
+
+    def form_invalid(self, form):
+        response = super(FormPageOrWaitPageMixin, self).form_invalid(form)
+        response[constants.redisplay_with_errors_http_header] = constants.get_param_truth_value
+        return response
+
+    def get(self, request, *args, **kwargs):
+        if self.request.is_ajax() and self.request.GET.get(constants.check_auto_submit):
+            return HttpResponse(int(not self._user_is_on_right_page()))
+        return super(FormPageMixin, self).get(request, *args, **kwargs)
 
 
     def post(self, request, *args, **kwargs):
@@ -582,12 +555,45 @@ class ModelFormMixin(object):
         return self._redirect_to_page_the_user_should_be_on()
 
 
+    def _poll_url(self):
+        '''called from template'''
+        return otree.common_internal.add_params_to_url(
+            self.request.path,
+            {constants.check_auto_submit: constants.get_param_truth_value}
+        )
+
+    def _redirect_url(self):
+        '''called from template'''
+        return self.request.path
+
+    # called from template
+    _poll_interval_seconds = 10
+
+
     def _set_auto_submit_values(self):
         for field_name in self.form_fields:
-            setattr(self.object, field_name, self.auto_submit_values[field_name])
+            if self.auto_submit_values.has_key('field_name'):
+                value = self.auto_submit_values['field_name']
+            else:
+                # get default value for datatype if the user didn't specify
+                ModelField = self.form_model._meta.get_field_by_name(field_name)[0]
+                value = ModelField.auto_submit_default
+            setattr(self.object, field_name, value)
+
+    def has_timeout(self):
+        return self.timeout_seconds is not None and self.timeout_seconds > 0
+
+    # FIXME: this will display erroneous info to the user if they refresh the page. we need a DB table
+    # timeout = self.timeout_seconds
+
+    # FIXME: schedule celery job -- where does this go? in get()
+    #otree.timeout.tasks.submit_expired_url.apply_async((self.request.path,), countdown=timeout)
+
+    timeout_seconds = None
 
 
-class PlayerSequenceMixin(SequenceMixin):
+
+class PlayerFormPageOrWaitPageMixin(FormPageOrWaitPageMixin):
     """for players"""
 
     def get_debug_values(self):
@@ -602,13 +608,13 @@ class PlayerSequenceMixin(SequenceMixin):
                 ('Session code', self.session.code),]
 
 
-class ExperimenterSequenceMixin(SequenceMixin):
+class ExperimenterSequenceMixin(FormPageOrWaitPageMixin):
 
     def get_debug_values(self):
         return [('Subsession code', self.subsession.code),]
 
 
-class PlayerUpdateView(ModelFormMixin, PlayerSequenceMixin, PlayerMixin, vanilla.UpdateView):
+class PlayerUpdateView(FormPageMixin, PlayerFormPageOrWaitPageMixin, PlayerMixin, vanilla.UpdateView):
 
     def get_object(self):
         Cls = self.form_model
@@ -619,11 +625,12 @@ class PlayerUpdateView(ModelFormMixin, PlayerSequenceMixin, PlayerMixin, vanilla
         elif Cls == seq_models.StubModel:
             return seq_models.StubModel.objects.all()[0]
 
-class WaitPage(PlayerSequenceMixin, PlayerMixin, CheckpointMixin, WaitPageMixin, vanilla.UpdateView):
+
+class WaitPage(PlayerFormPageOrWaitPageMixin, PlayerMixin, CheckpointMixin, WaitPageMixin, vanilla.UpdateView):
     pass
 
 
-class ExperimenterUpdateView(ModelFormMixin, ExperimenterSequenceMixin, ExperimenterMixin, vanilla.UpdateView):
+class ExperimenterUpdateView(FormPageMixin, ExperimenterSequenceMixin, ExperimenterMixin, vanilla.UpdateView):
     # 2014-9-14: commenting out as i figure out getting rid of forms.py
     #form_class = ExperimenterStubModelForm
 
@@ -754,4 +761,3 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
                 return HttpResponseNotFound("No Player objects left in the database to assign to new visitor.")
 
         return HttpResponseRedirect(participant._start_url())
-

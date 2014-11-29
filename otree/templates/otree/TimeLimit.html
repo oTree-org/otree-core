@@ -25,9 +25,9 @@
 
 <script type="text/javascript">
     $(function() {
-        {% if timeout_seconds > 0 %}
+        {% if view.timeout_seconds > 0 %}
         var currentDate = new Date();
-        var milliseconds = {{ timeout_seconds }}*1000;
+        var milliseconds = {{ view.timeout_seconds }}*1000;
         var howManyMinutesToShowCountdownTimer = 1;
         $('div#clock').countdown(currentDate.valueOf() + milliseconds, function(event) {
 

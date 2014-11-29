@@ -38,7 +38,7 @@
 
             <div>
 
-                {% if timeout_seconds != None %}
+                {% if view.has_timeout %}
                     {% include 'otree/TimeLimit.html' with form_element_id="form" %}
                 {% endif %}
 
@@ -59,8 +59,13 @@
 
             <br/>
 
-        {% include 'otree/debug_info.html' %}
+        {% if view.debug %}
+            {% include 'otree/debug_info.html' %}
+        {% endif %}
         </div>
+
+        {% block internal_content_at_bottom_of_body %}
+        {% endblock %}
 
         {% block content_at_bottom_of_body %}
         {% endblock %}

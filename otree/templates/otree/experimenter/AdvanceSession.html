@@ -1,0 +1,24 @@
+{% extends "otree/BaseBuiltIn.html" %}
+
+{% load staticfiles %}
+{% load i18n %}
+
+{% block title %}{% blocktrans %}Move session forward{% endblocktrans %}{% endblock %}
+
+
+{% block content %}
+
+<div class="alert alert-info" role="alert">You are the experimenter.</div>
+
+<p>
+{% blocktrans %}
+    If you click the below button, the slowest participants (those on the earliest page) will be automatically advanced
+    by 1 page.
+{% endblocktrans %}
+</p>
+
+<form action="" method="post">
+    <input class="btn btn-primary btn-large btn-primary" type="submit" value="Move slowest users to next page" />
+</form>
+
+{% endblock %}

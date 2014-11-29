@@ -7,6 +7,9 @@ from otree.db import models
 import otree.common_internal
 from otree.common_internal import directory_name
 from otree.common import Currency as c
+from otree import constants
+
+import django.test
 
 
 class GlobalSingleton(models.Model):
@@ -14,6 +17,10 @@ class GlobalSingleton(models.Model):
     GlobalSingleton object. Also used for wait page actions.
     """
     open_session = models.ForeignKey('Session', null=True, blank=True)
+
+    admin_access_code = models.RandomCharField(
+        doc='''used for authentication to things only the admin/experimenter should access'''
+    )
 
     class Meta:
         verbose_name = 'Set open session'
@@ -236,6 +243,29 @@ class Session(ModelWithVars):
         self.save()
 
 
+    def advance_last_place_participants(self):
+        participants = self.get_participants()
+
+
+        c = django.test.Client()
+
+        # in case some participants haven't started
+        for p in participants:
+            if not p.visited:
+                c.get(p._start_url(), follow=True)
+
+        last_place_subsession_index = min([p._index_in_subsessions for p in participants])
+        last_place_subsession_players = [p._current_user() for p in participants if p._index_in_subsessions == last_place_subsession_index]
+
+        last_place_page_index = min([p.index_in_pages for p in last_place_subsession_players])
+        last_place_players = [p for p in last_place_subsession_players if p.index_in_pages == last_place_page_index]
+
+        last_place_participants = [p.participant for p in last_place_players]
+
+        for p in last_place_participants:
+            c.post(p.current_page_url, data={constants.auto_submit: True}, follow=True)
+
+
 class SessionUser(ModelWithVars):
 
     _index_in_subsessions = models.PositiveIntegerField(default=0, null=True)
@@ -321,6 +351,10 @@ class SessionUser(ModelWithVars):
 
     class Meta:
         abstract = True
+
+
+
+
 
 class SessionExperimenter(SessionUser):
 

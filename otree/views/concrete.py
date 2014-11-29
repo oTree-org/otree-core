@@ -6,8 +6,8 @@ from otree.views.abstract import (
     load_session_user,
     AssignVisitorToOpenSessionBase,
     WaitPageMixin,
-    PlayerSequenceMixin,
-    SequenceMixin,
+    PlayerFormPageOrWaitPageMixin,
+    FormPageOrWaitPageMixin,
     PlayerMixin
 
 )
@@ -26,6 +26,7 @@ import django.utils.timezone
 import threading
 from django.conf import settings
 
+
 class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
     name_in_url = 'shared'
 
@@ -36,7 +37,7 @@ class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
         else:
             return TemplateResponse(request, 'otree/OutOfRangeNotification.html')
 
-class WaitUntilAssignedToGroup(PlayerSequenceMixin, PlayerMixin, WaitPageMixin, vanilla.View):
+class WaitUntilAssignedToGroup(PlayerFormPageOrWaitPageMixin, PlayerMixin, WaitPageMixin, vanilla.View):
     """
     this is visited after Initialize, to make sure the player has a group
     the player can be assigned at any time, but this is a safeguard,
@@ -232,3 +233,26 @@ class AssignVisitorToOpenSession(AssignVisitorToOpenSessionBase):
     required_params = {
         'label': otree.constants.participant_label,
     }
+
+class AdvanceSession(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
+
+    def dispatch(self, request, *args, **kwargs):
+        if not kwargs.get(constants.admin_access_code) == otree.session.models.GlobalSingleton.objects.get().admin_access_code:
+            return HttpResponseNotFound('incorrect or missing admin access code')
+
+    def get(self, *args, **kwargs):
+        return TemplateResponse(
+            self.request,
+            'otree/experimenter/AdvanceSession.html',
+            {}
+        )
+
+    def post(self, request, *args, **kwargs):
+        session = get_object_or_404(otree.session.models.Session, pk=kwargs['session_pk'])
+        session.advance_last_place_participants()
+        return TemplateResponse(
+            self.request,
+            'otree/experimenter/AdvanceSession.html',
+            {'success': True}
+        )
+
