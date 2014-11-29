@@ -3,7 +3,7 @@ from importlib import import_module
 from django.contrib.contenttypes import generic
 from otree.session.models import Session, Participant
 from otree.db import models
-from otree.common_internal import _players, _groups
+from otree.common_internal import get_players, get_groups
 
 # NOTE: this imports the following submodules and then subclasses several classes
 # importing is done via import_module rather than an ordinary import.

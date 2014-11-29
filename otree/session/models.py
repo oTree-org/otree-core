@@ -16,11 +16,19 @@ class GlobalSingleton(models.Model):
     """object that can hold site-wide settings. There should only be one
     GlobalSingleton object. Also used for wait page actions.
     """
+
+    # TODO: move to otree.models_concrete
+
     open_session = models.ForeignKey('Session', null=True, blank=True)
 
+    admin_access_code = 'change_this'
+
+    #FIXME: why do I get this after migrate? OperationalError: no such column: session_globalsingleton.admin_access_code
+    """
     admin_access_code = models.RandomCharField(
         doc='''used for authentication to things only the admin/experimenter should access'''
     )
+    """
 
     class Meta:
         verbose_name = 'Set open session'
@@ -33,6 +41,8 @@ class StubModel(models.Model):
     sure we need it.
 
     """
+
+    # TODO: move to otree.models_concrete
 
 # R: You really need this only if you are using save_the_change,
 #    which is not used for Session and SessionUser,

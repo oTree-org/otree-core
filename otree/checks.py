@@ -173,7 +173,7 @@ def pages_function(rules, **kwargs):
             return
         else:
             for ViewCls in page_list:
-                if not issubclass(ViewCls, otree.views.abstract.SequenceMixin):
+                if not issubclass(ViewCls, otree.views.abstract.FormPageOrWaitPageMixin):
                     rules.push_error('views.py: "{}" is not a valid page'.format(ViewCls))
                 if issubclass(ViewCls, otree.views.Page) and not getattr(ViewCls, 'template_name'):
                     rules.push_error(
