@@ -144,6 +144,7 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
     def __init__(self, session_name):
         super(OTreeExperimentFunctionTest, self).__init__()
         self.session_name = session_name
+        self.app_tested = []
 
     def __repr__(self):
         return "<{} '{}'>".format(
@@ -161,6 +162,10 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
 
     def _run_subsession(self, subsession):
         app_label = subsession.app_name
+
+        # patching round number
+        self.app_tested.append(app_label)
+        subsession.round_number = self.app_tested.count(app_label)
 
         logger.info("Starting subsession '{}'".format(app_label))
         try:
