@@ -234,7 +234,22 @@ class AssignVisitorToOpenSession(AssignVisitorToOpenSessionBase):
         'label': otree.constants.participant_label,
     }
 
-class AdvanceSession(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
+class AdvanceSession(vanilla.View):
+
+    @classmethod
+    def url_pattern(cls):
+        return r'^AdvanceSession/(?P<{}>\d+)/(?P<{}>[a-z]+)/$'.format(
+            'session_pk',
+            constants.admin_access_code,
+        )
+
+    @classmethod
+    def url(cls, session_pk):
+        return '/AdvanceSession/{}/{}/'.format(
+            session_pk,
+            settings.SECRET_KEY
+        )
+
 
     def dispatch(self, request, *args, **kwargs):
         if not kwargs.get(constants.admin_access_code) == otree.session.models.GlobalSingleton.objects.get().admin_access_code:

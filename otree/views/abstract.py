@@ -404,7 +404,6 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                 response = self._redirect_to_page_the_user_should_be_on()
             else:
                 self._session_user.current_page = self.__class__.__name__
-                self._session_user.current_page_url = self.request.path
                 response = super(FormPageOrWaitPageMixin, self).dispatch(request, *args, **kwargs)
             self._session_user.last_request_succeeded = True
             self.save_objects()
@@ -534,6 +533,7 @@ class FormPageMixin(object):
     def get(self, request, *args, **kwargs):
         if self.request.is_ajax() and self.request.GET.get(constants.check_auto_submit):
             return HttpResponse(int(not self._user_is_on_right_page()))
+        self._session_user.current_page_url = self.request.path
         return super(FormPageMixin, self).get(request, *args, **kwargs)
 
 

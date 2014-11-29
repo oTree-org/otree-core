@@ -16,6 +16,9 @@
         Open all links, each in its own browser tab.
     </p>
 
+    <h4>Experimenter link</h4>
+    <p><a href="{{ advance_session_url }}">Manage the session</a> </p>
+
     {# in demo mode, experimenter link is omitted #}
     {% if is_demo_page %}
         {% for participant_url in participant_urls %}
@@ -29,10 +32,7 @@
         </p>
 
     {% else %}
-        <h4>
-            Experimenter
-        </h4>
-            <a href="{{ experimenter_url }}" class="experimenter-link" target="_blank">{{ experimenter_url }}</a><br/>
+        <p><a href="{{ experimenter_url }}" class="experimenter-link" target="_blank">{{ experimenter_url }}</a><br/></p>
 
         <h4>
             Participants
