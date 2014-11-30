@@ -1,23 +1,16 @@
 from otree.views.abstract import (
     NonSequenceUrlMixin,
     OTreeMixin,
-    PlayerUpdateView,
-    LoadClassesAndUserMixin,
-    load_session_user,
     AssignVisitorToOpenSessionBase,
-    WaitPageMixin,
-    PlayerFormPageOrWaitPageMixin,
+    GenericWaitPageMixin,
     FormPageOrWaitPageMixin,
     PlayerMixin
-
 )
 
-from datetime import datetime
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
 import vanilla
-from django.utils.translation import ugettext as _
 import otree.constants as constants
 import otree.session.models
 from otree.session.models import Participant
@@ -37,7 +30,7 @@ class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
         else:
             return TemplateResponse(request, 'otree/OutOfRangeNotification.html')
 
-class WaitUntilAssignedToGroup(PlayerFormPageOrWaitPageMixin, PlayerMixin, WaitPageMixin, vanilla.View):
+class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin, GenericWaitPageMixin, vanilla.View):
     """
     this is visited after Initialize, to make sure the player has a group
     the player can be assigned at any time, but this is a safeguard,
@@ -62,7 +55,7 @@ class WaitUntilAssignedToGroup(PlayerFormPageOrWaitPageMixin, PlayerMixin, WaitP
         pass
 
 
-class SessionExperimenterWaitUntilPlayersAreAssigned(NonSequenceUrlMixin, WaitPageMixin, vanilla.View):
+class SessionExperimenterWaitUntilPlayersAreAssigned(NonSequenceUrlMixin, GenericWaitPageMixin, vanilla.View):
 
     def title_text(self):
         return 'Please wait'

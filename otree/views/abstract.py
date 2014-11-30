@@ -33,6 +33,7 @@ from otree.models_concrete import PageCompletion, WaitPageVisit, CompletedSubses
 from django.db import transaction
 import contextlib
 import otree.timeout.tasks
+import os
 
 
 # Get an instance of a logger
@@ -55,7 +56,8 @@ class OTreeMixin(object):
     so you can access self.group, self.player, etc.
     """
 
-    is_debug = settings.DEBUG
+    _is_debug = settings.DEBUG
+    _is_otree_dot_org = os.environ.get('IS_OTREE_DOT_ORG')
 
     def load_classes(self):
         """
@@ -160,6 +162,17 @@ class NonSequenceUrlMixin(object):
 
 class PlayerMixin(object):
 
+    def get_debug_values(self):
+        try:
+            group_id = self.group.pk
+        except:
+            group_id = ''
+        return [('ID in group', self.player.id_in_group),
+                ('Group', group_id),
+                ('Player', self.player.pk),
+                ('Participant label', self.player.participant.label),
+                ('Session code', self.session.code),]
+
     def get_UserClass(self):
         return self.PlayerClass
 
@@ -176,6 +189,9 @@ class PlayerMixin(object):
 
 class ExperimenterMixin(object):
 
+    def get_debug_values(self):
+        return [('Subsession code', self.subsession.code),]
+
     def get_UserClass(self):
         return Experimenter
 
@@ -185,7 +201,11 @@ class ExperimenterMixin(object):
     def objects_to_save(self):
         return [self._user, self.subsession, self._session_user] + self.subsession.get_players()
 
-class WaitPageMixin(object):
+class GenericWaitPageMixin(object):
+    """
+    used for in-game wait pages, as well as other wait-type pages oTree has (like waiting for session to be created,
+    or waiting for players to be assigned to matches
+    """
 
     # TODO: this is intended to be in the user's project, not part of oTree core.
     # but maybe have one in oTree core as a fallback in case the user doesn't have it.
@@ -244,7 +264,9 @@ class WaitPageMixin(object):
             return self.get_wait_page()
 
 
-class CheckpointMixin(object):
+class InGameWaitPageMixin(object):
+
+    """wait pages during game play (i.e. checkpoints), where users wait for others to complete"""
 
     def dispatch(self, request, *args, **kwargs):
         '''this is actually for sequence pages only, because of the _redirect_to_page_the_user_should_be_on()'''
@@ -533,7 +555,7 @@ class FormPageMixin(object):
     def get(self, request, *args, **kwargs):
         if self.request.is_ajax() and self.request.GET.get(constants.check_auto_submit):
             return HttpResponse(int(not self._user_is_on_right_page()))
-        self._session_user.current_page_url = self.request.path
+        self._session_user.current_form_page_url = self.request.path
         return super(FormPageMixin, self).get(request, *args, **kwargs)
 
 
@@ -592,29 +614,7 @@ class FormPageMixin(object):
     timeout_seconds = None
 
 
-
-class PlayerFormPageOrWaitPageMixin(FormPageOrWaitPageMixin):
-    """for players"""
-
-    def get_debug_values(self):
-        try:
-            group_id = self.group.pk
-        except:
-            group_id = ''
-        return [('ID in group', self.player.id_in_group),
-                ('Group', group_id),
-                ('Player', self.player.pk),
-                ('Participant label', self.player.participant.label),
-                ('Session code', self.session.code),]
-
-
-class ExperimenterSequenceMixin(FormPageOrWaitPageMixin):
-
-    def get_debug_values(self):
-        return [('Subsession code', self.subsession.code),]
-
-
-class PlayerUpdateView(FormPageMixin, PlayerFormPageOrWaitPageMixin, PlayerMixin, vanilla.UpdateView):
+class PlayerUpdateView(FormPageMixin, FormPageOrWaitPageMixin, PlayerMixin, vanilla.UpdateView):
 
     def get_object(self):
         Cls = self.form_model
@@ -626,11 +626,12 @@ class PlayerUpdateView(FormPageMixin, PlayerFormPageOrWaitPageMixin, PlayerMixin
             return seq_models.StubModel.objects.all()[0]
 
 
-class WaitPage(PlayerFormPageOrWaitPageMixin, PlayerMixin, CheckpointMixin, WaitPageMixin, vanilla.UpdateView):
+class InGameWaitPage(FormPageOrWaitPageMixin, PlayerMixin, InGameWaitPageMixin, GenericWaitPageMixin, vanilla.UpdateView):
+    """public API wait page"""
     pass
 
 
-class ExperimenterUpdateView(FormPageMixin, ExperimenterSequenceMixin, ExperimenterMixin, vanilla.UpdateView):
+class ExperimenterUpdateView(FormPageMixin, FormPageOrWaitPageMixin, ExperimenterMixin, vanilla.UpdateView):
     # 2014-9-14: commenting out as i figure out getting rid of forms.py
     #form_class = ExperimenterStubModelForm
 

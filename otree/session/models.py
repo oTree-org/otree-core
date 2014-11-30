@@ -273,7 +273,8 @@ class Session(ModelWithVars):
         last_place_participants = [p.participant for p in last_place_players]
 
         for p in last_place_participants:
-            c.post(p.current_page_url, data={constants.auto_submit: True}, follow=True)
+            resp = c.post(p.current_form_page_url, data={constants.auto_submit: True}, follow=True)
+            assert resp.status_code < 400
 
 
 class SessionUser(ModelWithVars):
@@ -316,7 +317,7 @@ class SessionUser(ModelWithVars):
 
     current_page = models.CharField(max_length=200,null=True)
 
-    current_page_url = models.URLField()
+    current_form_page_url = models.URLField()
 
     _current_user_code = models.CharField()
     _current_app_name = models.CharField()

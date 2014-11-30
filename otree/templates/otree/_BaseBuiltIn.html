@@ -59,13 +59,18 @@
 
             <br/>
 
-        {% if view.debug %}
+        {% if view._is_debug %}
             {% include 'otree/debug_info.html' %}
         {% endif %}
         </div>
 
+
         {% block internal_content_at_bottom_of_body %}
+            {% if view._is_otree_dot_org %}
+                {% include "otree/OtreeDotOrgFeedbackWidget.html" %}
+            {% endif %}
         {% endblock %}
+
 
         {% block content_at_bottom_of_body %}
         {% endblock %}

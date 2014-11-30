@@ -79,6 +79,12 @@ class _OtreeNullableModelFieldMixin(_OtreeModelFieldMixin, _OtreeWidgetForModelF
     def __init__(self, *args,  **kwargs):
         kwargs.setdefault('null',True)
 
+        # "initial" is an alias for default. in the context of oTree, 'initial' is a more intuitive name.
+        # (since the user never instantiates objects themselves. also, "default" could be misleading --
+        # people could think it's the default choice in the form
+        if kwargs.has_key('initial'):
+            kwargs.setdefault('default', kwargs['initial'])
+
         # if default=None, Django will omit the blank choice from form widget
         # https://code.djangoproject.com/ticket/10792
         # that is contrary to the way oTree views blank/None values, so to correct for this,

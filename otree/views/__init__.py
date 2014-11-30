@@ -21,7 +21,7 @@ from otree.views.abstract import InitializePlayer, InitializeExperimenter
 abstract = import_module('otree.views.abstract')
 
 
-class WaitPage(abstract.WaitPage):
+class WaitPage(abstract.InGameWaitPage):
 
     wait_for_all_groups = False
 
