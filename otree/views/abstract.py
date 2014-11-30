@@ -625,12 +625,6 @@ class PlayerUpdateView(FormPageMixin, FormPageOrWaitPageMixin, PlayerMixin, vani
         elif Cls == seq_models.StubModel:
             return seq_models.StubModel.objects.all()[0]
 
-
-class InGameWaitPage(FormPageOrWaitPageMixin, PlayerMixin, InGameWaitPageMixin, GenericWaitPageMixin, vanilla.UpdateView):
-    """public API wait page"""
-    pass
-
-
 class ExperimenterUpdateView(FormPageMixin, FormPageOrWaitPageMixin, ExperimenterMixin, vanilla.UpdateView):
     # 2014-9-14: commenting out as i figure out getting rid of forms.py
     #form_class = ExperimenterStubModelForm
@@ -641,6 +635,11 @@ class ExperimenterUpdateView(FormPageMixin, FormPageOrWaitPageMixin, Experimente
             return self.subsession
         elif Cls == seq_models.StubModel:
             return seq_models.StubModel.objects.all()[0]
+
+class InGameWaitPage(FormPageOrWaitPageMixin, PlayerMixin, InGameWaitPageMixin, GenericWaitPageMixin, vanilla.UpdateView):
+    """public API wait page"""
+    pass
+
 
 class InitializePlayerOrExperimenter(NonSequenceUrlMixin, vanilla.View):
 
