@@ -29,7 +29,9 @@ from django.utils.translation import ugettext as _
 import otree.session.models
 from otree.session.models import Participant, GlobalSingleton
 import otree.models
-from otree.models_concrete import PageCompletion, WaitPageVisit, CompletedSubsessionWaitPage, CompletedGroupWaitPage
+from otree.models_concrete import (
+    PageCompletion, WaitPageVisit, CompletedSubsessionWaitPage, CompletedGroupWaitPage, SessionuserToUserLookup
+)
 from django.db import transaction
 import contextlib
 import otree.timeout.tasks
@@ -59,34 +61,6 @@ class OTreeMixin(object):
     _is_debug = settings.DEBUG
     _is_otree_dot_org = os.environ.get('IS_OTREE_DOT_ORG')
 
-    def load_classes(self):
-        """
-        Even though we only use PlayerClass in load_objects,
-        we use {Group/Subsession}Class elsewhere.
-        """
-
-        app_name = self._session_user._current_app_name
-        models_module = otree.common_internal.get_models_module(app_name)
-        self.SubsessionClass = getattr(models_module, 'Subsession')
-        self.GroupClass = getattr(models_module, 'Group')
-        self.PlayerClass = getattr(models_module, 'Player')
-
-    def load_user(self):
-        code = self._session_user._current_user_code
-        UserClass = self._session_user.vars['UserClass']
-        try:
-            self._user = get_object_or_404(UserClass, code=code)
-        except ValueError:
-            raise Http404("This user ({}) does not exist in the database. Maybe the database was recreated.".format(code))
-        self.subsession = self._user.subsession
-        self.session = self._user.session
-
-        # at this point, _session_user already exists, but we reassign this variable
-        # the reason is that if we don't do this, there will be self._session_user, and
-        # self._user._session_user, which will be 2 separate queries, and thus changes made to 1 object
-        # will not be reflected in the other.
-        self._session_user = self._user._session_user
-
     def save_objects(self):
         for obj in self.objects_to_save():
             if obj:
@@ -114,42 +88,19 @@ class OTreeMixin(object):
         return {}
 
     def _variables_for_all_templates(self):
-        views_module = otree.common_internal._views_module(self.subsession)
+        views_module = otree.common_internal.get_views_module(self.subsession._meta.app_label)
         if hasattr(views_module, 'variables_for_all_templates'):
             return views_module.variables_for_all_templates(self) or {}
         return {}
 
 
     def page_the_user_should_be_on(self):
-        if self._session_user._index_in_subsessions > self.subsession._index_in_subsessions:
-            users = self._session_user._users()
-            try:
-                return users[self._session_user._index_in_subsessions]._start_url()
-            except IndexError:
-                from otree.views.concrete import OutOfRangeNotification
-                return OutOfRangeNotification.url(self._session_user)
+        try:
+            return self._session_user._pages_as_urls()[self._session_user._index_in_pages]
+        except IndexError:
+            from otree.views.concrete import OutOfRangeNotification
+            return OutOfRangeNotification.url(self._session_user)
 
-        return self._user._pages_as_urls()[self._user.index_in_pages]
-
-def load_session_user(dispatch_method):
-    def wrapped(self, request, *args, **kwargs):
-        session_user_code = kwargs.pop(constants.session_user_code)
-        user_type = kwargs.pop(constants.user_type)
-        if user_type == constants.user_type_participant:
-            SessionUserClass = otree.session.models.Participant
-        else:
-            SessionUserClass = otree.session.models.SessionExperimenter
-
-        self._session_user = get_object_or_404(SessionUserClass, code = session_user_code)
-        return dispatch_method(self, request, *args, **kwargs)
-    return wrapped
-
-class LoadClassesAndUserMixin(object):
-
-    def dispatch(self, request, *args, **kwargs):
-        self.load_classes()
-        self.load_user()
-        return super(LoadClassesAndUserMixin, self).dispatch(request, *args, **kwargs)
 
 class NonSequenceUrlMixin(object):
     @classmethod
@@ -161,6 +112,8 @@ class NonSequenceUrlMixin(object):
         return otree.common_internal.url_pattern(cls, False)
 
 class PlayerMixin(object):
+
+    _is_experimenter = False
 
     def get_debug_values(self):
         try:
@@ -176,18 +129,12 @@ class PlayerMixin(object):
     def get_UserClass(self):
         return self.PlayerClass
 
-    def load_objects(self):
-        self.load_user()
-        self.player = self._user
-        self.group = self.player.group
-        # 2/11/2014: group may be undefined because the player may be at a waiting screen
-        # before experimenter assigns to a group
-
-
     def objects_to_save(self):
         return [self._user, self._session_user, self.group, self.subsession.session]
 
 class ExperimenterMixin(object):
+
+    _is_experimenter = True
 
     def get_debug_values(self):
         return [('Subsession code', self.subsession.code),]
@@ -195,11 +142,158 @@ class ExperimenterMixin(object):
     def get_UserClass(self):
         return Experimenter
 
-    def load_objects(self):
-        self.load_user()
-
     def objects_to_save(self):
         return [self._user, self.subsession, self._session_user] + self.subsession.get_players()
+
+class FormPageOrWaitPageMixin(OTreeMixin):
+    """
+    View that manages its position in the group sequence.
+    for both players and experimenters
+    """
+
+    @classmethod
+    def url(cls, session_user, index):
+        return otree.common_internal.url(cls, session_user, index)
+
+    @classmethod
+    def url_pattern(cls):
+        return otree.common_internal.url_pattern(cls, True)
+
+    def load_objects(self):
+        """
+        Even though we only use PlayerClass in load_objects,
+        we use {Group/Subsession}Class elsewhere.
+        """
+
+        app_name = get_app_name(self.request)
+        models_module = otree.common_internal.get_models_module(app_name)
+        self.SubsessionClass = getattr(models_module, 'Subsession')
+        self.GroupClass = getattr(models_module, 'Group')
+        self.PlayerClass = getattr(models_module, 'Player')
+        self.UserClass = self.get_UserClass()
+
+        user_pk = SessionuserToUserLookup.objects.get(
+            session_user_pk=self._session_user.pk,
+            page_index=self._session_user._index_in_pages,
+        ).user_pk
+
+        try:
+            self._user = get_object_or_404(self.get_UserClass, pk=user_pk)
+        except ValueError:
+            raise Http404("This user ({}) does not exist in the database. Maybe the database was recreated.".format(user_pk))
+
+        if not self._is_experimenter:
+            self.group = self.player.group
+
+        self.subsession = self._user.subsession
+        self.session = self._user.session
+
+        # at this point, _session_user already exists, but we reassign this variable
+        # the reason is that if we don't do this, there will be self._session_user, and
+        # self._user._session_user, which will be 2 separate queries, and thus changes made to 1 object
+        # will not be reflected in the other.
+        self._session_user = self._user._session_user
+
+
+    @method_decorator(never_cache)
+    @method_decorator(cache_control(must_revalidate=True, max_age=0, no_cache=True, no_store = True))
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            session_user_code = kwargs.pop(constants.session_user_code)
+            user_type = kwargs.pop(constants.user_type)
+            if user_type == constants.user_type_participant:
+                self.SessionUserClass = otree.session.models.Participant
+            else:
+                self.SessionUserClass = otree.session.models.SessionExperimenter
+
+            self._session_user = get_object_or_404(self.SessionUserClass, code = session_user_code)
+
+            self.load_objects()
+
+            self._index_in_pages = int(kwargs.pop(constants.index_in_pages))
+
+            # if the player tried to skip past a part of the subsession
+            # (e.g. by typing in a future URL)
+            # or if they hit the back button to a previous subsession in the sequence.
+            if not self._user_is_on_right_page():
+                # then bring them back to where they should be
+                return self._redirect_to_page_the_user_should_be_on()
+
+            if not self.participate_condition():
+                self.increment_index_in_pages()
+                response = self._redirect_to_page_the_user_should_be_on()
+            else:
+                self._session_user.current_page = self.__class__.__name__
+                response = super(FormPageOrWaitPageMixin, self).dispatch(request, *args, **kwargs)
+            self._session_user.last_request_succeeded = True
+            self.save_objects()
+            return response
+        except Exception, e:
+
+            if hasattr(self, 'user'):
+                user_info = 'user: {}'.format(model_to_dict(self._user))
+                if hasattr(self, '_session_user'):
+                    self._session_user.last_request_succeeded = False
+                    self._session_user.save()
+            else:
+                user_info = '[user undefined]'
+            diagnostic_info = (
+                'is_ajax: {}'.format(self.request.is_ajax()),
+                'user: {}'.format(user_info),
+            )
+
+            e.args = ('{}\nDiagnostic info: {}'.format(e.args[0:1], diagnostic_info),) + e.args[1:]
+            raise
+
+
+    # TODO: maybe this isn't necessary, because I can figure out what page they should be on, from looking up
+    # index_in_pages
+    def _user_is_on_right_page(self):
+        """Will detect if a player tried to access a page they didn't reach yet,
+        for example if they know the URL to the redemption code page,
+        and try typing it in so they don't have to play the whole game.
+        We should block that."""
+
+        return self.request.path == self.page_the_user_should_be_on()
+
+
+    def increment_index_in_pages(self):
+        if self._index_in_pages == self._session_user._index_in_pages:
+            self._session_user._index_in_pages += 1
+            self._record_page_completion_time()
+
+            # 2014-11-30: FIXME: skip past pages where participate_condition = False
+
+    def participate_condition(self):
+        return True
+
+    def _record_page_completion_time(self):
+
+        now = django.utils.timezone.now()
+
+        seconds_on_page = int((now - self._session_user._last_page_timestamp).total_seconds())
+        self._session_user._last_page_timestamp = now
+
+        app_name = self.subsession.app_name,
+        round_number = self.subsession.round_number
+        page_name = self.__class__.__name__
+
+        # FIXME: what about experimenter visits?
+        completion = PageCompletion(
+            app_name=self.subsession.app_name,
+            page_index=self._index_in_pages,
+            page_name=page_name,
+            time_stamp = now,
+            seconds_on_page = seconds_on_page,
+            player_pk = self._user.pk,
+            subsession_pk = self.subsession.pk,
+            participant_pk = self._session_user.pk,
+            session_pk = self.subsession.session.pk,
+        )
+
+        completion.save()
+        self._session_user.save()
+
 
 class GenericWaitPageMixin(object):
     """
@@ -294,15 +388,14 @@ class InGameWaitPageMixin(object):
 
                     if self.wait_for_all_groups:
                         _, created = CompletedSubsessionWaitPage.objects.get_or_create(
-                            app_name = self.subsession.app_name,
-                            page_index = self.index_in_pages,
-                            subsession_pk = self.subsession.pk
+                            page_index = self._index_in_pages,
+                            session_pk = self.session.pk
                         )
                     else:
                         _, created = CompletedGroupWaitPage.objects.get_or_create(
-                            app_name = self.subsession.app_name,
-                            page_index = self.index_in_pages,
-                            group_pk = self.group.pk
+                            page_index = self._index_in_pages,
+                            group_pk = self.group.pk,
+                            session_pk = self.session.pk
                         )
                     # run the action inside the context manager, so that the action is completed
                     # before the next thread does a get_or_create and sees that the action has been completed
@@ -315,7 +408,7 @@ class InGameWaitPageMixin(object):
                             kwargs = {
                                 'app_name': self.subsession.app_name,
                                 'player_pk_set': self._pks_to_wait_for(),
-                                'wait_page_index': self.index_in_pages,
+                                'wait_page_index': self._index_in_pages,
                             },
                             countdown=10,
                         )
@@ -326,34 +419,34 @@ class InGameWaitPageMixin(object):
     def _is_complete(self):
         if self.wait_for_all_groups:
             return CompletedSubsessionWaitPage.objects.filter(
-                app_name = self.subsession.app_name,
-                page_index = self.index_in_pages,
-                subsession_pk = self.subsession.pk
+                page_index = self._index_in_pages,
+                session_pk = self.session.pk
             ).exists()
         else:
             return CompletedGroupWaitPage.objects.filter(
-                app_name = self.subsession.app_name,
-                page_index = self.index_in_pages,
-                group_pk = self.group.pk
+                page_index = self._index_in_pages,
+                group_pk = self.group.pk,
+                session_pk = self.session.pk
             ).exists()
 
     def _pks_to_wait_for(self):
-        return set([p.pk for p in self._group_or_subsession.player_set.all()])
+        return set([p.participant.pk for p in self._group_or_subsession.player_set.all()])
 
     def _all_players_have_visited(self):
         pks_that_have_visited = WaitPageVisit.objects.filter(
-            app_name = self.subsession.app_name,
-            page_index = self.index_in_pages,
-        ).values_list('player_pk', flat=True)
+            session_pk = self.session.pk,
+            page_index = self._index_in_pages,
+            participant_pk = self._session_user.pk,
+        ).values_list('participant_pk', flat=True)
 
         return self._pks_to_wait_for() <= set(pks_that_have_visited)
 
     def _record_visit(self):
         """record that this player visited"""
         visit, _ = WaitPageVisit.objects.get_or_create(
-            app_name = self.subsession.app_name,
-            page_index = self.index_in_pages,
-            player_pk = self._user.pk, #FIXME: what about experimenter?
+            session_pk = self.session.pk,
+            page_index = self._index_in_pages,
+            participant_pk = self._session_user.pk, #FIXME: what about experimenter?
         )
 
 
@@ -369,7 +462,7 @@ class InGameWaitPageMixin(object):
         return True
 
     def _redirect_after_complete(self):
-        self.advance_user()
+        self.increment_index_in_pages()
         return self._redirect_to_page_the_user_should_be_on()
 
     def after_all_players_arrive(self):
@@ -383,135 +476,6 @@ class InGameWaitPageMixin(object):
             return 'Waiting for the other participant.'
         elif num_other_players == 0:
             return 'Waiting'
-
-
-
-class FormPageOrWaitPageMixin(OTreeMixin):
-    """
-    View that manages its position in the group sequence.
-    for both players and experimenters
-    """
-
-    @classmethod
-    def url(cls, session_user, index):
-        return otree.common_internal.url(cls, session_user, index)
-
-    @classmethod
-    def url_pattern(cls):
-        return otree.common_internal.url_pattern(cls, True)
-
-    @method_decorator(never_cache)
-    @method_decorator(cache_control(must_revalidate=True, max_age=0, no_cache=True, no_store = True))
-    @load_session_user
-    def dispatch(self, request, *args, **kwargs):
-        try:
-            self.load_classes()
-            self.load_objects()
-
-            if self.subsession._skip:
-                self.advance_to_next_subsession()
-                return self._redirect_to_page_the_user_should_be_on()
-
-            self.index_in_pages = int(kwargs.pop(constants.index_in_pages))
-
-            # if the player tried to skip past a part of the subsession
-            # (e.g. by typing in a future URL)
-            # or if they hit the back button to a previous subsession in the sequence.
-            if not self._user_is_on_right_page():
-                # then bring them back to where they should be
-                return self._redirect_to_page_the_user_should_be_on()
-
-            if not self.participate_condition():
-                self.advance_user()
-                response = self._redirect_to_page_the_user_should_be_on()
-            else:
-                self._session_user.current_page = self.__class__.__name__
-                response = super(FormPageOrWaitPageMixin, self).dispatch(request, *args, **kwargs)
-            self._session_user.last_request_succeeded = True
-            self.save_objects()
-            return response
-        except Exception, e:
-
-            if hasattr(self, 'user'):
-                user_info = 'user: {}'.format(model_to_dict(self._user))
-                if hasattr(self, '_session_user'):
-                    self._session_user.last_request_succeeded = False
-                    self._session_user.save()
-            else:
-                user_info = '[user undefined]'
-            diagnostic_info = (
-                'is_ajax: {}'.format(self.request.is_ajax()),
-                'user: {}'.format(user_info),
-            )
-
-            e.args = ('{}\nDiagnostic info: {}'.format(e.args[0:1], diagnostic_info),) + e.args[1:]
-            raise
-
-
-    def _user_is_on_right_page(self):
-        """Will detect if a player tried to access a page they didn't reach yet,
-        for example if they know the URL to the redemption code page,
-        and try typing it in so they don't have to play the whole game.
-        We should block that."""
-
-        return self.request.path == self.page_the_user_should_be_on()
-
-
-    def advance_to_next_subsession(self):
-        if self.subsession._index_in_subsessions == self._session_user._index_in_subsessions:
-            self._session_user._index_in_subsessions += 1
-
-
-
-    def advance_user(self):
-        if self.index_in_pages == self._user.index_in_pages:
-            self._record_page_completion_time()
-            pages = self._user._pages()
-            for target_index in range(self.index_in_pages+1, len(pages)):
-                Page = pages[target_index]
-                # we skip any page that is a sequence page where participate_condition evaluates to true
-                if hasattr(Page, 'participate_condition'):
-                    #FIXME: just a prototype. there might be other attributes. also, not valid for experimenter pages
-                    page = Page()
-                    page.player = self.player
-                    page.group = self.group
-                    page.subsession = self.subsession
-                    if not page.participate_condition():
-                        continue
-                self._user.index_in_pages = target_index
-                return
-            # if there are no more pages, go to next subsession
-            self.advance_to_next_subsession()
-
-    def participate_condition(self):
-        return True
-
-    def _record_page_completion_time(self):
-
-        now = django.utils.timezone.now()
-
-        seconds_on_page = int((now - self._session_user._last_page_timestamp).total_seconds())
-        self._session_user._last_page_timestamp = now
-
-        app_name = self.subsession.app_name,
-        round_number = self.subsession.round_number
-        page_name = self.__class__.__name__
-
-        # FIXME: what about experimenter visits?
-        completion = PageCompletion(
-            app_name=self.subsession.app_name,
-            page_index=self.index_in_pages,
-            page_name=page_name,
-            time_stamp = now,
-            seconds_on_page = seconds_on_page,
-            player_pk = self._user.pk,
-            subsession_pk = self.subsession.pk,
-            participant_pk = self._session_user.pk,
-            session_pk = self.subsession.session.pk,
-        )
-
-        completion.save()
-        self._session_user.save()
 
 
 class FormPageMixin(object):
@@ -555,7 +519,7 @@ class FormPageMixin(object):
     def get(self, request, *args, **kwargs):
         if self.request.is_ajax() and self.request.GET.get(constants.check_auto_submit):
             return HttpResponse(int(not self._user_is_on_right_page()))
-        self._session_user.current_form_page_url = self.request.path
+        self._session_user._current_form_page_url = self.request.path
         return super(FormPageMixin, self).get(request, *args, **kwargs)
 
 
@@ -573,7 +537,7 @@ class FormPageMixin(object):
             else:
                 return self.form_invalid(form)
         self.after_next_button()
-        self.advance_user()
+        self.increment_index_in_pages()
         return self._redirect_to_page_the_user_should_be_on()
 
 
@@ -639,78 +603,6 @@ class ExperimenterUpdateView(FormPageMixin, FormPageOrWaitPageMixin, Experimente
 class InGameWaitPage(FormPageOrWaitPageMixin, PlayerMixin, InGameWaitPageMixin, GenericWaitPageMixin, vanilla.UpdateView):
     """public API wait page"""
     pass
-
-
-class InitializePlayerOrExperimenter(NonSequenceUrlMixin, vanilla.View):
-
-    @classmethod
-    def get_name_in_url(cls):
-        """urls.py requires that each view know its own URL.
-        a URL base is the first part of the path, usually the name of the game"""
-        return cls.z_models.Constants.name_in_url
-
-    @load_session_user
-    def dispatch(self, request, *args, **kwargs):
-        self.app_name = get_app_name(request)
-        return super(InitializePlayerOrExperimenter, self).dispatch(request, *args, **kwargs)
-
-    def get(self, request, *args, **kwargs):
-
-        user_code = self.request.GET.get(constants.user_code)
-
-        UserClass = self.get_UserClass()
-        self._user = get_object_or_404(UserClass, code = user_code)
-        # self._user is a generic name for self.player
-        # they are the same thing, but we use 'user' wherever possible
-        # so that the code can be copy pasted to experimenter code
-
-        self._user.visited = True
-        self._user.save()
-
-        self._session_user._current_app_name = self.app_name
-        self._session_user.vars['UserClass'] = UserClass
-        self._session_user._current_user_code = user_code
-        self._session_user.save()
-        return self.redirect()
-
-
-class InitializePlayer(InitializePlayerOrExperimenter):
-    """
-    What if I merged this with WaitUntilAssigned?
-    """
-
-    def get_UserClass(self):
-        models_module = otree.common_internal.get_models_module(self.app_name)
-        return models_module.Player
-
-    def redirect(self):
-        return HttpResponseRedirect(self._user._pages_as_urls()[0])
-
-
-class InitializeExperimenter(InitializePlayerOrExperimenter):
-    """
-    this needs to be abstract because experimenters also need to access self.PlayerClass, etc.
-    for example, in get_object, it checks if it's self.SubsessionClass
-    """
-
-    def get_UserClass(self):
-        return Experimenter
-
-    def redirect(self):
-        urls = self._user._pages_as_urls()
-        if len(urls) > 0:
-            url = urls[0]
-        else:
-            if self._user.subsession._index_in_subsessions == self._session_user._index_in_subsessions:
-                self._session_user._index_in_subsessions += 1
-                self._session_user.save()
-            me_in_next_subsession = self._user._me_in_next_subsession
-            if me_in_next_subsession:
-                url = me_in_next_subsession._start_url()
-            else:
-                from otree.views.concrete import OutOfRangeNotification
-                url = OutOfRangeNotification.url(self._session_user)
-        return HttpResponseRedirect(url)
 
 class AssignVisitorToOpenSessionBase(vanilla.View):
 

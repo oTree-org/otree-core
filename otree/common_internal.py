@@ -120,8 +120,7 @@ def get_app_name_from_import_path(import_path):
             app_name = None
     raise ValueError('The module {} is not part of any known otree app.'.format(import_path))
 
-def _views_module(model_instance):
-    app_name = get_app_name_from_import_path(model_instance.__module__)
+def get_views_module(app_name):
     return import_module('{}.views'.format(app_name))
 
 def get_players(self, refresh_from_db=False):

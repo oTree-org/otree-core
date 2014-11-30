@@ -1,5 +1,5 @@
 from otree import constants
-from otree.common_internal import get_session_module
+from otree.common_internal import get_session_module, get_models_module
 from django.conf import settings
 from django.utils.importlib import import_module
 from otree.models.user import Experimenter
@@ -8,6 +8,7 @@ from django.db import transaction
 from collections import defaultdict
 from itertools import groupby
 import re
+
 
 
 def gcd(a, b):
@@ -154,7 +155,7 @@ def create_session(type_name, label='', num_participants=None,
                    "in settings.py.")
             raise ValueError(msg.format(app_label))
 
-        models_module = import_module('{}.models'.format(app_label))
+        models_module = get_models_module(app_label)
 
         round_numbers = range(1, models_module.Constants.number_of_rounds+1)
         for round_number in round_numbers:
@@ -193,6 +194,7 @@ def create_session(type_name, label='', num_participants=None,
     session.session_experimenter.chain_experimenters()
     if preassign_players_to_groups:
         session._assign_groups_and_initialize()
+    session.build_session_user_to_user_lookups()
     session.ready = True
     session.save()
     return session

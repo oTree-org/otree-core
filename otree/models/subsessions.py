@@ -7,7 +7,7 @@ from otree.db import models
 
 import otree.constants as constants
 import math
-from otree.common_internal import flatten, _views_module
+from otree.common_internal import flatten, get_views_module
 import itertools
 from django_extensions.db.fields.json import JSONField
 from otree.common_internal import get_models_module
@@ -175,7 +175,7 @@ class BaseSubsession(models.Model):
         return previous_subsession and previous_subsession._meta.app_label == self._meta.app_label
 
     def _experimenter_pages(self):
-        views_module = _views_module(self)
+        views_module = get_views_module(self._meta.app_label)
         if hasattr(views_module, 'experimenter_pages'):
             return views_module.experimenter_pages() or []
         return []

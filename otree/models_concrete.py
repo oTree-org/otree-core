@@ -7,25 +7,28 @@ class PageCompletion(models.Model):
     page_name = models.CharField(max_length=300)
     time_stamp = models.DateTimeField()
     seconds_on_page = models.PositiveIntegerField()
-
     subsession_pk = models.PositiveIntegerField()
     participant_pk = models.PositiveIntegerField()
     session_pk = models.PositiveIntegerField()
 
 class WaitPageVisit(models.Model):
     '''difference between this and PageVisit model is that this is run when the player first loads the page, rather than when they leave'''
-    app_name = models.CharField(max_length=300)
+    session_pk = models.PositiveIntegerField()
     page_index = models.PositiveIntegerField()
-    player_pk = models.PositiveIntegerField()
+    participant_pk = models.PositiveIntegerField()
 
 class CompletedGroupWaitPage(models.Model):
-    app_name = models.CharField(max_length=300)
     page_index = models.PositiveIntegerField()
+    session_pk = models.PositiveIntegerField()
     group_pk = models.PositiveIntegerField()
 
-
 class CompletedSubsessionWaitPage(models.Model):
-    app_name = models.CharField(max_length=300)
     page_index = models.PositiveIntegerField()
-    subsession_pk = models.PositiveIntegerField()
+    session_pk = models.PositiveIntegerField()
 
+class SessionuserToUserLookup(models.Model):
+    session_user_pk = models.PositiveIntegerField()
+    page_index = models.PositiveIntegerField()
+    app_name = models.CharField(max_length=300)
+    user_pk = models.PositiveIntegerField()
+    is_experimenter = models.BooleanField()

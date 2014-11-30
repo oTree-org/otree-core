@@ -25,9 +25,6 @@ class User(SaveTheChange, models.Model):
         Session,
         related_name = '%(app_label)s_%(class)s')
 
-
-    index_in_pages = models.PositiveIntegerField(default=0)
-
     _me_in_previous_subsession_content_type = models.ForeignKey(ContentType,
                                                       null=True,
                                                       related_name = '%(app_label)s_%(class)s_previous')

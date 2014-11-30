@@ -10,7 +10,7 @@ from otree.common import Currency as c
 from otree import constants
 
 import django.test
-
+from otree.models_concrete import SessionuserToUserLookup
 
 class GlobalSingleton(models.Model):
     """object that can hold site-wide settings. There should only be one
@@ -264,22 +264,37 @@ class Session(ModelWithVars):
             if not p.visited:
                 c.get(p._start_url(), follow=True)
 
-        last_place_subsession_index = min([p._index_in_subsessions for p in participants])
-        last_place_subsession_players = [p._current_user() for p in participants if p._index_in_subsessions == last_place_subsession_index]
-
-        last_place_page_index = min([p.index_in_pages for p in last_place_subsession_players])
-        last_place_players = [p for p in last_place_subsession_players if p.index_in_pages == last_place_page_index]
-
-        last_place_participants = [p.participant for p in last_place_players]
+        last_place_page_index = min([p._index_in_pages for p in participants])
+        last_place_participants = [p for p in participants if p._index_in_pages == last_place_page_index]
 
         for p in last_place_participants:
-            resp = c.post(p.current_form_page_url, data={constants.auto_submit: True}, follow=True)
+            # what if current_form_page_url hasn't been set yet?
+            resp = c.post(p._current_form_page_url, data={constants.auto_submit: True}, follow=True)
             assert resp.status_code < 400
+
+    def build_session_user_to_user_lookups(self):
+
+        subsession_app_names = self.type().subsession_apps
+
+        num_pages_in_each_app = {}
+        for app_name in subsession_app_names:
+            views_module = otree.common_internal.get_views_module(app_name)
+            num_pages = len(views_module.pages())
+            num_pages_in_each_app[app_name] = num_pages
+
+        for participant in self.get_participants():
+            participant.build_session_user_to_user_lookups(num_pages_in_each_app)
+
+        # FIXME: what about experimenter?
+
+
 
 
 class SessionUser(ModelWithVars):
 
     _index_in_subsessions = models.PositiveIntegerField(default=0, null=True)
+
+    _index_in_pages = models.PositiveIntegerField(default=0)
 
     me_in_first_subsession_content_type = models.ForeignKey(
         ContentType, null=True, related_name = '%(app_label)s_%(class)s'
@@ -317,13 +332,13 @@ class SessionUser(ModelWithVars):
 
     current_page = models.CharField(max_length=200,null=True)
 
-    current_form_page_url = models.URLField()
+    _current_form_page_url = models.URLField()
 
     _current_user_code = models.CharField()
     _current_app_name = models.CharField()
 
     def _current_user(self):
-        return self._users()[self._index_in_subsessions]
+        return self.get_users()[self._index_in_subsessions]
 
     def subsessions_completed(self):
         if not self.visited:
@@ -342,7 +357,7 @@ class SessionUser(ModelWithVars):
         app_label = subsssn._meta.app_label
         return otree.common_internal.app_name_format(app_label)
 
-    def _users(self):
+    def get_users(self):
         """Used to calculate payoffs"""
         lst = []
         me_in_next_subsession = self.me_in_first_subsession
@@ -360,6 +375,40 @@ class SessionUser(ModelWithVars):
             return 'Waiting'
         return ''
 
+    def _pages_completed(self):
+        if not self.visited:
+            return None
+        return '{}/{} pages'.format(
+            self._index_in_pages,
+            len(self._pages())
+        )
+
+    def _pages(self):
+        from otree.views.concrete import WaitUntilAssignedToGroup
+
+        pages = []
+        for user in self.get_users():
+            views_module = otree.common_internal.get_views_module(user._meta.app_label)
+            subsession_pages = [user._start_url(), WaitUntilAssignedToGroup] + views_module.pages()
+            pages.append(subsession_pages)
+
+    def _pages_as_urls(self):
+        return [View.url(self._session_user, index) for index, View in enumerate(self._pages())]
+
+    def build_session_user_to_user_lookups(self, num_pages_in_each_app):
+        page_index = 0
+        for user in self.get_users():
+            app_name = user._meta.app_label
+            for i in range(num_pages_in_each_app + 1): # +1 is for WaitUntilAssigned...
+                SessionuserToUserLookup(
+                    session_user_pk=self.pk,
+                    page_index=page_index,
+                    app_name=app_name,
+                    user_pk=user.pk,
+                    is_experimenter = self._is_experimenter,
+                ).save()
+                page_index += 1
+
     class Meta:
         abstract = True
 
@@ -367,7 +416,10 @@ class SessionUser(ModelWithVars):
 
 
 
+
 class SessionExperimenter(SessionUser):
+
+    _is_experimenter = True
 
     def _start_url(self):
         return '/InitializeSessionExperimenter/{}/'.format(
@@ -390,11 +442,15 @@ class SessionExperimenter(SessionUser):
             subsession._experimenter.save()
 
     def experimenters(self):
-        return self._users()
+        return self.get_users()
+
+
 
     user_type_in_url = constants.user_type_experimenter
 
 class Participant(SessionUser):
+
+    _is_experimenter = False
 
     class Meta:
         ordering = ['pk']
@@ -439,7 +495,7 @@ class Participant(SessionUser):
         )
 
     def get_players(self):
-        return self._users()
+        return self.get_users()
 
     def payoff_from_subsessions(self):
         """convert to payment currency, since often this will need to be

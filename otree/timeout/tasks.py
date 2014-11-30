@@ -25,9 +25,10 @@ def ensure_pages_visited(app_name, player_pk_set, wait_page_index):
 
     c = Client()
 
+    #FIXME: no longer applies to players
     unvisited_players = get_models_module(app_name).Player.objects.filter(
         pk__in=player_pk_set,
-        index_in_pages__lte=wait_page_index,
+        _index_in_pages__lte=wait_page_index,
     )
 
     for player in unvisited_players:

@@ -39,13 +39,6 @@ class BasePlayer(User):
 
     _init_view_name = 'InitializePlayer'
 
-    def _pages(self):
-        from otree.views.concrete import WaitUntilAssignedToGroup
-        views_module = otree.common_internal._views_module(self)
-        return [WaitUntilAssignedToGroup] + views_module.pages()
-
-    def _pages_as_urls(self):
-        return [View.url(self._session_user, index) for index, View in enumerate(self._pages())]
 
     class Meta:
         abstract = True
@@ -66,11 +59,4 @@ class BasePlayer(User):
         return get_models_module(self._meta.app_label).Constants
 
 
-    def _pages_completed(self):
-        if not self.visited:
-            return None
-        return '{}/{} pages'.format(
-            self.index_in_pages,
-            len(self._pages())
-        )
 
