@@ -15,6 +15,8 @@ class GlobalSingleton(models.Model):
     """
     open_session = models.ForeignKey('Session', null=True, blank=True)
 
+    blah = models.RandomCharField()
+
     class Meta:
         verbose_name = 'Set open session'
         verbose_name_plural = verbose_name
