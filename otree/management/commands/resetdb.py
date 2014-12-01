@@ -26,8 +26,8 @@ class Command(NoArgsCommand):
         default_db = settings.DATABASES['default']
         if 'sqlite' not in default_db['ENGINE']:
             sys.stderr.write(
-                "ERROR: cannot set back a database that is using the {backend} "
-                "backend. We only support sqlite databases so far."
+                "ERROR: cannot set back a database that is using the "
+                "{backend} backend. We only support sqlite databases so far."
                 .format(backend=default_db['ENGINE']))
             sys.exit(1)
 
