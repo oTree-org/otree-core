@@ -345,7 +345,7 @@ class GenericWaitPageMixin(object):
         return 'Please wait'
 
     def body_text(self):
-        return
+        return ''
 
     def request_is_from_wait_page(self):
         return self.request.is_ajax() and self.request.GET.get(constants.check_if_wait_is_over) == constants.get_param_truth_value
@@ -365,10 +365,10 @@ class GenericWaitPageMixin(object):
     poll_interval_seconds = 4
 
     def _response_to_wait_page(self):
-        return HttpResponse(int(bool(self._is_complete())))
+        return HttpResponse(int(bool(self._is_ready())))
 
 
-    def get_wait_page(self):
+    def _get_wait_page(self):
         response = TemplateResponse(
             self.request,
             self.wait_page_template_name,
@@ -377,21 +377,20 @@ class GenericWaitPageMixin(object):
         response[constants.wait_page_http_header] = constants.get_param_truth_value
         return response
 
-    def _page_request_actions(self):
+    def _before_returning_wait_page(self):
         pass
 
-    def _redirect_after_complete(self):
+    def _response_when_ready(self):
         raise NotImplementedError()
 
     def dispatch(self, request, *args, **kwargs):
-        '''this is actually for sequence pages only, because of the _redirect_to_page_the_user_should_be_on()'''
         if self.request_is_from_wait_page():
             return self._response_to_wait_page()
         else:
-            if self._is_complete():
-                return self._redirect_after_complete()
-            self._page_request_actions()
-            return self.get_wait_page()
+            if self._is_ready():
+                return self._response_when_ready()
+            self._before_returning_wait_page()
+            return self._get_wait_page()
 
 
 class InGameWaitPageMixin(object):
@@ -407,8 +406,8 @@ class InGameWaitPageMixin(object):
         if self.request_is_from_wait_page():
             return self._response_to_wait_page()
         else:
-            if self._is_complete():
-                return self._redirect_after_complete()
+            if self._is_ready():
+                return self._response_when_ready()
             self._record_visit()
             if self._all_players_have_visited():
 
@@ -452,10 +451,10 @@ class InGameWaitPageMixin(object):
                         )
                         """
 
-                        return self._redirect_after_complete()
-            return self.get_wait_page()
+                        return self._response_when_ready()
+            return self._get_wait_page()
 
-    def _is_complete(self):
+    def _is_ready(self):
         if self.wait_for_all_groups:
             return CompletedSubsessionWaitPage.objects.filter(
                 page_index = self._index_in_pages,
@@ -502,7 +501,7 @@ class InGameWaitPageMixin(object):
     def participate_condition(self):
         return True
 
-    def _redirect_after_complete(self):
+    def _response_when_ready(self):
         self._increment_index_in_pages()
         return self._redirect_to_page_the_user_should_be_on()
 

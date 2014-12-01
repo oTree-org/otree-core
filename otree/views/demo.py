@@ -14,6 +14,7 @@ from django.http import (
 import vanilla
 
 import otree.constants as constants
+from otree.views.abstract import GenericWaitPageMixin
 from otree.session.models import Session
 from otree.session import (
     create_session, session_types_dict, session_types_list
@@ -165,45 +166,48 @@ def render_to_start_links_page(request, session, is_demo_page):
     )
 
 
-class Demo(vanilla.View):
+class Demo(GenericWaitPageMixin, vanilla.View):
 
     @classmethod
     def url_pattern(cls):
         return r"^demo/(?P<session_type>.+)/$"
 
-    def get(self, *args, **kwargs):
-        session_type_name=kwargs['session_type']
+    def _is_ready(self):
+        session = get_session(self.session_type_name)
+        return bool(session)
 
-        session_dir = session_types_dict(demo_only=True)
+    def _before_returning_wait_page(self):
+        session_types = session_types_dict(demo_only=True)
         try:
-            session_dir[session_type_name]
+            session_types[self.session_type_name]
         except KeyError:
             msg = (
                 "Session type '{}' not found, or not enabled for demo"
-            ).format(session_type_name)
+            ).format(self.session_type_name)
             return HttpResponseNotFound(msg)
 
-        if self.request.is_ajax():
-            session = get_session(session_type_name)
-            return HttpResponse(int(session is not None))
 
         t = threading.Thread(
             target=ensure_enough_spare_sessions,
-            args=(session_type_name,)
+            args=(self.session_type_name,)
         )
         t.start()
 
-        session = get_session(session_type_name)
-        if session:
-            session.demo_already_used = True
-            session.save()
-            return render_to_start_links_page(
-                self.request, session, is_demo_page=True
-            )
-        else:
-            ctx = {
-                'SequenceViewURL': start_link_url(session_type_name),
-                'title_text': 'Please wait',
-                'body_text': 'Creating a session.',
-            }
-            return TemplateResponse(self.request, 'otree/WaitPage.html', ctx)
+    def body_text(self):
+        return 'Creating a session'
+
+    def _response_when_ready(self):
+        session = get_session(self.session_type_name)
+        session.demo_already_used = True
+        session.save()
+
+        return render_to_start_links_page(
+            self.request, session, is_demo_page=True
+        )
+
+    def dispatch(self, request, *args, **kwargs):
+        self.session_type_name=kwargs['session_type']
+        return super(Demo, self).dispatch(request, *args, **kwargs)
+
+    def _get_wait_page(self):
+        return TemplateResponse(self.request, 'otree/WaitPage.html', {'view': self})

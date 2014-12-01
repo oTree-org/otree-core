@@ -41,13 +41,13 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin, GenericWait
     """
     name_in_url = 'shared'
 
-    def _is_complete(self):
+    def _is_ready(self):
         return bool(self.group)
 
     def body_text(self):
         return 'Waiting until other participants and/or the study supervisor are ready.'
 
-    def _redirect_after_complete(self):
+    def _response_when_ready(self):
         self._increment_index_in_pages()
         return self._redirect_to_page_the_user_should_be_on()
 
@@ -63,7 +63,7 @@ class SessionExperimenterWaitUntilPlayersAreAssigned(NonSequenceUrlMixin, Generi
     def body_text(self):
         return 'Assigning players to groups.'
 
-    def _is_complete(self):
+    def _is_ready(self):
         return self.session._players_assigned_to_groups or self.session.type().assign_to_groups_on_the_fly
 
     @classmethod
@@ -85,9 +85,9 @@ class SessionExperimenterWaitUntilPlayersAreAssigned(NonSequenceUrlMixin, Generi
             return self._response_to_wait_page()
         else:
             # if the player shouldn't see this view, skip to the next
-            if self._is_complete():
+            if self._is_ready():
                 return HttpResponseRedirect(self._session_user.me_in_first_subsession._start_url())
-            return self.get_wait_page()
+            return self._get_wait_page()
 
 
 class InitializeSessionExperimenter(vanilla.View):

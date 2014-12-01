@@ -2,5 +2,6 @@
 {% load staticfiles %}
 
 {% block internal_content_at_bottom_of_body %}
-    <script type="text/javascript" src="{% static 'otree/js/poll_server_then_redirect.js' %}"></script>
+    {% include 'otree/PollServerThenRedirect.html' %}
 {% endblock %}
+
