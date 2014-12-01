@@ -5,8 +5,6 @@
 from importlib import import_module
 
 import otree.session.models
-from otree.views.abstract import InitializePlayer, InitializeExperimenter
-
 
 # NOTE: this imports the following submodules and then subclasses several classes
 # importing is done via import_module rather than an ordinary import.

@@ -422,7 +422,7 @@ class SubsessionAdmin(OTreeBaseModelAdmin):
 
 
     list_filter = [NonHiddenSessionListFilter]
-    list_editable = ['_skip']
+
 
 class GlobalSingletonAdmin(OTreeBaseModelAdmin):
     list_display = ['id', 'open_session', 'persistent_urls_link', 'mturk_snippet_link']

@@ -26,11 +26,3 @@ class Bot(otree.test.Bot):
         self.subsession = models.Subsession()
         self.group = models.Group()
         self.player = models.Player()
-
-
-class InitializePlayer(otree.views.InitializePlayer):
-    z_models = models
-
-
-class InitializeExperimenter(otree.views.InitializeExperimenter):
-    z_models = models

@@ -42,11 +42,6 @@ class BaseSubsession(models.Model):
         doc="starts from 0. indicates the position of this subsession among other subsessions in the session."
     )
 
-    _skip = models.BooleanField(
-        default=False,
-        doc="""whether the experimenter made the players skip this subsession"""
-    )
-
     def previous_rounds(self):
 
         rounds = []

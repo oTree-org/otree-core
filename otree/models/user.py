@@ -12,9 +12,6 @@ class User(SaveTheChange, models.Model):
     # the player's unique ID that gets passed in the URL.
     code = models.RandomCharField(length = 8)
 
-    visited = models.BooleanField(default=False,
-          doc="""Whether this user's start URL was opened"""
-
     _index_in_game_pages = models.PositiveIntegerField(
         doc='Index in the list of pages returned by views_module.pages()'
     )

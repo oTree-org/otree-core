@@ -37,9 +37,6 @@ class BasePlayer(User):
     def __unicode__(self):
         return self.name()
 
-    _init_view_name = 'InitializePlayer'
-
-
     class Meta:
         abstract = True
 

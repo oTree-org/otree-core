@@ -4,7 +4,6 @@ from django.test.client import RequestFactory
 
 from otree import constants
 from otree.session.models import Participant, SessionExperimenter
-from tests.simple_game._builtin import InitializePlayer
 from tests.simple_game.views import MyPage
 from tests.simple_game.models import Player
 from tests.utils import capture_stdout
@@ -45,33 +44,8 @@ class BaseViewTestCase(TestCase):
         self.participant = Participant.objects.get(pk=self.participant.pk)
         self.player = Player.objects.get(pk=self.player.pk)
 
-    def initialize_player(self):
-        request = self.factory.get('/my-page/', {
-            constants.user_code: self.player.code
-        })
-        view = InitializePlayer.as_view()
-        view(request, **{
-            constants.session_user_code: self.participant.code,
-            constants.user_type: 'p',
-        })
 
 
-class TestInitializePlayer(BaseViewTestCase):
-    view_name = 'tests.simple_game._builtin.InitializePlayer'
-
-    def setUp(self):
-        super(TestInitializePlayer, self).setUp()
-        self.view = InitializePlayer.as_view()
-        self.kwargs = {
-            constants.session_user_code: self.participant.code,
-            constants.user_type: 'p',
-        }
-
-    def test_status_ok(self):
-        request = self.factory.get('/my-page/', {constants.user_code: self.player.code})
-
-        response = self.view(request, **self.kwargs)
-        self.assertEqual(response.status_code, 302)
 
 
 class TestPageView(BaseViewTestCase):
