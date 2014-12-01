@@ -14,12 +14,10 @@ class User(SaveTheChange, models.Model):
 
     visited = models.BooleanField(default=False,
           doc="""Whether this user's start URL was opened"""
-                                  )
 
-
-
-    def _pages_as_urls(self):
-        raise NotImplementedError()
+    _index_in_game_pages = models.PositiveIntegerField(
+        doc='Index in the list of pages returned by views_module.pages()'
+    )
 
     session = models.ForeignKey(
         Session,

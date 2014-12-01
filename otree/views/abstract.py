@@ -18,6 +18,7 @@ import otree.constants as constants
 import otree.session.models as seq_models
 import otree.session.models
 import otree.common_internal
+from otree.common_internal import get_views_module
 
 import otree.forms
 from otree.models.user import Experimenter
@@ -220,7 +221,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                 return self._redirect_to_page_the_user_should_be_on()
 
             if not self.participate_condition():
-                self.increment_index_in_pages()
+                self._increment_index_in_pages()
                 response = self._redirect_to_page_the_user_should_be_on()
             else:
                 self._session_user.current_page = self.__class__.__name__
@@ -257,12 +258,41 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         return self.request.path == self.page_the_user_should_be_on()
 
 
-    def increment_index_in_pages(self):
-        if self._index_in_pages == self._session_user._index_in_pages:
-            self._session_user._index_in_pages += 1
-            self._record_page_completion_time()
+    def _increment_index_in_pages(self):
+        # when is this not the case?
+        assert self._index_in_pages == self._session_user._index_in_pages
 
-            # 2014-11-30: FIXME: skip past pages where participate_condition = False
+        self._record_page_completion_time()
+
+        # performance optimization:
+        # we skip any page that is a sequence page where participate_condition evaluates to False
+        # to eliminate unnecessary redirection
+        views_module = get_views_module(self.subsession._meta.app_label)
+        pages = views_module.pages()
+
+        if self.__class__ in pages:
+            pages_to_jump_by = 1
+            for target_index in range(self._user._index_in_game_pages+1, len(pages)):
+                Page = pages[target_index]
+
+                #FIXME: are there other attributes? also, not valid for experimenter pages
+                # should i do As_view, or simulate the request?
+                page = Page()
+                page.player = self.player
+                page.group = self.group
+                page.subsession = self.subsession
+
+                if hasattr(Page, 'participate_condition') and not page.participate_condition():
+                    pages_to_jump_by += 1
+                else:
+                    break
+
+            self._user._index_in_pages += pages_to_jump_by
+            self._session_user._index_in_pages += pages_to_jump_by
+        else: # e.g. if it's WaitUntil...
+            self._session_user._index_in_pages += 1
+
+
 
     def participate_condition(self):
         return True
@@ -462,7 +492,7 @@ class InGameWaitPageMixin(object):
         return True
 
     def _redirect_after_complete(self):
-        self.increment_index_in_pages()
+        self._increment_index_in_pages()
         return self._redirect_to_page_the_user_should_be_on()
 
     def after_all_players_arrive(self):
@@ -537,7 +567,7 @@ class FormPageMixin(object):
             else:
                 return self.form_invalid(form)
         self.after_next_button()
-        self.increment_index_in_pages()
+        self._increment_index_in_pages()
         return self._redirect_to_page_the_user_should_be_on()
 
 
