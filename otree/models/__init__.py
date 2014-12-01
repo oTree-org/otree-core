@@ -46,10 +46,10 @@ class BaseSubsession(subsessions.BaseSubsession):
     )
 
     def get_groups(self, refresh_from_db=False):
-        return _groups(self, refresh_from_db)
+        return get_groups(self, refresh_from_db)
 
     def get_players(self, refresh_from_db=False):
-        return _players(self, refresh_from_db)
+        return get_players(self, refresh_from_db)
 
     @property
     def app_name(self):
@@ -76,7 +76,7 @@ class BaseGroup(groups.BaseGroup):
     )
 
     def get_players(self):
-        return _players(self, refresh_from_db=False)
+        return get_players(self, refresh_from_db=False)
 
     def get_player_by_role(self, role):
         return super(BaseGroup, self).get_player_by_role(role)

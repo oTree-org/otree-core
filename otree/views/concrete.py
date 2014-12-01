@@ -42,7 +42,7 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin, GenericWait
     name_in_url = 'shared'
 
     def _is_complete(self):
-        return self.group
+        return bool(self.group)
 
     def body_text(self):
         return 'Waiting until other participants and/or the study supervisor are ready.'
@@ -169,8 +169,8 @@ class InitializeParticipant(vanilla.UpdateView):
         session_user.time_started = now
         session_user._last_page_timestamp = now
         session_user.save()
-        start_url = session_user.me_in_first_subsession._start_url()
-        return HttpResponseRedirect(start_url)
+        first_url = session_user._pages_as_urls()[session_user._index_in_pages]
+        return HttpResponseRedirect(first_url)
 
 
 class AssignVisitorToOpenSessionMTurk(AssignVisitorToOpenSessionBase):

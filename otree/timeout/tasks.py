@@ -31,6 +31,9 @@ def ensure_pages_visited(app_name, player_pk_set, wait_page_index):
         _index_in_pages__lte=wait_page_index,
     )
 
+    #FIXME 2014-12-01: not working with views refactor
+    """
     for player in unvisited_players:
         # for simplicity of programming, we can just GET the player's start URL, because oTree auto-redirects to the page the user should be on
         c.get(player._start_url(), follow=True)
+    """

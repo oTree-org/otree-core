@@ -386,12 +386,6 @@ CHANGE_LIST_TEMPLATE = "admin/otree_change_list.html"
 class PlayerAdmin(OTreeBaseModelAdmin):
     change_list_template = CHANGE_LIST_TEMPLATE
 
-    def link(self, instance):
-        url = instance._start_url()
-        return new_tab_link(url, 'Link')
-
-    link.short_description = "Start link"
-    link.allow_tags = True
     list_filter = [NonHiddenSessionListFilter, 'subsession', 'group']
     list_per_page = 40
 

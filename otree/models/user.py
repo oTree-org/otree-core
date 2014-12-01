@@ -13,6 +13,7 @@ class User(SaveTheChange, models.Model):
     code = models.RandomCharField(length = 8)
 
     _index_in_game_pages = models.PositiveIntegerField(
+        default=0,
         doc='Index in the list of pages returned by views_module.pages()'
     )
 
@@ -37,15 +38,6 @@ class User(SaveTheChange, models.Model):
                                                 '_me_in_next_subsession_object_id',)
 
 
-    def _start_url(self):
-        url = '/{}/{}/{}/{}/'.format(
-            self._session_user.user_type_in_url,
-            self._session_user.code,
-            self.subsession._Constants.name_in_url,
-            self._init_view_name,
-        )
-        return add_params_to_url(url, {constants.user_code: self.code})
-
     class Meta:
         abstract = True
 
@@ -65,8 +57,6 @@ class Experimenter(User):
     subsession = generic.GenericForeignKey('subsession_content_type',
                                            'subsession_object_id',
                                            )
-
-    _init_view_name = 'InitializeExperimenter'
 
     class Meta:
         app_label = 'otree'

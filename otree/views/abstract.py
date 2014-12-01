@@ -59,8 +59,8 @@ class OTreeMixin(object):
     so you can access self.group, self.player, etc.
     """
 
-    _is_debug = settings.DEBUG
-    _is_otree_dot_org = os.environ.get('IS_OTREE_DOT_ORG')
+    is_debug = settings.DEBUG
+    is_otree_dot_org = os.environ.get('IS_OTREE_DOT_ORG')
 
     def save_objects(self):
         for obj in self.objects_to_save():
@@ -166,24 +166,30 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         we use {Group/Subsession}Class elsewhere.
         """
 
-        app_name = get_app_name(self.request)
+        # this is the most reliable way to get the app name, because of WaitUntilAssigned...
+        user_lookup = SessionuserToUserLookup.objects.get(
+            session_user_pk=self._session_user.pk,
+            page_index=self._session_user._index_in_pages,
+        )
+
+        app_name = user_lookup.app_name
+        user_pk = user_lookup.user_pk
+
         models_module = otree.common_internal.get_models_module(app_name)
         self.SubsessionClass = getattr(models_module, 'Subsession')
         self.GroupClass = getattr(models_module, 'Group')
         self.PlayerClass = getattr(models_module, 'Player')
         self.UserClass = self.get_UserClass()
 
-        user_pk = SessionuserToUserLookup.objects.get(
-            session_user_pk=self._session_user.pk,
-            page_index=self._session_user._index_in_pages,
-        ).user_pk
 
         try:
-            self._user = get_object_or_404(self.get_UserClass, pk=user_pk)
-        except ValueError:
-            raise Http404("This user ({}) does not exist in the database. Maybe the database was recreated.".format(user_pk))
+            self._user = get_object_or_404(self.get_UserClass(), pk=user_pk)
+        except Http404 as err:
+            err.message += "This user ({}) does not exist in the database. Maybe the database was recreated.".format(user_pk)
+            raise
 
         if not self._is_experimenter:
+            self.player = self._user
             self.group = self.player.group
 
         self.subsession = self._user.subsession
@@ -287,7 +293,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                 else:
                     break
 
-            self._user._index_in_pages += pages_to_jump_by
+            self._user._index_in_game_pages += pages_to_jump_by
             self._session_user._index_in_pages += pages_to_jump_by
         else: # e.g. if it's WaitUntil...
             self._session_user._index_in_pages += 1
@@ -315,7 +321,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
             page_name=page_name,
             time_stamp = now,
             seconds_on_page = seconds_on_page,
-            player_pk = self._user.pk,
+            player_pk = self._user.pk, #FIXME: delete?
             subsession_pk = self.subsession.pk,
             participant_pk = self._session_user.pk,
             session_pk = self.subsession.session.pk,
@@ -344,19 +350,19 @@ class GenericWaitPageMixin(object):
     def request_is_from_wait_page(self):
         return self.request.is_ajax() and self.request.GET.get(constants.check_if_wait_is_over) == constants.get_param_truth_value
 
-    def _poll_url(self):
+    def poll_url(self):
         '''called from template'''
         return otree.common_internal.add_params_to_url(
             self.request.path,
             {constants.check_if_wait_is_over: constants.get_param_truth_value}
         )
 
-    def _redirect_url(self):
+    def redirect_url(self):
         '''called from template'''
         return self.request.path
 
     # called from template
-    _poll_interval_seconds = 4
+    poll_interval_seconds = 4
 
     def _response_to_wait_page(self):
         return HttpResponse(int(bool(self._is_complete())))
@@ -366,7 +372,7 @@ class GenericWaitPageMixin(object):
         response = TemplateResponse(
             self.request,
             self.wait_page_template_name,
-            {}
+            {'view': self}
         )
         response[constants.wait_page_http_header] = constants.get_param_truth_value
         return response
@@ -434,6 +440,8 @@ class InGameWaitPageMixin(object):
                         # in case there is a timeout on the next page, we should ensure the next pages are visited promptly
                         # TODO: can we make this run only if next page is a timeout page?
                         # we could instead make this request the current page URL, but it's different for each player
+                        # FIXME 2014-12-1: add this back in when we get celery working
+                        """
                         otree.timeout.tasks.ensure_pages_visited(
                             kwargs = {
                                 'app_name': self.subsession.app_name,
@@ -442,6 +450,7 @@ class InGameWaitPageMixin(object):
                             },
                             countdown=10,
                         )
+                        """
 
                         return self._redirect_after_complete()
             return self.get_wait_page()
@@ -466,12 +475,14 @@ class InGameWaitPageMixin(object):
         pks_that_have_visited = WaitPageVisit.objects.filter(
             session_pk = self.session.pk,
             page_index = self._index_in_pages,
-            participant_pk = self._session_user.pk,
         ).values_list('participant_pk', flat=True)
 
+        print 'self._pks_to_wait_for()', self._pks_to_wait_for()
+        print 'pks_that_have_visited', pks_that_have_visited
         return self._pks_to_wait_for() <= set(pks_that_have_visited)
 
     def _record_visit(self):
+        print self._session_user.pk
         """record that this player visited"""
         visit, _ = WaitPageVisit.objects.get_or_create(
             session_pk = self.session.pk,
@@ -571,19 +582,19 @@ class FormPageMixin(object):
         return self._redirect_to_page_the_user_should_be_on()
 
 
-    def _poll_url(self):
-        '''called from template'''
+    def poll_url(self):
+        '''called from template. can't start with underscore because used in template'''
         return otree.common_internal.add_params_to_url(
             self.request.path,
             {constants.check_auto_submit: constants.get_param_truth_value}
         )
 
-    def _redirect_url(self):
+    def redirect_url(self):
         '''called from template'''
         return self.request.path
 
     # called from template
-    _poll_interval_seconds = 10
+    poll_interval_seconds = 10
 
 
     def _set_auto_submit_values(self):

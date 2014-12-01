@@ -389,17 +389,18 @@ class SessionUser(ModelWithVars):
         pages = []
         for user in self.get_users():
             views_module = otree.common_internal.get_views_module(user._meta.app_label)
-            subsession_pages = [user._start_url(), WaitUntilAssignedToGroup] + views_module.pages()
-            pages.append(subsession_pages)
+            subsession_pages = [WaitUntilAssignedToGroup] + views_module.pages()
+            pages.extend(subsession_pages)
+        return pages
 
     def _pages_as_urls(self):
-        return [View.url(self._session_user, index) for index, View in enumerate(self._pages())]
+        return [View.url(self, index) for index, View in enumerate(self._pages())]
 
     def build_session_user_to_user_lookups(self, num_pages_in_each_app):
         page_index = 0
         for user in self.get_users():
             app_name = user._meta.app_label
-            for i in range(num_pages_in_each_app + 1): # +1 is for WaitUntilAssigned...
+            for i in range(num_pages_in_each_app[app_name] + 1): # +1 is for WaitUntilAssigned...
                 SessionuserToUserLookup(
                     session_user_pk=self.pk,
                     page_index=page_index,
