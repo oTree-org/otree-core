@@ -21,14 +21,10 @@ class GlobalSingleton(models.Model):
 
     open_session = models.ForeignKey('Session', null=True, blank=True)
 
-    admin_access_code = 'change_this'
 
-    #FIXME: why do I get this after migrate? OperationalError: no such column: session_globalsingleton.admin_access_code
-    """
     admin_access_code = models.RandomCharField(
         doc='''used for authentication to things only the admin/experimenter should access'''
     )
-    """
 
     class Meta:
         verbose_name = 'Set open session'
@@ -347,8 +343,6 @@ class SessionUser(ModelWithVars):
             self._index_in_subsessions, len(self.session.get_subsessions())
         )
 
-    def _pages_completed_in_current_subsession(self):
-        return self._current_user()._pages_completed()
 
     def current_subsession(self):
         if not self.visited:

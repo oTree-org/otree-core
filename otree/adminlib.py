@@ -59,7 +59,6 @@ def get_callables(Model, fields_specific_to_this_subclass=None, for_export=False
         'Participant': [
                 'subsessions_completed',
                 'current_subsession',
-                '_pages_completed_in_current_subsession',
                 'status',
                 'start_link',
             ],
@@ -133,7 +132,6 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
                 'visited',
                 'subsessions_completed',
                 'current_subsession',
-                '_pages_completed_in_current_subsession',
                 'current_page',
                 'status',
                 'last_request_succeeded',
@@ -191,7 +189,6 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
             # the following fields are useful for telling if the participant actually finished
             #'subsessions_completed',
             #'current_subsession',
-            #'_pages_completed_in_current_subsession',
             #'current_page',
             'status',
             'last_request_succeeded',

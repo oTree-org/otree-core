@@ -240,7 +240,7 @@ class AdvanceSession(vanilla.View):
     def url(cls, session_pk):
         return '/AdvanceSession/{}/{}/'.format(
             session_pk,
-            settings.SECRET_KEY
+            otree.session.models.GlobalSingleton.objects.get().admin_access_code,
         )
 
 
