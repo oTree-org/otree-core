@@ -8,9 +8,11 @@ import sys
 
 from optparse import make_option
 
+
 from django.core.management.base import BaseCommand
 
-from otree.test import runner
+from otree.test import runner, client
+
 
 #==============================================================================
 # CONSTANTS
@@ -19,7 +21,7 @@ from otree.test import runner
 COVERAGE_CONSOLE = "console"
 COVERAGE_HTML = "HTML"
 COVERAGE_ALL = "all"
-
+COVERAGE_CHOICES = (COVERAGE_ALL, COVERAGE_CONSOLE, COVERAGE_HTML)
 
 #==============================================================================
 # LOGGER
@@ -38,8 +40,14 @@ class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option(
             '-c', '--coverage', action='store', dest='coverage',
-            choices=(COVERAGE_ALL, COVERAGE_CONSOLE, COVERAGE_HTML),
-            help='Execute code-coverage over the code of tested experiments'
+            choices=COVERAGE_CHOICES, help=(
+                'Execute code-coverage over the code of '
+                'tested experiments [{}]'
+            ).format("|".join(COVERAGE_CHOICES))
+        ),
+        make_option(
+            '-t', '--template-vars', action='store_true', dest='tplvars',
+            help='Validate the existence of all template vars (Warning)'
         ),
     )
     args = '[experiment_name|experiment_name|experiment_name]...'
@@ -55,9 +63,18 @@ class Command(BaseCommand):
 
     def handle(self, *test_labels, **options):
         options['verbosity'] = int(options.get('verbosity'))
+        if options['verbosity'] < 3:
+            logging.basicConfig(level=logging.WARNING)
+            logging.getLogger("otree").setLevel(logging.WARNING)
+            runner.logger.setLevel(logging.WARNING)
+            client.logger.setLevel(logging.WARNING)
         coverage = options["coverage"]
 
         test_runner = runner.OTreeExperimentTestRunner(**options)
+
+        if options["tplvars"]:
+            # this behavior is REAAAALY experimental
+            test_runner.patch_validate_missing_template_vars()
 
         if coverage:
             with runner.covering(test_labels) as coverage_report:
