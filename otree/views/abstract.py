@@ -175,18 +175,14 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         app_name = user_lookup.app_name
         user_pk = user_lookup.user_pk
 
+
         models_module = otree.common_internal.get_models_module(app_name)
         self.SubsessionClass = getattr(models_module, 'Subsession')
         self.GroupClass = getattr(models_module, 'Group')
         self.PlayerClass = getattr(models_module, 'Player')
         self.UserClass = self.get_UserClass()
 
-
-        try:
-            self._user = get_object_or_404(self.get_UserClass(), pk=user_pk)
-        except Http404 as err:
-            err.message += "This user ({}) does not exist in the database. Maybe the database was recreated.".format(user_pk)
-            raise
+        self._user = get_object_or_404(self.get_UserClass(), pk=user_pk)
 
         if not self._is_experimenter:
             self.player = self._user
@@ -213,7 +209,15 @@ class FormPageOrWaitPageMixin(OTreeMixin):
             else:
                 self.SessionUserClass = otree.session.models.SessionExperimenter
 
-            self._session_user = get_object_or_404(self.SessionUserClass, code = session_user_code)
+            try:
+                self._session_user = get_object_or_404(self.SessionUserClass, code = session_user_code)
+            except Http404 as e:
+                e.message += "This user ({}) does not exist in the database. Maybe the database was recreated.".format(
+                    session_user_code
+                )
+                raise
+
+
 
             self.load_objects()
 
@@ -237,7 +241,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
             return response
         except Exception, e:
 
-            if hasattr(self, 'user'):
+            if hasattr(self, '_user'):
                 user_info = 'user: {}'.format(model_to_dict(self._user))
                 if hasattr(self, '_session_user'):
                     self._session_user.last_request_succeeded = False

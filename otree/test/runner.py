@@ -177,17 +177,8 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
 
         logger.info("Creating and staring bots for '{}'".format(app_label))
 
-        # ExperimenterBot is optional
-        ExperimenterBotCls = getattr(
-            test_module, 'ExperimenterBot', DummyExperimenterBot
-        )
-
         # create the bots
         bots = []
-
-        ex_bot = ExperimenterBotCls(subsession)
-        ex_bot.start()
-        bots.append(ex_bot)
 
         for player in subsession.player_set.all():
             bot = test_module.PlayerBot(player)
@@ -226,13 +217,6 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         )
         sssn.label = '{} [bots]'.format(self.session_name)
         sssn.save()
-
-        msg = "Creating session experimenter on session '{}'"
-        logger.info(msg.format(self.session_name))
-
-        sssn_exbot = test.Client()
-        sssn_exbot.get(sssn.session_experimenter._start_url(), follow=True)
-        sssn_exbot.post(sssn.session_experimenter._start_url(), follow=True)
 
         #~ # since players are assigned to groups in a background thread,
         #~ # we need to wait for that to complete.

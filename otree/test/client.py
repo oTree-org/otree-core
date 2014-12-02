@@ -26,6 +26,8 @@ from easymoney import Money as Currency
 
 from otree import constants
 from otree.models.user import Experimenter
+from otree.views.concrete import WaitUntilAssignedToGroup
+from otree.common_internal import get_views_module
 
 #==============================================================================
 # LOGGER
@@ -133,7 +135,11 @@ class BaseClient(test.Client):
 
     def start(self):
         """Recolect all the submits in self.submit"""
-        self.response = self.get(self._user._start_url(), follow=True)
+        wait_page_url = WaitUntilAssignedToGroup.url(
+            self.player.participant,
+            self.player.participant._index_in_pages
+        )
+        self.response = self.get(wait_page_url, follow=True)
         self.set_path()
         self.check_200()
         self.play()
@@ -240,14 +246,14 @@ class BasePlayerBot(BaseClient):
                 self.player.participant.code
             )
             raise AssertionError(msg)
-        if self.player.index_in_pages + 1 < len(self.player._pages()):
+        if self.player._index_in_game_pages + 1 < len(get_views_module(self.subsession._meta.app_label).pages()):
             msg = (
-                "App {}: Player '{}': reach the page {} of {} at the end of "
+                "App {}: Participant '{}' reached the page {} of {} at the end of "
                 "run. Check in tests.py if the bot completes the game."
             ).format(
                 self.subsession._meta.app_label,
                 self.player.participant.code,
-                self.player.index_in_pages + 1,
+                self.player.participant.index_in_pages + 1,
                 len(self.player._pages())
             )
             #~ raise AssertionError(msg)
@@ -277,6 +283,7 @@ class BasePlayerBot(BaseClient):
 #==============================================================================
 
 class BaseExperimenterBot(BaseClient):
+    '''ExperimenterBot is optional; currently not being used'''
 
     def __init__(self, subsession, **kwargs):
         self._SubsessionClass = type(subsession)

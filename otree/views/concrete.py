@@ -86,7 +86,7 @@ class SessionExperimenterWaitUntilPlayersAreAssigned(NonSequenceUrlMixin, Generi
         else:
             # if the player shouldn't see this view, skip to the next
             if self._is_ready():
-                return HttpResponseRedirect(self._session_user.me_in_first_subsession._start_url())
+                return HttpResponse('') # FIXME 2014-12-4: what should this do instead of directing to the start url?
             return self._get_wait_page()
 
 
