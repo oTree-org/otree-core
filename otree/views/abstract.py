@@ -480,12 +480,9 @@ class InGameWaitPageMixin(object):
             page_index = self._index_in_pages,
         ).values_list('participant_pk', flat=True)
 
-        print 'self._pks_to_wait_for()', self._pks_to_wait_for()
-        print 'pks_that_have_visited', pks_that_have_visited
         return self._pks_to_wait_for() <= set(pks_that_have_visited)
 
     def _record_visit(self):
-        print self._session_user.pk
         """record that this player visited"""
         visit, _ = WaitPageVisit.objects.get_or_create(
             session_pk = self.session.pk,

@@ -141,7 +141,6 @@ class BaseClient(test.Client):
         )
         self.response = self.get(wait_page_url, follow=True)
         self.set_path()
-        print self.path
         self.check_200()
         self.play()
 

@@ -213,7 +213,8 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         ))
         sssn = session.create_session(
             type_name=self.session_name,
-            special_category=constants.session_special_category_bots
+            special_category=constants.session_special_category_bots,
+            preassign_players_to_groups=True
         )
         sssn.label = '{} [bots]'.format(self.session_name)
         sssn.save()
@@ -221,6 +222,7 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         #~ # since players are assigned to groups in a background thread,
         #~ # we need to wait for that to complete.
         logger.info("Adding bots on session '{}'".format(self.session_name))
+
         while True:
             sssn = session.models.Session.objects.get(id=sssn.pk)
             if sssn._players_assigned_to_groups:
