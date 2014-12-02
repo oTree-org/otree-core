@@ -23,6 +23,7 @@ class GlobalSingleton(models.Model):
 
 
     admin_access_code = models.RandomCharField(
+        length=12,
         doc='''used for authentication to things only the admin/experimenter should access'''
     )
 
@@ -256,9 +257,15 @@ class Session(ModelWithVars):
         c = django.test.Client()
 
         # in case some participants haven't started
+        some_participants_not_visited = False
         for p in participants:
             if not p.visited:
+                some_participants_not_visited = True
                 c.get(p._start_url(), follow=True)
+
+        if some_participants_not_visited:
+            # refresh from DB
+            participants = self.participant_set.all()
 
         last_place_page_index = min([p._index_in_pages for p in participants])
         last_place_participants = [p for p in participants if p._index_in_pages == last_place_page_index]

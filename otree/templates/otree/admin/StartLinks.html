@@ -17,37 +17,21 @@
     </p>
 
     <h4>Experimenter link</h4>
-    <!-- 2014-12-2: not working yet
-    <p><a href="{{ advance_session_url }}">Manage the session</a> </p>
-    -->
 
-    {# in demo mode, experimenter link is omitted #}
-    {% if is_demo_page %}
-        {% for participant_url in participant_urls %}
-                <a href="{{ participant_url }}" class="participant-link" target="_blank">{{ participant_url }}</a>
-                <br/>
-        {% endfor %}
-        <br/>
-        <p>
-            These are single-use links. To get new start links, refresh this page. This will let you simulate a new set of participants,
-            who will be reassigned to match groups.
-        </p>
+    <p><a href="{{ advance_session_url }}" target="_blank">{{ advance_session_url }}</a></p>
 
-    {% else %}
-        <p><a href="{{ experimenter_url }}" class="experimenter-link" target="_blank">{{ experimenter_url }}</a><br/></p>
+    <h4>Participant links</h4>
 
-        <h4>
-            Participants
-        </h4>
-
-        {% for participant_url in participant_urls %}
+    {% for participant_url in participant_urls %}
             <a href="{{ participant_url }}" class="participant-link" target="_blank">{{ participant_url }}</a>
             <br/>
-        {% endfor %}
+    {% endfor %}
 
-        <p><b>Before participants can play, you need to click the experimenter link above and start the session.</b></p>
-
-    {% endif %}
+    <br/>
+    <p>
+        These are single-use links. To get new start links, refresh this page. This will let you simulate a new set of participants,
+        who will be reassigned to match groups.
+    </p>
 
 
 {% endblock %}

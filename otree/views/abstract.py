@@ -227,6 +227,8 @@ class FormPageOrWaitPageMixin(OTreeMixin):
             # (e.g. by typing in a future URL)
             # or if they hit the back button to a previous subsession in the sequence.
             if not self._user_is_on_right_page():
+                if self.request.is_ajax() and self.request.GET.get(constants.check_auto_submit):
+                    return HttpResponse('1')
                 # then bring them back to where they should be
                 return self._redirect_to_page_the_user_should_be_on()
 
@@ -536,7 +538,8 @@ class FormPageMixin(object):
         pass
 
     def get_context_data(self, **kwargs):
-        context = {'form': kwargs.get('form') or kwargs.get('formset')}
+        context = super(FormPageMixin, self).get_context_data(**kwargs)
+        context.update({'form': kwargs.get('form')})
         game_context = {}
         game_context.update(self._variables_for_all_templates() or {})
         vars_for_template = self.variables_for_template() or {}
@@ -558,8 +561,6 @@ class FormPageMixin(object):
         return response
 
     def get(self, request, *args, **kwargs):
-        if self.request.is_ajax() and self.request.GET.get(constants.check_auto_submit):
-            return HttpResponse(int(not self._user_is_on_right_page()))
         self._session_user._current_form_page_url = self.request.path
         return super(FormPageMixin, self).get(request, *args, **kwargs)
 
@@ -594,7 +595,7 @@ class FormPageMixin(object):
         return self.request.path
 
     # called from template
-    poll_interval_seconds = 10
+    poll_interval_seconds = 5
 
 
     def _set_auto_submit_values(self):

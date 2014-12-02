@@ -6,11 +6,14 @@
         }
 
         var redirectToSequenceView = function(res, status) {
+
             if (status == "success") {
                 var response = res.responseText;
                 if (response == "1") {
-                    document.location.href = '{{ view.redirect_url }}';
+                    var a = 1/0;
+                    window.location.href = '{{ view.redirect_url }}';
                 }
+
             } else{
                 $(".error-notice").show();
             }

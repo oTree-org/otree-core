@@ -155,7 +155,7 @@ def render_to_start_links_page(request, session, is_demo_page):
         'experimenter_url': experimenter_url,
         'participant_urls': participant_urls,
         'is_demo_page': is_demo_page,
-        'advance_session_url': AdvanceSession.url(session.pk)
+        'advance_session_url': request.build_absolute_uri(AdvanceSession.url(session.code))
     }
 
     session_type = session_types_dict(demo_only=True)[session.type_name]
