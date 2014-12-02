@@ -141,6 +141,7 @@ class BaseClient(test.Client):
         )
         self.response = self.get(wait_page_url, follow=True)
         self.set_path()
+        print self.path
         self.check_200()
         self.play()
 
@@ -205,6 +206,7 @@ class BaseClient(test.Client):
         self.submits.append(sbmt)
 
     def submit_with_invalid_input(self, ViewClass, param_dict=None):
+        '''this method lets you intentionally submit with invalid input to ensure it's correctly rejected'''
         sbmt = Submit(
             bot=self, ViewClass=ViewClass, input_is_valid=False, data=param_dict
         )
