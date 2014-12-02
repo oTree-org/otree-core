@@ -246,15 +246,17 @@ class BasePlayerBot(BaseClient):
                 self.player.participant.code
             )
             raise AssertionError(msg)
-        if self.player._index_in_game_pages + 1 < len(get_views_module(self.subsession._meta.app_label).pages()):
+        player_page_index = self.player._index_in_game_pages
+        pages_in_subsession = len(get_views_module(self.subsession._meta.app_label).pages())
+        if player_page_index + 1 < pages_in_subsession:
             msg = (
                 "App {}: Participant '{}' reached the page {} of {} at the end of "
                 "run. Check in tests.py if the bot completes the game."
             ).format(
                 self.subsession._meta.app_label,
                 self.player.participant.code,
-                self.player.participant.index_in_pages + 1,
-                len(self.player._pages())
+                player_page_index,
+                pages_in_subsession,
             )
             #~ raise AssertionError(msg)
         super(BasePlayerBot, self).stop()
