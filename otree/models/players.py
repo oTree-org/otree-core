@@ -20,19 +20,19 @@ class BasePlayer(User):
         # you can make this depend of self.id_in_group
         return ''
 
-    def me_in_previous_rounds(self):
+    def in_previous_rounds(self):
 
         players = []
         current_player = self
         for i in range(self.subsession.round_number-1):
-            current_player = current_player._me_in_previous_subsession
+            current_player = current_player._in_previous_subsession
             players.append(current_player)
         # return starting with round 1
         players.reverse()
         return players
 
-    def me_in_all_rounds(self):
-        return self.me_in_previous_rounds() + [self]
+    def in_all_rounds(self):
+        return self.in_previous_rounds() + [self]
 
     def __unicode__(self):
         return self.name()

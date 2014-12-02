@@ -21,21 +21,21 @@ class User(SaveTheChange, models.Model):
         Session,
         related_name = '%(app_label)s_%(class)s')
 
-    _me_in_previous_subsession_content_type = models.ForeignKey(ContentType,
+    _in_previous_subsession_content_type = models.ForeignKey(ContentType,
                                                       null=True,
                                                       related_name = '%(app_label)s_%(class)s_previous')
-    _me_in_previous_subsession_object_id = models.PositiveIntegerField(null=True)
+    _in_previous_subsession_object_id = models.PositiveIntegerField(null=True)
 
-    _me_in_next_subsession_content_type = models.ForeignKey(ContentType,
+    _in_next_subsession_content_type = models.ForeignKey(ContentType,
                                                       null=True,
                                                       related_name = '%(app_label)s_%(class)s_next')
-    _me_in_next_subsession_object_id = models.PositiveIntegerField(null=True)
+    _in_next_subsession_object_id = models.PositiveIntegerField(null=True)
 
-    _me_in_previous_subsession = generic.GenericForeignKey('_me_in_previous_subsession_content_type',
-                                                '_me_in_previous_subsession_object_id',)
+    _in_previous_subsession = generic.GenericForeignKey('_in_previous_subsession_content_type',
+                                                '_in_previous_subsession_object_id',)
 
-    _me_in_next_subsession = generic.GenericForeignKey('_me_in_next_subsession_content_type',
-                                                '_me_in_next_subsession_object_id',)
+    _in_next_subsession = generic.GenericForeignKey('_in_next_subsession_content_type',
+                                                '_in_next_subsession_object_id',)
 
 
     class Meta:

@@ -203,10 +203,10 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
               # also, people might confuse player/subsession code with participant/session code
               'code',
               'index_in_pages',
-              '_me_in_previous_subsession_content_type',
-              '_me_in_previous_subsession_object_id',
-              '_me_in_next_subsession_content_type',
-              '_me_in_next_subsession_object_id',
+              '_in_previous_subsession_content_type',
+              '_in_previous_subsession_object_id',
+              '_in_next_subsession_content_type',
+              '_in_next_subsession_object_id',
               'participant',
               },
         'Group':
@@ -228,8 +228,8 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
             {
                 'id',
                 '_index_in_subsessions',
-                'me_in_first_subsession_content_type',
-                'me_in_first_subsession_object_id',
+                'in_first_subsession_content_type',
+                'in_first_subsession_object_id',
                 'is_on_wait_page',
                 'mturk_assignment_id',
                 'mturk_worker_id',

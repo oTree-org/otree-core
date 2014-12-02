@@ -202,7 +202,7 @@ class Session(ModelWithVars):
         for i in range(num_participants):
             player = first_subsession_players[i]
             participant = player.participant
-            participant.me_in_first_subsession = player
+            participant.in_first_subsession = player
             participant.save()
 
         for subsession_index in range(len(subsessions) - 1):
@@ -216,8 +216,8 @@ class Session(ModelWithVars):
                     player_left.participant and
                     player_left.participant == player_right.participant
                 )
-                player_left._me_in_next_subsession = player_right
-                player_right._me_in_previous_subsession = player_left
+                player_left._in_next_subsession = player_right
+                player_right._in_previous_subsession = player_left
                 player_left.save()
                 player_right.save()
 
@@ -292,10 +292,10 @@ class SessionUser(ModelWithVars):
 
     _index_in_pages = models.PositiveIntegerField(default=0)
 
-    me_in_first_subsession_content_type = models.ForeignKey(
+    in_first_subsession_content_type = models.ForeignKey(
         ContentType, null=True, related_name = '%(app_label)s_%(class)s'
     )
-    me_in_first_subsession_object_id = models.PositiveIntegerField(null=True)
+    in_first_subsession_object_id = models.PositiveIntegerField(null=True)
 
     code = models.RandomCharField(
         length = 8, doc=(
@@ -306,9 +306,9 @@ class SessionUser(ModelWithVars):
         )
     )
 
-    me_in_first_subsession = generic.GenericForeignKey(
-        'me_in_first_subsession_content_type',
-        'me_in_first_subsession_object_id'
+    in_first_subsession = generic.GenericForeignKey(
+        'in_first_subsession_content_type',
+        'in_first_subsession_object_id'
     )
 
     last_request_succeeded = models.NullBooleanField(
@@ -354,13 +354,13 @@ class SessionUser(ModelWithVars):
     def get_users(self):
         """Used to calculate payoffs"""
         lst = []
-        me_in_next_subsession = self.me_in_first_subsession
+        in_next_subsession = self.in_first_subsession
         while True:
-            if not me_in_next_subsession:
+            if not in_next_subsession:
                 break
-            lst.append(me_in_next_subsession)
-            me_in_next_subsession = (
-                me_in_next_subsession._me_in_next_subsession
+            lst.append(in_next_subsession)
+            in_next_subsession = (
+                in_next_subsession._in_next_subsession
             )
         return lst
 
@@ -424,14 +424,14 @@ class SessionExperimenter(SessionUser):
     def chain_experimenters(self):
         subsessions = self.session.get_subsessions()
 
-        self.me_in_first_subsession = subsessions[0]._experimenter
+        self.in_first_subsession = subsessions[0]._experimenter
         self.save()
 
         for i in range(len(subsessions) - 1):
             left_experimenter = subsessions[i]._experimenter
             right_experimenter = subsessions[i+1]._experimenter
-            left_experimenter._me_in_next_subsession = right_experimenter
-            right_experimenter._me_in_previous_subsession = left_experimenter
+            left_experimenter._in_next_subsession = right_experimenter
+            right_experimenter._in_previous_subsession = left_experimenter
         for subsession in subsessions:
             subsession._experimenter.session_experimenter = self
             subsession._experimenter.save()

@@ -42,7 +42,7 @@ class BaseSubsession(models.Model):
         doc="starts from 0. indicates the position of this subsession among other subsessions in the session."
     )
 
-    def previous_rounds(self):
+    def in_previous_rounds(self):
 
         rounds = []
         current_round = self
@@ -53,8 +53,8 @@ class BaseSubsession(models.Model):
         rounds.reverse()
         return rounds
 
-    def all_rounds(self):
-        return self.previous_rounds() + [self]
+    def in_all_rounds(self):
+        return self.in_previous_rounds() + [self]
 
     def name(self):
         return str(self.pk)
@@ -144,7 +144,7 @@ class BaseSubsession(models.Model):
             for i, group_list in enumerate(current_round_group_matrix):
                 for j, player in enumerate(group_list):
                     # for every entry (i,j) in the matrix, follow the pointer to the same person in the next round
-                    current_round_group_matrix[i][j] = player._me_in_next_subsession
+                    current_round_group_matrix[i][j] = player._in_next_subsession
         # save to DB
         self._group_matrix_to_objects(current_round_group_matrix)
 

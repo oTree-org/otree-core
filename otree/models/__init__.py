@@ -61,8 +61,11 @@ class BaseSubsession(subsessions.BaseSubsession):
     def next_round_groups(self, current_round_group_matrix):
         return super(BaseSubsession, self).next_round_groups(current_round_group_matrix)
 
-    def previous_rounds(self):
-        return super(BaseSubsession, self).previous_rounds()
+    def in_previous_rounds(self):
+        return super(BaseSubsession, self).in_previous_rounds()
+
+    def in_all_rounds(self):
+        return super(BaseSubsession, self).in_all_rounds()
 
     class Meta:
         abstract = True
@@ -106,11 +109,11 @@ class BasePlayer(players.BasePlayer):
     )
 
 
-    def me_in_previous_rounds(self):
-        return super(BasePlayer, self).me_in_previous_rounds()
+    def in_previous_rounds(self):
+        return super(BasePlayer, self).in_previous_rounds()
 
-    def me_in_all_rounds(self):
-        return super(BasePlayer, self).me_in_all_rounds()
+    def in_all_rounds(self):
+        return super(BasePlayer, self).in_all_rounds()
 
     def get_others_in_group(self):
         return [p for p in self.group.get_players() if p != self]
