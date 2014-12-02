@@ -55,10 +55,10 @@ class ClientError(Exception):
 
 class Submit(object):
 
-    def __init__(self, bot, ViewClass, valid_input, data):
+    def __init__(self, bot, ViewClass, input_is_valid, data):
         self.bot = bot
         self.ViewClass = ViewClass
-        self.valid_input = valid_input
+        self.input_is_valid = input_is_valid
         self.data = data or {}
 
         # clean data
@@ -100,7 +100,7 @@ class Submit(object):
         end = self.execute_core()
         has_errors = self.bot.page_redisplayed_with_errors()
 
-        if self.valid_input and has_errors:
+        if self.input_is_valid and has_errors:
             form = self.bot.response.context_data['form']
             errors = [
                 "{}: {}".format(k, repr(v)) for k, v in form.errors.items()
@@ -109,7 +109,7 @@ class Submit(object):
                 self.bot.path, errors
             )
             raise AssertionError(msg)
-        elif not self.valid_input and not has_errors:
+        elif not self.input_is_valid and not has_errors:
             msg = "Invalid input was accepted. Path: {}, params: {}".format(
                 self.bot.path, self.data
             )
@@ -200,13 +200,13 @@ class BaseClient(test.Client):
 
     def submit(self, ViewClass, param_dict=None):
         sbmt = Submit(
-            bot=self, ViewClass=ViewClass, valid_input=True, data=param_dict
+            bot=self, ViewClass=ViewClass, input_is_valid=True, data=param_dict
         )
         self.submits.append(sbmt)
 
     def submit_with_invalid_input(self, ViewClass, param_dict=None):
         sbmt = Submit(
-            bot=self, ViewClass=ViewClass, valid_input=False, data=param_dict
+            bot=self, ViewClass=ViewClass, input_is_valid=False, data=param_dict
         )
         self.submits.append(sbmt)
 

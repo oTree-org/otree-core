@@ -64,7 +64,7 @@ def ensure_enough_spare_sessions(type_name):
     DESIRED_SPARE_SESSIONS = 3
 
     spare_sessions = Session.objects.filter(
-        special_category=constants.special_category_demo,
+        special_category=constants.session_special_category_demo,
         type_name=type_name,
         demo_already_used=False,
     ).count()
@@ -72,7 +72,7 @@ def ensure_enough_spare_sessions(type_name):
     # fill in whatever gap exists. want at least 3 sessions waiting.
     for i in range(DESIRED_SPARE_SESSIONS - spare_sessions):
         create_session(
-            special_category=constants.special_category_demo,
+            special_category=constants.session_special_category_demo,
             type_name=type_name,
             preassign_players_to_groups=True,
         )
@@ -81,7 +81,7 @@ def ensure_enough_spare_sessions(type_name):
 def get_session(type_name):
 
     sessions = Session.objects.filter(
-        special_category=constants.special_category_demo,
+        special_category=constants.session_special_category_demo,
         type_name=type_name,
         demo_already_used=False,
         ready=True,

@@ -125,9 +125,9 @@ def create_session(type_name, label='', num_participants=None,
     participants = []
 
     if num_participants is None:
-        if special_category == constants.special_category_demo:
+        if special_category == constants.session_special_category_demo:
             num_participants = session_type.num_demo_participants
-        elif special_category == constants.special_category_bots:
+        elif special_category == constants.session_special_category_bots:
             num_participants = session_type.num_bots
 
     # check that it divides evenly

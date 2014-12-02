@@ -203,7 +203,7 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
                 if pending.is_blocked(submit) or not submit.execute():
                     pending.add(submit)
 
-        logger.info("Stoping bots for '{}'".format(app_label))
+        logger.info("Stopping bots for '{}'".format(app_label))
         for bot in bots:
             bot.stop()
 
@@ -213,7 +213,7 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         ))
         sssn = session.create_session(
             type_name=self.session_name,
-            special_category=constants.special_category_bots
+            special_category=constants.session_special_category_bots
         )
         sssn.label = '{} [bots]'.format(self.session_name)
         sssn.save()
