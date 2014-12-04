@@ -60,7 +60,6 @@ class FormFieldModel(otree.models.BaseGroup):
     file = models.FileField(upload_to='_tmp/uploads')
     file_path = models.FilePathField()
     float = models.FloatField()
-    image = models.ImageField(upload_to='_tmp/uploads')
     ip_address = models.IPAddressField()
     generic_ip_address = models.GenericIPAddressField()
     positive_integer = models.PositiveIntegerField()

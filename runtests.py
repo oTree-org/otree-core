@@ -22,7 +22,8 @@ def runtests(*args):
 
     test_command = Command()
     test_apps = list(args or default_test_apps)
-    test_command.execute(verbosity=1, *test_apps)
+
+    test_command.execute(verbosity=2, *test_apps)
 
 
 if __name__ == '__main__':

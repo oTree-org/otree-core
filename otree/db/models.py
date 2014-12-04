@@ -244,10 +244,6 @@ class FloatField(_OtreeNullableModelFieldMixin, FloatField):
     auto_submit_default = 0.0
 
 
-class ImageField(_OtreeNullableModelFieldMixin, ImageField):
-    pass
-
-
 class IntegerField(_OtreeNullableModelFieldMixin, IntegerField):
     auto_submit_default = 0
 

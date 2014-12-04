@@ -18,24 +18,39 @@ class BoundFieldModelForm(otree.forms.ModelForm):
 
 
 class WidgetArgumentTests(TestCase):
+
     def test_widget_argument(self):
-        self.assertEqual(TestModelForm.base_fields['char'].widget.__class__, otree.forms.TextInput)
-        self.assertEqual(TestModelForm.base_fields['alt_date_time'].widget.__class__, otree.forms.SplitDateTimeWidget)
-        self.assertEqual(TestModelForm.base_fields['text'].widget.__class__, otree.forms.Textarea)
-        self.assertEqual(TestModelForm.base_fields['alt_text'].widget.__class__, otree.forms.TextInput)
+        self.assertIsInstance(
+            TestModelForm.base_fields['char'].widget, otree.forms.TextInput
+        )
+        self.assertIsInstance(
+            TestModelForm.base_fields['alt_date_time'].widget,
+            otree.forms.SplitDateTimeWidget
+        )
+        self.assertIsInstance(
+            TestModelForm.base_fields['text'].widget, otree.forms.Textarea
+        )
+        self.assertIsInstance(
+            TestModelForm.base_fields['alt_text'].widget,
+            otree.forms.TextInput
+        )
 
 
 class ModelTests(TestCase):
+
     def test_get_FIELD_display(self):
         obj = SimpleModel(name='bob')
         self.assertEqual(obj.get_name_display(), 'BOB')
 
 
 class FieldBoundTests(TestCase):
+
     def test_big_integer_bounds(self):
         form = BoundFieldModelForm()
         self.assertEqual(form.fields['big_integer'].widget.attrs['min'], 0)
-        self.assertEqual(form.fields['big_integer'].widget.attrs['max'], 10**10)
+        self.assertEqual(
+            form.fields['big_integer'].widget.attrs['max'], 10**10
+        )
         self.assertTrue('min="0"' in str(form['big_integer']))
         self.assertTrue('max="10000000000"' in str(form['big_integer']))
 
@@ -64,15 +79,23 @@ class FieldBoundTests(TestCase):
 
     def test_integer_no_bounds_bounds(self):
         form = BoundFieldModelForm()
-        self.assertEqual(form.fields['integer_no_bounds'].widget.attrs.get('min'), None)
-        self.assertEqual(form.fields['integer_no_bounds'].widget.attrs.get(max), None)
+        self.assertEqual(
+            form.fields['integer_no_bounds'].widget.attrs.get('min'), None
+        )
+        self.assertEqual(
+            form.fields['integer_no_bounds'].widget.attrs.get(max), None
+        )
         self.assertTrue('min="' not in str(form['integer_no_bounds']))
         self.assertTrue('max="' not in str(form['integer_no_bounds']))
 
     def test_positive_integer_bounds(self):
         form = BoundFieldModelForm()
-        self.assertEqual(form.fields['positive_integer'].widget.attrs['min'], 0)
-        self.assertEqual(form.fields['positive_integer'].widget.attrs['max'], 10)
+        self.assertEqual(
+            form.fields['positive_integer'].widget.attrs['min'], 0
+        )
+        self.assertEqual(
+            form.fields['positive_integer'].widget.attrs['max'], 10
+        )
         self.assertTrue('min="0"' in str(form['positive_integer']))
         self.assertTrue('max="10"' in str(form['positive_integer']))
 
@@ -85,8 +108,12 @@ class FieldBoundTests(TestCase):
 
     def test_small_positive_integer_bounds(self):
         form = BoundFieldModelForm()
-        self.assertEqual(form.fields['small_positive_integer'].widget.attrs['min'], 0)
-        self.assertEqual(form.fields['small_positive_integer'].widget.attrs['max'], 1)
+        self.assertEqual(
+            form.fields['small_positive_integer'].widget.attrs['min'], 0
+        )
+        self.assertEqual(
+            form.fields['small_positive_integer'].widget.attrs['max'], 1
+        )
         self.assertTrue('min="0"' in str(form['small_positive_integer']))
         self.assertTrue('max="1"' in str(form['small_positive_integer']))
 
