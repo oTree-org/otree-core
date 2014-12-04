@@ -1,7 +1,7 @@
 import copy
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-from otree.common_internal import id_label_name, add_params_to_url, get_app_name_from_label
+from otree.common_internal import id_label_name, add_params_to_url
 from otree import constants
 from otree.db import models
 import otree.common_internal
@@ -159,9 +159,9 @@ class Session(ModelWithVars):
     def subsession_names(self):
         names = []
         for subsession in self.get_subsessions():
-            app_label = subsession._meta.app_label
+            app_name = subsession._meta.app_config.name
             name = '{} {}'.format(
-                otree.common_internal.app_name_format(app_label),
+                otree.common_internal.app_name_format(app_name),
                 subsession.name()
             )
             names.append(name)
@@ -340,9 +340,9 @@ class SessionUser(ModelWithVars):
     def current_subsession(self):
         if not self.visited:
             return None
-        subsssn = self.session.get_subsessions()[self._index_in_subsessions]
-        app_label = subsssn._meta.app_label
-        return otree.common_internal.app_name_format(app_label)
+        subsession = self.session.get_subsessions()[self._index_in_subsessions]
+        app_name = subsession._meta.app_config.name
+        return otree.common_internal.app_name_format(app_name)
 
     def get_users(self):
         """Used to calculate payoffs"""
@@ -384,7 +384,8 @@ class SessionUser(ModelWithVars):
 
         pages = []
         for user in self.get_users():
-            views_module = otree.common_internal.get_views_module(user._meta.app_label)
+            app_name = user._meta.app_config.name
+            views_module = otree.common_internal.get_views_module(app_name)
             subsession_pages = [WaitUntilAssignedToGroup] + views_module.pages()
             pages.extend(subsession_pages)
         return pages
@@ -395,7 +396,7 @@ class SessionUser(ModelWithVars):
     def build_session_user_to_user_lookups(self, num_pages_in_each_app):
         page_index = 0
         for user in self.get_users():
-            app_name = get_app_name_from_label(user._meta.app_label)
+            app_name = user._meta.app_config.name
             for i in range(num_pages_in_each_app[app_name] + 1): # +1 is for WaitUntilAssigned...
                 SessionuserToUserLookup(
                     session_user_pk=self.pk,

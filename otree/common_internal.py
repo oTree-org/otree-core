@@ -56,7 +56,8 @@ def git_commit_timestamp():
         return ''
 
 def app_name_format(app_name):
-    return title(app_name.replace("_", " "))
+    app_label = app_name.split('.')[-1]
+    return title(app_label.replace("_", " "))
 
 def url(cls, session_user, index=None):
     u = '/{}/{}/{}/{}/'.format(

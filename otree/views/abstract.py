@@ -89,7 +89,8 @@ class OTreeMixin(object):
         return {}
 
     def _variables_for_all_templates(self):
-        views_module = otree.common_internal.get_views_module(self.subsession._meta.app_label)
+        views_module = otree.common_internal.get_views_module(
+            self.subsession._meta.app_config.name)
         if hasattr(views_module, 'variables_for_all_templates'):
             return views_module.variables_for_all_templates(self) or {}
         return {}
@@ -282,7 +283,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         # performance optimization:
         # we skip any page that is a sequence page where participate_condition evaluates to False
         # to eliminate unnecessary redirection
-        views_module = get_views_module(self.subsession._meta.app_label)
+        views_module = get_views_module(self.subsession._meta.app_config.name)
         pages = views_module.pages()
 
         if self.__class__ in pages:
