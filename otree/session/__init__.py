@@ -69,9 +69,9 @@ class SessionType(object):
     def lcm(self):
         participants_per_group_list = []
         for app_name in self.subsession_apps:
-            constants = get_app_constants(app_name)
+            app_constants = get_app_constants(app_name)
             # if players_per_group is None, 0, etc.
-            players_per_group = constants.players_per_group or 1
+            players_per_group = app_constants.players_per_group or 1
             participants_per_group_list.append(players_per_group)
         return lcmm(*participants_per_group_list)
 
@@ -155,9 +155,9 @@ def create_session(type_name, label='', num_participants=None,
             raise ValueError(msg.format(app_name))
 
         models_module = get_models_module(app_name)
-        constants = get_app_constants(app_name)
+        app_constants = get_app_constants(app_name)
 
-        round_numbers = range(1, constants.number_of_rounds+1)
+        round_numbers = range(1, app_constants.number_of_rounds+1)
         for round_number in round_numbers:
             subsession = models_module.Subsession(
                 round_number = round_number,
