@@ -59,7 +59,6 @@ class TestPageView(BaseViewTestCase):
         }
         self.view = MyPage.as_view()
 
-        self.initialize_player()
         self.reload_objects()
 
     def test_status_ok(self):
