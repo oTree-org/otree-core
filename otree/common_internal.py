@@ -8,6 +8,7 @@ from os.path import dirname, join
 import babel.numbers
 from babel.core import Locale
 from django import forms
+from django.apps import apps
 from django.conf import settings
 from django.template.defaultfilters import title
 from django.utils.importlib import import_module
@@ -93,6 +94,18 @@ def get_session_module():
 def get_models_module(app_name):
     return import_module('{}.models'.format(app_name))
 
+def get_app_constants(app_name):
+    '''
+    Return the ``Constants`` object of a app defined in the models.py file.
+
+    Example::
+
+        >>> from otree.subsessions import get_app_constants
+        >>> get_app_constants('demo_game')
+        <class demo_game.models.Constants at 0x7fed46bdb188>
+    '''
+    return get_models_module(app_name).Constants
+
 def flatten(list_of_lists):
     return [item for sublist in list_of_lists for item in sublist]
 
@@ -122,6 +135,13 @@ def get_app_name_from_import_path(import_path):
 
 def get_views_module(app_name):
     return import_module('{}.views'.format(app_name))
+
+def get_app_name_from_label(app_label):
+    '''
+    >>> get_app_name_from_label('simple_game')
+    'tests.simple_game'
+    '''
+    return apps.get_app_config(app_label).name
 
 def get_players(self, refresh_from_db=False):
     if (not refresh_from_db) and hasattr(self, '_players'):

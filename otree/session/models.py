@@ -1,7 +1,7 @@
 import copy
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-from otree.common_internal import id_label_name, add_params_to_url
+from otree.common_internal import id_label_name, add_params_to_url, get_app_name_from_label
 from otree import constants
 from otree.db import models
 import otree.common_internal
@@ -395,7 +395,7 @@ class SessionUser(ModelWithVars):
     def build_session_user_to_user_lookups(self, num_pages_in_each_app):
         page_index = 0
         for user in self.get_users():
-            app_name = user._meta.app_label
+            app_name = get_app_name_from_label(user._meta.app_label)
             for i in range(num_pages_in_each_app[app_name] + 1): # +1 is for WaitUntilAssigned...
                 SessionuserToUserLookup(
                     session_user_pk=self.pk,

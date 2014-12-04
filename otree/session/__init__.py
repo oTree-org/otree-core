@@ -1,7 +1,6 @@
 from otree import constants
-from otree.common_internal import get_session_module, get_models_module
+from otree.common_internal import get_session_module, get_models_module, get_app_constants
 from django.conf import settings
-from django.utils.importlib import import_module
 from otree.models.user import Experimenter
 from otree.session.models import Session, SessionExperimenter, Participant
 from django.db import transaction
@@ -69,10 +68,10 @@ class SessionType(object):
 
     def lcm(self):
         participants_per_group_list = []
-        for app_label in self.subsession_apps:
-            models_module = import_module('{}.models'.format(app_label))
+        for app_name in self.subsession_apps:
+            constants = get_app_constants(app_name)
             # if players_per_group is None, 0, etc.
-            players_per_group = models_module.Constants.players_per_group or 1
+            players_per_group = constants.players_per_group or 1
             participants_per_group_list.append(players_per_group)
         return lcmm(*participants_per_group_list)
 
@@ -148,16 +147,17 @@ def create_session(type_name, label='', num_participants=None,
         participants.append(participant)
 
     subsessions = []
-    for app_label in session_type.subsession_apps:
-        if app_label not in settings.INSTALLED_OTREE_APPS:
+    for app_name in session_type.subsession_apps:
+        if app_name not in settings.INSTALLED_OTREE_APPS:
             msg = ("Your session contains a subsession app named '{}'. "
                    "You need to add this to INSTALLED_OTREE_APPS "
                    "in settings.py.")
-            raise ValueError(msg.format(app_label))
+            raise ValueError(msg.format(app_name))
 
-        models_module = get_models_module(app_label)
+        models_module = get_models_module(app_name)
+        constants = get_app_constants(app_name)
 
-        round_numbers = range(1, models_module.Constants.number_of_rounds+1)
+        round_numbers = range(1, constants.number_of_rounds+1)
         for round_number in round_numbers:
             subsession = models_module.Subsession(
                 round_number = round_number,
