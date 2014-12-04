@@ -276,6 +276,9 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
         self._record_page_completion_time()
 
+        if self._session_user._index_in_pages == self._session_user._max_page_index:
+            return
+
         # performance optimization:
         # we skip any page that is a sequence page where participate_condition evaluates to False
         # to eliminate unnecessary redirection
