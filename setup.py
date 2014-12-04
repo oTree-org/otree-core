@@ -13,6 +13,7 @@ REQUIREMENTS = [
     'Pillow>=2.6.1',
     'coverage>=3.7.1',
     'dj-static>=0.0.6',
+    'django-celery>=3.1.16',
     'django-countries>=3.0.1',
     'django-easymoney>=0.5',
     'django-extensions>=1.4.6',
