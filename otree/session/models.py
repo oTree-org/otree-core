@@ -23,7 +23,7 @@ class GlobalSingleton(models.Model):
 
 
     admin_access_code = models.RandomCharField(
-        length=12,
+        length=8,
         doc='''used for authentication to things only the admin/experimenter should access'''
     )
 
