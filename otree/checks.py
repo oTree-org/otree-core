@@ -101,8 +101,10 @@ class Rules(object):
 
 
 def _get_all_configs():
-    last_word = lambda s: s.rsplit('.', -1)[-1]
-    return [apps.app_configs[last_word(label)] for label in settings.INSTALLED_OTREE_APPS]
+    return [
+        app
+        for app in apps.get_app_configs()
+        if app.name in settings.INSTALLED_OTREE_APPS]
 
 
 def register_rules(tags=(), id=None):
