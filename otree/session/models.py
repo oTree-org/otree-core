@@ -180,52 +180,6 @@ class Session(ModelWithVars):
             subsession = subsession.next_subsession
         return lst
 
-    def chain_subsessions(self, subsessions):
-        self.first_subsession = subsessions[0]
-        for i in range(len(subsessions) - 1):
-            subsessions[i].next_subsession = subsessions[i + 1]
-            subsessions[i + 1].previous_subsession = subsessions[i]
-        for i, subsession in enumerate(subsessions):
-            subsession._index_in_subsessions = i
-            subsession.save()
-        self.save()
-
-    def chain_players(self):
-        """Should be called after add_subsessions"""
-
-        participants = self.get_participants()
-        num_participants = len(participants)
-
-        subsessions = self.get_subsessions()
-
-        first_subsession_players = self.first_subsession.get_players()
-
-        for i in range(num_participants):
-            player = first_subsession_players[i]
-            participant = player.participant
-            participant.in_first_subsession = player
-            participant.save()
-
-        for subsession_index in range(len(subsessions) - 1):
-            players_left = subsessions[subsession_index].get_players()
-            players_right = subsessions[subsession_index+1].get_players()
-            players_right_dict = {p.participant.pk: p for p in players_right}
-            for player_index in range(num_participants):
-                player_left = players_left[player_index]
-                player_right = players_right_dict[player_left.participant.pk]
-                assert (
-                    player_left.participant and
-                    player_left.participant == player_right.participant
-                )
-                player_left._in_next_subsession = player_right
-                player_right._in_previous_subsession = player_left
-                player_left.save()
-                player_right.save()
-
-    def add_subsession(self, subsession):
-        subsession.session = self
-        subsession.save()
-
     def delete(self, using=None):
         for subsession in self.get_subsessions():
             subsession.delete()
@@ -321,13 +275,7 @@ class SessionUser(ModelWithVars):
 
     _current_form_page_url = models.URLField()
 
-    _current_user_code = models.CharField()
-    _current_app_name = models.CharField()
-
     _max_page_index = models.PositiveIntegerField()
-
-    def _current_user(self):
-        return self.get_users()[self._index_in_subsessions]
 
     def subsessions_completed(self):
         if not self.visited:
@@ -347,15 +295,12 @@ class SessionUser(ModelWithVars):
     def get_users(self):
         """Used to calculate payoffs"""
         lst = []
-        in_next_subsession = self.in_first_subsession
-        while True:
-            if not in_next_subsession:
-                break
-            lst.append(in_next_subsession)
-            in_next_subsession = (
-                in_next_subsession._in_next_subsession
-            )
-        return lst
+        subsession_apps = self.subsession.session.type().subsession_apps
+        for app in subsession_apps:
+            models_module = otree.common_internal.get_models_module(app)
+            players = models_module.Player.objects.filter(participant=self.participant).order_by('round_number')
+            lst.append(players)
+        return list
 
     def status(self):
         if self.is_on_wait_page:
@@ -425,21 +370,6 @@ class SessionExperimenter(SessionUser):
         return '/InitializeSessionExperimenter/{}/'.format(
             self.code
         )
-
-    def chain_experimenters(self):
-        subsessions = self.session.get_subsessions()
-
-        self.in_first_subsession = subsessions[0]._experimenter
-        self.save()
-
-        for i in range(len(subsessions) - 1):
-            left_experimenter = subsessions[i]._experimenter
-            right_experimenter = subsessions[i+1]._experimenter
-            left_experimenter._in_next_subsession = right_experimenter
-            right_experimenter._in_previous_subsession = left_experimenter
-        for subsession in subsessions:
-            subsession._experimenter.session_experimenter = self
-            subsession._experimenter.save()
 
     def experimenters(self):
         return self.get_users()

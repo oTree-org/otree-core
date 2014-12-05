@@ -161,6 +161,7 @@ def create_session(type_name, label='', num_participants=None,
         for round_number in round_numbers:
             subsession = models_module.Subsession(
                 round_number = round_number,
+                session = session
                 )
             subsession.save()
 
@@ -177,7 +178,8 @@ def create_session(type_name, label='', num_participants=None,
                 player = models_module.Player(
                     subsession = subsession,
                     session = session,
-                    participant = participants[i]
+                    participant = participants[i],
+                    round_number=round_number
                 )
                 player.save()
 
@@ -189,9 +191,6 @@ def create_session(type_name, label='', num_participants=None,
 
             subsessions.append(subsession)
 
-    session.chain_subsessions(subsessions)
-    session.chain_players()
-    session.session_experimenter.chain_experimenters()
     if preassign_players_to_groups:
         session._assign_groups_and_initialize()
     session.build_session_user_to_user_lookups()

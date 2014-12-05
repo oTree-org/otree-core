@@ -21,22 +21,7 @@ class User(SaveTheChange, models.Model):
         Session,
         related_name = '%(app_label)s_%(class)s')
 
-    _in_previous_subsession_content_type = models.ForeignKey(ContentType,
-                                                      null=True,
-                                                      related_name = '%(app_label)s_%(class)s_previous')
-    _in_previous_subsession_object_id = models.PositiveIntegerField(null=True)
-
-    _in_next_subsession_content_type = models.ForeignKey(ContentType,
-                                                      null=True,
-                                                      related_name = '%(app_label)s_%(class)s_next')
-    _in_next_subsession_object_id = models.PositiveIntegerField(null=True)
-
-    _in_previous_subsession = generic.GenericForeignKey('_in_previous_subsession_content_type',
-                                                '_in_previous_subsession_object_id',)
-
-    _in_next_subsession = generic.GenericForeignKey('_in_next_subsession_content_type',
-                                                '_in_next_subsession_object_id',)
-
+    round_number = models.PositiveIntegerField()
 
     class Meta:
         abstract = True

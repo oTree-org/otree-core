@@ -203,10 +203,6 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
               # also, people might confuse player/subsession code with participant/session code
               'code',
               'index_in_pages',
-              '_in_previous_subsession_content_type',
-              '_in_previous_subsession_object_id',
-              '_in_next_subsession_content_type',
-              '_in_next_subsession_object_id',
               'participant',
               },
         'Group':
