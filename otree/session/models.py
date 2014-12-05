@@ -375,6 +375,7 @@ class SessionUser(ModelWithVars):
         c = django.test.Client()
         if not self.visited:
             c.get(self._start_url(), follow=True)
+            # FIXME: refresh from DB so next line doesn't fail (current_form_page_url is none)
         resp = c.post(self._current_form_page_url, data={constants.auto_submit: True}, follow=True)
         assert resp.status_code < 400
 
