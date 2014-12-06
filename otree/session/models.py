@@ -109,14 +109,6 @@ class Session(ModelWithVars):
         doc="The time at which the experimenter started the session",
     )
 
-    first_subsession_content_type = models.ForeignKey(
-        ContentType, null=True, related_name = '%(app_label)s_%(class)s'
-    )
-    first_subsession_object_id = models.PositiveIntegerField(null=True)
-    first_subsession = generic.GenericForeignKey(
-        'first_subsession_content_type', 'first_subsession_object_id'
-    )
-
     mturk_payment_was_sent = models.BooleanField(default=False)
 
     hidden = models.BooleanField(default=False)
@@ -172,12 +164,11 @@ class Session(ModelWithVars):
 
     def get_subsessions(self):
         lst = []
-        subsession = self.first_subsession
-        while True:
-            if not subsession:
-                break
-            lst.append(subsession)
-            subsession = subsession.next_subsession
+        subsession_apps = self.type().subsession_apps
+        for app in subsession_apps:
+            models_module = otree.common_internal.get_models_module(app)
+            subsessions = models_module.Subsession.objects.filter(session=self).order_by('round_number')
+            lst.extend(list(subsessions))
         return lst
 
     def delete(self, using=None):
@@ -237,11 +228,6 @@ class SessionUser(ModelWithVars):
 
     _index_in_pages = models.PositiveIntegerField(default=0)
 
-    in_first_subsession_content_type = models.ForeignKey(
-        ContentType, null=True, related_name = '%(app_label)s_%(class)s'
-    )
-    in_first_subsession_object_id = models.PositiveIntegerField(null=True)
-
     code = models.RandomCharField(
         length = 8, doc=(
             "Randomly generated unique identifier for the participant. If you "
@@ -249,11 +235,6 @@ class SessionUser(ModelWithVars):
             "subsession in the same session, you should join on this field, "
             "which will be the same across subsessions."
         )
-    )
-
-    in_first_subsession = generic.GenericForeignKey(
-        'in_first_subsession_content_type',
-        'in_first_subsession_object_id'
     )
 
     last_request_succeeded = models.NullBooleanField(
@@ -295,12 +276,12 @@ class SessionUser(ModelWithVars):
     def get_users(self):
         """Used to calculate payoffs"""
         lst = []
-        subsession_apps = self.subsession.session.type().subsession_apps
+        subsession_apps = self.session.type().subsession_apps
         for app in subsession_apps:
             models_module = otree.common_internal.get_models_module(app)
-            players = models_module.Player.objects.filter(participant=self.participant).order_by('round_number')
-            lst.append(players)
-        return list
+            players = models_module.Player.objects.filter(participant=self).order_by('round_number')
+            lst.extend(list(players))
+        return lst
 
     def status(self):
         if self.is_on_wait_page:

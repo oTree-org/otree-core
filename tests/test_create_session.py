@@ -28,7 +28,6 @@ class TestCreateSessionsCommand(TestCase):
 
         self.assertEqual(Subsession.objects.count(), 1)
         subsession = Subsession.objects.get()
-        self.assertEqual(session.first_subsession, subsession)
 
         self.assertEqual(Player.objects.count(), 1)
         player = Player.objects.get()

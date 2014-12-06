@@ -165,8 +165,6 @@ def create_session(type_name, label='', num_participants=None,
                 )
             subsession.save()
 
-            session.add_subsession(subsession)
-
             experimenter = Experimenter(session=session)
             experimenter.subsession = subsession
             experimenter.save()
