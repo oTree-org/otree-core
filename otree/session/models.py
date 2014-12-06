@@ -198,11 +198,27 @@ class Session(ModelWithVars):
     def advance_last_place_participants(self):
         participants = self.get_participants()
 
+        c = django.test.Client()
+
+        # in case some participants haven't started
+        some_participants_not_visited = False
+        for p in participants:
+            if not p.visited:
+                some_participants_not_visited = True
+                c.get(p._start_url(), follow=True)
+
+        if some_participants_not_visited:
+            # refresh from DB so that _current_form_page_url gets set
+            participants = self.participant_set.all()
+
         last_place_page_index = min([p._index_in_pages for p in participants])
         last_place_participants = [p for p in participants if p._index_in_pages == last_place_page_index]
 
         for p in last_place_participants:
-            p._advance_one_page()
+            # what if current_form_page_url hasn't been set yet?
+            resp = c.post(p._current_form_page_url, data={constants.auto_submit: True}, follow=True)
+            assert resp.status_code < 400
+
 
     def build_session_user_to_user_lookups(self):
 
@@ -295,16 +311,6 @@ class SessionUser(ModelWithVars):
             self._index_in_pages,
             len(self._pages())
         )
-
-    def _advance_one_page(self):
-        # what if current_form_page_url hasn't been set yet?
-        c = django.test.Client()
-        if not self.visited:
-            c.get(self._start_url(), follow=True)
-            # FIXME: refresh from DB so next line doesn't fail (current_form_page_url is none)
-        resp = c.post(self._current_form_page_url, data={constants.auto_submit: True}, follow=True)
-        assert resp.status_code < 400
-
 
     def _pages(self):
         from otree.views.concrete import WaitUntilAssignedToGroup
