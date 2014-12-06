@@ -43,10 +43,12 @@ class BaseSubsession(models.Model):
     )
 
     def in_previous_rounds(self):
-        return type(self).objects.filter(
+        qs = type(self).objects.filter(
             session=self.session,
             round_number__lt=self.round_number
         ).order_by('round_number')
+
+        return list(qs)
 
     def in_all_rounds(self):
         return self.in_previous_rounds() + [self]

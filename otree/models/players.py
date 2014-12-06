@@ -23,11 +23,12 @@ class BasePlayer(User):
     def in_previous_rounds(self):
 
         # FIXME: what if the same app is repeated in subsession_apps? would anyone need to do that?
-        # FIXME: add _round_number field to Player
-        return type(self).objects.filter(
+        qs = type(self).objects.filter(
             participant=self.participant,
-            _round_number__lt=self._round_number
-        ).order_by('_round_number')
+            round_number__lt=self.round_number
+        ).order_by('round_number')
+
+        return list(qs)
 
     def in_all_rounds(self):
         return self.in_previous_rounds() + [self]
