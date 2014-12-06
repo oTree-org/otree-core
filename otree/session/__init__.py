@@ -59,6 +59,9 @@ class SessionType(object):
         if not re.match(r'^\w+$', self.name):
             raise ValueError('Session "{}": name must be alphanumeric with no spaces (underscores allowed).'.format(self.name))
 
+        if len(self.subsession_apps) != len(set(self.subsession_apps)):
+            raise ValueError('subsession_apps cannot contain duplicate elements')
+
         if len(self.subsession_apps) == 0:
             raise ValueError('Need at least one subsession.')
 
