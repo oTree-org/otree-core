@@ -6,7 +6,6 @@ from django.forms import models as django_model_forms
 from django.utils.translation import ugettext as _
 import copy
 import otree.common_internal
-import otree.models.common
 import otree.session.models
 import otree.constants
 from otree.forms import fields

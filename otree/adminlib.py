@@ -218,8 +218,6 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
             {
                 'id',
                 '_index_in_subsessions',
-                'in_first_subsession_content_type',
-                'in_first_subsession_object_id',
                 'is_on_wait_page',
                 'mturk_assignment_id',
                 'mturk_worker_id',
@@ -231,9 +229,6 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
              'id', # can't be shown on change page, because pk not editable?
              'session_experimenter',
              'subsession_names',
-             'first_subsession_content_type',
-             'first_subsession_object_id',
-             'first_subsession',
              'demo_already_used',
              'ready',
              'vars',

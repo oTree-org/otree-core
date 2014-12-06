@@ -48,15 +48,12 @@ class BaseSubsession(models.Model):
         return self.name()
 
 
-    def previous_round(self):
-        '''finds non-contiguous rounds'''
-        s = self
-        while True:
-            s = s.previous_subsession
-            if not s:
-                return None
-            if s.app_name == self.app_name:
-                return s
+    def in_previous_round(self):
+        return type(self).objects.filter(
+            session=self.session,
+            round_number=self.round_number-1
+        ).get()
+
 
     def next_round_groups(self, current_round_group_matrix):
         return current_round_group_matrix
@@ -120,10 +117,10 @@ class BaseSubsession(models.Model):
         return self._random_group_matrix()
 
     def _assign_groups(self):
-        previous_round = self.previous_round()
-        if not previous_round:
+        if self.round_number == 1:
             current_round_group_matrix = self.first_round_groups()
         else:
+            previous_round = self.in_previous_round()
             previous_round_group_matrix = previous_round._group_objects_to_matrix()
             current_round_group_matrix = previous_round.next_round_groups(previous_round_group_matrix)
             for i, group_list in enumerate(current_round_group_matrix):
