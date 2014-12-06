@@ -28,12 +28,6 @@ class BaseSubsession(subsessions.BaseSubsession):
         null=True
     )
 
-    next_subsession = generic.GenericForeignKey('_next_subsession_content_type',
-                                            '_next_subsession_object_id',)
-
-    previous_subsession = generic.GenericForeignKey('_previous_subsession_content_type',
-                                            '_previous_subsession_object_id',)
-
     round_number = models.PositiveIntegerField(
         doc='''
         If this subsession is repeated (i.e. has multiple rounds), this field stores the position (index) of this subsession,

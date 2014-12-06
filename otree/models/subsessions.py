@@ -24,18 +24,6 @@ class BaseSubsession(models.Model):
         related_name = '%(app_label)s_subsession',
         null=True)
 
-    _next_subsession_content_type = models.ForeignKey(ContentType,
-                                                     null=True,
-                                                     related_name = '%(app_label)s_%(class)s_as_next_subsession')
-    _next_subsession_object_id = models.PositiveIntegerField(null=True)
-
-    _previous_subsession_content_type = models.ForeignKey(ContentType,
-                                                     null=True,
-                                                     related_name = '%(app_label)s_%(class)s_as_previous_subsession')
-
-    _previous_subsession_object_id = models.PositiveIntegerField(null=True)
-
-
     #FIXME: this should start at 1, to be consistent with id_in_group
     _index_in_subsessions = models.PositiveIntegerField(
         null=True,

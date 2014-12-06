@@ -212,12 +212,6 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
                 'code',
                 'label',
                 'session_access_code',
-                '_next_subsession_content_type',
-                '_next_subsession_object_id',
-                'next_subsession',
-                '_previous_subsession_content_type',
-                '_previous_subsession_object_id',
-                'previous_subsession',
                 '_experimenter',
              },
         'Participant':
