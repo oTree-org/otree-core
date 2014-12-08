@@ -5,8 +5,10 @@ from .forms import WidgetDemoForm
 
 
 def index(request):
-    return TemplateResponse(request, 'demo/index.html', {
-    }, context_instance=RequestContext(request))
+    return TemplateResponse(
+        request, 'demo/index.html', {},
+        context_instance=RequestContext(request)
+    )
 
 
 def widgets(request):
@@ -14,7 +16,4 @@ def widgets(request):
         form = WidgetDemoForm(request.POST, request.FILES)
     else:
         form = WidgetDemoForm()
-
-    return TemplateResponse(request, 'demo/widgets.html', {
-        'form': form,
-    })
+    return TemplateResponse(request, 'demo/widgets.html', {'form': form})

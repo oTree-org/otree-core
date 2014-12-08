@@ -7,6 +7,7 @@ from tests.utils import capture_stdout
 
 
 class TestCreateSessionsCommand(TestCase):
+
     def test_create_two_sessions_output(self):
         num_sessions = 2
         with capture_stdout() as output_stream:
