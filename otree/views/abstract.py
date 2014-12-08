@@ -599,7 +599,7 @@ class FormPageMixin(object):
         return self.request.path
 
     # called from template
-    poll_interval_seconds = 5
+    poll_interval_seconds = 30
 
 
     def _set_auto_submit_values(self):

@@ -33,7 +33,10 @@ class BasePlayer(User):
         return self.in_previous_rounds() + [self]
 
     def _in_next_round(self):
-        return type(self).objects.get(participant=self.participant,round_number=self.round_number+1)
+        return type(self).objects.get(
+            participant=self.participant,
+            round_number=self.round_number+1
+        )
 
     def __unicode__(self):
         return self.name()
