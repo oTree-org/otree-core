@@ -23,8 +23,8 @@ def session_types():
             doc=""""""
         ),
         SessionType(
-            name="two_simple_game",
-            display_name="2 Simple Game",
+            name="two_simple_games",
+            display_name="2 Simple Games",
             num_demo_participants=1,
             subsession_apps=['tests.simple_game', 'tests.simple_game_copy'],
             doc=""""""

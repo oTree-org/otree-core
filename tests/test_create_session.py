@@ -34,3 +34,19 @@ class TestCreateSessionsCommand(TestCase):
         player = Player.objects.get()
         self.assertEqual(player.session, session)
         self.assertEqual(player.subsession, subsession)
+
+    def test_session_vars(self):
+        with capture_stdout():
+            call_command('create_session', 'two_simple_games', 1)
+
+        self.assertEqual(Session.objects.count(), 1)
+        session = Session.objects.get()
+        self.assertEqual(session.type_name, 'two_simple_games')
+
+        self.assertEqual(Subsession.objects.count(), 2)
+        subsession0,  subsession1 = Subsession.objects.get()
+
+        self.assertEqual(Player.objects.count(), 1)
+        #~ player = Player.objects.get()
+        #~ self.assertEqual(player.session, session)
+        #~ self.assertEqual(player.subsession, subsession)

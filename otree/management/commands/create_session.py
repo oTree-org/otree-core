@@ -5,7 +5,9 @@ class Command(BaseCommand):
     help = "oTree: Create a session."
     args = 'type num_participants'
     option_list = BaseCommand.option_list + (
-        make_option("-l", "--label", action="store", type="string", dest="label"),
+        make_option(
+            "-l", "--label", action="store", type="string", dest="label"
+        ),
     )
 
     def handle(self, *args, **options):
@@ -13,9 +15,11 @@ class Command(BaseCommand):
         try:
             type, num_participants = args
         except ValueError:
-            raise CommandError("Wrong number of arguments (expecting '{}')".format(self.args))
+            raise CommandError(
+                "Wrong number of arguments (expecting '{}')".format(self.args)
+            )
         num_participants = int(num_participants)
-
         label = options.get('label', '')
-
-        create_session(type_name=type, num_participants=num_participants, label=label)
+        create_session(
+            type_name=type, num_participants=num_participants, label=label
+        )
