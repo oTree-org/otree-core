@@ -5,20 +5,13 @@
 {% endblock %}
 
 {% block content %}
-
-    {% include 'otree/SessionInfo.html' %}
-
     <h3>
-        Start links
+        Links
     </h3>
 
     <p>
         Open all links, each in its own browser tab.
     </p>
-
-    <h4>Experimenter link</h4>
-
-    <p><a href="{{ advance_session_url }}" target="_blank">{{ advance_session_url }}</a></p>
 
     <h4>Participant links</h4>
 
@@ -27,11 +20,16 @@
             <br/>
     {% endfor %}
 
+    <h4>Study interface link</h4>
+
+    <p><a href="{{ advance_session_url }}" target="_blank">{{ advance_session_url }}</a></p>
+
     <br/>
     <p>
         These are single-use links. To get new start links, refresh this page. This will let you simulate a new set of participants,
         who will be reassigned to match groups.
     </p>
 
+    {% include 'otree/SessionInfo.html' %}
 
 {% endblock %}
