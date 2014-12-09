@@ -22,16 +22,31 @@ def session_types():
             subsession_apps=['tests.simple_game'],
             doc=""""""
         ),
+        SessionType(
+            name="two_simple_games",
+            display_name="2 Simple Games",
+            num_demo_participants=1,
+            subsession_apps=['tests.simple_game', 'tests.simple_game_copy'],
+            doc=""""""
+        ),
     ]
 
 
 demo_page_intro_text = """
 <ul>
-    <li><a href="https://github.com/oTree-org/otree" target="_blank">Source code</a> for the below games.</li>
-    <li><a href="http://www.otree.org/" target="_blank">oTree homepage</a>.</li>
+    <li>
+        <a href="https://github.com/oTree-org/otree" target="_blank">
+            Source code
+        </a>
+        for the below games.
+    </li>
+    <li>
+        <a href="http://www.otree.org/" target="_blank">oTree homepage</a>.
+    </li>
 </ul>
 <p>
-Below are various games implemented with oTree. These games are all open source,
-and you can modify them as you wish to create your own variations. Click one to learn more and play.
+    Below are various games implemented with oTree. These games are all open
+    source, and you can modify them as you wish to create your own variations.
+    Click one to learn more and play.
 </p>
 """

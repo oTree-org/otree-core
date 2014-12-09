@@ -47,7 +47,6 @@ class BaseSubsession(models.Model):
     def __unicode__(self):
         return self.name()
 
-
     def in_previous_round(self):
         return type(self).objects.filter(
             session=self.session,

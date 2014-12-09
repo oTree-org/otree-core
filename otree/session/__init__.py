@@ -67,7 +67,9 @@ class SessionType(object):
 
         self.doc = self.doc.strip()
 
-
+    def __repr__(self):
+        mem = hex(id(self))
+        return "<SessionType '{}' at {}>".format(self.name, mem)
 
     def lcm(self):
         participants_per_group_list = []
@@ -77,6 +79,11 @@ class SessionType(object):
             players_per_group = app_constants.players_per_group or 1
             participants_per_group_list.append(players_per_group)
         return lcmm(*participants_per_group_list)
+
+
+#==============================================================================
+# FUNCTIONS
+#==============================================================================
 
 def session_types_list(demo_only=False):
     session_types = get_session_module().session_types()
@@ -109,7 +116,9 @@ def create_session(type_name, label='', num_participants=None,
     try:
         session_type = session_types_dict()[type_name]
     except KeyError:
-        raise ValueError('Session type "{}" not found in sessions.py'.format(type_name))
+        raise ValueError(
+            'Session type "{}" not found in sessions.py'.format(type_name)
+        )
     session = Session(
         type_name=session_type.name,
         label=label,
@@ -135,14 +144,11 @@ def create_session(type_name, label='', num_participants=None,
     # check that it divides evenly
     session_lcm = session_type.lcm()
     if num_participants % session_lcm:
-        raise ValueError(
-            'SessionType {}: Number of participants ({}) does not divide evenly into group size ({})'.format(
-                session_type.name,
-                num_participants,
-                session_lcm
-            )
-        )
-
+        msg = (
+            'SessionType {}: Number of participants ({}) does not divide '
+            'evenly into group size ({})'
+        ).format(session_type.name,num_participants, session_lcm)
+        raise ValueError(msg)
 
     for i in range(num_participants):
         participant = Participant(session = session)
@@ -161,6 +167,7 @@ def create_session(type_name, label='', num_participants=None,
         app_constants = get_app_constants(app_name)
 
         round_numbers = range(1, app_constants.number_of_rounds+1)
+
         for round_number in round_numbers:
             subsession = models_module.Subsession(
                 round_number = round_number,
@@ -189,7 +196,6 @@ def create_session(type_name, label='', num_participants=None,
                 # delete players unlike the lab setting, where there may be
                 # no-shows
                 subsession._create_empty_groups()
-
             subsessions.append(subsession)
 
     if preassign_players_to_groups:

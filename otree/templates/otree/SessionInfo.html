@@ -37,16 +37,6 @@
                     {% endfor %}
                 </p>
             {% endfor %}
-            {% if app.keywords %}
-                <p>
-                    <strong>Keywords: </strong>
-                    {% for kw, link in app.keywords %}
-                        <a target="_blank" href="{{link}}">
-                            <span class="label label-default">{{kw}}</span>
-                        </a>
-                    {% endfor %}
-                </p>
-            {% endif %}
         </td>
     </tr>
 

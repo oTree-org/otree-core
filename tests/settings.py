@@ -37,6 +37,7 @@ INSTALLED_APPS = [
 
 INSTALLED_OTREE_APPS = [
     'tests.simple_game',
+    'tests.simple_game_copy',
 ]
 
 MIDDLEWARE_CLASSES = ()
