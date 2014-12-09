@@ -97,18 +97,27 @@ class _OtreeNullableModelFieldMixin(_OtreeModelFieldMixin, _OtreeWidgetForModelF
         super(_OtreeNullableModelFieldMixin, self).__init__(*args, **kwargs)
 
 
+
 class _OtreeNotNullableModelFieldMixin(_OtreeModelFieldMixin):
     pass
 
+class _OtreeNumericFieldMixin(object):
+    def __init__(self, *args, **kwargs):
+        self.bounds = kwargs.pop('bounds', None)
+        super(_OtreeNumericFieldMixin, self).__init__(*args, **kwargs)
 
-class MoneyField(_OtreeNullableModelFieldMixin, easymoney.MoneyField):
+    auto_submit_default = 0
+
+
+
+class MoneyField(_OtreeNullableModelFieldMixin, _OtreeNumericFieldMixin, easymoney.MoneyField):
     widget = _CurrencyInput
 
     MONEY_CLASS = otree.common.Money
 
     auto_submit_default = otree.common.Money(0)
 
-class CurrencyField(_OtreeNullableModelFieldMixin, easymoney.MoneyField):
+class CurrencyField(_OtreeNullableModelFieldMixin, _OtreeNumericFieldMixin, easymoney.MoneyField):
     widget = _CurrencyInput
 
     MONEY_CLASS = otree.common.Currency
@@ -202,7 +211,7 @@ class NullBooleanField(_OtreeNullableModelFieldMixin, NullBooleanField):
 class AutoField(_OtreeNullableModelFieldMixin, AutoField):
     pass
 
-class BigIntegerField(_OtreeNullableModelFieldMixin, BigIntegerField):
+class BigIntegerField(_OtreeNullableModelFieldMixin, _OtreeNumericFieldMixin, BigIntegerField):
     auto_submit_default = 0
 
 class BinaryField(_OtreeNullableModelFieldMixin, BinaryField):
@@ -241,11 +250,11 @@ class FilePathField(_OtreeNullableModelFieldMixin, FilePathField):
 
 
 class FloatField(_OtreeNullableModelFieldMixin, FloatField):
-    auto_submit_default = 0.0
+    pass
 
 
-class IntegerField(_OtreeNullableModelFieldMixin, IntegerField):
-    auto_submit_default = 0
+class IntegerField(_OtreeNullableModelFieldMixin, _OtreeNumericFieldMixin, IntegerField):
+    pass
 
 
 class IPAddressField(_OtreeNullableModelFieldMixin, IPAddressField):
@@ -256,24 +265,24 @@ class GenericIPAddressField(_OtreeNullableModelFieldMixin, GenericIPAddressField
     pass
 
 
-class PositiveIntegerField(_OtreeNullableModelFieldMixin, PositiveIntegerField):
-    auto_submit_default = 0
+class PositiveIntegerField(_OtreeNullableModelFieldMixin, _OtreeNumericFieldMixin, PositiveIntegerField):
+    pass
 
 
-class PositiveSmallIntegerField(_OtreeNullableModelFieldMixin, PositiveSmallIntegerField):
-    auto_submit_default = 0
+class PositiveSmallIntegerField(_OtreeNullableModelFieldMixin, _OtreeNumericFieldMixin, PositiveSmallIntegerField):
+    pass
 
 
 class SlugField(_OtreeNullableModelFieldMixin, SlugField):
     pass
 
 
-class SmallIntegerField(_OtreeNullableModelFieldMixin, SmallIntegerField):
-    auto_submit_default = 0
+class SmallIntegerField(_OtreeNullableModelFieldMixin, _OtreeNumericFieldMixin, SmallIntegerField):
+    pass
 
 
 class TextField(_OtreeNullableModelFieldMixin, TextField):
-    auto_submit_default = 0
+    auto_submit_default = ''
 
 
 class TimeField(_OtreeNullableModelFieldMixin, TimeField):

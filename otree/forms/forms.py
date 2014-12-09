@@ -209,7 +209,9 @@ class BaseModelForm(forms.ModelForm):
         if hasattr(self.instance, method_name):
             method = getattr(self.instance, method_name)
             return method()
-        return None, None
+        model_field = self.instance._meta.get_field_by_name(field_name)[0]
+        return getattr(model_field, 'bounds', None) or [None, None]
+
 
     def _setup_field_boundaries(self):
         for field_name, field in self.fields.items():
