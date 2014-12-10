@@ -26,5 +26,7 @@ class NextButtonNode(template.Node):
 
 register.tag('next_button', NextButtonNode.parse)
 
+def c(val):
+    return Currency(val)
 
-register.filter('c',Currency)
+register.filter('c',c)
