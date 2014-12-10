@@ -45,6 +45,7 @@
     </div>
 {% endblock %}
 {% block internal_content_at_bottom_of_body %}
+    {{ block.super }}
     {% include 'otree/PollServerThenRedirect.html' %}
 {% endblock %}
 
