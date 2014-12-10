@@ -1,4 +1,5 @@
 import copy
+import itertools
 
 import django.test
 from django.contrib.contenttypes import generic
@@ -229,7 +230,6 @@ class Session(ModelWithVars):
 
 
     def build_session_user_to_user_lookups(self):
-
         subsession_app_names = self.type().subsession_apps
 
         num_pages_in_each_app = {}
@@ -341,21 +341,25 @@ class SessionUser(ModelWithVars):
         ]
 
     def build_session_user_to_user_lookups(self, num_pages_in_each_app):
-        page_index = 0
-        for user in self.get_users():
-            app_name = user._meta.app_config.name
+        pages_for_user = lambda user: num_pages_in_each_app[user._meta.app_config.name]
+        indexes = itertools.count()
+
+        SessionuserToUserLookup.objects.bulk_create([
+            SessionuserToUserLookup(
+                session_user_pk=self.pk,
+                page_index=page_index,
+                app_name=user._meta.app_config.name,
+                user_pk=user.pk,
+                is_experimenter = self._is_experimenter,
+            )
+            for user in self.get_users()
+            for _, page_index in zip(range(pages_for_user(user) + 1), indexes)
             # +1 is for WaitUntilAssigned...
-            for i in range(num_pages_in_each_app[app_name] + 1):
-                SessionuserToUserLookup(
-                    session_user_pk=self.pk,
-                    page_index=page_index,
-                    app_name=app_name,
-                    user_pk=user.pk,
-                    is_experimenter = self._is_experimenter,
-                ).save()
-                page_index += 1
-        self._max_page_index = page_index
+        ])
+
+        self._max_page_index = next(indexes) - 1
         self.save()
+
     class Meta:
         abstract = True
 
