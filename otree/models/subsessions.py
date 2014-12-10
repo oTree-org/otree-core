@@ -94,11 +94,12 @@ class BaseSubsession(models.Model):
 
     def _group_matrix_to_objects(self, group_matrix):
         """inverse operation of _group_objects_to_matrix"""
-        for group_list in group_matrix:
-            group = self._next_open_group()
-            for player in group_list:
-                player._assign_to_group(group)
-            group.save()
+        groups = self.group_set.all()
+        for group, group_list in zip(groups, group_matrix):
+            for i, player in enumerate(group_list, start=1):
+                player.group = group
+                player.id_in_group = i
+                player.save()
 
     @property
     def _Constants(self):

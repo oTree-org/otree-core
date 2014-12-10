@@ -119,21 +119,21 @@ def create_session(type_name, label='', num_participants=None,
         raise ValueError(
             'Session type "{}" not found in sessions.py'.format(type_name)
         )
-    session = Session(
+    session = Session.objects.create(
         type_name=session_type.name,
         label=label,
         fixed_pay=session_type.fixed_pay,
         special_category=special_category,
         money_per_point = session_type.money_per_point,
+        session_experimenter = SessionExperimenter.objects.create()
     )
 
-    session.save()
-
-    session_experimenter = SessionExperimenter()
-    session_experimenter.save()
-    session.session_experimenter = session_experimenter
-
-    participants = []
+    def bulk_create(model, descriptions):
+        model.objects.bulk_create([
+            model(session=session, **description)
+            for description in descriptions
+        ])
+        return model.objects.filter(session=session).order_by('pk')
 
     if num_participants is None:
         if special_category == constants.session_special_category_demo:
@@ -150,10 +150,7 @@ def create_session(type_name, label='', num_participants=None,
         ).format(session_type.name,num_participants, session_lcm)
         raise ValueError(msg)
 
-    for i in range(num_participants):
-        participant = Participant(session = session)
-        participant.save()
-        participants.append(participant)
+    participants = bulk_create(Participant, [{}] * num_participants)
 
     subsessions = []
     for app_name in session_type.subsession_apps:
@@ -166,43 +163,51 @@ def create_session(type_name, label='', num_participants=None,
         models_module = get_models_module(app_name)
         app_constants = get_app_constants(app_name)
 
-        round_numbers = range(1, app_constants.number_of_rounds+1)
+        round_numbers = range(1, app_constants.number_of_rounds + 1)
 
-        for round_number in round_numbers:
-            subsession = models_module.Subsession(
-                round_number = round_number,
-                session = session
-                )
-            subsession.save()
+        subs = bulk_create(models_module.Subsession, [
+            {'round_number': round_number}
+            for round_number in round_numbers
+        ])
 
-            experimenter = Experimenter(session=session)
-            experimenter.subsession = subsession
-            experimenter.save()
-            subsession._experimenter = experimenter
+        # Create players
+        models_module.Player.objects.bulk_create([
+            models_module.Player(
+                session=session,
+                subsession=subsession,
+                round_number=round_number,
+                participant=participant
+            )
+            for round_number, subsession in zip(round_numbers, subs)
+            for participant in participants
+        ])
 
-            subsession.save()
+        subsessions.extend(subs)
 
-            for i in range(num_participants):
-                player = models_module.Player(
-                    subsession = subsession,
-                    session = session,
-                    participant = participants[i],
-                    round_number=round_number
-                )
-                player.save()
+    # Create experimenters and bind subsessions to them
+    experimenters = bulk_create(Experimenter, [
+        {'subsession': subsession}
+        for subsession in subsessions
+    ])
+    sub_by_pk = {s.pk: s for s in subsessions}
+    for experimenter in experimenters:
+        sub_by_pk[experimenter.subsession_object_id]._experimenter = experimenter
+        sub_by_pk[experimenter.subsession_object_id].save()
 
-            if session.type().assign_to_groups_on_the_fly:
-                # create groups at the beginning because we will not need to
-                # delete players unlike the lab setting, where there may be
-                # no-shows
-                subsession._create_empty_groups()
-            subsessions.append(subsession)
+    if session.type().assign_to_groups_on_the_fly:
+        # create groups at the beginning because we will not need to
+        # delete players unlike the lab setting, where there may be
+        # no-shows
+        for subsession in subsessions:
+            subsession._create_empty_groups()
 
     if preassign_players_to_groups:
         session._assign_groups_and_initialize()
+
     session.build_session_user_to_user_lookups()
     session.ready = True
     session.save()
+
     return session
 
 
