@@ -3,7 +3,7 @@ from __future__ import division
 
 import random
 
-from otree.common import Currency, currency_range
+from otree.common import Currency as c, currency_range
 
 from . import views
 from ._builtin import Bot
@@ -14,7 +14,8 @@ class PlayerBot(Bot):
     """Bot that plays one round"""
 
     def play(self):
-        pass
+        self.submit(views.MyPage, {'my_field': c(1)})
+        self.submit(views.Results)
 
     def validate_play(self):
         pass

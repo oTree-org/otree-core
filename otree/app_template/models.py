@@ -57,7 +57,7 @@ keywords = ("Game Theory", "Nash Equilibrium", "Economics")
 
 class Constants:
     name_in_url = '{{ app_name }}'
-    players_per_group = 1
+    players_per_group = 2
     number_of_rounds = 1
 
     # define more constants here
