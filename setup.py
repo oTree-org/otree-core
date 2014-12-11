@@ -34,7 +34,7 @@ REQUIREMENTS = [
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version='0.2.240'
+version = '0.2.240'
 
 
 if sys.argv[-1] == 'publish':
@@ -77,7 +77,8 @@ setup(
         'Environment :: Web Environment',
         'Framework :: Django',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License', # example license
+        # example license
+        'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         # replace these appropriately if you are using Python 3
@@ -87,5 +88,3 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
 )
-
-

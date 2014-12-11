@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import os, sys
+
+import os
+import sys
 
 
 base_path = os.path.dirname(os.path.abspath(__file__))
