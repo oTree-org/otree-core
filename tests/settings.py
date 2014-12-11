@@ -3,6 +3,10 @@ import otree.settings
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+PRJ_DIR = os.path.join(BASE_DIR, "..")
+
+TEST_VERBOSITY = 2
+
 DEBUG = True
 
 ADMIN_PASSWORD = 'otree'
@@ -48,5 +52,15 @@ SESSIONS_MODULE = 'tests.sessions'
 
 ACCESS_CODE_FOR_OPEN_SESSION = 'idd1610'
 
+PEP8_CHECK = (
+    os.path.join(PRJ_DIR, "otree"),
+    os.path.join(PRJ_DIR, "tests"),
+    os.path.join(PRJ_DIR, "runtests.py"),
+    os.path.join(PRJ_DIR, "setup.py"),
+    os.path.join(PRJ_DIR, "manage.py"),
+)
 
 otree.settings.augment_settings(globals())
+
+
+
