@@ -6,6 +6,7 @@ from functools import wraps
 from django.apps import apps
 from django.conf import settings
 from django.core.checks import register, Error
+from django.template import Template
 
 import otree.views.abstract
 
@@ -99,6 +100,35 @@ class Rules(object):
         if not hasattr(module, name) or isinstance(getattr(module, name), type):
             return self.error('No class "%s" in module "%s"' % (name, module.__name__))
 
+    @rule
+    def template_has_no_dead_code(self, template_name):
+        from otree.checks.templates import get_unreachable_content
+
+        template_path = self.get_path(template_name)
+        try:
+            with open(template_path, 'r') as f:
+                compiled_template = Template(f.read())
+        except (IOError, OSError):
+            # Ignore errors that occured during file-read or compilation.
+            return
+
+        def format_content(text):
+            text = text.strip()
+            lines = text.splitlines()
+            lines = ['> {0}'.format(line) for line in lines]
+            return '\n'.join(lines)
+
+        contents = get_unreachable_content(compiled_template)
+        content_bits = '\n\n'.join(
+            format_content(bit)
+            for bit in contents)
+        if contents:
+            return self.error(
+                'Template contains the following text outside of a '
+                '{% block %}. This text will never be displayed.'
+                '\n\n' + content_bits,
+                obj=os.path.join(self.config.label, template_name))
+
 
 def _get_all_configs():
     return [
@@ -185,8 +215,13 @@ def pages_function(rules, **kwargs):
 
 @register_rules(id='otree.E005')
 def templates(rules, **kwargs):
+    basepath = rules.config.path
     path = rules.get_path('templates')
-    print path
+    for root, dirs, files in os.walk(path):
+        for filename in files:
+            template_path = os.path.join(root, filename)
+            template_name = os.path.relpath(template_path, basepath)
+            rules.template_has_no_dead_code(template_name)
 
 
 # TODO: startapp should pass validation checks
