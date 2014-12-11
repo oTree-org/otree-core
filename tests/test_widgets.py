@@ -19,9 +19,11 @@ class BasicWidgetTests(TestCase):
             first_name = otree.forms.CharField()
 
         rendered = force_text(Form()['first_name'])
-        self.assertHTMLEqual(rendered, '''
-            <input type="text" name="first_name" required class="form-control" id="id_first_name" />
-        ''')
+        elem = (
+            '<input type="text" name="first_name" '
+            'required class="form-control" id="id_first_name" />'
+        )
+        self.assertHTMLEqual(rendered, elem)
 
 
 class CheckboxSelectMultipleHorizontalTests(TestCase):

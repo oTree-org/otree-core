@@ -10,7 +10,7 @@ TEST_VERBOSITY = 2
 DEBUG = True
 
 ADMIN_PASSWORD = 'otree'
-SECRET_KEY = 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz'
+SECRET_KEY = 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz'
 
 DATABASES = {
     'default': {
@@ -29,7 +29,8 @@ PAYMENT_CURRENCY_CODE = 'EUR'
 USE_POINTS = False
 
 
-# e.g. en-gb, de-de, it-it, fr-fr. see: https://docs.djangoproject.com/en/1.7/topics/i18n/
+# e.g. en-gb, de-de, it-it, fr-fr.
+# see: https://docs.djangoproject.com/en/1.7/topics/i18n/
 LANGUAGE_CODE = 'en-us'
 
 INSTALLED_APPS = [
@@ -53,7 +54,7 @@ SESSIONS_MODULE = 'tests.sessions'
 ACCESS_CODE_FOR_OPEN_SESSION = 'idd1610'
 
 PEP8_CHECK = (
-    #~ os.path.join(PRJ_DIR, "otree"),
+    # os.path.join(PRJ_DIR, "otree"),
     os.path.join(PRJ_DIR, "tests"),
     os.path.join(PRJ_DIR, "runtests.py"),
     os.path.join(PRJ_DIR, "setup.py"),
@@ -61,6 +62,3 @@ PEP8_CHECK = (
 )
 
 otree.settings.augment_settings(globals())
-
-
-

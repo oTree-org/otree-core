@@ -21,7 +21,6 @@ class TestStyle(TestCase):
                 raise ImproperlyConfigured(msg)
             self.pep8.paths.append(path)
 
-
     def test_pep8(self):
         result = self.pep8.check_files()
         error_q = result.total_errors
@@ -39,5 +38,4 @@ class TestStyle(TestCase):
                     "the test with verbosity > 2"
                 )
             self.fail("\n".join(lines))
-
 
