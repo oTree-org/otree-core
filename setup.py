@@ -22,6 +22,7 @@ REQUIREMENTS = [
     'django-ptree-mturk>=1.0.1',
     'django-save-the-change>=1.0.0',
     'django-vanilla-views>=1.0.2',
+    'flake8>=2.2.5',
     'handy>=0.3',
     'mock>=1.0.0',
     'pytz>=2013.9',
