@@ -54,7 +54,7 @@ ACCESS_CODE_FOR_OPEN_SESSION = 'idd1610'
 
 PEP8_CHECK = (
     #~ os.path.join(PRJ_DIR, "otree"),
-    #~ os.path.join(PRJ_DIR, "tests"),
+    os.path.join(PRJ_DIR, "tests"),
     os.path.join(PRJ_DIR, "runtests.py"),
     os.path.join(PRJ_DIR, "setup.py"),
     os.path.join(PRJ_DIR, "manage.py"),
