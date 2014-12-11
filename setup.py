@@ -23,6 +23,7 @@ REQUIREMENTS = [
     'django-save-the-change>=1.0.0',
     'django-vanilla-views>=1.0.2',
     'handy>=0.3',
+    'mock>=1.0.0',
     'pytz>=2013.9',
     'raven>=5.1.1',
     'selenium>=2.41.0',
@@ -32,7 +33,7 @@ REQUIREMENTS = [
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version='0.2.238'
+version='0.2.240'
 
 
 if sys.argv[-1] == 'publish':

@@ -34,10 +34,15 @@ LANGUAGE_CODE = 'en-us'
 
 INSTALLED_APPS = [
     'otree',
-    'raven.contrib.django.raven_compat',
     'tests',
     'tests.demo',
 ]
+
+if os.environ.has_key('SENTRY_DSN'):
+    INSTALLED_APPS += [
+        'raven.contrib.django.raven_compat',
+    ]
+
 
 INSTALLED_OTREE_APPS = [
     'tests.simple_game',

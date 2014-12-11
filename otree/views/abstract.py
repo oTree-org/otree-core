@@ -599,13 +599,13 @@ class FormPageMixin(object):
         return self.request.path
 
     # called from template
-    poll_interval_seconds = 30
+    poll_interval_seconds = 10
 
 
     def _set_auto_submit_values(self):
         for field_name in self.form_fields:
-            if self.auto_submit_values.has_key('field_name'):
-                value = self.auto_submit_values['field_name']
+            if self.auto_submit_values.has_key(field_name):
+                value = self.auto_submit_values[field_name]
             else:
                 # get default value for datatype if the user didn't specify
                 ModelField = self.form_model._meta.get_field_by_name(field_name)[0]
