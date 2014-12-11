@@ -35,6 +35,11 @@ class CaptureStdoutTest(TestCase):
 class CdTest(TestCase):
     def test_cd(self):
         tmpdir = tempfile.mkdtemp()
+        # OS X returns symlinks for the temporary directory.
+        # We need to resolve to the real path in order to reliably test the
+        # outcome of a os.chdir()
+        # See: http://stackoverflow.com/q/12482702/199848
+        tmpdir = os.path.realpath(tmpdir)
 
         current_cwd = os.getcwd()
         self.assertEqual(os.getcwd(), current_cwd)
