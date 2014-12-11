@@ -167,13 +167,10 @@ class RandomCharField(_OtreeNotNullableModelFieldMixin, CharField):
 
     def generate_chars(self, *args, **kwargs):
         chars = []
-        n = self.length
         char_sets = [self.consonants, self.vowels]
-        for char_set in itertools.cycle(char_sets):
-            n -= 1
-            if n < 0:
-                break
-            chars.append(random.choice(char_set))
+        for i in range(self.length):
+            random_char = random.choice(char_sets[i % 2])
+            chars.append(random_char)
 
         return ''.join(chars)
 
