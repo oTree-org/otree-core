@@ -183,4 +183,10 @@ def pages_function(rules, **kwargs):
                     )
 
 
+@register_rules(id='otree.E005')
+def templates(rules, **kwargs):
+    path = rules.get_path('templates')
+    print path
+
+
 # TODO: startapp should pass validation checks
