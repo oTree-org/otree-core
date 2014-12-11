@@ -20,8 +20,8 @@ class TestCreateSessionsCommand(TestCase):
                 call_command('create_session', 'simple_game', 1)
         output = output_stream.read()
         lines = output.strip().splitlines()
-        self.assertEqual(len(lines), num_sessions)
-        self.assertEqual(lines[0], 'Creating session...')
+        created_sessions = lines.count('Creating session...')
+        self.assertEqual(created_sessions, num_sessions)
 
     def test_create_one_session(self):
         with capture_stdout():
