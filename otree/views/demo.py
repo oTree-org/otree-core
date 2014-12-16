@@ -23,6 +23,7 @@ from otree.common_internal import (
     get_session_module, get_models_module, app_name_format
 )
 
+import otree.adminlib
 
 def start_link_url(session_type_name):
     return '/demo/{}/'.format(session_type_name)
@@ -140,7 +141,7 @@ def info_about_session_type(session_type):
     }
 
 
-def render_to_start_links_page(request, session, is_demo_page):
+def render_to_start_links_page(request, session):
     from otree.views.concrete import AdvanceSession
 
     experimenter_url = request.build_absolute_uri(
@@ -154,8 +155,8 @@ def render_to_start_links_page(request, session, is_demo_page):
         'display_name': session.type().display_name,
         'experimenter_url': experimenter_url,
         'participant_urls': participant_urls,
-        'is_demo_page': is_demo_page,
-        'advance_session_url': request.build_absolute_uri(AdvanceSession.url(session.code))
+        'advance_session_url': request.build_absolute_uri(AdvanceSession.url(session.code)),
+        'session_monitor_url': otree.adminlib.session_monitor_url(session),
     }
 
     session_type = session_types_dict(demo_only=True)[session.type_name]
@@ -202,7 +203,7 @@ class Demo(GenericWaitPageMixin, vanilla.View):
         session.save()
 
         return render_to_start_links_page(
-            self.request, session, is_demo_page=True
+            self.request, session
         )
 
     def dispatch(self, request, *args, **kwargs):

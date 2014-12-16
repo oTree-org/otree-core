@@ -195,7 +195,6 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
                 if submit.execute():
                     pending.remove(submit)
 
-            # ejecutar un grupo
             group = submit_groups.pop(0) if submit_groups else ()
             for submit in group:
                 if submit is None:

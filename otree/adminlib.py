@@ -20,6 +20,10 @@ from otree.common_internal import add_params_to_url
 from otree.common import Currency as c
 from otree.common import Money
 
+def session_monitor_url(session):
+    participants_table_url = reverse('admin:%s_%s_changelist' % (Participant._meta.app_label, Participant._meta.module_name))
+    return add_params_to_url(participants_table_url, {'session': session.pk})
+
 def new_tab_link(url, label):
     return '<a href="{}" target="_blank">{}</a>'.format(url, label)
 
@@ -499,12 +503,11 @@ class SessionAdmin(OTreeBaseModelAdmin):
         return my_urls + urls
 
     def participants_table_link(self, instance):
-
-        participants_table_url = reverse('admin:%s_%s_changelist' % (Participant._meta.app_label, Participant._meta.module_name))
         return new_tab_link(
-            add_params_to_url(participants_table_url, {'session': instance.pk}),
+            session_monitor_url(instance),
             'Link'
         )
+
     participants_table_link.allow_tags = True
     participants_table_link.short_description = 'Monitor participants'
 
@@ -514,7 +517,7 @@ class SessionAdmin(OTreeBaseModelAdmin):
 
     def start_links(self, request, pk):
         session = self.model.objects.get(pk=pk)
-        return render_to_start_links_page(request, session, is_demo_page=False)
+        return render_to_start_links_page(request, session)
 
     def start_links_link(self, instance):
         return new_tab_link(
