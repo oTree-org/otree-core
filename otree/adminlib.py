@@ -45,9 +45,7 @@ def get_callables(Model, fields_specific_to_this_subclass=None, for_export=False
 
     changelist_but_not_export = {
         'Player':
-           [
-            'link',
-            '_pages_completed'],
+           [],
         'Group':
             [],
         'Subsession':
@@ -114,8 +112,6 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
                 'group',
                 'id_in_group',
                 'role',
-                'visited',
-                '_pages_completed'
             ],
         'Group':
             [
