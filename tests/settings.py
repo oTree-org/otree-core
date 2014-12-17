@@ -53,12 +53,17 @@ SESSIONS_MODULE = 'tests.sessions'
 
 ACCESS_CODE_FOR_OPEN_SESSION = 'idd1610'
 
-PEP8_CHECK = (
-    # os.path.join(PRJ_DIR, "otree"),
-    os.path.join(PRJ_DIR, "tests"),
-    os.path.join(PRJ_DIR, "runtests.py"),
-    os.path.join(PRJ_DIR, "setup.py"),
-    os.path.join(PRJ_DIR, "manage.py"),
-)
+PEP8 = {
+    "check": (
+        # os.path.join(PRJ_DIR, "otree"),
+        os.path.join(PRJ_DIR, "tests"),
+        os.path.join(PRJ_DIR, "runtests.py"),
+        os.path.join(PRJ_DIR, "setup.py"),
+        os.path.join(PRJ_DIR, "manage.py"),
+    ),
+    "exclude": ()
+}
+
+
 
 otree.settings.augment_settings(globals())
