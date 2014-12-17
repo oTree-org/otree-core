@@ -60,6 +60,8 @@ class DemoIndex(vanilla.View):
 
 def ensure_enough_spare_sessions(session_type_name):
 
+    # hack: this sleep is to prevent locks on SQLite. This gives time to let the page request finish before create_session is called,
+    # because creating the session involves a lot of database I/O, which seems to cause locks when multiple threads access at the same time.
     time.sleep(5)
 
     DESIRED_SPARE_SESSIONS = 3

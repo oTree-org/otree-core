@@ -687,14 +687,15 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
             participant = self.retrieve_existing_participant_with_these_params(open_session)
         except Participant.DoesNotExist:
             try:
-                participant = Participant.objects.select_for_update().filter(
-                    session = open_session,
-                    visited=False)[0]
-                self.set_external_params_on_participant(participant)
-                # 2014-10-17: needs to be here even if it's also set in the next view
-                # to prevent race conditions
-                participant.visited = True
-                participant.save()
+                with transaction.atomic():
+                    participant = Participant.objects.select_for_update().filter(
+                        session = open_session,
+                        visited=False)[0]
+                    self.set_external_params_on_participant(participant)
+                    # 2014-10-17: needs to be here even if it's also set in the next view
+                    # to prevent race conditions
+                    participant.visited = True
+                    participant.save()
             except IndexError:
                 return HttpResponseNotFound("No Player objects left in the database to assign to new visitor.")
 

@@ -15,6 +15,8 @@ from django.contrib.auth.decorators import user_passes_test
 from otree.views.demo import info_about_session_type
 from otree import forms
 from django.core.urlresolvers import reverse
+from otree.views.abstract import GenericWaitPageMixin
+import uuid
 
 class CreateSessionForm(forms.Form):
 
@@ -31,12 +33,45 @@ class CreateSessionForm(forms.Form):
             raise forms.ValidationError('Number of participants must be a multiple of {}'.format(lcm))
         return num_participants
 
+class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
+
+    @classmethod
+    def url_pattern(cls):
+        return r"^WaitUntilSessionCreated/(?P<session_pre_create_id>.+)/$"
+
+    @classmethod
+    def url(cls, pre_create_id):
+        return "/WaitUntilSessionCreated/{}/".format(pre_create_id)
+
+    def _is_ready(self):
+        return Session.objects.filter(_pre_create_id=self._pre_create_id).exists()
+
+    def body_text(self):
+        return 'Waiting until session created'
+
+    def _response_when_ready(self):
+        session = Session.objects.get(_pre_create_id=self._pre_create_id)
+        admin_url = reverse('admin:%s_%s_change' % (session._meta.app_label, session._meta.module_name), args=(session.pk,))
+        return HttpResponseRedirect(admin_url)
+
+    def dispatch(self, request, *args, **kwargs):
+        self._pre_create_id=kwargs['session_pre_create_id']
+        return super(WaitUntilSessionCreated, self).dispatch(request, *args, **kwargs)
+
+    def _get_wait_page(self):
+        return TemplateResponse(self.request, 'otree/WaitPage.html', {'view': self})
+
+def sleep_then_create_session(**kwargs):
+    # hack: this sleep is to prevent locks on SQLite. This gives time to let the page request finish before create_session is called,
+    # because creating the session involves a lot of database I/O, which seems to cause locks when multiple threads access at the same time.
+    time.sleep(5)
+
+    create_session(**kwargs)
+
+
 # FIXME: these decorators are not working together with issubclass?
 #@user_passes_test(lambda u: u.is_staff)
 #@login_required
-
-
-
 class CreateSession(vanilla.FormView):
 
     form_class = CreateSessionForm
@@ -62,13 +97,21 @@ class CreateSession(vanilla.FormView):
 
     def form_valid(self, form):
 
-        session = create_session(
-            session_type_name=self.session_type.name,
-            num_participants = form.cleaned_data['num_participants'],
-            preassign_players_to_groups=True,
-        )
-        admin_url = reverse('admin:%s_%s_change' % (session._meta.app_label, session._meta.module_name), args=(session.pk,))
-        return HttpResponseRedirect(admin_url)
+        pre_create_id = uuid.uuid4().hex
+
+        kwargs={
+            'session_type_name': self.session_type.name,
+            'num_participants': form.cleaned_data['num_participants'],
+            'preassign_players_to_groups': True,
+            '_pre_create_id': pre_create_id,
+        }
+
+        threading.Thread(
+            target=sleep_then_create_session,
+            kwargs=kwargs,
+        ).start()
+
+        return HttpResponseRedirect(WaitUntilSessionCreated.url(pre_create_id))
 
 
 # FIXME: these decorators are not working together with issubclass?
@@ -81,6 +124,8 @@ class SessionTypes(vanilla.View):
         return r"^create_session/$"
 
     def get(self, *args, **kwargs):
+
+
 
         session_types_info = []
         for session_type in get_session_types_list():
