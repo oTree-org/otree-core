@@ -232,6 +232,7 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
              'demo_already_used',
              'ready',
              'vars',
+             '_pre_create_id',
              # don't hide the code, since it's useful as a checksum (e.g. if you're on the payments page)
              }
     }[Model.__name__]
