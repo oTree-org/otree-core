@@ -85,7 +85,7 @@ class SessionType(object):
 # FUNCTIONS
 #==============================================================================
 
-def session_types_list(demo_only=False):
+def get_session_types_list(demo_only=False):
     session_types = get_session_module().session_types()
     if demo_only:
         return [
@@ -96,10 +96,10 @@ def session_types_list(demo_only=False):
         return session_types
 
 
-def session_types_dict(demo_only=False):
+def get_session_types_dict(demo_only=False):
     return {
         session_type.name: session_type
-        for session_type in session_types_list(demo_only)
+        for session_type in get_session_types_list(demo_only)
     }
 
 
@@ -114,7 +114,7 @@ def create_session(type_name, label='', num_participants=None,
     #~ 2014-9-22: preassign to groups for demo mode.
 
     try:
-        session_type = session_types_dict()[type_name]
+        session_type = get_session_types_dict()[type_name]
     except KeyError:
         raise ValueError(
             'Session type "{}" not found in sessions.py'.format(type_name)

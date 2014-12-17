@@ -17,7 +17,7 @@ import otree.constants as constants
 from otree.views.abstract import GenericWaitPageMixin
 from otree.session.models import Session
 from otree.session import (
-    create_session, session_types_dict, session_types_list
+    create_session, get_session_types_dict, get_session_types_list
 )
 from otree.common_internal import (
     get_session_module, get_models_module, app_name_format
@@ -40,7 +40,7 @@ class DemoIndex(vanilla.View):
         intro_text = getattr(get_session_module(), 'demo_page_intro_text', '')
 
         session_info = []
-        for session_type in session_types_list(demo_only=True):
+        for session_type in get_session_types_list(demo_only=True):
             session_info.append(
                 {
                     'name': session_type.name,
@@ -159,7 +159,7 @@ def render_to_start_links_page(request, session):
         'session_monitor_url': otree.adminlib.session_monitor_url(session),
     }
 
-    session_type = session_types_dict(demo_only=True)[session.type_name]
+    session_type = get_session_types_dict(demo_only=True)[session.type_name]
     context_data.update(info_about_session_type(session_type))
 
     return TemplateResponse(
@@ -178,7 +178,7 @@ class Demo(GenericWaitPageMixin, vanilla.View):
         return bool(session)
 
     def _before_returning_wait_page(self):
-        session_types = session_types_dict(demo_only=True)
+        session_types = get_session_types_dict(demo_only=True)
         try:
             session_types[self.session_type_name]
         except KeyError:
