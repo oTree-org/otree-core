@@ -17,12 +17,13 @@ import otree.constants as constants
 from otree.views.abstract import GenericWaitPageMixin
 from otree.session.models import Session
 from otree.session import (
-    create_session, session_types_dict, session_types_list
+    create_session, get_session_types_dict, get_session_types_list
 )
 from otree.common_internal import (
     get_session_module, get_models_module, app_name_format
 )
 
+import otree.adminlib
 
 def start_link_url(session_type_name):
     return '/demo/{}/'.format(session_type_name)
@@ -39,7 +40,7 @@ class DemoIndex(vanilla.View):
         intro_text = getattr(get_session_module(), 'demo_page_intro_text', '')
 
         session_info = []
-        for session_type in session_types_list(demo_only=True):
+        for session_type in get_session_types_list(demo_only=True):
             session_info.append(
                 {
                     'name': session_type.name,
@@ -57,7 +58,7 @@ class DemoIndex(vanilla.View):
         )
 
 
-def ensure_enough_spare_sessions(type_name):
+def ensure_enough_spare_sessions(session_type_name):
 
     time.sleep(5)
 
@@ -65,7 +66,7 @@ def ensure_enough_spare_sessions(type_name):
 
     spare_sessions = Session.objects.filter(
         special_category=constants.session_special_category_demo,
-        type_name=type_name,
+        session_type_name=session_type_name,
         demo_already_used=False,
     ).count()
 
@@ -73,16 +74,16 @@ def ensure_enough_spare_sessions(type_name):
     for i in range(DESIRED_SPARE_SESSIONS - spare_sessions):
         create_session(
             special_category=constants.session_special_category_demo,
-            type_name=type_name,
+            session_type_name=session_type_name,
             preassign_players_to_groups=True,
         )
 
 
-def get_session(type_name):
+def get_session(session_type_name):
 
     sessions = Session.objects.filter(
         special_category=constants.session_special_category_demo,
-        type_name=type_name,
+        session_type_name=session_type_name,
         demo_already_used=False,
         ready=True,
     )
@@ -140,7 +141,7 @@ def info_about_session_type(session_type):
     }
 
 
-def render_to_start_links_page(request, session, is_demo_page):
+def render_to_start_links_page(request, session):
     from otree.views.concrete import AdvanceSession
 
     experimenter_url = request.build_absolute_uri(
@@ -151,14 +152,14 @@ def render_to_start_links_page(request, session, is_demo_page):
         for participant in session.get_participants()
     ]
     context_data = {
-        'display_name': session.type().display_name,
+        'display_name': session.session_type.display_name,
         'experimenter_url': experimenter_url,
         'participant_urls': participant_urls,
-        'is_demo_page': is_demo_page,
-        'advance_session_url': request.build_absolute_uri(AdvanceSession.url(session.code))
+        'advance_session_url': request.build_absolute_uri(AdvanceSession.url(session.code)),
+        'session_monitor_url': otree.adminlib.session_monitor_url(session),
     }
 
-    session_type = session_types_dict(demo_only=True)[session.type_name]
+    session_type = get_session_types_dict(demo_only=True)[session.session_type_name]
     context_data.update(info_about_session_type(session_type))
 
     return TemplateResponse(
@@ -177,7 +178,7 @@ class Demo(GenericWaitPageMixin, vanilla.View):
         return bool(session)
 
     def _before_returning_wait_page(self):
-        session_types = session_types_dict(demo_only=True)
+        session_types = get_session_types_dict(demo_only=True)
         try:
             session_types[self.session_type_name]
         except KeyError:
@@ -202,7 +203,7 @@ class Demo(GenericWaitPageMixin, vanilla.View):
         session.save()
 
         return render_to_start_links_page(
-            self.request, session, is_demo_page=True
+            self.request, session
         )
 
     def dispatch(self, request, *args, **kwargs):

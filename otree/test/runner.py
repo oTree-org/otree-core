@@ -195,7 +195,6 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
                 if submit.execute():
                     pending.remove(submit)
 
-            # ejecutar un grupo
             group = submit_groups.pop(0) if submit_groups else ()
             for submit in group:
                 if submit is None:
@@ -212,7 +211,7 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
             self.session_name
         ))
         sssn = session.create_session(
-            type_name=self.session_name,
+            session_type_name=self.session_name,
             special_category=constants.session_special_category_bots,
             preassign_players_to_groups=True
         )
@@ -251,7 +250,7 @@ class OTreeExperimentTestRunner(runner.DiscoverRunner):
     def build_suite(self, session_names, extra_tests, **kwargs):
 
         if not session_names:
-            session_names = session.session_types_dict().keys()
+            session_names = session.get_session_types_dict().keys()
 
         tests = []
         for session_name in session_names:
@@ -284,10 +283,10 @@ def apps_from_sessions(session_names=None):
     if session_names:
         session_names = frozenset(session_names)
     else:
-        session_names = frozenset(session.session_types_dict().keys())
+        session_names = frozenset(session.get_session_types_dict().keys())
     apps = set()
     for sname in session_names:
-        sssn = session.session_types_dict()[sname]
+        sssn = session.get_session_types_dict()[sname]
         apps.update(sssn.subsession_apps)
     return apps
 

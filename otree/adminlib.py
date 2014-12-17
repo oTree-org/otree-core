@@ -20,6 +20,10 @@ from otree.common_internal import add_params_to_url
 from otree.common import Currency as c
 from otree.common import Money
 
+def session_monitor_url(session):
+    participants_table_url = reverse('admin:%s_%s_changelist' % (Participant._meta.app_label, Participant._meta.module_name))
+    return add_params_to_url(participants_table_url, {'session': session.pk})
+
 def new_tab_link(url, label):
     return '<a href="{}" target="_blank">{}</a>'.format(url, label)
 
@@ -41,9 +45,7 @@ def get_callables(Model, fields_specific_to_this_subclass=None, for_export=False
 
     changelist_but_not_export = {
         'Player':
-           [
-            'link',
-            '_pages_completed'],
+           [],
         'Group':
             [],
         'Subsession':
@@ -88,7 +90,7 @@ def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
         'Subsession': [],
         'Session': [
             'code',
-            'type_name',
+            'session_type_name',
             'time_started',
             '_players_assigned_to_groups',
             'special_category',
@@ -110,8 +112,6 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
                 'group',
                 'id_in_group',
                 'role',
-                'visited',
-                '_pages_completed'
             ],
         'Group':
             [
@@ -139,7 +139,7 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
         'Session':
             [
                 'code',
-                'type_name',
+                'session_type_name',
                 'label',
                 'hidden',
                 'type',
@@ -499,12 +499,11 @@ class SessionAdmin(OTreeBaseModelAdmin):
         return my_urls + urls
 
     def participants_table_link(self, instance):
-
-        participants_table_url = reverse('admin:%s_%s_changelist' % (Participant._meta.app_label, Participant._meta.module_name))
         return new_tab_link(
-            add_params_to_url(participants_table_url, {'session': instance.pk}),
+            session_monitor_url(instance),
             'Link'
         )
+
     participants_table_link.allow_tags = True
     participants_table_link.short_description = 'Monitor participants'
 
@@ -514,7 +513,7 @@ class SessionAdmin(OTreeBaseModelAdmin):
 
     def start_links(self, request, pk):
         session = self.model.objects.get(pk=pk)
-        return render_to_start_links_page(request, session, is_demo_page=False)
+        return render_to_start_links_page(request, session)
 
     def start_links_link(self, instance):
         return new_tab_link(
@@ -561,7 +560,7 @@ class SessionAdmin(OTreeBaseModelAdmin):
                                 'total_payments': total_payments,
                                 'mean_payment': mean_payment,
                                 'session_code': session.code,
-                                'session_type': session.type_name,
+                                'session_type': session.session_type_name,
                                 'fixed_pay': session.fixed_pay.to_money(session),
                                 })
 

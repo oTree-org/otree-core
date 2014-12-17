@@ -21,5 +21,5 @@ class Command(BaseCommand):
         num_participants = int(num_participants)
         label = options.get('label', '')
         create_session(
-            type_name=type, num_participants=num_participants, label=label
+            session_type_name=type, num_participants=num_participants, label=label
         )

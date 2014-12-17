@@ -64,7 +64,7 @@ class SessionExperimenterWaitUntilPlayersAreAssigned(NonSequenceUrlMixin, Generi
         return 'Assigning players to groups.'
 
     def _is_ready(self):
-        return self.session._players_assigned_to_groups or self.session.type().assign_to_groups_on_the_fly
+        return self.session._players_assigned_to_groups or self.session.session_type.assign_to_groups_on_the_fly
 
     @classmethod
     def get_name_in_url(cls):
@@ -109,7 +109,7 @@ class InitializeSessionExperimenter(vanilla.View):
         )
 
         session = self._session_user.session
-        if session._players_assigned_to_groups or session.type().assign_to_groups_on_the_fly:
+        if session._players_assigned_to_groups or session.session_type.assign_to_groups_on_the_fly:
             return self.redirect_to_next_page()
         return TemplateResponse(self.request, 'otree/experimenter/StartSession.html', {})
 
@@ -154,7 +154,7 @@ class InitializeParticipant(vanilla.UpdateView):
         )
 
         session = session_user.session
-        if session.type().assign_to_groups_on_the_fly:
+        if session.session_type.assign_to_groups_on_the_fly:
             session_user._assign_to_groups()
             # assign to groups on the fly
 
