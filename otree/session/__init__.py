@@ -105,7 +105,8 @@ def get_session_types_dict(demo_only=False):
 
 @transaction.atomic
 def create_session(session_type_name, label='', num_participants=None,
-                  special_category=None, preassign_players_to_groups=False):
+                  special_category=None, preassign_players_to_groups=False,
+                  _pre_create_id=None):
 
     #~ 2014-5-2: i could implement this by overriding the __init__ on the
     #~ Session model, but I don't really know how that works, and it seems to
@@ -125,7 +126,9 @@ def create_session(session_type_name, label='', num_participants=None,
         fixed_pay=session_type.fixed_pay,
         special_category=special_category,
         money_per_point = session_type.money_per_point,
-        session_experimenter = SessionExperimenter.objects.create()
+        session_experimenter = SessionExperimenter.objects.create(),
+        _pre_create_id = _pre_create_id,
+
     )
 
     def bulk_create(model, descriptions):

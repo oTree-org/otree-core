@@ -146,6 +146,8 @@ class Session(ModelWithVars):
     # model itself been created, but also the other models in the hierarchy)
     ready = models.BooleanField(default=False)
 
+    _pre_create_id = models.CharField(max_length=300, null=True)
+
     def __unicode__(self):
         return self.code
 
