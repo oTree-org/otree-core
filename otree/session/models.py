@@ -72,13 +72,16 @@ class Session(ModelWithVars):
         # if i don't set this, it could be in an unpredictable order
         ordering = ['pk']
 
-    type_name = models.CharField(max_length = 300, null = True, blank = True,
+    session_type_name = models.CharField(max_length = 300, null = True, blank = True,
         doc="the session type, as defined in the programmer's sessions.py."
     )
 
-    def type(self):
+    @property
+    def session_type(self):
         from otree.session import get_session_types_dict
-        return get_session_types_dict()[self.type_name]
+        return get_session_types_dict()[self.session_type_name]
+
+
 
     # label of this session instance
     label = models.CharField(
@@ -166,7 +169,7 @@ class Session(ModelWithVars):
 
     def get_subsessions(self):
         lst = []
-        subsession_apps = self.type().subsession_apps
+        subsession_apps = self.session_type.subsession_apps
         for app in subsession_apps:
             models_module = otree.common_internal.get_models_module(app)
             subsessions = models_module.Subsession.objects.filter(
@@ -230,7 +233,7 @@ class Session(ModelWithVars):
 
 
     def build_session_user_to_user_lookups(self):
-        subsession_app_names = self.type().subsession_apps
+        subsession_app_names = self.session_type.subsession_apps
 
         num_pages_in_each_app = {}
         for app_name in subsession_app_names:
@@ -300,7 +303,7 @@ class SessionUser(ModelWithVars):
     def get_users(self):
         """Used to calculate payoffs"""
         lst = []
-        subsession_apps = self.session.type().subsession_apps
+        subsession_apps = self.session.session_type.subsession_apps
         for app in subsession_apps:
             models_module = otree.common_internal.get_models_module(app)
             players = models_module.Player.objects.filter(

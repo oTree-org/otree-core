@@ -211,7 +211,7 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
             self.session_name
         ))
         sssn = session.create_session(
-            type_name=self.session_name,
+            session_type_name=self.session_name,
             special_category=constants.session_special_category_bots,
             preassign_players_to_groups=True
         )

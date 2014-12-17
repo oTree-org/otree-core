@@ -63,7 +63,7 @@ class CreateSession(vanilla.FormView):
     def form_valid(self, form):
 
         session = create_session(
-            type_name=self.session_type.name,
+            session_type_name=self.session_type.name,
             num_participants = form.cleaned_data['num_participants'],
             preassign_players_to_groups=True,
         )

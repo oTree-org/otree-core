@@ -58,7 +58,7 @@ class DemoIndex(vanilla.View):
         )
 
 
-def ensure_enough_spare_sessions(type_name):
+def ensure_enough_spare_sessions(session_type_name):
 
     time.sleep(5)
 
@@ -66,7 +66,7 @@ def ensure_enough_spare_sessions(type_name):
 
     spare_sessions = Session.objects.filter(
         special_category=constants.session_special_category_demo,
-        type_name=type_name,
+        session_type_name=session_type_name,
         demo_already_used=False,
     ).count()
 
@@ -74,16 +74,16 @@ def ensure_enough_spare_sessions(type_name):
     for i in range(DESIRED_SPARE_SESSIONS - spare_sessions):
         create_session(
             special_category=constants.session_special_category_demo,
-            type_name=type_name,
+            session_type_name=session_type_name,
             preassign_players_to_groups=True,
         )
 
 
-def get_session(type_name):
+def get_session(session_type_name):
 
     sessions = Session.objects.filter(
         special_category=constants.session_special_category_demo,
-        type_name=type_name,
+        session_type_name=session_type_name,
         demo_already_used=False,
         ready=True,
     )
@@ -152,14 +152,14 @@ def render_to_start_links_page(request, session):
         for participant in session.get_participants()
     ]
     context_data = {
-        'display_name': session.type().display_name,
+        'display_name': session.session_type.display_name,
         'experimenter_url': experimenter_url,
         'participant_urls': participant_urls,
         'advance_session_url': request.build_absolute_uri(AdvanceSession.url(session.code)),
         'session_monitor_url': otree.adminlib.session_monitor_url(session),
     }
 
-    session_type = get_session_types_dict(demo_only=True)[session.type_name]
+    session_type = get_session_types_dict(demo_only=True)[session.session_type_name]
     context_data.update(info_about_session_type(session_type))
 
     return TemplateResponse(

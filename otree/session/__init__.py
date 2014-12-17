@@ -104,7 +104,7 @@ def get_session_types_dict(demo_only=False):
 
 
 @transaction.atomic
-def create_session(type_name, label='', num_participants=None,
+def create_session(session_type_name, label='', num_participants=None,
                   special_category=None, preassign_players_to_groups=False):
 
     #~ 2014-5-2: i could implement this by overriding the __init__ on the
@@ -114,13 +114,13 @@ def create_session(type_name, label='', num_participants=None,
     #~ 2014-9-22: preassign to groups for demo mode.
 
     try:
-        session_type = get_session_types_dict()[type_name]
+        session_type = get_session_types_dict()[session_type_name]
     except KeyError:
         raise ValueError(
-            'Session type "{}" not found in sessions.py'.format(type_name)
+            'Session type "{}" not found in sessions.py'.format(session_type_name)
         )
     session = Session.objects.create(
-        type_name=session_type.name,
+        session_type_name=session_type.name,
         label=label,
         fixed_pay=session_type.fixed_pay,
         special_category=special_category,
@@ -194,7 +194,7 @@ def create_session(type_name, label='', num_participants=None,
         sub_by_pk[experimenter.subsession_object_id]._experimenter = experimenter
         sub_by_pk[experimenter.subsession_object_id].save()
 
-    if session.type().assign_to_groups_on_the_fly:
+    if session.session_type.assign_to_groups_on_the_fly:
         # create groups at the beginning because we will not need to
         # delete players unlike the lab setting, where there may be
         # no-shows

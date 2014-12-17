@@ -90,7 +90,7 @@ def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
         'Subsession': [],
         'Session': [
             'code',
-            'type_name',
+            'session_type_name',
             'time_started',
             '_players_assigned_to_groups',
             'special_category',
@@ -139,7 +139,7 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
         'Session':
             [
                 'code',
-                'type_name',
+                'session_type_name',
                 'label',
                 'hidden',
                 'type',
@@ -560,7 +560,7 @@ class SessionAdmin(OTreeBaseModelAdmin):
                                 'total_payments': total_payments,
                                 'mean_payment': mean_payment,
                                 'session_code': session.code,
-                                'session_type': session.type_name,
+                                'session_type': session.session_type_name,
                                 'fixed_pay': session.fixed_pay.to_money(session),
                                 })
 
