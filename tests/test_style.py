@@ -3,7 +3,6 @@
 
 import os
 import multiprocessing
-import collections
 
 from flake8 import engine, reporter
 
@@ -20,6 +19,8 @@ CHECK = settings.PEP8.get("check", ())
 
 EXCLUDE = list(settings.PEP8.get("exclude", ()))
 
+PRJ_DIR_LEN = len(settings.PRJ_DIR) + 1
+
 
 # =============================================================================
 # REPORT
@@ -29,28 +30,20 @@ class FileCollectReport(reporter.QueueReport):
 
     def __init__(self, *args, **kwargs):
         super(FileCollectReport, self).__init__(*args, **kwargs)
-        self._ferrs_queue = multiprocessing.Queue()
-        self._files_with_errors = collections.defaultdict(list)
+        self._errs_queue = multiprocessing.Queue()
+        self._errors = []
 
     def error(self, line_number, offset, text, check):
         super(FileCollectReport, self).error(line_number, offset, text, check)
-        self._ferrs_queue.put((self.filename, line_number))
+        self._errs_queue.put((self.filename, line_number, offset, text))
 
-    def get_statistics(self):
-        stats = super(FileCollectReport, self).get_statistics()
-        if stats:
-            stats.append("\nFiles with errors:")
-            for filename, linenos in self.files_with_errors():
-                lines = ", ".join(map(str, linenos))
-                line = u"{} - Lines: {}".format(filename, lines)
-                stats.append(line)
-        return stats
-
-    def files_with_errors(self):
-        while self._ferrs_queue.qsize():
-            filename, line_number = self._ferrs_queue.get_nowait()
-            self._files_with_errors[filename].append(line_number)
-        return tuple(self._files_with_errors.items())
+    def error_list(self):
+        while self._errs_queue.qsize():
+            filepath, line_number, offset, text = self._errs_queue.get_nowait()
+            filename = filepath[PRJ_DIR_LEN:]
+            error = u"{}:{}:{}: {}".format(filename, line_number, offset, text)
+            self._errors.append(error)
+        return tuple(self._errors)
 
 
 # =============================================================================
@@ -83,6 +76,6 @@ class TestStyle(TestCase):
                 "Please check the Python code style reference: "
                 "https://www.python.org/dev/peps/pep-0008/"
             )
-            lines.append("\nHere is a resume of errors found: ")
-            lines.extend(report.get_statistics())
+            lines.append("\nErrors found: ")
+            lines.extend(report.error_list())
             self.fail("\n".join(lines))

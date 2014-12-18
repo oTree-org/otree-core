@@ -3,7 +3,7 @@ import otree.settings
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-PRJ_DIR = os.path.join(BASE_DIR, "..")
+PRJ_DIR = os.path.dirname(BASE_DIR)
 
 TEST_VERBOSITY = 2
 
@@ -61,7 +61,10 @@ PEP8 = {
         os.path.join(PRJ_DIR, "setup.py"),
         os.path.join(PRJ_DIR, "manage.py"),
     ),
-    "exclude": ()
+    "exclude": (
+        os.path.join(PRJ_DIR, "tests", "simple_game"),
+        os.path.join(PRJ_DIR, "tests", "simple_game_copy"),
+    )
 }
 
 
