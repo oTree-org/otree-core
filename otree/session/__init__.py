@@ -46,7 +46,7 @@ class SessionType(object):
             'vars',
 
             # on MTurk, assign_to_groups_on_the_fly = True
-            'assign_to_groups_on_the_fly',
+            'group_by_arrival_time',
             'show_on_demo_page',
         ]
 
@@ -111,7 +111,7 @@ def get_session_types_dict(demo_only=False):
 
 @transaction.atomic
 def create_session(session_type_name, label='', num_participants=None,
-                  special_category=None, preassign_players_to_groups=False,
+                  special_category=None,
                   _pre_create_id=None):
 
     #~ 2014-5-2: i could implement this by overriding the __init__ on the
@@ -203,15 +203,7 @@ def create_session(session_type_name, label='', num_participants=None,
         sub_by_pk[experimenter.subsession_object_id]._experimenter = experimenter
         sub_by_pk[experimenter.subsession_object_id].save()
 
-    if session.session_type.assign_to_groups_on_the_fly:
-        # create groups at the beginning because we will not need to
-        # delete players unlike the lab setting, where there may be
-        # no-shows
-        for subsession in subsessions:
-            subsession._create_empty_groups()
-
-    if preassign_players_to_groups:
-        session._assign_groups_and_initialize()
+    session._assign_groups_and_initialize()
 
     session.build_session_user_to_user_lookups()
     session.ready = True

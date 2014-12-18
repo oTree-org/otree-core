@@ -54,9 +54,6 @@ class BaseSubsession(models.Model):
         ).get()
 
 
-    def next_round_groups(self, current_round_group_matrix):
-        return current_round_group_matrix
-
     def _players_per_group(self):
         ppg = self._Constants.players_per_group
         if isinstance(ppg, (int, long)) and ppg > 1:
@@ -90,16 +87,28 @@ class BaseSubsession(models.Model):
 
     def _group_objects_to_matrix(self):
         """puts Group objects in matrix format so you can do matrix permutations"""
-        return [list(g.get_players()) for g in self.group_set.all()]
+        return [list(g.player_set.all()) for g in self.group_set.all()]
 
-    def _group_matrix_to_objects(self, group_matrix):
-        """inverse operation of _group_objects_to_matrix"""
-        groups = self.group_set.all()
-        for group, group_list in zip(groups, group_matrix):
-            for i, player in enumerate(group_list, start=1):
-                player.group = group
-                player.id_in_group = i
-                player.save()
+
+    def set_groups(self, groups):
+        """elements in the list can be sublists, or group objects.
+        maybe this should be re-run after initialize() to ensure that id_in_groups are consistent.
+        or at least we should validate.
+        """
+        self.group_set.all().delete()
+        # first, get players in each group
+        matrix = []
+        for group in groups:
+            if isinstance(group, self._GroupClass()):
+                matrix.append(group.player_set.all())
+            else:
+                players_list = group
+                matrix.append(players_list)
+                # assume it's an iterable containing the players
+        for row in matrix:
+            group = self._create_group()
+            group.set_players(row)
+
 
     @property
     def _Constants(self):
@@ -108,10 +117,22 @@ class BaseSubsession(models.Model):
     def _GroupClass(self):
         return models.get_model(self._meta.app_label, 'Group')
 
-    def _create_empty_groups(self):
+    def _create_group(self):
+        '''should not be public API, because could leave the players in an inconsistent state,
+        where id_in_group is not updated. the only call should be to subsession.create_groups()
+        '''
         GroupClass = self._GroupClass()
+        group = GroupClass(
+            subsession = self,
+            session = self.session
+        )
+        # need to save it before you assign the player.group ForeignKey
+        group.save()
+        return group
+
+    def _create_empty_groups(self):
         for i in range(self._num_groups()):
-            m = GroupClass._create(self)
+            g = self._create_group()
 
     def first_round_groups(self):
         return self._random_group_matrix()
@@ -128,7 +149,7 @@ class BaseSubsession(models.Model):
                     # for every entry (i,j) in the matrix, follow the pointer to the same person in the next round
                     current_round_group_matrix[i][j] = player._in_next_round()
         # save to DB
-        self._group_matrix_to_objects(current_round_group_matrix)
+        self.set_groups(current_round_group_matrix)
 
     def initialize(self):
         '''
@@ -141,15 +162,11 @@ class BaseSubsession(models.Model):
     def _initialize(self):
         '''wrapper method for self.initialize()'''
         self.initialize()
-        for p in self.get_players():
+        for p in self.player_set.all():
             p.save()
-        for g in self.get_groups():
+        for g in self.group_set.all():
             g.save()
 
-
-    def previous_subsession_is_in_same_app(self):
-        previous_subsession = self.previous_subsession
-        return previous_subsession and previous_subsession._meta.app_label == self._meta.app_label
 
     def _experimenter_pages(self):
         views_module = get_views_module(self._meta.app_label)

@@ -154,7 +154,6 @@ class Session(ModelWithVars):
     def is_open(self):
         return GlobalSingleton.objects.get().open_session == self
 
-
     def subsession_names(self):
         names = []
         for subsession in self.get_subsessions():
@@ -194,6 +193,22 @@ class Session(ModelWithVars):
                 return False
         return True
     payments_ready.boolean = True
+
+    def _next_participant_to_assign(self):
+        for subsession in self.get_subsessions():
+            groups = subsession.get_groups()
+            if len(groups) > 1:
+                for group in groups:
+                    for player in group:
+                        if not player.participant.visited:
+                            return player.participant
+
+
+    def _swap_participant_codes(self, p1, p2):
+        p1.code, p2.code = p2.code, p1.code
+        p1.save()
+        p2.save()
+
 
     def _assign_groups_and_initialize(self):
         for subsession in self.get_subsessions():

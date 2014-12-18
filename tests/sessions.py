@@ -11,7 +11,7 @@ class SessionType(otree.session.SessionType):
     fixed_pay = 10.00
     num_bots = 12
     doc = "."
-    assign_to_groups_on_the_fly = False
+    group_by_arrival_time = False
     show_on_demo_page = True
     vars = {}
 

@@ -102,7 +102,6 @@ class CreateSession(vanilla.FormView):
         kwargs={
             'session_type_name': self.session_type.name,
             'num_participants': form.cleaned_data['num_participants'],
-            'preassign_players_to_groups': True,
             '_pre_create_id': pre_create_id,
         }
 

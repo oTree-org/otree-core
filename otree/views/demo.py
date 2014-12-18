@@ -77,7 +77,6 @@ def ensure_enough_spare_sessions(session_type_name):
         create_session(
             special_category=constants.session_special_category_demo,
             session_type_name=session_type_name,
-            preassign_players_to_groups=True,
         )
 
 

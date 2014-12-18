@@ -676,8 +676,8 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
         if not self.request.GET[constants.access_code_for_open_session] == settings.ACCESS_CODE_FOR_OPEN_SESSION:
             return HttpResponseNotFound('Incorrect access code for open session')
 
-        global_data = otree.session.models.GlobalSingleton.objects.get()
-        open_session = global_data.open_session
+        global_singleton = otree.session.models.GlobalSingleton.objects.get()
+        open_session = global_singleton.open_session
 
         if not open_session:
             return HttpResponseNotFound('No session is currently open. Make sure to create a session and set is as open.')
@@ -686,17 +686,22 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
         try:
             participant = self.retrieve_existing_participant_with_these_params(open_session)
         except Participant.DoesNotExist:
-            try:
-                with transaction.atomic():
-                    participant = Participant.objects.select_for_update().filter(
-                        session = open_session,
-                        visited=False)[0]
-                    self.set_external_params_on_participant(participant)
-                    # 2014-10-17: needs to be here even if it's also set in the next view
-                    # to prevent race conditions
-                    participant.visited = True
-                    participant.save()
-            except IndexError:
-                return HttpResponseNotFound("No Player objects left in the database to assign to new visitor.")
+            with transaction.atomic():
+                # just take a lock on an arbitrary object, to prevent multiple threads from executing this code concurrently
+                global_singleton = otree.session.models.GlobalSingleton.objects.select_for_update().get()
+                if open_session.session_type.group_by_arrival_time:
+                    participant = open_session._next_participant_to_assign()
+                if not participant:
+                    try:
+                        participant = Participant.objects.select_for_update().filter(
+                            session = open_session,
+                            visited=False)[0]
+                    except IndexError:
+                        return HttpResponseNotFound("No Player objects left in the database to assign to new visitor.")
+                self.set_external_params_on_participant(participant)
+                # 2014-10-17: needs to be here even if it's also set in the next view
+                # to prevent race conditions
+                participant.visited = True
+                participant.save()
 
         return HttpResponseRedirect(participant._start_url())

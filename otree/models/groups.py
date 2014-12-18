@@ -22,15 +22,11 @@ class BaseGroup(SaveTheChange, models.Model):
             if p.role() == role:
                 return p
 
-    @classmethod
-    def _create(cls, subsession):
-        group = cls(
-            subsession = subsession,
-            session = subsession.session
-        )
-        # need to save it before you assign the player.group ForeignKey
-        group.save()
-        return group
+    def set_players(self, players_list):
+        for i, player in enumerate(players_list, start=1):
+            player.group = self
+            player.id_in_group = i
+            player.save()
 
     @property
     def _Constants(self):

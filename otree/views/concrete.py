@@ -64,7 +64,7 @@ class SessionExperimenterWaitUntilPlayersAreAssigned(NonSequenceUrlMixin, Generi
         return 'Assigning players to groups.'
 
     def _is_ready(self):
-        return self.session._players_assigned_to_groups or self.session.session_type.assign_to_groups_on_the_fly
+        return self.session._players_assigned_to_groups
 
     @classmethod
     def get_name_in_url(cls):
@@ -109,7 +109,7 @@ class InitializeSessionExperimenter(vanilla.View):
         )
 
         session = self._session_user.session
-        if session._players_assigned_to_groups or session.session_type.assign_to_groups_on_the_fly:
+        if session._players_assigned_to_groups:
             return self.redirect_to_next_page()
         return TemplateResponse(self.request, 'otree/experimenter/StartSession.html', {})
 
@@ -154,17 +154,17 @@ class InitializeParticipant(vanilla.UpdateView):
         )
 
         session = session_user.session
-        if session.session_type.assign_to_groups_on_the_fly:
-            session_user._assign_to_groups()
-            # assign to groups on the fly
+        if (not session_user.visited) and session.session_type.group_by_arrival_time:
+            next_participant = session._next_participant_to_assign()
+            if next_participant:
+                session._swap_participant_codes(session_user, next_participant)
+                session_user = next_participant
 
         session_user.visited = True
 
         # session_user.label might already have been set by AssignToOpenSession
         session_user.label = session_user.label or self.request.GET.get(constants.participant_label)
-
-        if session_user.ip_address == None:
-            session_user.ip_address = self.request.META['REMOTE_ADDR']
+        session_user.ip_address = self.request.META['REMOTE_ADDR']
 
         now = django.utils.timezone.now()
         session_user.time_started = now
