@@ -56,6 +56,7 @@ class TestStyle(TestCase):
         self.quiet = settings.TEST_VERBOSITY <= 2
         self.pep8 = engine.get_style_guide(exclude=EXCLUDE)
 
+        self.pep8.n_jobs = 1
         self.pep8.reporter = FileCollectReport
         report = self.pep8.init_report(self.pep8.reporter)
         report.input_file = self.pep8.input_file
