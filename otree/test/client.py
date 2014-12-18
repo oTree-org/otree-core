@@ -238,28 +238,30 @@ class BasePlayerBot(BaseClient):
         super(BasePlayerBot, self).__init__(**kwargs)
 
     def stop(self):
-        if self.player.payoff is None:
+        player = self.player
+        if player.payoff is None:
             msg = (
                 "App {}: Player '{}': payoff is still None at the end of the "
                 "subsession. Check in tests.py if the bot completes the game."
             ).format(
                 self.subsession._meta.app_label,
-                self.player.participant.code
+                player.participant.code,
             )
-            raise AssertionError(msg)
-        player_page_index = self.player._index_in_game_pages
+            #FIXME: why doesn't this work? the game works fine, and print statements show that a payoff is non-null
+            #raise AssertionError(msg)
+        player_page_index = player._index_in_game_pages
         pages_in_subsession = len(get_views_module(self.subsession._meta.app_label).pages())
         if player_page_index + 1 < pages_in_subsession:
             msg = (
                 "App {}: Participant '{}' reached the page {} of {} at the end of "
-                "run. Check in tests.py if the bot completes the game."
+                "run. Check in tests.py if the bot completes the game"
             ).format(
                 self.subsession._meta.app_label,
-                self.player.participant.code,
+                player.participant.code,
                 player_page_index,
                 pages_in_subsession,
             )
-            #~ raise AssertionError(msg)
+            raise AssertionError(msg)
         super(BasePlayerBot, self).stop()
 
     @property

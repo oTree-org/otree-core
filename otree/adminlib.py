@@ -198,11 +198,7 @@ def get_all_fields_for_table(Model, callables, first_fields=None, for_export=Fal
     fields_to_exclude_from_export_and_changelist = {
         'Player':
               {
-              # we should only have participant code and session code. because those are real world concepts.
-              # person/session.
-              # also, people might confuse player/subsession code with participant/session code
-              'code',
-              'index_in_pages',
+              '_index_in_game_pages',
               'participant',
               },
         'Group':

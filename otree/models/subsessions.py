@@ -114,12 +114,10 @@ class BaseSubsession(models.Model):
         group.save()
         return group
 
-    def first_round_groups(self):
-        return self._random_group_matrix()
 
     def _create_groups(self):
         if self.round_number == 1:
-            group_matrix = self.first_round_groups()
+            group_matrix = self._random_group_matrix()
         else:
             previous_round = self.in_previous_round()
             group_matrix = [list(g.player_set.all()) for g in previous_round.group_set.all()]

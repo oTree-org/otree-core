@@ -43,7 +43,6 @@ class Migration(migrations.Migration):
             name='Experimenter',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('code', otree.db.models.RandomCharField(max_length=8, blank=True)),
                 ('_index_in_game_pages', otree.db.models.PositiveIntegerField(default=0, null=True)),
                 ('round_number', otree.db.models.PositiveIntegerField(null=True)),
                 ('subsession_object_id', otree.db.models.PositiveIntegerField(null=True)),
