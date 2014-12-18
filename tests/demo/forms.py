@@ -30,4 +30,6 @@ class WidgetDemoForm(forms.Form):
         widget=forms.CheckboxSelectMultipleHorizontal)
 
     currency = forms.CurrencyField()
-    currency_choice = forms.CurrencyChoiceField(choices=[(m, m) for m in currency_range(0,0.75, 0.05)])
+    currency_choice = forms.CurrencyChoiceField(
+        choices=[(m, m) for m in currency_range(0, 0.75, 0.05)]
+    )

@@ -33,7 +33,7 @@ class BoundFieldModel(otree.models.BaseGroup):
         return [0.111, Decimal('1') / Decimal('3')]
 
     def big_integer_bounds(self):
-        return [0, 10**10]
+        return [0, 10 ** 10]
 
     def integer_bounds(self):
         return [-5, self.upper_bound]

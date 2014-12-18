@@ -68,5 +68,4 @@ PEP8 = {
 }
 
 
-
 otree.settings.augment_settings(globals())
