@@ -43,6 +43,7 @@ class SessionType(object):
             'money_per_point',
             'num_demo_participants',
             'doc',
+            'vars',
 
             # on MTurk, assign_to_groups_on_the_fly = True
             'assign_to_groups_on_the_fly',
