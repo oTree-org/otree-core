@@ -8,9 +8,6 @@ from otree.common_internal import add_params_to_url, get_models_module
 from save_the_change.mixins import SaveTheChange
 
 class User(SaveTheChange, models.Model):
-    """represents experimenter or players"""
-    # the player's unique ID that gets passed in the URL.
-    code = models.RandomCharField(length = 8)
 
     _index_in_game_pages = models.PositiveIntegerField(
         default=0,
