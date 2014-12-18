@@ -151,7 +151,7 @@ def get_players(self, refresh_from_db=False):
     self._players = list(self.player_set.order_by('id_in_group'))
     return self._players
 
-def get_groups(self, refresh_from_db):
+def get_groups(self, refresh_from_db=False):
     if (not refresh_from_db) and hasattr(self, '_groups'):
         return self._groups
     self._groups = list(self.group_set.all())

@@ -39,11 +39,14 @@ class BaseSubsession(subsessions.BaseSubsession):
         '''
     )
 
-    def get_groups(self, refresh_from_db=False):
-        return get_groups(self, refresh_from_db)
+    def set_groups(self, groups_list):
+        return super(BaseSubsession, self).set_groups(groups_list)
 
-    def get_players(self, refresh_from_db=False):
-        return get_players(self, refresh_from_db)
+    def get_groups(self):
+        return get_groups(self)
+
+    def get_players(self):
+        return get_players(self)
 
     @property
     def app_name(self):
@@ -72,8 +75,11 @@ class BaseGroup(groups.BaseGroup):
         related_name = '%(app_label)s_%(class)s'
     )
 
+    def set_players(self, players_list):
+        return super(BaseGroup, self).set_players(players_list)
+
     def get_players(self):
-        return get_players(self, refresh_from_db=False)
+        return get_players(self)
 
     def get_player_by_role(self, role):
         return super(BaseGroup, self).get_player_by_role(role)
