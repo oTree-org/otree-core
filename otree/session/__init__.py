@@ -46,7 +46,7 @@ class SessionType(object):
             'vars',
 
             # on MTurk, assign_to_groups_on_the_fly = True
-            'group_by_arrival_order',
+            'group_by_arrival_time',
             'show_on_demo_page',
         ]
 

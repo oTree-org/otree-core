@@ -689,7 +689,8 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
             with transaction.atomic():
                 # just take a lock on an arbitrary object, to prevent multiple threads from executing this code concurrently
                 global_singleton = otree.session.models.GlobalSingleton.objects.select_for_update().get()
-                if open_session.session_type.group_by_arrival_order:
+                participant = None
+                if open_session.session_type.group_by_arrival_time:
                     participant = open_session._next_participant_to_assign()
                 if not participant:
                     try:
