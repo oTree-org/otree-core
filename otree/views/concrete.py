@@ -128,7 +128,7 @@ class InitializeSessionExperimenter(vanilla.View):
             session.time_started = django.utils.timezone.now()
             session.save()
 
-        t = threading.Thread(target=session._assign_groups_and_initialize())
+        t = threading.Thread(target=session._create_groups_and_initialize())
         t.start()
         return self.redirect_to_next_page()
 

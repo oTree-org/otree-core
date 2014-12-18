@@ -203,7 +203,7 @@ def create_session(session_type_name, label='', num_participants=None,
         sub_by_pk[experimenter.subsession_object_id]._experimenter = experimenter
         sub_by_pk[experimenter.subsession_object_id].save()
 
-    session._assign_groups_and_initialize()
+    session._create_groups_and_initialize()
 
     session.build_session_user_to_user_lookups()
     session.ready = True

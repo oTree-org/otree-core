@@ -210,10 +210,9 @@ class Session(ModelWithVars):
         p2.save()
 
 
-    def _assign_groups_and_initialize(self):
+    def _create_groups_and_initialize(self):
         for subsession in self.get_subsessions():
-            subsession._create_empty_groups()
-            subsession._assign_groups()
+            subsession._create_groups()
             subsession._initialize()
         self._players_assigned_to_groups = True
         self.save()
@@ -430,10 +429,6 @@ class Participant(SessionUser):
 
     def __unicode__(self):
         return self.name()
-
-    def _assign_to_groups(self):
-        for p in self.get_players():
-            p._assign_to_group()
 
     def _start_url(self):
         return '/InitializeParticipant/{}'.format(self.code)

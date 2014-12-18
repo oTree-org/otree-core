@@ -44,14 +44,6 @@ class BasePlayer(User):
     class Meta:
         abstract = True
 
-    def _assign_to_group(self, group=None):
-        if not group:
-            group = self.subsession._next_open_group()
-        self.group = group
-        self.save()
-        self.id_in_group = group.player_set.count()
-        self.save()
-
     def _GroupClass(self):
         return self._meta.get_field('group').rel.to
 
