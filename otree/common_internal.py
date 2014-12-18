@@ -95,6 +95,9 @@ def get_session_module():
 def get_models_module(app_name):
     return import_module('{}.models'.format(app_name))
 
+def get_views_module(app_name):
+    return import_module('{}.views'.format(app_name))
+
 def get_app_constants(app_name):
     '''
     Return the ``Constants`` object of a app defined in the models.py file.
@@ -134,8 +137,6 @@ def get_app_name_from_import_path(import_path):
             app_name = None
     raise ValueError('The module {} is not part of any known otree app.'.format(import_path))
 
-def get_views_module(app_name):
-    return import_module('{}.views'.format(app_name))
 
 def get_app_name_from_label(app_label):
     '''

@@ -96,7 +96,7 @@ class BaseSubsession(models.Model):
 
     @property
     def _Constants(self):
-        return get_models_module(self._meta.app_label).Constants
+        return get_models_module(self._meta.app_config.name).Constants
 
     def _GroupClass(self):
         return models.get_model(self._meta.app_label, 'Group')

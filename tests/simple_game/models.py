@@ -32,8 +32,6 @@ class Group(otree.models.BaseGroup):
     subsession = models.ForeignKey(Subsession)
     # </built-in>
 
-    players_per_group = None
-
     def set_payoffs(self):
         for p in self.get_players():
             p.payoff = 0 # change to whatever the payoff should be
