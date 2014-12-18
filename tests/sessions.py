@@ -13,6 +13,7 @@ class SessionType(otree.session.SessionType):
     doc = "."
     assign_to_groups_on_the_fly = False
     show_on_demo_page = True
+    vars = {}
 
 
 def session_types():
