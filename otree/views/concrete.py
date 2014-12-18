@@ -154,7 +154,7 @@ class InitializeParticipant(vanilla.UpdateView):
         )
 
         session = session_user.session
-        if (not session_user.visited) and session.session_type.group_by_arrival_time:
+        if (not session_user.visited) and session.session_type.group_by_arrival_order:
             next_participant = session._next_participant_to_assign()
             if next_participant:
                 session._swap_participant_codes(session_user, next_participant)

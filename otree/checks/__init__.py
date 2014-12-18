@@ -192,6 +192,11 @@ def constants(rules, **kwargs):
                 rules.push_error(
                     "models.py: 'Constants' class needs to define '{}'".format(attr_name),
                 )
+        if getattr(Constants, 'players_per_group', None) == 1:
+            rules.push_error(
+                "models.py: 'Constants.players_per_group' cannot be 1. You should set it to None, which makes the group"
+                "all players in the subsession."
+            )
 
 
 @register_rules(id='otree.E004')

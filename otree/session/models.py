@@ -199,7 +199,7 @@ class Session(ModelWithVars):
             groups = subsession.get_groups()
             if len(groups) > 1:
                 for group in groups:
-                    for player in group:
+                    for player in group.get_players():
                         if not player.participant.visited:
                             return player.participant
 
