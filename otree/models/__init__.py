@@ -64,6 +64,9 @@ class BaseSubsession(subsessions.BaseSubsession):
     def in_all_rounds(self):
         return super(BaseSubsession, self).in_all_rounds()
 
+    def initialize(self):
+        return super(BaseSubsession, self).initialize()
+
     class Meta:
         abstract = True
         ordering = ['pk']
