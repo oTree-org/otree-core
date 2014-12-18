@@ -10,7 +10,7 @@ import random
 
 class Constants:
     name_in_url = 'simple_game_copy'
-    players_per_group = 1
+    players_per_group = None
     number_of_rounds = 1
 
 
@@ -32,7 +32,7 @@ class Group(otree.models.BaseGroup):
     subsession = models.ForeignKey(Subsession)
     # </built-in>
 
-    players_per_group = 1
+    players_per_group = None
 
     def set_payoffs(self):
         for p in self.get_players():
