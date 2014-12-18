@@ -22,6 +22,7 @@ REQUIREMENTS = [
     'django-ptree-mturk>=1.0.1',
     'django-save-the-change>=1.0.0',
     'django-vanilla-views>=1.0.2',
+    'flake8>=2.2.5',
     'handy>=0.3',
     'mock>=1.0.0',
     'pytz>=2013.9',
@@ -76,7 +77,8 @@ setup(
         'Environment :: Web Environment',
         'Framework :: Django',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License', # example license
+        # example license
+        'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         # replace these appropriately if you are using Python 3
@@ -86,5 +88,3 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
 )
-
-

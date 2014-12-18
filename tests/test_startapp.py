@@ -1,13 +1,15 @@
 import os
 import shutil
 import tempfile
+
 from django.conf import settings
 from django.core.management import call_command, CommandError
 from django.test import TestCase
+
 from mock import patch
 
-from .utils import add_path, capture_stdout, cd
 import otree.checks
+from .utils import add_path, capture_stdout, cd
 
 
 class StartAppTest(TestCase):
@@ -69,9 +71,9 @@ class StartAppTest(TestCase):
                 self.assertRaises(CommandError, run_check)
 
     def test_startapp_is_checked_with_system_check(self):
-        # Gather some data how often the file_exists check is executed. That way
-        # we can compare it later to make sure that the new app was tested as
-        # well.
+        # Gather some data how often the file_exists check is executed. That
+        # way we can compare it later to make sure that the new app was tested
+        # as well.
         with patch.object(otree.checks.Rules, 'file_exists') as file_exists:
             file_exists.return_value = True
             with capture_stdout():
@@ -89,11 +91,13 @@ class StartAppTest(TestCase):
         new_otree_apps.append('brokengame')
 
         with add_path(self.tmp_dir):
-            with self.settings(INSTALLED_APPS=new_apps, INSTALLED_OTREE_APPS=new_otree_apps):
-                with patch.object(otree.checks.Rules, 'file_exists') as file_exists:
-                    file_exists.return_value = True
+            with self.settings(
+                INSTALLED_APPS=new_apps, INSTALLED_OTREE_APPS=new_otree_apps
+            ):
+                with patch.object(otree.checks.Rules, 'file_exists') as fexist:
+                    fexist.return_value = True
                     with capture_stdout():
                         call_command('check')
-                    self.assertTrue(file_exists.called)
-                    second_run_calls = file_exists.call_count
+                    self.assertTrue(fexist.called)
+                    second_run_calls = fexist.call_count
                     self.assertTrue(second_run_calls > first_run_calls)

@@ -17,7 +17,9 @@ class BoundFieldModel(otree.models.BaseGroup):
 
     big_integer = models.BigIntegerField(null=True, blank=True)
     currency = models.CurrencyField(null=True, blank=True)
-    decimal = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    decimal = models.DecimalField(
+        max_digits=5, decimal_places=2, null=True, blank=True
+    )
     integer = models.IntegerField(null=True, blank=True)
     integer_no_bounds = models.IntegerField(null=True, blank=True)
     positive_integer = models.PositiveIntegerField(null=True, blank=True)
@@ -31,7 +33,7 @@ class BoundFieldModel(otree.models.BaseGroup):
         return [0.111, Decimal('1') / Decimal('3')]
 
     def big_integer_bounds(self):
-        return [0, 10**10]
+        return [0, 10 ** 10]
 
     def integer_bounds(self):
         return [-5, self.upper_bound]
@@ -54,7 +56,9 @@ class FormFieldModel(otree.models.BaseGroup):
     comma_separated_integer = models.CommaSeparatedIntegerField(max_length=100)
     date = models.DateField()
     date_time = models.DateTimeField()
-    alt_date_time = models.DateTimeField(widget=otree.forms.SplitDateTimeWidget)
+    alt_date_time = models.DateTimeField(
+        widget=otree.forms.SplitDateTimeWidget
+    )
     decimal = models.DecimalField(max_digits=5, decimal_places=2)
     email = models.EmailField()
     file = models.FileField(upload_to='_tmp/uploads')

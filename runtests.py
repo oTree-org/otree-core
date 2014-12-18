@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import os, sys
+
+import os
+import sys
 
 
 base_path = os.path.dirname(os.path.abspath(__file__))
@@ -16,14 +18,13 @@ default_test_apps = [
 
 def runtests(*args):
     import django
-    from django.core.management.commands.test import Command
-
     django.setup()
 
+    from django.conf import settings
+    from django.core.management.commands.test import Command
     test_command = Command()
     test_apps = list(args or default_test_apps)
-
-    test_command.execute(verbosity=2, *test_apps)
+    test_command.execute(verbosity=settings.TEST_VERBOSITY, *test_apps)
 
 
 if __name__ == '__main__':

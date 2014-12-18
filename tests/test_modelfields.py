@@ -49,7 +49,7 @@ class FieldBoundTests(TestCase):
         form = BoundFieldModelForm()
         self.assertEqual(form.fields['big_integer'].widget.attrs['min'], 0)
         self.assertEqual(
-            form.fields['big_integer'].widget.attrs['max'], 10**10
+            form.fields['big_integer'].widget.attrs['max'], 10 ** 10
         )
         self.assertTrue('min="0"' in str(form['big_integer']))
         self.assertTrue('max="10000000000"' in str(form['big_integer']))

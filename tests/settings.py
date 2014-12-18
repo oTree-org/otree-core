@@ -3,10 +3,14 @@ import otree.settings
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+PRJ_DIR = os.path.dirname(BASE_DIR)
+
+TEST_VERBOSITY = 2
+
 DEBUG = True
 
 ADMIN_PASSWORD = 'otree'
-SECRET_KEY = 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz'
+SECRET_KEY = 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz'
 
 DATABASES = {
     'default': {
@@ -25,20 +29,16 @@ PAYMENT_CURRENCY_CODE = 'EUR'
 USE_POINTS = False
 
 
-# e.g. en-gb, de-de, it-it, fr-fr. see: https://docs.djangoproject.com/en/1.7/topics/i18n/
+# e.g. en-gb, de-de, it-it, fr-fr.
+# see: https://docs.djangoproject.com/en/1.7/topics/i18n/
 LANGUAGE_CODE = 'en-us'
 
 INSTALLED_APPS = [
     'otree',
+    'raven.contrib.django.raven_compat',
     'tests',
     'tests.demo',
 ]
-
-if os.environ.has_key('SENTRY_DSN'):
-    INSTALLED_APPS += [
-        'raven.contrib.django.raven_compat',
-    ]
-
 
 INSTALLED_OTREE_APPS = [
     'tests.simple_game',
@@ -52,6 +52,20 @@ ROOT_URLCONF = 'otree.default_urls'
 SESSIONS_MODULE = 'tests.sessions'
 
 ACCESS_CODE_FOR_OPEN_SESSION = 'idd1610'
+
+PEP8 = {
+    "check": (
+        # os.path.join(PRJ_DIR, "otree"),
+        os.path.join(PRJ_DIR, "tests"),
+        os.path.join(PRJ_DIR, "runtests.py"),
+        os.path.join(PRJ_DIR, "setup.py"),
+        os.path.join(PRJ_DIR, "manage.py"),
+    ),
+    "exclude": (
+        os.path.join(PRJ_DIR, "tests", "simple_game"),
+        os.path.join(PRJ_DIR, "tests", "simple_game_copy"),
+    )
+}
 
 
 otree.settings.augment_settings(globals())
