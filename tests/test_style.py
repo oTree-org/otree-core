@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 import multiprocessing
+import unittest
 
 from flake8 import engine, reporter
 
@@ -20,6 +22,8 @@ CHECK = settings.PEP8.get("check", ())
 EXCLUDE = list(settings.PEP8.get("exclude", ()))
 
 PRJ_DIR_LEN = len(settings.PRJ_DIR) + 1
+
+IS_WINDOWS = sys.platform.startswith("win")
 
 
 # =============================================================================
@@ -68,6 +72,7 @@ class TestStyle(TestCase):
                 raise ImproperlyConfigured(msg)
             self.pep8.paths.append(path)
 
+    @unittest.skipUnless(not IS_WINDOWS, "not work on Windows")
     def test_pep8(self):
         report = self.pep8.check_files()
         error_q = report.total_errors
