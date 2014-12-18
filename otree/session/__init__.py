@@ -54,8 +54,13 @@ class SessionType(object):
             attr_value = kwargs.get(attr_name)
             if attr_value is not None:
                 setattr(self, attr_name, attr_value)
-            if attr_name != 'doc':
-                assert getattr(self, attr_name) is not None
+            if getattr(self, attr_name, None) is None:
+                if attr_name == 'doc':
+                    self.doc = ''
+                if attr_name == 'vars':
+                    self.vars = {}
+                else:
+                    raise AttributeError('Required attribute SessionType.{} is missing or None'.format(attr_name))
 
         if not re.match(r'^\w+$', self.name):
             raise ValueError('Session "{}": name must be alphanumeric with no spaces (underscores allowed).'.format(self.name))
