@@ -115,9 +115,9 @@ def keywords_links(keywords):
 
 def info_about_session_type(session_type):
 
-    subsession_apps = []
+    app_sequence = []
     seo = set()
-    for app_name in session_type.subsession_apps:
+    for app_name in session_type.app_sequence:
         models_module = get_models_module(app_name)
         num_rounds = models_module.Constants.number_of_rounds
         formatted_app_name = app_name_format(app_name)
@@ -134,10 +134,10 @@ def info_about_session_type(session_type):
             'name': formatted_app_name,
         }
         seo.update(map(lambda (a, b): a, subsssn["keywords"]))
-        subsession_apps.append(subsssn)
+        app_sequence.append(subsssn)
     return {
         'doc': session_type.doc,
-        'subsession_apps': subsession_apps,
+        'app_sequence': app_sequence,
         'page_seo': seo
     }
 

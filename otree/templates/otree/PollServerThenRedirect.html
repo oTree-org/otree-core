@@ -22,6 +22,6 @@
         var SECOND = 1000;
         var intervalId = window.setInterval("checkIfReady()", {{ view.poll_interval_seconds }} * SECOND);
         // after 60 minutes, stop polling
-        setTimeout(function( ) { clearInterval( intervalId ); }, 60 * 60);
+        setTimeout(function( ) { clearInterval( intervalId ); }, 60 * 60 * SECOND   );
     </script>
 {% endif %}

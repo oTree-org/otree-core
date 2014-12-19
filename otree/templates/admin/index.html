@@ -16,17 +16,17 @@
 <p><a href="/create_session/"><b>Create a session</b></a></p>
 
 {% if app_list %}
-    {% with non_subsession_apps=app_list|non_subsession_apps %}
-    {% if non_subsession_apps|length != 0 %}
+    {% with non_app_sequence=app_list|non_app_sequence %}
+    {% if non_app_sequence|length != 0 %}
         <h2>Global</h2>
         {% mock_data_export_app %}
 
-        {% for app in non_subsession_apps %}
+        {% for app in non_app_sequence %}
             {% if app.app_label == "session" %}
                 {% include "admin/_dashboard_app_template.html" with app_models=app.models|fix_session_app_models_order %}
             {% endif %}
         {% endfor %}
-        {% for app in non_subsession_apps %}
+        {% for app in non_app_sequence %}
             {% if app.app_label != "session" %}
                 {% include "admin/_dashboard_app_template.html" with app_models=app.models %}
             {% endif %}
@@ -36,7 +36,7 @@
 
 
     <h2>Apps</h2>
-    {% for app in app_list|subsession_apps_only %}
+    {% for app in app_list|app_sequence_only %}
         {% include "admin/_dashboard_app_template.html" with app_models=app.models|fix_subsession_app_models_order %}
     {% endfor %}
 {% else %}

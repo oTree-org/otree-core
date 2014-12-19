@@ -286,7 +286,7 @@ def apps_from_sessions(session_names=None):
     apps = set()
     for sname in session_names:
         sssn = session.get_session_types_dict()[sname]
-        apps.update(sssn.subsession_apps)
+        apps.update(sssn.app_sequence)
     return apps
 
 

@@ -170,8 +170,8 @@ class Session(ModelWithVars):
 
     def get_subsessions(self):
         lst = []
-        subsession_apps = self.session_type.subsession_apps
-        for app in subsession_apps:
+        app_sequence = self.session_type.app_sequence
+        for app in app_sequence:
             models_module = otree.common_internal.get_models_module(app)
             subsessions = models_module.Subsession.objects.filter(
                 session=self
@@ -249,7 +249,7 @@ class Session(ModelWithVars):
 
 
     def build_session_user_to_user_lookups(self):
-        subsession_app_names = self.session_type.subsession_apps
+        subsession_app_names = self.session_type.app_sequence
 
         num_pages_in_each_app = {}
         for app_name in subsession_app_names:
@@ -319,8 +319,8 @@ class SessionUser(ModelWithVars):
     def get_users(self):
         """Used to calculate payoffs"""
         lst = []
-        subsession_apps = self.session.session_type.subsession_apps
-        for app in subsession_apps:
+        app_sequence = self.session.session_type.app_sequence
+        for app in app_sequence:
             models_module = otree.common_internal.get_models_module(app)
             players = models_module.Player.objects.filter(
                 participant=self

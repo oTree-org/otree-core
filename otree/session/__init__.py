@@ -36,7 +36,7 @@ class SessionType(object):
 
         attrs = [
             'name',
-            'subsession_apps',
+            'app_sequence',
             'fixed_pay',
             'num_bots',
             'display_name',
@@ -65,10 +65,10 @@ class SessionType(object):
         if not re.match(r'^\w+$', self.name):
             raise ValueError('Session "{}": name must be alphanumeric with no spaces (underscores allowed).'.format(self.name))
 
-        if len(self.subsession_apps) != len(set(self.subsession_apps)):
-            raise ValueError('subsession_apps cannot contain duplicate elements')
+        if len(self.app_sequence) != len(set(self.app_sequence)):
+            raise ValueError('app_sequence cannot contain duplicate elements')
 
-        if len(self.subsession_apps) == 0:
+        if len(self.app_sequence) == 0:
             raise ValueError('Need at least one subsession.')
 
         self.doc = self.doc.strip()
@@ -79,7 +79,7 @@ class SessionType(object):
 
     def lcm(self):
         participants_per_group_list = []
-        for app_name in self.subsession_apps:
+        for app_name in self.app_sequence:
             app_constants = get_app_constants(app_name)
             # if players_per_group is None, 0, etc.
             players_per_group = app_constants.players_per_group or 1
@@ -162,7 +162,7 @@ def create_session(session_type_name, label='', num_participants=None,
     participants = bulk_create(Participant, [{}] * num_participants)
 
     subsessions = []
-    for app_name in session_type.subsession_apps:
+    for app_name in session_type.app_sequence:
         if app_name not in settings.INSTALLED_OTREE_APPS:
             msg = ("Your session contains a subsession app named '{}'. "
                    "You need to add this to INSTALLED_OTREE_APPS "
