@@ -248,7 +248,7 @@ class BasePlayerBot(BaseClient):
                 player.participant.code,
             )
             #FIXME: why doesn't this work? the game works fine, and print statements show that a payoff is non-null
-            #raise AssertionError(msg)
+            # raise AssertionError(msg)
         player_page_index = player._index_in_game_pages
         pages_in_subsession = len(get_views_module(self.subsession._meta.app_label).pages())
         if player_page_index + 1 < pages_in_subsession:
