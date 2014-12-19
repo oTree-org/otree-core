@@ -1,4 +1,5 @@
 from otree import forms
+from otree import widgets
 from otree.common import currency_range
 from tests.models import FormFieldModel
 
@@ -41,4 +42,7 @@ class WidgetDemoForm(forms.Form):
         choices=[(m, m) for m in currency_range(0, 0.75, 0.05)]
     )
 
-    slider = forms.IntegerField(widget=forms.SliderInput())
+    slider = forms.IntegerField(widget=widgets.SliderInput())
+    unprecise_slider = forms.IntegerField(widget=widgets.SliderInput(show_value=False))
+    precise_slider = forms.FloatField(
+        widget=widgets.SliderInput(attrs={'min': 1, 'max': 50, 'step': 0.01}))

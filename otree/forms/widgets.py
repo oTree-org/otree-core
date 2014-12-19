@@ -100,3 +100,15 @@ class RadioSelectHorizontal(forms.RadioSelect):
 
 class SliderInput(forms.RangeInput):
     template_name = 'floppyforms/slider.html'
+    show_value = True
+
+    def __init__(self, *args, **kwargs):
+        show_value = kwargs.pop('show_value', None)
+        if show_value is not None:
+            self.show_value = show_value
+        super(SliderInput, self).__init__(*args, **kwargs)
+
+    def get_context(self, *args, **kwargs):
+        context = super(SliderInput, self).get_context(*args, **kwargs)
+        context['show_value'] = self.show_value
+        return context
