@@ -60,7 +60,7 @@ class OTreeMixin(object):
     """
 
     is_debug = settings.DEBUG
-    is_otree_dot_org = os.environ.get('IS_OTREE_DOT_ORG')
+    is_otree_dot_org = 'IS_OTREE_DOT_ORG' in os.environ
 
     def save_objects(self):
         for obj in self.objects_to_save():
