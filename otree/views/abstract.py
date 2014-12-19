@@ -449,17 +449,15 @@ class InGameWaitPageMixin(object):
                         # in case there is a timeout on the next page, we should ensure the next pages are visited promptly
                         # TODO: can we make this run only if next page is a timeout page?
                         # we could instead make this request the current page URL, but it's different for each player
-                        # FIXME 2014-12-1: add this back in when we get celery working
-                        """
-                        otree.timeout.tasks.ensure_pages_visited(
+                        otree.timeout.tasks.ensure_pages_visited.apply_async(
                             kwargs = {
                                 'app_name': self.subsession.app_name,
-                                'player_pk_set': self._pks_to_wait_for(),
+                                'participant_pk_set': self._pks_to_wait_for(),
                                 'wait_page_index': self._index_in_pages,
                             },
                             countdown=10,
                         )
-                        """
+
 
                         return self._response_when_ready()
             return self._get_wait_page()
@@ -566,6 +564,10 @@ class FormPageMixin(object):
 
     def get(self, request, *args, **kwargs):
         self._session_user._current_form_page_url = self.request.path
+        otree.timeout.tasks.submit_expired_url.apply_async(
+            (self.request.path,),
+            countdown=self.timeout_seconds
+        )
         return super(FormPageMixin, self).get(request, *args, **kwargs)
 
 
@@ -614,12 +616,6 @@ class FormPageMixin(object):
 
     def has_timeout(self):
         return self.timeout_seconds is not None and self.timeout_seconds > 0
-
-    # FIXME: this will display erroneous info to the user if they refresh the page. we need a DB table
-    # timeout = self.timeout_seconds
-
-    # FIXME: schedule celery job -- where does this go? in get()
-    #otree.timeout.tasks.submit_expired_url.apply_async((self.request.path,), countdown=timeout)
 
     timeout_seconds = None
 
