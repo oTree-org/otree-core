@@ -10,7 +10,7 @@ def execute_from_command_line(arguments, script_file):
     # complain if the script you are using to initialize celery does not end
     # on '.py'. That's why we require a manage.py file to be around.
     # See https://github.com/celery/billiard/issues/129 for more details.
-    if platform.system() == 'Windows' and script_file.lower().endswith('.py'):
+    if platform.system() == 'Windows' and not script_file.lower().endswith('.py'):
 
         scriptdir = os.path.dirname(os.path.abspath(script_file))
         managepy = os.path.join(scriptdir, 'manage.py')
