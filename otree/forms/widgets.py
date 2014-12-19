@@ -13,9 +13,10 @@ __all__ = (
     'HiddenInput', 'IPAddressInput', 'Input', 'MoneyInput', 'MultiWidget',
     'MultipleHiddenInput', 'NullBooleanSelect', 'NumberInput', 'PasswordInput',
     'PhoneNumberInput', 'RadioSelect', 'RadioSelectHorizontal', 'RangeInput',
-    'SearchInput', 'Select', 'SelectDateWidget', 'SelectMultiple', 'SlugInput',
-    'SplitDateTimeWidget', 'SplitHiddenDateTimeWidget', 'TextInput', 'Textarea',
-    'TimeInput', 'URLInput', 'Widget',
+    'SearchInput', 'Select', 'SelectDateWidget', 'SelectMultiple',
+    'SliderInput', 'SlugInput', 'SplitDateTimeWidget',
+    'SplitHiddenDateTimeWidget', 'TextInput', 'Textarea', 'TimeInput',
+    'URLInput', 'Widget',
 )
 
 
@@ -95,3 +96,7 @@ class CurrencyInput(BaseMoneyInput):
 
 class RadioSelectHorizontal(forms.RadioSelect):
     template_name = 'floppyforms/radio_select_horizontal.html'
+
+
+class SliderInput(forms.RangeInput):
+    template_name = 'floppyforms/slider.html'

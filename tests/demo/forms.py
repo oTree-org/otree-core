@@ -1,5 +1,6 @@
 from otree import forms
 from otree.common import currency_range
+from tests.models import FormFieldModel
 
 
 default_choices = (
@@ -9,6 +10,12 @@ default_choices = (
     ('1', '$1.00'),
     ('2', '2'),
 )
+
+
+class FormFieldModelForm(forms.ModelForm):
+    class Meta:
+        model = FormFieldModel
+        exclude = ()
 
 
 class WidgetDemoForm(forms.Form):
@@ -33,3 +40,5 @@ class WidgetDemoForm(forms.Form):
     currency_choice = forms.CurrencyChoiceField(
         choices=[(m, m) for m in currency_range(0, 0.75, 0.05)]
     )
+
+    slider = forms.IntegerField(widget=forms.SliderInput())

@@ -1,4 +1,5 @@
 <!-- this is an HTML file rather than JavaScript static file because context variables need to be passed to it -->
+{% if view.poll_interval_seconds %}
     <script type="text/javascript">
         var checkIfReady = function() {
             var args = { type: "GET", url: "{{ view.poll_url }}", complete: redirectToSequenceView};
@@ -21,3 +22,4 @@
         var SECOND = 1000;
         var intervalId = window.setInterval("checkIfReady()", {{ view.poll_interval_seconds }} * SECOND);
     </script>
+{% endif %}
