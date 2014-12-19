@@ -10,7 +10,8 @@ import math
 from otree.common_internal import flatten, get_views_module
 import itertools
 from django_extensions.db.fields.json import JSONField
-from otree.common_internal import get_models_module
+from otree.common_internal import get_models_module, get_players, get_groups
+
 
 class BaseSubsession(models.Model):
     """
@@ -79,7 +80,7 @@ class BaseSubsession(models.Model):
         maybe this should be re-run after initialize() to ensure that id_in_groups are consistent.
         or at least we should validate.
         """
-        self.group_set.all().delete()
+
         # first, get players in each group
         matrix = []
         for group in groups:
@@ -89,6 +90,12 @@ class BaseSubsession(models.Model):
                 players_list = group
                 matrix.append(players_list)
                 # assume it's an iterable containing the players
+        # Before deleting groups, Need to set the foreignkeys to None
+        for g in matrix:
+            for p in g:
+                p.group = None
+                p.save()
+        self.group_set.all().delete()
         for row in matrix:
             group = self._create_group()
             group.set_players(row)
@@ -120,7 +127,7 @@ class BaseSubsession(models.Model):
             group_matrix = self._random_group_matrix()
         else:
             previous_round = self.in_previous_round()
-            group_matrix = [list(g.player_set.all()) for g in previous_round.group_set.all()]
+            group_matrix = [get_players(group, refresh_from_db=True) for group in get_groups(previous_round, refresh_from_db=True)]
             for i, group_list in enumerate(group_matrix):
                 for j, player in enumerate(group_list):
                     # for every entry (i,j) in the matrix, follow the pointer to the same person in the next round
