@@ -7,4 +7,6 @@ urlpatterns = patterns(
     url(r'^latex/$', 'django.shortcuts.render',
         {'template_name': 'demo/latex.html'}, name='latex'),
     url(r'^widgets/$', 'tests.demo.views.widgets', name='widgets'),
+    url(r'^fields/$', 'tests.demo.views.modelformfields',
+        name='modelformfields'),
 )

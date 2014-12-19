@@ -1,4 +1,5 @@
 <!-- this is an HTML file rather than JavaScript static file because context variables need to be passed to it -->
+{% if view.poll_interval_seconds %}
     <script type="text/javascript">
         var checkIfReady = function() {
             var args = { type: "GET", url: "{{ view.poll_url }}", complete: redirectToSequenceView};
@@ -23,3 +24,4 @@
         // after 60 minutes, stop polling
         setTimeout(function( ) { clearInterval( intervalId ); }, 60 * 60);
     </script>
+{% endif %}
