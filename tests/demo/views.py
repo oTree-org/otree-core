@@ -24,4 +24,6 @@ def modelformfields(request):
         form = FormFieldModelForm(request.POST, request.FILES)
     else:
         form = FormFieldModelForm()
-    return TemplateResponse(request, 'demo/modelformfields.html', {'form': form})
+    return TemplateResponse(request,
+                            'demo/modelformfields.html',
+                            {'form': form})
