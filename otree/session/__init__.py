@@ -204,6 +204,8 @@ def create_session(session_type_name, label='', num_participants=None,
     session._create_groups_and_initialize()
 
     session.build_session_user_to_user_lookups()
+    if session.session_type.group_by_arrival_time:
+        session._set_predetermined_arrival_order()
     session.ready = True
     session.save()
 
