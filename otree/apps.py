@@ -4,6 +4,7 @@ from django.db.models import signals
 from django.utils.translation import ugettext_lazy as _
 from . import checks
 import logging
+import otree.adminlib
 
 logger = logging.getLogger('otree')
 
@@ -51,3 +52,4 @@ class OtreeConfig(AppConfig):
         self.setup_create_singleton_objects()
         if getattr(settings, 'CREATE_DEFAULT_SUPERUSER', False):
             self.setup_create_default_superuser()
+        otree.adminlib.autodiscover()
