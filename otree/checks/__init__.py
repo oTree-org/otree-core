@@ -12,8 +12,7 @@ import otree.views.abstract
 
 
 class Rules(object):
-    """
-    A helper class incapsulating common checks.
+    """A helper class incapsulating common checks.
 
     Usage:
         rules = Rules(app_configs, errors_list)
@@ -30,6 +29,7 @@ class Rules(object):
         if rules.module_exists('tests'):
             tests = rules.get_module('tests') # won't fail
             ...
+
     """
     def __init__(self, config, errors, id=None):
         self.config = config
@@ -78,7 +78,8 @@ class Rules(object):
     @rule
     def dir_exists(self, filename):
         if not os.path.isdir(self.get_path(filename)):
-            return self.error('No "%s" directory found in game folder' % filename)
+            msg = 'No "%s" directory found in game folder' % filename
+            return self.error(msg)
 
     @rule
     def model_exists(self, name):
@@ -97,8 +98,9 @@ class Rules(object):
     @rule
     def class_exists(self, module, name):
         module = self.get_module(module)
-        if not hasattr(module, name) or isinstance(getattr(module, name), type):
-            return self.error('No class "%s" in module "%s"' % (name, module.__name__))
+        if isinstance(getattr(module, name, None), type):
+            msg = 'No class "%s" in module "%s"' % (name, module.__name__)
+            return self.error(msg)
 
     @rule
     def template_has_no_dead_code(self, template_name):
@@ -138,9 +140,10 @@ def _get_all_configs():
 
 
 def register_rules(tags=(), id=None):
-    """
-    Transform a function based on rules, to a something django.core.checks.register takes.
-    Automatically loops over all games. Passes Rules instance as first argument.
+    """Transform a function based on rules, to a something
+    django.core.checks.register takes. Automatically loops over all games.
+    Passes Rules instance as first argument.
+
     """
     def decorator(func):
         @register(*tags)
@@ -164,15 +167,19 @@ def files(rules, **kwargs):
     rules.file_exists('views.py')
     rules.file_exists('tests.py')
 
-    if rules.dir_exists('templates') and rules.dir_exists('templates/' + rules.config.label):
+    cond = (
+        rules.dir_exists('templates') and
+        rules.dir_exists('templates/' + rules.config.label)
+    )
+    if cond:
         # check for files in templates, but not in templates/<label>
         misplaced_templates = set(os.listdir(rules.get_path('templates')))
         misplaced_templates.discard(rules.config.label)
         if misplaced_templates:
+            hint = 'Move template files to "templates/%s"' % rules.config.label
             rules.push_error(
                 "Templates files in root template directory",
-                hint='Move template files to "templates/%s"' % rules.config.label,
-                id='otree.E001'
+                hint=hint, id='otree.E001'
             )
 
 
@@ -185,16 +192,21 @@ def model_classes(rules, **kwargs):
 
 @register_rules(id='otree.E003')
 def constants(rules, **kwargs):
-    if rules.module_exists('models') and rules.class_exists('models', 'Constants'):
+    cond = (
+        rules.module_exists('models') and
+        rules.class_exists('models', 'Constants')
+    )
+    if cond:
         Constants = rules.get_module_attr('models', 'Constants')
-        for attr_name in ['name_in_url', 'players_per_group', 'number_of_rounds']:
+        attrs = ['name_in_url', 'players_per_group', 'number_of_rounds']
+        for attr_name in attrs:
             if not hasattr(Constants, attr_name):
-                rules.push_error(
-                    "models.py: 'Constants' class needs to define '{}'".format(attr_name),
-                )
+                msg = "models.py: 'Constants' class needs to define '{}'"
+                rules.push_error(msg.format(attr_name))
         if getattr(Constants, 'players_per_group', None) == 1:
             rules.push_error(
-                "models.py: 'Constants.players_per_group' cannot be 1. You should set it to None, which makes the group"
+                "models.py: 'Constants.players_per_group' cannot be 1. You "
+                "should set it to None, which makes the group"
                 "all players in the subsession."
             )
 
@@ -206,16 +218,27 @@ def pages_function(rules, **kwargs):
         try:
             page_list = views_module.pages()
         except:
-            rules.push_error('views.py: need a function pages() that returns a list of pages')
+            rules.push_error('views.py: need a function pages() '
+                             'that returns a list of pages')
             return
         else:
             for ViewCls in page_list:
-                if not issubclass(ViewCls, otree.views.abstract.FormPageOrWaitPageMixin):
-                    rules.push_error('views.py: "{}" is not a valid page'.format(ViewCls))
-                if issubclass(ViewCls, otree.views.Page) and not getattr(ViewCls, 'template_name'):
-                    rules.push_error(
-                        'views.py: Page class "{}" is missing a template_name attribute'.format(ViewCls)
-                    )
+                cond = not issubclass(
+                    ViewCls, otree.views.abstract.FormPageOrWaitPageMixin
+                )
+                if cond:
+                    msg = 'views.py: "{}" is not a valid page'.format(ViewCls)
+                    rules.push_error(msg)
+                cond = (
+                    issubclass(ViewCls, otree.views.Page) and not
+                    getattr(ViewCls, 'template_name')
+                )
+                if cond:
+                    msg = (
+                        'views.py: Page class "{}" is missing '
+                        'a template_name attribute'
+                    ).format(ViewCls)
+                    rules.push_error(msg)
 
 
 @register_rules(id='otree.E005')
