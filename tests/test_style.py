@@ -59,7 +59,6 @@ class TestStyle(TestCase):
     def setUp(self):
         self.quiet = settings.TEST_VERBOSITY <= 2
         self.pep8 = engine.get_style_guide(exclude=EXCLUDE)
-
         self.pep8.n_jobs = 1
         self.pep8.reporter = FileCollectReport
         report = self.pep8.init_report(self.pep8.reporter)
@@ -77,11 +76,12 @@ class TestStyle(TestCase):
         report = self.pep8.check_files()
         error_q = report.total_errors
         if error_q:
-            lines = ["Found '{}' pep8-style errors.".format(error_q)]
+            lines = ["Found pep8-style errors."]
             lines.append(
                 "Please check the Python code style reference: "
                 "https://www.python.org/dev/peps/pep-0008/"
             )
             lines.append("\nErrors found: ")
             lines.extend(report.error_list())
+            lines.append("Total: {}".format(error_q))
             self.fail("\n".join(lines))
