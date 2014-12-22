@@ -8,14 +8,11 @@ import otree.adminlib
 import otree.session.models
 
 
-admin.site.register(otree.session.models.GlobalSingleton, otree.adminlib.GlobalSingletonAdmin)
-
+admin.site.register(otree.session.models.GlobalSingleton,
+                    otree.adminlib.GlobalSingletonAdmin)
 admin.site.register(otree.session.models.Session,
-                    otree.adminlib.SessionAdmin
-                    )
-
+                    otree.adminlib.SessionAdmin)
 admin.site.register(otree.session.models.Participant,
                     otree.adminlib.ParticipantAdmin)
-
 admin.site.unregister(User)
 admin.site.unregister(Group)
