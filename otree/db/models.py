@@ -4,12 +4,9 @@
 import random
 import string
 
-import django.db.models
-from django.db.models import *
-from django.db.models.base import ModelBase
-import django.forms.widgets
-import django.forms.fields
 from django.utils.translation import ugettext_lazy
+from django.db import models
+from django.db.models.base import ModelBase
 
 from handy.models import PickleField
 import easymoney
@@ -30,6 +27,10 @@ class OTreeModelBase(ModelBase):
         return new_class
 
 
+def get_model(*args, **kwargs):
+    return models.get_model(*args, **kwargs)
+
+
 def make_get_display(field):
     def get_FIELD_display(self):
         choices = getattr(self, field.name + '_choices')()
@@ -38,7 +39,7 @@ def make_get_display(field):
     return get_FIELD_display
 
 
-class OTreeModel(Model):
+class OTreeModel(models.Model):
     __metaclass__ = OTreeModelBase
 
     class Meta:
@@ -142,7 +143,7 @@ def string_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
 
 
-class RandomCharField(_OtreeNotNullableModelFieldMixin, CharField):
+class RandomCharField(_OtreeNotNullableModelFieldMixin, models.CharField):
     """
     We use this for player code, subsession code
     generates gibberish pronounceable words, like 'satonoha' or 'gimoradi'
@@ -206,7 +207,7 @@ class PickleField(_OtreeNullableModelFieldMixin, PickleField):
     pass
 
 
-class NullBooleanField(_OtreeNullableModelFieldMixin, NullBooleanField):
+class NullBooleanField(_OtreeNullableModelFieldMixin, models.NullBooleanField):
     # 2014/3/28: i just define the allowable choices on the model field,
     # instead of customizing the widget since then it works for any widget
 
@@ -221,24 +222,24 @@ class NullBooleanField(_OtreeNullableModelFieldMixin, NullBooleanField):
     auto_submit_default = False
 
 
-class AutoField(_OtreeNullableModelFieldMixin, AutoField):
+class AutoField(_OtreeNullableModelFieldMixin, models.AutoField):
     pass
 
 
 class BigIntegerField(_OtreeNullableModelFieldMixin,
-                      _OtreeNumericFieldMixin, BigIntegerField):
+                      _OtreeNumericFieldMixin, models.BigIntegerField):
     auto_submit_default = 0
 
 
-class BinaryField(_OtreeNullableModelFieldMixin, BinaryField):
+class BinaryField(_OtreeNullableModelFieldMixin, models.BinaryField):
     pass
 
 
-class BooleanField(_OtreeNotNullableModelFieldMixin, BooleanField):
+class BooleanField(_OtreeNotNullableModelFieldMixin, models.BooleanField):
     auto_submit_default = False
 
 
-class CharField(_OtreeNullableModelFieldMixin, CharField):
+class CharField(_OtreeNullableModelFieldMixin, models.CharField):
     def __init__(self, *args,  **kwargs):
         kwargs.setdefault('max_length', 500)
         super(CharField, self).__init__(*args, **kwargs)
@@ -247,87 +248,92 @@ class CharField(_OtreeNullableModelFieldMixin, CharField):
 
 
 class CommaSeparatedIntegerField(_OtreeNullableModelFieldMixin,
-                                 CommaSeparatedIntegerField):
+                                 models.CommaSeparatedIntegerField):
     pass
 
 
-class DateField(_OtreeNullableModelFieldMixin, DateField):
+class DateField(_OtreeNullableModelFieldMixin, models.DateField):
     pass
 
 
-class DateTimeField(_OtreeNullableModelFieldMixin, DateTimeField):
+class DateTimeField(_OtreeNullableModelFieldMixin, models.DateTimeField):
     pass
 
 
-class DecimalField(_OtreeNullableModelFieldMixin, DecimalField):
+class DecimalField(_OtreeNullableModelFieldMixin, models.DecimalField):
     pass
 
 
-class EmailField(_OtreeNullableModelFieldMixin, EmailField):
+class EmailField(_OtreeNullableModelFieldMixin, models.EmailField):
     pass
 
 
-class FileField(_OtreeNullableModelFieldMixin, FileField):
+class FileField(_OtreeNullableModelFieldMixin, models.FileField):
     pass
 
 
-class FilePathField(_OtreeNullableModelFieldMixin, FilePathField):
+class FilePathField(_OtreeNullableModelFieldMixin, models.FilePathField):
     pass
 
 
-class FloatField(_OtreeNullableModelFieldMixin, FloatField):
+class FloatField(_OtreeNullableModelFieldMixin, models.FloatField):
     pass
 
 
 class IntegerField(_OtreeNullableModelFieldMixin,
-                   _OtreeNumericFieldMixin, IntegerField):
+                   _OtreeNumericFieldMixin, models.IntegerField):
     pass
 
 
-class IPAddressField(_OtreeNullableModelFieldMixin, IPAddressField):
+class IPAddressField(_OtreeNullableModelFieldMixin, models.IPAddressField):
     pass
 
 
 class GenericIPAddressField(_OtreeNullableModelFieldMixin,
-                            GenericIPAddressField):
+                            models.GenericIPAddressField):
     pass
 
 
 class PositiveIntegerField(_OtreeNullableModelFieldMixin,
-                           _OtreeNumericFieldMixin, PositiveIntegerField):
+                           _OtreeNumericFieldMixin,
+                           models.PositiveIntegerField):
     pass
 
 
 class PositiveSmallIntegerField(_OtreeNullableModelFieldMixin,
                                 _OtreeNumericFieldMixin,
-                                PositiveSmallIntegerField):
+                                models.PositiveSmallIntegerField):
     pass
 
 
-class SlugField(_OtreeNullableModelFieldMixin, SlugField):
+class SlugField(_OtreeNullableModelFieldMixin, models.SlugField):
     pass
 
 
 class SmallIntegerField(_OtreeNullableModelFieldMixin,
-                        _OtreeNumericFieldMixin, SmallIntegerField):
+                        _OtreeNumericFieldMixin, models.SmallIntegerField):
     pass
 
 
-class TextField(_OtreeNullableModelFieldMixin, TextField):
+class TextField(_OtreeNullableModelFieldMixin, models.TextField):
     auto_submit_default = ''
 
 
-class TimeField(_OtreeNullableModelFieldMixin, TimeField):
+class TimeField(_OtreeNullableModelFieldMixin, models.TimeField):
     pass
 
 
-class URLField(_OtreeNullableModelFieldMixin, URLField):
+class URLField(_OtreeNullableModelFieldMixin, models.URLField):
     pass
 
 
-class ManyToManyField(_OtreeNullableModelFieldMixin, ManyToManyField):
+class ForeignKey(models.ForeignKey):
     pass
 
 
-class OneToOneField(_OtreeNullableModelFieldMixin, OneToOneField):
+class ManyToManyField(_OtreeNullableModelFieldMixin, models.ManyToManyField):
+    pass
+
+
+class OneToOneField(_OtreeNullableModelFieldMixin, models.OneToOneField):
     pass
