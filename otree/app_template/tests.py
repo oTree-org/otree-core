@@ -13,7 +13,7 @@ from .models import Constants
 class PlayerBot(Bot):
     """Bot that plays one round"""
 
-    def play(self):
+    def play_round(self):
         self.submit(views.MyPage, {'my_field': c(1)})
         self.submit(views.Results)
 

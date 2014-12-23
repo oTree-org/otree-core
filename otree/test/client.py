@@ -142,10 +142,10 @@ class BaseClient(test.Client):
         self.response = self.get(wait_page_url, follow=True)
         self.set_path()
         self.check_200()
-        self.play()
+        self.play_round()
 
     @abc.abstractmethod
-    def play(self):
+    def play_round(self):
         raise NotImplementedError()
 
     def stop(self):

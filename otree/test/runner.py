@@ -91,7 +91,7 @@ class MissingVarsContextProxyBase(object):
 
 class DummyExperimenterBot(client.BaseExperimenterBot):
 
-    def play(self):
+    def play_round(self):
         pass
 
     def validate_play(self):

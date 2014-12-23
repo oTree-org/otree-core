@@ -9,7 +9,7 @@ from .models import Constants
 
 class PlayerBot(Bot):
 
-    def play(self):
+    def play_round(self):
 
         self.submit(views.MyPage, {'add100_1': 1, 'add100_2': 99})
         self.submit(views.Results)
