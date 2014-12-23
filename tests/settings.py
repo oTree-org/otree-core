@@ -64,10 +64,11 @@ PEP8 = {
     ),
     "exclude": (
         os.path.join(PRJ_DIR, "otree", "app_template"),
-        os.path.join(PRJ_DIR, "otree", "forms"),
         os.path.join(PRJ_DIR, "otree", "locale"),
-        os.path.join(PRJ_DIR, "otree", "management"),
         os.path.join(PRJ_DIR, "otree", "migrations"),
+
+        #~ os.path.join(PRJ_DIR, "otree", "management"),
+
         os.path.join(PRJ_DIR, "otree", "models"),
         os.path.join(PRJ_DIR, "otree", "session"),
         os.path.join(PRJ_DIR, "otree", "templatetags"),
@@ -76,7 +77,6 @@ PEP8 = {
         os.path.join(PRJ_DIR, "otree", "views"),
 
 
-        os.path.join(PRJ_DIR, "otree", "widgets.py"),
         os.path.join(PRJ_DIR, "tests", "simple_game"),
         os.path.join(PRJ_DIR, "tests", "simple_game_copy"),
     )
