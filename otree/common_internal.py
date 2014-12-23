@@ -1,12 +1,10 @@
-import hashlib
+
 import os
 import urllib
 import urlparse
 from decimal import Decimal
 from os.path import dirname, join
 
-import babel.numbers
-from babel.core import Locale
 from django import forms
 from django.apps import apps
 from django.conf import settings
@@ -14,30 +12,30 @@ from django.template.defaultfilters import title
 from django.utils.importlib import import_module
 from collections import OrderedDict
 
-
-
 from otree import constants
-from babel.numbers import format_currency
-from django.conf import settings
+
 
 class _CurrencyInput(forms.NumberInput):
-     def _format_value(self, value):
-         return str(Decimal(value))
+    def _format_value(self, value):
+        return str(Decimal(value))
 
 
 def add_params_to_url(url, params):
     url_parts = list(urlparse.urlparse(url))
 
-    # use OrderedDict because sometimes we want certain params at end for readability/consistency
+    # use OrderedDict because sometimes we want certain params at end
+    # for readability/consistency
     query = OrderedDict(urlparse.parse_qsl(url_parts[4]))
     query.update(params)
     url_parts[4] = urllib.urlencode(query)
     return urlparse.urlunparse(url_parts)
 
+
 def id_label_name(id, label):
     if label:
         return '{} (label: {})'.format(id, label)
     return '{}'.format(id)
+
 
 def is_subsession_app(app_label):
     try:
@@ -47,6 +45,7 @@ def is_subsession_app(app_label):
     class_names = ['Player', 'Group', 'Subsession']
     return all(hasattr(models_module, ClassName) for ClassName in class_names)
 
+
 def git_commit_timestamp():
     root_dir = dirname(settings.BASE_DIR)
     try:
@@ -55,9 +54,11 @@ def git_commit_timestamp():
     except IOError:
         return ''
 
+
 def app_name_format(app_name):
     app_label = app_name.split('.')[-1]
     return title(app_label.replace("_", " "))
+
 
 def url(cls, session_user, index=None):
     u = '/{}/{}/{}/{}/'.format(
@@ -71,6 +72,7 @@ def url(cls, session_user, index=None):
         u += '{}/'.format(index)
     return u
 
+
 def url_pattern(cls, is_sequence_url=False):
     p = r'(?P<{}>\w)/(?P<{}>[a-z]+)/{}/{}/'.format(
         constants.user_type,
@@ -83,8 +85,10 @@ def url_pattern(cls, is_sequence_url=False):
     p = r'^{}$'.format(p)
     return p
 
+
 def directory_name(path):
     return os.path.basename(os.path.normpath(path))
+
 
 def get_session_module():
     base_dir_name = directory_name(settings.BASE_DIR)
@@ -92,26 +96,31 @@ def get_session_module():
                           '{}.sessions'.format(base_dir_name))
     return import_module(module_name)
 
+
 def get_models_module(app_name):
     return import_module('{}.models'.format(app_name))
+
 
 def get_views_module(app_name):
     return import_module('{}.views'.format(app_name))
 
+
 def get_app_constants(app_name):
-    '''
-    Return the ``Constants`` object of a app defined in the models.py file.
+    '''Return the ``Constants`` object of a app defined in the models.py file.
 
     Example::
 
         >>> from otree.subsessions import get_app_constants
         >>> get_app_constants('demo_game')
         <class demo_game.models.Constants at 0x7fed46bdb188>
+
     '''
     return get_models_module(app_name).Constants
 
+
 def flatten(list_of_lists):
     return [item for sublist in list_of_lists for item in sublist]
+
 
 def get_app_name_from_import_path(import_path):
     '''
@@ -119,12 +128,15 @@ def get_app_name_from_import_path(import_path):
 
     >>> get_app_name_from_import_path('tests.simple_game.models')
     'tests.simple_game'
-    >>> get_app_name_from_import_path('tests.simple_game.views.mixins.FancyMixin')
+    >>> get_app_name_from_import_path(
+        'tests.simple_game.views.mixins.FancyMixin'
+    )
     'tests.simple_game'
     >>> get_app_name_from_import_path('unregistered_app.models')
     Traceback (most recent call last):
       File "<stdin>", line 1, in ?
-    ValueError: The module unregistered_app.models is not part of any known otree app.
+    ValueError: The module unregistered_app.models is not part of any
+    known otree app.
     '''
     app_name = import_path
     while app_name:
@@ -135,22 +147,29 @@ def get_app_name_from_import_path(import_path):
             app_name = '.'.join(app_name.split('.')[:-1])
         else:
             app_name = None
-    raise ValueError('The module {} is not part of any known otree app.'.format(import_path))
+    msg = 'The module {} is not part of any known otree app.'.format(
+        import_path
+    )
+    raise ValueError(msg)
 
 
 def get_app_name_from_label(app_label):
     '''
     >>> get_app_name_from_label('simple_game')
     'tests.simple_game'
+
     '''
     return apps.get_app_config(app_label).name
+
 
 def get_players(self, refresh_from_db=False):
     if (not refresh_from_db) and hasattr(self, '_players'):
         return self._players
-    # this means even subsession.players orders them by id_in_group, not necessarily optimal
+    # this means even subsession.players orders them by id_in_group, not
+    # necessarily optimal
     self._players = list(self.player_set.order_by('id_in_group'))
     return self._players
+
 
 def get_groups(self, refresh_from_db=False):
     if (not refresh_from_db) and hasattr(self, '_groups'):
@@ -160,7 +179,10 @@ def get_groups(self, refresh_from_db=False):
 
 
 def expand_choice_tuples(choices):
-    '''allows the programmer to define choices as a list of values rather than (value, display_value)'''
+    '''allows the programmer to define choices as a list of values rather
+    than (value, display_value)
+
+    '''
     if not choices:
         return
     # look at the first element
@@ -168,4 +190,3 @@ def expand_choice_tuples(choices):
     if not isinstance(first_choice, (list, tuple)):
         choices = [(value, value) for value in choices]
     return choices
-

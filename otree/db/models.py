@@ -1,17 +1,18 @@
-from django.db.models import *
-from django.db.models.base import ModelBase
-import django.forms.widgets
-from django.utils.translation import ugettext_lazy
-import django.forms.fields
-from django.utils.text import capfirst
-import django.db.models
-import easymoney
-from otree.common_internal import expand_choice_tuples, _CurrencyInput
-import otree.common
-from handy.models import PickleField
-import itertools
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import random
 import string
+
+from django.utils.translation import ugettext_lazy
+from django.db import models
+from django.db.models.base import ModelBase
+
+from handy.models import PickleField
+import easymoney
+
+import otree.common
+from otree.common_internal import expand_choice_tuples, _CurrencyInput
 
 
 class OTreeModelBase(ModelBase):
@@ -20,9 +21,15 @@ class OTreeModelBase(ModelBase):
 
         for f in new_class._meta.fields:
             if hasattr(new_class, f.name + '_choices'):
-                setattr(new_class, 'get_%s_display' % f.name, make_get_display(f))
+                attr_name = 'get_%s_display' % f.name
+                setattr(new_class, attr_name, make_get_display(f))
 
         return new_class
+
+
+def get_model(*args, **kwargs):
+    return models.get_model(*args, **kwargs)
+
 
 def make_get_display(field):
     def get_FIELD_display(self):
@@ -31,7 +38,8 @@ def make_get_display(field):
         return dict(expand_choice_tuples(choices))[value]
     return get_FIELD_display
 
-class OTreeModel(Model):
+
+class OTreeModel(models.Model):
     __metaclass__ = OTreeModelBase
 
     class Meta:
@@ -41,7 +49,10 @@ Model = OTreeModel
 
 class _OtreeModelFieldMixin(object):
     def fix_choices_arg(self, kwargs):
-        '''allows the programmer to define choices as a list of values rather than (value, display_value)'''
+        '''allows the programmer to define choices as a list of values rather
+        than (value, display_value)
+
+        '''
         choices = kwargs.get('choices')
         if not choices:
             return
@@ -51,23 +62,23 @@ class _OtreeModelFieldMixin(object):
     def set_otree_properties(self, kwargs):
         self.doc = kwargs.pop('doc', None)
 
-
     def __init__(self, *args,  **kwargs):
         self.set_otree_properties(kwargs)
         self.fix_choices_arg(kwargs)
 
-        # "initial" is an alias for default. in the context of oTree, 'initial' is a more intuitive name.
-        # (since the user never instantiates objects themselves. also, "default" could be misleading --
-        # people could think it's the default choice in the form
-        if kwargs.has_key('initial'):
+        # "initial" is an alias for default. in the context of oTree, 'initial'
+        # is a more intuitive name. (since the user never instantiates objects
+        # themselves. also, "default" could be misleading -- people could think
+        # it's the default choice in the form
+        if 'initial' in kwargs:
             kwargs.setdefault('default', kwargs.pop('initial'))
 
         # if default=None, Django will omit the blank choice from form widget
         # https://code.djangoproject.com/ticket/10792
-        # that is contrary to the way oTree views blank/None values, so to correct for this,
-        # we get rid of default=None args.
+        # that is contrary to the way oTree views blank/None values, so to
+        # correct for this, we get rid of default=None args.
         # setting null=True already should make the field null
-        if kwargs.has_key('default') and kwargs['default'] is None:
+        if 'default' in kwargs and kwargs['default'] is None:
             kwargs.pop('default')
 
         super(_OtreeModelFieldMixin, self).__init__(*args, **kwargs)
@@ -77,9 +88,8 @@ class _OtreeModelFieldMixin(object):
 
 
 class _OtreeWidgetForModelFieldMixin(object):
-    """
-    Give a `widget` argument to a model field in order to override the default
-    widget used for this field in a model form.
+    """Give a `widget` argument to a model field in order to override the
+    default widget used for this field in a model form.
 
     The given widget will only be used when you subclass your model form from
     otree.forms.forms.BaseModelForm.
@@ -90,16 +100,17 @@ class _OtreeWidgetForModelFieldMixin(object):
         super(_OtreeWidgetForModelFieldMixin, self).__init__(*args, **kwargs)
 
 
-class _OtreeNullableModelFieldMixin(_OtreeModelFieldMixin, _OtreeWidgetForModelFieldMixin):
+class _OtreeNullableModelFieldMixin(_OtreeModelFieldMixin,
+                                    _OtreeWidgetForModelFieldMixin):
     def __init__(self, *args,  **kwargs):
-        kwargs.setdefault('null',True)
+        kwargs.setdefault('null', True)
 
         super(_OtreeNullableModelFieldMixin, self).__init__(*args, **kwargs)
 
 
-
 class _OtreeNotNullableModelFieldMixin(_OtreeModelFieldMixin):
     pass
+
 
 class _OtreeNumericFieldMixin(object):
     def __init__(self, *args, **kwargs):
@@ -109,25 +120,30 @@ class _OtreeNumericFieldMixin(object):
     auto_submit_default = 0
 
 
-
-class MoneyField(_OtreeNullableModelFieldMixin, _OtreeNumericFieldMixin, easymoney.MoneyField):
+class MoneyField(_OtreeNullableModelFieldMixin,
+                 _OtreeNumericFieldMixin, easymoney.MoneyField):
     widget = _CurrencyInput
 
     MONEY_CLASS = otree.common.Money
 
     auto_submit_default = otree.common.Money(0)
 
-class CurrencyField(_OtreeNullableModelFieldMixin, _OtreeNumericFieldMixin, easymoney.MoneyField):
+
+class CurrencyField(_OtreeNullableModelFieldMixin,
+                    _OtreeNumericFieldMixin, easymoney.MoneyField):
+
     widget = _CurrencyInput
 
     MONEY_CLASS = otree.common.Currency
 
     auto_submit_default = otree.common.Currency(0)
 
+
 def string_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
 
-class RandomCharField(_OtreeNotNullableModelFieldMixin, CharField):
+
+class RandomCharField(_OtreeNotNullableModelFieldMixin, models.CharField):
     """
     We use this for player code, subsession code
     generates gibberish pronounceable words, like 'satonoha' or 'gimoradi'
@@ -187,16 +203,16 @@ class RandomCharField(_OtreeNotNullableModelFieldMixin, CharField):
         return "CharField"
 
 
-
 class PickleField(_OtreeNullableModelFieldMixin, PickleField):
     pass
 
-class NullBooleanField(_OtreeNullableModelFieldMixin, NullBooleanField):
-    # 2014/3/28: i just define the allowable choices on the model field, instead of customizing the widget
-    # since then it works for any widget
+
+class NullBooleanField(_OtreeNullableModelFieldMixin, models.NullBooleanField):
+    # 2014/3/28: i just define the allowable choices on the model field,
+    # instead of customizing the widget since then it works for any widget
 
     def __init__(self, *args,  **kwargs):
-        if not kwargs.has_key('choices'):
+        if 'choices' not in kwargs:
             kwargs['choices'] = (
                 (True, ugettext_lazy('Yes')),
                 (False, ugettext_lazy('No'))
@@ -205,96 +221,119 @@ class NullBooleanField(_OtreeNullableModelFieldMixin, NullBooleanField):
 
     auto_submit_default = False
 
-class AutoField(_OtreeNullableModelFieldMixin, AutoField):
+
+class AutoField(_OtreeNullableModelFieldMixin, models.AutoField):
     pass
 
-class BigIntegerField(_OtreeNullableModelFieldMixin, _OtreeNumericFieldMixin, BigIntegerField):
+
+class BigIntegerField(_OtreeNullableModelFieldMixin,
+                      _OtreeNumericFieldMixin, models.BigIntegerField):
     auto_submit_default = 0
 
-class BinaryField(_OtreeNullableModelFieldMixin, BinaryField):
+
+class BinaryField(_OtreeNullableModelFieldMixin, models.BinaryField):
     pass
 
-class BooleanField(_OtreeNotNullableModelFieldMixin, BooleanField):
+
+class BooleanField(_OtreeNotNullableModelFieldMixin, models.BooleanField):
     auto_submit_default = False
 
-class CharField(_OtreeNullableModelFieldMixin, CharField):
+
+class CharField(_OtreeNullableModelFieldMixin, models.CharField):
     def __init__(self, *args,  **kwargs):
-        kwargs.setdefault('max_length',500)
+        kwargs.setdefault('max_length', 500)
         super(CharField, self).__init__(*args, **kwargs)
 
     auto_submit_default = ''
 
-class CommaSeparatedIntegerField(_OtreeNullableModelFieldMixin, CommaSeparatedIntegerField):
-    pass
 
-class DateField(_OtreeNullableModelFieldMixin, DateField):
-    pass
-
-class DateTimeField(_OtreeNullableModelFieldMixin, DateTimeField):
-    pass
-
-class DecimalField(_OtreeNullableModelFieldMixin, DecimalField):
-    pass
-
-class EmailField(_OtreeNullableModelFieldMixin, EmailField):
-    pass
-
-class FileField(_OtreeNullableModelFieldMixin, FileField):
-    pass
-
-class FilePathField(_OtreeNullableModelFieldMixin, FilePathField):
+class CommaSeparatedIntegerField(_OtreeNullableModelFieldMixin,
+                                 models.CommaSeparatedIntegerField):
     pass
 
 
-class FloatField(_OtreeNullableModelFieldMixin, FloatField):
+class DateField(_OtreeNullableModelFieldMixin, models.DateField):
     pass
 
 
-class IntegerField(_OtreeNullableModelFieldMixin, _OtreeNumericFieldMixin, IntegerField):
+class DateTimeField(_OtreeNullableModelFieldMixin, models.DateTimeField):
     pass
 
 
-class IPAddressField(_OtreeNullableModelFieldMixin, IPAddressField):
+class DecimalField(_OtreeNullableModelFieldMixin, models.DecimalField):
     pass
 
 
-class GenericIPAddressField(_OtreeNullableModelFieldMixin, GenericIPAddressField):
+class EmailField(_OtreeNullableModelFieldMixin, models.EmailField):
     pass
 
 
-class PositiveIntegerField(_OtreeNullableModelFieldMixin, _OtreeNumericFieldMixin, PositiveIntegerField):
+class FileField(_OtreeNullableModelFieldMixin, models.FileField):
     pass
 
 
-class PositiveSmallIntegerField(_OtreeNullableModelFieldMixin, _OtreeNumericFieldMixin, PositiveSmallIntegerField):
+class FilePathField(_OtreeNullableModelFieldMixin, models.FilePathField):
     pass
 
 
-class SlugField(_OtreeNullableModelFieldMixin, SlugField):
+class FloatField(_OtreeNullableModelFieldMixin, models.FloatField):
     pass
 
 
-class SmallIntegerField(_OtreeNullableModelFieldMixin, _OtreeNumericFieldMixin, SmallIntegerField):
+class IntegerField(_OtreeNullableModelFieldMixin,
+                   _OtreeNumericFieldMixin, models.IntegerField):
     pass
 
 
-class TextField(_OtreeNullableModelFieldMixin, TextField):
+class IPAddressField(_OtreeNullableModelFieldMixin, models.IPAddressField):
+    pass
+
+
+class GenericIPAddressField(_OtreeNullableModelFieldMixin,
+                            models.GenericIPAddressField):
+    pass
+
+
+class PositiveIntegerField(_OtreeNullableModelFieldMixin,
+                           _OtreeNumericFieldMixin,
+                           models.PositiveIntegerField):
+    pass
+
+
+class PositiveSmallIntegerField(_OtreeNullableModelFieldMixin,
+                                _OtreeNumericFieldMixin,
+                                models.PositiveSmallIntegerField):
+    pass
+
+
+class SlugField(_OtreeNullableModelFieldMixin, models.SlugField):
+    pass
+
+
+class SmallIntegerField(_OtreeNullableModelFieldMixin,
+                        _OtreeNumericFieldMixin, models.SmallIntegerField):
+    pass
+
+
+class TextField(_OtreeNullableModelFieldMixin, models.TextField):
     auto_submit_default = ''
 
 
-class TimeField(_OtreeNullableModelFieldMixin, TimeField):
+class TimeField(_OtreeNullableModelFieldMixin, models.TimeField):
     pass
 
 
-class URLField(_OtreeNullableModelFieldMixin, URLField):
+class URLField(_OtreeNullableModelFieldMixin, models.URLField):
     pass
 
 
-
-class ManyToManyField(_OtreeNullableModelFieldMixin, ManyToManyField):
+class ForeignKey(models.ForeignKey):
     pass
 
 
-class OneToOneField(_OtreeNullableModelFieldMixin, OneToOneField):
+class ManyToManyField(_OtreeNullableModelFieldMixin, models.ManyToManyField):
     pass
 
+
+class OneToOneField(_OtreeNullableModelFieldMixin, models.OneToOneField):
+    pass

@@ -1,14 +1,19 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import logging
+
 from django.apps import AppConfig, apps
 from django.conf import settings
 from django.db.models import signals
 from django.utils.translation import ugettext_lazy as _
-from . import checks
-import logging
+
 import otree.adminlib
+from otree.session.models import StubModel, GlobalSingleton
+
 
 logger = logging.getLogger('otree')
 
-from otree.session.models import StubModel, GlobalSingleton
 
 def create_default_superuser(sender, **kwargs):
     """
@@ -21,7 +26,8 @@ def create_default_superuser(sender, **kwargs):
         logger.info(
             'Creating default superuser. '
             'Username: {}'.format(username))
-        assert User.objects.create_superuser(username, email='', password=password)
+        assert User.objects.create_superuser(username, email='',
+                                             password=password)
     else:
         logger.debug('Default superuser already exists.')
 
