@@ -6,9 +6,6 @@ from mturk import mturk
 from otree.common import Currency
 from otree.session.models import Session
 
-def cents_to_dollars(num_cents):
-    return round(num_cents/100.0,2)
-
 class Command(BaseCommand):
     args = '<session_code>'
     help = "oTree: Pay all Mechanical Turk participants for this session."
@@ -41,7 +38,7 @@ class Command(BaseCommand):
             return
 
         if not (settings.PAYMENT_CURRENCY_CODE == 'USD' and settings.CURRENCY_DECIMAL_PLACES == 2):
-            print 'Error. CURRENCY_CODE must be set to USD and CURRENCY_DECIMAL_PLACES must be set to 2'
+            print 'Error. PAYMENT_CURRENCY_CODE must be set to USD and CURRENCY_DECIMAL_PLACES must be set to 2'
             return
         else:
             self.pay_hit_bonuses(is_confirmed=False)
@@ -61,13 +58,13 @@ class Command(BaseCommand):
     def pay_hit_bonuses(self, is_confirmed):
         total_money_paid = 0
         for participant in self.session.get_participants():
-            bonus = participant.payoff_from_subsessions()
+            bonus = participant.payoff_from_subsessions().to_money()
             if bonus == None:
                 bonus = 0
             total_money_paid += bonus
 
             if not is_confirmed:
-                print 'Participant: [{}], Payment: {}'.format(participant.name(), participant.payoff_from_subsessions_display())
+                print 'Participant: [{}], Payment: {}'.format(participant.name(), bonus)
             if is_confirmed:
                 if bonus > 0:
                     resp = self.mturk_connection.request(
@@ -76,7 +73,7 @@ class Command(BaseCommand):
                             'WorkerId': participant.mturk_worker_id,
                             'AssignmentId': participant.mturk_assignment_id,
                             'BonusAmount': {
-                                'Amount': str(cents_to_dollars(bonus)),
+                                'Amount': bonus.to_number(),
                                 'CurrencyCode': 'USD'
                             },
                             'Reason': 'Thanks!',

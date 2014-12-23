@@ -16,6 +16,8 @@ class Money(easymoney.Money):
     LOCALE = settings.PAYMENT_CURRENCY_LOCALE
     DECIMAL_PLACES = settings.PAYMENT_CURRENCY_DECIMAL_PLACES
 
+    def to_number(self):
+        return Decimal(self)
 
 class Currency(easymoney.Money):
     '''game currency'''
