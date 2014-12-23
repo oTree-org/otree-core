@@ -35,8 +35,8 @@ class WaitPage(abstract.InGameWaitPage):
 
 class Page(abstract.PlayerUpdateView):
 
-    def variables_for_template(self):
-        return super(Page, self).variables_for_template()
+    def vars_for_template(self):
+        return super(Page, self).vars_for_template()
 
     def after_next_button(self):
         return super(Page, self).after_next_button()
@@ -50,7 +50,7 @@ class Page(abstract.PlayerUpdateView):
     template_name = None
 
     # prefix with "form_" so that it's clear these refer to the form
-    # otherwise someone might confuse 'fields' with variables_for_template
+    # otherwise someone might confuse 'fields' with vars_for_template
     form_model = abstract.PlayerUpdateView.model
     form_fields = abstract.PlayerUpdateView.fields
 
@@ -60,8 +60,8 @@ class Page(abstract.PlayerUpdateView):
 
 class ExperimenterPage(abstract.ExperimenterUpdateView):
 
-    def variables_for_template(self):
-        return super(ExperimenterPage, self).variables_for_template()
+    def vars_for_template(self):
+        return super(ExperimenterPage, self).vars_for_template()
 
     def after_next_button(self):
         return super(ExperimenterPage, self).after_next_button()

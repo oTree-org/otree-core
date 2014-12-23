@@ -5,7 +5,7 @@ from ._builtin import Page, WaitPage
 from otree.common import Currency, currency_range
 from .models import Constants
 
-def variables_for_all_templates(self):
+def vars_for_all_templates(self):
     return {
         # example:
         #'my_field': self.player.my_field,
@@ -28,7 +28,7 @@ class MyPage(Page):
 
     template_name = 'simple_game/MyPage.html'
 
-    def variables_for_template(self):
+    def vars_for_template(self):
         return {
             'my_variable_here': 1,
         }
