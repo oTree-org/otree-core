@@ -1,13 +1,18 @@
-from django.conf.urls import *
-from django.utils.importlib import import_module
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import inspect
-import vanilla
+
+from django.conf import urls
+from django.utils.importlib import import_module
+
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.contrib import admin
 from django.views.generic.base import RedirectView
 from django.conf import settings
-import otree.constants
-from otree.session.models import Session
+
+import vanilla
+
 from otree.common_internal import get_models_module
 
 
@@ -31,7 +36,6 @@ def url_patterns_from_module(module_name):
             inspect.getmodule(member) == views_module
         )
 
-
     all_views = [
         ViewCls for _, ViewCls in inspect.getmembers(views_module, isview)
     ]
@@ -40,27 +44,27 @@ def url_patterns_from_module(module_name):
 
     for View in all_views:
         if hasattr(View, 'url_pattern'):
-            the_url = url(View.url_pattern(), View.as_view())
+            the_url = urls.url(View.url_pattern(), View.as_view())
             view_urls.append(the_url)
 
-    return patterns('', *view_urls)
+    return urls.patterns('', *view_urls)
 
 
 def augment_urlpatterns(urlpatterns):
 
-    urlpatterns += patterns(
+    urlpatterns += urls.patterns(
         '',
-        url(r'^$', RedirectView.as_view(url='/demo')),
-        url(r'^admin/', include(admin.site.urls)),
-        url(
+        urls.url(r'^$', RedirectView.as_view(url='/demo')),
+        urls.url(r'^admin/', urls.include(admin.site.urls)),
+        urls.url(
             r'^export/(\w+)/$', 'otree.views.export.export',
             name='otree_views_export_export'
         ),
-        url(
+        urls.url(
             r'^export-list/$', 'otree.views.export.export_list',
             name='otree_views_export_export_list'
         ),
-        url(
+        urls.url(
             r'^export-docs/(\w+)/$', 'otree.views.export.export_docs',
             name='otree_views_export_export_docs'
         ),
@@ -88,9 +92,9 @@ def augment_urlpatterns(urlpatterns):
     urlpatterns += url_patterns_from_module('otree.views.concrete')
     urlpatterns += url_patterns_from_module('otree.views.demo')
     urlpatterns += url_patterns_from_module('otree.views.admin')
-    urlpatterns += patterns(
+    urlpatterns += urls.patterns(
         'otree.views.ajax_change_list',
-        url(
+        urls.url(
             r'^ajax/otree-change-list-results/$',
             'ajax_otree_change_list_results',
             name='ajax_otree_change_list_results'
@@ -98,5 +102,3 @@ def augment_urlpatterns(urlpatterns):
     )
 
     return urlpatterns
-
-

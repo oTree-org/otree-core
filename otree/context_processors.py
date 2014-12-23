@@ -9,5 +9,3 @@ def otree_context(request):
         "PAGE_FOOTER": settings.PAGE_FOOTER,
         "SEO": getattr(settings, "SEO", None) or ()
     }
-
-

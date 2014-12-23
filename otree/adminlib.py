@@ -589,7 +589,7 @@ class SessionAdmin(OTreeBaseModelAdmin):
         ).to_money(session)
 
         try:
-            mean_payment = total_payments/len(participants)
+            mean_payment = total_payments / len(participants)
         except ZeroDivisionError:
             mean_payment = Money(0)
 

@@ -75,6 +75,8 @@ PEP8 = {
         os.path.join(PRJ_DIR, "otree", "timeout"),
         os.path.join(PRJ_DIR, "otree", "views"),
 
+
+        os.path.join(PRJ_DIR, "otree", "widgets.py"),
         os.path.join(PRJ_DIR, "tests", "simple_game"),
         os.path.join(PRJ_DIR, "tests", "simple_game_copy"),
     )

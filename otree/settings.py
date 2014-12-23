@@ -1,8 +1,15 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import os
-from django.conf import global_settings
+
 import djcelery
 
+from django.conf import global_settings
+
+
 djcelery.setup_loader()
+
 
 def collapse_to_unique_list(*args):
     """Create a new list with all elements from a given lists without reapeated
@@ -22,7 +29,8 @@ def augment_settings(settings):
     # order is important:
     # otree unregisters User & Group, which are installed by auth.
     # otree templates need to get loaded before the admin.
-    new_installed_apps = collapse_to_unique_list([
+    new_installed_apps = collapse_to_unique_list(
+        [
             'django.contrib.auth',
             'otree',
             'floppyforms',
@@ -58,7 +66,7 @@ def augment_settings(settings):
     new_middleware_classes = collapse_to_unique_list(
         [
             'django.contrib.sessions.middleware.SessionMiddleware',
-            #'django.middleware.locale.LocaleMiddleware',
+            # 'django.middleware.locale.LocaleMiddleware',
             'django.middleware.common.CommonMiddleware',
             'django.middleware.csrf.CsrfViewMiddleware',
             'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -77,7 +85,6 @@ def augment_settings(settings):
         'CELERY_ACCEPT_CONTENT': ['pickle', 'json', 'msgpack', 'yaml'],
     }
 
-
     settings.setdefault('LANGUAGE_CODE', global_settings.LANGUAGE_CODE)
 
     CURRENCY_LOCALE = settings.get('CURRENCY_LOCALE', None)
@@ -90,7 +97,7 @@ def augment_settings(settings):
         else:
             CURRENCY_LOCALE = settings['LANGUAGE_CODE']
 
-    settings.setdefault('CURRENCY_LOCALE', CURRENCY_LOCALE.replace('-','_'))
+    settings.setdefault('CURRENCY_LOCALE', CURRENCY_LOCALE.replace('-', '_'))
 
     logging = {
         'version': 1,
@@ -108,14 +115,14 @@ def augment_settings(settings):
             },
         },
         'handlers': {
-            'console':{
-                'level':'INFO',
-                'class':'logging.StreamHandler',
+            'console': {
+                'level': 'INFO',
+                'class': 'logging.StreamHandler',
                 'formatter': 'verbose'
             },
         },
         'loggers': {
-            'otree.test.core':{
+            'otree.test.core': {
                 'handlers': ['console'],
                 'propagate': False,
                 'level': 'INFO',
@@ -148,8 +155,12 @@ def augment_settings(settings):
             'django.contrib.sessions.serializers.PickleSerializer'
         ),
         'ALLOWED_HOSTS': ['*'],
-        'OTREE_CHANGE_LIST_COLUMN_MIN_WIDTH': 50, # In pixels
-        'OTREE_CHANGE_LIST_UPDATE_INTERVAL': '10000', # default to 10 seconds(10000 miliseconds)
+
+        # In pixels
+        'OTREE_CHANGE_LIST_COLUMN_MIN_WIDTH': 50,
+
+        # default to 10 seconds(10000 miliseconds)
+        'OTREE_CHANGE_LIST_UPDATE_INTERVAL': '10000',
         'TEMPLATE_CONTEXT_PROCESSORS': (
             global_settings.TEMPLATE_CONTEXT_PROCESSORS +
             (
@@ -171,11 +182,10 @@ def augment_settings(settings):
         'PAYMENT_CURRENCY_DECIMAL_PLACES': 2
     }
 
-
     settings.update(augmented_settings)
 
     for k, v in overridable_settings.items():
-        settings.setdefault(k,v)
+        settings.setdefault(k, v)
 
     # by default, game setting matches payment setting
     # except if you use points, then we override
@@ -190,4 +200,3 @@ def augment_settings(settings):
             key_from = 'PAYMENT_{}'.format(CURRENCY_SETTING_NAME)
             key_to = 'GAME_{}'.format(CURRENCY_SETTING_NAME)
             settings[key_to] = settings[key_from]
-
