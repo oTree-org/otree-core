@@ -12,14 +12,13 @@ from django.contrib.staticfiles.templatetags.staticfiles import (
     static as static_template_tag
 )
 
-from otree.views.demo import render_to_start_links_page
-
 import otree.constants
 import otree.session.models
 from otree.session.models import Participant
 from otree.common_internal import add_params_to_url
 from otree.common import Currency as c
 from otree.common import Money
+from otree.views.demo import render_to_start_links_page
 
 
 CHANGE_LIST_TEMPLATE = "admin/otree_change_list.html"
