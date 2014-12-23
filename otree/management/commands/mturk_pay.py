@@ -1,13 +1,27 @@
-import sys
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
+import logging
+
+from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
+
 from mturk import mturk
-from otree.common import Currency
+
 from otree.session.models import Session
 
+
+logger = logging.getLogger(__name__)
+
+
 def cents_to_dollars(num_cents):
-    return round(num_cents/100.0,2)
+    return round(num_cents / 100.0, 2)
+
 
 class Command(BaseCommand):
     args = '<session_code>'
@@ -15,34 +29,41 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if len(args) != 1:
-            raise CommandError("Wrong number of arguments (expecting 'mturk_pay session_code'. Example: 'mturk_pay motaliho')")
+            raise CommandError("Wrong number of arguments (expecting "
+                               "'mturk_pay session_code'. Example: "
+                               "'mturk_pay motaliho')")
 
         try:
             config = {
-                "use_sandbox" : False,
-                "stdout_log" : True,
-                "aws_key" : settings.AWS_ACCESS_KEY_ID,
-                "aws_secret_key" : settings.AWS_SECRET_ACCESS_KEY,
+                "use_sandbox": False,
+                "stdout_log": True,
+                "aws_key": settings.AWS_ACCESS_KEY_ID,
+                "aws_secret_key": settings.AWS_SECRET_ACCESS_KEY,
             }
         except AttributeError:
-            print 'You need to set your Amazon credentials in settings.py (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)'
-            sys.exit(0)
-
+            raise ImproperlyConfigured(
+                'You need to set your Amazon credentials in settings.py '
+                '(AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)'
+            )
 
         self.mturk_connection = mturk.MechanicalTurk(config)
         response = self.mturk_connection.request('GetAccountBalance')
-        print response.get_response_element("AvailableBalance")
+        logger.info(response.get_response_element("AvailableBalance"))
 
         session_code = args[0]
 
         self.session = Session.objects.get(code=session_code)
         if self.session.mturk_payment_was_sent:
-            print 'Error: This subsession was already paid through oTree.'
-            return
+            raise CommandError(
+                "This subsession was already paid through oTree."
+            )
 
-        if not (settings.PAYMENT_CURRENCY_CODE == 'USD' and settings.CURRENCY_DECIMAL_PLACES == 2):
-            print 'Error. CURRENCY_CODE must be set to USD and CURRENCY_DECIMAL_PLACES must be set to 2'
-            return
+        if not (settings.PAYMENT_CURRENCY_CODE == 'USD' and
+                settings.CURRENCY_DECIMAL_PLACES == 2):
+            raise ImproperlyConfigured(
+                'CURRENCY_CODE must be set to USD and '
+                'CURRENCY_DECIMAL_PLACES must be set to 2'
+            )
         else:
             self.pay_hit_bonuses(is_confirmed=False)
 
@@ -50,27 +71,30 @@ class Command(BaseCommand):
             if confirmed:
                 self.pay_hit_bonuses(is_confirmed=True)
             else:
-                print 'Exit. Did not pay bonuses.'
-                return
-            print 'Done.'
+                raise CommandError('Exit. Did not pay bonuses.')
+            logger.info('Done.')
 
         response = self.mturk_connection.request('GetAccountBalance')
-        print response.get_response_element("AvailableBalance")
-
+        logger.info(response.get_response_element("AvailableBalance"))
 
     def pay_hit_bonuses(self, is_confirmed):
         total_money_paid = 0
         for participant in self.session.get_participants():
             bonus = participant.payoff_from_subsessions()
-            if bonus == None:
+            if bonus is None:
                 bonus = 0
             total_money_paid += bonus
 
             if not is_confirmed:
-                print 'Participant: [{}], Payment: {}'.format(participant.name(), participant.payoff_from_subsessions_display())
+                logger.info(
+                    'Participant: [{}], Payment: {}'.format(
+                        participant.name(),
+                        participant.payoff_from_subsessions_display()
+                    )
+                )
             if is_confirmed:
                 if bonus > 0:
-                    resp = self.mturk_connection.request(
+                    self.mturk_connection.request(
                         'GrantBonus',
                         {
                             'WorkerId': participant.mturk_worker_id,
@@ -83,8 +107,8 @@ class Command(BaseCommand):
                         }
                     )
         if not is_confirmed:
-            print 'Total amount to pay: {}'.format(total_money_paid)
+            logger.info('Total amount to pay: {}'.format(total_money_paid))
         if is_confirmed:
-            print 'Total amount paid: {}'.format(total_money_paid)
+            logger.info('Total amount paid: {}'.format(total_money_paid))
             self.session.mturk_payment_was_sent = True
             self.session.save()

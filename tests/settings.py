@@ -67,8 +67,6 @@ PEP8 = {
         os.path.join(PRJ_DIR, "otree", "locale"),
         os.path.join(PRJ_DIR, "otree", "migrations"),
 
-        #~ os.path.join(PRJ_DIR, "otree", "management"),
-
         os.path.join(PRJ_DIR, "otree", "models"),
         os.path.join(PRJ_DIR, "otree", "session"),
         os.path.join(PRJ_DIR, "otree", "templatetags"),

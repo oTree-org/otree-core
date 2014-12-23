@@ -65,7 +65,8 @@ def show_help(args):
         command. The deployment commands assist you in deploying your oTree
         instance to heroku.
 
-        Type '{script_name} help <subcommand>' for help on a specific subcommand.
+        Type '{script_name} help <subcommand>' for help on a specific
+        subcommand.
 
         Available subcommands:
 
@@ -74,7 +75,7 @@ def show_help(args):
     MESSAGE = textwrap.dedent(MESSAGE)
 
     deployment_commands = sorted(COMMANDS.keys())
-    deployment_commands = [(' ' * 4) + command for command in deployment_commands]
+    deployment_commands = [(' ' * 4) + cmd for cmd in deployment_commands]
     deployment_commands = '\n'.join(deployment_commands)
 
     print(MESSAGE.format(
