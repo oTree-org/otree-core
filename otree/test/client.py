@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#==============================================================================
+# =============================================================================
 # DOCS
-#==============================================================================
+# =============================================================================
 
 """
 """
 
 
-#==============================================================================
+# =============================================================================
 # IMPORTS
-#==============================================================================
+# =============================================================================
 
 import re
 import importlib
@@ -29,16 +29,16 @@ from otree.models.user import Experimenter
 from otree.views.concrete import WaitUntilAssignedToGroup
 from otree.common_internal import get_views_module
 
-#==============================================================================
+# =============================================================================
 # LOGGER
-#==============================================================================
+# =============================================================================
 
 logger = logging.getLogger(__name__)
 
 
-#==============================================================================
+# =============================================================================
 # CLIENT ERROR
-#==============================================================================
+# =============================================================================
 
 class ClientError(Exception):
     """This class represent all errors inside client logic except
@@ -49,9 +49,9 @@ class ClientError(Exception):
     pass
 
 
-#==============================================================================
+# =============================================================================
 # CLASS SUBMITS
-#==============================================================================
+# =============================================================================
 
 class Submit(object):
 
@@ -117,9 +117,9 @@ class Submit(object):
         return end
 
 
-#==============================================================================
+# =============================================================================
 # BASE CLIENT
-#==============================================================================
+# =============================================================================
 
 class BaseClient(test.Client):
 
@@ -205,16 +205,20 @@ class BaseClient(test.Client):
         self.submits.append(sbmt)
 
     def submit_with_invalid_input(self, ViewClass, param_dict=None):
-        '''this method lets you intentionally submit with invalid input to ensure it's correctly rejected'''
+        '''this method lets you intentionally submit with invalid
+        input to ensure it's correctly rejected
+
+        '''
         sbmt = Submit(
-            bot=self, ViewClass=ViewClass, input_is_valid=False, data=param_dict
+            bot=self, ViewClass=ViewClass,
+            input_is_valid=False, data=param_dict
         )
         self.submits.append(sbmt)
 
 
-#==============================================================================
+# =============================================================================
 # PLAYER BOT CLASS
-#==============================================================================
+# =============================================================================
 
 class BasePlayerBot(BaseClient):
 
@@ -247,14 +251,19 @@ class BasePlayerBot(BaseClient):
                 self.subsession._meta.app_label,
                 player.participant.code,
             )
-            #FIXME: why doesn't this work? the game works fine, and print statements show that a payoff is non-null
+
+            # FIXME: why doesn't this work? the game works fine, and print
+            # statements show that a payoff is non-null
             # raise AssertionError(msg)
         player_page_index = player._index_in_game_pages
-        pages_in_subsession = len(get_views_module(self.subsession._meta.app_label).pages())
+        pages_in_subsession = len(
+            get_views_module(self.subsession._meta.app_label).pages()
+        )
         if player_page_index + 1 < pages_in_subsession:
             msg = (
-                "App {}: Participant '{}' reached the page {} of {} at the end of "
-                "run. Check in tests.py if the bot completes the game"
+                "App {}: Participant '{}' reached the page {} of {} at "
+                "the end of run. Check in tests.py if the bot completes "
+                "the game"
             ).format(
                 self.subsession._meta.app_label,
                 player.participant.code,
@@ -283,9 +292,9 @@ class BasePlayerBot(BaseClient):
         return self._SubsessionClass.objects.get(id=self._subsession_id)
 
 
-#==============================================================================
+# =============================================================================
 # ESPERIMENT BOT CLASS
-#==============================================================================
+# =============================================================================
 
 class BaseExperimenterBot(BaseClient):
     '''ExperimenterBot is optional; currently not being used'''
