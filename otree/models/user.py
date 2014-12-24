@@ -1,11 +1,14 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 
-from otree.session.models import Session, SessionExperimenter
-from otree.db import models
-import otree.constants as constants
-from otree.common_internal import add_params_to_url, get_models_module
 from save_the_change.mixins import SaveTheChange
+
+from otree.db import models
+from otree.session.models import Session, SessionExperimenter
+
 
 class User(SaveTheChange, models.Model):
 
@@ -15,8 +18,8 @@ class User(SaveTheChange, models.Model):
     )
 
     session = models.ForeignKey(
-        Session,
-        related_name = '%(app_label)s_%(class)s')
+        Session, related_name='%(app_label)s_%(class)s'
+    )
 
     round_number = models.PositiveIntegerField()
 
@@ -27,18 +30,16 @@ class User(SaveTheChange, models.Model):
 class Experimenter(User):
 
     session_experimenter = models.ForeignKey(
-        SessionExperimenter,
-        null=True,
-        related_name='experimenter'
+        SessionExperimenter, null=True, related_name='experimenter'
     )
 
-    subsession_content_type = models.ForeignKey(ContentType,
-                                                null=True,
-                                                related_name = 'experimenter')
+    subsession_content_type = models.ForeignKey(
+        ContentType, null=True, related_name='experimenter'
+    )
     subsession_object_id = models.PositiveIntegerField(null=True)
-    subsession = generic.GenericForeignKey('subsession_content_type',
-                                           'subsession_object_id',
-                                           )
+    subsession = generic.GenericForeignKey(
+        'subsession_content_type', 'subsession_object_id',
+    )
 
     class Meta:
         app_label = 'otree'

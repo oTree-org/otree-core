@@ -1,13 +1,18 @@
-from otree.db import models
-import otree.session.models
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from save_the_change.mixins import SaveTheChange
-from django_extensions.db.fields.json import JSONField
+
+from otree.db import models
 from otree.common_internal import get_models_module
 
+
 class BaseGroup(SaveTheChange, models.Model):
+    """Base class for all Groupes.
     """
-    Base class for all Groupes.
-    """
+
+    class Meta:
+        abstract = True
 
     def __unicode__(self):
         return str(self.pk)
@@ -31,7 +36,3 @@ class BaseGroup(SaveTheChange, models.Model):
     @property
     def _Constants(self):
         return get_models_module(self._meta.app_label).Constants
-
-
-    class Meta:
-        abstract = True
