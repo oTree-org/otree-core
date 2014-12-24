@@ -125,8 +125,8 @@ class Command(BaseCommand):
                         }
                     )
         if not is_confirmed:
-            print 'Total amount to pay: {}'.format(total_money_paid)
+            logger.info('Total amount to pay: {}'.format(total_money_paid))
         if is_confirmed:
-            print 'Total amount paid: {}'.format(total_money_paid)
+            logger.info('Total amount paid: {}'.format(total_money_paid))
             self.session.mturk_payment_was_sent = True
             self.session.save()
