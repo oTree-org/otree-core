@@ -2,14 +2,11 @@ import copy
 import itertools
 
 import django.test
-from django.contrib.contenttypes import generic
-from django.contrib.contenttypes.models import ContentType
 
 from otree import constants
 import otree.common_internal
-from otree.common_internal import (
-    id_label_name, add_params_to_url, directory_name
-)
+from otree.common_internal import id_label_name
+
 from otree.common import Currency as c
 from otree.db import models
 from otree.models_concrete import SessionuserToUserLookup
@@ -49,6 +46,7 @@ class StubModel(models.Model):
 def model_vars_default():
     return {}
 
+
 class ModelWithVars(models.Model):
     vars = models.PickleField(default=model_vars_default)
 
@@ -72,7 +70,8 @@ class Session(ModelWithVars):
         # if i don't set this, it could be in an unpredictable order
         ordering = ['pk']
 
-    session_type_name = models.CharField(max_length = 300, null = True, blank = True,
+    session_type_name = models.CharField(
+        max_length=300, null=True, blank=True,
         doc="the session type, as defined in the programmer's sessions.py."
     )
 
@@ -81,17 +80,15 @@ class Session(ModelWithVars):
         from otree.session import get_session_types_dict
         return get_session_types_dict()[self.session_type_name]
 
-
-
     # label of this session instance
     label = models.CharField(
-        max_length = 300, null = True, blank = True,
-        help_text = 'For internal record-keeping'
+        max_length=300, null=True, blank=True,
+        help_text='For internal record-keeping'
     )
 
     experimenter_name = models.CharField(
-        max_length = 300, null = True, blank = True,
-        help_text = 'For internal record-keeping'
+        max_length=300, null=True, blank=True,
+        help_text='For internal record-keeping'
     )
 
     code = models.RandomCharField(
@@ -106,7 +103,7 @@ class Session(ModelWithVars):
 
     time_scheduled = models.DateTimeField(
         null=True, doc="The time at which the session is scheduled",
-        help_text = 'For internal record-keeping',
+        help_text='For internal record-keeping',
     )
 
     time_started = models.DateTimeField(
@@ -134,8 +131,8 @@ class Session(ModelWithVars):
 
     _players_assigned_to_groups = models.BooleanField(default=False)
 
-    #
-    special_category = models.CharField(max_length=20, null=True,
+    special_category = models.CharField(
+        max_length=20, null=True,
         doc="whether it's a test session, demo session, etc."
     )
 
@@ -231,7 +228,6 @@ class Session(ModelWithVars):
             )
             assert resp.status_code < 400
 
-
     def build_session_user_to_user_lookups(self):
         subsession_app_names = self.session_type.app_sequence
 
@@ -248,15 +244,15 @@ class Session(ModelWithVars):
 
         # FIXME: what about experimenter?
 
-
     def _next_participant_to_assign(self):
-        return self.participant_set.order_by('_predetermined_arrival_order').filter(visited=False)[0]
+        return self.participant_set.order_by(
+            '_predetermined_arrival_order'
+        ).filter(visited=False)[0]
 
     def _swap_participant_codes(self, p1, p2):
         p1.code, p2.code = p2.code, p1.code
         p1.save()
         p2.save()
-
 
     def _set_predetermined_arrival_order(self):
         for subsession in self.get_subsessions():
@@ -265,10 +261,13 @@ class Session(ModelWithVars):
                 arrival_order = 0
                 for group in groups:
                     for player in group.get_players():
-                        player.participant._predetermined_arrival_order = arrival_order
+                        player.participant._predetermined_arrival_order = (
+                            arrival_order
+                        )
                         arrival_order += 1
                         player.participant.save()
                 return
+
 
 class SessionUser(ModelWithVars):
 
@@ -277,7 +276,7 @@ class SessionUser(ModelWithVars):
     _index_in_pages = models.PositiveIntegerField(default=0)
 
     code = models.RandomCharField(
-        length = 8, doc=(
+        length=8, doc=(
             "Randomly generated unique identifier for the participant. If you "
             "would like to merge this dataset with those from another "
             "subsession in the same session, you should join on this field, "
@@ -289,18 +288,19 @@ class SessionUser(ModelWithVars):
         verbose_name='Health of last server request'
     )
 
-    visited = models.BooleanField(default=False,
+    visited = models.BooleanField(
+        default=False,
         doc="""Whether this user's start URL was opened"""
     )
 
-    ip_address = models.GenericIPAddressField(null = True)
+    ip_address = models.GenericIPAddressField(null=True)
 
     # stores when the page was first visited
     _last_page_timestamp = models.DateTimeField(null=True)
 
     is_on_wait_page = models.BooleanField(default=False)
 
-    current_page = models.CharField(max_length=200,null=True)
+    current_page = models.CharField(max_length=200, null=True)
 
     _current_form_page_url = models.URLField()
 
@@ -312,7 +312,6 @@ class SessionUser(ModelWithVars):
         return '{}/{} subsessions'.format(
             self._index_in_subsessions, len(self.session.get_subsessions())
         )
-
 
     def current_subsession(self):
         if not self.visited:
@@ -365,7 +364,9 @@ class SessionUser(ModelWithVars):
         ]
 
     def build_session_user_to_user_lookups(self, num_pages_in_each_app):
-        pages_for_user = lambda user: num_pages_in_each_app[user._meta.app_config.name]
+        def pages_for_user(user):
+            return num_pages_in_each_app[user._meta.app_config.name]
+
         indexes = itertools.count()
 
         SessionuserToUserLookup.objects.bulk_create([
@@ -374,7 +375,7 @@ class SessionUser(ModelWithVars):
                 page_index=page_index,
                 app_name=user._meta.app_config.name,
                 user_pk=user.pk,
-                is_experimenter = self._is_experimenter,
+                is_experimenter=self._is_experimenter,
             )
             for user in self.get_users()
             for _, page_index in zip(range(pages_for_user(user) + 1), indexes)
@@ -419,13 +420,13 @@ class Participant(SessionUser):
     session = models.ForeignKey(Session)
     time_started = models.DateTimeField(null=True)
     user_type_in_url = constants.user_type_participant
-    mturk_assignment_id = models.CharField(max_length = 50, null = True)
-    mturk_worker_id = models.CharField(max_length = 50, null = True)
+    mturk_assignment_id = models.CharField(max_length=50, null=True)
+    mturk_worker_id = models.CharField(max_length=50, null=True)
 
     # unique=True can't be set, because the same external ID could be reused
     # in multiple sequences. however, it should be unique within the sequence.
     label = models.CharField(
-        max_length = 50, null = True, doc=(
+        max_length=50, null=True, doc=(
             "Label assigned by the experimenter. Can be assigned by passing a "
             "GET param called 'participant_label' to the participant's start "
             "URL"
@@ -433,7 +434,10 @@ class Participant(SessionUser):
     )
 
     _predetermined_arrival_order = models.PositiveIntegerField(
-        doc="if group_by_arrival_time is True, use this field to decide who to assign next"
+        doc=(
+            "if group_by_arrival_time is True, use this field to decide "
+            "who to assign next"
+        )
     )
 
     def __unicode__(self):
