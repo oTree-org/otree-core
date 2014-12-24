@@ -68,6 +68,8 @@ PEP8 = {
         os.path.join(PRJ_DIR, "otree", "migrations"),
         os.path.join(PRJ_DIR, "otree", "session", "migrations"),
 
+        os.path.join(PRJ_DIR, "otree", "views"),
+
         os.path.join(PRJ_DIR, "tests", "simple_game"),
         os.path.join(PRJ_DIR, "tests", "simple_game_copy"),
     )
