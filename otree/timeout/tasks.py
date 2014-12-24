@@ -4,14 +4,14 @@ from otree.session.models import Participant
 
 import django.test
 
-@task()
+@task
 def submit_expired_url(url):
 
     c = django.test.Client()
     c.post(url, data={constants.auto_submit: True}, follow=True)
 
-@task()
-def ensure_pages_visited(app_name, participant_pk_set, wait_page_index):
+@task
+def ensure_pages_visited(participant_pk_set, wait_page_index):
     """
     This is necessary when a wait page is followed by a timeout page.
     We can't guarantee the user's browser will properly continue to poll the wait page and get redirected,

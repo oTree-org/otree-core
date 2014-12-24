@@ -8,7 +8,6 @@ import sys
 
 from optparse import make_option
 
-
 from django.core.management.base import BaseCommand
 
 from otree.test import runner, client
@@ -22,6 +21,7 @@ COVERAGE_CONSOLE = "console"
 COVERAGE_HTML = "HTML"
 COVERAGE_ALL = "all"
 COVERAGE_CHOICES = (COVERAGE_ALL, COVERAGE_CONSOLE, COVERAGE_HTML)
+
 
 # =============================================================================
 # LOGGER

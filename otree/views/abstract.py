@@ -85,14 +85,14 @@ class OTreeMixin(object):
         """
         return HttpResponseRedirect(self.page_the_user_should_be_on())
 
-    def variables_for_template(self):
+    def vars_for_template(self):
         return {}
 
-    def _variables_for_all_templates(self):
+    def _vars_for_all_templates(self):
         views_module = otree.common_internal.get_views_module(
             self.subsession._meta.app_config.name)
-        if hasattr(views_module, 'variables_for_all_templates'):
-            return views_module.variables_for_all_templates(self) or {}
+        if hasattr(views_module, 'vars_for_all_templates'):
+            return views_module.vars_for_all_templates(self) or {}
         return {}
 
 
@@ -543,8 +543,8 @@ class FormPageMixin(object):
         context = super(FormPageMixin, self).get_context_data(**kwargs)
         context.update({'form': kwargs.get('form')})
         game_context = {}
-        game_context.update(self._variables_for_all_templates() or {})
-        vars_for_template = self.variables_for_template() or {}
+        game_context.update(self._vars_for_all_templates() or {})
+        vars_for_template = self.vars_for_template() or {}
         game_context.update(vars_for_template)
         context.update(game_context)
         return context

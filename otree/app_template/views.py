@@ -8,7 +8,7 @@ from ._builtin import Page, WaitPage
 from .models import Constants
 
 
-def variables_for_all_templates(self):
+def vars_for_all_templates(self):
     return {
         # example:
         #'my_field': self.player.my_field,
@@ -25,7 +25,7 @@ class MyPage(Page):
 
     template_name = '{{ app_name }}/MyPage.html'
 
-    def variables_for_template(self):
+    def vars_for_template(self):
         return {
             'my_variable_here': 1,
         }
