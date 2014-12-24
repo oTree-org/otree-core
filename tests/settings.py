@@ -56,7 +56,6 @@ ACCESS_CODE_FOR_OPEN_SESSION = 'idd1610'
 PEP8 = {
     "check": (
         os.path.join(PRJ_DIR, "otree"),
-
         os.path.join(PRJ_DIR, "tests"),
         os.path.join(PRJ_DIR, "runtests.py"),
         os.path.join(PRJ_DIR, "setup.py"),
@@ -64,19 +63,9 @@ PEP8 = {
     ),
     "exclude": (
         os.path.join(PRJ_DIR, "otree", "app_template"),
-        os.path.join(PRJ_DIR, "otree", "forms"),
         os.path.join(PRJ_DIR, "otree", "locale"),
-        os.path.join(PRJ_DIR, "otree", "management"),
         os.path.join(PRJ_DIR, "otree", "migrations"),
-        os.path.join(PRJ_DIR, "otree", "models"),
-        os.path.join(PRJ_DIR, "otree", "session"),
-        os.path.join(PRJ_DIR, "otree", "templatetags"),
-        os.path.join(PRJ_DIR, "otree", "test"),
-        os.path.join(PRJ_DIR, "otree", "timeout"),
-        os.path.join(PRJ_DIR, "otree", "views"),
-
-
-        os.path.join(PRJ_DIR, "otree", "widgets.py"),
+        os.path.join(PRJ_DIR, "otree", "session", "migrations"),
         os.path.join(PRJ_DIR, "tests", "simple_game"),
         os.path.join(PRJ_DIR, "tests", "simple_game_copy"),
     )

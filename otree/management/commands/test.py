@@ -1,38 +1,38 @@
 
-#==============================================================================
+# =============================================================================
 # IMPORTS
-#==============================================================================
+# =============================================================================
 
 import logging
 import sys
 
 from optparse import make_option
 
-
 from django.core.management.base import BaseCommand
 
 from otree.test import runner, client
 
 
-#==============================================================================
+# =============================================================================
 # CONSTANTS
-#==============================================================================
+# =============================================================================
 
 COVERAGE_CONSOLE = "console"
 COVERAGE_HTML = "HTML"
 COVERAGE_ALL = "all"
 COVERAGE_CHOICES = (COVERAGE_ALL, COVERAGE_CONSOLE, COVERAGE_HTML)
 
-#==============================================================================
+
+# =============================================================================
 # LOGGER
-#==============================================================================
+# =============================================================================
 
 logger = logging.getLogger(__name__)
 
 
-#==============================================================================
+# =============================================================================
 # COMMAND
-#==============================================================================
+# =============================================================================
 
 class Command(BaseCommand):
     help = ('Discover and run experiment tests in the specified '
@@ -88,7 +88,7 @@ class Command(BaseCommand):
                 coverage_report.report()
             if coverage in [COVERAGE_HTML, COVERAGE_ALL]:
                 html_coverage_results_dir = '_coverage_results'
-                percent_coverage = coverage_report.html_report(
+                coverage_report.html_report(
                     directory=html_coverage_results_dir
                 )
                 msg = ("See '{}/index.html' for detailed results.").format(

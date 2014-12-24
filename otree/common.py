@@ -20,6 +20,7 @@ class Money(easymoney.Money):
     def to_number(self):
         return Decimal(self)
 
+
 class Currency(easymoney.Money):
     '''game currency'''
 

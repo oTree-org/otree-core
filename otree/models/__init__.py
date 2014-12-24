@@ -1,18 +1,20 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 from importlib import import_module
-from django.contrib.contenttypes import generic
-from otree.session.models import Session, Participant
+
 from otree.db import models
+from otree.session.models import Session, Participant
 from otree.common_internal import get_players, get_groups
 
-# NOTE: this imports the following submodules and then subclasses several classes
-# importing is done via import_module rather than an ordinary import.
+# NOTE: this imports the following submodules and then subclasses several
+# classes importing is done via import_module rather than an ordinary import.
 # The only reason for this is to hide the base classes from IDEs like PyCharm,
 # so that those members/attributes don't show up in autocomplete,
-# including all the built-in django model fields that an ordinary oTree programmer will never need or want.
-# if this was a conventional Django project I wouldn't do it this way,
-# but because oTree is aimed at newcomers who may need more assistance from their IDE,
-# I want to try this approach out.
+# including all the built-in django model fields that an ordinary oTree
+# programmer will never need or want. if this was a conventional Django
+# project I wouldn't do it this way, but because oTree is aimed at newcomers
+# who may need more assistance from their IDE, I want to try this approach out.
 # this module is also a form of documentation of the public API.
 
 subsessions = import_module('otree.models.subsessions')
@@ -20,22 +22,26 @@ groups = import_module('otree.models.groups')
 players = import_module('otree.models.players')
 user = import_module('otree.models.user')
 
+
 class BaseSubsession(subsessions.BaseSubsession):
 
     session = models.ForeignKey(
-        Session,
-        related_name = '%(app_label)s_%(class)s',
-        null=True
+        Session, related_name='%(app_label)s_%(class)s', null=True
     )
 
     round_number = models.PositiveIntegerField(
-        doc='''
-        If this subsession is repeated (i.e. has multiple rounds), this field stores the position (index) of this subsession,
-        among subsessions in the same app.
+        doc='''If this subsession is repeated (i.e. has multiple rounds), this
+        field stores the position (index) of this subsession, among subsessions
+        in the same app.
+
         For example, if a session consists of the subsessions:
-        [app1, app2, app1, app1, app3]
+
+            [app1, app2, app1, app1, app3]
+
         Then the round numbers of these subsessions would be:
-        [1, 1, 2, 3, 1]
+
+            [1, 1, 2, 3, 1]
+
         '''
     )
 
@@ -65,11 +71,14 @@ class BaseSubsession(subsessions.BaseSubsession):
         abstract = True
         ordering = ['pk']
 
+
 class BaseGroup(groups.BaseGroup):
+    class Meta:
+        abstract = True
+        ordering = ['pk']
 
     session = models.ForeignKey(
-        Session,
-        related_name = '%(app_label)s_%(class)s'
+        Session, related_name='%(app_label)s_%(class)s'
     )
 
     def set_players(self, players_list):
@@ -84,15 +93,13 @@ class BaseGroup(groups.BaseGroup):
     def get_player_by_id(self, id_in_group):
         return super(BaseGroup, self).get_player_by_id(id_in_group)
 
-    class Meta:
-        abstract = True
-        ordering = ['pk']
 
 class BasePlayer(players.BasePlayer):
 
     id_in_group = models.PositiveIntegerField(
-        null = True,
-        doc="Index starting from 1. In multiplayer games, indicates whether this is player 1, player 2, etc."
+        null=True,
+        doc=("Index starting from 1. In multiplayer games, "
+             "indicates whether this is player 1, player 2, etc.")
     )
 
     payoff = models.CurrencyField(
@@ -101,10 +108,8 @@ class BasePlayer(players.BasePlayer):
     )
 
     participant = models.ForeignKey(
-        Participant,
-        related_name = '%(app_label)s_%(class)s'
+        Participant, related_name='%(app_label)s_%(class)s'
     )
-
 
     def in_previous_rounds(self):
         return super(BasePlayer, self).in_previous_rounds()

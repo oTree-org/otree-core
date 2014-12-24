@@ -1,13 +1,17 @@
-from otree import constants
-from otree.common_internal import get_session_module, get_models_module, get_app_constants
-from django.conf import settings
-from otree.models.user import Experimenter
-from otree.session.models import Session, SessionExperimenter, Participant
-from django.db import transaction
-from collections import defaultdict
-from itertools import groupby
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import re
 
+from django.conf import settings
+from django.db import transaction
+
+from otree import constants
+from otree.models.user import Experimenter
+from otree.session.models import Session, SessionExperimenter, Participant
+from otree.common_internal import (
+    get_session_module, get_models_module, get_app_constants
+)
 
 
 def gcd(a, b):
@@ -28,11 +32,14 @@ def lcmm(*args):
 
 
 class SessionType(object):
+
     def __init__(self, **kwargs):
-        """this code allows default values for these attributes to be set on the class,
-         that can then be overridden by SessionType instances.
-         sessions.py uses this.
-         """
+        """this code allows default values for these attributes to be set on
+        the class, that can then be overridden by SessionType instances.
+
+        sessions.py uses this.
+
+        """
 
         attrs = [
             'name',
@@ -58,10 +65,17 @@ class SessionType(object):
                 if attr_name == 'vars':
                     self.vars = {}
                 else:
-                    raise AttributeError('Required attribute SessionType.{} is missing or None'.format(attr_name))
+                    msg = (
+                        'Required attribute SessionType.{} is missing or None'
+                    )
+                    raise AttributeError(msg.format(attr_name))
 
         if not re.match(r'^\w+$', self.name):
-            raise ValueError('Session "{}": name must be alphanumeric with no spaces (underscores allowed).'.format(self.name))
+            msg = (
+                'Session "{}": name must be alphanumeric with no '
+                'spaces (underscores allowed).'
+            )
+            raise ValueError(msg.format(self.name))
 
         if len(self.app_sequence) != len(set(self.app_sequence)):
             raise ValueError('app_sequence cannot contain duplicate elements')
@@ -85,9 +99,9 @@ class SessionType(object):
         return lcmm(*participants_per_group_list)
 
 
-#==============================================================================
+# =============================================================================
 # FUNCTIONS
-#==============================================================================
+# =============================================================================
 
 def get_session_types_list(demo_only=False):
     session_types = get_session_module().session_types()
@@ -109,30 +123,27 @@ def get_session_types_dict(demo_only=False):
 
 @transaction.atomic
 def create_session(session_type_name, label='', num_participants=None,
-                  special_category=None,
-                  _pre_create_id=None):
+                   special_category=None, _pre_create_id=None):
 
-    #~ 2014-5-2: i could implement this by overriding the __init__ on the
-    #~ Session model, but I don't really know how that works, and it seems to
-    #~ be a bit discouraged:
-    #~ https://docs.djangoproject.com/en/1.4/ref/models/instances/#django.db.models.Model
-    #~ 2014-9-22: preassign to groups for demo mode.
+    # 2014-5-2: i could implement this by overriding the __init__ on the
+    # Session model, but I don't really know how that works, and it seems to
+    # be a bit discouraged: http://goo.gl/dEXZpv
+    # 2014-9-22: preassign to groups for demo mode.
 
     try:
         session_type = get_session_types_dict()[session_type_name]
     except KeyError:
+        msg = 'Session type "{}" not found in sessions.py'
         raise ValueError(
-            'Session type "{}" not found in sessions.py'.format(session_type_name)
+            msg.format(session_type_name)
         )
     session = Session.objects.create(
         session_type_name=session_type.name,
-        label=label,
-        fixed_pay=session_type.fixed_pay,
+        label=label, fixed_pay=session_type.fixed_pay,
         special_category=special_category,
-        money_per_point = session_type.money_per_point,
-        session_experimenter = SessionExperimenter.objects.create(),
-        _pre_create_id = _pre_create_id,
-
+        money_per_point=session_type.money_per_point,
+        session_experimenter=SessionExperimenter.objects.create(),
+        _pre_create_id=_pre_create_id,
     )
 
     def bulk_create(model, descriptions):
@@ -154,7 +165,7 @@ def create_session(session_type_name, label='', num_participants=None,
         msg = (
             'SessionType {}: Number of participants ({}) does not divide '
             'evenly into group size ({})'
-        ).format(session_type.name,num_participants, session_lcm)
+        ).format(session_type.name, num_participants, session_lcm)
         raise ValueError(msg)
 
     participants = bulk_create(Participant, [{}] * num_participants)
@@ -198,8 +209,9 @@ def create_session(session_type_name, label='', num_participants=None,
     ])
     sub_by_pk = {s.pk: s for s in subsessions}
     for experimenter in experimenters:
-        sub_by_pk[experimenter.subsession_object_id]._experimenter = experimenter
-        sub_by_pk[experimenter.subsession_object_id].save()
+        idpk = experimenter.subsession_object_id
+        sub_by_pk[idpk]._experimenter = experimenter
+        sub_by_pk[idpk].save()
 
     session._create_groups_and_initialize()
 

@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError, make_option
 from otree.session import create_session
 
+
 class Command(BaseCommand):
     help = "oTree: Create a session."
     args = 'type num_participants'
@@ -21,5 +22,6 @@ class Command(BaseCommand):
         num_participants = int(num_participants)
         label = options.get('label', '')
         create_session(
-            session_type_name=type, num_participants=num_participants, label=label
+            session_type_name=type,
+            num_participants=num_participants, label=label
         )
