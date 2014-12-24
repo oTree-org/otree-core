@@ -1,22 +1,25 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from django.shortcuts import get_object_or_404
-from django.template.response import TemplateResponse
-from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
-import vanilla
-import otree.constants as constants
-from otree.session.models import Session
-from otree.session import create_session, get_session_types_dict, get_session_types_list
+
 import threading
 import time
 import urllib
-from otree.common_internal import get_session_module, get_models_module, app_name_format
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.decorators import user_passes_test
+import uuid
+
+from django.template.response import TemplateResponse
+from django.http import HttpResponseRedirect
+from django.core.urlresolvers import reverse
+
+import vanilla
+
+from otree.session.models import Session
+from otree.session import (
+    create_session, get_session_types_dict, get_session_types_list
+)
 from otree.views.demo import info_about_session_type
 from otree import forms
-from django.core.urlresolvers import reverse
 from otree.views.abstract import GenericWaitPageMixin
-import uuid
+
 
 class CreateSessionForm(forms.Form):
 
@@ -30,8 +33,11 @@ class CreateSessionForm(forms.Form):
         lcm = self.session_type.lcm()
         num_participants = self.cleaned_data['num_participants']
         if num_participants % lcm:
-            raise forms.ValidationError('Number of participants must be a multiple of {}'.format(lcm))
+            raise forms.ValidationError(
+                'Number of participants must be a multiple of {}'.format(lcm)
+            )
         return num_participants
+
 
 class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
 
@@ -44,34 +50,46 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
         return "/WaitUntilSessionCreated/{}/".format(pre_create_id)
 
     def _is_ready(self):
-        return Session.objects.filter(_pre_create_id=self._pre_create_id).exists()
+        return Session.objects.filter(
+            _pre_create_id=self._pre_create_id
+        ).exists()
 
     def body_text(self):
         return 'Waiting until session created'
 
     def _response_when_ready(self):
         session = Session.objects.get(_pre_create_id=self._pre_create_id)
-        admin_url = reverse('admin:%s_%s_change' % (session._meta.app_label, session._meta.module_name), args=(session.pk,))
+        urlname = 'admin:{}_{}_change'.format(
+            session._meta.app_label, session._meta.module_name
+        )
+        admin_url = reverse(urlname, args=(session.pk,))
         return HttpResponseRedirect(admin_url)
 
     def dispatch(self, request, *args, **kwargs):
-        self._pre_create_id=kwargs['session_pre_create_id']
-        return super(WaitUntilSessionCreated, self).dispatch(request, *args, **kwargs)
+        self._pre_create_id = kwargs['session_pre_create_id']
+        return super(WaitUntilSessionCreated, self).dispatch(
+            request, *args, **kwargs
+        )
 
     def _get_wait_page(self):
-        return TemplateResponse(self.request, 'otree/WaitPage.html', {'view': self})
+        return TemplateResponse(
+            self.request, 'otree/WaitPage.html', {'view': self}
+        )
+
 
 def sleep_then_create_session(**kwargs):
-    # hack: this sleep is to prevent locks on SQLite. This gives time to let the page request finish before create_session is called,
-    # because creating the session involves a lot of database I/O, which seems to cause locks when multiple threads access at the same time.
+    # hack: this sleep is to prevent locks on SQLite. This gives time to let
+    # the page request finish before create_session is called,
+    # because creating the session involves a lot of database I/O, which seems
+    # to cause locks when multiple threads access at the same time.
     time.sleep(5)
 
     create_session(**kwargs)
 
 
 # FIXME: these decorators are not working together with issubclass?
-#@user_passes_test(lambda u: u.is_staff)
-#@login_required
+# @user_passes_test(lambda u: u.is_staff)
+# @login_required
 class CreateSession(vanilla.FormView):
 
     form_class = CreateSessionForm
@@ -82,7 +100,7 @@ class CreateSession(vanilla.FormView):
         return r"^create_session/(?P<session_type>.+)/$"
 
     def dispatch(self, request, *args, **kwargs):
-        session_type_name=urllib.unquote_plus(kwargs.pop('session_type'))
+        session_type_name = urllib.unquote_plus(kwargs.pop('session_type'))
         self.session_type = get_session_types_dict()[session_type_name]
         return super(CreateSession, self).dispatch(request, *args, **kwargs)
 
@@ -96,10 +114,8 @@ class CreateSession(vanilla.FormView):
         return super(CreateSession, self).get_form(data, files, **kwargs)
 
     def form_valid(self, form):
-
         pre_create_id = uuid.uuid4().hex
-
-        kwargs={
+        kwargs = {
             'session_type_name': self.session_type.name,
             'num_participants': form.cleaned_data['num_participants'],
             '_pre_create_id': pre_create_id,
@@ -114,8 +130,8 @@ class CreateSession(vanilla.FormView):
 
 
 # FIXME: these decorators are not working together with issubclass?
-#@user_passes_test(lambda u: u.is_staff)
-#@login_required
+# @user_passes_test(lambda u: u.is_staff)
+# @login_required
 class SessionTypes(vanilla.View):
 
     @classmethod
@@ -123,9 +139,6 @@ class SessionTypes(vanilla.View):
         return r"^create_session/$"
 
     def get(self, *args, **kwargs):
-
-
-
         session_types_info = []
         for session_type in get_session_types_list():
             session_types_info.append(
