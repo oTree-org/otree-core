@@ -66,8 +66,8 @@ PEP8 = {
         os.path.join(PRJ_DIR, "otree", "app_template"),
         os.path.join(PRJ_DIR, "otree", "locale"),
         os.path.join(PRJ_DIR, "otree", "migrations"),
+        os.path.join(PRJ_DIR, "otree", "session", "migrations"),
 
-        os.path.join(PRJ_DIR, "otree", "session"),
         os.path.join(PRJ_DIR, "otree", "templatetags"),
         os.path.join(PRJ_DIR, "otree", "test"),
         os.path.join(PRJ_DIR, "otree", "timeout"),
