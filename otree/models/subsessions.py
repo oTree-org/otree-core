@@ -51,7 +51,7 @@ class BaseSubsession(models.Model):
     def in_previous_round(self):
         return type(self).objects.filter(
             session=self.session,
-            round_number=self.round_number-1
+            round_number=self.round_number - 1
         ).get()
 
     def _players_per_group(self):
@@ -70,7 +70,7 @@ class BaseSubsession(models.Model):
 
         # divide into equal size groups
         for i in range(0, len(players), players_per_group):
-            groups.append(players[i:i+players_per_group])
+            groups.append(players[i:i + players_per_group])
         return groups
 
     def set_groups(self, groups):

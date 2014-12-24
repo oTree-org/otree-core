@@ -37,7 +37,7 @@ class BasePlayer(User):
     def _in_next_round(self):
         return type(self).objects.get(
             participant=self.participant,
-            round_number=self.round_number+1
+            round_number=self.round_number + 1
         )
 
     def __unicode__(self):
