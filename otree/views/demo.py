@@ -119,7 +119,7 @@ def info_about_session_type(session_type):
     seo = set()
     for app_name in session_type.app_sequence:
         models_module = get_models_module(app_name)
-        num_rounds = models_module.Constants.number_of_rounds
+        num_rounds = models_module.Constants.num_rounds
         formatted_app_name = app_name_format(app_name)
         if num_rounds > 1:
             formatted_app_name = '{} ({} rounds)'.format(

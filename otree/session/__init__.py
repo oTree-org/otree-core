@@ -181,7 +181,7 @@ def create_session(session_type_name, label='', num_participants=None,
         models_module = get_models_module(app_name)
         app_constants = get_app_constants(app_name)
 
-        round_numbers = range(1, app_constants.number_of_rounds + 1)
+        round_numbers = range(1, app_constants.num_rounds + 1)
 
         subs = bulk_create(models_module.Subsession, [
             {'round_number': round_number}
