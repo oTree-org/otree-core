@@ -198,7 +198,7 @@ def constants(rules, **kwargs):
     )
     if cond:
         Constants = rules.get_module_attr('models', 'Constants')
-        attrs = ['name_in_url', 'players_per_group', 'number_of_rounds']
+        attrs = ['name_in_url', 'players_per_group', 'num_rounds']
         for attr_name in attrs:
             if not hasattr(Constants, attr_name):
                 msg = "models.py: 'Constants' class needs to define '{}'"

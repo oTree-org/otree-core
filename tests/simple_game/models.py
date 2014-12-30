@@ -11,7 +11,7 @@ import random
 class Constants:
     name_in_url = 'simple_game'
     players_per_group = None
-    number_of_rounds = 1
+    num_rounds = 1
 
 
 
