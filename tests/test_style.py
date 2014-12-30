@@ -4,7 +4,6 @@
 import os
 import sys
 import multiprocessing
-import unittest
 
 from flake8 import engine, reporter
 
@@ -21,7 +20,7 @@ CHECK = settings.PEP8.get("check", ())
 
 EXCLUDE = list(settings.PEP8.get("exclude", ()))
 
-PRJ_DIR_LEN = len(settings.PRJ_DIR) + 1
+PRJ_DIR_LEN = len(settings.PRJ_DIR)
 
 IS_WINDOWS = sys.platform.startswith("win")
 
@@ -57,9 +56,14 @@ class FileCollectReport(reporter.QueueReport):
 class TestStyle(TestCase):
 
     def setUp(self):
-        self.quiet = settings.TEST_VERBOSITY <= 2
-        self.pep8 = engine.get_style_guide(exclude=EXCLUDE)
-        self.pep8.n_jobs = 1
+        if IS_WINDOWS:
+            # WINDOWS UGLY AND HACKISH PATCH for flake 8 is based on
+            # http://goo.gl/2b53SG
+            sys.argv.append(".")
+            self.pep8 = engine.get_style_guide(exclude=EXCLUDE, jobs=1)
+        else:
+            self.pep8 = engine.get_style_guide(exclude=EXCLUDE)
+
         self.pep8.reporter = FileCollectReport
         report = self.pep8.init_report(self.pep8.reporter)
         report.input_file = self.pep8.input_file
@@ -71,7 +75,6 @@ class TestStyle(TestCase):
                 raise ImproperlyConfigured(msg)
             self.pep8.paths.append(path)
 
-    @unittest.skipUnless(not IS_WINDOWS, "not work on Windows")
     def test_pep8(self):
         report = self.pep8.check_files()
         error_q = report.total_errors

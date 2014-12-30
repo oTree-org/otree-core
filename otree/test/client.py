@@ -254,6 +254,9 @@ class BasePlayerBot(BaseClient):
 
             # FIXME: why doesn't this work? the game works fine, and print
             # statements show that a payoff is non-null
+            # ANSWER:
+            # this fails beacuse the test only simulate the play but the payoff
+            # is never set. I will try a workarround
             # raise AssertionError(msg)
         player_page_index = player._index_in_game_pages
         pages_in_subsession = len(

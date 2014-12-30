@@ -5,11 +5,8 @@ import time
 import urllib
 
 from django.conf import settings
-from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
-from django.http import (
-    HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
-)
+from django.http import HttpResponseNotFound
 
 import vanilla
 
@@ -24,6 +21,7 @@ from otree.common_internal import (
 )
 
 import otree.adminlib
+
 
 def start_link_url(session_type_name):
     return '/demo/{}/'.format(session_type_name)
@@ -60,8 +58,10 @@ class DemoIndex(vanilla.View):
 
 def ensure_enough_spare_sessions(session_type_name):
 
-    # hack: this sleep is to prevent locks on SQLite. This gives time to let the page request finish before create_session is called,
-    # because creating the session involves a lot of database I/O, which seems to cause locks when multiple threads access at the same time.
+    # hack: this sleep is to prevent locks on SQLite. This gives time to let
+    # the page request finish before create_session is called, because creating
+    # the session involves a lot of database I/O, which seems to cause locks
+    # when multiple threads access at the same time.
     time.sleep(5)
 
     DESIRED_SPARE_SESSIONS = 3
@@ -156,11 +156,15 @@ def render_to_start_links_page(request, session):
         'display_name': session.session_type.display_name,
         'experimenter_url': experimenter_url,
         'participant_urls': participant_urls,
-        'advance_session_url': request.build_absolute_uri(AdvanceSession.url(session.code)),
+        'advance_session_url': request.build_absolute_uri(
+            AdvanceSession.url(session.code)
+        ),
         'session_monitor_url': otree.adminlib.session_monitor_url(session),
     }
 
-    session_type = get_session_types_dict(demo_only=True)[session.session_type_name]
+    session_type = get_session_types_dict(
+        demo_only=True
+    )[session.session_type_name]
     context_data.update(info_about_session_type(session_type))
 
     return TemplateResponse(
@@ -188,7 +192,6 @@ class Demo(GenericWaitPageMixin, vanilla.View):
             ).format(self.session_type_name)
             return HttpResponseNotFound(msg)
 
-
         t = threading.Thread(
             target=ensure_enough_spare_sessions,
             args=(self.session_type_name,)
@@ -208,8 +211,10 @@ class Demo(GenericWaitPageMixin, vanilla.View):
         )
 
     def dispatch(self, request, *args, **kwargs):
-        self.session_type_name=kwargs['session_type']
+        self.session_type_name = kwargs['session_type']
         return super(Demo, self).dispatch(request, *args, **kwargs)
 
     def _get_wait_page(self):
-        return TemplateResponse(self.request, 'otree/WaitPage.html', {'view': self})
+        return TemplateResponse(
+            self.request, 'otree/WaitPage.html', {'view': self}
+        )

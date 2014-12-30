@@ -6,6 +6,7 @@ import string
 
 from django.utils.translation import ugettext_lazy
 from django.db import models
+from django.db.models.fields import related
 from django.db.models.base import ModelBase
 
 from handy.models import PickleField
@@ -328,6 +329,10 @@ class URLField(_OtreeNullableModelFieldMixin, models.URLField):
 
 
 class ForeignKey(models.ForeignKey):
+    pass
+
+
+class ManyToOneRel(related.ManyToOneRel):
     pass
 
 
