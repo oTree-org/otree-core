@@ -154,9 +154,10 @@ class BaseSubsession(models.Model):
     def _initialize(self):
         '''wrapper method for self.initialize()'''
         self.initialize()
-        for p in self.player_set.all():
+        # needs to be get_players and get_groups instead of self.player_set.all() because that would just send a new query to the DB
+        for p in self.get_players():
             p.save()
-        for g in self.group_set.all():
+        for g in self.get_groups():
             g.save()
 
     def _experimenter_pages(self):
