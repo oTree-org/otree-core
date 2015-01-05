@@ -1,4 +1,7 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
+import types
 from collections import OrderedDict
 
 from django.contrib import admin
@@ -19,9 +22,6 @@ from otree.common_internal import add_params_to_url
 from otree.common import Currency as c
 from otree.common import Money
 from otree.views.demo import render_to_start_links_page
-
-
-CHANGE_LIST_TEMPLATE = "admin/otree_change_list.html"
 
 
 def session_monitor_url(session):
@@ -386,9 +386,16 @@ class OTreeBaseModelAdmin(admin.ModelAdmin):
                 pass
         return form
 
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['extra_tools'] = getattr(self, "extra_tools", ())
+        return super(OTreeBaseModelAdmin, self).changelist_view(
+            request, extra_context=extra_context
+        )
+
 
 class PlayerAdmin(OTreeBaseModelAdmin):
-    change_list_template = CHANGE_LIST_TEMPLATE
+    change_list_template = "admin/otree_change_list.html"
 
     list_filter = [NonHiddenSessionListFilter, 'subsession', 'group']
     list_per_page = 40
@@ -399,7 +406,7 @@ class PlayerAdmin(OTreeBaseModelAdmin):
 
 
 class GroupAdmin(OTreeBaseModelAdmin):
-    change_list_template = CHANGE_LIST_TEMPLATE
+    change_list_template = "admin/otree_change_list.html"
 
     list_filter = [NonHiddenSessionListFilter, 'subsession']
     list_per_page = 40
@@ -411,7 +418,7 @@ class GroupAdmin(OTreeBaseModelAdmin):
 
 class SubsessionAdmin(OTreeBaseModelAdmin):
 
-    change_list_template = CHANGE_LIST_TEMPLATE
+    change_list_template = "admin/otree_change_list.html"
     list_filter = [NonHiddenSessionListFilter]
 
     def get_queryset(self, request):
@@ -491,7 +498,7 @@ class GlobalSingletonAdmin(OTreeBaseModelAdmin):
 
 
 class ParticipantAdmin(OTreeBaseModelAdmin):
-    change_list_template = CHANGE_LIST_TEMPLATE
+    change_list_template = "admin/otree_change_list.html"
 
     list_filter = [NonHiddenSessionListFilter]
 
@@ -511,8 +518,19 @@ class ParticipantAdmin(OTreeBaseModelAdmin):
         return qs.filter(session__hidden=False)
 
 
+class ParticipantProxyAdmin(ParticipantAdmin):
+
+    list_filter = []
+
+    def has_add_permission(self, request):
+        return False
+
+    def extra_tools(self):
+        return [("google", "http://google.com")]
+
+
 class SessionAdmin(OTreeBaseModelAdmin):
-    change_list_template = CHANGE_LIST_TEMPLATE
+    change_list_template = "admin/otree_change_list.html"
 
     def get_urls(self):
         urls = super(SessionAdmin, self).get_urls()

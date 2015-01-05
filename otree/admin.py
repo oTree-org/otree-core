@@ -14,5 +14,7 @@ admin.site.register(otree.session.models.Session,
                     otree.adminlib.SessionAdmin)
 admin.site.register(otree.session.models.Participant,
                     otree.adminlib.ParticipantAdmin)
+admin.site.register(otree.session.models.ParticipantProxy,
+                    otree.adminlib.ParticipantProxyAdmin)
 admin.site.unregister(User)
 admin.site.unregister(Group)
