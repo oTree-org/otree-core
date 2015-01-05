@@ -34,7 +34,7 @@ REQUIREMENTS = [
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version = '0.2.251'
+version = '0.2.252'
 
 
 if sys.argv[-1] == 'publish':
