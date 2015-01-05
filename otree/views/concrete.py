@@ -302,14 +302,7 @@ class AdvanceSession(vanilla.View):
         )
         return super(AdvanceSession, self).dispatch(request, *args, **kwargs)
 
-    def get(self, *args, **kwargs):
-        return TemplateResponse(
-            self.request,
-            'otree/experimenter/AdvanceSession.html',
-            {'session_code': self.session.code}
-        )
-
-    def post(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         self.session.advance_last_place_participants()
         return TemplateResponse(
             self.request,

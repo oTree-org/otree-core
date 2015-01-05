@@ -17,7 +17,7 @@ from django.contrib.staticfiles.templatetags.staticfiles import (
 
 import otree.constants
 import otree.session.models
-from otree.session.models import Participant
+from otree.session.models import Participant, ParticipantProxy
 from otree.common_internal import add_params_to_url
 from otree.common import Currency as c
 from otree.common import Money
@@ -26,7 +26,7 @@ from otree.views.demo import render_to_start_links_page
 
 def session_monitor_url(session):
     participants_table_url = reverse('admin:{}_{}_changelist'.format(
-        Participant._meta.app_label, Participant._meta.module_name
+        ParticipantProxy._meta.app_label, ParticipantProxy._meta.module_name
     ))
     return add_params_to_url(participants_table_url, {'session': session.pk})
 
@@ -389,6 +389,7 @@ class OTreeBaseModelAdmin(admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
         extra_context['extra_tools'] = getattr(self, "extra_tools", ())
+        extra_context['table_title'] = getattr(self, "table_title", None)
         return super(OTreeBaseModelAdmin, self).changelist_view(
             request, extra_context=extra_context
         )
@@ -525,8 +526,25 @@ class ParticipantProxyAdmin(ParticipantAdmin):
     def has_add_permission(self, request):
         return False
 
+    def changelist_view(self, request, extra_context=None):
+        from otree.views.concrete import AdvanceSession
+
+        self.session = otree.session.models.Session(pk=request.GET["session"])
+        self.advance_session_url = request.build_absolute_uri(
+            AdvanceSession.url(self.session.code)
+        )
+        return super(ParticipantProxyAdmin, self).changelist_view(
+            request, extra_context
+        )
+
     def extra_tools(self):
         return [("google", "http://google.com")]
+
+    def table_title(self):
+        title = u"{} - {}".format(
+            self.model._meta.verbose_name, self.session.code
+        )
+        return title
 
 
 class SessionAdmin(OTreeBaseModelAdmin):
