@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import types
 from collections import OrderedDict
 
 from django.contrib import admin
@@ -17,7 +16,7 @@ from django.contrib.staticfiles.templatetags.staticfiles import (
 
 import otree.constants
 import otree.session.models
-from otree.session.models import Participant, ParticipantProxy
+from otree.session.models import ParticipantProxy
 from otree.common_internal import add_params_to_url
 from otree.common import Currency as c
 from otree.common import Money
