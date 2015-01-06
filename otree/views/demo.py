@@ -142,7 +142,6 @@ def info_about_session_type(session_type):
 
 
 def render_to_start_links_page(request, session):
-    from otree.views.concrete import AdvanceSession
 
     experimenter_url = request.build_absolute_uri(
         session.session_experimenter._start_url()
@@ -155,9 +154,6 @@ def render_to_start_links_page(request, session):
         'display_name': session.session_type.display_name,
         'experimenter_url': experimenter_url,
         'participant_urls': participant_urls,
-        'advance_session_url': request.build_absolute_uri(
-            AdvanceSession.url(session.code)
-        ),
         'session_monitor_url': otree.adminlib.session_monitor_url(session),
     }
 

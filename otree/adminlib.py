@@ -518,11 +518,12 @@ class ParticipantAdmin(OTreeBaseModelAdmin):
         return qs.filter(session__hidden=False)
 
 
-class ParticipantProxyAdmin(ParticipantAdmin):
+class MonitorParticipantAdmin(ParticipantAdmin):
 
     list_filter = []
 
     def has_add_permission(self, request):
+        """Hide add button"""
         return False
 
     def get_model_perms(self, request):
@@ -536,7 +537,7 @@ class ParticipantProxyAdmin(ParticipantAdmin):
         self.advance_session_url = request.build_absolute_uri(
             AdvanceSession.url(self.session)
         )
-        return super(ParticipantProxyAdmin, self).changelist_view(
+        return super(MonitorParticipantAdmin, self).changelist_view(
             request, extra_context
         )
 
