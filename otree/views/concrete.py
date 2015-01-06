@@ -302,8 +302,11 @@ class AdvanceSession(vanilla.View):
         self.session = get_object_or_404(
             otree.session.models.Session, pk=kwargs['session_pk']
         )
-        someting = super(AdvanceSession, self).dispatch(request, *args, **kwargs)
-        import ipdb; ipdb.set_trace()
+        response = super(AdvanceSession, self).dispatch(
+            request, *args, **kwargs
+        )
+        messages.success(request, "Participants were advanced.")
+        return response
 
     def get(self, request, *args, **kwargs):
         self.session.advance_last_place_participants()
