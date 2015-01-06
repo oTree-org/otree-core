@@ -531,18 +531,18 @@ class ParticipantProxyAdmin(ParticipantAdmin):
 
         self.session = otree.session.models.Session(pk=request.GET["session"])
         self.advance_session_url = request.build_absolute_uri(
-            AdvanceSession.url(self.session.code)
+            AdvanceSession.url(self.session)
         )
         return super(ParticipantProxyAdmin, self).changelist_view(
             request, extra_context
         )
 
     def extra_tools(self):
-        return [("google", "http://google.com")]
+        return [("Advance slowest participant(s)", self.advance_session_url)]
 
     def table_title(self):
-        title = u"{} - {}".format(
-            self.model._meta.verbose_name, self.session.code
+        title = u"{} of Session '{}'".format(
+            self.model._meta.verbose_name, self.session.pk
         )
         return title
 

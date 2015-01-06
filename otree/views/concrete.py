@@ -20,6 +20,7 @@ from django.http import (
 
 import otree.constants as constants
 import otree.session.models
+import otree.adminlib
 import otree.common_internal
 from otree.views.abstract import (
     NonSequenceUrlMixin, OTreeMixin, AssignVisitorToOpenSessionBase,
@@ -280,15 +281,15 @@ class AdvanceSession(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r'^AdvanceSession/(?P<{}>[a-z]+)/(?P<{}>[a-z]+)/$'.format(
-            'session_code', constants.admin_access_code
+        return r'^AdvanceSession/(?P<{}>[0-9]+)/(?P<{}>[a-z]+)/$'.format(
+            'session_pk', constants.admin_access_code
         )
 
     @classmethod
-    def url(cls, session_code):
+    def url(cls, session):
         gs = otree.session.models.GlobalSingleton.objects.get()
         return '/AdvanceSession/{}/{}/'.format(
-            session_code, gs.admin_access_code
+            session.pk, gs.admin_access_code
         )
 
     def dispatch(self, request, *args, **kwargs):
@@ -298,14 +299,11 @@ class AdvanceSession(vanilla.View):
                 'incorrect or missing admin access code'
             )
         self.session = get_object_or_404(
-            otree.session.models.Session, code=kwargs['session_code']
+            otree.session.models.Session, pk=kwargs['session_pk']
         )
         return super(AdvanceSession, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         self.session.advance_last_place_participants()
-        return TemplateResponse(
-            self.request,
-            'otree/experimenter/AdvanceSession.html',
-            {'success': True}
-        )
+        admin_url = otree.adminlib.session_monitor_url(self.session)
+        return HttpResponseRedirect(admin_url)
