@@ -525,6 +525,10 @@ class ParticipantProxyAdmin(ParticipantAdmin):
     def has_add_permission(self, request):
         return False
 
+    def get_model_perms(self, request):
+        """Return empty perms dict thus hiding the model from admin index."""
+        return {}
+
     def changelist_view(self, request, extra_context=None):
         from otree.views.concrete import AdvanceSession
 
