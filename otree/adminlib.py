@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 from collections import OrderedDict
 
@@ -14,19 +16,16 @@ from django.contrib.staticfiles.templatetags.staticfiles import (
 
 import otree.constants
 import otree.session.models
-from otree.session.models import Participant
+from otree.session.models import ParticipantProxy
 from otree.common_internal import add_params_to_url
 from otree.common import Currency as c
 from otree.common import Money
 from otree.views.demo import render_to_start_links_page
 
 
-CHANGE_LIST_TEMPLATE = "admin/otree_change_list.html"
-
-
 def session_monitor_url(session):
     participants_table_url = reverse('admin:{}_{}_changelist'.format(
-        Participant._meta.app_label, Participant._meta.module_name
+        ParticipantProxy._meta.app_label, ParticipantProxy._meta.module_name
     ))
     return add_params_to_url(participants_table_url, {'session': session.pk})
 
@@ -386,9 +385,17 @@ class OTreeBaseModelAdmin(admin.ModelAdmin):
                 pass
         return form
 
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['extra_tools'] = getattr(self, "extra_tools", ())
+        extra_context['table_title'] = getattr(self, "table_title", None)
+        return super(OTreeBaseModelAdmin, self).changelist_view(
+            request, extra_context=extra_context
+        )
+
 
 class PlayerAdmin(OTreeBaseModelAdmin):
-    change_list_template = CHANGE_LIST_TEMPLATE
+    change_list_template = "admin/otree_change_list.html"
 
     list_filter = [NonHiddenSessionListFilter, 'subsession', 'group']
     list_per_page = 40
@@ -399,7 +406,7 @@ class PlayerAdmin(OTreeBaseModelAdmin):
 
 
 class GroupAdmin(OTreeBaseModelAdmin):
-    change_list_template = CHANGE_LIST_TEMPLATE
+    change_list_template = "admin/otree_change_list.html"
 
     list_filter = [NonHiddenSessionListFilter, 'subsession']
     list_per_page = 40
@@ -411,7 +418,7 @@ class GroupAdmin(OTreeBaseModelAdmin):
 
 class SubsessionAdmin(OTreeBaseModelAdmin):
 
-    change_list_template = CHANGE_LIST_TEMPLATE
+    change_list_template = "admin/otree_change_list.html"
     list_filter = [NonHiddenSessionListFilter]
 
     def get_queryset(self, request):
@@ -491,7 +498,7 @@ class GlobalSingletonAdmin(OTreeBaseModelAdmin):
 
 
 class ParticipantAdmin(OTreeBaseModelAdmin):
-    change_list_template = CHANGE_LIST_TEMPLATE
+    change_list_template = "admin/otree_change_list.html"
 
     list_filter = [NonHiddenSessionListFilter]
 
@@ -511,8 +518,41 @@ class ParticipantAdmin(OTreeBaseModelAdmin):
         return qs.filter(session__hidden=False)
 
 
+class MonitorParticipantAdmin(ParticipantAdmin):
+
+    list_filter = []
+
+    def has_add_permission(self, request):
+        """Hide add button"""
+        return False
+
+    def get_model_perms(self, request):
+        """Return empty perms dict thus hiding the model from admin index."""
+        return {}
+
+    def changelist_view(self, request, extra_context=None):
+        from otree.views.concrete import AdvanceSession
+
+        self.session = otree.session.models.Session(pk=request.GET["session"])
+        self.advance_session_url = request.build_absolute_uri(
+            AdvanceSession.url(self.session)
+        )
+        return super(MonitorParticipantAdmin, self).changelist_view(
+            request, extra_context
+        )
+
+    def extra_tools(self):
+        return [("Advance slowest participant(s)", self.advance_session_url)]
+
+    def table_title(self):
+        title = u"{} of Session '{}'".format(
+            self.model._meta.verbose_name, self.session.pk
+        )
+        return title
+
+
 class SessionAdmin(OTreeBaseModelAdmin):
-    change_list_template = CHANGE_LIST_TEMPLATE
+    change_list_template = "admin/otree_change_list.html"
 
     def get_urls(self):
         urls = super(SessionAdmin, self).get_urls()

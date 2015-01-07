@@ -485,3 +485,10 @@ class Participant(SessionUser):
 
     def name(self):
         return id_label_name(self.pk, self.label)
+
+
+class ParticipantProxy(Participant):
+    class Meta:
+        proxy = True
+        verbose_name = "Monitor Participant"
+        verbose_name_plural = "Monitor Participants"

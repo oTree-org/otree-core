@@ -53,9 +53,9 @@
 {% block content %}
     <div id="otree-change-list-error-messages"></div>
   <div id="content-main">
-    {% block object-tools %}
+     {% block object-tools %}
+      <ul class="object-tools">
       {% if has_add_permission %}
-        <ul class="object-tools">
           {% block object-tools-items %}
             <li>
               {% url cl.opts|admin_urlname:'add' as add_url %}
@@ -64,8 +64,13 @@
               </a>
             </li>
           {% endblock %}
-        </ul>
       {% endif %}
+      {% for label, link in extra_tools %}
+        <li>
+          <a href="{{link}}">{{label}}</a>
+        </li>
+      {% endfor %}
+      </ul>
     {% endblock %}
     {% if cl.formset.errors %}
         <p class="errornote">
@@ -86,6 +91,9 @@
         {% endif %}
       {% endblock %}
 
+      {% if table_title %}
+      <h3>{{table_title}}</h3>
+      {% endif %}
       <form id="changelist-form" action="" method="post"{% if cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %}>{% csrf_token %}
       {% if cl.formset %}
         <div>{{ cl.formset.management_form }}</div>
