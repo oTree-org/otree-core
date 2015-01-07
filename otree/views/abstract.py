@@ -369,7 +369,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         now = django.utils.timezone.now()
 
         last_page_timestamp = self._session_user._last_page_timestamp
-        if not last_page_timestamp:
+        if last_page_timestamp is None:
             logger.warning('Participant {}: _last_page_timestamp is None'.format(self._session_user.code))
             last_page_timestamp = now
 

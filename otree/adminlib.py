@@ -137,7 +137,6 @@ def get_all_fields_for_table(Model, callables,
                 'name',
                 'start_link',
                 'session',
-                'visited',
                 'subsessions_completed',
                 'current_subsession',
                 'current_page',
@@ -177,6 +176,7 @@ def get_all_fields_for_table(Model, callables,
         'Participant': {
             # 'label',
             'ip_address',
+            'time_started',
         },
     }[Model.__name__]
 
@@ -223,6 +223,12 @@ def get_all_fields_for_table(Model, callables,
             'mturk_assignment_id',
             'mturk_worker_id',
             'vars',
+            '_last_page_timestamp',
+            '_current_form_page_url',
+            '_max_page_index',
+            '_predetermined_arrival_order',
+            '_index_in_pages',
+            'visited', # not necessary because 'status' column includes this
         },
         'Session': {
             'mturk_payment_was_sent',

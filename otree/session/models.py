@@ -333,6 +333,8 @@ class SessionUser(ModelWithVars):
         return lst
 
     def status(self):
+        if not self.visited:
+            return 'Not visited yet'
         if self.is_on_wait_page:
             return 'Waiting'
         return ''
