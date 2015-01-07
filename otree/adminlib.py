@@ -64,6 +64,7 @@ def get_callables(Model,
             'is_open',
         ],
         'Participant': [
+            '_id_in_session_display',
             'subsessions_completed',
             'current_subsession',
             'status',
@@ -132,9 +133,9 @@ def get_all_fields_for_table(Model, callables,
              'session'],
         'Participant':
             [
+                '_id_in_session_display',
                 'code',
                 'label',
-                'name',
                 'start_link',
                 'session',
                 'subsessions_completed',
@@ -189,7 +190,6 @@ def get_all_fields_for_table(Model, callables,
             'hidden',
         },
         'Participant': {
-            'session',
             'name',
             'start_link',
             'session',
@@ -218,6 +218,8 @@ def get_all_fields_for_table(Model, callables,
         },
         'Participant': {
             'id',
+            'id_in_session',
+            'session', # because we already filter by session
             '_index_in_subsessions',
             'is_on_wait_page',
             'mturk_assignment_id',
@@ -229,6 +231,7 @@ def get_all_fields_for_table(Model, callables,
             '_predetermined_arrival_order',
             '_index_in_pages',
             'visited', # not necessary because 'status' column includes this
+            '_waiting_for_ids',
         },
         'Session': {
             'mturk_payment_was_sent',

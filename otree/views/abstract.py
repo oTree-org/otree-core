@@ -480,12 +480,17 @@ class InGameWaitPageMixin(object):
         else:
             self._group_or_subsession = self.group
         if self.request_is_from_wait_page():
+            unvisited_ids = self._get_unvisited_ids()
+            self._record_unvisited_ids(unvisited_ids)
             return self._response_to_wait_page()
         else:
             if self._is_ready():
                 return self._response_when_ready()
+            self._session_user.is_on_wait_page = True
             self._record_visit()
-            if self._all_players_have_visited():
+            unvisited_ids = self._get_unvisited_ids()
+            self._record_unvisited_ids(unvisited_ids)
+            if len(unvisited_ids) == 0:
 
                 # on SQLite, transaction.atomic causes database to lock,
                 # so we use no-op context manager instead
@@ -528,7 +533,7 @@ class InGameWaitPageMixin(object):
                         otree.timeout.tasks.ensure_pages_visited.apply_async(
                             kwargs={
                                 'app_name': self.subsession.app_name,
-                                'participant_pk_set': self._pks_to_wait_for(),
+                                'participant_pk_set': self._ids_for_this_wait_page(),
                                 'wait_page_index': self._index_in_pages,
                             },
                             countdown=10,
@@ -537,6 +542,7 @@ class InGameWaitPageMixin(object):
             return self._get_wait_page()
 
     def _is_ready(self):
+        """all participants visited, AND action has been run"""
         if self.wait_for_all_groups:
             return CompletedSubsessionWaitPage.objects.filter(
                 page_index=self._index_in_pages,
@@ -549,18 +555,28 @@ class InGameWaitPageMixin(object):
                 session_pk=self.session.pk
             ).exists()
 
-    def _pks_to_wait_for(self):
+    def _ids_for_this_wait_page(self):
         return set([
-            p.participant.pk
+            p.participant.id_in_session
             for p in self._group_or_subsession.player_set.all()
         ])
 
-    def _all_players_have_visited(self):
-        pks_that_have_visited = WaitPageVisit.objects.filter(
-            session_pk=self.session.pk,
-            page_index=self._index_in_pages,
-        ).values_list('participant_pk', flat=True)
-        return self._pks_to_wait_for() <= set(pks_that_have_visited)
+    def _get_unvisited_ids(self):
+        """side effect: set _waiting_for_ids"""
+        visited_ids = set(
+            WaitPageVisit.objects.filter(
+                session_pk=self.session.pk,
+                page_index=self._index_in_pages,
+            ).values_list('id_in_session', flat=True)
+        )
+        ids_for_this_wait_page = self._ids_for_this_wait_page()
+
+        return ids_for_this_wait_page - visited_ids
+
+    def _record_unvisited_ids(self, unvisited_ids):
+        # only bother numerating if there are just a few, otherwise it's distracting
+        if len(unvisited_ids) <= 3:
+            self._session_user._waiting_for_ids = ', '.join('P{}'.format(id_in_session) for id_in_session in unvisited_ids)
 
     def _record_visit(self):
         """record that this player visited"""
@@ -569,7 +585,7 @@ class InGameWaitPageMixin(object):
             page_index=self._index_in_pages,
 
             # FIXME: what about experimenter?
-            participant_pk=self._session_user.pk
+            id_in_session=self._session_user.id_in_session
         )
 
     def _action(self):
@@ -586,6 +602,7 @@ class InGameWaitPageMixin(object):
         return True
 
     def _response_when_ready(self):
+        self._session_user.is_on_wait_page = False
         self._increment_index_in_pages()
         return self._redirect_to_page_the_user_should_be_on()
 

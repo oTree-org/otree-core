@@ -275,6 +275,14 @@ class SessionUser(ModelWithVars):
 
     _index_in_pages = models.PositiveIntegerField(default=0)
 
+    id_in_session = models.PositiveIntegerField(null=True)
+
+    def _id_in_session_display(self):
+        return 'P{}'.format(self.id_in_session)
+    _id_in_session_display.short_description = 'Participant'
+
+    _waiting_for_ids = models.CharField(null=True, max_length=300)
+
     code = models.RandomCharField(
         length=8, doc=(
             "Randomly generated unique identifier for the participant. If you "
@@ -336,6 +344,8 @@ class SessionUser(ModelWithVars):
         if not self.visited:
             return 'Not visited yet'
         if self.is_on_wait_page:
+            if self._waiting_for_ids:
+                return 'Waiting for {}'.format(self._waiting_for_ids)
             return 'Waiting'
         return ''
 
