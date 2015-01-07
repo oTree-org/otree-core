@@ -286,6 +286,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                     request, *args, **kwargs
                 )
             self._session_user.last_request_succeeded = True
+            self._session_user._last_request_timestamp = django.utils.timezone.now()
             self.save_objects()
             return response
         except Exception as e:
@@ -432,7 +433,7 @@ class GenericWaitPageMixin(object):
         return self.request.path
 
     # called from template
-    poll_interval_seconds = 4
+    poll_interval_seconds = constants.wait_page_poll_interval_seconds
 
     def _response_to_wait_page(self):
         return HttpResponse(int(bool(self._is_ready())))
@@ -707,7 +708,7 @@ class FormPageMixin(object):
         return self.request.path
 
     # called from template
-    poll_interval_seconds = 10
+    poll_interval_seconds = constants.form_page_poll_interval_seconds
 
     def _set_auto_submit_values(self):
         for field_name in self.form_fields:

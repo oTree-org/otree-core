@@ -2,6 +2,7 @@ import copy
 import itertools
 
 import django.test
+import django.utils.timezone
 
 from otree import constants
 import otree.common_internal
@@ -306,6 +307,8 @@ class SessionUser(ModelWithVars):
     # stores when the page was first visited
     _last_page_timestamp = models.DateTimeField(null=True)
 
+    _last_request_timestamp = models.DateTimeField(null=True)
+
     is_on_wait_page = models.BooleanField(default=False)
 
     current_page = models.CharField(max_length=200, null=True)
@@ -343,6 +346,14 @@ class SessionUser(ModelWithVars):
     def status(self):
         if not self.visited:
             return 'Not visited yet'
+
+        # check if they are disconnected
+        max_seconds_since_last_request = max(
+            constants.form_page_poll_interval_seconds,
+            constants.wait_page_poll_interval_seconds,
+        ) + 10 # for latency
+        if (django.utils.timezone.now() - self._last_request_timestamp).total_seconds() > max_seconds_since_last_request:
+            return 'Disconnected'
         if self.is_on_wait_page:
             if self._waiting_for_ids:
                 return 'Waiting for {}'.format(self._waiting_for_ids)

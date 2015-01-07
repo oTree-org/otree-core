@@ -168,7 +168,10 @@ def create_session(session_type_name, label='', num_participants=None,
         ).format(session_type.name, num_participants, session_lcm)
         raise ValueError(msg)
 
-    participants = bulk_create(Participant, [{'id_in_session': i} for i in range(1, num_participants + 1)])
+    participants = bulk_create(
+        Participant,
+        [{'id_in_session': i} for i in range(1, num_participants + 1)]
+    )
 
     subsessions = []
     for app_name in session_type.app_sequence:

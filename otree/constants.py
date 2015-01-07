@@ -44,3 +44,6 @@ failure = False
 session_special_category_bots = 'bots'
 session_special_category_demo = 'demo'
 access_code_for_open_session = 'access_code_for_open_session'
+
+form_page_poll_interval_seconds = 10
+wait_page_poll_interval_seconds = 4
