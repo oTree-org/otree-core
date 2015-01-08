@@ -210,6 +210,9 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         app_name = user_lookup.app_name
         user_pk = user_lookup.user_pk
 
+        # for the participant changelist
+        self._session_user._current_app_name = app_name
+
         models_module = otree.common_internal.get_models_module(app_name)
         self.SubsessionClass = getattr(models_module, 'Subsession')
         self.GroupClass = getattr(models_module, 'Group')
@@ -281,7 +284,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                 self._increment_index_in_pages()
                 response = self._redirect_to_page_the_user_should_be_on()
             else:
-                self._session_user.current_page = self.__class__.__name__
+                self._session_user._current_page_name = self.__class__.__name__
                 response = super(FormPageOrWaitPageMixin, self).dispatch(
                     request, *args, **kwargs
                 )

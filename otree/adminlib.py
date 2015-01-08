@@ -65,8 +65,8 @@ def get_callables(Model,
         ],
         'Participant': [
             '_id_in_session_display',
-            'subsessions_completed',
-            'current_subsession',
+            '_pages_completed',
+            '_current_app_name',
             'status',
             'start_link',
         ],
@@ -137,10 +137,10 @@ def get_all_fields_for_table(Model, callables,
                 'code',
                 'label',
                 'start_link',
-                'session',
-                'subsessions_completed',
-                'current_subsession',
-                'current_page',
+                '_pages_completed',
+                '_current_app_name',
+                '_round_number',
+                '_current_page_name',
                 'status',
                 'last_request_succeeded',
             ],
@@ -194,11 +194,12 @@ def get_all_fields_for_table(Model, callables,
             'start_link',
             'session',
             'visited',
+            '_last_page_timestamp', # used to tell how long participant has been on a page
             # the following fields are useful for telling if the participant
             # actually finished:
-            #  'subsessions_completed',
-            #  'current_subsession',
-            #  'current_page',
+            #  '_pages_completed',
+            #  '_current_app_name',
+            #  '_current_page_name',
             'status',
             'last_request_succeeded',
         },
@@ -225,13 +226,13 @@ def get_all_fields_for_table(Model, callables,
             'mturk_assignment_id',
             'mturk_worker_id',
             'vars',
-            '_last_page_timestamp',
             '_current_form_page_url',
             '_max_page_index',
             '_predetermined_arrival_order',
             '_index_in_pages',
             'visited', # not necessary because 'status' column includes this
             '_waiting_for_ids',
+            '_last_request_timestamp',
         },
         'Session': {
             'mturk_payment_was_sent',
@@ -516,6 +517,8 @@ class ParticipantAdmin(OTreeBaseModelAdmin):
         otree.session.models.Participant, readonly_fields
     )
     list_editable = ['exclude_from_data_analysis']
+
+    list_display_links = None
 
     def start_link(self, instance):
         url = instance._start_url()

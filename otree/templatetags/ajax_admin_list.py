@@ -255,9 +255,9 @@ def items_for_result(cl, result, form):
             result_repr = mark_safe('&nbsp;')
         # If list_display_links not defined,
         # add the link tag to the first field
-        if (
+        if ( # 2015-1-8: add workaround in case list_display_links is None
             (first and not cl.list_display_links) or
-            field_name in cl.list_display_links
+            field_name in (cl.list_display_links or [])
         ):
             table_tag = {True: 'th', False: 'td'}[first]
             first = False

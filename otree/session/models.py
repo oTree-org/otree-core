@@ -311,25 +311,28 @@ class SessionUser(ModelWithVars):
 
     is_on_wait_page = models.BooleanField(default=False)
 
-    current_page = models.CharField(max_length=200, null=True)
+
+    # these are both for the admin
+    # In the changelist, simply call these "page" and "app"
+    _current_page_name = models.CharField(max_length=200, null=True, verbose_name='page')
+    _current_app_name = models.CharField(max_length=200, null=True, verbose_name='app')
+
+    # only to be displayed in the admin participants changelist
+    _round_number = models.PositiveIntegerField(
+        null=True
+    )
+
+
 
     _current_form_page_url = models.URLField()
 
     _max_page_index = models.PositiveIntegerField()
 
-    def subsessions_completed(self):
-        if not self.visited:
-            return None
-        return '{}/{} subsessions'.format(
-            self._index_in_subsessions, len(self.session.get_subsessions())
-        )
 
-    def current_subsession(self):
-        if not self.visited:
-            return None
-        subsession = self.session.get_subsessions()[self._index_in_subsessions]
-        app_name = subsession._meta.app_config.name
-        return otree.common_internal.app_name_format(app_name)
+    def _pages_completed(self):
+        return '{}/{} pages'.format(
+            self._index_in_pages, self._max_page_index
+        )
 
     def get_users(self):
         """Used to calculate payoffs"""
@@ -358,15 +361,7 @@ class SessionUser(ModelWithVars):
             if self._waiting_for_ids:
                 return 'Waiting for {}'.format(self._waiting_for_ids)
             return 'Waiting'
-        return ''
-
-    def _pages_completed(self):
-        if not self.visited:
-            return None
-        return '{}/{} pages'.format(
-            self._index_in_pages,
-            len(self._pages())
-        )
+        return 'Playing'
 
     def _pages(self):
         from otree.views.concrete import WaitUntilAssignedToGroup
