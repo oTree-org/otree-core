@@ -7,6 +7,17 @@ import otree.models.session
 import otree.db.models
 
 
+# Instructions after all installations have upgraded to this migration:
+#
+# * Remove the 'replaces' attribute from this migration.
+# * Remove the migrations 'otree.0001_initial' and
+#   'otree.0002_move_session_models_into_otree' from the repository.
+# * Remove the 'otree/session/models.py' file.
+# * Remove the 'otree.session' key from INSTALLED_APPS settings.
+# * Remove the 'otree.session.apps' file and all indications that this was a
+#   separate app in the past.
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
