@@ -289,7 +289,8 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                     request, *args, **kwargs
                 )
             self._session_user.last_request_succeeded = True
-            self._session_user._last_request_timestamp = django.utils.timezone.now()
+            now = django.utils.timezone.now()
+            self._session_user._last_request_timestamp = now
             self.save_objects()
             return response
         except Exception as e:
@@ -374,7 +375,9 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
         last_page_timestamp = self._session_user._last_page_timestamp
         if last_page_timestamp is None:
-            logger.warning('Participant {}: _last_page_timestamp is None'.format(self._session_user.code))
+            logger.warning(
+                'Participant {}: _last_page_timestamp is None'.format(
+                    self._session_user.code))
             last_page_timestamp = now
 
         seconds_on_page = int(
@@ -537,7 +540,8 @@ class InGameWaitPageMixin(object):
                         otree.timeout.tasks.ensure_pages_visited.apply_async(
                             kwargs={
                                 'app_name': self.subsession.app_name,
-                                'participant_pk_set': self._ids_for_this_wait_page(),
+                                'participant_pk_set':
+                                    self._ids_for_this_wait_page(),
                                 'wait_page_index': self._index_in_pages,
                             },
                             countdown=10,
@@ -578,9 +582,12 @@ class InGameWaitPageMixin(object):
         return ids_for_this_wait_page - visited_ids
 
     def _record_unvisited_ids(self, unvisited_ids):
-        # only bother numerating if there are just a few, otherwise it's distracting
+        # only bother numerating if there are just a few, otherwise it's
+        # distracting
         if len(unvisited_ids) <= 3:
-            self._session_user._waiting_for_ids = ', '.join('P{}'.format(id_in_session) for id_in_session in unvisited_ids)
+            self._session_user._waiting_for_ids = ', '.join(
+                'P{}'.format(id_in_session)
+                for id_in_session in unvisited_ids)
 
     def _record_visit(self):
         """record that this player visited"""

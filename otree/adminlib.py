@@ -194,7 +194,8 @@ def get_all_fields_for_table(Model, callables,
             'start_link',
             'session',
             'visited',
-            '_last_page_timestamp', # used to tell how long participant has been on a page
+            # used to tell how long participant has been on a page
+            '_last_page_timestamp',
             # the following fields are useful for telling if the participant
             # actually finished:
             #  '_pages_completed',
@@ -220,7 +221,7 @@ def get_all_fields_for_table(Model, callables,
         'Participant': {
             'id',
             'id_in_session',
-            'session', # because we already filter by session
+            'session',  # because we already filter by session
             '_index_in_subsessions',
             'is_on_wait_page',
             'mturk_assignment_id',
@@ -230,7 +231,7 @@ def get_all_fields_for_table(Model, callables,
             '_max_page_index',
             '_predetermined_arrival_order',
             '_index_in_pages',
-            'visited', # not necessary because 'status' column includes this
+            'visited',  # not necessary because 'status' column includes this
             '_waiting_for_ids',
             '_last_request_timestamp',
         },
