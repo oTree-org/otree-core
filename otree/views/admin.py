@@ -12,7 +12,7 @@ from django.core.urlresolvers import reverse
 
 import vanilla
 
-from otree.session.models import Session
+from otree.models.session import Session
 from otree.session import (
     create_session, get_session_types_dict, get_session_types_list
 )

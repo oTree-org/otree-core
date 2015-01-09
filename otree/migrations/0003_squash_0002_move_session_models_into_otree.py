@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
+import save_the_change.mixins
 import otree.models.session
 import otree.db.models
 
@@ -9,9 +10,53 @@ import otree.db.models
 class Migration(migrations.Migration):
 
     dependencies = [
+        ('contenttypes', '0001_initial'),
+    ]
+
+    replaces = [
+        ('otree', '0001_initial'),
+        ('otree', '0002_move_session_models_into_otree'),
+        ('session', '0001_initial'),
     ]
 
     operations = [
+        migrations.CreateModel(
+            name='CompletedGroupWaitPage',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('page_index', otree.db.models.PositiveIntegerField(null=True)),
+                ('session_pk', otree.db.models.PositiveIntegerField(null=True)),
+                ('group_pk', otree.db.models.PositiveIntegerField(null=True)),
+            ],
+            options={
+                'abstract': False,
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='CompletedSubsessionWaitPage',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('page_index', otree.db.models.PositiveIntegerField(null=True)),
+                ('session_pk', otree.db.models.PositiveIntegerField(null=True)),
+            ],
+            options={
+                'abstract': False,
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Experimenter',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('_index_in_game_pages', otree.db.models.PositiveIntegerField(default=0, null=True)),
+                ('round_number', otree.db.models.PositiveIntegerField(null=True)),
+                ('subsession_object_id', otree.db.models.PositiveIntegerField(null=True)),
+            ],
+            options={
+            },
+            bases=(save_the_change.mixins.SaveTheChange, models.Model),
+        ),
         migrations.CreateModel(
             name='GlobalSingleton',
             fields=[
@@ -21,6 +66,25 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'Set open session',
                 'verbose_name_plural': 'Set open session',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='PageCompletion',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('app_name', otree.db.models.CharField(max_length=300, null=True)),
+                ('player_pk', otree.db.models.PositiveIntegerField(null=True)),
+                ('page_index', otree.db.models.PositiveIntegerField(null=True)),
+                ('page_name', otree.db.models.CharField(max_length=300, null=True)),
+                ('time_stamp', otree.db.models.DateTimeField(null=True)),
+                ('seconds_on_page', otree.db.models.PositiveIntegerField(null=True)),
+                ('subsession_pk', otree.db.models.PositiveIntegerField(null=True)),
+                ('participant_pk', otree.db.models.PositiveIntegerField(null=True)),
+                ('session_pk', otree.db.models.PositiveIntegerField(null=True)),
+            ],
+            options={
+                'abstract': False,
             },
             bases=(models.Model,),
         ),
@@ -113,6 +177,21 @@ class Migration(migrations.Migration):
             bases=(models.Model,),
         ),
         migrations.CreateModel(
+            name='SessionuserToUserLookup',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('session_user_pk', otree.db.models.PositiveIntegerField(null=True)),
+                ('page_index', otree.db.models.PositiveIntegerField(null=True)),
+                ('app_name', otree.db.models.CharField(max_length=300, null=True)),
+                ('user_pk', otree.db.models.PositiveIntegerField(null=True)),
+                ('is_experimenter', otree.db.models.BooleanField(default=False)),
+            ],
+            options={
+                'abstract': False,
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
             name='StubModel',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
@@ -122,22 +201,53 @@ class Migration(migrations.Migration):
             },
             bases=(models.Model,),
         ),
+        migrations.CreateModel(
+            name='WaitPageVisit',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('session_pk', otree.db.models.PositiveIntegerField(null=True)),
+                ('page_index', otree.db.models.PositiveIntegerField(null=True)),
+                ('id_in_session', otree.db.models.PositiveIntegerField(help_text=b'id_in_session', null=True)),
+            ],
+            options={
+                'abstract': False,
+            },
+            bases=(models.Model,),
+        ),
         migrations.AddField(
             model_name='session',
             name='session_experimenter',
-            field=otree.db.models.OneToOneField(related_name='session', null=True, to='session.SessionExperimenter'),
+            field=otree.db.models.OneToOneField(related_name='session', null=True, to='otree.SessionExperimenter'),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='participant',
             name='session',
-            field=otree.db.models.ForeignKey(to='session.Session'),
+            field=otree.db.models.ForeignKey(to='otree.Session'),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='globalsingleton',
             name='open_session',
-            field=otree.db.models.ForeignKey(blank=True, to='session.Session', null=True),
+            field=otree.db.models.ForeignKey(blank=True, to='otree.Session', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='experimenter',
+            name='session',
+            field=otree.db.models.ForeignKey(related_name='otree_experimenter', to='otree.Session'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='experimenter',
+            name='session_experimenter',
+            field=otree.db.models.ForeignKey(related_name='experimenter', to='otree.SessionExperimenter', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='experimenter',
+            name='subsession_content_type',
+            field=otree.db.models.ForeignKey(related_name='experimenter', to='contenttypes.ContentType', null=True),
             preserve_default=True,
         ),
         migrations.CreateModel(
@@ -149,6 +259,6 @@ class Migration(migrations.Migration):
                 'proxy': True,
                 'verbose_name_plural': 'Monitor Participants',
             },
-            bases=('session.participant',),
+            bases=('otree.participant',),
         ),
     ]

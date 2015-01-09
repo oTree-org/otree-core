@@ -9,7 +9,7 @@ from django.db.models import signals
 from django.utils.translation import ugettext_lazy as _
 
 import otree.adminlib
-from otree.session.models import StubModel, GlobalSingleton
+from otree.models.session import StubModel, GlobalSingleton
 
 
 logger = logging.getLogger('otree')

@@ -15,8 +15,8 @@ from django.contrib.staticfiles.templatetags.staticfiles import (
 )
 
 import otree.constants
-import otree.session.models
-from otree.session.models import ParticipantProxy
+import otree.models.session
+from otree.models.session import ParticipantProxy
 from otree.common_internal import add_params_to_url
 from otree.common import Currency as c
 from otree.common import Money
@@ -361,7 +361,7 @@ class NonHiddenSessionListFilter(admin.SimpleListFilter):
         in the right sidebar.
         """
         return [(session.id, session.id) for session
-                in otree.session.models.Session.objects.filter(hidden=False)]
+                in otree.models.session.Session.objects.filter(hidden=False)]
 
     # is queryset method still necessary in 1.7?
     #
@@ -512,9 +512,9 @@ class ParticipantAdmin(OTreeBaseModelAdmin):
 
     list_filter = [NonHiddenSessionListFilter]
 
-    readonly_fields = get_callables(otree.session.models.Participant, [])
+    readonly_fields = get_callables(otree.models.session.Participant, [])
     list_display = get_all_fields_for_table(
-        otree.session.models.Participant, readonly_fields
+        otree.models.session.Participant, readonly_fields
     )
     list_editable = ['exclude_from_data_analysis']
 
@@ -545,7 +545,7 @@ class MonitorParticipantAdmin(ParticipantAdmin):
     def changelist_view(self, request, extra_context=None):
         from otree.views.concrete import AdvanceSession
 
-        self.session = otree.session.models.Session(pk=request.GET["session"])
+        self.session = otree.models.session.Session(pk=request.GET["session"])
         self.advance_session_url = request.build_absolute_uri(
             AdvanceSession.url(self.session)
         )
@@ -667,13 +667,13 @@ class SessionAdmin(OTreeBaseModelAdmin):
     payments_link.short_description = "Payments page"
     payments_link.allow_tags = True
 
-    readonly_fields = get_readonly_fields(otree.session.models.Session, [])
+    readonly_fields = get_readonly_fields(otree.models.session.Session, [])
     list_display = get_all_fields_for_table(
-        otree.session.models.Session, readonly_fields
+        otree.models.session.Session, readonly_fields
     )
 
     fields = get_all_fields_for_change_page(
-        otree.session.models.Session, readonly_fields
+        otree.models.session.Session, readonly_fields
     )
 
     list_editable = ['hidden']

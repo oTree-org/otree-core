@@ -5,16 +5,16 @@ from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 
 import otree.adminlib
-import otree.session.models
+import otree.models.session
 
 
-admin.site.register(otree.session.models.GlobalSingleton,
+admin.site.register(otree.models.session.GlobalSingleton,
                     otree.adminlib.GlobalSingletonAdmin)
-admin.site.register(otree.session.models.Session,
+admin.site.register(otree.models.session.Session,
                     otree.adminlib.SessionAdmin)
-admin.site.register(otree.session.models.Participant,
+admin.site.register(otree.models.session.Participant,
                     otree.adminlib.ParticipantAdmin)
-admin.site.register(otree.session.models.ParticipantProxy,
+admin.site.register(otree.models.session.ParticipantProxy,
                     otree.adminlib.MonitorParticipantAdmin)
 admin.site.unregister(User)
 admin.site.unregister(Group)

@@ -46,12 +46,12 @@ import otree.forms
 from otree.models.user import Experimenter
 from otree.common_internal import get_views_module
 
-import otree.session.models
+import otree.models.session
 import otree.timeout.tasks
 import otree.models
-import otree.session.models as seq_models
+import otree.models.session as seq_models
 import otree.constants as constants
-from otree.session.models import Participant, GlobalSingleton
+from otree.models.session import Participant, GlobalSingleton
 from otree.models_concrete import (
     PageCompletion, WaitPageVisit, CompletedSubsessionWaitPage,
     CompletedGroupWaitPage, SessionuserToUserLookup
@@ -244,10 +244,10 @@ class FormPageOrWaitPageMixin(OTreeMixin):
             session_user_code = kwargs.pop(constants.session_user_code)
             user_type = kwargs.pop(constants.user_type)
             if user_type == constants.user_type_participant:
-                self.SessionUserClass = otree.session.models.Participant
+                self.SessionUserClass = otree.models.session.Participant
             else:
                 self.SessionUserClass = (
-                    otree.session.models.SessionExperimenter
+                    otree.models.session.SessionExperimenter
                 )
 
             try:
@@ -630,7 +630,7 @@ class FormPageMixin(object):
     """
 
     # if a model is not specified, use empty "StubModel"
-    model = otree.session.models.StubModel
+    model = otree.models.session.StubModel
     fields = []
 
     def get_form_class(self):
@@ -798,7 +798,7 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
                 'Incorrect access code for open session'
             )
 
-        global_singleton = otree.session.models.GlobalSingleton.objects.get()
+        global_singleton = otree.models.session.GlobalSingleton.objects.get()
         open_session = global_singleton.open_session
 
         if not open_session:
@@ -821,7 +821,7 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
                 # just take a lock on an arbitrary object, to prevent multiple
                 # threads from executing this code concurrently
                 global_singleton = (
-                    otree.session.models.GlobalSingleton.objects
+                    otree.models.session.GlobalSingleton.objects
                     .select_for_update().get()
                 )
                 participant = None

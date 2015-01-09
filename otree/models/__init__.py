@@ -4,7 +4,7 @@
 from importlib import import_module
 
 from otree.db import models
-from otree.session.models import Session, Participant
+from otree.models.session import Session, Participant
 from otree.common_internal import get_players, get_groups
 
 # NOTE: this imports the following submodules and then subclasses several
@@ -21,6 +21,7 @@ subsessions = import_module('otree.models.subsessions')
 groups = import_module('otree.models.groups')
 players = import_module('otree.models.players')
 user = import_module('otree.models.user')
+session = import_module('otree.models.session')
 
 
 class BaseSubsession(subsessions.BaseSubsession):
