@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
 from django.test import TestCase
 from django.utils.encoding import force_text
+import easymoney
 import floppyforms.__future__ as forms
 import floppyforms.widgets
 
@@ -56,6 +58,22 @@ class CheckboxSelectMultipleHorizontalTests(TestCase):
                     value="3" /> 3
             </label>
             """)
+
+
+class CurrencyInputTests(TestCase):
+    maxDiff = None
+
+    class CurrencyForm(forms.Form):
+        currency = otree.forms.CurrencyField()
+
+    def test_widget(self):
+        form = self.CurrencyForm({'currency': easymoney.Money('52.23')})
+        rendered = force_text(form['currency'])
+
+        self.assertTrue(
+            u'''<span class="input-group-addon">€</span>''' in rendered)
+        # Make sure that the value does not contain the currency symbol
+        self.assertTrue('''value="52.23"''' in rendered)
 
 
 class RadioSelectHorizontalTests(TestCase):
