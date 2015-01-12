@@ -7,7 +7,7 @@
 # =============================================================================
 
 import threading
-
+import time
 import vanilla
 
 import django.utils.timezone
@@ -210,7 +210,7 @@ class InitializeParticipant(vanilla.UpdateView):
 
         now = django.utils.timezone.now()
         session_user.time_started = now
-        session_user._last_page_timestamp = now
+        session_user._last_page_timestamp = time.time()
         session_user.save()
         first_url = session_user._pages_as_urls()[session_user._index_in_pages]
         return HttpResponseRedirect(first_url)

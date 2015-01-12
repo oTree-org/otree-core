@@ -27,6 +27,7 @@ views that have URLs.
 import os
 import logging
 import contextlib
+import time
 
 from django.db import transaction
 from django.conf import settings
@@ -289,7 +290,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                     request, *args, **kwargs
                 )
             self._session_user.last_request_succeeded = True
-            self._session_user._last_request_timestamp = django.utils.timezone.now()
+            self._session_user._last_request_timestamp = time.time()
             self.save_objects()
             return response
         except Exception as e:
@@ -370,16 +371,15 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
     def _record_page_completion_time(self):
 
-        now = django.utils.timezone.now()
+        now = time.time()
 
         last_page_timestamp = self._session_user._last_page_timestamp
         if last_page_timestamp is None:
             logger.warning('Participant {}: _last_page_timestamp is None'.format(self._session_user.code))
             last_page_timestamp = now
 
-        seconds_on_page = int(
-            (now - last_page_timestamp).total_seconds()
-        )
+        seconds_on_page = int(now - last_page_timestamp)
+
         self._session_user._last_page_timestamp = now
         page_name = self.__class__.__name__
 

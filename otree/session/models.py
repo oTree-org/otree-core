@@ -1,5 +1,6 @@
 import copy
 import itertools
+import time
 
 import django.test
 import django.utils.timezone
@@ -305,9 +306,9 @@ class SessionUser(ModelWithVars):
     ip_address = models.GenericIPAddressField(null=True)
 
     # stores when the page was first visited
-    _last_page_timestamp = models.DateTimeField(null=True)
+    _last_page_timestamp = models.FloatField(null=True)
 
-    _last_request_timestamp = models.DateTimeField(null=True)
+    _last_request_timestamp = models.FloatField(null=True)
 
     is_on_wait_page = models.BooleanField(default=False)
 
@@ -355,7 +356,7 @@ class SessionUser(ModelWithVars):
             constants.form_page_poll_interval_seconds,
             constants.wait_page_poll_interval_seconds,
         ) + 10 # for latency
-        if (django.utils.timezone.now() - self._last_request_timestamp).total_seconds() > max_seconds_since_last_request:
+        if (time.time() - self._last_request_timestamp) > max_seconds_since_last_request:
             return 'Disconnected'
         if self.is_on_wait_page:
             if self._waiting_for_ids:

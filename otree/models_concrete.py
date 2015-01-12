@@ -21,7 +21,7 @@ class WaitPageVisit(models.Model):
     session_pk = models.PositiveIntegerField()
     page_index = models.PositiveIntegerField()
 
-    id_in_session = models.PositiveIntegerField(help_text='id_in_session')
+    id_in_session = models.PositiveIntegerField()
 
 
 class CompletedGroupWaitPage(models.Model):
