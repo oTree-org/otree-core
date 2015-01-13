@@ -26,6 +26,7 @@ from django import test
 from django.test import runner
 from django.template import response
 
+import otree.models
 from otree import constants, session
 from otree.test import client
 
@@ -223,7 +224,7 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         logger.info("Adding bots on session '{}'".format(self.session_name))
 
         while True:
-            sssn = session.models.Session.objects.get(id=sssn.pk)
+            sssn = otree.models.Session.objects.get(id=sssn.pk)
             if sssn._players_assigned_to_groups:
                 break
             time.sleep(1)

@@ -33,7 +33,6 @@ from django.db import transaction
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
-import django.utils.timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache, cache_control
 from django.forms.models import model_to_dict
@@ -371,7 +370,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
     def _record_page_completion_time(self):
 
-        now = time.time()
+        now = int(time.time())
 
         last_page_timestamp = self._session_user._last_page_timestamp
         if last_page_timestamp is None:
@@ -380,7 +379,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                     self._session_user.code))
             last_page_timestamp = now
 
-        seconds_on_page = int(now - last_page_timestamp)
+        seconds_on_page = now - last_page_timestamp
 
         self._session_user._last_page_timestamp = now
         page_name = self.__class__.__name__
