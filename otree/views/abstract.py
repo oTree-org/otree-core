@@ -47,12 +47,12 @@ import otree.forms
 from otree.models.user import Experimenter
 from otree.common_internal import get_views_module
 
-import otree.session.models
+import otree.models.session
 import otree.timeout.tasks
 import otree.models
-import otree.session.models as seq_models
+import otree.models.session as seq_models
 import otree.constants as constants
-from otree.session.models import Participant, GlobalSingleton
+from otree.models.session import Participant, GlobalSingleton
 from otree.models_concrete import (
     PageCompletion, WaitPageVisit, CompletedSubsessionWaitPage,
     CompletedGroupWaitPage, SessionuserToUserLookup
@@ -245,10 +245,10 @@ class FormPageOrWaitPageMixin(OTreeMixin):
             session_user_code = kwargs.pop(constants.session_user_code)
             user_type = kwargs.pop(constants.user_type)
             if user_type == constants.user_type_participant:
-                self.SessionUserClass = otree.session.models.Participant
+                self.SessionUserClass = otree.models.session.Participant
             else:
                 self.SessionUserClass = (
-                    otree.session.models.SessionExperimenter
+                    otree.models.session.SessionExperimenter
                 )
 
             try:
@@ -375,7 +375,9 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
         last_page_timestamp = self._session_user._last_page_timestamp
         if last_page_timestamp is None:
-            logger.warning('Participant {}: _last_page_timestamp is None'.format(self._session_user.code))
+            logger.warning(
+                'Participant {}: _last_page_timestamp is None'.format(
+                    self._session_user.code))
             last_page_timestamp = now
 
         seconds_on_page = int(now - last_page_timestamp)
@@ -537,7 +539,8 @@ class InGameWaitPageMixin(object):
                         otree.timeout.tasks.ensure_pages_visited.apply_async(
                             kwargs={
                                 'app_name': self.subsession.app_name,
-                                'participant_pk_set': self._ids_for_this_wait_page(),
+                                'participant_pk_set':
+                                    self._ids_for_this_wait_page(),
                                 'wait_page_index': self._index_in_pages,
                             },
                             countdown=10,
@@ -578,9 +581,12 @@ class InGameWaitPageMixin(object):
         return ids_for_this_wait_page - visited_ids
 
     def _record_unvisited_ids(self, unvisited_ids):
-        # only bother numerating if there are just a few, otherwise it's distracting
+        # only bother numerating if there are just a few, otherwise it's
+        # distracting
         if len(unvisited_ids) <= 3:
-            self._session_user._waiting_for_ids = ', '.join('P{}'.format(id_in_session) for id_in_session in unvisited_ids)
+            self._session_user._waiting_for_ids = ', '.join(
+                'P{}'.format(id_in_session)
+                for id_in_session in unvisited_ids)
 
     def _record_visit(self):
         """record that this player visited"""
@@ -630,7 +636,7 @@ class FormPageMixin(object):
     """
 
     # if a model is not specified, use empty "StubModel"
-    model = otree.session.models.StubModel
+    model = otree.models.session.StubModel
     fields = []
 
     def get_form_class(self):
@@ -798,7 +804,7 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
                 'Incorrect access code for open session'
             )
 
-        global_singleton = otree.session.models.GlobalSingleton.objects.get()
+        global_singleton = otree.models.session.GlobalSingleton.objects.get()
         open_session = global_singleton.open_session
 
         if not open_session:
@@ -821,7 +827,7 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
                 # just take a lock on an arbitrary object, to prevent multiple
                 # threads from executing this code concurrently
                 global_singleton = (
-                    otree.session.models.GlobalSingleton.objects
+                    otree.models.session.GlobalSingleton.objects
                     .select_for_update().get()
                 )
                 participant = None

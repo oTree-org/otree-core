@@ -13,7 +13,7 @@ import vanilla
 import otree.adminlib
 import otree.constants as constants
 from otree.views.abstract import GenericWaitPageMixin
-from otree.session.models import Session
+from otree.models.session import Session
 from otree.session import (
     create_session, get_session_types_dict, get_session_types_list
 )

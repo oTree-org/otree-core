@@ -6,7 +6,7 @@ import django.test
 from celery import task
 
 from otree import constants
-from otree.session.models import Participant
+from otree.models.session import Participant
 
 
 @task

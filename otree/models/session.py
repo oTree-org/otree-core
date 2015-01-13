@@ -1,6 +1,5 @@
 import copy
 import itertools
-import time
 
 import django.test
 import django.utils.timezone
@@ -306,29 +305,27 @@ class SessionUser(ModelWithVars):
     ip_address = models.GenericIPAddressField(null=True)
 
     # stores when the page was first visited
-    _last_page_timestamp = models.FloatField(null=True)
+    _last_page_timestamp = models.DateTimeField(null=True)
 
-    _last_request_timestamp = models.FloatField(null=True)
+    _last_request_timestamp = models.DateTimeField(null=True)
 
     is_on_wait_page = models.BooleanField(default=False)
 
-
     # these are both for the admin
     # In the changelist, simply call these "page" and "app"
-    _current_page_name = models.CharField(max_length=200, null=True, verbose_name='page')
-    _current_app_name = models.CharField(max_length=200, null=True, verbose_name='app')
+    _current_page_name = models.CharField(max_length=200, null=True,
+                                          verbose_name='page')
+    _current_app_name = models.CharField(max_length=200, null=True,
+                                         verbose_name='app')
 
     # only to be displayed in the admin participants changelist
     _round_number = models.PositiveIntegerField(
         null=True
     )
 
-
-
     _current_form_page_url = models.URLField()
 
     _max_page_index = models.PositiveIntegerField()
-
 
     def _pages_completed(self):
         return '{}/{} pages'.format(
@@ -355,8 +352,12 @@ class SessionUser(ModelWithVars):
         max_seconds_since_last_request = max(
             constants.form_page_poll_interval_seconds,
             constants.wait_page_poll_interval_seconds,
-        ) + 10 # for latency
-        if (time.time() - self._last_request_timestamp) > max_seconds_since_last_request:
+        ) + 10  # for latency
+        time_since_last_request = (
+            django.utils.timezone.now() -
+            self._last_request_timestamp)
+        time_since_last_request = time_since_last_request.total_seconds()
+        if time_since_last_request > max_seconds_since_last_request:
             return 'Disconnected'
         if self.is_on_wait_page:
             if self._waiting_for_ids:

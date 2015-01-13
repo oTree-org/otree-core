@@ -8,7 +8,7 @@ from django.db import transaction
 
 from otree import constants
 from otree.models.user import Experimenter
-from otree.session.models import Session, SessionExperimenter, Participant
+from otree.models.session import Session, SessionExperimenter, Participant
 from otree.common_internal import (
     get_session_module, get_models_module, get_app_constants
 )

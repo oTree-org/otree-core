@@ -19,7 +19,7 @@ from django.utils.translation import ugettext as _
 import easymoney
 
 import otree.common_internal
-import otree.session.models
+import otree.models.session
 import otree.constants
 from otree.forms import fields
 from otree.db import models

@@ -20,7 +20,7 @@ from django.http import (
 )
 
 import otree.constants as constants
-import otree.session.models
+import otree.models.session
 import otree.adminlib
 import otree.common_internal
 from otree.views.abstract import (
@@ -96,7 +96,7 @@ class SessionExperimenterWaitUntilPlayersAreAssigned(NonSequenceUrlMixin,
         self.request.session[session_user_code] = {}
 
         self._session_user = get_object_or_404(
-            otree.session.models.SessionExperimenter,
+            otree.models.session.SessionExperimenter,
             code=kwargs[constants.session_user_code]
         )
 
@@ -132,7 +132,7 @@ class InitializeSessionExperimenter(vanilla.View):
     def get(self, *args, **kwargs):
 
         self._session_user = get_object_or_404(
-            otree.session.models.SessionExperimenter,
+            otree.models.session.SessionExperimenter,
             code=kwargs[constants.session_user_code]
         )
 
@@ -145,7 +145,7 @@ class InitializeSessionExperimenter(vanilla.View):
 
     def post(self, request, *args, **kwargs):
         self._session_user = get_object_or_404(
-            otree.session.models.SessionExperimenter,
+            otree.models.session.SessionExperimenter,
             code=kwargs[constants.session_user_code]
         )
 
@@ -185,7 +185,7 @@ class InitializeParticipant(vanilla.UpdateView):
     def get(self, *args, **kwargs):
 
         session_user = get_object_or_404(
-            otree.session.models.Participant,
+            otree.models.session.Participant,
             code=kwargs[constants.session_user_code]
         )
 
@@ -290,19 +290,19 @@ class AdvanceSession(vanilla.View):
 
     @classmethod
     def url(cls, session):
-        gs = otree.session.models.GlobalSingleton.objects.get()
+        gs = otree.models.session.GlobalSingleton.objects.get()
         return '/AdvanceSession/{}/{}/'.format(
             session.pk, gs.admin_access_code
         )
 
     def dispatch(self, request, *args, **kwargs):
-        gs = otree.session.models.GlobalSingleton.objects.get()
+        gs = otree.models.session.GlobalSingleton.objects.get()
         if not kwargs.get(constants.admin_access_code) == gs.admin_access_code:
             return HttpResponseNotFound(
                 'incorrect or missing admin access code'
             )
         self.session = get_object_or_404(
-            otree.session.models.Session, pk=kwargs['session_pk']
+            otree.models.session.Session, pk=kwargs['session_pk']
         )
         response = super(AdvanceSession, self).dispatch(
             request, *args, **kwargs

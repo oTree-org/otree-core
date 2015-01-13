@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.test.client import RequestFactory
 
 from otree import constants
-from otree.session.models import Participant, SessionExperimenter
+from otree.models.session import Participant, SessionExperimenter
 
 from tests.simple_game.views import MyPage
 from tests.simple_game.models import Player

@@ -26,7 +26,7 @@ import otree.adminlib
 import otree.settings
 import otree.models
 import otree.adminlib
-import otree.session.models
+import otree.models.session
 from otree.adminlib import (
     get_callables, get_all_fields_for_table
 )
@@ -99,9 +99,9 @@ def get_data_export_fields(app_label):
     export_info = {}
     for model_name in MODEL_NAMES:
         if model_name == 'Session':
-            Model = otree.session.models.Session
+            Model = otree.models.session.Session
         elif model_name == 'Participant':
-            Model = otree.session.models.Participant
+            Model = otree.models.session.Participant
         else:
             Model = getattr(app_models_module, model_name)
 
@@ -157,9 +157,9 @@ def get_doc_dict(app_label):
         members = export_fields[model_name]['member_names']
         callables = export_fields[model_name]['callables']
         if model_name == 'Participant':
-            Model = otree.session.models.Participant
+            Model = otree.models.session.Participant
         elif model_name == 'Session':
-            Model = otree.session.models.Session
+            Model = otree.models.session.Session
         else:
             Model = getattr(app_models_module, model_name)
 
@@ -338,7 +338,7 @@ def export(request, app_label):
             fk_name, flat=True
         ).distinct())
         if fk_name in {'session', 'participant'}:
-            models_module = otree.session.models
+            models_module = otree.models.session
         else:
             models_module = app_models
         objects = getattr(models_module, model_name).objects.filter(pk__in=ids)

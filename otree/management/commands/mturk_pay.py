@@ -15,7 +15,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from mturk import mturk
 
-from otree.session.models import Session
+from otree.models.session import Session
 
 
 # =============================================================================
