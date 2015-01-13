@@ -2,10 +2,8 @@
 import os
 import urllib
 import urlparse
-from decimal import Decimal
 from os.path import dirname, join
 
-from django import forms
 from django.apps import apps
 from django.conf import settings
 from django.template.defaultfilters import title
@@ -13,11 +11,6 @@ from django.utils.importlib import import_module
 from collections import OrderedDict
 
 from otree import constants
-
-
-class _CurrencyInput(forms.NumberInput):
-    def _format_value(self, value):
-        return str(Decimal(value))
 
 
 def add_params_to_url(url, params):

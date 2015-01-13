@@ -13,7 +13,7 @@ from handy.models import PickleField
 import easymoney
 
 import otree.common
-from otree.common_internal import expand_choice_tuples, _CurrencyInput
+from otree.common_internal import expand_choice_tuples
 
 
 class OTreeModelBase(ModelBase):
@@ -123,7 +123,6 @@ class _OtreeNumericFieldMixin(object):
 
 class MoneyField(_OtreeNullableModelFieldMixin,
                  _OtreeNumericFieldMixin, easymoney.MoneyField):
-    widget = _CurrencyInput
 
     MONEY_CLASS = otree.common.Money
 
@@ -132,8 +131,6 @@ class MoneyField(_OtreeNullableModelFieldMixin,
 
 class CurrencyField(_OtreeNullableModelFieldMixin,
                     _OtreeNumericFieldMixin, easymoney.MoneyField):
-
-    widget = _CurrencyInput
 
     MONEY_CLASS = otree.common.Currency
 
