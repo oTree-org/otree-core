@@ -12,6 +12,7 @@ from django.core.urlresolvers import reverse
 
 import vanilla
 
+import otree.common_internal
 from otree.models.session import Session
 from otree.session import (
     create_session, get_session_types_dict, get_session_types_list
@@ -19,7 +20,7 @@ from otree.session import (
 from otree.views.demo import info_about_session_type
 from otree import forms
 from otree.views.abstract import GenericWaitPageMixin
-
+from otree import adminlib
 
 class CreateSessionForm(forms.Form):
 
@@ -139,6 +140,68 @@ class SessionTypes(vanilla.View):
         return r"^create_session/$"
 
     def get(self, *args, **kwargs):
+        session_types_info = []
+        for session_type in get_session_types_list():
+            session_types_info.append(
+                {
+                    'display_name': session_type.display_name,
+                    'url': '/create_session/{}/'.format(session_type.name),
+                }
+            )
+
+        return TemplateResponse(self.request,
+                                'otree/admin/SessionListing.html',
+                                {'session_types_info': session_types_info})
+
+class SessionResults(vanilla.View):
+
+    template_name = 'otree/admin/SessionResults.html'
+
+    @classmethod
+    def url_pattern(cls):
+        return r"^session_results/(?P<session_pk>\d+)/$"
+
+    def get(self, *args, **kwargs):
+
+        session = Session.objects.get(pk=int(kwargs['session_pk']))
+        participants = session.get_participants()
+
+
+        subsession_colspans = []
+        rows = []
+
+        column_titles_dict = {}
+        for app_name in session.session_type.app_sequence:
+            models_module = otree.common_internal.get_models_module(app_name)
+
+            player_fields = adminlib.get_all_fields(models_module.Player)
+            group_fields = ['group.{}' for f in adminlib.get_all_fields(models_module.Group)]
+            subsession_fields = ['subsession.{}' for f in adminlib.get_all_fields(models_module.Subsession)]
+
+            column_titles_dict[app_name] = player_fields + group_fields + subsession_fields
+
+        for participant in participants:
+            row = []
+            row.append(participant._id_in_session_display())
+            for player in participant.get_players():
+                field_names = column_titles_dict[player._meta.app_name]
+                for field_name in field_names:
+                    if callable(field_name):
+                        pass #FIXME...finish this code
+
+
+
+
+
+
+            # player fields, then group fields, then subsession fields
+
+
+
+
+
+
+
         session_types_info = []
         for session_type in get_session_types_list():
             session_types_info.append(

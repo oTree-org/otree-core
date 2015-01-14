@@ -134,11 +134,6 @@ def get_all_fields(Model, for_export=False):
             'visited',
             # used to tell how long participant has been on a page
             '_last_page_timestamp',
-            # the following fields are useful for telling if the participant
-            # actually finished:
-            #  '_pages_completed',
-            #  '_current_app_name',
-            #  '_current_page_name',
             'status',
             'last_request_succeeded',
         },
@@ -260,34 +255,16 @@ class OTreeBaseModelAdmin(admin.ModelAdmin):
 
 class PlayerAdmin(OTreeBaseModelAdmin):
     change_list_template = "admin/otree_change_list.html"
-
-    list_filter = [NonHiddenSessionListFilter, 'subsession', 'group']
     list_per_page = 40
-
-    def get_queryset(self, request):
-        qs = super(PlayerAdmin, self).get_queryset(request)
-        return qs.filter(session__hidden=False)
 
 
 class GroupAdmin(OTreeBaseModelAdmin):
     change_list_template = "admin/otree_change_list.html"
-
-    list_filter = [NonHiddenSessionListFilter, 'subsession']
     list_per_page = 40
-
-    def get_queryset(self, request):
-        qs = super(GroupAdmin, self).get_queryset(request)
-        return qs.filter(session__hidden=False)
-
 
 class SubsessionAdmin(OTreeBaseModelAdmin):
 
     change_list_template = "admin/otree_change_list.html"
-    list_filter = [NonHiddenSessionListFilter]
-
-    def get_queryset(self, request):
-        qs = super(SubsessionAdmin, self).get_queryset(request)
-        return qs.filter(session__hidden=False)
 
 
 class GlobalSingletonAdmin(OTreeBaseModelAdmin):
@@ -364,8 +341,6 @@ class GlobalSingletonAdmin(OTreeBaseModelAdmin):
 class ParticipantAdmin(OTreeBaseModelAdmin):
     change_list_template = "admin/otree_change_list.html"
 
-    list_filter = [NonHiddenSessionListFilter]
-
     list_display = get_all_fields(otree.models.Participant)
 
     list_editable = ['exclude_from_data_analysis']
@@ -428,9 +403,9 @@ class SessionAdmin(OTreeBaseModelAdmin):
             ),
             (
                 r'^(?P<pk>\d+)/raw_participant_urls/$',
-                self.raw_participant_urls
+                self.admin_site.admin_view(self.raw_participant_urls)
             ),
-            (r'^(?P<pk>\d+)/start_links/$', self.start_links),
+            (r'^(?P<pk>\d+)/start_links/$', self.admin_site.admin_view(self.start_links)),
         )
         return my_urls + urls
 
@@ -535,58 +510,3 @@ class SessionAdmin(OTreeBaseModelAdmin):
     ]
 
     list_editable = ['hidden']
-
-
-def autodiscover():
-    """
-    # django-1.7 -- will this still work?
-
-    The purpose of this function is to look for an admin.py not in an app's
-    root directory, but rather under a _builtin folder. This is because it's
-    not common for an oTree programmer to customize the admin, so it's good to
-    get admin.py out of the way so the programmer can focus on other things.
-    in fact, it may be OK to get rid of admin.py entirely, and move to
-    otree-core the code that registers the admin models.
-
-    The below function is copied from django 1.6's
-    django/contrib/admin/__init__.py I modified it to look instead for
-    _builtin.admin.
-
-    If we keep this in Django 1.7, we may want to instead use
-    django.utils.module_loading.autodiscover_modules, which is better
-    abstracted. But Django docs say this is now handled by AdminConfig rather
-    than calling autodiscover()
-    explicitly: http://goo.gl/YIQ3Gj. i don't have any knowledge of what
-    AdminConfig is.
-
-    """
-
-    from django.contrib.admin.sites import site
-    import copy
-    from django.conf import settings
-    from django.utils.importlib import import_module
-    from django.utils.module_loading import module_has_submodule
-
-    for app in settings.INSTALLED_APPS:
-        if app in settings.INSTALLED_OTREE_APPS:
-            admin_module_dotted_path = '_builtin.admin'
-        else:
-            admin_module_dotted_path = 'admin'
-
-        mod = import_module(app)
-        # Attempt to import the app's admin module.
-        try:
-            before_import_registry = copy.copy(site._registry)
-            import_module('{}.{}'.format(app, admin_module_dotted_path))
-        except:
-            # Reset the model registry to the state before the last import as
-            # this import will have to reoccur on the next request and this
-            # could raise NotRegistered and AlreadyRegistered exceptions
-            # (see #8245).
-            site._registry = before_import_registry
-
-            # Decide whether to bubble up this error. If the app just
-            # doesn't have an admin module, we can ignore the error
-            # attempting to import it, otherwise we want it to bubble up.
-            if module_has_submodule(mod, admin_module_dotted_path):
-                raise
