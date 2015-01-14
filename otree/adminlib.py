@@ -521,6 +521,19 @@ class SessionAdmin(OTreeBaseModelAdmin):
 
     list_display = get_all_fields(otree.models.session.Session)
 
+    readonly_fields = [
+
+    ]
+
+    fields = readonly_fields + [
+        'label',
+        'experimenter_name',
+        'time_scheduled',
+        'comment',
+        'fixed_pay',
+        'money_per_point',
+    ]
+
     list_editable = ['hidden']
 
 
