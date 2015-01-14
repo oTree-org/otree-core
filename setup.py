@@ -25,6 +25,7 @@ REQUIREMENTS = [
     'flake8>=2.2.5',
     'handy>=0.3',
     'mock>=1.0.0',
+    'ordered-set>=1.3',
     'pytz>=2013.9',
     'raven>=5.1.1',
     'selenium>=2.41.0',

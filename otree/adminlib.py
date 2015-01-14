@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from collections import OrderedDict
-
 from django.contrib import admin
 from django.conf.urls import patterns
 from django.template.response import TemplateResponse
@@ -13,6 +11,8 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.contrib.staticfiles.templatetags.staticfiles import (
     static as static_template_tag
 )
+
+from ordered_set import OrderedSet as oset
 
 import otree.constants
 import otree.models.session
@@ -33,83 +33,12 @@ def session_monitor_url(session):
 def new_tab_link(url, label):
     return '<a href="{}" target="_blank">{}</a>'.format(url, label)
 
-
-def remove_duplicates(lst):
-    return list(OrderedDict.fromkeys(lst))
-
-
-def get_callables(Model,
-                  fields_specific_to_this_subclass=None, for_export=False):
-
-    fields_specific_to_this_subclass = fields_specific_to_this_subclass or []
-
-    export_and_changelist = {
-        'Player': [],
-        'Group': [],
-        'Subsession': [],
-        'Session': [],
-        'Participant': [],
-    }[Model.__name__]
-
-    changelist_but_not_export = {
-        'Player': [],
-        'Group': [],
-        'Subsession': [],
-        'Session': [
-            'start_links_link',
-            'participants_table_link',
-            'raw_participant_urls_link',
-            'payments_ready',
-            'payments_link',
-            'is_open',
-        ],
-        'Participant': [
-            '_id_in_session_display',
-            '_pages_completed',
-            '_current_app_name',
-            'status',
-            'start_link',
-        ],
-    }[Model.__name__]
-
-    export_but_not_changelist = {
-        'Player': [],
-        'Group': [],
-        'Subsession': [],
-        'Session': [],
-        'Participant': [],
-    }[Model.__name__]
-
-    if for_export:
-        callables = export_and_changelist + export_but_not_changelist
-    else:
-        callables = export_and_changelist + changelist_but_not_export
-
-    return remove_duplicates(callables + fields_specific_to_this_subclass)
+def get_callables(Model):
+    '''2015-1-14: deprecated function. needs to exist until we can get rid of admin.py from apps'''
+    return []
 
 
-def get_readonly_fields(Model, fields_specific_to_this_subclass=None):
-    callables = get_callables(Model, fields_specific_to_this_subclass)
-
-    for_change_page_and_list = {
-        'Player': [],
-        'Group': [],
-        'Subsession': [],
-        'Session': [
-            'code',
-            'session_type_name',
-            'time_started',
-            '_players_assigned_to_groups',
-            'special_category',
-        ],
-        'Participant': [],
-    }[Model.__name__]
-
-    return remove_duplicates(callables + for_change_page_and_list)
-
-
-def get_all_fields_for_table(Model, callables,
-                             first_fields=None, for_export=False):
+def get_all_fields(Model, for_export=False):
 
     first_fields = {
         'Player':
@@ -150,9 +79,13 @@ def get_all_fields_for_table(Model, callables,
                 'session_type_name',
                 'label',
                 'hidden',
-                'type',
+                'start_links_link',
+                'participants_table_link',
+                'payments_link',
+                'is_open',
             ],
     }[Model.__name__]
+    first_fields = oset(first_fields)
 
     last_fields = {
         'Player': [],
@@ -165,6 +98,8 @@ def get_all_fields_for_table(Model, callables,
         'Session': [
         ],
     }[Model.__name__]
+    last_fields = oset(last_fields)
+
 
     fields_for_export_but_not_changelist = {
         'Player': {'id', 'label'},
@@ -172,7 +107,10 @@ def get_all_fields_for_table(Model, callables,
         'Subsession': {'id'},
         'Session': {
             'git_commit_timestamp',
-            # 'fixed_pay',
+            'fixed_pay',
+            'money_per_point',
+            'comment',
+            '_players_assigned_to_groups',
         },
         'Participant': {
             # 'label',
@@ -186,7 +124,7 @@ def get_all_fields_for_table(Model, callables,
         'Group': {'subsession', 'session'},
         'Subsession': {'session'},
         'Session': {
-            'players_assigned_to_groups',
+
             'hidden',
         },
         'Participant': {
@@ -205,6 +143,7 @@ def get_all_fields_for_table(Model, callables,
             'last_request_succeeded',
         },
     }[Model.__name__]
+
 
     fields_to_exclude_from_export_and_changelist = {
         'Player': {
@@ -260,93 +199,11 @@ def get_all_fields_for_table(Model, callables,
             fields_for_export_but_not_changelist
         )
 
-    all_field_names = [field.name for field in Model._meta.fields
-                       if field.name not in fields_to_exclude]
-    all_member_names = set(callables + all_field_names)
-    first_fields = [f for f in first_fields if f in all_member_names]
-    last_fields = [f for f in last_fields if f in all_member_names]
-    table_columns = first_fields + callables + all_field_names
-    table_columns = (
-        [f for f in table_columns if f not in last_fields] + last_fields
-    )
+    all_fields_in_model = oset([field.name for field in Model._meta.fields])
 
-    if for_export:
-        return remove_duplicates(table_columns)
-    else:
-        return _add_links_for_foreign_keys(
-            Model, remove_duplicates(table_columns)
-        )
+    middle_fields = all_fields_in_model - first_fields - last_fields - fields_to_exclude
 
-
-def get_all_fields_for_change_page(Model, readonly_fields):
-
-    table_fields = get_all_fields_for_table(Model, readonly_fields)
-
-    for_change_page_only = {
-        'Player': [],
-        'Group': [],
-        'Subsession': [],
-        'Session': [
-            'time_scheduled',
-            'comment',
-        ],
-        'Participant': [],
-    }[Model.__name__]
-
-    return remove_duplicates(table_fields + for_change_page_only)
-
-
-def get_list_display(Model, readonly_fields, first_fields=None):
-    return get_all_fields_for_table(Model, callables=readonly_fields,
-                                    first_fields=first_fields,
-                                    for_export=False)
-
-
-class FieldLinkToForeignKey:
-    def __init__(self, list_display_field):
-        self.list_display_field = list_display_field
-
-    @property
-    def __name__(self):
-        return self.list_display_field
-
-    def __repr__(self):
-        return self.list_display_field
-
-    def __str__(self):
-        return self.list_display_field
-
-    def __call__(self, instance):
-        object = getattr(instance, self.list_display_field)
-        if object is None:
-            return "(None)"
-        else:
-            pattern = 'admin:{}_{}_change'.format(
-                object._meta.app_label,  object._meta.module_name
-            )
-            url = reverse(pattern, args=[object.id])
-            return '<a href="{}">{}</a>'.format(url, object.__unicode__())
-
-    @property
-    def allow_tags(self):
-        return True
-
-
-def _add_links_for_foreign_keys(model, list_display_fields):
-
-    result = []
-    for list_display_field in list_display_fields:
-        if hasattr(model, list_display_field):
-            try:
-                if isinstance(model._meta.get_field(list_display_field),
-                              django.db.models.fields.related.ForeignKey):
-                    result.append(FieldLinkToForeignKey(list_display_field))
-                    continue
-            except django.db.models.options.FieldDoesNotExist:
-                pass
-        result.append(list_display_field)
-    return result
-
+    return list(first_fields | middle_fields | last_fields)
 
 class NonHiddenSessionListFilter(admin.SimpleListFilter):
     title = "session"
@@ -364,10 +221,6 @@ class NonHiddenSessionListFilter(admin.SimpleListFilter):
         return [(session.id, session.id) for session
                 in otree.models.session.Session.objects.filter(hidden=False)]
 
-    # is queryset method still necessary in 1.7?
-    #
-    #   def queryset(self, request, queryset):
-    #       return self.get_queryset(request, queryset)
 
     def queryset(self, request, queryset):
         """
@@ -513,10 +366,8 @@ class ParticipantAdmin(OTreeBaseModelAdmin):
 
     list_filter = [NonHiddenSessionListFilter]
 
-    readonly_fields = get_callables(otree.models.session.Participant, [])
-    list_display = get_all_fields_for_table(
-        otree.models.session.Participant, readonly_fields
-    )
+    list_display = get_all_fields(otree.models.Participant)
+
     list_editable = ['exclude_from_data_analysis']
 
     list_display_links = None
@@ -668,14 +519,7 @@ class SessionAdmin(OTreeBaseModelAdmin):
     payments_link.short_description = "Payments page"
     payments_link.allow_tags = True
 
-    readonly_fields = get_readonly_fields(otree.models.session.Session, [])
-    list_display = get_all_fields_for_table(
-        otree.models.session.Session, readonly_fields
-    )
-
-    fields = get_all_fields_for_change_page(
-        otree.models.session.Session, readonly_fields
-    )
+    list_display = get_all_fields(otree.models.session.Session)
 
     list_editable = ['hidden']
 

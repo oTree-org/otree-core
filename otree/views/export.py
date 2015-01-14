@@ -28,7 +28,7 @@ import otree.models
 import otree.adminlib
 import otree.models.session
 from otree.adminlib import (
-    get_callables, get_all_fields_for_table
+    get_all_fields
 )
 from otree.common_internal import app_name_format
 
@@ -105,18 +105,14 @@ def get_data_export_fields(app_label):
         else:
             Model = getattr(app_models_module, model_name)
 
-        callables = get_callables(
-            Model, fields_specific_to_this_subclass=None, for_export=True
-        )
-        export_member_names = get_all_fields_for_table(
-            Model, callables, first_fields=None, for_export=True
+        export_member_names = get_all_fields(
+            Model, for_export=True
         )
 
         # remove anything that isn't a field or method on the model.
         # remove since these are redundant
         export_info[model_name] = {
             'member_names': export_member_names,
-            'callables': set(callables)
         }
     return export_info
 
@@ -155,7 +151,6 @@ def get_doc_dict(app_label):
 
     for model_name in MODEL_NAMES:
         members = export_fields[model_name]['member_names']
-        callables = export_fields[model_name]['callables']
         if model_name == 'Participant':
             Model = otree.models.session.Participant
         elif model_name == 'Session':
@@ -167,14 +162,15 @@ def get_doc_dict(app_label):
 
         for i in range(len(members)):
             member_name = members[i]
+            member = getattr(Model, member_name, None)
             doc_dict[model_name][member_name] = OrderedDict()
             if member_name == 'id':
                 doc_dict[model_name][member_name]['type'] = [
                     'positive integer'
                 ]
                 doc_dict[model_name][member_name]['doc'] = ['Unique ID']
-            elif member_name in callables:
-                member = getattr(Model, member_name)
+
+            elif callable(member):
                 doc_dict[model_name][member_name]['doc'] = [
                     inspect.getdoc(member)
                 ]
@@ -247,15 +243,14 @@ def doc_file_name(app_label):
     )
 
 
-def get_member_values(object, member_names, callables):
+def get_member_values(object, member_names):
     member_values = []
     for i in range(len(member_names)):
         member_name = member_names[i]
         attr = getattr(object, member_name)
-        if member_name in callables:
-            member_values.append(attr())
-        else:
-            member_values.append(attr)
+        if callable(attr):
+            attr = attr()
+        member_values.append(attr)
     return member_values
 
 
@@ -327,7 +322,6 @@ def export(request, app_label):
     for fk_name in fk_names:
         model_name = model_names_as_fk[fk_name]
         member_names = export_data[model_name]['member_names']
-        callables = export_data[model_name]['callables']
         column_headers += [
             '{}.{}'.format(fk_name, member_name)
             for member_name in member_names
@@ -345,7 +339,7 @@ def export(request, app_label):
 
         for object in objects:
             parent_object_data[fk_name][object.id] = get_member_values(
-                object, member_names, callables
+                object, member_names
             )
 
     rows = [column_headers[:]]
@@ -356,8 +350,7 @@ def export(request, app_label):
 
     for player in Player.objects.all():
         member_names = export_data['Player']['member_names'][:]
-        callables = export_data['Player']['callables']
-        member_values = get_member_values(player, member_names, callables)
+        member_values = get_member_values(player, member_names)
         for fk_name in fk_names:
             parent_object_id = getattr(player, "%s_id" % fk_name)
             if parent_object_id is None:

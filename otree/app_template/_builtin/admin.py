@@ -9,21 +9,21 @@ from .. import models
 
 class PlayerAdmin(adminlib.PlayerAdmin):
     readonly_fields = adminlib.get_callables(models.Player)
-    list_display = adminlib.get_all_fields_for_table(
+    list_display = adminlib.get_all_fields(
         models.Player, readonly_fields
     )
 
 
 class GroupAdmin(adminlib.GroupAdmin):
     readonly_fields = adminlib.get_callables(models.Group)
-    list_display = adminlib.get_all_fields_for_table(
+    list_display = adminlib.get_all_fields(
         models.Group, readonly_fields
     )
 
 
 class SubsessionAdmin(adminlib.SubsessionAdmin):
     readonly_fields = adminlib.get_callables(models.Subsession)
-    list_display = adminlib.get_all_fields_for_table(
+    list_display = adminlib.get_all_fields(
         models.Subsession, readonly_fields
     )
 
