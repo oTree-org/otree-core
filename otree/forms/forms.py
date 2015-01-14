@@ -260,18 +260,6 @@ class BaseModelForm(forms.ModelForm):
         return [field_name for field_name in self.fields
                 if field_name in null_boolean_fields_in_model]
 
-    def clean(self):
-        """in oTree, a NullBooleaField should be null initially, but we should
-        force the user to make a choice.
-
-        2/17/2014: why don't i do this in the model field definition
-        maybe because None is not a valid value for a submitted value,
-        but it's OK for an initial value
-
-        """
-        cleaned_data = super(BaseModelForm, self).clean()
-        return cleaned_data
-
     def _clean_fields(self):
         null_boolean_field_names = self.null_boolean_field_names()
         for name, field in self.fields.items():
