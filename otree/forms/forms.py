@@ -16,6 +16,7 @@ import django.forms as django_forms
 from django.forms import models as django_model_forms
 from django.utils.translation import ugettext as _
 
+
 import easymoney
 
 import otree.common_internal
@@ -269,13 +270,10 @@ class BaseModelForm(forms.ModelForm):
 
         """
         cleaned_data = super(BaseModelForm, self).clean()
-        for field_name in self.null_boolean_field_names():
-            if cleaned_data[field_name] is None:
-                msg = _('This field is required.')
-                self._errors[field_name] = self.error_class([msg])
         return cleaned_data
 
     def _clean_fields(self):
+        null_boolean_field_names = self.null_boolean_field_names()
         for name, field in self.fields.items():
             # value_from_datadict() gets the data from the data dictionaries.
             # Each widget type knows how to retrieve its own data, because some
@@ -290,21 +288,20 @@ class BaseModelForm(forms.ModelForm):
                 else:
                     value = field.clean(value)
                 self.cleaned_data[name] = value
+                if name in null_boolean_field_names and value is None:
+                    msg = _('This field is required.')
+                    raise forms.ValidationError(msg)
                 if hasattr(self.instance, '%s_bounds' % name):
                     lower, upper = getattr(self.instance, '%s_bounds' % name)()
                     if not lower <= value <= upper:
                         msg = 'Must be between {} and {}, inclusive.'
-                        self._errors[name] = self.error_class([
-                            msg.format(lower, upper)
-                        ])
+                        raise forms.ValidationError(msg.format(lower, upper))
                 if hasattr(self.instance, '%s_error_message' % name):
                     error_string = getattr(
                         self.instance, '%s_error_message' % name
                     )(value)
                     if error_string:
-                        self._errors[name] = self.error_class([error_string])
-                        if name in self.cleaned_data:
-                            del self.cleaned_data[name]
+                        raise forms.ValidationError(error_string)
                 if hasattr(self, 'clean_%s' % name):
                     value = getattr(self, 'clean_%s' % name)()
                     self.cleaned_data[name] = value
