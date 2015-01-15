@@ -668,7 +668,7 @@ class FormPageMixin(object):
         return cls(data=data, files=files, **kwargs)
 
     def form_invalid(self, form):
-        response = super(FormPageOrWaitPageMixin, self).form_invalid(form)
+        response = super(FormPageMixin, self).form_invalid(form)
         response[constants.redisplay_with_errors_http_header] = (
             constants.get_param_truth_value
         )
