@@ -72,6 +72,9 @@ FORMFIELD_OVERRIDES.update({
     models.FloatField: {
         'form_class': forms.FloatField,
         'choices_form_class': forms.TypedChoiceField},
+    models.IntegerField: {
+        'form_class': forms.IntegerField,
+        'choices_form_class': forms.TypedChoiceField},
     models.IPAddressField: {
         'form_class': forms.IPAddressField,
         'choices_form_class': forms.TypedChoiceField},
