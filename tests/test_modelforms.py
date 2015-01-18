@@ -62,6 +62,9 @@ class UseFloppyformWidgetsTests(TestCase):
             TestModelForm.base_fields['float'], floppyforms.FloatField
         )
         self.assertIsInstance(
+            TestModelForm.base_fields['integer'], floppyforms.IntegerField
+        )
+        self.assertIsInstance(
             TestModelForm.base_fields['ip_address'], floppyforms.IPAddressField
         )
         self.assertIsInstance(
