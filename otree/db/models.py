@@ -210,6 +210,7 @@ class NullBooleanField(_OtreeNullableModelFieldMixin, models.NullBooleanField):
     # instead of customizing the widget since then it works for any widget
 
     def __init__(self, *args,  **kwargs):
+        # 2015-1-19: why is this here? isn't this the default behavior?
         if 'choices' not in kwargs:
             kwargs['choices'] = (
                 (True, ugettext_lazy('Yes')),
