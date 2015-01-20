@@ -28,9 +28,7 @@ def start_link_url(session_type_name):
 
 class DemoIndex(vanilla.View):
 
-    @classmethod
-    def url_pattern(cls):
-        return r'^demo/$'
+    url_pattern = r'^demo/$'
 
     def get(self, *args, **kwargs):
 
@@ -169,9 +167,7 @@ def render_to_start_links_page(request, session):
 
 class Demo(GenericWaitPageMixin, vanilla.View):
 
-    @classmethod
-    def url_pattern(cls):
-        return r"^demo/(?P<session_type>.+)/$"
+    url_pattern = r"^demo/(?P<session_type>.+)/$"
 
     def _is_ready(self):
         session = get_session(self.session_type_name)

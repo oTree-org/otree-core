@@ -5,23 +5,496 @@ import threading
 import time
 import urllib
 import uuid
+from django.contrib import admin
+from django.conf.urls import patterns
+from django.http import HttpResponse, HttpResponseBadRequest
+from django.contrib.staticfiles.templatetags.staticfiles import (
+    static as static_template_tag
+)
+from django.contrib.auth.decorators import (
+    user_passes_test, login_required
+)
 
 from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 
 import vanilla
+from ordered_set import OrderedSet as oset
+import easymoney
+
 
 import otree.common_internal
-from otree.models.session import Session
 from otree.session import (
     create_session, get_session_types_dict, get_session_types_list
 )
 from otree.views.demo import info_about_session_type
 from otree import forms
 from otree.views.abstract import GenericWaitPageMixin
-from otree import adminlib
 
+import otree.constants
+import otree.models.session
+from otree.models.session import ParticipantProxy
+from otree.common_internal import add_params_to_url
+from otree.common import Currency as c
+from otree.common import Money
+from otree.views.demo import render_to_start_links_page
+from otree.models.session import Session, Participant
+
+def session_monitor_url(session):
+    participants_table_url = reverse('admin:{}_{}_changelist'.format(
+        ParticipantProxy._meta.app_label, ParticipantProxy._meta.module_name
+    ))
+    return add_params_to_url(participants_table_url, {'session': session.pk})
+
+
+def new_tab_link(url, label):
+    return '<a href="{}" target="_blank">{}</a>'.format(url, label)
+
+def get_callables(Model):
+    '''2015-1-14: deprecated function. needs to exist until we can get rid of admin.py from apps'''
+    return []
+
+def get_all_fields(Model, for_export=False):
+
+    first_fields = {
+        'Player':
+            [
+                'id',
+                'name',
+                'session',
+                'subsession',
+                'group',
+                'id_in_group',
+                'role',
+            ],
+        'Group':
+            [
+                'id',
+                'session',
+                'subsession',
+            ],
+        'Subsession':
+            ['name',
+             'session'],
+        'Participant':
+            [
+                '_id_in_session_display',
+                'code',
+                'label',
+                'start_link',
+                '_pages_completed',
+                '_current_app_name',
+                '_round_number',
+                '_current_page_name',
+                'status',
+                'last_request_succeeded',
+            ],
+        'Session':
+            [
+                'code',
+                'session_type_name',
+                'label',
+                'hidden',
+                'start_links_link',
+                'participants_table_link',
+                'payments_link',
+                'is_open',
+            ],
+    }[Model.__name__]
+    first_fields = oset(first_fields)
+
+    last_fields = {
+        'Player': [],
+        'Group': [],
+        'Subsession': [],
+        'Participant': [
+            'start_link',
+            'exclude_from_data_analysis',
+        ],
+        'Session': [
+        ],
+    }[Model.__name__]
+    last_fields = oset(last_fields)
+
+
+    fields_for_export_but_not_changelist = {
+        'Player': {'id', 'label'},
+        'Group': {'id'},
+        'Subsession': {'id'},
+        'Session': {
+            'git_commit_timestamp',
+            'fixed_pay',
+            'money_per_point',
+            'comment',
+            '_players_assigned_to_groups',
+        },
+        'Participant': {
+            # 'label',
+            'ip_address',
+            'time_started',
+        },
+    }[Model.__name__]
+
+    fields_for_changelist_but_not_export = {
+        'Player': {'group', 'subsession', 'session', 'participant'},
+        'Group': {'subsession', 'session'},
+        'Subsession': {'session'},
+        'Session': {
+
+            'hidden',
+        },
+        'Participant': {
+            'name',
+            'start_link',
+            'session',
+            'visited',
+            # used to tell how long participant has been on a page
+            '_last_page_timestamp',
+            'status',
+            'last_request_succeeded',
+        },
+    }[Model.__name__]
+
+
+    fields_to_exclude_from_export_and_changelist = {
+        'Player': {
+            '_index_in_game_pages',
+            'participant',
+        },
+        'Group': set(),
+        'Subsession': {
+            'code',
+            'label',
+            'session_access_code',
+            '_experimenter',
+        },
+        'Participant': {
+            'id',
+            'id_in_session',
+            'session',  # because we already filter by session
+            '_index_in_subsessions',
+            'is_on_wait_page',
+            'mturk_assignment_id',
+            'mturk_worker_id',
+            'vars',
+            '_current_form_page_url',
+            '_max_page_index',
+            '_predetermined_arrival_order',
+            '_index_in_pages',
+            'visited',  # not necessary because 'status' column includes this
+            '_waiting_for_ids',
+            '_last_request_timestamp',
+        },
+        'Session': {
+            'mturk_payment_was_sent',
+
+            # can't be shown on change page, because pk not editable?
+            'id',
+            'session_experimenter',
+            'subsession_names',
+            'demo_already_used',
+            'ready',
+            'vars',
+            '_pre_create_id',
+            # don't hide the code, since it's useful as a checksum
+            # (e.g. if you're on the payments page)
+        }
+    }[Model.__name__]
+
+    if for_export:
+        fields_to_exclude = fields_to_exclude_from_export_and_changelist.union(
+            fields_for_changelist_but_not_export
+        )
+    else:
+        fields_to_exclude = fields_to_exclude_from_export_and_changelist.union(
+            fields_for_export_but_not_changelist
+        )
+
+    all_fields_in_model = oset([field.name for field in Model._meta.fields])
+
+    middle_fields = all_fields_in_model - first_fields - last_fields - fields_to_exclude
+
+    return list(first_fields | middle_fields | last_fields)
+
+def get_display_table_rows(app_name, for_export, subsession_pk=None):
+    if (not for_export) and (not subsession_pk):
+        raise ValueError("if this is for the admin results table, you need to specify a subsession pk")
+    models_module = otree.common_internal.get_models_module(app_name)
+    Player = models_module.Player
+    Group = models_module.Group
+    Subsession = models_module.Subsession
+    if for_export:
+        model_order = [
+            Participant,
+            Player,
+            Group,
+            Subsession,
+            Session
+        ]
+    else:
+        model_order = [
+            Player,
+            Group,
+            Subsession,
+        ]
+
+    # get title row
+    all_columns = []
+    for Model in model_order:
+        field_names = get_all_fields(Model, for_export)
+        columns_for_this_model = [(Model, field_name) for field_name in field_names]
+        all_columns.extend(columns_for_this_model)
+
+    if subsession_pk:
+        players = Player.objects.filter(subsession_id=subsession_pk)
+    else:
+        players = Player.objects.all()
+    session_ids = set([player.session_id for player in players])
+
+
+
+    # initialize
+    parent_objects = {}
+
+    parent_models = [Model for Model in model_order if Model not in {Player, Session}]
+
+    for Model in parent_models:
+        parent_objects[Model] = {obj.pk for obj in Model.objects.filter(session_id__in=session_ids)}
+
+    if Session in model_order:
+        parent_objects[Session] = {obj.pk for obj in Session.objects.filter(pk__in=session_ids)}
+
+    all_rows = []
+    for player in players:
+        row = []
+        for column in all_columns:
+            Model, field_name = column
+            if Model == Player:
+                model_instance = player
+            else:
+                fk_name = Model.__name__.lower()
+                parent_object_id = getattr(player, "{}_id".format(fk_name))
+                if parent_object_id is None:
+                    model_instance = None
+                else:
+                    model_instance = parent_objects[Model][parent_object_id]
+
+            attr = getattr(model_instance, field_name, '')
+            if callable(attr):
+                attr = attr()
+            row.append(attr)
+        all_rows.append(row)
+
+    if for_export:
+        values_to_replace = {None: '', True: 1, False: 0}
+
+        for row in all_rows:
+            for i in range(len(row)):
+                value = row[i]
+                if value in values_to_replace:
+                    value = values_to_replace[value]
+                elif isinstance(value, easymoney.Money):
+                    # remove currency formatting for easier analysis
+                    value = easymoney.to_dec(value)
+                value = unicode(value).encode('UTF-8')
+                value = value.replace('\n', ' ').replace('\r', ' ')
+                row[i] = value
+
+
+    all_rows_including_headers = [all_columns] + all_rows
+    return all_rows_including_headers
+
+
+class GlobalSingletonAdmin(admin.ModelAdmin):
+
+    list_display = ['id', 'open_session',
+                    'persistent_urls_link', 'mturk_snippet_link']
+    list_editable = ['open_session']
+
+    def get_urls(self):
+        urls = super(GlobalSingletonAdmin, self).get_urls()
+        my_urls = patterns(
+            '',
+            (
+                r'^(?P<pk>\d+)/mturk_snippet/$',
+                self.admin_site.admin_view(self.mturk_snippet)
+            ),
+            (
+                r'^(?P<pk>\d+)/persistent_urls/$',
+                self.admin_site.admin_view(self.persistent_urls)
+            ),
+        )
+        return my_urls + urls
+
+    def persistent_urls_link(self, instance):
+        return new_tab_link('{}/persistent_urls/'.format(instance.pk), 'Link')
+    persistent_urls_link.allow_tags = True
+    persistent_urls_link.short_description = "Persistent URLs"
+
+    def persistent_urls(self, request, pk):
+        from otree.views.concrete import AssignVisitorToOpenSession
+        open_session_base_url = request.build_absolute_uri(
+            AssignVisitorToOpenSession.url()
+        )
+        open_session_example_urls = []
+        for i in range(1, 31):
+            open_session_example_urls.append(
+                add_params_to_url(
+                    open_session_base_url,
+                    {otree.constants.participant_label: 'P{}'.format(i)}
+                )
+            )
+
+        return TemplateResponse(
+            request,
+            'otree/admin/PersistentLabURLs.html',
+            {
+                'open_session_example_urls': open_session_example_urls,
+                'access_code_for_open_session': (
+                    otree.constants.access_code_for_open_session
+                ),
+                'participant_label': otree.constants.participant_label
+            }
+        )
+
+    def mturk_snippet_link(self, instance):
+        return new_tab_link('{}/mturk_snippet/'.format(instance.pk), 'Link')
+
+    mturk_snippet_link.allow_tags = True
+    mturk_snippet_link.short_description = "HTML snippet for MTurk HIT page"
+
+    def mturk_snippet(self, request, pk):
+        hit_page_js_url = request.build_absolute_uri(
+            static_template_tag('otree/js/mturk_hit_page.js')
+        )
+        from otree.views.concrete import AssignVisitorToOpenSessionMTurk
+        open_session_url = request.build_absolute_uri(
+            AssignVisitorToOpenSessionMTurk.url()
+        )
+        context = {'hit_page_js_url': hit_page_js_url,
+                   'open_session_url': open_session_url}
+        return TemplateResponse(request, 'otree/admin/MTurkSnippet.html',
+                                context, content_type='text/plain')
+
+
+class SessionAdmin(admin.ModelAdmin):
+
+
+    def get_urls(self):
+        urls = super(SessionAdmin, self).get_urls()
+        my_urls = patterns(
+            '',
+            (
+                r'^(?P<pk>\d+)/payments/$',
+                self.admin_site.admin_view(self.payments)
+            ),
+            (
+                r'^(?P<pk>\d+)/raw_participant_urls/$',
+                self.admin_site.admin_view(self.raw_participant_urls)
+            ),
+            (r'^(?P<pk>\d+)/start_links/$', self.admin_site.admin_view(self.start_links)),
+        )
+        return my_urls + urls
+
+    def participants_table_link(self, instance):
+        return new_tab_link(
+            session_monitor_url(instance),
+            'Link'
+        )
+
+    participants_table_link.allow_tags = True
+    participants_table_link.short_description = 'Monitor participants'
+
+    def participant_urls(self, request, session):
+        participants = session.get_participants()
+        return [request.build_absolute_uri(participant._start_url())
+                for participant in participants]
+
+    def start_links(self, request, pk):
+        session = self.model.objects.get(pk=pk)
+        return render_to_start_links_page(request, session)
+
+    def start_links_link(self, instance):
+        return new_tab_link(
+            '/admin/session/session/{}/start_links/'.format(instance.pk),
+            'Link'
+        )
+
+    start_links_link.short_description = 'Start links'
+    start_links_link.allow_tags = True
+
+    def raw_participant_urls(self, request, pk):
+        session = self.model.objects.get(pk=pk)
+        cond = (
+            request.GET.get(otree.constants.session_user_code) !=
+            session.session_experimenter.code
+        )
+        if cond:
+            msg = '{} parameter missing or incorrect'.format(
+                otree.constants.session_user_code
+            )
+            return HttpResponseBadRequest(msg)
+        urls = self.participant_urls(request, session)
+        return HttpResponse('\n'.join(urls), content_type="text/plain")
+
+    def raw_participant_urls_link(self, instance):
+        link = '/admin/session/session/{}/raw_participant_urls/?{}={}'.format(
+            instance.pk, otree.constants.session_user_code,
+            instance.session_experimenter.code
+        )
+        return new_tab_link(link, 'Link')
+
+    raw_participant_urls_link.short_description = 'Participant URLs'
+    raw_participant_urls_link.allow_tags = True
+
+    def payments(self, request, pk):
+        session = self.model.objects.get(pk=pk)
+        participants = session.get_participants()
+        total_payments = sum(
+            participant.total_pay() or c(0) for participant in participants
+        ).to_money(session)
+
+        try:
+            mean_payment = total_payments / len(participants)
+        except ZeroDivisionError:
+            mean_payment = Money(0)
+
+        ctx = {
+            'participants': participants,
+            'total_payments': total_payments,
+            'mean_payment': mean_payment,
+            'session_code': session.code,
+            'session_type': session.session_type_name,
+            'fixed_pay': session.fixed_pay.to_money(session),
+        }
+        return TemplateResponse(request, 'otree/admin/Payments.html', ctx)
+
+    def payments_link(self, instance):
+        if instance.payments_ready():
+            link_text = 'Ready'
+        else:
+            link_text = 'Incomplete'
+        # FIXME: use proper URL
+        link = '/admin/session/session/{}/payments/'.format(instance.pk)
+        return new_tab_link(link, link_text)
+
+    payments_link.short_description = "Payments page"
+    payments_link.allow_tags = True
+
+    list_display = get_all_fields(otree.models.session.Session)
+
+    fields = [
+        'label',
+        'experimenter_name',
+        'time_scheduled',
+        'comment',
+        'fixed_pay',
+        'money_per_point',
+    ]
+
+@user_passes_test(lambda u: u.is_staff)
+@login_required
 class CreateSessionForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
@@ -39,12 +512,11 @@ class CreateSessionForm(forms.Form):
             )
         return num_participants
 
-
+@user_passes_test(lambda u: u.is_staff)
+@login_required
 class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
 
-    @classmethod
-    def url_pattern(cls):
-        return r"^WaitUntilSessionCreated/(?P<session_pre_create_id>.+)/$"
+    url_pattern = r"^WaitUntilSessionCreated/(?P<session_pre_create_id>.+)/$"
 
     @classmethod
     def url(cls, pre_create_id):
@@ -88,9 +560,8 @@ def sleep_then_create_session(**kwargs):
     create_session(**kwargs)
 
 
-# FIXME: these decorators are not working together with issubclass?
-# @user_passes_test(lambda u: u.is_staff)
-# @login_required
+@user_passes_test(lambda u: u.is_staff)
+@login_required
 class CreateSession(vanilla.FormView):
 
     form_class = CreateSessionForm
@@ -130,9 +601,8 @@ class CreateSession(vanilla.FormView):
         return HttpResponseRedirect(WaitUntilSessionCreated.url(pre_create_id))
 
 
-# FIXME: these decorators are not working together with issubclass?
-# @user_passes_test(lambda u: u.is_staff)
-# @login_required
+@user_passes_test(lambda u: u.is_staff)
+@login_required
 class SessionTypes(vanilla.View):
 
     @classmethod
@@ -153,6 +623,8 @@ class SessionTypes(vanilla.View):
                                 'otree/admin/SessionListing.html',
                                 {'session_types_info': session_types_info})
 
+@user_passes_test(lambda u: u.is_staff)
+@login_required
 class SessionResults(vanilla.View):
 
     template_name = 'otree/admin/SessionResults.html'
@@ -167,30 +639,19 @@ class SessionResults(vanilla.View):
         participants = session.get_participants()
 
 
-        subsession_colspans = []
+        subsession_headings = []
         rows = []
 
-        column_titles_dict = {}
-        for app_name in session.session_type.app_sequence:
-            models_module = otree.common_internal.get_models_module(app_name)
-
-            player_fields = adminlib.get_all_fields(models_module.Player)
-            group_fields = ['group.{}' for f in adminlib.get_all_fields(models_module.Group)]
-            subsession_fields = ['subsession.{}' for f in adminlib.get_all_fields(models_module.Subsession)]
-
-            column_titles_dict[app_name] = player_fields + group_fields + subsession_fields
-
-        for participant in participants:
-            row = []
-            row.append(participant._id_in_session_display())
-            for player in participant.get_players():
-                field_names = column_titles_dict[player._meta.app_name]
-                for field_name in field_names:
-                    if callable(field_name):
-                        pass #FIXME...finish this code
+        for subsession in session.get_subsessions():
+            subsession_rows = get_display_table_rows(
+                subsession._meta.app_label,
+                for_export=False,
+                subsession_pk=subsession.pk
+            )
+            colspan = len(subsession_rows[0])
 
 
-
+            subsession_headings.append()
 
 
 
@@ -202,14 +663,6 @@ class SessionResults(vanilla.View):
 
 
 
-        session_types_info = []
-        for session_type in get_session_types_list():
-            session_types_info.append(
-                {
-                    'display_name': session_type.display_name,
-                    'url': '/create_session/{}/'.format(session_type.name),
-                }
-            )
 
         return TemplateResponse(self.request,
                                 'otree/admin/SessionListing.html',

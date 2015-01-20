@@ -18,20 +18,17 @@ from django.contrib.auth.decorators import user_passes_test
 from django.contrib.admin import sites
 from django.template.response import TemplateResponse
 
-import easymoney
+
 
 import otree.common_internal
-import otree.adminlib
-
 import otree.settings
 import otree.models
-import otree.adminlib
+
 import otree.models.session
-from otree.adminlib import (
-    get_all_fields
-)
+from otree.views.admin import get_display_table_rows
 from otree.common_internal import app_name_format
 
+import vanilla
 
 # =============================================================================
 # CONSTANTS
@@ -93,30 +90,6 @@ If a session has 4 subsessions, for each person there will be 1 sess
 """
 
 
-def get_data_export_fields(app_label):
-    import_module('{}._builtin.admin'.format(app_label))
-    app_models_module = import_module('{}.models'.format(app_label))
-    export_info = {}
-    for model_name in MODEL_NAMES:
-        if model_name == 'Session':
-            Model = otree.models.session.Session
-        elif model_name == 'Participant':
-            Model = otree.models.session.Participant
-        else:
-            Model = getattr(app_models_module, model_name)
-
-        export_member_names = get_all_fields(
-            Model, for_export=True
-        )
-
-        # remove anything that isn't a field or method on the model.
-        # remove since these are redundant
-        export_info[model_name] = {
-            'member_names': export_member_names,
-        }
-    return export_info
-
-
 def build_doc_file(app_label):
     doc_dict = get_doc_dict(app_label)
     return get_docs_as_string(app_label, doc_dict)
@@ -150,7 +123,7 @@ def get_doc_dict(app_label):
     }
 
     for model_name in MODEL_NAMES:
-        members = export_fields[model_name]['member_names']
+        members = export_fields[model_name]
         if model_name == 'Participant':
             Model = otree.models.session.Participant
         elif model_name == 'Session':
@@ -243,41 +216,37 @@ def doc_file_name(app_label):
     )
 
 
-def get_member_values(object, member_names):
-    member_values = []
-    for i in range(len(member_names)):
-        member_name = member_names[i]
-        attr = getattr(object, member_name)
-        if callable(attr):
-            attr = attr()
-        member_values.append(attr)
-    return member_values
-
-
 @user_passes_test(lambda u: u.is_staff)
 @login_required
+class ExportList(vanilla.View):
+
+    def url_pattern(self):
+
+    def get(self, request, *args, **kwargs):
+        app_labels = [
+            model._meta.app_label
+            for model, model_admin in sites.site._registry.items()
+        ]
+        app_labels = list(set(app_labels))
+        # Sort the apps alphabetically.
+        app_labels.sort()
+        # Filter out non subsession apps
+        app_labels = [
+            app_label
+            for app_label in app_labels
+            if otree.common_internal.is_subsession_app(app_label)
+        ]
+        apps = [
+            {"name": app_name_format(app_label), "app_label": app_label}
+            for app_label in app_labels
+        ]
+        return TemplateResponse(
+            request, "admin/otree_data_export_list.html", {"apps": apps}
+        )
+
+
 def export_list(request):
     # Get unique app_labels
-    app_labels = [
-        model._meta.app_label
-        for model, model_admin in sites.site._registry.items()
-    ]
-    app_labels = list(set(app_labels))
-    # Sort the apps alphabetically.
-    app_labels.sort()
-    # Filter out non subsession apps
-    app_labels = [
-        app_label
-        for app_label in app_labels
-        if otree.common_internal.is_subsession_app(app_label)
-    ]
-    apps = [
-        {"name": app_name_format(app_label), "app_label": app_label}
-        for app_label in app_labels
-    ]
-    return TemplateResponse(
-        request, "admin/otree_data_export_list.html", {"apps": apps}
-    )
 
 
 @user_passes_test(lambda u: u.is_staff)
@@ -292,89 +261,12 @@ def export_docs(request, app_label):
     response['Content-Type'] = 'text/plain'
     return response
 
-
+# fixme: make this CBV?
 @user_passes_test(lambda u: u.is_staff)
 @login_required
 def export(request, app_label):
 
-    model_names_as_fk = {
-        'group': 'Group',
-        'subsession': 'Subsession',
-        'participant': 'Participant',
-        'session': 'Session',
-    }
-
-    app_models = import_module('{}.models'.format(app_label))
-
-    Player = app_models.Player
-
-    fk_names = ['participant', 'group', 'subsession', 'session']
-
-    export_data = get_data_export_fields(app_label)
-
-    parent_object_data = {fk_name: {} for fk_name in fk_names}
-
-    column_headers = [
-        'player.{}'.format(member_name)
-        for member_name in export_data['Player']['member_names']
-    ]
-
-    for fk_name in fk_names:
-        model_name = model_names_as_fk[fk_name]
-        member_names = export_data[model_name]['member_names']
-        column_headers += [
-            '{}.{}'.format(fk_name, member_name)
-            for member_name in member_names
-        ]
-
-        # http://goo.gl/bj3fnQ
-        ids = set(Player.objects.order_by().values_list(
-            fk_name, flat=True
-        ).distinct())
-        if fk_name in {'session', 'participant'}:
-            models_module = otree.models.session
-        else:
-            models_module = app_models
-        objects = getattr(models_module, model_name).objects.filter(pk__in=ids)
-
-        for object in objects:
-            parent_object_data[fk_name][object.id] = get_member_values(
-                object, member_names
-            )
-
-    rows = [column_headers[:]]
-
-    # make the CSV output look nicer and easier to work with in other apps
-    values_to_replace = {None: '', True: 1, False: 0}
-    values_to_replace_keys = values_to_replace.keys()
-
-    for player in Player.objects.all():
-        member_names = export_data['Player']['member_names'][:]
-        member_values = get_member_values(player, member_names)
-        for fk_name in fk_names:
-            parent_object_id = getattr(player, "%s_id" % fk_name)
-            if parent_object_id is None:
-                model_name = model_names_as_fk[fk_name]
-                member_names = export_data[model_name]['member_names']
-                member_values += [''] * len(member_names)
-            else:
-                member_values += parent_object_data[fk_name][parent_object_id]
-
-        for i in range(len(member_values)):
-            if member_values[i] in values_to_replace_keys:
-                member_values[i] = values_to_replace[member_values[i]]
-            elif isinstance(member_values[i], easymoney.Money):
-                # remove currency formatting for easier analysis
-                member_values[i] = easymoney.to_dec(member_values[i])
-
-        member_values = [unicode(v).encode('UTF-8') for v in member_values]
-
-        # replace line breaks since CSV does not handle line breaks well
-        member_values = [
-            v.replace('\n', ' ').replace('\r', ' ') for v in member_values
-        ]
-
-        rows.append(member_values)
+    rows = get_display_table_rows(app_label, for_export=True)
 
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="{}"'.format(

@@ -16,6 +16,8 @@ import vanilla
 from otree.common_internal import get_models_module
 
 
+
+
 def url_patterns_from_module(module_name):
     """automatically generates URLs for all Views in the module,
     So that you don't need to enumerate them all in urlpatterns.
@@ -29,23 +31,17 @@ def url_patterns_from_module(module_name):
 
     views_module = import_module(module_name)
 
-    def isview(member):
-        return (
-            inspect.isclass(member) and
-            issubclass(member, vanilla.View) and
-            inspect.getmodule(member) == views_module
-        )
 
     all_views = [
-        ViewCls for _, ViewCls in inspect.getmembers(views_module, isview)
+        ViewCls for _, ViewCls in inspect.getmembers(views_module)
+        if hasattr(ViewCls, 'url_pattern') and
+        inspect.getmodule(ViewCls) == views_module
     ]
 
-    view_urls = []
-
-    for View in all_views:
-        if hasattr(View, 'url_pattern'):
-            the_url = urls.url(View.url_pattern(), View.as_view())
-            view_urls.append(the_url)
+    view_urls = [
+        urls.url(ViewCls.url_pattern(), ViewCls.as_view())
+        for ViewCls in all_views
+    ]
 
     return urls.patterns('', *view_urls)
 
