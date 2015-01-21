@@ -52,18 +52,6 @@ def augment_urlpatterns(urlpatterns):
         '',
         urls.url(r'^$', RedirectView.as_view(url='/demo')),
         urls.url(r'^admin/', urls.include(admin.site.urls)),
-        urls.url(
-            r'^export/(\w+)/$', 'otree.views.export.export',
-            name='otree_views_export_export'
-        ),
-        urls.url(
-            r'^export-list/$', 'otree.views.export.export_list',
-            name='otree_views_export_export_list'
-        ),
-        urls.url(
-            r'^export-docs/(\w+)/$', 'otree.views.export.export_docs',
-            name='otree_views_export_export_docs'
-        ),
     )
 
     urlpatterns += staticfiles_urlpatterns()

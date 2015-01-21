@@ -218,9 +218,11 @@ def doc_file_name(app_label):
 
 @user_passes_test(lambda u: u.is_staff)
 @login_required
-class ExportList(vanilla.View):
+class ExportIndex(vanilla.View):
 
-    def url_pattern(self):
+    @classmethod
+    def url_pattern(cls):
+        return r"^export/$"
 
     def get(self, request, *args, **kwargs):
         app_labels = [
@@ -245,33 +247,42 @@ class ExportList(vanilla.View):
         )
 
 
-def export_list(request):
-    # Get unique app_labels
+@user_passes_test(lambda u: u.is_staff)
+@login_required
+class ExportAppDocs(vanilla.View):
 
+    @classmethod
+    def url_pattern(cls):
+        return r"^export/$"
+
+    def get(self, request, *args, **kwargs):
+        app_label = kwargs['app_label']
+        # export = self.model.objects.get(pk=pk)
+        # app_label = export.model.app_label
+        response = HttpResponse(build_doc_file(app_label))
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(
+            doc_file_name(app_label)
+        )
+        response['Content-Type'] = 'text/plain'
+        return response
 
 @user_passes_test(lambda u: u.is_staff)
 @login_required
-def export_docs(request, app_label):
-    # export = self.model.objects.get(pk=pk)
-    # app_label = export.model.app_label
-    response = HttpResponse(build_doc_file(app_label))
-    response['Content-Disposition'] = 'attachment; filename="{}"'.format(
-        doc_file_name(app_label)
-    )
-    response['Content-Type'] = 'text/plain'
-    return response
+class ExportAppDocs(vanilla.View):
 
-# fixme: make this CBV?
-@user_passes_test(lambda u: u.is_staff)
-@login_required
-def export(request, app_label):
+    @classmethod
+    def url_pattern(cls):
+        return r'^export/(\w+)/$'
 
-    rows = get_display_table_rows(app_label, for_export=True)
+    def get(self, request, *args, **kwargs):
+        app_label = args[0]
 
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="{}"'.format(
-        data_file_name(app_label)
-    )
-    writer = csv.writer(response)
-    writer.writerows(rows)
-    return response
+        rows = get_display_table_rows(app_label, for_export=True)
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(
+            data_file_name(app_label)
+        )
+        writer = csv.writer(response)
+        writer.writerows(rows)
+        return response

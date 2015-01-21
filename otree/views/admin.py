@@ -18,6 +18,7 @@ from django.contrib.auth.decorators import (
 from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
+from django.shortcuts import get_object_or_404
 
 import vanilla
 from ordered_set import OrderedSet as oset
@@ -378,111 +379,11 @@ class GlobalSingletonAdmin(admin.ModelAdmin):
                                 context, content_type='text/plain')
 
 
-class SessionAdmin(admin.ModelAdmin):
-
-
-    def get_urls(self):
-        urls = super(SessionAdmin, self).get_urls()
-        my_urls = patterns(
-            '',
-            (
-                r'^(?P<pk>\d+)/payments/$',
-                self.admin_site.admin_view(self.payments)
-            ),
-            (
-                r'^(?P<pk>\d+)/raw_participant_urls/$',
-                self.admin_site.admin_view(self.raw_participant_urls)
-            ),
-            (r'^(?P<pk>\d+)/start_links/$', self.admin_site.admin_view(self.start_links)),
-        )
-        return my_urls + urls
-
-    def participants_table_link(self, instance):
-        return new_tab_link(
-            session_monitor_url(instance),
-            'Link'
-        )
-
-    participants_table_link.allow_tags = True
-    participants_table_link.short_description = 'Monitor participants'
-
     def participant_urls(self, request, session):
         participants = session.get_participants()
         return [request.build_absolute_uri(participant._start_url())
                 for participant in participants]
 
-    def start_links(self, request, pk):
-        session = self.model.objects.get(pk=pk)
-        return render_to_start_links_page(request, session)
-
-    def start_links_link(self, instance):
-        return new_tab_link(
-            '/admin/session/session/{}/start_links/'.format(instance.pk),
-            'Link'
-        )
-
-    start_links_link.short_description = 'Start links'
-    start_links_link.allow_tags = True
-
-    def raw_participant_urls(self, request, pk):
-        session = self.model.objects.get(pk=pk)
-        cond = (
-            request.GET.get(otree.constants.session_user_code) !=
-            session.session_experimenter.code
-        )
-        if cond:
-            msg = '{} parameter missing or incorrect'.format(
-                otree.constants.session_user_code
-            )
-            return HttpResponseBadRequest(msg)
-        urls = self.participant_urls(request, session)
-        return HttpResponse('\n'.join(urls), content_type="text/plain")
-
-    def raw_participant_urls_link(self, instance):
-        link = '/admin/session/session/{}/raw_participant_urls/?{}={}'.format(
-            instance.pk, otree.constants.session_user_code,
-            instance.session_experimenter.code
-        )
-        return new_tab_link(link, 'Link')
-
-    raw_participant_urls_link.short_description = 'Participant URLs'
-    raw_participant_urls_link.allow_tags = True
-
-    def payments(self, request, pk):
-        session = self.model.objects.get(pk=pk)
-        participants = session.get_participants()
-        total_payments = sum(
-            participant.total_pay() or c(0) for participant in participants
-        ).to_money(session)
-
-        try:
-            mean_payment = total_payments / len(participants)
-        except ZeroDivisionError:
-            mean_payment = Money(0)
-
-        ctx = {
-            'participants': participants,
-            'total_payments': total_payments,
-            'mean_payment': mean_payment,
-            'session_code': session.code,
-            'session_type': session.session_type_name,
-            'fixed_pay': session.fixed_pay.to_money(session),
-        }
-        return TemplateResponse(request, 'otree/admin/Payments.html', ctx)
-
-    def payments_link(self, instance):
-        if instance.payments_ready():
-            link_text = 'Ready'
-        else:
-            link_text = 'Incomplete'
-        # FIXME: use proper URL
-        link = '/admin/session/session/{}/payments/'.format(instance.pk)
-        return new_tab_link(link, link_text)
-
-    payments_link.short_description = "Payments page"
-    payments_link.allow_tags = True
-
-    list_display = get_all_fields(otree.models.session.Session)
 
     fields = [
         'label',
@@ -516,7 +417,9 @@ class CreateSessionForm(forms.Form):
 @login_required
 class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
 
-    url_pattern = r"^WaitUntilSessionCreated/(?P<session_pre_create_id>.+)/$"
+    @classmethod
+    def url_pattern(cls):
+        return r"^WaitUntilSessionCreated/(?P<session_pre_create_id>.+)/$"
 
     @classmethod
     def url(cls, pre_create_id):
@@ -600,14 +503,12 @@ class CreateSession(vanilla.FormView):
 
         return HttpResponseRedirect(WaitUntilSessionCreated.url(pre_create_id))
 
-
-@user_passes_test(lambda u: u.is_staff)
-@login_required
-class SessionTypes(vanilla.View):
+class SessionTypesToCreate(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
         return r"^create_session/$"
+
 
     def get(self, *args, **kwargs):
         session_types_info = []
@@ -623,47 +524,155 @@ class SessionTypes(vanilla.View):
                                 'otree/admin/SessionListing.html',
                                 {'session_types_info': session_types_info})
 
+
 @user_passes_test(lambda u: u.is_staff)
 @login_required
-class SessionResults(vanilla.View):
-
-    template_name = 'otree/admin/SessionResults.html'
+class SessionPageMixin(object):
 
     @classmethod
     def url_pattern(cls):
-        return r"^session_results/(?P<session_pk>\d+)/$"
+        return r"^{}/(\d+)/$".format(cls.__name__)
+
+    @classmethod
+    def url(cls, session_pk):
+        return '/{}/{}/'.format(cls.__name__, session_pk)
+
+    def dispatch(self, request, *args, **kwargs):
+        session_pk = int(args[0])
+        self.session = get_object_or_404(Session, kwargs={'pk': session_pk})
+
+
+class SessionMonitor(SessionPageMixin, vanilla.View):
+
 
     def get(self, *args, **kwargs):
 
-        session = Session.objects.get(pk=int(kwargs['session_pk']))
-        participants = session.get_participants()
+        return TemplateResponse(
+            self.request,
+            'otree/admin/SessionMonitor.html', #FIXME: create this
+            {
+                'participants': self.session.get_participants(),
+                'session': self.session
+            })
 
+
+
+class EditSessionProperties(SessionPageMixin, vanilla.UpdateView):
+
+    model = Session
+    fields = [
+        'label',
+        'experimenter_name',
+        'money_per_point',
+        'time_scheduled',
+        'hidden',
+        'fixed_pay',
+        'comment',
+    ]
+
+    template_name = 'otree/admin/EditSessionProperties.html'
+
+    def get_context_data(self, **kwargs):
+        return {
+            'participants': self.session.get_participants(),
+            'session': self.session
+        }
+
+class SessionPayments(SessionPageMixin, vanilla.View):
+
+
+
+    def get_context_data(self, **kwargs):
+        session = self.session
+        participants = session.get_participants()
+        total_payments = sum(
+            participant.total_pay() or c(0) for participant in participants
+        ).to_money(session)
+
+        try:
+            mean_payment = total_payments / len(participants)
+        except ZeroDivisionError:
+            mean_payment = Money(0)
+
+        return {
+            'participants': participants,
+            'total_payments': total_payments,
+            'mean_payment': mean_payment,
+            'session_code': session.code,
+            'session_type': session.session_type_name,
+            'fixed_pay': session.fixed_pay.to_money(session),
+        }
+
+class SessionStartLinks(vanilla.View, SessionPageMixin):
+
+    def get(self, request, *args, **kwargs):
+        return render_to_start_links_page(request, self.session)
+
+
+class SessionResults(SessionPageMixin, vanilla.View):
+
+    template_name = 'otree/admin/SessionResults.html'
+
+
+    def get(self, *args, **kwargs):
+        session = self.session
 
         subsession_headings = []
         rows = []
 
         for subsession in session.get_subsessions():
+            app_label = subsession._meta.app_label
+
             subsession_rows = get_display_table_rows(
                 subsession._meta.app_label,
                 for_export=False,
                 subsession_pk=subsession.pk
             )
+
+            if not rows:
+                rows = subsession_rows
+            else:
+                for i in range(len(rows)):
+                    rows[i].append(subsession_rows[i])
+
             colspan = len(subsession_rows[0])
 
+            round_number = subsession.round_number
+            if round_number > 1:
+                subsession_name = '{} [Round {}]'.format(app_label, round_number)
+            else:
+                subsession_name = app_label
 
-            subsession_headings.append()
+            subsession_headings.append({
+                'subsession_name': subsession_name,
+                'colspan': colspan
+            })
+
+        return TemplateResponse(
+            self.request,
+            'otree/admin/SessionListing.html',
+            {
+                'subsession_headings': subsession_headings,
+                'rows': rows,
+            }
+        )
+
+@user_passes_test(lambda u: u.is_staff)
+@login_required
+class AdminHome(vanilla.ListView):
+
+    template_name = '/otree/admin/Home.html'
+
+    @classmethod
+    def url_pattern(cls):
+        return r"^admin_home/$"
+
+    @classmethod
+    def url(cls):
+        return '/admin_home/'
+
+    def get_queryset(self):
+        return Session.objects.filter(hidden=False)
 
 
 
-            # player fields, then group fields, then subsession fields
-
-
-
-
-
-
-
-
-        return TemplateResponse(self.request,
-                                'otree/admin/SessionListing.html',
-                                {'session_types_info': session_types_info})

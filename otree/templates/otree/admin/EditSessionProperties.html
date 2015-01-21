@@ -1,0 +1,14 @@
+{% extends "otree/BaseBuiltIn.html" %}
+{% load otree_tags floppyforms %}
+
+{% block title %}
+    Edit properties for session <code>{{ session.code }}</code>
+{% endblock %}
+
+{% block content %}
+
+    {% form form %}
+
+    {% next_button %}
+
+{% endblock %}

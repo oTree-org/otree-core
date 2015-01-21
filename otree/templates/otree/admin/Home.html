@@ -1,0 +1,20 @@
+{% extends "otree/BaseBuiltIn.html" %}
+{% load otree_tags floppyforms %}
+
+{% block title %}
+    oTree Admin
+{% endblock %}
+
+{% block content %}
+
+    <p>Welcome to the oTree Admin. Click on a session below.</p>
+
+    {% for s in object_list %}
+        <li><a href="{{  }}{{ s.code }}</li>
+        <li>{{ s.label }}</li>
+        <li>{{ s.session_type_name }}</li>
+    {% empty %}
+        <li>No articles yet.</li>
+    {% endfor %}
+
+{% endblock %}
