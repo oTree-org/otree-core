@@ -98,7 +98,7 @@ class FakeRequest:
 
 # TODO
 # 2014-3-11: chris changed this to use otree's custom autodiscover
-from otree.adminlib import autodiscover
+
 autodiscover()
 url_name2model_admin = None
 

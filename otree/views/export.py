@@ -216,8 +216,7 @@ def doc_file_name(app_label):
     )
 
 
-@user_passes_test(lambda u: u.is_staff)
-@login_required
+
 class ExportIndex(vanilla.View):
 
     @classmethod
@@ -247,8 +246,7 @@ class ExportIndex(vanilla.View):
         )
 
 
-@user_passes_test(lambda u: u.is_staff)
-@login_required
+
 class ExportAppDocs(vanilla.View):
 
     @classmethod
@@ -264,25 +262,4 @@ class ExportAppDocs(vanilla.View):
             doc_file_name(app_label)
         )
         response['Content-Type'] = 'text/plain'
-        return response
-
-@user_passes_test(lambda u: u.is_staff)
-@login_required
-class ExportAppDocs(vanilla.View):
-
-    @classmethod
-    def url_pattern(cls):
-        return r'^export/(\w+)/$'
-
-    def get(self, request, *args, **kwargs):
-        app_label = args[0]
-
-        rows = get_display_table_rows(app_label, for_export=True)
-
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="{}"'.format(
-            data_file_name(app_label)
-        )
-        writer = csv.writer(response)
-        writer.writerows(rows)
         return response

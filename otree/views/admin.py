@@ -313,20 +313,6 @@ class GlobalSingletonAdmin(admin.ModelAdmin):
                     'persistent_urls_link', 'mturk_snippet_link']
     list_editable = ['open_session']
 
-    def get_urls(self):
-        urls = super(GlobalSingletonAdmin, self).get_urls()
-        my_urls = patterns(
-            '',
-            (
-                r'^(?P<pk>\d+)/mturk_snippet/$',
-                self.admin_site.admin_view(self.mturk_snippet)
-            ),
-            (
-                r'^(?P<pk>\d+)/persistent_urls/$',
-                self.admin_site.admin_view(self.persistent_urls)
-            ),
-        )
-        return my_urls + urls
 
     def persistent_urls_link(self, instance):
         return new_tab_link('{}/persistent_urls/'.format(instance.pk), 'Link')
@@ -359,13 +345,11 @@ class GlobalSingletonAdmin(admin.ModelAdmin):
             }
         )
 
-    def mturk_snippet_link(self, instance):
-        return new_tab_link('{}/mturk_snippet/'.format(instance.pk), 'Link')
 
-    mturk_snippet_link.allow_tags = True
-    mturk_snippet_link.short_description = "HTML snippet for MTurk HIT page"
 
-    def mturk_snippet(self, request, pk):
+class MTurkSnippet(vanilla.TemplateView):
+
+    def get(self, request, *args, **kwargs):
         hit_page_js_url = request.build_absolute_uri(
             static_template_tag('otree/js/mturk_hit_page.js')
         )
@@ -375,27 +359,11 @@ class GlobalSingletonAdmin(admin.ModelAdmin):
         )
         context = {'hit_page_js_url': hit_page_js_url,
                    'open_session_url': open_session_url}
+
         return TemplateResponse(request, 'otree/admin/MTurkSnippet.html',
                                 context, content_type='text/plain')
 
 
-    def participant_urls(self, request, session):
-        participants = session.get_participants()
-        return [request.build_absolute_uri(participant._start_url())
-                for participant in participants]
-
-
-    fields = [
-        'label',
-        'experimenter_name',
-        'time_scheduled',
-        'comment',
-        'fixed_pay',
-        'money_per_point',
-    ]
-
-@user_passes_test(lambda u: u.is_staff)
-@login_required
 class CreateSessionForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
@@ -413,8 +381,7 @@ class CreateSessionForm(forms.Form):
             )
         return num_participants
 
-@user_passes_test(lambda u: u.is_staff)
-@login_required
+
 class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
 
     @classmethod
@@ -463,8 +430,7 @@ def sleep_then_create_session(**kwargs):
     create_session(**kwargs)
 
 
-@user_passes_test(lambda u: u.is_staff)
-@login_required
+
 class CreateSession(vanilla.FormView):
 
     form_class = CreateSessionForm
@@ -525,8 +491,7 @@ class SessionTypesToCreate(vanilla.View):
                                 {'session_types_info': session_types_info})
 
 
-@user_passes_test(lambda u: u.is_staff)
-@login_required
+
 class SessionPageMixin(object):
 
     @classmethod
@@ -536,6 +501,9 @@ class SessionPageMixin(object):
     @classmethod
     def url(cls, session_pk):
         return '/{}/{}/'.format(cls.__name__, session_pk)
+
+    def get_template_name(self):
+        return '/otree/admin/{}'.format(cls.__name__)
 
     def dispatch(self, request, *args, **kwargs):
         session_pk = int(args[0])
@@ -614,7 +582,7 @@ class SessionResults(SessionPageMixin, vanilla.View):
     template_name = 'otree/admin/SessionResults.html'
 
 
-    def get(self, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         session = self.session
 
         subsession_headings = []
@@ -657,8 +625,22 @@ class SessionResults(SessionPageMixin, vanilla.View):
             }
         )
 
-@user_passes_test(lambda u: u.is_staff)
-@login_required
+class SessionHome(vanilla.TemplateView, SessionPageMixin):
+
+    template_name = '/otree/admin/SessionHome.html'
+
+    def get_context_data(self, **kwargs):
+        session_pk = self.session.pk
+        return {
+            'results_url': SessionResults.url(session_pk),
+            'monitor_url': SessionMonitor.url(session_pk),
+            'properties_url': EditSessionProperties.url(session_pk),
+            'payments_url': SessionPayments.url(session_pk),
+            'start_links_url': SessionStartLinks.url(session_pk),
+        }
+
+
+
 class AdminHome(vanilla.ListView):
 
     template_name = '/otree/admin/Home.html'
