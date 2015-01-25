@@ -1,0 +1,31 @@
+{% extends "otree/BaseBuiltIn.html" %}
+{% load otree_tags floppyforms %}
+
+{% block title %}
+    Session Results
+{% endblock %}
+
+{% block content %}
+
+
+<table class="table">
+    <tr>
+        {% for subsession_heading in subsession_headings %}
+            <th colspan="{{ subsession_heading.colspan }}">{{subsession_heading.subsession_name}}</th>
+        {% endfor %}
+    </tr>
+    <tr>
+        {% for column_name in column_names %}
+            <th>{{ column_name }}</th>
+        {% endfor %}
+    </tr>
+    {% for row in rows %}
+        <tr>
+        {% for cell in row %}
+            <td>{{ cell }}</td>
+        {% endfor %}
+        </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

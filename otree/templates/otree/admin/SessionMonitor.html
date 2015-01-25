@@ -1,0 +1,27 @@
+{% extends "otree/BaseBuiltIn.html" %}
+{% load otree_tags floppyforms %}
+
+{% block title %}
+    Session Monitor
+{% endblock %}
+
+{% block content %}
+
+<table class="table">
+    <tr>
+        {% for column_name in column_names %}
+            <th>{{ column_name }}</th>
+        {% endfor %}
+    </tr>
+    {% for row in rows %}
+        <tr>
+        {% for cell in row %}
+            <td>{{ cell }}</td>
+        {% endfor %}
+        </tr>
+    {% endfor %}
+</table>
+
+
+
+{% endblock %}

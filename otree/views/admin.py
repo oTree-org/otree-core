@@ -31,7 +31,7 @@ from otree.session import (
 )
 from otree.views.demo import info_about_session_type
 from otree import forms
-from otree.views.abstract import GenericWaitPageMixin
+from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
 
 import otree.constants
 import otree.models.session
@@ -61,29 +61,20 @@ def get_all_fields(Model, for_export=False):
     first_fields = {
         'Player':
             [
-                'id',
-                'name',
-                'session',
-                'subsession',
-                'group',
                 'id_in_group',
                 'role',
             ],
         'Group':
             [
                 'id',
-                'session',
-                'subsession',
             ],
         'Subsession':
-            ['name',
-             'session'],
+            [],
         'Participant':
             [
                 '_id_in_session_display',
                 'code',
                 'label',
-                'start_link',
                 '_pages_completed',
                 '_current_app_name',
                 '_round_number',
@@ -110,7 +101,6 @@ def get_all_fields(Model, for_export=False):
         'Group': [],
         'Subsession': [],
         'Participant': [
-            'start_link',
             'exclude_from_data_analysis',
         ],
         'Session': [
@@ -120,9 +110,9 @@ def get_all_fields(Model, for_export=False):
 
 
     fields_for_export_but_not_changelist = {
-        'Player': {'id', 'label'},
+        'Player': {'id', 'label', 'subsession', 'session'},
         'Group': {'id'},
-        'Subsession': {'id'},
+        'Subsession': {'id', 'round_number'},
         'Session': {
             'git_commit_timestamp',
             'fixed_pay',
@@ -138,7 +128,7 @@ def get_all_fields(Model, for_export=False):
     }[Model.__name__]
 
     fields_for_changelist_but_not_export = {
-        'Player': {'group', 'subsession', 'session', 'participant'},
+        'Player': set(),
         'Group': {'subsession', 'session'},
         'Subsession': {'session'},
         'Session': {
@@ -147,7 +137,6 @@ def get_all_fields(Model, for_export=False):
         },
         'Participant': {
             'name',
-            'start_link',
             'session',
             'visited',
             # used to tell how long participant has been on a page
@@ -162,13 +151,22 @@ def get_all_fields(Model, for_export=False):
         'Player': {
             '_index_in_game_pages',
             'participant',
+            'group',
+            'subsession',
+            'session',
+            'round_number',
         },
-        'Group': set(),
+        'Group': {
+            'subsession',
+            'session',
+        },
         'Subsession': {
             'code',
             'label',
+            'session',
             'session_access_code',
             '_experimenter',
+            '_index_in_subsessions',
         },
         'Participant': {
             'id',
@@ -261,10 +259,10 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
     parent_models = [Model for Model in model_order if Model not in {Player, Session}]
 
     for Model in parent_models:
-        parent_objects[Model] = {obj.pk for obj in Model.objects.filter(session_id__in=session_ids)}
+        parent_objects[Model] = {obj.pk: obj for obj in Model.objects.filter(session_id__in=session_ids)}
 
     if Session in model_order:
-        parent_objects[Session] = {obj.pk for obj in Session.objects.filter(pk__in=session_ids)}
+        parent_objects[Session] = {obj.pk: obj for obj in Session.objects.filter(pk__in=session_ids)}
 
     all_rows = []
     for player in players:
@@ -287,24 +285,23 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
             row.append(attr)
         all_rows.append(row)
 
-    if for_export:
-        values_to_replace = {None: '', True: 1, False: 0}
+    values_to_replace = {None: '', True: 1, False: 0}
 
-        for row in all_rows:
-            for i in range(len(row)):
-                value = row[i]
-                if value in values_to_replace:
-                    value = values_to_replace[value]
-                elif isinstance(value, easymoney.Money):
-                    # remove currency formatting for easier analysis
-                    value = easymoney.to_dec(value)
-                value = unicode(value).encode('UTF-8')
-                value = value.replace('\n', ' ').replace('\r', ' ')
-                row[i] = value
+    for row in all_rows:
+        for i in range(len(row)):
+            value = row[i]
+            if value in values_to_replace:
+                value = values_to_replace[value]
+            elif for_export and isinstance(value, easymoney.Money):
+                # remove currency formatting for easier analysis
+                value = easymoney.to_dec(value)
+            value = unicode(value).encode('UTF-8')
+            value = value.replace('\n', ' ').replace('\r', ' ')
+            row[i] = value
 
+    column_display_names = ['{}.{}'.format(Model.__name__.lower(), field_name) for (Model, field_name) in all_columns]
+    return column_display_names, all_rows
 
-    all_rows_including_headers = [all_columns] + all_rows
-    return all_rows_including_headers
 
 
 class GlobalSingletonAdmin(admin.ModelAdmin):
@@ -492,40 +489,33 @@ class SessionTypesToCreate(vanilla.View):
 
 
 
-class SessionPageMixin(object):
-
-    @classmethod
-    def url_pattern(cls):
-        return r"^{}/(\d+)/$".format(cls.__name__)
-
-    @classmethod
-    def url(cls, session_pk):
-        return '/{}/{}/'.format(cls.__name__, session_pk)
-
-    def get_template_name(self):
-        return '/otree/admin/{}'.format(cls.__name__)
-
-    def dispatch(self, request, *args, **kwargs):
-        session_pk = int(args[0])
-        self.session = get_object_or_404(Session, kwargs={'pk': session_pk})
+class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
 
 
-class SessionMonitor(SessionPageMixin, vanilla.View):
+    def get_context_data(self, **kwargs):
 
-
-    def get(self, *args, **kwargs):
-
-        return TemplateResponse(
-            self.request,
-            'otree/admin/SessionMonitor.html', #FIXME: create this
-            {
-                'participants': self.session.get_participants(),
-                'session': self.session
-            })
+        field_names = get_all_fields(Participant)
+        rows = []
+        for p in self.session.get_participants():
+            row = []
+            for fn in field_names:
+                attr = getattr(p, fn)
+                if callable(attr):
+                    attr = attr()
+                row.append(attr)
+            rows.append(row)
 
 
 
-class EditSessionProperties(SessionPageMixin, vanilla.UpdateView):
+        return {
+            'column_names': field_names,
+            'rows': rows,
+            'session': self.session
+        }
+
+
+
+class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
 
     model = Session
     fields = [
@@ -538,15 +528,13 @@ class EditSessionProperties(SessionPageMixin, vanilla.UpdateView):
         'comment',
     ]
 
-    template_name = 'otree/admin/EditSessionProperties.html'
-
     def get_context_data(self, **kwargs):
         return {
             'participants': self.session.get_participants(),
             'session': self.session
         }
 
-class SessionPayments(SessionPageMixin, vanilla.View):
+class SessionPayments(AdminSessionPageMixin, vanilla.View):
 
 
 
@@ -571,37 +559,36 @@ class SessionPayments(SessionPageMixin, vanilla.View):
             'fixed_pay': session.fixed_pay.to_money(session),
         }
 
-class SessionStartLinks(vanilla.View, SessionPageMixin):
+class SessionStartLinks(vanilla.View, AdminSessionPageMixin):
 
     def get(self, request, *args, **kwargs):
         return render_to_start_links_page(request, self.session)
 
 
-class SessionResults(SessionPageMixin, vanilla.View):
-
-    template_name = 'otree/admin/SessionResults.html'
-
+class SessionResults(AdminSessionPageMixin, vanilla.View):
 
     def get(self, request, *args, **kwargs):
         session = self.session
 
         subsession_headings = []
+        column_names = []
         rows = []
 
         for subsession in session.get_subsessions():
             app_label = subsession._meta.app_label
 
-            subsession_rows = get_display_table_rows(
+            subsession_column_names, subsession_rows = get_display_table_rows(
                 subsession._meta.app_label,
                 for_export=False,
                 subsession_pk=subsession.pk
             )
 
+            column_names.extend(subsession_column_names)
             if not rows:
                 rows = subsession_rows
             else:
                 for i in range(len(rows)):
-                    rows[i].append(subsession_rows[i])
+                    rows[i].extend(subsession_rows[i])
 
             colspan = len(subsession_rows[0])
 
@@ -618,16 +605,16 @@ class SessionResults(SessionPageMixin, vanilla.View):
 
         return TemplateResponse(
             self.request,
-            'otree/admin/SessionListing.html',
+            'otree/admin/SessionResults.html',
             {
                 'subsession_headings': subsession_headings,
+                'column_names': column_names,
                 'rows': rows,
             }
         )
 
-class SessionHome(vanilla.TemplateView, SessionPageMixin):
+class SessionHome(AdminSessionPageMixin, vanilla.TemplateView):
 
-    template_name = '/otree/admin/SessionHome.html'
 
     def get_context_data(self, **kwargs):
         session_pk = self.session.pk
@@ -643,7 +630,7 @@ class SessionHome(vanilla.TemplateView, SessionPageMixin):
 
 class AdminHome(vanilla.ListView):
 
-    template_name = '/otree/admin/Home.html'
+    template_name = 'otree/admin/Home.html'
 
     @classmethod
     def url_pattern(cls):

@@ -76,13 +76,5 @@ def augment_urlpatterns(urlpatterns):
     urlpatterns += url_patterns_from_module('otree.views.concrete')
     urlpatterns += url_patterns_from_module('otree.views.demo')
     urlpatterns += url_patterns_from_module('otree.views.admin')
-    urlpatterns += urls.patterns(
-        'otree.views.ajax_change_list',
-        urls.url(
-            r'^ajax/otree-change-list-results/$',
-            'ajax_otree_change_list_results',
-            name='ajax_otree_change_list_results'
-        ),
-    )
 
     return urlpatterns

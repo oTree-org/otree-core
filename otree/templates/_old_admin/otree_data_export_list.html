@@ -1,4 +1,4 @@
-{% extends "admin/base_site.html" %}
+{% extends "_old_admin/base_site.html" %}
 {% load i18n admin_urls admin_static admin_list %}
 
 {% block title %}
@@ -47,7 +47,8 @@
               </thead>
               <tbody>
                   {% for app in apps %}
-                  <tr class="{% cycle 'row1' 'row2' %}"><td>{{ app.name }}</td><td><a href="{% url "otree_views_export_export" app.app_label %}">{%trans "Download" %}</a></td><td><a href="{% url "otree_views_export_export_docs" app.app_label %}">{%trans "Download" %}</a></td></tr>
+                      {% FIXME: I got rid of this to make an error go away:  url "otree_views_export_export" app.app_label %}
+                  <tr class="{% cycle 'row1' 'row2' %}"><td>{{ app.name }}</td><td><a href="">{%trans "Download" %}</a></td><td><a href="{% url "otree_views_export_export_docs" app.app_label %}">{%trans "Download" %}</a></td></tr>
                   {% endfor %}
               </tbody>
               </table>

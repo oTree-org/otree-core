@@ -270,6 +270,9 @@ class Session(ModelWithVars):
                         player.participant.save()
                 return
 
+    def admin_url(self):
+        from otree.views.admin import SessionHome
+        return SessionHome.url(self.pk)
 
 class SessionUser(ModelWithVars):
 

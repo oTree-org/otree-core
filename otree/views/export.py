@@ -242,7 +242,7 @@ class ExportIndex(vanilla.View):
             for app_label in app_labels
         ]
         return TemplateResponse(
-            request, "admin/otree_data_export_list.html", {"apps": apps}
+            request, "_old_admin/otree_data_export_list.html", {"apps": apps}
         )
 
 
@@ -251,7 +251,7 @@ class ExportAppDocs(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r"^export/$"
+        return r"^export_docs/$"
 
     def get(self, request, *args, **kwargs):
         app_label = kwargs['app_label']
@@ -263,3 +263,4 @@ class ExportAppDocs(vanilla.View):
         )
         response['Content-Type'] = 'text/plain'
         return response
+

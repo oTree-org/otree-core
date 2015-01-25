@@ -46,7 +46,7 @@ register = Library()
 # TAGS
 # =============================================================================
 
-@register.inclusion_tag('admin/ajax_pagination.html')
+@register.inclusion_tag('_old_admin/ajax_pagination.html')
 def ajax_pagination(cl):
     """
     Generates the series of links to the pages in a paginated list.
@@ -347,7 +347,7 @@ def prepare_results_json(cl):
     )
 
 
-@register.inclusion_tag("admin/otree_change_list_results.html")
+@register.inclusion_tag("_old_admin/otree_change_list_results.html")
 def ajax_result_list(cl, request):
     """
     Displays the headers and data list together
@@ -375,7 +375,7 @@ def ajax_result_list(cl, request):
             'results': the_results}
 
 
-@register.inclusion_tag('admin/ajax_actions.html', takes_context=True)
+@register.inclusion_tag('_old_admin/ajax_actions.html', takes_context=True)
 def ajax_admin_actions(context):
     """
     Track the number of times the action field has been rendered on the page,

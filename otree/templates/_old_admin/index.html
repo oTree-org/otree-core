@@ -1,4 +1,4 @@
-{% extends "admin/base_site.html" %}
+{% extends "_old_admin/base_site.html" %}
 {% load i18n admin_static %}
 {% load otree_dashboard %}
 
@@ -23,12 +23,12 @@
 
         {% for app in non_app_sequence %}
             {% if app.app_label == "session" %}
-                {% include "admin/_dashboard_app_template.html" with app_models=app.models|fix_session_app_models_order %}
+                {% include "_old_admin/_dashboard_app_template.html" with app_models=app.models|fix_session_app_models_order %}
             {% endif %}
         {% endfor %}
         {% for app in non_app_sequence %}
             {% if app.app_label != "session" %}
-                {% include "admin/_dashboard_app_template.html" with app_models=app.models %}
+                {% include "_old_admin/_dashboard_app_template.html" with app_models=app.models %}
             {% endif %}
         {% endfor %}
     {% endif %}
@@ -37,7 +37,7 @@
 
     <h2>Apps</h2>
     {% for app in app_list|app_sequence_only %}
-        {% include "admin/_dashboard_app_template.html" with app_models=app.models|fix_subsession_app_models_order %}
+        {% include "_old_admin/_dashboard_app_template.html" with app_models=app.models|fix_subsession_app_models_order %}
     {% endfor %}
 {% else %}
     <p>{% trans "You don't have permission to edit anything." %}</p>

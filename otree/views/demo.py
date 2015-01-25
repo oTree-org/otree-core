@@ -10,7 +10,7 @@ from django.http import HttpResponseNotFound
 
 import vanilla
 
-import otree.admin
+import otree.views.admin
 import otree.constants as constants
 from otree.views.abstract import GenericWaitPageMixin
 from otree.models.session import Session
@@ -154,7 +154,7 @@ def render_to_start_links_page(request, session):
         'display_name': session.session_type.display_name,
         'experimenter_url': experimenter_url,
         'participant_urls': participant_urls,
-        'session_monitor_url': otree.admin.session_monitor_url(session),
+        'session_monitor_url': otree.views.admin.session_monitor_url(session),
     }
 
     session_type = get_session_types_dict(
