@@ -35,18 +35,12 @@ from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
 
 import otree.constants
 import otree.models.session
-from otree.models.session import ParticipantProxy
 from otree.common_internal import add_params_to_url
 from otree.common import Currency as c
 from otree.common import Money
 from otree.views.demo import render_to_start_links_page
 from otree.models.session import Session, Participant
 
-def session_monitor_url(session):
-    participants_table_url = reverse('admin:{}_{}_changelist'.format(
-        ParticipantProxy._meta.app_label, ParticipantProxy._meta.module_name
-    ))
-    return add_params_to_url(participants_table_url, {'session': session.pk})
 
 
 def new_tab_link(url, label):
@@ -642,6 +636,3 @@ class AdminHome(vanilla.ListView):
 
     def get_queryset(self):
         return Session.objects.filter(hidden=False)
-
-
-

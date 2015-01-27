@@ -312,5 +312,5 @@ class AdvanceSession(vanilla.View):
 
     def get(self, request, *args, **kwargs):
         self.session.advance_last_place_participants()
-        admin_url = otree.views.admin.session_monitor_url(self.session)
+        admin_url = otree.views.admin.SessionHome.url(self.session.pk)
         return HttpResponseRedirect(admin_url)

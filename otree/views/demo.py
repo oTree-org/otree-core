@@ -154,7 +154,7 @@ def render_to_start_links_page(request, session):
         'display_name': session.session_type.display_name,
         'experimenter_url': experimenter_url,
         'participant_urls': participant_urls,
-        'session_monitor_url': otree.views.admin.session_monitor_url(session),
+        'session_admin_url': otree.views.admin.SessionHome.url(session.pk),
     }
 
     session_type = get_session_types_dict(

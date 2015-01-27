@@ -244,15 +244,4 @@ class Migration(migrations.Migration):
             field=otree.db.models.ForeignKey(related_name='experimenter', to='contenttypes.ContentType', null=True),
             preserve_default=True,
         ),
-        migrations.CreateModel(
-            name='ParticipantProxy',
-            fields=[
-            ],
-            options={
-                'verbose_name': 'Monitor Participant',
-                'proxy': True,
-                'verbose_name_plural': 'Monitor Participants',
-            },
-            bases=('otree.participant',),
-        ),
     ]
