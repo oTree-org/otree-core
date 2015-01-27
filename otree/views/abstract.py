@@ -214,6 +214,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         self._session_user._current_app_name = app_name
 
         models_module = otree.common_internal.get_models_module(app_name)
+        self._models_module = models_module
         self.SubsessionClass = getattr(models_module, 'Subsession')
         self.GroupClass = getattr(models_module, 'Group')
         self.PlayerClass = getattr(models_module, 'Player')
@@ -651,12 +652,15 @@ class FormPageMixin(object):
 
     def get_context_data(self, **kwargs):
         context = super(FormPageMixin, self).get_context_data(**kwargs)
-        context.update({'form': kwargs.get('form')})
-        game_context = {}
-        game_context.update(self._vars_for_all_templates() or {})
-        vars_for_template = self.vars_for_template() or {}
-        game_context.update(vars_for_template)
-        context.update(game_context)
+        context.update({
+            'form': kwargs.get('form'),
+            'player': self.player,
+            'group': self.group,
+            'subsession': self.subsession,
+            'Constants': self._models_module.Constants,
+        })
+        context.update(self._vars_for_all_templates() or {})
+        context.update(self.vars_for_template() or {})
         return context
 
     def get_form(self, data=None, files=None, **kwargs):
