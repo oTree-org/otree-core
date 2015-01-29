@@ -539,10 +539,12 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
         return 'session_edit'
 
     def get_context_data(self, **kwargs):
-        return {
+        context = super(EditSessionProperties, self).get_context_data(**kwargs)
+        context.update({
             'participants': self.session.get_participants(),
             'session': self.session
-        }
+        })
+        return context
 
 class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
 
