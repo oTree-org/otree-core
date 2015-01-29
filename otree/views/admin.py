@@ -511,14 +511,13 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
                 row.append(attr)
             rows.append(row)
 
-
-
-        return {
+        context = super(SessionMonitor, self).get_context_data(**kwargs)
+        context.update({
             'column_names': field_names,
             'rows': rows,
             'session': self.session
-        }
-
+        })
+        return context
 
 
 class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
@@ -553,6 +552,8 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
         return 'session_payments'
 
     def get_context_data(self, **kwargs):
+        context = super(SessionPayments, self).get_context_data(**kwargs)
+
         session = self.session
         participants = session.get_participants()
         total_payments = sum(
@@ -564,14 +565,16 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
         except ZeroDivisionError:
             mean_payment = Money(0)
 
-        return {
+        context.update({
             'participants': participants,
             'total_payments': total_payments,
             'mean_payment': mean_payment,
             'session_code': session.code,
             'session_type': session.session_type_name,
             'fixed_pay': session.fixed_pay.to_money(session),
-        }
+        })
+
+        return context
 
 class SessionStartLinks(AdminSessionPageMixin, vanilla.View):
 
@@ -648,7 +651,9 @@ class SessionHome(AdminSessionPageMixin, vanilla.TemplateView):
         return 'session_home'
 
     def get_context_data(self, **kwargs):
-        return {'session': self.session }
+        context = super(SessionHome, self).get_context_data(**kwargs)
+        context.update({'session': self.session })
+        return context
 
 
 
