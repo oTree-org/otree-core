@@ -8,8 +8,9 @@
 {% block content %}
 
 
-<table class="table">
+<table class="table-bordered">
     <tr>
+        <th rowspan="2">Player label</th>
         {% for subsession_heading in subsession_headings %}
             <th colspan="{{ subsession_heading.colspan }}">{{subsession_heading.subsession_name}}</th>
         {% endfor %}

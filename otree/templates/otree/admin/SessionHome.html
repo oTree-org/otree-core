@@ -7,13 +7,12 @@
 
 {% block content %}
 
-    <ul>
-        <li><a href="{{ results_url  }}">Results</a></li>
-        <li><a href="{{ monitor_url }}">Monitor</a></li>
-        <li><a href="{{ properties_url }}">Edit Properties</a></li>
-        <li><a href="{{ payments_url }}">Payments</a></li>
-        <li><a href="{{ start_links_url }}">Start Links</a></li>
-
+    <ul class="nav nav-tabs">
+        <li role="presentation" class="active"><a href="{% url 'session_results' session.pk %}">Results</a></li>
+        <li role="presentation"><a href="{% url 'session_monitor' session.pk %}">Monitor</a></li>
+        <li role="presentation"><a href="{% url 'session_edit' session.pk %}">Edit properties</a></li>
+        <li role="presentation"><a href="{% url 'session_payments' session.pk %}">Payments</a></li>
+        <li role="presentation"><a href="{% url 'session_start_links' session.pk %}">Start Links</a></li>
     </ul>
 
 {% endblock %}

@@ -431,6 +431,10 @@ class CreateSession(vanilla.FormView):
     def url_pattern(cls):
         return r"^create_session/(?P<session_type>.+)/$"
 
+    @classmethod
+    def url_name(cls):
+        return 'session_create'
+
     def dispatch(self, request, *args, **kwargs):
         session_type_name = urllib.unquote_plus(kwargs.pop('session_type'))
         self.session_type = get_session_types_dict()[session_type_name]
@@ -463,6 +467,14 @@ class CreateSession(vanilla.FormView):
 class SessionTypesToCreate(vanilla.View):
 
     @classmethod
+    def url(cls):
+        return "/create_session/"
+
+    @classmethod
+    def url_name(cls):
+        return 'session_types_create'
+
+    @classmethod
     def url_pattern(cls):
         return r"^create_session/$"
 
@@ -485,6 +497,9 @@ class SessionTypesToCreate(vanilla.View):
 
 class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
 
+    @classmethod
+    def url_name(cls):
+        return 'session_monitor'
 
     def get_context_data(self, **kwargs):
 
@@ -522,6 +537,10 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
         'comment',
     ]
 
+    @classmethod
+    def url_name(cls):
+        return 'session_edit'
+
     def get_context_data(self, **kwargs):
         return {
             'participants': self.session.get_participants(),
@@ -530,7 +549,9 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
 
 class SessionPayments(AdminSessionPageMixin, vanilla.View):
 
-
+    @classmethod
+    def url_name(cls):
+        return 'session_payments'
 
     def get_context_data(self, **kwargs):
         session = self.session
@@ -555,17 +576,27 @@ class SessionPayments(AdminSessionPageMixin, vanilla.View):
 
 class SessionStartLinks(vanilla.View, AdminSessionPageMixin):
 
+    @classmethod
+    def url_name(cls):
+        return 'session_start_links'
+
     def get(self, request, *args, **kwargs):
         return render_to_start_links_page(request, self.session)
 
 
 class SessionResults(AdminSessionPageMixin, vanilla.View):
 
+    @classmethod
+    def url_name(cls):
+        return 'session_results'
+
     def get(self, request, *args, **kwargs):
         session = self.session
 
         subsession_headings = []
         column_names = []
+        participants = session.get_participants()
+        participant_labels = [p._id_in_session_display() for p in participants]
         rows = []
 
         for subsession in session.get_subsessions():
@@ -597,6 +628,10 @@ class SessionResults(AdminSessionPageMixin, vanilla.View):
                 'colspan': colspan
             })
 
+        # prepend labels to the rows
+        for row, participant_label in zip(rows, participant_labels):
+            row.insert(0, participant_label)
+
         return TemplateResponse(
             self.request,
             'otree/admin/SessionResults.html',
@@ -609,16 +644,12 @@ class SessionResults(AdminSessionPageMixin, vanilla.View):
 
 class SessionHome(AdminSessionPageMixin, vanilla.TemplateView):
 
+    @classmethod
+    def url_name(cls):
+        return 'session_home'
 
     def get_context_data(self, **kwargs):
-        session_pk = self.session.pk
-        return {
-            'results_url': SessionResults.url(session_pk),
-            'monitor_url': SessionMonitor.url(session_pk),
-            'properties_url': EditSessionProperties.url(session_pk),
-            'payments_url': SessionPayments.url(session_pk),
-            'start_links_url': SessionStartLinks.url(session_pk),
-        }
+        return {'session': self.session }
 
 
 
@@ -629,6 +660,10 @@ class AdminHome(vanilla.ListView):
     @classmethod
     def url_pattern(cls):
         return r"^admin_home/$"
+
+    @classmethod
+    def url_name(cls):
+        return 'admin_home'
 
     @classmethod
     def url(cls):

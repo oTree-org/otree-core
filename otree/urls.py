@@ -38,10 +38,12 @@ def url_patterns_from_module(module_name):
         inspect.getmodule(ViewCls) == views_module
     ]
 
-    view_urls = [
-        urls.url(ViewCls.url_pattern(), ViewCls.as_view())
-        for ViewCls in all_views
-    ]
+    view_urls = []
+    for ViewCls in all_views:
+        if hasattr(ViewCls, 'url_name'):
+            view_urls.append(urls.url(ViewCls.url_pattern(), ViewCls.as_view(), name=ViewCls.url_name()))
+        else:
+            view_urls.append(urls.url(ViewCls.url_pattern(), ViewCls.as_view()))
 
     return urls.patterns('', *view_urls)
 
