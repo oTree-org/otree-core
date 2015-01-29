@@ -861,7 +861,7 @@ class AdminSessionPageMixin(object):
 
     @classmethod
     def url_pattern(cls):
-        return r"^{}/(\d+)/$".format(cls.__name__)
+        return r"^{}/(?P<pk>\d+)/$".format(cls.__name__)
 
     @classmethod
     def url(cls, session_pk):
@@ -871,6 +871,6 @@ class AdminSessionPageMixin(object):
         return ['otree/admin/{}.html'.format(self.__class__.__name__)]
 
     def dispatch(self, request, *args, **kwargs):
-        session_pk = int(args[0])
+        session_pk = int(kwargs['pk'])
         self.session = get_object_or_404(otree.models.Session, pk=session_pk)
         return super(AdminSessionPageMixin, self).dispatch(request, *args, **kwargs)

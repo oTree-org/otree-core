@@ -544,7 +544,7 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
             'session': self.session
         }
 
-class SessionPayments(AdminSessionPageMixin, vanilla.View):
+class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
 
     @classmethod
     def url_name(cls):
@@ -571,7 +571,7 @@ class SessionPayments(AdminSessionPageMixin, vanilla.View):
             'fixed_pay': session.fixed_pay.to_money(session),
         }
 
-class SessionStartLinks(vanilla.View, AdminSessionPageMixin):
+class SessionStartLinks(AdminSessionPageMixin, vanilla.View):
 
     @classmethod
     def url_name(cls):
