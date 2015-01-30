@@ -115,57 +115,6 @@ class SessionExperimenterWaitUntilPlayersAreAssigned(NonSequenceUrlMixin,
             return self._get_wait_page()
 
 
-class InitializeSessionExperimenter(vanilla.View):
-
-    @classmethod
-    def url_pattern(cls):
-        return r'^InitializeSessionExperimenter/(?P<{}>[a-z]+)/$'.format(
-            constants.session_user_code
-        )
-
-    def redirect_to_next_page(self):
-        url = SessionExperimenterWaitUntilPlayersAreAssigned.url(
-            self._session_user
-        )
-        return HttpResponseRedirect(url)
-
-    def get(self, *args, **kwargs):
-
-        self._session_user = get_object_or_404(
-            otree.models.session.SessionExperimenter,
-            code=kwargs[constants.session_user_code]
-        )
-
-        session = self._session_user.session
-        if session._players_assigned_to_groups:
-            return self.redirect_to_next_page()
-        return TemplateResponse(
-            self.request, 'otree/experimenter/StartSession.html', {}
-        )
-
-    def post(self, request, *args, **kwargs):
-        self._session_user = get_object_or_404(
-            otree.models.session.SessionExperimenter,
-            code=kwargs[constants.session_user_code]
-        )
-
-        session = self._session_user.session
-
-        if not session.time_started:
-            # get timestamp when the experimenter starts, rather than when the
-            # session was created (since code is often updated after session
-            # created)
-            session.git_commit_timestamp = (
-                otree.common_internal.git_commit_timestamp()
-            )
-            session.time_started = django.utils.timezone.now()
-            session.save()
-
-        t = threading.Thread(target=session._create_groups_and_initialize())
-        t.start()
-        return self.redirect_to_next_page()
-
-
 class InitializeParticipant(vanilla.UpdateView):
     """just collects data and sets properties. not essential to functionality.
     the only exception is if the participant needs to be assigned to groups on

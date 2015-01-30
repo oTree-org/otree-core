@@ -412,6 +412,7 @@ class SessionExperimenter(SessionUser):
     _is_experimenter = True
 
     def _start_url(self):
+        # 2015-1-31: doesn't work
         return '/InitializeSessionExperimenter/{}/'.format(self.code)
 
     def experimenters(self):
