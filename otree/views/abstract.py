@@ -867,6 +867,11 @@ class AdminSessionPageMixin(object):
     def url(cls, session_pk):
         return '/{}/{}/'.format(cls.__name__, session_pk)
 
+    def get_context_data(self, **kwargs):
+        context = super(AdminSessionPageMixin, self).get_context_data(**kwargs)
+        context.update({'session': self.session})
+        return context
+
     def get_template_names(self):
         return ['otree/admin/{}.html'.format(self.__class__.__name__)]
 

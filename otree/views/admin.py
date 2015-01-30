@@ -520,7 +520,6 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
         context.update({
             'column_names': [pretty_name(field.strip('_')) for field in field_names],
             'rows': rows,
-            'session': self.session
         })
         return context
 
@@ -542,13 +541,6 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
     def url_name(cls):
         return 'session_edit'
 
-    def get_context_data(self, **kwargs):
-        context = super(EditSessionProperties, self).get_context_data(**kwargs)
-        context.update({
-            'participants': self.session.get_participants(),
-            'session': self.session
-        })
-        return context
 
 class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
 
@@ -557,7 +549,6 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
         return 'session_payments'
 
     def get_context_data(self, **kwargs):
-        context = super(SessionPayments, self).get_context_data(**kwargs)
 
         session = self.session
         participants = session.get_participants()
@@ -570,15 +561,16 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
         except ZeroDivisionError:
             mean_payment = Money(0)
 
+        context = super(SessionPayments, self).get_context_data(**kwargs)
         context.update({
             'participants': participants,
             'total_payments': total_payments,
             'mean_payment': mean_payment,
-            'session': session,
             'fixed_pay': session.fixed_pay.to_money(session),
         })
 
         return context
+
 
 class SessionStartLinks(AdminSessionPageMixin, vanilla.View):
 
@@ -642,25 +634,21 @@ class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
 
         context = super(SessionResults, self).get_context_data(**kwargs)
         context.update({
-                'subsession_headers': subsession_headers,
-                'model_headers': model_headers,
-                'field_headers': field_headers,
-                'rows': rows,
-                'session': self.session,
-            })
+            'subsession_headers': subsession_headers,
+            'model_headers': model_headers,
+            'field_headers': field_headers,
+            'rows': rows})
         return context
 
-class SessionHome(AdminSessionPageMixin, vanilla.TemplateView):
+
+class SessionInfo(AdminSessionPageMixin, vanilla.View):
 
     @classmethod
     def url_name(cls):
-        return 'session_home'
+        return 'session_info'
 
-    def get_context_data(self, **kwargs):
-        context = super(SessionHome, self).get_context_data(**kwargs)
-        context.update({'session': self.session })
-        return context
-
+    def get(self, request, *args, **kwargs):
+        return render_to_start_links_page(request, self.session)
 
 
 class AdminHome(vanilla.ListView):
