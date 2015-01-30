@@ -1,23 +1,22 @@
-{% extends "otree/BaseBuiltIn.html" %}
-{% load otree_tags floppyforms %}
+{% extends "otree/admin/Session.html" %}
 
-{% block title %}
-    Session Results
-{% endblock %}
+{% block real_content %}
 
-{% block content %}
-
-
-<table class="table-bordered">
+<table class="text-center table-bordered">
     <tr>
-        <th rowspan="2">Player label</th>
-        {% for subsession_heading in subsession_headings %}
-            <th colspan="{{ subsession_heading.colspan }}">{{subsession_heading.subsession_name}}</th>
+        <th rowspan="3" class="text-center">Player label</th>
+        {% for header, colspan in subsession_headers %}
+            <th colspan="{{ colspan }}" class="text-center">{{ header }}</th>
         {% endfor %}
     </tr>
     <tr>
-        {% for column_name in column_names %}
-            <th>{{ column_name }}</th>
+        {% for header, colspan in model_headers %}
+            <th colspan="{{ colspan }}" class="text-center">{{ header }}</th>
+        {% endfor %}
+    </tr>
+    <tr>
+        {% for header in field_headers %}
+            <th class="text-center">{{ header }}</th>
         {% endfor %}
     </tr>
     {% for row in rows %}

@@ -1,16 +1,11 @@
-{% extends "otree/BaseBuiltIn.html" %}
-{% load otree_tags floppyforms %}
+{% extends "otree/admin/Session.html" %}
 
-{% block title %}
-    Session Monitor
-{% endblock %}
+{% block real_content %}
 
-{% block content %}
-
-<table class="table">
+<table class="table-bordered text-center">
     <tr>
         {% for column_name in column_names %}
-            <th>{{ column_name }}</th>
+            <th class="text-center">{{ column_name }}</th>
         {% endfor %}
     </tr>
     {% for row in rows %}
@@ -21,7 +16,5 @@
         </tr>
     {% endfor %}
 </table>
-
-
 
 {% endblock %}

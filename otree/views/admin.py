@@ -5,6 +5,7 @@ import threading
 import time
 import urllib
 import uuid
+import itertools
 from django.contrib import admin
 from django.conf.urls import patterns
 from django.http import HttpResponse, HttpResponseBadRequest
@@ -19,6 +20,7 @@ from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
+from django.forms.forms import pretty_name
 
 import vanilla
 from ordered_set import OrderedSet as oset
@@ -293,7 +295,10 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
             value = value.replace('\n', ' ').replace('\r', ' ')
             row[i] = value
 
-    column_display_names = ['{}.{}'.format(Model.__name__.lower(), field_name) for (Model, field_name) in all_columns]
+    column_display_names = []
+    for Model, field_name in all_columns:
+        column_display_names.append((pretty_name(Model.__name__), pretty_name(field_name)))
+
     return column_display_names, all_rows
 
 
@@ -513,7 +518,7 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
 
         context = super(SessionMonitor, self).get_context_data(**kwargs)
         context.update({
-            'column_names': field_names,
+            'column_names': [pretty_name(field.strip('_')) for field in field_names],
             'rows': rows,
             'session': self.session
         })
@@ -569,8 +574,7 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
             'participants': participants,
             'total_payments': total_payments,
             'mean_payment': mean_payment,
-            'session_code': session.code,
-            'session_type': session.session_type_name,
+            'session': session,
             'fixed_pay': session.fixed_pay.to_money(session),
         })
 
@@ -586,63 +590,65 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.View):
         return render_to_start_links_page(request, self.session)
 
 
-class SessionResults(AdminSessionPageMixin, vanilla.View):
+class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
 
     @classmethod
     def url_name(cls):
         return 'session_results'
 
-    def get(self, request, *args, **kwargs):
+    def get_context_data(self, **kwargs):
         session = self.session
 
-        subsession_headings = []
-        column_names = []
         participants = session.get_participants()
         participant_labels = [p._id_in_session_display() for p in participants]
+        column_name_tuples = []
         rows = []
 
         for subsession in session.get_subsessions():
             app_label = subsession._meta.app_label
 
-            subsession_column_names, subsession_rows = get_display_table_rows(
+            column_names, subsession_rows = get_display_table_rows(
                 subsession._meta.app_label,
                 for_export=False,
                 subsession_pk=subsession.pk
             )
 
-            column_names.extend(subsession_column_names)
             if not rows:
                 rows = subsession_rows
             else:
                 for i in range(len(rows)):
                     rows[i].extend(subsession_rows[i])
 
-            colspan = len(subsession_rows[0])
-
             round_number = subsession.round_number
             if round_number > 1:
-                subsession_name = '{} [Round {}]'.format(app_label, round_number)
+                subsession_column_name = '{} [Round {}]'.format(app_label, round_number)
             else:
-                subsession_name = app_label
+                subsession_column_name = pretty_name(app_label)
 
-            subsession_headings.append({
-                'subsession_name': subsession_name,
-                'colspan': colspan
-            })
+            for model_column_name, field_column_name in column_names:
+                column_name_tuples.append((subsession_column_name, model_column_name, field_column_name))
 
-        # prepend labels to the rows
+        subsession_headers = [(key, len(list(group)))
+                              for key, group in itertools.groupby(column_name_tuples, key=lambda x: x[0])]
+
+        model_headers = [(key[1], len(list(group)))
+                         for key, group in itertools.groupby(column_name_tuples, key=lambda x: (x[0], x[1]))]
+
+        field_headers = [key[2] for key, group in itertools.groupby(column_name_tuples, key=lambda x: x)]
+
+        # prepend participant labels to the rows
         for row, participant_label in zip(rows, participant_labels):
             row.insert(0, participant_label)
 
-        return TemplateResponse(
-            self.request,
-            'otree/admin/SessionResults.html',
-            {
-                'subsession_headings': subsession_headings,
-                'column_names': column_names,
+        context = super(SessionResults, self).get_context_data(**kwargs)
+        context.update({
+                'subsession_headers': subsession_headers,
+                'model_headers': model_headers,
+                'field_headers': field_headers,
                 'rows': rows,
-            }
-        )
+                'session': self.session,
+            })
+        return context
 
 class SessionHome(AdminSessionPageMixin, vanilla.TemplateView):
 
