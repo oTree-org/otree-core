@@ -21,7 +21,7 @@ from django.http import (
 
 import otree.constants as constants
 import otree.models.session
-import otree.adminlib
+import otree.views.admin
 import otree.common_internal
 from otree.views.abstract import (
     NonSequenceUrlMixin, OTreeMixin, AssignVisitorToOpenSessionBase,
@@ -261,5 +261,5 @@ class AdvanceSession(vanilla.View):
 
     def get(self, request, *args, **kwargs):
         self.session.advance_last_place_participants()
-        admin_url = otree.adminlib.session_monitor_url(self.session)
+        admin_url = otree.views.admin.SessionHome.url(self.session.pk)
         return HttpResponseRedirect(admin_url)

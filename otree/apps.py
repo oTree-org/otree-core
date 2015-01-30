@@ -8,7 +8,7 @@ from django.conf import settings
 from django.db.models import signals
 from django.utils.translation import ugettext_lazy as _
 
-import otree.adminlib
+
 from otree.models.session import StubModel, GlobalSingleton
 
 
@@ -58,4 +58,4 @@ class OtreeConfig(AppConfig):
         self.setup_create_singleton_objects()
         if getattr(settings, 'CREATE_DEFAULT_SUPERUSER', False):
             self.setup_create_default_superuser()
-        otree.adminlib.autodiscover()
+

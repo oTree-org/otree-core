@@ -66,7 +66,7 @@ def non_app_sequence(apps):
     ]
 
 
-@register.inclusion_tag('admin/_dashboard_app_template.html',
+@register.inclusion_tag('_old_admin/_dashboard_app_template.html',
                         takes_context=True)
 def mock_data_export_app(context):
     context["app"] = {

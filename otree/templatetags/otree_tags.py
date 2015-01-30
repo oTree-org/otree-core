@@ -16,6 +16,7 @@
 
 from django import template
 from django.template.loader import render_to_string
+from django.core.urlresolvers import resolve, Resolver404
 from otree.common import Currency
 
 # =============================================================================
@@ -50,3 +51,13 @@ def c(val):
 
 
 register.filter('c', c)
+
+
+@register.simple_tag
+def active_page(request, view_name):
+    if not request:
+        return ""
+    try:
+        return "active" if resolve(request.path_info).url_name == view_name else ""
+    except Resolver404:
+        return ""

@@ -1,0 +1,47 @@
+{% extends "otree/BaseBuiltIn.html" %}
+{% load otree_tags floppyforms %}
+
+{% block title %}
+    oTree Admin
+{% endblock %}
+
+{% block content %}
+
+    <p>Welcome to the oTree Admin.</p>
+    {% if object_list %}
+
+        <p>Click on a session below.</p>
+        <table class="table">
+        {% for s in object_list %}
+            <tr>
+                <td><a href="{% url 'session_results' s.pk %}">{{ s.code }}</a></td>
+                <td>{{ s.label }}</td>
+                <td>{{ s.session_type_name }}</td>
+                <td>
+                    <!-- Split button -->
+                    <div class="btn-group">
+                    <a class="btn btn-primary btn-sm" href="{% url 'session_edit' s.pk %}">Edit properties</a>
+                    <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                        <span class="caret"></span>
+                        <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="{% url 'session_results' s.pk %}">Results</a></li>
+                        <li><a href="{% url 'session_monitor' s.pk %}">Monitor</a></li>
+                        <li><a href="{% url 'session_payments' s.pk %}">Payments</a></li>
+                        <li><a href="{% url 'session_start_links' s.pk %}">Start Links</a></li>
+                    </ul>
+                </div>
+                </td>
+            </tr>
+        {% endfor %}
+        </table>
+
+    {% else %}
+
+        <p>No sessions available.</p>
+
+    {% endif %}
+    <p><a class="btn btn-primary btn-sm" href="{% url 'session_types_create' %}">Create new session</a></p>
+
+{% endblock %}

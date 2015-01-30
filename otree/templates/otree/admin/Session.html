@@ -1,0 +1,25 @@
+{% extends "otree/BaseBuiltIn.html" %}
+{% load otree_tags floppyforms %}
+
+{% block title %}
+    Admin panel for session <code>{{ session.code }}</code>
+{% endblock %}
+
+{% block content %}
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li role="presentation" class="{% active_page request 'session_results' %}"><a href="{% url 'session_results' session.pk %}">Results</a></li>
+        <li role="presentation" class="{% active_page request 'session_monitor' %}"><a href="{% url 'session_monitor' session.pk %}">Monitor</a></li>
+        <li role="presentation" class="{% active_page request 'session_edit' %}"><a href="{% url 'session_edit' session.pk %}">Edit properties</a></li>
+        <li role="presentation" class="{% active_page request 'session_payments' %}"><a href="{% url 'session_payments' session.pk %}">Payments</a></li>
+        <li role="presentation" class="{% active_page request 'session_start_links' %}"><a href="{% url 'session_start_links' session.pk %}">Start Links</a></li>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+{% block real_content %}
+{% endblock %}
+{% endblock %}

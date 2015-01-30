@@ -1,0 +1,10 @@
+{% extends "otree/admin/Session.html" %}
+{% load otree_tags floppyforms %}
+
+{% block real_content %}
+
+    {% form form using "floppyforms/layouts/bootstrap.html"%}
+
+    {% next_button %}
+
+{% endblock %}
