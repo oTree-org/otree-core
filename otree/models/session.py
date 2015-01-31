@@ -196,7 +196,8 @@ class Session(ModelWithVars):
     def _create_groups_and_initialize(self):
         for subsession in self.get_subsessions():
             if subsession.group_by_arrival_time and subsession.round_number == 1:
-                pass # skip group creation, we will do it on the fly
+                subsession._players_per_group_list = subsession._get_players_per_group_list()
+                subsession.save()
             else:
                 subsession._create_groups()
             subsession._initialize()

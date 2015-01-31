@@ -34,6 +34,11 @@ class BaseSubsession(models.Model):
         )
     )
 
+    _players_per_group_list = models.PickleField(
+        default=[],
+        doc="for group_by_arrival_time"
+    )
+
     def in_previous_rounds(self):
         qs = type(self).objects.filter(
             session=self.session,
@@ -57,21 +62,21 @@ class BaseSubsession(models.Model):
             round_number=self.round_number - 1
         ).get()
 
-    def _players_per_group_list(self):
+    def _get_players_per_group_list(self):
         ppg = self._Constants.players_per_group
         if ppg == None:
             return [len(self.session.get_participants())]
 
-        group_cycles = len(players) / min_players_multiple(ppg)
+        group_cycle_size = min_players_multiple(ppg)
+        num_group_cycles = len(players) / group_cycle_size
         # if groups have variable sizes, you can put it in a list
         if isinstance(ppg, (list, tuple)):
-            group_unit = ppg
+            assert all(n > 1 for n in ppg)
+            group_cycle = ppg
         else:
             assert isinstance(ppg, (int, long)) and ppg > 1
-            group_unit = [ppg]
-
-        # otherwise, the group is the whole subsession
-
+            group_cycle = [ppg]
+        return group_cycle * num_group_cycles
 
     def _min_players_multiple(self):
         ppg = self._Constants.players_per_group
@@ -79,7 +84,6 @@ class BaseSubsession(models.Model):
 
     def _random_group_matrix(self):
         players = list(self.player_set.all())
-
 
         random.shuffle(players)
 
@@ -89,10 +93,9 @@ class BaseSubsession(models.Model):
         # if players_per_group is an integer, then outer_loops == num_groups
         # this is to enable apps with variable group sizes
 
-        for i in range(outer_loops):
-            for group_size in self._players_per_group_list():
-                groups.append(players[first_player_index:first_player_index+group_size])
-                first_player_index += group_size
+        for group_size in self._get_players_per_group_list():
+            groups.append(players[first_player_index:first_player_index+group_size])
+            first_player_index += group_size
         return groups
 
     def set_groups(self, groups):
@@ -162,6 +165,8 @@ class BaseSubsession(models.Model):
 
         # save to DB
         self.set_groups(group_matrix)
+
+    def _create_empty_groups(self):
 
     def initialize(self):
         '''This gets called at the beginning of every subsession, before the
