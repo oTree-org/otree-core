@@ -114,7 +114,7 @@ def get_all_fields(Model, for_export=False):
             'fixed_pay',
             'money_per_point',
             'comment',
-            '_players_assigned_to_groups',
+            '_ready_to_play',
         },
         'Participant': {
             # 'label',

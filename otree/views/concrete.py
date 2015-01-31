@@ -56,7 +56,15 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin,
     name_in_url = 'shared'
 
     def _is_ready(self):
-        return bool(self.group)
+        if self.subsession.group_by_arrival_time and self.subsession.round_number == 1:
+            #FIXME: race conditions
+            open_group = self.subsession._get_or_create_open_group()
+            group_players = open_group.get_players()
+            group_players.append(self.player)
+            open_group.set_players(group_players)
+            return True
+        else:
+            return bool(self.group)
 
     def body_text(self):
         return (
@@ -85,7 +93,7 @@ class SessionExperimenterWaitUntilPlayersAreAssigned(NonSequenceUrlMixin,
         return 'Assigning players to groups.'
 
     def _is_ready(self):
-        return self.session._players_assigned_to_groups
+        return self.session._ready_to_play
 
     @classmethod
     def get_name_in_url(cls):
@@ -139,16 +147,6 @@ class InitializeParticipant(vanilla.UpdateView):
         )
 
         session = session_user.session
-        cond = (
-            (not session_user.visited) and
-            session.session_type.group_by_arrival_time
-        )
-        if cond:
-            next_participant = session._next_participant_to_assign()
-            if next_participant:
-                session._swap_participant_codes(session_user, next_participant)
-                session_user = next_participant
-
         session_user.visited = True
 
         # session_user.label might already have been set by AssignToOpenSession

@@ -10,7 +10,8 @@ from otree import constants
 from otree.models.user import Experimenter
 from otree.models.session import Session, SessionExperimenter, Participant
 from otree.common_internal import (
-    get_session_module, get_models_module, get_app_constants
+    get_session_module, get_models_module, get_app_constants,
+    min_players_multiple,
 )
 
 
@@ -51,7 +52,6 @@ class SessionType(object):
             'num_demo_participants',
             'doc',
             'vars',
-            'group_by_arrival_time',
             'show_on_demo_page',
         ]
 
@@ -90,13 +90,15 @@ class SessionType(object):
         return "<SessionType '{}' at {}>".format(self.name, mem)
 
     def lcm(self):
-        participants_per_group_list = []
+        min_multiple_list = []
         for app_name in self.app_sequence:
             app_constants = get_app_constants(app_name)
             # if players_per_group is None, 0, etc.
-            players_per_group = app_constants.players_per_group or 1
-            participants_per_group_list.append(players_per_group)
-        return lcmm(*participants_per_group_list)
+            min_multiple = min_players_multiple(
+                app_constants.players_per_group
+            )
+            min_multiple_list.append(min_multiple)
+        return lcmm(*min_multiple_list)
 
 
 # =============================================================================
@@ -219,8 +221,6 @@ def create_session(session_type_name, label='', num_participants=None,
     session._create_groups_and_initialize()
 
     session.build_session_user_to_user_lookups()
-    if session.session_type.group_by_arrival_time:
-        session._set_predetermined_arrival_order()
     session.ready = True
     session.save()
 

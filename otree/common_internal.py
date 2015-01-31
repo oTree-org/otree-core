@@ -183,3 +183,13 @@ def expand_choice_tuples(choices):
     if not isinstance(first_choice, (list, tuple)):
         choices = [(value, value) for value in choices]
     return choices
+
+def min_players_multiple(players_per_group):
+    ppg = players_per_group
+
+    if isinstance(ppg, (int, long)) and ppg >= 1:
+        return ppg
+    if isinstance(ppg, (list, tuple)):
+        return sum(ppg)
+    # else, it's probably None
+    return 1

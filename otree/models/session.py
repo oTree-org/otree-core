@@ -131,7 +131,7 @@ class Session(ModelWithVars):
 
     comment = models.TextField()
 
-    _players_assigned_to_groups = models.BooleanField(default=False)
+    _ready_to_play = models.BooleanField(default=False)
 
     special_category = models.CharField(
         max_length=20, null=True,
@@ -195,9 +195,12 @@ class Session(ModelWithVars):
 
     def _create_groups_and_initialize(self):
         for subsession in self.get_subsessions():
-            subsession._create_groups()
+            if subsession.group_by_arrival_time and subsession.round_number == 1:
+                pass # skip group creation, we will do it on the fly
+            else:
+                subsession._create_groups()
             subsession._initialize()
-        self._players_assigned_to_groups = True
+        self._ready_to_play = True
         self.save()
 
     def advance_last_place_participants(self):
@@ -245,30 +248,6 @@ class Session(ModelWithVars):
             )
 
         # FIXME: what about experimenter?
-
-    def _next_participant_to_assign(self):
-        return self.participant_set.order_by(
-            '_predetermined_arrival_order'
-        ).filter(visited=False)[0]
-
-    def _swap_participant_codes(self, p1, p2):
-        p1.code, p2.code = p2.code, p1.code
-        p1.save()
-        p2.save()
-
-    def _set_predetermined_arrival_order(self):
-        for subsession in self.get_subsessions():
-            groups = subsession.get_groups()
-            if len(groups) > 1:
-                arrival_order = 0
-                for group in groups:
-                    for player in group.get_players():
-                        player.participant._predetermined_arrival_order = (
-                            arrival_order
-                        )
-                        arrival_order += 1
-                        player.participant.save()
-                return
 
     def admin_url(self):
         from otree.views.admin import SessionHome

@@ -225,7 +225,7 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
 
         while True:
             sssn = otree.models.Session.objects.get(id=sssn.pk)
-            if sssn._players_assigned_to_groups:
+            if sssn._ready_to_play:
                 break
             time.sleep(1)
 

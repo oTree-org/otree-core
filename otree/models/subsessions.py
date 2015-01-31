@@ -5,7 +5,10 @@ import random
 
 from otree.db import models
 from otree.common_internal import get_views_module
-from otree.common_internal import get_models_module, get_players, get_groups
+from otree.common_internal import (
+    get_models_module, get_players, get_groups,
+    min_players_multiple,
+)
 
 
 class BaseSubsession(models.Model):
@@ -54,23 +57,42 @@ class BaseSubsession(models.Model):
             round_number=self.round_number - 1
         ).get()
 
-    def _players_per_group(self):
+    def _players_per_group_list(self):
         ppg = self._Constants.players_per_group
-        if isinstance(ppg, (int, long)) and ppg > 1:
-            return ppg
+        if ppg == None:
+            return [len(self.session.get_participants())]
+
+        group_cycles = len(players) / min_players_multiple(ppg)
+        # if groups have variable sizes, you can put it in a list
+        if isinstance(ppg, (list, tuple)):
+            group_unit = ppg
+        else:
+            assert isinstance(ppg, (int, long)) and ppg > 1
+            group_unit = [ppg]
+
         # otherwise, the group is the whole subsession
-        return len(self.session.get_participants())
+
+
+    def _min_players_multiple(self):
+        ppg = self._Constants.players_per_group
+        return
 
     def _random_group_matrix(self):
         players = list(self.player_set.all())
-        players_per_group = self._players_per_group()
 
-        groups = []
+
         random.shuffle(players)
 
-        # divide into equal size groups
-        for i in range(0, len(players), players_per_group):
-            groups.append(players[i:i + players_per_group])
+        groups = []
+        first_player_index = 0
+
+        # if players_per_group is an integer, then outer_loops == num_groups
+        # this is to enable apps with variable group sizes
+
+        for i in range(outer_loops):
+            for group_size in self._players_per_group_list():
+                groups.append(players[first_player_index:first_player_index+group_size])
+                first_player_index += group_size
         return groups
 
     def set_groups(self, groups):

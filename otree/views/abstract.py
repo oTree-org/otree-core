@@ -833,22 +833,18 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
                     otree.models.session.GlobalSingleton.objects
                     .select_for_update().get()
                 )
-                participant = None
-                if open_session.session_type.group_by_arrival_time:
-                    participant = open_session._next_participant_to_assign()
-                if not participant:
-                    try:
-                        participant = (
-                            Participant.objects.select_for_update().filter(
-                                session=open_session,
-                                visited=False
-                            )
-                        )[0]
-                    except IndexError:
-                        return HttpResponseNotFound(
-                            "No Player objects left in the database "
-                            "to assign to new visitor."
+                try:
+                    participant = (
+                        Participant.objects.select_for_update().filter(
+                            session=open_session,
+                            visited=False
                         )
+                    )[0]
+                except IndexError:
+                    return HttpResponseNotFound(
+                        "No Player objects left in the database "
+                        "to assign to new visitor."
+                    )
                 self.set_external_params_on_participant(participant)
                 # 2014-10-17: needs to be here even if it's also set in
                 # the next view to prevent race conditions
