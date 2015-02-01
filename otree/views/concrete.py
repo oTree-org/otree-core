@@ -72,7 +72,7 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin,
                     ).order_by('group_index')[0]
                     group_quota = group_size_obj.group_size
                     if len(group_players) == group_quota:
-                        open_group._is_full = True
+                        open_group._is_missing_players = False
                         group_size_obj.delete()
                     open_group.save()
                 else:
