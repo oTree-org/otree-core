@@ -58,17 +58,8 @@ class StubModel(models.Model):
     # TODO: move to otree.models_concrete
 
 
-
-
-# R: You really need this only if you are using save_the_change,
-#    which is not used for Session and SessionUser,
-#    Otherwise you can just
-def model_vars_default():
-    return {}
-
-
 class ModelWithVars(models.Model):
-    vars = models.PickleField(default=model_vars_default)
+    vars = models.PickleField(default=lambda: {})
 
     class Meta:
         abstract = True
@@ -213,7 +204,7 @@ class Session(ModelWithVars):
 
     def _create_groups_and_initialize(self):
         for subsession in self.get_subsessions():
-            if subsession.group_by_arrival_time:
+            if self.session_type.group_by_arrival_time:
                 if subsession.round_number == 1:
                     subsession._set_players_per_group_list()
                 subsession._create_empty_groups()

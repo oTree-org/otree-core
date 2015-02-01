@@ -28,7 +28,7 @@ from otree.views.abstract import (
     NonSequenceUrlMixin, OTreeMixin, AssignVisitorToOpenSessionBase,
     GenericWaitPageMixin, FormPageOrWaitPageMixin, PlayerMixin
 )
-
+from otree.models_concrete import GroupSize
 
 class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
     name_in_url = 'shared'
@@ -59,18 +59,22 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin,
     def _is_ready(self):
         if bool(self.group):
             return True
-        elif self.subsession.group_by_arrival_time:
+        elif self.session.session_type.group_by_arrival_time:
             with lock_on_this_code_path():
                 if self.subsession.round_number == 1:
                     open_group = self.subsession._get_open_group()
                     group_players = open_group.get_players()
                     group_players.append(self.player)
                     open_group.set_players(group_players)
-                    ppg_list = self.subsession._players_per_group_list
-                    this_group_size = ppg_list[0]
-                    if len(group_players) == this_group_size:
+                    group_size_obj = GroupSize.objects.filter(
+                        app_label = self.subsession._meta.app_label,
+                        subsession_pk = self.subsession.pk,
+                    ).order_by('group_index')[0]
+                    group_quota = group_size_obj.group_size
+                    if len(group_players) == group_quota:
                         open_group._is_full = True
-                        self.subsession._players_per_group_list = ppg_list[1:]
+                        group_size_obj.delete()
+                    open_group.save()
                 else:
                     self.subsession._create_groups()
             return True

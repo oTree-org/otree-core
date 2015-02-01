@@ -53,6 +53,7 @@ class SessionType(object):
             'doc',
             'vars',
             'show_on_demo_page',
+            'group_by_arrival_time',
         ]
 
         for attr_name in attrs:

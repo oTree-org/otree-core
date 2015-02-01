@@ -9,7 +9,7 @@ from otree.common_internal import (
     get_models_module, get_players, get_groups,
     min_players_multiple,
 )
-
+from otree.models_concrete import GroupSize
 
 class BaseSubsession(models.Model):
     """Base class for all Subsessions.
@@ -32,11 +32,6 @@ class BaseSubsession(models.Model):
             "starts from 0. indicates the position of this subsession "
             "among other subsessions in the session."
         )
-    )
-
-    _players_per_group_list = models.PickleField(
-        default=[],
-        doc="for group_by_arrival_time"
     )
 
     def in_previous_rounds(self):
@@ -64,11 +59,10 @@ class BaseSubsession(models.Model):
 
     def _get_players_per_group_list(self):
         ppg = self._Constants.players_per_group
+        subsession_size = len(self.get_players())
         if ppg == None:
-            return [len(self.session.get_participants())]
+            return [subsession_size]
 
-        group_cycle_size = min_players_multiple(ppg)
-        num_group_cycles = len(players) / group_cycle_size
         # if groups have variable sizes, you can put it in a list
         if isinstance(ppg, (list, tuple)):
             assert all(n > 1 for n in ppg)
@@ -76,6 +70,8 @@ class BaseSubsession(models.Model):
         else:
             assert isinstance(ppg, (int, long)) and ppg > 1
             group_cycle = [ppg]
+
+        num_group_cycles = subsession_size / sum(group_cycle)
         return group_cycle * num_group_cycles
 
     def _min_players_multiple(self):
@@ -147,8 +143,15 @@ class BaseSubsession(models.Model):
             first_player_index += group_size
         return groups
 
+
     def _set_players_per_group_list(self):
-        self._players_per_group_list = self._get_players_per_group_list()
+        for index, group_size in enumerate(self._get_players_per_group_list()):
+            GroupSize(
+                app_label = self._meta.app_label,
+                subsession_pk = self.pk,
+                group_index = index,
+                group_size = group_size,
+            ).save()
 
     def _create_empty_groups(self):
         num_groups = len(self._get_players_per_group_list())
@@ -178,10 +181,11 @@ class BaseSubsession(models.Model):
         self.set_groups(group_matrix)
 
     def _get_open_group(self):
-        groups_missing_players = []
-        for group in self.get_groups():
-            if group._is_missing_players:
-                groups_missing_players.append(group)
+        # force refresh from DB so that next call to this function does not
+        # show the group as still missing players
+        groups_missing_players = self.group_set.filter(
+            _is_missing_players=True
+        )
         for group in groups_missing_players:
             if len(group.get_players()) > 0:
                 return group
