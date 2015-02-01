@@ -21,6 +21,7 @@ from django.http import (
 
 import otree.constants as constants
 import otree.models.session
+from otree.models.session import lock_on_this_code_path
 import otree.views.admin
 import otree.common_internal
 from otree.views.abstract import (
@@ -56,15 +57,24 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin,
     name_in_url = 'shared'
 
     def _is_ready(self):
-        if self.subsession.group_by_arrival_time and self.subsession.round_number == 1:
-            #FIXME: race conditions
-            open_group = self.subsession._get_or_create_open_group()
-            group_players = open_group.get_players()
-            group_players.append(self.player)
-            open_group.set_players(group_players)
+        if bool(self.group):
             return True
-        else:
-            return bool(self.group)
+        elif self.subsession.group_by_arrival_time:
+            with lock_on_this_code_path():
+                if self.subsession.round_number == 1:
+                    open_group = self.subsession._get_open_group()
+                    group_players = open_group.get_players()
+                    group_players.append(self.player)
+                    open_group.set_players(group_players)
+                    ppg_list = self.subsession._players_per_group_list
+                    this_group_size = ppg_list[0]
+                    if len(group_players) == this_group_size:
+                        open_group._is_full = True
+                        self.subsession._players_per_group_list = ppg_list[1:]
+                else:
+                    self.subsession._create_groups()
+            return True
+        return False
 
     def body_text(self):
         return (

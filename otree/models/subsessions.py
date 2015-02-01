@@ -82,22 +82,6 @@ class BaseSubsession(models.Model):
         ppg = self._Constants.players_per_group
         return
 
-    def _random_group_matrix(self):
-        players = list(self.player_set.all())
-
-        random.shuffle(players)
-
-        groups = []
-        first_player_index = 0
-
-        # if players_per_group is an integer, then outer_loops == num_groups
-        # this is to enable apps with variable group sizes
-
-        for group_size in self._get_players_per_group_list():
-            groups.append(players[first_player_index:first_player_index+group_size])
-            first_player_index += group_size
-        return groups
-
     def set_groups(self, groups):
         """elements in the list can be sublists, or group objects.
 
@@ -147,6 +131,33 @@ class BaseSubsession(models.Model):
         group.save()
         return group
 
+    def _random_group_matrix(self):
+        players = list(self.player_set.all())
+
+        random.shuffle(players)
+
+        groups = []
+        first_player_index = 0
+
+        # if players_per_group is an integer, then outer_loops == num_groups
+        # this is to enable apps with variable group sizes
+
+        for group_size in self._get_players_per_group_list():
+            groups.append(players[first_player_index:first_player_index+group_size])
+            first_player_index += group_size
+        return groups
+
+    def _set_players_per_group_list(self):
+        self._players_per_group_list = self._get_players_per_group_list()
+
+    def _create_empty_groups(self):
+        num_groups = len(self._get_players_per_group_list())
+        self.set_groups([[] for i in range(num_groups)])
+        groups = self.get_groups()
+        for group in groups:
+            group._is_missing_players = True
+            group.save()
+
     def _create_groups(self):
         if self.round_number == 1:
             group_matrix = self._random_group_matrix()
@@ -166,7 +177,15 @@ class BaseSubsession(models.Model):
         # save to DB
         self.set_groups(group_matrix)
 
-    def _create_empty_groups(self):
+    def _get_open_group(self):
+        groups_missing_players = []
+        for group in self.get_groups():
+            if group._is_missing_players:
+                groups_missing_players.append(group)
+        for group in groups_missing_players:
+            if len(group.get_players()) > 0:
+                return group
+        return groups_missing_players[0]
 
     def initialize(self):
         '''This gets called at the beginning of every subsession, before the

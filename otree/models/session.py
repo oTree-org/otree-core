@@ -3,7 +3,8 @@ import itertools
 import time
 
 import django.test
-
+from django.db import transaction
+from django.conf import settings
 
 from otree import constants
 import otree.common_internal
@@ -12,6 +13,7 @@ from otree.common_internal import id_label_name
 from otree.common import Currency as c
 from otree.db import models
 from otree.models_concrete import SessionuserToUserLookup
+import contextlib
 
 
 class GlobalSingleton(models.Model):
@@ -31,6 +33,20 @@ class GlobalSingleton(models.Model):
         verbose_name = 'Set open session'
         verbose_name_plural = verbose_name
 
+@contextlib.contextmanager
+def no_op_context_manager():
+    yield
+
+@contextlib.contextmanager
+def lock_on_this_code_path():
+    if settings.DATABASES['default']['ENGINE'].endswith('sqlite3'):
+        yield
+    else:
+        with transaction.atomic():
+            # take a lock on this singleton, so that only 1 person can
+            # be completing this code path at once
+            GlobalSingleton.objects.select_for_update().get()
+            yield
 
 class StubModel(models.Model):
     """To be used as the model for an empty form, so that form_class can be
@@ -40,6 +56,8 @@ class StubModel(models.Model):
     """
 
     # TODO: move to otree.models_concrete
+
+
 
 
 # R: You really need this only if you are using save_the_change,
@@ -195,12 +213,14 @@ class Session(ModelWithVars):
 
     def _create_groups_and_initialize(self):
         for subsession in self.get_subsessions():
-            if subsession.group_by_arrival_time and subsession.round_number == 1:
-                subsession._players_per_group_list = subsession._get_players_per_group_list()
-                subsession.save()
+            if subsession.group_by_arrival_time:
+                if subsession.round_number == 1:
+                    subsession._set_players_per_group_list()
+                subsession._create_empty_groups()
             else:
                 subsession._create_groups()
             subsession._initialize()
+            subsession.save()
         self._ready_to_play = True
         self.save()
 

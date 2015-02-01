@@ -51,7 +51,10 @@ import otree.timeout.tasks
 import otree.models
 import otree.models.session as seq_models
 import otree.constants as constants
-from otree.models.session import Participant, GlobalSingleton
+from otree.models.session import (
+    Participant, GlobalSingleton, lock_on_this_code_path
+)
+
 from otree.models_concrete import (
     PageCompletion, WaitPageVisit, CompletedSubsessionWaitPage,
     CompletedGroupWaitPage, SessionuserToUserLookup
@@ -60,11 +63,6 @@ from otree.models_concrete import (
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
-
-
-@contextlib.contextmanager
-def no_op_context_manager():
-    yield
 
 
 def get_app_name(request):
@@ -500,16 +498,7 @@ class InGameWaitPageMixin(object):
 
                 # on SQLite, transaction.atomic causes database to lock,
                 # so we use no-op context manager instead
-                if settings.DATABASES['default']['ENGINE'].endswith('sqlite3'):
-                    context_manager = no_op_context_manager
-                else:
-                    context_manager = transaction.atomic
-                with context_manager():
-                    # take a lock on this singleton, so that only 1 person can
-                    # be completing a wait page action at a time to avoid race
-                    # conditions
-                    GlobalSingleton.objects.select_for_update().get()
-
+                with lock_on_this_code_path():
                     if self.wait_for_all_groups:
                         _c = CompletedSubsessionWaitPage.objects.get_or_create(
                             page_index=self._index_in_pages,
@@ -826,13 +815,7 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
                 )
             )
         except Participant.DoesNotExist:
-            with transaction.atomic():
-                # just take a lock on an arbitrary object, to prevent multiple
-                # threads from executing this code concurrently
-                global_singleton = (
-                    otree.models.session.GlobalSingleton.objects
-                    .select_for_update().get()
-                )
+            with lock_on_this_code_path():
                 try:
                     participant = (
                         Participant.objects.select_for_update().filter(
@@ -845,11 +828,11 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
                         "No Player objects left in the database "
                         "to assign to new visitor."
                     )
-                self.set_external_params_on_participant(participant)
-                # 2014-10-17: needs to be here even if it's also set in
-                # the next view to prevent race conditions
-                participant.visited = True
-                participant.save()
+            self.set_external_params_on_participant(participant)
+            # 2014-10-17: needs to be here even if it's also set in
+            # the next view to prevent race conditions
+            participant.visited = True
+            participant.save()
 
         return HttpResponseRedirect(participant._start_url())
 

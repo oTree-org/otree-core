@@ -11,6 +11,8 @@ class BaseGroup(SaveTheChange, models.Model):
     """Base class for all Groupes.
     """
 
+    _is_missing_players = models.BooleanField(default=False)
+
     class Meta:
         abstract = True
 
