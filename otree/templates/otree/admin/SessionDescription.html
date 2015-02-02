@@ -1,4 +1,7 @@
+{% extends "otree/admin/Session.html" %}
 
+{% block real_content %}
+<h2>{{ display_name }}</h2>
 {% if doc %}
     <h3>Session description</h3>
     <p>
@@ -42,3 +45,4 @@
 
 {% endfor %}
 </table>
+{% endblock %}

@@ -31,7 +31,7 @@ import time
 
 from django.db import transaction
 from django.conf import settings
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404
 from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache, cache_control
@@ -857,6 +857,7 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
 
         return HttpResponseRedirect(participant._start_url())
 
+
 class AdminSessionPageMixin(object):
 
     @classmethod
@@ -869,7 +870,10 @@ class AdminSessionPageMixin(object):
 
     def get_context_data(self, **kwargs):
         context = super(AdminSessionPageMixin, self).get_context_data(**kwargs)
-        context.update({'session': self.session})
+        other_sessions = get_list_or_404(otree.models.Session)
+        other_sessions.remove(self.session)
+        context.update({'session': self.session,
+                        'other_sessions': other_sessions})
         return context
 
     def get_template_names(self):

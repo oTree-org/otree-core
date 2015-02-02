@@ -1,8 +1,13 @@
 {% extends "otree/admin/Session.html" %}
 
 {% block real_content %}
+<script type="text/javascript" charset="utf-8">
+$(function () {
+    $('[data-toggle="popover"]').popover()
+})
+</script>
 
-<table class="table-bordered text-center">
+<table class="table-condensed text-center">
     <tr>
         {% for column_name in column_names %}
             <th class="text-center">{{ column_name }}</th>
@@ -16,5 +21,14 @@
         </tr>
     {% endfor %}
 </table>
-
+<br/>
+<form action="" method="post">
+    <button class="btn btn-primary" type="submit" data-toggle="popover" data-trigger="hover"
+    data-content="By clicking this button the slowest user(s)
+    will be automatically advanced by one page, while the other users
+    will remain where they are (unless perhaps if they have a waiting page).">Advance slowest user(s)</button>
+</form>
+{% if success %}
+    <div class="alert alert-success" role="alert">Participants were advanced.</div>
+{% endif %}
 {% endblock %}

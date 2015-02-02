@@ -14,7 +14,7 @@
         <table class="table">
         {% for s in object_list %}
             <tr>
-                <td><a href="{% url 'session_results' s.pk %}">{{ s.code }}</a></td>
+                <td><a href="{% url 'session_description' s.pk %}">{{ s.code }}</a></td>
                 <td>{{ s.label }}</td>
                 <td>{{ s.session_type_name }}</td>
                 <td>
@@ -26,8 +26,9 @@
                         <span class="sr-only">Toggle Dropdown</span>
                     </button>
                     <ul class="dropdown-menu" role="menu">
-                        <li><a href="{% url 'session_results' s.pk %}">Results</a></li>
+                        <li><a href="{% url 'session_description' s.pk %}">Description</a></li>
                         <li><a href="{% url 'session_monitor' s.pk %}">Monitor</a></li>
+                        <li><a href="{% url 'session_results' s.pk %}">Results</a></li>
                         <li><a href="{% url 'session_payments' s.pk %}">Payments</a></li>
                         <li><a href="{% url 'session_start_links' s.pk %}">Start Links</a></li>
                     </ul>

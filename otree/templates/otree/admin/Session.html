@@ -11,20 +11,23 @@
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
-        <li role="presentation" class="{% active_page request 'session_results' %}"><a href="{% url 'session_results' session.pk %}">Results</a></li>
-        <li role="presentation" class="{% active_page request 'session_monitor' %}"><a href="{% url 'session_monitor' session.pk %}">Monitor</a></li>
+        <li role="presentation" class="{% active_page request 'session_description' %}"><a href="{% url 'session_description' session.pk %}">Description</a></li>
         <li role="presentation" class="{% active_page request 'session_edit' %}"><a href="{% url 'session_edit' session.pk %}">Edit properties</a></li>
+        <li role="presentation" class="{% active_page request 'session_monitor' %}"><a href="{% url 'session_monitor' session.pk %}">Monitor</a></li>
+        <li role="presentation" class="{% active_page request 'session_results' %}"><a href="{% url 'session_results' session.pk %}">Results</a></li>
         <li role="presentation" class="{% active_page request 'session_payments' %}"><a href="{% url 'session_payments' session.pk %}">Payments</a></li>
         <li role="presentation" class="{% active_page request 'session_start_links' %}"><a href="{% url 'session_start_links' session.pk %}">Start Links</a></li>
       </ul>
  <ul class="nav navbar-nav navbar-right">
         <li class="dropdown">
-          <a href="{% url 'session_info' session.pk %}" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{ session.code }} <span class="caret"></span></a>
-          <ul class="dropdown-menu" role="menu">
-            {% for s in other_sessions %}
-                <li><a href="{% url 'session_info' s.pk %}">{{ s.code }}</a></li>
-            {% endfor %}
-          </ul>
+          <a href="{% url 'session_description' session.pk %}" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{ session.code }} <span class="caret"></span></a>
+          {% if other_sessions %}
+              <ul class="dropdown-menu" role="menu">
+                {% for s in other_sessions %}
+                    <li><a href="{% url 'session_description' s.pk %}">{{ s.code }}</a></li>
+                {% endfor %}
+              </ul>
+          {% endif %}
         </li>
       </ul>
   </div><!-- /.navbar-collapse -->

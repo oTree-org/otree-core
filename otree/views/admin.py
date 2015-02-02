@@ -40,7 +40,7 @@ import otree.models.session
 from otree.common_internal import add_params_to_url
 from otree.common import Currency as c
 from otree.common import Money
-from otree.views.demo import render_to_start_links_page
+from otree.views.demo import session_description_dict
 from otree.models.session import Session, Participant
 
 
@@ -572,14 +572,25 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
         return context
 
 
-class SessionStartLinks(AdminSessionPageMixin, vanilla.View):
+class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
 
     @classmethod
     def url_name(cls):
         return 'session_start_links'
 
-    def get(self, request, *args, **kwargs):
-        return render_to_start_links_page(request, self.session)
+    def get_context_data(self, **kwargs):
+        session = self.session
+        experimenter_url = self.request.build_absolute_uri(
+            session.session_experimenter._start_url()
+        )
+        participant_urls = [
+            self.request.build_absolute_uri(participant._start_url())
+            for participant in session.get_participants()
+        ]
+        context = super(SessionStartLinks, self).get_context_data(**kwargs)
+        context.update({'experimenter_url': experimenter_url,
+                        'participant_urls': participant_urls})
+        return context
 
 
 class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
@@ -641,14 +652,16 @@ class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
         return context
 
 
-class SessionInfo(AdminSessionPageMixin, vanilla.View):
+class SessionDescription(AdminSessionPageMixin, vanilla.TemplateView):
 
     @classmethod
     def url_name(cls):
-        return 'session_info'
+        return 'session_description'
 
-    def get(self, request, *args, **kwargs):
-        return render_to_start_links_page(request, self.session)
+    def get_context_data(self, **kwargs):
+        context = super(SessionDescription, self).get_context_data(**kwargs)
+        context.update(session_description_dict(self.session))
+        return context
 
 
 class AdminHome(vanilla.ListView):

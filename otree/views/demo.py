@@ -141,20 +141,10 @@ def info_about_session_type(session_type):
     }
 
 
-def render_to_start_links_page(request, session):
+def session_description_dict(session):
 
-    experimenter_url = request.build_absolute_uri(
-        session.session_experimenter._start_url()
-    )
-    participant_urls = [
-        request.build_absolute_uri(participant._start_url())
-        for participant in session.get_participants()
-    ]
     context_data = {
         'display_name': session.session_type.display_name,
-        'experimenter_url': experimenter_url,
-        'participant_urls': participant_urls,
-        'session': session,
     }
 
     session_type = get_session_types_dict(
@@ -162,9 +152,7 @@ def render_to_start_links_page(request, session):
     )[session.session_type_name]
     context_data.update(info_about_session_type(session_type))
 
-    return TemplateResponse(
-        request, 'otree/admin/StartLinks.html', context_data
-    )
+    return context_data
 
 
 class Demo(GenericWaitPageMixin, vanilla.View):
