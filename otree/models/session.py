@@ -106,6 +106,7 @@ class Session(ModelWithVars):
     time_scheduled = models.DateTimeField(
         null=True, doc="The time at which the session is scheduled",
         help_text='For internal record-keeping',
+        blank=True,
     )
 
     time_started = models.DateTimeField(
@@ -129,7 +130,7 @@ class Session(ModelWithVars):
     # todo: change this to money
     fixed_pay = models.CurrencyField(doc="""Show-up fee""")
 
-    comment = models.TextField()
+    comment = models.TextField(blank=True)
 
     _players_assigned_to_groups = models.BooleanField(default=False)
 

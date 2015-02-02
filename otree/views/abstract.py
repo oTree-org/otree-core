@@ -882,4 +882,5 @@ class AdminSessionPageMixin(object):
     def dispatch(self, request, *args, **kwargs):
         session_pk = int(kwargs['pk'])
         self.session = get_object_or_404(otree.models.Session, pk=session_pk)
+        self.is_demo = self.session.special_category == constants.session_special_category_demo
         return super(AdminSessionPageMixin, self).dispatch(request, *args, **kwargs)
