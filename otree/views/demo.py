@@ -189,6 +189,8 @@ class Demo(GenericWaitPageMixin, vanilla.View):
         session.demo_already_used = True
         session.save()
 
+
+
         return render_to_start_links_page(
             self.request, session
         )
