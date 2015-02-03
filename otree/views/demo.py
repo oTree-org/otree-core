@@ -6,7 +6,8 @@ import urllib
 
 from django.conf import settings
 from django.template.response import TemplateResponse
-from django.http import HttpResponseNotFound
+from django.http import HttpResponseNotFound, HttpResponseRedirect
+from django.core.urlresolvers import reverse
 
 import vanilla
 
@@ -189,11 +190,8 @@ class Demo(GenericWaitPageMixin, vanilla.View):
         session.demo_already_used = True
         session.save()
 
-
-
-        return render_to_start_links_page(
-            self.request, session
-        )
+        session_home_url = reverse('session_home', args=(session.pk,))
+        return HttpResponseRedirect(session_home_url)
 
     def dispatch(self, request, *args, **kwargs):
         self.session_type_name = kwargs['session_type']
