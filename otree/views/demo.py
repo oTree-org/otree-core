@@ -6,7 +6,7 @@ import urllib
 
 from django.conf import settings
 from django.template.response import TemplateResponse
-from django.http import HttpResponseNotFound, HttpResponseRedirect
+from django.http import HttpResponseNotFound, HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
 
 import vanilla
@@ -18,16 +18,12 @@ from otree.models.session import Session
 from otree.session import (
     create_session, get_session_types_dict, get_session_types_list
 )
-from otree.common_internal import (
-    get_session_module, get_models_module, app_name_format
-)
+from otree.common_internal import get_session_module
 
 
-def start_link_url(session_type_name):
-    return '/demo/{}/'.format(session_type_name)
+class DemoIndex(vanilla.TemplateView):
 
-
-class DemoIndex(vanilla.View):
+    template_name = 'otree/demo/index.html'
 
     @classmethod
     def url_pattern(cls):
@@ -37,9 +33,10 @@ class DemoIndex(vanilla.View):
     def url_name(cls):
         return 'demo_index'
 
-    def get(self, *args, **kwargs):
+    def get_context_data(self, **kwargs):
 
         intro_text = getattr(get_session_module(), 'demo_page_intro_text', '')
+        context = super(DemoIndex, self).get_context_data(**kwargs)
 
         session_info = []
         for session_type in get_session_types_list(demo_only=True):
@@ -47,17 +44,18 @@ class DemoIndex(vanilla.View):
                 {
                     'name': session_type.name,
                     'display_name': session_type.display_name,
-                    'url': start_link_url(session_type.name),
-                    'num_demo_parcitipants': session_type.num_demo_participants
+                    'url': reverse('create_demo_session', args=(session_type.name,)),
+                    'num_demo_participants': session_type.num_demo_participants
                 }
             )
-        return TemplateResponse(
-            self.request, 'otree/demo/index.html',
-            {
-                'session_info': session_info, 'intro_text': intro_text,
-                'debug': settings.DEBUG
+
+        context.update( {
+            'session_info': session_info,
+            'intro_text': intro_text,
+            'debug': settings.DEBUG
             }
         )
+        return context
 
 
 def ensure_enough_spare_sessions(session_type_name):
@@ -93,74 +91,10 @@ def get_session(session_type_name):
         ready=True,
     )
     if sessions.exists():
-        return sessions[:1].get()
+        return sessions[0]
 
 
-def sort_links(links):
-    """Return the sorted .items() result from a dictionary
-
-    """
-    return sorted(links.items())
-
-
-def keywords_links(keywords):
-    """Create a duckduckgo.com link for every keyword
-
-    """
-    links = []
-    for kw in keywords:
-        kw = kw.strip()
-        if kw:
-            args = urllib.urlencode({"q": kw + " game theory", "t": "otree"})
-            link = "https://duckduckgo.com/?{}".format(args)
-            links.append((kw, link))
-    return links
-
-
-def info_about_session_type(session_type):
-
-    app_sequence = []
-    seo = set()
-    for app_name in session_type.app_sequence:
-        models_module = get_models_module(app_name)
-        num_rounds = models_module.Constants.num_rounds
-        formatted_app_name = app_name_format(app_name)
-        if num_rounds > 1:
-            formatted_app_name = '{} ({} rounds)'.format(
-                formatted_app_name, num_rounds
-            )
-        subsssn = {
-            'doc': getattr(models_module, 'doc', ''),
-            'source_code': getattr(models_module, 'source_code', ''),
-            'bibliography': getattr(models_module, 'bibliography', []),
-            'links': sort_links(getattr(models_module, 'links', {})),
-            'keywords': keywords_links(getattr(models_module, 'keywords', [])),
-            'name': formatted_app_name,
-        }
-        seo.update(map(lambda (a, b): a, subsssn["keywords"]))
-        app_sequence.append(subsssn)
-    return {
-        'doc': session_type.doc,
-        'app_sequence': app_sequence,
-        'page_seo': seo
-    }
-
-
-def session_description_dict(session):
-
-    context_data = {
-        'display_name': session.session_type.display_name,
-    }
-
-    session_type = get_session_types_dict(
-        demo_only=True
-    )[session.session_type_name]
-    context_data.update(info_about_session_type(session_type))
-
-    return context_data
-
-
-class Demo(GenericWaitPageMixin, vanilla.View):
+class CreateDemoSession(GenericWaitPageMixin, vanilla.View):
 
     @classmethod
     def url_pattern(cls):
@@ -168,7 +102,7 @@ class Demo(GenericWaitPageMixin, vanilla.View):
 
     @classmethod
     def url_name(cls):
-        return 'demo_create_session'
+        return 'create_demo_session'
 
     def _is_ready(self):
         session = get_session(self.session_type_name)
@@ -182,7 +116,7 @@ class Demo(GenericWaitPageMixin, vanilla.View):
             msg = (
                 "Session type '{}' not found, or not enabled for demo"
             ).format(self.session_type_name)
-            return HttpResponseNotFound(msg)
+            raise Http404(msg)
 
         t = threading.Thread(
             target=ensure_enough_spare_sessions,
@@ -203,7 +137,7 @@ class Demo(GenericWaitPageMixin, vanilla.View):
 
     def dispatch(self, request, *args, **kwargs):
         self.session_type_name = kwargs['session_type']
-        return super(Demo, self).dispatch(request, *args, **kwargs)
+        return super(CreateDemoSession, self).dispatch(request, *args, **kwargs)
 
     def _get_wait_page(self):
         return TemplateResponse(

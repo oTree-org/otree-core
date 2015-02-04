@@ -27,20 +27,17 @@ from ordered_set import OrderedSet as oset
 import easymoney
 
 
-import otree.common_internal
+from otree.common_internal import get_models_module, app_name_format
 from otree.session import (
     create_session, get_session_types_dict, get_session_types_list
 )
-from otree.views.demo import info_about_session_type
 from otree import forms
 from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
 
 import otree.constants
 import otree.models.session
-from otree.common_internal import add_params_to_url
 from otree.common import Currency as c
 from otree.common import Money
-from otree.views.demo import session_description_dict
 from otree.models.session import Session, Participant
 
 
@@ -541,6 +538,9 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
     def url_name(cls):
         return 'session_edit'
 
+    def get_success_url(self):
+        return reverse('session_edit', args=(self.session.pk,))
+
 
 class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
 
@@ -664,6 +664,70 @@ class SessionDescription(AdminSessionPageMixin, vanilla.TemplateView):
         return context
 
 
+def info_about_session_type(session_type):
+
+    app_sequence = []
+    seo = set()
+    for app_name in session_type.app_sequence:
+        models_module = get_models_module(app_name)
+        num_rounds = models_module.Constants.num_rounds
+        formatted_app_name = app_name_format(app_name)
+        if num_rounds > 1:
+            formatted_app_name = '{} ({} rounds)'.format(
+                formatted_app_name, num_rounds
+            )
+        subsssn = {
+            'doc': getattr(models_module, 'doc', ''),
+            'source_code': getattr(models_module, 'source_code', ''),
+            'bibliography': getattr(models_module, 'bibliography', []),
+            'links': sort_links(getattr(models_module, 'links', {})),
+            'keywords': keywords_links(getattr(models_module, 'keywords', [])),
+            'name': formatted_app_name,
+        }
+        seo.update(map(lambda (a, b): a, subsssn["keywords"]))
+        app_sequence.append(subsssn)
+    return {
+        'doc': session_type.doc,
+        'app_sequence': app_sequence,
+        'page_seo': seo
+    }
+
+
+def sort_links(links):
+    """Return the sorted .items() result from a dictionary
+
+    """
+    return sorted(links.items())
+
+
+def keywords_links(keywords):
+    """Create a duckduckgo.com link for every keyword
+
+    """
+    links = []
+    for kw in keywords:
+        kw = kw.strip()
+        if kw:
+            args = urllib.urlencode({"q": kw + " game theory", "t": "otree"})
+            link = "https://duckduckgo.com/?{}".format(args)
+            links.append((kw, link))
+    return links
+
+
+def session_description_dict(session):
+
+    context_data = {
+        'display_name': session.session_type.display_name,
+    }
+
+    session_type = get_session_types_dict(
+        demo_only=True
+    )[session.session_type_name]
+    context_data.update(info_about_session_type(session_type))
+
+    return context_data
+
+
 class AdminHome(vanilla.ListView):
 
     template_name = 'otree/admin/Home.html'
@@ -677,4 +741,4 @@ class AdminHome(vanilla.ListView):
         return 'admin_home'
 
     def get_queryset(self):
-        return Session.objects.filter(hidden=False)
+        return Session.objects.filter(hidden=False).exclude(special_category=otree.constants.session_special_category_demo)
