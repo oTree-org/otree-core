@@ -1,15 +1,15 @@
 {% extends "otree/admin/Session.html" %}
 
 {% block real_content %}
-
-<table class="text-center table-condensed">
+<div style="overflow: auto">
+<table class="header-fixed table table-bordered table-striped table-hover table-condensed">
+    <thead>
     <tr>
         <th rowspan="3" class="text-center">Player label</th>
         {% for header, colspan in subsession_headers %}
             <th colspan="{{ colspan }}" class="text-center">{{ header }}</th>
         {% endfor %}
     </tr>
-    <tr>
         {% for header, colspan in model_headers %}
             <th colspan="{{ colspan }}" class="text-center">{{ header }}</th>
         {% endfor %}
@@ -19,6 +19,7 @@
             <th class="text-center">{{ header }}</th>
         {% endfor %}
     </tr>
+</thead>
     {% for row in rows %}
         <tr>
         {% for cell in row %}
@@ -26,6 +27,7 @@
         {% endfor %}
         </tr>
     {% endfor %}
+    </tbody>
 </table>
-
+</div>
 {% endblock %}

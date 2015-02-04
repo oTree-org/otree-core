@@ -52,8 +52,8 @@ def augment_urlpatterns(urlpatterns):
 
     urlpatterns += urls.patterns(
         '',
-        urls.url(r'^$', RedirectView.as_view(url='/demo')),
-        urls.url(r'^admin/', urls.include(admin.site.urls)),
+        urls.url(r'^$', RedirectView.as_view(url='/demo'), name='demo'),
+        #urls.url(r'^admin/', urls.include(admin.site.urls)),
     )
 
     urlpatterns += staticfiles_urlpatterns()

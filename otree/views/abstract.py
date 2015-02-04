@@ -873,7 +873,8 @@ class AdminSessionPageMixin(object):
         other_sessions = get_list_or_404(otree.models.Session)
         other_sessions.remove(self.session)
         context.update({'session': self.session,
-                        'other_sessions': other_sessions})
+                        'other_sessions': other_sessions,
+                        'is_demo': self.is_demo})
         return context
 
     def get_template_names(self):

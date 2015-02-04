@@ -33,6 +33,10 @@ class DemoIndex(vanilla.View):
     def url_pattern(cls):
         return r'^demo/$'
 
+    @classmethod
+    def url_name(cls):
+        return 'demo_index'
+
     def get(self, *args, **kwargs):
 
         intro_text = getattr(get_session_module(), 'demo_page_intro_text', '')
@@ -162,6 +166,10 @@ class Demo(GenericWaitPageMixin, vanilla.View):
     def url_pattern(cls):
         return r"^demo/(?P<session_type>.+)/$"
 
+    @classmethod
+    def url_name(cls):
+        return 'demo_create_session'
+
     def _is_ready(self):
         session = get_session(self.session_type_name)
         return bool(session)
@@ -190,7 +198,7 @@ class Demo(GenericWaitPageMixin, vanilla.View):
         session.demo_already_used = True
         session.save()
 
-        session_home_url = reverse('session_start_links', args=(session.pk,))
+        session_home_url = reverse('session_description', args=(session.pk,))
         return HttpResponseRedirect(session_home_url)
 
     def dispatch(self, request, *args, **kwargs):

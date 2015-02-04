@@ -1,18 +1,16 @@
 {% extends "otree/admin/Session.html" %}
 
 {% block real_content %}
-<script type="text/javascript" charset="utf-8">
-$(function () {
-    $('[data-toggle="popover"]').popover()
-})
-</script>
-
-<table class="table-condensed text-center">
+<div style="overflow: auto">
+<table class="header-fixed table table-bordered table-striped table-hover table-condensed">
+    <thead>
     <tr>
         {% for column_name in column_names %}
             <th class="text-center">{{ column_name }}</th>
         {% endfor %}
     </tr>
+    </thead>
+    <tbody>
     {% for row in rows %}
         <tr>
         {% for cell in row %}
@@ -20,7 +18,9 @@ $(function () {
         {% endfor %}
         </tr>
     {% endfor %}
+    </tbody>
 </table>
+</div>
 <br/>
 <form action="" method="post">
     <button class="btn btn-primary" type="submit" data-toggle="popover" data-trigger="hover"

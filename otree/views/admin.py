@@ -398,7 +398,7 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
 
     def _response_when_ready(self):
         session = Session.objects.get(_pre_create_id=self._pre_create_id)
-        session_home_url = reverse('session_start_links', args=(session.pk,))
+        session_home_url = reverse('session_description', args=(session.pk,))
         return HttpResponseRedirect(session_home_url)
 
     def dispatch(self, request, *args, **kwargs):
@@ -670,15 +670,11 @@ class AdminHome(vanilla.ListView):
 
     @classmethod
     def url_pattern(cls):
-        return r"^admin_home/$"
+        return r"^admin/$"
 
     @classmethod
     def url_name(cls):
         return 'admin_home'
-
-    @classmethod
-    def url(cls):
-        return '/admin_home/'
 
     def get_queryset(self):
         return Session.objects.filter(hidden=False)
