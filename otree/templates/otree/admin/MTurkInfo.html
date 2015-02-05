@@ -1,0 +1,23 @@
+{% extends "otree/BaseBuiltIn.html" %}
+
+{% block title %}
+    Amazon Mechanical Turk: HTML snippet
+{% endblock %}
+
+{% block content %}
+
+    <p>paste the below into the HIT page on mturk.com</p>
+
+    <pre>
+        <code>
+            Click
+            <a href="{{ mturk_open_session_url }}" id="start_url" target="_blank">
+                here
+            </a>
+            to start.
+            <script type="text/javascript" src="{{ mturk_hit_page_js_url }}"></script>
+        </code>
+    </pre>
+
+{% endblock %}
+

@@ -27,7 +27,7 @@ from ordered_set import OrderedSet as oset
 import easymoney
 
 
-from otree.common_internal import get_models_module, app_name_format
+from otree.common_internal import get_models_module, app_name_format, add_params_to_url
 from otree.session import (
     create_session, get_session_types_dict, get_session_types_list
 )
@@ -299,22 +299,56 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
     return column_display_names, all_rows
 
 
+class MTurkInfo(vanilla.TemplateView):
 
-class GlobalSingletonAdmin(admin.ModelAdmin):
+    template_name = 'otree/admin/MTurkInfo.html'
 
-    list_display = ['id', 'open_session',
-                    'persistent_urls_link', 'mturk_snippet_link']
-    list_editable = ['open_session']
+    @classmethod
+    def url_pattern(cls):
+        return r"^mturk_info/$"
+
+    @classmethod
+    def url_name(cls):
+        return 'mturk_info'
+
+    def get_context_data(self, **kwargs):
+        context = super(MTurkInfo, self).get_context_data(**kwargs)
+
+        # Mturk stuff
+        hit_page_js_url = self.request.build_absolute_uri(
+            static_template_tag('otree/js/mturk_hit_page.js')
+        )
+
+        from otree.views.concrete import AssignVisitorToOpenSessionMTurk
+        open_session_url = self.request.build_absolute_uri(
+            AssignVisitorToOpenSessionMTurk.url()
+        )
+        context.update({
+            'mturk_hit_page_js_url': hit_page_js_url,
+            'mturk_open_session_url': open_session_url,
+        })
+
+        return context
 
 
-    def persistent_urls_link(self, instance):
-        return new_tab_link('{}/persistent_urls/'.format(instance.pk), 'Link')
-    persistent_urls_link.allow_tags = True
-    persistent_urls_link.short_description = "Persistent URLs"
+class PersistentLabURLs(vanilla.TemplateView):
 
-    def persistent_urls(self, request, pk):
+    @classmethod
+    def url_pattern(cls):
+        return r"^persistent_lab_urls/$"
+
+    @classmethod
+    def url_name(cls):
+        return 'persistent_lab_urls'
+
+    template_name = 'otree/admin/PersistentLabURLs.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(PersistentLabURLs, self).get_context_data(**kwargs)
+
+        # open session stuff
         from otree.views.concrete import AssignVisitorToOpenSession
-        open_session_base_url = request.build_absolute_uri(
+        open_session_base_url = self.request.build_absolute_uri(
             AssignVisitorToOpenSession.url()
         )
         open_session_example_urls = []
@@ -326,35 +360,15 @@ class GlobalSingletonAdmin(admin.ModelAdmin):
                 )
             )
 
-        return TemplateResponse(
-            request,
-            'otree/admin/PersistentLabURLs.html',
-            {
-                'open_session_example_urls': open_session_example_urls,
-                'access_code_for_open_session': (
-                    otree.constants.access_code_for_open_session
-                ),
-                'participant_label': otree.constants.participant_label
-            }
-        )
+        context.update({
+            'open_session_example_urls': open_session_example_urls,
+            'access_code_for_open_session': (
+                otree.constants.access_code_for_open_session
+            ),
+            'participant_label': otree.constants.participant_label
+        })
 
 
-
-class MTurkSnippet(vanilla.TemplateView):
-
-    def get(self, request, *args, **kwargs):
-        hit_page_js_url = request.build_absolute_uri(
-            static_template_tag('otree/js/mturk_hit_page.js')
-        )
-        from otree.views.concrete import AssignVisitorToOpenSessionMTurk
-        open_session_url = request.build_absolute_uri(
-            AssignVisitorToOpenSessionMTurk.url()
-        )
-        context = {'hit_page_js_url': hit_page_js_url,
-                   'open_session_url': open_session_url}
-
-        return TemplateResponse(request, 'otree/admin/MTurkSnippet.html',
-                                context, content_type='text/plain')
 
 
 class CreateSessionForm(forms.Form):
