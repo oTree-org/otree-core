@@ -179,6 +179,8 @@ class BaseModelForm(forms.ModelForm):
             This will conceptually match a dropdown.
 
         """
+        # first extract the view instance
+        self.view = kwargs.pop("view", None)
 
         super(BaseModelForm, self).__init__(*args, **kwargs)
 
@@ -283,15 +285,15 @@ class BaseModelForm(forms.ModelForm):
                     msg = _('This field is required.')
                     raise forms.ValidationError(msg)
 
-                if hasattr(self.instance, '%s_bounds' % name):
-                    lower, upper = getattr(self.instance, '%s_bounds' % name)()
+                if hasattr(self.view, '%s_bounds' % name):
+                    lower, upper = getattr(self.view, '%s_bounds' % name)()
                     if not lower <= value <= upper:
                         msg = 'Must be between {} and {}, inclusive.'
                         raise forms.ValidationError(msg.format(lower, upper))
 
-                if hasattr(self.instance, '%s_error_message' % name):
+                if hasattr(self.view, '%s_error_message' % name):
                     error_string = getattr(
-                        self.instance, '%s_error_message' % name
+                        self.view, '%s_error_message' % name
                     )(value)
                     if error_string:
                         raise forms.ValidationError(error_string)
@@ -299,11 +301,12 @@ class BaseModelForm(forms.ModelForm):
                 if hasattr(self, 'clean_%s' % name):
                     value = getattr(self, 'clean_%s' % name)()
                     self.cleaned_data[name] = value
+
             except forms.ValidationError as e:
                 self.add_error(name, e)
 
-        if hasattr(self.instance, 'error_message'):
-            error_string = self.instance.error_message(self.cleaned_data)
+        if hasattr(self.view, 'error_message'):
+            error_string = self.view.error_message(self.cleaned_data)
             if error_string:
                 e = forms.ValidationError(error_string)
                 self.add_error(None, e)

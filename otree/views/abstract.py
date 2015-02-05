@@ -658,7 +658,7 @@ class FormPageMixin(object):
 
         """
         cls = self.get_form_class()
-        return cls(data=data, files=files, **kwargs)
+        return cls(data=data, files=files, view=self, **kwargs)
 
     def form_invalid(self, form):
         response = super(FormPageMixin, self).form_invalid(form)
