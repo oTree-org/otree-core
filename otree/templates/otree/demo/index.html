@@ -27,14 +27,14 @@
         <div class="list-group">
         {% for s in session_info %}
             <a href="{{ s.url }}" class="list-group-item" target="_blank">
-                {% if s.num_demo_parcitipants == 1 %}
+                {% if s.num_demo_participants == 1 %}
                 <span class="label label-default pull-right">
-                {% elif s.num_demo_parcitipants == 2 %}
+                {% elif s.num_demo_participants == 2 %}
                 <span class="label label-info pull-right">
                 {% else %}
                 <span class="label label-danger pull-right">
                 {% endif %}
-                Participants: {{s.num_demo_parcitipants}}</span>
+                Participants: {{s.num_demo_participants}}</span>
                 {{ s.display_name }}
             </a>
         {% endfor %}

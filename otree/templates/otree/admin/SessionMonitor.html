@@ -1,13 +1,16 @@
 {% extends "otree/admin/Session.html" %}
 
 {% block real_content %}
-
-<table class="table-bordered text-center">
+<div style="overflow: auto">
+<table class="header-fixed table table-bordered table-striped table-hover table-condensed">
+    <thead>
     <tr>
         {% for column_name in column_names %}
             <th class="text-center">{{ column_name }}</th>
         {% endfor %}
     </tr>
+    </thead>
+    <tbody>
     {% for row in rows %}
         <tr>
         {% for cell in row %}
@@ -15,6 +18,17 @@
         {% endfor %}
         </tr>
     {% endfor %}
+    </tbody>
 </table>
-
+</div>
+<br/>
+<form action="" method="post">
+    <button class="btn btn-primary" type="submit" data-toggle="popover" data-trigger="hover"
+    data-content="By clicking this button the slowest user(s)
+    will be automatically advanced by one page, while the other users
+    will remain where they are (unless perhaps if they have a waiting page).">Advance slowest user(s)</button>
+</form>
+{% if success %}
+    <div class="alert alert-success" role="alert">Participants were advanced.</div>
+{% endif %}
 {% endblock %}

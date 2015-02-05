@@ -31,7 +31,7 @@ import time
 
 from django.db import transaction
 from django.conf import settings
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404
 from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache, cache_control
@@ -836,6 +836,7 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
 
         return HttpResponseRedirect(participant._start_url())
 
+
 class AdminSessionPageMixin(object):
 
     @classmethod
@@ -846,10 +847,20 @@ class AdminSessionPageMixin(object):
     def url(cls, session_pk):
         return '/{}/{}/'.format(cls.__name__, session_pk)
 
+    def get_context_data(self, **kwargs):
+        context = super(AdminSessionPageMixin, self).get_context_data(**kwargs)
+        other_sessions = get_list_or_404(otree.models.Session)
+        other_sessions.remove(self.session)
+        context.update({'session': self.session,
+                        'other_sessions': other_sessions,
+                        'is_demo': self.is_demo})
+        return context
+
     def get_template_names(self):
         return ['otree/admin/{}.html'.format(self.__class__.__name__)]
 
     def dispatch(self, request, *args, **kwargs):
         session_pk = int(kwargs['pk'])
         self.session = get_object_or_404(otree.models.Session, pk=session_pk)
+        self.is_demo = self.session.special_category == constants.session_special_category_demo
         return super(AdminSessionPageMixin, self).dispatch(request, *args, **kwargs)

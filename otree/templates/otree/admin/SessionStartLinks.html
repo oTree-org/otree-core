@@ -1,0 +1,13 @@
+{% extends "otree/admin/Session.html" %}
+
+
+{% block real_content %}
+    <p>
+        Open each link in its own browser tab.
+    </p>
+    <h4>Participant links</h4>
+    {% for participant_url in participant_urls %}
+            <a href="{{ participant_url }}" class="participant-link" target="_blank">{{ participant_url }}</a>
+            <br/>
+    {% endfor %}
+{% endblock %}

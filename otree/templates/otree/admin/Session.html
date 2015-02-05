@@ -2,22 +2,75 @@
 {% load otree_tags floppyforms %}
 
 {% block title %}
-    Admin panel for session <code>{{ session.code }}</code>
+Admin panel for session
+{% if other_sessions and not is_demo %}
+<span class="btn-group">
+    <button class="btn btn-default btn-lg dropdown-toggle" data-toggle="dropdown">
+        {{ session.code }}
+        <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+        {% for s in other_sessions %}
+        <li><a href="{% url 'session_description' s.pk %}">{{ s.code }}</a></li>
+        {% endfor %}
+    </ul>
+</span>
+{% else %}
+<code>{{ session.code }}</code>
+{% endif %}
+{% if is_demo %}
+(demo)
+{% endif %}
 {% endblock %}
 
 {% block content %}
+<!--bootstrap popover launch-->
+<script type="text/javascript" charset="utf-8">
+$(function () {
+    $('[data-toggle="popover"]').popover()
+})
+</script>
+<!--end bootstrap popover launch-->
+<!--setup for fixed header of table-->
+<style>
+table.floatThead-table {
+    border-top: none;
+    border-bottom: none;
+    background-color: #FFF;
+}
+</style>
+<script type="text/javascript" charset="utf-8">
+$(document).ready(function() {
+var $table = $('table.header-fixed');
+$table.floatThead();
+});
+</script>
+<!--end setup for fixed header of table-->
 <nav class="navbar navbar-default">
   <div class="container-fluid">
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
-        <li role="presentation" class="{% active_page request 'session_results' %}"><a href="{% url 'session_results' session.pk %}">Results</a></li>
-        <li role="presentation" class="{% active_page request 'session_monitor' %}"><a href="{% url 'session_monitor' session.pk %}">Monitor</a></li>
+        <li role="presentation" class="{% active_page request 'session_description' %}"><a href="{% url 'session_description' session.pk %}">Description</a></li>
         <li role="presentation" class="{% active_page request 'session_edit' %}"><a href="{% url 'session_edit' session.pk %}">Edit properties</a></li>
+        <li role="presentation" class="{% active_page request 'session_monitor' %}"><a href="{% url 'session_monitor' session.pk %}">Monitor</a></li>
+        <li role="presentation" class="{% active_page request 'session_results' %}"><a href="{% url 'session_results' session.pk %}">Results</a></li>
         <li role="presentation" class="{% active_page request 'session_payments' %}"><a href="{% url 'session_payments' session.pk %}">Payments</a></li>
         <li role="presentation" class="{% active_page request 'session_start_links' %}"><a href="{% url 'session_start_links' session.pk %}">Start Links</a></li>
       </ul>
-    </div><!-- /.navbar-collapse -->
+      {% if not is_demo %}
+      <a href="{% url 'admin_home' %}" role="button" class="btn btn-default navbar-btn navbar-right">
+          <span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span> Home
+      </a>
+      {% else %}
+      <a href="{% url 'demo_index' %}" style="margin-left:5px" role="button" class="btn btn-default navbar-btn navbar-right" data-toggle="popover" data-trigger="hover" data-placement="bottom" data-content="List of demo games">
+          <span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>
+      </a>
+      <a href="{% url 'create_demo_session' session.session_type_name %}" role="button" class="btn btn-default navbar-btn navbar-right" data-toggle="popover" data-trigger="hover" data-placement="bottom" data-content="Recreate session from scratch">
+          <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+      </a>
+      {% endif %}
+  </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
 </nav>
 {% block real_content %}

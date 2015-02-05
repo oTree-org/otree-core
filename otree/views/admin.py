@@ -27,20 +27,17 @@ from ordered_set import OrderedSet as oset
 import easymoney
 
 
-import otree.common_internal
+from otree.common_internal import get_models_module, app_name_format, add_params_to_url
 from otree.session import (
     create_session, get_session_types_dict, get_session_types_list
 )
-from otree.views.demo import info_about_session_type
 from otree import forms
 from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
 
 import otree.constants
 import otree.models.session
-from otree.common_internal import add_params_to_url
 from otree.common import Currency as c
 from otree.common import Money
-from otree.views.demo import render_to_start_links_page
 from otree.models.session import Session, Participant
 
 
@@ -302,22 +299,56 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
     return column_display_names, all_rows
 
 
+class MTurkInfo(vanilla.TemplateView):
 
-class GlobalSingletonAdmin(admin.ModelAdmin):
+    template_name = 'otree/admin/MTurkInfo.html'
 
-    list_display = ['id', 'open_session',
-                    'persistent_urls_link', 'mturk_snippet_link']
-    list_editable = ['open_session']
+    @classmethod
+    def url_pattern(cls):
+        return r"^mturk_info/$"
+
+    @classmethod
+    def url_name(cls):
+        return 'mturk_info'
+
+    def get_context_data(self, **kwargs):
+        context = super(MTurkInfo, self).get_context_data(**kwargs)
+
+        # Mturk stuff
+        hit_page_js_url = self.request.build_absolute_uri(
+            static_template_tag('otree/js/mturk_hit_page.js')
+        )
+
+        from otree.views.concrete import AssignVisitorToOpenSessionMTurk
+        open_session_url = self.request.build_absolute_uri(
+            AssignVisitorToOpenSessionMTurk.url()
+        )
+        context.update({
+            'mturk_hit_page_js_url': hit_page_js_url,
+            'mturk_open_session_url': open_session_url,
+        })
+
+        return context
 
 
-    def persistent_urls_link(self, instance):
-        return new_tab_link('{}/persistent_urls/'.format(instance.pk), 'Link')
-    persistent_urls_link.allow_tags = True
-    persistent_urls_link.short_description = "Persistent URLs"
+class PersistentLabURLs(vanilla.TemplateView):
 
-    def persistent_urls(self, request, pk):
+    @classmethod
+    def url_pattern(cls):
+        return r"^persistent_lab_urls/$"
+
+    @classmethod
+    def url_name(cls):
+        return 'persistent_lab_urls'
+
+    template_name = 'otree/admin/PersistentLabURLs.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(PersistentLabURLs, self).get_context_data(**kwargs)
+
+        # open session stuff
         from otree.views.concrete import AssignVisitorToOpenSession
-        open_session_base_url = request.build_absolute_uri(
+        open_session_base_url = self.request.build_absolute_uri(
             AssignVisitorToOpenSession.url()
         )
         open_session_example_urls = []
@@ -329,35 +360,15 @@ class GlobalSingletonAdmin(admin.ModelAdmin):
                 )
             )
 
-        return TemplateResponse(
-            request,
-            'otree/admin/PersistentLabURLs.html',
-            {
-                'open_session_example_urls': open_session_example_urls,
-                'access_code_for_open_session': (
-                    otree.constants.access_code_for_open_session
-                ),
-                'participant_label': otree.constants.participant_label
-            }
-        )
+        context.update({
+            'open_session_example_urls': open_session_example_urls,
+            'access_code_for_open_session': (
+                otree.constants.access_code_for_open_session
+            ),
+            'participant_label': otree.constants.participant_label
+        })
 
 
-
-class MTurkSnippet(vanilla.TemplateView):
-
-    def get(self, request, *args, **kwargs):
-        hit_page_js_url = request.build_absolute_uri(
-            static_template_tag('otree/js/mturk_hit_page.js')
-        )
-        from otree.views.concrete import AssignVisitorToOpenSessionMTurk
-        open_session_url = request.build_absolute_uri(
-            AssignVisitorToOpenSessionMTurk.url()
-        )
-        context = {'hit_page_js_url': hit_page_js_url,
-                   'open_session_url': open_session_url}
-
-        return TemplateResponse(request, 'otree/admin/MTurkSnippet.html',
-                                context, content_type='text/plain')
 
 
 class CreateSessionForm(forms.Form):
@@ -398,7 +409,7 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
 
     def _response_when_ready(self):
         session = Session.objects.get(_pre_create_id=self._pre_create_id)
-        session_home_url = reverse('session_home', args=(session.pk,))
+        session_home_url = reverse('session_description', args=(session.pk,))
         return HttpResponseRedirect(session_home_url)
 
     def dispatch(self, request, *args, **kwargs):
@@ -520,7 +531,6 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
         context.update({
             'column_names': [pretty_name(field.strip('_')) for field in field_names],
             'rows': rows,
-            'session': self.session
         })
         return context
 
@@ -542,13 +552,9 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
     def url_name(cls):
         return 'session_edit'
 
-    def get_context_data(self, **kwargs):
-        context = super(EditSessionProperties, self).get_context_data(**kwargs)
-        context.update({
-            'participants': self.session.get_participants(),
-            'session': self.session
-        })
-        return context
+    def get_success_url(self):
+        return reverse('session_edit', args=(self.session.pk,))
+
 
 class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
 
@@ -557,7 +563,6 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
         return 'session_payments'
 
     def get_context_data(self, **kwargs):
-        context = super(SessionPayments, self).get_context_data(**kwargs)
 
         session = self.session
         participants = session.get_participants()
@@ -570,24 +575,36 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
         except ZeroDivisionError:
             mean_payment = Money(0)
 
+        context = super(SessionPayments, self).get_context_data(**kwargs)
         context.update({
             'participants': participants,
             'total_payments': total_payments,
             'mean_payment': mean_payment,
-            'session': session,
             'fixed_pay': session.fixed_pay.to_money(session),
         })
 
         return context
 
-class SessionStartLinks(AdminSessionPageMixin, vanilla.View):
+
+class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
 
     @classmethod
     def url_name(cls):
         return 'session_start_links'
 
-    def get(self, request, *args, **kwargs):
-        return render_to_start_links_page(request, self.session)
+    def get_context_data(self, **kwargs):
+        session = self.session
+        experimenter_url = self.request.build_absolute_uri(
+            session.session_experimenter._start_url()
+        )
+        participant_urls = [
+            self.request.build_absolute_uri(participant._start_url())
+            for participant in session.get_participants()
+        ]
+        context = super(SessionStartLinks, self).get_context_data(**kwargs)
+        context.update({'experimenter_url': experimenter_url,
+                        'participant_urls': participant_urls})
+        return context
 
 
 class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
@@ -642,25 +659,87 @@ class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
 
         context = super(SessionResults, self).get_context_data(**kwargs)
         context.update({
-                'subsession_headers': subsession_headers,
-                'model_headers': model_headers,
-                'field_headers': field_headers,
-                'rows': rows,
-                'session': self.session,
-            })
+            'subsession_headers': subsession_headers,
+            'model_headers': model_headers,
+            'field_headers': field_headers,
+            'rows': rows})
         return context
 
-class SessionHome(AdminSessionPageMixin, vanilla.TemplateView):
+
+class SessionDescription(AdminSessionPageMixin, vanilla.TemplateView):
 
     @classmethod
     def url_name(cls):
-        return 'session_home'
+        return 'session_description'
 
     def get_context_data(self, **kwargs):
-        context = super(SessionHome, self).get_context_data(**kwargs)
-        context.update({'session': self.session })
+        context = super(SessionDescription, self).get_context_data(**kwargs)
+        context.update(session_description_dict(self.session))
         return context
 
+
+def info_about_session_type(session_type):
+
+    app_sequence = []
+    seo = set()
+    for app_name in session_type.app_sequence:
+        models_module = get_models_module(app_name)
+        num_rounds = models_module.Constants.num_rounds
+        formatted_app_name = app_name_format(app_name)
+        if num_rounds > 1:
+            formatted_app_name = '{} ({} rounds)'.format(
+                formatted_app_name, num_rounds
+            )
+        subsssn = {
+            'doc': getattr(models_module, 'doc', ''),
+            'source_code': getattr(models_module, 'source_code', ''),
+            'bibliography': getattr(models_module, 'bibliography', []),
+            'links': sort_links(getattr(models_module, 'links', {})),
+            'keywords': keywords_links(getattr(models_module, 'keywords', [])),
+            'name': formatted_app_name,
+        }
+        seo.update(map(lambda (a, b): a, subsssn["keywords"]))
+        app_sequence.append(subsssn)
+    return {
+        'doc': session_type.doc,
+        'app_sequence': app_sequence,
+        'page_seo': seo
+    }
+
+
+def sort_links(links):
+    """Return the sorted .items() result from a dictionary
+
+    """
+    return sorted(links.items())
+
+
+def keywords_links(keywords):
+    """Create a duckduckgo.com link for every keyword
+
+    """
+    links = []
+    for kw in keywords:
+        kw = kw.strip()
+        if kw:
+            args = urllib.urlencode({"q": kw + " game theory", "t": "otree"})
+            link = "https://duckduckgo.com/?{}".format(args)
+            links.append((kw, link))
+    return links
+
+
+def session_description_dict(session):
+
+    context_data = {
+        'display_name': session.session_type.display_name,
+    }
+
+    session_type = get_session_types_dict(
+        demo_only=True
+    )[session.session_type_name]
+    context_data.update(info_about_session_type(session_type))
+
+    return context_data
 
 
 class AdminHome(vanilla.ListView):
@@ -669,15 +748,11 @@ class AdminHome(vanilla.ListView):
 
     @classmethod
     def url_pattern(cls):
-        return r"^admin_home/$"
+        return r"^admin/$"
 
     @classmethod
     def url_name(cls):
         return 'admin_home'
 
-    @classmethod
-    def url(cls):
-        return '/admin_home/'
-
     def get_queryset(self):
-        return Session.objects.filter(hidden=False)
+        return Session.objects.filter(hidden=False).exclude(special_category=otree.constants.session_special_category_demo)
