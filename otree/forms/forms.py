@@ -216,12 +216,15 @@ class BaseModelForm(forms.ModelForm):
 
     def _get_field_boundaries(self, field_name):
         """
-        Get the field boundaries from a method defined on the model.
+        Get the field boundaries from a method defined on the view.
 
         Example (will get boundaries from `amount_bounds`):
 
-            class MyModel(...):
-                amount = models.IntegerField()
+
+            class Offer(Page):
+                ...
+                form_model = models.Group
+                form_fields = ['amount']
 
                 def amount_bounds(self):
                     return [1, 5]
@@ -229,8 +232,8 @@ class BaseModelForm(forms.ModelForm):
         If the method is not found, it will return ``(None, None)``.
         """
         method_name = '%s_bounds' % field_name
-        if hasattr(self.instance, method_name):
-            method = getattr(self.instance, method_name)
+        if hasattr(self.view, method_name):
+            method = getattr(self.view, method_name)
             return method()
         model_field = self.instance._meta.get_field_by_name(field_name)[0]
         return getattr(model_field, 'bounds', None) or [None, None]
