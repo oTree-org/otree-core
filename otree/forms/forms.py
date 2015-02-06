@@ -185,8 +185,8 @@ class BaseModelForm(forms.ModelForm):
         super(BaseModelForm, self).__init__(*args, **kwargs)
 
         for field_name in self.fields:
-            if hasattr(self.instance, '%s_choices' % field_name):
-                choices = getattr(self.instance, '%s_choices' % field_name)()
+            if hasattr(self.view, '%s_choices' % field_name):
+                choices = getattr(self.view, '%s_choices' % field_name)()
                 choices = otree.common_internal.expand_choice_tuples(choices)
 
                 model_field = self.instance._meta.get_field(field_name)
@@ -194,9 +194,9 @@ class BaseModelForm(forms.ModelForm):
                 model_field_copy._choices = choices
 
                 self.fields[field_name] = formfield_callback(model_field_copy)
-            if hasattr(self.instance, '%s_label' % field_name):
+            if hasattr(self.view, '%s_label' % field_name):
                 self.fields[field_name].label = getattr(
-                    self.instance, '%s_label' % field_name
+                    self.view, '%s_label' % field_name
                 )()
 
         for field_name in self.fields:
@@ -293,6 +293,14 @@ class BaseModelForm(forms.ModelForm):
                     if not lower <= value <= upper:
                         msg = 'Must be between {} and {}, inclusive.'
                         raise forms.ValidationError(msg.format(lower, upper))
+
+                if hasattr(self.view, '%s_choices' % name):
+                    choices = getattr(self.view, '%s_choices' % name)()
+                    if value not in choices:
+                        msg = 'Value must be one of: {}'.format(
+                            ", ".join(map(str, choices))
+                        )
+                        raise forms.ValidationError(msg)
 
                 if hasattr(self.view, '%s_error_message' % name):
                     error_string = getattr(
