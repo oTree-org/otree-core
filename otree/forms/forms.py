@@ -269,10 +269,10 @@ class BaseModelForm(forms.ModelForm):
                 if max_bound is not None:
                     field.widget.attrs['max'] = max_bound
                 # is this UI too intrusive?
-                # if min_bound is not None and max_bound is not None:
-                #    field.widget.attrs['placeholder'] = '({} - {})'.format(
-                #        min_bound, max_bound
-                #    )
+                if min_bound is not None and max_bound is not None:
+                    field.widget.attrs['placeholder'] = '({} - {})'.format(
+                        min_bound, max_bound
+                    )
 
     def null_boolean_field_names(self):
         null_boolean_fields_in_model = [
