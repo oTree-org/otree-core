@@ -215,9 +215,9 @@ class BaseModelForm(forms.ModelForm):
 
     def _get_field_boundaries(self, field_name):
         """
-        Get the field boundaries from a method defined on the view.
+        Get the field boundaries from a methods defined on the view.
 
-        Example (will get boundaries from `amount_bounds`):
+        Example (will get boundaries from `amount_<min|max>`):
 
 
             class Offer(Page):
@@ -225,17 +225,32 @@ class BaseModelForm(forms.ModelForm):
                 form_model = models.Group
                 form_fields = ['amount']
 
-                def amount_bounds(self):
-                    return [1, 5]
+                def amount_min(self):
+                    return 1
+
+                def amount_max(self):
+                    return 5
 
         If the method is not found, it will return ``(None, None)``.
         """
-        method_name = '%s_bounds' % field_name
-        if hasattr(self.view, method_name):
-            method = getattr(self.view, method_name)
-            return method()
-        model_field = self.instance._meta.get_field_by_name(field_name)[0]
-        return getattr(model_field, 'bounds', None) or [None, None]
+
+        min_value, max_value = None, None
+
+        min_method_name = '%s_min' % field_name
+        if hasattr(self.view, min_method_name):
+            min_value = getattr(self.view, min_method_name)()
+        else:
+            model_field = self.instance._meta.get_field_by_name(field_name)[0]
+            min_value = getattr(model_field, 'min', None)
+
+        max_method_name = '%s_max' % field_name
+        if hasattr(self.view, max_method_name):
+            max_value = getattr(self.view, max_method_name)()
+        else:
+            model_field = self.instance._meta.get_field_by_name(field_name)[0]
+            max_value = getattr(model_field, 'max', None)
+
+        return [min_value, max_value]
 
     def _setup_field_boundaries(self):
         for field_name, field in self.fields.items():
@@ -287,11 +302,17 @@ class BaseModelForm(forms.ModelForm):
                     msg = _('This field is required.')
                     raise forms.ValidationError(msg)
 
-                if hasattr(self.view, '%s_bounds' % name):
-                    lower, upper = getattr(self.view, '%s_bounds' % name)()
-                    if not lower <= value <= upper:
-                        msg = 'Must be between {} and {}, inclusive.'
-                        raise forms.ValidationError(msg.format(lower, upper))
+                if hasattr(self.view, '%s_min' % name):
+                    lower = getattr(self.view, '%s_min' % name)()
+                    if value < lower:
+                        msg = 'Must be less or equal than {}.'
+                        raise forms.ValidationError(msg.format(lower))
+
+                if hasattr(self.view, '%s_max' % name):
+                    upper = getattr(self.view, '%s_max' % name)()
+                    if value > upper:
+                        msg = 'Must be greater or equal than {}.'
+                        raise forms.ValidationError(msg.format(lower))
 
                 if hasattr(self.view, '%s_choices' % name):
                     choices = getattr(self.view, '%s_choices' % name)()
