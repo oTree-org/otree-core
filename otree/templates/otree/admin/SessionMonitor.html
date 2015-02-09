@@ -1,6 +1,7 @@
 {% extends "otree/admin/Session.html" %}
 
-{% block real_content %}
+{% block content %}
+{{ block.super }}
 <div style="overflow: auto">
 <table class="header-fixed table table-bordered table-striped table-hover table-condensed">
     <thead>
@@ -22,13 +23,11 @@
 </table>
 </div>
 <br/>
-<form action="" method="post">
-    <button class="btn btn-primary" type="submit" data-toggle="popover" data-trigger="hover"
-    data-content="By clicking this button the slowest user(s)
-    will be automatically advanced by one page, while the other users
-    will remain where they are (unless perhaps if they have a waiting page).">Advance slowest user(s)</button>
-</form>
-{% if success %}
-    <div class="alert alert-success" role="alert">Participants were advanced.</div>
-{% endif %}
+<a href="{% url 'session_advance' session.pk %}" class="btn btn-primary" role="button" data-toggle="popover" data-trigger="hover"
+data-content="By clicking this button the slowest user(s)
+will be automatically advanced by one page, while the other users
+will remain where they are (unless perhaps if they have a waiting page).">
+Advance slowest user(s)
+</a>
+{% include "otree/messages.html" %}
 {% endblock %}

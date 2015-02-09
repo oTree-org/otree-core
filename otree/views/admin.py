@@ -319,6 +319,9 @@ class MTurkInfo(vanilla.TemplateView):
             static_template_tag('otree/js/mturk_hit_page.js')
         )
 
+        global_singleton = otree.models.session.GlobalSingleton.objects.get()
+        open_session = global_singleton.open_session
+
         from otree.views.concrete import AssignVisitorToOpenSessionMTurk
         open_session_url = self.request.build_absolute_uri(
             AssignVisitorToOpenSessionMTurk.url()
@@ -326,6 +329,7 @@ class MTurkInfo(vanilla.TemplateView):
         context.update({
             'mturk_hit_page_js_url': hit_page_js_url,
             'mturk_open_session_url': open_session_url,
+            'open_session': open_session,
         })
 
         return context
@@ -352,23 +356,25 @@ class PersistentLabURLs(vanilla.TemplateView):
             AssignVisitorToOpenSession.url()
         )
         open_session_example_urls = []
-        for i in range(1, 31):
+        for i in range(1, 20):
             open_session_example_urls.append(
                 add_params_to_url(
                     open_session_base_url,
                     {otree.constants.participant_label: 'P{}'.format(i)}
                 )
             )
+        global_singleton = otree.models.session.GlobalSingleton.objects.get()
+        open_session = global_singleton.open_session
 
         context.update({
             'open_session_example_urls': open_session_example_urls,
             'access_code_for_open_session': (
                 otree.constants.access_code_for_open_session
             ),
-            'participant_label': otree.constants.participant_label
+            'participant_label': otree.constants.participant_label,
+            'open_session': open_session,
         })
-
-
+        return context
 
 
 class CreateSessionForm(forms.Form):
@@ -753,6 +759,13 @@ class AdminHome(vanilla.ListView):
     @classmethod
     def url_name(cls):
         return 'admin_home'
+
+    def get_context_data(self, **kwargs):
+        context = super(AdminHome, self).get_context_data(**kwargs)
+        global_singleton = otree.models.session.GlobalSingleton.objects.get()
+        open_session = global_singleton.open_session
+        context.update({'open_session': open_session})
+        return context
 
     def get_queryset(self):
         return Session.objects.filter(hidden=False).exclude(special_category=otree.constants.session_special_category_demo)
