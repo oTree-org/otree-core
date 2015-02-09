@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError, make_option
-from otree.session import create_session
+from otree.session import create_session, get_session_types_dict
 
 
 class Command(BaseCommand):
@@ -21,7 +21,8 @@ class Command(BaseCommand):
             )
         num_participants = int(num_participants)
         label = options.get('label', '')
+
         create_session(
-            session_type_name=type,
+            session_type = get_session_types_dict()[type],
             num_participants=num_participants, label=label
         )

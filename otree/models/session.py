@@ -81,15 +81,11 @@ class Session(ModelWithVars):
         # if i don't set this, it could be in an unpredictable order
         ordering = ['pk']
 
-    session_type_name = models.CharField(
-        max_length=300, null=True, blank=True,
-        doc="the session type, as defined in the programmer's sessions.py."
+    session_type = models.PickleField(
+        default=lambda: {},
+        null=True,
+        doc="the session type, as defined in the programmer's sessions.py.",
     )
-
-    @property
-    def session_type(self):
-        from otree.session import get_session_types_dict
-        return get_session_types_dict()[self.session_type_name]
 
     # label of this session instance
     label = models.CharField(
@@ -179,7 +175,7 @@ class Session(ModelWithVars):
 
     def get_subsessions(self):
         lst = []
-        app_sequence = self.session_type.app_sequence
+        app_sequence = self.session_type['app_sequence']
         for app in app_sequence:
             models_module = otree.common_internal.get_models_module(app)
             subsessions = models_module.Subsession.objects.filter(
@@ -205,7 +201,7 @@ class Session(ModelWithVars):
 
     def _create_groups_and_initialize(self):
         for subsession in self.get_subsessions():
-            if self.session_type.group_by_arrival_time:
+            if self.session_type['group_by_arrival_time']:
                 if subsession.round_number == 1:
                     subsession._set_players_per_group_list()
                 subsession._create_empty_groups()
@@ -247,7 +243,7 @@ class Session(ModelWithVars):
             assert resp.status_code < 400
 
     def build_session_user_to_user_lookups(self):
-        subsession_app_names = self.session_type.app_sequence
+        subsession_app_names = self.session_type['app_sequence']
 
         num_pages_in_each_app = {}
         for app_name in subsession_app_names:
@@ -331,7 +327,7 @@ class SessionUser(ModelWithVars):
     def get_users(self):
         """Used to calculate payoffs"""
         lst = []
-        app_sequence = self.session.session_type.app_sequence
+        app_sequence = self.session.session_type['app_sequence']
         for app in app_sequence:
             models_module = otree.common_internal.get_models_module(app)
             players = models_module.Player.objects.filter(

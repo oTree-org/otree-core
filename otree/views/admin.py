@@ -29,7 +29,8 @@ import easymoney
 
 from otree.common_internal import get_models_module, app_name_format, add_params_to_url
 from otree.session import (
-    create_session, get_session_types_dict, get_session_types_list
+    create_session, get_session_types_dict, get_session_types_list,
+    get_lcm
 )
 from otree import forms
 from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
@@ -78,7 +79,6 @@ def get_all_fields(Model, for_export=False):
         'Session':
             [
                 'code',
-                'session_type_name',
                 'label',
                 'hidden',
                 'start_links_link',
@@ -380,7 +380,8 @@ class CreateSessionForm(forms.Form):
     num_participants = forms.IntegerField()
 
     def clean_num_participants(self):
-        lcm = self.session_type.lcm()
+
+        lcm = get_lcm(self.session_type)
         num_participants = self.cleaned_data['num_participants']
         if num_participants % lcm:
             raise forms.ValidationError(
@@ -465,7 +466,7 @@ class CreateSession(vanilla.FormView):
     def form_valid(self, form):
         pre_create_id = uuid.uuid4().hex
         kwargs = {
-            'session_type_name': self.session_type.name,
+            'session_type': self.session_type,
             'num_participants': form.cleaned_data['num_participants'],
             '_pre_create_id': pre_create_id,
         }
@@ -497,8 +498,8 @@ class SessionTypesToCreate(vanilla.View):
         for session_type in get_session_types_list():
             session_types_info.append(
                 {
-                    'display_name': session_type.display_name,
-                    'url': '/create_session/{}/'.format(session_type.name),
+                    'display_name': session_type['display_name'],
+                    'url': '/create_session/{}/'.format(session_type['name']),
                 }
             )
 

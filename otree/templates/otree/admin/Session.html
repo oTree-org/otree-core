@@ -66,7 +66,7 @@ $table.floatThead();
       <a href="{% url 'demo_index' %}" style="margin-left:5px" role="button" class="btn btn-default navbar-btn navbar-right" data-toggle="popover" data-trigger="hover" data-placement="bottom" data-content="List of demo games">
           <span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>
       </a>
-      <a href="{% url 'create_demo_session' session.session_type_name %}" role="button" class="btn btn-default navbar-btn navbar-right" data-toggle="popover" data-trigger="hover" data-placement="bottom" data-content="Recreate session from scratch">
+      <a href="{% url 'create_demo_session' session.session_type.name %}" role="button" class="btn btn-default navbar-btn navbar-right" data-toggle="popover" data-trigger="hover" data-placement="bottom" data-content="Recreate session from scratch">
           <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
       </a>
       {% endif %}

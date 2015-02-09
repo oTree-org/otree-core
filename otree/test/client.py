@@ -129,7 +129,7 @@ class BaseClient(test.Client):
         self.response = None
         self.url = None
         self.path = None
-        self.num_bots = self.subsession.session.session_type.num_bots
+        self.num_bots = self.subsession.session.session_type['num_bots']
         self.submits = []
         super(BaseClient, self).__init__()
 

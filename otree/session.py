@@ -32,6 +32,63 @@ def lcmm(*args):
     return reduce(lcm, args)
 
 
+def get_lcm(session_type):
+    min_multiple_list = []
+    for app_name in session_type.app_sequence:
+        app_constants = get_app_constants(app_name)
+        # if players_per_group is None, 0, etc.
+        min_multiple = min_players_multiple(
+            app_constants.players_per_group
+        )
+        min_multiple_list.append(min_multiple)
+    return lcmm(*min_multiple_list)
+
+def augment_session_type(session_type):
+    new_session_type = {'doc': ''}
+    new_session_type.update(get_session_module().session_type_defaults)
+    new_session_type.update(session_type)
+    new_session_type['doc'] = new_session_type['doc'].strip()
+    return new_session_type
+
+def validate_session_type(session_type):
+
+
+    required_keys = {
+        'name',
+        'app_sequence',
+        'fixed_pay',
+        'num_bots',
+        'display_name',
+        'money_per_point',
+        'num_demo_participants',
+        'doc',
+        'vars',
+        'show_on_demo_page',
+        'group_by_arrival_time',
+    }
+
+    for key in required_keys:
+        if key not in session_type:
+        msg = (
+            'Required attribute SessionType.{} is missing or None'
+        )
+        raise AttributeError(msg.format(key))
+
+    st_name = session_type['name']
+    if not re.match(r'^\w+$', st_name):
+        msg = (
+            'Session "{}": name must be alphanumeric with no '
+            'spaces (underscores allowed).'
+        )
+        raise ValueError(msg.format(st_name))
+
+    app_sequence = session_type['app_sequence']
+    if len(app_sequence) != len(set(app_sequence)):
+        raise ValueError('app_sequence cannot contain duplicate elements')
+
+    if len(app_sequence) == 0:
+        raise ValueError('Need at least one subsession.')
+
 class SessionType(object):
 
     def __init__(self, **kwargs):
@@ -42,64 +99,11 @@ class SessionType(object):
 
         """
 
-        attrs = [
-            'name',
-            'app_sequence',
-            'fixed_pay',
-            'num_bots',
-            'display_name',
-            'money_per_point',
-            'num_demo_participants',
-            'doc',
-            'vars',
-            'show_on_demo_page',
-            'group_by_arrival_time',
-        ]
-
-        for attr_name in attrs:
-            attr_value = kwargs.get(attr_name)
-            if attr_value is not None:
-                setattr(self, attr_name, attr_value)
-            if getattr(self, attr_name, None) is None:
-                if attr_name == 'doc':
-                    self.doc = ''
-                if attr_name == 'vars':
-                    self.vars = {}
-                else:
-                    msg = (
-                        'Required attribute SessionType.{} is missing or None'
-                    )
-                    raise AttributeError(msg.format(attr_name))
-
-        if not re.match(r'^\w+$', self.name):
-            msg = (
-                'Session "{}": name must be alphanumeric with no '
-                'spaces (underscores allowed).'
-            )
-            raise ValueError(msg.format(self.name))
-
-        if len(self.app_sequence) != len(set(self.app_sequence)):
-            raise ValueError('app_sequence cannot contain duplicate elements')
-
-        if len(self.app_sequence) == 0:
-            raise ValueError('Need at least one subsession.')
-
-        self.doc = self.doc.strip()
 
     def __repr__(self):
         mem = hex(id(self))
         return "<SessionType '{}' at {}>".format(self.name, mem)
 
-    def lcm(self):
-        min_multiple_list = []
-        for app_name in self.app_sequence:
-            app_constants = get_app_constants(app_name)
-            # if players_per_group is None, 0, etc.
-            min_multiple = min_players_multiple(
-                app_constants.players_per_group
-            )
-            min_multiple_list.append(min_multiple)
-        return lcmm(*min_multiple_list)
 
 
 # =============================================================================
@@ -107,11 +111,11 @@ class SessionType(object):
 # =============================================================================
 
 def get_session_types_list(demo_only=False):
-    session_types = get_session_module().session_types()
+    session_types = get_session_module().session_types
     if demo_only:
         return [
             session_type for session_type in session_types
-            if session_type.show_on_demo_page
+            if session_type['show_on_demo_page']
         ]
     else:
         return session_types

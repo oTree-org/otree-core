@@ -213,7 +213,7 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
             self.session_name
         ))
         sssn = session.create_session(
-            session_type_name=self.session_name,
+            session_type=session.get_session_types_dict()[self.session_name],
             special_category=constants.session_special_category_bots,
         )
         sssn.label = '{} [bots]'.format(self.session_name)

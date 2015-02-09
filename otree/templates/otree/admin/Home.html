@@ -16,7 +16,7 @@
             <tr>
                 <td><a href="{% url 'session_description' s.pk %}">{{ s.code }}</a></td>
                 <td>{{ s.label }}</td>
-                <td>{{ s.session_type_name }}</td>
+                <td>{{ s.session_type.name }}</td>
                 <td>
                     <!-- Split button -->
                     <div class="btn-group">
