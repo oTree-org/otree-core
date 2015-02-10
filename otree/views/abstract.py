@@ -30,6 +30,7 @@ import contextlib
 import time
 
 from django.db import transaction
+from django.db.models import Q
 from django.conf import settings
 from django.shortcuts import get_object_or_404, get_list_or_404
 from django.template.response import TemplateResponse
@@ -52,7 +53,7 @@ import otree.models
 import otree.models.session as seq_models
 import otree.constants as constants
 from otree.models.session import (
-    Participant, GlobalSingleton, lock_on_this_code_path
+    Session, Participant, GlobalSingleton, lock_on_this_code_path
 )
 
 from otree.models_concrete import (
@@ -775,12 +776,12 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
                 return False
         return True
 
-    def retrieve_existing_participant_with_these_params(self, open_session):
+    def retrieve_existing_participant_with_these_params(self, default_session):
         params = {
             field_name: self.request.GET[get_param_name]
             for field_name, get_param_name in self.required_params.items()
         }
-        return Participant.objects.get(session=open_session, **params)
+        return Participant.objects.get(session=default_session, **params)
 
     def set_external_params_on_participant(self, participant):
         for field_name, get_param_name in self.required_params.items():
@@ -797,9 +798,9 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
             )
 
         global_singleton = otree.models.session.GlobalSingleton.objects.get()
-        open_session = global_singleton.open_session
+        default_session = global_singleton.default_session
 
-        if not open_session:
+        if not default_session:
             return HttpResponseNotFound(
                 'No session is currently open. Make sure to create '
                 'a session and set is as open.'
@@ -811,7 +812,7 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
         try:
             participant = (
                 self.retrieve_existing_participant_with_these_params(
-                    open_session
+                    default_session
                 )
             )
         except Participant.DoesNotExist:
@@ -819,7 +820,7 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
                 try:
                     participant = (
                         Participant.objects.select_for_update().filter(
-                            session=open_session,
+                            session=default_session,
                             visited=False
                         )
                     )[0]
@@ -849,8 +850,9 @@ class AdminSessionPageMixin(object):
 
     def get_context_data(self, **kwargs):
         context = super(AdminSessionPageMixin, self).get_context_data(**kwargs)
-        other_sessions = get_list_or_404(otree.models.Session)
-        other_sessions.remove(self.session)
+        other_sessions = Session.objects.filter(Q(hidden=False) &
+                                                ~Q(special_category=otree.constants.session_special_category_demo) &
+                                                ~Q(pk=self.session.pk))
         context.update({'session': self.session,
                         'other_sessions': other_sessions,
                         'is_demo': self.is_demo,

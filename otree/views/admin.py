@@ -320,16 +320,16 @@ class MTurkInfo(vanilla.TemplateView):
         )
 
         global_singleton = otree.models.session.GlobalSingleton.objects.get()
-        open_session = global_singleton.open_session
+        default_session = global_singleton.default_session
 
         from otree.views.concrete import AssignVisitorToOpenSessionMTurk
-        open_session_url = self.request.build_absolute_uri(
+        default_session_url = self.request.build_absolute_uri(
             AssignVisitorToOpenSessionMTurk.url()
         )
         context.update({
             'mturk_hit_page_js_url': hit_page_js_url,
-            'mturk_open_session_url': open_session_url,
-            'open_session': open_session,
+            'mturk_default_session_url': default_session_url,
+            'default_session': default_session,
         })
 
         return context
@@ -352,27 +352,27 @@ class PersistentLabURLs(vanilla.TemplateView):
 
         # open session stuff
         from otree.views.concrete import AssignVisitorToOpenSession
-        open_session_base_url = self.request.build_absolute_uri(
+        default_session_base_url = self.request.build_absolute_uri(
             AssignVisitorToOpenSession.url()
         )
-        open_session_example_urls = []
+        default_session_example_urls = []
         for i in range(1, 20):
-            open_session_example_urls.append(
+            default_session_example_urls.append(
                 add_params_to_url(
-                    open_session_base_url,
+                    default_session_base_url,
                     {otree.constants.participant_label: 'P{}'.format(i)}
                 )
             )
         global_singleton = otree.models.session.GlobalSingleton.objects.get()
-        open_session = global_singleton.open_session
+        default_session = global_singleton.default_session
 
         context.update({
-            'open_session_example_urls': open_session_example_urls,
+            'default_session_example_urls': default_session_example_urls,
             'access_code_for_open_session': (
                 otree.constants.access_code_for_open_session
             ),
             'participant_label': otree.constants.participant_label,
-            'open_session': open_session,
+            'default_session': default_session,
         })
         return context
 
@@ -763,8 +763,8 @@ class AdminHome(vanilla.ListView):
     def get_context_data(self, **kwargs):
         context = super(AdminHome, self).get_context_data(**kwargs)
         global_singleton = otree.models.session.GlobalSingleton.objects.get()
-        open_session = global_singleton.open_session
-        context.update({'open_session': open_session})
+        default_session = global_singleton.default_session
+        context.update({'default_session': default_session})
         return context
 
     def get_queryset(self):

@@ -272,33 +272,72 @@ class AdvanceSession(vanilla.View):
         return HttpResponseRedirect(redirect_url)
 
 
-class OpenSession(vanilla.View):
+class SetDefaultSession(vanilla.View):
+    '''
+        This view sets the default ("landing") session
+        for persistent urls and amt urls.
+        Globally we can have only one default_session.
+    '''
 
     @classmethod
     def url_pattern(cls):
-        return r'^OpenSession/(?P<{}>[0-9]+)/$'.format('session_pk')
+        return r'^SetDefaultSession/(?P<{}>[0-9]+)/$'.format('session_pk')
 
     @classmethod
     def url_name(cls):
-        return 'session_open'
+        return 'set_default_session'
 
     @classmethod
     def url(cls, session):
-        return '/OpenSession/{}/'.format(session.pk)
+        return '/SetDefaultSession/{}/'.format(session.pk)
 
     def dispatch(self, request, *args, **kwargs):
         self.session = get_object_or_404(
             otree.models.session.Session, pk=kwargs['session_pk']
         )
-        response = super(OpenSession, self).dispatch(
+        response = super(SetDefaultSession, self).dispatch(
             request, *args, **kwargs
         )
         return response
 
     def get(self, request, *args, **kwargs):
         global_singleton = otree.models.session.GlobalSingleton.objects.get()
-        global_singleton.open_session = self.session
+        global_singleton.default_session = self.session
         global_singleton.save()
-        messages.success(request, "The session %s was open" % self.session.code)
+        #messages.success(request, "The session %s is set as a default" % self.session.code)
+        redirect_url = reverse('admin_home')
+        return HttpResponseRedirect(redirect_url)
+
+
+class UnsetDefaultSession(vanilla.View):
+    '''
+        This view unsets the default ("landing") session
+        for persistent urls and amt urls.
+        This is the opposite action to SetDefaultSession
+    '''
+
+    @classmethod
+    def url_pattern(cls):
+        return r'^UnsetDefaultSession/'
+
+    @classmethod
+    def url_name(cls):
+        return 'unset_default_session'
+
+    @classmethod
+    def url(cls, session):
+        return '/UnsetDefaultSession/'
+
+    def dispatch(self, request, *args, **kwargs):
+        response = super(UnsetDefaultSession, self).dispatch(
+            request, *args, **kwargs
+        )
+        return response
+
+    def get(self, request, *args, **kwargs):
+        global_singleton = otree.models.session.GlobalSingleton.objects.get()
+        global_singleton.default_session = None
+        global_singleton.save()
+        #messages.success(request, "The session %s is set as a default" % self.session.code)
         redirect_url = reverse('admin_home')
         return HttpResponseRedirect(redirect_url)

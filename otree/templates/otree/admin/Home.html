@@ -7,6 +7,13 @@ oTree Admin
 
 {% block content %}
 {{ block.super }}
+<!--bootstrap initialize popover-->
+<script type="text/javascript" charset="utf-8">
+$(function () {
+  $('[data-toggle="popover"]').popover()
+})
+</script>
+<!--end bootstrap initialize popover-->
 {% include 'otree/TopMenu.html' %}
 {% if object_list %}
 <table class="table">
@@ -19,35 +26,32 @@ oTree Admin
     <tbody>
     {% for s in object_list %}
     <tr>
-        <td><a href="{% url 'session_description' s.pk %}">{{ s.code }}</a></td>
+        <td><a href="{% url 'session_description' s.pk %}" target="_blank">{{ s.code }}</a></td>
         <td>{{ s.label }}</td>
         <td>{{ s.session_type_name }}</td>
         <td>
-            <a href="{% url 'session_edit' s.pk %}" target="_blank" class="btn btn-primary btn-xs" role="button">
+            <a href="{% url 'session_edit' s.pk %}" target="_blank" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-pencil"></span> Edit
             </a>
-            <a href="{% url 'session_monitor' s.pk %}" target="_blank" class="btn btn-primary btn-xs" role="button">
+            <a href="{% url 'session_monitor' s.pk %}" target="_blank" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-eye-open"></span> Monitor
             </a>
-            <a href="{% url 'session_results' s.pk %}" target="_blank" class="btn btn-primary btn-xs" role="button">
+            <a href="{% url 'session_results' s.pk %}" target="_blank" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-list-alt"></span> Results
             </a>
-            <a href="{% url 'session_payments' s.pk %}" target="_blank" class="btn btn-primary btn-xs" role="button">
+            <a href="{% url 'session_payments' s.pk %}" target="_blank" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-usd"></span> Payments
             </a>
-            <a href="{% url 'session_start_links' s.pk %}" target="_blank" class="btn btn-primary btn-xs" role="button">
+            <a href="{% url 'session_start_links' s.pk %}" target="_blank" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-link"></span> Links
             </a>
-            <a href="{% url 'session_start_links' s.pk %}" target="_blank" class="btn btn-primary btn-xs" role="button">
-                <span class="glyphicon glyphicon-export"></span> Export
-            </a>
-            {% if s != open_session %}
-            <a href="{% url 'session_open' s.pk %}" class="btn btn-primary btn-xs" role="button">
-                <span class="glyphicon glyphicon-lock"></span> Open
+            {% if s != default_session %}
+            <a href="{% url 'set_default_session' s.pk %}" class="btn btn-primary btn-sm" data-toggle="popover" data-trigger="hover" data-content="You can route the participants to this session by clicking the button.">
+                <span class="glyphicon glyphicon-info-sign"></span> Default
             </a>
             {% else %}
-            <a href="{% url 'session_open' s.pk %}" class="btn btn-success btn-xs" role="button">
-                <span class="glyphicon glyphicon-lock"></span> Opened
+            <a href="{% url 'unset_default_session' %}" class="btn btn-success btn-sm" data-toggle="popover" data-trigger="hover" data-content="The participants are routed to this session. By clicking the button you can unset it.">
+                <span class="glyphicon glyphicon-info-sign"></span> Default
             </a>
             {% endif %}
         </td>
@@ -59,5 +63,4 @@ oTree Admin
     <p>No sessions available.</p>
 {% endif %}
 <p><a class="btn btn-primary btn" href="{% url 'session_types_create' %}">Create new session</a></p>
-{% include "otree/messages.html" %}
 {% endblock %}
