@@ -59,6 +59,9 @@ Dashboard for session
         <li role="presentation" class="{% active_page request 'session_description' %}">
         <a href="{% url 'session_description' session.pk %}"><span class="glyphicon glyphicon-home"></span> Description</a>
         </li>
+        <li role="presentation" class="{% active_page request 'session_start_links' %}">
+        <a href="{% url 'session_start_links' session.pk %}"><span class="glyphicon glyphicon-link"></span> Links</a>
+        </li>
         <li role="presentation" class="{% active_page request 'session_edit' %}">
         <a href="{% url 'session_edit' session.pk %}"><span class="glyphicon glyphicon-pencil"></span> Edit
         </a>
@@ -70,9 +73,6 @@ Dashboard for session
         <a href="{% url 'session_results' session.pk %}"><span class="glyphicon glyphicon-list-alt"></span> Results</a></li>
         <li role="presentation" class="{% active_page request 'session_payments' %}">
         <a href="{% url 'session_payments' session.pk %}"><span class="glyphicon glyphicon-usd"></span> Payments</a>
-        </li>
-        <li role="presentation" class="{% active_page request 'session_start_links' %}">
-        <a href="{% url 'session_start_links' session.pk %}"><span class="glyphicon glyphicon-link"></span> Links</a>
         </li>
         {% if is_demo %}
         <li role="presentation">
