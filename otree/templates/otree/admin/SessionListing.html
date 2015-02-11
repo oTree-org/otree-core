@@ -4,6 +4,11 @@
     Choose a session type to create
 {% endblock %}
 
+{% block content_at_top_of_body %}
+{{ block.super }}
+{% include 'otree/TopMenu.html' %}
+{% endblock %}
+
 {% block content %}
 
 {% for s in session_types_info %}
