@@ -49,9 +49,12 @@ Dashboard for session
 {% endif %}
 {% endblock %}
 
-
-{% block content %}
+{% block content_at_top_of_body %}
+{{ block.super }}
 {% include 'otree/TopMenu.html' %}
+{% endblock %}
+
+{% block menus %}
 <nav class="navbar">
   <div class="container-fluid">
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
