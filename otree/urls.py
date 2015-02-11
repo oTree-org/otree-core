@@ -10,6 +10,8 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.contrib import admin
 from django.views.generic.base import RedirectView
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
+
 
 import vanilla
 
@@ -38,12 +40,39 @@ def url_patterns_from_module(module_name):
         inspect.getmodule(ViewCls) == views_module
     ]
 
+    # see issue #273 for discussion of AUTH_LEVEL setting
+    if settings.DEBUG and settings.AUTH_LEVEL not in ['DEMO', 'EXPERIMENT']:
+        AUTH_LEVEL = 'FULL'
+    elif not settings.DEBUG and settings.AUTH_LEVEL not in ['DEMO', 'EXPERIMENT']:
+        AUTH_LEVEL = 'EXPERIMENT'
+    else:
+        AUTH_LEVEL = settings.AUTH_LEVEL
+    
+    restricted_views_demo = ['SessionTypesToCreate', 'CreateSession', 'AdminHome',
+                             'MTurkInfo', 'PersistentLabURLs']
+
+    restricted_views_experiment = restricted_views_demo + ['SessionDescription', 'SessionMonitor',
+                                                           'SessionResults', 'SessionStartLinks',
+                                                           'SessionPayments', 'DemoIndex',
+                                                           'CreateDemoSession']
+    if AUTH_LEVEL == 'DEMO':
+        restricted_views = restricted_views_demo
+    elif AUTH_LEVEL == 'EXPERIMENT':
+        restricted_views = restricted_views_experiment
+    else:
+        restricted_views = []
+
     view_urls = []
     for ViewCls in all_views:
-        if hasattr(ViewCls, 'url_name'):
-            view_urls.append(urls.url(ViewCls.url_pattern(), ViewCls.as_view(), name=ViewCls.url_name()))
+        if ViewCls.__name__ in restricted_views:
+            as_view = login_required(ViewCls.as_view())
         else:
-            view_urls.append(urls.url(ViewCls.url_pattern(), ViewCls.as_view()))
+            as_view = ViewCls.as_view()
+
+        if hasattr(ViewCls, 'url_name'):
+            view_urls.append(urls.url(ViewCls.url_pattern(), as_view, name=ViewCls.url_name()))
+        else:
+            view_urls.append(urls.url(ViewCls.url_pattern(), as_view))
 
     return urls.patterns('', *view_urls)
 
@@ -53,6 +82,7 @@ def augment_urlpatterns(urlpatterns):
     urlpatterns += urls.patterns(
         '',
         urls.url(r'^$', RedirectView.as_view(url='/demo'), name='demo'),
+        urls.url(r'^accounts/login/$', 'django.contrib.auth.views.login', {'template_name': 'otree/login.html'}),
         #urls.url(r'^admin/', urls.include(admin.site.urls)),
     )
 
