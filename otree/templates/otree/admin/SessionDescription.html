@@ -1,5 +1,6 @@
 {% extends "otree/admin/Session.html" %}
 
-{% block real_content %}
+{% block content %}
+{{ block.super }}
 {% include 'otree/SessionInfo.html' %}
 {% endblock %}

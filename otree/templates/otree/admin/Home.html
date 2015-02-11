@@ -2,47 +2,65 @@
 {% load otree_tags floppyforms %}
 
 {% block title %}
-    oTree Admin
+oTree Admin
 {% endblock %}
 
 {% block content %}
-
-    <p>Welcome to the oTree Admin.</p>
-    {% if object_list %}
-
-        <p>Click on a session below.</p>
-        <table class="table">
-        {% for s in object_list %}
-            <tr>
-                <td><a href="{% url 'session_description' s.pk %}">{{ s.code }}</a></td>
-                <td>{{ s.label }}</td>
-                <td>{{ s.session_type.name }}</td>
-                <td>
-                    <!-- Split button -->
-                    <div class="btn-group">
-                    <a class="btn btn-primary btn-sm" href="{% url 'session_edit' s.pk %}">Edit properties</a>
-                    <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                        <span class="caret"></span>
-                        <span class="sr-only">Toggle Dropdown</span>
-                    </button>
-                    <ul class="dropdown-menu" role="menu">
-                        <li><a href="{% url 'session_description' s.pk %}">Description</a></li>
-                        <li><a href="{% url 'session_monitor' s.pk %}">Monitor</a></li>
-                        <li><a href="{% url 'session_results' s.pk %}">Results</a></li>
-                        <li><a href="{% url 'session_payments' s.pk %}">Payments</a></li>
-                        <li><a href="{% url 'session_start_links' s.pk %}">Start Links</a></li>
-                    </ul>
-                </div>
-                </td>
-            </tr>
-        {% endfor %}
-        </table>
-
-    {% else %}
-
-        <p>No sessions available.</p>
-
-    {% endif %}
-    <p><a class="btn btn-primary btn-sm" href="{% url 'session_types_create' %}">Create new session</a></p>
-
+{{ block.super }}
+<!--bootstrap initialize popover-->
+<script type="text/javascript" charset="utf-8">
+$(function () {
+  $('[data-toggle="popover"]').popover()
+})
+</script>
+<!--end bootstrap initialize popover-->
+{% include 'otree/TopMenu.html' %}
+{% if object_list %}
+<table class="table">
+    <thead>
+        <th>Code</th>
+        <th>Label</th>
+        <th>Type</th>
+        <th></th>
+    </thead>
+    <tbody>
+    {% for s in object_list %}
+    <tr>
+        <td><a href="{% url 'session_description' s.pk %}" target="_blank">{{ s.code }}</a></td>
+        <td>{{ s.label }}</td>
+        <td>{{ s.session_type_name }}</td>
+        <td>
+            <a href="{% url 'session_edit' s.pk %}" target="_blank" class="btn btn-primary btn-sm" role="button">
+                <span class="glyphicon glyphicon-pencil"></span> Edit
+            </a>
+            <a href="{% url 'session_monitor' s.pk %}" target="_blank" class="btn btn-primary btn-sm" role="button">
+                <span class="glyphicon glyphicon-eye-open"></span> Monitor
+            </a>
+            <a href="{% url 'session_results' s.pk %}" target="_blank" class="btn btn-primary btn-sm" role="button">
+                <span class="glyphicon glyphicon-list-alt"></span> Results
+            </a>
+            <a href="{% url 'session_payments' s.pk %}" target="_blank" class="btn btn-primary btn-sm" role="button">
+                <span class="glyphicon glyphicon-usd"></span> Payments
+            </a>
+            <a href="{% url 'session_start_links' s.pk %}" target="_blank" class="btn btn-primary btn-sm" role="button">
+                <span class="glyphicon glyphicon-link"></span> Links
+            </a>
+            {% if s != default_session %}
+            <a href="{% url 'set_default_session' s.pk %}" class="btn btn-primary btn-sm" data-toggle="popover" data-trigger="hover" data-content="You can route the participants to this session by clicking the button.">
+                <span class="glyphicon glyphicon-info-sign"></span> Default
+            </a>
+            {% else %}
+            <a href="{% url 'unset_default_session' %}" class="btn btn-success btn-sm" data-toggle="popover" data-trigger="hover" data-content="The participants are routed to this session. By clicking the button you can unset it.">
+                <span class="glyphicon glyphicon-info-sign"></span> Default
+            </a>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+    <p>No sessions available.</p>
+{% endif %}
+<p><a class="btn btn-primary btn" href="{% url 'session_types_create' %}">Create new session</a></p>
 {% endblock %}

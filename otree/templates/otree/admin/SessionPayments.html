@@ -1,5 +1,6 @@
 {% extends "otree/admin/Session.html" %}
-{% block real_content %}
+{% block content %}
+{{ block.super }}
 <div class="container" style='max-width:970px'>
     <p>
     PDF generated: <strong>{% now "DATETIME_FORMAT" %}</strong>

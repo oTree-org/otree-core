@@ -23,14 +23,14 @@ class GlobalSingleton(models.Model):
 
     # TODO: move to otree.models_concrete
 
-    open_session = models.ForeignKey('Session', null=True, blank=True)
+    default_session = models.ForeignKey('Session', null=True, blank=True)
     admin_access_code = models.RandomCharField(
         length=8, doc=('used for authentication to things only the '
                        'admin/experimenter should access')
     )
 
     class Meta:
-        verbose_name = 'Set open session'
+        verbose_name = 'Set default session'
         verbose_name_plural = verbose_name
 
 @contextlib.contextmanager
@@ -157,7 +157,7 @@ class Session(ModelWithVars):
         return self.code
 
     def is_open(self):
-        return GlobalSingleton.objects.get().open_session == self
+        return GlobalSingleton.objects.get().default_session == self
 
     def subsession_names(self):
         names = []

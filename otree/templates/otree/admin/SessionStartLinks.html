@@ -1,13 +1,22 @@
 {% extends "otree/admin/Session.html" %}
 
 
-{% block real_content %}
+{% block content %}
+{{ block.super }}
     <p>
         Open each link in its own browser tab.
     </p>
-    <h4>Participant links</h4>
+    <h4>Participant links:</h4>
+    <p>
     {% for participant_url in participant_urls %}
             <a href="{{ participant_url }}" class="participant-link" target="_blank">{{ participant_url }}</a>
             <br/>
     {% endfor %}
+    </p>
+    <p>
+    To run your experiment in Lab checkout <a href="{% url 'persistent_lab_urls' %}">Persistent URLs</a> page.
+    </p>
+    <p>
+    To run your experiment on Amazon Mturk checkout <a href="{% url 'mturk_info' %}">AMT Integration</a> page.
+    </p>
 {% endblock %}

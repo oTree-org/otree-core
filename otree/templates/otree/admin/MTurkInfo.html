@@ -5,19 +5,31 @@
 {% endblock %}
 
 {% block content %}
+{% include 'otree/TopMenu.html' %}
+<p>Paste the following code into the HIT page on <a href="https://requester.mturk.com/" target="_blank">Amazon Mechanical Turk</a></p>
 
-    <p>paste the below into the HIT page on mturk.com</p>
-
-    <pre>
-        <code>
-            Click
-            <a href="{{ mturk_open_session_url }}" id="start_url" target="_blank">
-                here
-            </a>
-            to start.
-            <script type="text/javascript" src="{{ mturk_hit_page_js_url }}"></script>
-        </code>
-    </pre>
-
+<code>
+<pre>
+    Click
+    &lt;a href=&quot;{{ mturk_default_session_url }}&quot; id=&quot;start_url&quot; target=&quot;_blank&quot;&gt;
+    here
+    &lt;/a&gt; 
+    to start.
+    &lt;script type=&quot;text/javascript&quot; src=&quot;{{ mturk_hit_page_js_url }}&quot;&gt;&lt;/script&gt;
+</pre>
+</code>
+{% if default_session %}
+<div class="alert alert-info" role="alert">
+    Your current default session is 
+    <a href="{% url 'session_description' default_session.pk %}" target="_blank">{{ default_session.code }}</a>.
+    All participants are going to be routed to this session.
+</div>
+{% else %}
+<div class="alert alert-warning" role="alert">
+    The default session is currently not set.
+    Before launching your experiment set the default session
+    via <a href="{% url 'admin_home' %}" target="_blank">admin interface</a> to route
+    the participants to it.
+</div>
+{% endif %}
 {% endblock %}
-

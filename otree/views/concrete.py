@@ -11,6 +11,7 @@ import time
 import vanilla
 
 import django.utils.timezone
+from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
@@ -245,23 +246,17 @@ class AdvanceSession(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r'^AdvanceSession/(?P<{}>[0-9]+)/(?P<{}>[a-z]+)/$'.format(
-            'session_pk', constants.admin_access_code
-        )
+        return r'^AdvanceSession/(?P<{}>[0-9]+)/$'.format('session_pk')
+
+    @classmethod
+    def url_name(cls):
+        return 'session_advance'
 
     @classmethod
     def url(cls, session):
-        gs = otree.models.session.GlobalSingleton.objects.get()
-        return '/AdvanceSession/{}/{}/'.format(
-            session.pk, gs.admin_access_code
-        )
+        return '/AdvanceSession/{}/'.format(session.pk)
 
     def dispatch(self, request, *args, **kwargs):
-        gs = otree.models.session.GlobalSingleton.objects.get()
-        if not kwargs.get(constants.admin_access_code) == gs.admin_access_code:
-            return HttpResponseNotFound(
-                'incorrect or missing admin access code'
-            )
         self.session = get_object_or_404(
             otree.models.session.Session, pk=kwargs['session_pk']
         )
@@ -273,5 +268,76 @@ class AdvanceSession(vanilla.View):
 
     def get(self, request, *args, **kwargs):
         self.session.advance_last_place_participants()
-        admin_url = otree.views.admin.SessionHome.url(self.session.pk)
-        return HttpResponseRedirect(admin_url)
+        redirect_url = reverse('session_monitor', args=(self.session.pk,))
+        return HttpResponseRedirect(redirect_url)
+
+
+class SetDefaultSession(vanilla.View):
+    '''
+        This view sets the default ("landing") session
+        for persistent urls and amt urls.
+        Globally we can have only one default_session.
+    '''
+
+    @classmethod
+    def url_pattern(cls):
+        return r'^SetDefaultSession/(?P<{}>[0-9]+)/$'.format('session_pk')
+
+    @classmethod
+    def url_name(cls):
+        return 'set_default_session'
+
+    @classmethod
+    def url(cls, session):
+        return '/SetDefaultSession/{}/'.format(session.pk)
+
+    def dispatch(self, request, *args, **kwargs):
+        self.session = get_object_or_404(
+            otree.models.session.Session, pk=kwargs['session_pk']
+        )
+        response = super(SetDefaultSession, self).dispatch(
+            request, *args, **kwargs
+        )
+        return response
+
+    def get(self, request, *args, **kwargs):
+        global_singleton = otree.models.session.GlobalSingleton.objects.get()
+        global_singleton.default_session = self.session
+        global_singleton.save()
+        #messages.success(request, "The session %s is set as a default" % self.session.code)
+        redirect_url = reverse('admin_home')
+        return HttpResponseRedirect(redirect_url)
+
+
+class UnsetDefaultSession(vanilla.View):
+    '''
+        This view unsets the default ("landing") session
+        for persistent urls and amt urls.
+        This is the opposite action to SetDefaultSession
+    '''
+
+    @classmethod
+    def url_pattern(cls):
+        return r'^UnsetDefaultSession/'
+
+    @classmethod
+    def url_name(cls):
+        return 'unset_default_session'
+
+    @classmethod
+    def url(cls, session):
+        return '/UnsetDefaultSession/'
+
+    def dispatch(self, request, *args, **kwargs):
+        response = super(UnsetDefaultSession, self).dispatch(
+            request, *args, **kwargs
+        )
+        return response
+
+    def get(self, request, *args, **kwargs):
+        global_singleton = otree.models.session.GlobalSingleton.objects.get()
+        global_singleton.default_session = None
+        global_singleton.save()
+        #messages.success(request, "The session %s is set as a default" % self.session.code)
+        redirect_url = reverse('admin_home')
+        return HttpResponseRedirect(redirect_url)
