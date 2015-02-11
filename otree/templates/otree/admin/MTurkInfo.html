@@ -4,8 +4,12 @@
     Amazon Mechanical Turk: HTML snippet
 {% endblock %}
 
-{% block content %}
+{% block content_at_top_of_body %}
+{{ block.super }}
 {% include 'otree/TopMenu.html' %}
+{% endblock %}
+
+{% block content %}
 <p>Paste the following code into the HIT page on <a href="https://requester.mturk.com/" target="_blank">Amazon Mechanical Turk</a></p>
 
 <code>

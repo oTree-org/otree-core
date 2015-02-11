@@ -35,7 +35,7 @@
             <div class="page-header" style="padding-top: 40px">
                 <h2>{% block title %}{% endblock %}</h2>
             </div>
-
+            {% block menus %}{% endblock %}
             <div>
 
                 {% if view.has_timeout %}

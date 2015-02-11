@@ -416,7 +416,7 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
 
     def _response_when_ready(self):
         session = Session.objects.get(_pre_create_id=self._pre_create_id)
-        session_home_url = reverse('session_description', args=(session.pk,))
+        session_home_url = reverse('session_start_links', args=(session.pk,))
         return HttpResponseRedirect(session_home_url)
 
     def dispatch(self, request, *args, **kwargs):

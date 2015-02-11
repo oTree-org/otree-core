@@ -30,6 +30,9 @@ $(function () {
         <td>{{ s.label }}</td>
         <td>{{ s.session_type.name }}</td>
         <td>
+            <a href="{% url 'session_start_links' s.pk %}" target="_blank" class="btn btn-primary btn-sm" role="button">
+                <span class="glyphicon glyphicon-link"></span> Links
+            </a>
             <a href="{% url 'session_edit' s.pk %}" target="_blank" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-pencil"></span> Edit
             </a>
@@ -41,9 +44,6 @@ $(function () {
             </a>
             <a href="{% url 'session_payments' s.pk %}" target="_blank" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-usd"></span> Payments
-            </a>
-            <a href="{% url 'session_start_links' s.pk %}" target="_blank" class="btn btn-primary btn-sm" role="button">
-                <span class="glyphicon glyphicon-link"></span> Links
             </a>
             {% if s != default_session %}
             <a href="{% url 'set_default_session' s.pk %}" class="btn btn-primary btn-sm" data-toggle="popover" data-trigger="hover" data-content="You can route the participants to this session by clicking the button.">
