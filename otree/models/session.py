@@ -248,6 +248,7 @@ class Session(ModelWithVars):
         num_pages_in_each_app = {}
         for app_name in subsession_app_names:
             views_module = otree.common_internal.get_views_module(app_name)
+
             num_pages = len(views_module.page_sequence)
             num_pages_in_each_app[app_name] = num_pages
 
