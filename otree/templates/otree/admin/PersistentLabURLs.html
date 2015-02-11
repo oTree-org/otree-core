@@ -4,8 +4,12 @@
     Persistent Lab URLs
 {% endblock %}
 
-{% block content %}
+{% block content_at_top_of_body %}
+{{ block.super }}
 {% include 'otree/TopMenu.html' %}
+{% endblock %}
+
+{% block content %}
 
     <p>
     Here are some example persistent URLs you can use in the lab. They will stay constant for new sessions, even if the database is recreated.
