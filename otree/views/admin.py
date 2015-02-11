@@ -472,7 +472,7 @@ class CreateSession(vanilla.FormView):
     def form_valid(self, form):
         pre_create_id = uuid.uuid4().hex
         kwargs = {
-            'session_type': self.session_type,
+            'session_type_name': self.session_type['name'],
             'num_participants': form.cleaned_data['num_participants'],
             '_pre_create_id': pre_create_id,
         }
@@ -689,7 +689,7 @@ def info_about_session_type(session_type):
 
     app_sequence = []
     seo = set()
-    for app_name in session_type.app_sequence:
+    for app_name in session_type['app_sequence']:
         models_module = get_models_module(app_name)
         num_rounds = models_module.Constants.num_rounds
         formatted_app_name = app_name_format(app_name)
@@ -708,7 +708,7 @@ def info_about_session_type(session_type):
         seo.update(map(lambda (a, b): a, subsssn["keywords"]))
         app_sequence.append(subsssn)
     return {
-        'doc': session_type.doc,
+        'doc': session_type['doc'],
         'app_sequence': app_sequence,
         'page_seo': seo
     }
@@ -738,12 +738,12 @@ def keywords_links(keywords):
 def session_description_dict(session):
 
     context_data = {
-        'display_name': session.session_type.display_name,
+        'display_name': session.session_type['display_name'],
     }
 
     session_type = get_session_types_dict(
-        demo_only=True
-    )[session.session_type_name]
+
+    )[session.session_type['name']]
     context_data.update(info_about_session_type(session_type))
 
     return context_data

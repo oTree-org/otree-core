@@ -45,11 +45,57 @@ INSTALLED_OTREE_APPS = [
     'tests.simple_game_copy',
 ]
 
+SESSION_TYPE_DEFAULTS = {
+    'money_per_point': 0.01,
+    'demo_enabled': True,
+    'fixed_pay': 10.00,
+    'num_bots': 12,
+    'doc': "",
+    'group_by_arrival_time': False,
+}
+
+
+SESSION_TYPES =  [
+         {
+            'name':'simple_game',
+            'display_name':"Simple Game",
+            'num_demo_participants':1,
+            'app_sequence':['tests.simple_game'],
+            'doc':""""""
+    },
+        {
+            "name" : 'two_simple_games',
+            "display_name":"2 Simple Games",
+            "num_demo_participants":1,
+            "app_sequence":['tests.simple_game', 'tests.simple_game_copy'],
+            "doc":""""""
+    },
+    ]
+
+
+DEMO_PAGE_INTRO_TEXT = """
+<ul>
+    <li>
+        <a href="https://github.com/oTree-org/otree" target="_blank">
+            Source code
+        </a>
+        for the below games.
+    </li>
+    <li>
+        <a href="http://www.otree.org/" target="_blank">oTree homepage</a>.
+    </li>
+</ul>
+<p>
+    Below are various games implemented with oTree. These games are all open
+    source, and you can modify them as you wish to create your own variations.
+    Click one to learn more and play.
+</p>
+"""
+
+
 MIDDLEWARE_CLASSES = ()
 
 ROOT_URLCONF = 'otree.default_urls'
-
-SESSIONS_MODULE = 'tests.sessions'
 
 ACCESS_CODE_FOR_OPEN_SESSION = 'idd1610'
 

@@ -216,10 +216,10 @@ def pages_function(rules, **kwargs):
     if rules.module_exists('views'):
         views_module = rules.get_module('views')
         try:
-            page_list = views_module.pages()
+            page_list = views_module.page_sequence
         except:
-            rules.push_error('views.py: need a function pages() '
-                             'that returns a list of pages')
+            rules.push_error('views.py: need a list page_sequence '
+                             'that contains a list of pages')
             return
         else:
             for ViewCls in page_list:

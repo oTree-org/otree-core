@@ -28,7 +28,7 @@ $(function () {
     <tr>
         <td><a href="{% url 'session_description' s.pk %}" target="_blank">{{ s.code }}</a></td>
         <td>{{ s.label }}</td>
-        <td>{{ s.session_type_name }}</td>
+        <td>{{ s.session_type.name }}</td>
         <td>
             <a href="{% url 'session_edit' s.pk %}" target="_blank" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-pencil"></span> Edit

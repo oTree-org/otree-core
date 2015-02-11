@@ -84,7 +84,7 @@ class Session(ModelWithVars):
     session_type = models.PickleField(
         default=lambda: {},
         null=True,
-        doc="the session type, as defined in the programmer's sessions.py.",
+        doc="the session type, as defined in the programmer's settings.py.",
     )
 
     # label of this session instance
@@ -248,7 +248,7 @@ class Session(ModelWithVars):
         num_pages_in_each_app = {}
         for app_name in subsession_app_names:
             views_module = otree.common_internal.get_views_module(app_name)
-            num_pages = len(views_module.pages())
+            num_pages = len(views_module.page_sequence)
             num_pages_in_each_app[app_name] = num_pages
 
         for participant in self.get_participants():
@@ -362,7 +362,7 @@ class SessionUser(ModelWithVars):
             app_name = user._meta.app_config.name
             views_module = otree.common_internal.get_views_module(app_name)
             subsession_pages = (
-                [WaitUntilAssignedToGroup] + views_module.pages()
+                [WaitUntilAssignedToGroup] + views_module.page_sequence
             )
             pages.extend(subsession_pages)
         return pages

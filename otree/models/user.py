@@ -14,7 +14,7 @@ class User(SaveTheChange, models.Model):
 
     _index_in_game_pages = models.PositiveIntegerField(
         default=0,
-        doc='Index in the list of pages returned by views_module.pages()'
+        doc='Index in the list of pages  views_module.page_sequence'
     )
 
     session = models.ForeignKey(

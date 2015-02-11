@@ -10,7 +10,7 @@ from otree import constants
 from otree.models.user import Experimenter
 from otree.models.session import Session, SessionExperimenter, Participant
 from otree.common_internal import (
-    get_session_module, get_models_module, get_app_constants,
+     get_models_module, get_app_constants,
     min_players_multiple,
 )
 
@@ -34,7 +34,7 @@ def lcmm(*args):
 
 def get_lcm(session_type):
     min_multiple_list = []
-    for app_name in session_type.app_sequence:
+    for app_name in session_type['app_sequence']:
         app_constants = get_app_constants(app_name)
         # if players_per_group is None, 0, etc.
         min_multiple = min_players_multiple(
@@ -43,12 +43,7 @@ def get_lcm(session_type):
         min_multiple_list.append(min_multiple)
     return lcmm(*min_multiple_list)
 
-def augment_session_type(session_type):
-    new_session_type = {'doc': ''}
-    new_session_type.update(get_session_module().session_type_defaults)
-    new_session_type.update(session_type)
-    new_session_type['doc'] = new_session_type['doc'].strip()
-    return new_session_type
+
 
 def validate_session_type(session_type):
 
@@ -62,17 +57,15 @@ def validate_session_type(session_type):
         'money_per_point',
         'num_demo_participants',
         'doc',
-        'vars',
-        'show_on_demo_page',
         'group_by_arrival_time',
     }
 
     for key in required_keys:
         if key not in session_type:
-        msg = (
-            'Required attribute SessionType.{} is missing or None'
-        )
-        raise AttributeError(msg.format(key))
+            msg = (
+                'Required key "{}" is missing from  session_type: {} dictionary'
+            )
+            raise AttributeError(msg.format(key, session_type))
 
     st_name = session_type['name']
     if not re.match(r'^\w+$', st_name):
@@ -82,12 +75,27 @@ def validate_session_type(session_type):
         )
         raise ValueError(msg.format(st_name))
 
+
     app_sequence = session_type['app_sequence']
     if len(app_sequence) != len(set(app_sequence)):
         raise ValueError('app_sequence cannot contain duplicate elements')
 
     if len(app_sequence) == 0:
         raise ValueError('Need at least one subsession.')
+
+
+
+def augment_session_type(session_type):
+    new_session_type = {'doc': ''}
+    new_session_type.update(settings.SESSION_TYPE_DEFAULTS)
+    new_session_type.update(session_type)
+    #look up new_session_type
+    new_session_type['doc'] = new_session_type['doc'].strip()
+    validate_session_type(new_session_type)
+    return new_session_type
+
+
+
 
 class SessionType(object):
 
@@ -110,21 +118,16 @@ class SessionType(object):
 # FUNCTIONS
 # =============================================================================
 
-def get_session_types_list(demo_only=False):
-    session_types = get_session_module().session_types
-    if demo_only:
-        return [
-            session_type for session_type in session_types
-            if session_type['show_on_demo_page']
-        ]
-    else:
-        return session_types
 
 
-def get_session_types_dict(demo_only=False):
+def get_session_types_list():
+
+    return [augment_session_type(s) for s in settings.SESSION_TYPES]
+
+def get_session_types_dict():
     return {
-        session_type.name: session_type
-        for session_type in get_session_types_list(demo_only)
+        session_type['name']: session_type
+        for session_type in get_session_types_list()
     }
 
 
@@ -140,15 +143,15 @@ def create_session(session_type_name, label='', num_participants=None,
     try:
         session_type = get_session_types_dict()[session_type_name]
     except KeyError:
-        msg = 'Session type "{}" not found in sessions.py'
+        msg = 'Session type "{}" not found in settings.py'
         raise ValueError(
             msg.format(session_type_name)
         )
     session = Session.objects.create(
-        session_type_name=session_type.name,
-        label=label, fixed_pay=session_type.fixed_pay,
+        session_type=session_type,
+        label=label, fixed_pay=session_type['fixed_pay'],
         special_category=special_category,
-        money_per_point=session_type.money_per_point,
+        money_per_point=session_type['money_per_point'],
         session_experimenter=SessionExperimenter.objects.create(),
         _pre_create_id=_pre_create_id,
     )
@@ -162,17 +165,17 @@ def create_session(session_type_name, label='', num_participants=None,
 
     if num_participants is None:
         if special_category == constants.session_special_category_demo:
-            num_participants = session_type.num_demo_participants
+            num_participants = session_type['num_demo_participants']
         elif special_category == constants.session_special_category_bots:
-            num_participants = session_type.num_bots
+            num_participants = session_type['num_bots']
 
     # check that it divides evenly
-    session_lcm = session_type.lcm()
+    session_lcm = get_lcm(session_type)
     if num_participants % session_lcm:
         msg = (
             'SessionType {}: Number of participants ({}) does not divide '
             'evenly into group size ({})'
-        ).format(session_type.name, num_participants, session_lcm)
+        ).format(session_type['name'], num_participants, session_lcm)
         raise ValueError(msg)
 
     participants = bulk_create(
@@ -181,7 +184,7 @@ def create_session(session_type_name, label='', num_participants=None,
     )
 
     subsessions = []
-    for app_name in session_type.app_sequence:
+    for app_name in session_type['app_sequence']:
         if app_name not in settings.INSTALLED_OTREE_APPS:
             msg = ("Your session contains a subsession app named '{}'. "
                    "You need to add this to INSTALLED_OTREE_APPS "

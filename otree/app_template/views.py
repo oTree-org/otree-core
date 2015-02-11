@@ -42,8 +42,7 @@ class Results(Page):
     template_name = '{{ app_name }}/Results.html'
 
 
-def pages():
-    return [
+page_sequence =[
         MyPage,
         ResultsWaitPage,
         Results

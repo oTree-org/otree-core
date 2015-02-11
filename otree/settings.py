@@ -25,6 +25,11 @@ def collapse_to_unique_list(*args):
 
 
 def augment_settings(settings):
+    all_otree_apps_set = set()
+    for s in settings['SESSION_TYPES']:
+        for app in s['app_sequence']:
+            all_otree_apps_set.add(app)
+    all_otree_apps = list(all_otree_apps_set)
 
     # order is important:
     # otree unregisters User & Group, which are installed by auth.
@@ -44,8 +49,11 @@ def augment_settings(settings):
             'djcelery',
             'kombu.transport.django',
         ],
+
+
         settings['INSTALLED_APPS'],
-        settings['INSTALLED_OTREE_APPS']
+        all_otree_apps
+
     )
 
     new_template_dirs = collapse_to_unique_list(
@@ -79,7 +87,7 @@ def augment_settings(settings):
         'TEMPLATE_DIRS': new_template_dirs,
         'STATICFILES_DIRS': new_staticfiles_dirs,
         'MIDDLEWARE_CLASSES': new_middleware_classes,
-
+        'INSTALLED_OTREE_APPS': all_otree_apps,
         'BROKER_URL': 'django://',
         'CELERY_ACCEPT_CONTENT': ['pickle', 'json', 'msgpack', 'yaml'],
     }
@@ -172,7 +180,7 @@ def augment_settings(settings):
         'PAGE_FOOTER': page_footer,
         'SEO': (),
 
-        'SESSIONS_MODULE': 'sessions',
+
         'LOGGING': logging,
 
         'PAYMENT_CURRENCY_CODE': 'USD',

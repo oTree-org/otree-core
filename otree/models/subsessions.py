@@ -222,10 +222,6 @@ class BaseSubsession(models.Model):
         """Converts the sequence to URLs.
 
         e.g.:
-
-            pages() returns something like [views.IntroPage, ...]
-            pages_as_urls() returns something like ['mygame/IntroPage', ...]
-
         """
         return [
             View.url(self._experimenter.session_experimenter, index)

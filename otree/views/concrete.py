@@ -60,7 +60,7 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin,
     def _is_ready(self):
         if bool(self.group):
             return True
-        elif self.session.session_type.group_by_arrival_time:
+        elif self.session.session_type['group_by_arrival_time']:
             with lock_on_this_code_path():
                 if self.subsession.round_number == 1:
                     open_group = self.subsession._get_open_group()

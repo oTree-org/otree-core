@@ -83,11 +83,7 @@ def directory_name(path):
     return os.path.basename(os.path.normpath(path))
 
 
-def get_session_module():
-    base_dir_name = directory_name(settings.BASE_DIR)
-    module_name = getattr(settings, 'SESSIONS_MODULE',
-                          '{}.sessions'.format(base_dir_name))
-    return import_module(module_name)
+
 
 
 def get_models_module(app_name):

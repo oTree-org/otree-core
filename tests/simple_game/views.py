@@ -49,8 +49,7 @@ class Results(Page):
 
     template_name = 'simple_game/Results.html'
 
-def pages():
-    return [
+page_sequence =[
         MyPage,
         ResultsWaitPage,
         Results

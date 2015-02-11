@@ -335,7 +335,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         # we skip any page that is a sequence page where participate_condition
         # evaluates to False to eliminate unnecessary redirection
         views_module = get_views_module(self.subsession._meta.app_config.name)
-        pages = views_module.pages()
+        pages = views_module.page_sequence
 
         if self.__class__ in pages:
             pages_to_jump_by = 1

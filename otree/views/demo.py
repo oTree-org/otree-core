@@ -18,7 +18,7 @@ from otree.models.session import Session
 from otree.session import (
     create_session, get_session_types_dict, get_session_types_list
 )
-from otree.common_internal import get_session_module
+
 
 
 class DemoIndex(vanilla.TemplateView):
@@ -35,17 +35,17 @@ class DemoIndex(vanilla.TemplateView):
 
     def get_context_data(self, **kwargs):
 
-        intro_text = getattr(get_session_module(), 'demo_page_intro_text', '')
+        intro_text = settings.DEMO_PAGE_INTRO_TEXT
         context = super(DemoIndex, self).get_context_data(**kwargs)
 
         session_info = []
-        for session_type in get_session_types_list(demo_only=True):
+        for session_type in get_session_types_list():
             session_info.append(
                 {
-                    'name': session_type.name,
-                    'display_name': session_type.display_name,
-                    'url': reverse('create_demo_session', args=(session_type.name,)),
-                    'num_demo_participants': session_type.num_demo_participants
+                    'name': session_type['name'],
+                    'display_name': session_type['display_name'],
+                    'url': reverse('create_demo_session', args=(session_type['name'],)),
+                    'num_demo_participants': session_type['num_demo_participants']
                 }
             )
 
@@ -70,12 +70,13 @@ def ensure_enough_spare_sessions(session_type_name):
 
     spare_sessions = Session.objects.filter(
         special_category=constants.session_special_category_demo,
-        session_type_name=session_type_name,
+        #session_type_name=session_type_name,
         demo_already_used=False,
-    ).count()
+    )
+    spare_sessions = [s for s in spare_sessions if s.session_type['name'] == session_type_name ]
 
     # fill in whatever gap exists. want at least 3 sessions waiting.
-    for i in range(DESIRED_SPARE_SESSIONS - spare_sessions):
+    for i in range(DESIRED_SPARE_SESSIONS - len(spare_sessions)):
         create_session(
             special_category=constants.session_special_category_demo,
             session_type_name=session_type_name,
@@ -86,11 +87,12 @@ def get_session(session_type_name):
 
     sessions = Session.objects.filter(
         special_category=constants.session_special_category_demo,
-        session_type_name=session_type_name,
+        #session_type['name']=session_type_name,
         demo_already_used=False,
         ready=True,
     )
-    if sessions.exists():
+    sessions = [s for s in sessions if s.session_type['name'] == session_type_name ]
+    if len(sessions):
         return sessions[0]
 
 
@@ -109,7 +111,7 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.View):
         return bool(session)
 
     def _before_returning_wait_page(self):
-        session_types = get_session_types_dict(demo_only=True)
+        session_types = get_session_types_dict()
         try:
             session_types[self.session_type_name]
         except KeyError:
