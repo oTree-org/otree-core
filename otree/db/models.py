@@ -217,9 +217,16 @@ class NullBooleanField(_OtreeNullableModelFieldMixin, models.NullBooleanField):
                 (False, ugettext_lazy('No'))
             )
         super(NullBooleanField, self).__init__(*args, **kwargs)
-        self.blank = bool(kwargs.get("blank"))
+
+        # you cant override "blank" or you will destroy the migration system
+        self.allow_blank = bool(kwargs.get("blank"))
 
     auto_submit_default = False
+
+    def formfield(self, *args, **kwargs):
+        # this use the allow_blank for the form fields
+        kwargs["required"] = not self.allow_blank
+        return super(NullBooleanField, self).formfield(*args, **kwargs)
 
 
 class AutoField(_OtreeNullableModelFieldMixin, models.AutoField):

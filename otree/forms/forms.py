@@ -301,7 +301,7 @@ class BaseModelForm(forms.ModelForm):
 
                 if name in null_boolean_field_names and value is None:
                     mfield = self.instance._meta.get_field_by_name(name)[0]
-                    if not mfield.blank:
+                    if not mfield.allow_blank:
                         msg = _('This field is required.')
                         raise forms.ValidationError(msg)
 
