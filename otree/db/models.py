@@ -205,7 +205,7 @@ class PickleField(_OtreeNullableModelFieldMixin, PickleField):
     pass
 
 
-class NullBooleanField(_OtreeNullableModelFieldMixin, models.NullBooleanField):
+class BooleanField(_OtreeNullableModelFieldMixin, models.NullBooleanField):
     # 2014/3/28: i just define the allowable choices on the model field,
     # instead of customizing the widget since then it works for any widget
 
@@ -222,6 +222,11 @@ class NullBooleanField(_OtreeNullableModelFieldMixin, models.NullBooleanField):
         self.allow_blank = bool(kwargs.get("blank"))
 
     auto_submit_default = False
+
+    def clean(self, value, model_instance):
+        if value is None and self.allow_blank:
+            raise ValidationError("This field is required")
+        return super(BooleanField, self).clean(value, model_instance)
 
     def formfield(self, *args, **kwargs):
         # this use the allow_blank for the form fields
