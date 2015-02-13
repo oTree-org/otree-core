@@ -298,9 +298,12 @@ class BaseModelForm(forms.ModelForm):
                 else:
                     value = field.clean(value)
                 self.cleaned_data[name] = value
+
                 if name in null_boolean_field_names and value is None:
-                    msg = _('This field is required.')
-                    raise forms.ValidationError(msg)
+                    mfield = self.instance._meta.get_field_by_name(name)[0]
+                    if not mfield.blank:
+                        msg = _('This field is required.')
+                        raise forms.ValidationError(msg)
 
                 if hasattr(self.view, '%s_min' % name):
                     lower = getattr(self.view, '%s_min' % name)()

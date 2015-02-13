@@ -217,6 +217,7 @@ class NullBooleanField(_OtreeNullableModelFieldMixin, models.NullBooleanField):
                 (False, ugettext_lazy('No'))
             )
         super(NullBooleanField, self).__init__(*args, **kwargs)
+        self.blank = bool(kwargs.get("blank"))
 
     auto_submit_default = False
 
