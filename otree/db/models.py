@@ -224,7 +224,7 @@ class BooleanField(_OtreeNullableModelFieldMixin, models.NullBooleanField):
     auto_submit_default = False
 
     def clean(self, value, model_instance):
-        if value is None and self.allow_blank:
+        if value is None and not self.allow_blank:
             raise ValidationError("This field is required")
         return super(BooleanField, self).clean(value, model_instance)
 
