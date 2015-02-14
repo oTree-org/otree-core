@@ -36,9 +36,6 @@ FORMFIELD_OVERRIDES = FLOPPYFORMS_FORMFIELD_OVERRIDES.copy()
 FORMFIELD_OVERRIDES.update({
     # Overrides from fields defined in otree.db.models
 
-    models.NullBooleanField: {
-        'form_class': forms.NullBooleanField,
-        'choices_form_class': forms.TypedChoiceField},
     models.BigIntegerField: {
         'form_class': forms.IntegerField,
         'choices_form_class': forms.TypedChoiceField},
@@ -163,13 +160,13 @@ class BaseModelForm(forms.ModelForm):
     __metaclass__ = BaseModelFormMetaclass
 
     def __init__(self, *args, **kwargs):
-        """Special handling for 'choices' argument, NullBooleanFields, and
+        """Special handling for 'choices' argument, BooleanFields, and
         initial choice: If the user explicitly specifies a None choice
         (which is usually  rendered as '---------'), we should always respect
         it
 
         Otherwise:
-        If the field is a NullBooleanField:
+        If the field is a BooleanField:
             if it's rendered as a Select menu (which it is by default), it
             should have a None choice
         If the field is a RadioSelect:
@@ -274,16 +271,16 @@ class BaseModelForm(forms.ModelForm):
                 #        min_bound, max_bound
                 #    )
 
-    def null_boolean_field_names(self):
-        null_boolean_fields_in_model = [
+    def boolean_field_names(self):
+        boolean_fields_in_model = [
             field.name for field in self.Meta.model._meta.fields
-            if isinstance(field, models.NullBooleanField)
+            if isinstance(field, models.BooleanField)
         ]
         return [field_name for field_name in self.fields
-                if field_name in null_boolean_fields_in_model]
+                if field_name in boolean_fields_in_model]
 
     def _clean_fields(self):
-        null_boolean_field_names = self.null_boolean_field_names()
+        boolean_field_names = self.boolean_field_names()
         for name, field in self.fields.items():
             # value_from_datadict() gets the data from the data dictionaries.
             # Each widget type knows how to retrieve its own data, because some

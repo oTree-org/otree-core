@@ -216,7 +216,7 @@ class BooleanField(_OtreeNullableModelFieldMixin, models.NullBooleanField):
                 (True, ugettext_lazy('Yes')),
                 (False, ugettext_lazy('No'))
             )
-        super(NullBooleanField, self).__init__(*args, **kwargs)
+        super(BooleanField, self).__init__(*args, **kwargs)
 
         # you cant override "blank" or you will destroy the migration system
         self.allow_blank = bool(kwargs.get("blank"))
@@ -231,7 +231,7 @@ class BooleanField(_OtreeNullableModelFieldMixin, models.NullBooleanField):
     def formfield(self, *args, **kwargs):
         # this use the allow_blank for the form fields
         kwargs["required"] = not self.allow_blank
-        return super(NullBooleanField, self).formfield(*args, **kwargs)
+        return super(BooleanField, self).formfield(*args, **kwargs)
 
 
 class AutoField(_OtreeNullableModelFieldMixin, models.AutoField):
@@ -245,10 +245,6 @@ class BigIntegerField(_OtreeNullableModelFieldMixin,
 
 class BinaryField(_OtreeNullableModelFieldMixin, models.BinaryField):
     pass
-
-
-class BooleanField(_OtreeNotNullableModelFieldMixin, models.BooleanField):
-    auto_submit_default = False
 
 
 class CharField(_OtreeNullableModelFieldMixin, models.CharField):

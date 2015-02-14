@@ -286,7 +286,7 @@ class SessionUser(ModelWithVars):
         )
     )
 
-    last_request_succeeded = models.NullBooleanField(
+    last_request_succeeded = models.BooleanField(
         verbose_name='Health of last server request'
     )
 

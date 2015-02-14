@@ -114,7 +114,6 @@ def get_doc_dict(app_label):
         'PositiveIntegerField': 'positive integer',
         'IntegerField': 'integer',
         'BooleanField': 'boolean',
-        'NullBooleanField': 'boolean',
         'CharField': 'text',
         'TextField': 'text',
         'FloatField': 'decimal',
