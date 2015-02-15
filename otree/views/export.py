@@ -100,7 +100,7 @@ def choices_readable(choices):
 
 
 def get_doc_dict(app_label):
-    export_fields = get_data_export_fields(app_label)
+    export_fields = []  # FIXME: get_data_export_fields(app_label)
     app_models_module = import_module('{}.models'.format(app_label))
 
     doc_dict = OrderedDict()

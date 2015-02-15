@@ -191,7 +191,6 @@ class FormPageOrWaitPageMixin(OTreeMixin):
     def url_pattern(cls):
         return otree.common_internal.url_pattern(cls, True)
 
-
     def load_objects(self):
         """
         Even though we only use PlayerClass in load_objects,
