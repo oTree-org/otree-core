@@ -7,17 +7,11 @@ from django.conf import urls
 from django.utils.importlib import import_module
 
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from django.contrib import admin
 from django.views.generic.base import RedirectView
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 
-
-import vanilla
-
 from otree.common_internal import get_models_module
-
-
 
 
 def url_patterns_from_module(module_name):
@@ -33,7 +27,6 @@ def url_patterns_from_module(module_name):
 
     views_module = import_module(module_name)
 
-
     all_views = [
         ViewCls for _, ViewCls in inspect.getmembers(views_module)
         if hasattr(ViewCls, 'url_pattern') and
@@ -43,18 +36,20 @@ def url_patterns_from_module(module_name):
     # see issue #273 for discussion of AUTH_LEVEL setting
     if settings.DEBUG and settings.AUTH_LEVEL not in ['DEMO', 'EXPERIMENT']:
         AUTH_LEVEL = 'FULL'
-    elif not settings.DEBUG and settings.AUTH_LEVEL not in ['DEMO', 'EXPERIMENT']:
+    elif not settings.DEBUG and settings.AUTH_LEVEL not in ['DEMO',
+                                                            'EXPERIMENT']:
         AUTH_LEVEL = 'EXPERIMENT'
     else:
         AUTH_LEVEL = settings.AUTH_LEVEL
-    
-    restricted_views_demo = ['SessionTypesToCreate', 'CreateSession', 'AdminHome',
-                             'MTurkInfo', 'PersistentLabURLs']
 
-    restricted_views_experiment = restricted_views_demo + ['SessionDescription', 'SessionMonitor',
-                                                           'SessionResults', 'SessionStartLinks',
-                                                           'SessionPayments', 'DemoIndex',
-                                                           'CreateDemoSession']
+    restricted_views_demo = ['SessionTypesToCreate', 'CreateSession',
+                             'AdminHome', 'MTurkInfo', 'PersistentLabURLs']
+
+    restricted_views_experiment = restricted_views_demo + [
+        'SessionDescription', 'SessionMonitor', 'SessionResults',
+        'SessionStartLinks', 'SessionPayments',
+        'DemoIndex', 'CreateDemoSession'
+    ]
     if AUTH_LEVEL == 'DEMO':
         restricted_views = restricted_views_demo
     elif AUTH_LEVEL == 'EXPERIMENT':
@@ -70,7 +65,10 @@ def url_patterns_from_module(module_name):
             as_view = ViewCls.as_view()
 
         if hasattr(ViewCls, 'url_name'):
-            view_urls.append(urls.url(ViewCls.url_pattern(), as_view, name=ViewCls.url_name()))
+            view_urls.append(
+                urls.url(ViewCls.url_pattern(), as_view,
+                         name=ViewCls.url_name())
+            )
         else:
             view_urls.append(urls.url(ViewCls.url_pattern(), as_view))
 
@@ -82,8 +80,10 @@ def augment_urlpatterns(urlpatterns):
     urlpatterns += urls.patterns(
         '',
         urls.url(r'^$', RedirectView.as_view(url='/demo'), name='demo'),
-        urls.url(r'^accounts/login/$', 'django.contrib.auth.views.login', {'template_name': 'otree/login.html'}),
-        #urls.url(r'^admin/', urls.include(admin.site.urls)),
+        urls.url(
+            r'^accounts/login/$', 'django.contrib.auth.views.login',
+            {'template_name': 'otree/login.html'}
+        ),
     )
 
     urlpatterns += staticfiles_urlpatterns()

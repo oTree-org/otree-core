@@ -6,29 +6,24 @@
 # IMPORTS
 # =============================================================================
 
-import csv
 import inspect
 import datetime
 from collections import OrderedDict
 
 from django.http import HttpResponse
 from django.utils.importlib import import_module
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.decorators import user_passes_test
 from django.contrib.admin import sites
 from django.template.response import TemplateResponse
-
-
 
 import otree.common_internal
 import otree.settings
 import otree.models
 
 import otree.models.session
-from otree.views.admin import get_display_table_rows
 from otree.common_internal import app_name_format
 
 import vanilla
+
 
 # =============================================================================
 # CONSTANTS
@@ -114,7 +109,6 @@ def get_doc_dict(app_label):
         'PositiveIntegerField': 'positive integer',
         'IntegerField': 'integer',
         'BooleanField': 'boolean',
-        'NullBooleanField': 'boolean',
         'CharField': 'text',
         'TextField': 'text',
         'FloatField': 'decimal',
@@ -216,7 +210,6 @@ def doc_file_name(app_label):
     )
 
 
-
 class ExportIndex(vanilla.View):
 
     @classmethod
@@ -246,7 +239,6 @@ class ExportIndex(vanilla.View):
         )
 
 
-
 class ExportAppDocs(vanilla.View):
 
     @classmethod
@@ -263,4 +255,3 @@ class ExportAppDocs(vanilla.View):
         )
         response['Content-Type'] = 'text/plain'
         return response
-

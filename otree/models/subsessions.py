@@ -7,9 +7,9 @@ from otree.db import models
 from otree.common_internal import get_views_module
 from otree.common_internal import (
     get_models_module, get_players, get_groups,
-    min_players_multiple,
 )
 from otree.models_concrete import GroupSize
+
 
 class BaseSubsession(models.Model):
     """Base class for all Subsessions.
@@ -60,7 +60,7 @@ class BaseSubsession(models.Model):
     def _get_players_per_group_list(self):
         ppg = self._Constants.players_per_group
         subsession_size = len(self.get_players())
-        if ppg == None:
+        if ppg is None:
             return [subsession_size]
 
         # if groups have variable sizes, you can put it in a list
@@ -75,8 +75,7 @@ class BaseSubsession(models.Model):
         return group_cycle * num_group_cycles
 
     def _min_players_multiple(self):
-        ppg = self._Constants.players_per_group
-        return
+        self._Constants.players_per_group
 
     def set_groups(self, groups):
         """elements in the list can be sublists, or group objects.
@@ -139,18 +138,19 @@ class BaseSubsession(models.Model):
         # this is to enable apps with variable group sizes
 
         for group_size in self._get_players_per_group_list():
-            groups.append(players[first_player_index:first_player_index+group_size])
+            groups.append(
+                players[first_player_index:first_player_index + group_size]
+            )
             first_player_index += group_size
         return groups
-
 
     def _set_players_per_group_list(self):
         for index, group_size in enumerate(self._get_players_per_group_list()):
             GroupSize(
-                app_label = self._meta.app_label,
-                subsession_pk = self.pk,
-                group_index = index,
-                group_size = group_size,
+                app_label=self._meta.app_label,
+                subsession_pk=self.pk,
+                group_index=index,
+                group_size=group_size,
             ).save()
 
     def _create_empty_groups(self):

@@ -4,10 +4,11 @@
 import random
 import string
 
-from django.utils.translation import ugettext_lazy
 from django.db import models
 from django.db.models.fields import related
 from django.db.models.base import ModelBase
+from django.core import exceptions
+from django.utils.translation import ugettext_lazy
 
 from handy.models import PickleField
 import easymoney
@@ -205,7 +206,7 @@ class PickleField(_OtreeNullableModelFieldMixin, PickleField):
     pass
 
 
-class NullBooleanField(_OtreeNullableModelFieldMixin, models.NullBooleanField):
+class BooleanField(_OtreeNullableModelFieldMixin, models.NullBooleanField):
     # 2014/3/28: i just define the allowable choices on the model field,
     # instead of customizing the widget since then it works for any widget
 
@@ -216,9 +217,22 @@ class NullBooleanField(_OtreeNullableModelFieldMixin, models.NullBooleanField):
                 (True, ugettext_lazy('Yes')),
                 (False, ugettext_lazy('No'))
             )
-        super(NullBooleanField, self).__init__(*args, **kwargs)
+        super(BooleanField, self).__init__(*args, **kwargs)
+
+        # you cant override "blank" or you will destroy the migration system
+        self.allow_blank = bool(kwargs.get("blank"))
 
     auto_submit_default = False
+
+    def clean(self, value, model_instance):
+        if value is None and not self.allow_blank:
+            raise exceptions.ValidationError("This field is required")
+        return super(BooleanField, self).clean(value, model_instance)
+
+    def formfield(self, *args, **kwargs):
+        # this use the allow_blank for the form fields
+        kwargs["required"] = not self.allow_blank
+        return super(BooleanField, self).formfield(*args, **kwargs)
 
 
 class AutoField(_OtreeNullableModelFieldMixin, models.AutoField):
@@ -232,10 +246,6 @@ class BigIntegerField(_OtreeNullableModelFieldMixin,
 
 class BinaryField(_OtreeNullableModelFieldMixin, models.BinaryField):
     pass
-
-
-class BooleanField(_OtreeNotNullableModelFieldMixin, models.BooleanField):
-    auto_submit_default = False
 
 
 class CharField(_OtreeNullableModelFieldMixin, models.CharField):

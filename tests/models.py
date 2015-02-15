@@ -13,7 +13,7 @@ class SimpleModel(otree.models.BaseGroup):
 
 
 class FormFieldModel(otree.models.BaseGroup):
-    null_boolean = models.NullBooleanField()
+    null_boolean = models.BooleanField()
     big_integer = models.BigIntegerField()
     boolean = models.BooleanField(default=False)
     char = models.CharField()

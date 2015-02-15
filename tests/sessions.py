@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import otree.session
-
-
 SESSION_TYPE_DEFAULTS = {
     'money_per_point': 0.01,
     'demo_enabled': True,
@@ -18,15 +15,15 @@ session_types = [
         'display_name': "Simple Game",
         'num_demo_participants': 1,
         'app_sequence': ['tests.simple_game'],
-        'doc': """"""
+        'doc': ""
     },
     {
         "name": 'two_simple_games',
         "display_name": "2 Simple Games",
         "num_demo_participants": 1,
         "app_sequence": ['tests.simple_game', 'tests.simple_game_copy'],
-        "doc" : """"""
-},
+        "doc": ""
+    }
 ]
 
 

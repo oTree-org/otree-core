@@ -77,7 +77,8 @@ def augment_settings(settings):
             'django.middleware.common.CommonMiddleware',
             'django.middleware.csrf.CsrfViewMiddleware',
             'django.contrib.auth.middleware.AuthenticationMiddleware',
-            'django.contrib.messages.middleware.MessageMiddleware'
+            'django.contrib.messages.middleware.MessageMiddleware',
+            'otree.middleware.OperationalErrorMidleware',
         ],
         settings.get('MIDDLEWARE_CLASSES')
     )

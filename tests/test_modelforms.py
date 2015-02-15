@@ -23,14 +23,11 @@ class UseFloppyformWidgetsTests(TestCase):
             TestModelForm.base_fields['char'], floppyforms.CharField
         )
         self.assertIsInstance(
-            TestModelForm.base_fields['null_boolean'],
+            TestModelForm.base_fields['boolean'],
             floppyforms.TypedChoiceField
         )
         self.assertIsInstance(
             TestModelForm.base_fields['big_integer'], floppyforms.IntegerField
-        )
-        self.assertIsInstance(
-            TestModelForm.base_fields['boolean'], floppyforms.BooleanField
         )
         self.assertIsInstance(
             TestModelForm.base_fields['char'], floppyforms.CharField
