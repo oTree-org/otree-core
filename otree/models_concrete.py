@@ -42,6 +42,7 @@ class SessionuserToUserLookup(models.Model):
     user_pk = models.PositiveIntegerField()
     is_experimenter = models.BooleanField(default=False)
 
+
 class GroupSize(models.Model):
     app_label = models.CharField(max_length=300)
     subsession_pk = models.PositiveIntegerField()

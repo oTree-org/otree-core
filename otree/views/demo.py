@@ -2,23 +2,20 @@
 
 import threading
 import time
-import urllib
 
 from django.conf import settings
 from django.template.response import TemplateResponse
-from django.http import HttpResponseNotFound, HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
 
 import vanilla
 
-import otree.views.admin
 import otree.constants as constants
 from otree.views.abstract import GenericWaitPageMixin
 from otree.models.session import Session
 from otree.session import (
     create_session, get_session_types_dict, get_session_types_list
 )
-
 
 
 class DemoIndex(vanilla.TemplateView):
@@ -44,17 +41,20 @@ class DemoIndex(vanilla.TemplateView):
                 {
                     'name': session_type['name'],
                     'display_name': session_type['display_name'],
-                    'url': reverse('create_demo_session', args=(session_type['name'],)),
-                    'num_demo_participants': session_type['num_demo_participants']
+                    'url': reverse(
+                        'create_demo_session', args=(session_type['name'],)
+                    ),
+                    'num_demo_participants': session_type[
+                        'num_demo_participants'
+                    ]
                 }
             )
 
-        context.update( {
+        context.update({
             'session_info': session_info,
             'intro_text': intro_text,
             'debug': settings.DEBUG
-            }
-        )
+        })
         return context
 
 
@@ -70,10 +70,12 @@ def ensure_enough_spare_sessions(session_type_name):
 
     spare_sessions = Session.objects.filter(
         special_category=constants.session_special_category_demo,
-        #session_type_name=session_type_name,
         demo_already_used=False,
     )
-    spare_sessions = [s for s in spare_sessions if s.session_type['name'] == session_type_name ]
+    spare_sessions = [
+        s for s in spare_sessions
+        if s.session_type['name'] == session_type_name
+    ]
 
     # fill in whatever gap exists. want at least 3 sessions waiting.
     for i in range(DESIRED_SPARE_SESSIONS - len(spare_sessions)):
@@ -87,11 +89,13 @@ def get_session(session_type_name):
 
     sessions = Session.objects.filter(
         special_category=constants.session_special_category_demo,
-        #session_type['name']=session_type_name,
         demo_already_used=False,
         ready=True,
     )
-    sessions = [s for s in sessions if s.session_type['name'] == session_type_name ]
+    sessions = [
+        s for s in sessions
+        if s.session_type['name'] == session_type_name
+    ]
     if len(sessions):
         return sessions[0]
 
@@ -139,7 +143,9 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.View):
 
     def dispatch(self, request, *args, **kwargs):
         self.session_type_name = kwargs['session_type']
-        return super(CreateDemoSession, self).dispatch(request, *args, **kwargs)
+        return super(CreateDemoSession, self).dispatch(
+            request, *args, **kwargs
+        )
 
     def _get_wait_page(self):
         return TemplateResponse(

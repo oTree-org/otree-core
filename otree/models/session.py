@@ -33,9 +33,11 @@ class GlobalSingleton(models.Model):
         verbose_name = 'Set default session'
         verbose_name_plural = verbose_name
 
+
 @contextlib.contextmanager
 def no_op_context_manager():
     yield
+
 
 @contextlib.contextmanager
 def lock_on_this_code_path():
@@ -47,6 +49,7 @@ def lock_on_this_code_path():
             # be completing this code path at once
             GlobalSingleton.objects.select_for_update().get()
             yield
+
 
 class StubModel(models.Model):
     """To be used as the model for an empty form, so that form_class can be
@@ -262,6 +265,7 @@ class Session(ModelWithVars):
     def admin_url(self):
         from otree.views.admin import SessionHome
         return SessionHome.url(self.pk)
+
 
 class SessionUser(ModelWithVars):
 

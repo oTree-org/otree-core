@@ -6,7 +6,6 @@
 # IMPORTS
 # =============================================================================
 
-import threading
 import time
 import vanilla
 
@@ -17,7 +16,7 @@ from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.contrib import messages
 from django.http import (
-    HttpResponse, HttpResponseRedirect, HttpResponseNotFound
+    HttpResponse, HttpResponseRedirect
 )
 
 import otree.constants as constants
@@ -30,6 +29,7 @@ from otree.views.abstract import (
     GenericWaitPageMixin, FormPageOrWaitPageMixin, PlayerMixin
 )
 from otree.models_concrete import GroupSize
+
 
 class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
     name_in_url = 'shared'
@@ -68,8 +68,8 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin,
                     group_players.append(self.player)
                     open_group.set_players(group_players)
                     group_size_obj = GroupSize.objects.filter(
-                        app_label = self.subsession._meta.app_label,
-                        subsession_pk = self.subsession.pk,
+                        app_label=self.subsession._meta.app_label,
+                        subsession_pk=self.subsession.pk,
                     ).order_by('group_index')[0]
                     group_quota = group_size_obj.group_size
                     if len(group_players) == group_quota:
@@ -161,7 +161,6 @@ class InitializeParticipant(vanilla.UpdateView):
             code=kwargs[constants.session_user_code]
         )
 
-        session = session_user.session
         session_user.visited = True
 
         # session_user.label might already have been set by AssignToOpenSession
@@ -304,7 +303,6 @@ class SetDefaultSession(vanilla.View):
         global_singleton = otree.models.session.GlobalSingleton.objects.get()
         global_singleton.default_session = self.session
         global_singleton.save()
-        #messages.success(request, "The session %s is set as a default" % self.session.code)
         redirect_url = reverse('admin_home')
         return HttpResponseRedirect(redirect_url)
 
@@ -338,6 +336,5 @@ class UnsetDefaultSession(vanilla.View):
         global_singleton = otree.models.session.GlobalSingleton.objects.get()
         global_singleton.default_session = None
         global_singleton.save()
-        #messages.success(request, "The session %s is set as a default" % self.session.code)
         redirect_url = reverse('admin_home')
         return HttpResponseRedirect(redirect_url)

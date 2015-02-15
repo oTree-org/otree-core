@@ -83,9 +83,6 @@ def directory_name(path):
     return os.path.basename(os.path.normpath(path))
 
 
-
-
-
 def get_models_module(app_name):
     return import_module('{}.models'.format(app_name))
 
@@ -179,6 +176,7 @@ def expand_choice_tuples(choices):
     if not isinstance(first_choice, (list, tuple)):
         choices = [(value, value) for value in choices]
     return choices
+
 
 def min_players_multiple(players_per_group):
     ppg = players_per_group

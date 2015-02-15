@@ -55,22 +55,22 @@ SESSION_TYPE_DEFAULTS = {
 }
 
 
-SESSION_TYPES =  [
-         {
-            'name':'simple_game',
-            'display_name':"Simple Game",
-            'num_demo_participants':1,
-            'app_sequence':['tests.simple_game'],
-            'doc':""""""
+SESSION_TYPES = [
+    {
+        'name': 'simple_game',
+        'display_name': "Simple Game",
+        'num_demo_participants': 1,
+        'app_sequence': ['tests.simple_game'],
+        'doc': ""
     },
-        {
-            "name" : 'two_simple_games',
-            "display_name":"2 Simple Games",
-            "num_demo_participants":1,
-            "app_sequence":['tests.simple_game', 'tests.simple_game_copy'],
-            "doc":""""""
+    {
+        "name": 'two_simple_games',
+        "display_name": "2 Simple Games",
+        "num_demo_participants": 1,
+        "app_sequence": ['tests.simple_game', 'tests.simple_game_copy'],
+        "doc": ""
     },
-    ]
+]
 
 
 DEMO_PAGE_INTRO_TEXT = """

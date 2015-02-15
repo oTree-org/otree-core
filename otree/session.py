@@ -10,7 +10,7 @@ from otree import constants
 from otree.models.user import Experimenter
 from otree.models.session import Session, SessionExperimenter, Participant
 from otree.common_internal import (
-     get_models_module, get_app_constants,
+    get_models_module, get_app_constants,
     min_players_multiple,
 )
 
@@ -44,9 +44,7 @@ def get_lcm(session_type):
     return lcmm(*min_multiple_list)
 
 
-
 def validate_session_type(session_type):
-
 
     required_keys = {
         'name',
@@ -62,9 +60,8 @@ def validate_session_type(session_type):
 
     for key in required_keys:
         if key not in session_type:
-            msg = (
-                'Required key "{}" is missing from  session_type: {} dictionary'
-            )
+            msg = ('Required key "{}" is missing from '
+                   'session_type: {} dictionary')
             raise AttributeError(msg.format(key, session_type))
 
     st_name = session_type['name']
@@ -75,7 +72,6 @@ def validate_session_type(session_type):
         )
         raise ValueError(msg.format(st_name))
 
-
     app_sequence = session_type['app_sequence']
     if len(app_sequence) != len(set(app_sequence)):
         raise ValueError('app_sequence cannot contain duplicate elements')
@@ -84,17 +80,15 @@ def validate_session_type(session_type):
         raise ValueError('Need at least one subsession.')
 
 
-
 def augment_session_type(session_type):
     new_session_type = {'doc': ''}
     new_session_type.update(settings.SESSION_TYPE_DEFAULTS)
     new_session_type.update(session_type)
-    #look up new_session_type
+
+    # look up new_session_type
     new_session_type['doc'] = new_session_type['doc'].strip()
     validate_session_type(new_session_type)
     return new_session_type
-
-
 
 
 class SessionType(object):
@@ -107,22 +101,19 @@ class SessionType(object):
 
         """
 
-
     def __repr__(self):
         mem = hex(id(self))
         return "<SessionType '{}' at {}>".format(self.name, mem)
-
 
 
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
 
-
-
 def get_session_types_list():
 
     return [augment_session_type(s) for s in settings.SESSION_TYPES]
+
 
 def get_session_types_dict():
     return {

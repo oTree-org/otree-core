@@ -4,10 +4,11 @@
 import random
 import string
 
-from django.utils.translation import ugettext_lazy
 from django.db import models
 from django.db.models.fields import related
 from django.db.models.base import ModelBase
+from django.core import exceptions
+from django.utils.translation import ugettext_lazy
 
 from handy.models import PickleField
 import easymoney
@@ -225,7 +226,7 @@ class BooleanField(_OtreeNullableModelFieldMixin, models.NullBooleanField):
 
     def clean(self, value, model_instance):
         if value is None and not self.allow_blank:
-            raise ValidationError("This field is required")
+            raise exceptions.ValidationError("This field is required")
         return super(BooleanField, self).clean(value, model_instance)
 
     def formfield(self, *args, **kwargs):

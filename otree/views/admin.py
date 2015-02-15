@@ -6,20 +6,13 @@ import time
 import urllib
 import uuid
 import itertools
-from django.contrib import admin
-from django.conf.urls import patterns
-from django.http import HttpResponse, HttpResponseBadRequest
+
 from django.contrib.staticfiles.templatetags.staticfiles import (
     static as static_template_tag
 )
-from django.contrib.auth.decorators import (
-    user_passes_test, login_required
-)
-
 from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
-from django.shortcuts import get_object_or_404
 from django.forms.forms import pretty_name
 
 import vanilla
@@ -27,7 +20,9 @@ from ordered_set import OrderedSet as oset
 import easymoney
 
 
-from otree.common_internal import get_models_module, app_name_format, add_params_to_url
+from otree.common_internal import (
+    get_models_module, app_name_format, add_params_to_url
+)
 from otree.session import (
     create_session, get_session_types_dict, get_session_types_list,
     get_lcm
@@ -42,13 +37,17 @@ from otree.common import Money
 from otree.models.session import Session, Participant
 
 
-
 def new_tab_link(url, label):
     return '<a href="{}" target="_blank">{}</a>'.format(url, label)
 
+
 def get_callables(Model):
-    '''2015-1-14: deprecated function. needs to exist until we can get rid of admin.py from apps'''
+    '''2015-1-14: deprecated function. needs to exist until we can get
+    rid of admin.py from apps
+
+    '''
     return []
+
 
 def get_all_fields(Model, for_export=False):
 
@@ -101,7 +100,6 @@ def get_all_fields(Model, for_export=False):
     }[Model.__name__]
     last_fields = oset(last_fields)
 
-
     fields_for_export_but_not_changelist = {
         'Player': {'id', 'label', 'subsession', 'session'},
         'Group': {'id'},
@@ -138,7 +136,6 @@ def get_all_fields(Model, for_export=False):
             'last_request_succeeded',
         },
     }[Model.__name__]
-
 
     fields_to_exclude_from_export_and_changelist = {
         'Player': {
@@ -205,13 +202,17 @@ def get_all_fields(Model, for_export=False):
 
     all_fields_in_model = oset([field.name for field in Model._meta.fields])
 
-    middle_fields = all_fields_in_model - first_fields - last_fields - fields_to_exclude
+    middle_fields = (
+        all_fields_in_model - first_fields - last_fields - fields_to_exclude
+    )
 
     return list(first_fields | middle_fields | last_fields)
 
+
 def get_display_table_rows(app_name, for_export, subsession_pk=None):
-    if (not for_export) and (not subsession_pk):
-        raise ValueError("if this is for the admin results table, you need to specify a subsession pk")
+    if not for_export and not subsession_pk:
+        raise ValueError("if this is for the admin results table, "
+                         "you need to specify a subsession pk")
     models_module = otree.common_internal.get_models_module(app_name)
     Player = models_module.Player
     Group = models_module.Group
@@ -235,7 +236,9 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
     all_columns = []
     for Model in model_order:
         field_names = get_all_fields(Model, for_export)
-        columns_for_this_model = [(Model, field_name) for field_name in field_names]
+        columns_for_this_model = [
+            (Model, field_name) for field_name in field_names
+        ]
         all_columns.extend(columns_for_this_model)
 
     if subsession_pk:
@@ -244,18 +247,23 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
         players = Player.objects.all()
     session_ids = set([player.session_id for player in players])
 
-
-
     # initialize
     parent_objects = {}
 
-    parent_models = [Model for Model in model_order if Model not in {Player, Session}]
+    parent_models = [
+        Model for Model in model_order if Model not in {Player, Session}
+    ]
 
     for Model in parent_models:
-        parent_objects[Model] = {obj.pk: obj for obj in Model.objects.filter(session_id__in=session_ids)}
+        parent_objects[Model] = {
+            obj.pk: obj
+            for obj in Model.objects.filter(session_id__in=session_ids)
+        }
 
     if Session in model_order:
-        parent_objects[Session] = {obj.pk: obj for obj in Session.objects.filter(pk__in=session_ids)}
+        parent_objects[Session] = {
+            obj.pk: obj for obj in Session.objects.filter(pk__in=session_ids)
+        }
 
     all_rows = []
     for player in players:
@@ -294,7 +302,9 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
 
     column_display_names = []
     for Model, field_name in all_columns:
-        column_display_names.append((pretty_name(Model.__name__), pretty_name(field_name)))
+        column_display_names.append(
+            (pretty_name(Model.__name__), pretty_name(field_name))
+        )
 
     return column_display_names, all_rows
 
@@ -441,7 +451,6 @@ def sleep_then_create_session(**kwargs):
     create_session(**kwargs)
 
 
-
 class CreateSession(vanilla.FormView):
 
     form_class = CreateSessionForm
@@ -484,6 +493,7 @@ class CreateSession(vanilla.FormView):
 
         return HttpResponseRedirect(WaitUntilSessionCreated.url(pre_create_id))
 
+
 class SessionTypesToCreate(vanilla.View):
 
     @classmethod
@@ -498,7 +508,6 @@ class SessionTypesToCreate(vanilla.View):
     def url_pattern(cls):
         return r"^create_session/$"
 
-
     def get(self, *args, **kwargs):
         session_types_info = []
         for session_type in get_session_types_list():
@@ -512,7 +521,6 @@ class SessionTypesToCreate(vanilla.View):
         return TemplateResponse(self.request,
                                 'otree/admin/SessionListing.html',
                                 {'session_types_info': session_types_info})
-
 
 
 class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
@@ -536,7 +544,9 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
 
         context = super(SessionMonitor, self).get_context_data(**kwargs)
         context.update({
-            'column_names': [pretty_name(field.strip('_')) for field in field_names],
+            'column_names': [
+                pretty_name(field.strip('_')) for field in field_names
+            ],
             'rows': rows,
         })
         return context
@@ -645,20 +655,34 @@ class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
 
             round_number = subsession.round_number
             if round_number > 1:
-                subsession_column_name = '{} [Round {}]'.format(app_label, round_number)
+                subsession_column_name = '{} [Round {}]'.format(
+                    app_label, round_number
+                )
             else:
                 subsession_column_name = pretty_name(app_label)
 
             for model_column_name, field_column_name in column_names:
-                column_name_tuples.append((subsession_column_name, model_column_name, field_column_name))
+                column_name_tuples.append(
+                    (subsession_column_name, model_column_name,
+                     field_column_name)
+                )
 
-        subsession_headers = [(key, len(list(group)))
-                              for key, group in itertools.groupby(column_name_tuples, key=lambda x: x[0])]
+        subsession_headers = [
+            (key, len(list(group)))
+            for key, group in
+            itertools.groupby(column_name_tuples, key=lambda x: x[0])
+        ]
 
-        model_headers = [(key[1], len(list(group)))
-                         for key, group in itertools.groupby(column_name_tuples, key=lambda x: (x[0], x[1]))]
+        model_headers = [
+            (key[1], len(list(group)))
+            for key, group in
+            itertools.groupby(column_name_tuples, key=lambda x: (x[0], x[1]))
+        ]
 
-        field_headers = [key[2] for key, group in itertools.groupby(column_name_tuples, key=lambda x: x)]
+        field_headers = [
+            key[2] for key, group in
+            itertools.groupby(column_name_tuples, key=lambda x: x)
+        ]
 
         # prepend participant labels to the rows
         for row, participant_label in zip(rows, participant_labels):
@@ -769,4 +793,6 @@ class AdminHome(vanilla.ListView):
         return context
 
     def get_queryset(self):
-        return Session.objects.filter(hidden=False).exclude(special_category=otree.constants.session_special_category_demo)
+        return Session.objects.filter(hidden=False).exclude(
+            special_category=otree.constants.session_special_category_demo
+        )

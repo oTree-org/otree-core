@@ -26,13 +26,11 @@ views that have URLs.
 
 import os
 import logging
-import contextlib
 import time
 
-from django.db import transaction
 from django.db.models import Q
 from django.conf import settings
-from django.shortcuts import get_object_or_404, get_list_or_404
+from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache, cache_control
@@ -53,7 +51,7 @@ import otree.models
 import otree.models.session as seq_models
 import otree.constants as constants
 from otree.models.session import (
-    Session, Participant, GlobalSingleton, lock_on_this_code_path
+    Session, Participant, lock_on_this_code_path
 )
 
 from otree.models_concrete import (
@@ -850,9 +848,11 @@ class AdminSessionPageMixin(object):
 
     def get_context_data(self, **kwargs):
         context = super(AdminSessionPageMixin, self).get_context_data(**kwargs)
-        other_sessions = Session.objects.filter(Q(hidden=False) &
-                                                ~Q(special_category=otree.constants.session_special_category_demo) &
-                                                ~Q(pk=self.session.pk))
+        other_sessions = Session.objects.filter(
+            Q(hidden=False) &
+            ~Q(special_category=otree.constants.session_special_category_demo)
+            & ~Q(pk=self.session.pk)
+        )
         context.update({'session': self.session,
                         'other_sessions': other_sessions,
                         'is_demo': self.is_demo,
@@ -865,5 +865,10 @@ class AdminSessionPageMixin(object):
     def dispatch(self, request, *args, **kwargs):
         session_pk = int(kwargs['pk'])
         self.session = get_object_or_404(otree.models.Session, pk=session_pk)
-        self.is_demo = self.session.special_category == constants.session_special_category_demo
-        return super(AdminSessionPageMixin, self).dispatch(request, *args, **kwargs)
+        self.is_demo = (
+            self.session.special_category ==
+            constants.session_special_category_demo
+        )
+        return super(AdminSessionPageMixin, self).dispatch(
+            request, *args, **kwargs
+        )
