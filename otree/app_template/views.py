@@ -20,7 +20,7 @@ class MyPage(Page):
     form_model = models.Player
     form_fields = ['my_field']
 
-    def participate_condition(self):
+    def is_displayed(self):
         return True
 
     template_name = '{{ app_name }}/MyPage.html'

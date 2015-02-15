@@ -49,8 +49,8 @@ class Page(abstract.PlayerUpdateView):
     def get_form_class(self):
         return super(Page, self).get_form_class()
 
-    def participate_condition(self):
-        return super(Page, self).participate_condition()
+    def is_displayed(self):
+        return super(Page, self).is_displayed()
 
     template_name = None
 
@@ -74,8 +74,8 @@ class ExperimenterPage(abstract.ExperimenterUpdateView):
     def get_form_class(self):
         return super(ExperimenterPage, self).get_form_class()
 
-    def participate_condition(self):
-        return super(ExperimenterPage, self).participate_condition()
+    def is_displayed(self):
+        return super(ExperimenterPage, self).is_displayed()
 
     template_name = None
 

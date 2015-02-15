@@ -23,7 +23,7 @@ class MyPage(Page):
     }
 
 
-    def participate_condition(self):
+    def is_displayed(self):
         return True
 
     template_name = 'simple_game/MyPage.html'

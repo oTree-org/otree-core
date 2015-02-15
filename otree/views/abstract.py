@@ -193,6 +193,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
     def url_pattern(cls):
         return otree.common_internal.url_pattern(cls, True)
 
+
     def load_objects(self):
         """
         Even though we only use PlayerClass in load_objects,
@@ -280,7 +281,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                 # then bring them back to where they should be
                 return self._redirect_to_page_the_user_should_be_on()
 
-            if not self.participate_condition():
+            if not self.is_displayed():
                 self._increment_index_in_pages()
                 response = self._redirect_to_page_the_user_should_be_on()
             else:
@@ -332,7 +333,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
             return
 
         # performance optimization:
-        # we skip any page that is a sequence page where participate_condition
+        # we skip any page that is a sequence page where is_displayed
         # evaluates to False to eliminate unnecessary redirection
         views_module = get_views_module(self.subsession._meta.app_config.name)
         pages = views_module.page_sequence
@@ -352,8 +353,8 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                 page.subsession = self.subsession
 
                 cond = (
-                    hasattr(Page, 'participate_condition') and not
-                    page.participate_condition()
+                    hasattr(Page, 'is_displayed') and not
+                    page.is_displayed()
                 )
                 if cond:
                     pages_to_jump_by += 1
@@ -365,7 +366,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         else:  # e.g. if it's WaitUntil...
             self._session_user._index_in_pages += 1
 
-    def participate_condition(self):
+    def is_displayed(self):
         return True
 
     def _record_page_completion_time(self):
@@ -598,7 +599,7 @@ class InGameWaitPageMixin(object):
             p.save()
         self._group_or_subsession.save()
 
-    def participate_condition(self):
+    def is_displayed(self):
         return True
 
     def _response_when_ready(self):
@@ -628,6 +629,14 @@ class FormPageMixin(object):
     # if a model is not specified, use empty "StubModel"
     model = otree.models.session.StubModel
     fields = []
+
+    def get_template_names(self):
+        if self.template_name is not None:
+            return [self.template_name]
+        return '{}/{}.html'.format(
+            self.subsession._meta.app_label,
+            self.__class__.__name__
+        )
 
     def get_form_class(self):
         form_class = otree.forms.modelform_factory(
