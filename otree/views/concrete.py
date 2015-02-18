@@ -16,11 +16,12 @@ from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.contrib import messages
 from django.http import (
-    HttpResponse, HttpResponseRedirect
+    HttpResponse, HttpResponseRedirect, HttpResponseNotFound
 )
 
 import otree.constants as constants
 import otree.models.session
+from otree.models.session import Participant
 from otree.models.session import lock_on_this_code_path
 import otree.views.admin
 import otree.common_internal
@@ -177,43 +178,87 @@ class InitializeParticipant(vanilla.UpdateView):
         return HttpResponseRedirect(first_url)
 
 
-class AssignVisitorToOpenSessionMTurk(AssignVisitorToOpenSessionBase):
+class MTurkLandingPage(vanilla.TemplateView):
 
-    def incorrect_parameters_in_url_message(self):
-        # A visitor to this experiment was turned away because they did not
-        # have the MTurk parameters in their URL. This URL only works if
-        # clicked from a MTurk job posting with the JavaScript snippet embedded
-        return ("To participate, you need to first accept this Mechanical "
-                "Turk HIT and then re-click the link (refreshing this page "
-                "will not work).")
-
-    @classmethod
-    def url(cls):
-        return otree.common_internal.add_params_to_url(
-            '/{}'.format(cls.__name__), {
-                otree.constants.access_code_for_open_session:
-                    settings.ACCESS_CODE_FOR_OPEN_SESSION
-            }
-        )
+    def get_template_names(self):
+        return self.session.session_type['mturk_hit_settings']['landing_page_template']
 
     @classmethod
     def url_pattern(cls):
-        return r'^{}/$'.format(cls.__name__)
+        return r"^MTurkLandingPage/(?P<session_code>[a-z]+)/$"
 
-    required_params = {
-        'mturk_worker_id': otree.constants.mturk_worker_id,
-        'mturk_assignment_id': otree.constants.mturk_assignment_id,
-    }
+    @classmethod
+    def url_name(cls):
+        return 'mturk_landing_page'
 
-    def url_has_correct_parameters(self):
-        return (
-            super(
-                AssignVisitorToOpenSessionMTurk, self
-            ).url_has_correct_parameters() and
-            self.request.GET[
-                constants.mturk_assignment_id
-            ] != 'ASSIGNMENT_ID_NOT_AVAILABLE'
+    def dispatch(self, request, *args, **kwargs):
+        session_code = kwargs['session_code']
+        self.session = get_object_or_404(otree.models.Session, code=session_code)
+        return super(MTurkLandingPage, self).dispatch(
+            request, *args, **kwargs
         )
+
+    def get_context_data(self, **kwargs):
+        context = super(MTurkLandingPage, self).get_context_data(**kwargs)
+        assignment_id = self.request.GET['assignmentId']
+        worker_id = self.request.GET['workerId']
+        if assignment_id and assignment_id != 'ASSIGNMENT_ID_NOT_AVAILABLE':
+            context['hit_accepted'] = True
+        else:
+            context['hit_accepted'] = False
+        context.update({
+            'session': self.session,
+            'assignment_id': assignment_id,
+            'worker_id': worker_id,
+        })
+
+        return context
+
+class MTurkStart(vanilla.View):
+
+    @classmethod
+    def url_pattern(cls):
+        return r"^MTurkStart/(?P<session_code>[a-z]+)/$"
+
+    @classmethod
+    def url_name(cls):
+        return 'mturk_start'
+
+    def dispatch(self, request, *args, **kwargs):
+        session_code = kwargs['session_code']
+        self.session = get_object_or_404(otree.models.Session, code=session_code)
+        return super(MTurkStart, self).dispatch(
+            request, *args, **kwargs
+        )
+
+    def get(self, *args, **kwargs):
+        assignment_id = self.request.GET['assignmentId']
+        worker_id = self.request.GET['workerId']
+        try:
+            participant = Participant.objects.get(mturk_worker_id=worker_id,
+                    mturk_assignment_id=assignment_id)
+        except Participant.DoesNotExist:
+            with lock_on_this_code_path():
+                try:
+                    participant = (
+                        Participant.objects.select_for_update().filter(
+                            session=self.session,
+                            visited=False
+                        )
+                    )[0]
+                except IndexError:
+                    return HttpResponseNotFound(
+                        "No Player objects left in the database "
+                        "to assign to new visitor."
+                    )
+            self.set_external_params_on_participant(participant)
+            # 2014-10-17: needs to be here even if it's also set in
+            # the next view to prevent race conditions
+            participant.visited = True
+            participant.mturk_worker_id = worker_id
+            participant.mturk_assignment_id = assignment_id
+            participant.save()
+        return HttpResponseRedirect(participant._start_url())
 
 
 class AssignVisitorToOpenSession(AssignVisitorToOpenSessionBase):
