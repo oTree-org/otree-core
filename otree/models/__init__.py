@@ -65,8 +65,8 @@ class BaseSubsession(subsessions.BaseSubsession):
     def in_all_rounds(self):
         return super(BaseSubsession, self).in_all_rounds()
 
-    def initialize(self):
-        return super(BaseSubsession, self).initialize()
+    def before_session_starts(self):
+        return super(BaseSubsession, self).before_session_starts()
 
     class Meta:
         abstract = True
