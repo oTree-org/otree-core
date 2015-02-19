@@ -5,6 +5,7 @@ from django.template import Node
 from django.template import TemplateSyntaxError
 from django.template import Variable
 from django.template import VariableDoesNotExist
+from django.template.base import token_kwargs
 from django.template.loader import get_template
 from django.utils import six
 
@@ -12,8 +13,9 @@ from django.utils import six
 class FormFieldNode(Node):
     default_template = get_template('otree/forms/_formfield.html')
 
-    def __init__(self, field_variable_name):
+    def __init__(self, field_variable_name, with_arguments):
         self.field_variable_name = field_variable_name
+        self.with_arguments = with_arguments
 
     def get_form_instance(self, context):
         try:
@@ -77,9 +79,14 @@ class FormFieldNode(Node):
 
     def get_extra_context(self, context):
         bound_field = self.get_bound_field(context)
-        return {
+        extra_context = {
             'bound_field': bound_field
         }
+        if self.with_arguments:
+            extra_context.update(dict([
+                (name, var.resolve(context))
+                for name, var in self.with_arguments.items()]))
+        return extra_context
 
     def render(self, context):
         extra_context = self.get_extra_context(context)
@@ -100,7 +107,21 @@ class FormFieldNode(Node):
                     tagname=tagname))
         field = bits.pop(0)
         if bits:
+            with_ = bits.pop(0)
+            if with_ != 'with':
+                raise TemplateSyntaxError(
+                    "{tagname}'s second argument must be 'with'.".format(
+                        tagname=tagname))
+            with_arguments = token_kwargs(bits, parser, support_legacy=False)
+            if not with_arguments:
+                raise TemplateSyntaxError(
+                    "'with' in {tagname} tag needs at least one keyword "
+                    "argument.".format(tagname=tagname))
+        else:
+            with_arguments = {}
+        if bits:
             raise TemplateSyntaxError(
-                "{tagname!r} takes only one argument.".format(
-                    tagname=tagname))
-        return cls(field)
+                'Unkown argument for {tagname} tag: {bits!r}'.format(
+                    tagname=tagname,
+                    bits=bits))
+        return cls(field, with_arguments)

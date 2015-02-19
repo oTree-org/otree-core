@@ -56,10 +56,29 @@ class FormFieldSyntaxTests(FormFieldTestMixin, TestCase):
         with self.assertRaises(TemplateSyntaxError):
             self.parse('{% formfield field field2 %}')
 
+    def test_fail_with_no_arguments_after_with(self):
+        with self.assertRaises(TemplateSyntaxError):
+            self.parse('{% formfield field with %}')
+
+    def test_fail_with_bad_arguments_after_with(self):
+        with self.assertRaises(TemplateSyntaxError):
+            self.parse('{% formfield field with label %}')
+        with self.assertRaises(TemplateSyntaxError):
+            self.parse('{% formfield field with -=- %}')
+        with self.assertRaises(TemplateSyntaxError):
+            self.parse('{% formfield field with label="Right" wrong %}')
+
     def test_one_field_is_given(self):
         self.parse('{% formfield field %}')
         self.parse('{% formfield player.field %}')
         self.parse('{% formfield player.soso.deeply.nested.field %}')
+
+    def test_with_syntax(self):
+        self.parse('{% formfield field with label="Hello" %}')
+        self.parse('{% formfield field with help_text=variable %}')
+        self.parse('''
+            {% formfield field with label=label_value help_text="Constant" %}
+        ''')
 
 
 class FormFieldTests(FormFieldTestMixin, TestCase):
@@ -175,3 +194,17 @@ class FormFieldTests(FormFieldTestMixin, TestCase):
         # variable.
         self.assertTrue("'formfield'" in str(cm.exception))
         self.assertTrue("'form'" in str(cm.exception))
+
+    def test_override_label(self):
+        form = SimplePlayerForm(instance=self.simple_player)
+        rendered = self.render(
+            '{% formfield player.name with label="A fancy label" %}',
+            {
+                'form': form,
+                'player': self.simple_player,
+            })
+        # Label is there.
+        self.assertInHTML(
+            '''
+            <label for="id_name">A fancy label:</label>
+            ''', rendered)
