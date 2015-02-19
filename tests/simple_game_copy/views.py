@@ -37,7 +37,7 @@ class MyPage(Page):
         if values['add100_1'] + values['add100_2'] != 100:
             return 'The numbers must add up to 100'
 
-    def after_next_button(self):
+    def before_next_page(self):
         self.player.after_next_button_field = True
 
 class ResultsWaitPage(WaitPage):

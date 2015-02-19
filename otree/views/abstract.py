@@ -643,7 +643,7 @@ class FormPageMixin(object):
         )
         return form_class
 
-    def after_next_button(self):
+    def before_next_page(self):
         pass
 
     def get_context_data(self, **kwargs):
@@ -697,7 +697,7 @@ class FormPageMixin(object):
                 self.object = form.save()
             else:
                 return self.form_invalid(form)
-        self.after_next_button()
+        self.before_next_page()
         self._increment_index_in_pages()
         return self._redirect_to_page_the_user_should_be_on()
 
