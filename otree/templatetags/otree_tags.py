@@ -62,3 +62,9 @@ def active_page(request, view_name):
         return "active" if url_name == view_name else ""
     except Resolver404:
         return ""
+
+
+from .otree_forms import FormFieldNode
+
+
+register.tag('formfield', FormFieldNode.parse)
