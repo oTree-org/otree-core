@@ -201,11 +201,11 @@ class MTurkLandingPage(vanilla.TemplateView):
     def get_context_data(self, **kwargs):
         context = super(MTurkLandingPage, self).get_context_data(**kwargs)
         assignment_id = self.request.GET['assignmentId']
-        worker_id = self.request.GET['workerId']
         if assignment_id and assignment_id != 'ASSIGNMENT_ID_NOT_AVAILABLE':
             context['hit_accepted'] = True
         else:
             context['hit_accepted'] = False
+        worker_id = self.request.GET['workerId']
         context.update({
             'session': self.session,
             'assignment_id': assignment_id,
