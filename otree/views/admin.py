@@ -282,7 +282,8 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
 
             attr = getattr(model_instance, field_name, '')
             if callable(attr):
-                if Model == Player and field_name == 'role' and model_instance.group is None:
+                if Model == Player and field_name == 'role' \
+                        and model_instance.group is None:
                     attr = ''
                 else:
                     try:

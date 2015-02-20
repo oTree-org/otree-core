@@ -28,7 +28,6 @@ class User(SaveTheChange, models.Model):
 
 
 class Experimenter(User):
-
     session_experimenter = models.ForeignKey(
         SessionExperimenter, null=True, related_name='experimenter'
     )
