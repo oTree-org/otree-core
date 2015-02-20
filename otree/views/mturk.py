@@ -54,8 +54,10 @@ class CreateHitFromSession(vanilla.View):
             host=mturk_host,
         )
         url_landing_page = reverse('mturk_landing_page', args=(session.code,))
+        print url_landing_page
         # updating schema from http to https
         secured_url_landing_page = urlparse.urlunparse(urlparse.urlparse(url_landing_page)._replace(scheme='https'))
+        print secured_url_landing_page
         # TODO: valudate, that the server support https (heroku does support by default)
         hit_settings = session.session_type['mturk_hit_settings']
         # TODO: validate that there is enought money for the hit
