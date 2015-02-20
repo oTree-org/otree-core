@@ -230,8 +230,8 @@ class MTurkStart(vanilla.View):
         )
 
     def get(self, *args, **kwargs):
-        assignment_id = self.request.GET['assignmentId']
-        worker_id = self.request.GET['workerId']
+        assignment_id = self.request.GET['assignment_id']
+        worker_id = self.request.GET['worker_id']
         try:
             participant = Participant.objects.get(mturk_worker_id=worker_id,
                     mturk_assignment_id=assignment_id)
