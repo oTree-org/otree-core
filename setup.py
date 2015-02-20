@@ -73,7 +73,7 @@ setup(
     url='http://otree.org/',
     author='C. Wickens',
     author_email='c.wickens+otree@googlemail.com',
-    install_requires = REQUIREMENTS,
+    install_requires=REQUIREMENTS,
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',

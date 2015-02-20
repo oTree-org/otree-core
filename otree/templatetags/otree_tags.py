@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 # =============================================================================
 # DOCS
 # =============================================================================
@@ -14,10 +13,12 @@
 # IMPORTS
 # =============================================================================
 
+from .otree_forms import FormFieldNode
 from django import template
 from django.template.loader import render_to_string
 from django.core.urlresolvers import resolve, Resolver404
 from otree.common import Currency
+
 
 # =============================================================================
 # CONSTANTS
@@ -62,9 +63,4 @@ def active_page(request, view_name):
         return "active" if url_name == view_name else ""
     except Resolver404:
         return ""
-
-
-from .otree_forms import FormFieldNode
-
-
 register.tag('formfield', FormFieldNode.parse)

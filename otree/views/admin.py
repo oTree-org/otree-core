@@ -282,7 +282,14 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
 
             attr = getattr(model_instance, field_name, '')
             if callable(attr):
-                attr = attr()
+                if Model == Player and field_name == 'role' \
+                        and model_instance.group is None:
+                    attr = ''
+                else:
+                    try:
+                        attr = attr()
+                    except:
+                        attr = "(error)"
             row.append(attr)
         all_rows.append(row)
 
@@ -360,7 +367,7 @@ class PersistentLabURLs(vanilla.TemplateView):
     def get_context_data(self, **kwargs):
         context = super(PersistentLabURLs, self).get_context_data(**kwargs)
 
-        # open session stuff
+        # default session stuff
         from otree.views.concrete import AssignVisitorToOpenSession
         default_session_base_url = self.request.build_absolute_uri(
             AssignVisitorToOpenSession.url()
@@ -378,8 +385,8 @@ class PersistentLabURLs(vanilla.TemplateView):
 
         context.update({
             'default_session_example_urls': default_session_example_urls,
-            'access_code_for_open_session': (
-                otree.constants.access_code_for_open_session
+            'access_code_for_default_session': (
+                otree.constants.access_code_for_default_session
             ),
             'participant_label': otree.constants.participant_label,
             'default_session': default_session,

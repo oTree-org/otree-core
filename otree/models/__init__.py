@@ -86,7 +86,7 @@ class BaseGroup(groups.BaseGroup):
         return super(BaseGroup, self).set_players(players_list)
 
     def get_players(self):
-        return get_players(self)
+        return get_players(self, order_by='id_in_group')
 
     def get_player_by_role(self, role):
         return super(BaseGroup, self).get_player_by_role(role)

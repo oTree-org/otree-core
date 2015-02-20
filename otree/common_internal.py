@@ -148,12 +148,10 @@ def get_app_name_from_label(app_label):
     return apps.get_app_config(app_label).name
 
 
-def get_players(self, refresh_from_db=False):
+def get_players(self, order_by='pk', refresh_from_db=False):
     if (not refresh_from_db) and hasattr(self, '_players'):
         return self._players
-    # this means even subsession.players orders them by id_in_group, not
-    # necessarily optimal
-    self._players = list(self.player_set.order_by('id_in_group'))
+    self._players = list(self.player_set.order_by(order_by))
     return self._players
 
 
