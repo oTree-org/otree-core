@@ -191,8 +191,8 @@ class AssignVisitorToOpenSessionMTurk(AssignVisitorToOpenSessionBase):
     def url(cls):
         return otree.common_internal.add_params_to_url(
             '/{}'.format(cls.__name__), {
-                otree.constants.access_code_for_open_session:
-                    settings.ACCESS_CODE_FOR_OPEN_SESSION
+                otree.constants.access_code_for_default_session:
+                    settings.ACCESS_CODE_FOR_DEFAULT_SESSION
             }
         )
 
@@ -227,8 +227,8 @@ class AssignVisitorToOpenSession(AssignVisitorToOpenSessionBase):
     def url(cls):
         return otree.common_internal.add_params_to_url(
             '/{}'.format(cls.__name__), {
-                otree.constants.access_code_for_open_session:
-                    settings.ACCESS_CODE_FOR_OPEN_SESSION
+                otree.constants.access_code_for_default_session:
+                    settings.ACCESS_CODE_FOR_DEFAULT_SESSION
             }
         )
 

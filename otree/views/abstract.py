@@ -795,12 +795,12 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
 
     def get(self, *args, **kwargs):
         cond = (
-            self.request.GET[constants.access_code_for_open_session] ==
-            settings.ACCESS_CODE_FOR_OPEN_SESSION
+            self.request.GET[constants.access_code_for_default_session] ==
+            settings.ACCESS_CODE_FOR_DEFAULT_SESSION
         )
         if not cond:
             return HttpResponseNotFound(
-                'Incorrect access code for open session'
+                'Incorrect access code for default session'
             )
 
         global_singleton = otree.models.session.GlobalSingleton.objects.get()

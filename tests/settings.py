@@ -97,7 +97,7 @@ MIDDLEWARE_CLASSES = ()
 
 ROOT_URLCONF = 'otree.default_urls'
 
-ACCESS_CODE_FOR_OPEN_SESSION = 'idd1610'
+ACCESS_CODE_FOR_DEFAULT_SESSION = 'idd1610'
 
 PEP8 = {
     "check": (
