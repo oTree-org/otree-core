@@ -79,6 +79,7 @@ def augment_settings(settings):
             'django.contrib.auth.middleware.AuthenticationMiddleware',
             'django.contrib.messages.middleware.MessageMiddleware',
             'otree.middleware.OperationalErrorMidleware',
+            'sslify.middleware.SSLifyMiddleware',
         ],
         settings.get('MIDDLEWARE_CLASSES')
     )
