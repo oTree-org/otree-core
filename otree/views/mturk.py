@@ -53,8 +53,7 @@ class CreateHitFromSession(vanilla.View):
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
             host=mturk_host,
         )
-        url_landing_page = reverse('mturk_landing_page', args=(session.code,))
-        print url_landing_page
+        url_landing_page = self.request.build_absolute_uri(reverse('mturk_landing_page', args=(session.code,)))
         # updating schema from http to https
         secured_url_landing_page = urlparse.urlunparse(urlparse.urlparse(url_landing_page)._replace(scheme='https'))
         print secured_url_landing_page
