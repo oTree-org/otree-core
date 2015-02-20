@@ -249,7 +249,6 @@ class MTurkStart(vanilla.View):
                         "No Player objects left in the database "
                         "to assign to new visitor."
                     )
-            self.set_external_params_on_participant(participant)
             # 2014-10-17: needs to be here even if it's also set in
             # the next view to prevent race conditions
             participant.visited = True
