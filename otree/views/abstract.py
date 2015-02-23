@@ -227,8 +227,11 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         if not self._is_experimenter:
             self.player = self._user
             self.group = self.player.group
+            self.group._player = self.player
+
 
         self.subsession = self._user.subsession
+        self.subsession._player = self.player
         self.session = self._user.session
 
         # at this point, _session_user already exists, but we reassign this
