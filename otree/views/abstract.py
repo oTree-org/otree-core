@@ -157,8 +157,13 @@ class PlayerMixin(object):
         return self.PlayerClass
 
     def objects_to_save(self):
-        return [self._user, self._session_user,
+        objs = [self._user, self._session_user,
                 self.group, self.subsession.session]
+        objs.extend(self.group._players)
+        objs.extend(self.subsession._players)
+        objs.extend(self.subsession._groups)
+
+        return objs
 
 
 class ExperimenterMixin(object):

@@ -51,6 +51,10 @@ class BaseSubsession(models.Model):
     def __unicode__(self):
         return self.name()
 
+    _groups = []
+    _players = []
+    _player = None
+
     def in_previous_round(self):
         return type(self).objects.filter(
             session=self.session,
@@ -83,6 +87,8 @@ class BaseSubsession(models.Model):
         Maybe this should be re-run after before_session_starts() to ensure that
         id_in_groups are consistent. Or at least we should validate.
 
+
+        warning: this deletes the groups and any data stored on them
         """
 
         # first, get players in each group

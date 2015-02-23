@@ -149,14 +149,19 @@ def get_app_name_from_label(app_label):
 
 
 def get_players(self, order_by='pk', refresh_from_db=False):
-    if (not refresh_from_db) and hasattr(self, '_players'):
+    if (not refresh_from_db) and self._players:
         return self._players
-    self._players = list(self.player_set.order_by(order_by))
+    players = list(self.player_set.order_by(order_by))
+    if self._player:
+        for i, p in enumerate(players):
+            if p == self._player:
+                players[i] = self._player
+    self._players = players
     return self._players
 
 
 def get_groups(self, refresh_from_db=False):
-    if (not refresh_from_db) and hasattr(self, '_groups'):
+    if (not refresh_from_db) and self._groups:
         return self._groups
     self._groups = list(self.group_set.all())
     return self._groups

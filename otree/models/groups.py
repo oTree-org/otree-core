@@ -19,6 +19,9 @@ class BaseGroup(SaveTheChange, models.Model):
     def __unicode__(self):
         return str(self.pk)
 
+    _players = []
+    _player = None
+
     def get_player_by_id(self, id_in_group):
         for p in self.get_players():
             if p.id_in_group == id_in_group:
