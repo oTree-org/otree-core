@@ -864,7 +864,8 @@ class AdminSessionPageMixin(object):
         context.update({'session': self.session,
                         'other_sessions': other_sessions,
                         'is_demo': self.is_demo,
-                        'has_top_menu': True})
+                        'has_top_menu': True,
+                        'is_debug': settings.DEBUG})
         return context
 
     def get_template_names(self):

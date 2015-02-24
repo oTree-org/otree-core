@@ -1,3 +1,10 @@
+<!--bootstrap popover launch-->
+<script type="text/javascript" charset="utf-8">
+$(function () {
+    $('[data-toggle="popover"]').popover()
+})
+</script>
+<!--end bootstrap popover launch-->
 <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container">
         <div style="padding-left:100px">
@@ -11,6 +18,11 @@
                     <li><a href="{% url 'persistent_lab_urls' %}"><h4>Persistent URLs</h4></a></li>
                 </ul>
                 </li>
+                {% if is_debug %}
+                <li><a href="#" onclick="return false" data-toggle="popover" data-trigger="hover" data-content="Debug mode (can be disabled in settings.py)" data-placement="bottom">
+                    <h4><span style="color: #fff" class="glyphicon glyphicon-wrench"></span></h4>
+                </a></li>
+                {% endif %}
             </ul>
         </div>
     </div>

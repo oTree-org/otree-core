@@ -42,7 +42,9 @@ class CreateHitFromSession(vanilla.View):
 
     def get(self, request, *args, **kwargs):
         session = self.session
-        # if DEBUG mode all HITS are created in sandbox of mturk
+        if session.mturk_id:
+            return HttpResponseRedirect(reverse('admin_home'))
+        # if we are in DEBUG mode all HITS are created in mturk sandbox
         if settings.DEBUG:
             mturk_host = settings.MTURK_SANDBOX_HOST
         else:
@@ -56,23 +58,23 @@ class CreateHitFromSession(vanilla.View):
         url_landing_page = self.request.build_absolute_uri(reverse('mturk_landing_page', args=(session.code,)))
         # updating schema from http to https
         secured_url_landing_page = urlparse.urlunparse(urlparse.urlparse(url_landing_page)._replace(scheme='https'))
-        print secured_url_landing_page
-        # TODO: valudate, that the server support https (heroku does support by default)
+        # TODO: validate, that the server support https (heroku does support by default)
         hit_settings = session.session_type['mturk_hit_settings']
         # TODO: validate that there is enought money for the hit
-        reward = boto.mturk.price.Price(amount=session.session_type['fixed_pay'])
+        reward = boto.mturk.price.Price(amount=request.GET['hit-reward'])
         # creating external questions, that would be passed to the hit
         external_question = boto.mturk.question.ExternalQuestion(
             secured_url_landing_page,
             hit_settings['frame_height']
         )
-        hit_result = mturk_connection.create_hit(
-            title=hit_settings['title'],
-            description=hit_settings['description'],
-            keywords=hit_settings['keywords'],
+        hit = mturk_connection.create_hit(
+            title=request.GET['hit-title'],
+            description=request.GET['hit-description'],
+            keywords=[k.strip() for k in request.GET['hit-keywords'].split(',')],
             question=external_question,
             max_assignments=len(session.get_participants()),
             reward=reward,
         )
-        session.has_mturk_hit = True
-        return HttpResponseRedirect(reverse('session_monitor', args=(session.pk,)))
+        session.mturk_id = hit[0].HITId
+        session.save()
+        return HttpResponseRedirect(reverse('admin_home'))

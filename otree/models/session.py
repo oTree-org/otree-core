@@ -124,9 +124,9 @@ class Session(ModelWithVars):
 
     mturk_payment_was_sent = models.BooleanField(default=False)
 
-    has_mturk_hit = models.BooleanField(
-        default=False,
-        doc="Is there a HIT on MTurk for this session"
+    mturk_id = models.CharField(
+        max_length=300, null=True, blank=True,
+        help_text='Hit id for this session on MTurk',
     )
 
     hidden = models.BooleanField(default=False)

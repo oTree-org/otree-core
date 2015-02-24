@@ -14,6 +14,7 @@ from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.forms.forms import pretty_name
+from django.conf import settings
 
 import vanilla
 from ordered_set import OrderedSet as oset
@@ -789,7 +790,8 @@ class AdminHome(vanilla.ListView):
         context = super(AdminHome, self).get_context_data(**kwargs)
         global_singleton = otree.models.session.GlobalSingleton.objects.get()
         default_session = global_singleton.default_session
-        context.update({'default_session': default_session})
+        context.update({'default_session': default_session,
+                        'is_debug': settings.DEBUG})
         return context
 
     def get_queryset(self):

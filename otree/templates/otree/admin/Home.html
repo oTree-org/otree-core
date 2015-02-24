@@ -3,17 +3,74 @@
 
 {% block title %}
 oTree Admin
+    <a class="btn btn-primary btn" href="{% url 'session_types_create' %}" style="float: right;">
+        <span class="glyphicon glyphicon-plus"></span> Create new session
+    </a>
 {% endblock %}
-
 {% block content %}
 {{ block.super }}
-<!--bootstrap initialize popover-->
+<!--modal windows for creating mturk session-->
+<div class="modal fade" id="mturk" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="exampleModalLabel">Create HIT</h4>
+      </div>
+      <div class="modal-body">
+          <div class="form-group">
+              <label for="recipient-name" class="col-sm-3 control-label">Title:</label>
+              <input type="text" class="form-control" name="hit-title">
+          </div>
+          <div class="form-group">
+              <label for="recipient-name" class="col-sm-3 control-label">Description:</label>
+              <input type="text" class="form-control" name="hit-description">
+          </div>
+          <div class="form-group">
+              <label for="recipient-name" class="col-sm-3 control-label">Keywords:</label>
+              <input type="text" class="form-control" name="hit-keywords">
+          </div>
+          <div class="form-group">
+              <label for="recipient-name" class="col-sm-3 control-label">Money reward:</label>
+              <input type="text" class="form-control" name="hit-reward">
+          </div>
+          <div class="form-group">
+              <label for="recipient-name" class="col-sm-3 control-label">Assignments:</label>
+              <input type="text" class="form-control" name="hit-assignments" readOnly="true">
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary" id="create-hit" formmethod="GET" formaction="#">Create HIT</button>
+      </div>
+    </div>
+  </div>
+</div>
 <script type="text/javascript" charset="utf-8">
-$(function () {
-  $('[data-toggle="popover"]').popover()
+$(document).ready(function() {
+    $('[data-target="#mturk"][data-mturk!="None"]').each(function() {
+    $(this).removeClass('btn-primary').addClass('btn-success')
+})})
+$('#mturk').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget) // Button that triggered the modal
+    var session_code = button.data('code') // Extract info from data-* attributes
+    var hit_title = button.data('title')
+    var hit_description = button.data('description')
+    var hit_keywords = button.data('keywords')
+    var hit_assignments = button.data('assignments')
+    var hit_reward = button.data('reward')
+    var hit_create_href = button.data('href')
+    var modal = $(this)
+    modal.find('.modal-title').text('Create HIT for session "' + session_code + '"')
+    modal.find('button#create-hit').attr('formaction', hit_create_href)
+    modal.find('input[name="hit-title"]:text').val(hit_title)
+    modal.find('input[name="hit-description"]:text').val(hit_description)
+    modal.find('input[name="hit-keywords"]:text').val(hit_keywords)
+    modal.find('input[name="hit-reward"]:text').val(hit_reward)
+    modal.find('input[name="hit-assignments"]:text').val(hit_assignments)
 })
 </script>
-<!--end bootstrap initialize popover-->
+<!--end modal windows for creating mturk session-->
 {% include 'otree/TopMenu.html' %}
 {% if object_list %}
 <table class="table">
@@ -26,35 +83,38 @@ $(function () {
     <tbody>
     {% for s in object_list %}
     <tr>
-        <td><a href="{% url 'session_description' s.pk %}" target="_blank">{{ s.code }}</a></td>
+        <td><a href="{% url 'session_description' s.pk %}">{{ s.code }}</a></td>
         <td>{{ s.label }}</td>
         <td>{{ s.session_type.name }}</td>
         <td>
-            <a href="{% url 'session_start_links' s.pk %}" target="_blank" class="btn btn-primary btn-sm" role="button">
+            <a href="{% url 'session_start_links' s.pk %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-link"></span> Links
             </a>
-            <a href="{% url 'session_edit' s.pk %}" target="_blank" class="btn btn-primary btn-sm" role="button">
+            <a href="{% url 'session_edit' s.pk %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-pencil"></span> Edit
             </a>
-            <a href="{% url 'session_monitor' s.pk %}" target="_blank" class="btn btn-primary btn-sm" role="button">
+            <a href="{% url 'session_monitor' s.pk %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-eye-open"></span> Monitor
             </a>
-            <a href="{% url 'session_results' s.pk %}" target="_blank" class="btn btn-primary btn-sm" role="button">
+            <a href="{% url 'session_results' s.pk %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-list-alt"></span> Results
             </a>
-            <a href="{% url 'session_payments' s.pk %}" target="_blank" class="btn btn-primary btn-sm" role="button">
+            <a href="{% url 'session_payments' s.pk %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-usd"></span> Payments
             </a>
-            <a href="{% url 'create_hit_from_session' s.pk %}" class="btn btn-primary btn-sm" data-toggle="popover" data-trigger="hover" data-content="Create MTurk HIT from this session by clicking the button">
+<!--href="{% url 'create_hit_from_session' s.pk %}" -->
+            {% with s.session_type.mturk_hit_settings as hit %}
+            <button data-href="{% url 'create_hit_from_session' s.pk %}" data-mturk="{{ s.mturk_id }}" data-code="{{ s.code }}" data-title="{{ hit.title }}" data-description="{{ hit.description }}" data-keywords="{{ hit.keywords|join:', ' }}" data-reward="{{ s.session_type.fixed_pay }}" data-assignments="{{ s.get_participants|length }}" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#mturk">
                 <span class="glyphicon glyphicon-cloud"></span> MTurk
-            </a>
+            </button>
+            {% endwith %}
             {% if s != default_session %}
             <a href="{% url 'set_default_session' s.pk %}" class="btn btn-primary btn-sm" data-toggle="popover" data-trigger="hover" data-content="You can route the participants to this session by clicking the button.">
-                <span class="glyphicon glyphicon-info-sign"></span> Default
+                <span class="glyphicon glyphicon-home"></span> Default
             </a>
             {% else %}
             <a href="{% url 'unset_default_session' %}" class="btn btn-success btn-sm" data-toggle="popover" data-trigger="hover" data-content="The participants are routed to this session. By clicking the button you can unset it.">
-                <span class="glyphicon glyphicon-info-sign"></span> Default
+                <span class="glyphicon glyphicon-home"></span> Default
             </a>
             {% endif %}
         </td>
@@ -65,5 +125,4 @@ $(function () {
 {% else %}
     <p>No sessions available.</p>
 {% endif %}
-<p><a class="btn btn-primary btn" href="{% url 'session_types_create' %}">Create new session</a></p>
 {% endblock %}

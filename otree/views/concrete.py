@@ -198,19 +198,18 @@ class MTurkLandingPage(vanilla.TemplateView):
             request, *args, **kwargs
         )
 
-    def get_context_data(self, **kwargs):
-        context = super(MTurkLandingPage, self).get_context_data(**kwargs)
-        assignment_id = self.request.GET['assignmentId']
+    def get(self, request, *args, **kwargs):
+        assignment_id = self.request.GET['assignmentId'] if 'assignmentId' in self.request.GET else ''
         if assignment_id and assignment_id != 'ASSIGNMENT_ID_NOT_AVAILABLE':
-            context['hit_accepted'] = True
-            context['worker_id'] = self.request.GET['workerId']
+            url_start = reverse('mturk_start', args=(self.session.code,))
+            url_start = otree.common_internal.add_params_to_url(url_start, {
+                'assignmentId': self.request.GET['assignmentId'],
+                'workerId': self.request.GET['workerId']})
+            return HttpResponseRedirect(url_start)
         else:
-            context['hit_accepted'] = False
-        context.update({
-            'session': self.session,
-            'assignment_id': assignment_id,
-        })
-        return context
+            context = super(MTurkLandingPage, self).get_context_data(**kwargs)
+            return self.render_to_response(context)
+
 
 class MTurkStart(vanilla.View):
 
@@ -230,11 +229,12 @@ class MTurkStart(vanilla.View):
         )
 
     def get(self, *args, **kwargs):
-        assignment_id = self.request.GET['assignment_id']
-        worker_id = self.request.GET['worker_id']
+        assignment_id = self.request.GET['assignmentId']
+        worker_id = self.request.GET['workerId']
         try:
-            participant = Participant.objects.get(mturk_worker_id=worker_id,
-                    mturk_assignment_id=assignment_id)
+            participant = Participant.objects.get(
+                mturk_worker_id=worker_id,
+                mturk_assignment_id=assignment_id)
         except Participant.DoesNotExist:
             with lock_on_this_code_path():
                 try:
