@@ -116,6 +116,10 @@ class _OtreeNotNullableModelFieldMixin(_OtreeModelFieldMixin):
 
 class _OtreeNumericFieldMixin(object):
     def __init__(self, *args, **kwargs):
+        self.min = kwargs.pop('min', None)
+        self.max = kwargs.pop('max', None)
+
+        # 2015-2-25: deprecated, remove this
         self.bounds = kwargs.pop('bounds', None)
         super(_OtreeNumericFieldMixin, self).__init__(*args, **kwargs)
 
