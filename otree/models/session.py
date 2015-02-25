@@ -124,7 +124,11 @@ class Session(ModelWithVars):
 
     mturk_payment_was_sent = models.BooleanField(default=False)
 
-    mturk_id = models.CharField(
+    mturk_HITId = models.CharField(
+        max_length=300, null=True, blank=True,
+        help_text='Hit id for this session on MTurk',
+    )
+    mturk_HITGroupId = models.CharField(
         max_length=300, null=True, blank=True,
         help_text='Hit id for this session on MTurk',
     )
@@ -219,6 +223,20 @@ class Session(ModelWithVars):
             subsession.save()
         self._ready_to_play = True
         self.save()
+
+    def mturk_requester_url(self):
+        if settings.DEBUG:
+            requester_url = "https://requestersandbox.mturk.com/mturk/manageHITs"
+        else:
+            requester_url = "https://requester.mturk.com/mturk/manageHITs"
+        return requester_url
+
+    def mturk_worker_url(self):
+        if settings.DEBUG:
+            worker_url = "https://workersandbox.mturk.com/mturk/preview?groupId=%s" % self.mturk_HITGroupId
+        else:
+            worker_url = "https://www.mturk.com/mturk/preview?groupId=%s" % self.mturk_HITGroupId
+        return worker_url
 
     def advance_last_place_participants(self):
         participants = self.get_participants()

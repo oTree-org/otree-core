@@ -6,6 +6,7 @@ import vanilla
 import boto.mturk.connection
 
 from django.conf import settings
+from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404
@@ -42,7 +43,7 @@ class CreateHitFromSession(vanilla.View):
 
     def get(self, request, *args, **kwargs):
         session = self.session
-        if session.mturk_id:
+        if session.mturk_HITId:
             return HttpResponseRedirect(reverse('admin_home'))
         # if we are in DEBUG mode all HITS are created in mturk sandbox
         if settings.DEBUG:
@@ -74,7 +75,20 @@ class CreateHitFromSession(vanilla.View):
             question=external_question,
             max_assignments=len(session.get_participants()),
             reward=reward,
+            response_groups=('Minimal', 'HITDetail'),
         )
-        session.mturk_id = hit[0].HITId
+        session.mturk_HITId = hit[0].HITId
+        session.mturk_HITGroupId = hit[0].HITGroupId
         session.save()
+        message = """
+            You have created a hit for session <b>%s</b>.<br>
+            To look at the hit as a <em>requester</em>
+            follow this <a href="%s">link</a>.<br>
+            To look at the hit as a <em>worker</em>
+            follow this <a href="%s">link</a>.
+            """ % (session.code,
+                   session.mturk_requester_url(),
+                   session.mturk_worker_url())
+
+        messages.success(request, message, extra_tags='safe')
         return HttpResponseRedirect(reverse('admin_home'))

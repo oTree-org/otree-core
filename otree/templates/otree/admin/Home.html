@@ -32,7 +32,10 @@ oTree Admin
           </div>
           <div class="form-group">
               <label for="recipient-name" class="col-sm-3 control-label">Money reward:</label>
-              <input type="text" class="form-control" name="hit-reward">
+              <div class="input-group">
+                  <div class="input-group-addon">$</div>
+                  <input type="text" class="form-control" name="hit-reward">
+              </div>
           </div>
           <div class="form-group">
               <label for="recipient-name" class="col-sm-3 control-label">Assignments:</label>
@@ -47,10 +50,6 @@ oTree Admin
   </div>
 </div>
 <script type="text/javascript" charset="utf-8">
-$(document).ready(function() {
-    $('[data-target="#mturk"][data-mturk!="None"]').each(function() {
-    $(this).removeClass('btn-primary').addClass('btn-success')
-})})
 $('#mturk').on('show.bs.modal', function (event) {
     var button = $(event.relatedTarget) // Button that triggered the modal
     var session_code = button.data('code') // Extract info from data-* attributes
@@ -66,7 +65,7 @@ $('#mturk').on('show.bs.modal', function (event) {
     modal.find('input[name="hit-title"]:text').val(hit_title)
     modal.find('input[name="hit-description"]:text').val(hit_description)
     modal.find('input[name="hit-keywords"]:text').val(hit_keywords)
-    modal.find('input[name="hit-reward"]:text').val(hit_reward)
+    modal.find('input[name="hit-reward"]:text').val(parseFloat(hit_reward).toFixed(2))
     modal.find('input[name="hit-assignments"]:text').val(hit_assignments)
 })
 </script>
@@ -102,18 +101,23 @@ $('#mturk').on('show.bs.modal', function (event) {
             <a href="{% url 'session_payments' s.pk %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-usd"></span> Payments
             </a>
-<!--href="{% url 'create_hit_from_session' s.pk %}" -->
+            {% if not s.mturk_HITId %}
             {% with s.session_type.mturk_hit_settings as hit %}
             <button data-href="{% url 'create_hit_from_session' s.pk %}" data-mturk="{{ s.mturk_id }}" data-code="{{ s.code }}" data-title="{{ hit.title }}" data-description="{{ hit.description }}" data-keywords="{{ hit.keywords|join:', ' }}" data-reward="{{ s.session_type.fixed_pay }}" data-assignments="{{ s.get_participants|length }}" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#mturk">
                 <span class="glyphicon glyphicon-cloud"></span> MTurk
             </button>
             {% endwith %}
+            {% else %}
+            <a href="#" onclick="return false" class="btn btn-success btn-sm" data-toggle="popover" data-trigger="focus" data-content="<a href='{{ s.mturk_requester_url }}'>Requester link.</a><br><a href='{{ s.mturk_worker_url }}'>Worker link.</a>" data-placement="bottom" data-html="true">
+                <span class="glyphicon glyphicon-cloud"></span> MTurk
+            </a>
+            {% endif %}
             {% if s != default_session %}
-            <a href="{% url 'set_default_session' s.pk %}" class="btn btn-primary btn-sm" data-toggle="popover" data-trigger="hover" data-content="You can route the participants to this session by clicking the button.">
+            <a href="{% url 'set_default_session' s.pk %}" class="btn btn-primary btn-sm" data-toggle="popover" data-trigger="hover" data-content="You can route the participants to this session by clicking the button." data-placement="bottom">
                 <span class="glyphicon glyphicon-home"></span> Default
             </a>
             {% else %}
-            <a href="{% url 'unset_default_session' %}" class="btn btn-success btn-sm" data-toggle="popover" data-trigger="hover" data-content="The participants are routed to this session. By clicking the button you can unset it.">
+            <a href="{% url 'unset_default_session' %}" class="btn btn-success btn-sm" data-toggle="popover" data-trigger="hover" data-content="The participants are routed to this session. By clicking the button you can unset it." data-placement="bottom">
                 <span class="glyphicon glyphicon-home"></span> Default
             </a>
             {% endif %}
@@ -125,4 +129,5 @@ $('#mturk').on('show.bs.modal', function (event) {
 {% else %}
     <p>No sessions available.</p>
 {% endif %}
+{% include "otree/messages.html" %}
 {% endblock %}

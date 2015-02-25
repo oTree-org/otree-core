@@ -3,11 +3,10 @@ window.setTimeout(function() {
         $(".alert").fadeTo(500, 0).slideUp(500, function(){
             $(this).remove(); 
             });
-        }, 5000);
+        }, 10000);
 </script>
-{% if messages %}
 {% for message in messages %}
-<div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    <div class="alert alert-{{ message.tags.split|last }}">
+        {% if 'safe' in message.tags %}{{ message|safe }}{% else %}{{ message }}{% endif %}
+    </div>
 {% endfor %}
-{% endif %}
-
