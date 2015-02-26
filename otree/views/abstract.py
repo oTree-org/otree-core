@@ -122,9 +122,22 @@ class OTreeMixin(object):
                 self._session_user._index_in_pages
             ]
         except IndexError:
+            if self.session.mturk_HITId:
+                assignment_id = self.player.participant.mturk_assignment_id
+                if settings.DEBUG:
+                    url = 'http://workersandbox.mturk.com/mturk/externalSubmit'
+                else:
+                    url = "https://www.mturk.com/mturk/externalSubmit"
+                url = add_params_to_url(
+                    url,
+                    {
+                        'assignmentId': assignment_id,
+                        'extra_param': '1' # required extra param?
+                    }
+                )
+                return HttpResponseRedirect(url)
             from otree.views.concrete import OutOfRangeNotification
             return OutOfRangeNotification.url(self._session_user)
-
 
 class NonSequenceUrlMixin(object):
     @classmethod
@@ -322,12 +335,8 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         assert self._index_in_pages == self._session_user._index_in_pages
 
         self._record_page_completion_time()
-        in_last_page = (
-            self._session_user._index_in_pages ==
-            self._session_user._max_page_index
-        )
-        if in_last_page:
-            return
+        # we should allow a user to move beyond the last page if it's mturk
+        # also in general maybe we should show the 'out of sequence' page
 
         # performance optimization:
         # we skip any page that is a sequence page where is_displayed

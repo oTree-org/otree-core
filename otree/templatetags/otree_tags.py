@@ -54,14 +54,10 @@ def c(val):
 
 register.filter('c', c)
 
+#FIXME: deprecated, remove this
 @register.simple_tag(takes_context=True)
 def mturk_submit_button(context):
-    participant = context['player'].participant
-    assignment_id = participant.mturk_assignment_id
-    url = "https://www.mturk.com/mturk/externalSubmit"
-    url = add_params_to_url(url, {'assignmentId': assignment_id,
-                                  'foo': 'bar'})
-    return mark_safe('<a href="%s">Continue</a>' % url)
+    pass
 
 @register.simple_tag
 def active_page(request, view_name):
