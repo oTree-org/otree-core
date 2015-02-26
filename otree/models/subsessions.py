@@ -51,6 +51,10 @@ class BaseSubsession(models.Model):
     def __unicode__(self):
         return self.name()
 
+    _groups = []
+    _players = []
+    _player = None
+
     def in_previous_round(self):
         return type(self).objects.filter(
             session=self.session,
@@ -80,9 +84,11 @@ class BaseSubsession(models.Model):
     def set_groups(self, groups):
         """elements in the list can be sublists, or group objects.
 
-        Maybe this should be re-run after initialize() to ensure that
+        Maybe this should be re-run after before_session_starts() to ensure that
         id_in_groups are consistent. Or at least we should validate.
 
+
+        warning: this deletes the groups and any data stored on them
         """
 
         # first, get players in each group
@@ -191,7 +197,7 @@ class BaseSubsession(models.Model):
                 return group
         return groups_missing_players[0]
 
-    def initialize(self):
+    def before_session_starts(self):
         '''This gets called at the beginning of every subsession, before the
         first page is loaded.
 
@@ -202,8 +208,8 @@ class BaseSubsession(models.Model):
         pass
 
     def _initialize(self):
-        '''wrapper method for self.initialize()'''
-        self.initialize()
+        '''wrapper method for self.before_session_starts()'''
+        self.before_session_starts()
         # needs to be get_players and get_groups instead of
         # self.player_set.all() because that would just send a new query
         # to the DB

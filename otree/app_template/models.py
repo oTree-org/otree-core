@@ -57,7 +57,7 @@ keywords = ("Game Theory", "Nash Equilibrium", "Economics")
 
 class Constants:
     name_in_url = '{{ app_name }}'
-    players_per_group = 2
+    players_per_group = None
     num_rounds = 1
 
     # define more constants here
@@ -89,7 +89,8 @@ class Player(otree.models.BasePlayer):
 
     # example field
     my_field = models.CurrencyField(
-        bounds=[c(0), c(10)],
+        min=c(0),
+        max=c(10),
         doc="""
         Description of this field, for documentation
         """

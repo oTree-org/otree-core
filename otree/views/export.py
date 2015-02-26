@@ -34,54 +34,6 @@ LINE_BREAK = '\r\n'
 MODEL_NAMES = ["Participant", "Player", "Group", "Subsession", "Session"]
 
 CONCEPTUAL_OVERVIEW_TEXT = """
-oTree data is exported in CSV (comma-separated values) format.
-
-Each field is prefixed by the name of the model it belongs to.
-
-Here is an explanation of these terms:
-
-Session
-=======
-
-Refers to an event where a group of people spend time taking part in oTree
-experiments.
-
-An example of a session would be: "On Tuesday at 3PM, 30 people will come to
-the lab for 1 hour, during which time they will play a trust game, followed by
-2 ultimatum games, followed by a questionnaire. Participants get paid EUR 10.00
-for showing up, plus bonus amounts for participating.
-
-Subsession
-==========
-
-A session can be broken down into "subsessions".
-These are interchangeable units or modules that come one after another.
-Each subsession has a sequence of one or more pages the player must interact
-with.
-The session in the above example had 4 subsessions:
-
-Trust game
-Ultimatum game 1
-Ultimatum game 2
-Questionnaire
-
-"Player"
-=============
-
-Each subsession has data fields for a
-
-and "Participant"
-========================================
-
-Each session has a number of players. They are referred to as "participants".
-
-Each subsession has its own "subsession player" (or just "player" for short)
-objects that are independent of the other subsessions.
-
-If a session has 4 subsessions, for each person there will be 1 sess
-
-
-
 """
 
 

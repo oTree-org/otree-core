@@ -23,8 +23,6 @@ class MyPage(Page):
     def is_displayed(self):
         return True
 
-    template_name = '{{ app_name }}/MyPage.html'
-
     def vars_for_template(self):
         return {
             'my_variable_here': 1,
@@ -39,7 +37,7 @@ class ResultsWaitPage(WaitPage):
 
 class Results(Page):
 
-    template_name = '{{ app_name }}/Results.html'
+    pass
 
 
 page_sequence =[

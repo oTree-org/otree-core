@@ -229,16 +229,6 @@ def pages_function(rules, **kwargs):
                 if cond:
                     msg = 'views.py: "{}" is not a valid page'.format(ViewCls)
                     rules.push_error(msg)
-                cond = (
-                    issubclass(ViewCls, otree.views.Page) and not
-                    getattr(ViewCls, 'template_name')
-                )
-                if cond:
-                    msg = (
-                        'views.py: Page class "{}" is missing '
-                        'a template_name attribute'
-                    ).format(ViewCls)
-                    rules.push_error(msg)
 
 
 @register_rules(id='otree.E005')

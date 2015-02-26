@@ -9,6 +9,7 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
 
 REQUIREMENTS = [
     'Babel>=1.3',
+    'boto>=2.36.0'
     'Django>=1.7.1',
     'coverage>=3.7.1',
     'dj-static>=0.0.6',
@@ -21,6 +22,7 @@ REQUIREMENTS = [
     'django-inspect-model>=0.7',
     'django-ptree-mturk>=1.0.1',
     'django-save-the-change>=1.0.0',
+    'django-sslify>=0.2.5',
     'django-vanilla-views>=1.0.2',
     'flake8>=2.2.5',
     'handy>=0.3',
@@ -35,7 +37,7 @@ REQUIREMENTS = [
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version = '0.2.262'
+version = '0.2.270'
 
 
 if sys.argv[-1] == 'publish':
@@ -73,7 +75,7 @@ setup(
     url='http://otree.org/',
     author='C. Wickens',
     author_email='c.wickens+otree@googlemail.com',
-    install_requires = REQUIREMENTS,
+    install_requires=REQUIREMENTS,
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',

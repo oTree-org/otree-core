@@ -65,8 +65,8 @@ class BaseSubsession(subsessions.BaseSubsession):
     def in_all_rounds(self):
         return super(BaseSubsession, self).in_all_rounds()
 
-    def initialize(self):
-        return super(BaseSubsession, self).initialize()
+    def before_session_starts(self):
+        return super(BaseSubsession, self).before_session_starts()
 
     class Meta:
         abstract = True
@@ -86,7 +86,7 @@ class BaseGroup(groups.BaseGroup):
         return super(BaseGroup, self).set_players(players_list)
 
     def get_players(self):
-        return get_players(self)
+        return get_players(self, order_by='id_in_group')
 
     def get_player_by_role(self, role):
         return super(BaseGroup, self).get_player_by_role(role)

@@ -43,8 +43,8 @@ class Page(abstract.PlayerUpdateView):
     def vars_for_template(self):
         return super(Page, self).vars_for_template()
 
-    def after_next_button(self):
-        return super(Page, self).after_next_button()
+    def before_next_page(self):
+        return super(Page, self).before_next_page()
 
     def get_form_class(self):
         return super(Page, self).get_form_class()
@@ -68,8 +68,8 @@ class ExperimenterPage(abstract.ExperimenterUpdateView):
     def vars_for_template(self):
         return super(ExperimenterPage, self).vars_for_template()
 
-    def after_next_button(self):
-        return super(ExperimenterPage, self).after_next_button()
+    def before_next_page(self):
+        return super(ExperimenterPage, self).before_next_page()
 
     def get_form_class(self):
         return super(ExperimenterPage, self).get_form_class()

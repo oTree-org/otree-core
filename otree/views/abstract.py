@@ -170,8 +170,14 @@ class PlayerMixin(object):
         return self.PlayerClass
 
     def objects_to_save(self):
-        return [self._user, self._session_user,
-                self.group, self.subsession.session]
+        objs = [self._user, self._session_user, self.subsession.session]
+        if self.group:
+            objs.append(self.group)
+            objs.extend(self.group._players)
+        objs.extend(self.subsession._players)
+        objs.extend(self.subsession._groups)
+
+        return objs
 
 
 class ExperimenterMixin(object):
@@ -235,8 +241,12 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         if not self._is_experimenter:
             self.player = self._user
             self.group = self.player.group
+            if self.group:
+                self.group._player = self.player
+
 
         self.subsession = self._user.subsession
+        self.subsession._player = self.player
         self.session = self._user.session
 
         # at this point, _session_user already exists, but we reassign this
@@ -652,7 +662,7 @@ class FormPageMixin(object):
         )
         return form_class
 
-    def after_next_button(self):
+    def before_next_page(self):
         pass
 
     def get_context_data(self, **kwargs):
@@ -706,7 +716,7 @@ class FormPageMixin(object):
                 self.object = form.save()
             else:
                 return self.form_invalid(form)
-        self.after_next_button()
+        self.before_next_page()
         self._increment_index_in_pages()
         return self._redirect_to_page_the_user_should_be_on()
 
@@ -804,12 +814,12 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
 
     def get(self, *args, **kwargs):
         cond = (
-            self.request.GET[constants.access_code_for_open_session] ==
-            settings.ACCESS_CODE_FOR_OPEN_SESSION
+            self.request.GET[constants.access_code_for_default_session] ==
+            settings.ACCESS_CODE_FOR_DEFAULT_SESSION
         )
         if not cond:
             return HttpResponseNotFound(
-                'Incorrect access code for open session'
+                'Incorrect access code for default session'
             )
 
         global_singleton = otree.models.session.GlobalSingleton.objects.get()
