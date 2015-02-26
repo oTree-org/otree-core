@@ -126,12 +126,12 @@ class _OtreeNumericFieldMixin(object):
     auto_submit_default = 0
 
 
-class MoneyField(_OtreeNullableModelFieldMixin,
+class RealWorldCurrencyField(_OtreeNullableModelFieldMixin,
                  _OtreeNumericFieldMixin, easymoney.MoneyField):
 
-    MONEY_CLASS = otree.common.Money
+    MONEY_CLASS = otree.common.RealWorldCurrency
 
-    auto_submit_default = otree.common.Money(0)
+    auto_submit_default = otree.common.RealWorldCurrency(0)
 
 
 class CurrencyField(_OtreeNullableModelFieldMixin,

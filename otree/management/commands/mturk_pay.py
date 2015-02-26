@@ -76,10 +76,10 @@ class Command(BaseCommand):
                 'Error: This subsession was already paid through oTree.'
             )
 
-        if not (settings.PAYMENT_CURRENCY_CODE == 'USD' and
+        if not (settings.REAL_WORLD_CURRENCY_CODE == 'USD' and
                 settings.CURRENCY_DECIMAL_PLACES == 2):
             raise ImproperlyConfigured(
-                'Error. PAYMENT_CURRENCY_CODE must be set to USD and '
+                'Error. REAL_WORLD_CURRENCY_CODE must be set to USD and '
                 'CURRENCY_DECIMAL_PLACES must be set to 2'
             )
         else:
@@ -99,7 +99,7 @@ class Command(BaseCommand):
     def pay_hit_bonuses(self, is_confirmed):
         total_money_paid = 0
         for participant in self.session.get_participants():
-            bonus = participant.payoff_from_subsessions().to_money()
+            bonus = participant.payoff_from_subsessions().to_real_world_currency()
             if bonus is None:
                 bonus = 0
             total_money_paid += bonus

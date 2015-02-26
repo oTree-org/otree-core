@@ -9,13 +9,13 @@ from django.utils.safestring import mark_safe
 import easymoney
 
 
-class Money(easymoney.Money):
+class RealWorldCurrency(easymoney.Money):
     '''payment currency'''
 
-    CODE = settings.PAYMENT_CURRENCY_CODE
-    FORMAT = settings.PAYMENT_CURRENCY_FORMAT
-    LOCALE = settings.PAYMENT_CURRENCY_LOCALE
-    DECIMAL_PLACES = settings.PAYMENT_CURRENCY_DECIMAL_PLACES
+    CODE = settings.REAL_WORLD_CURRENCY_CODE
+    FORMAT = settings.REAL_WORLD_CURRENCY_FORMAT
+    LOCALE = settings.REAL_WORLD_CURRENCY_LOCALE
+    DECIMAL_PLACES = settings.REAL_WORLD_CURRENCY_DECIMAL_PLACES
 
     def to_number(self):
         return Decimal(self)
@@ -29,7 +29,7 @@ class Currency(easymoney.Money):
     LOCALE = settings.GAME_CURRENCY_LOCALE
     DECIMAL_PLACES = settings.GAME_CURRENCY_DECIMAL_PLACES
 
-    def to_money(self, subsession):
+    def to_real_world_currency(self, subsession):
         # subsession arg can actually be a session as well
         # can't use isinstance() to avoid circular import
         if subsession.__class__.__name__ == 'Session':
@@ -38,9 +38,8 @@ class Currency(easymoney.Money):
             session = subsession.session
 
         if settings.USE_POINTS:
-            return Money(self * session.money_per_point)
+            return RealWorldCurrency(self * session.real_world_currency_per_point)
         else:
-            # should i convert to Money?
             return self
 
     def to_number(self):

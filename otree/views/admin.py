@@ -33,7 +33,7 @@ from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
 import otree.constants
 import otree.models.session
 from otree.common import Currency as c
-from otree.common import Money
+from otree.common import RealWorldCurrency
 from otree.models.session import Session, Participant
 
 
@@ -107,7 +107,7 @@ def get_all_fields(Model, for_export=False):
         'Session': {
             'git_commit_timestamp',
             'fixed_pay',
-            'money_per_point',
+            'real_world_currency_per_point',
             'comment',
             '_ready_to_play',
         },
@@ -565,7 +565,7 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
     fields = [
         'label',
         'experimenter_name',
-        'money_per_point',
+        'real_world_currency_per_point',
         'time_scheduled',
         'hidden',
         'fixed_pay',
@@ -592,19 +592,19 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
         participants = session.get_participants()
         total_payments = sum(
             participant.total_pay() or c(0) for participant in participants
-        ).to_money(session)
+        ).to_real_world_currency(session)
 
         try:
             mean_payment = total_payments / len(participants)
         except ZeroDivisionError:
-            mean_payment = Money(0)
+            mean_payment = RealWorldCurrency(0)
 
         context = super(SessionPayments, self).get_context_data(**kwargs)
         context.update({
             'participants': participants,
             'total_payments': total_payments,
             'mean_payment': mean_payment,
-            'fixed_pay': session.fixed_pay.to_money(session),
+            'fixed_pay': session.fixed_pay.to_real_world_currency(session),
         })
 
         return context

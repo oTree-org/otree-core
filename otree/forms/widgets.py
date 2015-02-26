@@ -90,10 +90,10 @@ class BaseMoneyInput(forms.NumberInput):
         return value
 
 
-class MoneyInput(BaseMoneyInput):
-    currency_code = settings.PAYMENT_CURRENCY_CODE
-    currency_locale = settings.PAYMENT_CURRENCY_LOCALE
-    currency_format = settings.PAYMENT_CURRENCY_FORMAT
+class RealWorldCurrencyInput(BaseMoneyInput):
+    currency_code = settings.REAL_WORLD_CURRENCY_CODE
+    currency_locale = settings.REAL_WORLD_CURRENCY_LOCALE
+    currency_format = settings.REAL_WORLD_CURRENCY_FORMAT
 
 
 class CurrencyInput(BaseMoneyInput):

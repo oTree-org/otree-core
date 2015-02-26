@@ -25,7 +25,7 @@ AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 
 # e.g. EUR, CAD, GBP, CHF, CNY, JPY
-PAYMENT_CURRENCY_CODE = 'EUR'
+REAL_WORLD_CURRENCY_CODE = 'EUR'
 USE_POINTS = False
 
 
@@ -46,7 +46,7 @@ INSTALLED_OTREE_APPS = [
 ]
 
 SESSION_TYPE_DEFAULTS = {
-    'money_per_point': 0.01,
+    'real_world_currency_per_point': 0.01,
     'demo_enabled': True,
     'fixed_pay': 10.00,
     'num_bots': 12,

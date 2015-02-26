@@ -105,7 +105,7 @@ class Session(ModelWithVars):
         length=8, doc="Randomly generated unique identifier for the session."
     )
 
-    money_per_point = models.DecimalField(decimal_places=5, max_digits=12)
+    real_world_currency_per_point = models.DecimalField(decimal_places=5, max_digits=12)
 
     session_experimenter = models.OneToOneField(
         'SessionExperimenter', null=True, related_name='session',
@@ -136,7 +136,7 @@ class Session(ModelWithVars):
     )
 
     # todo: change this to money
-    fixed_pay = models.CurrencyField(doc="""Show-up fee""")
+    fixed_pay = models.RealWorldCurrencyField(doc="""Show-up fee""")
 
     comment = models.TextField(blank=True)
 
@@ -477,7 +477,7 @@ class Participant(SessionUser):
 
     def payoff_from_subsessions_display(self):
         complete = self.payoff_from_subsessions_is_complete()
-        payoff_from_subsessions = self.payoff_from_subsessions().to_money(
+        payoff_from_subsessions = self.payoff_from_subsessions().to_real_world_currency(
             self.session
         )
         if complete:
@@ -493,7 +493,7 @@ class Participant(SessionUser):
 
     def total_pay_display(self):
         complete = self.payoff_from_subsessions_is_complete()
-        total_pay = self.total_pay().to_money(self.session)
+        total_pay = self.total_pay().to_real_world_currency(self.session)
         if complete:
             return total_pay
         return u'{} (incomplete)'.format(total_pay)

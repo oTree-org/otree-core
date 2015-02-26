@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 SESSION_TYPE_DEFAULTS = {
-    'money_per_point': 0.01,
+    'real_world_currency_per_point': 0.01,
     'demo_enabled': True,
     'fixed_pay': 10.00,
     'num_bots': 12,

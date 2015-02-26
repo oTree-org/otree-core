@@ -645,9 +645,12 @@ class FormPageMixin(object):
             self.__class__.__name__
         )
 
+    def get_form_fields(self):
+        return self.form_fields
+
     def get_form_class(self):
         form_class = otree.forms.modelform_factory(
-            self.form_model, fields=self.form_fields,
+            self.form_model, fields=self.get_form_fields(),
             form=otree.forms.ModelForm,
             formfield_callback=otree.forms.formfield_callback
         )
