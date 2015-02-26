@@ -43,7 +43,7 @@ import vanilla
 
 import otree.forms
 from otree.models.user import Experimenter
-from otree.common_internal import get_views_module
+from otree.common_internal import get_views_module, add_params_to_url
 
 import otree.models.session
 import otree.timeout.tasks
@@ -128,7 +128,7 @@ class OTreeMixin(object):
                     url = 'http://workersandbox.mturk.com/mturk/externalSubmit'
                 else:
                     url = "https://www.mturk.com/mturk/externalSubmit"
-                url = add_params_to_url(
+                url = otree.common_internal.add_params_to_url(
                     url,
                     {
                         'assignmentId': assignment_id,
@@ -351,7 +351,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         # performance optimization:
         # we skip any page that is a sequence page where is_displayed
         # evaluates to False to eliminate unnecessary redirection
-        views_module = get_views_module(self.subsession._meta.app_config.name)
+        views_module = otree.common_internal.get_views_module(self.subsession._meta.app_config.name)
         pages = views_module.page_sequence
 
         if self.__class__ in pages:
