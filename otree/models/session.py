@@ -407,7 +407,7 @@ class SessionUser(ModelWithVars):
             if self.session.mturk_HITId:
                 assignment_id = self.mturk_assignment_id
                 if settings.DEBUG:
-                    url = 'http://workersandbox.mturk.com/mturk/externalSubmit'
+                    url = 'https://workersandbox.mturk.com/mturk/externalSubmit'
                 else:
                     url = "https://www.mturk.com/mturk/externalSubmit"
                 url = otree.common_internal.add_params_to_url(
@@ -417,7 +417,7 @@ class SessionUser(ModelWithVars):
                         'extra_param': '1' # required extra param?
                     }
                 )
-                return HttpResponseRedirect(url)
+                return url
             from otree.views.concrete import OutOfRangeNotification
             return OutOfRangeNotification.url(self)
 

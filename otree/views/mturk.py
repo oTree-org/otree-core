@@ -83,9 +83,9 @@ class CreateHitFromSession(vanilla.View):
         message = """
             You have created a hit for session <b>%s</b>.<br>
             To look at the hit as a <em>requester</em>
-            follow this <a href="%s">link</a>.<br>
+            follow this <a href="%s" target="_blank">link</a>.<br>
             To look at the hit as a <em>worker</em>
-            follow this <a href="%s">link</a>.
+            follow this <a href="%s" target="_blank">link</a>.
             """ % (session.code,
                    session.mturk_requester_url(),
                    session.mturk_worker_url())

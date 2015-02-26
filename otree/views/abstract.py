@@ -116,28 +116,6 @@ class OTreeMixin(object):
             return views_module.vars_for_all_templates(self) or {}
         return {}
 
-    def page_the_user_should_be_on(self):
-        try:
-            return self._session_user._pages_as_urls()[
-                self._session_user._index_in_pages
-            ]
-        except IndexError:
-            if self.session.mturk_HITId:
-                assignment_id = self.player.participant.mturk_assignment_id
-                if settings.DEBUG:
-                    url = 'http://workersandbox.mturk.com/mturk/externalSubmit'
-                else:
-                    url = "https://www.mturk.com/mturk/externalSubmit"
-                url = otree.common_internal.add_params_to_url(
-                    url,
-                    {
-                        'assignmentId': assignment_id,
-                        'extra_param': '1' # required extra param?
-                    }
-                )
-                return url
-            from otree.views.concrete import OutOfRangeNotification
-            return OutOfRangeNotification.url(self._session_user)
 
 class NonSequenceUrlMixin(object):
     @classmethod
