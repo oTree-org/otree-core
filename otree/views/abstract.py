@@ -157,9 +157,10 @@ class PlayerMixin(object):
         return self.PlayerClass
 
     def objects_to_save(self):
-        objs = [self._user, self._session_user,
-                self.group, self.subsession.session]
-        objs.extend(self.group._players)
+        objs = [self._user, self._session_user, self.subsession.session]
+        if self.group:
+            objs.append(self.group)
+            objs.extend(self.group._players)
         objs.extend(self.subsession._players)
         objs.extend(self.subsession._groups)
 
@@ -227,7 +228,8 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         if not self._is_experimenter:
             self.player = self._user
             self.group = self.player.group
-            self.group._player = self.player
+            if self.group:
+                self.group._player = self.player
 
 
         self.subsession = self._user.subsession
