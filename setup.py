@@ -9,7 +9,7 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
 
 REQUIREMENTS = [
     'Babel>=1.3',
-    'boto>=2.36.0'
+    'boto>=2.36.0',
     'Django>=1.7.1',
     'coverage>=3.7.1',
     'dj-static>=0.0.6',
