@@ -108,7 +108,7 @@ $('#mturk').on('show.bs.modal', function (event) {
             </button>
             {% endwith %}
             {% else %}
-            <a href="#" onclick="return false" class="btn btn-success btn-sm" data-toggle="popover" data-trigger="focus" data-content="<a href='{{ s.mturk_requester_url }}'>Requester link.</a><br><a href='{{ s.mturk_worker_url }}'>Worker link.</a>" data-placement="bottom" data-html="true">
+            <a href="#" onclick="return false" class="btn btn-success btn-sm" data-toggle="popover" data-trigger="focus" data-content="<a href='{{ s.mturk_requester_url }}' target='_blank'>Requester link.</a><br><a href='{{ s.mturk_worker_url }}' target='_blank'>Worker link.</a>" data-placement="bottom" data-html="true">
                 <span class="glyphicon glyphicon-cloud"></span> MTurk
             </a>
             {% endif %}
