@@ -573,6 +573,12 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
         'comment',
     ]
 
+    def get_form(self, data=None, files=None, **kwargs):
+        form = super(EditSessionProperties, self).get_form(data, files, ** kwargs)
+        if self.session.mturk_HITId:
+            form.fields['fixed_pay'].widget.attrs['readonly'] = 'True'
+        return form
+
     @classmethod
     def url_name(cls):
         return 'session_edit'
