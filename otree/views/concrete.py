@@ -174,7 +174,7 @@ class InitializeParticipant(vanilla.UpdateView):
         session_user.time_started = now
         session_user._last_page_timestamp = time.time()
         session_user.save()
-        first_url = session_user._pages_as_urls()[session_user._index_in_pages]
+        first_url = session_user._url_i_should_be_on()
         return HttpResponseRedirect(first_url)
 
 

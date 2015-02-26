@@ -400,6 +400,28 @@ class SessionUser(ModelWithVars):
             View.url(self, index) for index, View in enumerate(self._pages())
         ]
 
+    def _url_i_should_be_on(self):
+        if self._index_in_pages <= self._max_page_index:
+            return self._pages_as_urls()[self._index_in_pages]
+        else:
+            if self.session.mturk_HITId:
+                assignment_id = self.mturk_assignment_id
+                if settings.DEBUG:
+                    url = 'http://workersandbox.mturk.com/mturk/externalSubmit'
+                else:
+                    url = "https://www.mturk.com/mturk/externalSubmit"
+                url = otree.common_internal.add_params_to_url(
+                    url,
+                    {
+                        'assignmentId': assignment_id,
+                        'extra_param': '1' # required extra param?
+                    }
+                )
+                return HttpResponseRedirect(url)
+            from otree.views.concrete import OutOfRangeNotification
+            return OutOfRangeNotification.url(self)
+
+
     def build_session_user_to_user_lookups(self, num_pages_in_each_app):
         def pages_for_user(user):
             return num_pages_in_each_app[user._meta.app_config.name]

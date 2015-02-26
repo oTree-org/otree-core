@@ -104,7 +104,7 @@ class OTreeMixin(object):
         or if they hit the back button.
         We can put them back where they belong.
         """
-        return HttpResponseRedirect(self.page_the_user_should_be_on())
+        return HttpResponseRedirect(self._session_user._url_i_should_be_on())
 
     def vars_for_template(self):
         return {}
@@ -115,29 +115,6 @@ class OTreeMixin(object):
         if hasattr(views_module, 'vars_for_all_templates'):
             return views_module.vars_for_all_templates(self) or {}
         return {}
-
-    def page_the_user_should_be_on(self):
-        try:
-            return self._session_user._pages_as_urls()[
-                self._session_user._index_in_pages
-            ]
-        except IndexError:
-            if self.session.mturk_HITId:
-                assignment_id = self.player.participant.mturk_assignment_id
-                if settings.DEBUG:
-                    url = 'http://workersandbox.mturk.com/mturk/externalSubmit'
-                else:
-                    url = "https://www.mturk.com/mturk/externalSubmit"
-                url = otree.common_internal.add_params_to_url(
-                    url,
-                    {
-                        'assignmentId': assignment_id,
-                        'extra_param': '1' # required extra param?
-                    }
-                )
-                return HttpResponseRedirect(url)
-            from otree.views.concrete import OutOfRangeNotification
-            return OutOfRangeNotification.url(self._session_user)
 
 class NonSequenceUrlMixin(object):
     @classmethod
@@ -261,6 +238,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
     @method_decorator(cache_control(must_revalidate=True, max_age=0,
                                     no_cache=True, no_store=True))
     def dispatch(self, request, *args, **kwargs):
+
         try:
             session_user_code = kwargs.pop(constants.session_user_code)
             user_type = kwargs.pop(constants.user_type)
@@ -283,8 +261,6 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                 err.message += msg
                 raise
 
-            self.load_objects()
-
             self._index_in_pages = int(kwargs.pop(constants.index_in_pages))
 
             # if the player tried to skip past a part of the subsession
@@ -299,7 +275,10 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                 if cond:
                     return HttpResponse('1')
                 # then bring them back to where they should be
+
                 return self._redirect_to_page_the_user_should_be_on()
+
+            self.load_objects()
 
             if not self.is_displayed():
                 self._increment_index_in_pages()
@@ -338,7 +317,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         and try typing it in so they don't have to play the whole game.
         We should block that."""
 
-        return self.request.path == self.page_the_user_should_be_on()
+        return self.request.path == self._session_user._url_i_should_be_on()
 
     def _increment_index_in_pages(self):
         # when is this not the case?
@@ -351,7 +330,9 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         # performance optimization:
         # we skip any page that is a sequence page where is_displayed
         # evaluates to False to eliminate unnecessary redirection
-        views_module = otree.common_internal.get_views_module(self.subsession._meta.app_config.name)
+        views_module = otree.common_internal.get_views_module(
+            self.subsession._meta.app_config.name
+        )
         pages = views_module.page_sequence
 
         if self.__class__ in pages:
@@ -381,6 +362,8 @@ class FormPageOrWaitPageMixin(OTreeMixin):
             self._session_user._index_in_pages += pages_to_jump_by
         else:  # e.g. if it's WaitUntil...
             self._session_user._index_in_pages += 1
+        #print self._session_user.code, self._session_user._index_in_pages, self.request.path
+
 
     def is_displayed(self):
         return True
@@ -702,7 +685,6 @@ class FormPageMixin(object):
         return super(FormPageMixin, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-
         self.object = self.get_object()
 
         if request.POST.get(constants.auto_submit):
