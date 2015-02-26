@@ -43,7 +43,7 @@ import vanilla
 
 import otree.forms
 from otree.models.user import Experimenter
-from otree.common_internal import get_views_module, add_params_to_url
+import otree.common_internal
 
 import otree.models.session
 import otree.timeout.tasks
@@ -135,7 +135,7 @@ class OTreeMixin(object):
                         'extra_param': '1' # required extra param?
                     }
                 )
-                return HttpResponseRedirect(url)
+                return url
             from otree.views.concrete import OutOfRangeNotification
             return OutOfRangeNotification.url(self._session_user)
 

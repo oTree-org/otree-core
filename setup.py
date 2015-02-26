@@ -31,7 +31,8 @@ REQUIREMENTS = [
     'pytz>=2013.9',
     'raven>=5.1.1',
     'selenium>=2.41.0',
-    'xmltodict>=0.9.0'
+    'xmltodict>=0.9.0',
+    'django-sslserver>=0.14'
 ]
 
 # allow setup.py to be run from any path
