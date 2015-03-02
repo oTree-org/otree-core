@@ -122,8 +122,6 @@ class Session(ModelWithVars):
         doc="The time at which the experimenter started the session",
     )
 
-    mturk_payment_was_sent = models.BooleanField(default=False)
-
     mturk_HITId = models.CharField(
         max_length=300, null=True, blank=True,
         help_text='Hit id for this session on MTurk',
@@ -482,6 +480,8 @@ class Participant(SessionUser):
     user_type_in_url = constants.user_type_participant
     mturk_assignment_id = models.CharField(max_length=50, null=True)
     mturk_worker_id = models.CharField(max_length=50, null=True)
+    mturk_reward_paid = models.BooleanField(default=False)
+    mturk_bonus_paid = models.BooleanField(default=False)
 
     # unique=True can't be set, because the same external ID could be reused
     # in multiple sequences. however, it should be unique within the sequence.

@@ -1,12 +1,6 @@
-<script type="text/javascript" charset="utf-8">
-window.setTimeout(function() {
-        $(".alert").fadeTo(500, 0).slideUp(500, function(){
-            $(this).remove(); 
-            });
-        }, 10000);
-</script>
 {% for message in messages %}
     <div class="alert alert-{{ message.tags.split|last }}">
+        <a href="#" class="close" data-dismiss="alert">&times;</a>
         {% if 'safe' in message.tags %}{{ message|safe }}{% else %}{{ message }}{% endif %}
     </div>
 {% endfor %}
