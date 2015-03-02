@@ -46,7 +46,7 @@ $(function() {
         $('input[name=reward][checked]:enabled').each(function( index, element ){
             sum += parseFloat($(this).data('value'));
         });
-        if (sum >= 0.00) {
+        if (sum > 0.00) {
             $('#pay-hit').attr('disabled', false).text('Pay ( $ ' + sum.toFixed(2) + ' )');
         }
         else {

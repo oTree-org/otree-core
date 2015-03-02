@@ -3,7 +3,6 @@
 
 import urlparse
 import vanilla
-import xml.etree.ElementTree as ET
 import boto.mturk.connection
 from boto.mturk.connection import MTurkRequestError
 
@@ -46,7 +45,7 @@ class MTurkConnection(boto.mturk.connection.MTurkConnection):
     def __exit__(self, exc_type, value, traceback):
         # TODO: need to take care of possible errors (login,
         # "service not approved")
-        if exc_type == MTurkRequestError:
+        if exc_type is MTurkRequestError:
             MTurkError(self.request, value.message)
         return True
 

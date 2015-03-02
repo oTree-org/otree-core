@@ -818,7 +818,8 @@ class AdminHome(vanilla.ListView):
         global_singleton = otree.models.session.GlobalSingleton.objects.get()
         default_session = global_singleton.default_session
         context.update({'default_session': default_session,
-                        'is_debug': settings.DEBUG})
+                        'is_debug': settings.DEBUG,
+                        'is_mturk_set': settings.AWS_SECRET_ACCESS_KEY and settings.AWS_ACCESS_KEY_ID})
         return context
 
     def get_queryset(self):

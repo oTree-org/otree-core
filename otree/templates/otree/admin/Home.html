@@ -101,17 +101,6 @@ $('#mturk').on('show.bs.modal', function (event) {
             <a href="{% url 'session_payments' s.pk %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-usd"></span> Payments
             </a>
-            {% if not s.mturk_HITId %}
-            {% with s.session_type.mturk_hit_settings as hit %}
-            <button data-href="{% url 'create_hit_from_session' s.pk %}" data-mturk="{{ s.mturk_id }}" data-code="{{ s.code }}" data-title="{{ hit.title }}" data-description="{{ hit.description }}" data-keywords="{{ hit.keywords|join:', ' }}" data-reward="{{ s.session_type.fixed_pay }}" data-assignments="{{ s.get_participants|length }}" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#mturk">
-                <span class="glyphicon glyphicon-cloud"></span> MTurk
-            </button>
-            {% endwith %}
-            {% else %}
-            <a href="#" onclick="return false" class="btn btn-success btn-sm" data-toggle="popover" data-trigger="focus" data-content="<a href='{{ s.mturk_requester_url }}' target='_blank'>Requester link.</a><br><a href='{{ s.mturk_worker_url }}' target='_blank'>Worker link.</a>" data-placement="bottom" data-html="true">
-                <span class="glyphicon glyphicon-cloud"></span> MTurk
-            </a>
-            {% endif %}
             {% if s != default_session %}
             <a href="{% url 'set_default_session' s.pk %}" class="btn btn-primary btn-sm" data-toggle="popover" data-trigger="hover" data-content="You can route the participants to this session by clicking the button." data-placement="bottom">
                 <span class="glyphicon glyphicon-home"></span> Default
@@ -120,6 +109,29 @@ $('#mturk').on('show.bs.modal', function (event) {
             <a href="{% url 'unset_default_session' %}" class="btn btn-success btn-sm" data-toggle="popover" data-trigger="hover" data-content="The participants are routed to this session. By clicking the button you can unset it." data-placement="bottom">
                 <span class="glyphicon glyphicon-home"></span> Default
             </a>
+            {% endif %}
+            {% if not s.mturk_HITId %}
+            {% if not is_mturk_set %}
+            <div style="display: inline-block;" data-toggle="popover" data-trigger="hover" data-content="To publish you experiment you need to setup your credentials for MTurk as enviromental variables"><button class="btn btn-primary btn-sm active" disabled>
+                <span class="glyphicon glyphicon-cloud"></span> MTurk&nbsp;&nbsp;&nbsp;
+        </button></div>
+            {% else %}
+            {% with s.session_type.mturk_hit_settings as hit %}
+            <button data-href="{% url 'create_hit_from_session' s.pk %}" data-mturk="{{ s.mturk_id }}" data-code="{{ s.code }}" data-title="{{ hit.title }}" data-description="{{ hit.description }}" data-keywords="{{ hit.keywords|join:', ' }}" data-reward="{{ s.session_type.fixed_pay }}" data-assignments="{{ s.get_participants|length }}" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#mturk">
+                <span class="glyphicon glyphicon-cloud"></span> MTurk&nbsp;&nbsp;&nbsp;
+            </button>
+            {% endwith %}
+            {% endif %}
+            {% else %}
+            <div class="btn-group">
+                <button class="btn btn-success btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+                    <span class="glyphicon glyphicon-cloud"></span> MTurk <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li><a href="{{ s.mturk_requester_url }}">Requester link</a></li>
+                    <li><a href="{{ s.mturk_worker_url }}">Worker link</a></li>
+                </ul>
+            </div>
             {% endif %}
         </td>
     </tr>

@@ -861,11 +861,14 @@ class AdminSessionPageMixin(object):
             ~Q(special_category=otree.constants.session_special_category_demo)
             & ~Q(pk=self.session.pk)
         )
+        global_singleton = otree.models.session.GlobalSingleton.objects.get()
+        default_session = global_singleton.default_session
         context.update({'session': self.session,
                         'other_sessions': other_sessions,
                         'is_demo': self.is_demo,
                         'has_top_menu': True,
-                        'is_debug': settings.DEBUG})
+                        'is_debug': settings.DEBUG,
+                        'default_session': default_session})
         return context
 
     def get_template_names(self):
