@@ -53,7 +53,7 @@ class DemoIndex(vanilla.TemplateView):
         context.update({
             'session_info': session_info,
             'intro_text': intro_text,
-            'debug': settings.DEBUG
+            'is_debug': settings.DEBUG
         })
         return context
 

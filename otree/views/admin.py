@@ -14,6 +14,7 @@ from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.forms.forms import pretty_name
+from django.conf import settings
 
 import vanilla
 from ordered_set import OrderedSet as oset
@@ -572,6 +573,12 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
         'comment',
     ]
 
+    def get_form(self, data=None, files=None, **kwargs):
+        form = super(EditSessionProperties, self).get_form(data, files, ** kwargs)
+        if self.session.mturk_HITId:
+            form.fields['fixed_pay'].widget.attrs['readonly'] = 'True'
+        return form
+
     @classmethod
     def url_name(cls):
         return 'session_edit'
@@ -586,18 +593,32 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
     def url_name(cls):
         return 'session_payments'
 
+    def get_template_names(self):
+        if self.session.mturk_HITId:
+            return 'otree/admin/SessionMTurkPayments.html'
+        else:
+            return 'otree/admin/SessionPayments.html'
+
+    def get(self, *args, **kwargs):
+        response = super(SessionPayments, self).get(*args, **kwargs)
+        return response
+
     def get_context_data(self, **kwargs):
 
         session = self.session
-        participants = session.get_participants()
-        total_payments = sum(
-            participant.total_pay() or c(0) for participant in participants
-        ).to_real_world_currency(session)
+        if session.mturk_HITId:
+            participants = session.participant_set.exclude(mturk_assignment_id__isnull=True).\
+                                                   exclude(mturk_assignment_id="")
+        else:
+            participants = session.get_participants()
+        total_payments = 0.0
+        mean_payment = 0.0
+        if participants:
+            total_payments = sum(
+                participant.total_pay() or c(0) for participant in participants
+            ).to_real_world_currency(session)
 
-        try:
             mean_payment = total_payments / len(participants)
-        except ZeroDivisionError:
-            mean_payment = RealWorldCurrency(0)
 
         context = super(SessionPayments, self).get_context_data(**kwargs)
         context.update({
@@ -796,7 +817,9 @@ class AdminHome(vanilla.ListView):
         context = super(AdminHome, self).get_context_data(**kwargs)
         global_singleton = otree.models.session.GlobalSingleton.objects.get()
         default_session = global_singleton.default_session
-        context.update({'default_session': default_session})
+        context.update({'default_session': default_session,
+                        'is_debug': settings.DEBUG,
+                        'is_mturk_set': settings.AWS_SECRET_ACCESS_KEY and settings.AWS_ACCESS_KEY_ID})
         return context
 
     def get_queryset(self):

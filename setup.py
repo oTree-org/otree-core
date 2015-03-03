@@ -9,6 +9,7 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
 
 REQUIREMENTS = [
     'Babel>=1.3',
+    'boto>=2.36.0',
     'Django>=1.7.1',
     'coverage>=3.7.1',
     'dj-static>=0.0.6',
@@ -21,6 +22,8 @@ REQUIREMENTS = [
     'django-inspect-model>=0.7',
     'django-ptree-mturk>=1.0.1',
     'django-save-the-change>=1.0.0',
+    'django-sslify>=0.2.5',
+    'django-sslserver==0.14',
     'django-vanilla-views>=1.0.2',
     'flake8>=2.2.5',
     'handy>=0.3',
@@ -29,7 +32,8 @@ REQUIREMENTS = [
     'pytz>=2013.9',
     'raven>=5.1.1',
     'selenium>=2.41.0',
-    'xmltodict>=0.9.0'
+    'xmltodict>=0.9.0',
+    'django-sslserver>=0.14'
 ]
 
 # allow setup.py to be run from any path

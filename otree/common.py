@@ -29,14 +29,9 @@ class Currency(easymoney.Money):
     LOCALE = settings.GAME_CURRENCY_LOCALE
     DECIMAL_PLACES = settings.GAME_CURRENCY_DECIMAL_PLACES
 
-    def to_real_world_currency(self, subsession):
+    def to_real_world_currency(self, session):
         # subsession arg can actually be a session as well
         # can't use isinstance() to avoid circular import
-        if subsession.__class__.__name__ == 'Session':
-            session = subsession
-        else:
-            session = subsession.session
-
         if settings.USE_POINTS:
             return RealWorldCurrency(self * session.real_world_currency_per_point)
         else:

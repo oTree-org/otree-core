@@ -88,6 +88,7 @@ class Submit(object):
         else:
             logger.info(self.bot.path)
         self.bot.response = self.bot.post(self.bot.url, self.data, follow=True)
+
         self.bot.check_200()
         self.bot.set_path()
         return True

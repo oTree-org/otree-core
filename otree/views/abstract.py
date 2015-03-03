@@ -43,7 +43,7 @@ import vanilla
 
 import otree.forms
 from otree.models.user import Experimenter
-from otree.common_internal import get_views_module
+import otree.common_internal
 
 import otree.models.session
 import otree.timeout.tasks
@@ -104,7 +104,7 @@ class OTreeMixin(object):
         or if they hit the back button.
         We can put them back where they belong.
         """
-        return HttpResponseRedirect(self.page_the_user_should_be_on())
+        return HttpResponseRedirect(self._session_user._url_i_should_be_on())
 
     def vars_for_template(self):
         return {}
@@ -115,15 +115,6 @@ class OTreeMixin(object):
         if hasattr(views_module, 'vars_for_all_templates'):
             return views_module.vars_for_all_templates(self) or {}
         return {}
-
-    def page_the_user_should_be_on(self):
-        try:
-            return self._session_user._pages_as_urls()[
-                self._session_user._index_in_pages
-            ]
-        except IndexError:
-            from otree.views.concrete import OutOfRangeNotification
-            return OutOfRangeNotification.url(self._session_user)
 
 
 class NonSequenceUrlMixin(object):
@@ -270,8 +261,6 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                 err.message += msg
                 raise
 
-            self.load_objects()
-
             self._index_in_pages = int(kwargs.pop(constants.index_in_pages))
 
             # if the player tried to skip past a part of the subsession
@@ -286,7 +275,10 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                 if cond:
                     return HttpResponse('1')
                 # then bring them back to where they should be
+
                 return self._redirect_to_page_the_user_should_be_on()
+
+            self.load_objects()
 
             if not self.is_displayed():
                 self._increment_index_in_pages()
@@ -325,24 +317,22 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         and try typing it in so they don't have to play the whole game.
         We should block that."""
 
-        return self.request.path == self.page_the_user_should_be_on()
+        return self.request.path == self._session_user._url_i_should_be_on()
 
     def _increment_index_in_pages(self):
         # when is this not the case?
         assert self._index_in_pages == self._session_user._index_in_pages
 
         self._record_page_completion_time()
-        in_last_page = (
-            self._session_user._index_in_pages ==
-            self._session_user._max_page_index
-        )
-        if in_last_page:
-            return
+        # we should allow a user to move beyond the last page if it's mturk
+        # also in general maybe we should show the 'out of sequence' page
 
         # performance optimization:
         # we skip any page that is a sequence page where is_displayed
         # evaluates to False to eliminate unnecessary redirection
-        views_module = get_views_module(self.subsession._meta.app_config.name)
+        views_module = otree.common_internal.get_views_module(
+            self.subsession._meta.app_config.name
+        )
         pages = views_module.page_sequence
 
         if self.__class__ in pages:
@@ -874,10 +864,14 @@ class AdminSessionPageMixin(object):
             ~Q(special_category=otree.constants.session_special_category_demo)
             & ~Q(pk=self.session.pk)
         )
+        global_singleton = otree.models.session.GlobalSingleton.objects.get()
+        default_session = global_singleton.default_session
         context.update({'session': self.session,
                         'other_sessions': other_sessions,
                         'is_demo': self.is_demo,
-                        'has_top_menu': True})
+                        'has_top_menu': True,
+                        'is_debug': settings.DEBUG,
+                        'default_session': default_session})
         return context
 
     def get_template_names(self):

@@ -188,9 +188,9 @@ class BaseModelForm(forms.ModelForm):
 
                 model_field = self.instance._meta.get_field(field_name)
                 model_field_copy = copy.copy(model_field)
-                print model_field_copy._choices
+
                 model_field_copy._choices = choices
-                print model_field_copy._choices
+
                 self.fields[field_name] = formfield_callback(model_field_copy)
             if hasattr(self.view, '%s_label' % field_name):
                 self.fields[field_name].label = getattr(

@@ -3,13 +3,6 @@
 
 {% block head_content %}
 {{ block.super }}
-<!--bootstrap popover launch-->
-<script type="text/javascript" charset="utf-8">
-$(function () {
-    $('[data-toggle="popover"]').popover()
-})
-</script>
-<!--end bootstrap popover launch-->
 <!--setup for fixed header of table-->
 <style>
 table.floatThead-table {
@@ -29,24 +22,22 @@ $table.floatThead();
 
 {% block title %}
 Dashboard for session
-{% if other_sessions and not is_demo %}
-<span class="btn-group">
-    <button class="btn btn-default btn-lg dropdown-toggle" data-toggle="dropdown">
-        {{ session.code }}
-        <span class="caret"></span>
-    </button>
-    <ul class="dropdown-menu">
-        {% for s in other_sessions %}
-        <li><a href="{% url 'session_description' s.pk %}">{{ s.code }}</a></li>
-        {% endfor %}
-    </ul>
-</span>
-{% else %}
 <code>{{ session.code }}</code>
-{% endif %}
 {% if is_demo %}
-(demo)
+    (demo)
+{% else %}
+<div style="float: right;">
+    {% if session != default_session %}
+    <a href="{% url 'set_default_session' session.pk %}" class="btn btn-primary btn">
+        <span class="glyphicon glyphicon-home"></span> Default
+    </a>
+    {% else %}
+    <a href="{% url 'unset_default_session' %}" class="btn btn-success btn">
+        <span class="glyphicon glyphicon-home"></span> Default
+    </a>
+    {% endif %}
 {% endif %}
+</div>
 {% endblock %}
 
 {% block content_at_top_of_body %}
@@ -60,7 +51,7 @@ Dashboard for session
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav nav-pills nav-justified">
         <li role="presentation" class="{% active_page request 'session_description' %}">
-        <a href="{% url 'session_description' session.pk %}"><span class="glyphicon glyphicon-home"></span> Description</a>
+        <a href="{% url 'session_description' session.pk %}"><span class="glyphicon glyphicon-pushpin"></span> Description</a>
         </li>
         <li role="presentation" class="{% active_page request 'session_start_links' %}">
         <a href="{% url 'session_start_links' session.pk %}"><span class="glyphicon glyphicon-link"></span> Links</a>

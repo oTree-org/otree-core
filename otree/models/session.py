@@ -122,7 +122,14 @@ class Session(ModelWithVars):
         doc="The time at which the experimenter started the session",
     )
 
-    mturk_payment_was_sent = models.BooleanField(default=False)
+    mturk_HITId = models.CharField(
+        max_length=300, null=True, blank=True,
+        help_text='Hit id for this session on MTurk',
+    )
+    mturk_HITGroupId = models.CharField(
+        max_length=300, null=True, blank=True,
+        help_text='Hit id for this session on MTurk',
+    )
 
     hidden = models.BooleanField(default=False)
 
@@ -214,6 +221,20 @@ class Session(ModelWithVars):
             subsession.save()
         self._ready_to_play = True
         self.save()
+
+    def mturk_requester_url(self):
+        if settings.DEBUG:
+            requester_url = "https://requestersandbox.mturk.com/mturk/manageHITs"
+        else:
+            requester_url = "https://requester.mturk.com/mturk/manageHITs"
+        return requester_url
+
+    def mturk_worker_url(self):
+        if settings.DEBUG:
+            worker_url = "https://workersandbox.mturk.com/mturk/preview?groupId=%s" % self.mturk_HITGroupId
+        else:
+            worker_url = "https://www.mturk.com/mturk/preview?groupId=%s" % self.mturk_HITGroupId
+        return worker_url
 
     def advance_last_place_participants(self):
         participants = self.get_participants()
@@ -377,6 +398,28 @@ class SessionUser(ModelWithVars):
             View.url(self, index) for index, View in enumerate(self._pages())
         ]
 
+    def _url_i_should_be_on(self):
+        if self._index_in_pages <= self._max_page_index:
+            return self._pages_as_urls()[self._index_in_pages]
+        else:
+            if self.session.mturk_HITId:
+                assignment_id = self.mturk_assignment_id
+                if settings.DEBUG:
+                    url = 'https://workersandbox.mturk.com/mturk/externalSubmit'
+                else:
+                    url = "https://www.mturk.com/mturk/externalSubmit"
+                url = otree.common_internal.add_params_to_url(
+                    url,
+                    {
+                        'assignmentId': assignment_id,
+                        'extra_param': '1' # required extra param?
+                    }
+                )
+                return url
+            from otree.views.concrete import OutOfRangeNotification
+            return OutOfRangeNotification.url(self)
+
+
     def build_session_user_to_user_lookups(self, num_pages_in_each_app):
         def pages_for_user(user):
             return num_pages_in_each_app[user._meta.app_config.name]
@@ -437,6 +480,8 @@ class Participant(SessionUser):
     user_type_in_url = constants.user_type_participant
     mturk_assignment_id = models.CharField(max_length=50, null=True)
     mturk_worker_id = models.CharField(max_length=50, null=True)
+    mturk_reward_paid = models.BooleanField(default=False)
+    mturk_bonus_paid = models.BooleanField(default=False)
 
     # unique=True can't be set, because the same external ID could be reused
     # in multiple sequences. however, it should be unique within the sequence.

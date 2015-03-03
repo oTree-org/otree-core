@@ -1,0 +1,159 @@
+{% extends "otree/admin/Session.html" %}
+{% block head_content %}
+{{ block.super }}
+<script type="text/javascript" charset="utf-8">
+/*
+****************************
+****************************
+Code for "checkAll" checkbox
+in the header
+****************************
+****************************
+*/
+$(function() {
+    checkFunction('reward', 'checkAllReward');
+    checkFunction('bonus', 'checkAllBonus');
+});
+function checkFunction(checkName, checkAllName) {
+// disable "checkAll" checkbox if we already paid everyone
+if ($("input[name=" + checkName + "][disabled][checked]").length == $("input[name=" + checkName + "]").length) {
+    $("input[name=" + checkAllName + "]").prop('checked', true);
+    $("input[name=" + checkAllName + "]").attr('disabled', true);
+}
+// code for "checkAll" checkbox
+$('input[name=' +  checkAllName + ']').click (function () {
+    $('input[name=' + checkName + ']').prop('checked', $(this).prop('checked')).trigger("change")
+});
+// if all checkboxes are selected check also "checkAll" checkbox
+$('input[name=' + checkName + ']').change (function () {
+    var check = ($("input[name=" + checkName + "]:checked").length == $("input[name=" + checkName + "]").length);
+    $("input[name=" + checkAllName + "]").prop('checked', check);
+})
+}
+/*
+****************************
+****************************
+Smart Pay Button
+****************************
+****************************
+*/
+$(function() {
+    $('input[name=bonus], input[name=reward]').change(function () {
+        var sum = 0.0;
+        $('input[name=bonus][checked]:enabled').each(function( index, element ){
+            sum += parseFloat($(this).data('value'));
+        });
+        $('input[name=reward][checked]:enabled').each(function( index, element ){
+            sum += parseFloat($(this).data('value'));
+        });
+        if (sum > 0.00) {
+            $('#pay-hit').attr('disabled', false).text('Pay ( $ ' + sum.toFixed(2) + ' )');
+        }
+        else {
+            $('#pay-hit').attr('disabled', true).text('Pay');
+        }
+    })
+});
+</script>
+<style type="text/css" media="screen">
+.codes {
+    font-family: 'Courier New'
+}
+</style>
+{% endblock %}
+{% block content %}
+{{ block.super }}
+<div class="container" style='max-width:970px'>
+    <h3>Session</h3>
+    <table class="table table-condensed">
+        <tr>
+            <th>Session type</th>
+            <td>{{ session.session_type.name }}</td>
+        </tr>
+
+        <tr>
+            <th>Session code</th>
+            <td class="codes">{{ session.code }}</td>
+        </tr>
+
+        <tr>
+            <th>MTurk Hit Id</th>
+            <td class="codes">{{ session.mturk_HITId }}</td>
+        </tr>
+
+        <tr>
+            <th>Experimenter name</th>
+            <td>{{ session.experimenter_name|default_if_none:"" }}</td>
+        </tr>
+
+    </table>
+
+    <h3>Participants</h3>
+    {% if participants %}
+
+
+    <table class="table table-striped">
+        <tr>
+            <th>Participant code</th>
+            <th>Assignment Id</th>
+            <th>Worker Id</th>
+            <th>
+                Participation fee (Reward)
+                <div class="checkbox">
+                    <label>
+                        <input name="checkAllReward" type="checkbox" value="">
+                    </label>
+                </div> 
+            </th>
+            <th>
+                Variable pay (Bonus)
+                <div class="checkbox">
+                    <label>
+                        <input name="checkAllBonus" type="checkbox" value="">
+                    </label>
+                </div> 
+            </th>
+            <th>Total pay</th>
+        </tr>
+
+        {% for p in participants %}
+        <tr>
+            <td class="codes">{{ p.code }}</td>
+            <td class="codes">{{ p.mturk_assignment_id|default_if_none:"" }}</td>
+            <td class="codes">{{ p.mturk_worker_id|default_if_none:"" }}</td>
+            <td>
+                <div class="checkbox-inline">
+                    <label>
+                        {% if not p.mturk_reward_paid %}
+                        <input name="reward" data-value="{{ fixed_pay.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}">
+                        {% else %}
+                        <input name="reward" data-value="{{ fixed_pay.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}" disabled checked>
+                        {% endif %}
+                    </label>
+                </div> 
+                {{ fixed_pay }}
+            </td>
+            <td>
+                <div class="checkbox-inline">
+                    <label>
+                        {% if not p.mturk_bonus_paid %}
+                        <input name="bonus" data-value="{{ p.payoff_from_subsessions.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}">
+                        {% else %}
+                        <input name="bonus" data-value="{{ p.payoff_from_subsession.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}" disabled checked>
+                        {% endif %}
+                    </label>
+                </div> 
+                {{ p.payoff_from_subsessions_display }}
+            </td>
+            <td>{{ p.total_pay_display }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>You have no participants who finished the experiment.</p>
+    {% endif %}
+</div>
+{% if participants %}
+<button style="float: right;" type="submit" class="btn btn-primary" id="pay-hit" formmethod="POST" formaction="{% url 'pay_mturk' session.pk %}" disabled>Pay</button>
+{% endif %}
+{% endblock %}

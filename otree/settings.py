@@ -6,6 +6,7 @@ import os
 import djcelery
 
 from django.conf import global_settings
+from django.contrib.messages import constants as messages
 
 
 djcelery.setup_loader()
@@ -48,6 +49,7 @@ def augment_settings(settings):
             'otree.timeout',
             'djcelery',
             'kombu.transport.django',
+            'sslserver',
         ],
 
 
@@ -79,6 +81,7 @@ def augment_settings(settings):
             'django.contrib.auth.middleware.AuthenticationMiddleware',
             'django.contrib.messages.middleware.MessageMiddleware',
             'otree.middleware.OperationalErrorMidleware',
+            'sslify.middleware.SSLifyMiddleware',
         ],
         settings.get('MIDDLEWARE_CLASSES')
     )
@@ -90,6 +93,7 @@ def augment_settings(settings):
         'MIDDLEWARE_CLASSES': new_middleware_classes,
         'INSTALLED_OTREE_APPS': all_otree_apps,
         'BROKER_URL': 'django://',
+        'MESSAGE_TAGS': {messages.ERROR: 'danger'},
         'CELERY_ACCEPT_CONTENT': ['pickle', 'json', 'msgpack', 'yaml'],
     }
 
