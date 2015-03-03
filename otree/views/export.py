@@ -15,13 +15,13 @@ from django.utils.importlib import import_module
 from django.contrib.admin import sites
 from django.template.response import TemplateResponse
 import otree.common_internal
-import otree.settings
+from django.conf import settings
 import otree.models
 import otree.models.session
 from otree.common_internal import app_name_format
 import vanilla
 import csv
-from otree.views.admin import get_display_table_rows
+from otree.views.admin import get_display_table_rows, get_all_fields
 
 
 # =============================================================================
@@ -51,7 +51,6 @@ def choices_readable(choices):
 
 
 def get_doc_dict(app_label):
-    export_fields = []  # FIXME: get_data_export_fields(app_label)
     app_models_module = import_module('{}.models'.format(app_label))
 
     doc_dict = OrderedDict()
@@ -68,7 +67,6 @@ def get_doc_dict(app_label):
     }
 
     for model_name in MODEL_NAMES:
-        members = export_fields[model_name]
         if model_name == 'Participant':
             Model = otree.models.session.Participant
         elif model_name == 'Session':
@@ -76,6 +74,7 @@ def get_doc_dict(app_label):
         else:
             Model = getattr(app_models_module, model_name)
 
+        members = get_all_fields(Model, for_export=True)
         doc_dict[model_name] = OrderedDict()
 
         for i in range(len(members)):
@@ -161,40 +160,42 @@ def doc_file_name(app_label):
     )
 
 
-class ExportIndex(vanilla.View):
+class ExportIndex(vanilla.TemplateView):
+
+    template_name = 'otree/export/index.html'
 
     @classmethod
     def url_pattern(cls):
         return r"^export/$"
 
-    def get(self, request, *args, **kwargs):
-        app_labels = [
-            model._meta.app_label
-            for model, model_admin in sites.site._registry.items()
-        ]
-        app_labels = list(set(app_labels))
-        # Sort the apps alphabetically.
-        app_labels.sort()
-        # Filter out non subsession apps
-        app_labels = [
-            app_label
-            for app_label in app_labels
-            if otree.common_internal.is_subsession_app(app_label)
-        ]
+    @classmethod
+    def url_name(cls):
+        return 'export'
+
+    def get_context_data(self, **kwargs):
+        context = super(ExportIndex, self).get_context_data(**kwargs)
+        app_labels = settings.INSTALLED_OTREE_APPS
+        app_labels_with_data = []
+        for app_label in app_labels:
+            if otree.common_internal.get_models_module(app_label).Player.objects.exists():
+                app_labels_with_data.append(app_label)
         apps = [
-            {"name": app_name_format(app_label), "app_label": app_label}
-            for app_label in app_labels
+            {"name": app_name_format(app_label), "label": app_label}
+            for app_label in app_labels_with_data
         ]
-        return TemplateResponse(
-            request, "_old_admin/otree_data_export_list.html", {"apps": apps}
-        )
+        context.update({'apps': apps})
+        return context
 
 
 class ExportAppDocs(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r"^export_docs/$"
+        return r"^ExportAppDocs/(?P<app_label>\w+)/$"
+
+    @classmethod
+    def url_name(cls):
+        return 'export_app_docs'
 
     def get(self, request, *args, **kwargs):
         app_label = kwargs['app_label']
@@ -207,51 +208,24 @@ class ExportAppDocs(vanilla.View):
         response['Content-Type'] = 'text/plain'
         return response
 
-def data_file_name(app_label):
-    return '{} (accessed {}).csv'.format(
-        otree.common_internal.app_name_format(app_label),
-        datetime.date.today().isoformat(),
-    )
-
-
-def export_list(request):
-    # Get unique app_labels
-    app_labels = [
-        model._meta.app_label
-        for model, model_admin in sites.site._registry.items()
-    ]
-    app_labels = list(set(app_labels))
-    # Sort the apps alphabetically.
-    app_labels.sort()
-    # Filter out non subsession apps
-    app_labels = [
-        app_label
-        for app_label in app_labels
-        if otree.common_internal.is_subsession_app(app_label)
-    ]
-    apps = [
-        {"name": app_name_format(app_label), "app_label": app_label}
-        for app_label in app_labels
-    ]
-    return TemplateResponse(
-        request, "admin/otree_data_export_list.html", {"apps": apps}
-    )
-
-
 
 class ExportCsv(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r"^ExportCsv/(?P<app_name>\w+)/$"
+        return r"^ExportCsv/(?P<app_label>\w+)/$"
 
-    def get(self,request,*args,**kwargs):
-        app_name = kwargs['app_name']
-        colnames, rows = get_display_table_rows(app_name, for_export=True, subsession_pk=None)
-        colnames = ['{}.{}'.format(k,v) for k,v in colnames ]
+    @classmethod
+    def url_name(cls):
+        return 'export_csv'
+
+    def get(self, request, *args, **kwargs):
+        app_label = kwargs['app_label']
+        colnames, rows = get_display_table_rows(app_label, for_export=True, subsession_pk=None)
+        colnames = ['{}.{}'.format(k, v) for k, v in colnames]
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(
-        data_file_name(app_name)
+            data_file_name(app_label)
         )
         writer = csv.writer(response)
         writer.writerows([colnames])

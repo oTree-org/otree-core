@@ -2,7 +2,7 @@
 {% load otree_tags floppyforms %}
 
 {% block title %}
-oTree Admin
+oTree Sessions
     <a class="btn btn-primary btn" href="{% url 'session_types_create' %}" style="float: right;">
         <span class="glyphicon glyphicon-plus"></span> Create new session
     </a>
@@ -128,8 +128,8 @@ $('#mturk').on('show.bs.modal', function (event) {
                     <span class="glyphicon glyphicon-cloud"></span> MTurk <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu" role="menu">
-                    <li><a href="{{ s.mturk_requester_url }}">Requester link</a></li>
-                    <li><a href="{{ s.mturk_worker_url }}">Worker link</a></li>
+                    <li><a href="{{ s.mturk_requester_url }}" target="_blank">Requester link</a></li>
+                    <li><a href="{{ s.mturk_worker_url }}" target="_blank">Worker link</a></li>
                 </ul>
             </div>
             {% endif %}

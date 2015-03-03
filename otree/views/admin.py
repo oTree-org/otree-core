@@ -38,19 +38,40 @@ from otree.common import RealWorldCurrency
 from otree.models.session import Session, Participant
 
 
-def new_tab_link(url, label):
-    return '<a href="{}" target="_blank">{}</a>'.format(url, label)
-
-
-def get_callables(Model):
-    '''2015-1-14: deprecated function. needs to exist until we can get
-    rid of admin.py from apps
-
-    '''
-    return []
-
-
 def get_all_fields(Model, for_export=False):
+
+    if Model is Participant:
+        if for_export:
+            return [
+                '_id_in_session_display',
+                'code',
+                'label',
+                '_pages_completed',
+                '_current_app_name',
+                '_round_number',
+                '_current_page_name',
+                'status',
+                'last_request_succeeded',
+                'ip_address',
+                'time_started',
+                'exclude_from_data_analysis',
+                'name',
+                'session',
+                'visited',
+            ]
+        else:
+            return [
+                '_id_in_session_display',
+                'code',
+                'label',
+                '_pages_completed',
+                '_current_app_name',
+                '_round_number',
+                '_current_page_name',
+                'status',
+                'last_request_succeeded',
+                '_last_page_timestamp',
+            ]
 
     first_fields = {
         'Player':
@@ -64,26 +85,11 @@ def get_all_fields(Model, for_export=False):
             ],
         'Subsession':
             [],
-        'Participant':
-            [
-                '_id_in_session_display',
-                'code',
-                'label',
-                '_pages_completed',
-                '_current_app_name',
-                '_round_number',
-                '_current_page_name',
-                'status',
-                'last_request_succeeded',
-            ],
         'Session':
             [
                 'code',
                 'label',
                 'hidden',
-                'start_links_link',
-                'participants_table_link',
-                'payments_link',
             ],
     }[Model.__name__]
     first_fields = oset(first_fields)
@@ -92,15 +98,11 @@ def get_all_fields(Model, for_export=False):
         'Player': [],
         'Group': [],
         'Subsession': [],
-        'Participant': [
-            'exclude_from_data_analysis',
-        ],
-        'Session': [
-        ],
+        'Session': [],
     }[Model.__name__]
     last_fields = oset(last_fields)
 
-    fields_for_export_but_not_changelist = {
+    fields_for_export_but_not_view = {
         'Player': {'id', 'label', 'subsession', 'session'},
         'Group': {'id'},
         'Subsession': {'id', 'round_number'},
@@ -111,14 +113,9 @@ def get_all_fields(Model, for_export=False):
             'comment',
             '_ready_to_play',
         },
-        'Participant': {
-            # 'label',
-            'ip_address',
-            'time_started',
-        },
     }[Model.__name__]
 
-    fields_for_changelist_but_not_export = {
+    fields_for_view_but_not_export = {
         'Player': set(),
         'Group': {'subsession', 'session'},
         'Subsession': {'session'},
@@ -126,18 +123,9 @@ def get_all_fields(Model, for_export=False):
 
             'hidden',
         },
-        'Participant': {
-            'name',
-            'session',
-            'visited',
-            # used to tell how long participant has been on a page
-            '_last_page_timestamp',
-            'status',
-            'last_request_succeeded',
-        },
     }[Model.__name__]
 
-    fields_to_exclude_from_export_and_changelist = {
+    fields_to_exclude_from_export_and_view = {
         'Player': {
             '_index_in_game_pages',
             'participant',
@@ -149,6 +137,7 @@ def get_all_fields(Model, for_export=False):
         'Group': {
             'subsession',
             'session',
+            '_is_missing_players',
         },
         'Subsession': {
             'code',
@@ -157,23 +146,6 @@ def get_all_fields(Model, for_export=False):
             'session_access_code',
             '_experimenter',
             '_index_in_subsessions',
-        },
-        'Participant': {
-            'id',
-            'id_in_session',
-            'session',  # because we already filter by session
-            '_index_in_subsessions',
-            'is_on_wait_page',
-            'mturk_assignment_id',
-            'mturk_worker_id',
-            'vars',
-            '_current_form_page_url',
-            '_max_page_index',
-            '_predetermined_arrival_order',
-            '_index_in_pages',
-            'visited',  # not necessary because 'status' column includes this
-            '_waiting_for_ids',
-            '_last_request_timestamp',
         },
         'Session': {
             'session_type',
@@ -193,12 +165,12 @@ def get_all_fields(Model, for_export=False):
     }[Model.__name__]
 
     if for_export:
-        fields_to_exclude = fields_to_exclude_from_export_and_changelist.union(
-            fields_for_changelist_but_not_export
+        fields_to_exclude = fields_to_exclude_from_export_and_view.union(
+            fields_for_view_but_not_export
         )
     else:
-        fields_to_exclude = fields_to_exclude_from_export_and_changelist.union(
-            fields_for_export_but_not_changelist
+        fields_to_exclude = fields_to_exclude_from_export_and_view.union(
+            fields_for_export_but_not_view
         )
 
     all_fields_in_model = oset([field.name for field in Model._meta.fields])

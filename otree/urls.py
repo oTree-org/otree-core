@@ -43,7 +43,8 @@ def url_patterns_from_module(module_name):
         AUTH_LEVEL = settings.AUTH_LEVEL
 
     restricted_views_demo = ['SessionTypesToCreate', 'CreateSession',
-                             'AdminHome', 'MTurkInfo', 'PersistentLabURLs']
+                             'AdminHome', 'PersistentLabURLs', 'ExportIndex',
+                             'ExportCsv', 'ExportAppDocs']
 
     restricted_views_experiment = restricted_views_demo + [
         'SessionDescription', 'SessionMonitor', 'SessionResults',

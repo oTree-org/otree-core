@@ -1,0 +1,41 @@
+{% extends "otree/BaseBuiltIn.html" %}
+
+{% block title %}
+    Data Export
+{% endblock %}
+
+{% block content_at_top_of_body %}
+{{ block.super }}
+{% include 'otree/TopMenu.html' %}
+{% endblock %}
+
+{% block content %}
+{% if apps %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>App</th>
+            <th>Data</th>
+            <th>Documentation</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for app in apps %}
+        <tr>
+            <td>
+                {{ app.name }}
+            </td>
+            <td>
+                <a href="{% url "export_csv" app.label %}"><span class="glyphicon glyphicon-download-alt"></span></a>
+            </td>
+            <td>
+                <a href="{% url "export_app_docs" app.label %}"><span class="glyphicon glyphicon-download-alt"></span></a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No sessions has yet taken place</p>
+{% endif %}
+{% endblock %}
