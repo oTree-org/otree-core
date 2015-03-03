@@ -23,6 +23,7 @@ REQUIREMENTS = [
     'django-ptree-mturk>=1.0.1',
     'django-save-the-change>=1.0.0',
     'django-sslify>=0.2.5',
+    'django-sslserver==0.14',
     'django-vanilla-views>=1.0.2',
     'flake8>=2.2.5',
     'handy>=0.3',
