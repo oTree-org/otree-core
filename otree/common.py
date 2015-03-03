@@ -31,8 +31,6 @@ class Currency(easymoney.Money):
 
     def to_real_world_currency(self, session):
 
-        # subsession arg can actually be a session as well
-        # can't use isinstance() to avoid circular import
         if settings.USE_POINTS:
             return RealWorldCurrency(self.to_number() * session.real_world_currency_per_point)
         else:

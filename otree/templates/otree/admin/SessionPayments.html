@@ -50,8 +50,8 @@
             <td style="font-family: 'Courier New'">{{ p.code }}</td>
             <td>{{ p.label|default_if_none:"" }}</td>
             <td>{{ fixed_pay }}</td>
-            <td>{{ p.payoff_from_subsessions_display }}</td>
-            <td>{{ p.total_pay_display }}</td>
+            <td>{{ p.payoff_from_subsessions_in_real_world_currency }}</td>
+            <td>{{ p.total_pay }}</td>
             <td></td>
         </tr>
         {% endfor %}

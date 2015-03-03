@@ -509,31 +509,21 @@ class Participant(SessionUser):
     def get_players(self):
         return self.get_users()
 
+    def payoff_from_subsessions_in_real_world_currency(self):
+        return self.payoff_from_subsessions().to_real_world_currency(self.session)
+
     def payoff_from_subsessions(self):
-        """convert to payment currency, since often this will need to be
+        """
+        convert to payment currency, since often this will need to be
         printed on the results page But then again, it's easy to just do the
         multiplication oneself.
 
         """
-        return sum(player.payoff or c(0) for player in self.get_players())
+        payoff = sum(player.payoff or c(0) for player in self.get_players())
+        return payoff
 
     def total_pay(self):
-
-
         return self.session.fixed_pay + self.payoff_from_subsessions().to_real_world_currency(self.session)
-
-    def payoff_from_subsessions_display(self):
-        complete = self.payoff_from_subsessions_is_complete()
-        payoff_from_subsessions = self.payoff_from_subsessions().to_real_world_currency(
-            self.session
-        )
-        if complete:
-            return payoff_from_subsessions
-        return u'{} (incomplete)'.format(payoff_from_subsessions)
-
-    payoff_from_subsessions_display.short_description = (
-        'payoff from subsessions'
-    )
 
     def payoff_from_subsessions_is_complete(self):
         return all(p.payoff is not None for p in self.get_players())

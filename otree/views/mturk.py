@@ -47,7 +47,7 @@ class MTurkConnection(boto.mturk.connection.MTurkConnection):
         # "service not approved")
         if exc_type is MTurkRequestError:
             MTurkError(self.request, value.message)
-        return True
+        return False
 
 
 class CreateHitFromSession(vanilla.View):
@@ -151,12 +151,12 @@ class PayMTurk(vanilla.View):
             participants_bonus = [participants.get(mturk_assignment_id=assignment_id)
                                   for assignment_id in request.POST.getlist('bonus')]
             for p in participants_bonus:
-                bonus = boto.mturk.price.Price(amount=p.payoff_from_subsession.to_number)
+                bonus = boto.mturk.price.Price(amount=p.payoff_from_subsessions().to_number())
                 mturk_connection.grant_bonus(p.mturk_worker_id,
                                              p.mturk_assignment_id,
                                              bonus,
-                                             reason="")
+                                             reason="Good job!!!")
                 p.mturk_bonus_paid = True
                 p.save()
-
+        messages.success(request, "Your payment was successful")
         return HttpResponseRedirect(reverse('session_payments', args=(session.pk,)))

@@ -16,8 +16,7 @@ $(function() {
 });
 function checkFunction(checkName, checkAllName) {
 // disable "checkAll" checkbox if we already paid everyone
-if ($("input[name=" + checkName + "][disabled][checked]").length == $("input[name=" + checkName + "]").length) {
-    $("input[name=" + checkAllName + "]").prop('checked', true);
+if ($("input[name=" + checkName + "][disabled]").length == $("input[name=" + checkName + "]").length) {
     $("input[name=" + checkAllName + "]").attr('disabled', true);
 }
 // code for "checkAll" checkbox
@@ -40,17 +39,17 @@ Smart Pay Button
 $(function() {
     $('input[name=bonus], input[name=reward]').change(function () {
         var sum = 0.0;
-        $('input[name=bonus][checked]:enabled').each(function( index, element ){
+        $('input[name=bonus]:checked:enabled').each(function( index, element ){
             sum += parseFloat($(this).data('value'));
         });
-        $('input[name=reward][checked]:enabled').each(function( index, element ){
+        $('input[name=reward]:checked:enabled').each(function( index, element ){
             sum += parseFloat($(this).data('value'));
         });
         if (sum > 0.00) {
-            $('#pay-hit').attr('disabled', false).text('Pay ( $ ' + sum.toFixed(2) + ' )');
+            $('#pay-hit').attr('disabled', false).text('Pay via MTurk ( $ ' + sum.toFixed(2) + ' )');
         }
         else {
-            $('#pay-hit').attr('disabled', true).text('Pay');
+            $('#pay-hit').attr('disabled', true).text('Pay via MTurk');
         }
     })
 });
@@ -127,7 +126,7 @@ $(function() {
                         {% if not p.mturk_reward_paid %}
                         <input name="reward" data-value="{{ fixed_pay.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}">
                         {% else %}
-                        <input name="reward" data-value="{{ fixed_pay.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}" disabled checked>
+                        <input name="reward" data-value="{{ fixed_pay.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}" disabled>
                         {% endif %}
                     </label>
                 </div> 
@@ -137,13 +136,13 @@ $(function() {
                 <div class="checkbox-inline">
                     <label>
                         {% if not p.mturk_bonus_paid %}
-                        <input name="bonus" data-value="{{ p.payoff_from_subsessions.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}">
+                        <input name="bonus" data-value="{{ p.payoff_from_subsessions_in_real_world_currency.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}">
                         {% else %}
-                        <input name="bonus" data-value="{{ p.payoff_from_subsession.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}" disabled checked>
+                        <input name="bonus" data-value="{{ p.payoff_from_subsessions_in_real_world_currency.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}" disabled>
                         {% endif %}
                     </label>
                 </div> 
-                {{ p.payoff_from_subsessions_display }}
+                {{ p.payoff_from_subsessions_in_real_world_currency }}
             </td>
             <td>{{ p.total_pay_display }}</td>
         </tr>
@@ -154,6 +153,6 @@ $(function() {
     {% endif %}
 </div>
 {% if participants %}
-<button style="float: right;" type="submit" class="btn btn-primary" id="pay-hit" formmethod="POST" formaction="{% url 'pay_mturk' session.pk %}" disabled>Pay</button>
+<button style="float: right;" type="submit" class="btn btn-primary" id="pay-hit" formmethod="POST" formaction="{% url 'pay_mturk' session.pk %}" disabled>Pay via MTurk</button>
 {% endif %}
 {% endblock %}

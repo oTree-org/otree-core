@@ -84,7 +84,6 @@ def get_all_fields(Model, for_export=False):
                 'start_links_link',
                 'participants_table_link',
                 'payments_link',
-                'is_open',
             ],
     }[Model.__name__]
     first_fields = oset(first_fields)
@@ -316,42 +315,6 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
         )
 
     return column_display_names, all_rows
-
-
-class MTurkInfo(vanilla.TemplateView):
-
-    template_name = 'otree/admin/MTurkInfo.html'
-
-    @classmethod
-    def url_pattern(cls):
-        return r"^mturk_info/$"
-
-    @classmethod
-    def url_name(cls):
-        return 'mturk_info'
-
-    def get_context_data(self, **kwargs):
-        context = super(MTurkInfo, self).get_context_data(**kwargs)
-
-        # Mturk stuff
-        hit_page_js_url = self.request.build_absolute_uri(
-            static_template_tag('otree/js/mturk_hit_page.js')
-        )
-
-        global_singleton = otree.models.session.GlobalSingleton.objects.get()
-        default_session = global_singleton.default_session
-
-        from otree.views.concrete import AssignVisitorToOpenSessionMTurk
-        default_session_url = self.request.build_absolute_uri(
-            AssignVisitorToOpenSessionMTurk.url()
-        )
-        context.update({
-            'mturk_hit_page_js_url': hit_page_js_url,
-            'mturk_default_session_url': default_session_url,
-            'default_session': default_session,
-        })
-
-        return context
 
 
 class PersistentLabURLs(vanilla.TemplateView):
