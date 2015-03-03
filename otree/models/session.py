@@ -14,7 +14,7 @@ from otree.common import Currency as c
 from otree.db import models
 from otree.models_concrete import SessionuserToUserLookup
 import contextlib
-
+import pdb
 
 class GlobalSingleton(models.Model):
     """object that can hold site-wide settings. There should only be one
@@ -518,7 +518,9 @@ class Participant(SessionUser):
         return sum(player.payoff or c(0) for player in self.get_players())
 
     def total_pay(self):
-        return self.session.fixed_pay + self.payoff_from_subsessions()
+
+
+        return self.session.fixed_pay + self.payoff_from_subsessions().to_real_world_currency(self.session)
 
     def payoff_from_subsessions_display(self):
         complete = self.payoff_from_subsessions_is_complete()
@@ -538,7 +540,7 @@ class Participant(SessionUser):
 
     def total_pay_display(self):
         complete = self.payoff_from_subsessions_is_complete()
-        total_pay = self.total_pay().to_real_world_currency(self.session)
+        total_pay = self.total_pay()#.to_real_world_currency(self.session)
         if complete:
             return total_pay
         return u'{} (incomplete)'.format(total_pay)

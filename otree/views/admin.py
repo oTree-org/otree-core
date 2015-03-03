@@ -616,8 +616,7 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
         if participants:
             total_payments = sum(
                 participant.total_pay() or c(0) for participant in participants
-            ).to_real_world_currency(session)
-
+            )
             mean_payment = total_payments / len(participants)
 
         context = super(SessionPayments, self).get_context_data(**kwargs)
@@ -625,7 +624,7 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
             'participants': participants,
             'total_payments': total_payments,
             'mean_payment': mean_payment,
-            'fixed_pay': session.fixed_pay.to_real_world_currency(session),
+            'fixed_pay': session.fixed_pay,
         })
 
         return context
