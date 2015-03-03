@@ -109,5 +109,6 @@ def augment_urlpatterns(urlpatterns):
     urlpatterns += url_patterns_from_module('otree.views.demo')
     urlpatterns += url_patterns_from_module('otree.views.admin')
     urlpatterns += url_patterns_from_module('otree.views.mturk')
+    urlpatterns += url_patterns_from_module('otree.views.export')
 
     return urlpatterns

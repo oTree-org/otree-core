@@ -177,6 +177,7 @@ def get_all_fields(Model, for_export=False):
             '_last_request_timestamp',
         },
         'Session': {
+            'session_type',
             'mturk_payment_was_sent',
 
             # can't be shown on change page, because pk not editable?
@@ -311,7 +312,7 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
     column_display_names = []
     for Model, field_name in all_columns:
         column_display_names.append(
-            (pretty_name(Model.__name__), pretty_name(field_name))
+            (Model.__name__, field_name)
         )
 
     return column_display_names, all_rows
@@ -690,8 +691,8 @@ class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
 
             for model_column_name, field_column_name in column_names:
                 column_name_tuples.append(
-                    (subsession_column_name, model_column_name,
-                     field_column_name)
+                    (subsession_column_name, pretty_name(model_column_name),
+                     pretty_name(field_column_name))
                 )
 
         subsession_headers = [

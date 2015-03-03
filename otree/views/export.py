@@ -14,15 +14,14 @@ from django.http import HttpResponse
 from django.utils.importlib import import_module
 from django.contrib.admin import sites
 from django.template.response import TemplateResponse
-
 import otree.common_internal
 import otree.settings
 import otree.models
-
 import otree.models.session
 from otree.common_internal import app_name_format
-
 import vanilla
+import csv
+from otree.views.admin import get_display_table_rows
 
 
 # =============================================================================
@@ -206,4 +205,55 @@ class ExportAppDocs(vanilla.View):
             doc_file_name(app_label)
         )
         response['Content-Type'] = 'text/plain'
+        return response
+
+def data_file_name(app_label):
+    return '{} (accessed {}).csv'.format(
+        otree.common_internal.app_name_format(app_label),
+        datetime.date.today().isoformat(),
+    )
+
+
+def export_list(request):
+    # Get unique app_labels
+    app_labels = [
+        model._meta.app_label
+        for model, model_admin in sites.site._registry.items()
+    ]
+    app_labels = list(set(app_labels))
+    # Sort the apps alphabetically.
+    app_labels.sort()
+    # Filter out non subsession apps
+    app_labels = [
+        app_label
+        for app_label in app_labels
+        if otree.common_internal.is_subsession_app(app_label)
+    ]
+    apps = [
+        {"name": app_name_format(app_label), "app_label": app_label}
+        for app_label in app_labels
+    ]
+    return TemplateResponse(
+        request, "admin/otree_data_export_list.html", {"apps": apps}
+    )
+
+
+
+class ExportCsv(vanilla.View):
+
+    @classmethod
+    def url_pattern(cls):
+        return r"^ExportCsv/(?P<app_name>\w+)/$"
+
+    def get(self,request,*args,**kwargs):
+        app_name = kwargs['app_name']
+        colnames, rows = get_display_table_rows(app_name, for_export=True, subsession_pk=None)
+        colnames = ['{}.{}'.format(k,v) for k,v in colnames ]
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(
+        data_file_name(app_name)
+        )
+        writer = csv.writer(response)
+        writer.writerows([colnames])
+        writer.writerows(rows)
         return response
