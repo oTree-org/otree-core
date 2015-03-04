@@ -312,9 +312,9 @@ class MTurkInfo(vanilla.TemplateView):
         global_singleton = otree.models.session.GlobalSingleton.objects.get()
         default_session = global_singleton.default_session
 
-        from otree.views.concrete import AssignVisitorToOpenSession
+        from otree.views.concrete import AssignVisitorToOpenSessionMTurk
         default_session_url = self.request.build_absolute_uri(
-            AssignVisitorToOpenSession.url()
+            AssignVisitorToOpenSessionMTurk.url()
         )
         context.update({
             'mturk_hit_page_js_url': hit_page_js_url,
