@@ -58,6 +58,8 @@ def get_all_fields(Model, for_export=False):
                 'name',
                 'session',
                 'visited',
+                'mturk_worker_id',
+                'mturk_assignment_id',
             ]
         else:
             return [
