@@ -26,18 +26,18 @@ Dashboard for session
 {% if is_demo %}
     (demo)
 {% else %}
-<div style="float: right;">
-    {% if session != default_session %}
-    <a href="{% url 'set_default_session' session.pk %}" class="btn btn-primary btn">
-        <span class="glyphicon glyphicon-home"></span> Default
-    </a>
-    {% else %}
-    <a href="{% url 'unset_default_session' %}" class="btn btn-success btn">
-        <span class="glyphicon glyphicon-home"></span> Default
-    </a>
-    {% endif %}
+    <div style="float: right;">
+        {% if session != default_session %}
+        <a href="{% url 'set_default_session' session.pk %}" class="btn btn-primary btn">
+            <span class="glyphicon glyphicon-home"></span> Default
+        </a>
+        {% else %}
+        <a href="{% url 'unset_default_session' %}" class="btn btn-success btn">
+            <span class="glyphicon glyphicon-home"></span> Default
+        </a>
+        {% endif %}
+    </div>
 {% endif %}
-</div>
 {% endblock %}
 
 {% block content_at_top_of_body %}
@@ -47,36 +47,36 @@ Dashboard for session
 
 {% block menus %}
 <nav class="navbar">
-  <div class="container-fluid">
-    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-      <ul class="nav nav-pills nav-justified">
-        <li role="presentation" class="{% active_page request 'session_description' %}">
-        <a href="{% url 'session_description' session.pk %}"><span class="glyphicon glyphicon-pushpin"></span> Description</a>
-        </li>
-        <li role="presentation" class="{% active_page request 'session_start_links' %}">
-        <a href="{% url 'session_start_links' session.pk %}"><span class="glyphicon glyphicon-link"></span> Links</a>
-        </li>
-        <li role="presentation" class="{% active_page request 'session_edit' %}">
-        <a href="{% url 'session_edit' session.pk %}"><span class="glyphicon glyphicon-pencil"></span> Edit
-        </a>
-        </li>
-        <li role="presentation" class="{% active_page request 'session_monitor' %}">
-        <a href="{% url 'session_monitor' session.pk %}"><span class="glyphicon glyphicon-eye-open"></span> Monitor</a>
-        </li>
-        <li role="presentation" class="{% active_page request 'session_results' %}">
-        <a href="{% url 'session_results' session.pk %}"><span class="glyphicon glyphicon-list-alt"></span> Results</a></li>
-        <li role="presentation" class="{% active_page request 'session_payments' %}">
-        <a href="{% url 'session_payments' session.pk %}"><span class="glyphicon glyphicon-usd"></span> Payments</a>
-        </li>
-        {% if is_demo %}
-        <li role="presentation">
-        <a href="{% url 'create_demo_session' session.session_type.name %}" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Recreate session from scratch">
-            <span class="glyphicon glyphicon-refresh"></span> Reload
-        </a>
-        </li>
-        {% endif %}
-      </ul>
-  </div><!-- /.navbar-collapse -->
-  </div><!-- /.container-fluid -->
+    <div class="container-fluid">
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav nav-pills nav-justified">
+                <li role="presentation" class="{% active_page request 'session_description' %}">
+                <a href="{% url 'session_description' session.pk %}"><span class="glyphicon glyphicon-pushpin"></span> Description</a>
+                </li>
+                <li role="presentation" class="{% active_page request 'session_start_links' %}">
+                <a href="{% url 'session_start_links' session.pk %}"><span class="glyphicon glyphicon-link"></span> Links</a>
+                </li>
+                <li role="presentation" class="{% active_page request 'session_edit' %}">
+                <a href="{% url 'session_edit' session.pk %}"><span class="glyphicon glyphicon-pencil"></span> Edit
+                </a>
+                </li>
+                <li role="presentation" class="{% active_page request 'session_monitor' %}">
+                <a href="{% url 'session_monitor' session.pk %}"><span class="glyphicon glyphicon-eye-open"></span> Monitor</a>
+                </li>
+                <li role="presentation" class="{% active_page request 'session_results' %}">
+                <a href="{% url 'session_results' session.pk %}"><span class="glyphicon glyphicon-list-alt"></span> Results</a></li>
+                <li role="presentation" class="{% active_page request 'session_payments' %}">
+                <a href="{% url 'session_payments' session.pk %}"><span class="glyphicon glyphicon-usd"></span> Payments</a>
+                </li>
+                {% if is_demo %}
+                <li role="presentation">
+                <a href="{% url 'create_demo_session' session.session_type.name %}" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Recreate session from scratch">
+                    <span class="glyphicon glyphicon-refresh"></span> Reload
+                </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
 </nav>
 {% endblock %}
