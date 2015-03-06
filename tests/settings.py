@@ -12,6 +12,8 @@ DEBUG = True
 ADMIN_PASSWORD = 'otree'
 SECRET_KEY = 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz'
 
+AUTH_LEVEL = os.environ.get('OTREE_AUTH_LEVEL', 'DEMO')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
