@@ -27,7 +27,9 @@ views that have URLs.
 import os
 import logging
 import time
+import warnings
 
+from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Q
 from django.conf import settings
 from django.shortcuts import get_object_or_404
@@ -847,7 +849,34 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
         return HttpResponseRedirect(participant._start_url())
 
 
-class AdminSessionPageMixin(object):
+class GetFloppyFormClassMixin(object):
+    def get_form_class(self):
+        """
+        A drop-in replacement for
+        ``vanilla.model_views.GenericModelView.get_form_class``. The only
+        difference is that we use oTree's modelform_factory in order to always
+        get a floppyfied form back which supports richer widgets.
+        """
+        if self.form_class is not None:
+            return self.form_class
+
+        if self.model is not None:
+            if self.fields is None:
+                msg = "'Using GenericModelView (base class of '%s) without setting" \
+                    "either 'form_class' or the 'fields' attribute is pending deprecation."
+                warnings.warn(msg % self.__class__.__name__,
+                              PendingDeprecationWarning)
+            return otree.forms.modelform_factory(
+                self.model,
+                fields=self.fields,
+                formfield_callback=otree.forms.formfield_callback)
+
+        msg = "'%s' must either define 'form_class' or both 'model' and " \
+            "'fields', or override 'get_form_class()'"
+        raise ImproperlyConfigured(msg % self.__class__.__name__)
+
+
+class AdminSessionPageMixin(GetFloppyFormClassMixin):
 
     @classmethod
     def url_pattern(cls):
