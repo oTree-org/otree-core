@@ -117,6 +117,9 @@ FORMFIELD_OVERRIDES.update({
     models.CurrencyField: {
         'form_class': fields.CurrencyField,
         'choices_form_class': fields.CurrencyChoiceField},
+    models.RealWorldCurrencyField: {
+        'form_class': fields.CurrencyField,
+        'choices_form_class': fields.CurrencyChoiceField},
 })
 
 
