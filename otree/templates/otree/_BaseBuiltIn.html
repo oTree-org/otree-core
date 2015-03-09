@@ -1,6 +1,6 @@
 {% load staticfiles %}
 {% load i18n %}
-{% load floppyforms %}
+{% load floppyforms otree_tags %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -49,10 +49,10 @@
                 {% endif %}
 
                 <form action="" method="post" role="form" class="form" id="form">{% csrf_token %}
-                    {% form form using %}
+                    {% pageform form using %}
                         {% formconfig row using "floppyforms/rows/bootstrap.html" %}
                         {% block content %}{% endblock %}
-                    {% endform %}
+                    {% endpageform %}
                 </form>
 
             </div>

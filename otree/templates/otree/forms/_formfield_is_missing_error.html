@@ -1,0 +1,13 @@
+<div class="alert alert-warning">
+    <p>
+        You did not include the following form fields in the HTML:
+    </p>
+    <ul>
+    {% for field_name, field in missing_fields %}
+        <li><code>{{ field_name }}</code></li>
+    {% endfor %}
+    </ul>
+    <p>
+        You can include them by using the <code>{% templatetag openblock %} formfield ... {% templatetag closeblock %}</code> template tag.
+    </p>
+</div>

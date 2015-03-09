@@ -109,13 +109,14 @@ FORMFIELD_OVERRIDES.update({
         'choices_form_class': forms.TypedChoiceField},
 
     # Other custom db fields used in otree.
-
     models.RandomCharField: {
         'form_class': forms.CharField,
         'choices_form_class': forms.TypedChoiceField},
-
     models.CurrencyField: {
         'form_class': fields.CurrencyField,
+        'choices_form_class': fields.CurrencyChoiceField},
+    models.RealWorldCurrencyField: {
+        'form_class': fields.RealWorldCurrencyField,
         'choices_form_class': fields.CurrencyChoiceField},
 })
 

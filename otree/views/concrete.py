@@ -232,15 +232,14 @@ class MTurkStart(vanilla.View):
         assignment_id = self.request.GET['assignmentId']
         worker_id = self.request.GET['workerId']
         try:
-            participant = Participant.objects.get(
+            participant = self.session.participant_set.get(
                 mturk_worker_id=worker_id,
                 mturk_assignment_id=assignment_id)
         except Participant.DoesNotExist:
             with lock_on_this_code_path():
                 try:
                     participant = (
-                        Participant.objects.select_for_update().filter(
-                            session=self.session,
+                        self.session.participant_set.select_for_update().filter(
                             visited=False
                         )
                     )[0]
@@ -256,6 +255,41 @@ class MTurkStart(vanilla.View):
             participant.mturk_assignment_id = assignment_id
             participant.save()
         return HttpResponseRedirect(participant._start_url())
+
+
+class AssignVisitorToOpenSessionMTurk(AssignVisitorToOpenSessionBase):
+
+    def incorrect_parameters_in_url_message(self):
+        # A visitor to this experiment was turned away because they did not have the MTurk parameters in their URL.
+        # This URL only works if clicked from a MTurk job posting with the JavaScript snippet embedded
+        return """
+                To participate, you need to first accept this Mechanical Turk HIT
+                and then re-click the link (refreshing this page will not work).
+            """
+
+    @classmethod
+    def url(cls):
+        return otree.common_internal.add_params_to_url(
+            '/{}'.format(cls.__name__),
+            {
+                otree.constants.access_code_for_default_session: settings.ACCESS_CODE_FOR_DEFAULT_SESSION
+            }
+        )
+
+    @classmethod
+    def url_pattern(cls):
+        return r'^{}/$'.format(cls.__name__)
+
+    required_params = {
+        'mturk_worker_id': otree.constants.mturk_worker_id,
+        'mturk_assignment_id': otree.constants.mturk_assignment_id,
+    }
+
+    def url_has_correct_parameters(self):
+        return (
+            super(AssignVisitorToOpenSessionMTurk, self).url_has_correct_parameters()
+            and self.request.GET[constants.mturk_assignment_id] != 'ASSIGNMENT_ID_NOT_AVAILABLE'
+        )
 
 
 class AssignVisitorToOpenSession(AssignVisitorToOpenSessionBase):
@@ -345,8 +379,14 @@ class SetDefaultSession(vanilla.View):
         global_singleton = otree.models.session.GlobalSingleton.objects.get()
         global_singleton.default_session = self.session
         global_singleton.save()
-        redirect_url = reverse('admin_home')
-        return HttpResponseRedirect(redirect_url)
+        messages.success(request, """You have set
+                                     the default session to
+                                     <a href="%s">%s</a>. All participants are 
+                                     going to be routed to this session.
+                                     """ % (reverse('session_description',
+                                                    args=(self.session.pk,)),
+                                            self.session.code), extra_tags='safe')
+        return HttpResponseRedirect(reverse('admin_home'))
 
 
 class UnsetDefaultSession(vanilla.View):
@@ -379,4 +419,5 @@ class UnsetDefaultSession(vanilla.View):
         global_singleton.default_session = None
         global_singleton.save()
         redirect_url = reverse('admin_home')
+        messages.success(request, "You have successfully reset the default session")
         return HttpResponseRedirect(redirect_url)

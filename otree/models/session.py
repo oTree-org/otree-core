@@ -131,6 +131,12 @@ class Session(ModelWithVars):
         help_text='Hit id for this session on MTurk',
     )
 
+    mturk_sandbox = models.BooleanField(default=False,
+                                        help_text="""
+                                        Should this session be
+                                        created in mturk sandbox?
+                                        """)
+
     hidden = models.BooleanField(default=False)
 
     git_commit_timestamp = models.CharField(
@@ -223,14 +229,14 @@ class Session(ModelWithVars):
         self.save()
 
     def mturk_requester_url(self):
-        if settings.DEBUG:
+        if self.mturk_sandbox:
             requester_url = "https://requestersandbox.mturk.com/mturk/manageHITs"
         else:
             requester_url = "https://requester.mturk.com/mturk/manageHITs"
         return requester_url
 
     def mturk_worker_url(self):
-        if settings.DEBUG:
+        if self.mturk_sandbox:
             worker_url = "https://workersandbox.mturk.com/mturk/preview?groupId=%s" % self.mturk_HITGroupId
         else:
             worker_url = "https://www.mturk.com/mturk/preview?groupId=%s" % self.mturk_HITGroupId

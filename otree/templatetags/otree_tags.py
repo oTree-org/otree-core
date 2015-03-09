@@ -13,7 +13,9 @@
 # IMPORTS
 # =============================================================================
 
+from .otree_forms import FormNode
 from .otree_forms import FormFieldNode
+from .otree_forms import MarkFieldAsRenderedNode
 from django import template
 from django.template.loader import render_to_string
 from django.core.urlresolvers import resolve, Resolver404, reverse
@@ -69,4 +71,8 @@ def active_page(request, view_name):
         return "active" if url_name == view_name else ""
     except Resolver404:
         return ""
+
+
+register.tag('pageform', FormNode.parse)
+register.tag('mark_field_as_rendered', MarkFieldAsRenderedNode.parse)
 register.tag('formfield', FormFieldNode.parse)
