@@ -2,7 +2,6 @@
 
 SESSION_TYPE_DEFAULTS = {
     'real_world_currency_per_point': 0.01,
-    'demo_enabled': True,
     'fixed_pay': 10.00,
     'num_bots': 12,
     'doc': "",

@@ -40,6 +40,21 @@ from otree.models.session import Session, Participant
 
 def get_all_fields(Model, for_export=False):
 
+    if Model is Session:
+        return [
+           'code',
+           'label',
+           'experimenter_name',
+           'real_world_currency_per_point',
+           'time_scheduled'	,
+           'time_started',
+           'mturk_HITId',
+           'mturk_HITGroupId',
+           'fixed_pay',
+           'comment',
+           'special_category',
+        ]
+
     if Model is Participant:
         if for_export:
             return [
@@ -85,12 +100,6 @@ def get_all_fields(Model, for_export=False):
             ],
         'Subsession':
             [],
-        'Session':
-            [
-                'code',
-                'label',
-                'hidden',
-            ],
     }[Model.__name__]
     first_fields = oset(first_fields)
 
@@ -98,7 +107,6 @@ def get_all_fields(Model, for_export=False):
         'Player': [],
         'Group': [],
         'Subsession': [],
-        'Session': [],
     }[Model.__name__]
     last_fields = oset(last_fields)
 
@@ -106,23 +114,12 @@ def get_all_fields(Model, for_export=False):
         'Player': {'id', 'label', 'subsession', 'session'},
         'Group': {'id'},
         'Subsession': {'id', 'round_number'},
-        'Session': {
-            'git_commit_timestamp',
-            'fixed_pay',
-            'real_world_currency_per_point',
-            'comment',
-            '_ready_to_play',
-        },
     }[Model.__name__]
 
     fields_for_view_but_not_export = {
         'Player': set(),
         'Group': {'subsession', 'session'},
         'Subsession': {'session'},
-        'Session': {
-
-            'hidden',
-        },
     }[Model.__name__]
 
     fields_to_exclude_from_export_and_view = {
@@ -147,21 +144,6 @@ def get_all_fields(Model, for_export=False):
             '_experimenter',
             '_index_in_subsessions',
         },
-        'Session': {
-            'session_type',
-            'mturk_payment_was_sent',
-
-            # can't be shown on change page, because pk not editable?
-            'id',
-            'session_experimenter',
-            'subsession_names',
-            'demo_already_used',
-            'ready',
-            'vars',
-            '_pre_create_id',
-            # don't hide the code, since it's useful as a checksum
-            # (e.g. if you're on the payments page)
-        }
     }[Model.__name__]
 
     if for_export:
