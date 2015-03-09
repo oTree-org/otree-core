@@ -155,4 +155,5 @@ $(function() {
 {% if participants %}
 <button style="float: right;" type="submit" class="btn btn-primary" id="pay-hit" formmethod="POST" formaction="{% url 'pay_mturk' session.pk %}" disabled>Pay via MTurk</button>
 {% endif %}
+{% include "otree/messages.html" %}
 {% endblock %}

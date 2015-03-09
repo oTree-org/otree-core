@@ -5,14 +5,20 @@ import urlparse
 import vanilla
 import boto.mturk.connection
 from boto.mturk.connection import MTurkRequestError
+from boto.mturk.qualification import (LocaleRequirement,
+                                      PercentAssignmentsApprovedRequirement,
+                                      NumberHitsApprovedRequirement,
+                                      Qualifications)
 
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404
+from otree import forms
 
 import otree
+from otree.views.abstract import AdminSessionPageMixin
 
 
 class MTurkError(Exception):
@@ -26,19 +32,18 @@ class MTurkError(Exception):
 
 class MTurkConnection(boto.mturk.connection.MTurkConnection):
 
-    def __init__(self, request):
+    def __init__(self, request, in_sandbox=True):
+        if in_sandbox:
+            self.mturk_host = settings.MTURK_SANDBOX_HOST
+        else:
+            self.mturk_host = settings.MTURK_HOST
         self.request = request
 
     def __enter__(self):
-        if settings.DEBUG:
-            mturk_host = settings.MTURK_SANDBOX_HOST
-        else:
-            mturk_host = settings.MTURK_HOST
-
         self = boto.mturk.connection.MTurkConnection(
             aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-            host=mturk_host,
+            host=self.mturk_host,
         )
         return self
 
@@ -50,74 +55,121 @@ class MTurkConnection(boto.mturk.connection.MTurkConnection):
         return False
 
 
-class CreateHitFromSession(vanilla.View):
+class SessionCreateHitForm(forms.Form):
+    title = forms.CharField()
+    description = forms.CharField()
+    keywords = forms.CharField()
+    money_reward = forms.RealWorldCurrencyField()
+    assignments = forms.IntegerField(widget=forms.NumberInput(attrs={'readonly': 'readonly'}),
+                                     help_text="""
+                                     This value is populated by
+                                     number of participants in your session.
+                                     Can be altered only via creating new session.""")
+    location = forms.CharField(required=False,
+                               help_text="""
+                               The location of the Worker.
+                               Leave it blank if you don't
+                               want to specify it.""")
+    number_hits_approved = forms.IntegerField(required=False,
+                                              min_value=1,
+                                              help_text="""
+                                              Minimum number of approved HITs
+                                              the Worker must have.
+                                              Leave it blank if you don't
+                                              want to specify it.""")
+    percent_assignments_approved = forms.IntegerField(required=False,
+                                                      min_value=1,
+                                                      max_value=100,
+                                                      help_text="""
+                                                      The percentage of assignments
+                                                      the Worker has submitted that
+                                                      were subsequently approved
+                                                      by the Requester.
+                                                      Leave it blank if you don't
+                                                      want to specify it.""")
+    in_sandbox = forms.BooleanField(required=False,
+                                    help_text="""
+                                    Do you want HIT published
+                                    on MTurk sandbox?
+                                    """)
+
+
+class SessionCreateHit(AdminSessionPageMixin, vanilla.TemplateView):
     '''
         This view creates mturk HIT for session provided in request
         AWS externalQuestion API is used to generate HIT.
     '''
-
-    @classmethod
-    def url_pattern(cls):
-        return r'^CreateHitFromSession/(?P<{}>[0-9]+)/$'.format('session_pk')
+    form_class = SessionCreateHitForm
 
     @classmethod
     def url_name(cls):
-        return 'create_hit_from_session'
-
-    @classmethod
-    def url(cls, session):
-        return '/CreateHitFromSession/{}/'.format(session.pk)
-
-    def dispatch(self, request, *args, **kwargs):
-        self.session = get_object_or_404(
-            otree.models.session.Session, pk=kwargs['session_pk']
-        )
-        return super(CreateHitFromSession, self).dispatch(
-            request, *args, **kwargs
-        )
+        return 'session_create_hit'
 
     def get(self, request, *args, **kwargs):
+        mturk_hit_settings = self.session.session_type['mturk_hit_settings']
+        form = self.get_form(initial={'title': mturk_hit_settings['title'],
+                                      'description': mturk_hit_settings['description'],
+                                      'keywords': ', '.join(mturk_hit_settings['keywords']),
+                                      'money_reward': "%0.2f" % self.session.session_type['fixed_pay'],
+                                      'assignments': len(self.session.get_participants()),
+                                      'location': mturk_hit_settings['location'],
+                                      'number_hits_approved': mturk_hit_settings['number_hits_approved'],
+                                      'percent_assignments_approved': mturk_hit_settings['percent_assignments_approved'],
+                                      'in_sandbox': settings.DEBUG})
+        context = self.get_context_data(form=form)
+        return self.render_to_response(context)
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form(data=request.POST, files=request.FILES)
+        if not form.is_valid():
+            return self.form_invalid(form)
         session = self.session
-        if session.mturk_HITId:
-            return HttpResponseRedirect(reverse('admin_home'))
-        with MTurkConnection(self.request) as mturk_connection:
-            url_landing_page = self.request.build_absolute_uri(reverse('mturk_landing_page', args=(session.code,)))
+        in_sandbox = 'in_sandbox' in form.data
+        with MTurkConnection(self.request, in_sandbox) as mturk_connection:
+            url_landing_page = self.request.build_absolute_uri(reverse('mturk_landing_page',
+                                                               args=(session.code,)))
             # updating schema from http to https
             # this is compulsory for MTurk exteranlQuestion
-            secured_url_landing_page = urlparse.urlunparse(urlparse.urlparse(url_landing_page)._replace(scheme='https'))
+            secured_url_landing_page = urlparse.urlunparse(urlparse.urlparse(url_landing_page).
+                                                           _replace(scheme='https'))
             # TODO: validate, that the server support https (heroku does support by default)
-            hit_settings = session.session_type['mturk_hit_settings']
             # TODO: validate that there is enought money for the hit
-            reward = boto.mturk.price.Price(amount=request.GET['hit-reward'])
+            reward = boto.mturk.price.Price(amount=float(form.data['money_reward']))
             # creating external questions, that would be passed to the hit
             external_question = boto.mturk.question.ExternalQuestion(
                 secured_url_landing_page,
-                hit_settings['frame_height']
+                session.session_type['mturk_hit_settings']['frame_height'],
             )
+            qualifications = Qualifications()
+            location = form.data['location']
+            if location:
+                qualifications.add(LocaleRequirement("EqualTo", location))
+            percent_assignments_approved = form.data['percent_assignments_approved']
+            if percent_assignments_approved:
+                qualifications.add(
+                    PercentAssignmentsApprovedRequirement("GreaterThanOrEqualTo",
+                                                          int(percent_assignments_approved)))
+            number_hits_approved = form.data['number_hits_approved']
+            if number_hits_approved:
+                qualifications.add(
+                    NumberHitsApprovedRequirement("GreaterThanOrEqualTo",
+                                                  int(number_hits_approved)))
             hit = mturk_connection.create_hit(
-                title=request.GET['hit-title'],
-                description=request.GET['hit-description'],
-                keywords=[k.strip() for k in request.GET['hit-keywords'].split(',')],
+                title=form.data['title'],
+                description=form.data['description'],
+                keywords=[k.strip() for k in form.data['keywords'].split(',')],
                 question=external_question,
                 max_assignments=len(session.get_participants()),
                 reward=reward,
                 response_groups=('Minimal', 'HITDetail'),
+                qualifications=qualifications
             )
             session.mturk_HITId = hit[0].HITId
             session.mturk_HITGroupId = hit[0].HITGroupId
+            session.mturk_sandbox = in_sandbox
             session.save()
-            message = """
-                You have created a hit for session <strong>%s</strong>.<br>
-                To look at the hit as a <em>requester</em>
-                follow this <a href="%s" target="_blank">link</a>.<br>
-                To look at the hit as a <em>worker</em>
-                follow this <a href="%s" target="_blank">link</a>.
-                """ % (session.code,
-                       session.mturk_requester_url(),
-                       session.mturk_worker_url())
-
-            messages.success(request, message, extra_tags='safe')
-        return HttpResponseRedirect(reverse('admin_home'))
+        return HttpResponseRedirect(reverse('session_create_hit',
+                                            args=(session.pk,)))
 
 
 class PayMTurk(vanilla.View):
@@ -140,7 +192,7 @@ class PayMTurk(vanilla.View):
         )
         participants = session.participant_set.exclude(mturk_assignment_id__isnull=True).\
                                                exclude(mturk_assignment_id="")
-        with MTurkConnection(self.request) as mturk_connection:
+        with MTurkConnection(self.request, session.mturk_sandbox) as mturk_connection:
             participants_reward = [participants.get(mturk_assignment_id=assignment_id)
                                    for assignment_id in request.POST.getlist('reward')]
             for p in participants_reward:

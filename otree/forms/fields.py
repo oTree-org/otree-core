@@ -3,15 +3,22 @@ from easymoney import to_dec
 from . import widgets
 
 
-__all__ = ('CurrencyField', 'CurrencyChoiceField',)
+__all__ = ('CurrencyField', 'CurrencyChoiceField', 'RealWorldCurrencyField')
 
 
-class CurrencyField(forms.DecimalField):
-    widget = widgets.CurrencyInput
+class BaseCurrencyField(forms.DecimalField):
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('widget', self.widget)
-        super(CurrencyField, self).__init__(*args, **kwargs)
+        super(BaseCurrencyField, self).__init__(*args, **kwargs)
+
+
+class CurrencyField(BaseCurrencyField):
+    widget = widgets.CurrencyInput
+
+
+class RealWorldCurrencyField(BaseCurrencyField):
+    widget = widgets.RealWorldCurrencyInput
 
 
 class CurrencyChoiceField(forms.TypedChoiceField):

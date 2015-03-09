@@ -232,15 +232,14 @@ class MTurkStart(vanilla.View):
         assignment_id = self.request.GET['assignmentId']
         worker_id = self.request.GET['workerId']
         try:
-            participant = Participant.objects.get(
+            participant = self.session.participant_set.get(
                 mturk_worker_id=worker_id,
                 mturk_assignment_id=assignment_id)
         except Participant.DoesNotExist:
             with lock_on_this_code_path():
                 try:
                     participant = (
-                        Participant.objects.select_for_update().filter(
-                            session=self.session,
+                        self.session.participant_set.select_for_update().filter(
                             visited=False
                         )
                     )[0]
@@ -380,8 +379,14 @@ class SetDefaultSession(vanilla.View):
         global_singleton = otree.models.session.GlobalSingleton.objects.get()
         global_singleton.default_session = self.session
         global_singleton.save()
-        redirect_url = reverse('admin_home')
-        return HttpResponseRedirect(redirect_url)
+        messages.success(request, """You have set
+                                     the default session to
+                                     <a href="%s">%s</a>. All participants are 
+                                     going to be routed to this session.
+                                     """ % (reverse('session_description',
+                                                    args=(self.session.pk,)),
+                                            self.session.code), extra_tags='safe')
+        return HttpResponseRedirect(reverse('admin_home'))
 
 
 class UnsetDefaultSession(vanilla.View):
@@ -414,4 +419,5 @@ class UnsetDefaultSession(vanilla.View):
         global_singleton.default_session = None
         global_singleton.save()
         redirect_url = reverse('admin_home')
+        messages.success(request, "You have successfully reset the default session")
         return HttpResponseRedirect(redirect_url)

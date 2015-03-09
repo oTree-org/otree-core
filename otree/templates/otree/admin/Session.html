@@ -68,6 +68,9 @@ Dashboard for session
                 <li role="presentation" class="{% active_page request 'session_payments' %}">
                 <a href="{% url 'session_payments' session.pk %}"><span class="glyphicon glyphicon-usd"></span> Payments</a>
                 </li>
+                <li role="presentation" class="{% active_page request 'session_create_hit' %}">
+                <a href="{% url 'session_create_hit' session.pk %}"><span class="glyphicon glyphicon-cloud"></span> MTurk</a>
+                </li>
                 {% if is_demo %}
                 <li role="presentation">
                 <a href="{% url 'create_demo_session' session.session_type.name %}" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Recreate session from scratch">
