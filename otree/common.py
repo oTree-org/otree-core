@@ -32,7 +32,9 @@ class Currency(easymoney.Money):
     def to_real_world_currency(self, session):
 
         if settings.USE_POINTS:
-            return RealWorldCurrency(self.to_number() * session.real_world_currency_per_point)
+            return RealWorldCurrency(
+                self.to_number() * session.real_world_currency_per_point
+            )
         else:
             return self
 

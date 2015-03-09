@@ -8,19 +8,19 @@
 
 import inspect
 import datetime
+import csv
 from collections import OrderedDict
 
 from django.http import HttpResponse
 from django.utils.importlib import import_module
-from django.contrib.admin import sites
-from django.template.response import TemplateResponse
-import otree.common_internal
 from django.conf import settings
+
+import vanilla
+
+import otree.common_internal
 import otree.models
 import otree.models.session
 from otree.common_internal import app_name_format
-import vanilla
-import csv
 from otree.views.admin import get_display_table_rows, get_all_fields
 
 
@@ -177,7 +177,8 @@ class ExportIndex(vanilla.TemplateView):
         app_labels = settings.INSTALLED_OTREE_APPS
         app_labels_with_data = []
         for app_label in app_labels:
-            if otree.common_internal.get_models_module(app_label).Player.objects.exists():
+            model_module = otree.common_internal.get_models_module(app_label)
+            if model_module.Player.objects.exists():
                 app_labels_with_data.append(app_label)
         apps = [
             {"name": app_name_format(app_label), "label": app_label}
@@ -221,7 +222,9 @@ class ExportCsv(vanilla.View):
 
     def get(self, request, *args, **kwargs):
         app_label = kwargs['app_label']
-        colnames, rows = get_display_table_rows(app_label, for_export=True, subsession_pk=None)
+        colnames, rows = get_display_table_rows(
+            app_label, for_export=True, subsession_pk=None
+        )
         colnames = ['{}.{}'.format(k, v) for k, v in colnames]
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(

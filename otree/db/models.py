@@ -127,7 +127,7 @@ class _OtreeNumericFieldMixin(object):
 
 
 class RealWorldCurrencyField(_OtreeNullableModelFieldMixin,
-                 _OtreeNumericFieldMixin, easymoney.MoneyField):
+                             _OtreeNumericFieldMixin, easymoney.MoneyField):
 
     MONEY_CLASS = otree.common.RealWorldCurrency
 

@@ -205,7 +205,9 @@ def augment_settings(settings):
         settings['GAME_CURRENCY_CODE'] = 'points'
         settings['GAME_CURRENCY_FORMAT'] = u'# points'
         settings['GAME_CURRENCY_DECIMAL_PLACES'] = 0
-        settings['GAME_CURRENCY_LOCALE'] = settings['REAL_WORLD_CURRENCY_LOCALE']
+        settings['GAME_CURRENCY_LOCALE'] = (
+            settings['REAL_WORLD_CURRENCY_LOCALE']
+        )
     else:
         for SETTING_NAME in ['CODE', 'FORMAT', 'LOCALE', 'DECIMAL_PLACES']:
             CURRENCY_SETTING_NAME = 'CURRENCY_{}'.format(SETTING_NAME)

@@ -181,7 +181,8 @@ class InitializeParticipant(vanilla.UpdateView):
 class MTurkLandingPage(vanilla.TemplateView):
 
     def get_template_names(self):
-        return self.session.session_type['mturk_hit_settings']['landing_page_template']
+        hit_settings = self.session.session_type['mturk_hit_settings']
+        return hit_settings['landing_page_template']
 
     @classmethod
     def url_pattern(cls):
@@ -193,13 +194,19 @@ class MTurkLandingPage(vanilla.TemplateView):
 
     def dispatch(self, request, *args, **kwargs):
         session_code = kwargs['session_code']
-        self.session = get_object_or_404(otree.models.Session, code=session_code)
+        self.session = get_object_or_404(
+            otree.models.Session, code=session_code
+        )
         return super(MTurkLandingPage, self).dispatch(
             request, *args, **kwargs
         )
 
     def get(self, request, *args, **kwargs):
-        assignment_id = self.request.GET['assignmentId'] if 'assignmentId' in self.request.GET else ''
+        assignment_id = (
+            self.request.GET['assignmentId']
+            if 'assignmentId' in self.request.GET else
+            ''
+        )
         if assignment_id and assignment_id != 'ASSIGNMENT_ID_NOT_AVAILABLE':
             url_start = reverse('mturk_start', args=(self.session.code,))
             url_start = otree.common_internal.add_params_to_url(url_start, {
@@ -223,7 +230,9 @@ class MTurkStart(vanilla.View):
 
     def dispatch(self, request, *args, **kwargs):
         session_code = kwargs['session_code']
-        self.session = get_object_or_404(otree.models.Session, code=session_code)
+        self.session = get_object_or_404(
+            otree.models.Session, code=session_code
+        )
         return super(MTurkStart, self).dispatch(
             request, *args, **kwargs
         )
@@ -238,16 +247,14 @@ class MTurkStart(vanilla.View):
         except Participant.DoesNotExist:
             with lock_on_this_code_path():
                 try:
-                    participant = (
-                        self.session.participant_set.select_for_update().filter(
-                            visited=False
-                        )
-                    )[0]
+                    query = self.session.participant_set.select_for_update()
+                    participant = query.filter(visited=False)[0]
                 except IndexError:
                     return HttpResponseNotFound(
                         "No Player objects left in the database "
                         "to assign to new visitor."
                     )
+
             # 2014-10-17: needs to be here even if it's also set in
             # the next view to prevent race conditions
             participant.visited = True
@@ -260,20 +267,22 @@ class MTurkStart(vanilla.View):
 class AssignVisitorToOpenSessionMTurk(AssignVisitorToOpenSessionBase):
 
     def incorrect_parameters_in_url_message(self):
-        # A visitor to this experiment was turned away because they did not have the MTurk parameters in their URL.
-        # This URL only works if clicked from a MTurk job posting with the JavaScript snippet embedded
-        return """
-                To participate, you need to first accept this Mechanical Turk HIT
-                and then re-click the link (refreshing this page will not work).
-            """
+        # A visitor to this experiment was turned away because they did not
+        # have the MTurk parameters in their URL.
+        # This URL only works if clicked from a MTurk job posting with the
+        # JavaScript snippet embedded
+        return (
+            "To participate, you need to first accept this Mechanical Turk "
+            "HIT and then re-click the link "
+            "(refreshing this page will not work)."
+        )
 
     @classmethod
     def url(cls):
+        code = otree.constants.access_code_for_default_session
+        default_session_code = settings.ACCESS_CODE_FOR_DEFAULT_SESSION
         return otree.common_internal.add_params_to_url(
-            '/{}'.format(cls.__name__),
-            {
-                otree.constants.access_code_for_default_session: settings.ACCESS_CODE_FOR_DEFAULT_SESSION
-            }
+            '/{}'.format(cls.__name__), {code: default_session_code}
         )
 
     @classmethod
@@ -286,10 +295,14 @@ class AssignVisitorToOpenSessionMTurk(AssignVisitorToOpenSessionBase):
     }
 
     def url_has_correct_parameters(self):
-        return (
-            super(AssignVisitorToOpenSessionMTurk, self).url_has_correct_parameters()
-            and self.request.GET[constants.mturk_assignment_id] != 'ASSIGNMENT_ID_NOT_AVAILABLE'
+        correct_params = super(
+            AssignVisitorToOpenSessionMTurk, self
+        ).url_has_correct_parameters()
+        same_id = (
+            self.request.GET[constants.mturk_assignment_id] !=
+            'ASSIGNMENT_ID_NOT_AVAILABLE'
         )
+        return correct_params and same_id
 
 
 class AssignVisitorToOpenSession(AssignVisitorToOpenSessionBase):
@@ -379,13 +392,15 @@ class SetDefaultSession(vanilla.View):
         global_singleton = otree.models.session.GlobalSingleton.objects.get()
         global_singleton.default_session = self.session
         global_singleton.save()
-        messages.success(request, """You have set
-                                     the default session to
-                                     <a href="%s">%s</a>. All participants are 
-                                     going to be routed to this session.
-                                     """ % (reverse('session_description',
-                                                    args=(self.session.pk,)),
-                                            self.session.code), extra_tags='safe')
+
+        msg = (
+            'You have set the default session to <a href="{}">{}</a>. '
+            'All participants are going to be routed to this session.'
+        ).format(
+            reverse('session_description', args=(self.session.pk,)),
+            self.session.code
+        )
+        messages.success(request, msg, extra_tags='safe')
         return HttpResponseRedirect(reverse('admin_home'))
 
 
@@ -419,5 +434,7 @@ class UnsetDefaultSession(vanilla.View):
         global_singleton.default_session = None
         global_singleton.save()
         redirect_url = reverse('admin_home')
-        messages.success(request, "You have successfully reset the default session")
+        messages.success(
+            request, "You have successfully reset the default session"
+        )
         return HttpResponseRedirect(redirect_url)
