@@ -3,12 +3,10 @@
 
 import urlparse
 import vanilla
+import datetime
 import boto.mturk.connection
 from boto.mturk.connection import MTurkRequestError
-from boto.mturk.qualification import (LocaleRequirement,
-                                      PercentAssignmentsApprovedRequirement,
-                                      NumberHitsApprovedRequirement,
-                                      Qualifications)
+from boto.mturk.qualification import Qualifications
 
 from django.conf import settings
 from django.contrib import messages
@@ -56,45 +54,71 @@ class MTurkConnection(boto.mturk.connection.MTurkConnection):
 
 
 class SessionCreateHitForm(forms.Form):
-    title = forms.CharField()
-    description = forms.CharField()
-    keywords = forms.CharField()
-    money_reward = forms.RealWorldCurrencyField()
-    assignments = forms.IntegerField(widget=forms.NumberInput(attrs={'readonly': 'readonly'}),
-                                     help_text="""
-                                     This value is populated by
-                                     number of participants in your session.
-                                     Can be altered only via creating new session.""")
-    location = forms.CharField(required=False,
-                               help_text="""
-                               The location of the Worker.
-                               Leave it blank if you don't
-                               want to specify it.""")
-    number_hits_approved = forms.IntegerField(required=False,
-                                              min_value=1,
-                                              help_text="""
-                                              Minimum number of approved HITs
-                                              the Worker must have.
-                                              Leave it blank if you don't
-                                              want to specify it.""")
-    percent_assignments_approved = forms.IntegerField(required=False,
-                                                      min_value=1,
-                                                      max_value=100,
-                                                      help_text="""
-                                                      The percentage of assignments
-                                                      the Worker has submitted that
-                                                      were subsequently approved
-                                                      by the Requester.
-                                                      Leave it blank if you don't
-                                                      want to specify it.""")
     in_sandbox = forms.BooleanField(required=False,
                                     help_text="""
                                     Do you want HIT published
                                     on MTurk sandbox?
                                     """)
+    title = forms.CharField()
+    description = forms.CharField()
+    keywords = forms.CharField()
+    money_reward = forms.RealWorldCurrencyField()
+    assignments = forms.IntegerField(label="Number of assignments",
+                                     help_text="""
+                                     How many unique Workers do you
+                                     want to work on the HIT?
+                                     You may want this number to be
+                                     lower than participants
+                                     in the oTree session to account
+                                     for people who accepts and then
+                                     return the HIT.""")
+
+    duration = forms.IntegerField(label="Assignment duration in minutes",
+                                  required=False,
+                                  help_text="""
+                                  The amount of time, in minutes,
+                                  that a Worker has to complete
+                                  the HIT after accepting it.
+                                  Leave it blank if you don't
+                                  want to specify it.
+                                  """)
+    lifetime = forms.IntegerField(label="Lifetime in hours",
+                                  required=False,
+                                  help_text="""
+                                  An amount of time, in hours,
+                                  after which the HIT is no longer
+                                  available for users to accept.
+                                  Leave it blank if you don't
+                                  want to specify it.
+                                  """)
+
+    qualifications_choices = []
+    for i, q in enumerate(settings.MTURK_WORKER_REQUIREMENTS):
+        label = ', '.join((q.__class__.__name__, q.comparator, str(q.integer_value)
+                                                               if q.integer_value else q.locale))
+        qualifications_choices.append((i, label))
+    worker_qualifications = forms.MultipleChoiceField(choices=qualifications_choices,
+                                                      required=False,
+                                                      widget=forms.CheckboxSelectMultiple(),
+                                                      help_text="""
+                                                      You can extend the list of possible
+                                                      requirements in settings.py
+                                                      """)
+
+    def __init__(self, *args, **kwargs):
+        self.session = kwargs.pop('session', None)
+        super(SessionCreateHitForm, self).__init__(*args, **kwargs)
+
+    def clean_assignments(self):
+        data = self.cleaned_data['assignments']
+        if data > len(self.session.get_participants()):
+            raise forms.ValidationError("""Number of Mturk assignments should be less or equal
+                                           than number of participants in
+                                           oTree session.""")
+        return data
 
 
-class SessionCreateHit(AdminSessionPageMixin, vanilla.TemplateView):
+class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
     '''
         This view creates mturk HIT for session provided in request
         AWS externalQuestion API is used to generate HIT.
@@ -112,15 +136,13 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.TemplateView):
                                       'keywords': ', '.join(mturk_hit_settings['keywords']),
                                       'money_reward': "%0.2f" % self.session.session_type['fixed_pay'],
                                       'assignments': len(self.session.get_participants()),
-                                      'location': mturk_hit_settings['location'],
-                                      'number_hits_approved': mturk_hit_settings['number_hits_approved'],
-                                      'percent_assignments_approved': mturk_hit_settings['percent_assignments_approved'],
-                                      'in_sandbox': settings.DEBUG})
+                                      'in_sandbox': settings.DEBUG},
+                                      session=self.session)
         context = self.get_context_data(form=form)
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
-        form = self.get_form(data=request.POST, files=request.FILES)
+        form = self.get_form(data=request.POST, session=self.session, files=request.FILES)
         if not form.is_valid():
             return self.form_invalid(form)
         session = self.session
@@ -141,33 +163,30 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.TemplateView):
                 session.session_type['mturk_hit_settings']['frame_height'],
             )
             qualifications = Qualifications()
-            location = form.data['location']
-            if location:
-                qualifications.add(LocaleRequirement("EqualTo", location))
-            percent_assignments_approved = form.data['percent_assignments_approved']
-            if percent_assignments_approved:
-                qualifications.add(
-                    PercentAssignmentsApprovedRequirement("GreaterThanOrEqualTo",
-                                                          int(percent_assignments_approved)))
-            number_hits_approved = form.data['number_hits_approved']
-            if number_hits_approved:
-                qualifications.add(
-                    NumberHitsApprovedRequirement("GreaterThanOrEqualTo",
-                                                  int(number_hits_approved)))
-            hit = mturk_connection.create_hit(
-                title=form.data['title'],
-                description=form.data['description'],
-                keywords=[k.strip() for k in form.data['keywords'].split(',')],
-                question=external_question,
-                max_assignments=len(session.get_participants()),
-                reward=reward,
-                response_groups=('Minimal', 'HITDetail'),
-                qualifications=qualifications
-            )
+            for q_id in form.data.get('worker_qualifications', []):
+                qualifications.add(settings.MTURK_WORKER_REQUIREMENTS[int(q_id)])
+            mturk_hit_parameters = {
+                'title': form.cleaned_data['title'],
+                'description': form.cleaned_data['description'],
+                'keywords': [k.strip() for k in form.cleaned_data['keywords'].split(',')],
+                'question': external_question,
+                'max_assignments': form.cleaned_data['assignments'],
+                'reward': reward,
+                'response_groups': ('Minimal', 'HITDetail'),
+                'qualifications': qualifications,
+            }
+            if form.cleaned_data['duration']:
+                mturk_hit_parameters['duration'] = datetime.timedelta(minutes=form.cleaned_data['duration'])
+
+            if form.cleaned_data['lifetime']:
+                mturk_hit_parameters['lifetime'] = datetime.timedelta(hours=form.cleaned_data['lifetime'])
+
+            hit = mturk_connection.create_hit(**mturk_hit_parameters)
             session.mturk_HITId = hit[0].HITId
             session.mturk_HITGroupId = hit[0].HITGroupId
             session.mturk_sandbox = in_sandbox
             session.save()
+
         return HttpResponseRedirect(reverse('session_create_hit',
                                             args=(session.pk,)))
 
