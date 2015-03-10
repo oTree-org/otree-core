@@ -2,20 +2,22 @@
 # encoding: utf-8
 
 import urlparse
-import vanilla
 import datetime
-import boto.mturk.connection
-from boto.mturk.connection import MTurkRequestError
-from boto.mturk.qualification import Qualifications
 
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from otree import forms
+
+import vanilla
+
+import boto.mturk.connection
+from boto.mturk.connection import MTurkRequestError
+from boto.mturk.qualification import Qualifications
 
 import otree
+from otree import forms
 from otree.views.abstract import AdminSessionPageMixin
 
 
@@ -63,47 +65,43 @@ class SessionCreateHitForm(forms.Form):
     description = forms.CharField()
     keywords = forms.CharField()
     money_reward = forms.RealWorldCurrencyField()
-    assignments = forms.IntegerField(label="Number of assignments",
-                                     help_text="""
-                                     How many unique Workers do you
-                                     want to work on the HIT?
-                                     You may want this number to be
-                                     lower than participants
-                                     in the oTree session to account
-                                     for people who accepts and then
-                                     return the HIT.""")
-
-    duration = forms.IntegerField(label="Assignment duration in minutes",
-                                  required=False,
-                                  help_text="""
-                                  The amount of time, in minutes,
-                                  that a Worker has to complete
-                                  the HIT after accepting it.
-                                  Leave it blank if you don't
-                                  want to specify it.
-                                  """)
-    lifetime = forms.IntegerField(label="Lifetime in hours",
-                                  required=False,
-                                  help_text="""
-                                  An amount of time, in hours,
-                                  after which the HIT is no longer
-                                  available for users to accept.
-                                  Leave it blank if you don't
-                                  want to specify it.
-                                  """)
+    assignments = forms.IntegerField(
+        label="Number of assignments",
+        help_text=("How many unique Workers do you want to work on the HIT? "
+                   "You may want this number to be lower than participants "
+                   "in the oTree session to account for people who accepts "
+                   "and then return the HIT.")
+    )
+    duration = forms.IntegerField(
+        label="Assignment duration in minutes",
+        required=False,
+        help_text=("The amount of time, in minutes, that a Worker has to "
+                   "complete the HIT after accepting it."
+                   "Leave it blank if you don't want to specify it.")
+    )
+    lifetime = forms.IntegerField(
+        label="Lifetime in hours",
+        required=False,
+        help_text=("An amount of time, in hours, after which the HIT "
+                   "is no longer available for users to accept. "
+                   "Leave it blank if you don't want to specify it.")
+    )
 
     qualifications_choices = []
     for i, q in enumerate(settings.MTURK_WORKER_REQUIREMENTS):
-        label = ', '.join((q.__class__.__name__, q.comparator, str(q.integer_value)
-                                                               if q.integer_value else q.locale))
+        label = ', '.join(
+            (q.__class__.__name__,
+             q.comparator,
+             str(q.integer_value) if q.integer_value else q.locale)
+        )
         qualifications_choices.append((i, label))
-    worker_qualifications = forms.MultipleChoiceField(choices=qualifications_choices,
-                                                      required=False,
-                                                      widget=forms.CheckboxSelectMultiple(),
-                                                      help_text="""
-                                                      You can extend the list of possible
-                                                      requirements in settings.py
-                                                      """)
+    worker_qualifications = forms.MultipleChoiceField(
+        choices=qualifications_choices,
+        required=False,
+        widget=forms.CheckboxSelectMultiple(),
+        help_text=("You can extend the list of possible "
+                   "requirements in settings.py")
+    )
 
     def __init__(self, *args, **kwargs):
         self.session = kwargs.pop('session', None)
@@ -131,32 +129,46 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
 
     def get(self, request, *args, **kwargs):
         mturk_hit_settings = self.session.session_type['mturk_hit_settings']
-        form = self.get_form(initial={'title': mturk_hit_settings['title'],
-                                      'description': mturk_hit_settings['description'],
-                                      'keywords': ', '.join(mturk_hit_settings['keywords']),
-                                      'money_reward': "%0.2f" % self.session.session_type['fixed_pay'],
-                                      'assignments': len(self.session.get_participants()),
-                                      'in_sandbox': settings.DEBUG},
-                                      session=self.session)
+        initial = {
+            'title': mturk_hit_settings['title'],
+            'description': mturk_hit_settings['description'],
+            'keywords': ', '.join(mturk_hit_settings['keywords']),
+            'money_reward': "%0.2f" % self.session.session_type['fixed_pay'],
+            'assignments': len(self.session.get_participants()),
+            'in_sandbox': settings.DEBUG
+        }
+        form = self.get_form(initial=initial)
         context = self.get_context_data(form=form)
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
-        form = self.get_form(data=request.POST, session=self.session, files=request.FILES)
+        form = self.get_form(
+            data=request.POST,
+            session=self.session,
+            files=request.FILES
+        )
         if not form.is_valid():
             return self.form_invalid(form)
         session = self.session
         in_sandbox = 'in_sandbox' in form.data
         with MTurkConnection(self.request, in_sandbox) as mturk_connection:
-            url_landing_page = self.request.build_absolute_uri(reverse('mturk_landing_page',
-                                                               args=(session.code,)))
+            url_landing_page = self.request.build_absolute_uri(
+                reverse('mturk_landing_page', args=(session.code,))
+            )
+
             # updating schema from http to https
             # this is compulsory for MTurk exteranlQuestion
-            secured_url_landing_page = urlparse.urlunparse(urlparse.urlparse(url_landing_page).
-                                                           _replace(scheme='https'))
-            # TODO: validate, that the server support https (heroku does support by default)
+            secured_url_landing_page = urlparse.urlunparse(
+                urlparse.urlparse(url_landing_page)._replace(scheme='https')
+            )
+
+            # TODO: validate, that the server support https
+            #       (heroku does support by default)
             # TODO: validate that there is enought money for the hit
-            reward = boto.mturk.price.Price(amount=float(form.data['money_reward']))
+            reward = boto.mturk.price.Price(
+                amount=float(form.data['money_reward'])
+            )
+
             # creating external questions, that would be passed to the hit
             external_question = boto.mturk.question.ExternalQuestion(
                 secured_url_landing_page,
@@ -164,11 +176,15 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             )
             qualifications = Qualifications()
             for q_id in form.data.get('worker_qualifications', []):
-                qualifications.add(settings.MTURK_WORKER_REQUIREMENTS[int(q_id)])
+                qualifications.add(
+                    settings.MTURK_WORKER_REQUIREMENTS[int(q_id)]
+                )
             mturk_hit_parameters = {
                 'title': form.cleaned_data['title'],
                 'description': form.cleaned_data['description'],
-                'keywords': [k.strip() for k in form.cleaned_data['keywords'].split(',')],
+                'keywords': [
+                    k.strip() for k in form.cleaned_data['keywords'].split(',')
+                ],
                 'question': external_question,
                 'max_assignments': form.cleaned_data['assignments'],
                 'reward': reward,
@@ -176,10 +192,14 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
                 'qualifications': qualifications,
             }
             if form.cleaned_data['duration']:
-                mturk_hit_parameters['duration'] = datetime.timedelta(minutes=form.cleaned_data['duration'])
+                mturk_hit_parameters['duration'] = datetime.timedelta(
+                    minutes=form.cleaned_data['duration']
+                )
 
             if form.cleaned_data['lifetime']:
-                mturk_hit_parameters['lifetime'] = datetime.timedelta(hours=form.cleaned_data['lifetime'])
+                mturk_hit_parameters['lifetime'] = datetime.timedelta(
+                    hours=form.cleaned_data['lifetime']
+                )
 
             hit = mturk_connection.create_hit(**mturk_hit_parameters)
             session.mturk_HITId = hit[0].HITId
@@ -209,25 +229,35 @@ class PayMTurk(vanilla.View):
         session = get_object_or_404(
             otree.models.session.Session, pk=kwargs['session_pk']
         )
-        participants = session.participant_set.exclude(mturk_assignment_id__isnull=True).\
-                                               exclude(mturk_assignment_id="")
-        with MTurkConnection(self.request, session.mturk_sandbox) as mturk_connection:
-            participants_reward = [participants.get(mturk_assignment_id=assignment_id)
-                                   for assignment_id in request.POST.getlist('reward')]
+        participants = session.participant_set.exclude(
+            mturk_assignment_id__isnull=True
+        ).exclude(mturk_assignment_id="")
+        with MTurkConnection(self.request,
+                             session.mturk_sandbox) as mturk_connection:
+            participants_reward = [
+                participants.get(mturk_assignment_id=assignment_id)
+                for assignment_id in request.POST.getlist('reward')
+            ]
             for p in participants_reward:
                 mturk_connection.approve_assignment(p.mturk_assignment_id)
                 p.mturk_reward_paid = True
                 p.save()
 
-            participants_bonus = [participants.get(mturk_assignment_id=assignment_id)
-                                  for assignment_id in request.POST.getlist('bonus')]
+            participants_bonus = [
+                participants.get(mturk_assignment_id=assignment_id)
+                for assignment_id in request.POST.getlist('bonus')
+            ]
             for p in participants_bonus:
-                bonus = boto.mturk.price.Price(amount=p.payoff_from_subsessions().to_number())
-                mturk_connection.grant_bonus(p.mturk_worker_id,
-                                             p.mturk_assignment_id,
-                                             bonus,
-                                             reason="Good job!!!")
+                bonus = boto.mturk.price.Price(
+                    amount=p.payoff_from_subsessions().to_number()
+                )
+                mturk_connection.grant_bonus(
+                    p.mturk_worker_id, p.mturk_assignment_id,
+                    bonus, reason="Good job!!!"
+                )
                 p.mturk_bonus_paid = True
                 p.save()
         messages.success(request, "Your payment was successful")
-        return HttpResponseRedirect(reverse('session_payments', args=(session.pk,)))
+        return HttpResponseRedirect(
+            reverse('session_payments', args=(session.pk,))
+        )

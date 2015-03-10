@@ -319,7 +319,10 @@ class BaseModelForm(forms.ModelForm):
 
                 if hasattr(self.view, '%s_choices' % name):
                     choices = getattr(self.view, '%s_choices' % name)()
-                    if value not in choices:
+                    choices_values = (
+                        otree.common_internal.contract_choice_tuples(choices)
+                    )
+                    if value not in choices_values:
                         msg = 'Value must be one of: {}'.format(
                             ", ".join(map(str, choices))
                         )

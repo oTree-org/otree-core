@@ -17,7 +17,9 @@ from django.forms.forms import pretty_name
 from django.conf import settings
 
 import vanilla
+
 from ordered_set import OrderedSet as oset
+
 import easymoney
 
 
@@ -34,7 +36,6 @@ from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
 import otree.constants
 import otree.models.session
 from otree.common import Currency as c
-from otree.common import RealWorldCurrency
 from otree.models.session import Session, Participant
 
 
@@ -548,7 +549,9 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
     ]
 
     def get_form(self, data=None, files=None, **kwargs):
-        form = super(EditSessionProperties, self).get_form(data, files, ** kwargs)
+        form = super(
+            EditSessionProperties, self
+        ).get_form(data, files, ** kwargs)
         if self.session.mturk_HITId:
             form.fields['fixed_pay'].widget.attrs['readonly'] = 'True'
         return form
@@ -581,8 +584,9 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
 
         session = self.session
         if session.mturk_HITId:
-            participants = session.participant_set.exclude(mturk_assignment_id__isnull=True).\
-                                                   exclude(mturk_assignment_id="")
+            participants = session.participant_set.exclude(
+                mturk_assignment_id__isnull=True
+            ).exclude(mturk_assignment_id="")
         else:
             participants = session.get_participants()
         total_payments = 0.0
@@ -790,9 +794,13 @@ class AdminHome(vanilla.ListView):
         context = super(AdminHome, self).get_context_data(**kwargs)
         global_singleton = otree.models.session.GlobalSingleton.objects.get()
         default_session = global_singleton.default_session
-        context.update({'default_session': default_session,
-                        'is_debug': settings.DEBUG,
-                        'is_mturk_set': settings.AWS_SECRET_ACCESS_KEY and settings.AWS_ACCESS_KEY_ID})
+        context.update({
+            'default_session': default_session,
+            'is_debug': settings.DEBUG,
+            'is_mturk_set': (
+                settings.AWS_SECRET_ACCESS_KEY and settings.AWS_ACCESS_KEY_ID
+            )
+        })
         return context
 
     def get_queryset(self):
