@@ -110,7 +110,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.TemplateView):
         form = self.get_form(initial={'title': mturk_hit_settings['title'],
                                       'description': mturk_hit_settings['description'],
                                       'keywords': ', '.join(mturk_hit_settings['keywords']),
-                                      'money_reward': "%0.2f" % self.session.session_type['fixed_pay'],
+                                      'money_reward': self.session.fixed_pay,
                                       'assignments': len(self.session.get_participants()),
                                       'location': mturk_hit_settings['location'],
                                       'number_hits_approved': mturk_hit_settings['number_hits_approved'],
