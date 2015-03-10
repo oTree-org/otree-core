@@ -224,7 +224,6 @@ class FormPageOrWaitPageMixin(OTreeMixin):
             if self.group:
                 self.group._player = self.player
 
-
         self.subsession = self._user.subsession
         self.subsession._player = self.player
         self.session = self._user.session
@@ -314,8 +313,8 @@ class FormPageOrWaitPageMixin(OTreeMixin):
     # TODO: maybe this isn't necessary, because I can figure out what page
     # they should be on, from looking up index_in_pages
     def _user_is_on_right_page(self):
-        """Will detect if a player tried to access a page they didn't reach yet,
-        for example if they know the URL to the redemption code page,
+        """Will detect if a player tried to access a page they didn't reach
+        yet, for example if they know the URL to the redemption code page,
         and try typing it in so they don't have to play the whole game.
         We should block that."""
 
@@ -862,18 +861,21 @@ class GetFloppyFormClassMixin(object):
 
         if self.model is not None:
             if self.fields is None:
-                msg = "'Using GenericModelView (base class of '%s) without setting" \
-                    "either 'form_class' or the 'fields' attribute is pending deprecation."
-                warnings.warn(msg % self.__class__.__name__,
-                              PendingDeprecationWarning)
+                msg = (
+                    "'Using GenericModelView (base class of {}) without "
+                    "setting either 'form_class' or the 'fields' attribute "
+                    "is pending deprecation."
+                ).format(self.__class__.__name__)
+                warnings.warn(msg, PendingDeprecationWarning)
             return otree.forms.modelform_factory(
                 self.model,
                 fields=self.fields,
                 formfield_callback=otree.forms.formfield_callback)
-
-        msg = "'%s' must either define 'form_class' or both 'model' and " \
+        msg = (
+            "'{}' must either define 'form_class' or both 'model' and "
             "'fields', or override 'get_form_class()'"
-        raise ImproperlyConfigured(msg % self.__class__.__name__)
+        ).format(self.__class__.__name__)
+        raise ImproperlyConfigured(msg)
 
 
 class AdminSessionPageMixin(GetFloppyFormClassMixin):

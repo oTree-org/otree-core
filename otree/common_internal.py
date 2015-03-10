@@ -173,12 +173,22 @@ def expand_choice_tuples(choices):
 
     '''
     if not choices:
-        return
-    # look at the first element
-    first_choice = choices[0]
-    if not isinstance(first_choice, (list, tuple)):
+        return None
+    elif not isinstance(choices[0], (list, tuple)):
         choices = [(value, value) for value in choices]
     return choices
+
+
+def contract_choice_tuples(choices):
+    '''Return only values of a choice tuple. If the choices are simple lists
+    without display name the same list is returned
+
+    '''
+    if not choices:
+        return None
+    elif not isinstance(choices[0], (list, tuple)):
+        return choices
+    return [value for value, _ in choices]
 
 
 def min_players_multiple(players_per_group):

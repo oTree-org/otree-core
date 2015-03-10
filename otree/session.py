@@ -142,7 +142,9 @@ def create_session(session_type_name, label='', num_participants=None,
         session_type=session_type,
         label=label, fixed_pay=session_type['fixed_pay'],
         special_category=special_category,
-        real_world_currency_per_point=session_type['real_world_currency_per_point'],
+        real_world_currency_per_point=(
+            session_type['real_world_currency_per_point']
+        ),
         session_experimenter=SessionExperimenter.objects.create(),
         _pre_create_id=_pre_create_id,
     )

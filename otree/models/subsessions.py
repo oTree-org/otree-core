@@ -84,8 +84,8 @@ class BaseSubsession(models.Model):
     def set_groups(self, groups):
         """elements in the list can be sublists, or group objects.
 
-        Maybe this should be re-run after before_session_starts() to ensure that
-        id_in_groups are consistent. Or at least we should validate.
+        Maybe this should be re-run after before_session_starts() to ensure
+        that id_in_groups are consistent. Or at least we should validate.
 
 
         warning: this deletes the groups and any data stored on them

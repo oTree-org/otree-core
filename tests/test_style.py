@@ -85,6 +85,9 @@ class TestStyle(TestCase):
                 "https://www.python.org/dev/peps/pep-0008/"
             )
             lines.append("\nErrors found: ")
-            lines.extend(report.error_list())
+            for error in report.error_list():
+                if error.startswith("/") or error.startswith("\\"):
+                    error = error[1:]
+                lines.append(error)
             lines.append("Total: {}".format(error_q))
             self.fail("\n".join(lines))

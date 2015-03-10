@@ -1,15 +1,12 @@
-from django.core.management import call_command
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from django.template import Context
 from django.template import Template
-from django.template import TemplateSyntaxError
-from django.template import VariableDoesNotExist
 from django.test import TestCase
 
 import otree.db.models
 import otree.forms
-
-from tests.simple_game.models import Player
-from tests.utils import capture_stdout
 
 
 class SimplePlayer(otree.db.models.Model):
@@ -60,7 +57,8 @@ class CheckAllFieldsAreRenderedTests(FormFieldTestMixin, TestCase):
         self.assertTrue('name="name"' in result)
 
         form = SimplePlayerForm(instance=self.simple_player)
-        with self.assertTemplateNotUsed('otree/forms/_formfield_is_missing_error.html'):
+        with self.assertTemplateNotUsed(
+                'otree/forms/_formfield_is_missing_error.html'):
             result = self.render(
                 '''
                 {% pageform form using %}
@@ -72,7 +70,13 @@ class CheckAllFieldsAreRenderedTests(FormFieldTestMixin, TestCase):
 
     def test_rendering_complains_when_not_all_fields_are_rendered(self):
         form = SimplePlayerForm(instance=self.simple_player)
-        with self.assertTemplateUsed('otree/forms/_formfield_is_missing_error.html'):
+        with self.assertTemplateUsed(
+                'otree/forms/_formfield_is_missing_error.html'):
+            tpl = (
+                '{% pageform form using %}'
+                '{% formfield player.name %}'
+                '{% endpageform %}'
+            )
             self.render(
-                '{% pageform form using %}{% formfield player.name %}{% endpageform %}',
-                context={'form': form, 'player': self.simple_player})
+                tpl, context={'form': form, 'player': self.simple_player}
+            )

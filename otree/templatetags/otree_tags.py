@@ -13,15 +13,14 @@
 # IMPORTS
 # =============================================================================
 
+from django import template
+from django.template.loader import render_to_string
+from django.core.urlresolvers import resolve, Resolver404
+
 from .otree_forms import FormNode
 from .otree_forms import FormFieldNode
 from .otree_forms import MarkFieldAsRenderedNode
-from django import template
-from django.template.loader import render_to_string
-from django.core.urlresolvers import resolve, Resolver404, reverse
-from django.utils.safestring import mark_safe
 from otree.common import Currency
-from otree.common_internal import add_params_to_url
 
 
 # =============================================================================
@@ -57,10 +56,12 @@ def c(val):
 
 register.filter('c', c)
 
-#FIXME: deprecated, remove this
+
+# FIXME: deprecated, remove this
 @register.simple_tag(takes_context=True)
 def mturk_submit_button(context):
     pass
+
 
 @register.simple_tag
 def active_page(request, view_name):

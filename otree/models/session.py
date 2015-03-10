@@ -14,7 +14,7 @@ from otree.common import Currency as c
 from otree.db import models
 from otree.models_concrete import SessionuserToUserLookup
 import contextlib
-import pdb
+
 
 class GlobalSingleton(models.Model):
     """object that can hold site-wide settings. There should only be one
@@ -105,7 +105,9 @@ class Session(ModelWithVars):
         length=8, doc="Randomly generated unique identifier for the session."
     )
 
-    real_world_currency_per_point = models.DecimalField(decimal_places=5, max_digits=12)
+    real_world_currency_per_point = models.DecimalField(
+        decimal_places=5, max_digits=12
+    )
 
     session_experimenter = models.OneToOneField(
         'SessionExperimenter', null=True, related_name='session',
@@ -230,16 +232,22 @@ class Session(ModelWithVars):
 
     def mturk_requester_url(self):
         if self.mturk_sandbox:
-            requester_url = "https://requestersandbox.mturk.com/mturk/manageHITs"
+            requester_url = (
+                "https://requestersandbox.mturk.com/mturk/manageHITs"
+            )
         else:
             requester_url = "https://requester.mturk.com/mturk/manageHITs"
         return requester_url
 
     def mturk_worker_url(self):
         if self.mturk_sandbox:
-            worker_url = "https://workersandbox.mturk.com/mturk/preview?groupId=%s" % self.mturk_HITGroupId
+            worker_url = (
+                "https://workersandbox.mturk.com/mturk/preview?groupId={}"
+            ).format(self.mturk_HITGroupId)
         else:
-            worker_url = "https://www.mturk.com/mturk/preview?groupId=%s" % self.mturk_HITGroupId
+            worker_url = (
+                "https://www.mturk.com/mturk/preview?groupId={}"
+            ).format(self.mturk_HITGroupId)
         return worker_url
 
     def advance_last_place_participants(self):
@@ -411,22 +419,24 @@ class SessionUser(ModelWithVars):
             if self.session.mturk_HITId:
                 assignment_id = self.mturk_assignment_id
                 if settings.DEBUG:
-                    url = 'https://workersandbox.mturk.com/mturk/externalSubmit'
+                    url = (
+                        'https://workersandbox.mturk.com/mturk/externalSubmit'
+                    )
                 else:
                     url = "https://www.mturk.com/mturk/externalSubmit"
                 url = otree.common_internal.add_params_to_url(
                     url,
                     {
                         'assignmentId': assignment_id,
-                        'extra_param': '1' # required extra param?
+                        'extra_param': '1'  # required extra param?
                     }
                 )
                 return url
             from otree.views.concrete import OutOfRangeNotification
             return OutOfRangeNotification.url(self)
 
-
     def build_session_user_to_user_lookups(self, num_pages_in_each_app):
+
         def pages_for_user(user):
             return num_pages_in_each_app[user._meta.app_config.name]
 
@@ -516,7 +526,9 @@ class Participant(SessionUser):
         return self.get_users()
 
     def payoff_from_subsessions_in_real_world_currency(self):
-        return self.payoff_from_subsessions().to_real_world_currency(self.session)
+        return self.payoff_from_subsessions().to_real_world_currency(
+            self.session
+        )
 
     def payoff_from_subsessions(self):
         """
@@ -529,14 +541,17 @@ class Participant(SessionUser):
         return payoff
 
     def total_pay(self):
-        return self.session.fixed_pay + self.payoff_from_subsessions().to_real_world_currency(self.session)
+        return (
+            self.session.fixed_pay +
+            self.payoff_from_subsessions().to_real_world_currency(self.session)
+        )
 
     def payoff_from_subsessions_is_complete(self):
         return all(p.payoff is not None for p in self.get_players())
 
     def total_pay_display(self):
         complete = self.payoff_from_subsessions_is_complete()
-        total_pay = self.total_pay()#.to_real_world_currency(self.session)
+        total_pay = self.total_pay()  # .to_real_world_currency(self.session)
         if complete:
             return total_pay
         return u'{} (incomplete)'.format(total_pay)

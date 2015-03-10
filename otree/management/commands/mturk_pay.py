@@ -99,7 +99,9 @@ class Command(BaseCommand):
     def pay_hit_bonuses(self, is_confirmed):
         total_money_paid = 0
         for participant in self.session.get_participants():
-            bonus = participant.payoff_from_subsessions().to_real_world_currency()
+            bonus = (
+                participant.payoff_from_subsessions().to_real_world_currency()
+            )
             if bonus is None:
                 bonus = 0
             total_money_paid += bonus
