@@ -43,17 +43,17 @@ def get_all_fields(Model, for_export=False):
 
     if Model is Session:
         return [
-           'code',
-           'label',
-           'experimenter_name',
-           'real_world_currency_per_point',
-           'time_scheduled'	,
-           'time_started',
-           'mturk_HITId',
-           'mturk_HITGroupId',
-           'fixed_pay',
-           'comment',
-           'special_category',
+            'code',
+            'label',
+            'experimenter_name',
+            'real_world_currency_per_point',
+            'time_scheduled'	,
+            'time_started',
+            'mturk_HITId',
+            'mturk_HITGroupId',
+            'fixed_pay',
+            'comment',
+            'special_category',
         ]
 
     if Model is Participant:
