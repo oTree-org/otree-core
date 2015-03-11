@@ -273,7 +273,9 @@ class DateTimeField(_OtreeNullableModelFieldMixin, models.DateTimeField):
     pass
 
 
-class DecimalField(_OtreeNullableModelFieldMixin, models.DecimalField):
+class DecimalField(_OtreeNullableModelFieldMixin,
+                   _OtreeNumericFieldMixin,
+                   models.DecimalField):
     pass
 
 
@@ -289,7 +291,9 @@ class FilePathField(_OtreeNullableModelFieldMixin, models.FilePathField):
     pass
 
 
-class FloatField(_OtreeNullableModelFieldMixin, models.FloatField):
+class FloatField(_OtreeNullableModelFieldMixin,
+                 _OtreeNumericFieldMixin,
+                 models.FloatField):
     pass
 
 
