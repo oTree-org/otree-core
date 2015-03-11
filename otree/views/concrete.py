@@ -348,14 +348,13 @@ class AdvanceSession(vanilla.View):
         self.session = get_object_or_404(
             otree.models.session.Session, pk=kwargs['session_pk']
         )
-        response = super(AdvanceSession, self).dispatch(
+        return super(AdvanceSession, self).dispatch(
             request, *args, **kwargs
         )
-        messages.success(request, "Participants were advanced.")
-        return response
 
     def get(self, request, *args, **kwargs):
         self.session.advance_last_place_participants()
+        messages.success(request, "Participants were advanced.")
         redirect_url = reverse('session_monitor', args=(self.session.pk,))
         return HttpResponseRedirect(redirect_url)
 
@@ -383,10 +382,9 @@ class SetDefaultSession(vanilla.View):
         self.session = get_object_or_404(
             otree.models.session.Session, pk=kwargs['session_pk']
         )
-        response = super(SetDefaultSession, self).dispatch(
+        return super(SetDefaultSession, self).dispatch(
             request, *args, **kwargs
         )
-        return response
 
     def get(self, request, *args, **kwargs):
         global_singleton = otree.models.session.GlobalSingleton.objects.get()
@@ -424,17 +422,54 @@ class UnsetDefaultSession(vanilla.View):
         return '/UnsetDefaultSession/'
 
     def dispatch(self, request, *args, **kwargs):
-        response = super(UnsetDefaultSession, self).dispatch(
+        return super(UnsetDefaultSession, self).dispatch(
             request, *args, **kwargs
         )
-        return response
 
     def get(self, request, *args, **kwargs):
         global_singleton = otree.models.session.GlobalSingleton.objects.get()
         global_singleton.default_session = None
         global_singleton.save()
-        redirect_url = reverse('admin_home')
         messages.success(
             request, "You have successfully reset the default session"
         )
-        return HttpResponseRedirect(redirect_url)
+        return HttpResponseRedirect(reverse('admin_home'))
+
+
+class HideSessions(vanilla.View):
+
+    @classmethod
+    def url_pattern(cls):
+        return r'^HideSessions/'
+
+    @classmethod
+    def url_name(cls):
+        return 'hide_sessions'
+
+    def post(self, request, *args, **kwargs):
+        for pk in request.POST.getlist('item-action'):
+            session = get_object_or_404(
+                otree.models.session.Session, pk=pk
+            )
+            session.hidden = True
+            session.save()
+        return HttpResponseRedirect(reverse('admin_home'))
+
+
+class DeleteSessions(vanilla.View):
+
+    @classmethod
+    def url_pattern(cls):
+        return r'^DeleteSessions/'
+
+    @classmethod
+    def url_name(cls):
+        return 'delete_sessions'
+
+    def post(self, request, *args, **kwargs):
+        for pk in request.POST.getlist('item-action'):
+            session = get_object_or_404(
+                otree.models.session.Session, pk=pk
+            )
+            session.delete()
+        return HttpResponseRedirect(reverse('admin_home'))

@@ -804,6 +804,6 @@ class AdminHome(vanilla.ListView):
         return context
 
     def get_queryset(self):
-        return Session.objects.filter(hidden=False).exclude(
+        return Session.objects.exclude(
             special_category=otree.constants.session_special_category_demo
-        )
+        ).order_by('hidden')

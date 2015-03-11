@@ -72,17 +72,17 @@ class SessionCreateHitForm(forms.Form):
                    "in the oTree session to account for people who accepts "
                    "and then return the HIT.")
     )
-    duration = forms.IntegerField(
-        label="Assignment duration in minutes",
+    time_alloted_minutes = forms.IntegerField(
+        label="Time allotted per assignment",
         required=False,
         help_text=("The amount of time, in minutes, that a Worker has to "
                    "complete the HIT after accepting it."
                    "Leave it blank if you don't want to specify it.")
     )
-    lifetime = forms.IntegerField(
-        label="Lifetime in hours",
+    expiration_days = forms.IntegerField(
+        label="HIT expires in",
         required=False,
-        help_text=("An amount of time, in hours, after which the HIT "
+        help_text=("An amount of time, in days, after which the HIT "
                    "is no longer available for users to accept. "
                    "Leave it blank if you don't want to specify it.")
     )
@@ -135,7 +135,9 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             'keywords': ', '.join(mturk_hit_settings['keywords']),
             'money_reward': "%0.2f" % self.session.session_type['fixed_pay'],
             'assignments': len(self.session.get_participants()),
-            'in_sandbox': settings.DEBUG
+            'in_sandbox': settings.DEBUG,
+            'time_alloted_minutes': mturk_hit_settings['time_alloted_minutes'],
+            'expiration_days': mturk_hit_settings['expiration_days'],
         }
         form = self.get_form(initial=initial)
         context = self.get_context_data(form=form)
@@ -191,14 +193,14 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
                 'response_groups': ('Minimal', 'HITDetail'),
                 'qualifications': qualifications,
             }
-            if form.cleaned_data['duration']:
+            if form.cleaned_data['time_alloted_minutes']:
                 mturk_hit_parameters['duration'] = datetime.timedelta(
-                    minutes=form.cleaned_data['duration']
+                    minutes=form.cleaned_data['time_alloted_minutes']
                 )
 
-            if form.cleaned_data['lifetime']:
+            if form.cleaned_data['expiration_days']:
                 mturk_hit_parameters['lifetime'] = datetime.timedelta(
-                    hours=form.cleaned_data['lifetime']
+                    days=form.cleaned_data['expiration_days']
                 )
 
             hit = mturk_connection.create_hit(**mturk_hit_parameters)
@@ -207,8 +209,9 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             session.mturk_sandbox = in_sandbox
             session.save()
 
-        return HttpResponseRedirect(reverse('session_create_hit',
-                                            args=(session.pk,)))
+        return HttpResponseRedirect(
+            reverse('session_create_hit', args=(session.pk,))
+        )
 
 
 class PayMTurk(vanilla.View):
