@@ -178,11 +178,6 @@ def create_session(session_type_name, label='', num_participants=None,
 
     subsessions = []
     for app_name in session_type['app_sequence']:
-        if app_name not in settings.INSTALLED_OTREE_APPS:
-            msg = ("Your session contains a subsession app named '{}'. "
-                   "You need to add this to INSTALLED_OTREE_APPS "
-                   "in settings.py.")
-            raise ValueError(msg.format(app_name))
 
         models_module = get_models_module(app_name)
         app_constants = get_app_constants(app_name)

@@ -264,19 +264,21 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
             self._index_in_pages = int(kwargs.pop(constants.index_in_pages))
 
+            cond = (
+                self.request.is_ajax() and
+                self.request.GET.get(constants.check_auto_submit)
+            )
+            if cond:
+                if self._user_is_on_right_page():
+                    return HttpResponse('0')
+                return HttpResponse('1')
+
             # if the player tried to skip past a part of the subsession
             # (e.g. by typing in a future URL)
             # or if they hit the back button to a previous subsession
             # in the sequence.
             if not self._user_is_on_right_page():
-                cond = (
-                    self.request.is_ajax() and
-                    self.request.GET.get(constants.check_auto_submit)
-                )
-                if cond:
-                    return HttpResponse('1')
                 # then bring them back to where they should be
-
                 return self._redirect_to_page_the_user_should_be_on()
 
             self.load_objects()

@@ -133,7 +133,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             'title': mturk_hit_settings['title'],
             'description': mturk_hit_settings['description'],
             'keywords': ', '.join(mturk_hit_settings['keywords']),
-            'money_reward': "%0.2f" % self.session.session_type['fixed_pay'],
+            'money_reward': self.session.fixed_pay,
             'assignments': len(self.session.get_participants()),
             'in_sandbox': settings.DEBUG,
             'time_alloted_minutes': mturk_hit_settings['time_alloted_minutes'],

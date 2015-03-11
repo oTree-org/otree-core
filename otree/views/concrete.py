@@ -241,14 +241,19 @@ class MTurkStart(vanilla.View):
         assignment_id = self.request.GET['assignmentId']
         worker_id = self.request.GET['workerId']
         try:
-            participant = self.session.participant_set.get(
+            participant = Participant.objects.get(
+                session=self.session,
                 mturk_worker_id=worker_id,
                 mturk_assignment_id=assignment_id)
         except Participant.DoesNotExist:
             with lock_on_this_code_path():
                 try:
-                    query = self.session.participant_set.select_for_update()
-                    participant = query.filter(visited=False)[0]
+                    participant = (
+                        Participant.objects.select_for_update().filter(
+                            session=self.session,
+                            visited=False
+                        )
+                    )[0]
                 except IndexError:
                     return HttpResponseNotFound(
                         "No Player objects left in the database "
