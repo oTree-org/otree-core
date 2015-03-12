@@ -8,13 +8,9 @@ from django.test import TestCase
 import otree.db.models
 import otree.forms
 
-from tests.simple_game.models import Player
-from tests.utils import capture_stdout
-
-
-class SimplePlayer(otree.db.models.Model):
-    name = otree.db.models.CharField(max_length=50, blank=True)
-    age = otree.db.models.IntegerField(default=30, null=True, blank=True)
+from .models import SimplePlayer
+from .simple_game.models import Player
+from .utils import capture_stdout
 
 
 class PlayerForm(otree.forms.ModelForm):
