@@ -72,17 +72,17 @@ class SessionCreateHitForm(forms.Form):
                    "in the oTree session to account for people who accepts "
                    "and then return the HIT.")
     )
-    time_alloted_minutes = forms.IntegerField(
+    time_allotted_minutes = forms.IntegerField(
         label="Time allotted per assignment",
         required=False,
         help_text=("The amount of time, in minutes, that a Worker has to "
                    "complete the HIT after accepting it."
                    "Leave it blank if you don't want to specify it.")
     )
-    expiration_days = forms.IntegerField(
+    expiration_hours = forms.IntegerField(
         label="HIT expires in",
         required=False,
-        help_text=("An amount of time, in days, after which the HIT "
+        help_text=("An amount of time, in hours, after which the HIT "
                    "is no longer available for users to accept. "
                    "Leave it blank if you don't want to specify it.")
     )
@@ -136,8 +136,8 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             'money_reward': self.session.fixed_pay,
             'assignments': len(self.session.get_participants()),
             'in_sandbox': settings.DEBUG,
-            'time_alloted_minutes': mturk_hit_settings['time_alloted_minutes'],
-            'expiration_days': mturk_hit_settings['expiration_days'],
+            'time_allotted_minutes': mturk_hit_settings['time_allotted_minutes'],
+            'expiration_hours': mturk_hit_settings['expiration_hours'],
         }
         form = self.get_form(initial=initial)
         context = self.get_context_data(form=form)
@@ -193,14 +193,14 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
                 'response_groups': ('Minimal', 'HITDetail'),
                 'qualifications': qualifications,
             }
-            if form.cleaned_data['time_alloted_minutes']:
+            if form.cleaned_data['time_allotted_minutes']:
                 mturk_hit_parameters['duration'] = datetime.timedelta(
-                    minutes=form.cleaned_data['time_alloted_minutes']
+                    minutes=form.cleaned_data['time_allotted_minutes']
                 )
 
-            if form.cleaned_data['expiration_days']:
+            if form.cleaned_data['expiration_hours']:
                 mturk_hit_parameters['lifetime'] = datetime.timedelta(
-                    days=form.cleaned_data['expiration_days']
+                    days=form.cleaned_data['expiration_hours']
                 )
 
             hit = mturk_connection.create_hit(**mturk_hit_parameters)
