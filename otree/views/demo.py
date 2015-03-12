@@ -138,7 +138,7 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.View):
         session.demo_already_used = True
         session.save()
 
-        session_home_url = reverse('session_description', args=(session.pk,))
+        session_home_url = reverse('session_start_links', args=(session.pk,))
         return HttpResponseRedirect(session_home_url)
 
     def dispatch(self, request, *args, **kwargs):
