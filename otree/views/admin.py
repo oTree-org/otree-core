@@ -525,7 +525,7 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
         'experimenter_name',
         'real_world_currency_per_point',
         'time_scheduled',
-        'hidden',
+        'archived',
         'fixed_pay',
         'comment',
     ]
@@ -777,6 +777,10 @@ class AdminHome(vanilla.ListView):
         global_singleton = otree.models.session.GlobalSingleton.objects.get()
         default_session = global_singleton.default_session
         context.update({
+            'archive_list_view': False,
+            'has_archived_sessions': (
+                Session.objects.filter(archived=True).count() > 0
+            ),
             'default_session': default_session,
             'is_debug': settings.DEBUG,
             'is_mturk_set': (
@@ -786,6 +790,41 @@ class AdminHome(vanilla.ListView):
         return context
 
     def get_queryset(self):
-        return Session.objects.exclude(
+        return Session.objects.filter(archived=False).exclude(
             special_category=otree.constants.session_special_category_demo
-        ).order_by('hidden')
+        )
+
+
+class AdminHomeArchive(vanilla.ListView):
+
+    template_name = 'otree/admin/Home.html'
+
+    @classmethod
+    def url_pattern(cls):
+        return r"^admin/archive$"
+
+    @classmethod
+    def url_name(cls):
+        return 'admin_home_archive'
+
+    def get_context_data(self, **kwargs):
+        context = super(AdminHomeArchive, self).get_context_data(**kwargs)
+        global_singleton = otree.models.session.GlobalSingleton.objects.get()
+        default_session = global_singleton.default_session
+        context.update({
+            'archive_list_view': True,
+            'has_archived_sessions': (
+                Session.objects.filter(archived=True).count() > 0
+            ),
+            'default_session': default_session,
+            'is_debug': settings.DEBUG,
+            'is_mturk_set': (
+                settings.AWS_SECRET_ACCESS_KEY and settings.AWS_ACCESS_KEY_ID
+            )
+        })
+        return context
+
+    def get_queryset(self):
+        return Session.objects.filter(archived=True).exclude(
+            special_category=otree.constants.session_special_category_demo
+        )

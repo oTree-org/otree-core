@@ -441,24 +441,27 @@ class UnsetDefaultSession(vanilla.View):
         return HttpResponseRedirect(reverse('admin_home'))
 
 
-class HideSessions(vanilla.View):
+class ToggleArchivedSessions(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r'^HideSessions/'
+        return r'^ToggleArchivedSessions/'
 
     @classmethod
     def url_name(cls):
-        return 'hide_sessions'
+        return 'toggle_archived_sessions'
 
     def post(self, request, *args, **kwargs):
         for pk in request.POST.getlist('item-action'):
             session = get_object_or_404(
                 otree.models.session.Session, pk=pk
             )
-            session.hidden = True
+            if session.archived:
+                session.archived = False
+            else:
+                session.archived = True
             session.save()
-        return HttpResponseRedirect(reverse('admin_home'))
+        return HttpResponseRedirect(request.POST['origin_url'])
 
 
 class DeleteSessions(vanilla.View):

@@ -30,7 +30,7 @@ $('input[name=' + checkName + ']').change (function () {
 ****************************
 ****************************
 Smart Action Buttons
-(Delete and Hide)
+(Delete and Archive)
 They active only if at least 
 one action-item is selected
 ****************************
@@ -39,12 +39,10 @@ one action-item is selected
 $(function() {
     $('input[name=item-action]').change(function () {
         if ( $('input[name=item-action]:checked').length == 0 ) {
-            $('#action-hide').attr('disabled', true);
-            $('#action-delete').attr('disabled', true);
+            $('button.action').attr('disabled', true);
         }
         else {
-            $('#action-hide').attr('disabled', false);
-            $('#action-delete').attr('disabled', false);
+            $('button.action').attr('disabled', false);
         }
     })
 });
@@ -57,20 +55,6 @@ Activate tooltips
 */
 $(function () {
     $('[data-toggle="tooltip"]').tooltip()
-})
-/*
-****************************
-****************************
-Hide records in table
-****************************
-****************************
-*/
-$(function () {
-    $('tr[data-hidden="True"]').hide()
-    $('#show-hidden').click (function () {
-        $('tr[data-hidden="True"]').show();
-        $('#show-hidden').parent().hide();
-    });
 })
 /*
 ****************************
@@ -102,10 +86,14 @@ $(document).ready(function() {
 </style>
 {% endblock %}
 {% block title %}
-oTree Sessions
+oTree 
+Sessions
     <a class="btn btn-primary btn" href="{% url 'session_types_create' %}" style="float: right;">
         <span class="glyphicon glyphicon-plus"></span> Create new session
     </a>
+{% if archive_list_view %}
+[ Archive ]
+{% endif %}
 {% endblock %}
 {% block content %}
 {{ block.super }}
@@ -137,10 +125,16 @@ oTree Sessions
 {% if object_list %}
 
 <div class="btn-group" role="group">
-    <button type="submit" id="action-hide" class="btn btn-default" data-toggle="tooltip" title="Hide" data-placement="bottom" formaction="{% url 'hide_sessions' %}" disabled>
-        <span class="glyphicon glyphicon-eye-close"></span>
-    </button>
-    <button type="submit" id="action-delete" class="btn btn-default" data-toggle="tooltip" title="Delete" data-placement="bottom"  formaction="{% url 'delete_sessions' %}" disabled>
+    {% if archive_list_view %}
+        <button type="submit" id="action-unarchive" class="action btn btn-default" data-toggle="tooltip" title="Unarchive" data-placement="bottom" formaction="{% url 'toggle_archived_sessions' %}" disabled>
+            <span class="glyphicon glyphicon-folder-open"></span>
+        </button>
+    {% else %}
+        <button type="submit" id="action-archive" class="action btn btn-default" data-toggle="tooltip" title="Archive" data-placement="bottom" formaction="{% url 'toggle_archived_sessions' %}" disabled>
+            <span class="glyphicon glyphicon-folder-close"></span>
+        </button>
+    {% endif %}
+    <button type="submit" id="action-delete" class="action btn btn-default" data-toggle="tooltip" title="Delete" data-placement="bottom"  formaction="{% url 'delete_sessions' %}" disabled>
         <span class="glyphicon glyphicon-trash"></span>
     </button>
 </div>
@@ -156,7 +150,7 @@ oTree Sessions
     </thead>
     <tbody>
     {% for s in object_list %}
-    <tr data-hidden={{ s.hidden }}>
+    <tr>
         <td>
             <input name="item-action" type="checkbox" value="{{ s.pk }}">
         </td>
@@ -208,9 +202,11 @@ oTree Sessions
     {% endfor %}
     </tbody>
 </table>
-<p><a id="show-hidden" onclick="return false;">Show</a> hidden sessions.</p>
 {% else %}
     <p>No sessions available.</p>
+{% endif %}
+{% if has_archived_sessions and not archive_list_view %}
+    <p>You have sessions in <a href="{% url 'admin_home_archive' %}">archive</a>.</p>
 {% endif %}
 {% include "otree/messages.html" %}
 {% endblock %}

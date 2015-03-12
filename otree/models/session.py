@@ -139,7 +139,11 @@ class Session(ModelWithVars):
                                         created in mturk sandbox?
                                         """)
 
-    hidden = models.BooleanField(default=False)
+    archived = models.BooleanField(
+        default=False, doc=(
+            "If set to True the session won't be visible on the "
+            "main ViewList for sessions")
+    )
 
     git_commit_timestamp = models.CharField(
         max_length=200, null=True, doc=(
