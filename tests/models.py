@@ -12,6 +12,11 @@ class SimpleModel(otree.models.BaseGroup):
         return [(self.name, self.name.upper())]
 
 
+class SimplePlayer(otree.db.models.Model):
+    name = otree.db.models.CharField(max_length=50, blank=True)
+    age = otree.db.models.IntegerField(default=30, null=True, blank=True)
+
+
 class FormFieldModel(otree.models.BaseGroup):
     null_boolean = models.BooleanField()
     big_integer = models.BigIntegerField()
