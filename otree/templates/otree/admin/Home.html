@@ -206,7 +206,7 @@ Sessions
     <p>No sessions available.</p>
 {% endif %}
 {% if has_archived_sessions and not archive_list_view %}
-    <p>You have sessions in <a href="{% url 'admin_home_archive' %}">archive</a>.</p>
+    <p>You have sessions in <a href="{% url 'admin_home' "archive" %}">archive</a>.</p>
 {% endif %}
 {% include "otree/messages.html" %}
 {% endblock %}
