@@ -119,4 +119,7 @@ PEP8 = {
 }
 
 
+MTURK_WORKER_REQUIREMENTS = []
+
+
 otree.settings.augment_settings(globals())
