@@ -136,7 +136,9 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             'money_reward': self.session.fixed_pay,
             'assignments': len(self.session.get_participants()),
             'in_sandbox': settings.DEBUG,
-            'time_allotted_minutes': mturk_hit_settings['time_allotted_minutes'],
+            'time_allotted_minutes': (
+                mturk_hit_settings['time_allotted_minutes']
+            ),
             'expiration_hours': mturk_hit_settings['expiration_hours'],
         }
         form = self.get_form(initial=initial)
