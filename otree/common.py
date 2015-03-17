@@ -1,12 +1,15 @@
 """oTree Public API utilities"""
 
 import json
+import sys
 from decimal import Decimal
 
 from django.conf import settings
 from django.utils.safestring import mark_safe
 
 import easymoney
+
+import requests
 
 
 class RealWorldCurrency(easymoney.Money):
@@ -66,3 +69,19 @@ def currency_range(first, last, increment):
             return values
         values.append(current_value)
         current_value += increment
+
+
+def ping_myself():
+    """Return True if my url can be seeit from outside
+
+    """
+
+    url = "http://isitup.org/{}.json".format(settings.MY_HOST)
+    headers = {
+        'User-Agent': 'oTree http://otree.org',
+        'From': 'youremail@domain.com'  # This is another valid field
+    }
+    response = requests.get(url, headers=headers)
+    return response.json()["status_code"] == 1
+
+

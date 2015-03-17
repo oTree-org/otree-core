@@ -31,6 +31,7 @@ REQUIREMENTS = [
     'ordered-set>=1.3',
     'pytz>=2013.9',
     'raven>=5.1.1',
+    'requests>=2.5.3',
     'selenium>=2.41.0',
     'xmltodict>=0.9.0',
     'django-sslserver>=0.14'

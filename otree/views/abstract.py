@@ -30,7 +30,6 @@ import time
 import warnings
 
 from django.core.exceptions import ImproperlyConfigured
-from django.db.models import Q
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
@@ -52,9 +51,7 @@ import otree.timeout.tasks
 import otree.models
 import otree.models.session as seq_models
 import otree.constants as constants
-from otree.models.session import (
-    Session, Participant, lock_on_this_code_path
-)
+from otree.models.session import Participant, lock_on_this_code_path
 
 from otree.models_concrete import (
     PageCompletion, WaitPageVisit, CompletedSubsessionWaitPage,

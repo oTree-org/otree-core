@@ -156,7 +156,6 @@ def get_players(self, order_by, refresh_from_db=False):
         for i, p in enumerate(players):
             if p == self._player:
                 players[i] = self._player
-    assert sorted(players, key=lambda p: p.id_in_group) == players
     self._players = players
     return self._players
 
