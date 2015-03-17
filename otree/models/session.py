@@ -301,9 +301,6 @@ class Session(ModelWithVars):
 
         # FIXME: what about experimenter?
 
-    def admin_url(self):
-        from otree.views.admin import SessionHome
-        return SessionHome.url(self.pk)
 
 
 class SessionUser(ModelWithVars):

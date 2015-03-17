@@ -57,12 +57,6 @@ def c(val):
 register.filter('c', c)
 
 
-# FIXME: deprecated, remove this
-@register.simple_tag(takes_context=True)
-def mturk_submit_button(context):
-    pass
-
-
 @register.simple_tag
 def active_page(request, view_name):
     if not request:

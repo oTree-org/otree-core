@@ -81,6 +81,19 @@ class BaseSubsession(models.Model):
     def _min_players_multiple(self):
         self._Constants.players_per_group
 
+    def get_groups(self):
+        return get_groups(self, refresh_from_db=False)
+
+    def _get_players(self, refresh_from_db=False):
+        return get_players(
+            self, order_by='pk',
+            refresh_from_db=refresh_from_db
+        )
+
+    def get_players(self):
+        return self._get_players()
+
+
     def set_groups(self, groups):
         """elements in the list can be sublists, or group objects.
 
@@ -173,7 +186,7 @@ class BaseSubsession(models.Model):
         else:
             previous_round = self.in_previous_round()
             group_matrix = [
-                get_players(group, refresh_from_db=True)
+                group._get_players(refresh_from_db=True)
                 for group in get_groups(previous_round, refresh_from_db=True)
             ]
             for i, group_list in enumerate(group_matrix):

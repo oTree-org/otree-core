@@ -72,7 +72,7 @@ class SessionCreateHitForm(forms.Form):
                    "in the oTree session to account for people who accepts "
                    "and then return the HIT.")
     )
-    time_allotted_minutes = forms.IntegerField(
+    minutes_allotted_per_assignment = forms.IntegerField(
         label="Time allotted per assignment",
         required=False,
         help_text=("The amount of time, in minutes, that a Worker has to "
@@ -136,7 +136,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             'money_reward': self.session.fixed_pay,
             'assignments': len(self.session.get_participants()),
             'in_sandbox': settings.DEBUG,
-            'time_allotted_minutes': mturk_hit_settings['time_allotted_minutes'],
+            'minutes_allotted_per_assignment': mturk_hit_settings['minutes_allotted_per_assignment'],
             'expiration_hours': mturk_hit_settings['expiration_hours'],
         }
         form = self.get_form(initial=initial)
@@ -193,9 +193,9 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
                 'response_groups': ('Minimal', 'HITDetail'),
                 'qualifications': qualifications,
             }
-            if form.cleaned_data['time_allotted_minutes']:
+            if form.cleaned_data['minutes_allotted_per_assignment']:
                 mturk_hit_parameters['duration'] = datetime.timedelta(
-                    minutes=form.cleaned_data['time_allotted_minutes']
+                    minutes=form.cleaned_data['minutes_allotted_per_assignment']
                 )
 
             if form.cleaned_data['expiration_hours']:

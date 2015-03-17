@@ -148,7 +148,7 @@ def get_app_name_from_label(app_label):
     return apps.get_app_config(app_label).name
 
 
-def get_players(self, order_by='pk', refresh_from_db=False):
+def get_players(self, order_by, refresh_from_db=False):
     if (not refresh_from_db) and self._players:
         return self._players
     players = list(self.player_set.order_by(order_by))
@@ -156,6 +156,7 @@ def get_players(self, order_by='pk', refresh_from_db=False):
         for i, p in enumerate(players):
             if p == self._player:
                 players[i] = self._player
+    assert sorted(players, key=lambda p: p.id_in_group) == players
     self._players = players
     return self._players
 

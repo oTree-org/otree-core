@@ -91,21 +91,6 @@ def augment_session_type(session_type):
     return new_session_type
 
 
-class SessionType(object):
-
-    def __init__(self, **kwargs):
-        """this code allows default values for these attributes to be set on
-        the class, that can then be overridden by SessionType instances.
-
-        sessions.py uses this.
-
-        """
-
-    def __repr__(self):
-        mem = hex(id(self))
-        return "<SessionType '{}' at {}>".format(self.name, mem)
-
-
 # =============================================================================
 # FUNCTIONS
 # =============================================================================

@@ -591,9 +591,7 @@ class InGameWaitPageMixin(object):
 
     def _action(self):
         # force to refresh from DB
-        otree.common_internal.get_players(
-            self._group_or_subsession, refresh_from_db=True
-        )
+        self._group_or_subsession._get_players(refresh_from_db=True)
         self.after_all_players_arrive()
         for p in self._group_or_subsession.get_players():
             p.save()
@@ -815,7 +813,7 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
         if not default_session:
             return HttpResponseNotFound(
                 'No session is currently open. Make sure to create '
-                'a session and set is as open.'
+                'a session and set is as default.'
             )
         if not self.url_has_correct_parameters():
             return HttpResponseNotFound(

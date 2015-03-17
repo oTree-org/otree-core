@@ -5,7 +5,6 @@ from importlib import import_module
 
 from otree.db import models
 from otree.models.session import Session, Participant
-from otree.common_internal import get_players, get_groups
 
 # NOTE: this imports the following submodules and then subclasses several
 # classes importing is done via import_module rather than an ordinary import.
@@ -50,10 +49,10 @@ class BaseSubsession(subsessions.BaseSubsession):
         return super(BaseSubsession, self).set_groups(groups_list)
 
     def get_groups(self):
-        return get_groups(self)
+        return super(BaseSubsession, self).get_groups()
 
     def get_players(self):
-        return get_players(self)
+        return super(BaseSubsession, self).get_players()
 
     @property
     def app_name(self):
@@ -86,7 +85,7 @@ class BaseGroup(groups.BaseGroup):
         return super(BaseGroup, self).set_players(players_list)
 
     def get_players(self):
-        return get_players(self, order_by='id_in_group')
+        return super(BaseGroup, self).get_players()
 
     def get_player_by_role(self, role):
         return super(BaseGroup, self).get_player_by_role(role)

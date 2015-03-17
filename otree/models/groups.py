@@ -5,7 +5,7 @@ from save_the_change.mixins import SaveTheChange
 
 from otree.db import models
 from otree.common_internal import get_models_module
-
+from otree.common_internal import get_players, get_groups
 
 class BaseGroup(SaveTheChange, models.Model):
     """Base class for all Groupes.
@@ -21,6 +21,15 @@ class BaseGroup(SaveTheChange, models.Model):
 
     _players = []
     _player = None
+
+    def _get_players(self, refresh_from_db=False):
+        return get_players(
+            self, order_by='id_in_group',
+            refresh_from_db=refresh_from_db
+        )
+
+    def get_players(self):
+        return self._get_players()
 
     def get_player_by_id(self, id_in_group):
         for p in self.get_players():
