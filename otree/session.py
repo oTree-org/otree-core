@@ -44,6 +44,7 @@ def get_lcm(session_type):
     return lcmm(*min_multiple_list)
 
 
+_session_type_names = set()
 def validate_session_type(session_type):
 
     required_keys = {
@@ -78,6 +79,12 @@ def validate_session_type(session_type):
 
     if len(app_sequence) == 0:
         raise ValueError('Need at least one subsession.')
+
+    if st_name in _session_type_names:
+        msg = "SessionType name '{}' is duplicated".format(st_name)
+        raise ValueError(msg)
+    _session_type_names.add(st_name)
+
 
 
 def augment_session_type(session_type):
