@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from importlib import import_module
 
 from django.apps import AppConfig, apps
 from django.conf import settings
@@ -9,9 +10,10 @@ from django.db.models import signals
 from django.utils.translation import ugettext_lazy as _
 
 from otree.models.session import StubModel, GlobalSingleton
-from otree import checks
+
 
 logger = logging.getLogger('otree')
+import_module('otree.checks')  # this made that style check work
 
 
 def create_default_superuser(sender, **kwargs):

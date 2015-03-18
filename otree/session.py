@@ -14,6 +14,7 @@ from otree.common_internal import (
     min_players_multiple,
 )
 
+
 def gcd(a, b):
     """Return greatest common divisor using Euclid's Algorithm."""
     while b:
