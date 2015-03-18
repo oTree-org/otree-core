@@ -31,6 +31,9 @@ class Rules(object):
             ...
 
     """
+
+    common_buffer = {}
+
     def __init__(self, config, errors, id=None):
         self.config = config
         self.errors = errors
@@ -240,6 +243,20 @@ def templates(rules, **kwargs):
             template_path = os.path.join(root, filename)
             template_name = os.path.relpath(template_path, basepath)
             rules.template_has_no_dead_code(template_name)
+
+
+@register_rules(id='otree.E006')
+def unique_sessions_names(rules, **kwargs):
+    if "unique_session_names_already_run" not in rules.common_buffer:
+        rules.common_buffer["unique_session_names_already_run"] = True
+        buff = set()
+        for st in settings.SESSION_TYPES:
+            st_name = st["name"]
+            if st_name in buff:
+                msg = "Duplicate SESSION_TYPE name '{}'".format(st_name)
+                rules.push_error(msg)
+            else:
+                buff.add(st_name)
 
 
 # TODO: startapp should pass validation checks

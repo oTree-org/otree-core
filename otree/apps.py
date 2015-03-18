@@ -8,9 +8,8 @@ from django.conf import settings
 from django.db.models import signals
 from django.utils.translation import ugettext_lazy as _
 
-
 from otree.models.session import StubModel, GlobalSingleton
-
+from otree import checks
 
 logger = logging.getLogger('otree')
 
