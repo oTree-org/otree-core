@@ -1,5 +1,5 @@
 {% extends "otree/admin/Session.html" %}
-{% block content %}
+{% block head_content %}
 {{ block.super }}
 <script>
 $(function () {
@@ -8,13 +8,10 @@ $(function () {
             url: '{% url 'session_advance' session.pk %}',
             type: 'GET',
             error: function(jqXHR, textStatus) {
-                $( "form" ).append('\
-                    <div class="alert alert-danger"> <a href="#" class="close" data-dismiss="alert">&times;</a>\
-                        "Server error, failed to advance users."\
-                    </div>\
-                ')
+                $( "div#server_error" ).show();
             },
             success: function (new_json) {
+                $( "div#server_error" ).hide();
                 ajax_json_participants();
             }
         });
@@ -32,13 +29,10 @@ function ajax_json_participants() {
         url: '{% url "session_participants_list" session.code %}',
         type: 'GET',
         error: function(jqXHR, textStatus) {
-            $( "form" ).append('\
-                <div class="alert alert-danger"> <a href="#" class="close" data-dismiss="alert">&times;</a>\
-                    "Failed to update from the server"\
-                </div>\
-            ')
+            $( "div#server_error" ).show();
         },
         success: function (new_json) {
+            $( "div#server_error" ).hide();
             var old_json = $( "table" ).data("raw");
             // build table for the first time
             if ( old_json === undefined ) {
@@ -58,8 +52,8 @@ function ajax_json_participants() {
                 var delta = diffpatcher.diff(old_json, new_json);
                 for (i in delta) {
                     for (header_name in delta[i]) {
-                        var header_index = $( "th" ).index($( "th#" + header_name ));
-                        var cell_to_update = $( "tbody tr:eq(" + i + ") td:eq(" + header_index + ")" );
+                        var cell_to_update = $( "tbody tr:eq(" + i + ") \
+                                                 td[data-field='" + header_name + "']" );
                         cell_to_update.text(delta[i][header_name][1]);
                         cell_to_update.css('background-color', 'green');
                         cell_to_update.animate({
@@ -75,6 +69,9 @@ function ajax_json_participants() {
     });
 }
 </script>
+{% endblock %}
+{% block content %}
+{{ block.super }}
 <div style="overflow: auto" id="div-table">
 </div>
 <br/>
@@ -84,5 +81,8 @@ will be automatically advanced by one page, while the other users
 will remain where they are (unless perhaps if they have a waiting page).">
 Advance slowest user(s)
 </a>
-{% include "otree/messages.html" %}
+<div id="server_error" class="alert alert-danger" style="display: none;"> 
+    <a href="#" class="close" data-dismiss="alert">&times;</a>
+    "Failed to connect to server"
+</div>
 {% endblock %}

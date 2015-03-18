@@ -46,7 +46,7 @@ String.prototype.format = function()
  *  
  * @return string Converted JSON to HTML table
  */
-function ConvertJsonToTable(parsedJson, tableId, tableClassName, linkText)
+function ConvertJsonToTable(parsedJson, tableId, tableClassName, linkText, only_body)
 {
     //Patterns for links and NULL value
     var italic = '<i>{0}</i>';
@@ -64,8 +64,8 @@ function ConvertJsonToTable(parsedJson, tableId, tableClassName, linkText)
     var th = '<thead>{0}</thead>';
     var tb = '<tbody>{0}</tbody>';
     var tr = '<tr>{0}</tr>';
-    var thRow = '<th id="{1}" class="text-center">{0}</th>';
-    var tdRow = '<td class="text-center">{0}</td>';
+    var thRow = '<th class="text-center">{0}</th>';
+    var tdRow = '<td data-field="{1}" class="text-center">{0}</td>';
     var thCon = '';
     var tbCon = '';
     var trCon = '';
@@ -97,12 +97,12 @@ function ConvertJsonToTable(parsedJson, tableId, tableClassName, linkText)
                             //for supporting nested tables
                             tbCon += tdRow.format(ConvertJsonToTable(eval(value.data), value.tableId, value.tableClassName, value.linkText));
                         } else {
-                            tbCon += tdRow.format(value);
+                            tbCon += tdRow.format(value, headers[j]);
                         }
                         
                     } 
                     else {    // If value == null we format it like PhpMyAdmin NULL values
-                        tbCon += tdRow.format(italic.format(value).toUpperCase());
+                        tbCon += tdRow.format(italic.format(value).toUpperCase(), headers[j]);
                     }
                 }
                 trCon += tr.format(tbCon);
@@ -111,8 +111,12 @@ function ConvertJsonToTable(parsedJson, tableId, tableClassName, linkText)
         }
         tb = tb.format(trCon);
         tbl = tbl.format(th, tb);
-
-        return tbl;
+        if (typeof only_body === 'undefined') {
+            return tbl;
+        }
+        else {
+            return tb;
+        }
     }
     return null;
 }

@@ -11,7 +11,7 @@ from django.contrib.staticfiles.templatetags.staticfiles import (
     static as static_template_tag
 )
 from django.template.response import TemplateResponse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.core.urlresolvers import reverse
 from django.forms.forms import pretty_name
 from django.conf import settings
@@ -19,6 +19,7 @@ from django.conf import settings
 import vanilla
 
 from ordered_set import OrderedSet as oset
+from collections import OrderedDict
 
 import easymoney
 
@@ -646,34 +647,41 @@ class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
                     app_label, round_number
                 )
             else:
-                subsession_column_name = pretty_name(app_label)
+                subsession_column_name = app_label
 
             for model_column_name, field_column_name in column_names:
                 column_name_tuples.append(
-                    (subsession_column_name, pretty_name(model_column_name),
-                     pretty_name(field_column_name))
+                    (subsession_column_name,
+                     model_column_name,
+                     field_column_name)
                 )
 
         subsession_headers = [
-            (key, len(list(group)))
+            (pretty_name(key), len(list(group)))
             for key, group in
             itertools.groupby(column_name_tuples, key=lambda x: x[0])
         ]
 
         model_headers = [
-            (key[1], len(list(group)))
+            (pretty_name(key[1]), len(list(group)))
             for key, group in
             itertools.groupby(column_name_tuples, key=lambda x: (x[0], x[1]))
         ]
 
         field_headers = [
-            key[2] for key, group in
+            pretty_name(key[2]) for key, group in
             itertools.groupby(column_name_tuples, key=lambda x: x)
         ]
 
-        # prepend participant labels to the rows
-        for row, participant_label in zip(rows, participant_labels):
-            row.insert(0, participant_label)
+        # dictionary for json response
+        # will be used only if json request  is done
+        self.context_json = []
+        for i, row in enumerate(rows):
+            d_row = OrderedDict()
+            d_row['participant_label'] = participant_labels[i]
+            for t, v in zip(column_name_tuples, row):
+                d_row['.'.join(t)] = v
+            self.context_json.append(d_row)
 
         context = super(SessionResults, self).get_context_data(**kwargs)
         context.update({
@@ -682,6 +690,13 @@ class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
             'field_headers': field_headers,
             'rows': rows})
         return context
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data()
+        if self.request.META.get('CONTENT_TYPE') == 'application/json':
+            return JsonResponse(self.context_json, safe=False)
+        else:
+            return self.render_to_response(context)
 
 
 class SessionDescription(AdminSessionPageMixin, vanilla.TemplateView):
