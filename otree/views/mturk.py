@@ -7,7 +7,7 @@ import datetime
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponseServerError
 from django.shortcuts import get_object_or_404
 
 import vanilla
@@ -15,6 +15,8 @@ import vanilla
 import boto.mturk.connection
 from boto.mturk.connection import MTurkRequestError
 from boto.mturk.qualification import Qualifications
+
+import IPy
 
 import otree
 from otree import forms
@@ -126,6 +128,32 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
     @classmethod
     def url_name(cls):
         return 'session_create_hit'
+
+    def in_public_domain(self, request, *args, **kwargs):
+        """This method validates if oTree are publishedn on a public domain
+        because mturk need it
+
+        """
+        host = request.get_host().lower()
+        if ":" in host:
+            host = host.split(":", 1)[0]
+        if host == "localhost":
+            return False
+        try:
+            ip = IPy.IP(host)
+            return ip.iptype() == "PUBLIC"
+        except ValueError:
+            # probably is a public domain
+            return True
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.in_public_domain(request, *args, **kwargs):
+            msg = (
+                '<h1>Error: '
+                'oTree must run on a public domain for Mechanical Turk</h1>'
+            )
+            return HttpResponseServerError(msg)
+        return super(SessionCreateHit, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         mturk_hit_settings = self.session.session_type['mturk_hit_settings']
