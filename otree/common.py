@@ -1,7 +1,6 @@
 """oTree Public API utilities"""
 
 import json
-import sys
 from decimal import Decimal
 
 from django.conf import settings
@@ -83,5 +82,3 @@ def ping_myself():
     }
     response = requests.get(url, headers=headers)
     return response.json()["status_code"] == 1
-
-
