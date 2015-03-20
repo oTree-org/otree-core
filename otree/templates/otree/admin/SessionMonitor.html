@@ -2,7 +2,14 @@
 {% block head_content %}
 {{ block.super }}
 <script>
-// update timestamp
+$(document).ready(
+    function() {
+        ajax_json_participants();
+        setInterval(ajax_json_participants , 2000);
+        ajax_advance();
+    }
+);
+// wrap timestamp into timeago tag
 function wrap_timestamp() {
     $( "td[data-field='_last_page_timestamp']:not(:has(*))" ).each(function( index ) {
         if ( $(this).text() != "") {
@@ -17,30 +24,25 @@ function wrap_timestamp() {
         $(this).children("td[data-field='_last_page_timestamp']").text("");
     });
 }
-// setup ajax request for advance session button
-$(function () {
+// ajax request for advance session button
+function ajax_advance() {
     $('#advance_users').on('click', function () {
+        $('#advance_users').attr("disabled", true);
         $.ajax({
             url: '{% url 'session_advance' session.pk %}',
             type: 'GET',
             error: function(jqXHR, textStatus) {
                 $( "div#server_error" ).show();
             },
-            success: function (new_json) {
+            success: function() {
                 $( "div#server_error" ).hide();
                 ajax_json_participants();
+                $('#advance_users').attr("disabled", false);
             }
         });
-
     });
-});
-// setup ajax requests to the server for participants data
-$(document).ready(
-    function() {
-        ajax_json_participants();
-        setInterval(ajax_json_participants , 2000);
-    }
-);
+}
+// ajax requests to the server for participants data
 function ajax_json_participants() {
     $.ajax({
         url: '{% url "session_participants_list" session.code %}',
@@ -48,14 +50,14 @@ function ajax_json_participants() {
         error: function(jqXHR, textStatus) {
             $( "div#server_error" ).show();
         },
-        success: function (new_json) {
+        success: function(new_json) {
             $( "div#server_error" ).hide();
             var old_json = $( "table" ).data("raw");
             // build table for the first time
             if ( old_json === undefined ) {
                 var htmlTable = ConvertJsonToTable(new_json,
-                    "",
-                    "header-fixed table table-bordered table-hover table-condensed");
+                    "monitor_table",
+                    "table table-bordered table-hover table-condensed");
                 $("#div-table").append(htmlTable);
             }
             // compute delta and update
@@ -90,7 +92,7 @@ function ajax_json_participants() {
 {% endblock %}
 {% block content %}
 {{ block.super }}
-<div style="overflow: auto" id="div-table">
+<div id="div-table">
 </div>
 <br/>
 <a id="advance_users" class="btn btn-primary" role="button" data-toggle="popover" data-trigger="hover"
