@@ -2,6 +2,22 @@
 {% block head_content %}
 {{ block.super }}
 <script>
+// update timestamp
+function wrap_timestamp() {
+    $( "td[data-field='_last_page_timestamp']:not(:has(*))" ).each(function( index ) {
+        if ( $(this).text() != "") {
+            var date = new Date($(this).text() * 1000);
+            $(this).text("");
+            $(this).append('<abbr class="timeago" title="{0}">Last submit was done that long ago</abbr>'.format(date.toISOString()));
+            $("abbr.timeago").timeago();
+        }
+    });
+    // remove timestamp for disconnected users
+    $( "tr:has(> td[data-field='status']:contains('Disconnected'))" ).each(function( index ) {
+        $(this).children("td[data-field='_last_page_timestamp']").text("");
+    });
+}
+// setup ajax request for advance session button
 $(function () {
     $('#advance_users').on('click', function () {
         $.ajax({
@@ -18,6 +34,7 @@ $(function () {
 
     });
 });
+// setup ajax requests to the server for participants data
 $(document).ready(
     function() {
         ajax_json_participants();
@@ -64,6 +81,7 @@ function ajax_json_participants() {
                     }
                 }
             }
+            wrap_timestamp();
             $( "table" ).data("raw", new_json);
         }
     });

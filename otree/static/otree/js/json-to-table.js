@@ -48,8 +48,6 @@ String.prototype.format = function()
  */
 function ConvertJsonToTable(parsedJson, tableId, tableClassName, linkText, only_body)
 {
-    //Patterns for links and NULL value
-    var italic = '<i>{0}</i>';
     var link = linkText ? '<a href="{0}">' + linkText + '</a>' :
                           '<a href="{0}">{0}</a>';
 
@@ -99,10 +97,9 @@ function ConvertJsonToTable(parsedJson, tableId, tableClassName, linkText, only_
                         } else {
                             tbCon += tdRow.format(value, headers[j]);
                         }
-                        
                     } 
-                    else {    // If value == null we format it like PhpMyAdmin NULL values
-                        tbCon += tdRow.format(italic.format(value).toUpperCase(), headers[j]);
+                    else {    // If value == null we input empty string into cell
+                        tbCon += tdRow.format("", headers[j]);
                     }
                 }
                 trCon += tr.format(tbCon);
