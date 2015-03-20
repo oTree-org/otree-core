@@ -49,6 +49,7 @@ def augment_settings(settings):
             'otree.timeout',
             'djcelery',
             'kombu.transport.django',
+            'rest_framework',
             'sslserver',
         ],
 
