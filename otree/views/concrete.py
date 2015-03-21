@@ -359,7 +359,6 @@ class AdvanceSession(vanilla.View):
 
     def get(self, request, *args, **kwargs):
         self.session.advance_last_place_participants()
-        messages.success(request, "Participants were advanced.")
         redirect_url = reverse('session_monitor', args=(self.session.pk,))
         return HttpResponseRedirect(redirect_url)
 

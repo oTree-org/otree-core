@@ -1,25 +1,6 @@
 {% extends "otree/BaseBuiltIn.html" %}
 {% load otree_tags floppyforms %}
 
-{% block head_content %}
-{{ block.super }}
-<!--setup for fixed header of table-->
-<style>
-table.floatThead-table {
-    border-top: none;
-    border-bottom: none;
-    background-color: #FFF;
-}
-</style>
-<script type="text/javascript" charset="utf-8">
-$(document).ready(function() {
-var $table = $('table.header-fixed');
-$table.floatThead();
-});
-</script>
-<!--end setup for fixed header of table-->
-{% endblock %}
-
 {% block title %}
 Dashboard for session
 <code>{{ session.code }}</code>

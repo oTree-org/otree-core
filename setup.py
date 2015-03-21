@@ -27,6 +27,7 @@ REQUIREMENTS = [
     'django-vanilla-views>=1.0.2',
     'flake8>=2.2.5',
     'handy>=0.3',
+    'IPy>=0.81',
     'mock>=1.0.0',
     'ordered-set>=1.3',
     'pytz>=2013.9',
@@ -34,7 +35,8 @@ REQUIREMENTS = [
     'requests>=2.5.3',
     'selenium>=2.41.0',
     'xmltodict>=0.9.0',
-    'django-sslserver>=0.14'
+    'django-sslserver>=0.14',
+    'djangorestframework>=3.1.0'
 ]
 
 # allow setup.py to be run from any path
