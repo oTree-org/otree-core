@@ -39,8 +39,8 @@ class Bot(client.BasePlayerBot):
     def submit(self, ViewClass, param_dict=None):
         return super(Bot, self).submit(ViewClass, param_dict)
 
-    def submit_with_invalid_input(self, ViewClass, param_dict=None):
-        return super(Bot, self).submit_with_invalid_input(
+    def submit_invalid(self, ViewClass, param_dict=None):
+        return super(Bot, self).submit_invalid(
             ViewClass, param_dict
         )
 
@@ -50,7 +50,7 @@ class ExperimenterBot(client.BaseExperimenterBot):
     def submit(self, ViewClass, param_dict=None):
         return super(ExperimenterBot, self).submit(ViewClass, param_dict)
 
-    def submit_with_invalid_input(self, ViewClass, param_dict=None):
-        return super(ExperimenterBot, self).submit_with_invalid_input(
+    def submit_invalid(self, ViewClass, param_dict=None):
+        return super(ExperimenterBot, self).submit_invalid(
             ViewClass, param_dict
         )

@@ -205,7 +205,7 @@ class BaseClient(test.Client):
         )
         self.submits.append(sbmt)
 
-    def submit_with_invalid_input(self, ViewClass, param_dict=None):
+    def submit_invalid(self, ViewClass, param_dict=None):
         '''this method lets you intentionally submit with invalid
         input to ensure it's correctly rejected
 
