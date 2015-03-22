@@ -8,6 +8,7 @@ import sys
 
 from optparse import make_option
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from otree.test import runner, client
@@ -24,10 +25,12 @@ COVERAGE_CHOICES = (COVERAGE_ALL, COVERAGE_CONSOLE, COVERAGE_HTML)
 
 
 # =============================================================================
-# LOGGER
+# LOGGER & Other Conf
 # =============================================================================
 
 logger = logging.getLogger(__name__)
+
+settings.SSLIFY_DISABLE = True
 
 
 # =============================================================================
