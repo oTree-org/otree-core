@@ -1,0 +1,31 @@
+{% load staticfiles %}
+{% load i18n %}
+{% load floppyforms otree_tags %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Full Demo</title>
+        <meta name="description" content="otree, game theory{% for seo in SEO %}, {{seo}}{% endfor %}{% for seo in page_seo %}, {{seo}}{% endfor %}">
+        <meta name="keywords" content="otree, game theory{% for seo in SEO %}, {{seo}}{% endfor %}{% for seo in page_seo %}, {{seo}}{% endfor %}">
+    <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+    $(document).ready(function() {
+        iframe_resize();
+        $(window).on('resize', function(){
+            iframe_resize();
+        });
+    });
+    function iframe_resize() {
+        var height = Math.floor($( window ).height() / 3);
+        var width = $( window ).width() - 10;
+        $( "iframe" ).height(height).width(width);
+    }
+    </script>
+    </head>
+    <body>
+        <iframe src="{% url 'session_monitor' session.pk %}"></iframe>
+        {% for participant_url in participant_urls %}
+            <iframe src="{{ participant_url }}"></iframe>
+        {% endfor %}
+    </body>
+</html>
