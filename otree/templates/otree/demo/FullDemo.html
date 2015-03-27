@@ -10,22 +10,38 @@
     <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
     <script type="text/javascript" charset="utf-8">
     $(document).ready(function() {
-        iframe_resize();
+        manipIframe();
         $(window).on('resize', function(){
             iframe_resize();
         });
     });
+    function manipIframe() {
+        el = $('iframe.monitor-frame').contents().find('tbody');
+        if (el.length == 0) {
+          setTimeout(manipIframe, 1000);
+        }
+        iframe_resize();
+    }
     function iframe_resize() {
-        var height = Math.floor($( window ).height() / 3);
-        var width = $( window ).width() - 10;
-        $( "iframe" ).height(height).width(width);
+        var height_monitor = $("iframe.monitor-frame").contents().find('html').height();
+        $( "iframe.monitor-frame" ).height(height_monitor).width($( window ).width() - 20);
+        var num_participants = $( "iframe.participant-frame" ).length;
+        var width = Math.floor($( window ).width() / num_participants);
+        var height = $( window ).height() - height_monitor - 30;
+        $( "iframe.participant-frame" ).height(height).width(width - 10);
     }
     </script>
     </head>
     <body>
-        <iframe src="{% url 'session_monitor' session.pk %}"></iframe>
-        {% for participant_url in participant_urls %}
-            <iframe src="{{ participant_url }}"></iframe>
-        {% endfor %}
+        <iframe class="monitor-frame" src="{% url 'session_monitor' session.pk %}"></iframe>
+        <table border="0" cellspacing="0" cellpadding="0">
+            <tr>
+                {% for participant_url in participant_urls %}
+                    <td>
+                        <iframe class="participant-frame" src="{{ participant_url }}"></iframe>
+                    </td>
+                {% endfor %}
+            </tr>
+        </table>
     </body>
 </html>
