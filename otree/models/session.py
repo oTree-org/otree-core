@@ -386,7 +386,11 @@ class SessionUser(ModelWithVars):
             constants.form_page_poll_interval_seconds,
             constants.wait_page_poll_interval_seconds,
         ) + 10  # for latency
-        time_since_last_request = time.time() - self._last_request_timestamp
+        if self._last_request_timestamp is None:
+            # it shouldn't be None, but sometimes is...race condition?
+            time_since_last_request = 0
+        else:
+            time_since_last_request = time.time() - self._last_request_timestamp
         if time_since_last_request > max_seconds_since_last_request:
             return 'Disconnected'
         if self.is_on_wait_page:
