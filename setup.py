@@ -23,6 +23,7 @@ REQUIREMENTS = [
     'django-ptree-mturk>=1.0.1',
     'django-save-the-change>=1.0.0',
     'django-sslify>=0.2.5',
+    'django-sslserver>=0.14',
     'django-sslserver==0.14',
     'django-vanilla-views>=1.0.2',
     'djangorestframework>=3.1.0',
@@ -35,9 +36,7 @@ REQUIREMENTS = [
     'raven>=5.1.1',
     'requests>=2.5.3',
     'selenium>=2.41.0',
-    'xmltodict>=0.9.0',
-    'django-sslserver>=0.14',
-    'djangorestframework>=3.1.0'
+    'xmltodict>=0.9.0'
 ]
 
 # allow setup.py to be run from any path
