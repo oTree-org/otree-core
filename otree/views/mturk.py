@@ -130,7 +130,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
         return 'session_create_hit'
 
     def in_public_domain(self, request, *args, **kwargs):
-        """This method validates if oTree are publishedn on a public domain
+        """This method validates if oTree are published on a public domain
         because mturk need it
 
         """
@@ -145,15 +145,6 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
         except ValueError:
             # probably is a public domain
             return True
-
-    def dispatch(self, request, *args, **kwargs):
-        if not self.in_public_domain(request, *args, **kwargs):
-            msg = (
-                '<h1>Error: '
-                'oTree must run on a public domain for Mechanical Turk</h1>'
-            )
-            return HttpResponseServerError(msg)
-        return super(SessionCreateHit, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         mturk_hit_settings = self.session.session_type['mturk_hit_settings']
@@ -181,6 +172,13 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             return self.form_invalid(form)
         session = self.session
         in_sandbox = 'in_sandbox' in form.data
+        # session can't be created
+        if not self.in_public_domain(request, *args, **kwargs) and not in_sandbox:
+            msg = (
+                '<h1>Error: '
+                'oTree must run on a public domain for Mechanical Turk</h1>'
+            )
+            return HttpResponseServerError(msg)
         with MTurkConnection(self.request, in_sandbox) as mturk_connection:
             url_landing_page = self.request.build_absolute_uri(
                 reverse('mturk_landing_page', args=(session.code,))
