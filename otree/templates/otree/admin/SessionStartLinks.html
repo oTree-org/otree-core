@@ -3,8 +3,13 @@
 
 {% block content %}
 {{ block.super }}
+    {% if fullscreen_mode_on %}
+        <p>
+        Try out this session in <a target="_blank" href="{% url 'session_fullscreen' session.pk %}">fullscreen</a> mode.
+        </p>
+    {% endif %}
     <p>
-        Open each link in its own browser tab.
+        Or simply open each link in its own browser tab.
     </p>
     <h4>Participant links:</h4>
     <p>
@@ -16,5 +21,5 @@
     <p>
     To run your experiment in Lab checkout <a href="{% url 'persistent_lab_urls' %}">Persistent URLs</a> page.
     </p>
-
+    <p>
 {% endblock %}

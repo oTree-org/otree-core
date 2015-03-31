@@ -139,8 +139,11 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.View):
         session.demo_already_used = True
         session.save()
 
-        session_home_url = reverse('session_start_links', args=(session.pk,))
-        return HttpResponseRedirect(session_home_url)
+        if 'fullscreen' in self.request.GET and self.request.GET['fullscreen']:
+            landing_url = reverse('session_fullscreen', args=(session.pk,))
+        else:
+            landing_url = reverse('session_start_links', args=(session.pk,))
+        return HttpResponseRedirect(landing_url)
 
     def dispatch(self, request, *args, **kwargs):
         self.session_type_name = kwargs['session_type']
@@ -154,27 +157,29 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.View):
         )
 
 
-class FullDemo(vanilla.TemplateView):
+class SessionFullscreen(vanilla.TemplateView):
+    '''Launch the session in fullscreen mode
+    '''
 
-    template_name = 'otree/demo/FullDemo.html'
+    template_name = 'otree/demo/SessionFullscreen.html'
 
     @classmethod
     def url_name(cls):
-        return 'full_demo'
+        return 'session_fullscreen'
 
     @classmethod
     def url_pattern(cls):
-        return r"^FullDemo/(?P<pk>\d+)/$"
+        return r"^SessionFullscreen/(?P<pk>\d+)/$"
 
     def dispatch(self, request, *args, **kwargs):
         session_pk = int(kwargs['pk'])
         self.session = get_object_or_404(Session, pk=session_pk)
-        return super(FullDemo, self).dispatch(
+        return super(SessionFullscreen, self).dispatch(
             request, *args, **kwargs
         )
 
     def get_context_data(self, **kwargs):
-        context = super(FullDemo, self).get_context_data(**kwargs)
+        context = super(SessionFullscreen, self).get_context_data(**kwargs)
         participant_urls = [
             self.request.build_absolute_uri(participant._start_url())
             for participant in self.session.get_participants()
