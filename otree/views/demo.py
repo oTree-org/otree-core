@@ -7,6 +7,7 @@ from django.conf import settings
 from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
+from django.shortcuts import get_object_or_404
 
 import vanilla
 
@@ -151,3 +152,35 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.View):
         return TemplateResponse(
             self.request, 'otree/WaitPage.html', {'view': self}
         )
+
+
+class FullDemo(vanilla.TemplateView):
+
+    template_name = 'otree/demo/FullDemo.html'
+
+    @classmethod
+    def url_name(cls):
+        return 'full_demo'
+
+    @classmethod
+    def url_pattern(cls):
+        return r"^FullDemo/(?P<pk>\d+)/$"
+
+    def dispatch(self, request, *args, **kwargs):
+        session_pk = int(kwargs['pk'])
+        self.session = get_object_or_404(Session, pk=session_pk)
+        return super(FullDemo, self).dispatch(
+            request, *args, **kwargs
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super(FullDemo, self).get_context_data(**kwargs)
+        participant_urls = [
+            self.request.build_absolute_uri(participant._start_url())
+            for participant in self.session.get_participants()
+        ]
+        context.update({
+            'session': self.session,
+            'participant_urls': participant_urls
+        })
+        return context
