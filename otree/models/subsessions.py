@@ -93,7 +93,6 @@ class BaseSubsession(models.Model):
     def get_players(self):
         return self._get_players()
 
-
     def set_groups(self, groups):
         """elements in the list can be sublists, or group objects.
 

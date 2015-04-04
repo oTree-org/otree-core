@@ -302,7 +302,6 @@ class Session(ModelWithVars):
         # FIXME: what about experimenter?
 
 
-
 class SessionUser(ModelWithVars):
 
     _index_in_subsessions = models.PositiveIntegerField(default=0, null=True)
@@ -390,7 +389,9 @@ class SessionUser(ModelWithVars):
             # it shouldn't be None, but sometimes is...race condition?
             time_since_last_request = 0
         else:
-            time_since_last_request = time.time() - self._last_request_timestamp
+            time_since_last_request = (
+                time.time() - self._last_request_timestamp
+            )
         if time_since_last_request > max_seconds_since_last_request:
             return 'Disconnected'
         if self.is_on_wait_page:
