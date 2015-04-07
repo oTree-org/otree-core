@@ -155,7 +155,9 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             'money_reward': self.session.fixed_pay,
             'assignments': len(self.session.get_participants()),
             'in_sandbox': settings.DEBUG,
-            'minutes_allotted_per_assignment': mturk_hit_settings['minutes_allotted_per_assignment'],
+            'minutes_allotted_per_assignment': (
+                mturk_hit_settings['minutes_allotted_per_assignment']
+            ),
             'expiration_hours': mturk_hit_settings['expiration_hours'],
         }
         form = self.get_form(initial=initial)
@@ -221,7 +223,9 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             }
             if form.cleaned_data['minutes_allotted_per_assignment']:
                 mturk_hit_parameters['duration'] = datetime.timedelta(
-                    minutes=form.cleaned_data['minutes_allotted_per_assignment']
+                    minutes=(
+                        form.cleaned_data['minutes_allotted_per_assignment']
+                    ),
                 )
 
             if form.cleaned_data['expiration_hours']:

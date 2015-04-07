@@ -4,8 +4,8 @@
 from save_the_change.mixins import SaveTheChange
 
 from otree.db import models
-from otree.common_internal import get_models_module
-from otree.common_internal import get_players, get_groups
+from otree.common_internal import get_models_module, get_players
+
 
 class BaseGroup(SaveTheChange, models.Model):
     """Base class for all Groupes.
