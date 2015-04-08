@@ -82,7 +82,8 @@ def augment_settings(settings):
             'django.contrib.auth.middleware.AuthenticationMiddleware',
             'django.contrib.messages.middleware.MessageMiddleware',
             'otree.middleware.OperationalErrorMidleware',
-            'sslify.middleware.SSLifyMiddleware',
+            # 2015-04-08: disabling SSLify until we make this work better
+            #'sslify.middleware.SSLifyMiddleware',
         ],
         settings.get('MIDDLEWARE_CLASSES')
     )

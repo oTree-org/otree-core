@@ -101,6 +101,7 @@ class BaseSubsession(models.Model):
 
 
         warning: this deletes the groups and any data stored on them
+        TODO: we should indicate this in docs
         """
 
         # first, get players in each group
