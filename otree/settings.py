@@ -185,15 +185,25 @@ def augment_settings(settings):
 
         # SEO AND FOOTER
         'PAGE_FOOTER': page_footer,
-        'SEO': (),
 
+        # list of extra string to positioning you experiments on search engines
+        # Also if you want to add a particular set of SEO words to a particular page
+        # add to template context "page_seo" variable.
+        # See: http://en.wikipedia.org/wiki/Search_engine_optimization
+        'SEO': (),
 
         'LOGGING': logging,
 
         'REAL_WORLD_CURRENCY_CODE': 'USD',
         'REAL_WORLD_CURRENCY_LOCALE': 'en_US',
         'REAL_WORLD_CURRENCY_FORMAT': None,
-        'REAL_WORLD_CURRENCY_DECIMAL_PLACES': 2
+        'REAL_WORLD_CURRENCY_DECIMAL_PLACES': 2,
+
+        'WSGI_APPLICATION': 'wsgi.application',
+        'SECURE_PROXY_SSL_HEADER': ('HTTP_X_FORWARDED_PROTO', 'https'),
+        'MTURK_HOST': 'mechanicalturk.amazonaws.com',
+        'MTURK_SANDBOX_HOST': 'mechanicalturk.sandbox.amazonaws.com',
+        'CREATE_DEFAULT_SUPERUSER': True,
     }
 
     settings.update(augmented_settings)
