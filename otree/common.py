@@ -8,8 +8,6 @@ from django.utils.safestring import mark_safe
 
 import easymoney
 
-import requests
-
 
 class RealWorldCurrency(easymoney.Money):
     '''payment currency'''

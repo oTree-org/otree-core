@@ -187,8 +187,8 @@ def augment_settings(settings):
         'PAGE_FOOTER': page_footer,
 
         # list of extra string to positioning you experiments on search engines
-        # Also if you want to add a particular set of SEO words to a particular page
-        # add to template context "page_seo" variable.
+        # Also if you want to add a particular set of SEO words to a particular
+        # page add to template context "page_seo" variable.
         # See: http://en.wikipedia.org/wiki/Search_engine_optimization
         'SEO': (),
 
