@@ -68,17 +68,3 @@ def currency_range(first, last, increment):
             return values
         values.append(current_value)
         current_value += increment
-
-
-def ping_myself():
-    """Return True if my url can be seeit from outside
-
-    """
-
-    url = "http://isitup.org/{}.json".format(settings.MY_HOST)
-    headers = {
-        'User-Agent': 'oTree http://otree.org',
-        'From': 'youremail@domain.com'  # This is another valid field
-    }
-    response = requests.get(url, headers=headers)
-    return response.json()["status_code"] == 1
