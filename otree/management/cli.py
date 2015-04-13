@@ -5,6 +5,7 @@ import sys
 
 import django.core.management
 from django.core.management.base import CommandError
+from django.conf import settings
 
 
 MANAGE_URL = (
@@ -22,6 +23,12 @@ def execute_from_command_line(arguments, script_file):
         platform.system() == 'Windows' and not
         script_file.lower().endswith('.py')
     )
+
+    # in issue #300 we agreed that sslserver should
+    # run only if user has specified credentials for AWS
+    if 'runserver' in sys.argv[1] and settings.AWS_ACCESS_KEY_ID:
+        sys.argv[1] = 'runsslserver'
+
     if cond:
 
         scriptdir = os.path.dirname(os.path.abspath(script_file))

@@ -162,6 +162,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
         }
         form = self.get_form(initial=initial)
         context = self.get_context_data(form=form)
+        context['mturk_enabled'] = bool(settings.AWS_ACCESS_KEY_ID)
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
