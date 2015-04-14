@@ -55,7 +55,8 @@ def perfect_strangers(subssn):
 
 @match_func("partners")
 def partners(subssn):
-    pass
+    p_subssn = subssn.in_previous_rounds().last()
+    return extract_players(p_subssn)
 
 
 @match_func("swap_25")
@@ -63,9 +64,11 @@ def swap_25(subssn):
     pass
 
 
-@match_func("reverse")
-def reverse(subssn):
-    pass
+@match_func("reversed")
+def reversed(subssn):
+    p_subssn = subssn.in_previous_rounds().last()
+    last_group = extract_players(p_subssn)
+    return tuple(reversed(last_group))
 
 
 
