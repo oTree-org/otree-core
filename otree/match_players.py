@@ -65,7 +65,7 @@ def swap_25(subssn):
     pass
 
 
-@match_func("reversed")
+@match_func("reversed", "players_reversed")
 def players_reversed(subssn):
     p_subssn = subssn.in_previous_rounds()[-1]
     reversed_players_x_groups = []
