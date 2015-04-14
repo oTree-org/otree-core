@@ -4,6 +4,8 @@
 {% block head_content %}
 {{ block.super }}
 <script type="text/javascript" charset="utf-8">
+// show modal warning window if user tries to create hit in non-sandbox mode
+// and if we are not already showing this modal to user
 $(document).ready(function() {
     $("input[type=text]").click(function() {
         $(this).select();
@@ -23,12 +25,14 @@ $(document).ready(function() {
 {{ block.super }}
 {% if not mturk_enabled %}
 <p> MTurk is currently disabled.
-If you want to publish your HIT on mturk 
-please set environmental variables
-<code>AWS_ACCESS_KEY_ID</code> and <code>AWS_SECRET_ACCESS_KEY</code>
-and restart the server.
-You can read more about in 
-<a href="https://github.com/oTree-org/oTree#aws-credentials" target="_blank">mturk documentation</a>.
+If you want to publish your HIT on MTurk please do the following steps:
+<ol>
+    <li>set environmental variables <code>AWS_ACCESS_KEY_ID</code> and <code>AWS_SECRET_ACCESS_KEY</code></li>
+    <li>restart the server</li>
+    <li>access this page via secured url <a href="{{ secured_url }}">{{ secured_url }}</a></li>
+</ol>
+You can read more about Amazon Mechanical Turk integration 
+<a href="https://github.com/oTree-org/oTree#amazon-mechanical-turk" target="_blank">here</a>.
 </p>
 {% else %}
 <div class="modal fade" id="mturk-production" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
