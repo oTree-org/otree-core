@@ -251,6 +251,6 @@ class BaseSubsession(models.Model):
     def match_players(self, match_name):
         if self.round_number > 1:
             match_function = match_players.MATCHS[match_name]
-            players_x_group = match_function(self)
-            for group, players in zip(self.get_groups(), players_x_groups):
+            pxg = match_function(self)
+            for group, players in zip(self.get_groups(), pxg):
                 group.set_players(players)

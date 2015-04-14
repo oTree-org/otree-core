@@ -30,7 +30,7 @@ def match_func(*names):
         @functools.wraps(func)
         def _dec(subssn):
             if subssn.round_number == 1:
-                return extract_players(subssn)
+                return players_x_groups(subssn)
             return func(subssn)
 
         for name in names:
@@ -44,8 +44,9 @@ def match_func(*names):
 # MATCHS
 # =============================================================================
 
-def extract_players(subssn):
+def players_x_groups(subssn):
     return tuple(g.get_players() for g in subssn.get_groups())
+
 
 @match_func("perfect_strangers", "round_robin")
 def perfect_strangers(subssn):
@@ -55,8 +56,8 @@ def perfect_strangers(subssn):
 
 @match_func("partners")
 def partners(subssn):
-    p_subssn = subssn.in_previous_rounds().last()
-    return extract_players(p_subssn)
+    p_subssn = subssn.in_previous_rounds()[-1]
+    return players_x_groups(p_subssn)
 
 
 @match_func("swap_25")
@@ -65,12 +66,13 @@ def swap_25(subssn):
 
 
 @match_func("reversed")
-def reversed(subssn):
-    p_subssn = subssn.in_previous_rounds().last()
-    last_group = extract_players(p_subssn)
-    return tuple(reversed(last_group))
-
-
+def players_reversed(subssn):
+    p_subssn = subssn.in_previous_rounds()[-1]
+    reversed_players_x_groups = []
+    for players in players_x_groups(p_subssn):
+        players_reversed = list(reversed(players))
+        reversed_players_x_groups.append(players_reversed)
+    return tuple(reversed_players_x_groups)
 
 
 
