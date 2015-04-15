@@ -105,8 +105,15 @@ def augment_urlpatterns(urlpatterns):
         '',
         urls.url(r'^$', RedirectView.as_view(url='/demo'), name='demo'),
         urls.url(
-            r'^accounts/login/$', 'django.contrib.auth.views.login',
-            {'template_name': 'otree/login.html'}
+            r'^accounts/login/$',
+            'django.contrib.auth.views.login',
+            {'template_name': 'otree/login.html'},
+            name='login_url',
+        ),
+        urls.url(
+            r'^accounts/logout/$',
+            'django.contrib.auth.views.logout_then_login',
+            name='logout',
         ),
     )
 
