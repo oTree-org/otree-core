@@ -112,7 +112,8 @@ def augment_urlpatterns(urlpatterns):
         ),
         urls.url(
             r'^accounts/logout/$',
-            'django.contrib.auth.views.logout_then_login',
+            'django.contrib.auth.views.logout',
+            {'next_page': 'demo_index'},
             name='logout',
         ),
     )
