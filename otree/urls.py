@@ -43,28 +43,50 @@ def url_patterns_from_module(module_name):
     else:
         AUTH_LEVEL = settings.AUTH_LEVEL
 
-    restricted_views_demo = ['SessionTypesToCreate', 'CreateSession',
-                             'AdminHome', 'PersistentLabURLs', 'ExportIndex',
-                             'ExportCsv', 'ExportAppDocs']
-
-    restricted_views_experiment = restricted_views_demo + [
-        'SessionDescription', 'SessionMonitor', 'SessionResults',
-        'SessionStartLinks', 'SessionPayments',
-        'DemoIndex', 'CreateDemoSession'
-    ]
-    if AUTH_LEVEL == 'DEMO':
-        restricted_views = restricted_views_demo
-    elif AUTH_LEVEL == 'EXPERIMENT':
-        restricted_views = restricted_views_experiment
+    # see issue #303 for discussion of granting access with "white-list"
+    if not module_name.startswith('otree.views'):
+        unrestricted_views_experiment = [
+            '%s.%s' % (module_name, view.__name__) for view in all_views
+        ]
+        unrestricted_views_demo = unrestricted_views_experiment
     else:
-        restricted_views = []
+        unrestricted_views_experiment = [
+            'otree.views.concrete.AssignVisitorToOpenSession',
+            'otree.views.concrete.AssignVisitorToOpenSessionMTurk',
+            'otree.views.concrete.InitializeParticipant',
+            'otree.views.concrete.MTurkLandingPage',
+            'otree.views.concrete.MTurkStart',
+            'otree.views.concrete.OutOfRangeNotification',
+            'otree.views.concrete.SessionExperimenterWaitUntilPlayersAreAssigned',
+            'otree.views.concrete.WaitUntilAssignedToGroup',
+        ]
+        unrestricted_views_demo = unrestricted_views_experiment + [
+            'otree.views.concrete.AdvanceSession',
+            'otree.views.demo.CreateDemoSession',
+            'otree.views.demo.DemoIndex',
+            'otree.views.demo.SessionFullscreen',
+            'otree.views.admin.SessionDescription',
+            'otree.views.admin.SessionMonitor',
+            'otree.views.admin.SessionPayments',
+            'otree.views.admin.SessionResults',
+            'otree.views.admin.SessionStartLinks',
+        ]
 
+    if AUTH_LEVEL == 'FULL':
+        unrestricted_views = [
+            '%s.%s' % (module_name, view.__name__) for view in all_views
+        ]
+    elif AUTH_LEVEL == 'DEMO':
+        unrestricted_views = unrestricted_views_demo
+    else:
+        # presumably EXPERIMENT mode
+        unrestricted_views = unrestricted_views_experiment
     view_urls = []
     for ViewCls in all_views:
-        if ViewCls.__name__ in restricted_views:
-            as_view = login_required(ViewCls.as_view())
-        else:
+        if '%s.%s' % (module_name, ViewCls.__name__) in unrestricted_views:
             as_view = ViewCls.as_view()
+        else:
+            as_view = login_required(ViewCls.as_view())
 
         if hasattr(ViewCls, 'url_name'):
             view_urls.append(
@@ -83,8 +105,15 @@ def augment_urlpatterns(urlpatterns):
         '',
         urls.url(r'^$', RedirectView.as_view(url='/demo'), name='demo'),
         urls.url(
-            r'^accounts/login/$', 'django.contrib.auth.views.login',
-            {'template_name': 'otree/login.html'}
+            r'^accounts/login/$',
+            'django.contrib.auth.views.login',
+            {'template_name': 'otree/login.html'},
+            name='login_url',
+        ),
+        urls.url(
+            r'^accounts/logout/$',
+            'django.contrib.auth.views.logout_then_login',
+            name='logout',
         ),
     )
 

@@ -25,6 +25,7 @@ $(function () {
                 <li><a href="#" onclick="return false" data-toggle="popover" data-trigger="hover" data-content="Debug mode (can be disabled in settings.py)" data-placement="bottom">
                     <h4><span style="color: #fff" class="glyphicon glyphicon-wrench"></span></h4>
                 </a></li>
+                <li><a href="{% url 'logout' %}"><h4>Logout</h4></a></li>
                 {% endif %}
             </ul>
         </div>
