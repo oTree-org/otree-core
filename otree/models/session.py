@@ -515,13 +515,6 @@ class Participant(SessionUser):
         )
     )
 
-    _predetermined_arrival_order = models.PositiveIntegerField(
-        doc=(
-            "if group_by_arrival_time is True, use this field to decide "
-            "who to assign next"
-        )
-    )
-
     def __unicode__(self):
         return self.name()
 

@@ -7,6 +7,7 @@ from otree.db import models
 from otree.common_internal import get_views_module
 from otree.common_internal import (
     get_models_module, get_players, get_groups,
+    flatten
 )
 from otree.models_concrete import GroupSize
 
@@ -105,6 +106,20 @@ class BaseSubsession(models.Model):
     def get_players(self):
         return self._get_players()
 
+    def check_group_integrity(self):
+        '''
+
+        2015-4-17: can't check this from set_players,
+        because sometimes we are intentionally in an inconsistent state
+        e.g., if group_by_arrival_time is true, and some players have not
+        been assigned to groups yet
+        '''
+        players = get_players(self, order_by='id', refresh_from_db=True)
+        groups = [get_players(g, 'id', True) for g in get_groups(self, True)]
+        players_from_groups = flatten(groups)
+
+        assert set(players) == set(players_from_groups)
+
     def set_groups(self, groups):
         """elements in the list can be sublists, or group objects.
 
@@ -134,6 +149,7 @@ class BaseSubsession(models.Model):
         for row in matrix:
             group = self._create_group()
             group.set_players(row)
+        self.check_group_integrity()
 
     @property
     def _Constants(self):
