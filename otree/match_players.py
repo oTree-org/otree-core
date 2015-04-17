@@ -9,7 +9,6 @@
 # IMPORTS
 # =============================================================================
 
-import collections
 import functools
 import itertools
 
@@ -63,39 +62,53 @@ def perfect_strangers(subssn):
         groups_str = [",".join(map(str, g)) for g in groups]
         return "|".join(groups_str)
 
-    def chunkify(lst, n):
-        return [lst[i::n] for i in xrange(n)]
+    def roundrobin(iterable, n):
 
-    def roundrobin(*iterables):
-        "roundrobin('ABC', 'D', 'EF') --> A D E B F C"
-        # Recipe credited to George Sakkis
-        pending = len(iterables)
-        nexts = itertools.cycle(iter(it).next for it in iterables)
-        while pending:
-            try:
-                for next in nexts:
-                    yield next()
-            except StopIteration:
-                pending -= 1
-                nexts = itertools.cycle(itertools.islice(nexts, pending))
+        def norepeat(tail, buff):
+            group = []
+            if tail:
+                sg, sub_tail = tail[0], tail[1:]
+                if not buff.intersection(sg):
+                    buff.update(sg)
+                    group.append(sg)
+                group += norepeat(sub_tail, buff)
+            return group
+
+        subgroups = tuple(itertools.combinations(iterable, n))
+        subgroups_len = len(subgroups)
+        for idx in range(subgroups_len):
+            sg = subgroups[idx]
+            tail = subgroups[:idx] + subgroups[idx+1:]
+            buff = set(sg)
+            group = [sg] + norepeat(tail, buff)
+            yield group
 
     # retrieve all users groups
-    used_groups = collections.defaultdict(int)
+    pxg_ids_cnt = {}
+    pxg_ids_to_pxg = {}
     for p_subssn in subssn.in_previous_rounds():
         pxg = players_x_groups(p_subssn)
         pxg_ids = gen_pxg_id(pxg)
-        used_groups[pxg_ids] += 1
-
+        if pxg_ids in pxg_ids_cnt:
+            pxg_ids_cnt[pxg_ids] += 1
+        else:
+            pxg_ids_cnt[pxg_ids] = 1
+            pxg_ids_to_pxg[pxg_ids] = pxg
 
     players = tuple(itertools.chain.from_iterable(players_x_groups(subssn)))
 
     ppg = subssn._Constants.players_per_group
 
-    chunked = chunkify(players, ppg)
+    for pxg in roundrobin(players, ppg):
+        pxg_ids = gen_pxg_id(pxg)
+        if pxg_ids not in pxg_ids_cnt:
+            return pxg
 
-    candidates = roundrobin(*chunked)
+    pxg_ids_cnt_items = pxg_ids_cnt.items()
+    pxg_ids_cnt_items.sort(key=lambda e: e[1])
 
-    import ipdb; ipdb.set_trace()
+    key = pxg_ids_cnt_items[0][0]
+    return pxg_ids_to_pxg[key]
 
 
 @match_func("partners")
