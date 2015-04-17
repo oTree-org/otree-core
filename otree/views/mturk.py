@@ -183,8 +183,9 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
         session = self.session
         in_sandbox = 'in_sandbox' in form.data
         # session can't be created
-        if (not self.in_public_domain(request, *args, **kwargs)
-                and not in_sandbox):
+        if (
+                not self.in_public_domain(request, *args, **kwargs) and
+                not in_sandbox):
             msg = (
                 '<h1>Error: '
                 'oTree must run on a public domain for Mechanical Turk</h1>'

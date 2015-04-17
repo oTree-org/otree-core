@@ -79,7 +79,7 @@ def perfect_strangers(subssn):
         yielded = set()
         for idx in range(subgroups_len):
             sg = tuple(sorted(subgroups[idx]))
-            tail = subgroups[:idx] + subgroups[idx+1:]
+            tail = subgroups[:idx] + subgroups[idx + 1:]
             buff = set(sg)
             group = [sg] + norepeat(tail, buff)
             group = tuple(sorted(group))
@@ -129,6 +129,3 @@ def players_reversed(subssn):
         players_reversed = list(reversed(players))
         reversed_players_x_groups.append(players_reversed)
     return tuple(reversed_players_x_groups)
-
-
-
