@@ -1,7 +1,7 @@
+from collections import namedtuple
 import sys
 
 from django.db import models
-from django.template import Context
 from django.template import Node
 from django.template import TemplateSyntaxError
 from django.template import Variable
@@ -13,6 +13,12 @@ from django.utils import six
 import floppyforms.templatetags.floppyforms as floppyforms_templatetags
 
 
+FORM_UNRENDERED_FIELDS = 'form_unrendered_fields'
+
+
+UnrenderedField = namedtuple('UnrenderedField', ('name', 'html_name', 'field'))
+
+
 def mark_field_as_rendered(context, bound_field):
     if not hasattr(context, '_rendered_fields'):
         context._rendered_fields = set()
@@ -20,21 +26,10 @@ def mark_field_as_rendered(context, bound_field):
 
 
 class FormNode(floppyforms_templatetags.FormNode):
-    def __init__(self, *args, **kwargs):
-        super(FormNode, self).__init__(*args, **kwargs)
-        self.formfield_is_missing_template = get_template(
-            'otree/forms/_formfield_is_missing_error.html')
-
     def get_form_instance(self, context):
         extra_context = self.get_extra_context(context)
         form = extra_context[self.single_template_var]
         return form
-
-    def get_error_html(self, form, missing_fields):
-        return self.formfield_is_missing_template.render(Context({
-            'form': form,
-            'missing_fields': missing_fields,
-        }))
 
     def get_rendered_fields(self, context):
         return getattr(context, '_rendered_fields', [])
@@ -43,12 +38,12 @@ class FormNode(floppyforms_templatetags.FormNode):
         result = super(FormNode, self).render(context)
         form = self.get_form_instance(context)
         if form is not None:
-            missing_fields = []
+            missing_fields = context.get(FORM_UNRENDERED_FIELDS, [])
             for field_name, field in form.fields.items():
                 if field not in self.get_rendered_fields(context):
-                    missing_fields.append((field_name, field))
-            if missing_fields:
-                result += self.get_error_html(form, missing_fields)
+                    missing_fields.append(UnrenderedField(
+                        field_name, form.add_prefix(field_name), field))
+            context[FORM_UNRENDERED_FIELDS] = missing_fields
         return result
 
 

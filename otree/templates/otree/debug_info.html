@@ -1,7 +1,7 @@
-
+{% load staticfiles otree_tags %}
 <div class="panel panel-danger">
-    <div class="panel-heading">Debug info
-    </div>
+    <div class="panel-heading">Debug info</div>
+    {% include 'otree/forms/_formfield_is_missing_error.html' %}
     <table class="table table-hover">
         {% for k,v in view.get_debug_values %}
             <tr><td>{{ k }}</td> <td><code>{{ v }}</code></td></tr>
@@ -9,4 +9,3 @@
     </table>
 </div>
 {{ debug_info }}
-
