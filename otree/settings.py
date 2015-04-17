@@ -83,7 +83,7 @@ def augment_settings(settings):
             'django.contrib.messages.middleware.MessageMiddleware',
             'otree.middleware.OperationalErrorMidleware',
             # 2015-04-08: disabling SSLify until we make this work better
-            #'sslify.middleware.SSLifyMiddleware',
+            # 'sslify.middleware.SSLifyMiddleware',
         ],
         settings.get('MIDDLEWARE_CLASSES')
     )

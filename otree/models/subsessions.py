@@ -63,6 +63,21 @@ class BaseSubsession(models.Model):
         ).get()
 
     def _get_players_per_group_list(self):
+        """get a list whose elements are the number of players in each group
+
+        Example: a group of 30 players
+
+        # everyone is in the same group
+        [30]
+
+        # 5 groups of 6
+        [6, 6, 6, 6, 6,]
+
+        # 2 groups of 5 players, 2 groups of 10 players
+        [5, 10, 5, 10] # (you can do this with players_per_group = [5, 10]
+
+        """
+
         ppg = self._Constants.players_per_group
         subsession_size = len(self.get_players())
         if ppg is None:
@@ -78,9 +93,6 @@ class BaseSubsession(models.Model):
 
         num_group_cycles = subsession_size / sum(group_cycle)
         return group_cycle * num_group_cycles
-
-    def _min_players_multiple(self):
-        self._Constants.players_per_group
 
     def get_groups(self):
         return get_groups(self, refresh_from_db=False)
