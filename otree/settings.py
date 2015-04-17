@@ -97,6 +97,7 @@ def augment_settings(settings):
         'BROKER_URL': 'django://',
         'MESSAGE_TAGS': {messages.ERROR: 'danger'},
         'CELERY_ACCEPT_CONTENT': ['pickle', 'json', 'msgpack', 'yaml'],
+        'LOGIN_REDIRECT_URL': 'admin_home',
     }
 
     settings.setdefault('LANGUAGE_CODE', global_settings.LANGUAGE_CODE)
@@ -187,8 +188,8 @@ def augment_settings(settings):
         'PAGE_FOOTER': page_footer,
 
         # list of extra string to positioning you experiments on search engines
-        # Also if you want to add a particular set of SEO words to a page
-        # add to template context "page_seo" variable.
+        # Also if you want to add a particular set of SEO words to a particular
+        # page add to template context "page_seo" variable.
         # See: http://en.wikipedia.org/wiki/Search_engine_optimization
         'SEO': (),
 

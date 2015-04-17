@@ -26,6 +26,9 @@ $(function () {
                     <h4><span style="color: #fff" class="glyphicon glyphicon-wrench"></span></h4>
                 </a></li>
                 {% endif %}
+                {% if request.user.is_authenticated %}
+                <li><a href="{% url 'logout' %}"><h4>Logout</h4></a></li>
+                {% endif %}
             </ul>
         </div>
     </div>
