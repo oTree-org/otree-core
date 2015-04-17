@@ -10,6 +10,7 @@ from otree.common_internal import (
     flatten
 )
 from otree.models_concrete import GroupSize
+from otree import match_players
 
 
 class BaseSubsession(models.Model):
@@ -274,3 +275,10 @@ class BaseSubsession(models.Model):
             View.url(self._experimenter.session_experimenter, index)
             for index, View in enumerate(self._experimenter_pages())
         ]
+
+    def match_players(self, match_name):
+        if self.round_number > 1:
+            match_function = match_players.MATCHS[match_name]
+            pxg = match_function(self)
+            for group, players in zip(self.get_groups(), pxg):
+                group.set_players(players)
