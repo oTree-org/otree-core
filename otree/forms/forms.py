@@ -315,7 +315,7 @@ class BaseModelForm(forms.ModelForm):
                     upper = getattr(self.view, '%s_max' % name)()
                     if value > upper:
                         msg = 'Must be greater or equal than {}.'
-                        raise forms.ValidationError(msg.format(lower))
+                        raise forms.ValidationError(msg.format(upper))
 
                 if hasattr(self.view, '%s_choices' % name):
                     choices = getattr(self.view, '%s_choices' % name)()
