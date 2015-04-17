@@ -73,6 +73,7 @@ class CheckAllFieldsAreRenderedTests(FormFieldTestMixin, TestCase):
                 '{% pageform form using %}'
                 '{% formfield player.name %}'
                 '{% endpageform %}'
+                '{% include "otree/debug_info.html" %}'
             )
             self.render(
                 tpl, context={'form': form, 'player': self.simple_player}
