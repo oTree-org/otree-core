@@ -67,7 +67,7 @@ def perfect_strangers(subssn):
         def norepeat(tail, buff):
             group = []
             if tail:
-                sg, sub_tail = tail[0], tail[1:]
+                sg, sub_tail = tuple(sorted(tail[0])), tail[1:]
                 if not buff.intersection(sg):
                     buff.update(sg)
                     group.append(sg)
@@ -76,12 +76,16 @@ def perfect_strangers(subssn):
 
         subgroups = tuple(itertools.combinations(iterable, n))
         subgroups_len = len(subgroups)
+        yielded = set()
         for idx in range(subgroups_len):
-            sg = subgroups[idx]
+            sg = tuple(sorted(subgroups[idx]))
             tail = subgroups[:idx] + subgroups[idx+1:]
             buff = set(sg)
             group = [sg] + norepeat(tail, buff)
-            yield group
+            group = tuple(sorted(group))
+            if group not in yielded:
+                yielded.add(group)
+                yield group
 
     # retrieve all users groups
     pxg_ids_cnt = {}
@@ -102,13 +106,13 @@ def perfect_strangers(subssn):
     for pxg in roundrobin(players, ppg):
         pxg_ids = gen_pxg_id(pxg)
         if pxg_ids not in pxg_ids_cnt:
-            return pxg
+            return tuple(pxg)
 
     pxg_ids_cnt_items = pxg_ids_cnt.items()
     pxg_ids_cnt_items.sort(key=lambda e: e[1])
 
     key = pxg_ids_cnt_items[0][0]
-    return pxg_ids_to_pxg[key]
+    return tuple(pxg_ids_to_pxg[key])
 
 
 @match_func("partners")
