@@ -104,7 +104,7 @@ class BasePlayer(players.BasePlayer):
 
     payoff = models.CurrencyField(
         null=True,
-        doc="""The payoff the player made in this subsession"""
+        doc="""The payoff the player made in this subsession""",
     )
 
     participant = models.ForeignKey(
