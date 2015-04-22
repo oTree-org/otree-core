@@ -688,7 +688,7 @@ class FormPageMixin(object):
         self.object = self.get_object()
 
         if request.POST.get(constants.auto_submit):
-            self.auto_submitted = True # not used yet
+            self.auto_submitted = True  # not used yet
             self._set_auto_submit_values()
         else:
             form = self.get_form(

@@ -616,7 +616,6 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
 
         context = super(SessionStartLinks, self).get_context_data(**kwargs)
 
-
         context.update({'experimenter_url': experimenter_url,
                         'participant_urls': participant_urls,
                         'anonymous_url': anonymous_url,

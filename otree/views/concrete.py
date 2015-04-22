@@ -268,6 +268,7 @@ class MTurkStart(vanilla.View):
             participant.save()
         return HttpResponseRedirect(participant._start_url())
 
+
 class JoinSessionAnonymously(vanilla.View):
 
     @classmethod
