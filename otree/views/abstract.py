@@ -55,7 +55,8 @@ from otree.models.session import Participant, lock_on_this_code_path
 
 from otree.models_concrete import (
     PageCompletion, WaitPageVisit, CompletedSubsessionWaitPage,
-    CompletedGroupWaitPage, SessionuserToUserLookup
+    CompletedGroupWaitPage, SessionuserToUserLookup,
+    PageTimeout
 )
 
 
@@ -327,6 +328,15 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         # we should allow a user to move beyond the last page if it's mturk
         # also in general maybe we should show the 'out of sequence' page
 
+        # the timeout record is irrelevant at this point, delete it
+        # wait pages don't have a has_timeout attribute
+        if hasattr(self, 'has_timeout') and self.has_timeout():
+            PageTimeout.objects.filter(
+                participant_pk = self._session_user.pk,
+                page_index = self._session_user._index_in_pages,
+            ).delete()
+
+
         # performance optimization:
         # we skip any page that is a sequence page where is_displayed
         # evaluates to False to eliminate unnecessary redirection
@@ -526,7 +536,6 @@ class InGameWaitPageMixin(object):
                         # URL, but it's different for each player
                         otree.timeout.tasks.ensure_pages_visited.apply_async(
                             kwargs={
-                                'app_name': self.subsession.app_name,
                                 'participant_pk_set':
                                     self._ids_for_this_wait_page(),
                                 'wait_page_index': self._index_in_pages,
@@ -677,10 +686,11 @@ class FormPageMixin(object):
 
     def get(self, request, *args, **kwargs):
         self._session_user._current_form_page_url = self.request.path
-        otree.timeout.tasks.submit_expired_url.apply_async(
-            (self.request.path,),
-            countdown=self.timeout_seconds
-        )
+        if self.has_timeout():
+            otree.timeout.tasks.submit_expired_url.apply_async(
+                (self.request.path,),
+                countdown=self.timeout_seconds
+            )
         return super(FormPageMixin, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -734,6 +744,19 @@ class FormPageMixin(object):
 
     def has_timeout(self):
         return self.timeout_seconds is not None and self.timeout_seconds > 0
+
+    def remaining_timeout_seconds(self):
+        if not self.has_timeout():
+            return
+        current_time = int(time.time())
+        expiration_time = current_time + self.timeout_seconds
+        timeout, created = PageTimeout.objects.get_or_create(
+            participant_pk = self._session_user.pk,
+            page_index = self._session_user._index_in_pages,
+            defaults={'expiration_time': expiration_time}
+        )
+
+        return timeout.expiration_time - current_time
 
     timeout_seconds = None
 

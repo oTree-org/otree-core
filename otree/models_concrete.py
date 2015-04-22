@@ -1,5 +1,5 @@
 from otree.db import models
-
+import time
 
 class PageCompletion(models.Model):
     app_name = models.CharField(max_length=300)
@@ -23,6 +23,10 @@ class WaitPageVisit(models.Model):
 
     id_in_session = models.PositiveIntegerField()
 
+class PageTimeout(models.Model):
+    participant_pk = models.PositiveIntegerField()
+    page_index = models.PositiveIntegerField()
+    expiration_time = models.PositiveIntegerField()
 
 class CompletedGroupWaitPage(models.Model):
     page_index = models.PositiveIntegerField()
@@ -48,3 +52,4 @@ class GroupSize(models.Model):
     subsession_pk = models.PositiveIntegerField()
     group_index = models.PositiveIntegerField()
     group_size = models.PositiveIntegerField()
+

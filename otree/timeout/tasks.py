@@ -6,7 +6,6 @@ import django.test
 from celery import task
 
 from otree import constants
-from otree.models.session import Participant
 
 
 @task
@@ -15,9 +14,9 @@ def submit_expired_url(url):
     c = django.test.Client()
     c.post(url, data={constants.auto_submit: True}, follow=True)
 
-
 @task
 def ensure_pages_visited(participant_pk_set, wait_page_index):
+
     """
     This is necessary when a wait page is followed by a timeout page.
     We can't guarantee the user's browser will properly continue to poll
@@ -26,6 +25,7 @@ def ensure_pages_visited(participant_pk_set, wait_page_index):
 
     """
 
+    from otree.models.session import Participant
     c = django.test.Client()
 
     unvisited_participants = Participant.objects.filter(
