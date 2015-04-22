@@ -18,8 +18,25 @@
             <br/>
     {% endfor %}
     </p>
+
+    <h4>Anonymous mode</h4>
     <p>
-    To run your experiment in Lab checkout <a href="{% url 'persistent_lab_urls' %}">Persistent URLs</a> page.
+        Instead of unique start URLs, you can give the following start URL to all participants:
+    </p>
+
+    <p>
+    <a target="_blank" href="{{ anonymous_url }}">{{ anonymous_url }}</a>
+    </p>
+
+    <p>
+        Note: Unlike the unique start URLs, anonymous mode does not prevent the same participant from playing twice.
+    </p>
+
+
+    <p>
+    To run your experiment in a lab, see the <a href="{% url 'persistent_lab_urls' %}">Persistent URLs</a> page.
     </p>
     <p>
+
+
 {% endblock %}

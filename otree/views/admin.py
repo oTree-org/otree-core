@@ -606,9 +606,20 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
             self.request.build_absolute_uri(participant._start_url())
             for participant in session.get_participants()
         ]
+
+        anonymous_url = self.request.build_absolute_uri(
+            reverse(
+                'join_session_anonymously',
+                args=(session._anonymous_code,)
+            )
+        )
+
         context = super(SessionStartLinks, self).get_context_data(**kwargs)
+
+
         context.update({'experimenter_url': experimenter_url,
                         'participant_urls': participant_urls,
+                        'anonymous_url': anonymous_url,
                         'fullscreen_mode_on': len(participant_urls) <= 3})
         return context
 

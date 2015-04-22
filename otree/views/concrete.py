@@ -268,6 +268,42 @@ class MTurkStart(vanilla.View):
             participant.save()
         return HttpResponseRedirect(participant._start_url())
 
+class JoinSessionAnonymously(vanilla.View):
+
+    @classmethod
+    def url_pattern(cls):
+        return r'^join/(?P<anonymous_code>[a-z]+)/$'
+
+    @classmethod
+    def url_name(cls):
+        return 'join_session_anonymously'
+
+    def get(self, *args, **kwargs):
+
+        anonymous_code = kwargs['anonymous_code']
+        session = get_object_or_404(
+            otree.models.Session, _anonymous_code=anonymous_code
+        )
+        with lock_on_this_code_path():
+            try:
+                participant = (
+                    Participant.objects.select_for_update().filter(
+                        session=session,
+                        visited=False
+                    )
+                )[0]
+            except IndexError:
+                return HttpResponseNotFound(
+                    "No Player objects left in the database "
+                    "to assign to new visitor."
+                )
+
+            # 2014-10-17: needs to be here even if it's also set in
+            # the next view to prevent race conditions
+            participant.visited = True
+            participant.save()
+        return HttpResponseRedirect(participant._start_url())
+
 
 class AssignVisitorToOpenSessionMTurk(AssignVisitorToOpenSessionBase):
 
