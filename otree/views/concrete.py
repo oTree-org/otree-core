@@ -306,47 +306,6 @@ class JoinSessionAnonymously(vanilla.View):
         return HttpResponseRedirect(participant._start_url())
 
 
-class AssignVisitorToOpenSessionMTurk(AssignVisitorToOpenSessionBase):
-
-    def incorrect_parameters_in_url_message(self):
-        # A visitor to this experiment was turned away because they did not
-        # have the MTurk parameters in their URL.
-        # This URL only works if clicked from a MTurk job posting with the
-        # JavaScript snippet embedded
-        return (
-            "To participate, you need to first accept this Mechanical Turk "
-            "HIT and then re-click the link "
-            "(refreshing this page will not work)."
-        )
-
-    @classmethod
-    def url(cls):
-        code = otree.constants.access_code_for_default_session
-        default_session_code = settings.ACCESS_CODE_FOR_DEFAULT_SESSION
-        return otree.common_internal.add_params_to_url(
-            '/{}'.format(cls.__name__), {code: default_session_code}
-        )
-
-    @classmethod
-    def url_pattern(cls):
-        return r'^{}/$'.format(cls.__name__)
-
-    required_params = {
-        'mturk_worker_id': otree.constants.mturk_worker_id,
-        'mturk_assignment_id': otree.constants.mturk_assignment_id,
-    }
-
-    def url_has_correct_parameters(self):
-        correct_params = super(
-            AssignVisitorToOpenSessionMTurk, self
-        ).url_has_correct_parameters()
-        same_id = (
-            self.request.GET[constants.mturk_assignment_id] !=
-            'ASSIGNMENT_ID_NOT_AVAILABLE'
-        )
-        return correct_params and same_id
-
-
 class AssignVisitorToOpenSession(AssignVisitorToOpenSessionBase):
 
     def incorrect_parameters_in_url_message(self):
