@@ -619,6 +619,7 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
         context.update({'experimenter_url': experimenter_url,
                         'participant_urls': participant_urls,
                         'anonymous_url': anonymous_url,
+                        'num_participants': len(participant_urls),
                         'fullscreen_mode_on': len(participant_urls) <= 3})
         return context
 
