@@ -3,15 +3,21 @@
 
 {% block content %}
 {{ block.super }}
+    <p>There are several modes to play this session.</p>
+
     {% if fullscreen_mode_on %}
+        <h4>Full screen mode</h4>
         <p>
-        Try out this session in <a target="_blank" href="{% url 'session_fullscreen' session.pk %}">fullscreen</a> mode.
+        To play in full screen mode, <a target="_blank" href="{% url 'session_fullscreen' session.pk %}">click here</a>.
         </p>
     {% endif %}
+
+    <h4>Single-use link mode</h4>
+
     <p>
-        Or simply open each link in its own browser tab.
+        Open each link in its own browser tab.
     </p>
-    <h4>Participant links:</h4>
+
     <p>
     {% for participant_url in participant_urls %}
             <a href="{{ participant_url }}" class="participant-link" target="_blank">{{ participant_url }}</a>
