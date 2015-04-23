@@ -7,9 +7,6 @@ import urllib
 import uuid
 import itertools
 
-from django.contrib.staticfiles.templatetags.staticfiles import (
-    static as static_template_tag
-)
 from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect, JsonResponse
 from django.core.urlresolvers import reverse
