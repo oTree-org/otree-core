@@ -269,45 +269,41 @@ class MTurkStart(vanilla.View):
         return HttpResponseRedirect(participant._start_url())
 
 
-class AssignVisitorToOpenSessionMTurk(AssignVisitorToOpenSessionBase):
-
-    def incorrect_parameters_in_url_message(self):
-        # A visitor to this experiment was turned away because they did not
-        # have the MTurk parameters in their URL.
-        # This URL only works if clicked from a MTurk job posting with the
-        # JavaScript snippet embedded
-        return (
-            "To participate, you need to first accept this Mechanical Turk "
-            "HIT and then re-click the link "
-            "(refreshing this page will not work)."
-        )
-
-    @classmethod
-    def url(cls):
-        code = otree.constants.access_code_for_default_session
-        default_session_code = settings.ACCESS_CODE_FOR_DEFAULT_SESSION
-        return otree.common_internal.add_params_to_url(
-            '/{}'.format(cls.__name__), {code: default_session_code}
-        )
+class JoinSessionAnonymously(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r'^{}/$'.format(cls.__name__)
+        return r'^join/(?P<anonymous_code>[a-z]+)/$'
 
-    required_params = {
-        'mturk_worker_id': otree.constants.mturk_worker_id,
-        'mturk_assignment_id': otree.constants.mturk_assignment_id,
-    }
+    @classmethod
+    def url_name(cls):
+        return 'join_session_anonymously'
 
-    def url_has_correct_parameters(self):
-        correct_params = super(
-            AssignVisitorToOpenSessionMTurk, self
-        ).url_has_correct_parameters()
-        same_id = (
-            self.request.GET[constants.mturk_assignment_id] !=
-            'ASSIGNMENT_ID_NOT_AVAILABLE'
+    def get(self, *args, **kwargs):
+
+        anonymous_code = kwargs['anonymous_code']
+        session = get_object_or_404(
+            otree.models.Session, _anonymous_code=anonymous_code
         )
-        return correct_params and same_id
+        with lock_on_this_code_path():
+            try:
+                participant = (
+                    Participant.objects.select_for_update().filter(
+                        session=session,
+                        visited=False
+                    )
+                )[0]
+            except IndexError:
+                return HttpResponseNotFound(
+                    "No Player objects left in the database "
+                    "to assign to new visitor."
+                )
+
+            # 2014-10-17: needs to be here even if it's also set in
+            # the next view to prevent race conditions
+            participant.visited = True
+            participant.save()
+        return HttpResponseRedirect(participant._start_url())
 
 
 class AssignVisitorToOpenSession(AssignVisitorToOpenSessionBase):

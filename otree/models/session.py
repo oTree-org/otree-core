@@ -161,6 +161,10 @@ class Session(ModelWithVars):
 
     _ready_to_play = models.BooleanField(default=False)
 
+    _anonymous_code = models.RandomCharField(
+        length=10
+    )
+
     special_category = models.CharField(
         max_length=20, null=True,
         doc="whether it's a test session, demo session, etc."

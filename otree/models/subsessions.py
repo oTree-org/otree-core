@@ -121,7 +121,7 @@ class BaseSubsession(models.Model):
 
         assert set(players) == set(players_from_groups)
 
-    def set_groups(self, groups):
+    def _set_groups(self, groups, check_integrity=True):
         """elements in the list can be sublists, or group objects.
 
         Maybe this should be re-run after before_session_starts() to ensure
@@ -150,7 +150,12 @@ class BaseSubsession(models.Model):
         for row in matrix:
             group = self._create_group()
             group.set_players(row)
-        self.check_group_integrity()
+
+        if check_integrity:
+            self.check_group_integrity()
+
+    def set_groups(self, groups):
+        self._set_groups(groups, check_integrity=True)
 
     @property
     def _Constants(self):
@@ -203,7 +208,10 @@ class BaseSubsession(models.Model):
 
     def _create_empty_groups(self):
         num_groups = len(self._get_players_per_group_list())
-        self.set_groups([[] for i in range(num_groups)])
+        self._set_groups(
+            [[] for i in range(num_groups)],
+            check_integrity=False
+        )
         groups = self.get_groups()
         for group in groups:
             group._is_missing_players = True
