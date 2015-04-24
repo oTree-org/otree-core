@@ -29,6 +29,10 @@
         return document.querySelector('[name=' + fieldName + ']') !== null;
     };
 
+    var remove = function (element) {
+        element.parentNode.removeChild(element);
+    }
+
     var checkUnrenderedFields = function () {
         var warnings = document.querySelectorAll('.unrendered-fields-warning');
         forEach(warnings, function (warning) {
@@ -39,12 +43,12 @@
             forEach(getMissingFields(), function (missingField) {
                 var fieldName = missingField.dataset.fieldName
                 if (fieldDoesExist(fieldName)) {
-                    missingField.remove();
+                    remove(missingField);
                 }
             });
 
             if (getMissingFields().length === 0) {
-                warning.remove();
+                remove(warning);
             }
         });
     };
