@@ -3,18 +3,19 @@
 
 import django.test
 
-from celery import task
+from celery import shared_task
 
 from otree import constants
 
 
-@task
+@shared_task
 def submit_expired_url(url):
 
     c = django.test.Client()
     c.post(url, data={constants.auto_submit: True}, follow=True)
 
-@task
+
+@shared_task
 def ensure_pages_visited(participant_pk_set, wait_page_index):
 
     """
