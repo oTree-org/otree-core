@@ -243,7 +243,7 @@ class Session(ModelWithVars):
         # previous round's groups
         for subsession in self.get_subsessions():
             if (self.session_type['group_by_arrival_time'] and
-                subsession._Constants.players_per_group != None):
+              subsession._Constants.players_per_group is not None):
                 if subsession.round_number == 1:
                     subsession._set_players_per_group_list()
                 subsession._create_empty_groups()
