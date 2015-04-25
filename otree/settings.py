@@ -3,13 +3,8 @@
 
 import os
 
-import djcelery
-
 from django.conf import global_settings
 from django.contrib.messages import constants as messages
-
-
-djcelery.setup_loader()
 
 
 def collapse_to_unique_list(*args):
