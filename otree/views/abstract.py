@@ -739,7 +739,8 @@ class FormPageMixin(object):
                 ModelField = self.form_model._meta.get_field_by_name(
                     field_name
                 )[0]
-                value = ModelField.auto_submit_default
+                # TODO: should we warn if the attribute doesn't exist?
+                value = getattr(ModelField, 'auto_submit_default', None)
             setattr(self.object, field_name, value)
 
     def has_timeout(self):
