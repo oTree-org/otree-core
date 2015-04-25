@@ -484,10 +484,6 @@ class InGameWaitPageMixin(object):
     """
 
     def dispatch(self, request, *args, **kwargs):
-        '''this is actually for sequence pages only, because of
-        the _redirect_to_page_the_user_should_be_on()
-
-        '''
         if self.wait_for_all_groups:
             self._group_or_subsession = self.subsession
         else:
@@ -534,10 +530,15 @@ class InGameWaitPageMixin(object):
                         # timeout page?
                         # we could instead make this request the current page
                         # URL, but it's different for each player
+
+                        participant_pk_set = set([
+                            p.participant.pk
+                            for p in self._group_or_subsession.player_set.all()
+                        ])
+
                         otree.timeout.tasks.ensure_pages_visited.apply_async(
                             kwargs={
-                                'participant_pk_set':
-                                    self._ids_for_this_wait_page(),
+                                'participant_pk_set': participant_pk_set,
                                 'wait_page_index': self._index_in_pages,
                             },
                             countdown=10,
@@ -711,7 +712,8 @@ class FormPageMixin(object):
                 return self.form_invalid(form)
         self.before_next_page()
         self._increment_index_in_pages()
-        return self._redirect_to_page_the_user_should_be_on()
+        resp = self._redirect_to_page_the_user_should_be_on()
+        return resp
 
     def poll_url(self):
         '''called from template. can't start with underscore because used
