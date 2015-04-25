@@ -49,18 +49,27 @@ class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
 
 class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin,
                                GenericWaitPageMixin, vanilla.View):
-    """This is visited after Initialize, to make sure the player has a group
-    the player can be assigned at any time, but this is a safeguard,
-    and therefore should be at the beginning of each subsession.
-    Should it instead be called after InitializeParticipant?
-    Someday, we might want to shuffle players dynamically,
-    e.g. based on the results of the past game.
+    """
+    In "group by arrival time",
+    we wait until enough players have arrived to form a group,
+    then they all start at the same time.
+
+    It would be bad if some players started before others
+
+    The exception is if players_per_group = None.
+    Then the players should be preassigned, and start right away.
+
+    If we're not grouping by arrival time
+
     """
     name_in_url = 'shared'
 
     def _is_ready(self):
         if bool(self.group):
-            return True
+            return not self.group._is_missing_players
+        # if grouping by arrival time,
+        # and the player has not yet been assigned to a group,
+        # we assign them.
         elif self.session.session_type['group_by_arrival_time']:
             with lock_on_this_code_path():
                 if self.subsession.round_number == 1:
@@ -76,10 +85,16 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin,
                     if len(group_players) == group_quota:
                         open_group._is_missing_players = False
                         group_size_obj.delete()
-                    open_group.save()
+                        open_group.save()
+                        return True
+                    else:
+                        open_group.save()
+                        return False
                 else:
                     self.subsession._create_groups()
-            return True
+                    return True
+        # if not grouping by arrival time, but the session was just created
+        # and the code to assign to groups has not executed yet
         return False
 
     def body_text(self):

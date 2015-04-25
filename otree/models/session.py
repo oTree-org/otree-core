@@ -227,7 +227,17 @@ class Session(ModelWithVars):
 
     def _create_groups_and_initialize(self):
         for subsession in self.get_subsessions():
-            if self.session_type['group_by_arrival_time']:
+            # if ppg is None, then the arrival time doesn't matter because
+            # everyone is assigned to one big group.
+            # otherwise, even in single-player games, you would have to wait
+            # for other players to arrive
+            # the drawback of this approach is that id_in_group is
+            # predetermined, rather than by arrival time.
+            # alternative design:
+            # instead of checking ppg, we could also check if the game
+            # contains a wait page
+            if (self.session_type['group_by_arrival_time'] and
+                subsession._Constants.players_per_group != None):
                 if subsession.round_number == 1:
                     subsession._set_players_per_group_list()
                 subsession._create_empty_groups()
