@@ -63,6 +63,11 @@ from otree.models_concrete import (
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
+NO_PARTICIPANTS_LEFT_MSG = (
+    "No Participant objects left in this session "
+    "to assign to new visitor."
+)
+
 
 def get_app_name(request):
     return otree.common_internal.get_app_name_from_import_path(
@@ -859,10 +864,8 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
                         )
                     )[0]
                 except IndexError:
-                    return HttpResponseNotFound(
-                        "No Player objects left in the database "
-                        "to assign to new visitor."
-                    )
+                    return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
+
             self.set_external_params_on_participant(participant)
             # 2014-10-17: needs to be here even if it's also set in
             # the next view to prevent race conditions

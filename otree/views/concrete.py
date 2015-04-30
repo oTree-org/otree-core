@@ -27,7 +27,8 @@ import otree.views.admin
 import otree.common_internal
 from otree.views.abstract import (
     NonSequenceUrlMixin, OTreeMixin, AssignVisitorToOpenSessionBase,
-    GenericWaitPageMixin, FormPageOrWaitPageMixin, PlayerMixin
+    GenericWaitPageMixin, FormPageOrWaitPageMixin, PlayerMixin,
+    NO_PARTICIPANTS_LEFT_MSG
 )
 from otree.models_concrete import GroupSize
 
@@ -270,10 +271,7 @@ class MTurkStart(vanilla.View):
                         )
                     )[0]
                 except IndexError:
-                    return HttpResponseNotFound(
-                        "No Player objects left in the database "
-                        "to assign to new visitor."
-                    )
+                    return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
 
             # 2014-10-17: needs to be here even if it's also set in
             # the next view to prevent race conditions
@@ -309,10 +307,7 @@ class JoinSessionAnonymously(vanilla.View):
                     )
                 )[0]
             except IndexError:
-                return HttpResponseNotFound(
-                    "No Player objects left in the database "
-                    "to assign to new visitor."
-                )
+                return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
 
             # 2014-10-17: needs to be here even if it's also set in
             # the next view to prevent race conditions
