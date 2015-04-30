@@ -61,7 +61,7 @@ def augment_settings(settings):
 
     new_template_dirs = collapse_to_unique_list(
         [
-            os.path.join(settings['BASE_DIR'], 'templates/')
+            os.path.join(settings['BASE_DIR'], '_templates/')
         ],
         settings.get('TEMPLATE_DIRS')
     )
@@ -69,7 +69,7 @@ def augment_settings(settings):
     new_staticfiles_dirs = collapse_to_unique_list(
         settings.get('STATICFILES_DIRS'),
         [
-            os.path.join(settings['BASE_DIR'], 'static')
+            os.path.join(settings['BASE_DIR'], '_static')
         ]
     )
 
