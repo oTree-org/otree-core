@@ -61,7 +61,11 @@ def augment_settings(settings):
 
     new_template_dirs = collapse_to_unique_list(
         [
-            os.path.join(settings['BASE_DIR'], '_templates/')
+            os.path.join(settings['BASE_DIR'], '_templates/'),
+
+            # 2015-5-2: 'templates' is deprecated in favor of '_templates'
+            # remove it at some point
+            os.path.join(settings['BASE_DIR'], 'templates/')
         ],
         settings.get('TEMPLATE_DIRS')
     )
@@ -69,7 +73,11 @@ def augment_settings(settings):
     new_staticfiles_dirs = collapse_to_unique_list(
         settings.get('STATICFILES_DIRS'),
         [
-            os.path.join(settings['BASE_DIR'], '_static')
+            os.path.join(settings['BASE_DIR'], '_static'),
+
+            # 2015-5-2: 'static' is deprecated in favor of '_static'
+            # remove it at some point
+            os.path.join(settings['BASE_DIR'], 'static'),
         ]
     )
 
