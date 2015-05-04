@@ -13,9 +13,8 @@ from otree.common import Currency as c, currency_range, safe_json
 
 author = 'Your name here'
 
-# The description of the app support HTML tags
 doc = """
-Your <a href="http://otree.org" target="_blank">oTree</a> app description
+Your app description
 """
 
 class Constants:
