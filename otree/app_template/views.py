@@ -8,13 +8,6 @@ from ._builtin import Page, WaitPage
 from .models import Constants
 
 
-def vars_for_all_templates(self):
-    return {
-        # example:
-        #'my_field': self.player.my_field,
-    }
-
-
 class MyPage(Page):
 
     form_model = models.Player

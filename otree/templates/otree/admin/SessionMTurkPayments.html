@@ -124,27 +124,27 @@ $(function() {
                 <div class="checkbox-inline">
                     <label>
                         {% if not p.mturk_reward_paid %}
-                        <input name="reward" data-value="{{ fixed_pay.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}">
+                        <input name="reward" data-value="{{ participation_fee.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}">
                         {% else %}
-                        <input name="reward" data-value="{{ fixed_pay.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}" disabled>
+                        <input name="reward" data-value="{{ participation_fee.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}" disabled>
                         {% endif %}
                     </label>
                 </div> 
-                {{ fixed_pay }}
+                {{ participation_fee }}
             </td>
             <td>
                 <div class="checkbox-inline">
                     <label>
                         {% if not p.mturk_bonus_paid %}
-                        <input name="bonus" data-value="{{ p.payoff_from_subsessions_in_real_world_currency.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}">
+                        <input name="bonus" data-value="{{ p.payoff_in_real_world_currency.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}">
                         {% else %}
-                        <input name="bonus" data-value="{{ p.payoff_from_subsessions_in_real_world_currency.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}" disabled>
+                        <input name="bonus" data-value="{{ p.payoff_in_real_world_currency.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}" disabled>
                         {% endif %}
                     </label>
                 </div> 
-                {{ p.payoff_from_subsessions_in_real_world_currency }}
+                {{ p.payoff_in_real_world_currency }}
             </td>
-            <td>{{ p.total_pay_display }}</td>
+            <td>{{ p.money_to_pay_display }}</td>
         </tr>
         {% endfor %}
     </table>

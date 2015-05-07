@@ -100,7 +100,7 @@ class Command(BaseCommand):
         total_money_paid = 0
         for participant in self.session.get_participants():
             bonus = (
-                participant.payoff_from_subsessions().to_real_world_currency()
+                participant.payoff.to_real_world_currency()
             )
             if bonus is None:
                 bonus = 0

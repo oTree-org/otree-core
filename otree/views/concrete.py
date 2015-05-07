@@ -312,6 +312,9 @@ class JoinSessionAnonymously(vanilla.View):
             # 2014-10-17: needs to be here even if it's also set in
             # the next view to prevent race conditions
             participant.visited = True
+            participant.label = (
+                self.request.GET.get('participant_label') or participant.label
+            )
             participant.save()
         return HttpResponseRedirect(participant._start_url())
 
