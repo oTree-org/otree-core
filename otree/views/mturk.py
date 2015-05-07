@@ -152,7 +152,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             'title': mturk_hit_settings['title'],
             'description': mturk_hit_settings['description'],
             'keywords': ', '.join(mturk_hit_settings['keywords']),
-            'money_reward': self.session.fixed_pay,
+            'money_reward': self.session.participation_fee,
             'assignments': len(self.session.get_participants()),
             'in_sandbox': settings.DEBUG,
             'minutes_allotted_per_assignment': (
@@ -292,7 +292,7 @@ class PayMTurk(vanilla.View):
             ]
             for p in participants_bonus:
                 bonus = boto.mturk.price.Price(
-                    amount=p.payoff_from_subsessions().to_number()
+                    amount=p.payoff.to_number()
                 )
                 mturk_connection.grant_bonus(
                     p.mturk_worker_id, p.mturk_assignment_id,

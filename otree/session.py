@@ -49,7 +49,9 @@ def validate_session_type(session_type):
     required_keys = {
         'name',
         'app_sequence',
-        'fixed_pay',
+        # TODO: fixed_pay is deprecated as of 2015-05-07,
+        # in favor of participation_fee. make this required at some point.
+        # 'participation_fee'
         'num_bots',
         'display_name',
         'real_world_currency_per_point',
@@ -125,7 +127,11 @@ def create_session(session_type_name, label='', num_participants=None,
         )
     session = Session.objects.create(
         session_type=session_type,
-        label=label, fixed_pay=session_type['fixed_pay'],
+        label=label,
+        # FIXME: fixed_pay is deprecated on 2015-5-7, remove it eventually
+        participation_fee=(
+            session_type.get('participation_fee') or session_type.get('fixed_pay')
+        ),
         special_category=special_category,
         real_world_currency_per_point=(
             session_type['real_world_currency_per_point']

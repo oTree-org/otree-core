@@ -49,7 +49,7 @@ def get_all_fields(Model, for_export=False):
             'time_started',
             'mturk_HITId',
             'mturk_HITGroupId',
-            'fixed_pay',
+            'participation_fee',
             'comment',
             'special_category',
         ]
@@ -488,7 +488,7 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
         'real_world_currency_per_point',
         'time_scheduled',
         'archived',
-        'fixed_pay',
+        'participation_fee',
         'comment',
     ]
 
@@ -497,7 +497,7 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
             EditSessionProperties, self
         ).get_form(data, files, ** kwargs)
         if self.session.mturk_HITId:
-            form.fields['fixed_pay'].widget.attrs['readonly'] = 'True'
+            form.fields['participation_fee'].widget.attrs['readonly'] = 'True'
         return form
 
     @classmethod
@@ -537,7 +537,7 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
         mean_payment = 0.0
         if participants:
             total_payments = sum(
-                participant.total_pay() or c(0) for participant in participants
+                part.money_to_pay() or c(0) for part in participants
             )
             mean_payment = total_payments / len(participants)
 
@@ -546,7 +546,7 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
             'participants': participants,
             'total_payments': total_payments,
             'mean_payment': mean_payment,
-            'fixed_pay': session.fixed_pay,
+            'participation_fee': session.participation_fee,
         })
 
         return context

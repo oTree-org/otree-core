@@ -155,7 +155,7 @@ class Session(ModelWithVars):
     )
 
     # todo: change this to money
-    fixed_pay = models.RealWorldCurrencyField(doc="""Show-up fee""")
+    participation_fee = models.RealWorldCurrencyField(doc="""Show-up fee""")
 
     comment = models.TextField(blank=True)
 
@@ -220,7 +220,7 @@ class Session(ModelWithVars):
 
     def payments_ready(self):
         for participants in self.get_participants():
-            if not participants.payoff_from_subsessions_is_complete():
+            if not participants.payoff_is_complete():
                 return False
         return True
     payments_ready.boolean = True
@@ -547,36 +547,39 @@ class Participant(SessionUser):
     def get_players(self):
         return self.get_users()
 
-    def payoff_from_subsessions_in_real_world_currency(self):
-        return self.payoff_from_subsessions().to_real_world_currency(
+    @property
+    def payoff(self):
+        return sum(player.payoff or c(0) for player in self.get_players())
+
+    def payoff_in_real_world_currency(self):
+        return self.payoff.to_real_world_currency(
             self.session
         )
 
     def payoff_from_subsessions(self):
+        """Deprecated on 2015-05-07.
+        Remove at some point.
         """
-        convert to payment currency, since often this will need to be
-        printed on the results page But then again, it's easy to just do the
-        multiplication oneself.
+        return self.payoff
 
-        """
-        payoff = sum(player.payoff or c(0) for player in self.get_players())
-        return payoff
-
-    def total_pay(self):
+    def money_to_pay(self):
         return (
-            self.session.fixed_pay +
-            self.payoff_from_subsessions().to_real_world_currency(self.session)
+            self.session.participation_fee +
+            self.payoff.to_real_world_currency(self.session)
         )
 
-    def payoff_from_subsessions_is_complete(self):
+    def total_pay(self):
+        return self.money_to_pay()
+
+    def payoff_is_complete(self):
         return all(p.payoff is not None for p in self.get_players())
 
-    def total_pay_display(self):
-        complete = self.payoff_from_subsessions_is_complete()
-        total_pay = self.total_pay()  # .to_real_world_currency(self.session)
+    def money_to_pay_display(self):
+        complete = self.payoff_is_complete()
+        money_to_pay = self.money_to_pay()
         if complete:
-            return total_pay
-        return u'{} (incomplete)'.format(total_pay)
+            return money_to_pay
+        return u'{} (incomplete)'.format(money_to_pay)
 
     def name(self):
         return id_label_name(self.pk, self.label)
