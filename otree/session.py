@@ -130,7 +130,8 @@ def create_session(session_type_name, label='', num_participants=None,
         label=label,
         # FIXME: fixed_pay is deprecated on 2015-5-7, remove it eventually
         participation_fee=(
-            session_type.get('participation_fee') or session_type.get('fixed_pay')
+            session_type.get('participation_fee')
+            or session_type.get('fixed_pay')
         ),
         special_category=special_category,
         real_world_currency_per_point=(
