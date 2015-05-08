@@ -1,4 +1,4 @@
-{% extends "otree/BaseBuiltIn.html" %}
+{% extends "otree/BaseSite.html" %}
 {% load otree_tags floppyforms %}
 
 {% block title %}
@@ -8,12 +8,6 @@ Dashboard for session
     (demo)
 {% endif %}
 {% endblock %}
-
-{% block content_at_top_of_body %}
-{{ block.super }}
-{% include 'otree/TopMenu.html' %}
-{% endblock %}
-
 {% block menus %}
 <nav class="navbar">
     <div class="container-fluid">

@@ -1,4 +1,4 @@
-{% extends 'otree/BaseBuiltIn.html' %}
+{% extends 'otree/BaseExperiment.html' %}
 {% load i18n %}
 {% load staticfiles %}
 {% block head_title %}{{ view.title_text }}{% endblock %}
@@ -46,7 +46,7 @@
 {% endblock %}
 {% block internal_content_at_bottom_of_body %}
     {{ block.super }}
-    {% include 'otree/PollServerThenRedirect.html' %}
+    {% include 'otree/includes/PollServerThenRedirect.html' %}
 {% endblock %}
 
 {# never show footer here #}

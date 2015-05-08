@@ -38,7 +38,7 @@ class NextButtonNode(template.Node):
     def render(self, context):
         context.update({})
         try:
-            return render_to_string('otree/NextButton.html', context)
+            return render_to_string('otree/tags/NextButton.html', context)
         finally:
             context.pop()
 
