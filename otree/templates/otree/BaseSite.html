@@ -12,11 +12,6 @@
     </div>
     {% block menus %}{% endblock %}
     <div>
-
-        {% if view.has_timeout %}
-            {% include 'otree/includes/TimeLimit.html' with form_element_id="form" %}
-        {% endif %}
-
         {% if form.errors %}
             <div class="alert alert-danger">
             {% blocktrans %}Please fix the errors in the form.{% endblocktrans %}
