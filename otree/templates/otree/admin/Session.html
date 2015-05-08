@@ -13,22 +13,22 @@ Dashboard for session
     <div class="container-fluid">
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav nav-pills nav-justified">
-                <li role="presentation" class="{% active_page request 'session_description' %}">
+                <li role="presentation" class="{% active_page request 'session_description' session.pk %}">
                 <a href="{% url 'session_description' session.pk %}"><span class="glyphicon glyphicon-pushpin"></span> Description</a>
                 </li>
-                <li role="presentation" class="{% active_page request 'session_start_links' %}">
+                <li role="presentation" class="{% active_page request 'session_start_links' session.pk %}">
                 <a href="{% url 'session_start_links' session.pk %}"><span class="glyphicon glyphicon-link"></span> Links</a>
                 </li>
-                <li role="presentation" class="{% active_page request 'session_edit' %}">
+                <li role="presentation" class="{% active_page request 'session_edit' session.pk %}">
                 <a href="{% url 'session_edit' session.pk %}"><span class="glyphicon glyphicon-pencil"></span> Edit
                 </a>
                 </li>
-                <li role="presentation" class="{% active_page request 'session_monitor' %}">
+                <li role="presentation" class="{% active_page request 'session_monitor' session.pk %}">
                 <a href="{% url 'session_monitor' session.pk %}"><span class="glyphicon glyphicon-eye-open"></span> Monitor</a>
                 </li>
-                <li role="presentation" class="{% active_page request 'session_results' %}">
+                <li role="presentation" class="{% active_page request 'session_results' session.pk %}">
                 <a href="{% url 'session_results' session.pk %}"><span class="glyphicon glyphicon-list-alt"></span> Results</a></li>
-                <li role="presentation" class="{% active_page request 'session_payments' %}">
+                <li role="presentation" class="{% active_page request 'session_payments' session.pk %}">
                 <a href="{% url 'session_payments' session.pk %}"><span class="glyphicon glyphicon-usd"></span> Payments</a>
                 </li>
                 {% if is_demo %}
@@ -38,7 +38,7 @@ Dashboard for session
                 </a>
                 </li>
                 {% else %}
-                <li role="presentation" class="{% active_page request 'session_create_hit' %}">
+                <li role="presentation" class="{% active_page request 'session_create_hit' session.pk %}">
                 <a href="{% url 'session_create_hit' session.pk %}"><span class="glyphicon glyphicon-cloud"></span> MTurk</a>
                 </li>
                 {% endif %}
