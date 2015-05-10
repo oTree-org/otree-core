@@ -117,15 +117,19 @@ def perfect_strangers(subssn):
 
 @match_func("partners")
 def partners(subssn):
-    p_subssn = subssn.in_previous_rounds()[-1]
-    return players_x_groups(p_subssn)
+    return players_x_groups(subssn)
 
 
 @match_func("reversed", "players_reversed")
 def players_reversed(subssn):
-    p_subssn = subssn.in_previous_rounds()[-1]
-    reversed_players_x_groups = []
-    for players in players_x_groups(p_subssn):
-        players_reversed = list(reversed(players))
-        reversed_players_x_groups.append(players_reversed)
-    return tuple(reversed_players_x_groups)
+
+    def reverse_group(g):
+        return list(reversed(g))
+
+    p_subssn = players_x_groups(subssn)
+    rev_p = map(reverse_group, p_subssn)
+
+    import ipdb; ipdb.set_trace()
+
+    return tuple(rev_p)
+
