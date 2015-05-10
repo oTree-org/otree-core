@@ -84,24 +84,15 @@ def players_x_groups(subssn):
 
 @match_func("perfect_strangers", "round_robin")
 def round_robin(subssn):
-    """Try to generate every group of players with a lesser probabilty to mixe
-    the same players twice
+    """Try to generate every group of players with a lesser probabilty to mix
+    the same players twice.
+
+    **Warning:** This is slow, really slow. Seriously, it is very slow.
 
     """
     # all available players
     all_players = tuple(
         itertools.chain.from_iterable(players_x_groups(subssn)))
-
-    def intersect_any(players, already_choiced):
-        """Return true if players groups already exists in any already_choiced
-        list of groups
-
-        """
-        players_set = frozenset(players_ids(players))
-        all_ready_choiced = map(
-            players_ids,
-            [plys for plys in already_choiced if len(plys) == len(players)])
-        return any(map(players_set.intersection, already_choiced))
 
     def players_ids(players):
         """Generate a unique id as tuple for a group of players"""
@@ -118,26 +109,29 @@ def round_robin(subssn):
     # this is subroutine for select the less frequent group
     prev_round_lfreq = {}  # lesser frequency for a given size
     prev_round_lfreq_players = {}  # the players with the lfreq for given size
-    def get_less_frequent(players, size, already_choiced):
-        """Get the most infrequent combintation of players"""
-        for comb in itertools.combinations(players, size):
-            if not intersect_any(players, already_choiced):
-                ply_ids = players_ids(comb)
-                freq = prev_round_buff[size][ply_ids]
-                if freq == 0:
-                    return players
-                elif size not in prev_round_lfreq:
-                    prev_round_lfreq[size] = freq
-                    prev_round_lfreq_players[size] = comb
-                elif freq < prev_round_lfreq[size]:
-                    prev_round_lfreq[size] = freq
-                    prev_round_lfreq_players[size] = comb
 
+    def get_less_frequent(players, size):
+        """Get the most infrequent combintation of players"""
+
+        for comb in itertools.combinations(players, size):
+            ply_ids = players_ids(comb)
+            freq = prev_round_buff[size][ply_ids]
+            if freq == 0:
+                return comb
+            elif size not in prev_round_lfreq:
+                prev_round_lfreq[size] = freq
+                prev_round_lfreq_players[size] = comb
+            elif freq < prev_round_lfreq[size]:
+                prev_round_lfreq[size] = freq
+                prev_round_lfreq_players[size] = comb
         return prev_round_lfreq_players[size]
 
     groups = []
     for ppg in subssn._get_players_per_group_list():
-        groups.append(get_less_frequent(all_players, ppg, groups))
+        used_players = tuple(itertools.chain(*groups))
+        candidates = [ply for ply in all_players if ply not in used_players]
+        group = get_less_frequent(candidates, ppg)
+        groups.append(group)
 
     return tuple(groups)
 
@@ -161,4 +155,3 @@ def players_reversed(subssn):
     rev_p = map(reverse_group, p_subssn)
 
     return tuple(rev_p)
-
