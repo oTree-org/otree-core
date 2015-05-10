@@ -129,7 +129,5 @@ def players_reversed(subssn):
     p_subssn = players_x_groups(subssn)
     rev_p = map(reverse_group, p_subssn)
 
-    import ipdb; ipdb.set_trace()
-
     return tuple(rev_p)
 
