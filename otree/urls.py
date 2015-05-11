@@ -105,7 +105,7 @@ def augment_urlpatterns(urlpatterns):
 
     urlpatterns += urls.patterns(
         '',
-        urls.url(r'^$', RedirectView.as_view(url='/demo'), name='demo'),
+        urls.url(r'^$', RedirectView.as_view(url='/demo')),
         urls.url(
             r'^accounts/login/$',
             'django.contrib.auth.views.login',
