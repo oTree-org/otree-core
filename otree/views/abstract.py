@@ -926,7 +926,6 @@ class AdminSessionPageMixin(GetFloppyFormClassMixin):
         default_session = global_singleton.default_session
         context.update({'session': self.session,
                         'is_demo': self.is_demo,
-                        'has_top_menu': True,
                         'is_debug': settings.DEBUG,
                         'default_session': default_session})
         return context

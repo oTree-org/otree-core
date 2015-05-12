@@ -41,7 +41,7 @@ class CheckAllFieldsAreRenderedTests(FormFieldTestMixin, TestCase):
 
         form = OnlyNameForm(instance=self.simple_player)
         with self.assertTemplateNotUsed(
-                template_name='otree/forms/_formfield_is_missing_error.html'):
+                template_name='otree/includes/_formfield_is_missing_error.html'):
             result = self.render(
                 '''
                 {% pageform form using %}
@@ -55,7 +55,7 @@ class CheckAllFieldsAreRenderedTests(FormFieldTestMixin, TestCase):
 
         form = SimplePlayerForm(instance=self.simple_player)
         with self.assertTemplateNotUsed(
-                'otree/forms/_formfield_is_missing_error.html'):
+                'otree/includes/_formfield_is_missing_error.html'):
             result = self.render(
                 '''
                 {% pageform form using %}
@@ -68,12 +68,12 @@ class CheckAllFieldsAreRenderedTests(FormFieldTestMixin, TestCase):
     def test_rendering_complains_when_not_all_fields_are_rendered(self):
         form = SimplePlayerForm(instance=self.simple_player)
         with self.assertTemplateUsed(
-                'otree/forms/_formfield_is_missing_error.html'):
+                'otree/includes/_formfield_is_missing_error.html'):
             tpl = (
                 '{% pageform form using %}'
                 '{% formfield player.name %}'
                 '{% endpageform %}'
-                '{% include "otree/debug_info.html" %}'
+                '{% include "otree/includes/debug_info.html" %}'
             )
             self.render(
                 tpl, context={'form': form, 'player': self.simple_player}

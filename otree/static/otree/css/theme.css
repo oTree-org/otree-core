@@ -51,3 +51,14 @@ input[type=number] { -moz-appearance : textfield; }
 .slider [data-slider-value] {
     min-width: 5em;
 }
+.asteriskField {
+    display: none;
+}
+
+.radio {
+    margin-top:0px;
+}
+.help-block {
+    margin-top:5px;
+    margin-bottom:5px;
+}
