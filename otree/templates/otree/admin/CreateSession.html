@@ -1,4 +1,4 @@
-{% extends "otree/BaseBuiltIn.html" %}
+{% extends "otree/BaseSite.html" %}
 {% load otree_tags floppyforms %}
 
 {% block title %}
@@ -13,6 +13,6 @@
 
     {% next_button %}
 
-    {% include 'otree/SessionInfo.html' %}
+    {% include 'otree/includes/SessionInfo.html' %}
 
 {% endblock %}

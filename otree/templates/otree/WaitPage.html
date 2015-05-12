@@ -1,11 +1,10 @@
-{% extends 'otree/BaseBuiltIn.html' %}
+{% extends 'otree/Base.html' %}
 {% load i18n %}
 {% load staticfiles %}
 {% block head_title %}{{ view.title_text }}{% endblock %}
 
 
-{% block content %}
-
+{% block content_main %}
     <style>
         body {
             background-color: #c0c0c0;
@@ -29,6 +28,7 @@
         }
     </style>
 
+<div class="container" style='max-width:970px'>
     <div class="panel panel-primary">
         <div class="panel-heading">
             <h3 class="panel-title">{{ view.title_text }}</h3>
@@ -43,10 +43,14 @@
             </div>
         </div>
     </div>
+    {% if view.is_debug %}
+        {% include 'otree/includes/debug_info.html' %}
+    {% endif %}
+</div>
 {% endblock %}
 {% block internal_content_at_bottom_of_body %}
     {{ block.super }}
-    {% include 'otree/PollServerThenRedirect.html' %}
+    {% include 'otree/includes/PollServerThenRedirect.html' %}
 {% endblock %}
 
 {# never show footer here #}

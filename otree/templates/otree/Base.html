@@ -1,0 +1,39 @@
+{% load staticfiles %}
+{% load i18n %}
+{% load floppyforms otree_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>{% block head_title %}{% block title %}{% endblock %}{% endblock %}</title>
+
+        <meta name="description" content="otree, game theory{% for seo in SEO %}, {{seo}}{% endfor %}{% for seo in page_seo %}, {{seo}}{% endfor %}">
+        <meta name="keywords" content="otree, game theory{% for seo in SEO %}, {{seo}}{% endfor %}{% for seo in page_seo %}, {{seo}}{% endfor %}">
+
+        {% block head_content %}
+            {% include 'otree/includes/HeadContent.html' %}
+        {% endblock %}
+        {% block custom_styles %}{% endblock %}
+        {% block custom_scripts %}{% endblock %}
+    </head>
+    <body>
+        {% block content_at_top_of_body %}{% endblock %}
+        {% block content_main %}{% endblock %}
+
+        {% block internal_content_at_bottom_of_body %}
+            {% if view.is_otree_dot_org %}
+                {% include "otree/includes/OtreeDotOrgFeedbackWidget.html" %}
+            {% endif %}
+        {% endblock %}
+        {% block content_at_bottom_of_body %}{% endblock %}
+        {% block page_footer  %}
+            {% if PAGE_FOOTER %}
+            <footer>
+                <div class="text-center">
+                    {{PAGE_FOOTER|safe}}
+                </div>
+            </footer>
+            {% endif %}
+        {% endblock page_footer %}
+    </body>
+</html>

@@ -73,7 +73,7 @@ class MarkFieldAsRenderedNode(Node):
 
 
 class FormFieldNode(Node):
-    default_template = get_template('otree/forms/_formfield.html')
+    default_template = get_template('otree/tags/_formfield.html')
 
     def __init__(self, field_variable_name, with_arguments):
         self.field_variable_name = field_variable_name

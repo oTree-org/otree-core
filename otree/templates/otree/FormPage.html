@@ -1,8 +1,7 @@
-{% extends "otree/BaseBuiltIn.html" %}
+{% extends "otree/BaseExperiment.html" %}
 {% load staticfiles %}
 
 {% block internal_content_at_bottom_of_body %}
     {{ block.super }}
-    {% include 'otree/PollServerThenRedirect.html' %}
+    {% include 'otree/includes/PollServerThenRedirect.html' %}
 {% endblock %}
-
