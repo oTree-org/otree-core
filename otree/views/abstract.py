@@ -197,6 +197,9 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         """
         Even though we only use PlayerClass in load_objects,
         we use {Group/Subsession}Class elsewhere.
+
+        2015-05-07: shouldn't this go in oTreeMixin?
+        because used by all views, not just sequence
         """
 
         # this is the most reliable way to get the app name,

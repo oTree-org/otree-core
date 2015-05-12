@@ -49,16 +49,6 @@ class Player(otree.models.BasePlayer):
         """Returns other player in group. Only valid for 2-player groups."""
         return self.get_others_in_group()[0]
 
-    # example field
-    my_field = models.CurrencyField(
-        min=c(0),
-        max=c(10),
-        doc="""
-        Description of this field, for documentation
-        """
-    )
-
-
     def role(self):
         # you can make this depend of self.id_in_group
         return ''
