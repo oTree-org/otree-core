@@ -59,26 +59,34 @@ def augment_settings(settings):
 
     )
 
-    new_template_dirs = collapse_to_unique_list(
-        [
-            os.path.join(settings['BASE_DIR'], '_templates/'),
+    template_dir = os.path.join(settings['BASE_DIR'], 'templates')
+    if os.path.exists(template_dir):
+        additional_template_dirs = [template_dir]
 
-            # 2015-5-2: 'templates' is deprecated in favor of '_templates'
-            # remove it at some point
-            os.path.join(settings['BASE_DIR'], 'templates/')
-        ],
-        settings.get('TEMPLATE_DIRS')
+    _template_dir = os.path.join(settings['BASE_DIR'], '_templates')
+    if os.path.exists(_template_dir):
+        additional_template_dirs = [_template_dir]
+
+    new_template_dirs = collapse_to_unique_list(
+        settings.get('TEMPLATE_DIRS'),
+        # 2015-5-2: 'templates' is deprecated in favor of '_templates'
+        # remove it at some point
+        additional_template_dirs,
     )
+
+    static_dir = os.path.join(settings['BASE_DIR'], 'static')
+    if os.path.exists(static_dir):
+        additional_static_dirs = [static_dir]
+
+    _static_dir = os.path.join(settings['BASE_DIR'], '_static')
+    if os.path.exists(_static_dir):
+        additional_static_dirs = [_static_dir]
 
     new_staticfiles_dirs = collapse_to_unique_list(
         settings.get('STATICFILES_DIRS'),
-        [
-            os.path.join(settings['BASE_DIR'], '_static'),
-
-            # 2015-5-2: 'static' is deprecated in favor of '_static'
-            # remove it at some point
-            os.path.join(settings['BASE_DIR'], 'static'),
-        ]
+        # 2015-5-2: 'static' is deprecated in favor of '_static'
+        # remove it at some point
+        additional_static_dirs,
     )
 
     new_middleware_classes = collapse_to_unique_list(
