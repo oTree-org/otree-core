@@ -215,6 +215,4 @@ def reraise(original):
     conversor = constants.exceptions_conversors.get(
         original_cls, lambda err: err)
     new = conversor(original)
-    six.reraise(utils.OperationalError, new_err, sys.exc_traceback)
-
-
+    six.reraise(utils.OperationalError, new, sys.exc_traceback)

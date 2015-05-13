@@ -6,10 +6,6 @@
 # IMPORTS
 # =============================================================================
 
-import sys
-
-import six
-
 from django.db import utils
 
 

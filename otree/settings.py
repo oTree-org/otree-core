@@ -75,6 +75,7 @@ def augment_settings(settings):
     )
 
     static_dir = os.path.join(settings['BASE_DIR'], 'static')
+    additional_static_dirs = []
     if os.path.exists(static_dir):
         additional_static_dirs = [static_dir]
 

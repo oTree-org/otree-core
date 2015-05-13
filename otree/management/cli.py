@@ -13,8 +13,6 @@ MANAGE_URL = (
 )
 
 
-
-
 def execute_from_command_line(arguments, script_file):
     # Workaround for windows. Celery (more precicely the billard library) will
     # complain if the script you are using to initialize celery does not end
