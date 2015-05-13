@@ -1,3 +1,22 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
+import sys
+
+import six
+
+from django.db import utils
+
+
+# =============================================================================
+# CONSTANTS
+# =============================================================================
+
 SubsessionClass = 'SubsessionClass'
 GroupClass = 'GroupClass'
 PlayerClass = 'PlayerClass'
@@ -47,3 +66,9 @@ access_code_for_default_session = 'access_code_for_default_session'
 
 form_page_poll_interval_seconds = 10
 wait_page_poll_interval_seconds = 4
+
+exceptions_conversors = {
+    utils.OperationalError: lambda exception: utils.OperationalError(
+        "{} - Try resetting the database.".format(exception.message)
+    )
+}

@@ -1,14 +1,18 @@
 
 import os
+import sys
 import urllib
 import urlparse
 from os.path import dirname, join
+from collections import OrderedDict
 
+from django.db import utils
 from django.apps import apps
 from django.conf import settings
 from django.template.defaultfilters import title
 from django.utils.importlib import import_module
-from collections import OrderedDict
+
+import six
 
 from otree import constants
 
@@ -200,3 +204,17 @@ def min_players_multiple(players_per_group):
         return sum(ppg)
     # else, it's probably None
     return 1
+
+
+def reraise(original):
+    """Convert an exception in another type specified by
+    ``constants.exception_conversors``
+
+    """
+    original_cls = type(original)
+    conversor = constants.exceptions_conversors.get(
+        original_cls, lambda err: err)
+    new = conversor(original)
+    six.reraise(utils.OperationalError, new_err, sys.exc_traceback)
+
+
