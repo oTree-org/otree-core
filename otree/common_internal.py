@@ -216,3 +216,16 @@ def reraise(original):
         original_cls, lambda err: err)
     new = conversor(original)
     six.reraise(utils.OperationalError, new, sys.exc_traceback)
+
+
+def db_status_ok():
+    """Try to execute a simple select * for every model registered
+
+    """
+    import ipdb; ipdb.set_trace()
+    for Model in apps.get_models():
+        try:
+            Model.objects.all()
+        except Exception as err:
+            import ipdb; ipdb.set_trace()
+

@@ -9,6 +9,7 @@ from django.conf import settings
 from django.db.models import signals
 from django.utils.translation import ugettext_lazy as _
 
+from otree import common_internal
 from otree.models.session import StubModel, GlobalSingleton
 
 
