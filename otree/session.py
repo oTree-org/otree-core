@@ -88,6 +88,8 @@ def augment_session_type(session_type):
     new_session_type.update(session_type)
 
     # look up new_session_type
+    # 2015-05-14: why do we strip? the doc can have line breaks in the middle
+    # anyways
     new_session_type['doc'] = new_session_type['doc'].strip()
     validate_session_type(new_session_type)
     return new_session_type

@@ -17,7 +17,7 @@ from otree.models.session import Session
 from otree.session import (
     create_session, get_session_types_dict, get_session_types_list
 )
-
+import otree.session
 
 class DemoIndex(vanilla.TemplateView):
 
@@ -67,7 +67,7 @@ def ensure_enough_spare_sessions(session_type_name):
     # when multiple threads access at the same time.
     time.sleep(5)
 
-    DESIRED_SPARE_SESSIONS = 3
+    DESIRED_SPARE_SESSIONS = 2
 
     spare_sessions = Session.objects.filter(
         special_category=constants.session_special_category_demo,
@@ -118,13 +118,26 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.View):
     def _before_returning_wait_page(self):
         session_types = get_session_types_dict()
         try:
-            session_types[self.session_type_name]
+            session_type = session_types[self.session_type_name]
         except KeyError:
             msg = (
-                "Session type '{}' not found, or not enabled for demo"
+                "Session type '{}' not found"
             ).format(self.session_type_name)
             raise Http404(msg)
-
+        # check that it divides evenly
+        # need to check here so that the user knows upfront
+        session_lcm = otree.session.get_lcm(self.session_type_name)
+        num_participants = session_type['num_demo_participants']
+        if num_participants % session_lcm:
+            msg = (
+                'SessionType {}: Number of participants ({}) does not '
+                'divide evenly into group size ({})'
+            ).format(
+                self.session_type_name,
+                num_participants,
+                session_lcm
+            )
+            raise Http404(msg)
         t = threading.Thread(
             target=ensure_enough_spare_sessions,
             args=(self.session_type_name,)
