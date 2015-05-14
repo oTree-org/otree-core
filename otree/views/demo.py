@@ -18,6 +18,10 @@ from otree.session import (
     create_session, get_session_types_dict, get_session_types_list
 )
 
+# if it's debug mode, we should always generate a new session
+# because a bug might have been fixed
+# in production, we optimize for UX and quick loading
+DESIRED_SPARE_SESSIONS = 1 if settings.DEBUG else 3
 
 class DemoIndex(vanilla.TemplateView):
 
@@ -67,7 +71,7 @@ def ensure_enough_spare_sessions(session_type_name):
     # when multiple threads access at the same time.
     time.sleep(5)
 
-    DESIRED_SPARE_SESSIONS = 3
+
 
     spare_sessions = Session.objects.filter(
         special_category=constants.session_special_category_demo,
