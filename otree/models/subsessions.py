@@ -187,9 +187,6 @@ class BaseSubsession(models.Model):
         groups = []
         first_player_index = 0
 
-        # if players_per_group is an integer, then outer_loops == num_groups
-        # this is to enable apps with variable group sizes
-
         for group_size in self._get_players_per_group_list():
             groups.append(
                 players[first_player_index:first_player_index + group_size]
@@ -267,6 +264,9 @@ class BaseSubsession(models.Model):
             p.save()
         for g in self.get_groups():
             g.save()
+        self.save()
+        self.session.save()
+
 
     def _experimenter_pages(self):
         views_module = get_views_module(self._meta.app_label)
