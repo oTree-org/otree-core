@@ -6,7 +6,7 @@ import urlparse
 from os.path import dirname, join
 from collections import OrderedDict
 
-from django.db import utils
+from django.db import utils, connection
 from django.apps import apps
 from django.conf import settings
 from django.template.defaultfilters import title
@@ -218,14 +218,17 @@ def reraise(original):
     six.reraise(utils.OperationalError, new, sys.exc_traceback)
 
 
+def db_table_exists(table_name):
+    """Return True if a table already exists"""
+    return table_name in connection.introspection.table_names()
+
+
 def db_status_ok():
     """Try to execute a simple select * for every model registered
 
     """
-    import ipdb; ipdb.set_trace()
     for Model in apps.get_models():
-        try:
-            Model.objects.all()
-        except Exception as err:
-            import ipdb; ipdb.set_trace()
-
+        table_name = Model._meta.db_table
+        if not db_table_exists(table_name):
+            return False
+    return True
