@@ -6,19 +6,19 @@ import string
 
 from django.db import models
 from django.db.models.fields import related
-from django.db.models.base import ModelBase
 from django.core import exceptions
 from django.utils.translation import ugettext_lazy
 
 from handy.models import PickleField
 import easymoney
+from idmap.metaclass import SharedMemoryModelBase
 from idmap.models import SharedMemoryModel
 
 import otree.common
 from otree.common_internal import expand_choice_tuples
 
 
-class OTreeModelBase(ModelBase):
+class OTreeModelBase(SharedMemoryModelBase):
     def __new__(cls, name, bases, attrs):
         new_class = super(OTreeModelBase, cls).__new__(cls, name, bases, attrs)
 
