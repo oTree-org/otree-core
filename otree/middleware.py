@@ -5,22 +5,28 @@
 # IMPORTS
 # =============================================================================
 
-import sys
+from django.http import HttpResponseServerError
 
-import six
-
-from django.db import utils
+from otree import common_internal
 
 
 # =============================================================================
 # MIDDLEWARES
 # =============================================================================
 
-class OperationalErrorMidleware(object):
+class CheckDBMiddleware(object):
+
+    checked = False
+
+    def process_request(self, request):
+        if not CheckDBMiddleware.checked:
+            CheckDBMiddleware.checked = common_internal.db_status_ok()
+            if not CheckDBMiddleware.checked:
+                msg = "Your DB is not ready!!!, Try resetting the database."
+                return HttpResponseServerError(msg)
+
+
+class HumanErrorMiddleware(object):
 
     def process_exception(self, request, exception):
-        if isinstance(exception, utils.OperationalError):
-            new_err = utils.OperationalError(
-                "{} - Try resetting the database.".format(exception.message)
-            )
-            six.reraise(utils.OperationalError, new_err, sys.exc_traceback)
+        common_internal.reraise(exception)
