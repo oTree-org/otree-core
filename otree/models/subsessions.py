@@ -4,7 +4,7 @@
 import random
 
 from save_the_change.mixins import SaveTheChange
-from idmap.models import SharedMemoryModel
+
 
 from otree.db import models
 from otree.common_internal import get_views_module
@@ -16,7 +16,7 @@ from otree.models_concrete import GroupSize
 from otree import match_players
 
 
-class BaseSubsession(SaveTheChange, SharedMemoryModel):
+class BaseSubsession(SaveTheChange, models.Model):
     """Base class for all Subsessions.
 
     """
@@ -269,7 +269,6 @@ class BaseSubsession(SaveTheChange, SharedMemoryModel):
             g.save()
 
         # subsession.save() gets called in the parent method
-
 
     def _experimenter_pages(self):
         views_module = get_views_module(self._meta.app_label)

@@ -5,9 +5,9 @@ from save_the_change.mixins import SaveTheChange
 
 from otree.db import models
 from otree.common_internal import get_models_module, get_players
-from idmap.models import SharedMemoryModel
 
-class BaseGroup(SaveTheChange, SharedMemoryModel):
+
+class BaseGroup(SaveTheChange, models.Model):
     """Base class for all Groups.
     """
 

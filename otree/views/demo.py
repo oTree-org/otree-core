@@ -23,6 +23,7 @@ from otree.session import (
 # in production, we optimize for UX and quick loading
 DESIRED_SPARE_SESSIONS = 1 if settings.DEBUG else 3
 
+
 class DemoIndex(vanilla.TemplateView):
 
     template_name = 'otree/demo/index.html'
@@ -70,8 +71,6 @@ def ensure_enough_spare_sessions(session_type_name):
     # the session involves a lot of database I/O, which seems to cause locks
     # when multiple threads access at the same time.
     time.sleep(5)
-
-
 
     spare_sessions = Session.objects.filter(
         special_category=constants.session_special_category_demo,

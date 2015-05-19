@@ -12,6 +12,7 @@ from django.utils.translation import ugettext_lazy
 
 from handy.models import PickleField
 import easymoney
+from idmap.models import SharedMemoryModel
 
 import otree.common
 from otree.common_internal import expand_choice_tuples
@@ -41,11 +42,12 @@ def make_get_display(field):
     return get_FIELD_display
 
 
-class OTreeModel(models.Model):
+class OTreeModel(SharedMemoryModel):
     __metaclass__ = OTreeModelBase
 
     class Meta:
         abstract = True
+        
 Model = OTreeModel
 
 
