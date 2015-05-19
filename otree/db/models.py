@@ -47,7 +47,7 @@ class OTreeModel(SharedMemoryModel):
 
     class Meta:
         abstract = True
-        
+
 Model = OTreeModel
 
 

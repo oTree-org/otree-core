@@ -36,7 +36,8 @@ REQUIREMENTS = [
     'raven>=5.1.1',
     'requests>=2.5.3',
     'selenium>=2.41.0',
-    'xmltodict>=0.9.0'
+    'xmltodict>=0.9.0',
+    'django-idmap>=0.3.2'
 ]
 
 # allow setup.py to be run from any path
