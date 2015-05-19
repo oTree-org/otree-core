@@ -270,12 +270,6 @@ class BaseSubsession(SaveTheChange, SharedMemoryModel):
 
         # subsession.save() gets called in the parent method
 
-        # session also gets saved in the calling method,
-        # but subsession.session is a distinct Python object
-        # since we don't have an "identity map"
-        # so we need to save this separately
-
-
 
     def _experimenter_pages(self):
         views_module = get_views_module(self._meta.app_label)
