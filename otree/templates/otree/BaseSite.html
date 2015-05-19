@@ -1,6 +1,20 @@
 {% extends "otree/Base.html" %}
 {% load i18n %}
 {% load floppyforms otree_tags %}
+{% block head_content %}
+{{ block.super }}
+<script type="text/javascript" charset="utf-8">
+$(function(){
+    // if top menu link is clicked inside iframe
+    // we exit full mode
+    $("#top_menu a").click(function() {
+        if ( window.location !== window.parent.location ) {
+                window.parent.location.href = $(this).attr("href");
+        }
+    });
+});
+</script>
+{% endblock %}
 {% block content_at_top_of_body %}
 {{ block.super }}
 {% include 'otree/includes/TopMenu.html' %}
