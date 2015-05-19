@@ -5,10 +5,10 @@ from save_the_change.mixins import SaveTheChange
 
 from otree.db import models
 from otree.common_internal import get_models_module, get_players
+from idmap.models import SharedMemoryModel
 
-
-class BaseGroup(SaveTheChange, models.Model):
-    """Base class for all Groupes.
+class BaseGroup(SaveTheChange, SharedMemoryModel):
+    """Base class for all Groups.
     """
 
     _is_missing_players = models.BooleanField(default=False)

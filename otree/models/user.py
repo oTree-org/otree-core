@@ -5,12 +5,13 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 
 from save_the_change.mixins import SaveTheChange
+from idmap.models import SharedMemoryModel
 
 from otree.db import models
 from otree.models.session import Session, SessionExperimenter
 
 
-class User(SaveTheChange, models.Model):
+class User(SaveTheChange, SharedMemoryModel):
 
     _index_in_game_pages = models.PositiveIntegerField(
         default=0,

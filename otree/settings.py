@@ -51,6 +51,7 @@ def augment_settings(settings):
             'kombu.transport.django',
             'rest_framework',
             'sslserver',
+            'idmap',
         ],
 
 

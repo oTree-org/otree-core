@@ -147,7 +147,7 @@ class PlayerMixin(object):
         return self.PlayerClass
 
     def objects_to_save(self):
-        objs = [self._user, self._session_user, self.subsession.session]
+        objs = [self._user, self._session_user, self.session]
         if self.group:
             objs.append(self.group)
             objs.extend(self.group._players)
@@ -218,20 +218,9 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         if not self._is_experimenter:
             self.player = self._user
             self.group = self.player.group
-            if self.group:
-                self.group._player = self.player
 
         self.subsession = self._user.subsession
-        self.subsession._player = self.player
         self.session = self._user.session
-
-        # at this point, _session_user already exists, but we reassign this
-        # variable
-        # the reason is that if we don't do this, there will be
-        # self._session_user, and self._user._session_user, which will be 2
-        # separate queries, and thus changes made to 1 object will not be
-        # reflected in the other.
-        self._session_user = self._user._session_user
 
     @method_decorator(never_cache)
     @method_decorator(cache_control(must_revalidate=True, max_age=0,

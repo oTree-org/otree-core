@@ -14,7 +14,8 @@ from otree.common import Currency as c
 from otree.db import models
 from otree.models_concrete import SessionuserToUserLookup
 import contextlib
-
+from save_the_change.mixins import SaveTheChange
+from idmap.models import SharedMemoryModel
 
 class GlobalSingleton(models.Model):
     """object that can hold site-wide settings. There should only be one
@@ -60,9 +61,11 @@ class StubModel(models.Model):
 
     # TODO: move to otree.models_concrete
 
+def get_empty_dict():
+    return {}
 
-class ModelWithVars(models.Model):
-    vars = models.PickleField(default=lambda: {})
+class ModelWithVars(SharedMemoryModel):
+    vars = models.PickleField(default=get_empty_dict)
 
     class Meta:
         abstract = True
@@ -78,14 +81,14 @@ class ModelWithVars(models.Model):
         super(ModelWithVars, self).save(*args, **kwargs)
 
 
-class Session(ModelWithVars):
+class Session(ModelWithVars): # for now removing SaveTheChange
 
     class Meta:
         # if i don't set this, it could be in an unpredictable order
         ordering = ['pk']
 
     session_type = models.PickleField(
-        default=lambda: {},
+        default=get_empty_dict,
         null=True,
         doc="the session type, as defined in the programmer's settings.py.",
     )
@@ -325,7 +328,7 @@ class Session(ModelWithVars):
         # FIXME: what about experimenter?
 
 
-class SessionUser(ModelWithVars):
+class SessionUser(ModelWithVars): # for now removing SaveTheChange
 
     _index_in_subsessions = models.PositiveIntegerField(default=0, null=True)
 

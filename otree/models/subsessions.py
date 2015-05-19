@@ -3,6 +3,9 @@
 
 import random
 
+from save_the_change.mixins import SaveTheChange
+from idmap.models import SharedMemoryModel
+
 from otree.db import models
 from otree.common_internal import get_views_module
 from otree.common_internal import (
@@ -13,7 +16,7 @@ from otree.models_concrete import GroupSize
 from otree import match_players
 
 
-class BaseSubsession(models.Model):
+class BaseSubsession(SaveTheChange, SharedMemoryModel):
     """Base class for all Subsessions.
 
     """
@@ -264,8 +267,14 @@ class BaseSubsession(models.Model):
             p.save()
         for g in self.get_groups():
             g.save()
-        self.save()
-        self.session.save()
+
+        # subsession.save() gets called in the parent method
+
+        # session also gets saved in the calling method,
+        # but subsession.session is a distinct Python object
+        # since we don't have an "identity map"
+        # so we need to save this separately
+
 
 
     def _experimenter_pages(self):
