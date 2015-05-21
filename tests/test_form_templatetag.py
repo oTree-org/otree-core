@@ -40,8 +40,8 @@ class CheckAllFieldsAreRenderedTests(FormFieldTestMixin, TestCase):
                 fields = ('name',)
 
         form = OnlyNameForm(instance=self.simple_player)
-        with self.assertTemplateNotUsed(
-                template_name='otree/includes/_formfield_is_missing_error.html'):
+        templatename = 'otree/includes/_formfield_is_missing_error.html'
+        with self.assertTemplateNotUsed(template_name=templatename):
             result = self.render(
                 '''
                 {% pageform form using %}

@@ -19,6 +19,12 @@ from otree.session import (
 )
 import otree.session
 
+# if it's debug mode, we should always generate a new session
+# because a bug might have been fixed
+# in production, we optimize for UX and quick loading
+MAX_SESSIONS_TO_CREATE = 1 if settings.DEBUG else 3
+
+
 class DemoIndex(vanilla.TemplateView):
 
     template_name = 'otree/demo/index.html'
@@ -67,8 +73,6 @@ def ensure_enough_spare_sessions(session_type_name):
     # when multiple threads access at the same time.
     time.sleep(5)
 
-    DESIRED_SPARE_SESSIONS = 2
-
     spare_sessions = Session.objects.filter(
         special_category=constants.session_special_category_demo,
         demo_already_used=False,
@@ -79,7 +83,7 @@ def ensure_enough_spare_sessions(session_type_name):
     ]
 
     # fill in whatever gap exists. want at least 3 sessions waiting.
-    for i in range(DESIRED_SPARE_SESSIONS - len(spare_sessions)):
+    for i in range(MAX_SESSIONS_TO_CREATE - len(spare_sessions)):
         create_session(
             special_category=constants.session_special_category_demo,
             session_type_name=session_type_name,
@@ -126,7 +130,7 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.View):
             raise Http404(msg)
         # check that it divides evenly
         # need to check here so that the user knows upfront
-        session_lcm = otree.session.get_lcm(self.session_type_name)
+        session_lcm = otree.session.get_lcm(session_type)
         num_participants = session_type['num_demo_participants']
         if num_participants % session_lcm:
             msg = (

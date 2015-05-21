@@ -61,8 +61,12 @@ class StubModel(models.Model):
     # TODO: move to otree.models_concrete
 
 
+def get_empty_dict():
+    return {}
+
+
 class ModelWithVars(models.Model):
-    vars = models.PickleField(default=lambda: {})
+    vars = models.PickleField(default=get_empty_dict)
 
     class Meta:
         abstract = True
@@ -78,6 +82,7 @@ class ModelWithVars(models.Model):
         super(ModelWithVars, self).save(*args, **kwargs)
 
 
+# for now removing SaveTheChange
 class Session(ModelWithVars):
 
     class Meta:
@@ -85,7 +90,7 @@ class Session(ModelWithVars):
         ordering = ['pk']
 
     session_type = models.PickleField(
-        default=lambda: {},
+        default=get_empty_dict,
         null=True,
         doc="the session type, as defined in the programmer's settings.py.",
     )
@@ -325,6 +330,7 @@ class Session(ModelWithVars):
         # FIXME: what about experimenter?
 
 
+# for now removing SaveTheChange
 class SessionUser(ModelWithVars):
 
     _index_in_subsessions = models.PositiveIntegerField(default=0, null=True)

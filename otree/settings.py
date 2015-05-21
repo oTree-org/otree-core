@@ -46,6 +46,7 @@ def augment_settings(settings):
             'kombu.transport.django',
             'rest_framework',
             'sslserver',
+            'idmap',
         ],
 
 
@@ -70,6 +71,7 @@ def augment_settings(settings):
     )
 
     static_dir = os.path.join(settings['BASE_DIR'], 'static')
+    additional_static_dirs = []
     if os.path.exists(static_dir):
         additional_static_dirs = [static_dir]
 
@@ -86,13 +88,16 @@ def augment_settings(settings):
 
     new_middleware_classes = collapse_to_unique_list(
         [
+            # this middlewware is for generate human redeable errors
+            'otree.middleware.CheckDBMiddleware',
+            'otree.middleware.HumanErrorMiddleware',
+
             'django.contrib.sessions.middleware.SessionMiddleware',
             # 'django.middleware.locale.LocaleMiddleware',
             'django.middleware.common.CommonMiddleware',
             'django.middleware.csrf.CsrfViewMiddleware',
             'django.contrib.auth.middleware.AuthenticationMiddleware',
             'django.contrib.messages.middleware.MessageMiddleware',
-            'otree.middleware.OperationalErrorMidleware',
             # 2015-04-08: disabling SSLify until we make this work better
             # 'sslify.middleware.SSLifyMiddleware',
         ],

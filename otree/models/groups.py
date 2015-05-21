@@ -8,7 +8,7 @@ from otree.common_internal import get_models_module, get_players
 
 
 class BaseGroup(SaveTheChange, models.Model):
-    """Base class for all Groupes.
+    """Base class for all Groups.
     """
 
     _is_missing_players = models.BooleanField(default=False)

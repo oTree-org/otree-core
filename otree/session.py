@@ -76,7 +76,12 @@ def validate_session_type(session_type):
 
     app_sequence = session_type['app_sequence']
     if len(app_sequence) != len(set(app_sequence)):
-        raise ValueError('app_sequence cannot contain duplicate elements')
+        raise ValueError(
+            'app_sequence of "{}" in settings.py '
+            'must not contain duplicate elements'.format(
+                session_type['name']
+            )
+        )
 
     if len(app_sequence) == 0:
         raise ValueError('Need at least one subsession.')

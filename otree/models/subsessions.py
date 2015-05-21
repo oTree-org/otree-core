@@ -3,6 +3,9 @@
 
 import random
 
+from save_the_change.mixins import SaveTheChange
+
+
 from otree.db import models
 from otree.common_internal import get_views_module
 from otree.common_internal import (
@@ -13,7 +16,7 @@ from otree.models_concrete import GroupSize
 from otree import match_players
 
 
-class BaseSubsession(models.Model):
+class BaseSubsession(SaveTheChange, models.Model):
     """Base class for all Subsessions.
 
     """
@@ -187,9 +190,6 @@ class BaseSubsession(models.Model):
         groups = []
         first_player_index = 0
 
-        # if players_per_group is an integer, then outer_loops == num_groups
-        # this is to enable apps with variable group sizes
-
         for group_size in self._get_players_per_group_list():
             groups.append(
                 players[first_player_index:first_player_index + group_size]
@@ -267,6 +267,8 @@ class BaseSubsession(models.Model):
             p.save()
         for g in self.get_groups():
             g.save()
+
+        # subsession.save() gets called in the parent method
 
     def _experimenter_pages(self):
         views_module = get_views_module(self._meta.app_label)
