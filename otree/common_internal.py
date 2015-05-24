@@ -157,6 +157,7 @@ def get_players(self, order_by, refresh_from_db=False):
         self._players = self.player_set.all()
     return list(self._players.order_by(order_by))
 
+
 def get_groups(self, refresh_from_db=False):
     if refresh_from_db or not self._groups:
         self._groups = self.group_set.all()
