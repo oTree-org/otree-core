@@ -150,9 +150,9 @@ class PlayerMixin(object):
         objs = [self._user, self._session_user, self.session]
         if self.group:
             objs.append(self.group)
-            objs.extend(self.group._players)
-        objs.extend(self.subsession._players)
-        objs.extend(self.subsession._groups)
+            objs.extend(list(self.group._players))
+        objs.extend(list(self.subsession._players))
+        objs.extend(list(self.subsession._groups))
 
         return objs
 
