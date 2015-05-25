@@ -19,6 +19,7 @@ REQUIREMENTS = [
     'django-extensions>=1.4.6',
     'django-ptree-extra-views>=0.6.3',
     'django-floppyforms>=1.2.0',
+    'django-idmap>=0.3.2',
     'django-inspect-model>=0.7',
     'django-ptree-mturk>=1.0.1',
     'django-save-the-change>=1.0.0',
@@ -37,7 +38,6 @@ REQUIREMENTS = [
     'requests>=2.5.3',
     'selenium>=2.41.0',
     'xmltodict>=0.9.0',
-    'django-idmap>=0.3.2'
 ]
 
 # allow setup.py to be run from any path
