@@ -77,13 +77,16 @@ def validate_session_for_mturk(request, session):
     for page in v.get_no_next_buttons_pages():
         messages.warning(
             request,
-            'Template %s for page %s has no next button'
+            ('Template %s for page %s has no next button. '
+             'When using oTree on MTurk,'
+             'even the last page should have a next button.')
             % (page.get_template_names(), page.__class__.__name__)
         )
     if not v.check_group_by_arrival_time():
         messages.warning(
             request,
-            'You should set group_by_arrival_time in settings.py'
+            ('You should set group_by_arrival_time in settings.py, '
+             'and then create a new session')
         )
     for page in v.get_no_timeout_pages():
         messages.warning(
