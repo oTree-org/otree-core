@@ -3,11 +3,11 @@ from django.core.management import call_command, CommandError
 from django.template import Template
 from django.test import TestCase
 
-from otree.checks.templates import get_unreachable_content
+from otree.checks.templates import get_unreachable_content, check_next_button
 from .utils import capture_stdout, dummyapp
 
 
-class TemplateCheckTest(TestCase):
+class TemplateCheckContentTest(TestCase):
     def test_non_extending_template(self):
         template = Template('''Stuff in here.''')
         content = get_unreachable_content(template)
@@ -116,6 +116,31 @@ class TemplateCheckTest(TestCase):
 
         content = get_unreachable_content(template)
         self.assertEqual(len(content), 0)
+
+
+class TemplateCheckNextButtonTest(TestCase):
+
+    def test_outside_block(self):
+        template = Template(
+            '''
+            {% extends "base.html" %}
+            {% load otree_tags %}
+            {% block content %}Click the next button...{% endblock %}
+            {% next_button %}
+            ''')
+        self.assertTrue(check_next_button(template))
+
+    def test_inside_block(self):
+        template = Template(
+            '''
+            {% extends "base.html" %}
+            {% load otree_tags %}
+            {% block content %}
+            Click the next button...
+            {% next_button %}
+            {% endblock %}
+            ''')
+        self.assertTrue(check_next_button(template))
 
 
 class TemplateCheckInSystemCheckTest(TestCase):

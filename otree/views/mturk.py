@@ -21,6 +21,7 @@ import IPy
 import otree
 from otree import forms
 from otree.views.abstract import AdminSessionPageMixin
+from otree.checks.mturk import validate_session_for_mturk
 
 
 class MTurkError(Exception):
@@ -147,6 +148,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             return True
 
     def get(self, request, *args, **kwargs):
+        validate_session_for_mturk(request, self.session)
         mturk_hit_settings = self.session.session_type['mturk_hit_settings']
         initial = {
             'title': mturk_hit_settings['title'],
@@ -162,7 +164,10 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
         }
         form = self.get_form(initial=initial)
         context = self.get_context_data(form=form)
-        context['mturk_enabled'] = bool(settings.AWS_ACCESS_KEY_ID)
+        context['mturk_enabled'] = (
+            bool(settings.AWS_ACCESS_KEY_ID) and
+            bool(settings.AWS_SECRET_ACCESS_KEY)
+        )
         url = self.request.build_absolute_uri(
             reverse('session_create_hit', args=(self.session.pk,))
         )

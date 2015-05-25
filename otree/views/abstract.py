@@ -618,7 +618,7 @@ class FormPageMixin(object):
         if self.template_name is not None:
             return [self.template_name]
         return '{}/{}.html'.format(
-            self.subsession._meta.app_label,
+            self.__module__.rsplit('.', 1)[0],
             self.__class__.__name__
         )
 
