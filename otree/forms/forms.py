@@ -305,17 +305,14 @@ class BaseModelForm(forms.ModelForm):
                         msg = _('This field is required.')
                         raise forms.ValidationError(msg)
 
-                if hasattr(self.view, '%s_min' % name):
-                    lower = getattr(self.view, '%s_min' % name)()
-                    if value < lower:
-                        msg = 'Must be less or equal than {}.'
-                        raise forms.ValidationError(msg.format(lower))
+                lower, upper = self._get_field_boundaries(name)
+                if lower is not None and value < lower:
+                    msg = 'Must be greater than or equal to {}.'
+                    raise forms.ValidationError(msg.format(lower))
 
-                if hasattr(self.view, '%s_max' % name):
-                    upper = getattr(self.view, '%s_max' % name)()
-                    if value > upper:
-                        msg = 'Must be greater or equal than {}.'
-                        raise forms.ValidationError(msg.format(upper))
+                if upper is not None and value > upper:
+                    msg = 'Must be less than or equal to {}.'
+                    raise forms.ValidationError(msg.format(upper))
 
                 if hasattr(self.view, '%s_choices' % name):
                     choices = getattr(self.view, '%s_choices' % name)()
