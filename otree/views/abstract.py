@@ -710,9 +710,10 @@ class FormPageMixin(object):
     poll_interval_seconds = constants.form_page_poll_interval_seconds
 
     def _set_auto_submit_values(self):
+        timeout_values = self.timeout_values or self.auto_submit_values
         for field_name in self.form_fields:
-            if field_name in self.auto_submit_values:
-                value = self.auto_submit_values[field_name]
+            if field_name in timeout_values:
+                value = timeout_values[field_name]
             else:
                 # get default value for datatype if the user didn't specify
                 ModelField = self.form_model._meta.get_field_by_name(
