@@ -307,11 +307,11 @@ class BaseModelForm(forms.ModelForm):
 
                 lower, upper = self._get_field_boundaries(name)
                 if lower is not None and value < lower:
-                    msg = 'Must be greater than or equal to {}.'
+                    msg = _('Must be greater than or equal to {}.')
                     raise forms.ValidationError(msg.format(lower))
 
                 if upper is not None and value > upper:
-                    msg = 'Must be less than or equal to {}.'
+                    msg = _('Must be less than or equal to {}.')
                     raise forms.ValidationError(msg.format(upper))
 
                 if hasattr(self.view, '%s_choices' % name):
@@ -320,9 +320,9 @@ class BaseModelForm(forms.ModelForm):
                         otree.common_internal.contract_choice_tuples(choices)
                     )
                     if value not in choices_values:
-                        msg = 'Value must be one of: {}'.format(
+                        msg = _('Value must be one of: {}'.format(
                             ", ".join(map(str, choices))
-                        )
+                        ))
                         raise forms.ValidationError(msg)
 
                 if hasattr(self.view, '%s_error_message' % name):
@@ -338,12 +338,12 @@ class BaseModelForm(forms.ModelForm):
 
             except forms.ValidationError as e:
                 self.add_error(name, e)
-
-        if hasattr(self.view, 'error_message'):
-            error_string = self.view.error_message(self.cleaned_data)
-            if error_string:
-                e = forms.ValidationError(error_string)
-                self.add_error(None, e)
+            else:
+                if hasattr(self.view, 'error_message'):
+                    error_string = self.view.error_message(self.cleaned_data)
+                    if error_string:
+                        e = forms.ValidationError(error_string)
+                        self.add_error(None, e)
 
 
 class ModelForm(BaseModelForm):
