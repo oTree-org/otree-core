@@ -57,8 +57,7 @@ class Page(abstract.PlayerUpdateView):
     form_fields = abstract.PlayerUpdateView.fields
 
     timeout_seconds = None
-    timeout_values = {}
-    auto_submit_values = {}
+    timeout_submission = {}
 
 
 class ExperimenterPage(abstract.ExperimenterUpdateView):
@@ -78,4 +77,4 @@ class ExperimenterPage(abstract.ExperimenterUpdateView):
     template_name = None
 
     timeout_seconds = None
-    auto_submit_values = {}
+
