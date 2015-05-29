@@ -20,7 +20,6 @@ class BaseGroup(SaveTheChange, models.Model):
         return str(self.pk)
 
     _players = []
-    _player = None
 
     def _get_players(self, refresh_from_db=False):
         return get_players(
@@ -35,11 +34,13 @@ class BaseGroup(SaveTheChange, models.Model):
         for p in self.get_players():
             if p.id_in_group == id_in_group:
                 return p
+        raise ValueError('No player with id_in_group {}'.format(id_in_group))
 
     def get_player_by_role(self, role):
         for p in self.get_players():
             if p.role() == role:
                 return p
+        raise ValueError('No player with role {}'.format(role))
 
     def set_players(self, players_list):
         for i, player in enumerate(players_list, start=1):

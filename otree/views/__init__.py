@@ -46,9 +46,6 @@ class Page(abstract.PlayerUpdateView):
     def before_next_page(self):
         return super(Page, self).before_next_page()
 
-    def get_form_class(self):
-        return super(Page, self).get_form_class()
-
     def is_displayed(self):
         return super(Page, self).is_displayed()
 
@@ -60,7 +57,7 @@ class Page(abstract.PlayerUpdateView):
     form_fields = abstract.PlayerUpdateView.fields
 
     timeout_seconds = None
-    auto_submit_values = {}
+    timeout_submission = {}
 
 
 class ExperimenterPage(abstract.ExperimenterUpdateView):
@@ -80,4 +77,3 @@ class ExperimenterPage(abstract.ExperimenterUpdateView):
     template_name = None
 
     timeout_seconds = None
-    auto_submit_values = {}

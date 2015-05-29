@@ -58,7 +58,6 @@ class BaseSubsession(SaveTheChange, models.Model):
 
     _groups = []
     _players = []
-    _player = None
 
     def in_previous_round(self):
         return type(self).objects.filter(

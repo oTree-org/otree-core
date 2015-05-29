@@ -15,7 +15,8 @@
 
         {% if form.errors %}
             <div class="alert alert-danger">
-            {% blocktrans %}Please fix the errors in the form.{% endblocktrans %}
+                {% blocktrans %}Please fix the errors in the form{% endblocktrans %}
+                {{ form.non_field_errors }}
             </div>
         {% endif %}
 

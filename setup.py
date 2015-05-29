@@ -19,12 +19,12 @@ REQUIREMENTS = [
     'django-extensions>=1.4.6',
     'django-ptree-extra-views>=0.6.3',
     'django-floppyforms>=1.2.0',
+    'django-idmap>=0.3.2',
     'django-inspect-model>=0.7',
     'django-ptree-mturk>=1.0.1',
     'django-save-the-change>=1.0.0',
     'django-sslify>=0.2.5',
     'django-sslserver>=0.14',
-    'django-sslserver==0.14',
     'django-vanilla-views>=1.0.2',
     'djangorestframework>=3.1.1',
     'flake8>=2.2.5',
@@ -37,13 +37,12 @@ REQUIREMENTS = [
     'requests>=2.5.3',
     'selenium>=2.41.0',
     'xmltodict>=0.9.0',
-    'django-idmap>=0.3.2'
 ]
 
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version = '0.3.1'
+version = '0.3.4'
 
 
 if sys.argv[-1] == 'publish':

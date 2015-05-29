@@ -156,9 +156,9 @@ class PlayerMixin(object):
         objs = [self._user, self._session_user, self.session]
         if self.group:
             objs.append(self.group)
-            objs.extend(self.group._players)
-        objs.extend(self.subsession._players)
-        objs.extend(self.subsession._groups)
+            objs.extend(list(self.group._players))
+        objs.extend(list(self.subsession._players))
+        objs.extend(list(self.subsession._groups))
 
         return objs
 
@@ -636,7 +636,7 @@ class FormPageMixin(object):
         if self.template_name is not None:
             return [self.template_name]
         return '{}/{}.html'.format(
-            self.subsession._meta.app_label,
+            self.__module__.rsplit('.', 1)[0],
             self.__class__.__name__
         )
 
@@ -730,9 +730,12 @@ class FormPageMixin(object):
     poll_interval_seconds = constants.form_page_poll_interval_seconds
 
     def _set_auto_submit_values(self):
+        # TODO: auto_submit_values deprecated on 2015-05-28
+        auto_submit_values = getattr(self, 'auto_submit_values', {})
+        timeout_submission = self.timeout_submission or auto_submit_values
         for field_name in self.form_fields:
-            if field_name in self.auto_submit_values:
-                value = self.auto_submit_values[field_name]
+            if field_name in timeout_submission:
+                value = timeout_submission[field_name]
             else:
                 # get default value for datatype if the user didn't specify
                 ModelField = self.form_model._meta.get_field_by_name(

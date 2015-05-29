@@ -153,18 +153,15 @@ def get_app_name_from_label(app_label):
 
 
 def get_players(self, order_by, refresh_from_db=False):
-    if (not refresh_from_db) and self._players:
-        return self._players
-    players = list(self.player_set.order_by(order_by))
-    self._players = players
-    return self._players
+    if refresh_from_db or not self._players:
+        self._players = self.player_set.all()
+    return list(self._players.order_by(order_by))
 
 
 def get_groups(self, refresh_from_db=False):
-    if (not refresh_from_db) and self._groups:
-        return self._groups
-    self._groups = list(self.group_set.all())
-    return self._groups
+    if refresh_from_db or not self._groups:
+        self._groups = self.group_set.all()
+    return list(self._groups)
 
 
 def expand_choice_tuples(choices):
