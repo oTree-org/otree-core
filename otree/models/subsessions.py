@@ -164,7 +164,7 @@ class BaseSubsession(SaveTheChange, models.Model):
         return get_models_module(self._meta.app_config.name).Constants
 
     def _GroupClass(self):
-        return models.get_model(self._meta.app_config.name, 'Group')
+        return models.get_model(self._meta.app_config.label, 'Group')
 
     def _create_group(self):
         '''should not be public API, because could leave the players in an

@@ -206,8 +206,12 @@ def create_session(session_type_name, label='', num_participants=None,
         for subsession in subsessions
     ])
     sub_by_pk = {s.pk: s for s in subsessions}
+
+    print sub_by_pk
+
     for experimenter in experimenters:
         idpk = experimenter.subsession_object_id
+        print idpk
         sub_by_pk[idpk]._experimenter = experimenter
         sub_by_pk[idpk].save()
 

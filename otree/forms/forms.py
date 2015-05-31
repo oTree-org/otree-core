@@ -338,12 +338,11 @@ class BaseModelForm(forms.ModelForm):
 
             except forms.ValidationError as e:
                 self.add_error(name, e)
-            else:
-                if hasattr(self.view, 'error_message'):
-                    error_string = self.view.error_message(self.cleaned_data)
-                    if error_string:
-                        e = forms.ValidationError(error_string)
-                        self.add_error(None, e)
+        if not self.errors and hasattr(self.view, 'error_message'):
+            error_string = self.view.error_message(self.cleaned_data)
+            if error_string:
+                e = forms.ValidationError(error_string)
+                self.add_error(None, e)
 
 
 class ModelForm(BaseModelForm):
