@@ -33,6 +33,10 @@ class MyPage(Page):
             'my_variable_here': 1,
         }
 
+    def even_int_error_message(self, value):
+        if value % 2:
+            return 'Must be an even number'
+
     def error_message(self, values):
         if values['add100_1'] + values['add100_2'] != 100:
             return 'The numbers must add up to 100'

@@ -34,9 +34,9 @@ def id_label_name(id, label):
     return '{}'.format(id)
 
 
-def is_subsession_app(app_label):
+def is_subsession_app(app_name):
     try:
-        models_module = import_module('{}.models'.format(app_label))
+        models_module = import_module('{}.models'.format(app_name))
     except ImportError:
         return False
     class_names = ['Player', 'Group', 'Subsession']

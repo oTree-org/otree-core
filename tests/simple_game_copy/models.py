@@ -64,7 +64,7 @@ class Player(otree.models.BasePlayer):
 
     even_int = models.PositiveIntegerField()
 
-    after_next_button_field = models.BooleanField()
+    before_next_page_field = models.BooleanField()
 
     def even_int_error_message(self, value):
         if value % 2:

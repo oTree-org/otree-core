@@ -224,7 +224,7 @@ class BaseClient(test.Client):
 class BasePlayerBot(BaseClient):
 
     def __init__(self, user, **kwargs):
-        app_label = user.subsession.app_name
+        app_label = user.subsession._meta.app_config.name
         models_module = importlib.import_module('{}.models'.format(app_label))
 
         self._PlayerClass = models_module.Player

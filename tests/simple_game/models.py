@@ -64,10 +64,6 @@ class Player(otree.models.BasePlayer):
 
     after_next_button_field = models.BooleanField()
 
-    def even_int_error_message(self, value):
-        if value % 2:
-            return 'Must be an even number'
-
     def role(self):
         # you can make this depend of self.id_in_group
         return ''
