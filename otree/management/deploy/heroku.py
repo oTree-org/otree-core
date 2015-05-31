@@ -19,7 +19,7 @@ COMMANDS = {}
 
 
 def resetdb(args):
-    setup_db = './otree migrate --traceback'
+    setup_db = 'python otree migrate --traceback'
 
     app = args.app[0]
 
