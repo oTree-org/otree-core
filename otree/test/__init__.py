@@ -43,14 +43,3 @@ class Bot(client.BasePlayerBot):
         return super(Bot, self).submit_invalid(
             ViewClass, param_dict
         )
-
-
-class ExperimenterBot(client.BaseExperimenterBot):
-
-    def submit(self, ViewClass, param_dict=None):
-        return super(ExperimenterBot, self).submit(ViewClass, param_dict)
-
-    def submit_invalid(self, ViewClass, param_dict=None):
-        return super(ExperimenterBot, self).submit_invalid(
-            ViewClass, param_dict
-        )

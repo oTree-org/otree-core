@@ -58,22 +58,3 @@ class Page(abstract.PlayerUpdateView):
 
     timeout_seconds = None
     timeout_submission = {}
-
-
-class ExperimenterPage(abstract.ExperimenterUpdateView):
-
-    def vars_for_template(self):
-        return super(ExperimenterPage, self).vars_for_template()
-
-    def before_next_page(self):
-        return super(ExperimenterPage, self).before_next_page()
-
-    def get_form_class(self):
-        return super(ExperimenterPage, self).get_form_class()
-
-    def is_displayed(self):
-        return super(ExperimenterPage, self).is_displayed()
-
-    template_name = None
-
-    timeout_seconds = None

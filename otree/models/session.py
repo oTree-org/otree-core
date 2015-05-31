@@ -114,10 +114,6 @@ class Session(ModelWithVars):
         decimal_places=5, max_digits=12
     )
 
-    session_experimenter = models.OneToOneField(
-        'SessionExperimenter', null=True, related_name='session',
-    )
-
     time_scheduled = models.DateTimeField(
         null=True, doc="The time at which the session is scheduled",
         help_text='For internal record-keeping',
@@ -327,8 +323,6 @@ class Session(ModelWithVars):
                 num_pages_in_each_app
             )
 
-        # FIXME: what about experimenter?
-
 
 # for now removing SaveTheChange
 class SessionUser(ModelWithVars):
@@ -483,7 +477,6 @@ class SessionUser(ModelWithVars):
                 page_index=page_index,
                 app_name=user._meta.app_config.name,
                 user_pk=user.pk,
-                is_experimenter=self._is_experimenter,
             )
             for user in self.get_users()
             for _, page_index in zip(range(pages_for_user(user) + 1), indexes)
@@ -497,23 +490,7 @@ class SessionUser(ModelWithVars):
         abstract = True
 
 
-class SessionExperimenter(SessionUser):
-
-    _is_experimenter = True
-
-    def _start_url(self):
-        # 2015-1-31: doesn't work
-        return '/InitializeSessionExperimenter/{}/'.format(self.code)
-
-    def experimenters(self):
-        return self.get_users()
-
-    user_type_in_url = constants.user_type_experimenter
-
-
 class Participant(SessionUser):
-
-    _is_experimenter = False
 
     class Meta:
         ordering = ['pk']

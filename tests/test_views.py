@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.test.client import RequestFactory
 
 from otree import constants
-from otree.models.session import Participant, SessionExperimenter
+from otree.models.session import Participant
 
 from tests.simple_game.views import MyPage
 from tests.simple_game.models import Player
@@ -36,14 +36,10 @@ class BaseViewTestCase(TestCase):
         with capture_stdout():
             call_command('create_session', 'simple_game', 1)
 
-        self.session_experimenter = SessionExperimenter.objects.first()
         self.participant = Participant.objects.first()
         self.player = Player.objects.first()
 
     def reload_objects(self):
-        self.session_experimenter = SessionExperimenter.objects.get(
-            pk=self.session_experimenter.pk
-        )
         self.participant = Participant.objects.get(pk=self.participant.pk)
         self.player = Player.objects.get(pk=self.player.pk)
 

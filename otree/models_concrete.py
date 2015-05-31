@@ -40,7 +40,6 @@ class SessionuserToUserLookup(models.Model):
     page_index = models.PositiveIntegerField()
     app_name = models.CharField(max_length=300)
     user_pk = models.PositiveIntegerField()
-    is_experimenter = models.BooleanField(default=False)
 
 
 class GroupSize(models.Model):

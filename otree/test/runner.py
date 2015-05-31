@@ -28,7 +28,6 @@ from django.template import response
 
 import otree.models
 from otree import constants, session
-from otree.test import client
 
 import coverage
 
@@ -85,19 +84,6 @@ class MissingVarsContextProxyBase(object):
 
     def __delitem__(self, key):
         del self.context[key]
-
-
-# =============================================================================
-# DUMMY EXPERIMENTER BOT
-# =============================================================================
-
-class DummyExperimenterBot(client.BaseExperimenterBot):
-
-    def play_round(self):
-        pass
-
-    def validate_play(self):
-        pass
 
 
 # =============================================================================

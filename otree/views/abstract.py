@@ -43,7 +43,6 @@ from django.http import (
 import vanilla
 
 import otree.forms
-from otree.models.user import Experimenter
 import otree.common_internal
 
 import otree.models.session
@@ -128,8 +127,6 @@ class NonSequenceUrlMixin(object):
 
 class PlayerMixin(object):
 
-    _is_experimenter = False
-
     def get_debug_values(self):
         try:
             group_id = self.group.pk
@@ -155,22 +152,6 @@ class PlayerMixin(object):
         objs.extend(list(self.subsession._groups))
 
         return objs
-
-
-class ExperimenterMixin(object):
-
-    _is_experimenter = True
-
-    def get_debug_values(self):
-        return [('Subsession code', self.subsession.code)]
-
-    def get_UserClass(self):
-        return Experimenter
-
-    def objects_to_save(self):
-        return [
-            self._user, self.subsession, self._session_user
-        ] + self.subsession.get_players()
 
 
 class FormPageOrWaitPageMixin(OTreeMixin):
@@ -215,9 +196,8 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
         self._user = get_object_or_404(self.get_UserClass(), pk=user_pk)
 
-        if not self._is_experimenter:
-            self.player = self._user
-            self.group = self.player.group
+        self.player = self._user
+        self.group = self.player.group
 
         self.subsession = self._user.subsession
         self.session = self._user.session
@@ -228,13 +208,8 @@ class FormPageOrWaitPageMixin(OTreeMixin):
     def dispatch(self, request, *args, **kwargs):
         try:
             session_user_code = kwargs.pop(constants.session_user_code)
-            user_type = kwargs.pop(constants.user_type)
-            if user_type == constants.user_type_participant:
-                self.SessionUserClass = otree.models.session.Participant
-            else:
-                self.SessionUserClass = (
-                    otree.models.session.SessionExperimenter
-                )
+
+            self.SessionUserClass = otree.models.session.Participant
 
             try:
                 self._session_user = get_object_or_404(
@@ -570,8 +545,6 @@ class InGameWaitPageMixin(object):
         visit, _ = WaitPageVisit.objects.get_or_create(
             session_pk=self.session.pk,
             page_index=self._index_in_pages,
-
-            # FIXME: what about experimenter?
             id_in_session=self._session_user.id_in_session
         )
 
@@ -739,20 +712,6 @@ class PlayerUpdateView(FormPageMixin, FormPageOrWaitPageMixin,
             return self.group
         elif Cls == self.PlayerClass:
             return self.player
-        elif Cls == seq_models.StubModel:
-            return seq_models.StubModel.objects.all()[0]
-
-
-class ExperimenterUpdateView(FormPageMixin, FormPageOrWaitPageMixin,
-                             ExperimenterMixin, vanilla.UpdateView):
-
-    # 2014-9-14: commenting out as i figure out getting rid of forms.py
-    # form_class = ExperimenterStubModelForm
-
-    def get_object(self):
-        Cls = self.form_model
-        if Cls == self.SubsessionClass:
-            return self.subsession
         elif Cls == seq_models.StubModel:
             return seq_models.StubModel.objects.all()[0]
 

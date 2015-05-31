@@ -25,7 +25,6 @@ from django import test
 from easymoney import Money as Currency
 
 from otree import constants
-from otree.models.user import Experimenter
 from otree.views.concrete import WaitUntilAssignedToGroup
 from otree.common_internal import get_views_module
 
@@ -294,26 +293,3 @@ class BasePlayerBot(BaseClient):
     @property
     def subsession(self):
         return self._SubsessionClass.objects.get(id=self._subsession_id)
-
-
-# =============================================================================
-# ESPERIMENT BOT CLASS
-# =============================================================================
-
-class BaseExperimenterBot(BaseClient):
-    '''ExperimenterBot is optional; currently not being used'''
-
-    def __init__(self, subsession, **kwargs):
-        self._SubsessionClass = type(subsession)
-        self._subsession_id = subsession.id
-        self._experimenter_id = subsession._experimenter.id
-
-        super(BaseExperimenterBot, self).__init__(**kwargs)
-
-    @property
-    def subsession(self):
-        return self._SubsessionClass.objects.get(id=self._subsession_id)
-
-    @property
-    def _user(self):
-        return Experimenter.objects.get(id=self._experimenter_id)
