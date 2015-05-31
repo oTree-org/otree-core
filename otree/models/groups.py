@@ -50,4 +50,4 @@ class BaseGroup(SaveTheChange, models.Model):
 
     @property
     def _Constants(self):
-        return get_models_module(self._meta.app_label).Constants
+        return get_models_module(self._meta.app_config.name).Constants

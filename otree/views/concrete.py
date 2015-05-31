@@ -78,7 +78,7 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin,
                     group_players.append(self.player)
                     open_group.set_players(group_players)
                     group_size_obj = GroupSize.objects.filter(
-                        app_label=self.subsession._meta.app_label,
+                        app_label=self.subsession._meta.app_config.name,
                         subsession_pk=self.subsession.pk,
                     ).order_by('group_index')[0]
                     group_quota = group_size_obj.group_size

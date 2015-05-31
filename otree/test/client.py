@@ -249,7 +249,7 @@ class BasePlayerBot(BaseClient):
                 "App {}: Player '{}': payoff is still None at the end of the "
                 "subsession. Check in tests.py if the bot completes the game."
             ).format(
-                self.subsession._meta.app_label,
+                self.subsession._meta.app_config.name,
                 player.participant.code,
             )
 
@@ -261,7 +261,7 @@ class BasePlayerBot(BaseClient):
             # raise AssertionError(msg)
         player_page_index = player._index_in_game_pages
         pages_in_subsession = len(
-            get_views_module(self.subsession._meta.app_label).page_sequence
+            get_views_module(self.subsession._meta.app_config.name).page_sequence
         )
         if player_page_index + 1 < pages_in_subsession:
             msg = (
@@ -269,7 +269,7 @@ class BasePlayerBot(BaseClient):
                 "the end of run. Check in tests.py if the bot completes "
                 "the game"
             ).format(
-                self.subsession._meta.app_label,
+                self.subsession._meta.app_config.name,
                 player.participant.code,
                 player_page_index,
                 pages_in_subsession,

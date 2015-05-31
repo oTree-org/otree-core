@@ -600,10 +600,10 @@ class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
         rows = []
 
         for subsession in session.get_subsessions():
-            app_label = subsession._meta.app_label
+            app_label = subsession._meta.app_config.name
 
             column_names, subsession_rows = get_display_table_rows(
-                subsession._meta.app_label,
+                subsession._meta.app_config.name,
                 for_export=False,
                 subsession_pk=subsession.pk
             )
