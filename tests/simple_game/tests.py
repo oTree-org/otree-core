@@ -11,8 +11,8 @@ class PlayerBot(Bot):
 
     def play_round(self):
 
+        self.submit_invalid(views.MyPage, {'add100_1': 1, 'add100_2': 98})
         self.submit(views.MyPage, {'add100_1': 1, 'add100_2': 99})
-        #print 'in PlayerBot', 1/0
         self.submit(views.Results)
 
     def validate_play(self):
