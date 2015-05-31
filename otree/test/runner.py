@@ -163,7 +163,7 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         return list(itertools.izip_longest(*submits))
 
     def _run_subsession(self, subsession):
-        app_label = subsession.app_name
+        app_label = subsession._meta.app_config.name
 
         # patching round number
         self.app_tested.append(app_label)
