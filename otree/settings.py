@@ -7,7 +7,7 @@ import djcelery
 
 from django.conf import global_settings
 from django.contrib.messages import constants as messages
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy
 
 djcelery.setup_loader()
 
@@ -236,10 +236,8 @@ def augment_settings(settings):
     # by default, game setting matches payment setting
     # except if you use points, then we override
     if settings.get('USE_POINTS'):
-        settings['GAME_CURRENCY_CODE'] = _('points')
-        settings['GAME_CURRENCY_FORMAT'] = '# {}'.format(
-            settings['GAME_CURRENCY_CODE']
-        )
+        settings['GAME_CURRENCY_CODE'] = ugettext_lazy('points')
+        settings['GAME_CURRENCY_FORMAT'] = u'# ¤¤¤'
         settings['GAME_CURRENCY_DECIMAL_PLACES'] = 0
         settings['GAME_CURRENCY_LOCALE'] = (
             settings['REAL_WORLD_CURRENCY_LOCALE']

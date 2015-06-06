@@ -78,10 +78,10 @@ class BaseMoneyInput(forms.NumberInput):
         return context
 
     def currency_symbol_is_prefix(self):
+        if settings.USE_POINTS:
+            return False
         locale = Locale.parse(self.currency_locale)
-        format = self.currency_format
-        if not format:
-            format = locale.currency_formats.get(None)
+        format = locale.currency_formats.get(None)
         pattern = babel.numbers.parse_pattern(format)
         return u'\xa4' in pattern.prefix[0]
 
