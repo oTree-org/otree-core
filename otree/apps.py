@@ -42,7 +42,7 @@ def create_singleton_objects(sender, **kwargs):
 class OtreeConfig(AppConfig):
     name = 'otree'
     label = 'otree'
-    verbose_name = _("Otree")
+    verbose_name = _("oTree")
 
     def setup_create_default_superuser(self):
         authconfig = apps.get_app_config('auth')

@@ -307,11 +307,11 @@ class BaseModelForm(forms.ModelForm):
 
                 lower, upper = self._get_field_boundaries(name)
                 if lower is not None and value < lower:
-                    msg = _('Must be greater than or equal to {}.')
+                    msg = _('Value must be greater than or equal to {}.')
                     raise forms.ValidationError(msg.format(lower))
 
                 if upper is not None and value > upper:
-                    msg = _('Must be less than or equal to {}.')
+                    msg = _('Value must be less than or equal to {}.')
                     raise forms.ValidationError(msg.format(upper))
 
                 if hasattr(self.view, '%s_choices' % name):

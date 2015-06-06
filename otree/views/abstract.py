@@ -39,6 +39,7 @@ from django.forms.models import model_to_dict
 from django.http import (
     HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
 )
+from django.utils.translation import ugettext as _
 
 import vanilla
 
@@ -373,7 +374,7 @@ class GenericWaitPageMixin(object):
     wait_page_template_name = 'otree/WaitPage.html'
 
     def title_text(self):
-        return 'Please wait'
+        return _('Please wait')
 
     def body_text(self):
         return ''
@@ -569,11 +570,11 @@ class InGameWaitPageMixin(object):
     def body_text(self):
         num_other_players = len(self._group_or_subsession.get_players()) - 1
         if num_other_players > 1:
-            return 'Waiting for the other participants.'
+            return _('Waiting for the other participants.')
         elif num_other_players == 1:
-            return 'Waiting for the other participant.'
+            return _('Waiting for the other participant.')
         elif num_other_players == 0:
-            return 'Waiting'
+            return _('Waiting')
 
 
 class FormPageMixin(object):
