@@ -490,7 +490,7 @@ class InGameWaitPageMixin(object):
                         # URL, but it's different for each player
                         otree.timeout.tasks.ensure_pages_visited.apply_async(
                             kwargs={
-                                'app_name': self.subsession._meta.app_config.name,
+                                'app_name': self.subsession.app_name,
                                 'participant_pk_set':
                                     self._ids_for_this_wait_page(),
                                 'wait_page_index': self._index_in_pages,
@@ -732,7 +732,7 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
         return 'Missing or incorrect parameters in URL'
 
     def url_has_correct_parameters(self):
-        for _, get_param_name in self.required_params.items():
+        for i, get_param_name in self.required_params.items():
             if get_param_name not in self.request.GET:
                 return False
         return True
