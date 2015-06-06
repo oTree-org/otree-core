@@ -260,7 +260,7 @@ class BasePlayerBot(BaseClient):
             # raise AssertionError(msg)
         player_page_index = player._index_in_game_pages
         pages_in_subsession = len(
-            get_views_module(self.subsession.app_name).page_sequence
+            get_views_module(self.subsession._meta.app_config.name).page_sequence
         )
         if player_page_index + 1 < pages_in_subsession:
             msg = (

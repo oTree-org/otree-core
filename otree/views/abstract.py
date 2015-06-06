@@ -192,9 +192,8 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         self.SubsessionClass = getattr(models_module, 'Subsession')
         self.GroupClass = getattr(models_module, 'Group')
         self.PlayerClass = getattr(models_module, 'Player')
-        self.UserClass = self.get_UserClass()
 
-        self._user = get_object_or_404(self.get_UserClass(), pk=user_pk)
+        self._user = self.PlayerClass.objects.get(pk=user_pk)
 
         self.player = self._user
         self.group = self.player.group
@@ -348,7 +347,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
         # FIXME: what about experimenter visits?
         completion = PageCompletion(
-            app_name=self.subsession.app_name,
+            app_name=self.subsession._meta.app_config.name,
             page_index=self._index_in_pages,
             page_name=page_name, time_stamp=now,
             seconds_on_page=seconds_on_page,
@@ -490,7 +489,7 @@ class InGameWaitPageMixin(object):
                         # URL, but it's different for each player
                         otree.timeout.tasks.ensure_pages_visited.apply_async(
                             kwargs={
-                                'app_name': self.subsession.app_name,
+                                'app_name': self.subsession._meta.app_config.name,
                                 'participant_pk_set':
                                     self._ids_for_this_wait_page(),
                                 'wait_page_index': self._index_in_pages,
