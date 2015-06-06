@@ -7,7 +7,7 @@ import babel.numbers
 import easymoney
 import floppyforms.__future__ as forms
 import floppyforms.widgets
-
+import otree.common
 
 __all__ = (
     'BaseMoneyInput', 'CheckboxInput', 'CheckboxSelectMultiple',
@@ -67,20 +67,20 @@ class BaseMoneyInput(forms.NumberInput):
 
     def get_currency_symbol(self, currency_code):
         return babel.numbers.get_currency_symbol(
-            currency_code, self.currency_locale)
+            currency_code, self.CURRENCY_CLASS.LOCALE)
 
     def get_context(self, *args, **kwargs):
         context = super(BaseMoneyInput, self).get_context(*args, **kwargs)
-        currency_symbol = self.get_currency_symbol(self.currency_code)
-        context.setdefault('currency', self.currency_code)
-        context.setdefault('currency_symbol', currency_symbol)
+        currency_symbol = self.get_currency_symbol(self.self.CURRENCY_CLASS.CODE)
+        context['currency_symbol'] = currency_symbol
         context['currency_symbol_is_prefix'] = self.currency_symbol_is_prefix()
         return context
 
     def currency_symbol_is_prefix(self):
-        locale = Locale.parse(self.currency_locale)
-        format = self.currency_format
+        # TODO: should be moved to settings
+        format = self.CURRENCY_CLASS.FORMAT
         if not format:
+            locale = Locale.parse(self.CURRENCY_CLASS.LOCALE)
             format = locale.currency_formats.get(None)
         pattern = babel.numbers.parse_pattern(format)
         return u'\xa4' in pattern.prefix[0]
@@ -92,15 +92,11 @@ class BaseMoneyInput(forms.NumberInput):
 
 
 class RealWorldCurrencyInput(BaseMoneyInput):
-    currency_code = settings.REAL_WORLD_CURRENCY_CODE
-    currency_locale = settings.REAL_WORLD_CURRENCY_LOCALE
-    currency_format = settings.REAL_WORLD_CURRENCY_FORMAT
+    CURRENCY_CLASS = otree.common.RealWorldCurrency
 
 
 class CurrencyInput(BaseMoneyInput):
-    currency_code = settings.GAME_CURRENCY_CODE
-    currency_locale = settings.GAME_CURRENCY_LOCALE
-    currency_format = settings.GAME_CURRENCY_FORMAT
+    CURRENCY_CLASS = otree.common.Currency
 
 
 class RadioSelectHorizontal(forms.RadioSelect):
