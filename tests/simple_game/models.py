@@ -24,8 +24,6 @@ Description of this app.
 
 class Subsession(otree.models.BaseSubsession):
 
-    name_in_url = 'simple_game'
-
     def before_session_starts(self):
         self.session.vars['a'] = 1
         if self.round_number == 1:
