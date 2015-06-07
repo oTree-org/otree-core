@@ -2,12 +2,13 @@ from decimal import Decimal
 
 from babel.core import Locale
 from django.conf import settings
+from django.utils.translation import ugettext_lazy
 import babel
 import babel.numbers
 import easymoney
 import floppyforms.__future__ as forms
 import floppyforms.widgets
-import otree.common
+
 
 __all__ = (
     'BaseMoneyInput', 'CheckboxInput', 'CheckboxSelectMultiple',
@@ -62,28 +63,21 @@ class CheckboxSelectMultipleHorizontal(forms.CheckboxSelectMultiple):
 
 
 class BaseMoneyInput(forms.NumberInput):
-    step = '0.01'
     template_name = 'floppyforms/moneyinput.html'
-
-    def get_currency_symbol(self, currency_code):
-        return babel.numbers.get_currency_symbol(
-            currency_code, self.CURRENCY_CLASS.LOCALE)
 
     def get_context(self, *args, **kwargs):
         context = super(BaseMoneyInput, self).get_context(*args, **kwargs)
-        currency_symbol = self.get_currency_symbol(self.self.CURRENCY_CLASS.CODE)
-        context['currency_symbol'] = currency_symbol
-        context['currency_symbol_is_prefix'] = self.currency_symbol_is_prefix()
+        context['currency_symbol'] = self.CURRENCY_SYMBOL
+        context['currency_symbol_is_prefix'] = self.currency_symbol_is_prefix
         return context
 
-    def currency_symbol_is_prefix(self):
-        # TODO: should be moved to settings
-        format = self.CURRENCY_CLASS.FORMAT
-        if not format:
-            locale = Locale.parse(self.CURRENCY_CLASS.LOCALE)
-            format = locale.currency_formats.get(None)
+    if settings.USE_POINTS:
+        currency_symbol_is_prefix = False
+    else:
+        locale = Locale.parse(settings.REAL_WORLD_CURRENCY_LOCALE)
+        format = locale.currency_formats.get(None)
         pattern = babel.numbers.parse_pattern(format)
-        return u'\xa4' in pattern.prefix[0]
+        currency_symbol_is_prefix = u'\xa4' in pattern.prefix[0]
 
     def _format_value(self, value):
         if isinstance(value, easymoney.Money):
@@ -92,11 +86,15 @@ class BaseMoneyInput(forms.NumberInput):
 
 
 class RealWorldCurrencyInput(BaseMoneyInput):
-    CURRENCY_CLASS = otree.common.RealWorldCurrency
+    CURRENCY_SYMBOL = babel.numbers.get_currency_symbol(
+        settings.REAL_WORLD_CURRENCY_CODE,
+        settings.REAL_WORLD_CURRENCY_LOCALE
+    )
 
 
-class CurrencyInput(BaseMoneyInput):
-    CURRENCY_CLASS = otree.common.Currency
+class CurrencyInput(RealWorldCurrencyInput):
+    if settings.USE_POINTS:
+        CURRENCY_SYMBOL = ugettext_lazy('points')
 
 
 class RadioSelectHorizontal(forms.RadioSelect):

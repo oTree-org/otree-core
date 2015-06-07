@@ -8,7 +8,6 @@ import djcelery
 from django.conf import global_settings
 from django.contrib.messages import constants as messages
 
-
 djcelery.setup_loader()
 
 
@@ -232,19 +231,3 @@ def augment_settings(settings):
 
     for k, v in overridable_settings.items():
         settings.setdefault(k, v)
-
-    # by default, game setting matches payment setting
-    # except if you use points, then we override
-    if settings.get('USE_POINTS'):
-        settings['GAME_CURRENCY_CODE'] = 'points'
-        settings['GAME_CURRENCY_FORMAT'] = u'# points'
-        settings['GAME_CURRENCY_DECIMAL_PLACES'] = 0
-        settings['GAME_CURRENCY_LOCALE'] = (
-            settings['REAL_WORLD_CURRENCY_LOCALE']
-        )
-    else:
-        for SETTING_NAME in ['CODE', 'FORMAT', 'LOCALE', 'DECIMAL_PLACES']:
-            CURRENCY_SETTING_NAME = 'CURRENCY_{}'.format(SETTING_NAME)
-            key_from = 'REAL_WORLD_{}'.format(CURRENCY_SETTING_NAME)
-            key_to = 'GAME_{}'.format(CURRENCY_SETTING_NAME)
-            settings[key_to] = settings[key_from]

@@ -18,6 +18,7 @@ from django.contrib import messages
 from django.http import (
     HttpResponseRedirect, HttpResponseNotFound
 )
+from django.utils.translation import ugettext as _
 
 import otree.constants as constants
 import otree.models.session
@@ -92,7 +93,7 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin,
         return False
 
     def body_text(self):
-        return (
+        return _(
             'Waiting until other participants and/or '
             'the study supervisor are ready.'
         )

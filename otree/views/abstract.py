@@ -39,6 +39,7 @@ from django.forms.models import model_to_dict
 from django.http import (
     HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
 )
+from django.utils.translation import ugettext as _
 
 import vanilla
 
@@ -192,9 +193,8 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         self.SubsessionClass = getattr(models_module, 'Subsession')
         self.GroupClass = getattr(models_module, 'Group')
         self.PlayerClass = getattr(models_module, 'Player')
-        self.UserClass = self.get_UserClass()
 
-        self._user = get_object_or_404(self.get_UserClass(), pk=user_pk)
+        self._user = self.PlayerClass.objects.get(pk=user_pk)
 
         self.player = self._user
         self.group = self.player.group
@@ -348,7 +348,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
         # FIXME: what about experimenter visits?
         completion = PageCompletion(
-            app_name=self.subsession.app_name,
+            app_name=self.subsession._meta.app_config.name,
             page_index=self._index_in_pages,
             page_name=page_name, time_stamp=now,
             seconds_on_page=seconds_on_page,
@@ -374,7 +374,7 @@ class GenericWaitPageMixin(object):
     wait_page_template_name = 'otree/WaitPage.html'
 
     def title_text(self):
-        return 'Please wait'
+        return _('Please wait')
 
     def body_text(self):
         return ''
@@ -570,11 +570,11 @@ class InGameWaitPageMixin(object):
     def body_text(self):
         num_other_players = len(self._group_or_subsession.get_players()) - 1
         if num_other_players > 1:
-            return 'Waiting for the other participants.'
+            return _('Waiting for the other participants.')
         elif num_other_players == 1:
-            return 'Waiting for the other participant.'
+            return _('Waiting for the other participant.')
         elif num_other_players == 0:
-            return 'Waiting'
+            return _('Waiting')
 
 
 class FormPageMixin(object):
@@ -732,7 +732,7 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
         return 'Missing or incorrect parameters in URL'
 
     def url_has_correct_parameters(self):
-        for _, get_param_name in self.required_params.items():
+        for i, get_param_name in self.required_params.items():
             if get_param_name not in self.request.GET:
                 return False
         return True
