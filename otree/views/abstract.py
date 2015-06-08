@@ -257,20 +257,8 @@ class FormPageOrWaitPageMixin(OTreeMixin):
             self.save_objects()
             return response
         except Exception as e:
-            if hasattr(self, '_user'):
-                user_info = 'user: {}'.format(model_to_dict(self._user))
-                if hasattr(self, '_session_user'):
-                    self._session_user.last_request_succeeded = False
-                    self._session_user.save()
-            else:
-                user_info = '[user undefined]'
-            diagnostic_info = (
-                'is_ajax: {}'.format(self.request.is_ajax()),
-                'user: {}'.format(user_info),
-            )
-            e.args = (
-                '{}\nDiagnostic info: {}'.format(e.args[0:1], diagnostic_info),
-            ) + e.args[1:]
+            self._session_user.last_request_succeeded = False
+            self._session_user.save()
             raise
 
     # TODO: maybe this isn't necessary, because I can figure out what page
