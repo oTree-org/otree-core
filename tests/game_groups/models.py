@@ -9,22 +9,23 @@ import random
 # </standard imports>
 
 class Constants:
-    name_in_url = 'simple_game_copy'
-    players_per_group = None
-    num_rounds = 1
-
-
-
-author = 'Your name here'
-
-doc = """
-Description of this app.
-"""
+    name_in_url = 'groups_game'
+    players_per_group = 3
+    num_rounds = 2
 
 
 class Subsession(otree.models.BaseSubsession):
 
-    name_in_url = 'simple_game_copy'
+    def before_session_starts(self):
+        if self.round_number == 2:
+            for group in self.get_groups():
+                players = group.get_players()
+                pks = [p.pk for p in players]
+                for i, p in enumerate(players):
+                    assert p.id_in_group == i + 1
+                players.reverse()
+                group.set_players(players)
+                assert reversed(pks) == [p.pk for p in group.get_players()]
 
 
 class Group(otree.models.BaseGroup):
@@ -59,12 +60,8 @@ class Player(otree.models.BasePlayer):
     def my_field_bounds(self):
         return [5, 10]
 
-    add100_1 = models.PositiveIntegerField()
-    add100_2 = models.PositiveIntegerField()
+    from_other_player = models.PositiveIntegerField()
 
-    even_int = models.PositiveIntegerField()
-
-    before_next_page_field = models.BooleanField()
 
     def even_int_error_message(self, value):
         if value % 2:
