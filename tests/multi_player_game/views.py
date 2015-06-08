@@ -2,11 +2,11 @@
 from __future__ import division
 from . import models
 from ._builtin import Page, WaitPage
-from otree.common import Currency, currency_range
-from .models import Constants
+
 
 class Page(Page):
     template_name = 'multi_player_game/EveryPage.html'
+
 
 class FieldOnOtherPlayer(Page):
 
@@ -30,11 +30,11 @@ class ResultsWaitPage(WaitPage):
     def after_all_players_arrive(self):
         self.group.set_payoffs()
 
+
 class Results(Page):
 
     def vars_for_template(self):
         assert self.player.from_other_player == 1
-
 
 
 page_sequence = [

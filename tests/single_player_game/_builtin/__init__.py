@@ -3,6 +3,7 @@ from .. import models
 import otree.views
 import otree.test
 
+
 class Page(otree.views.Page):
     z_models = models
 
@@ -19,6 +20,7 @@ class WaitPage(otree.views.WaitPage):
     def z_autocomplete(self):
         self.subsession = models.Subsession()
         self.group = models.Group()
+
 
 class Bot(otree.test.Bot):
 

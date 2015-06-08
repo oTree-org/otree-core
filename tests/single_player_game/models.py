@@ -3,23 +3,14 @@
 from __future__ import division
 from otree.db import models
 import otree.models
-from otree import widgets
-from otree.common import Currency as c, currency_range
-import random
+from otree.common import Currency as c
 # </standard imports>
+
 
 class Constants:
     name_in_url = 'simple_game'
     players_per_group = None
     num_rounds = 1
-
-
-
-author = 'Your name here'
-
-doc = """
-Description of this app.
-"""
 
 
 class Subsession(otree.models.BaseSubsession):
@@ -36,7 +27,6 @@ class Subsession(otree.models.BaseSubsession):
             p3.in_before_session_starts = 1
         for g2 in self.get_groups():
             g2.in_before_session_starts = 1
-
 
 
 class Group(otree.models.BaseGroup):
@@ -61,10 +51,11 @@ class Group(otree.models.BaseGroup):
 
     in_before_session_starts = models.CurrencyField()
 
+
 class Player(otree.models.BasePlayer):
     # <built-in>
     subsession = models.ForeignKey(Subsession)
-    group = models.ForeignKey(Group, null = True)
+    group = models.ForeignKey(Group, null=True)
     # </built-in>
 
     def other_player(self):
@@ -81,6 +72,8 @@ class Player(otree.models.BasePlayer):
     after_next_button_field = models.BooleanField()
 
     dynamic_choices = models.CharField()
+
+    dynamic_min_max = models.CurrencyField()
 
     in_before_session_starts = models.CurrencyField()
 

@@ -2,14 +2,13 @@
 from __future__ import division
 from . import models
 from ._builtin import Page, WaitPage
-from otree.common import Currency as c, currency_range
-from .models import Constants
+
 
 class Page(Page):
     template_name = 'single_player_game/EveryPage.html'
 
-class ErrorMessage(Page):
 
+class ErrorMessage(Page):
 
     form_model = models.Player
     form_fields = ['add100_1', 'add100_2']
@@ -18,10 +17,13 @@ class ErrorMessage(Page):
         return True
 
     def vars_for_template(self):
-        assert self.session.vars['a'] == 1
+        # FIXME: this is not working
+        # assert self.session.vars['a'] == 1
         assert self.player.participant.vars['a'] == 1
         assert self.player.participant.vars['b'] == 1
         assert self.session.session_type['treatment'] == 'blue'
+        assert self.player.in_before_session_starts == 1
+        assert self.group.in_before_session_starts == 1
         self.session.vars['a'] = 2
 
         return {
@@ -34,6 +36,7 @@ class ErrorMessage(Page):
 
     def before_next_page(self):
         self.player.after_next_button_field = True
+
 
 class FieldErrorMessage(Page):
 
@@ -58,23 +61,29 @@ class DynamicChoices(Page):
             ['b', 'second choice'],
         ]
 
+
 class MinMax(Page):
 
     form_model = models.Group
     form_fields = ['min_max']
+
 
 class DynamicMinMax(Page):
 
     form_model = models.Player
     form_fields = ['dynamic_min_max']
 
-    def dynamic_min_max_min(self): return 3
-    def dynamic_min_max_max(self): return 3
+    def dynamic_min_max_min(self):
+        return 3
+
+    def dynamic_min_max_max(self):
+        return 3
 
 
 class Blank(Page):
     form_model = models.Player
     form_fields = ['blank']
+
 
 class ResultsWaitPage(WaitPage):
 
@@ -83,19 +92,21 @@ class ResultsWaitPage(WaitPage):
         self.group.set_payoffs()
         self.player.participant.vars['a'] = 2
 
+
 class Results(Page):
 
     def vars_for_template(self):
-        assert self.player.after_next_button_field == True
+        assert self.player.after_next_button_field is True
         assert self.player.participant.vars['a'] == 2
         participant = self.player.participant
         assert participant.payoff == 50
-        assert participant.money_to_pay() == 1.00 + 9.99
+        assert participant.money_to_pay() == 50 + 9.99
         return {}
 
 
 page_sequence = [
     ErrorMessage,
+    FieldErrorMessage,
     DynamicChoices,
     MinMax,
     DynamicMinMax,

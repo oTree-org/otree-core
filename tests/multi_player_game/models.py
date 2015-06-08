@@ -3,10 +3,8 @@
 from __future__ import division
 from otree.db import models
 import otree.models
-from otree import widgets
-from otree.common import Currency, currency_range
-import random
 # </standard imports>
+
 
 class Constants:
     name_in_url = 'groups_game'
@@ -37,13 +35,13 @@ class Group(otree.models.BaseGroup):
 
     def set_payoffs(self):
         for p in self.get_players():
-            p.payoff = 0 # change to whatever the payoff should be
+            p.payoff = 0
 
 
 class Player(otree.models.BasePlayer):
     # <built-in>
     subsession = models.ForeignKey(Subsession)
-    group = models.ForeignKey(Group, null = True)
+    group = models.ForeignKey(Group, null=True)
     # </built-in>
 
     def other_player(self):
@@ -61,7 +59,6 @@ class Player(otree.models.BasePlayer):
         return [5, 10]
 
     from_other_player = models.PositiveIntegerField()
-
 
     def even_int_error_message(self, value):
         if value % 2:

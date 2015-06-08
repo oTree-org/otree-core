@@ -35,7 +35,6 @@ from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache, cache_control
-from django.forms.models import model_to_dict
 from django.http import (
     HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
 )
@@ -256,7 +255,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
             self._session_user._last_request_timestamp = time.time()
             self.save_objects()
             return response
-        except Exception as e:
+        except Exception:
             self._session_user.last_request_succeeded = False
             self._session_user.save()
             raise
