@@ -23,6 +23,7 @@ class Subsession(otree.models.BaseSubsession):
                     assert p.id_in_group == i + 1
                 players.reverse()
                 group.set_players(players)
+                # FIXME: debug this
                 assert reversed(pks) == [p.pk for p in group.get_players()]
 
 
@@ -35,7 +36,7 @@ class Group(otree.models.BaseGroup):
 
     def set_payoffs(self):
         for p in self.get_players():
-            p.payoff = 0
+            p.payoff = 50
 
 
 class Player(otree.models.BasePlayer):

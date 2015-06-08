@@ -18,7 +18,7 @@ class ErrorMessage(Page):
 
     def vars_for_template(self):
         # FIXME: this is not working
-        # assert self.session.vars['a'] == 1
+        assert self.session.vars['a'] == 1
         assert self.player.participant.vars['a'] == 1
         assert self.player.participant.vars['b'] == 1
         assert self.session.session_type['treatment'] == 'blue'

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
-from . import models
 from ._builtin import Page, WaitPage
 
 
@@ -9,8 +8,6 @@ class Page(Page):
 
 
 class FieldOnOtherPlayer(Page):
-
-    form_model = models.Player
 
     def is_displayed(self):
         return self.player.id_in_group == 1
@@ -23,6 +20,11 @@ class FieldOnOtherPlayer(Page):
         assert ([p.subsession.round_number for p in in_all_rounds] ==
                 range(1, self.subsession.round_number + 1))
         assert in_all_rounds[-1].from_other_player == 1
+
+
+class Shim(Page):
+    def is_displayed(self):
+        return self.player.id_in_group != 1
 
 
 class ResultsWaitPage(WaitPage):
@@ -39,6 +41,7 @@ class Results(Page):
 
 page_sequence = [
     FieldOnOtherPlayer,
+    Shim,
     ResultsWaitPage,
     Results
 ]
