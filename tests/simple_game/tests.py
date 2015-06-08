@@ -11,5 +11,10 @@ class PlayerBot(Bot):
 
     def play_round(self):
 
-        self.submit(views.MyPage, {'add100_1': 1, 'add100_2': 99})
+        self.submit_invalid(views.MyPage, {'add100_1': 1, 'add100_2': 98, 'even_int': 2})
+        self.submit_invalid(views.MyPage, {'add100_1': 1, 'add100_2': 99, 'even_int': 3})
+        self.submit(views.MyPage, {'add100_1': 1, 'add100_2': 99, 'even_int': 2})
         self.submit(views.Results)
+
+    def validate_play(self):
+        pass

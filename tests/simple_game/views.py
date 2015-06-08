@@ -14,7 +14,7 @@ def vars_for_all_templates(self):
 class MyPage(Page):
 
     form_model = models.Player
-    form_fields = ['add100_1', 'add100_2']
+    form_fields = ['add100_1', 'add100_2', 'even_int']
 
     timeout_seconds = 10
     timeout_submission = {
@@ -29,9 +29,17 @@ class MyPage(Page):
     template_name = 'simple_game/MyPage.html'
 
     def vars_for_template(self):
+        assert self.session.vars['a'] == 1
+        assert self.player.participant.vars['a'] == 1
+        assert self.player.participant.vars['b'] == 1
+        self.session.vars['a'] = 2
         return {
             'my_variable_here': 1,
         }
+
+    def even_int_error_message(self, value):
+        if value % 2:
+            return 'Must be an even number'
 
     def error_message(self, values):
         if values['add100_1'] + values['add100_2'] != 100:
@@ -43,11 +51,17 @@ class MyPage(Page):
 class ResultsWaitPage(WaitPage):
 
     def after_all_players_arrive(self):
+        assert self.session.vars['a'] == 2
         self.group.set_payoffs()
 
 class Results(Page):
 
     template_name = 'simple_game/Results.html'
+
+    def vars_for_template(self):
+        assert self.player.after_next_button_field == True
+        return {}
+
 
 page_sequence =[
         MyPage,

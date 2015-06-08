@@ -5,6 +5,7 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.utils.safestring import mark_safe
+from django.utils.translation import ugettext
 
 import easymoney
 
@@ -13,7 +14,6 @@ class RealWorldCurrency(easymoney.Money):
     '''payment currency'''
 
     CODE = settings.REAL_WORLD_CURRENCY_CODE
-    FORMAT = settings.REAL_WORLD_CURRENCY_FORMAT
     LOCALE = settings.REAL_WORLD_CURRENCY_LOCALE
     DECIMAL_PLACES = settings.REAL_WORLD_CURRENCY_DECIMAL_PLACES
 
@@ -21,13 +21,18 @@ class RealWorldCurrency(easymoney.Money):
         return Decimal(self)
 
 
-class Currency(easymoney.Money):
+class Currency(RealWorldCurrency):
     '''game currency'''
 
-    CODE = settings.GAME_CURRENCY_CODE
-    FORMAT = settings.GAME_CURRENCY_FORMAT
-    LOCALE = settings.GAME_CURRENCY_LOCALE
-    DECIMAL_PLACES = settings.GAME_CURRENCY_DECIMAL_PLACES
+    if settings.USE_POINTS:
+        # TODO: make this customizable?
+        DECIMAL_PLACES = 0
+
+    @classmethod
+    def _format_currency(cls, number):
+        if settings.USE_POINTS:
+            return ugettext('{} points').format(number)
+        return super(Currency, cls)._format_currency(number)
 
     def to_real_world_currency(self, session):
 

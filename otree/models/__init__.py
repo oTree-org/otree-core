@@ -56,7 +56,7 @@ class BaseSubsession(subsessions.BaseSubsession):
 
     @property
     def app_name(self):
-        return self._meta.app_label
+        return self._meta.app_config.name
 
     def in_previous_rounds(self):
         return super(BaseSubsession, self).in_previous_rounds()

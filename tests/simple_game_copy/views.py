@@ -14,7 +14,11 @@ def vars_for_all_templates(self):
 class MyPage(Page):
 
     form_model = models.Player
-    form_fields = ['add100_1', 'add100_2']
+    form_fields = [
+        'add100_1',
+        'add100_2',
+        #'value_for_both_players'
+    ]
 
     timeout_seconds = 10
     timeout_submission = {
@@ -25,8 +29,6 @@ class MyPage(Page):
 
     def is_displayed(self):
         return True
-
-    template_name = 'simple_game_copy/MyPage.html'
 
     def vars_for_template(self):
         return {
@@ -46,8 +48,7 @@ class ResultsWaitPage(WaitPage):
         self.group.set_payoffs()
 
 class Results(Page):
-
-    template_name = 'simple_game_copy/Results.html'
+    pass
 
 page_sequence = [
         MyPage,

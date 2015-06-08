@@ -24,7 +24,15 @@ Description of this app.
 
 class Subsession(otree.models.BaseSubsession):
 
-    name_in_url = 'simple_game'
+    def before_session_starts(self):
+        self.session.vars['a'] = 1
+        if self.round_number == 1:
+            for p in self.get_players():
+                p.participant.vars['a'] = 1
+            for g in self.get_groups():
+                for p2 in g.get_players():
+                    p2.participant.vars['b'] = 1
+
 
 
 class Group(otree.models.BaseGroup):
@@ -63,10 +71,6 @@ class Player(otree.models.BasePlayer):
     even_int = models.PositiveIntegerField()
 
     after_next_button_field = models.BooleanField()
-
-    def even_int_error_message(self, value):
-        if value % 2:
-            return 'Must be an even number'
 
     def role(self):
         # you can make this depend of self.id_in_group

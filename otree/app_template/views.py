@@ -21,8 +21,8 @@ class Results(Page):
     pass
 
 
-page_sequence =[
-        MyPage,
-        ResultsWaitPage,
-        Results
-    ]
+page_sequence = [
+    MyPage,
+    ResultsWaitPage,
+    Results
+]

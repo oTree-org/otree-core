@@ -142,7 +142,6 @@ def get_all_fields(Model, for_export=False):
             'label',
             'session',
             'session_access_code',
-            '_experimenter',
             '_index_in_subsessions',
         },
     }[Model.__name__]
@@ -560,9 +559,7 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
 
     def get_context_data(self, **kwargs):
         session = self.session
-        experimenter_url = self.request.build_absolute_uri(
-            session.session_experimenter._start_url()
-        )
+
         participant_urls = [
             self.request.build_absolute_uri(participant._start_url())
             for participant in session.get_participants()
@@ -577,11 +574,12 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
 
         context = super(SessionStartLinks, self).get_context_data(**kwargs)
 
-        context.update({'experimenter_url': experimenter_url,
-                        'participant_urls': participant_urls,
-                        'anonymous_url': anonymous_url,
-                        'num_participants': len(participant_urls),
-                        'fullscreen_mode_on': len(participant_urls) <= 3})
+        context.update({
+            'participant_urls': participant_urls,
+            'anonymous_url': anonymous_url,
+            'num_participants': len(participant_urls),
+            'fullscreen_mode_on': len(participant_urls) <= 3
+        })
         return context
 
 
@@ -600,10 +598,10 @@ class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
         rows = []
 
         for subsession in session.get_subsessions():
-            app_label = subsession._meta.app_label
+            app_label = subsession._meta.app_config.name
 
             column_names, subsession_rows = get_display_table_rows(
-                subsession._meta.app_label,
+                subsession._meta.app_config.name,
                 for_export=False,
                 subsession_pk=subsession.pk
             )

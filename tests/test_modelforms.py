@@ -1,11 +1,10 @@
-from django.test import TestCase
-
 import floppyforms
 
 import otree.forms
 import otree.widgets
 from otree.forms import ModelForm
 
+from .base import TestCase
 from .models import FormFieldModel
 
 

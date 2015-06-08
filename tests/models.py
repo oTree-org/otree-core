@@ -1,3 +1,4 @@
+import easymoney
 from otree.common import currency_range
 from otree.db import models
 import otree.models
@@ -56,3 +57,9 @@ class FormFieldModel(otree.models.BaseGroup):
 
     sent_amount = models.CurrencyField(choices=currency_range(0, 0.75, 0.05))
     slider_widget = models.IntegerField(widget=widgets.SliderInput())
+
+
+class CurrencyFieldTestModel(otree.db.models.Model):
+    currency_with_default_value_zero = models.CurrencyField(
+        initial=easymoney.Money(0),
+        min=0)

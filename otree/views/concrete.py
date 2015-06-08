@@ -16,8 +16,9 @@ from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.contrib import messages
 from django.http import (
-    HttpResponse, HttpResponseRedirect, HttpResponseNotFound
+    HttpResponseRedirect, HttpResponseNotFound
 )
+from django.utils.translation import ugettext as _
 
 import otree.constants as constants
 import otree.models.session
@@ -37,15 +38,9 @@ class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
     name_in_url = 'shared'
 
     def dispatch(self, request, *args, **kwargs):
-        user_type = kwargs.pop(constants.user_type)
-        if user_type == constants.user_type_experimenter:
-            return TemplateResponse(
-                request, 'otree/OutOfRangeNotificationExperimenter.html'
-            )
-        else:
-            return TemplateResponse(
-                request, 'otree/OutOfRangeNotification.html'
-            )
+        return TemplateResponse(
+            request, 'otree/OutOfRangeNotification.html'
+        )
 
 
 class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin,
@@ -79,7 +74,7 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin,
                     group_players.append(self.player)
                     open_group.set_players(group_players)
                     group_size_obj = GroupSize.objects.filter(
-                        app_label=self.subsession._meta.app_label,
+                        app_label=self.subsession._meta.app_config.name,
                         subsession_pk=self.subsession.pk,
                     ).order_by('group_index')[0]
                     group_quota = group_size_obj.group_size
@@ -99,7 +94,7 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin,
         return False
 
     def body_text(self):
-        return (
+        return _(
             'Waiting until other participants and/or '
             'the study supervisor are ready.'
         )
@@ -112,47 +107,6 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin,
 
     def get_debug_values(self):
         pass
-
-
-class SessionExperimenterWaitUntilPlayersAreAssigned(NonSequenceUrlMixin,
-                                                     GenericWaitPageMixin,
-                                                     vanilla.View):
-
-    def title_text(self):
-        return 'Please wait'
-
-    def body_text(self):
-        return 'Assigning players to groups.'
-
-    def _is_ready(self):
-        return self.session._ready_to_play
-
-    @classmethod
-    def get_name_in_url(cls):
-        return 'shared'
-
-    def dispatch(self, request, *args, **kwargs):
-        session_user_code = kwargs[constants.session_user_code]
-        self.request.session[session_user_code] = {}
-
-        self._session_user = get_object_or_404(
-            otree.models.session.SessionExperimenter,
-            code=kwargs[constants.session_user_code]
-        )
-
-        self.session = self._session_user.session
-
-        if self.request_is_from_wait_page():
-            return self._response_to_wait_page()
-        else:
-            # if the player shouldn't see this view, skip to the next
-            if self._is_ready():
-                # FIXME 2014-12-4: what should this do instead of directing
-                # to the start url?
-                return HttpResponse(
-                    'not yet implemented: redirect to experimenter page'
-                )
-            return self._get_wait_page()
 
 
 class InitializeParticipant(vanilla.UpdateView):

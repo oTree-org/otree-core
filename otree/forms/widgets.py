@@ -2,6 +2,8 @@ from decimal import Decimal
 
 from babel.core import Locale
 from django.conf import settings
+from django.utils.encoding import force_text
+from django.utils.translation import ugettext_lazy
 import babel
 import babel.numbers
 import easymoney
@@ -62,45 +64,38 @@ class CheckboxSelectMultipleHorizontal(forms.CheckboxSelectMultiple):
 
 
 class BaseMoneyInput(forms.NumberInput):
-    step = '0.01'
     template_name = 'floppyforms/moneyinput.html'
-
-    def get_currency_symbol(self, currency_code):
-        return babel.numbers.get_currency_symbol(
-            currency_code, self.currency_locale)
 
     def get_context(self, *args, **kwargs):
         context = super(BaseMoneyInput, self).get_context(*args, **kwargs)
-        currency_symbol = self.get_currency_symbol(self.currency_code)
-        context.setdefault('currency', self.currency_code)
-        context.setdefault('currency_symbol', currency_symbol)
-        context['currency_symbol_is_prefix'] = self.currency_symbol_is_prefix()
+        context['currency_symbol'] = self.CURRENCY_SYMBOL
+        context['currency_symbol_is_prefix'] = self.currency_symbol_is_prefix
         return context
 
-    def currency_symbol_is_prefix(self):
-        locale = Locale.parse(self.currency_locale)
-        format = self.currency_format
-        if not format:
-            format = locale.currency_formats.get(None)
+    if settings.USE_POINTS:
+        currency_symbol_is_prefix = False
+    else:
+        locale = Locale.parse(settings.REAL_WORLD_CURRENCY_LOCALE)
+        format = locale.currency_formats.get(None)
         pattern = babel.numbers.parse_pattern(format)
-        return u'\xa4' in pattern.prefix[0]
+        currency_symbol_is_prefix = u'\xa4' in pattern.prefix[0]
 
     def _format_value(self, value):
         if isinstance(value, easymoney.Money):
-            return Decimal(value)
-        return value
+            value = Decimal(value)
+        return force_text(value)
 
 
 class RealWorldCurrencyInput(BaseMoneyInput):
-    currency_code = settings.REAL_WORLD_CURRENCY_CODE
-    currency_locale = settings.REAL_WORLD_CURRENCY_LOCALE
-    currency_format = settings.REAL_WORLD_CURRENCY_FORMAT
+    CURRENCY_SYMBOL = babel.numbers.get_currency_symbol(
+        settings.REAL_WORLD_CURRENCY_CODE,
+        settings.REAL_WORLD_CURRENCY_LOCALE
+    )
 
 
-class CurrencyInput(BaseMoneyInput):
-    currency_code = settings.GAME_CURRENCY_CODE
-    currency_locale = settings.GAME_CURRENCY_LOCALE
-    currency_format = settings.GAME_CURRENCY_FORMAT
+class CurrencyInput(RealWorldCurrencyInput):
+    if settings.USE_POINTS:
+        CURRENCY_SYMBOL = ugettext_lazy('points')
 
 
 class RadioSelectHorizontal(forms.RadioSelect):

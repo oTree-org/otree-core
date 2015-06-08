@@ -39,11 +39,11 @@ from django.forms.models import model_to_dict
 from django.http import (
     HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
 )
+from django.utils.translation import ugettext as _
 
 import vanilla
 
 import otree.forms
-from otree.models.user import Experimenter
 import otree.common_internal
 
 import otree.models.session
@@ -134,8 +134,6 @@ class NonSequenceUrlMixin(object):
 
 class PlayerMixin(object):
 
-    _is_experimenter = False
-
     def get_debug_values(self):
         try:
             group_id = self.group.pk
@@ -161,22 +159,6 @@ class PlayerMixin(object):
         objs.extend(list(self.subsession._groups))
 
         return objs
-
-
-class ExperimenterMixin(object):
-
-    _is_experimenter = True
-
-    def get_debug_values(self):
-        return [('Subsession code', self.subsession.code)]
-
-    def get_UserClass(self):
-        return Experimenter
-
-    def objects_to_save(self):
-        return [
-            self._user, self.subsession, self._session_user
-        ] + self.subsession.get_players()
 
 
 class FormPageOrWaitPageMixin(OTreeMixin):
@@ -220,13 +202,11 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         self.SubsessionClass = getattr(models_module, 'Subsession')
         self.GroupClass = getattr(models_module, 'Group')
         self.PlayerClass = getattr(models_module, 'Player')
-        self.UserClass = self.get_UserClass()
 
-        self._user = get_object_or_404(self.get_UserClass(), pk=user_pk)
+        self._user = self.PlayerClass.objects.get(pk=user_pk)
 
-        if not self._is_experimenter:
-            self.player = self._user
-            self.group = self.player.group
+        self.player = self._user
+        self.group = self.player.group
 
         self.subsession = self._user.subsession
         self.session = self._user.session
@@ -237,13 +217,8 @@ class FormPageOrWaitPageMixin(OTreeMixin):
     def dispatch(self, request, *args, **kwargs):
         try:
             session_user_code = kwargs.pop(constants.session_user_code)
-            user_type = kwargs.pop(constants.user_type)
-            if user_type == constants.user_type_participant:
-                self.SessionUserClass = otree.models.session.Participant
-            else:
-                self.SessionUserClass = (
-                    otree.models.session.SessionExperimenter
-                )
+
+            self.SessionUserClass = otree.models.session.Participant
 
             try:
                 self._session_user = get_object_or_404(
@@ -391,7 +366,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
         # FIXME: what about experimenter visits?
         completion = PageCompletion(
-            app_name=self.subsession.app_name,
+            app_name=self.subsession._meta.app_config.name,
             page_index=self._index_in_pages,
             page_name=page_name, time_stamp=now,
             seconds_on_page=seconds_on_page,
@@ -417,7 +392,7 @@ class GenericWaitPageMixin(object):
     wait_page_template_name = 'otree/WaitPage.html'
 
     def title_text(self):
-        return 'Please wait'
+        return _('Please wait')
 
     def body_text(self):
         return ''
@@ -588,8 +563,6 @@ class InGameWaitPageMixin(object):
         visit, _ = WaitPageVisit.objects.get_or_create(
             session_pk=self.session.pk,
             page_index=self._index_in_pages,
-
-            # FIXME: what about experimenter?
             id_in_session=self._session_user.id_in_session
         )
 
@@ -615,11 +588,11 @@ class InGameWaitPageMixin(object):
     def body_text(self):
         num_other_players = len(self._group_or_subsession.get_players()) - 1
         if num_other_players > 1:
-            return 'Waiting for the other participants.'
+            return _('Waiting for the other participants.')
         elif num_other_players == 1:
-            return 'Waiting for the other participant.'
+            return _('Waiting for the other participant.')
         elif num_other_players == 0:
-            return 'Waiting'
+            return _('Waiting')
 
 
 class FormPageMixin(object):
@@ -777,20 +750,6 @@ class PlayerUpdateView(FormPageMixin, FormPageOrWaitPageMixin,
             return seq_models.StubModel.objects.all()[0]
 
 
-class ExperimenterUpdateView(FormPageMixin, FormPageOrWaitPageMixin,
-                             ExperimenterMixin, vanilla.UpdateView):
-
-    # 2014-9-14: commenting out as i figure out getting rid of forms.py
-    # form_class = ExperimenterStubModelForm
-
-    def get_object(self):
-        Cls = self.form_model
-        if Cls == self.SubsessionClass:
-            return self.subsession
-        elif Cls == seq_models.StubModel:
-            return seq_models.StubModel.objects.all()[0]
-
-
 class InGameWaitPage(FormPageOrWaitPageMixin, PlayerMixin, InGameWaitPageMixin,
                      GenericWaitPageMixin, vanilla.UpdateView):
     """public API wait page
@@ -807,7 +766,7 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
         return 'Missing or incorrect parameters in URL'
 
     def url_has_correct_parameters(self):
-        for _, get_param_name in self.required_params.items():
+        for i, get_param_name in self.required_params.items():
             if get_param_name not in self.request.GET:
                 return False
         return True

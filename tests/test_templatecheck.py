@@ -1,9 +1,9 @@
 import os
 from django.core.management import call_command, CommandError
 from django.template import Template
-from django.test import TestCase
 
 from otree.checks.templates import get_unreachable_content, check_next_button
+from .base import TestCase
 from .utils import capture_stdout, dummyapp
 
 

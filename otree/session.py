@@ -7,8 +7,7 @@ from django.conf import settings
 from django.db import transaction
 
 from otree import constants
-from otree.models.user import Experimenter
-from otree.models.session import Session, SessionExperimenter, Participant
+from otree.models.session import Session, Participant
 from otree.common_internal import (
     get_models_module, get_app_constants,
     min_players_multiple,
@@ -137,14 +136,13 @@ def create_session(session_type_name, label='', num_participants=None,
         label=label,
         # FIXME: fixed_pay is deprecated on 2015-5-7, remove it eventually
         participation_fee=(
-            session_type.get('participation_fee')
-            or session_type.get('fixed_pay')
+            session_type.get('participation_fee') or
+            session_type.get('fixed_pay')
         ),
         special_category=special_category,
         real_world_currency_per_point=(
             session_type['real_world_currency_per_point']
         ),
-        session_experimenter=SessionExperimenter.objects.create(),
         _pre_create_id=_pre_create_id,
     )
 
@@ -202,19 +200,7 @@ def create_session(session_type_name, label='', num_participants=None,
 
         subsessions.extend(subs)
 
-    # Create experimenters and bind subsessions to them
-    experimenters = bulk_create(Experimenter, [
-        {'subsession': subsession}
-        for subsession in subsessions
-    ])
-    sub_by_pk = {s.pk: s for s in subsessions}
-    for experimenter in experimenters:
-        idpk = experimenter.subsession_object_id
-        sub_by_pk[idpk]._experimenter = experimenter
-        sub_by_pk[idpk].save()
-
     session._create_groups_and_initialize()
-
     session.build_session_user_to_user_lookups()
     session.ready = True
     session.save()

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: oTree\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-12-13 13:41+0800\n"
+"POT-Creation-Date: 2015-06-07 12:30+0700\n"
 "PO-Revision-Date: 2013-12-13 13:40+0800\n"
 "Last-Translator: Raphael <raphael.nehmer@gess.ethz.ch>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,58 +18,134 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 1.6\n"
 
-#: .\forms.py:47
+#: .\otree\apps.py:45
+msgid "oTree"
+msgstr ""
+
+#: .\otree\common.py:34
+msgid "{} points"
+msgstr ""
+
+#: .\otree\db\models.py:223
 msgid "Yes"
 msgstr ""
 
-#: .\forms.py:48
+#: .\otree\db\models.py:224
 msgid "No"
 msgstr ""
 
-#: .\forms.py:67
+#: .\otree\forms\forms.py:305
 msgid "This field is required."
 msgstr "Dieses Feld ist erforderlich."
 
-#: .\templates\data_exports\otree.html:56
-msgid "No columns where defined for this export, so there's no data to display"
+#: .\otree\forms\forms.py:310
+msgid "Value must be greater than or equal to {}."
 msgstr ""
-"Für diesen Export wurden keine Spalten definiert, es können also keine Daten "
-"angezeigt werden"
 
-#: .\templates\otree\BaseBuiltIn.html:7
-msgid "Task"
-msgstr "Aufgabe"
+#: .\otree\forms\forms.py:314
+msgid "Value must be less than or equal to {}."
+msgstr ""
 
-#: .\templates\otree\BaseBuiltIn.html:28
+#: .\otree\forms\forms.py:323
+msgid "Value must be one of: {}"
+msgstr ""
+
+#: .\otree\forms\widgets.py:97
+msgid "points"
+msgstr ""
+
+#: .\otree\templates\otree\BaseExperiment.html:18
+#: .\otree\templates\otree\BaseSite.html:31
 msgid "Please fix the errors in the form."
 msgstr "Bitte korrigieren Sie die Fehler im Formular."
 
-#: .\templates\otree\Form.html:10
-msgid "Next"
-msgstr "Weiter"
+#: .\otree\templates\otree\OutOfRangeNotification.html:10
+msgid "No more pages left to show."
+msgstr ""
+
+#: .\otree\templates\otree\WaitPage.html:38
+msgid "An error occurred."
+msgstr ""
 
 # incomplete sentence
-#: .\templates\otree\Timer.html:6
+#: .\otree\templates\otree\includes\TimeLimit.html:6
 msgid "Time left to complete this page:"
 msgstr "Verbleibende Zeit für diese Seite."
 
-#: .\templates\otree\Timer.html:20
-msgid "Time ran out. Please fill out any form fields and continue."
+#: .\otree\templates\otree\includes\TimeLimit.html:20
+msgid "Time ran out."
 msgstr ""
-"Die Zeit ist abgelaufen. Bitte füllen Sie die Formularfelder aus und fahren "
-"Sie fort."
 
-#: .\templates\otree\WaitPage.html:5 .\templates\otree\WaitPage.html.py:14
+#: .\otree\templates\otree\login.html:8
+#, fuzzy
+#| msgid "Please fix the errors in the form."
+msgid "Please correct the error below."
+msgstr "Bitte korrigieren Sie die Fehler im Formular."
+
+#: .\otree\templates\otree\login.html:8
+#, fuzzy
+#| msgid "Please fix the errors in the form."
+msgid "Please correct the errors below."
+msgstr "Bitte korrigieren Sie die Fehler im Formular."
+
+#: .\otree\templates\otree\login.html:35
+msgid "Forgotten your password or username?"
+msgstr ""
+
+#: .\otree\templates\otree\login.html:39
+msgid "Log in"
+msgstr ""
+
+#: .\otree\templates\otree\tags\NextButton.html:3
+msgid "Next"
+msgstr "Weiter"
+
+#: .\otree\views\abstract.py:377
 msgid "Please wait"
 msgstr "Bitte warten Sie"
 
-#: .\views\abstract.py:443
-msgid ""
-"To participate, you need to first accept this Mechanical Turk HIT and then "
-"re-click the link (refreshing this page will not work)."
+#: .\otree\views\abstract.py:573
+msgid "Waiting for the other participants."
 msgstr ""
-"Um teizunehmen, akzeptieren Sie bitte zuerst diesen Mechanical Turk HIT und "
-"klicken Sie dann auf den Link (aktualisieren der Seite funktioniert nicht)."
+
+#: .\otree\views\abstract.py:575
+msgid "Waiting for the other participant."
+msgstr ""
+
+#: .\otree\views\abstract.py:577
+msgid "Waiting"
+msgstr ""
+
+#: .\otree\views\concrete.py:97
+msgid "Waiting until other participants and/or the study supervisor are ready."
+msgstr ""
+
+#, fuzzy
+#~| msgid "Please fix the errors in the form."
+#~ msgid "Please fix the errors in the form"
+#~ msgstr "Bitte korrigieren Sie die Fehler im Formular."
+
+#~ msgid "Time ran out. Please fill out any form fields and continue."
+#~ msgstr ""
+#~ "Die Zeit ist abgelaufen. Bitte füllen Sie die Formularfelder aus und "
+#~ "fahren Sie fort."
+
+#~ msgid ""
+#~ "No columns where defined for this export, so there's no data to display"
+#~ msgstr ""
+#~ "Für diesen Export wurden keine Spalten definiert, es können also keine "
+#~ "Daten angezeigt werden"
+
+#~ msgid "Task"
+#~ msgstr "Aufgabe"
+
+#~ msgid ""
+#~ "To participate, you need to first accept this Mechanical Turk HIT and "
+#~ "then re-click the link (refreshing this page will not work)."
+#~ msgstr ""
+#~ "Um teizunehmen, akzeptieren Sie bitte zuerst diesen Mechanical Turk HIT "
+#~ "und klicken Sie dann auf den Link (aktualisieren der Seite funktioniert "
+#~ "nicht)."
 
 #~ msgid "Your browser does not support this site's cookies."
 #~ msgstr "Ihr Browser unterstützt keine Cookies dieser Seite."

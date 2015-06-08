@@ -4,10 +4,7 @@
 import random
 
 from save_the_change.mixins import SaveTheChange
-
-
 from otree.db import models
-from otree.common_internal import get_views_module
 from otree.common_internal import (
     get_models_module, get_players, get_groups,
     flatten
@@ -25,11 +22,6 @@ class BaseSubsession(SaveTheChange, models.Model):
         abstract = True
 
     code = models.RandomCharField(length=8)
-
-    _experimenter = models.OneToOneField(
-        'otree.Experimenter', null=True,
-        related_name='%(app_label)s_subsession'
-    )
 
     # FIXME: this should start at 1, to be consistent with id_in_group
     _index_in_subsessions = models.PositiveIntegerField(
@@ -164,7 +156,7 @@ class BaseSubsession(SaveTheChange, models.Model):
         return get_models_module(self._meta.app_config.name).Constants
 
     def _GroupClass(self):
-        return models.get_model(self._meta.app_label, 'Group')
+        return models.get_model(self._meta.app_config.label, 'Group')
 
     def _create_group(self):
         '''should not be public API, because could leave the players in an
@@ -199,7 +191,7 @@ class BaseSubsession(SaveTheChange, models.Model):
     def _set_players_per_group_list(self):
         for index, group_size in enumerate(self._get_players_per_group_list()):
             GroupSize(
-                app_label=self._meta.app_label,
+                app_label=self._meta.app_config.name,
                 subsession_pk=self.pk,
                 group_index=index,
                 group_size=group_size,
@@ -268,22 +260,6 @@ class BaseSubsession(SaveTheChange, models.Model):
             g.save()
 
         # subsession.save() gets called in the parent method
-
-    def _experimenter_pages(self):
-        views_module = get_views_module(self._meta.app_label)
-        if hasattr(views_module, 'experimenter_pages'):
-            return views_module.experimenter_pages() or []
-        return []
-
-    def _experimenter_pages_as_urls(self):
-        """Converts the sequence to URLs.
-
-        e.g.:
-        """
-        return [
-            View.url(self._experimenter.session_experimenter, index)
-            for index, View in enumerate(self._experimenter_pages())
-        ]
 
     def match_players(self, match_name):
         if self.round_number > 1:

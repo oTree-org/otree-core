@@ -8,7 +8,6 @@
 
 from django.db import utils
 
-
 # =============================================================================
 # CONSTANTS
 # =============================================================================
@@ -53,7 +52,6 @@ wait_page_http_header = 'oTree-Wait-Page'
 redisplay_with_errors_http_header = 'oTree-Redisplay-With-Errors'
 user_type = 'user_type'
 user_type_participant = 'p'
-user_type_experimenter = 'e'
 success = True
 failure = False
 session_special_category_bots = 'bots'

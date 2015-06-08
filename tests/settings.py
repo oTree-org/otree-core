@@ -42,10 +42,6 @@ INSTALLED_APPS = [
     'tests.demo',
 ]
 
-INSTALLED_OTREE_APPS = [
-    'tests.simple_game',
-    'tests.simple_game_copy',
-]
 
 SESSION_TYPE_DEFAULTS = {
     'real_world_currency_per_point': 0.01,
@@ -74,29 +70,8 @@ SESSION_TYPES = [
 ]
 
 
-DEMO_PAGE_INTRO_TEXT = """
-<ul>
-    <li>
-        <a href="https://github.com/oTree-org/otree" target="_blank">
-            Source code
-        </a>
-        for the below games.
-    </li>
-    <li>
-        <a href="http://www.otree.org/" target="_blank">oTree homepage</a>.
-    </li>
-</ul>
-<p>
-    Below are various games implemented with oTree. These games are all open
-    source, and you can modify them as you wish to create your own variations.
-    Click one to learn more and play.
-</p>
-"""
+DEMO_PAGE_INTRO_TEXT = """"""
 
-
-MIDDLEWARE_CLASSES = ()
-
-ROOT_URLCONF = 'otree.default_urls'
 
 ACCESS_CODE_FOR_DEFAULT_SESSION = 'idd1610'
 
