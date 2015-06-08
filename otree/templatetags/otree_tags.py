@@ -20,6 +20,7 @@ from django.core.urlresolvers import Resolver404, reverse
 from .otree_forms import FormNode
 from .otree_forms import FormFieldNode
 from .otree_forms import MarkFieldAsRenderedNode
+from .otree_forms import defaultlabel
 from otree.common import Currency
 
 
@@ -71,3 +72,4 @@ def active_page(request, view_name, *args, **kwargs):
 register.tag('pageform', FormNode.parse)
 register.tag('mark_field_as_rendered', MarkFieldAsRenderedNode.parse)
 register.tag('formfield', FormFieldNode.parse)
+register.filter('defaultlabel', defaultlabel)

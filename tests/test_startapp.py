@@ -4,11 +4,11 @@ import tempfile
 
 from django.conf import settings
 from django.core.management import call_command, CommandError
-from django.test import TestCase
 
 from mock import patch
 
 import otree.checks
+from .base import TestCase
 from .utils import add_path, capture_stdout, cd
 
 
