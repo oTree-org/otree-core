@@ -1,14 +1,13 @@
-
 import uuid
 
-from django.test import TestCase
 from django.core.management import call_command
 
 from otree.models import Session
-from tests.utils import capture_stdout
 
+from .base import TestCase
 from tests.simple_game import models as sg_models
 from tests.simple_game_copy import models as sgc_models
+from tests.utils import capture_stdout
 
 
 class TestCreateSessionsCommand(TestCase):

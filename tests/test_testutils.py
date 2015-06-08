@@ -2,8 +2,7 @@ import os
 import sys
 import tempfile
 
-from django.test import TestCase
-
+from .base import TestCase
 from .utils import add_path, capture_stdout, cd
 
 

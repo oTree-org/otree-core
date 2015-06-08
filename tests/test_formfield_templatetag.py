@@ -3,11 +3,11 @@ from django.template import Context
 from django.template import Template
 from django.template import TemplateSyntaxError
 from django.template import VariableDoesNotExist
-from django.test import TestCase
 
 import otree.db.models
 import otree.forms
 
+from .base import TestCase
 from .models import SimplePlayer
 from .simple_game.models import Player
 from .utils import capture_stdout
@@ -204,3 +204,21 @@ class FormFieldTests(FormFieldTestMixin, TestCase):
             '''
             <label for="id_name">A fancy label:</label>
             ''', rendered)
+
+    def test_empty_label_in_bootstrap_theme(self):
+        form = SimplePlayerForm(instance=self.simple_player)
+        rendered = self.render(
+            '''
+            {% load form from floppyforms %}
+            {% load formconfig from floppyforms %}
+            {% form form using %}
+                {% formconfig row using "floppyforms/rows/bootstrap.html" %}
+                {% formfield player.name with label="" %}
+            {% endform %}
+            ''',
+            {
+                'form': form,
+                'player': self.simple_player,
+            })
+        # Label is there.
+        self.assertTrue('<label' not in rendered, rendered)

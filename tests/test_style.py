@@ -8,8 +8,9 @@ import multiprocessing
 from flake8 import engine, reporter
 
 from django.core.exceptions import ImproperlyConfigured
-from django.test import TestCase
 from django.conf import settings
+
+from .base import TestCase
 
 
 # =============================================================================

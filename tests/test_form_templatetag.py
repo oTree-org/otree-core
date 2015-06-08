@@ -3,11 +3,11 @@
 
 from django.template import Context
 from django.template import Template
-from django.test import TestCase
 
 import otree.db.models
 import otree.forms
 
+from .base import TestCase
 from .models import SimplePlayer
 
 
