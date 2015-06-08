@@ -256,7 +256,7 @@ class Session(ModelWithVars):
             subsession._initialize()
             subsession.save()
         self._ready_to_play = True
-        # assert self is not subsession.session
+        # assert self is subsession.session
         self.save()
 
     def mturk_requester_url(self):

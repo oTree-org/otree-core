@@ -1,5 +1,4 @@
 from django.core.management import call_command
-from django.test import TestCase
 from django.test.client import RequestFactory
 
 from otree import constants
@@ -8,6 +7,7 @@ from otree.models.session import Participant
 from tests.simple_game.views import MyPage
 from tests.simple_game.models import Player
 from tests.utils import capture_stdout
+from .base import TestCase
 
 
 class Attribute(object):

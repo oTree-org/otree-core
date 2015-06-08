@@ -1,7 +1,6 @@
-from django.test import TestCase
-
 import otree.forms
 
+from .base import TestCase
 from .models import CurrencyFieldTestModel
 from .models import SimpleModel
 from .models import FormFieldModel
