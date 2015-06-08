@@ -5,11 +5,8 @@ from ._builtin import Page, WaitPage
 from otree.common import Currency as c, currency_range
 from .models import Constants
 
-def vars_for_all_templates(self):
-    return {
-        # example:
-        #'my_field': self.player.my_field,
-    }
+class Page(Page):
+    template_name = 'multi_player_game/EveryPage.html'
 
 class ErrorMessage(Page):
 

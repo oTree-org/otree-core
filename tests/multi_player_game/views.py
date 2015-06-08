@@ -5,6 +5,8 @@ from ._builtin import Page, WaitPage
 from otree.common import Currency, currency_range
 from .models import Constants
 
+class Page(Page):
+    template_name = 'multi_player_game/EveryPage.html'
 
 class FieldOnOtherPlayer(Page):
 
