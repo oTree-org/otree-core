@@ -17,8 +17,10 @@ class ErrorMessage(Page):
         return True
 
     def vars_for_template(self):
-        # FIXME: this is not working
-        assert self.session.vars['a'] == 1
+        # if a is True, why does the assert fail??
+        a = self.session.vars['a'] == 1
+        raise Exception(a)
+        assert a
         assert self.player.participant.vars['a'] == 1
         assert self.player.participant.vars['b'] == 1
         assert self.session.session_type['treatment'] == 'blue'
