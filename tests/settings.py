@@ -28,7 +28,7 @@ AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 
 # e.g. EUR, CAD, GBP, CHF, CNY, JPY
 REAL_WORLD_CURRENCY_CODE = 'EUR'
-USE_POINTS = True
+USE_POINTS = False
 
 
 # e.g. en-gb, de-de, it-it, fr-fr.
@@ -60,20 +60,25 @@ SESSION_TYPES = [
         'app_sequence': ['tests.simple_game'],
     },
     {
-        'name': 'complex_game',
-        'display_name': "Complex Game",
+        'name': 'single_player_game',
+        'display_name': "Single Player Game",
         'num_demo_participants': 1,
         'participation_fee': 9.99,
         'real_world_currency_per_point': 0.02,
-        'app_sequence': ['tests.complex_game'],
+        'app_sequence': ['tests.single_player_game'],
         'treatment': 'blue'
     },
-
+    {
+        'name': 'multi_player_game',
+        'display_name': "Multi Player Game",
+        'num_demo_participants': 3,
+        'app_sequence': ['tests.multi_player_game'],
+    },
     {
         "name": 'two_simple_games',
         "display_name": "2 Simple Games",
         "num_demo_participants": 1,
-        "app_sequence": ['tests.simple_game', 'tests.simple_game_copy'],
+        "app_sequence": ['tests.simple_game', 'tests.single_player_game'],
     },
 ]
 

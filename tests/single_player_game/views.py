@@ -6,15 +6,13 @@ from otree.common import Currency as c, currency_range
 from .models import Constants
 
 class Page(Page):
-    template_name = 'multi_player_game/EveryPage.html'
+    template_name = 'single_player_game/EveryPage.html'
 
 class ErrorMessage(Page):
 
-    # explicit template_name
-    template_name = 'complex_game/CustomPageName.html'
 
     form_model = models.Player
-    form_fields = ['add100_1', 'add100_2', 'even_int']
+    form_fields = ['add100_1', 'add100_2']
 
     def is_displayed(self):
         return True

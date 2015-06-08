@@ -15,7 +15,6 @@ class Constants:
 
 
 class Subsession(otree.models.BaseSubsession):
-
     pass
 
 
@@ -28,7 +27,7 @@ class Group(otree.models.BaseGroup):
 
     def set_payoffs(self):
         for p in self.get_players():
-            p.payoff = 0 # change to whatever the payoff should be
+            p.payoff = 0
 
 
 class Player(otree.models.BasePlayer):
@@ -37,6 +36,4 @@ class Player(otree.models.BasePlayer):
     group = models.ForeignKey(Group, null = True)
     # </built-in>
 
-    def other_player(self):
-        """Returns other player in group. Only valid for 2-player groups."""
-        return self.get_others_in_group()[0]
+    my_field = models.CurrencyField()
