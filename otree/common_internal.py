@@ -206,10 +206,13 @@ def reraise(original):
 
     """
     original_cls = type(original)
-    conversor = constants.exceptions_conversors.get(
-        original_cls, lambda err: err)
-    new = conversor(original)
-    six.reraise(utils.OperationalError, new, sys.exc_traceback)
+    if original_cls in constants.exceptions_conversors:
+        conversor = constants.exceptions_conversors[original_cls]
+        new = conversor(original)
+        new_cls = type(new)
+        six.reraise(new_cls, new, sys.exc_traceback)
+    else:
+        six.reraise(original_cls, original, sys.exc_traceback)
 
 
 def db_table_exists(table_name):
