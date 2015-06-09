@@ -16,7 +16,6 @@ class FieldOnOtherPlayer(Page):
         for p in self.group.get_players():
             p.from_other_player = 1
         in_all_rounds = self.player.in_all_rounds()
-        assert len(in_all_rounds) == self.subsession.round_number
         assert ([p.subsession.round_number for p in in_all_rounds] ==
                 range(1, self.subsession.round_number + 1))
         assert in_all_rounds[-1].from_other_player == 1
@@ -37,6 +36,9 @@ class AllGroupsWaitPage(WaitPage):
     wait_for_all_groups = True
 
     def after_all_players_arrive(self):
+
+        # TODO: shuffle groups
+
         for p in self.subsession.get_players():
             p.in_all_groups_wait_page = 5.0
         for g in self.subsession.get_groups():

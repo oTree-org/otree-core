@@ -361,6 +361,7 @@ class GenericWaitPageMixin(object):
     wait_page_template_name = 'otree/WaitPage.html'
 
     def title_text(self):
+        # Translators: the default title of a wait page
         return _('Please wait')
 
     def body_text(self):
@@ -561,6 +562,8 @@ class InGameWaitPageMixin(object):
         elif num_other_players == 1:
             return _('Waiting for the other participant.')
         elif num_other_players == 0:
+            # Translators: the default body text on the waiting page
+            # to inform the user we are waiting.
             return _('Waiting')
 
 

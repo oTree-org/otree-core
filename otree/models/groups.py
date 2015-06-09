@@ -47,9 +47,8 @@ class BaseGroup(SaveTheChange, models.Model):
             player.group = self
             player.id_in_group = i
             player.save()
-        # need
+        # so that get_players doesn't return stale cache
         self._players = players_list
-
 
     @property
     def _Constants(self):

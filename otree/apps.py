@@ -7,7 +7,6 @@ from importlib import import_module
 from django.apps import AppConfig, apps
 from django.conf import settings
 from django.db.models import signals
-from django.utils.translation import ugettext_lazy as _
 
 from otree.models.session import StubModel, GlobalSingleton
 
@@ -42,7 +41,7 @@ def create_singleton_objects(sender, **kwargs):
 class OtreeConfig(AppConfig):
     name = 'otree'
     label = 'otree'
-    verbose_name = _("oTree")
+    verbose_name = "oTree"
 
     def setup_create_default_superuser(self):
         authconfig = apps.get_app_config('auth')

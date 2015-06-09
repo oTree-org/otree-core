@@ -95,6 +95,7 @@ class RealWorldCurrencyInput(BaseMoneyInput):
 
 class CurrencyInput(RealWorldCurrencyInput):
     if settings.USE_POINTS:
+        # Translators: the label next to a "points" input field
         CURRENCY_SYMBOL = ugettext_lazy('points')
 
 

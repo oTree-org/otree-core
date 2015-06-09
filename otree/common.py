@@ -31,6 +31,7 @@ class Currency(RealWorldCurrency):
     @classmethod
     def _format_currency(cls, number):
         if settings.USE_POINTS:
+            # Translators: Show a number of points, e.g. "5 points"
             return ugettext('{} points').format(number)
         return super(Currency, cls)._format_currency(number)
 

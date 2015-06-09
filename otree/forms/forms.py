@@ -302,7 +302,7 @@ class BaseModelForm(forms.ModelForm):
                 if name in boolean_field_names and value is None:
                     mfield = self.instance._meta.get_field_by_name(name)[0]
                     if not mfield.allow_blank:
-                        msg = _('This field is required.')
+                        msg = otree.constants.field_required_msg
                         raise forms.ValidationError(msg)
 
                 lower, upper = self._get_field_boundaries(name)
@@ -320,6 +320,9 @@ class BaseModelForm(forms.ModelForm):
                         otree.common_internal.contract_choice_tuples(choices)
                     )
                     if value not in choices_values:
+                        # Translators: for multiple-choice fields,
+                        # show the valid choices.
+                        # e.g. "Value must be one of: A, B, C"
                         msg = _('Value must be one of: {}'.format(
                             ", ".join(map(str, choices))
                         ))
