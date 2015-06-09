@@ -118,8 +118,5 @@ msgid "Waiting"
 msgstr "Ожидайте"
 
 #: .\views\concrete.py:97
-#, fuzzy
-#| msgid ""
-#| "Waiting until other participants and/or the study supervisor are ready."
 msgid "Waiting until other participants or the study supervisor are ready."
 msgstr "Ожидайте готовности других участников и/или наблюдателя эксперимента."
