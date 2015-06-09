@@ -25,88 +25,88 @@ msgstr ""
 
 #: .\db\models.py:223
 msgid "Yes"
-msgstr ""
+msgstr "Да"
 
 #: .\db\models.py:224
 msgid "No"
-msgstr ""
+msgstr "Нет"
 
 #: .\forms\forms.py:305
 msgid "This field is required."
-msgstr ""
+msgstr "Это поле обязательно для заполнения."
 
 #: .\forms\forms.py:310
 msgid "Value must be greater than or equal to {}."
-msgstr ""
+msgstr "Значение должно быть больше или равно {}."
 
 #: .\forms\forms.py:314
 msgid "Value must be less than or equal to {}."
-msgstr ""
+msgstr "Значение должно быть меньше или равно {}."
 
 #: .\forms\forms.py:323
 msgid "Value must be one of: {}"
-msgstr ""
+msgstr "Допускается только одно из следующих значений: {}"
 
 #: .\settings.py:239
 msgid "points"
-msgstr ""
+msgstr "очков"
 
 #: .\templates\otree\BaseExperiment.html:18 .\templates\otree\BaseSite.html:31
 msgid "Please fix the errors in the form."
-msgstr ""
+msgstr "Пожалуйста внесите исправления в поля формы."
 
 #: .\templates\otree\OutOfRangeNotification.html:10
 msgid "No more pages left to show."
-msgstr ""
+msgstr "Это последняя страница."
 
 #: .\templates\otree\WaitPage.html:38
 msgid "An error occurred."
-msgstr ""
+msgstr "Произошла ошибка."
 
 #: .\templates\otree\includes\TimeLimit.html:6
 msgid "Time left to complete this page:"
-msgstr ""
+msgstr "Для выполнения задания на этой странице у вас осталось:"
 
 #: .\templates\otree\includes\TimeLimit.html:20
 msgid "Time ran out."
-msgstr ""
+msgstr "Ваше время истекло."
 
 #: .\templates\otree\login.html:8
 msgid "Please correct the error below."
-msgstr ""
+msgstr "Пожалуйста, исправьте ошибку ниже."
 
 #: .\templates\otree\login.html:8
 msgid "Please correct the errors below."
-msgstr ""
+msgstr "Пожалуйста, исправьте ошибки ниже."
 
 #: .\templates\otree\login.html:35
 msgid "Forgotten your password or username?"
-msgstr ""
+msgstr "Забыли свой логин или пароль?"
 
 #: .\templates\otree\login.html:39
 msgid "Log in"
-msgstr ""
+msgstr "Вход"
 
 #: .\templates\otree\tags\NextButton.html:2
 msgid "Next"
-msgstr ""
+msgstr "Далее"
 
 #: .\views\abstract.py:377
 msgid "Please wait"
-msgstr ""
+msgstr "Пожалуйста подождите"
 
 #: .\views\abstract.py:573
 msgid "Waiting for the other participants."
-msgstr ""
+msgstr "Пожалуйста ожидайте других участников."
 
 #: .\views\abstract.py:575
 msgid "Waiting for the other participant."
-msgstr ""
+msgstr "Пожалуйста ожидайте другого участника."
 
 #: .\views\abstract.py:577
 msgid "Waiting"
-msgstr ""
+msgstr "Ожидайте"
 
 #: .\views\concrete.py:97
 msgid "Waiting until other participants and/or the study supervisor are ready."
-msgstr ""
+msgstr "Ожидайте готовности других участников и/или наблюдателя эксперимента."
