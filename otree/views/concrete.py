@@ -94,7 +94,7 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin,
 
     def body_text(self):
         return _(
-            'Waiting until other participants and/or '
+            'Waiting until other participants or '
             'the study supervisor are ready.'
         )
 
