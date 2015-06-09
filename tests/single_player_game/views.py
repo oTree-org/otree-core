@@ -17,16 +17,12 @@ class ErrorMessage(Page):
         return True
 
     def vars_for_template(self):
-        # if a is True, why does the assert fail??
-        a = self.session.vars['a'] == 1
-        raise Exception(a)
-        assert a
+        assert self.session.vars['a'] == 1
         assert self.player.participant.vars['a'] == 1
         assert self.player.participant.vars['b'] == 1
         assert self.session.session_type['treatment'] == 'blue'
         assert self.player.in_before_session_starts == 1
         assert self.group.in_before_session_starts == 1
-        self.session.vars['a'] = 2
 
         return {
             'my_variable_here': 1,
@@ -38,6 +34,7 @@ class ErrorMessage(Page):
 
     def before_next_page(self):
         self.player.after_next_button_field = True
+        self.session.vars['a'] = 2
 
 
 class FieldErrorMessage(Page):
