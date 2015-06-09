@@ -78,14 +78,10 @@ msgid "Time ran out."
 msgstr ""
 
 #: .\templates\otree\login.html:8
-#, fuzzy
-#| msgid "Please fix the errors in the form."
 msgid "Please correct the error below."
 msgstr "Bitte korrigieren Sie die Fehler im Formular."
 
 #: .\templates\otree\login.html:8
-#, fuzzy
-#| msgid "Please fix the errors in the form."
 msgid "Please correct the errors below."
 msgstr "Bitte korrigieren Sie die Fehler im Formular."
 
@@ -125,7 +121,4 @@ msgstr ""
 msgid "Waiting until other participants or the study supervisor are ready."
 msgstr ""
 
-#, fuzzy
-#~| msgid "Please fix the errors in the form."
-#~ msgid "Please fix the errors in the form"
-#~ msgstr "Bitte korrigieren Sie die Fehler im Formular."
+
