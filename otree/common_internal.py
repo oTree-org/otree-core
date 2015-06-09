@@ -7,7 +7,7 @@ from os.path import dirname, join
 from collections import OrderedDict
 import operator
 
-from django.db import utils, connection
+from django.db import connection
 from django.apps import apps
 from django.conf import settings
 from django.template.defaultfilters import title
