@@ -33,15 +33,27 @@ class ResultsWaitPage(WaitPage):
         self.group.set_payoffs()
 
 
+class AllGroupsWaitPage(WaitPage):
+    wait_for_all_groups = True
+
+    def after_all_players_arrive(self):
+        for p in self.subsession.get_players():
+            p.in_all_groups_wait_page = 5.0
+        for g in self.subsession.get_groups():
+            g.in_all_groups_wait_page = 5.0
+
+
 class Results(Page):
 
     def vars_for_template(self):
         assert self.player.from_other_player == 1
-
+        assert self.player.in_all_groups_wait_page == 5.0
+        assert self.group.in_all_groups_wait_page == 5.0
 
 page_sequence = [
     FieldOnOtherPlayer,
     Shim,
     ResultsWaitPage,
+    AllGroupsWaitPage,
     Results
 ]

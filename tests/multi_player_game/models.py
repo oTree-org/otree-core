@@ -7,7 +7,7 @@ import otree.models
 
 
 class Constants:
-    name_in_url = 'groups_game'
+    name_in_url = 'multi_player_game'
     players_per_group = 3
     num_rounds = 2
 
@@ -23,8 +23,8 @@ class Subsession(otree.models.BaseSubsession):
                     assert p.id_in_group == i + 1
                 players.reverse()
                 group.set_players(players)
-                # FIXME: debug this
-                assert reversed(pks) == [p.pk for p in group.get_players()]
+                pks_reversed = list(reversed(pks))
+                assert [p.pk for p in group.get_players()] == pks_reversed
 
 
 class Group(otree.models.BaseGroup):
@@ -32,11 +32,11 @@ class Group(otree.models.BaseGroup):
     subsession = models.ForeignKey(Subsession)
     # </built-in>
 
-    players_per_group = None
-
     def set_payoffs(self):
         for p in self.get_players():
             p.payoff = 50
+
+    in_all_groups_wait_page = models.FloatField(initial=0)
 
 
 class Player(otree.models.BasePlayer):
@@ -49,21 +49,9 @@ class Player(otree.models.BasePlayer):
         """Returns other player in group. Only valid for 2-player groups."""
         return self.get_others_in_group()[0]
 
-    # example field
-    my_field = models.CurrencyField(
-        doc="""
-        Description of this field, for documentation
-        """
-    )
-
-    def my_field_bounds(self):
-        return [5, 10]
-
     from_other_player = models.PositiveIntegerField()
 
-    def even_int_error_message(self, value):
-        if value % 2:
-            return 'Must be an even number'
+    in_all_groups_wait_page = models.FloatField(initial=0)
 
     def role(self):
         # you can make this depend of self.id_in_group

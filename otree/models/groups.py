@@ -43,11 +43,13 @@ class BaseGroup(SaveTheChange, models.Model):
         raise ValueError('No player with role {}'.format(role))
 
     def set_players(self, players_list):
-        # TODO: clear cache, but make sure the objects get saved
         for i, player in enumerate(players_list, start=1):
             player.group = self
             player.id_in_group = i
             player.save()
+        # need
+        self._players = players_list
+
 
     @property
     def _Constants(self):
