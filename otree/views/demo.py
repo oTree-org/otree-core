@@ -37,7 +37,6 @@ class DemoIndex(vanilla.TemplateView):
         return 'demo_index'
 
     def get_context_data(self, **kwargs):
-        {}["hola"]
         intro_text = settings.DEMO_PAGE_INTRO_TEXT
         context = super(DemoIndex, self).get_context_data(**kwargs)
 
