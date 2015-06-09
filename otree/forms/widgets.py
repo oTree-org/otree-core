@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from babel.core import Locale
 from django.conf import settings
+from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy
 import babel
 import babel.numbers
@@ -81,8 +82,8 @@ class BaseMoneyInput(forms.NumberInput):
 
     def _format_value(self, value):
         if isinstance(value, easymoney.Money):
-            return Decimal(value)
-        return value
+            value = Decimal(value)
+        return force_text(value)
 
 
 class RealWorldCurrencyInput(BaseMoneyInput):

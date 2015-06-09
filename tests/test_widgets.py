@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from django.test import TestCase
 from django.utils.encoding import force_text
 import easymoney
 import floppyforms.__future__ as forms
@@ -7,6 +6,7 @@ import floppyforms.widgets
 
 import otree.forms
 import otree.widgets
+from .base import TestCase
 
 
 class BasicWidgetTests(TestCase):
