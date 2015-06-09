@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: oTree\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-10 00:44+0700\n"
+"POT-Creation-Date: 2015-06-10 01:03+0700\n"
 "PO-Revision-Date: 2013-12-13 13:40+0800\n"
 "Last-Translator: Raphael <raphael.nehmer@gess.ethz.ch>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -122,7 +122,7 @@ msgid "Waiting"
 msgstr ""
 
 #: .\views\concrete.py:97
-msgid "Waiting until other participants and/or the study supervisor are ready."
+msgid "Waiting until other participants or the study supervisor are ready."
 msgstr ""
 
 #, fuzzy
