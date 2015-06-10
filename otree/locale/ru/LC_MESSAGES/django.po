@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-10 01:03+0700\n"
+"POT-Creation-Date: 2015-06-10 16:17+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,10 +19,12 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#. Translators: Show a number of points, e.g. "5 points"
-#: .\common.py:35
-msgid "{} points"
-msgstr "{} очков"
+#: .\common.py:37
+msgid "{} point"
+msgid_plural "{} points"
+msgstr[0] "{} очков"
+msgstr[1] "{} очков"
+msgstr[2] "{} очков"
 
 #. Translators: for required form fields
 #: .\constants.py:72
@@ -77,14 +79,6 @@ msgstr "Для выполнения задания на этой страниц�
 msgid "Time ran out."
 msgstr "Ваше время истекло."
 
-#: .\templates\otree\login.html:8
-msgid "Please correct the error below."
-msgstr "Пожалуйста, исправьте ошибку ниже."
-
-#: .\templates\otree\login.html:8
-msgid "Please correct the errors below."
-msgstr "Пожалуйста, исправьте ошибки ниже."
-
 #: .\templates\otree\login.html:35
 msgid "Forgotten your password or username?"
 msgstr "Забыли свой логин или пароль?"
@@ -120,3 +114,9 @@ msgstr "Ожидайте"
 #: .\views\concrete.py:97
 msgid "Waiting until other participants or the study supervisor are ready."
 msgstr "Ожидайте готовности других участников и/или наблюдателя эксперимента."
+
+#~ msgid "Please correct the error below."
+#~ msgstr "Пожалуйста, исправьте ошибку ниже."
+
+#~ msgid "Please correct the errors below."
+#~ msgstr "Пожалуйста, исправьте ошибки ниже."

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-10 01:03+0700\n"
+"POT-Creation-Date: 2015-06-10 16:17+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,10 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#. Translators: Show a number of points, e.g. "5 points"
-#: .\common.py:35
-msgid "{} points"
-msgstr ""
+#: .\common.py:37
+msgid "{} point"
+msgid_plural "{} points"
+msgstr[0] ""
+msgstr[1] ""
 
 #. Translators: for required form fields
 #: .\constants.py:72
@@ -74,14 +75,6 @@ msgstr ""
 
 #: .\templates\otree\includes\TimeLimit.html:20
 msgid "Time ran out."
-msgstr ""
-
-#: .\templates\otree\login.html:8
-msgid "Please correct the error below."
-msgstr ""
-
-#: .\templates\otree\login.html:8
-msgid "Please correct the errors below."
 msgstr ""
 
 #: .\templates\otree\login.html:35

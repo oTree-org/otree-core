@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: oTree\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-10 01:03+0700\n"
+"POT-Creation-Date: 2015-06-10 16:17+0900\n"
 "PO-Revision-Date: 2013-12-13 13:40+0800\n"
 "Last-Translator: Raphael <raphael.nehmer@gess.ethz.ch>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,10 +18,11 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 1.6\n"
 
-#. Translators: Show a number of points, e.g. "5 points"
-#: .\common.py:35
-msgid "{} points"
-msgstr ""
+#: .\common.py:37
+msgid "{} point"
+msgid_plural "{} points"
+msgstr[0] ""
+msgstr[1] ""
 
 #. Translators: for required form fields
 #: .\constants.py:72
@@ -77,14 +78,6 @@ msgstr "Verbleibende Zeit für diese Seite."
 msgid "Time ran out."
 msgstr ""
 
-#: .\templates\otree\login.html:8
-msgid "Please correct the error below."
-msgstr "Bitte korrigieren Sie die Fehler im Formular."
-
-#: .\templates\otree\login.html:8
-msgid "Please correct the errors below."
-msgstr "Bitte korrigieren Sie die Fehler im Formular."
-
 #: .\templates\otree\login.html:35
 msgid "Forgotten your password or username?"
 msgstr ""
@@ -120,5 +113,3 @@ msgstr ""
 #: .\views\concrete.py:97
 msgid "Waiting until other participants or the study supervisor are ready."
 msgstr ""
-
-

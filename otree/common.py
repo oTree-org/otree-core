@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext
+from django.utils.translation import ungettext
 
 import easymoney
 
@@ -31,8 +31,13 @@ class Currency(RealWorldCurrency):
     @classmethod
     def _format_currency(cls, number):
         if settings.USE_POINTS:
-            # Translators: Show a number of points, e.g. "5 points"
-            return ugettext('{} points').format(number)
+            # Translators: Show a number of points,
+            # Translators: need to handle plurals. "1 point", "2 points", ...
+            return ungettext(
+                '{} point',
+                '{} points',
+                number
+            ).format(number)
         return super(Currency, cls)._format_currency(number)
 
     def to_real_world_currency(self, session):
