@@ -31,13 +31,12 @@ class Currency(RealWorldCurrency):
     @classmethod
     def _format_currency(cls, number):
         if settings.USE_POINTS:
-            # Translators: Show a number of points,
-            # Translators: need to handle plurals. "1 point", "2 points", ...
-            return ungettext(
-                '{} point',
-                '{} points',
-                number
-            ).format(number)
+            # Translators: display a number of points,
+            # like "1 point", "2 points", ...
+            # See "Plural-Forms" above for pluralization rules
+            # in this language.
+            # Explanation at http://bit.ly/1IurMu7
+            return ungettext('{} point', '{} points', number).format(number)
         return super(Currency, cls)._format_currency(number)
 
     def to_real_world_currency(self, session):
