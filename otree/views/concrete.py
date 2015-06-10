@@ -151,7 +151,7 @@ class MTurkLandingPage(vanilla.TemplateView):
 
     def get_template_names(self):
         hit_settings = self.session.session_type['mturk_hit_settings']
-        return hit_settings['preview_template']
+        return [hit_settings['preview_template']]
 
     @classmethod
     def url_pattern(cls):

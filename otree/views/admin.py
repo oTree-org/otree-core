@@ -515,9 +515,9 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
 
     def get_template_names(self):
         if self.session.mturk_HITId:
-            return 'otree/admin/SessionMTurkPayments.html'
+            return ['otree/admin/SessionMTurkPayments.html']
         else:
-            return 'otree/admin/SessionPayments.html'
+            return ['otree/admin/SessionPayments.html']
 
     def get(self, *args, **kwargs):
         response = super(SessionPayments, self).get(*args, **kwargs)

@@ -579,11 +579,13 @@ class FormPageMixin(object):
 
     def get_template_names(self):
         if self.template_name is not None:
-            return [self.template_name]
-        return '{}/{}.html'.format(
-            self.__module__.rsplit('.', 1)[0],
-            self.__class__.__name__
-        )
+            template_name = self.template_name
+        else:
+            template_name = '{}/{}.html'.format(
+                self.__module__.rsplit('.', 1)[0],
+                self.__class__.__name__
+            )
+        return [template_name]
 
     def get_form_fields(self):
         return self.form_fields
