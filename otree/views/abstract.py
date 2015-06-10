@@ -35,7 +35,6 @@ from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache, cache_control
-from django.forms.models import model_to_dict
 from django.http import (
     HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
 )
@@ -265,21 +264,9 @@ class FormPageOrWaitPageMixin(OTreeMixin):
             self._session_user._last_request_timestamp = time.time()
             self.save_objects()
             return response
-        except Exception as e:
-            if hasattr(self, '_user'):
-                user_info = 'user: {}'.format(model_to_dict(self._user))
-                if hasattr(self, '_session_user'):
-                    self._session_user.last_request_succeeded = False
-                    self._session_user.save()
-            else:
-                user_info = '[user undefined]'
-            diagnostic_info = (
-                'is_ajax: {}'.format(self.request.is_ajax()),
-                'user: {}'.format(user_info),
-            )
-            e.args = (
-                '{}\nDiagnostic info: {}'.format(e.args[0:1], diagnostic_info),
-            ) + e.args[1:]
+        except Exception:
+            self._session_user.last_request_succeeded = False
+            self._session_user.save()
             raise
 
     # TODO: maybe this isn't necessary, because I can figure out what page
@@ -392,6 +379,7 @@ class GenericWaitPageMixin(object):
     wait_page_template_name = 'otree/WaitPage.html'
 
     def title_text(self):
+        # Translators: the default title of a wait page
         return _('Please wait')
 
     def body_text(self):
@@ -592,6 +580,8 @@ class InGameWaitPageMixin(object):
         elif num_other_players == 1:
             return _('Waiting for the other participant.')
         elif num_other_players == 0:
+            # Translators: the default body text on the waiting page
+            # to inform the user we are waiting.
             return _('Waiting')
 
 
@@ -607,11 +597,13 @@ class FormPageMixin(object):
 
     def get_template_names(self):
         if self.template_name is not None:
-            return [self.template_name]
-        return '{}/{}.html'.format(
-            self.__module__.rsplit('.', 1)[0],
-            self.__class__.__name__
-        )
+            template_name = self.template_name
+        else:
+            template_name = '{}/{}.html'.format(
+                self.__module__.rsplit('.', 1)[0],
+                self.__class__.__name__
+            )
+        return [template_name]
 
     def get_form_fields(self):
         return self.form_fields

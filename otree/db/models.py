@@ -16,6 +16,7 @@ from idmap.models import SharedMemoryModel
 
 import otree.common
 from otree.common_internal import expand_choice_tuples
+from otree.constants import field_required_msg
 
 
 class OTreeModelBase(SharedMemoryModelBase):
@@ -232,7 +233,7 @@ class BooleanField(_OtreeNullableModelFieldMixin, models.NullBooleanField):
 
     def clean(self, value, model_instance):
         if value is None and not self.allow_blank:
-            raise exceptions.ValidationError("This field is required")
+            raise exceptions.ValidationError(field_required_msg)
         return super(BooleanField, self).clean(value, model_instance)
 
     def formfield(self, *args, **kwargs):

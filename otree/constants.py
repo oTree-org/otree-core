@@ -7,6 +7,7 @@
 # =============================================================================
 
 from django.db import utils
+from django.utils.translation import ugettext_lazy
 
 # =============================================================================
 # CONSTANTS
@@ -66,3 +67,6 @@ exceptions_conversors = {
         "{} - Try resetting the database.".format(exception.message)
     )
 }
+
+# Translators: for required form fields
+field_required_msg = ugettext_lazy('This field is required.')

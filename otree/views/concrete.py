@@ -95,7 +95,7 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin,
 
     def body_text(self):
         return _(
-            'Waiting until other participants and/or '
+            'Waiting until other participants or '
             'the study supervisor are ready.'
         )
 
@@ -152,7 +152,7 @@ class MTurkLandingPage(vanilla.TemplateView):
 
     def get_template_names(self):
         hit_settings = self.session.session_type['mturk_hit_settings']
-        return hit_settings['preview_template']
+        return [hit_settings['preview_template']]
 
     @classmethod
     def url_pattern(cls):

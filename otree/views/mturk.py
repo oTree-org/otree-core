@@ -301,7 +301,7 @@ class PayMTurk(vanilla.View):
                 )
                 mturk_connection.grant_bonus(
                     p.mturk_worker_id, p.mturk_assignment_id,
-                    bonus, reason="Good job!!!"
+                    bonus, reason="Thank you."
                 )
                 p.mturk_bonus_paid = True
                 p.save()

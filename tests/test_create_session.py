@@ -6,7 +6,7 @@ from otree.models import Session
 
 from .base import TestCase
 from tests.simple_game import models as sg_models
-from tests.simple_game_copy import models as sgc_models
+from tests.single_player_game import models as sgc_models
 from tests.utils import capture_stdout
 
 

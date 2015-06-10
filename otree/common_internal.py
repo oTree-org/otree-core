@@ -5,6 +5,7 @@ import urllib
 import urlparse
 from os.path import dirname, join
 from collections import OrderedDict
+import operator
 
 from django.db import utils, connection
 from django.apps import apps
@@ -154,8 +155,8 @@ def get_app_name_from_label(app_label):
 
 def get_players(self, order_by, refresh_from_db=False):
     if refresh_from_db or not self._players:
-        self._players = self.player_set.all()
-    return list(self._players.order_by(order_by))
+        self._players = list(self.player_set.all())
+    return sorted(self._players, key=operator.attrgetter(order_by))
 
 
 def get_groups(self, refresh_from_db=False):

@@ -1,4 +1,4 @@
-from django.template.loader import get_template
+from django.template.loader import select_template
 from django.contrib import messages
 
 from otree.views import Page, WaitPage
@@ -25,7 +25,7 @@ class ValidateMTurk(object):
                 page = page_class()
                 if isinstance(page, Page):
                     path_template = page.get_template_names()
-                    template = get_template(path_template)
+                    template = select_template(path_template)
                     if not check_next_button(template):
                         yield page
 

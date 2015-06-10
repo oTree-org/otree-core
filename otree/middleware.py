@@ -22,7 +22,7 @@ class CheckDBMiddleware(object):
         if not CheckDBMiddleware.checked:
             CheckDBMiddleware.checked = common_internal.db_status_ok()
             if not CheckDBMiddleware.checked:
-                msg = "Your DB is not ready!!!, Try resetting the database."
+                msg = "Your DB is not ready. Try resetting the database."
                 return HttpResponseServerError(msg)
 
 
