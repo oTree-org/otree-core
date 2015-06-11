@@ -86,7 +86,24 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin,
                         open_group.save()
                         return False
                 else:
-                    self.subsession._create_groups()
+                    # 2015-06-11: just running
+                    # self.subsession._create_groups() doesn't work
+                    # because what if some participants didn't start round 1?
+                    # following code only gets executed once
+                    # (because of self.group check above)
+                    # and doesn't get executed if ppg == None
+                    # (because if ppg == None we preassign)
+                    # get_players() is guaranteed to return a complete group
+                    # (because a player can't start round 1 before
+                    # being assigned to a complete group)
+                    group_players = [
+                        p._in_next_round() for p in
+                        self.player._in_previous_round().group.get_players()
+                    ]
+                    open_group = self.subsession._get_open_group()
+                    open_group.set_players(group_players)
+                    open_group._is_missing_players = False
+                    open_group.save()
                     return True
         # if not grouping by arrival time, but the session was just created
         # and the code to assign to groups has not executed yet
