@@ -27,8 +27,8 @@ msgstr ""
 #: .\common.py:39
 msgid "{} point"
 msgid_plural "{} points"
-msgstr[0] "{} очков"
-msgstr[1] "{} очков"
+msgstr[0] "{} очко"
+msgstr[1] "{} очка"
 msgstr[2] "{} очков"
 
 #. Translators: for required form fields
