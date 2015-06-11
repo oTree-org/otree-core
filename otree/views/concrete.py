@@ -239,10 +239,9 @@ class MTurkStart(vanilla.View):
             self.session.mturk_unique_workers and
             self.worker_participated_before(worker_id)
         ):
-            hit_settings = self.session.session_type['mturk_hit_settings']
             return TemplateResponse(
                 self.request,
-                hit_settings['mturk_error_page'],
+                'otree/mturk/MTurkErrorPage.html',
                 {
                     'error_message':
                     'You are not allowed to participate more than once.'
