@@ -59,35 +59,48 @@ class MTurkConnection(boto.mturk.connection.MTurkConnection):
 
 
 class SessionCreateHitForm(forms.Form):
-    in_sandbox = forms.BooleanField(required=False,
-                                    help_text="""
-                                    Do you want HIT published
-                                    on MTurk sandbox?
-                                    """)
+    in_sandbox = forms.BooleanField(
+        required=False,
+        help_text="Do you want HIT published on MTurk sandbox?"
+    )
+    unique_workers = forms.BooleanField(
+        required=False,
+        initial=True,
+        help_text=(
+            "Are workers allowed to participate more than ones in "
+            "this type of session?"
+        )
+    )
     title = forms.CharField()
     description = forms.CharField()
     keywords = forms.CharField()
     money_reward = forms.RealWorldCurrencyField()
     assignments = forms.IntegerField(
         label="Number of assignments",
-        help_text=("How many unique Workers do you want to work on the HIT? "
-                   "You may want this number to be lower than participants "
-                   "in the oTree session to account for people who accepts "
-                   "and then return the HIT.")
+        help_text=(
+            "How many unique Workers do you want to work on the HIT? "
+            "You may want this number to be lower than participants "
+            "in the oTree session to account for people who accepts "
+            "and then return the HIT."
+        )
     )
     minutes_allotted_per_assignment = forms.IntegerField(
         label="Time allotted per assignment",
         required=False,
-        help_text=("The amount of time, in minutes, that a Worker has to "
-                   "complete the HIT after accepting it."
-                   "Leave it blank if you don't want to specify it.")
+        help_text=(
+            "The amount of time, in minutes, that a Worker has to "
+            "complete the HIT after accepting it."
+            "Leave it blank if you don't want to specify it."
+        )
     )
     expiration_hours = forms.IntegerField(
         label="HIT expires in",
         required=False,
-        help_text=("An amount of time, in hours, after which the HIT "
-                   "is no longer available for users to accept. "
-                   "Leave it blank if you don't want to specify it.")
+        help_text=(
+            "An amount of time, in hours, after which the HIT "
+            "is no longer available for users to accept. "
+            "Leave it blank if you don't want to specify it."
+        )
     )
 
     qualifications_choices = []
@@ -252,6 +265,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             session.mturk_HITId = hit[0].HITId
             session.mturk_HITGroupId = hit[0].HITGroupId
             session.mturk_sandbox = in_sandbox
+            session.mturk_unique_workers = 'mturk_unique_workers' in form.data
             session.save()
 
         return HttpResponseRedirect(

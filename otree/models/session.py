@@ -134,16 +134,25 @@ class Session(ModelWithVars):
         help_text='Hit id for this session on MTurk',
     )
 
-    mturk_sandbox = models.BooleanField(default=False,
-                                        help_text="""
-                                        Should this session be
-                                        created in mturk sandbox?
-                                        """)
+    mturk_sandbox = models.BooleanField(
+        default=False,
+        help_text="Should this session be created in mturk sandbox?"
+    )
+
+    mturk_unique_workers = models.BooleanField(
+        default=True,
+        help_text=(
+            "Are workers allowed to participate more than ones in "
+            "this type of session?"
+        )
+    )
 
     archived = models.BooleanField(
-        default=False, doc=(
+        default=False,
+        doc=(
             "If set to True the session won't be visible on the "
-            "main ViewList for sessions")
+            "main ViewList for sessions"
+        )
     )
 
     git_commit_timestamp = models.CharField(
