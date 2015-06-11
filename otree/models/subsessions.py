@@ -51,7 +51,7 @@ class BaseSubsession(SaveTheChange, models.Model):
     _groups = []
     _players = []
 
-    def in_previous_round(self):
+    def _in_previous_round(self):
         return type(self).objects.filter(
             session=self.session,
             round_number=self.round_number - 1
@@ -212,7 +212,7 @@ class BaseSubsession(SaveTheChange, models.Model):
         if self.round_number == 1:
             group_matrix = self._random_group_matrix()
         else:
-            previous_round = self.in_previous_round()
+            previous_round = self._in_previous_round()
             group_matrix = [
                 group._get_players(refresh_from_db=True)
                 for group in get_groups(previous_round, refresh_from_db=True)

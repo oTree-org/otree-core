@@ -19,7 +19,7 @@ REQUIREMENTS = [
     'django-extensions>=1.4.6',
     'django-ptree-extra-views>=0.6.3',
     'django-floppyforms>=1.2.0',
-    'django-idmap>=0.3.2',
+    'django-idmap>=0.3.3',
     'django-inspect-model>=0.7',
     'django-ptree-mturk>=1.0.1',
     'django-save-the-change>=1.0.0',
@@ -42,7 +42,7 @@ REQUIREMENTS = [
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version = '0.3.5'
+version = '0.3.6'
 
 
 if sys.argv[-1] == 'publish':
