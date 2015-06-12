@@ -39,6 +39,8 @@ COVERAGE_MODELS = ['models', 'tests', 'views']
 
 MAX_ATTEMPTS = 100
 
+SLEEP_TIMES = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+
 
 # =============================================================================
 # LOGGER
@@ -180,7 +182,7 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
             for submit, attempts in pending:
                 if attempts > MAX_ATTEMPTS:
                     msg = "Max attepts reached in  submit '{}'"
-                    raise AssertionError(msg.format(submit))
+                    self.fail(msg.format(submit))
                 if submit.execute():
                     pending.remove(submit)
 
@@ -210,11 +212,13 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         # we need to wait for that to complete.
         logger.info("Adding bots on session '{}'".format(self.session_name))
 
-        while True:
+        for sleep_time in SLEEP_TIMES:
             sssn = otree.models.Session.objects.get(id=sssn.pk)
             if sssn._ready_to_play:
                 break
-            time.sleep(1)
+            time.sleep(sleep_time)
+        else:
+            self.fail("Bots session assignment Timeout")
 
         msg = "'GET' over first page of all '{}' participants"
         logger.info(msg.format(self.session_name))

@@ -226,6 +226,7 @@ class BasePlayerBot(BaseClient):
         app_label = user.subsession._meta.app_config.name
         models_module = importlib.import_module('{}.models'.format(app_label))
 
+        self._ConstantsClass = models_module.Constants
         self._PlayerClass = models_module.Player
         self._GroupClass = models_module.Group
         self._SubsessionClass = models_module.Subsession
@@ -242,6 +243,7 @@ class BasePlayerBot(BaseClient):
         super(BasePlayerBot, self).__init__(**kwargs)
 
     def stop(self):
+
         player = self.player
         if player.payoff is None:
             msg = (
@@ -258,22 +260,23 @@ class BasePlayerBot(BaseClient):
             # this fails beacuse the test only simulate the play but the payoff
             # is never set. I will try a workarround
             # raise AssertionError(msg)
-        player_page_index = player._index_in_game_pages
-        pages_in_subsession = len(
-            get_views_module(self.subsession.app_name).page_sequence
-        )
-        if player_page_index + 1 < pages_in_subsession:
-            msg = (
-                "App {}: Participant '{}' reached the page {} of {} at "
-                "the end of run. Check in tests.py if the bot completes "
-                "the game"
-            ).format(
-                self.subsession._meta.app_config.name,
-                player.participant.code,
-                player_page_index,
-                pages_in_subsession,
+        if self.is_last_round:
+            player_page_index = player._index_in_game_pages
+            pages_in_subsession = len(
+                get_views_module(self.subsession.app_name).page_sequence
             )
-            raise AssertionError(msg)
+            if player_page_index + 1 < pages_in_subsession:
+                msg = (
+                    "App {}: Participant '{}' reached the page {} of {} at "
+                    "the end of run. Check in tests.py if the bot completes "
+                    "the game"
+                ).format(
+                    self.subsession._meta.app_config.name,
+                    player.participant.code,
+                    player_page_index,
+                    pages_in_subsession,
+                )
+                raise AssertionError(msg)
         super(BasePlayerBot, self).stop()
 
     @property
@@ -293,3 +296,21 @@ class BasePlayerBot(BaseClient):
     @property
     def subsession(self):
         return self._SubsessionClass.objects.get(id=self._subsession_id)
+
+    @property
+    def is_last_round(self):
+        """Determines if the current subsession round is the last one of this
+        kind.
+
+        For example if you has 3 subssesions created with some app
+        this property resolve if is the last one of entire session or if after
+        this one cames another round from another app.
+
+        """
+        current_round = self.subsession
+        session = current_round.session
+        all_rounds = tuple(session.get_subsessions())
+        for idx, subsession_round in enumerate(all_rounds):
+            if subsession_round == current_round:
+                return len(all_rounds) == idx + 1
+        return False
