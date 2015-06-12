@@ -758,37 +758,17 @@ class AdminHome(vanilla.ListView):
     def url_name(cls):
         return 'admin_home'
 
-    def dispatch(self, request, *args, **kwargs):
-        if kwargs['archive'] == 'archive':
-            self.is_archive_request = True
-        else:
-            self.is_archive_request = False
-        return super(AdminHome, self).dispatch(
-            request, *args, **kwargs
-        )
-
     def get_context_data(self, **kwargs):
         context = super(AdminHome, self).get_context_data(**kwargs)
         global_singleton = otree.models.session.GlobalSingleton.objects.get()
         default_session = global_singleton.default_session
         context.update({
-            'archive_list_view': self.is_archive_request,
-            'has_archived_sessions': (
-                Session.objects.filter(
-                    archived=True
-                ).count() > 0
-            ),
             'default_session': default_session,
             'is_debug': settings.DEBUG,
-            'is_mturk_set': (
-                settings.AWS_SECRET_ACCESS_KEY and settings.AWS_ACCESS_KEY_ID
-            )
         })
         return context
 
     def get_queryset(self):
-        return Session.objects.filter(
-            archived=self.is_archive_request
-        ).exclude(
+        return Session.objects.exclude(
             special_category=otree.constants.session_special_category_demo
-        )
+        ).order_by('archived', '-pk')
