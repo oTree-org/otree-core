@@ -171,7 +171,6 @@ def create_session(session_type_name, label='', num_participants=None,
         [{'id_in_session': i} for i in range(1, num_participants + 1)]
     )
 
-    subsessions = []
     for app_name in session_type['app_sequence']:
 
         models_module = get_models_module(app_name)
@@ -195,8 +194,6 @@ def create_session(session_type_name, label='', num_participants=None,
             for round_number, subsession in zip(round_numbers, subs)
             for participant in participants
         ])
-
-        subsessions.extend(subs)
 
     session._create_groups_and_initialize()
     session.build_session_user_to_user_lookups()
