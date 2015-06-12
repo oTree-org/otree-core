@@ -102,8 +102,10 @@ class PendingBuffer(object):
     def __len__(self):
         return len(self.storage)
 
-    def __nonzero__(self):
+    def __bool__(self):
         return bool(self.storage)
+
+    __nonzero__ = __bool__
 
     def __iter__(self):
         for k, v in self.storage.items():
@@ -132,7 +134,6 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
     def __init__(self, session_name):
         super(OTreeExperimentFunctionTest, self).__init__()
         self.session_name = session_name
-        self.app_tested = []
 
     def __repr__(self):
         return "<{} '{}'>".format(
@@ -148,14 +149,13 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         submits = map(lambda b: b.submits, bots)
         return list(itertools.izip_longest(*submits))
 
-    def _run_subsession(self, subsession):
-        app_label = subsession._meta.app_config.name
+    def _run_subsession_round(self, subsession_round):
 
-        # patching round number
-        self.app_tested.append(app_label)
-        subsession.round_number = self.app_tested.count(app_label)
+        app_label = subsession_round._meta.app_config.name
+        round_number = subsession_round.round_number
 
-        logger.info("Starting subsession '{}'".format(app_label))
+        msg = "Starting subsession '{}' - Round {}"
+        logger.info(msg.format(app_label, round_number))
         try:
             test_module_name = '{}.tests'.format(app_label)
             test_module = import_module(test_module_name)
@@ -163,12 +163,13 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         except ImportError as err:
             self.fail(unicode(err))
 
-        logger.info("Creating and staring bots for '{}'".format(app_label))
+        msg = "Creating and staring bots for '{}' - Round {}"
+        logger.info(msg.format(app_label, round_number))
 
         # create the bots
         bots = []
 
-        for player in subsession.player_set.all():
+        for player in subsession_round.player_set.all():
             bot = test_module.PlayerBot(player)
             bot.start()
             bots.append(bot)
@@ -190,14 +191,14 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
                 if pending.is_blocked(submit) or not submit.execute():
                     pending.add(submit)
 
-        logger.info("Stopping bots for '{}'".format(app_label))
+        msg = "Stopping bots for '{}' - Round {}"
+        logger.info(msg.format(app_label, round_number))
         for bot in bots:
             bot.stop()
 
     def runTest(self):
-        logger.info("Creating session for experimenter on session '{}'".format(
-            self.session_name
-        ))
+        msg = "Creating session for experimenter on session '{}'"
+        logger.info(msg.format(self.session_name))
         sssn = session.create_session(
             session_type_name=self.session_name,
             special_category=constants.session_special_category_bots,
@@ -224,8 +225,8 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
 
         logger.info("Running subsessions of '{}'".format(self.session_name))
 
-        for subsession in sssn.get_subsessions():
-            self._run_subsession(subsession)
+        for subsession_round in sssn.get_subsessions():
+            self._run_subsession_round(subsession_round)
 
 
 # =============================================================================
