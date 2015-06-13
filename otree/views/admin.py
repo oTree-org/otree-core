@@ -317,7 +317,20 @@ class CreateSessionForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         self.session_type = kwargs.pop('session_type')
+        for_mturk = kwargs.pop('for_mturk')
         super(CreateSessionForm, self).__init__(*args, **kwargs)
+        if for_mturk:
+            self.fields['num_participants'].label = "Number of workers"
+            self.fields['num_participants'].help_text = (
+                'Since workers can return the hit or drop out '
+                '"spare" participants will be created. Namely server will '
+                'have %s times more participants than MTurk HIT. '
+                'The number you enter in this field is number of '
+                'workers required for your HIT.'
+                % settings.MTURK_NUM_PARTICIPANTS_MULT
+            )
+        else:
+            self.fields['num_participants'].label = "Number of participants"
 
     num_participants = forms.IntegerField()
 
@@ -339,8 +352,8 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
         return r"^WaitUntilSessionCreated/(?P<session_pre_create_id>.+)/$"
 
     @classmethod
-    def url(cls, pre_create_id):
-        return "/WaitUntilSessionCreated/{}/".format(pre_create_id)
+    def url_name(cls):
+        return 'wait_until_session_created'
 
     def _is_ready(self):
         return Session.objects.filter(
@@ -352,6 +365,12 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
 
     def _response_when_ready(self):
         session = Session.objects.get(_pre_create_id=self._pre_create_id)
+        if self.request.session.get('for_mturk', False):
+            session.mturk_num_participants = (
+                len(session.get_participants()) /
+                settings.MTURK_NUM_PARTICIPANTS_MULT
+            )
+        session.save()
         session_home_url = reverse('session_start_links', args=(session.pk,))
         return HttpResponseRedirect(session_home_url)
 
@@ -393,6 +412,7 @@ class CreateSession(vanilla.FormView):
     def dispatch(self, request, *args, **kwargs):
         session_type_name = urllib.unquote_plus(kwargs.pop('session_type'))
         self.session_type = get_session_types_dict()[session_type_name]
+        self.for_mturk = (int(self.request.GET.get('mturk', 0)) == 1)
         return super(CreateSession, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -402,22 +422,33 @@ class CreateSession(vanilla.FormView):
 
     def get_form(self, data=None, files=None, **kwargs):
         kwargs['session_type'] = self.session_type
+        kwargs['for_mturk'] = self.for_mturk
         return super(CreateSession, self).get_form(data, files, **kwargs)
 
     def form_valid(self, form):
         pre_create_id = uuid.uuid4().hex
         kwargs = {
             'session_type_name': self.session_type['name'],
-            'num_participants': form.cleaned_data['num_participants'],
             '_pre_create_id': pre_create_id,
         }
+        if self.for_mturk:
+            kwargs['num_participants'] = (
+                form.cleaned_data['num_participants'] *
+                settings.MTURK_NUM_PARTICIPANTS_MULT
+            )
+        else:
+            kwargs['num_participants'] = form.cleaned_data['num_participants']
 
         threading.Thread(
             target=sleep_then_create_session,
             kwargs=kwargs,
         ).start()
 
-        return HttpResponseRedirect(WaitUntilSessionCreated.url(pre_create_id))
+        self.request.session['for_mturk'] = self.for_mturk
+        wait_until_session_created_url = reverse(
+            'wait_until_session_created', args=(pre_create_id,)
+        )
+        return HttpResponseRedirect(wait_until_session_created_url)
 
 
 class SessionTypesToCreate(vanilla.View):
@@ -440,7 +471,9 @@ class SessionTypesToCreate(vanilla.View):
             session_types_info.append(
                 {
                     'display_name': session_type['display_name'],
-                    'url': '/create_session/{}/'.format(session_type['name']),
+                    'url': '/create_session/{}/?mturk={}'.format(
+                        session_type['name'], self.request.GET.get('mturk', 0)
+                    ),
                 }
             )
 

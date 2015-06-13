@@ -836,7 +836,6 @@ class AdminSessionPageMixin(GetFloppyFormClassMixin):
         global_singleton = otree.models.session.GlobalSingleton.objects.get()
         default_session = global_singleton.default_session
         context.update({'session': self.session,
-                        'is_demo': self.is_demo,
                         'is_debug': settings.DEBUG,
                         'default_session': default_session})
         return context
@@ -847,10 +846,6 @@ class AdminSessionPageMixin(GetFloppyFormClassMixin):
     def dispatch(self, request, *args, **kwargs):
         session_pk = int(kwargs['pk'])
         self.session = get_object_or_404(otree.models.Session, pk=session_pk)
-        self.is_demo = (
-            self.session.special_category ==
-            constants.session_special_category_demo
-        )
         return super(AdminSessionPageMixin, self).dispatch(
             request, *args, **kwargs
         )

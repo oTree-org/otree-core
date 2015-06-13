@@ -134,6 +134,14 @@ class Session(ModelWithVars):
         help_text='Hit id for this session on MTurk',
     )
 
+    # since workers can drop out number of participants on server should be
+    # greater than number of participants on mturk
+    # value -1 indicates that this session it not intended to run on mturk
+    mturk_num_participants = models.IntegerField(
+        default=-1,
+        help_text="Number of participants on MTurk",
+    )
+
     mturk_sandbox = models.BooleanField(
         default=False,
         help_text="Should this session be created in mturk sandbox?"
@@ -194,6 +202,15 @@ class Session(ModelWithVars):
 
     def is_open(self):
         return GlobalSingleton.objects.get().default_session == self
+
+    def is_for_mturk(self):
+        return (not self.is_demo()) and (self.mturk_num_participants > 0)
+
+    def is_demo(self):
+        return (
+            self.special_category ==
+            constants.session_special_category_demo
+        )
 
     def subsession_names(self):
         names = []

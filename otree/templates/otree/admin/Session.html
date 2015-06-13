@@ -4,7 +4,7 @@
 {% block title %}
 Dashboard for session
 <code>{{ session.code }}</code>
-{% if is_demo %}
+{% if session.is_demo %}
     (demo)
 {% endif %}
 {% endblock %}
@@ -31,13 +31,14 @@ Dashboard for session
                 <li role="presentation" class="{% active_page request 'session_payments' session.pk %}">
                 <a href="{% url 'session_payments' session.pk %}"><span class="glyphicon glyphicon-usd"></span> Payments</a>
                 </li>
-                {% if is_demo %}
+                {% if session.is_demo %}
                 <li role="presentation">
                 <a href="{% url 'create_demo_session' session.session_type.name %}" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Recreate session from scratch">
                     <span class="glyphicon glyphicon-refresh"></span> Reload
                 </a>
                 </li>
-                {% else %}
+                {% endif %}
+                {% if session.is_for_mturk %}
                 <li role="presentation" class="{% active_page request 'session_create_hit' session.pk %}">
                 <a href="{% url 'session_create_hit' session.pk %}"><span class="glyphicon glyphicon-cloud"></span> MTurk</a>
                 </li>

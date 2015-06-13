@@ -106,9 +106,18 @@ $(document).ready(function() {
 {% block title %}
 oTree 
 Sessions
-    <a class="btn btn-primary btn" href="{% url 'session_types_create' %}" style="float: right;">
+<div class="btn-group" style="float: right;">
+    <a class="btn btn-primary" href="{% url 'session_types_create' %}?mturk=0">
         <span class="glyphicon glyphicon-plus"></span> Create new session
     </a>
+    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+        <span class="caret"></span>
+        <span class="sr-only">Toggle Dropdown</span>
+    </button>
+    <ul class="dropdown-menu" role="menu">
+        <li><a href="{% url 'session_types_create' %}?mturk=1">For MTurk</a></li>
+    </ul>
+</div>
 {% endblock %}
 {% block content %}
 {{ block.super }}
@@ -190,20 +199,22 @@ Sessions
                 <span class="glyphicon glyphicon-home"></span> Default
             </a>
             {% endif %}
-            {% if not s.mturk_HITId %}
-            <a href="{% url 'session_create_hit' s.pk %}" class="btn btn-primary btn-sm" role="button">
-                <span class="glyphicon glyphicon-cloud"></span> MTurk&nbsp;&nbsp;&nbsp;
-            </a>
-            {% else %}
-            <div class="btn-group">
-                <button class="btn btn-success btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
-                    <span class="glyphicon glyphicon-cloud"></span> MTurk <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu" role="menu">
-                    <li><a href="{{ s.mturk_requester_url }}" target="_blank">Requester link</a></li>
-                    <li><a href="{{ s.mturk_worker_url }}" target="_blank">Worker link</a></li>
-                </ul>
-            </div>
+            {% if s.is_for_mturk %}
+                {% if not s.mturk_HITId %}
+                <a href="{% url 'session_create_hit' s.pk %}" class="btn btn-primary btn-sm" role="button">
+                    <span class="glyphicon glyphicon-cloud"></span> MTurk&nbsp;&nbsp;&nbsp;
+                </a>
+                {% else %}
+                <div class="btn-group">
+                    <button class="btn btn-success btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+                        <span class="glyphicon glyphicon-cloud"></span> MTurk <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="{{ s.mturk_requester_url }}" target="_blank">Requester link</a></li>
+                        <li><a href="{{ s.mturk_worker_url }}" target="_blank">Worker link</a></li>
+                    </ul>
+                </div>
+                {% endif %}
             {% endif %}
         </td>
     </tr>

@@ -79,9 +79,6 @@ class SessionCreateHitForm(forms.Form):
         label="Number of assignments",
         help_text=(
             "How many unique Workers do you want to work on the HIT? "
-            "You may want this number to be lower than participants "
-            "in the oTree session to account for people who accepts "
-            "and then return the HIT."
         )
     )
     minutes_allotted_per_assignment = forms.IntegerField(
@@ -120,16 +117,8 @@ class SessionCreateHitForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
-        self.session = kwargs.pop('session', None)
         super(SessionCreateHitForm, self).__init__(*args, **kwargs)
-
-    def clean_assignments(self):
-        data = self.cleaned_data['assignments']
-        if data > len(self.session.get_participants()):
-            raise forms.ValidationError("""Number of Mturk assignments should be less or equal
-                                           than number of participants in
-                                           oTree session.""")
-        return data
+        self.fields['assignments'].widget.attrs['readonly'] = True
 
 
 class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
@@ -174,6 +163,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
                 mturk_hit_settings['minutes_allotted_per_assignment']
             ),
             'expiration_hours': mturk_hit_settings['expiration_hours'],
+            'assignments': self.session.mturk_num_participants,
         }
         form = self.get_form(initial=initial)
         context = self.get_context_data(form=form)
