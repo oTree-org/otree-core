@@ -387,6 +387,8 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
 
 
 def sleep_then_create_session(**kwargs):
+
+
     # hack: this sleep is to prevent locks on SQLite. This gives time to let
     # the page request finish before create_session is called,
     # because creating the session involves a lot of database I/O, which seems
