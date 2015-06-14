@@ -243,14 +243,10 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
             self.load_objects()
 
-            if not self.is_displayed():
-                self._increment_index_in_pages()
-                response = self._redirect_to_page_the_user_should_be_on()
-            else:
-                self._session_user._current_page_name = self.__class__.__name__
-                response = super(FormPageOrWaitPageMixin, self).dispatch(
-                    request, *args, **kwargs
-                )
+            self._session_user._current_page_name = self.__class__.__name__
+            response = super(FormPageOrWaitPageMixin, self).dispatch(
+                request, *args, **kwargs
+            )
             self._session_user.last_request_succeeded = True
             self._session_user._last_request_timestamp = time.time()
             self.save_objects()
@@ -443,6 +439,9 @@ class InGameWaitPageMixin(object):
                 return self._response_when_ready()
             self._session_user.is_on_wait_page = True
             self._record_visit()
+            if not self.is_displayed():
+                self._increment_index_in_pages()
+                return self._redirect_to_page_the_user_should_be_on()
             unvisited_ids = self._get_unvisited_ids()
             self._record_unvisited_ids(unvisited_ids)
             if len(unvisited_ids) == 0:
@@ -630,6 +629,10 @@ class FormPageMixin(object):
         return response
 
     def get(self, request, *args, **kwargs):
+        if not self.is_displayed():
+            self._increment_index_in_pages()
+            return self._redirect_to_page_the_user_should_be_on()
+
         self._session_user._current_form_page_url = self.request.path
         otree.timeout.tasks.submit_expired_url.apply_async(
             (self.request.path,),
