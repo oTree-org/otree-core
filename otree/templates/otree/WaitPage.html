@@ -51,6 +51,7 @@
 {% block internal_content_at_bottom_of_body %}
     {{ block.super }}
     {% include 'otree/includes/PollServerThenRedirect.html' %}
+    {% include "otree/includes/messages.html" %}
 {% endblock %}
 
 {# never show footer here #}
