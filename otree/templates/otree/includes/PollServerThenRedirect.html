@@ -2,7 +2,12 @@
 {% if view.poll_interval_seconds %}
     <script type="text/javascript">
         var checkIfReady = function() {
-            var args = { type: "GET", cache: false, url: "{{ view.poll_url }}", complete: redirectToSequenceView};
+            var args = { 
+                type: "GET",
+                cache: false,
+                url: "{{ view.poll_url }}",
+                complete: redirectToSequenceView,
+            }
             $.ajax(args);
         }
 

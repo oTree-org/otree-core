@@ -370,10 +370,7 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
             thread_create_session.isAlive()
         )
         if not thread_alive and not session_exists:
-            messages.error(
-                self.request,
-                "We failed to create session. Check console for errors."
-            )
+            raise Exception("Thread failed to create new session")
         return session_exists
 
     def body_text(self):
