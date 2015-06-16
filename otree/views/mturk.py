@@ -183,7 +183,6 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
     def post(self, request, *args, **kwargs):
         form = self.get_form(
             data=request.POST,
-            session=self.session,
             files=request.FILES
         )
         if not form.is_valid():
@@ -281,11 +280,16 @@ class PayMTurk(vanilla.View):
         session = get_object_or_404(
             otree.models.session.Session, pk=kwargs['session_pk']
         )
-        participants = session.participant_set.exclude(
-            mturk_assignment_id__isnull=True
-        ).exclude(mturk_assignment_id="")
         with MTurkConnection(self.request,
                              session.mturk_sandbox) as mturk_connection:
+            workers_with_submit = [
+                completed_assignment.WorkerId
+                for completed_assignment in
+                mturk_connection.get_assignments(session.mturk_HITId)
+            ]
+            participants = session.participant_set.filter(
+                mturk_worker_id__in=workers_with_submit
+            )
             participants_reward = [
                 participants.get(mturk_assignment_id=assignment_id)
                 for assignment_id in request.POST.getlist('reward')

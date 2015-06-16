@@ -135,7 +135,7 @@ $(function() {
             <td>
                 <div class="checkbox-inline">
                     <label>
-                        {% if not p.mturk_bonus_paid %}
+                        {% if not p.mturk_bonus_paid and p.payoff_in_real_world_currency.to_number > 0 %}
                         <input name="bonus" data-value="{{ p.payoff_in_real_world_currency.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}">
                         {% else %}
                         <input name="bonus" data-value="{{ p.payoff_in_real_world_currency.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}" disabled>

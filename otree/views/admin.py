@@ -30,6 +30,7 @@ from otree.session import (
 )
 from otree import forms
 from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
+from otree.views.mturk import MTurkConnection
 
 import otree.constants
 import otree.models.session
@@ -561,9 +562,17 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
 
         session = self.session
         if session.mturk_HITId:
-            participants = session.participant_set.exclude(
-                mturk_assignment_id__isnull=True
-            ).exclude(mturk_assignment_id="")
+            with MTurkConnection(
+                self.request, session.mturk_sandbox
+            ) as mturk_connection:
+                workers_with_submit = [
+                    completed_assignment.WorkerId
+                    for completed_assignment in
+                    mturk_connection.get_assignments(session.mturk_HITId)
+                ]
+                participants = session.participant_set.filter(
+                    mturk_worker_id__in=workers_with_submit
+                )
         else:
             participants = session.get_participants()
         total_payments = 0.0

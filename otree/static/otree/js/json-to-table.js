@@ -63,7 +63,7 @@ function ConvertJsonToTable(parsedJson, tableId, tableClassName, linkText, only_
     var tb = '<tbody>{0}</tbody>';
     var tr = '<tr>{0}</tr>';
     var thRow = '<th class="text-center">{0}</th>';
-    var tdRow = '<td data-field="{1}" class="text-center">{0}</td>';
+    var tdRow = '<td title="{1}" data-field="{1}" class="text-center">{0}</td>';
     var thCon = '';
     var tbCon = '';
     var trCon = '';

@@ -66,16 +66,16 @@ function ajax_json_results() {
         <tr>
             <th rowspan="3" class="text-center">Player label</th>
             {% for header, colspan in subsession_headers %}
-                <th colspan="{{ colspan }}" class="text-center">{{ header }}</th>
+                <th colspan="{{ colspan }}">{{ header }}</th>
             {% endfor %}
         </tr>
             {% for header, colspan in model_headers %}
-                <th colspan="{{ colspan }}" class="text-center">{{ header }}</th>
+                <th colspan="{{ colspan }}">{{ header }}</th>
             {% endfor %}
         </tr>
         <tr>
             {% for header in field_headers %}
-                <th class="text-center">{{ header }}</th>
+                <th>{{ header }}</th>
             {% endfor %}
         </tr>
     </thead>
