@@ -223,6 +223,13 @@ def augment_settings(settings):
         'MTURK_HOST': 'mechanicalturk.amazonaws.com',
         'MTURK_SANDBOX_HOST': 'mechanicalturk.sandbox.amazonaws.com',
         'CREATE_DEFAULT_SUPERUSER': True,
+
+        # since workers on Amazon MTurk can return the hit
+        # we need extra participants created on the
+        # server.
+        # The following setting is ratio:
+        # num_participants_server / num_participants_mturk
+        'MTURK_NUM_PARTICIPANTS_MULT': 2,
     }
 
     settings.update(augmented_settings)
