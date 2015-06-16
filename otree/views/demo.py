@@ -70,7 +70,8 @@ def ensure_enough_spare_sessions(session_type_name):
     # the page request finish before create_session is called, because creating
     # the session involves a lot of database I/O, which seems to cause locks
     # when multiple threads access at the same time.
-    time.sleep(5)
+    if settings.DATABASES['default']['ENGINE'].endswith('sqlite3'):
+        time.sleep(5)
 
     spare_sessions = Session.objects.filter(
         special_category=constants.session_special_category_demo,

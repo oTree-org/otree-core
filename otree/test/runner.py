@@ -20,14 +20,12 @@ import itertools
 import time
 import random
 
-from django.utils.importlib import import_module
-
 from django import test
 from django.test import runner
-from django.template import response
 
 import otree.models
 from otree import constants, session
+from otree.test.client import ParticipantBot
 
 import coverage
 
@@ -48,53 +46,13 @@ logger = logging.getLogger(__name__)
 
 
 # =============================================================================
-#
-# =============================================================================
-
-class MissingVarsContextProxyBase(object):
-    """
-    This is a poor-man's proxy for a context instance.
-
-    Make sure template rendering stops immediately on a KeyError.
-
-    bassed on: https://excess.org/article/2012/04/paranoid-django-templates/
-
-    """
-    CONTEXT_CLS = None
-
-    def __init__(self, *args, **kwargs):
-        self.context = self.CONTEXT_CLS(*args, **kwargs)
-        self.seen_keys = set()
-
-    def __repr__(self):
-        return "<MV ({}) at {}>".format(type(self.CONTEXT_CLS))
-
-    def __getitem__(self, key):
-        self.seen_keys.add(key)
-        try:
-            return self.context[key]
-        except KeyError:
-            raise AssertionError("Missing template var '{}'".format(key))
-
-    def __getattr__(self, name):
-        return getattr(self.context, name)
-
-    def __setitem__(self, key, value):
-        self.context[key] = value
-
-    def __delitem__(self, key):
-        del self.context[key]
-
-
-# =============================================================================
 # PENDING LIST
 # =============================================================================
 
 class PendingBuffer(object):
 
-    def __init__(self, app_label):
+    def __init__(self):
         self.storage = collections.OrderedDict()
-        self.app_label = app_label
 
     def __str__(self):
         return repr(self)
@@ -132,7 +90,6 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
     def __init__(self, session_name):
         super(OTreeExperimentFunctionTest, self).__init__()
         self.session_name = session_name
-        self.app_tested = []
 
     def __repr__(self):
         return "<{} '{}'>".format(
@@ -148,56 +105,11 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         submits = map(lambda b: b.submits, bots)
         return list(itertools.izip_longest(*submits))
 
-    def _run_subsession(self, subsession):
-        app_label = subsession._meta.app_config.name
-
-        # patching round number
-        self.app_tested.append(app_label)
-        subsession.round_number = self.app_tested.count(app_label)
-
-        logger.info("Starting subsession '{}'".format(app_label))
-        try:
-            test_module_name = '{}.tests'.format(app_label)
-            test_module = import_module(test_module_name)
-            logger.info("Found test '{}'".format(test_module_name))
-        except ImportError as err:
-            self.fail(unicode(err))
-
-        logger.info("Creating and staring bots for '{}'".format(app_label))
-
-        # create the bots
-        bots = []
-
-        for player in subsession.player_set.all():
-            bot = test_module.PlayerBot(player)
-            bot.start()
-            bots.append(bot)
-
-        submit_groups = self.zip_submits(bots)
-        pending = PendingBuffer(app_label)
-        while pending or submit_groups:
-            for submit, attempts in pending:
-                if attempts > MAX_ATTEMPTS:
-                    msg = "Max attepts reached in  submit '{}'"
-                    raise AssertionError(msg.format(submit))
-                if submit.execute():
-                    pending.remove(submit)
-
-            group = submit_groups.pop(0) if submit_groups else ()
-            for submit in group:
-                if submit is None:
-                    continue
-                if pending.is_blocked(submit) or not submit.execute():
-                    pending.add(submit)
-
-        logger.info("Stopping bots for '{}'".format(app_label))
-        for bot in bots:
-            bot.stop()
-
     def runTest(self):
-        logger.info("Creating session for experimenter on session '{}'".format(
+        logger.info("Creating '{}' session".format(
             self.session_name
         ))
+
         sssn = session.create_session(
             session_type_name=self.session_name,
             special_category=constants.session_special_category_bots,
@@ -218,19 +130,37 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         msg = "'GET' over first page of all '{}' participants"
         logger.info(msg.format(self.session_name))
 
+        participant_bots = []
         for participant in sssn.get_participants():
-            bot = test.Client()
-            bot.get(participant._start_url(), follow=True)
+            participant_bot = ParticipantBot(participant)
+            participant_bots.append(participant_bot)
+            participant_bot.start()
 
-        logger.info("Running subsessions of '{}'".format(self.session_name))
+        submit_groups = self.zip_submits(participant_bots)
+        pending = PendingBuffer()
+        while pending or submit_groups:
+            for submit, attempts in pending:
+                if attempts > MAX_ATTEMPTS:
+                    msg = "Max attepts reached in  submit '{}'"
+                    raise AssertionError(msg.format(submit))
+                if submit.execute():
+                    pending.remove(submit)
 
-        for subsession in sssn.get_subsessions():
-            self._run_subsession(subsession)
+            group = submit_groups.pop(0) if submit_groups else ()
+            for submit in group:
+                if submit is None:
+                    continue
+                if pending.is_blocked(submit) or not submit.execute():
+                    pending.add(submit)
 
+        logger.info("Stopping bots")
+        for bot in participant_bots:
+            bot.stop()
 
 # =============================================================================
 # RUNNER
 # =============================================================================
+
 
 class OTreeExperimentTestRunner(runner.DiscoverRunner):
 
@@ -247,24 +177,10 @@ class OTreeExperimentTestRunner(runner.DiscoverRunner):
             test_labels=(), extra_tests=tests, **kwargs
         )
 
-    def patch_validate_missing_template_vars(self):
-        # black magic envolved
-        ContextProxy = type(
-            "ContextProxy", (MissingVarsContextProxyBase,),
-            {"CONTEXT_CLS": response.Context}
-        )
-        setattr(response, "Context", ContextProxy)
-
-        RequestContextProxy = type(
-            "ContextProxy", (MissingVarsContextProxyBase,),
-            {"CONTEXT_CLS": response.RequestContext}
-        )
-        setattr(response, "RequestContext", RequestContextProxy)
-
-
 # =============================================================================
 # HELPER
 # =============================================================================
+
 
 def apps_from_sessions(session_names=None):
     if session_names:

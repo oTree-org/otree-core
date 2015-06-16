@@ -36,3 +36,18 @@
 <script src="http://code.highcharts.com/highcharts.js"></script>
 <script src="http://code.highcharts.com/highcharts-3d.js"></script>
 <script src="http://code.highcharts.com/modules/exporting.js"></script>
+
+<script type="text/javascript">
+
+    // Prevent duplicate form submission, which results in problematic race conditions
+    formAlreadySubmitted=false;
+
+    function markFormSubmitted() {
+        if (formAlreadySubmitted) {
+            return false;
+        }
+        formAlreadySubmitted = true;
+        return true;
+    }
+
+</script>

@@ -59,35 +59,45 @@ class MTurkConnection(boto.mturk.connection.MTurkConnection):
 
 
 class SessionCreateHitForm(forms.Form):
-    in_sandbox = forms.BooleanField(required=False,
-                                    help_text="""
-                                    Do you want HIT published
-                                    on MTurk sandbox?
-                                    """)
+    in_sandbox = forms.BooleanField(
+        required=False,
+        help_text="Do you want HIT published on MTurk sandbox?"
+    )
+    unique_workers = forms.BooleanField(
+        required=False,
+        initial=True,
+        help_text=(
+            "Are workers allowed to participate more than ones in "
+            "this type of session?"
+        )
+    )
     title = forms.CharField()
     description = forms.CharField()
     keywords = forms.CharField()
     money_reward = forms.RealWorldCurrencyField()
     assignments = forms.IntegerField(
         label="Number of assignments",
-        help_text=("How many unique Workers do you want to work on the HIT? "
-                   "You may want this number to be lower than participants "
-                   "in the oTree session to account for people who accepts "
-                   "and then return the HIT.")
+        help_text=(
+            "How many unique Workers do you want to work on the HIT? "
+        )
     )
     minutes_allotted_per_assignment = forms.IntegerField(
         label="Time allotted per assignment",
         required=False,
-        help_text=("The amount of time, in minutes, that a Worker has to "
-                   "complete the HIT after accepting it."
-                   "Leave it blank if you don't want to specify it.")
+        help_text=(
+            "The amount of time, in minutes, that a Worker has to "
+            "complete the HIT after accepting it."
+            "Leave it blank if you don't want to specify it."
+        )
     )
     expiration_hours = forms.IntegerField(
         label="HIT expires in",
         required=False,
-        help_text=("An amount of time, in hours, after which the HIT "
-                   "is no longer available for users to accept. "
-                   "Leave it blank if you don't want to specify it.")
+        help_text=(
+            "An amount of time, in hours, after which the HIT "
+            "is no longer available for users to accept. "
+            "Leave it blank if you don't want to specify it."
+        )
     )
 
     qualifications_choices = []
@@ -107,16 +117,8 @@ class SessionCreateHitForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
-        self.session = kwargs.pop('session', None)
         super(SessionCreateHitForm, self).__init__(*args, **kwargs)
-
-    def clean_assignments(self):
-        data = self.cleaned_data['assignments']
-        if data > len(self.session.get_participants()):
-            raise forms.ValidationError("""Number of Mturk assignments should be less or equal
-                                           than number of participants in
-                                           oTree session.""")
-        return data
+        self.fields['assignments'].widget.attrs['readonly'] = True
 
 
 class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
@@ -161,6 +163,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
                 mturk_hit_settings['minutes_allotted_per_assignment']
             ),
             'expiration_hours': mturk_hit_settings['expiration_hours'],
+            'assignments': self.session.mturk_num_participants,
         }
         form = self.get_form(initial=initial)
         context = self.get_context_data(form=form)
@@ -180,7 +183,6 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
     def post(self, request, *args, **kwargs):
         form = self.get_form(
             data=request.POST,
-            session=self.session,
             files=request.FILES
         )
         if not form.is_valid():
@@ -252,6 +254,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             session.mturk_HITId = hit[0].HITId
             session.mturk_HITGroupId = hit[0].HITGroupId
             session.mturk_sandbox = in_sandbox
+            session.mturk_unique_workers = 'mturk_unique_workers' in form.data
             session.save()
 
         return HttpResponseRedirect(
@@ -277,11 +280,16 @@ class PayMTurk(vanilla.View):
         session = get_object_or_404(
             otree.models.session.Session, pk=kwargs['session_pk']
         )
-        participants = session.participant_set.exclude(
-            mturk_assignment_id__isnull=True
-        ).exclude(mturk_assignment_id="")
         with MTurkConnection(self.request,
                              session.mturk_sandbox) as mturk_connection:
+            workers_with_submit = [
+                completed_assignment.WorkerId
+                for completed_assignment in
+                mturk_connection.get_assignments(session.mturk_HITId)
+            ]
+            participants = session.participant_set.filter(
+                mturk_worker_id__in=workers_with_submit
+            )
             participants_reward = [
                 participants.get(mturk_assignment_id=assignment_id)
                 for assignment_id in request.POST.getlist('reward')
