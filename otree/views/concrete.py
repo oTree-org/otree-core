@@ -68,6 +68,9 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin,
         # we assign them.
         elif self.session.session_type['group_by_arrival_time']:
             with lock_on_this_code_path():
+                # need to check again to prevent race conditions
+                if bool(self.group):
+                    return not self.group._is_missing_players
                 if self.subsession.round_number == 1:
                     open_group = self.subsession._get_open_group()
                     group_players = open_group.get_players()

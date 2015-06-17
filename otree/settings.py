@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import os
+
 import djcelery
+
 from django.conf import global_settings
 from django.contrib.messages import constants as messages
 

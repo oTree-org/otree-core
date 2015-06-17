@@ -11,6 +11,7 @@ from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect, JsonResponse
 from django.core.urlresolvers import reverse
 from django.forms.forms import pretty_name
+from django.contrib import messages
 from django.conf import settings
 
 import vanilla
@@ -357,9 +358,20 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
         return 'wait_until_session_created'
 
     def _is_ready(self):
-        return Session.objects.filter(
+        thread_create_session = None
+        for t in threading.enumerate():
+            if t.name == self._pre_create_id:
+                thread_create_session = t
+        session_exists = Session.objects.filter(
             _pre_create_id=self._pre_create_id
         ).exists()
+        thread_alive = (
+            thread_create_session and
+            thread_create_session.isAlive()
+        )
+        if not thread_alive and not session_exists:
+            raise Exception("Thread failed to create new session")
+        return session_exists
 
     def body_text(self):
         return 'Waiting until session created'
@@ -441,10 +453,12 @@ class CreateSession(vanilla.FormView):
         else:
             kwargs['num_participants'] = form.cleaned_data['num_participants']
 
-        threading.Thread(
+        thread_create_session = threading.Thread(
             target=sleep_then_create_session,
             kwargs=kwargs,
-        ).start()
+        )
+        thread_create_session.setName(pre_create_id)
+        thread_create_session.start()
 
         self.request.session['for_mturk'] = self.for_mturk
         wait_until_session_created_url = reverse(

@@ -1,5 +1,4 @@
 from otree.db import models
-import time
 
 class PageCompletion(models.Model):
     app_name = models.CharField(max_length=300)
@@ -52,3 +51,5 @@ class GroupSize(models.Model):
     group_index = models.PositiveIntegerField()
     group_size = models.PositiveIntegerField()
 
+class LockModel(models.Model):
+    pass

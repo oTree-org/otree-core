@@ -242,28 +242,29 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                     return HttpResponse('0')
                 return HttpResponse('1')
 
-            # if the player tried to skip past a part of the subsession
-            # (e.g. by typing in a future URL)
-            # or if they hit the back button to a previous subsession
-            # in the sequence.
-            if not self._user_is_on_right_page():
-                # then bring them back to where they should be
-                return self._redirect_to_page_the_user_should_be_on()
+            with lock_on_this_code_path(self._session_user.lock_object):
+                # if the player tried to skip past a part of the subsession
+                # (e.g. by typing in a future URL)
+                # or if they hit the back button to a previous subsession
+                # in the sequence.
+                if not self._user_is_on_right_page():
+                    # then bring them back to where they should be
+                    return self._redirect_to_page_the_user_should_be_on()
 
-            self.load_objects()
+                self.load_objects()
 
-            if not self.is_displayed():
-                self._increment_index_in_pages()
-                response = self._redirect_to_page_the_user_should_be_on()
-            else:
-                self._session_user._current_page_name = self.__class__.__name__
-                response = super(FormPageOrWaitPageMixin, self).dispatch(
-                    request, *args, **kwargs
-                )
-            self._session_user.last_request_succeeded = True
-            self._session_user._last_request_timestamp = time.time()
-            self.save_objects()
-            return response
+                if not self.is_displayed():
+                    self._increment_index_in_pages()
+                    response = self._redirect_to_page_the_user_should_be_on()
+                else:
+                    self._session_user._current_page_name = self.__class__.__name__
+                    response = super(FormPageOrWaitPageMixin, self).dispatch(
+                        request, *args, **kwargs
+                    )
+                self._session_user.last_request_succeeded = True
+                self._session_user._last_request_timestamp = time.time()
+                self.save_objects()
+                return response
         except Exception:
             self._session_user.last_request_succeeded = False
             self._session_user.save()

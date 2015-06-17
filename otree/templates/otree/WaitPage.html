@@ -35,7 +35,7 @@
         </div>
         <div class="panel-body">
             <div class="alert alert-danger error-notice" style="display:none">
-                {% blocktrans %}An error occurred.{% endblocktrans %}
+                {% blocktrans %}An error occurred. Please check the logs or ask the administrator for help.{% endblocktrans %}
             </div>
             <p>{{ view.body_text|default_if_none:'' }}</p>
             <div class="progress progress-striped active" id='waitingIndicator'>
