@@ -384,7 +384,14 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
                 settings.MTURK_NUM_PARTICIPANTS_MULT
             )
         session.save()
-        session_home_url = reverse('session_start_links', args=(session.pk,))
+        if session.is_for_mturk():
+            session_home_url = reverse(
+                'session_create_hit', args=(session.pk,)
+            )
+        else:
+            session_home_url = reverse(
+                'session_start_links', args=(session.pk,)
+            )
         return HttpResponseRedirect(session_home_url)
 
     def dispatch(self, request, *args, **kwargs):
