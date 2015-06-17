@@ -12,7 +12,9 @@ from otree.common_internal import id_label_name
 
 from otree.common import Currency as c
 from otree.db import models
-from otree.models_concrete import SessionuserToUserLookup
+from otree.models_concrete import (
+    SessionuserToUserLookup, LockModel
+)
 import contextlib
 
 
@@ -40,14 +42,19 @@ def no_op_context_manager():
 
 
 @contextlib.contextmanager
-def lock_on_this_code_path():
+def lock_on_this_code_path(lock_object=None):
     if settings.DATABASES['default']['ENGINE'].endswith('sqlite3'):
         yield
     else:
         with transaction.atomic():
             # take a lock on this singleton, so that only 1 person can
             # be completing this code path at once
-            GlobalSingleton.objects.select_for_update().get()
+            if lock_object is None:
+                lock_object = GlobalSingleton.objects.select_for_update().get()
+            else:
+                type(lock_object).objects.select_for_update().get(
+                    pk=lock_object.pk
+                )
             yield
 
 
@@ -516,6 +523,10 @@ class SessionUser(ModelWithVars):
     class Meta:
         abstract = True
 
+def create_lock_object():
+    a = LockModel()
+    a.save()
+    return a
 
 class Participant(SessionUser):
 
@@ -537,6 +548,7 @@ class Participant(SessionUser):
     mturk_worker_id = models.CharField(max_length=50, null=True)
     mturk_reward_paid = models.BooleanField(default=False)
     mturk_bonus_paid = models.BooleanField(default=False)
+    lock_object = models.ForeignKey(LockModel, default=create_lock_object)
 
     # unique=True can't be set, because the same external ID could be reused
     # in multiple sequences. however, it should be unique within the sequence.

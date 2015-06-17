@@ -225,6 +225,7 @@ def augment_settings(settings):
         'MTURK_HOST': 'mechanicalturk.amazonaws.com',
         'MTURK_SANDBOX_HOST': 'mechanicalturk.sandbox.amazonaws.com',
         'CREATE_DEFAULT_SUPERUSER': True,
+        'MTURK_NUM_PARTICIPANTS_MULT': 2,
     }
 
     settings.update(augmented_settings)

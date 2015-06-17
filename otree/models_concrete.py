@@ -47,3 +47,6 @@ class GroupSize(models.Model):
     subsession_pk = models.PositiveIntegerField()
     group_index = models.PositiveIntegerField()
     group_size = models.PositiveIntegerField()
+
+class LockModel(models.Model):
+    pass
