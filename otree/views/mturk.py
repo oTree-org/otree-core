@@ -305,7 +305,7 @@ class PayMTurk(vanilla.View):
             ]
             for p in participants_bonus:
                 bonus = boto.mturk.price.Price(
-                    amount=p.payoff.to_number()
+                    amount=p.payoff_in_real_world_currency().to_number()
                 )
                 mturk_connection.grant_bonus(
                     p.mturk_worker_id, p.mturk_assignment_id,
