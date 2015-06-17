@@ -384,7 +384,14 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
                 settings.MTURK_NUM_PARTICIPANTS_MULT
             )
         session.save()
-        session_home_url = reverse('session_start_links', args=(session.pk,))
+        if session.is_for_mturk():
+            session_home_url = reverse(
+                'session_create_hit', args=(session.pk,)
+            )
+        else:
+            session_home_url = reverse(
+                'session_start_links', args=(session.pk,)
+            )
         return HttpResponseRedirect(session_home_url)
 
     def dispatch(self, request, *args, **kwargs):
@@ -400,6 +407,8 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
 
 
 def sleep_then_create_session(**kwargs):
+
+
     # hack: this sleep is to prevent locks on SQLite. This gives time to let
     # the page request finish before create_session is called,
     # because creating the session involves a lot of database I/O, which seems

@@ -254,18 +254,14 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
                 self.load_objects()
 
-                if not self.is_displayed():
-                    self._increment_index_in_pages()
-                    response = self._redirect_to_page_the_user_should_be_on()
-                else:
-                    self._session_user._current_page_name = self.__class__.__name__
-                    response = super(FormPageOrWaitPageMixin, self).dispatch(
-                        request, *args, **kwargs
-                    )
-                self._session_user.last_request_succeeded = True
-                self._session_user._last_request_timestamp = time.time()
-                self.save_objects()
-                return response
+            self._session_user._current_page_name = self.__class__.__name__
+            response = super(FormPageOrWaitPageMixin, self).dispatch(
+                request, *args, **kwargs
+            )
+            self._session_user.last_request_succeeded = True
+            self._session_user._last_request_timestamp = time.time()
+            self.save_objects()
+            return response
         except Exception:
             self._session_user.last_request_succeeded = False
             self._session_user.save()
@@ -312,16 +308,19 @@ class FormPageOrWaitPageMixin(OTreeMixin):
             for target_index in indexes:
                 Page = pages[target_index]
 
-                # FIXME: are there other attributes? also, not valid for
-                # experimenter pages should i do As_view, or simulate the
+                # FIXME: are there other attributes? should i do As_view,
+                # or simulate the
                 # request?
                 page = Page()
                 page.player = self.player
                 page.group = self.group
                 page.subsession = self.subsession
 
+                # don't skip wait pages because the user has to pass through them
+                # so we record that they visited
                 cond = (
                     hasattr(Page, 'is_displayed') and not
+                    hasattr(Page, '_wait_page_flag') and not
                     page.is_displayed()
                 )
                 if cond:
@@ -374,6 +373,9 @@ class GenericWaitPageMixin(object):
     assigned to matches
 
     """
+
+    # for duck typing, indicates this is a wait page
+    _wait_page_flag = True
 
     # TODO: this is intended to be in the user's project, not part of oTree
     # core. But maybe have one in oTree core as a fallback in case the user
@@ -459,6 +461,9 @@ class InGameWaitPageMixin(object):
                 return self._response_when_ready()
             self._session_user.is_on_wait_page = True
             self._record_visit()
+            if not self.is_displayed():
+                self._increment_index_in_pages()
+                return self._redirect_to_page_the_user_should_be_on()
             unvisited_ids = self._get_unvisited_ids()
             self._record_unvisited_ids(unvisited_ids)
             if len(unvisited_ids) == 0:
@@ -650,6 +655,10 @@ class FormPageMixin(object):
         return response
 
     def get(self, request, *args, **kwargs):
+        if not self.is_displayed():
+            self._increment_index_in_pages()
+            return self._redirect_to_page_the_user_should_be_on()
+
         self._session_user._current_form_page_url = self.request.path
         if self.has_timeout():
             otree.timeout.tasks.submit_expired_url.apply_async(
@@ -676,8 +685,7 @@ class FormPageMixin(object):
                 return self.form_invalid(form)
         self.before_next_page()
         self._increment_index_in_pages()
-        resp = self._redirect_to_page_the_user_should_be_on()
-        return resp
+        return self._redirect_to_page_the_user_should_be_on()
 
     def poll_url(self):
         '''called from template. can't start with underscore because used
