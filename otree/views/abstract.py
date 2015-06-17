@@ -228,12 +228,12 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                 self.request.is_ajax() and
                 self.request.GET.get(constants.check_auto_submit)
             )
-            if cond:
-                if self._user_is_on_right_page():
-                    return HttpResponse('0')
-                return HttpResponse('1')
-
             with lock_on_this_code_path(self._session_user.lock_object):
+                if cond:
+                    if self._user_is_on_right_page():
+                        return HttpResponse('0')
+                    return HttpResponse('1')
+
                 # if the player tried to skip past a part of the subsession
                 # (e.g. by typing in a future URL)
                 # or if they hit the back button to a previous subsession
