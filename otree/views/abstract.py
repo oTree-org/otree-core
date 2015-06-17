@@ -289,16 +289,19 @@ class FormPageOrWaitPageMixin(OTreeMixin):
             for target_index in indexes:
                 Page = pages[target_index]
 
-                # FIXME: are there other attributes? also, not valid for
-                # experimenter pages should i do As_view, or simulate the
+                # FIXME: are there other attributes? should i do As_view,
+                # or simulate the
                 # request?
                 page = Page()
                 page.player = self.player
                 page.group = self.group
                 page.subsession = self.subsession
 
+                # don't skip wait pages because the user has to pass through them
+                # so we record that they visited
                 cond = (
                     hasattr(Page, 'is_displayed') and not
+                    hasattr(Page, '_wait_page_flag') and not
                     page.is_displayed()
                 )
                 if cond:
@@ -351,6 +354,9 @@ class GenericWaitPageMixin(object):
     assigned to matches
 
     """
+
+    # for duck typing, indicates this is a wait page
+    _wait_page_flag = True
 
     # TODO: this is intended to be in the user's project, not part of oTree
     # core. But maybe have one in oTree core as a fallback in case the user
