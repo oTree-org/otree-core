@@ -481,7 +481,7 @@ class SessionUser(ModelWithVars):
         else:
             if self.session.mturk_HITId:
                 assignment_id = self.mturk_assignment_id
-                if settings.DEBUG:
+                if self.session.mturk_sandbox:
                     url = (
                         'https://workersandbox.mturk.com/mturk/externalSubmit'
                     )
