@@ -30,7 +30,6 @@ completed_views = 'completed_views'
 
 form_invalid = 'form_invalid'
 precondition = 'precondition'
-mturk_assignment_id = 'mturk_assignment_id'
 mturk_worker_id = 'mturk_worker_id'
 debug_values_built_in = 'debug_values_built_in'
 debug_values = 'debug_values'
