@@ -495,6 +495,13 @@ class SessionUser(ModelWithVars):
                     }
                 )
                 return url
+            else:
+                redirect_url_function = self.session.session_type.get(
+                    'redirect_url_function'
+                )
+                if redirect_url_function:
+                    redirect_url = redirect_url_function(self)
+                    return redirect_url
             from otree.views.concrete import OutOfRangeNotification
             return OutOfRangeNotification.url(self)
 
