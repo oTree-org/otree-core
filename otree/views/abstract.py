@@ -254,14 +254,14 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
                 self.load_objects()
 
-            self._session_user._current_page_name = self.__class__.__name__
-            response = super(FormPageOrWaitPageMixin, self).dispatch(
-                request, *args, **kwargs
-            )
-            self._session_user.last_request_succeeded = True
-            self._session_user._last_request_timestamp = time.time()
-            self.save_objects()
-            return response
+                self._session_user._current_page_name = self.__class__.__name__
+                response = super(FormPageOrWaitPageMixin, self).dispatch(
+                    request, *args, **kwargs
+                )
+                self._session_user.last_request_succeeded = True
+                self._session_user._last_request_timestamp = time.time()
+                self.save_objects()
+                return response
         except Exception:
             self._session_user.last_request_succeeded = False
             self._session_user.save()
