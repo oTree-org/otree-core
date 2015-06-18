@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: oTree\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-10 17:01+0900\n"
+"POT-Creation-Date: 2015-06-18 09:21+0200\n"
 "PO-Revision-Date: 2013-12-13 13:40+0800\n"
-"Last-Translator: Raphael <raphael.nehmer@gess.ethz.ch>\n"
+"Last-Translator: Gregor Müllegger <gregor@muellegger.de>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
@@ -26,8 +26,8 @@ msgstr ""
 #: .\common.py:39
 msgid "{} point"
 msgid_plural "{} points"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "{} Punkt"
+msgstr[1] "{} Punkte"
 
 #. Translators: for required form fields
 #: .\constants.py:72
@@ -36,31 +36,31 @@ msgstr "Dieses Feld ist erforderlich."
 
 #: .\db\models.py:224
 msgid "Yes"
-msgstr ""
+msgstr "Ja"
 
 #: .\db\models.py:225
 msgid "No"
-msgstr ""
+msgstr "Nein"
 
 #: .\forms\forms.py:310
 msgid "Value must be greater than or equal to {}."
-msgstr ""
+msgstr "Der Wert muss größer gleich {} sein."
 
 #: .\forms\forms.py:314
 msgid "Value must be less than or equal to {}."
-msgstr ""
+msgstr "Der Wert muss kleiner gleich {} sein."
 
 #. Translators: for multiple-choice fields,
 #. show the valid choices.
 #. e.g. "Value must be one of: A, B, C"
 #: .\forms\forms.py:326
 msgid "Value must be one of: {}"
-msgstr ""
+msgstr "Der Wert muss einer der folgenden sein: {}"
 
 #. Translators: the label next to a "points" input field
 #: .\forms\widgets.py:99
 msgid "points"
-msgstr ""
+msgstr "Punkte"
 
 #: .\templates\otree\BaseExperiment.html:18 .\templates\otree\BaseSite.html:31
 msgid "Please fix the errors in the form."
@@ -68,11 +68,14 @@ msgstr "Bitte korrigieren Sie die Fehler im Formular."
 
 #: .\templates\otree\OutOfRangeNotification.html:11
 msgid "No more pages left to show."
-msgstr ""
+msgstr "Es gibt keine weiteren Seiten."
 
 #: .\templates\otree\WaitPage.html:38
-msgid "An error occurred."
+msgid ""
+"An error occurred. Please check the logs or ask the administrator for help."
 msgstr ""
+"Ein Fehler ist aufgetreten. Bitte lesen Sie die Logs oder "
+"wenden Sie sich an einen Administrator für Hilfe."
 
 # incomplete sentence
 #: .\templates\otree\includes\TimeLimit.html:6
@@ -81,15 +84,15 @@ msgstr "Verbleibende Zeit für diese Seite."
 
 #: .\templates\otree\includes\TimeLimit.html:20
 msgid "Time ran out."
-msgstr ""
+msgstr "Zeit beendet."
 
 #: .\templates\otree\login.html:35
 msgid "Forgotten your password or username?"
-msgstr ""
+msgstr "Passwort oder Benutzername vergessen?"
 
 #: .\templates\otree\login.html:39
 msgid "Log in"
-msgstr ""
+msgstr "Einloggen"
 
 #. Translators: The text on the button the user clicks to get to the next page
 #: .\templates\otree\tags\NextButton.html:4
@@ -97,24 +100,24 @@ msgid "Next"
 msgstr "Weiter"
 
 #. Translators: the default title of a wait page
-#: .\views\abstract.py:365
+#: views/abstract.py:368
 msgid "Please wait"
-msgstr "Bitte warten Sie"
+msgstr "Bitte warten"
 
-#: .\views\abstract.py:561
+#: views/abstract.py:567
 msgid "Waiting for the other participants."
-msgstr ""
+msgstr "Bitte warten Sie bis die anderen Teilnehmer bereit sind."
 
-#: .\views\abstract.py:563
+#: views/abstract.py:569
 msgid "Waiting for the other participant."
-msgstr ""
+msgstr "Bitte warten Sie bis der andere Teilnehmer bereit ist."
 
 #. Translators: the default body text on the waiting page
 #. to inform the user we are waiting.
-#: .\views\abstract.py:567
+#: views/abstract.py:573
 msgid "Waiting"
-msgstr ""
+msgstr "Bitte warten"
 
-#: .\views\concrete.py:97
+#: views/concrete.py:117
 msgid "Waiting until other participants or the study supervisor are ready."
-msgstr ""
+msgstr "Bitte warten Sie bis die anderen Teilnehmer und Ihr Betreuer bereit sind."
