@@ -239,6 +239,12 @@ class FormPageOrWaitPageMixin(OTreeMixin):
             )
 
             with lock_on_this_code_path(self._session_user.lock_object):
+                # hack; reload in case of race condition
+                # fix later
+                self._session_user = get_object_or_404(
+                    self.SessionUserClass, code=session_user_code
+                )
+
                 if cond:
                     if self._user_is_on_right_page():
                         return HttpResponse('0')
