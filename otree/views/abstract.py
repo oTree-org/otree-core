@@ -297,7 +297,8 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                 page.group = self.group
                 page.subsession = self.subsession
 
-                # don't skip wait pages because the user has to pass through them
+                # don't skip wait pages
+                # because the user has to pass through them
                 # so we record that they visited
                 cond = (
                     hasattr(Page, 'is_displayed') and not
