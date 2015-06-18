@@ -114,7 +114,7 @@ msgstr "Esperando al otro participante."
 #. to inform the user we are waiting.
 #: .\views\abstract.py:574
 msgid "Waiting"
-msgstr "Esperandp"
+msgstr "Esperando"
 
 #: .\views\concrete.py:117
 msgid "Waiting until other participants or the study supervisor are ready."
