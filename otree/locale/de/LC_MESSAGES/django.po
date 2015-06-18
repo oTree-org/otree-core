@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: oTree\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-10 17:01+0900\n"
+"POT-Creation-Date: 2015-06-18 18:41+0900\n"
 "PO-Revision-Date: 2013-12-13 13:40+0800\n"
 "Last-Translator: Raphael <raphael.nehmer@gess.ethz.ch>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,7 +30,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: for required form fields
-#: .\constants.py:72
+#: .\constants.py:71
 msgid "This field is required."
 msgstr "Dieses Feld ist erforderlich."
 
@@ -71,7 +71,8 @@ msgid "No more pages left to show."
 msgstr ""
 
 #: .\templates\otree\WaitPage.html:38
-msgid "An error occurred."
+msgid ""
+"An error occurred. Please check the logs or ask the administrator for help."
 msgstr ""
 
 # incomplete sentence
@@ -97,24 +98,24 @@ msgid "Next"
 msgstr "Weiter"
 
 #. Translators: the default title of a wait page
-#: .\views\abstract.py:365
+#: .\views\abstract.py:369
 msgid "Please wait"
 msgstr "Bitte warten Sie"
 
-#: .\views\abstract.py:561
+#: .\views\abstract.py:568
 msgid "Waiting for the other participants."
 msgstr ""
 
-#: .\views\abstract.py:563
+#: .\views\abstract.py:570
 msgid "Waiting for the other participant."
 msgstr ""
 
 #. Translators: the default body text on the waiting page
 #. to inform the user we are waiting.
-#: .\views\abstract.py:567
+#: .\views\abstract.py:574
 msgid "Waiting"
 msgstr ""
 
-#: .\views\concrete.py:97
+#: .\views\concrete.py:117
 msgid "Waiting until other participants or the study supervisor are ready."
 msgstr ""

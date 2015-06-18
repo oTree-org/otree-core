@@ -11,7 +11,6 @@ from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect, JsonResponse
 from django.core.urlresolvers import reverse
 from django.forms.forms import pretty_name
-from django.contrib import messages
 from django.conf import settings
 
 import vanilla
@@ -407,7 +406,6 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
 
 
 def sleep_then_create_session(**kwargs):
-
 
     # hack: this sleep is to prevent locks on SQLite. This gives time to let
     # the page request finish before create_session is called,

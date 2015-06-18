@@ -530,10 +530,12 @@ class SessionUser(ModelWithVars):
     class Meta:
         abstract = True
 
+
 def create_lock_object():
     a = LockModel()
     a.save()
     return a
+
 
 class Participant(SessionUser):
 

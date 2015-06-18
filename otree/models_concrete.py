@@ -51,5 +51,6 @@ class GroupSize(models.Model):
     group_index = models.PositiveIntegerField()
     group_size = models.PositiveIntegerField()
 
+
 class LockModel(models.Model):
     pass
