@@ -16,11 +16,9 @@ Dashboard for session
                 <li role="presentation" class="{% active_page request 'session_description' session.pk %}">
                 <a href="{% url 'session_description' session.pk %}"><span class="glyphicon glyphicon-pushpin"></span> Description</a>
                 </li>
-                {% if not session.is_for_mturk %}
-                    <li role="presentation" class="{% active_page request 'session_start_links' session.pk %}">
-                    <a href="{% url 'session_start_links' session.pk %}"><span class="glyphicon glyphicon-link"></span> Links</a>
-                    </li>
-                {% endif %}
+                <li role="presentation" class="{% active_page request 'session_start_links' session.pk %}">
+                <a href="{% url 'session_start_links' session.pk %}"><span class="glyphicon glyphicon-link"></span> Links</a>
+                </li>
                 <li role="presentation" class="{% active_page request 'session_edit' session.pk %}">
                 <a href="{% url 'session_edit' session.pk %}"><span class="glyphicon glyphicon-pencil"></span> Edit
                 </a>
