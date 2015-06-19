@@ -247,7 +247,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
 
             if form.cleaned_data['expiration_hours']:
                 mturk_hit_parameters['lifetime'] = datetime.timedelta(
-                    days=form.cleaned_data['expiration_hours']
+                    hours=form.cleaned_data['expiration_hours']
                 )
 
             hit = mturk_connection.create_hit(**mturk_hit_parameters)
