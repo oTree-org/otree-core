@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 from ._builtin import Page, WaitPage
+from .models import Constants
 
 
 class Page(Page):
@@ -30,6 +31,22 @@ class ResultsWaitPage(WaitPage):
 
     def after_all_players_arrive(self):
         self.group.set_payoffs()
+
+        if self.subsession.round_number == Constants.num_rounds:
+            this_group_players = self.group.get_players()
+            participants = set(
+                p.participant for p in this_group_players
+            )
+
+            for i, group in enumerate(self.group.in_previous_rounds()):
+                assert group.subsession.round_number == i + 1
+                players = group.get_players()
+                assert len(players) == len(this_group_players)
+
+                assert all(
+                    p.participant in participants
+                    for p in players
+                )
 
 
 class AllGroupsWaitPage(WaitPage):

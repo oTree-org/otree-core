@@ -13,6 +13,8 @@ class BaseGroup(SaveTheChange, models.Model):
 
     _is_missing_players = models.BooleanField(default=False)
 
+    id_in_subsession = models.PositiveIntegerField()
+
     class Meta:
         abstract = True
 
@@ -49,6 +51,32 @@ class BaseGroup(SaveTheChange, models.Model):
             player.save()
         # so that get_players doesn't return stale cache
         self._players = players_list
+
+    def in_previous_rounds(self):
+
+        qs = type(self).objects.filter(
+            session=self.session,
+            id_in_subsession=self.id_in_subsession,
+        )
+
+        round_list = [
+            g for g in qs if
+            g.subsession.round_number < self.subsession.round_number
+        ]
+
+        if not len(round_list) == self.subsession.round_number - 1:
+            raise ValueError(
+                'This group is missing round history. '
+                'You should not use this method if '
+                'you are rearranging groups between rounds.'
+            )
+
+        round_list.sort(key=lambda grp: grp.subsession.round_number)
+
+        return round_list
+
+    def in_all_rounds(self):
+        return self.in_previous_rounds() + [self]
 
     @property
     def _Constants(self):

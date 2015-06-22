@@ -93,6 +93,12 @@ class BaseGroup(groups.BaseGroup):
     def get_player_by_id(self, id_in_group):
         return super(BaseGroup, self).get_player_by_id(id_in_group)
 
+    def in_previous_rounds(self):
+        return super(BaseGroup, self).in_previous_rounds()
+
+    def in_all_rounds(self):
+        return super(BaseGroup, self).in_all_rounds()
+
 
 class BasePlayer(players.BasePlayer):
 

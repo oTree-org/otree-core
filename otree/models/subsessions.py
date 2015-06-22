@@ -141,9 +141,10 @@ class BaseSubsession(SaveTheChange, models.Model):
                 p.group = None
                 p.save()
         self.group_set.all().delete()
-        for row in matrix:
+        for i, row in enumerate(matrix, start=1):
             group = self._create_group()
             group.set_players(row)
+            group.id_in_subsession = i
 
         if check_integrity:
             self.check_group_integrity()
