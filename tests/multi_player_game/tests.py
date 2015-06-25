@@ -10,8 +10,6 @@ class PlayerBot(Bot):
 
         if self.player.id_in_group == 1:
             self.submit(views.FieldOnOtherPlayer)
-        else:
-            self.submit(views.Shim)
         self.submit(views.Results)
 
     def validate_play(self):

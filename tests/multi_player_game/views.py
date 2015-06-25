@@ -22,10 +22,12 @@ class FieldOnOtherPlayer(Page):
         assert in_all_rounds[-1].from_other_player == 1
 
 
-class Shim(Page):
-    def is_displayed(self):
-        return self.player.id_in_group != 1
+class PickWinner(WaitPage):
 
+    def after_all_players_arrive(self):
+        # testing that this code only gets executed once
+        winner = random.choice(self.group.get_players())
+        winner.is_winner = True
 
 class ResultsWaitPage(WaitPage):
 
@@ -71,7 +73,7 @@ class Results(Page):
 
 page_sequence = [
     FieldOnOtherPlayer,
-    Shim,
+    PickWinner,
     ResultsWaitPage,
     AllGroupsWaitPage,
     Results
