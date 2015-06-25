@@ -727,8 +727,8 @@ class InGameWaitPage(FormPageOrWaitPageMixin, PlayerMixin, InGameWaitPageMixin,
     pass
 
 
-class AssignVisitorToOpenSessionBase(vanilla.View):
-    # TODO: merge this with AssignVisitorToOpenSession.
+class AssignVisitorToDefaultSessionBase(vanilla.View):
+    # TODO: merge this with AssignVisitorToDefaultSession.
     # we used to have the MTurk version but it has been removed.
 
     def incorrect_parameters_in_url_message(self):
