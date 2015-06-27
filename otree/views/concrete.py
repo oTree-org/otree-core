@@ -23,7 +23,7 @@ from django.utils.translation import ugettext as _
 import otree.constants as constants
 import otree.models.session
 from otree.models.session import Participant, Session
-from otree.models.session import lock_on_this_code_path
+from otree.common_internal import lock_on_this_code_path
 import otree.views.admin
 import otree.common_internal
 from otree.views.abstract import (
@@ -32,6 +32,7 @@ from otree.views.abstract import (
     NO_PARTICIPANTS_LEFT_MSG
 )
 from otree.models_concrete import GroupSize
+from otree.models.session import GlobalSingleton
 
 
 class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
@@ -395,7 +396,7 @@ class SetDefaultSession(vanilla.View):
         )
 
     def get(self, request, *args, **kwargs):
-        global_singleton = otree.models.session.GlobalSingleton.objects.get()
+        global_singleton = GlobalSingleton.objects.get()
         global_singleton.default_session = self.session
         global_singleton.save()
 
@@ -435,7 +436,7 @@ class UnsetDefaultSession(vanilla.View):
         )
 
     def get(self, request, *args, **kwargs):
-        global_singleton = otree.models.session.GlobalSingleton.objects.get()
+        global_singleton = GlobalSingleton.objects.get()
         global_singleton.default_session = None
         global_singleton.save()
         messages.success(

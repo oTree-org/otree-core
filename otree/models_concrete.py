@@ -1,5 +1,6 @@
 from otree.db import models
 
+
 class PageCompletion(models.Model):
     app_name = models.CharField(max_length=300)
     player_pk = models.PositiveIntegerField()
@@ -52,5 +53,15 @@ class GroupSize(models.Model):
     group_size = models.PositiveIntegerField()
 
 
-class LockModel(models.Model):
+class ParticipantLockModel(models.Model):
+    participant_code = models.CharField(max_length=10)
+
+
+class StubModel(models.Model):
+    """To be used as the model for an empty form, so that form_class can be
+    omitted. Consider using SingletonModel for this. Right now, I'm not
+    sure we need it.
+
+    """
+
     pass

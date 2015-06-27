@@ -6,7 +6,9 @@ import urlparse
 from os.path import dirname, join
 from collections import OrderedDict
 import operator
+import contextlib
 
+from django.db import transaction
 from django.db import connection
 from django.apps import apps
 from django.conf import settings
@@ -229,3 +231,29 @@ def db_status_ok():
         if not db_table_exists(table_name):
             return False
     return True
+
+@contextlib.contextmanager
+def no_op_context_manager():
+    yield
+
+@contextlib.contextmanager
+def transaction_atomic():
+    if settings.DATABASES['default']['ENGINE'].endswith('sqlite3'):
+        yield
+    else:
+        with transaction.atomic():
+            yield
+
+@contextlib.contextmanager
+def lock_on_this_code_path(lock_object=None):
+    with transaction_atomic():
+        # take a lock on this singleton, so that only 1 person can
+        # be completing this code path at once
+        if lock_object is None:
+            from otree.models.session import GlobalSingleton
+            lock_object = GlobalSingleton.objects.select_for_update().get()
+        else:
+            type(lock_object).objects.select_for_update().get(
+                pk=lock_object.pk
+            )
+        yield

@@ -3,8 +3,6 @@ import itertools
 import time
 
 import django.test
-from django.db import transaction
-from django.conf import settings
 
 from otree import constants
 import otree.common_internal
@@ -13,63 +11,23 @@ from otree.common_internal import id_label_name
 from otree.common import Currency as c
 from otree.db import models
 from otree.models_concrete import (
-    SessionuserToUserLookup, LockModel
+    SessionuserToUserLookup
 )
-import contextlib
 
+
+def get_empty_dict():
+    return {}
 
 class GlobalSingleton(models.Model):
     """object that can hold site-wide settings. There should only be one
     GlobalSingleton object. Also used for wait page actions.
     """
 
-    # TODO: move to otree.models_concrete
-
     default_session = models.ForeignKey('Session', null=True, blank=True)
     admin_access_code = models.RandomCharField(
         length=8, doc=('used for authentication to things only the '
                        'admin/experimenter should access')
     )
-
-    class Meta:
-        verbose_name = 'Set default session'
-        verbose_name_plural = verbose_name
-
-
-@contextlib.contextmanager
-def no_op_context_manager():
-    yield
-
-
-@contextlib.contextmanager
-def lock_on_this_code_path(lock_object=None):
-    if settings.DATABASES['default']['ENGINE'].endswith('sqlite3'):
-        yield
-    else:
-        with transaction.atomic():
-            # take a lock on this singleton, so that only 1 person can
-            # be completing this code path at once
-            if lock_object is None:
-                lock_object = GlobalSingleton.objects.select_for_update().get()
-            else:
-                type(lock_object).objects.select_for_update().get(
-                    pk=lock_object.pk
-                )
-            yield
-
-
-class StubModel(models.Model):
-    """To be used as the model for an empty form, so that form_class can be
-    omitted. Consider using SingletonModel for this. Right now, I'm not
-    sure we need it.
-
-    """
-
-    # TODO: move to otree.models_concrete
-
-
-def get_empty_dict():
-    return {}
 
 
 class ModelWithVars(models.Model):
@@ -531,12 +489,6 @@ class SessionUser(ModelWithVars):
         abstract = True
 
 
-def create_lock_object():
-    a = LockModel()
-    a.save()
-    return a
-
-
 class Participant(SessionUser):
 
     class Meta:
@@ -557,7 +509,6 @@ class Participant(SessionUser):
     mturk_worker_id = models.CharField(max_length=50, null=True)
     mturk_reward_paid = models.BooleanField(default=False)
     mturk_bonus_paid = models.BooleanField(default=False)
-    lock_object = models.ForeignKey(LockModel, default=create_lock_object)
 
     # unique=True can't be set, because the same external ID could be reused
     # in multiple sequences. however, it should be unique within the sequence.
@@ -614,3 +565,5 @@ class Participant(SessionUser):
 
     def name(self):
         return id_label_name(self.pk, self.label)
+
+

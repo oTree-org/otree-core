@@ -48,14 +48,16 @@ import otree.common_internal
 import otree.models.session
 import otree.timeout.tasks
 import otree.models
-import otree.models.session as seq_models
 import otree.constants as constants
-from otree.models.session import Participant, lock_on_this_code_path
+from otree.models.session import Participant
+from otree.models.session import GlobalSingleton
+from otree.common_internal import lock_on_this_code_path
 
 from otree.models_concrete import (
     PageCompletion, WaitPageVisit, CompletedSubsessionWaitPage,
     CompletedGroupWaitPage, SessionuserToUserLookup,
-    PageTimeout
+    PageTimeout, StubModel,
+    ParticipantLockModel
 )
 
 
@@ -215,35 +217,33 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                                     no_cache=True, no_store=True))
     def dispatch(self, request, *args, **kwargs):
         try:
-            session_user_code = kwargs.pop(constants.session_user_code)
+            with otree.common_internal.transaction_atomic():
 
-            self.SessionUserClass = otree.models.session.Participant
+                participant_code = kwargs.pop(constants.session_user_code)
 
-            try:
-                self._session_user = get_object_or_404(
-                    self.SessionUserClass, code=session_user_code
+                self._index_in_pages = int(kwargs.pop(constants.index_in_pages))
+
+                cond = (
+                    self.request.is_ajax() and
+                    self.request.GET.get(constants.check_auto_submit)
                 )
-            except Http404 as err:
-                msg = (
-                    "This user ({}) does not exist in the database. "
-                    "Maybe the database was recreated."
-                ).format(session_user_code)
-                err.message += msg
-                raise
 
-            self._index_in_pages = int(kwargs.pop(constants.index_in_pages))
-
-            cond = (
-                self.request.is_ajax() and
-                self.request.GET.get(constants.check_auto_submit)
-            )
-
-            with lock_on_this_code_path(self._session_user.lock_object):
-                # hack; reload in case of race condition
-                # fix later
-                self._session_user = get_object_or_404(
-                    self.SessionUserClass, code=session_user_code
+                # take a lock so that this same code path is not run twice
+                # for the same participant
+                ParticipantLockModel.objects.select_for_update().get(
+                    participant_code=participant_code
                 )
+
+                try:
+                    self._session_user = Participant.objects.get(
+                        code=participant_code
+                    )
+                except Participant.DoesNotExist:
+                    msg = (
+                        "This user ({}) does not exist in the database. "
+                        "Maybe the database was recreated."
+                    ).format(participant_code)
+                    raise Http404(msg)
 
                 if cond:
                     if self._user_is_on_right_page():
@@ -269,8 +269,9 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                 self.save_objects()
                 return response
         except Exception:
-            self._session_user.last_request_succeeded = False
-            self._session_user.save()
+            if hasattr(self, '_session_user'):
+                self._session_user.last_request_succeeded = False
+                self._session_user.save()
             raise
 
     # TODO: maybe this isn't necessary, because I can figure out what page
@@ -614,7 +615,7 @@ class FormPageMixin(object):
     """
 
     # if a model is not specified, use empty "StubModel"
-    model = otree.models.session.StubModel
+    model = StubModel
     fields = []
 
     def get_template_names(self):
@@ -763,8 +764,8 @@ class PlayerUpdateView(FormPageMixin, FormPageOrWaitPageMixin,
             return self.group
         elif Cls == self.PlayerClass:
             return self.player
-        elif Cls == seq_models.StubModel:
-            return seq_models.StubModel.objects.all()[0]
+        elif Cls == StubModel:
+            return StubModel.objects.all()[0]
 
 
 class InGameWaitPage(FormPageOrWaitPageMixin, PlayerMixin, InGameWaitPageMixin,
@@ -809,7 +810,7 @@ class AssignVisitorToOpenSessionBase(vanilla.View):
                 'Incorrect access code for default session'
             )
 
-        global_singleton = otree.models.session.GlobalSingleton.objects.get()
+        global_singleton = GlobalSingleton.objects.get()
         default_session = global_singleton.default_session
 
         if not default_session:
@@ -890,7 +891,7 @@ class AdminSessionPageMixin(GetFloppyFormClassMixin):
 
     def get_context_data(self, **kwargs):
         context = super(AdminSessionPageMixin, self).get_context_data(**kwargs)
-        global_singleton = otree.models.session.GlobalSingleton.objects.get()
+        global_singleton = GlobalSingleton.objects.get()
         default_session = global_singleton.default_session
         context.update({'session': self.session,
                         'is_debug': settings.DEBUG,

@@ -12,7 +12,7 @@ from otree.common_internal import (
     get_models_module, get_app_constants,
     min_players_multiple,
 )
-
+from otree.models_concrete import ParticipantLockModel
 
 def gcd(a, b):
     """Return greatest common divisor using Euclid's Algorithm."""
@@ -172,6 +172,9 @@ def create_session(session_type_name, label='', num_participants=None,
         Participant,
         [{'id_in_session': i} for i in range(1, num_participants + 1)]
     )
+
+    for participant in participants:
+        ParticipantLockModel(participant_code=participant.code).save()
 
     for app_name in session_type['app_sequence']:
 

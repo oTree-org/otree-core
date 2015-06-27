@@ -36,7 +36,7 @@ import otree.constants
 import otree.models.session
 from otree.common import Currency as c
 from otree.models.session import Session, Participant
-
+from otree.models.session import GlobalSingleton
 
 def get_all_fields(Model, for_export=False):
 
@@ -300,7 +300,7 @@ class PersistentLabURLs(vanilla.TemplateView):
                     {otree.constants.participant_label: 'P{}'.format(i)}
                 )
             )
-        global_singleton = otree.models.session.GlobalSingleton.objects.get()
+        global_singleton = GlobalSingleton.objects.get()
         default_session = global_singleton.default_session
 
         context.update({
@@ -824,7 +824,7 @@ class AdminHome(vanilla.ListView):
 
     def get_context_data(self, **kwargs):
         context = super(AdminHome, self).get_context_data(**kwargs)
-        global_singleton = otree.models.session.GlobalSingleton.objects.get()
+        global_singleton = GlobalSingleton.objects.get()
         default_session = global_singleton.default_session
         context.update({
             'default_session': default_session,
