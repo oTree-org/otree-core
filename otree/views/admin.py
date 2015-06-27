@@ -288,9 +288,9 @@ class PersistentLabURLs(vanilla.TemplateView):
         context = super(PersistentLabURLs, self).get_context_data(**kwargs)
 
         # default session stuff
-        from otree.views.concrete import AssignVisitorToOpenSession
+        from otree.views.concrete import AssignVisitorToDefaultSession
         default_session_base_url = self.request.build_absolute_uri(
-            AssignVisitorToOpenSession.url()
+            AssignVisitorToDefaultSession.url()
         )
         default_session_example_urls = []
         for i in range(1, 20):

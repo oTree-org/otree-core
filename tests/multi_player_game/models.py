@@ -51,6 +51,7 @@ class Player(otree.models.BasePlayer):
 
     from_other_player = models.PositiveIntegerField()
 
+    is_winner = models.BooleanField(initial=False)
     in_all_groups_wait_page = models.FloatField(initial=0)
 
     def role(self):

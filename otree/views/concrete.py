@@ -27,7 +27,7 @@ from otree.common_internal import lock_on_this_code_path
 import otree.views.admin
 import otree.common_internal
 from otree.views.abstract import (
-    NonSequenceUrlMixin, OTreeMixin, AssignVisitorToOpenSessionBase,
+    NonSequenceUrlMixin, OTreeMixin, AssignVisitorToDefaultSessionBase,
     GenericWaitPageMixin, FormPageOrWaitPageMixin, PlayerMixin,
     NO_PARTICIPANTS_LEFT_MSG
 )
@@ -155,7 +155,7 @@ class InitializeParticipant(vanilla.UpdateView):
 
         session_user.visited = True
 
-        # session_user.label might already have been set by AssignToOpenSession
+        # session_user.label might already have been set by AssignToDefaultSession
         session_user.label = session_user.label or self.request.GET.get(
             constants.participant_label
         )
@@ -315,7 +315,7 @@ class JoinSessionAnonymously(vanilla.View):
         return HttpResponseRedirect(participant._start_url())
 
 
-class AssignVisitorToOpenSession(AssignVisitorToOpenSessionBase):
+class AssignVisitorToDefaultSession(AssignVisitorToDefaultSessionBase):
 
     def incorrect_parameters_in_url_message(self):
         return 'Missing parameter(s) in URL: {}'.format(

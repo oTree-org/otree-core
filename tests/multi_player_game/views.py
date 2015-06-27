@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 from ._builtin import Page, WaitPage
+from .models import Constants
+import random
 
 
 class Page(Page):
@@ -21,15 +23,33 @@ class FieldOnOtherPlayer(Page):
         assert in_all_rounds[-1].from_other_player == 1
 
 
-class Shim(Page):
-    def is_displayed(self):
-        return self.player.id_in_group != 1
+class PickWinner(WaitPage):
 
+    def after_all_players_arrive(self):
+        # testing that this code only gets executed once
+        winner = random.choice(self.group.get_players())
+        winner.is_winner = True
 
 class ResultsWaitPage(WaitPage):
 
     def after_all_players_arrive(self):
         self.group.set_payoffs()
+
+        if self.subsession.round_number == Constants.num_rounds:
+            this_group_players = self.group.get_players()
+            participants = set(
+                p.participant for p in this_group_players
+            )
+
+            for i, group in enumerate(self.group.in_previous_rounds()):
+                assert group.subsession.round_number == i + 1
+                players = group.get_players()
+                assert len(players) == len(this_group_players)
+
+                assert all(
+                    p.participant in participants
+                    for p in players
+                )
 
 
 class AllGroupsWaitPage(WaitPage):
@@ -54,7 +74,7 @@ class Results(Page):
 
 page_sequence = [
     FieldOnOtherPlayer,
-    Shim,
+    PickWinner,
     ResultsWaitPage,
     AllGroupsWaitPage,
     Results

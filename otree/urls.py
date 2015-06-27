@@ -51,8 +51,7 @@ def url_patterns_from_module(module_name):
         unrestricted_views_demo = unrestricted_views_experiment
     else:
         unrestricted_views_experiment = [
-            'otree.views.concrete.AssignVisitorToOpenSession',
-            'otree.views.concrete.AssignVisitorToOpenSessionMTurk',
+            'otree.views.concrete.AssignVisitorToDefaultSession',
             'otree.views.concrete.InitializeParticipant',
             'otree.views.concrete.MTurkLandingPage',
             'otree.views.concrete.MTurkStart',
