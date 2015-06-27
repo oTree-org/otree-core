@@ -336,14 +336,6 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                 else:
                     break
 
-            print 'Jump {}. Round: {}, delta: {}. Path: {}. Meth: {}. param: {}'.format(
-                pages_to_jump_by,
-                self.subsession.round_number,
-                self._session_user._index_in_pages - self._user._index_in_game_pages,
-                self.request.path,
-                self.request.method,
-                dict(self.request.POST))
-
             self._user._index_in_game_pages += pages_to_jump_by
             self._session_user._index_in_pages += pages_to_jump_by
         else:  # e.g. if it's WaitUntil...

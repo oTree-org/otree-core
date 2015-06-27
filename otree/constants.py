@@ -58,8 +58,8 @@ session_special_category_bots = 'bots'
 session_special_category_demo = 'demo'
 access_code_for_default_session = 'access_code_for_default_session'
 
-form_page_poll_interval_seconds = 10
-wait_page_poll_interval_seconds = 12
+form_page_poll_interval_seconds = 5
+wait_page_poll_interval_seconds = 10
 
 exceptions_conversors = {
     utils.OperationalError: lambda exception: utils.OperationalError(
