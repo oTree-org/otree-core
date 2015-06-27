@@ -245,15 +245,10 @@ def transaction_atomic():
             yield
 
 @contextlib.contextmanager
-def lock_on_this_code_path(lock_object=None):
+def lock_on_this_code_path():
     with transaction_atomic():
         # take a lock on this singleton, so that only 1 person can
         # be completing this code path at once
-        if lock_object is None:
-            from otree.models.session import GlobalSingleton
-            lock_object = GlobalSingleton.objects.select_for_update().get()
-        else:
-            type(lock_object).objects.select_for_update().get(
-                pk=lock_object.pk
-            )
+        from otree.models.session import GlobalSingleton
+        GlobalSingleton.objects.select_for_update().get()
         yield
