@@ -29,6 +29,7 @@ REQUIREMENTS = [
     'djangorestframework>=3.1.1',
     'flake8>=2.2.5',
     'handy>=0.3',
+    'honcho>=0.6.6',
     'IPy>=0.81',
     'mock>=1.0.0',
     'ordered-set>=1.3',
