@@ -226,6 +226,8 @@ def augment_settings(settings):
         'MTURK_SANDBOX_HOST': 'mechanicalturk.sandbox.amazonaws.com',
         'CREATE_DEFAULT_SUPERUSER': True,
 
+        'CELERY_APP': 'otree.celery.app:app',
+
         # since workers on Amazon MTurk can return the hit
         # we need extra participants created on the
         # server.
