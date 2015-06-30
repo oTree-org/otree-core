@@ -100,21 +100,6 @@ class SessionCreateHitForm(forms.Form):
         )
     )
 
-    qualifications_choices = []
-    for i, q in enumerate(settings.MTURK_WORKER_REQUIREMENTS):
-        label = ', '.join(
-            (q.__class__.__name__,
-             q.comparator,
-             str(q.integer_value) if q.integer_value else q.locale)
-        )
-        qualifications_choices.append((i, label))
-    worker_qualifications = forms.MultipleChoiceField(
-        choices=qualifications_choices,
-        required=False,
-        widget=forms.CheckboxSelectMultiple(),
-        help_text=("You can extend the list of possible "
-                   "requirements in settings.py")
-    )
 
     def __init__(self, *args, **kwargs):
         super(SessionCreateHitForm, self).__init__(*args, **kwargs)
@@ -151,18 +136,17 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
 
     def get(self, request, *args, **kwargs):
         validate_session_for_mturk(request, self.session)
-        mturk_hit_settings = self.session.session_type['mturk_hit_settings']
+        mturk_settings = self.session.session_type['mturk_hit_settings']
         initial = {
-            'title': mturk_hit_settings['title'],
-            'description': mturk_hit_settings['description'],
-            'keywords': ', '.join(mturk_hit_settings['keywords']),
+            'title': mturk_settings['title'],
+            'description': mturk_settings['description'],
+            'keywords': ', '.join(mturk_settings['keywords']),
             'money_reward': self.session.participation_fee,
-            'assignments': len(self.session.get_participants()),
             'in_sandbox': settings.DEBUG,
             'minutes_allotted_per_assignment': (
-                mturk_hit_settings['minutes_allotted_per_assignment']
+                mturk_settings['minutes_allotted_per_assignment']
             ),
-            'expiration_hours': mturk_hit_settings['expiration_hours'],
+            'expiration_hours': mturk_settings['expiration_hours'],
             'assignments': self.session.mturk_num_participants,
         }
         form = self.get_form(initial=initial)
@@ -178,6 +162,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             urlparse.urlparse(url)._replace(scheme='https')
         )
         context['secured_url'] = secured_url
+
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
@@ -199,6 +184,9 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             )
             return HttpResponseServerError(msg)
         with MTurkConnection(self.request, in_sandbox) as mturk_connection:
+
+            mturk_settings = session.session_type['mturk_hit_settings']
+
             url_landing_page = self.request.build_absolute_uri(
                 reverse('mturk_landing_page', args=(session.code,))
             )
@@ -219,13 +207,17 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             # creating external questions, that would be passed to the hit
             external_question = boto.mturk.question.ExternalQuestion(
                 secured_url_landing_page,
-                session.session_type['mturk_hit_settings']['frame_height'],
+                mturk_settings['frame_height'],
             )
-            qualifications = Qualifications()
-            for q_id in form.data.get('worker_qualifications', []):
-                qualifications.add(
-                    settings.MTURK_WORKER_REQUIREMENTS[int(q_id)]
-                )
+
+            qualifications = (
+                mturk_settings.get('qualification_requirements')
+            )
+
+            # deprecated: remove this
+            if not qualifications:
+                qualifications = settings.MTURK_WORKER_REQUIREMENTS
+
             mturk_hit_parameters = {
                 'title': form.cleaned_data['title'],
                 'description': form.cleaned_data['description'],
@@ -236,7 +228,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
                 'max_assignments': form.cleaned_data['assignments'],
                 'reward': reward,
                 'response_groups': ('Minimal', 'HITDetail'),
-                'qualifications': qualifications,
+                'qualifications': Qualifications(qualifications),
             }
             if form.cleaned_data['minutes_allotted_per_assignment']:
                 mturk_hit_parameters['duration'] = datetime.timedelta(
