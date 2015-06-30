@@ -25,6 +25,7 @@ import otree.models.session
 from otree.models.session import Participant, Session
 from otree.common_internal import lock_on_this_code_path
 import otree.views.admin
+from otree.views.mturk import MTurkConnection
 import otree.common_internal
 from otree.views.abstract import (
     NonSequenceUrlMixin, OTreeMixin, AssignVisitorToDefaultSessionBase,
@@ -228,29 +229,15 @@ class MTurkStart(vanilla.View):
             request, *args, **kwargs
         )
 
-    def worker_participated_before(self, worker_id):
-        session_name = self.session.session_type['name']
-        for s in Session.objects.all():
-            if s.session_type['name'] != session_name:
-                continue
-            if s.participant_set.filter(mturk_worker_id=worker_id):
-                return True
-        return False
-
     def get(self, *args, **kwargs):
         assignment_id = self.request.GET['assignmentId']
         worker_id = self.request.GET['workerId']
-        if (
-            self.session.mturk_unique_workers and
-            self.worker_participated_before(worker_id)
-        ):
-            return TemplateResponse(
-                self.request,
-                'otree/mturk/MTurkErrorPage.html',
-                {
-                    'error_message':
-                    'You are not allowed to participate more than once.'
-                }
+        with MTurkConnection(
+            self.request, self.session.mturk_sandbox
+        ) as mturk_connection:
+            mturk_connection.assign_qualification(
+                self.session.mturk_qualification_type_id,
+                worker_id
             )
         try:
             participant = Participant.objects.get(

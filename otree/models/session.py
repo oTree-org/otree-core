@@ -98,6 +98,11 @@ class Session(ModelWithVars):
         max_length=300, null=True, blank=True,
         help_text='Hit id for this session on MTurk',
     )
+    mturk_qualification_type_id = models.CharField(
+        max_length=300, null=True, blank=True,
+        help_text='Qualification type that is '
+                  'assigned to each worker taking hit',
+    )
 
     # since workers can drop out number of participants on server should be
     # greater than number of participants on mturk
@@ -108,16 +113,8 @@ class Session(ModelWithVars):
     )
 
     mturk_sandbox = models.BooleanField(
-        default=False,
-        help_text="Should this session be created in mturk sandbox?"
-    )
-
-    mturk_unique_workers = models.BooleanField(
         default=True,
-        help_text=(
-            "Are workers allowed to participate more than ones in "
-            "this type of session?"
-        )
+        help_text="Should this session be created in mturk sandbox?"
     )
 
     archived = models.BooleanField(

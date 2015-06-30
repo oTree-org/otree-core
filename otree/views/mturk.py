@@ -14,9 +14,10 @@ import vanilla
 
 import boto.mturk.connection
 from boto.mturk.connection import MTurkRequestError
-from boto.mturk.qualification import Qualifications
+from boto.mturk.qualification import Qualifications, Requirement
 
 import IPy
+import lxml.etree
 
 import otree
 from otree import forms
@@ -63,14 +64,6 @@ class SessionCreateHitForm(forms.Form):
         required=False,
         help_text="Do you want HIT published on MTurk sandbox?"
     )
-    unique_workers = forms.BooleanField(
-        required=False,
-        initial=True,
-        help_text=(
-            "Are workers allowed to participate more than ones in "
-            "this type of session?"
-        )
-    )
     title = forms.CharField()
     description = forms.CharField()
     keywords = forms.CharField()
@@ -99,7 +92,6 @@ class SessionCreateHitForm(forms.Form):
             "Leave it blank if you don't want to specify it."
         )
     )
-
 
     def __init__(self, *args, **kwargs):
         super(SessionCreateHitForm, self).__init__(*args, **kwargs)
@@ -186,6 +178,23 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
         with MTurkConnection(self.request, in_sandbox) as mturk_connection:
 
             mturk_settings = session.session_type['mturk_hit_settings']
+            if mturk_settings['grant_qualification']:
+                try:
+                    requirement = mturk_connection.create_qualification_type(
+                        **mturk_settings['grant_qualification']
+                    )[0]
+                    qualification_type_id = requirement.QualificationTypeId
+                except MTurkRequestError as e:
+                    messages.warning(
+                        request,
+                        'Qualification "%s" already exists and will be granted'
+                        ' to all workers in your HIT.'
+                        % mturk_settings['grant_qualification']['name']
+                    )
+                    error_tree = lxml.etree.fromstring(e.body)
+                    qualification_type_id = str(error_tree.xpath(
+                        '//Data/Value/text()'
+                    )[0])
 
             url_landing_page = self.request.build_absolute_uri(
                 reverse('mturk_landing_page', args=(session.code,))
@@ -210,13 +219,15 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
                 mturk_settings['frame_height'],
             )
 
-            qualifications = (
-                mturk_settings.get('qualification_requirements')
-            )
+            qualifications = mturk_settings.get('qualification_requirements')
 
             # deprecated: remove this
             if not qualifications:
                 qualifications = settings.MTURK_WORKER_REQUIREMENTS
+
+            qualifications.append(
+                Requirement(qualification_type_id, 'DoesNotExist')
+            )
 
             mturk_hit_parameters = {
                 'title': form.cleaned_data['title'],
@@ -246,7 +257,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             session.mturk_HITId = hit[0].HITId
             session.mturk_HITGroupId = hit[0].HITGroupId
             session.mturk_sandbox = in_sandbox
-            session.mturk_unique_workers = 'mturk_unique_workers' in form.data
+            session.qualification_type_id = qualification_type_id
             session.save()
 
         return HttpResponseRedirect(
