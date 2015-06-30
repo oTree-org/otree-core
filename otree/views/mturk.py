@@ -82,19 +82,19 @@ class SessionCreateHitForm(forms.Form):
         )
     )
     minutes_allotted_per_assignment = forms.IntegerField(
-        label="Time allotted per assignment",
+        label="Minutes allotted per assignment",
         required=False,
         help_text=(
-            "The amount of time, in minutes, that a Worker has to "
+            "Number of minutes, that a Worker has to "
             "complete the HIT after accepting it."
             "Leave it blank if you don't want to specify it."
         )
     )
     expiration_hours = forms.IntegerField(
-        label="HIT expires in",
+        label="Hours until HIT expiration",
         required=False,
         help_text=(
-            "An amount of time, in hours, after which the HIT "
+            "Number of hours after which the HIT "
             "is no longer available for users to accept. "
             "Leave it blank if you don't want to specify it."
         )
