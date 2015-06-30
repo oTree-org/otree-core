@@ -1,6 +1,7 @@
 import os
 from optparse import make_option
 
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 import honcho.command
@@ -35,6 +36,15 @@ class Command(BaseCommand):
                 'The path to the Procfile that should be executed. '
                 'The default is ./Procfile')),
         make_option(
+            '--no-collectstatic',
+            action='store_false',
+            dest='collectstatic',
+            default=True,
+            help=(
+                'By default we will collect all static files into the '
+                'directory configured in your settings. Disable it with this '
+                'switch if you want to do it manually.')),
+        make_option(
             '--port',
             action='store',
             type=int,
@@ -64,11 +74,16 @@ class Command(BaseCommand):
 
         port = self.get_port(options['port'])
         procfile = options['procfile']
+        collectstatic = options['collectstatic']
 
         args = HonchoConifg(
             procfile=procfile,
             port=port,
         )
+
+        if collectstatic:
+            self.stdout.write('Running collectstatic ...', ending='')
+            call_command('collectstatic', interactive=False, verbosity=1)
 
         try:
             honcho.command.command_start(args)
