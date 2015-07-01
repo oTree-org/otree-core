@@ -8,6 +8,7 @@
 
 import time
 import vanilla
+from boto.mturk.connection import MTurkRequestError
 
 import django.utils.timezone
 from django.core.urlresolvers import reverse
@@ -232,13 +233,23 @@ class MTurkStart(vanilla.View):
     def get(self, *args, **kwargs):
         assignment_id = self.request.GET['assignmentId']
         worker_id = self.request.GET['workerId']
-        with MTurkConnection(
-            self.request, self.session.mturk_sandbox
-        ) as mturk_connection:
-            mturk_connection.assign_qualification(
-                self.session.mturk_qualification_type_id,
-                worker_id
-            )
+        if self.session.mturk_qualification_type_id:
+            with MTurkConnection(
+                self.request, self.session.mturk_sandbox
+            ) as mturk_connection:
+                try:
+                    mturk_connection.assign_qualification(
+                        self.session.mturk_qualification_type_id,
+                        worker_id
+                    )
+                except MTurkRequestError as e:
+                    if (
+                        e.error_code ==
+                        'AWS.MechanicalTurk.QualificationAlreadyExists'
+                    ):
+                        pass
+                    else:
+                        raise
         try:
             participant = Participant.objects.get(
                 session=self.session,
