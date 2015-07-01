@@ -177,7 +177,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
         with MTurkConnection(self.request, in_sandbox) as mturk_connection:
             mturk_settings = session.session_type['mturk_hit_settings']
             qualification_id = mturk_settings.get(
-                'exclusion_qualification_id',
+                'grant_qualification_id',
                 None
             )
             # verify that specified qualification type
@@ -195,10 +195,9 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
                         messages.error(
                             request,
                             "In settings.py you specified qualification id "
-                            " '%s' to prevent retakes which "
-                            "doesn't exist on mturk server. "
+                            " '%s' which doesn't exist on mturk server. "
                             "Please verify its validity."
-                            % mturk_settings['exclusion_qualification_id']
+                            % mturk_settings['grant_qualification_id']
                         )
                         return HttpResponseRedirect(
                             reverse('session_create_hit', args=(session.pk,))
@@ -234,11 +233,6 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             # deprecated: remove this
             if not qualifications:
                 qualifications = settings.MTURK_WORKER_REQUIREMENTS
-
-            if qualification_id:
-                qualifications.append(
-                    Requirement(qualification_id, 'DoesNotExist')
-                )
 
             mturk_hit_parameters = {
                 'title': form.cleaned_data['title'],
