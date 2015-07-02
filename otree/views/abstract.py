@@ -144,7 +144,7 @@ class PlayerMixin(object):
             ('ID in group', self.player.id_in_group),
             ('Group', group_id),
             ('Participant', self.player.participant._id_in_session_display()),
-            ('Participant label', self.player.participant.label),
+            ('Participant label', self.player.participant.label or ''),
             ('Session code', self.session.code)
         ]
 
