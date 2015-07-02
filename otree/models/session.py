@@ -451,6 +451,9 @@ class SessionUser(ModelWithVars):
                 )
                 return url
             else:
+                # TODO: deprecated, remove this
+                # someone can just add a hyperlink on the last page
+                # of their app
                 redirect_url_function = self.session.session_type.get(
                     'redirect_url_function'
                 )

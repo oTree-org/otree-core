@@ -2,8 +2,7 @@
 {% load otree_tags floppyforms %}
 
 {% block title %}
-Dashboard for session
-<code>{{ session.code }}</code>
+{{ session.session_type.display_name }}: session <code>{{ session.code }}</code>
 {% if session.is_demo %}
     (demo)
 {% endif %}
