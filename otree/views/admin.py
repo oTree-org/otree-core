@@ -135,6 +135,7 @@ def get_all_fields(Model, for_export=False):
         },
         'Group': {
             'subsession',
+            'id_in_subsession',
             'session',
             '_is_missing_players',
         },
