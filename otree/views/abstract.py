@@ -143,7 +143,7 @@ class PlayerMixin(object):
         return [
             ('ID in group', self.player.id_in_group),
             ('Group', group_id),
-            ('Player', self.player.pk),
+            ('Participant', self.player.participant._id_in_session_display()),
             ('Participant label', self.player.participant.label),
             ('Session code', self.session.code)
         ]
