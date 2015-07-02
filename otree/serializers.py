@@ -12,7 +12,7 @@ class ParticipantSerializer(serializers.ModelSerializer):
             '_id_in_session_display',
             'code',
             'label',
-            '_pages_completed',
+            '_current_page',
             '_current_app_name',
             '_round_number',
             '_current_page_name',
