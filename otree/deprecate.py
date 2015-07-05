@@ -34,8 +34,7 @@ class OTreeDeprecationWarning(DeprecationWarning):
 # =============================================================================
 
 def dmessage(func, alternative=None):
-    """Create a simple deprecation message for a function, and if is given
-    suggest an alternative
+    """Create a simple deprecation message for a function
 
     """
     name = func.__name__
