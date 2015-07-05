@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 
 import os
 import sys
@@ -232,9 +235,11 @@ def db_status_ok():
             return False
     return True
 
+
 @contextlib.contextmanager
 def no_op_context_manager():
     yield
+
 
 @contextlib.contextmanager
 def transaction_atomic():
@@ -243,6 +248,7 @@ def transaction_atomic():
     else:
         with transaction.atomic():
             yield
+
 
 @contextlib.contextmanager
 def lock_on_this_code_path():

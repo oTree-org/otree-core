@@ -34,7 +34,6 @@ def ensure_pages_visited(participant_pk_set, wait_page_index):
         _index_in_pages__lte=wait_page_index,
     )
 
-
     for participant in unvisited_participants:
         # we can assume _current_form_page_url is not null because
         # the wait page was visited

@@ -23,10 +23,12 @@ class WaitPageVisit(models.Model):
 
     id_in_session = models.PositiveIntegerField()
 
+
 class PageTimeout(models.Model):
     participant_pk = models.PositiveIntegerField()
     page_index = models.PositiveIntegerField()
     expiration_time = models.PositiveIntegerField()
+
 
 class CompletedGroupWaitPage(models.Model):
     page_index = models.PositiveIntegerField()

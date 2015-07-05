@@ -14,7 +14,7 @@ import vanilla
 
 import boto.mturk.connection
 from boto.mturk.connection import MTurkRequestError
-from boto.mturk.qualification import Qualifications, Requirement
+from boto.mturk.qualification import Qualifications
 
 import IPy
 
@@ -25,6 +25,7 @@ from otree.checks.mturk import validate_session_for_mturk
 
 
 class MTurkError(Exception):
+
     def __init__(self, request, message):
         self.message = message
         messages.error(request, message, extra_tags='safe')
@@ -59,6 +60,7 @@ class MTurkConnection(boto.mturk.connection.MTurkConnection):
 
 
 class SessionCreateHitForm(forms.Form):
+
     in_sandbox = forms.BooleanField(
         required=False,
         help_text="Do you want HIT published on MTurk sandbox?"
@@ -98,9 +100,9 @@ class SessionCreateHitForm(forms.Form):
 
 
 class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
-    '''
-        This view creates mturk HIT for session provided in request
-        AWS externalQuestion API is used to generate HIT.
+    '''This view creates mturk HIT for session provided in request
+    AWS externalQuestion API is used to generate HIT.
+
     '''
     form_class = SessionCreateHitForm
 

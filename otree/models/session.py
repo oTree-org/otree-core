@@ -18,6 +18,7 @@ from otree.models_concrete import (
 def get_empty_dict():
     return {}
 
+
 class GlobalSingleton(models.Model):
     """object that can hold site-wide settings. There should only be one
     GlobalSingleton object. Also used for wait page actions.
@@ -565,5 +566,3 @@ class Participant(SessionUser):
 
     def name(self):
         return id_label_name(self.pk, self.label)
-
-

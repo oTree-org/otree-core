@@ -14,6 +14,7 @@ from otree.common_internal import (
 )
 from otree.models_concrete import ParticipantLockModel
 
+
 def gcd(a, b):
     """Return greatest common divisor using Euclid's Algorithm."""
     while b:
@@ -90,7 +91,6 @@ def augment_session_type(session_type):
     new_session_type = {'doc': ''}
     new_session_type.update(settings.SESSION_TYPE_DEFAULTS)
     new_session_type.update(session_type)
-
 
     # look up new_session_type
     # 2015-05-14: why do we strip? the doc can have line breaks in the middle

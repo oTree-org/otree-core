@@ -9,7 +9,7 @@ from django.conf import settings
 from django.db.models import signals
 
 from otree.models_concrete import StubModel
-from otree.models.session import GlobalSingleton, Participant
+from otree.models.session import GlobalSingleton
 
 
 logger = logging.getLogger('otree')

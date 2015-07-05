@@ -7,8 +7,6 @@
 # =============================================================================
 
 import time
-import vanilla
-from boto.mturk.connection import MTurkRequestError
 
 import django.utils.timezone
 from django.core.urlresolvers import reverse
@@ -21,9 +19,13 @@ from django.http import (
 )
 from django.utils.translation import ugettext as _
 
+import vanilla
+
+from boto.mturk.connection import MTurkRequestError
+
 import otree.constants as constants
 import otree.models.session
-from otree.models.session import Participant, Session
+from otree.models.session import Participant
 from otree.common_internal import lock_on_this_code_path
 import otree.views.admin
 from otree.views.mturk import MTurkConnection
@@ -157,7 +159,8 @@ class InitializeParticipant(vanilla.UpdateView):
 
         session_user.visited = True
 
-        # session_user.label might already have been set by AssignToDefaultSession
+        # session_user.label might already have been set by
+        # AssignToDefaultSession
         session_user.label = session_user.label or self.request.GET.get(
             constants.participant_label
         )

@@ -30,6 +30,7 @@ class PickWinner(WaitPage):
         winner = random.choice(self.group.get_players())
         winner.is_winner = True
 
+
 class ResultsWaitPage(WaitPage):
 
     def after_all_players_arrive(self):

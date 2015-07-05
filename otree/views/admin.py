@@ -20,7 +20,6 @@ from collections import OrderedDict
 
 import easymoney
 
-
 from otree.common_internal import (
     get_models_module, app_name_format, add_params_to_url
 )
@@ -38,6 +37,7 @@ from otree.common import Currency as c
 from otree.models.session import Session, Participant
 from otree.models.session import GlobalSingleton
 
+
 def get_all_fields(Model, for_export=False):
 
     if Model is Session:
@@ -46,7 +46,7 @@ def get_all_fields(Model, for_export=False):
             'label',
             'experimenter_name',
             'real_world_currency_per_point',
-            'time_scheduled'	,
+            'time_scheduled',
             'time_started',
             'mturk_HITId',
             'mturk_HITGroupId',

@@ -221,7 +221,8 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
                 participant_code = kwargs.pop(constants.session_user_code)
 
-                self._index_in_pages = int(kwargs.pop(constants.index_in_pages))
+                self._index_in_pages = int(
+                    kwargs.pop(constants.index_in_pages))
 
                 cond = (
                     self.request.is_ajax() and
@@ -296,10 +297,9 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         # wait pages don't have a has_timeout attribute
         if hasattr(self, 'has_timeout') and self.has_timeout():
             PageTimeout.objects.filter(
-                participant_pk = self._session_user.pk,
-                page_index = self._session_user._index_in_pages,
+                participant_pk=self._session_user.pk,
+                page_index=self._session_user._index_in_pages,
             ).delete()
-
 
         # performance optimization:
         # we skip any page that is a sequence page where is_displayed
@@ -737,8 +737,8 @@ class FormPageMixin(object):
         current_time = int(time.time())
         expiration_time = current_time + self.timeout_seconds
         timeout, created = PageTimeout.objects.get_or_create(
-            participant_pk = self._session_user.pk,
-            page_index = self._session_user._index_in_pages,
+            participant_pk=self._session_user.pk,
+            page_index=self._session_user._index_in_pages,
             defaults={'expiration_time': expiration_time}
         )
 
