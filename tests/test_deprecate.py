@@ -14,7 +14,7 @@ class DeprecateTest(TestCase):
 
     def random_string(self):
         chars = list(string.letters + string.digits)
-        idx = random.randint(5, len(chars)-1)
+        idx = random.randint(5, len(chars) - 1)
         random.shuffle(chars)
         return random.choice(string.letters) + "".join(chars[:idx])
 
@@ -52,6 +52,7 @@ class DeprecateTest(TestCase):
             self.assertEqual(dw.message.message, msg)
 
         alternative = self.random_string()
+
         @deprecate.deprecated(alternative)
         def dfunction():
             pass
