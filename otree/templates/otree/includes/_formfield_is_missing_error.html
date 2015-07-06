@@ -3,8 +3,12 @@
     rendered on the page. It contains some JavaScript which checks again if a
     fields was really not rendered. This is necessary to avoid false positives
     when the user includes the field with handwritten HTML.
+
+    We hide all warnings at page load. The reason is that we might remove
+    the warning when we think it's not valid. And that might result in a
+    flash of the message, then disappearing again.
 {% endcomment %}
-<div class="panel-body unrendered-fields-warning">
+<div class="panel-body unrendered-fields-warning hidden">
     <div class="alert alert-warning">
         <p>
             You did not include the following form fields in the HTML:
@@ -35,7 +39,10 @@
 
     var checkUnrenderedFields = function () {
         var warnings = document.querySelectorAll('.unrendered-fields-warning');
+
         forEach(warnings, function (warning) {
+            warning.classList.remove('hidden');
+
             var getMissingFields = function () {
                 return warning.querySelectorAll('[data-field-name]');
             };
