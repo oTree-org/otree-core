@@ -5,6 +5,7 @@ import sys
 
 import django.core.management
 from django.core.management.base import CommandError
+from django.core.management.color import color_style
 from django.conf import settings
 
 
@@ -62,3 +63,30 @@ def execute_from_command_line(arguments, script_file):
         sys.argv[1] = 'runsslserver'
 
     django.core.management.execute_from_command_line(sys.argv)
+
+
+def main():
+    """
+    This function is the entry point for the ``otree`` console script.
+    """
+
+    # We need to add the current directory to the python path as this is not
+    # set by default when no using "python <script>" but a standalone script
+    # like ``otree``.
+    if os.getcwd() not in sys.path:
+        sys.path.insert(0, os.getcwd())
+
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
+    style = color_style()
+
+    try:
+        from django.conf import settings
+        settings.INSTALLED_APPS
+    except ImportError:
+        print(style.ERROR(
+            "Cannot import otree settings. Please make sure that you are "
+            "in the base directory of your oTree library checkout. "
+            "This directory contains a settings.py and a manage.py file."))
+        sys.exit(1)
+
+    execute_from_command_line(sys.argv, 'otree')
