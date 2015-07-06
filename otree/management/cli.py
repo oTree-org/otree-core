@@ -24,11 +24,6 @@ def execute_from_command_line(arguments, script_file):
         script_file.lower().endswith('.py')
     )
 
-    # in issue #300 we agreed that sslserver should
-    # run only if user has specified credentials for AWS
-    if 'runserver' in sys.argv[1] and settings.AWS_ACCESS_KEY_ID:
-        sys.argv[1] = 'runsslserver'
-
     if cond:
 
         scriptdir = os.path.dirname(os.path.abspath(script_file))
@@ -57,5 +52,13 @@ def execute_from_command_line(arguments, script_file):
                                    stderr=sys.stderr)
         return_code = process.wait()
         sys.exit(return_code)
+
+    # in issue #300 we agreed that sslserver should
+    # run only if user has specified credentials for AWS
+    if (
+            len(sys.argv) >= 2 and
+            sys.argv[1] == 'runserver' and
+            settings.AWS_ACCESS_KEY_ID):
+        sys.argv[1] = 'runsslserver'
 
     django.core.management.execute_from_command_line(sys.argv)
