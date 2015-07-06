@@ -66,7 +66,11 @@ class CheckAllFieldsAreRenderedTests(FormFieldTestMixin, TestCase):
                 context={'form': form, 'player': self.simple_player})
 
     def test_rendering_complains_when_not_all_fields_are_rendered(self):
-        form = SimplePlayerForm(instance=self.simple_player)
+        form = SimplePlayerForm(
+            # The missing field error only shows up if there are errors on the
+            # form. So we construct one.
+            data={'age': 'no number'},
+            instance=self.simple_player)
         with self.assertTemplateUsed(
                 'otree/includes/_formfield_is_missing_error.html'):
             tpl = (
