@@ -33,9 +33,9 @@ def execute_from_command_line(arguments, script_file):
             error_lines = []
 
             error_lines.append(
-                "It seems that you do not have a file called 'manage.py' next "
-                "to the ./otree script you just called. This is a requirement "
-                "when using otree on windows."
+                "It seems that you do not have a file called 'manage.py' in "
+                "your current directory. This is a requirement when using "
+                "otree on windows."
             )
             error_lines.append("")
             error_lines.append("")
