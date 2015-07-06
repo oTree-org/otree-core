@@ -5,6 +5,7 @@ import sys
 
 import django.core.management
 from django.core.management.base import CommandError
+from django.core.management.color import color_style
 from django.conf import settings
 
 
@@ -24,11 +25,6 @@ def execute_from_command_line(arguments, script_file):
         script_file.lower().endswith('.py')
     )
 
-    # in issue #300 we agreed that sslserver should
-    # run only if user has specified credentials for AWS
-    if 'runserver' in sys.argv[1] and settings.AWS_ACCESS_KEY_ID:
-        sys.argv[1] = 'runsslserver'
-
     if cond:
 
         scriptdir = os.path.dirname(os.path.abspath(script_file))
@@ -37,9 +33,9 @@ def execute_from_command_line(arguments, script_file):
             error_lines = []
 
             error_lines.append(
-                "It seems that you do not have a file called 'manage.py' next "
-                "to the ./otree script you just called. This is a requirement "
-                "when using otree on windows."
+                "It seems that you do not have a file called 'manage.py' in "
+                "your current directory. This is a requirement when using "
+                "otree on windows."
             )
             error_lines.append("")
             error_lines.append("")
@@ -58,4 +54,39 @@ def execute_from_command_line(arguments, script_file):
         return_code = process.wait()
         sys.exit(return_code)
 
+    # in issue #300 we agreed that sslserver should
+    # run only if user has specified credentials for AWS
+    if (
+            len(sys.argv) >= 2 and
+            sys.argv[1] == 'runserver' and
+            settings.AWS_ACCESS_KEY_ID):
+        sys.argv[1] = 'runsslserver'
+
     django.core.management.execute_from_command_line(sys.argv)
+
+
+def main():
+    """
+    This function is the entry point for the ``otree`` console script.
+    """
+
+    # We need to add the current directory to the python path as this is not
+    # set by default when no using "python <script>" but a standalone script
+    # like ``otree``.
+    if os.getcwd() not in sys.path:
+        sys.path.insert(0, os.getcwd())
+
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
+    style = color_style()
+
+    try:
+        from django.conf import settings
+        settings.INSTALLED_APPS
+    except ImportError:
+        print(style.ERROR(
+            "Cannot import otree settings. Please make sure that you are "
+            "in the base directory of your oTree library checkout. "
+            "This directory contains a settings.py and a manage.py file."))
+        sys.exit(1)
+
+    execute_from_command_line(sys.argv, 'otree')
