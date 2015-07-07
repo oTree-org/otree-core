@@ -48,8 +48,6 @@ class Currency(RealWorldCurrency):
         else:
             return self
 
-    def to_number(self):
-        return Decimal(self)
 
 
 class _CurrencyEncoder(json.JSONEncoder):
