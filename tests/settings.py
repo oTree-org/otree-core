@@ -43,7 +43,7 @@ INSTALLED_APPS = [
 ]
 
 
-SESSION_TYPE_DEFAULTS = {
+SESSION_CONFIG_DEFAULTS = {
     'real_world_currency_per_point': 0.01,
     'participation_fee': 10.00,
     'num_bots': 12,
@@ -52,7 +52,7 @@ SESSION_TYPE_DEFAULTS = {
 }
 
 
-SESSION_TYPES = [
+SESSION_CONFIGS = [
     {
         'name': 'simple_game',
         'display_name': "Simple Game",

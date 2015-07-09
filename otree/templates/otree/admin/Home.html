@@ -107,7 +107,7 @@ $(document).ready(function() {
 oTree 
 Sessions
 <div class="btn-group" style="float: right;">
-    <a class="btn btn-primary" href="{% url 'session_types_create' %}?mturk=0">
+    <a class="btn btn-primary" href="{% url 'session_configs_create' %}?mturk=0">
         <span class="glyphicon glyphicon-plus"></span> Create new session
     </a>
     <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
@@ -115,7 +115,7 @@ Sessions
         <span class="sr-only">Toggle Dropdown</span>
     </button>
     <ul class="dropdown-menu" role="menu">
-        <li><a href="{% url 'session_types_create' %}?mturk=1">For MTurk</a></li>
+        <li><a href="{% url 'session_configs_create' %}?mturk=1">For MTurk</a></li>
     </ul>
 </div>
 {% endblock %}
@@ -173,7 +173,7 @@ Sessions
         </td>
         <td><a href="{% url 'session_description' s.pk %}">{{ s.code }}</a></td>
         <td>{{ s.label }}</td>
-        <td>{{ s.session_type.name }}</td>
+        <td>{{ s.session_config.name }}</td>
         <td>
             <a href="{% url 'session_start_links' s.pk %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-link"></span> Links

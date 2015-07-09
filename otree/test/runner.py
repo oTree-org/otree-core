@@ -111,7 +111,7 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         ))
 
         sssn = session.create_session(
-            session_type_name=self.session_name,
+            session_config_name=self.session_name,
             special_category=constants.session_special_category_bots,
         )
         sssn.label = '{} [bots]'.format(self.session_name)
@@ -171,7 +171,7 @@ class OTreeExperimentTestRunner(runner.DiscoverRunner):
     def build_suite(self, session_names, extra_tests, **kwargs):
 
         if not session_names:
-            session_names = session.get_session_types_dict().keys()
+            session_names = session.get_session_configs_dict().keys()
 
         tests = []
         for session_name in session_names:
@@ -190,10 +190,10 @@ def apps_from_sessions(session_names=None):
     if session_names:
         session_names = frozenset(session_names)
     else:
-        session_names = frozenset(session.get_session_types_dict().keys())
+        session_names = frozenset(session.get_session_configs_dict().keys())
     apps = set()
     for sname in session_names:
-        sssn = session.get_session_types_dict()[sname]
+        sssn = session.get_session_configs_dict()[sname]
         apps.update(sssn.app_sequence)
     return apps
 

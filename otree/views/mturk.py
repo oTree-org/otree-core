@@ -129,12 +129,12 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
 
     def get(self, request, *args, **kwargs):
         validate_session_for_mturk(request, self.session)
-        mturk_settings = self.session.session_type['mturk_hit_settings']
+        mturk_settings = self.session.config['mturk_hit_settings']
         initial = {
             'title': mturk_settings['title'],
             'description': mturk_settings['description'],
             'keywords': ', '.join(mturk_settings['keywords']),
-            'money_reward': self.session.participation_fee,
+            'money_reward': self.session.config['participation_fee'],
             'in_sandbox': settings.DEBUG,
             'minutes_allotted_per_assignment': (
                 mturk_settings['minutes_allotted_per_assignment']
@@ -177,7 +177,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             )
             return HttpResponseServerError(msg)
         with MTurkConnection(self.request, in_sandbox) as mturk_connection:
-            mturk_settings = session.session_type['mturk_hit_settings']
+            mturk_settings = session.config['mturk_hit_settings']
             qualification_id = mturk_settings.get(
                 'grant_qualification_id',
                 None

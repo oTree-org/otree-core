@@ -15,7 +15,7 @@ import otree.constants as constants
 from otree.views.abstract import GenericWaitPageMixin
 from otree.models.session import Session
 from otree.session import (
-    create_session, get_session_types_dict, get_session_types_list
+    create_session, get_session_configs_dict, get_session_configs_list
 )
 import otree.session
 
@@ -42,15 +42,15 @@ class DemoIndex(vanilla.TemplateView):
         context = super(DemoIndex, self).get_context_data(**kwargs)
 
         session_info = []
-        for session_type in get_session_types_list():
+        for session_config in get_session_configs_list():
             session_info.append(
                 {
-                    'name': session_type['name'],
-                    'display_name': session_type['display_name'],
+                    'name': session_config['name'],
+                    'display_name': session_config['display_name'],
                     'url': reverse(
-                        'create_demo_session', args=(session_type['name'],)
+                        'create_demo_session', args=(session_config['name'],)
                     ),
-                    'num_demo_participants': session_type[
+                    'num_demo_participants': session_config[
                         'num_demo_participants'
                     ]
                 }
@@ -64,7 +64,7 @@ class DemoIndex(vanilla.TemplateView):
         return context
 
 
-def ensure_enough_spare_sessions(session_type_name):
+def ensure_enough_spare_sessions(session_config_name):
 
     # hack: this sleep is to prevent locks on SQLite. This gives time to let
     # the page request finish before create_session is called, because creating
@@ -79,18 +79,18 @@ def ensure_enough_spare_sessions(session_type_name):
     )
     spare_sessions = [
         s for s in spare_sessions
-        if s.session_type['name'] == session_type_name
+        if s.config['name'] == session_config_name
     ]
 
     # fill in whatever gap exists. want at least 3 sessions waiting.
     for i in range(MAX_SESSIONS_TO_CREATE - len(spare_sessions)):
         create_session(
             special_category=constants.session_special_category_demo,
-            session_type_name=session_type_name,
+            session_config_name=session_config_name,
         )
 
 
-def get_session(session_type_name):
+def get_session(session_config_name):
 
     sessions = Session.objects.filter(
         special_category=constants.session_special_category_demo,
@@ -99,7 +99,7 @@ def get_session(session_type_name):
     )
     sessions = [
         s for s in sessions
-        if s.session_type['name'] == session_type_name
+        if s.config['name'] == session_config_name
     ]
     if len(sessions):
         return sessions[0]
@@ -109,42 +109,42 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r"^demo/(?P<session_type>.+)/$"
+        return r"^demo/(?P<session_config>.+)/$"
 
     @classmethod
     def url_name(cls):
         return 'create_demo_session'
 
     def _is_ready(self):
-        session = get_session(self.session_type_name)
+        session = get_session(self.session_config_name)
         return bool(session)
 
     def _before_returning_wait_page(self):
-        session_types = get_session_types_dict()
+        session_configs = get_session_configs_dict()
         try:
-            session_type = session_types[self.session_type_name]
+            session_config = session_configs[self.session_config_name]
         except KeyError:
             msg = (
                 "Session type '{}' not found"
-            ).format(self.session_type_name)
+            ).format(self.session_config_name)
             raise Http404(msg)
         # check that it divides evenly
         # need to check here so that the user knows upfront
-        session_lcm = otree.session.get_lcm(session_type)
-        num_participants = session_type['num_demo_participants']
+        session_lcm = otree.session.get_lcm(session_config)
+        num_participants = session_config['num_demo_participants']
         if num_participants % session_lcm:
             msg = (
-                'SessionType {}: Number of participants ({}) does not '
+                'Session Config {}: Number of participants ({}) does not '
                 'divide evenly into group size ({})'
             ).format(
-                self.session_type_name,
+                self.session_config_name,
                 num_participants,
                 session_lcm
             )
             raise Http404(msg)
         t = threading.Thread(
             target=ensure_enough_spare_sessions,
-            args=(self.session_type_name,)
+            args=(self.session_config_name,)
         )
         t.start()
 
@@ -152,7 +152,7 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.View):
         return 'Creating a session'
 
     def _response_when_ready(self):
-        session = get_session(self.session_type_name)
+        session = get_session(self.session_config_name)
         session.demo_already_used = True
         session.save()
 
@@ -163,7 +163,7 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.View):
         return HttpResponseRedirect(landing_url)
 
     def dispatch(self, request, *args, **kwargs):
-        self.session_type_name = kwargs['session_type']
+        self.session_config_name = kwargs['session_config']
         return super(CreateDemoSession, self).dispatch(
             request, *args, **kwargs
         )

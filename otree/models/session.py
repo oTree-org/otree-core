@@ -55,10 +55,10 @@ class Session(ModelWithVars):
         # if i don't set this, it could be in an unpredictable order
         ordering = ['pk']
 
-    session_type = models.PickleField(
+    config = models.PickleField(
         default=get_empty_dict,
         null=True,
-        doc="the session type, as defined in the programmer's settings.py.",
+        doc="the session config dict, as defined in the programmer's settings.py.",
     )
 
     # label of this session instance
@@ -74,10 +74,6 @@ class Session(ModelWithVars):
 
     code = models.RandomCharField(
         length=8, doc="Randomly generated unique identifier for the session."
-    )
-
-    real_world_currency_per_point = models.DecimalField(
-        decimal_places=5, max_digits=12
     )
 
     time_scheduled = models.DateTimeField(
@@ -135,9 +131,6 @@ class Session(ModelWithVars):
         )
     )
 
-    # todo: change this to money
-    participation_fee = models.RealWorldCurrencyField(doc="""Show-up fee""")
-
     comment = models.TextField(blank=True)
 
     _ready_to_play = models.BooleanField(default=False)
@@ -162,6 +155,25 @@ class Session(ModelWithVars):
 
     def __unicode__(self):
         return self.code
+
+    @property
+    def participation_fee(self):
+        '''This method is deprecated from public API,
+        but still useful internally (like data export)'''
+        return self.config['participation_fee']
+
+    @property
+    def real_world_currency_per_point(self):
+        '''This method is deprecated from public API,
+        but still useful internally (like data export)'''
+        return self.config.get['real_world_currency_per_point']
+
+
+    @property
+    def session_type(self):
+        '''2015-07-10: session_type is deprecated
+        this shim method will be removed eventually'''
+        return self.config
 
     def is_open(self):
         return GlobalSingleton.objects.get().default_session == self
@@ -191,7 +203,7 @@ class Session(ModelWithVars):
 
     def get_subsessions(self):
         lst = []
-        app_sequence = self.session_type['app_sequence']
+        app_sequence = self.config['app_sequence']
         for app in app_sequence:
             models_module = otree.common_internal.get_models_module(app)
             subsessions = models_module.Subsession.objects.filter(
@@ -233,7 +245,7 @@ class Session(ModelWithVars):
         # previous round's groups
         for subsession in self.get_subsessions():
             cond = (
-                self.session_type['group_by_arrival_time'] and
+                self.config['group_by_arrival_time'] and
                 subsession._Constants.players_per_group is not None
             )
             if cond:
@@ -299,7 +311,7 @@ class Session(ModelWithVars):
             assert resp.status_code < 400
 
     def build_session_user_to_user_lookups(self):
-        subsession_app_names = self.session_type['app_sequence']
+        subsession_app_names = self.config['app_sequence']
 
         num_pages_in_each_app = {}
         for app_name in subsession_app_names:
@@ -380,7 +392,7 @@ class SessionUser(ModelWithVars):
     def get_users(self):
         """Used to calculate payoffs"""
         lst = []
-        app_sequence = self.session.session_type['app_sequence']
+        app_sequence = self.session.config['app_sequence']
         for app in app_sequence:
             models_module = otree.common_internal.get_models_module(app)
             players = models_module.Player.objects.filter(
@@ -455,7 +467,7 @@ class SessionUser(ModelWithVars):
                 # TODO: deprecated, remove this
                 # someone can just add a hyperlink on the last page
                 # of their app
-                redirect_url_function = self.session.session_type.get(
+                redirect_url_function = self.session.config.get(
                     'redirect_url_function'
                 )
                 if redirect_url_function:
@@ -547,7 +559,7 @@ class Participant(SessionUser):
 
     def money_to_pay(self):
         return (
-            self.session.participation_fee +
+            self.session.config['participation_fee'] +
             self.payoff.to_real_world_currency(self.session)
         )
 

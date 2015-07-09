@@ -20,7 +20,7 @@ class ErrorMessage(Page):
         assert self.session.vars['a'] == 1
         assert self.player.participant.vars['a'] == 1
         assert self.player.participant.vars['b'] == 1
-        assert self.session.session_type['treatment'] == 'blue'
+        assert self.session.config['treatment'] == 'blue'
         assert self.player.in_before_session_starts == 1
         assert self.group.in_before_session_starts == 1
 

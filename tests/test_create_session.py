@@ -28,7 +28,7 @@ class TestCreateSessionsCommand(TestCase):
 
         self.assertEqual(Session.objects.count(), 1)
         session = Session.objects.get()
-        self.assertEqual(session.session_type['name'], 'simple_game')
+        self.assertEqual(session.config['name'], 'simple_game')
 
         self.assertEqual(sg_models.Subsession.objects.count(), 1)
         subsession = sg_models.Subsession.objects.get()
@@ -48,7 +48,7 @@ class TestCreateSessionsCommand(TestCase):
 
         self.assertEqual(Session.objects.count(), 1)
         session = Session.objects.get()
-        self.assertEqual(session.session_type['name'], 'two_simple_games')
+        self.assertEqual(session.config['name'], 'two_simple_games')
 
         self.assertEqual(sg_models.Subsession.objects.count(), 1)
         self.assertEqual(sgc_models.Subsession.objects.count(), 1)

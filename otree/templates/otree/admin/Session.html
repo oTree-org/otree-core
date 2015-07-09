@@ -2,7 +2,7 @@
 {% load otree_tags floppyforms %}
 
 {% block title %}
-{{ session.session_type.display_name }}: session <code>{{ session.code }}</code>
+{{ session.config.display_name }}: session <code>{{ session.code }}</code>
 {% if session.is_demo %}
     (demo)
 {% endif %}
@@ -32,7 +32,7 @@
                 </li>
                 {% if session.is_demo %}
                 <li role="presentation">
-                <a href="{% url 'create_demo_session' session.session_type.name %}" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Recreate session from scratch">
+                <a href="{% url 'create_demo_session' session.config.name %}" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Recreate session from scratch">
                     <span class="glyphicon glyphicon-refresh"></span> Reload
                 </a>
                 </li>

@@ -14,7 +14,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         print 'Creating session...'
         try:
-            session_type_name, num_participants = args
+            session_config_name, num_participants = args
         except ValueError:
             raise CommandError(
                 "Wrong number of arguments (expecting '{}')".format(self.args)
@@ -23,6 +23,6 @@ class Command(BaseCommand):
         label = options.get('label', '')
 
         create_session(
-            session_type_name=session_type_name,
+            session_config_name=session_config_name,
             num_participants=num_participants, label=label
         )

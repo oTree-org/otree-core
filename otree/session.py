@@ -12,6 +12,8 @@ from otree.common_internal import (
     get_models_module, get_app_constants,
     min_players_multiple,
 )
+from otree.common import RealWorldCurrency
+from decimal import Decimal
 from otree.models_concrete import ParticipantLockModel
 
 
@@ -32,9 +34,9 @@ def lcmm(*args):
     return reduce(lcm, args)
 
 
-def get_lcm(session_type):
+def get_lcm(session_config):
     min_multiple_list = []
-    for app_name in session_type['app_sequence']:
+    for app_name in session_config['app_sequence']:
         app_constants = get_app_constants(app_name)
         # if players_per_group is None, 0, etc.
         min_multiple = min_players_multiple(
@@ -44,14 +46,12 @@ def get_lcm(session_type):
     return lcmm(*min_multiple_list)
 
 
-def validate_session_type(session_type):
+def validate_session_config(session_config):
 
     required_keys = {
         'name',
         'app_sequence',
-        # TODO: fixed_pay is deprecated as of 2015-05-07,
-        # in favor of participation_fee. make this required at some point.
-        # 'participation_fee'
+        'participation_fee',
         'num_bots',
         'display_name',
         'real_world_currency_per_point',
@@ -61,12 +61,12 @@ def validate_session_type(session_type):
     }
 
     for key in required_keys:
-        if key not in session_type:
+        if key not in session_config:
             msg = ('Required key "{}" is missing from '
-                   'session_type: {} dictionary')
-            raise AttributeError(msg.format(key, session_type))
+                   'session_config: {} dictionary')
+            raise AttributeError(msg.format(key, session_config))
 
-    st_name = session_type['name']
+    st_name = session_config['name']
     if not re.match(r'^\w+$', st_name):
         msg = (
             'Session "{}": name must be alphanumeric with no '
@@ -74,12 +74,12 @@ def validate_session_type(session_type):
         )
         raise ValueError(msg.format(st_name))
 
-    app_sequence = session_type['app_sequence']
+    app_sequence = session_config['app_sequence']
     if len(app_sequence) != len(set(app_sequence)):
         raise ValueError(
             'app_sequence of "{}" in settings.py '
             'must not contain duplicate elements'.format(
-                session_type['name']
+                session_config['name']
             )
         )
 
@@ -87,37 +87,55 @@ def validate_session_type(session_type):
         raise ValueError('Need at least one subsession.')
 
 
-def augment_session_type(session_type):
-    new_session_type = {'doc': ''}
-    new_session_type.update(settings.SESSION_TYPE_DEFAULTS)
-    new_session_type.update(session_type)
+def augment_session_config(session_config):
+    new_session_config = {'doc': ''}
+    new_session_config.update(settings.SESSION_CONFIG_DEFAULTS)
+    new_session_config.update(session_config)
 
-    # look up new_session_type
+    # look up new_session_config
     # 2015-05-14: why do we strip? the doc can have line breaks in the middle
     # anyways
-    new_session_type['doc'] = new_session_type['doc'].strip()
-    validate_session_type(new_session_type)
-    return new_session_type
+    new_session_config['doc'] = new_session_config['doc'].strip()
+
+    # TODO: fixed_pay is deprecated as of 2015-05-07,
+    # in favor of participation_fee. make this required at some point.
+    if not 'participation_fee' in new_session_config:
+        new_session_config['participation_fee'] = (
+            new_session_config['fixed_pay']
+        )
+
+    new_session_config['participation_fee'] = RealWorldCurrency(
+        new_session_config['participation_fee']
+    )
+
+    # normalize to decimal so we can do multiplications, etc
+    new_session_config['real_world_currency_per_point'] = Decimal(
+        new_session_config['real_world_currency_per_point']
+    )
+
+
+    validate_session_config(new_session_config)
+    return new_session_config
 
 
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
 
-def get_session_types_list():
+def get_session_configs_list():
 
-    return [augment_session_type(s) for s in settings.SESSION_TYPES]
+    return [augment_session_config(s) for s in settings.SESSION_CONFIGS]
 
 
-def get_session_types_dict():
+def get_session_configs_dict():
     return {
-        session_type['name']: session_type
-        for session_type in get_session_types_list()
+        session_config['name']: session_config
+        for session_config in get_session_configs_list()
     }
 
 
 @transaction.atomic
-def create_session(session_type_name, label='', num_participants=None,
+def create_session(session_config_name, label='', num_participants=None,
                    special_category=None, _pre_create_id=None):
 
     # 2014-5-2: i could implement this by overriding the __init__ on the
@@ -126,24 +144,17 @@ def create_session(session_type_name, label='', num_participants=None,
     # 2014-9-22: preassign to groups for demo mode.
 
     try:
-        session_type = get_session_types_dict()[session_type_name]
+        session_config = get_session_configs_dict()[session_config_name]
     except KeyError:
         msg = 'Session type "{}" not found in settings.py'
         raise ValueError(
-            msg.format(session_type_name)
+            msg.format(session_config_name)
         )
     session = Session.objects.create(
-        session_type=session_type,
+        config=session_config,
         label=label,
-        # FIXME: fixed_pay is deprecated on 2015-5-7, remove it eventually
-        participation_fee=(
-            session_type.get('participation_fee') or
-            session_type.get('fixed_pay')
-        ),
+
         special_category=special_category,
-        real_world_currency_per_point=(
-            session_type['real_world_currency_per_point']
-        ),
         _pre_create_id=_pre_create_id,
     )
 
@@ -156,17 +167,17 @@ def create_session(session_type_name, label='', num_participants=None,
 
     if num_participants is None:
         if special_category == constants.session_special_category_demo:
-            num_participants = session_type['num_demo_participants']
+            num_participants = session_config['num_demo_participants']
         elif special_category == constants.session_special_category_bots:
-            num_participants = session_type['num_bots']
+            num_participants = session_config['num_bots']
 
     # check that it divides evenly
-    session_lcm = get_lcm(session_type)
+    session_lcm = get_lcm(session_config)
     if num_participants % session_lcm:
         msg = (
-            'SessionType {}: Number of participants ({}) does not divide '
+            'Session Config {}: Number of participants ({}) does not divide '
             'evenly into group size ({})'
-        ).format(session_type['name'], num_participants, session_lcm)
+        ).format(session_config['name'], num_participants, session_lcm)
         raise ValueError(msg)
 
     participants = bulk_create(
@@ -177,7 +188,7 @@ def create_session(session_type_name, label='', num_participants=None,
     for participant in participants:
         ParticipantLockModel(participant_code=participant.code).save()
 
-    for app_name in session_type['app_sequence']:
+    for app_name in session_config['app_sequence']:
 
         models_module = get_models_module(app_name)
         app_constants = get_app_constants(app_name)

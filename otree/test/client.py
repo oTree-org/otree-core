@@ -132,7 +132,7 @@ class ParticipantBot(test.Client):
         self.response = None
         self.url = None
         self.path = None
-        self.num_bots = self.participant.session.session_type['num_bots']
+        self.num_bots = self.participant.session.config['num_bots']
         self.submits = []
         super(ParticipantBot, self).__init__()
 

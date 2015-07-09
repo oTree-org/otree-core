@@ -250,10 +250,10 @@ def unique_sessions_names(rules, **kwargs):
     if "unique_session_names_already_run" not in rules.common_buffer:
         rules.common_buffer["unique_session_names_already_run"] = True
         buff = set()
-        for st in settings.SESSION_TYPES:
+        for st in settings.SESSION_CONFIGS:
             st_name = st["name"]
             if st_name in buff:
-                msg = "Duplicate SESSION_TYPE name '{}'".format(st_name)
+                msg = "Duplicate SESSION_CONFIG name '{}'".format(st_name)
                 rules.push_error(msg)
             else:
                 buff.add(st_name)

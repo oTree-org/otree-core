@@ -24,7 +24,7 @@ from otree.common_internal import (
     get_models_module, app_name_format, add_params_to_url
 )
 from otree.session import (
-    create_session, get_session_types_dict, get_session_types_list,
+    create_session, get_session_configs_dict, get_session_configs_list,
     get_lcm
 )
 from otree import forms
@@ -318,7 +318,7 @@ class PersistentLabURLs(vanilla.TemplateView):
 class CreateSessionForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
-        self.session_type = kwargs.pop('session_type')
+        self.session_config = kwargs.pop('session_config')
         for_mturk = kwargs.pop('for_mturk')
         super(CreateSessionForm, self).__init__(*args, **kwargs)
         if for_mturk:
@@ -338,7 +338,7 @@ class CreateSessionForm(forms.Form):
 
     def clean_num_participants(self):
 
-        lcm = get_lcm(self.session_type)
+        lcm = get_lcm(self.session_config)
         num_participants = self.cleaned_data['num_participants']
         if num_participants % lcm:
             raise forms.ValidationError(
@@ -425,32 +425,32 @@ class CreateSession(vanilla.FormView):
 
     @classmethod
     def url_pattern(cls):
-        return r"^create_session/(?P<session_type>.+)/$"
+        return r"^create_session/(?P<session_config>.+)/$"
 
     @classmethod
     def url_name(cls):
         return 'session_create'
 
     def dispatch(self, request, *args, **kwargs):
-        session_type_name = urllib.unquote_plus(kwargs.pop('session_type'))
-        self.session_type = get_session_types_dict()[session_type_name]
+        session_config_name = urllib.unquote_plus(kwargs.pop('session_config'))
+        self.session_config = get_session_configs_dict()[session_config_name]
         self.for_mturk = (int(self.request.GET.get('mturk', 0)) == 1)
         return super(CreateSession, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = info_about_session_type(self.session_type)
+        context = info_about_session_config(self.session_config)
         kwargs.update(context)
         return super(CreateSession, self).get_context_data(**kwargs)
 
     def get_form(self, data=None, files=None, **kwargs):
-        kwargs['session_type'] = self.session_type
+        kwargs['session_config'] = self.session_config
         kwargs['for_mturk'] = self.for_mturk
         return super(CreateSession, self).get_form(data, files, **kwargs)
 
     def form_valid(self, form):
         pre_create_id = uuid.uuid4().hex
         kwargs = {
-            'session_type_name': self.session_type['name'],
+            'session_config_name': self.session_config['name'],
             '_pre_create_id': pre_create_id,
         }
         if self.for_mturk:
@@ -475,7 +475,7 @@ class CreateSession(vanilla.FormView):
         return HttpResponseRedirect(wait_until_session_created_url)
 
 
-class SessionTypesToCreate(vanilla.View):
+class SessionConfigsToCreate(vanilla.View):
 
     @classmethod
     def url(cls):
@@ -483,27 +483,27 @@ class SessionTypesToCreate(vanilla.View):
 
     @classmethod
     def url_name(cls):
-        return 'session_types_create'
+        return 'session_configs_create'
 
     @classmethod
     def url_pattern(cls):
         return r"^create_session/$"
 
     def get(self, *args, **kwargs):
-        session_types_info = []
-        for session_type in get_session_types_list():
-            session_types_info.append(
+        session_configs_info = []
+        for session_config in get_session_configs_list():
+            session_configs_info.append(
                 {
-                    'display_name': session_type['display_name'],
+                    'display_name': session_config['display_name'],
                     'url': '/create_session/{}/?mturk={}'.format(
-                        session_type['name'], self.request.GET.get('mturk', 0)
+                        session_config['name'], self.request.GET.get('mturk', 0)
                     ),
                 }
             )
 
         return TemplateResponse(self.request,
                                 'otree/admin/SessionListing.html',
-                                {'session_types_info': session_types_info})
+                                {'session_configs_info': session_configs_info})
 
 
 class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
@@ -541,10 +541,16 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
     fields = [
         'label',
         'experimenter_name',
-        'real_world_currency_per_point',
+
         'time_scheduled',
         'archived',
-        'participation_fee',
+
+        # TODO: make this editable,
+        # but it's no longer a field on the session
+        # rather an element in session config
+        # 'participation_fee',
+        # 'real_world_currency_per_point',
+
         'comment',
     ]
 
@@ -552,8 +558,10 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
         form = super(
             EditSessionProperties, self
         ).get_form(data, files, ** kwargs)
-        if self.session.mturk_HITId:
-            form.fields['participation_fee'].widget.attrs['readonly'] = 'True'
+
+        # TODO: make editable again, see above
+        # if self.session.mturk_HITId:
+        #    form.fields['participation_fee'].widget.attrs['readonly'] = 'True'
         return form
 
     @classmethod
@@ -610,7 +618,7 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
             'participants': participants,
             'total_payments': total_payments,
             'mean_payment': mean_payment,
-            'participation_fee': session.participation_fee,
+            'participation_fee': session.config['participation_fee'],
         })
 
         return context
@@ -747,11 +755,11 @@ class SessionDescription(AdminSessionPageMixin, vanilla.TemplateView):
         return context
 
 
-def info_about_session_type(session_type):
+def info_about_session_config(session_config):
 
     app_sequence = []
     seo = set()
-    for app_name in session_type['app_sequence']:
+    for app_name in session_config['app_sequence']:
         models_module = get_models_module(app_name)
         num_rounds = models_module.Constants.num_rounds
         formatted_app_name = app_name_format(app_name)
@@ -770,7 +778,7 @@ def info_about_session_type(session_type):
         seo.update(map(lambda (a, b): a, subsssn["keywords"]))
         app_sequence.append(subsssn)
     return {
-        'doc': session_type['doc'],
+        'doc': session_config['doc'],
         'app_sequence': app_sequence,
         'page_seo': seo
     }
@@ -800,13 +808,13 @@ def keywords_links(keywords):
 def session_description_dict(session):
 
     context_data = {
-        'display_name': session.session_type['display_name'],
+        'display_name': session.config['display_name'],
     }
 
-    session_type = get_session_types_dict(
+    session_config = get_session_configs_dict(
 
-    )[session.session_type['name']]
-    context_data.update(info_about_session_type(session_type))
+    )[session.config['name']]
+    context_data.update(info_about_session_config(session_config))
 
     return context_data
 

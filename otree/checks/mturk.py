@@ -19,7 +19,7 @@ class ValidateMTurk(object):
         Also including the last page. Next button on last page is
         necessary to trigger an externalSubmit to the MTurk server.
         '''
-        for app in self.session.session_type['app_sequence']:
+        for app in self.session.config['app_sequence']:
             views_module = otree.common_internal.get_views_module(app)
             for page_class in views_module.page_sequence:
                 page = page_class()
@@ -44,12 +44,12 @@ class ValidateMTurk(object):
         '''
         no_wait_pages = all(
             self.app_has_no_wait_pages(app) for app in
-            self.session.session_type['app_sequence']
+            self.session.config['app_sequence']
         )
         if no_wait_pages:
             return True
         else:
-            return self.session.session_type['group_by_arrival_time']
+            return self.session.config['group_by_arrival_time']
 
     def get_no_timeout_pages(self):
         '''
@@ -58,7 +58,7 @@ class ValidateMTurk(object):
         '''
         pages = []
         pages_needs_timeout = False
-        for app in self.session.session_type['app_sequence']:
+        for app in self.session.config['app_sequence']:
             views_module = otree.common_internal.get_views_module(app)
             for page_class in views_module.page_sequence:
                 page = page_class()
