@@ -3,15 +3,33 @@ import platform
 import subprocess
 import sys
 
+import django
 import django.core.management
 from django.core.management.base import CommandError
 from django.core.management.color import color_style
 from django.conf import settings
 
+import otree
+
+
+# =============================================================================
+# CONSTANTS
+# =============================================================================
 
 MANAGE_URL = (
     "https://raw.githubusercontent.com/oTree-org/oTree/master/manage.py"
 )
+
+
+# =============================================================================
+# FUNCTIONS
+# =============================================================================
+
+def otree_get_version(*args, **kwargs):
+    """this function patch the original get version of django"""
+    otree_ver = otree.get_version()
+    django_ver = django.get_version()
+    return "oTree: {} - Django: {}".format(otree_ver, django_ver)
 
 
 def execute_from_command_line(arguments, script_file):
@@ -56,11 +74,13 @@ def execute_from_command_line(arguments, script_file):
 
     # in issue #300 we agreed that sslserver should
     # run only if user has specified credentials for AWS
-    if (
-            len(sys.argv) >= 2 and
-            sys.argv[1] == 'runserver' and
-            settings.AWS_ACCESS_KEY_ID):
-        sys.argv[1] = 'runsslserver'
+    if (len(sys.argv) >= 2 and sys.argv[1] == 'runserver' and
+       settings.AWS_ACCESS_KEY_ID):
+            sys.argv[1] = 'runsslserver'
+
+    # only monkey path when is necesary
+    if "version" in arguments or "--version" in arguments:
+        django.core.management.get_version = otree_get_version
 
     django.core.management.execute_from_command_line(sys.argv)
 
