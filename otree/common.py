@@ -49,7 +49,6 @@ class Currency(RealWorldCurrency):
             return self
 
 
-
 class _CurrencyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, easymoney.Money):
