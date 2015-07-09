@@ -173,7 +173,7 @@ Sessions
         </td>
         <td><a href="{% url 'session_description' s.pk %}">{{ s.code }}</a></td>
         <td>{{ s.label }}</td>
-        <td>{{ s.session_config.name }}</td>
+        <td>{{ s.config.name }}</td>
         <td>
             <a href="{% url 'session_start_links' s.pk %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-link"></span> Links
