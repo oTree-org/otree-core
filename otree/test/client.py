@@ -18,9 +18,9 @@ import urlparse
 import decimal
 import logging
 import abc
+from importlib import import_module
 
 from django import test
-from django.utils.importlib import import_module
 
 from easymoney import Money as Currency
 

@@ -10,9 +10,9 @@ import inspect
 import datetime
 import csv
 from collections import OrderedDict
+from importlib import import_module
 
 from django.http import HttpResponse
-from django.utils.importlib import import_module
 from django.conf import settings
 
 import vanilla

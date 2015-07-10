@@ -20,9 +20,9 @@ from otree.constants import field_required_msg
 
 
 class OTreeModelBase(SharedMemoryModelBase):
+
     def __new__(cls, name, bases, attrs):
         new_class = super(OTreeModelBase, cls).__new__(cls, name, bases, attrs)
-
         for f in new_class._meta.fields:
             if hasattr(new_class, f.name + '_choices'):
                 attr_name = 'get_%s_display' % f.name
@@ -47,6 +47,7 @@ class OTreeModel(SharedMemoryModel):
     __metaclass__ = OTreeModelBase
 
     class Meta:
+        app_name = "otree"
         abstract = True
 
 Model = OTreeModel

@@ -99,7 +99,7 @@ def augment_session_config(session_config):
 
     # TODO: fixed_pay is deprecated as of 2015-05-07,
     # in favor of participation_fee. make this required at some point.
-    if not 'participation_fee' in new_session_config:
+    if 'participation_fee' not in new_session_config:
         new_session_config['participation_fee'] = (
             new_session_config['fixed_pay']
         )
@@ -112,7 +112,6 @@ def augment_session_config(session_config):
     new_session_config['real_world_currency_per_point'] = Decimal(
         new_session_config['real_world_currency_per_point']
     )
-
 
     validate_session_config(new_session_config)
     return new_session_config

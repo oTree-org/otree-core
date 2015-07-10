@@ -27,10 +27,10 @@ def collapse_to_unique_list(*args):
 def augment_settings(settings):
 
     # 2015-07-10: SESSION_TYPE is deprecated
-    if not 'SESSION_CONFIGS' in settings:
+    if 'SESSION_CONFIGS' not in settings:
         settings['SESSION_CONFIGS'] = settings['SESSION_TYPES']
 
-    if not 'SESSION_CONFIG_DEFAULTS' in settings:
+    if 'SESSION_CONFIG_DEFAULTS' not in settings:
         settings['SESSION_CONFIG_DEFAULTS'] = settings['SESSION_TYPE_DEFAULTS']
 
     all_otree_apps_set = set()

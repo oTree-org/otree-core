@@ -43,17 +43,16 @@ class Command(BaseCommand):
         # Positional arguments
         parser.add_argument('experiment_name', nargs='+')
 
+        coverage_choices = "|".join(COVERAGE_CHOICES)
         ahelp = ('Execute code-coverage over the code of '
-                'tested experiments [{}]').format("|".join(COVERAGE_CHOICES))
+                 'tested experiments [{}]').format(coverage_choices)
         parser.add_parse(
             '-c', '--coverage', action='store', dest='coverage',
             choices=COVERAGE_CHOICES, help=ahelp)
 
         parser.add_parse(
             '-t', '--template-vars', action='store_true', dest='tplvars',
-            help='Validate the existence of all template vars (Warning)'
-        )
-
+            help='Validate the existence of all template vars (Warning)')
 
     def execute(self, *args, **options):
         if int(options['verbosity']) > 0:

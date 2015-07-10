@@ -43,8 +43,8 @@ class Currency(RealWorldCurrency):
 
         if settings.USE_POINTS:
             return RealWorldCurrency(
-                self.to_number() * session.config['real_world_currency_per_point']
-            )
+                self.to_number() *
+                session.config['real_world_currency_per_point'])
         else:
             return self
 

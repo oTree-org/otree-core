@@ -492,18 +492,14 @@ class SessionConfigsToCreate(vanilla.View):
     def get(self, *args, **kwargs):
         session_configs_info = []
         for session_config in get_session_configs_list():
+            session_name = session_config['name']
+            key = self.request.GET.get('mturk', 0)
+            url = '/create_session/{}/?mturk={}'.format(session_name, key)
             session_configs_info.append(
-                {
-                    'display_name': session_config['display_name'],
-                    'url': '/create_session/{}/?mturk={}'.format(
-                        session_config['name'], self.request.GET.get('mturk', 0)
-                    ),
-                }
-            )
-
-        return TemplateResponse(self.request,
-                                'otree/admin/SessionListing.html',
-                                {'session_configs_info': session_configs_info})
+                {'display_name': session_config['display_name'], 'url': url})
+        return TemplateResponse(
+            self.request, 'otree/admin/SessionListing.html',
+            {'session_configs_info': session_configs_info})
 
 
 class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):

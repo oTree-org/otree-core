@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import inspect
+from importlib import import_module
 
 from django.conf import urls
-from django.utils.importlib import import_module
 
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic.base import RedirectView
