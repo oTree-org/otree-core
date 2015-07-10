@@ -47,7 +47,6 @@ class OTreeModel(SharedMemoryModel):
     __metaclass__ = OTreeModelBase
 
     class Meta:
-        app_name = "otree"
         abstract = True
 
 Model = OTreeModel
