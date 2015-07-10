@@ -10,7 +10,7 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
 REQUIREMENTS = [
     'Babel>=1.3',
     'boto>=2.36.0',
-    'Django==1.7.7',
+    #~ 'Django==1.7.7',
     'coverage>=3.7.1',
     'dj-static>=0.0.6',
     'django-celery>=3.1.16',
@@ -22,7 +22,7 @@ REQUIREMENTS = [
     'django-idmap>=0.3.3',
     'django-inspect-model>=0.7',
     'django-ptree-mturk>=1.0.1',
-    'django-save-the-change>=1.0.0',
+    #~ 'django-save-the-change>=1.1.0',
     'django-sslify>=0.2.5',
     'django-sslserver>=0.14',
     'django-vanilla-views>=1.0.2',

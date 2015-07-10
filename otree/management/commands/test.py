@@ -6,8 +6,6 @@
 import logging
 import sys
 
-from optparse import make_option
-
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
@@ -40,20 +38,22 @@ settings.SSLIFY_DISABLE = True
 class Command(BaseCommand):
     help = ('Discover and run experiment tests in the specified '
             'modules or the current directory.')
-    option_list = BaseCommand.option_list + (
-        make_option(
+
+    def add_arguments(self, parser):
+        # Positional arguments
+        parser.add_argument('experiment_name', nargs='+')
+
+        ahelp = ('Execute code-coverage over the code of '
+                'tested experiments [{}]').format("|".join(COVERAGE_CHOICES))
+        parser.add_parse(
             '-c', '--coverage', action='store', dest='coverage',
-            choices=COVERAGE_CHOICES, help=(
-                'Execute code-coverage over the code of '
-                'tested experiments [{}]'
-            ).format("|".join(COVERAGE_CHOICES))
-        ),
-        make_option(
+            choices=COVERAGE_CHOICES, help=ahelp)
+
+        parser.add_parse(
             '-t', '--template-vars', action='store_true', dest='tplvars',
             help='Validate the existence of all template vars (Warning)'
-        ),
-    )
-    args = '[experiment_name|experiment_name|experiment_name]...'
+        )
+
 
     def execute(self, *args, **options):
         if int(options['verbosity']) > 0:

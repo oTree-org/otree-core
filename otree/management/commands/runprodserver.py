@@ -26,37 +26,33 @@ class HonchoConifg(object):
 class Command(BaseCommand):
     help = 'Run otree services for the production environment.'
 
-    option_list = BaseCommand.option_list + (
-        make_option(
+    default_port = 5000
+
+    def add_arguments(self, parser):
+        parser.add_argument(
             '--procfile',
             action='store',
             dest='procfile',
             default='./Procfile',
-            help=(
-                'The path to the Procfile that should be executed. '
-                'The default is ./Procfile')),
-        make_option(
+            help=('The path to the Procfile that should be executed. '
+                ' The default is ./Procfile'))
+        parser.add_argument(
             '--no-collectstatic',
             action='store_false',
             dest='collectstatic',
             default=True,
-            help=(
-                'By default we will collect all static files into the '
-                'directory configured in your settings. Disable it with this '
-                'switch if you want to do it manually.')),
-        make_option(
+            help=('By default we will collect all static files into the '
+                  'directory configured in your settings. Disable it with '
+                  'this switch if you want to do it manually.'))
+        parser.add_argument(
             '--port',
             action='store',
             type=int,
             dest='port',
             default=None,
-            help=(
-                'The port that the wsgi server should run on. '
-                'It defaults to 5000. This value can be set by the '
-                'environment variable $PORT.')),
-    )
-
-    default_port = 5000
+            help=('The port that the wsgi server should run on. '
+                  'It defaults to 5000. This value can be set by the '
+                  'environment variable $PORT.'))
 
     def get_port(self, suggested_port):
         if suggested_port is None:
@@ -76,10 +72,7 @@ class Command(BaseCommand):
         procfile = options['procfile']
         collectstatic = options['collectstatic']
 
-        args = HonchoConifg(
-            procfile=procfile,
-            port=port,
-        )
+        args = HonchoConifg(procfile=procfile, port=port)
 
         if collectstatic:
             self.stdout.write('Running collectstatic ...', ending='')
