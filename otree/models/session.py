@@ -166,7 +166,7 @@ class Session(ModelWithVars):
     def real_world_currency_per_point(self):
         '''This method is deprecated from public API,
         but still useful internally (like data export)'''
-        return self.config.get['real_world_currency_per_point']
+        return self.config['real_world_currency_per_point']
 
 
     @property
