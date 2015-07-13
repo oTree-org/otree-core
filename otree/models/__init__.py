@@ -24,6 +24,7 @@ session = import_module('otree.models.session')
 
 
 class BaseSubsession(subsessions.BaseSubsession):
+
     class Meta:
         abstract = True
         ordering = ['pk']
@@ -72,6 +73,7 @@ class BaseSubsession(subsessions.BaseSubsession):
 
 
 class BaseGroup(groups.BaseGroup):
+
     class Meta:
         abstract = True
         ordering = ['pk']
@@ -100,6 +102,10 @@ class BaseGroup(groups.BaseGroup):
 
 
 class BasePlayer(players.BasePlayer):
+
+    class Meta:
+        abstract = True
+        ordering = ['pk']
 
     id_in_group = models.PositiveIntegerField(
         null=True,
@@ -130,8 +136,3 @@ class BasePlayer(players.BasePlayer):
 
     def role(self):
         return super(BasePlayer, self).role()
-
-    class Meta:
-        abstract = True
-        ordering = ['pk']
-
