@@ -8,9 +8,12 @@ from django.db import models
 from django.db.models.fields import related
 from django.core import exceptions
 from django.utils.translation import ugettext_lazy
+from django.apps import apps
 
 from handy.models import PickleField
+
 import easymoney
+
 from idmap.metaclass import SharedMemoryModelBase
 from idmap.models import SharedMemoryModel
 
@@ -32,7 +35,7 @@ class OTreeModelBase(SharedMemoryModelBase):
 
 
 def get_model(*args, **kwargs):
-    return models.get_model(*args, **kwargs)
+    return apps.get_model(*args, **kwargs)
 
 
 def make_get_display(field):
@@ -351,7 +354,7 @@ class ManyToOneRel(related.ManyToOneRel):
     pass
 
 
-class ManyToManyField(_OtreeNullableModelFieldMixin, models.ManyToManyField):
+class ManyToManyField(models.ManyToManyField):
     pass
 
 

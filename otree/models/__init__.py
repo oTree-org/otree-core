@@ -30,8 +30,7 @@ class BaseSubsession(subsessions.BaseSubsession):
         ordering = ['pk']
 
     session = models.ForeignKey(
-        Session, related_name='%(app_label)s_%(class)s', null=True
-    )
+        Session, related_name='%(app_label)s_%(class)s', null=True)
 
     round_number = models.PositiveIntegerField(
         doc='''If this subsession is repeated (i.e. has multiple rounds), this
