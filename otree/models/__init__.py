@@ -24,6 +24,9 @@ session = import_module('otree.models.session')
 
 
 class BaseSubsession(subsessions.BaseSubsession):
+    class Meta:
+        abstract = True
+        ordering = ['pk']
 
     session = models.ForeignKey(
         Session, related_name='%(app_label)s_%(class)s', null=True
@@ -66,10 +69,6 @@ class BaseSubsession(subsessions.BaseSubsession):
 
     def before_session_starts(self):
         return super(BaseSubsession, self).before_session_starts()
-
-    class Meta:
-        abstract = True
-        ordering = ['pk']
 
 
 class BaseGroup(groups.BaseGroup):
@@ -135,3 +134,4 @@ class BasePlayer(players.BasePlayer):
     class Meta:
         abstract = True
         ordering = ['pk']
+

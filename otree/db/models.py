@@ -305,10 +305,6 @@ class IntegerField(_OtreeNullableModelFieldMixin,
     pass
 
 
-class IPAddressField(_OtreeNullableModelFieldMixin, models.IPAddressField):
-    pass
-
-
 class GenericIPAddressField(_OtreeNullableModelFieldMixin,
                             models.GenericIPAddressField):
     pass
