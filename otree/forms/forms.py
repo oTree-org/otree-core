@@ -15,6 +15,7 @@ from floppyforms.__future__.models import (
 import django.forms as django_forms
 from django.forms import models as django_model_forms
 from django.utils.translation import ugettext as _
+from django.db.models.options import FieldDoesNotExist
 
 
 import easymoney
@@ -234,20 +235,25 @@ class BaseModelForm(forms.ModelForm):
         If the method is not found, it will return ``(None, None)``.
         """
 
+        # EditSessionProperties is a ModelForm with extra field which is not
+        # part of the model. In case your ModelForm has an extra field.
+        try:
+            model_field = self.instance._meta.get_field_by_name(field_name)[0]
+        except FieldDoesNotExist:
+            return [None, None]
+
         min_value, max_value = None, None
 
         min_method_name = '%s_min' % field_name
         if hasattr(self.view, min_method_name):
             min_value = getattr(self.view, min_method_name)()
         else:
-            model_field = self.instance._meta.get_field_by_name(field_name)[0]
             min_value = getattr(model_field, 'min', None)
 
         max_method_name = '%s_max' % field_name
         if hasattr(self.view, max_method_name):
             max_value = getattr(self.view, max_method_name)()
         else:
-            model_field = self.instance._meta.get_field_by_name(field_name)[0]
             max_value = getattr(model_field, 'max', None)
 
         return [min_value, max_value]
