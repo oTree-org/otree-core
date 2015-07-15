@@ -12,6 +12,7 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.core.urlresolvers import reverse
 from django.forms.forms import pretty_name
 from django.conf import settings
+from django.contrib import messages
 
 import vanilla
 
@@ -28,6 +29,7 @@ from otree.session import (
     get_lcm
 )
 from otree import forms
+from otree.common import RealWorldCurrency
 from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
 from otree.views.mturk import MTurkConnection
 
@@ -317,6 +319,8 @@ class PersistentLabURLs(vanilla.TemplateView):
 
 class CreateSessionForm(forms.Form):
 
+    num_participants = forms.IntegerField()
+
     def __init__(self, *args, **kwargs):
         self.session_config = kwargs.pop('session_config')
         for_mturk = kwargs.pop('for_mturk')
@@ -333,8 +337,6 @@ class CreateSessionForm(forms.Form):
             )
         else:
             self.fields['num_participants'].label = "Number of participants"
-
-    num_participants = forms.IntegerField()
 
     def clean_num_participants(self):
 
@@ -535,33 +537,46 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
         return context
 
 
+class EditSessionPropertiesForm(forms.ModelForm):
+
+    participation_fee = forms.RealWorldCurrencyField(required=False)
+    real_world_currency_per_point = forms.DecimalField(
+        decimal_places=5, max_digits=12,
+        required=False
+    )
+
+    class Meta:
+        model = Session
+        fields = [
+            'label',
+            'experimenter_name',
+            'time_scheduled',
+            'comment',
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super(EditSessionPropertiesForm, self).__init__(*args, **kwargs)
+
+
 class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
 
     model = Session
-    fields = [
-        'label',
-        'experimenter_name',
-
-        'time_scheduled',
-        'archived',
-
-        # TODO: make this editable,
-        # but it's no longer a field on the session
-        # rather an element in session config
-        # 'participation_fee',
-        # 'real_world_currency_per_point',
-
-        'comment',
-    ]
+    form_class = EditSessionPropertiesForm
+    template_name = 'otree/admin/EditSessionProperties.html'
 
     def get_form(self, data=None, files=None, **kwargs):
         form = super(
             EditSessionProperties, self
         ).get_form(data, files, ** kwargs)
-
-        # TODO: make editable again, see above
-        # if self.session.mturk_HITId:
-        #    form.fields['participation_fee'].widget.attrs['readonly'] = 'True'
+        config = self.session.config
+        form.fields[
+            'participation_fee'
+        ].initial = config['participation_fee']
+        form.fields[
+            'real_world_currency_per_point'
+        ].initial = config['real_world_currency_per_point']
+        if self.session.mturk_HITId:
+            form.fields['participation_fee'].widget.attrs['readonly'] = 'True'
         return form
 
     @classmethod
@@ -570,6 +585,26 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
 
     def get_success_url(self):
         return reverse('session_edit', args=(self.session.pk,))
+
+    def form_valid(self, form):
+        super(EditSessionProperties, self).form_valid(form)
+        config = self.session.config
+        participation_fee = form.cleaned_data[
+            'participation_fee'
+        ]
+        real_world_currency_per_point = form.cleaned_data[
+            'real_world_currency_per_point'
+        ]
+        if form.cleaned_data['participation_fee']:
+            config['participation_fee'] = RealWorldCurrency(participation_fee)
+        if form.cleaned_data['real_world_currency_per_point']:
+            config[
+                'real_world_currency_per_point'
+            ] = real_world_currency_per_point
+        self.session.config = config
+        self.session.save()
+        messages.success(self.request, 'Properties have been updated')
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
