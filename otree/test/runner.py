@@ -169,7 +169,6 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
 class OTreeExperimentTestRunner(runner.DiscoverRunner):
 
     def build_suite(self, session_names, extra_tests, **kwargs):
-
         if not session_names:
             session_names = session.get_session_configs_dict().keys()
 

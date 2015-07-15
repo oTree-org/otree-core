@@ -41,16 +41,16 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         # Positional arguments
-        parser.add_argument('experiment_name', nargs='+')
+        parser.add_argument('experiment_name', nargs='*')
 
         coverage_choices = "|".join(COVERAGE_CHOICES)
         ahelp = ('Execute code-coverage over the code of '
                  'tested experiments [{}]').format(coverage_choices)
-        parser.add_parse(
+        parser.add_argument(
             '-c', '--coverage', action='store', dest='coverage',
             choices=COVERAGE_CHOICES, help=ahelp)
 
-        parser.add_parse(
+        parser.add_argument(
             '-t', '--template-vars', action='store_true', dest='tplvars',
             help='Validate the existence of all template vars (Warning)')
 
@@ -63,7 +63,10 @@ class Command(BaseCommand):
         if int(options['verbosity']) > 0:
             logger.removeHandler(handler)
 
-    def handle(self, *test_labels, **options):
+    def handle(self, **options):
+
+        test_labels = options["experiment_name"]
+
         options['verbosity'] = int(options.get('verbosity'))
         if options['verbosity'] < 3:
             logging.basicConfig(level=logging.WARNING)
