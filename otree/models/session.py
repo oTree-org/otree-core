@@ -22,6 +22,9 @@ class GlobalSingleton(models.Model):
     GlobalSingleton object. Also used for wait page actions.
     """
 
+    class Meta:
+        app_label = "otree"
+
     default_session = models.ForeignKey('Session', null=True, blank=True)
     admin_access_code = models.RandomCharField(
         length=8, doc=('used for authentication to things only the '
@@ -52,6 +55,7 @@ class Session(ModelWithVars):
     class Meta:
         # if i don't set this, it could be in an unpredictable order
         ordering = ['pk']
+        app_label = "otree"
 
     config = models.PickleField(
         default=get_empty_dict, null=True,
@@ -484,6 +488,7 @@ class Participant(SessionUser):
 
     class Meta:
         ordering = ['pk']
+        app_label = "otree"
 
     exclude_from_data_analysis = models.BooleanField(
         default=False, doc=(
