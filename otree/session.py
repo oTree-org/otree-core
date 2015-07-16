@@ -109,9 +109,12 @@ def augment_session_config(session_config):
     )
 
     # normalize to decimal so we can do multiplications, etc
+    # quantize because the original value may be a float,
+    # which when converted to Decimal may have some 'decimal junk'
+    # like 0.010000000000000000208166817...
     new_session_config['real_world_currency_per_point'] = Decimal(
         new_session_config['real_world_currency_per_point']
-    )
+    ).quantize(Decimal('0.00001'))
 
 
     validate_session_config(new_session_config)

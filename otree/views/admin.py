@@ -494,12 +494,18 @@ class SessionConfigsToCreate(vanilla.View):
     def get(self, *args, **kwargs):
         session_configs_info = []
         for session_config in get_session_configs_list():
+
+            url = '/create_session/{}/'.format(
+                session_config['name']
+            )
+
+            if self.request.GET.get('mturk') == '1':
+                url = add_params_to_url(url, {'mturk': 1})
+
             session_configs_info.append(
                 {
                     'display_name': session_config['display_name'],
-                    'url': '/create_session/{}/?mturk={}'.format(
-                        session_config['name'], self.request.GET.get('mturk', 0)
-                    ),
+                    'url': url
                 }
             )
 
