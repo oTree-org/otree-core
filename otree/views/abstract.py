@@ -685,9 +685,10 @@ class FormPageMixin(object):
         self.object = self.get_object()
 
         if request.POST.get(constants.auto_submit):
-            self.auto_submitted = True  # not used yet
+            self.timeout_happened = True  # for public API
             self._set_auto_submit_values()
         else:
+            self.timeout_happened = False
             form = self.get_form(
                 data=request.POST, files=request.FILES, instance=self.object
             )
