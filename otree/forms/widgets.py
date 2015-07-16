@@ -64,6 +64,7 @@ class CheckboxSelectMultipleHorizontal(forms.CheckboxSelectMultiple):
 
 
 class BaseMoneyInput(forms.NumberInput):
+    #step=0.01
     template_name = 'floppyforms/moneyinput.html'
 
     def get_context(self, *args, **kwargs):

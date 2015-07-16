@@ -117,10 +117,10 @@ class FormFieldNode(Node):
                     return form[field_name]
                 except KeyError:
                     raise ValueError(
-                        "Field '{field_name}' is not part of the form "
-                        "({form!r}).".format(
-                            field_name=field_name,
-                            form=form))
+                        "Field '{field_name}' was referenced in the template, "
+                        "but was not included in the Page's 'form_fields' "
+                        "in views.py ".format(
+                            field_name=field_name))
 
         # Second we try to resolve it to a bound field.
         # No field found, so we return None.
