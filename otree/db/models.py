@@ -25,6 +25,18 @@ from otree.constants import field_required_msg
 class OTreeModelBase(SharedMemoryModelBase):
 
     def __new__(cls, name, bases, attrs):
+        meta = attrs.get("Meta")
+        module = attrs.get("__module__")
+        is_concrete = not getattr(meta, "abstract", False)
+        app_label = getattr(meta, "app_label", "")
+
+        if is_concrete and module and not app_label:
+            if meta is None:
+                meta = type("Meta", (), {})
+            meta.app_label = module.rsplit(".", 1)[0].replace(".", "_")
+            meta.db_table = "{}_{}".format(meta.app_label, name.lower())
+            attrs["Meta"] = meta
+
         new_class = super(OTreeModelBase, cls).__new__(cls, name, bases, attrs)
         for f in new_class._meta.fields:
             if hasattr(new_class, f.name + '_choices'):
