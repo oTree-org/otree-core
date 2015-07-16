@@ -33,8 +33,11 @@ class OTreeModelBase(SharedMemoryModelBase):
         if is_concrete and module and not app_label:
             if meta is None:
                 meta = type("Meta", (), {})
-            meta.app_label = module.rsplit(".", 1)[0].replace(".", "_")
-            meta.db_table = "{}_{}".format(meta.app_label, name.lower())
+            app_label = module.rsplit(".", 1)[0]
+            while "." in app_label:
+                app_label = app_label.rsplit(".", 1)[-1]
+            meta.app_label = app_label
+            meta.db_table = "{}_{}".format(app_label, name.lower())
             attrs["Meta"] = meta
 
         new_class = super(OTreeModelBase, cls).__new__(cls, name, bases, attrs)
