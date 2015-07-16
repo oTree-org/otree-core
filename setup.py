@@ -12,6 +12,7 @@ REQUIREMENTS = [
     'boto>=2.36.0',
     'Django==1.7.7',
     'coverage>=3.7.1',
+    'dj-database-url>=0.2.2',
     'dj-static>=0.0.6',
     'django-celery>=3.1.16',
     'django-countries>=3.0.1',
