@@ -80,7 +80,6 @@ class Command(BaseCommand):
         if options["tplvars"]:
             # this behavior is REAAAALY experimental
             test_runner.patch_validate_missing_template_vars()
-
         if coverage:
             with runner.covering(test_labels) as coverage_report:
                 failures = test_runner.run_tests(test_labels)
