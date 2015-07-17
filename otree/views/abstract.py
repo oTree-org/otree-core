@@ -110,6 +110,9 @@ class OTreeMixin(object):
         or if they hit the back button.
         We can put them back where they belong.
         """
+
+        # shouldn't return HttpResponseRedirect to an AJAX request
+        assert not self.request.is_ajax()
         return HttpResponseRedirect(self._session_user._url_i_should_be_on())
 
     def vars_for_template(self):
@@ -255,7 +258,9 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                 # (e.g. by typing in a future URL)
                 # or if they hit the back button to a previous subsession
                 # in the sequence.
-                if not self._user_is_on_right_page():
+                #
+                if (not self.request.is_ajax()
+                        and not self._user_is_on_right_page()):
                     # then bring them back to where they should be
                     return self._redirect_to_page_the_user_should_be_on()
 
@@ -680,9 +685,10 @@ class FormPageMixin(object):
         self.object = self.get_object()
 
         if request.POST.get(constants.auto_submit):
-            self.auto_submitted = True  # not used yet
+            self.timeout_happened = True  # for public API
             self._set_auto_submit_values()
         else:
+            self.timeout_happened = False
             form = self.get_form(
                 data=request.POST, files=request.FILES, instance=self.object
             )
