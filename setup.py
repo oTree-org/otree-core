@@ -38,6 +38,9 @@ REQUIREMENTS = [
     'requests>=2.7',
     'selenium>=2.46',
     'xmltodict>=0.9',
+
+    # Remove this when save-the-change > 1.1.0 is out
+    'otree-save-the-change'
 ]
 
 
