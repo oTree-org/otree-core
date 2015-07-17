@@ -80,9 +80,9 @@ def execute_from_command_line(arguments, script_file):
 
     # only monkey path when is necesary
     if "version" in arguments or "--version" in arguments:
-        django.core.management.get_version = otree_get_version
-
-    django.core.management.execute_from_command_line(sys.argv)
+        sys.stdout.write(otree_get_version() + '\n')
+    else:
+        django.core.management.execute_from_command_line(sys.argv)
 
 
 def main():
