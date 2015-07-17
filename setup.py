@@ -19,7 +19,7 @@ REQUIREMENTS = [
     'django-easymoney>=0.5',
     'django-extensions>=1.4.6',
     'django-ptree-extra-views>=0.6.3',
-    'django-floppyforms>=1.2.0',
+    'django-floppyforms==1.5.0',
     'django-idmap>=0.3.3',
     'django-inspect-model>=0.7',
     'django-ptree-mturk>=1.0.1',
