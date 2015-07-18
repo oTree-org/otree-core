@@ -168,21 +168,20 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
 class OTreeExperimentTestRunner(runner.DiscoverRunner):
 
     def build_suite(self, session_names, extra_tests, **kwargs):
+        suite = self.test_suite()
         if not session_names:
-            session_names = session.get_session_configs_dict().keys()
+            session_names = sorted(session.get_session_configs_dict().keys())
 
-        tests = []
         for session_name in session_names:
             case = OTreeExperimentFunctionTest(session_name)
-            tests.append(case)
+            suite.addTest(case)
 
-        return super(OTreeExperimentTestRunner, self).build_suite(
-            test_labels=(), extra_tests=tests, **kwargs)
+        return suite
+
 
 # =============================================================================
 # HELPER
 # =============================================================================
-
 
 def apps_from_sessions(session_names=None):
     if session_names:
