@@ -4,6 +4,7 @@ import json
 from decimal import Decimal
 
 from django.conf import settings
+import django.utils.formats
 from django.utils.safestring import mark_safe
 from django.utils.translation import ungettext
 
@@ -25,18 +26,22 @@ class Currency(RealWorldCurrency):
     '''game currency'''
 
     if settings.USE_POINTS:
-        # TODO: make this customizable?
-        DECIMAL_PLACES = 0
+        DECIMAL_PLACES = settings.POINTS_DECIMAL_PLACES
 
     @classmethod
     def _format_currency(cls, number):
         if settings.USE_POINTS:
+
+            formatted_number = django.utils.formats.number_format(number)
+
             # Translators: display a number of points,
             # like "1 point", "2 points", ...
             # See "Plural-Forms" above for pluralization rules
             # in this language.
             # Explanation at http://bit.ly/1IurMu7
-            return ungettext('{} point', '{} points', number).format(number)
+            return ungettext('{} point', '{} points', number).format(
+                formatted_number
+            )
         return super(Currency, cls)._format_currency(number)
 
     def to_real_world_currency(self, session):
