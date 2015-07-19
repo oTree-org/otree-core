@@ -33,9 +33,9 @@ def augment_settings(settings):
     if 'SESSION_CONFIG_DEFAULTS' not in settings:
         settings['SESSION_CONFIG_DEFAULTS'] = settings['SESSION_TYPE_DEFAULTS']
 
-    if ('POINTS_CUSTOM_NAME' in settings
-            and 'POINTS_CUSTOM_FORMAT' not in settings):
-        settings['POINTS_CUSTOM_FORMAT'] = (
+    if 'POINTS_CUSTOM_NAME' in settings:
+        settings.setdefault(
+            'POINTS_CUSTOM_FORMAT',
             '{} ' + settings['POINTS_CUSTOM_NAME']
         )
 
