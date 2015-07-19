@@ -34,6 +34,9 @@ class Currency(RealWorldCurrency):
 
             formatted_number = django.utils.formats.number_format(number)
 
+            if hasattr(settings, 'POINTS_CUSTOM_FORMAT'):
+                return settings.POINTS_CUSTOM_FORMAT.format(formatted_number)
+
             # Translators: display a number of points,
             # like "1 point", "2 points", ...
             # See "Plural-Forms" above for pluralization rules
