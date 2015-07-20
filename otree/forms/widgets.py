@@ -96,8 +96,11 @@ class RealWorldCurrencyInput(BaseMoneyInput):
 
 class CurrencyInput(RealWorldCurrencyInput):
     if settings.USE_POINTS:
-        # Translators: the label next to a "points" input field
-        CURRENCY_SYMBOL = ugettext_lazy('points')
+        if hasattr(settings, 'POINTS_CUSTOM_NAME'):
+            CURRENCY_SYMBOL = settings.POINTS_CUSTOM_NAME
+        else:
+            # Translators: the label next to a "points" input field
+            CURRENCY_SYMBOL = ugettext_lazy('points')
 
 
 class RadioSelectHorizontal(forms.RadioSelect):
