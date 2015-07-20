@@ -53,7 +53,7 @@ def augment_settings(settings):
             'django.contrib.auth',
             'otree',
             'floppyforms',
-            
+
             'django.contrib.contenttypes',
             'django.contrib.sessions',
             'django.contrib.messages',
