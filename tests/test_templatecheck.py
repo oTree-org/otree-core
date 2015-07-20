@@ -3,8 +3,12 @@ from django.core.management import call_command, CommandError
 from django.template import Template
 
 from otree.checks.templates import get_unreachable_content, check_next_button
+from otree.checks.templates import has_valid_encoding
 from .base import TestCase
 from .utils import capture_stdout, dummyapp
+
+
+TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class TemplateCheckContentTest(TestCase):
@@ -187,3 +191,15 @@ class TemplateCheckInSystemCheckTest(TestCase):
 
             # Check that dead bits are displayed.
             self.assertTrue('This file has dead text' in message)
+
+
+class TemplateCheckEncodingTest(TestCase):
+    def test_bad_encoding(self):
+        file_name = os.path.join(TEST_DIR, 'test_files',
+                                 'bad_encoding_template.html')
+        self.assertFalse(has_valid_encoding(file_name))
+
+    def test_good_encoding(self):
+        file_name = os.path.join(TEST_DIR, 'test_files',
+                                 'good_encoding_template.html')
+        self.assertTrue(has_valid_encoding(file_name))
