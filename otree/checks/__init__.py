@@ -63,6 +63,10 @@ class Rules(object):
     def get_path(self, name):
         return os.path.join(self.config.path, name)
 
+    def get_rel_path(self, name):
+        basepath = os.getcwd()
+        return os.path.relpath(name, basepath)
+
     def get_module(self, name):
         return import_module(self.config.name + '.' + name)
 
@@ -70,6 +74,14 @@ class Rules(object):
         if not isinstance(module, types.ModuleType):
             module = self.get_module(module)
         return getattr(module, name)
+
+    def get_template_names(self):
+        path = self.get_path('templates')
+        template_names = []
+        for root, dirs, files in os.walk(path):
+            for filename in files:
+                template_names.append(os.path.join(root, filename))
+        return template_names
 
     # Rule methods
 
@@ -108,10 +120,14 @@ class Rules(object):
     @rule
     def template_has_no_dead_code(self, template_name):
         from otree.checks.templates import get_unreachable_content
+        from otree.checks.templates import has_valid_encoding
 
-        template_path = self.get_path(template_name)
+        # Only test files that are valid templates.
+        if not has_valid_encoding(template_name):
+            return
+
         try:
-            with open(template_path, 'r') as f:
+            with open(template_name, 'r') as f:
                 compiled_template = Template(f.read())
         except (IOError, OSError):
             # Ignore errors that occured during file-read or compilation.
@@ -132,7 +148,19 @@ class Rules(object):
                 'Template contains the following text outside of a '
                 '{% block %}. This text will never be displayed.'
                 '\n\n' + content_bits,
-                obj=os.path.join(self.config.label, template_name))
+                obj=os.path.join(self.config.label,
+                                 self.get_rel_path(template_name)))
+
+    @rule
+    def template_has_valid_encoding(self, template_name):
+        from otree.checks.templates import has_valid_encoding
+
+        if not has_valid_encoding(template_name):
+            return self.error(
+                'The template {template} is not UTF-8 encoded. '
+                'Please configure your text editor to always save files '
+                'as UTF-8. Then open the file and save it again.'
+                .format(template=self.get_rel_path(template_name)))
 
 
 def _get_all_configs():
@@ -235,14 +263,9 @@ def pages_function(rules, **kwargs):
 
 
 @register_rules(id='otree.E005')
-def templates(rules, **kwargs):
-    basepath = rules.config.path
-    path = rules.get_path('templates')
-    for root, dirs, files in os.walk(path):
-        for filename in files:
-            template_path = os.path.join(root, filename)
-            template_name = os.path.relpath(template_path, basepath)
-            rules.template_has_no_dead_code(template_name)
+def templates_have_no_dead_code(rules, **kwargs):
+    for template_name in rules.get_template_names():
+        rules.template_has_no_dead_code(template_name)
 
 
 @register_rules(id='otree.E006')
@@ -257,6 +280,12 @@ def unique_sessions_names(rules, **kwargs):
                 rules.push_error(msg)
             else:
                 buff.add(st_name)
+
+
+@register_rules(id='otree.E007')
+def template_encoding(rules, **kwargs):
+    for template_name in rules.get_template_names():
+        rules.template_has_valid_encoding(template_name)
 
 
 # TODO: startapp should pass validation checks

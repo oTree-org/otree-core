@@ -1,5 +1,6 @@
 from django.template.base import TextNode
 from django.template.loader_tags import ExtendsNode, BlockNode
+from django.utils.encoding import force_text
 from otree.templatetags.otree_tags import NextButtonNode
 
 
@@ -76,3 +77,13 @@ class TemplateCheckNextButton(object):
 def check_next_button(root):
     check = TemplateCheckNextButton(root)
     return check.check_next_button()
+
+
+def has_valid_encoding(file_name):
+    with open(file_name, 'r') as f:
+        template_string = f.read()
+    try:
+        force_text(template_string)
+    except UnicodeDecodeError:
+        return False
+    return True
