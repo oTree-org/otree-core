@@ -1,4 +1,5 @@
 import os
+import glob
 import types
 from importlib import import_module
 from functools import wraps
@@ -79,7 +80,7 @@ class Rules(object):
         path = self.get_path('templates')
         template_names = []
         for root, dirs, files in os.walk(path):
-            for filename in files:
+            for filename in filter(lambda f: f.endswith('.html'), files):
                 template_names.append(os.path.join(root, filename))
         return template_names
 
@@ -204,7 +205,9 @@ def files(rules, **kwargs):
     )
     if cond:
         # check for files in templates, but not in templates/<label>
-        misplaced_templates = set(os.listdir(rules.get_path('templates')))
+        misplaced_templates = set(glob.glob(
+            os.path.join(rules.get_path('templates'), '*.html')
+        ))
         misplaced_templates.discard(rules.config.label)
         if misplaced_templates:
             hint = 'Move template files to "templates/%s"' % rules.config.label
