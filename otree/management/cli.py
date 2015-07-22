@@ -26,8 +26,7 @@ MANAGE_URL = (
 # FUNCTIONS
 # =============================================================================
 
-def otree_get_version(*args, **kwargs):
-    """this function patch the original get version of django"""
+def otree_and_django_version(*args, **kwargs):
     otree_ver = otree.get_version()
     django_ver = django.get_version()
     return "oTree: {} - Django: {}".format(otree_ver, django_ver)
@@ -79,9 +78,9 @@ def execute_from_command_line(arguments, script_file):
        settings.AWS_ACCESS_KEY_ID):
             sys.argv[1] = 'runsslserver'
 
-    # only monkey path when is necesary
+    # only monkey patch when is necesary
     if "version" in arguments or "--version" in arguments:
-        sys.stdout.write(otree_get_version() + '\n')
+        sys.stdout.write(otree_and_django_version() + '\n')
     else:
         django.core.management.execute_from_command_line(sys.argv)
 

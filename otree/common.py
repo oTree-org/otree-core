@@ -28,6 +28,9 @@ class Currency(RealWorldCurrency):
     if settings.USE_POINTS:
         DECIMAL_PLACES = settings.POINTS_DECIMAL_PLACES
 
+    def __format__(self, format_spect):
+        return super(Currency, self).__format__('s')
+
     @classmethod
     def _format_currency(cls, number):
         if settings.USE_POINTS:

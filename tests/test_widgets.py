@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
-from django.utils.encoding import force_text
+
 import easymoney
+
+from django.utils.encoding import force_text
+
 import floppyforms.__future__ as forms
 import floppyforms.widgets
 
