@@ -38,9 +38,23 @@ import otree.models.session
 from otree.common import Currency as c
 from otree.models.session import Session, Participant
 from otree.models.session import GlobalSingleton
+from otree.models_concrete import PageCompletion
 
 
 def get_all_fields(Model, for_export=False):
+
+    if Model is PageCompletion:
+        return [
+            'session_pk',
+            'participant_pk',
+            'page_index',
+            'app_name',
+            'page_name',
+            'time_stamp',
+            'seconds_on_page',
+            'player_pk',
+            'subsession_pk',
+        ]
 
     if Model is Session:
         return [

@@ -22,6 +22,7 @@ import otree.models
 import otree.models.session
 from otree.common_internal import app_name_format
 from otree.views.admin import get_display_table_rows, get_all_fields
+from otree.models_concrete import PageCompletion
 
 
 # =============================================================================
@@ -232,5 +233,32 @@ class ExportCsv(vanilla.View):
         )
         writer = csv.writer(response)
         writer.writerows([colnames])
+        writer.writerows(rows)
+        return response
+
+
+class ExportTimeSpent(vanilla.View):
+
+    @classmethod
+    def url_pattern(cls):
+        return r"^ExportTimeSpent/$"
+
+    @classmethod
+    def url_name(cls):
+        return 'export_time_spent'
+
+    def get(self, request, *args, **kwargs):
+        columns = get_all_fields(PageCompletion)
+        rows = PageCompletion.objects.order_by(
+            'session_pk', 'participant_pk', 'page_index'
+        ).values_list(*columns)
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(
+            'TimeSpent (accessed {}).csv'.format(
+                datetime.date.today().isoformat()
+            )
+        )
+        writer = csv.writer(response)
+        writer.writerows([columns])
         writer.writerows(rows)
         return response

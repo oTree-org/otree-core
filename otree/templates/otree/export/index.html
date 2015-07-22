@@ -21,15 +21,18 @@
                 {{ app.name }}
             </td>
             <td>
-                <a href="{% url "export_csv" app.label %}"><span class="glyphicon glyphicon-download-alt"></span></a>
+                <a href="{% url 'export_csv' app.label %}"><span class="glyphicon glyphicon-download-alt"></span></a>
             </td>
             <td>
-                <a href="{% url "export_app_docs" app.label %}"><span class="glyphicon glyphicon-download-alt"></span></a>
+                <a href="{% url 'export_app_docs' app.label %}"><span class="glyphicon glyphicon-download-alt"></span></a>
+            </td>
+            <td>
             </td>
         </tr>
     {% endfor %}
     </tbody>
 </table>
+Time spent on each page can be downloaded <a href="{% url 'export_time_spent' %}">here</a>.
 {% else %}
 <p>No sessions has yet taken place</p>
 {% endif %}
