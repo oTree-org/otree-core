@@ -64,7 +64,7 @@ class CheckboxSelectMultipleHorizontal(forms.CheckboxSelectMultiple):
 
 
 class BaseMoneyInput(forms.NumberInput):
-    #step=0.01
+    # step = 0.01
     template_name = 'floppyforms/moneyinput.html'
 
     def get_context(self, *args, **kwargs):
@@ -96,8 +96,11 @@ class RealWorldCurrencyInput(BaseMoneyInput):
 
 class CurrencyInput(RealWorldCurrencyInput):
     if settings.USE_POINTS:
-        # Translators: the label next to a "points" input field
-        CURRENCY_SYMBOL = ugettext_lazy('points')
+        if hasattr(settings, 'POINTS_CUSTOM_NAME'):
+            CURRENCY_SYMBOL = settings.POINTS_CUSTOM_NAME
+        else:
+            # Translators: the label next to a "points" input field
+            CURRENCY_SYMBOL = ugettext_lazy('points')
 
 
 class RadioSelectHorizontal(forms.RadioSelect):

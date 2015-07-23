@@ -10,6 +10,7 @@ from django.core.management.color import color_style
 from django.conf import settings
 
 import otree
+import otree.management.deploy.heroku
 
 
 # =============================================================================
@@ -25,8 +26,7 @@ MANAGE_URL = (
 # FUNCTIONS
 # =============================================================================
 
-def otree_get_version(*args, **kwargs):
-    """this function patch the original get version of django"""
+def otree_and_django_version(*args, **kwargs):
     otree_ver = otree.get_version()
     django_ver = django.get_version()
     return "oTree: {} - Django: {}".format(otree_ver, django_ver)
@@ -78,14 +78,14 @@ def execute_from_command_line(arguments, script_file):
        settings.AWS_ACCESS_KEY_ID):
             sys.argv[1] = 'runsslserver'
 
-    # only monkey path when is necesary
+    # only monkey patch when is necesary
     if "version" in arguments or "--version" in arguments:
-        django.core.management.get_version = otree_get_version
+        sys.stdout.write(otree_and_django_version() + '\n')
+    else:
+        django.core.management.execute_from_command_line(sys.argv)
 
-    django.core.management.execute_from_command_line(sys.argv)
 
-
-def main():
+def otree_cli():
     """
     This function is the entry point for the ``otree`` console script.
     """
@@ -110,3 +110,30 @@ def main():
         sys.exit(1)
 
     execute_from_command_line(sys.argv, 'otree')
+
+
+def otree_heroku_cli():
+    """
+    This function is the entry point for the ``otree-heroku`` console script.
+    """
+
+    # We need to add the current directory to the python path as this is not
+    # set by default when no using "python <script>" but a standalone script
+    # like ``otree``.
+    if os.getcwd() not in sys.path:
+        sys.path.insert(0, os.getcwd())
+
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
+    style = color_style()
+
+    try:
+        from django.conf import settings
+        settings.INSTALLED_APPS
+    except ImportError:
+        print(style.ERROR(
+            "Cannot import otree settings. Please make sure that you are "
+            "in the base directory of your oTree library checkout. "
+            "This directory contains a settings.py and a manage.py file."))
+        sys.exit(1)
+
+    otree.management.deploy.heroku.execute_from_command_line(sys.argv)

@@ -6,11 +6,9 @@ from decimal import Decimal
 
 import floppyforms.__future__ as forms
 from floppyforms.__future__.models import (
-    FORMFIELD_OVERRIDES as FLOPPYFORMS_FORMFIELD_OVERRIDES
-)
+    FORMFIELD_OVERRIDES as FLOPPYFORMS_FORMFIELD_OVERRIDES)
 from floppyforms.__future__.models import (
-    ModelFormMetaclass as FloppyformsModelFormMetaclass
-)
+    ModelFormMetaclass as FloppyformsModelFormMetaclass)
 
 import django.forms as django_forms
 from django.forms import models as django_model_forms
@@ -28,8 +26,7 @@ from otree.db import models
 
 
 __all__ = (
-    'formfield_callback', 'modelform_factory', 'BaseModelForm', 'ModelForm'
-)
+    'formfield_callback', 'modelform_factory', 'BaseModelForm', 'ModelForm')
 
 
 FORMFIELD_OVERRIDES = FLOPPYFORMS_FORMFIELD_OVERRIDES.copy()
@@ -73,9 +70,6 @@ FORMFIELD_OVERRIDES.update({
         'choices_form_class': forms.TypedChoiceField},
     models.IntegerField: {
         'form_class': forms.IntegerField,
-        'choices_form_class': forms.TypedChoiceField},
-    models.IPAddressField: {
-        'form_class': forms.IPAddressField,
         'choices_form_class': forms.TypedChoiceField},
     models.GenericIPAddressField: {
         'form_class': forms.GenericIPAddressField,

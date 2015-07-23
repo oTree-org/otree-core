@@ -92,9 +92,8 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         self.session_name = session_name
 
     def __repr__(self):
-        return "<{} '{}'>".format(
-            type(self).__name__, self.session_name, hex(id(self))
-        )
+        hid = hex(id(self))
+        return "<{} '{}'>".format(type(self).__name__, self.session_name, hid)
 
     def __str__(self):
         return "ExperimentTest For '{}'".format(self.session_name)
@@ -169,22 +168,20 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
 class OTreeExperimentTestRunner(runner.DiscoverRunner):
 
     def build_suite(self, session_names, extra_tests, **kwargs):
-
+        suite = self.test_suite()
         if not session_names:
-            session_names = session.get_session_configs_dict().keys()
+            session_names = sorted(session.get_session_configs_dict().keys())
 
-        tests = []
         for session_name in session_names:
             case = OTreeExperimentFunctionTest(session_name)
-            tests.append(case)
-        return super(OTreeExperimentTestRunner, self).build_suite(
-            test_labels=(), extra_tests=tests, **kwargs
-        )
+            suite.addTest(case)
+
+        return suite
+
 
 # =============================================================================
 # HELPER
 # =============================================================================
-
 
 def apps_from_sessions(session_names=None):
     if session_names:

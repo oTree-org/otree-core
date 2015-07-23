@@ -1,4 +1,6 @@
-from optparse import make_option
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import os
 import sys
 
@@ -13,12 +15,13 @@ class Command(NoArgsCommand):
         "Resets your development database to a fresh state. "
         "All data will be deleted.")
 
-    option_list = NoArgsCommand.option_list + (
-        make_option('--noinput', action='store_false', dest='interactive',
-                    default=True, help=(
-                        'Tells the resetdb command to NOT prompt the user for '
-                        'input of any kind.')),
-    )
+    def add_arguments(self, parser):
+        ahelp = (
+            'Tells the resetdb command to NOT prompt the user '
+            'for input of any kind.')
+        parser.add_argument(
+            '--noinput', action='store_false', dest='interactive',
+            default=True, help=ahelp)
 
     def handle_noargs(self, **options):
         self.interactive = options.get('interactive')

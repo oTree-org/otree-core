@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import inspect
+from importlib import import_module
 
 from django.conf import urls
-from django.utils.importlib import import_module
 
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic.base import RedirectView
@@ -102,7 +102,7 @@ def augment_urlpatterns(urlpatterns):
 
     urlpatterns += urls.patterns(
         '',
-        urls.url(r'^$', RedirectView.as_view(url='/demo')),
+        urls.url(r'^$', RedirectView.as_view(url='/demo', permanent=True)),
         urls.url(
             r'^accounts/login/$',
             'django.contrib.auth.views.login',

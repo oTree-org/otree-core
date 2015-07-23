@@ -9,37 +9,40 @@ README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
 
 REQUIREMENTS = [
     'Babel>=1.3',
-    'boto>=2.36.0',
-    'Django==1.7.7',
-    'coverage>=3.7.1',
-    'dj-database-url>=0.2.2',
+    'boto>=2.38',
+    'Django>=1.8',
+    'coverage>=3.7',
+    'dj-database-url>=0.2',
     'dj-static>=0.0.6',
-    'django-celery>=3.1.16',
-    'django-countries>=3.0.1',
+    'django-celery>=3.1',
+    'django-countries>=3.3',
     'django-easymoney>=0.5',
-    'django-extensions>=1.4.6',
-    'django-ptree-extra-views>=0.6.3',
-    'django-floppyforms==1.5.1',
+    'django-extensions>=1.5',
+    'django-ptree-extra-views>=0.6',
+    'django-floppyforms>=1.5.1',
     'django-idmap>=0.3.3',
     'django-inspect-model>=0.7',
     'django-ptree-mturk>=1.0.1',
-    'django-save-the-change>=1.0.0',
-    'django-sslify>=0.2.5',
-    'django-sslserver>=0.14',
-    'django-vanilla-views>=1.0.2',
-    'djangorestframework>=3.1.1',
-    'flake8>=2.2.5',
-    'handy>=0.3',
-    'honcho>=0.6.6',
-    'IPy>=0.81',
-    'mock>=1.0.0',
+    'django-sslify>=0.2.7',
+    'django-sslserver>=0.15',
+    'django-vanilla-views>=1.0',
+    'djangorestframework>=3.1',
+    'flake8>=2.4',
+    'handy>=0.5',
+    'honcho>=0.6',
+    'IPy>=0.83',
+    'mock>=1.0',
     'ordered-set>=1.3',
-    'pytz>=2013.9',
-    'raven>=5.1.1',
-    'requests>=2.5.3',
-    'selenium>=2.41.0',
-    'xmltodict>=0.9.0',
+    'pytz>=2015.4',
+    'raven>=5.4',
+    'requests>=2.7',
+    'selenium>=2.46',
+    'xmltodict>=0.9',
+
+    # Remove this when save-the-change > 1.1.0 is out
+    'otree-save-the-change'
 ]
+
 
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
@@ -99,6 +102,9 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
     entry_points = {
-        'console_scripts': ['otree=otree.management.cli:main'],
+        'console_scripts': [
+            'otree=otree.management.cli:otree_cli',
+            'otree-heroku=otree.management.cli:otree_heroku_cli',
+        ],
     }
 )

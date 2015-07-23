@@ -8,9 +8,12 @@ from django.db import models
 from django.db.models.fields import related
 from django.core import exceptions
 from django.utils.translation import ugettext_lazy
+from django.apps import apps
 
 from handy.models import PickleField
+
 import easymoney
+
 from idmap.metaclass import SharedMemoryModelBase
 from idmap.models import SharedMemoryModel
 
@@ -20,9 +23,24 @@ from otree.constants import field_required_msg
 
 
 class OTreeModelBase(SharedMemoryModelBase):
-    def __new__(cls, name, bases, attrs):
-        new_class = super(OTreeModelBase, cls).__new__(cls, name, bases, attrs)
 
+    def __new__(cls, name, bases, attrs):
+        meta = attrs.get("Meta")
+        module = attrs.get("__module__")
+        is_concrete = not getattr(meta, "abstract", False)
+        app_label = getattr(meta, "app_label", "")
+
+        if is_concrete and module and not app_label:
+            if meta is None:
+                meta = type("Meta", (), {})
+            app_label = module.rsplit(".", 1)[0]
+            while "." in app_label:
+                app_label = app_label.rsplit(".", 1)[-1]
+            meta.app_label = app_label
+            meta.db_table = "{}_{}".format(app_label, name.lower())
+            attrs["Meta"] = meta
+
+        new_class = super(OTreeModelBase, cls).__new__(cls, name, bases, attrs)
         for f in new_class._meta.fields:
             if hasattr(new_class, f.name + '_choices'):
                 attr_name = 'get_%s_display' % f.name
@@ -32,7 +50,7 @@ class OTreeModelBase(SharedMemoryModelBase):
 
 
 def get_model(*args, **kwargs):
-    return models.get_model(*args, **kwargs)
+    return apps.get_model(*args, **kwargs)
 
 
 def make_get_display(field):
@@ -305,10 +323,6 @@ class IntegerField(_OtreeNullableModelFieldMixin,
     pass
 
 
-class IPAddressField(_OtreeNullableModelFieldMixin, models.IPAddressField):
-    pass
-
-
 class GenericIPAddressField(_OtreeNullableModelFieldMixin,
                             models.GenericIPAddressField):
     pass
@@ -355,7 +369,7 @@ class ManyToOneRel(related.ManyToOneRel):
     pass
 
 
-class ManyToManyField(_OtreeNullableModelFieldMixin, models.ManyToManyField):
+class ManyToManyField(models.ManyToManyField):
     pass
 
 

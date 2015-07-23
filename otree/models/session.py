@@ -10,9 +10,7 @@ from otree.common_internal import id_label_name
 
 from otree.common import Currency as c
 from otree.db import models
-from otree.models_concrete import (
-    SessionuserToUserLookup
-)
+from otree.models_concrete import SessionuserToUserLookup
 
 
 def get_empty_dict():
@@ -23,6 +21,9 @@ class GlobalSingleton(models.Model):
     """object that can hold site-wide settings. There should only be one
     GlobalSingleton object. Also used for wait page actions.
     """
+
+    class Meta:
+        app_label = "otree"
 
     default_session = models.ForeignKey('Session', null=True, blank=True)
     admin_access_code = models.RandomCharField(
@@ -54,95 +55,77 @@ class Session(ModelWithVars):
     class Meta:
         # if i don't set this, it could be in an unpredictable order
         ordering = ['pk']
+        app_label = "otree"
 
     config = models.PickleField(
-        default=get_empty_dict,
-        null=True,
-        doc="the session config dict, as defined in the programmer's settings.py.",
-    )
+        default=get_empty_dict, null=True,
+        doc=("the session config dict, as defined in the "
+             "programmer's settings.py."))
 
     # label of this session instance
     label = models.CharField(
         max_length=300, null=True, blank=True,
-        help_text='For internal record-keeping'
-    )
+        help_text='For internal record-keeping')
 
     experimenter_name = models.CharField(
         max_length=300, null=True, blank=True,
-        help_text='For internal record-keeping'
-    )
+        help_text='For internal record-keeping')
 
     code = models.RandomCharField(
-        length=8, doc="Randomly generated unique identifier for the session."
-    )
+        length=8, doc="Randomly generated unique identifier for the session.")
 
     time_scheduled = models.DateTimeField(
         null=True, doc="The time at which the session is scheduled",
-        help_text='For internal record-keeping',
-        blank=True,
-    )
+        help_text='For internal record-keeping', blank=True)
 
     time_started = models.DateTimeField(
         null=True,
-        doc="The time at which the experimenter started the session",
-    )
+        doc="The time at which the experimenter started the session")
 
     mturk_HITId = models.CharField(
         max_length=300, null=True, blank=True,
-        help_text='Hit id for this session on MTurk',
-    )
+        help_text='Hit id for this session on MTurk')
     mturk_HITGroupId = models.CharField(
         max_length=300, null=True, blank=True,
-        help_text='Hit id for this session on MTurk',
-    )
+        help_text='Hit id for this session on MTurk')
     mturk_qualification_type_id = models.CharField(
         max_length=300, null=True, blank=True,
         help_text='Qualification type that is '
-                  'assigned to each worker taking hit',
-    )
+                  'assigned to each worker taking hit')
 
     # since workers can drop out number of participants on server should be
     # greater than number of participants on mturk
     # value -1 indicates that this session it not intended to run on mturk
     mturk_num_participants = models.IntegerField(
         default=-1,
-        help_text="Number of participants on MTurk",
-    )
+        help_text="Number of participants on MTurk")
 
     mturk_sandbox = models.BooleanField(
         default=True,
-        help_text="Should this session be created in mturk sandbox?"
-    )
+        help_text="Should this session be created in mturk sandbox?")
 
     archived = models.BooleanField(
         default=False,
-        doc=(
-            "If set to True the session won't be visible on the "
-            "main ViewList for sessions"
-        )
-    )
+        doc=("If set to True the session won't be visible on the "
+             "main ViewList for sessions"))
 
     git_commit_timestamp = models.CharField(
-        max_length=200, null=True, doc=(
+        max_length=200, null=True,
+        doc=(
             "Indicates the version of the code (as recorded by Git) that was "
             "used to run the session, so that the session can be replicated "
             "later.\n Search through the Git commit log to find a commit that "
-            "was made at this time."
-        )
-    )
+            "was made at this time."))
 
     comment = models.TextField(blank=True)
 
     _ready_to_play = models.BooleanField(default=False)
 
-    _anonymous_code = models.RandomCharField(
-        length=10
-    )
+    _anonymous_code = models.RandomCharField(length=10)
 
     special_category = models.CharField(
         max_length=20, null=True,
-        doc="whether it's a test session, demo session, etc."
-    )
+        doc="whether it's a test session, demo session, etc.")
 
     # whether someone already viewed this session's demo links
     demo_already_used = models.BooleanField(default=False)
@@ -167,7 +150,6 @@ class Session(ModelWithVars):
         '''This method is deprecated from public API,
         but still useful internally (like data export)'''
         return self.config['real_world_currency_per_point']
-
 
     @property
     def session_type(self):
@@ -506,6 +488,7 @@ class Participant(SessionUser):
 
     class Meta:
         ordering = ['pk']
+        app_label = "otree"
 
     exclude_from_data_analysis = models.BooleanField(
         default=False, doc=(

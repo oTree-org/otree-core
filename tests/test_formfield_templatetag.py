@@ -28,7 +28,7 @@ class SimplePlayerForm(otree.forms.ModelForm):
 class FormFieldTestMixin(TestCase):
     def setUp(self):
         with capture_stdout():
-            call_command('create_session', 'simple_game', 1)
+            call_command('create_session', 'simple_game', "1")
         self.player = Player.objects.first()
         self.simple_player = SimplePlayer.objects.create()
 

@@ -10,13 +10,13 @@ from os.path import dirname, join
 from collections import OrderedDict
 import operator
 import contextlib
+from importlib import import_module
 
 from django.db import transaction
 from django.db import connection
 from django.apps import apps
 from django.conf import settings
 from django.template.defaultfilters import title
-from django.utils.importlib import import_module
 
 import six
 

@@ -27,11 +27,17 @@ def collapse_to_unique_list(*args):
 def augment_settings(settings):
 
     # 2015-07-10: SESSION_TYPE is deprecated
-    if not 'SESSION_CONFIGS' in settings:
+    if 'SESSION_CONFIGS' not in settings:
         settings['SESSION_CONFIGS'] = settings['SESSION_TYPES']
 
-    if not 'SESSION_CONFIG_DEFAULTS' in settings:
+    if 'SESSION_CONFIG_DEFAULTS' not in settings:
         settings['SESSION_CONFIG_DEFAULTS'] = settings['SESSION_TYPE_DEFAULTS']
+
+    if 'POINTS_CUSTOM_NAME' in settings:
+        settings.setdefault(
+            'POINTS_CUSTOM_FORMAT',
+            '{} ' + settings['POINTS_CUSTOM_NAME']
+        )
 
     all_otree_apps_set = set()
     for s in settings['SESSION_CONFIGS']:
@@ -47,7 +53,7 @@ def augment_settings(settings):
             'django.contrib.auth',
             'otree',
             'floppyforms',
-            'django.contrib.admin',
+
             'django.contrib.contenttypes',
             'django.contrib.sessions',
             'django.contrib.messages',
@@ -199,11 +205,6 @@ def augment_settings(settings):
         ),
         'ALLOWED_HOSTS': ['*'],
 
-        # In pixels
-        'OTREE_CHANGE_LIST_COLUMN_MIN_WIDTH': 50,
-
-        # default to 10 seconds(10000 miliseconds)
-        'OTREE_CHANGE_LIST_UPDATE_INTERVAL': '10000',
         'TEMPLATE_CONTEXT_PROCESSORS': (
             global_settings.TEMPLATE_CONTEXT_PROCESSORS +
             (
@@ -225,8 +226,14 @@ def augment_settings(settings):
 
         'REAL_WORLD_CURRENCY_CODE': 'USD',
         'REAL_WORLD_CURRENCY_LOCALE': 'en_US',
-        'REAL_WORLD_CURRENCY_FORMAT': None,
         'REAL_WORLD_CURRENCY_DECIMAL_PLACES': 2,
+
+        'POINTS_DECIMAL_PLACES': 0,
+
+        # eventually can remove this,
+        # when it's present in otree-library
+        # that most people downloaded
+        'USE_L10N': True,
 
         'WSGI_APPLICATION': 'wsgi.application',
         'SECURE_PROXY_SSL_HEADER': ('HTTP_X_FORWARDED_PROTO', 'https'),

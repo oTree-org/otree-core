@@ -6,8 +6,6 @@
 import logging
 import sys
 
-from optparse import make_option
-
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
@@ -40,20 +38,21 @@ settings.SSLIFY_DISABLE = True
 class Command(BaseCommand):
     help = ('Discover and run experiment tests in the specified '
             'modules or the current directory.')
-    option_list = BaseCommand.option_list + (
-        make_option(
+
+    def add_arguments(self, parser):
+        # Positional arguments
+        parser.add_argument('experiment_name', nargs='*')
+
+        coverage_choices = "|".join(COVERAGE_CHOICES)
+        ahelp = ('Execute code-coverage over the code of '
+                 'tested experiments [{}]').format(coverage_choices)
+        parser.add_argument(
             '-c', '--coverage', action='store', dest='coverage',
-            choices=COVERAGE_CHOICES, help=(
-                'Execute code-coverage over the code of '
-                'tested experiments [{}]'
-            ).format("|".join(COVERAGE_CHOICES))
-        ),
-        make_option(
+            choices=COVERAGE_CHOICES, help=ahelp)
+
+        parser.add_argument(
             '-t', '--template-vars', action='store_true', dest='tplvars',
-            help='Validate the existence of all template vars (Warning)'
-        ),
-    )
-    args = '[experiment_name|experiment_name|experiment_name]...'
+            help='Validate the existence of all template vars (Warning)')
 
     def execute(self, *args, **options):
         if int(options['verbosity']) > 0:
@@ -64,7 +63,10 @@ class Command(BaseCommand):
         if int(options['verbosity']) > 0:
             logger.removeHandler(handler)
 
-    def handle(self, *test_labels, **options):
+    def handle(self, **options):
+
+        test_labels = options["experiment_name"]
+
         options['verbosity'] = int(options.get('verbosity'))
         if options['verbosity'] < 3:
             logging.basicConfig(level=logging.WARNING)
@@ -78,7 +80,6 @@ class Command(BaseCommand):
         if options["tplvars"]:
             # this behavior is REAAAALY experimental
             test_runner.patch_validate_missing_template_vars()
-
         if coverage:
             with runner.covering(test_labels) as coverage_report:
                 failures = test_runner.run_tests(test_labels)

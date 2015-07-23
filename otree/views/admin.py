@@ -38,9 +38,23 @@ import otree.models.session
 from otree.common import Currency as c
 from otree.models.session import Session, Participant
 from otree.models.session import GlobalSingleton
+from otree.models_concrete import PageCompletion
 
 
 def get_all_fields(Model, for_export=False):
+
+    if Model is PageCompletion:
+        return [
+            'session_pk',
+            'participant_pk',
+            'page_index',
+            'app_name',
+            'page_name',
+            'time_stamp',
+            'seconds_on_page',
+            'player_pk',
+            'subsession_pk',
+        ]
 
     if Model is Session:
         return [
@@ -494,24 +508,14 @@ class SessionConfigsToCreate(vanilla.View):
     def get(self, *args, **kwargs):
         session_configs_info = []
         for session_config in get_session_configs_list():
-
-            url = '/create_session/{}/'.format(
-                session_config['name']
-            )
-
-            if self.request.GET.get('mturk') == '1':
-                url = add_params_to_url(url, {'mturk': 1})
-
+            session_name = session_config['name']
+            key = self.request.GET.get('mturk', 0)
+            url = '/create_session/{}/?mturk={}'.format(session_name, key)
             session_configs_info.append(
-                {
-                    'display_name': session_config['display_name'],
-                    'url': url
-                }
-            )
-
-        return TemplateResponse(self.request,
-                                'otree/admin/SessionListing.html',
-                                {'session_configs_info': session_configs_info})
+                {'display_name': session_config['display_name'], 'url': url})
+        return TemplateResponse(
+            self.request, 'otree/admin/SessionListing.html',
+            {'session_configs_info': session_configs_info})
 
 
 class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
