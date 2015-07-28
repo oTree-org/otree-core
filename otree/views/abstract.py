@@ -501,7 +501,8 @@ class InGameWaitPageMixin(object):
                         # we could instead make this request the current page
                         # URL, but it's different for each player
 
-                        # 2015-07-27: why not check if the next page has_timeout?
+                        # 2015-07-27:
+                        #   why not check if the next page has_timeout?
 
                         participant_pk_set = set([
                             p.participant.pk
