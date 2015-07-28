@@ -115,16 +115,6 @@ class OTreeMixin(object):
         assert not self.request.is_ajax()
         return HttpResponseRedirect(self._session_user._url_i_should_be_on())
 
-    def vars_for_template(self):
-        return {}
-
-    def _vars_for_all_templates(self):
-        views_module = otree.common_internal.get_views_module(
-            self.subsession._meta.app_config.name)
-        if hasattr(views_module, 'vars_for_all_templates'):
-            return views_module.vars_for_all_templates(self) or {}
-        return {}
-
 
 class NonSequenceUrlMixin(object):
     @classmethod
@@ -648,8 +638,7 @@ class FormPageMixin(object):
             'subsession': self.subsession,
             'Constants': self._models_module.Constants,
         })
-        context.update(self._vars_for_all_templates() or {})
-        context.update(self.vars_for_template() or {})
+        context.update(self.resolve_vars_for_template())
         return context
 
     def get_form(self, data=None, files=None, **kwargs):
@@ -659,6 +648,21 @@ class FormPageMixin(object):
         """
         cls = self.get_form_class()
         return cls(data=data, files=files, view=self, **kwargs)
+
+    def vars_for_template(self):
+        return {}
+
+    def resolve_vars_for_template(self):
+        """Resolve all vars for template including "vars_for_all_templates"
+
+        """
+        context = {}
+        views_module = otree.common_internal.get_views_module(
+            self.subsession._meta.app_config.name)
+        if hasattr(views_module, 'vars_for_all_templates'):
+            context.update(views_module.vars_for_all_templates(self) or {})
+        context.update(self.vars_for_template() or {})
+        return context
 
     def form_invalid(self, form):
         response = super(FormPageMixin, self).form_invalid(form)
