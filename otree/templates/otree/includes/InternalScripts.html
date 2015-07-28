@@ -1,0 +1,36 @@
+{% load static %}
+<script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
+<script>window.jQuery || document.write('<script src="{% static 'otree/js/jquery.min.js' %}">\x3C/script>')</script>
+
+<!-- compiled and minified JavaScript -->
+<script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+
+<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!--[if lt IE 9]>
+  <script src="../../assets/js/html5shiv.js"></script>
+  <script src="../../assets/js/respond.min.js"></script>
+<![endif]-->
+
+<script src="{% static 'otree/js/init_widgets.js' %}"></script>
+<script src="{% static 'otree/js/jquery.color-2.1.2.min.js' %}"></script>
+<script src="{% static 'otree/js/jquery.timeago.js' %}"></script>
+
+<!-- KaTeX library takes care of rendering TeX formulas. -->
+<script src="{% static 'otree/katex/katex.min.js' %}"></script>
+<script src="{% static 'otree/js/init_katex.js' %}"></script>
+<script src="{% static 'otree/js/jsondiffpatch.min.js' %}"></script>
+<script src="{% static 'otree/js/json-to-table.js' %}"></script>
+
+
+<script type="text/javascript">
+    // Prevent duplicate form submission, which results in problematic race conditions
+    formAlreadySubmitted=false;
+
+    function markFormSubmitted() {
+        if (formAlreadySubmitted) {
+            return false;
+        }
+        formAlreadySubmitted = true;
+        return true;
+    }
+</script>

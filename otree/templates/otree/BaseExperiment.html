@@ -35,3 +35,9 @@
 </div>
 {% endblock %}
 <!--end content_main-->
+{% block internal_scripts %}
+    {{ block.super }}
+    {% if view.has_timeout %}
+        {% include 'otree/includes/TimeLimit.js.html' %}
+    {% endif %}
+{% endblock %}
