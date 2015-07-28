@@ -53,7 +53,8 @@ def augment_settings(settings):
             'django.contrib.auth',
             'otree',
             'floppyforms',
-
+            # need this for admin login
+            'django.contrib.admin',
             'django.contrib.contenttypes',
             'django.contrib.sessions',
             'django.contrib.messages',
@@ -109,7 +110,7 @@ def augment_settings(settings):
             # this middlewware is for generate human redeable errors
             'otree.middleware.CheckDBMiddleware',
             'otree.middleware.HumanErrorMiddleware',
-            'otree.middleware.DebugTableMiddleware',
+            # 'otree.middleware.DebugTableMiddleware',
 
             'django.contrib.sessions.middleware.SessionMiddleware',
             # 'django.middleware.locale.LocaleMiddleware',

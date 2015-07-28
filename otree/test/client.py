@@ -100,6 +100,11 @@ class Submit(object):
 
         """
         end = self.execute_core()
+        if not end:
+            # don't need to check if it has errors because
+            # nothing was submitted
+            return False
+
         has_errors = self.bot.page_redisplayed_with_errors()
 
         if self.input_is_valid and has_errors:
@@ -116,7 +121,7 @@ class Submit(object):
                 self.bot.path, self.data
             )
             raise AssertionError(msg)
-        return end
+        return True
 
 
 # =============================================================================
