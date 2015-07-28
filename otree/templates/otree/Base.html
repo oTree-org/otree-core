@@ -10,11 +10,21 @@
         <meta name="description" content="otree, game theory{% for seo in SEO %}, {{seo}}{% endfor %}{% for seo in page_seo %}, {{seo}}{% endfor %}">
         <meta name="keywords" content="otree, game theory{% for seo in SEO %}, {{seo}}{% endfor %}{% for seo in page_seo %}, {{seo}}{% endfor %}">
 
-        {% block head_content %}
-            {% include 'otree/includes/HeadContent.html' %}
+        {% block internal_styles %}
+            {% include 'otree/includes/InternalStyles.html' %}
         {% endblock %}
-        {% block custom_styles %}{% endblock %}
-        {% block custom_scripts %}{% endblock %}
+        {% block global_styles %}
+        {% endblock %}
+        {% block app_styles %}
+        {% endblock %}
+        {% block page_styles %}
+        {% endblock %}
+        <!--head_content deprecated-->
+        {% block head_content %}
+        {% endblock %}
+        <!--custom_styles deprecated-->
+        {% block custom_styles %}
+        {% endblock %}
     </head>
     <body>
         {% block content_at_top_of_body %}{% endblock %}
@@ -34,6 +44,18 @@
                 </div>
             </footer>
             {% endif %}
-        {% endblock page_footer %}
+        {% endblock %}
+        {% block internal_scripts %}
+            {% include 'otree/includes/InternalScripts.html' %}
+        {% endblock %}
+        {% block global_scripts %}
+        {% endblock %}
+        {% block app_scripts %}
+        {% endblock %}
+        {% block page_scripts %}
+        {% endblock %}
+        <!--custom_scripts deprecated-->
+        {% block custom_scripts %}
+        {% endblock %}
     </body>
 </html>

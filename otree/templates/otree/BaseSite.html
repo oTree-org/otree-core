@@ -1,9 +1,12 @@
 {% extends "otree/Base.html" %}
 {% load i18n %}
 {% load floppyforms otree_tags %}
-{% block head_content %}
+{% block internal_scripts %}
 {{ block.super }}
 <script type="text/javascript" charset="utf-8">
+$(function () {
+    $('[data-toggle="popover"]').popover()
+});
 $(function(){
     // if top menu link is clicked inside iframe
     // we exit full mode
