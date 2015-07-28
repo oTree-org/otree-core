@@ -53,7 +53,8 @@ def augment_settings(settings):
             'django.contrib.auth',
             'otree',
             'floppyforms',
-
+            # need this for admin login
+            'django.contrib.admin',
             'django.contrib.contenttypes',
             'django.contrib.sessions',
             'django.contrib.messages',
