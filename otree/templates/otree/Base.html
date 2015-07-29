@@ -17,7 +17,8 @@
         {% endblock %}
         {% block app_styles %}
         {% endblock %}
-        {% block page_styles %}
+        {# 'styles' block is for page-specific styles (for 3rd party programmers only) #}
+        {% block styles %}
         {% endblock %}
         <!--head_content deprecated-->
         {% block head_content %}
@@ -52,7 +53,8 @@
         {% endblock %}
         {% block app_scripts %}
         {% endblock %}
-        {% block page_scripts %}
+        {# 'scripts' block is for page-specific scripts (for 3rd party programmers only) #}
+        {% block scripts %}
         {% endblock %}
         <!--custom_scripts deprecated-->
         {% block custom_scripts %}
