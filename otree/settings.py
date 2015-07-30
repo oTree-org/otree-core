@@ -240,7 +240,7 @@ def augment_settings(settings):
         # that most people downloaded
         'USE_L10N': True,
 
-        'WSGI_APPLICATION': 'wsgi.application',
+        'WSGI_APPLICATION': 'otree.wsgi.application',
         'SECURE_PROXY_SSL_HEADER': ('HTTP_X_FORWARDED_PROTO', 'https'),
         'MTURK_HOST': 'mechanicalturk.amazonaws.com',
         'MTURK_SANDBOX_HOST': 'mechanicalturk.sandbox.amazonaws.com',
