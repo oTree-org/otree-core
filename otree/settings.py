@@ -198,6 +198,9 @@ def augment_settings(settings):
         'TEMPLATE_DEBUG': settings['DEBUG'],
         'STATIC_ROOT': 'staticfiles',
         'STATIC_URL': '/static/',
+        'STATICFILES_STORAGE': (
+            'whitenoise.django.GzipManifestStaticFilesStorage'
+        ),
         'ROOT_URLCONF': 'otree.default_urls',
 
         'TIME_ZONE': 'UTC',

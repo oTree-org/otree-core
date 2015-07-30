@@ -13,7 +13,6 @@ REQUIREMENTS = [
     'Django>=1.8',
     'coverage>=3.7',
     'dj-database-url>=0.2',
-    'dj-static>=0.0.6',
     'django-celery>=3.1',
     'django-countries>=3.3',
     'django-easymoney>=0.5',
@@ -37,6 +36,7 @@ REQUIREMENTS = [
     'raven>=5.4',
     'requests>=2.7',
     'selenium>=2.46',
+    'whitenoise>=2.0.2',
     'xmltodict>=0.9',
 
     # Remove this when save-the-change > 1.1.0 is out
