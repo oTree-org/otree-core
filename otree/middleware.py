@@ -40,10 +40,8 @@ class DebugTableMiddleware(object):
             view = response.context_data.get("view", None)
             debug_values = []
             if view and hasattr(view, "get_debug_values"):
-                view_debug_values = view.get_debug_values() or []
-                debug_values += view_debug_values
-            if view and hasattr(view, "on_debug_show"):
-                view_custom_debug_values = view.on_debug_show() or {}
-                debug_values += sorted(view_custom_debug_values.items())
+                debug_values = view.get_debug_values() or []
+                debug_values += sorted(
+                    view.resolve_vars_for_template().items())
             response.context_data["DEBUG_TABLE"] = debug_values
         return response
