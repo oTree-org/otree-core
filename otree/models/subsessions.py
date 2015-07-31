@@ -174,10 +174,8 @@ class BaseSubsession(SaveTheChange, models.Model):
         group.save()
         return group
 
-    def _random_group_matrix(self):
+    def _first_round_group_matrix(self):
         players = list(self.player_set.all())
-
-        random.shuffle(players)
 
         groups = []
         first_player_index = 0
@@ -211,7 +209,7 @@ class BaseSubsession(SaveTheChange, models.Model):
 
     def _create_groups(self):
         if self.round_number == 1:
-            group_matrix = self._random_group_matrix()
+            group_matrix = self._first_round_group_matrix()
         else:
             previous_round = self._in_previous_round()
             group_matrix = [

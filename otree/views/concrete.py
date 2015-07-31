@@ -266,7 +266,7 @@ class MTurkStart(vanilla.View):
                             session=self.session,
                             visited=False
                         )
-                    )[0]
+                    ).order_by('start_order')[0]
                 except IndexError:
                     return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
 
@@ -302,7 +302,7 @@ class JoinSessionAnonymously(vanilla.View):
                         session=session,
                         visited=False
                     )
-                )[0]
+                ).order_by('start_order')[0]
             except IndexError:
                 return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
 

@@ -506,6 +506,8 @@ class Participant(SessionUser):
     mturk_reward_paid = models.BooleanField(default=False)
     mturk_bonus_paid = models.BooleanField(default=False)
 
+    start_order = models.PositiveIntegerField()
+
     # unique=True can't be set, because the same external ID could be reused
     # in multiple sequences. however, it should be unique within the sequence.
     label = models.CharField(

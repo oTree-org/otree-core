@@ -841,7 +841,7 @@ class AssignVisitorToDefaultSessionBase(vanilla.View):
                             session=default_session,
                             visited=False
                         )
-                    )[0]
+                    ).order_by('start_order')[0]
                 except IndexError:
                     return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
 

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+import random
 
 from django.conf import settings
 from django.db import transaction
@@ -182,9 +183,14 @@ def create_session(session_config_name, label='', num_participants=None,
         ).format(session_config['name'], num_participants, session_lcm)
         raise ValueError(msg)
 
+    start_order = range(num_participants)
+    if session_config.get('random_start_order'):
+        random.shuffle(start_order)
+
     participants = bulk_create(
         Participant,
-        [{'id_in_session': i} for i in range(1, num_participants + 1)]
+        [{'id_in_session': i + 1, 'start_order': j}
+         for i, j in enumerate(start_order)]
     )
 
     for participant in participants:
