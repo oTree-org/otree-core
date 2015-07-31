@@ -3,6 +3,7 @@ import glob
 import types
 from importlib import import_module
 from functools import wraps
+import inspect
 
 from django.apps import apps
 from django.conf import settings
@@ -114,7 +115,8 @@ class Rules(object):
     @rule
     def class_exists(self, module, name):
         module = self.get_module(module)
-        if isinstance(getattr(module, name, None), type):
+        cls = getattr(module, name, None)
+        if not inspect.isclass(cls):
             msg = 'No class "%s" in module "%s"' % (name, module.__name__)
             return self.error(msg)
 
