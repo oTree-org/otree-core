@@ -21,6 +21,7 @@ groups = import_module('otree.models.groups')
 players = import_module('otree.models.players')
 user = import_module('otree.models.user')
 session = import_module('otree.models.session')
+constants = import_module('otree.models.constants')
 
 
 class BaseSubsession(subsessions.BaseSubsession):
@@ -135,3 +136,7 @@ class BasePlayer(players.BasePlayer):
 
     def role(self):
         return super(BasePlayer, self).role()
+
+
+class BaseConstants(constants.BaseConstants):
+    pass

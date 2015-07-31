@@ -17,7 +17,7 @@ doc = """
 Your app description
 """
 
-class Constants:
+class Constants(otree.models.BaseConstants):
     name_in_url = '{{ app_name }}'
     players_per_group = None
     num_rounds = 1
