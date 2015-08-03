@@ -130,12 +130,13 @@ class PlayerMixin(object):
 
     def get_debug_values(self):
         try:
-            group_id = self.group.pk
+            group_id = self.group.id_in_subsession
         except:
             group_id = ''
         return [
             ('ID in group', self.player.id_in_group),
             ('Group', group_id),
+            ('Round number', self.subsession.round_number),
             ('Participant', self.player.participant._id_in_session_display()),
             ('Participant label', self.player.participant.label or ''),
             ('Session code', self.session.code)
