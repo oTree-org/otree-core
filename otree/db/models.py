@@ -19,7 +19,7 @@ from idmap.models import SharedMemoryModel
 
 import otree.common
 from otree.common_internal import expand_choice_tuples
-from otree.constants import field_required_msg
+from otree.constants_internal import field_required_msg
 
 
 class OTreeModelBase(SharedMemoryModelBase):

@@ -48,7 +48,7 @@ import otree.common_internal
 import otree.models.session
 import otree.timeout.tasks
 import otree.models
-import otree.constants as constants
+import otree.constants_internal as constants
 from otree.models.session import Participant
 from otree.models.session import GlobalSingleton
 from otree.common_internal import lock_on_this_code_path

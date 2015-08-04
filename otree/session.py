@@ -7,7 +7,7 @@ import random
 from django.conf import settings
 from django.db import transaction
 
-from otree import constants
+from otree import constants_internal
 from otree.models.session import Session, Participant
 from otree.common_internal import (
     get_models_module, get_app_constants,
@@ -169,9 +169,9 @@ def create_session(session_config_name, label='', num_participants=None,
         return model.objects.filter(session=session).order_by('pk')
 
     if num_participants is None:
-        if special_category == constants.session_special_category_demo:
+        if special_category == constants_internal.session_special_category_demo:
             num_participants = session_config['num_demo_participants']
-        elif special_category == constants.session_special_category_bots:
+        elif special_category == constants_internal.session_special_category_bots:
             num_participants = session_config['num_bots']
 
     # check that it divides evenly

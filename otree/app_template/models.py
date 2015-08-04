@@ -5,6 +5,7 @@ from __future__ import division
 import random
 
 import otree.models
+import otree.constants
 from otree.db import models
 from otree import widgets
 from otree.common import Currency as c, currency_range, safe_json
@@ -17,7 +18,8 @@ doc = """
 Your app description
 """
 
-class Constants(otree.models.BaseConstants):
+
+class Constants(otree.constants.BaseConstants):
     name_in_url = '{{ app_name }}'
     players_per_group = None
     num_rounds = 1

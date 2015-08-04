@@ -20,7 +20,7 @@ from django.template.defaultfilters import title
 
 import six
 
-from otree import constants
+from otree import constants_internal
 
 
 def add_params_to_url(url, params):
@@ -78,13 +78,13 @@ def url(cls, session_user, index=None):
 
 def url_pattern(cls, is_sequence_url=False):
     p = r'(?P<{}>\w)/(?P<{}>[a-z]+)/{}/{}/'.format(
-        constants.user_type,
-        constants.session_user_code,
+        constants_internal.user_type,
+        constants_internal.session_user_code,
         cls.get_name_in_url(),
         cls.__name__,
     )
     if is_sequence_url:
-        p += r'(?P<{}>\d+)/'.format(constants.index_in_pages,)
+        p += r'(?P<{}>\d+)/'.format(constants_internal.index_in_pages,)
     p = r'^{}$'.format(p)
     return p
 
@@ -211,8 +211,8 @@ def reraise(original):
 
     """
     original_cls = type(original)
-    if original_cls in constants.exceptions_conversors:
-        conversor = constants.exceptions_conversors[original_cls]
+    if original_cls in constants_internal.exceptions_conversors:
+        conversor = constants_internal.exceptions_conversors[original_cls]
         new = conversor(original)
         new_cls = type(new)
         six.reraise(new_cls, new, sys.exc_traceback)

@@ -24,7 +24,7 @@ from django import test
 
 from easymoney import Money as Currency
 
-from otree import constants
+from otree import constants_internal
 
 # =============================================================================
 # LOGGER
@@ -198,14 +198,14 @@ class ParticipantBot(test.Client):
 
     def on_wait_page(self):
         return (
-            self.response.get(constants.wait_page_http_header) ==
-            constants.get_param_truth_value
+            self.response.get(constants_internal.wait_page_http_header) ==
+            constants_internal.get_param_truth_value
         )
 
     def page_redisplayed_with_errors(self):
         return (
-            self.response.get(constants.redisplay_with_errors_http_header) ==
-            constants.get_param_truth_value
+            self.response.get(constants_internal.redisplay_with_errors_http_header) ==
+            constants_internal.get_param_truth_value
         )
 
     def set_path(self):

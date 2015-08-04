@@ -20,7 +20,7 @@ import easymoney
 
 import otree.common_internal
 import otree.models.session
-import otree.constants
+import otree.constants_internal
 from otree.forms import fields
 from otree.db import models
 
@@ -302,7 +302,7 @@ class BaseModelForm(forms.ModelForm):
                 if name in boolean_field_names and value is None:
                     mfield = self.instance._meta.get_field_by_name(name)[0]
                     if not mfield.allow_blank:
-                        msg = otree.constants.field_required_msg
+                        msg = otree.constants_internal.field_required_msg
                         raise forms.ValidationError(msg)
 
                 lower, upper = self._get_field_boundaries(name)

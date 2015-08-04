@@ -23,7 +23,7 @@ import vanilla
 
 from boto.mturk.connection import MTurkRequestError
 
-import otree.constants as constants
+import otree.constants_internal as constants
 import otree.models.session
 from otree.models.session import Participant
 from otree.common_internal import lock_on_this_code_path
@@ -327,7 +327,7 @@ class AssignVisitorToDefaultSession(AssignVisitorToDefaultSessionBase):
     def url(cls):
         return otree.common_internal.add_params_to_url(
             '/{}'.format(cls.__name__), {
-                otree.constants.access_code_for_default_session:
+                otree.constants_internal.access_code_for_default_session:
                     settings.ACCESS_CODE_FOR_DEFAULT_SESSION
             }
         )
@@ -337,7 +337,7 @@ class AssignVisitorToDefaultSession(AssignVisitorToDefaultSessionBase):
         return r'^{}/$'.format(cls.__name__)
 
     required_params = {
-        'label': otree.constants.participant_label,
+        'label': otree.constants_internal.participant_label,
     }
 
 

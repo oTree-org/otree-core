@@ -5,14 +5,14 @@ import django.test
 
 from celery import shared_task
 
-from otree import constants
+from otree import constants_internal
 
 
 @shared_task
 def submit_expired_url(url):
 
     c = django.test.Client()
-    c.post(url, data={constants.auto_submit: True}, follow=True)
+    c.post(url, data={constants_internal.auto_submit: True}, follow=True)
 
 
 @shared_task

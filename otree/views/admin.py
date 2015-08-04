@@ -33,7 +33,7 @@ from otree.common import RealWorldCurrency
 from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
 from otree.views.mturk import MTurkConnection
 
-import otree.constants
+import otree.constants_internal
 import otree.models.session
 from otree.common import Currency as c
 from otree.models.session import Session, Participant
@@ -314,7 +314,7 @@ class PersistentLabURLs(vanilla.TemplateView):
             default_session_example_urls.append(
                 add_params_to_url(
                     default_session_base_url,
-                    {otree.constants.participant_label: 'P{}'.format(i)}
+                    {otree.constants_internal.participant_label: 'P{}'.format(i)}
                 )
             )
         global_singleton = GlobalSingleton.objects.get()
@@ -323,9 +323,9 @@ class PersistentLabURLs(vanilla.TemplateView):
         context.update({
             'default_session_example_urls': default_session_example_urls,
             'access_code_for_default_session': (
-                otree.constants.access_code_for_default_session
+                otree.constants_internal.access_code_for_default_session
             ),
-            'participant_label': otree.constants.participant_label,
+            'participant_label': otree.constants_internal.participant_label,
             'default_session': default_session,
         })
         return context
@@ -888,5 +888,5 @@ class AdminHome(vanilla.ListView):
 
     def get_queryset(self):
         return Session.objects.exclude(
-            special_category=otree.constants.session_special_category_demo
+            special_category=otree.constants_internal.session_special_category_demo
         ).order_by('archived', '-pk')

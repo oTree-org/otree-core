@@ -24,7 +24,7 @@ from django import test
 from django.test import runner
 
 import otree.models
-from otree import constants, session
+from otree import constants_internal, session
 from otree.test.client import ParticipantBot
 
 import coverage
@@ -111,7 +111,7 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
 
         sssn = session.create_session(
             session_config_name=self.session_name,
-            special_category=constants.session_special_category_bots,
+            special_category=constants_internal.session_special_category_bots,
         )
         sssn.label = '{} [bots]'.format(self.session_name)
         sssn.save()

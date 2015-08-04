@@ -1,7 +1,7 @@
 from django.core.management import call_command
 from django.test.client import RequestFactory
 
-from otree import constants
+from otree import constants_internal
 from otree.models.session import Participant
 
 from tests.simple_game.views import MyPage
@@ -49,9 +49,9 @@ class TestPageView(BaseViewTestCase):
         super(TestPageView, self).setUp()
 
         self.kwargs = {
-            constants.session_user_code: self.participant.code,
-            constants.user_type: 'p',
-            constants.index_in_pages: 0,
+            constants_internal.session_user_code: self.participant.code,
+            constants_internal.user_type: 'p',
+            constants_internal.index_in_pages: 0,
         }
         self.view = MyPage.as_view()
 
@@ -60,8 +60,8 @@ class TestPageView(BaseViewTestCase):
     def test_status_ok(self):
         request = self.factory.get(
             '/{0}/{1}/shared/WaitUntilAssignedToGroup/0/'.format(
-                self.kwargs[constants.user_type],
-                self.kwargs[constants.session_user_code]))
+                self.kwargs[constants_internal.user_type],
+                self.kwargs[constants_internal.session_user_code]))
 
         response = self.view(request, **self.kwargs)
         self.assertEqual(response.status_code, 200)

@@ -4,7 +4,7 @@ import time
 
 import django.test
 
-from otree import constants
+from otree import constants_internal
 import otree.common_internal
 from otree.common_internal import id_label_name
 
@@ -166,7 +166,7 @@ class Session(ModelWithVars):
     def is_demo(self):
         return (
             self.special_category ==
-            constants.session_special_category_demo
+            constants_internal.session_special_category_demo
         )
 
     def subsession_names(self):
@@ -288,7 +288,7 @@ class Session(ModelWithVars):
             # what if current_form_page_url hasn't been set yet?
             resp = c.post(
                 p._current_form_page_url,
-                data={constants.auto_submit: True}, follow=True
+                data={constants_internal.auto_submit: True}, follow=True
             )
             assert resp.status_code < 400
 
@@ -389,8 +389,8 @@ class SessionUser(ModelWithVars):
 
         # check if they are disconnected
         max_seconds_since_last_request = max(
-            constants.form_page_poll_interval_seconds,
-            constants.wait_page_poll_interval_seconds,
+            constants_internal.form_page_poll_interval_seconds,
+            constants_internal.wait_page_poll_interval_seconds,
         ) + 10  # for latency
         if self._last_request_timestamp is None:
             # it shouldn't be None, but sometimes is...race condition?
@@ -500,7 +500,7 @@ class Participant(SessionUser):
 
     session = models.ForeignKey(Session)
     time_started = models.DateTimeField(null=True)
-    user_type_in_url = constants.user_type_participant
+    user_type_in_url = constants_internal.user_type_participant
     mturk_assignment_id = models.CharField(max_length=50, null=True)
     mturk_worker_id = models.CharField(max_length=50, null=True)
     mturk_reward_paid = models.BooleanField(default=False)

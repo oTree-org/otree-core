@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404
 
 import vanilla
 
-import otree.constants as constants
+import otree.constants_internal as constants
 from otree.views.abstract import GenericWaitPageMixin
 from otree.models.session import Session
 from otree.session import (
