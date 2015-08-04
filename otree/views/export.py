@@ -215,7 +215,7 @@ class ExportCsv(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r"^ExportCsv/(?P<app_label>\w+)/$"
+        return r"^ExportCsv/(?P<app_label>[\w.]+)/$"
 
     @classmethod
     def url_name(cls):

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 import os
 import sys
 import urllib
@@ -94,11 +93,13 @@ def directory_name(path):
 
 
 def get_models_module(app_name):
-    return import_module('{}.models'.format(app_name))
+    module_name = '{}.models'.format(app_name)
+    return import_module(module_name)
 
 
 def get_views_module(app_name):
-    return import_module('{}.views'.format(app_name))
+    module_name = '{}.views'.format(app_name)
+    return import_module(module_name)
 
 
 def get_app_constants(app_name):
