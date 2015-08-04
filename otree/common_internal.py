@@ -5,6 +5,7 @@ import os
 import sys
 import urllib
 import urlparse
+import csv
 from os.path import dirname, join
 from collections import OrderedDict
 import operator
@@ -113,6 +114,19 @@ def get_app_constants(app_name):
 
     '''
     return get_models_module(app_name).Constants
+
+
+def export_data(fp, app_name):
+    """Write the data of the given app name as csv into the file-like object
+
+    """
+    from otree.views.admin import get_display_table_rows
+    colnames, rows = get_display_table_rows(
+        app_name, for_export=True, subsession_pk=None)
+    colnames = ['{}.{}'.format(k, v) for k, v in colnames]
+    writer = csv.writer(fp)
+    writer.writerows([colnames])
+    writer.writerows(rows)
 
 
 def flatten(list_of_lists):
