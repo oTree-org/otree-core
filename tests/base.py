@@ -1,5 +1,17 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from django.conf import settings
 import django.test
+
 import idmap.tls
+
+
+class OTreeTestClient(django.test.client.Client):
+
+    def login(self):
+        return super(OTreeTestClient, self).login(
+            username=settings.ADMIN_USERNAME, password=settings.ADMIN_PASSWORD)
 
 
 class IDMapTestCaseMixin(object):
@@ -13,4 +25,5 @@ class IDMapTestCaseMixin(object):
 
 
 class TestCase(IDMapTestCaseMixin, django.test.TestCase):
-    pass
+
+    client_class = OTreeTestClient

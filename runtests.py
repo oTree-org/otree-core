@@ -20,8 +20,11 @@ def runtests(*args):
     import django
     django.setup()
 
-    from django.conf import settings
+    from django.conf import settings, global_settings
     from django.core.management.commands.test import Command
+
+    settings.STATICFILES_STORAGE = global_settings.STATICFILES_STORAGE
+
     test_command = Command()
     test_apps = list(args or default_test_apps)
     test_command.execute(verbosity=settings.TEST_VERBOSITY, *test_apps)
