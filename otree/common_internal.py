@@ -131,6 +131,22 @@ def export_data(fp, app_name):
     writer.writerows(rows)
 
 
+def export_time_spent(fp):
+    """Write the data of the timespent on each_page as csv into the file-like
+    object
+
+    """
+    from otree.models_concrete import PageCompletion
+    from otree.views.admin import get_all_fields
+
+    columns = get_all_fields(PageCompletion)
+    rows = PageCompletion.objects.order_by(
+        'session_pk', 'participant_pk', 'page_index').values_list(*columns)
+    writer = csv.writer(fp)
+    writer.writerows([columns])
+    writer.writerows(rows)
+
+
 def export_docs(fp, app_name):
     """Write the dcos of the given app name as csv into the file-like object
 

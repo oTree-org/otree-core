@@ -113,3 +113,24 @@ class TestDocExport(TestCase):
 
     def test_two_simple_games_export_docs(self):
         self.session_test("two_simple_games")
+
+
+class TestTimeSpentExport(TestCase):
+
+    def setUp(self):
+        for session_conf in settings.SESSION_CONFIGS:
+            session_name = session_conf["name"]
+            npar = session_conf["num_demo_participants"]
+            call_command('create_session', session_name, str(npar))
+        self.client.login()
+
+    def test_time_spent(self):
+        response = self.client.get("/ExportTimeSpent/")
+
+        # HEADERS CHECK
+        content_type = response["content-type"]
+        self.assertEqual(content_type, "text/csv")
+
+        buff = six.StringIO()
+        common_internal.export_time_spent(buff)
+        self.assertEqual(response.content, buff.getvalue())

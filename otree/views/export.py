@@ -7,7 +7,6 @@
 # =============================================================================
 
 import datetime
-import csv
 
 from django.http import HttpResponse
 from django.conf import settings
@@ -18,8 +17,6 @@ import otree.common_internal
 import otree.models
 import otree.models.session
 from otree.common_internal import app_name_format
-from otree.views.admin import get_all_fields
-from otree.models_concrete import PageCompletion
 
 
 # =============================================================================
@@ -117,17 +114,11 @@ class ExportTimeSpent(vanilla.View):
         return 'export_time_spent'
 
     def get(self, request, *args, **kwargs):
-        columns = get_all_fields(PageCompletion)
-        rows = PageCompletion.objects.order_by(
-            'session_pk', 'participant_pk', 'page_index'
-        ).values_list(*columns)
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(
             'TimeSpent (accessed {}).csv'.format(
                 datetime.date.today().isoformat()
             )
         )
-        writer = csv.writer(response)
-        writer.writerows([columns])
-        writer.writerows(rows)
+        otree.common_internal.export_time_spent(response)
         return response
