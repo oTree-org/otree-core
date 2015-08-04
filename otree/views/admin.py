@@ -311,12 +311,10 @@ class PersistentLabURLs(vanilla.TemplateView):
         )
         default_session_example_urls = []
         for i in range(1, 20):
-            default_session_example_urls.append(
-                add_params_to_url(
-                    default_session_base_url,
-                    {otree.constants_internal.participant_label: 'P{}'.format(i)}
-                )
-            )
+            data_urls = add_params_to_url(
+                default_session_base_url,
+                {otree.constants_internal.participant_label: 'P{}'.format(i)})
+            default_session_example_urls.append(data_urls)
         global_singleton = GlobalSingleton.objects.get()
         default_session = global_singleton.default_session
 
@@ -887,6 +885,6 @@ class AdminHome(vanilla.ListView):
         return context
 
     def get_queryset(self):
+        category = otree.constants_internal.session_special_category_demo
         return Session.objects.exclude(
-            special_category=otree.constants_internal.session_special_category_demo
-        ).order_by('archived', '-pk')
+            special_category=category).order_by('archived', '-pk')

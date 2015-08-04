@@ -135,5 +135,3 @@ class BasePlayer(players.BasePlayer):
 
     def role(self):
         return super(BasePlayer, self).role()
-
-

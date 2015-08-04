@@ -169,9 +169,11 @@ def create_session(session_config_name, label='', num_participants=None,
         return model.objects.filter(session=session).order_by('pk')
 
     if num_participants is None:
-        if special_category == constants_internal.session_special_category_demo:
+        c_special_catdemo = constants_internal.session_special_category_demo
+        c_special_catbots = constants_internal.session_special_category_bots
+        if special_category == c_special_catdemo:
             num_participants = session_config['num_demo_participants']
-        elif special_category == constants_internal.session_special_category_bots:
+        elif special_category == c_special_catbots:
             num_participants = session_config['num_bots']
 
     # check that it divides evenly
