@@ -6,10 +6,12 @@ import sys
 
 
 base_path = os.path.dirname(os.path.abspath(__file__))
+tests_path = os.path.join(base_path, "tests")
 
+sys.path.insert(0, tests_path)
 sys.path.insert(0, base_path)
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tests.settings")
 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tests.settings")
 
 default_test_apps = [
     'tests',
