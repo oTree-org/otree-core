@@ -21,7 +21,7 @@ import otree.common_internal
 import otree.models
 import otree.models.session
 from otree.common_internal import app_name_format
-from otree.views.admin import get_display_table_rows, get_all_fields
+from otree.views.admin import get_all_fields
 from otree.models_concrete import PageCompletion
 
 
@@ -215,7 +215,7 @@ class ExportCsv(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r"^ExportCsv/(?P<app_label>\w+)/$"
+        return r"^ExportCsv/(?P<app_label>[\w.]+)/$"
 
     @classmethod
     def url_name(cls):
@@ -223,17 +223,11 @@ class ExportCsv(vanilla.View):
 
     def get(self, request, *args, **kwargs):
         app_label = kwargs['app_label']
-        colnames, rows = get_display_table_rows(
-            app_label, for_export=True, subsession_pk=None
-        )
-        colnames = ['{}.{}'.format(k, v) for k, v in colnames]
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(
             data_file_name(app_label)
         )
-        writer = csv.writer(response)
-        writer.writerows([colnames])
-        writer.writerows(rows)
+        otree.common_internal.export_data(response, app_label)
         return response
 
 
