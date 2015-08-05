@@ -9,7 +9,8 @@ import otree.constants
 from otree.db import models
 from otree import widgets
 from otree.common import Currency as c, currency_range, safe_json
-
+from otree.constants import BaseConstants
+from otree.models import BaseSubsession, BaseGroup, BasePlayer
 # </standard imports>
 
 author = 'Your name here'
@@ -19,7 +20,7 @@ Your app description
 """
 
 
-class Constants(otree.constants.BaseConstants):
+class Constants(BaseConstants):
     name_in_url = '{{ app_name }}'
     players_per_group = None
     num_rounds = 1
@@ -27,11 +28,11 @@ class Constants(otree.constants.BaseConstants):
     # define more constants here
 
 
-class Subsession(otree.models.BaseSubsession):
+class Subsession(BaseSubsession):
     pass
 
 
-class Group(otree.models.BaseGroup):
+class Group(BaseGroup):
     # <built-in>
     subsession = models.ForeignKey(Subsession)
     # </built-in>
@@ -41,7 +42,7 @@ class Group(otree.models.BaseGroup):
             p.payoff = 0 # change to whatever the payoff should be
 
 
-class Player(otree.models.BasePlayer):
+class Player(BasePlayer):
     # <built-in>
     subsession = models.ForeignKey(Subsession)
     group = models.ForeignKey(Group, null = True)
