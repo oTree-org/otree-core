@@ -40,17 +40,17 @@
     </p>
 
     <ul>
-    <li>Unlike the unique start URLs, anonymous mode does not prevent the same participant from playing twice.
-        Therefore, it is not recommended to use this when running real experiments</li>
-    <li>At most {{ num_participants }} participants can open this URL.</li>
-    <li>If you already clicked the participant links for this session, you cannot use anonymous mode.</li>
+        <li>Unlike the unique start URLs, anonymous mode does not prevent the same participant from playing twice.
+            Therefore, it is not recommended to use this when running real experiments
+        </li>
+        <li>At most {{ num_participants }} participants can open this URL.</li>
+        <li>If you already clicked the participant links for this session, you cannot use anonymous mode.</li>
     </ul>
 
 
     <p>
         To run your experiment in a lab, see the <a href="{% url 'persistent_lab_urls' %}">Persistent URLs</a> page.
     </p>
-    <p>
 
 
 {% endblock %}
