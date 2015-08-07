@@ -403,10 +403,12 @@ class SetDefaultSession(vanilla.View):
 
         msg = (
             'You have set the default session to <a href="{}">{}</a>. '
-            'All participants are going to be routed to this session.'
+            'All participants using <a href="{}">Persistent URLs</a> '
+            'are going to be routed to this session. '
         ).format(
             reverse('session_description', args=(self.session.pk,)),
-            self.session.code
+            self.session.code,
+            reverse('persistent_lab_urls'),
         )
         messages.success(request, msg, extra_tags='safe')
         return HttpResponseRedirect(reverse('admin_home'))
