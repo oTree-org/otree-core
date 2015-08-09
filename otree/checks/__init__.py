@@ -242,7 +242,7 @@ def constants(rules, **kwargs):
         if getattr(Constants, 'players_per_group', None) == 1:
             rules.push_error(
                 "models.py: 'Constants.players_per_group' cannot be 1. You "
-                "should set it to None, which makes the group"
+                "should set it to None, which makes the group "
                 "all players in the subsession."
             )
 
