@@ -199,14 +199,13 @@ class ParticipantBot(test.Client):
     def on_wait_page(self):
         return (
             self.response.get(constants_internal.wait_page_http_header) ==
-            constants_internal.get_param_truth_value
-        )
+            constants_internal.get_param_truth_value)
 
     def page_redisplayed_with_errors(self):
+        header = constants_internal.redisplay_with_errors_http_header
+        truth_value = constants_internal.get_param_truth_value
         return (
-            self.response.get(constants_internal.redisplay_with_errors_http_header) ==
-            constants_internal.get_param_truth_value
-        )
+            self.response.get(header) == truth_value)
 
     def set_path(self):
         try:
@@ -217,8 +216,8 @@ class ParticipantBot(test.Client):
 
     def submit(self, ViewClass, param_dict=None):
         sbmt = Submit(
-            bot=self, ViewClass=ViewClass, input_is_valid=True, data=param_dict
-        )
+            bot=self, ViewClass=ViewClass,
+            input_is_valid=True, data=param_dict)
         self.submits.append(sbmt)
 
     def submit_invalid(self, ViewClass, param_dict=None):
