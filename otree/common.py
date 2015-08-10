@@ -45,6 +45,8 @@ class Currency(RealWorldCurrency):
             # See "Plural-Forms" above for pluralization rules
             # in this language.
             # Explanation at http://bit.ly/1IurMu7
+            # In most languages, msgstr[0] is singular,
+            # and msgstr[1] is plural
             return ungettext('{} point', '{} points', number).format(
                 formatted_number
             )
