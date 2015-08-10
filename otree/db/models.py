@@ -231,6 +231,7 @@ class RandomCharField(_OtreeNotNullableModelFieldMixin, models.CharField):
 class PickleField(_OtreeNullableModelFieldMixin, PickleField):
     pass
 
+
 class JSONField(_OtreeNullableModelFieldMixin, JSONField):
     pass
 

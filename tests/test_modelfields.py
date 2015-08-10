@@ -2,14 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import json
-import types
 
-import six
+from six.moves import cPickle as pickle
 
 from otree.db import models
 import otree.forms
-
-from django.core import serializers
 
 from .base import TestCase
 from .models import CurrencyFieldTestModel, SimpleModel, FormFieldModel
@@ -81,10 +78,20 @@ class JSONPickleFieldTests(TestCase):
         for value in self.test_values:
             field = models.JSONField(value)
             serialized = field.get_prep_value(value)
-            self.assertJSONEqual(json.dumps(value), serialized)
+            if value is None:
+                self.assertIsNone(serialized)
+            else:
+                self.assertJSONEqual(json.dumps(value), serialized)
             restored = field.to_python(serialized)
             self.assertEquals(value, restored)
 
-
-
-
+    def test_pickle_field(self):
+        for value in self.test_values:
+            field = models.PickleField(value)
+            serialized = field.get_prep_value(value)
+            if value is None:
+                self.assertIsNone(serialized)
+            else:
+                self.assertEqual(pickle.dumps(value), serialized)
+            restored = field.to_python(serialized)
+            self.assertEqual(value, restored)
