@@ -1,0 +1,118 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Django_otree\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-08-10 16:45+0900\n"
+"PO-Revision-Date: 2015-08-10 12:57+0200\n"
+"Language: it_IT\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"X-Generator: Poedit 1.8.4\n"
+
+#. Translators: display a number of points,
+#. like "1 point", "2 points", ...
+#. See "Plural-Forms" above for pluralization rules
+#. in this language.
+#. Explanation at http://bit.ly/1IurMu7
+#. In most languages, msgstr[0] is singular,
+#. and msgstr[1] is plural
+#: .\otree\common.py:50
+msgid "{} point"
+msgid_plural "{} points"
+msgstr[0] "{} punto"
+msgstr[1] "{} punti"
+
+#. Translators: for required form fields
+#: .\otree\constants_internal.py:70
+msgid "This field is required."
+msgstr "Questo campo è obbligatorio"
+
+#: .\otree\db\models.py:242
+msgid "Yes"
+msgstr "Sì"
+
+#: .\otree\db\models.py:243
+msgid "No"
+msgstr "No"
+
+#: .\otree\forms\forms.py:310
+msgid "Value must be greater than or equal to {}."
+msgstr "Il valore deve essere superiore o uguale a {}."
+
+#: .\otree\forms\forms.py:314
+msgid "Value must be less than or equal to {}."
+msgstr "Il valore deve essere minore o uguale a {}."
+
+#. Translators: for multiple-choice fields,
+#. show the valid choices.
+#. e.g. "Value must be one of: A, B, C"
+#: .\otree\forms\forms.py:326
+msgid "Value must be one of: {}"
+msgstr "Il valore deve essere uno dei seguenti: {}"
+
+#. Translators: the label next to a "points" input field
+#: .\otree\forms\widgets.py:103
+msgid "points"
+msgstr "punti"
+
+#: .\otree\templates\otree\BaseExperiment.html:18
+#: .\otree\templates\otree\BaseSite.html:34
+msgid "Please fix the errors in the form."
+msgstr "Si prega di correggere gli errori del modulo."
+
+#: .\otree\templates\otree\OutOfRangeNotification.html:11
+msgid "No more pages left to show."
+msgstr "Non ci sono più pagine da mostrare."
+
+#: .\otree\templates\otree\WaitPage.html:38
+msgid "An error occurred. Please check the logs or ask the administrator for help."
+msgstr "Si è verificato un errore. Si prega di controllare i blog o chiedere aiuto all’amministratore."
+
+#: .\otree\templates\otree\includes\TimeLimit.html:6
+msgid "Time left to complete this page:"
+msgstr "Tempo rimasto per completare questa pagina:"
+
+#: .\otree\templates\otree\login.html:35
+msgid "Forgotten your password or username?"
+msgstr "Hai dimenticato la tua Password o il tuo nome utente?"
+
+#: .\otree\templates\otree\login.html:39
+msgid "Log in"
+msgstr "Accedere"
+
+#. Translators: The text on the button the user clicks to get to the next page
+#: .\otree\templates\otree\tags\NextButton.html:4
+msgid "Next"
+msgstr "Successivo"
+
+#. Translators: the default title of a wait page
+#: .\otree\views\abstract.py:391
+msgid "Please wait"
+msgstr "Si prega di attendere"
+
+#: .\otree\views\abstract.py:593
+msgid "Waiting for the other participants."
+msgstr "In attesa degli altri partecipanti"
+
+#: .\otree\views\abstract.py:595
+msgid "Waiting for the other participant."
+msgstr "In attesa dell’altro partecipante"
+
+#. Translators: the default body text on the waiting page
+#. to inform the user we are waiting.
+#: .\otree\views\abstract.py:599
+msgid "Waiting"
+msgstr "In attesa"
+
+#: .\otree\views\concrete.py:123
+msgid "Waiting until other participants or the study supervisor are ready."
+msgstr "In attesa che l’altro partecipanti o il supervisore dello studio siano pronti."
