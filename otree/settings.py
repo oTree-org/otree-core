@@ -66,6 +66,7 @@ def augment_settings(settings):
             'rest_framework',
             'sslserver',
             'idmap',
+            'corsheaders',
         ],
 
 
@@ -112,6 +113,9 @@ def augment_settings(settings):
             'otree.middleware.HumanErrorMiddleware',
             'otree.middleware.DebugTableMiddleware',
 
+            # alwaws before CommonMiddleware
+            'corsheaders.middleware.CorsMiddleware',
+
             'django.contrib.sessions.middleware.SessionMiddleware',
             # 'django.middleware.locale.LocaleMiddleware',
             'django.middleware.common.CommonMiddleware',
@@ -135,6 +139,13 @@ def augment_settings(settings):
         'CELERY_ACCEPT_CONTENT': ['pickle', 'json', 'msgpack', 'yaml'],
         'LOGIN_REDIRECT_URL': 'admin_home',
     }
+
+    # CORS CONFS
+    augmented_settings.update({
+        'CORS_ORIGIN_ALLOW_ALL': True,
+        'CORS_URLS_REGEX': r'^ping/$',
+        'CORS_ALLOW_METHODS': ('GET',)
+    })
 
     settings.setdefault('LANGUAGE_CODE', global_settings.LANGUAGE_CODE)
 
