@@ -271,7 +271,13 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
     for row in all_rows:
         for i in range(len(row)):
             value = row[i]
-            if value in values_to_replace:
+            try:
+                replace = value in values_to_replace
+            except TypeError:
+                # if it's an unhashable data type
+                # like Json or Pickle field
+                replace = False
+            if replace:
                 value = values_to_replace[value]
             elif for_export and isinstance(value, easymoney.Money):
                 # remove currency formatting for easier analysis
