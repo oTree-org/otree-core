@@ -111,7 +111,9 @@ def augment_settings(settings):
             # this middlewware is for generate human redeable errors
             'otree.middleware.CheckDBMiddleware',
             'otree.middleware.HumanErrorMiddleware',
-            'otree.middleware.DebugTableMiddleware',
+            # 2015-08-19: temporarily commented out because
+            # a user got this error: http://dpaste.com/3E7JKCP
+            # 'otree.middleware.DebugTableMiddleware',
 
             # alwaws before CommonMiddleware
             'corsheaders.middleware.CorsMiddleware',
