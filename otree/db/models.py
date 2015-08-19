@@ -10,7 +10,7 @@ from django.core import exceptions
 from django.utils.translation import ugettext_lazy
 from django.apps import apps
 
-from handy.models import PickleField
+from handy.models import JSONField, PickleField
 
 import easymoney
 
@@ -125,9 +125,9 @@ class _OtreeWidgetForModelFieldMixin(object):
 
 class _OtreeNullableModelFieldMixin(_OtreeModelFieldMixin,
                                     _OtreeWidgetForModelFieldMixin):
+
     def __init__(self, *args,  **kwargs):
         kwargs.setdefault('null', True)
-
         super(_OtreeNullableModelFieldMixin, self).__init__(*args, **kwargs)
 
 
@@ -136,6 +136,7 @@ class _OtreeNotNullableModelFieldMixin(_OtreeModelFieldMixin):
 
 
 class _OtreeNumericFieldMixin(object):
+
     def __init__(self, *args, **kwargs):
         self.min = kwargs.pop('min', None)
         self.max = kwargs.pop('max', None)
@@ -228,6 +229,10 @@ class RandomCharField(_OtreeNotNullableModelFieldMixin, models.CharField):
 
 
 class PickleField(_OtreeNullableModelFieldMixin, PickleField):
+    pass
+
+
+class JSONField(_OtreeNullableModelFieldMixin, JSONField):
     pass
 
 

@@ -13,10 +13,6 @@ from otree.db import models
 from otree.models_concrete import SessionuserToUserLookup
 
 
-def get_empty_dict():
-    return {}
-
-
 class GlobalSingleton(models.Model):
     """object that can hold site-wide settings. There should only be one
     GlobalSingleton object. Also used for wait page actions.
@@ -33,7 +29,7 @@ class GlobalSingleton(models.Model):
 
 
 class ModelWithVars(models.Model):
-    vars = models.PickleField(default=get_empty_dict)
+    vars = models.JSONField(default=dict)
 
     class Meta:
         abstract = True
@@ -57,8 +53,8 @@ class Session(ModelWithVars):
         ordering = ['pk']
         app_label = "otree"
 
-    config = models.PickleField(
-        default=get_empty_dict, null=True,
+    config = models.JSONField(
+        default=dict, null=True,
         doc=("the session config dict, as defined in the "
              "programmer's settings.py."))
 

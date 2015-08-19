@@ -14,6 +14,7 @@ REQUIREMENTS = [
     'coverage>=3.7',
     'dj-database-url>=0.2',
     'django-celery>=3.1',
+    'django-cors-headers>=1.1',
     'django-countries>=3.3',
     'django-easymoney>=0.5',
     'django-extensions>=1.5',
