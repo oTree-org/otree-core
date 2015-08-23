@@ -51,6 +51,9 @@ class Command(BaseCommand):
         parser.add_argument(
             '-c', '--coverage', action='store', dest='coverage',
             choices=COVERAGE_CHOICES, help=ahelp)
+        parser.add_argument(
+            '-d', '--export-data', action='store', dest='export_data',
+            help='export data into a ziped csv files')
 
         parser.add_argument(
             '-t', '--template-vars', action='store_true', dest='tplvars',
@@ -77,6 +80,11 @@ class Command(BaseCommand):
             client.logger.setLevel(logging.WARNING)
         coverage = options["coverage"]
 
+        export_data = options["export_data"] or ""
+        if not export_data.lower().endswith(".zip"):
+            export_data += ".zip"
+        preserve_data = bool(export_data)
+
         test_runner = runner.OTreeExperimentTestRunner(**options)
 
         if options["tplvars"]:
@@ -84,10 +92,11 @@ class Command(BaseCommand):
             test_runner.patch_validate_missing_template_vars()
         if coverage:
             with runner.covering(test_labels) as coverage_report:
-                failures = test_runner.run_tests(test_labels)
+                failures, data = test_runner.run_tests(
+                    test_labels, preserve_data=preserve_data)
         else:
-            failures = test_runner.run_tests(test_labels)
-
+            failures, data = test_runner.run_tests(
+                test_labels, preserve_data=preserve_data)
         if coverage:
             logger.info("Coverage Report")
             if coverage in [COVERAGE_CONSOLE, COVERAGE_ALL]:

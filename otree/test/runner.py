@@ -20,11 +20,13 @@ import itertools
 import time
 import random
 
+import six
+
 from django import test
 from django.test import runner
 
 import otree.models
-from otree import constants_internal, session
+from otree import constants_internal, session, common_internal
 from otree.test.client import ParticipantBot
 
 import coverage
@@ -160,10 +162,10 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         for bot in participant_bots:
             bot.stop()
 
+
 # =============================================================================
 # RUNNER
 # =============================================================================
-
 
 class OTreeExperimentTestRunner(runner.DiscoverRunner):
 
@@ -171,12 +173,32 @@ class OTreeExperimentTestRunner(runner.DiscoverRunner):
         suite = self.test_suite()
         if not session_names:
             session_names = sorted(session.get_session_configs_dict().keys())
-
         for session_name in session_names:
             case = OTreeExperimentFunctionTest(session_name)
             suite.addTest(case)
-
         return suite
+
+    def suite_result(self, suite, result, preserve_data, *args, **kwargs):
+        failures = super(OTreeExperimentTestRunner, self).suite_result(
+            suite, result, *args, **kwargs)
+        data = {}
+        if preserve_data:
+            for case in suite:
+                buff = six.StringIO()
+                common_internal.export_data(buff, case.session_name)
+                data[case.session_name] = buff.getvalue()
+        return failures, data
+
+    def run_tests(self, test_labels, extra_tests=None,
+                  preserve_data=False, **kwargs):
+        self.setup_test_environment()
+        suite = self.build_suite(test_labels, extra_tests)
+        old_config = self.setup_databases()
+        result = self.run_suite(suite)
+        failures, data = self.suite_result(suite, result, preserve_data)
+        self.teardown_databases(old_config)
+        self.teardown_test_environment()
+        return failures, data
 
 
 # =============================================================================
