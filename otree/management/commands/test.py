@@ -57,7 +57,7 @@ class Command(BaseCommand):
             choices=COVERAGE_CHOICES, help=ahelp)
         parser.add_argument(
             '-d', '--export-data', action='store', dest='exportdata_path',
-            help='export data into a csv files iside a given empty directory',
+            help='export data into a csv files iside a given new directory',
             metavar='PATH')
         parser.add_argument(
             '-t', '--template-vars', action='store_true', dest='tplvars',
