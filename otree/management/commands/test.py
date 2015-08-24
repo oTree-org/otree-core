@@ -5,8 +5,9 @@
 
 import logging
 import sys
-import zipfile
+import os
 import datetime
+import codecs
 
 from django.conf import settings, global_settings
 from django.core.management.base import BaseCommand
@@ -56,7 +57,8 @@ class Command(BaseCommand):
             choices=COVERAGE_CHOICES, help=ahelp)
         parser.add_argument(
             '-d', '--export-data', action='store', dest='exportdata_path',
-            help='export data into a ziped csv files')
+            help='export data into a csv files iside a given directory',
+            metavar='PATH')
         parser.add_argument(
             '-t', '--template-vars', action='store_true', dest='tplvars',
             help='Validate the existence of all template vars (Warning)')
@@ -83,8 +85,9 @@ class Command(BaseCommand):
         coverage = options["coverage"]
 
         exportdata_path = options["exportdata_path"]
-        if exportdata_path and not exportdata_path.lower().endswith(".zip"):
-            exportdata_path += ".zip"
+        if exportdata_path and os.path.isdir(exportdata_path):
+            msg = "Directory '{}' already exists".format(exportdata_path)
+            raise IOError(msg)
         preserve_data = bool(exportdata_path)
 
         test_runner = runner.OTreeExperimentTestRunner(**options)
@@ -112,6 +115,8 @@ class Command(BaseCommand):
                 logger.info(msg)
 
         if preserve_data:
+            os.makedirs(exportdata_path)
+
             metadata = dict(options)
             metadata.update({
                 "timestamp": datetime.datetime.now().isoformat(),
@@ -119,18 +124,21 @@ class Command(BaseCommand):
                 "failures": failures, "error": bool(failures)})
 
             sizes = {}
-            with zipfile.ZipFile(exportdata_path, 'w') as zip_fp:
-                for session_name, session_data in data.items():
-                    session_data = session_data or ""
-                    sizes[session_name] = len(session_data.splitlines())
-                    arcname = "{}.csv".format(session_name)
-                    zip_fp.writestr(arcname, session_data)
+            for session_name, session_data in data.items():
+                session_data = session_data or ""
+                sizes[session_name] = len(session_data.splitlines())
+                fname = "{}.csv".format(session_name)
+                fpath = os.path.join(exportdata_path, fname)
+                with codecs.open(fpath, "w", encoding="utf8") as fp:
+                    fp.write(session_data)
 
                 metainfo = "\n".join(
                     ["{}: {}".format(k, v) for k, v in metadata.items()] +
                     ["sizes:"] +
-                    ["\t{}: {}".format(k, v) for k, v in sizes.items()])
-                zip_fp.writestr("meta.txt", metainfo)
+                    ["\t{}: {}".format(k, v) for k, v in sizes.items()] + [""])
+                fpath = os.path.join(exportdata_path, "meta.txt")
+                with codecs.open(fpath, "w", encoding="utf8") as fp:
+                    fp.write(metainfo)
 
         if failures:
             sys.exit(bool(failures))
