@@ -110,16 +110,13 @@ class Submit(object):
         if self.input_is_valid and has_errors:
             form = self.bot.response.context_data['form']
             errors = [
-                "{}: {}".format(k, repr(v)) for k, v in form.errors.items()
-            ]
+                "{}: {}".format(k, repr(v)) for k, v in form.errors.items()]
             msg = ('Input was rejected.\nPath: {}\nErrors: {}\n').format(
-                self.bot.path, errors
-            )
+                self.bot.path, errors)
             raise AssertionError(msg)
         elif not self.input_is_valid and not has_errors:
             msg = "Invalid input was accepted. Path: {}, params: {}".format(
-                self.bot.path, self.data
-            )
+                self.bot.path, self.data)
             raise AssertionError(msg)
         return True
 
@@ -179,8 +176,7 @@ class ParticipantBot(test.Client):
         # Also, this exception doesn't have a useful traceback.
         if self.response.status_code != 200:
             msg = "Response status code: {} (expected 200)".format(
-                self.response.status_code
-            )
+                self.response.status_code)
             logger.warning(msg)
 
     def get(self, path, data={}, follow=False, **extra):
@@ -192,8 +188,7 @@ class ParticipantBot(test.Client):
     def assert_is_on(self, ViewClass):
         if not self.is_on(ViewClass):
             msg = "Expected page: {}, Actual page: {}".format(
-                ViewClass.__name__, self.path
-            )
+                ViewClass.__name__, self.path)
             raise AssertionError(msg)
 
     def on_wait_page(self):
@@ -227,8 +222,7 @@ class ParticipantBot(test.Client):
         '''
         sbmt = Submit(
             bot=self, ViewClass=ViewClass,
-            input_is_valid=False, data=param_dict
-        )
+            input_is_valid=False, data=param_dict)
         self.submits.append(sbmt)
 
 

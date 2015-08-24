@@ -5,11 +5,14 @@
 
 import logging
 import sys
+import zipfile
+import datetime
 
 from django.conf import settings, global_settings
 from django.core.management.base import BaseCommand
 
 from otree.test import runner, client
+from otree.management.cli import otree_and_django_version
 
 
 # =============================================================================
@@ -52,9 +55,8 @@ class Command(BaseCommand):
             '-c', '--coverage', action='store', dest='coverage',
             choices=COVERAGE_CHOICES, help=ahelp)
         parser.add_argument(
-            '-d', '--export-data', action='store', dest='export_data',
+            '-d', '--export-data', action='store', dest='exportdata_path',
             help='export data into a ziped csv files')
-
         parser.add_argument(
             '-t', '--template-vars', action='store_true', dest='tplvars',
             help='Validate the existence of all template vars (Warning)')
@@ -80,10 +82,10 @@ class Command(BaseCommand):
             client.logger.setLevel(logging.WARNING)
         coverage = options["coverage"]
 
-        export_data = options["export_data"] or ""
-        if not export_data.lower().endswith(".zip"):
-            export_data += ".zip"
-        preserve_data = bool(export_data)
+        exportdata_path = options["exportdata_path"]
+        if exportdata_path and not exportdata_path.lower().endswith(".zip"):
+            exportdata_path += ".zip"
+        preserve_data = bool(exportdata_path)
 
         test_runner = runner.OTreeExperimentTestRunner(**options)
 
@@ -104,12 +106,31 @@ class Command(BaseCommand):
             if coverage in [COVERAGE_HTML, COVERAGE_ALL]:
                 html_coverage_results_dir = '_coverage_results'
                 coverage_report.html_report(
-                    directory=html_coverage_results_dir
-                )
+                    directory=html_coverage_results_dir)
                 msg = ("See '{}/index.html' for detailed results.").format(
-                    html_coverage_results_dir
-                )
+                    html_coverage_results_dir)
                 logger.info(msg)
+
+        if preserve_data:
+            metadata = dict(options)
+            metadata.update({
+                "timestamp": datetime.datetime.now().isoformat(),
+                "versions": otree_and_django_version(),
+                "failures": failures, "error": bool(failures)})
+
+            sizes = {}
+            with zipfile.ZipFile(exportdata_path, 'w') as zip_fp:
+                for session_name, session_data in data.items():
+                    session_data = session_data or ""
+                    sizes[session_name] = len(session_data.splitlines())
+                    arcname = "{}.csv".format(session_name)
+                    zip_fp.writestr(arcname, session_data)
+
+                metainfo = "\n".join(
+                    ["{}: {}".format(k, v) for k, v in metadata.items()] +
+                    ["sizes:"] +
+                    ["\t{}: {}".format(k, v) for k, v in sizes.items()])
+                zip_fp.writestr("meta.txt", metainfo)
 
         if failures:
             sys.exit(bool(failures))
