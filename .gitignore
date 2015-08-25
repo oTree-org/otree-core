@@ -8,6 +8,7 @@ docs/app/Thumbs.db
 django_otree.egg-info/
 myapp*
 .idea/
+.geanyprj
 *.pyc
 tests/db.sqlite3
 otree_core.egg-info/

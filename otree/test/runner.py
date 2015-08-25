@@ -20,11 +20,13 @@ import itertools
 import time
 import random
 
+import six
+
 from django import test
 from django.test import runner
 
 import otree.models
-from otree import constants_internal, session
+from otree import constants_internal, session, common_internal
 from otree.test.client import ParticipantBot
 
 import coverage
@@ -87,16 +89,18 @@ class PendingBuffer(object):
 
 class OTreeExperimentFunctionTest(test.TransactionTestCase):
 
-    def __init__(self, session_name):
+    def __init__(self, session_name, preserve_data):
         super(OTreeExperimentFunctionTest, self).__init__()
         self.session_name = session_name
+        self.preserve_data = preserve_data
+        self._data = None
 
     def __repr__(self):
         hid = hex(id(self))
         return "<{} '{}'>".format(type(self).__name__, self.session_name, hid)
 
     def __str__(self):
-        return "ExperimentTest For '{}'".format(self.session_name)
+        return "ExperimentTest for session '{}'".format(self.session_name)
 
     def zip_submits(self, bots):
         bots = list(bots)
@@ -104,15 +108,23 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         submits = map(lambda b: b.submits, bots)
         return list(itertools.izip_longest(*submits))
 
+    def tearDown(self):
+        if self.preserve_data:
+            logger.info(
+                "Recolecting data for session '{}'".format(self.session_name))
+            buff = six.StringIO()
+            common_internal.export_data(buff, self.session_name)
+            self._data = buff.getvalue()
+
+    def get_data(self):
+        return self._data
+
     def runTest(self):
-        logger.info("Creating '{}' session".format(
-            self.session_name
-        ))
+        logger.info("Creating '{}' session".format(self.session_name))
 
         sssn = session.create_session(
             session_config_name=self.session_name,
-            special_category=constants_internal.session_special_category_bots,
-        )
+            special_category=constants_internal.session_special_category_bots)
         sssn.label = '{} [bots]'.format(self.session_name)
         sssn.save()
 
@@ -160,23 +172,38 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         for bot in participant_bots:
             bot.stop()
 
+
 # =============================================================================
 # RUNNER
 # =============================================================================
 
-
 class OTreeExperimentTestRunner(runner.DiscoverRunner):
 
-    def build_suite(self, session_names, extra_tests, **kwargs):
+    def build_suite(self, session_names, extra_tests, preserve_data, **kwargs):
         suite = self.test_suite()
         if not session_names:
             session_names = sorted(session.get_session_configs_dict().keys())
-
         for session_name in session_names:
-            case = OTreeExperimentFunctionTest(session_name)
+            case = OTreeExperimentFunctionTest(session_name, preserve_data)
             suite.addTest(case)
-
         return suite
+
+    def suite_result(self, suite, result, *args, **kwargs):
+        failures = super(OTreeExperimentTestRunner, self).suite_result(
+            suite, result, *args, **kwargs)
+        data = {case.session_name: case.get_data() for case in suite}
+        return failures, data
+
+    def run_tests(self, test_labels, extra_tests=None,
+                  preserve_data=False, **kwargs):
+        self.setup_test_environment()
+        suite = self.build_suite(test_labels, extra_tests, preserve_data)
+        old_config = self.setup_databases()
+        result = self.run_suite(suite)
+        failures, data = self.suite_result(suite, result)
+        self.teardown_databases(old_config)
+        self.teardown_test_environment()
+        return failures, data
 
 
 # =============================================================================
