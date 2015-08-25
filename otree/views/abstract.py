@@ -28,6 +28,7 @@ import os
 import logging
 import time
 import warnings
+import collections
 
 from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
@@ -74,6 +75,7 @@ def get_app_name(request):
     return otree.common_internal.get_app_name_from_import_path(
         request.resolver_match.url_name)
 
+DebugTable = collections.namedtuple('DebugTable', ['title', 'rows'])
 
 class OTreeMixin(object):
     """Base mixin class for oTree views.
@@ -126,20 +128,37 @@ class NonSequenceUrlMixin(object):
         return otree.common_internal.url_pattern(cls, False)
 
 
-class PlayerMixin(object):
+class FormPageOrWaitPageMixin(OTreeMixin):
+    """
+    View that manages its position in the group sequence.
+    for both players and experimenters
+    """
 
-    def get_debug_values(self):
+    @classmethod
+    def url(cls, session_user, index):
+        return otree.common_internal.url(cls, session_user, index)
+
+    @classmethod
+    def url_pattern(cls):
+        return otree.common_internal.url_pattern(cls, True)
+
+    def _get_debug_tables(self):
         try:
             group_id = self.group.id_in_subsession
         except:
             group_id = ''
         return [
-            ('ID in group', self.player.id_in_group),
-            ('Group', group_id),
-            ('Round number', self.subsession.round_number),
-            ('Participant', self.player.participant._id_in_session_display()),
-            ('Participant label', self.player.participant.label or ''),
-            ('Session code', self.session.code)
+            DebugTable(
+                title='Basic info',
+                rows=[
+                    ('ID in group', self.player.id_in_group),
+                    ('Group', group_id),
+                    ('Round number', self.subsession.round_number),
+                    ('Participant', self.player.participant._id_in_session_display()),
+                    ('Participant label', self.player.participant.label or ''),
+                    ('Session code', self.session.code)
+                ]
+            )
         ]
 
     def get_UserClass(self):
@@ -155,20 +174,6 @@ class PlayerMixin(object):
 
         return objs
 
-
-class FormPageOrWaitPageMixin(OTreeMixin):
-    """
-    View that manages its position in the group sequence.
-    for both players and experimenters
-    """
-
-    @classmethod
-    def url(cls, session_user, index):
-        return otree.common_internal.url(cls, session_user, index)
-
-    @classmethod
-    def url_pattern(cls):
-        return otree.common_internal.url_pattern(cls, True)
 
     def load_objects(self):
         """
@@ -419,6 +424,8 @@ class GenericWaitPageMixin(object):
         return HttpResponse(int(bool(self._is_ready())))
 
     def _get_wait_page(self):
+        if settings.DEBUG:
+            self.debug_tables = self._get_debug_tables()
         response = TemplateResponse(
             self.request,
             self.wait_page_template_name,
@@ -642,7 +649,11 @@ class FormPageMixin(object):
             'subsession': self.subsession,
             'Constants': self._models_module.Constants,
         })
-        context.update(self.resolve_vars_for_template())
+        vars_for_template = self.resolve_vars_for_template()
+        context.update(vars_for_template)
+        self._vars_for_template = vars_for_template
+        if settings.DEBUG:
+            self.debug_tables = self._get_debug_tables()
         return context
 
     def get_form(self, data=None, files=None, **kwargs):
@@ -760,9 +771,24 @@ class FormPageMixin(object):
 
     timeout_seconds = None
 
+    def _get_debug_tables(self):
+        super_tables = super(FormPageMixin, self)._get_debug_tables()
+        new_tables = []
+        if self._vars_for_template:
+            new_tables.append(
+                DebugTable(
+                    title='vars_for_template',
+                    rows=sorted(self._vars_for_template.items())
+                ),
+            )
+
+        return super_tables + new_tables
+
+
+
 
 class PlayerUpdateView(FormPageMixin, FormPageOrWaitPageMixin,
-                       PlayerMixin, vanilla.UpdateView):
+                       vanilla.UpdateView):
 
     def get_object(self):
         Cls = self.form_model
@@ -774,7 +800,7 @@ class PlayerUpdateView(FormPageMixin, FormPageOrWaitPageMixin,
             return StubModel.objects.all()[0]
 
 
-class InGameWaitPage(FormPageOrWaitPageMixin, PlayerMixin, InGameWaitPageMixin,
+class InGameWaitPage(FormPageOrWaitPageMixin, InGameWaitPageMixin,
                      GenericWaitPageMixin, vanilla.UpdateView):
     """public API wait page
 

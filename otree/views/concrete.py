@@ -32,7 +32,7 @@ from otree.views.mturk import MTurkConnection
 import otree.common_internal
 from otree.views.abstract import (
     NonSequenceUrlMixin, OTreeMixin, AssignVisitorToDefaultSessionBase,
-    GenericWaitPageMixin, FormPageOrWaitPageMixin, PlayerMixin,
+    GenericWaitPageMixin, FormPageOrWaitPageMixin,
     NO_PARTICIPANTS_LEFT_MSG
 )
 from otree.models_concrete import GroupSize
@@ -48,7 +48,7 @@ class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
         )
 
 
-class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin,
+class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin,
                                GenericWaitPageMixin, vanilla.View):
     """
     In "group by arrival time",
@@ -130,8 +130,8 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin, PlayerMixin,
         self._session_user._round_number = self.subsession.round_number
         return self._redirect_to_page_the_user_should_be_on()
 
-    def get_debug_values(self):
-        pass
+    def _get_debug_tables(self):
+        return []
 
 
 class InitializeParticipant(vanilla.UpdateView):
