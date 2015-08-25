@@ -47,7 +47,10 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         # Positional arguments
-        parser.add_argument('experiment_name', nargs='*')
+        parser.add_argument(
+            'session_name', nargs='*',
+            help='If omitted, all sessions in SESSION_CONFIGS are run'
+        )
 
         coverage_choices = "|".join(COVERAGE_CHOICES)
         ahelp = ('Execute code-coverage over the code of '
@@ -56,12 +59,13 @@ class Command(BaseCommand):
             '-c', '--coverage', action='store', dest='coverage',
             choices=COVERAGE_CHOICES, help=ahelp)
         parser.add_argument(
-            '-d', '--export-data', action='store', dest='exportdata_path',
-            help='export data into a csv files iside a given new directory',
+            '--export', action='store', dest='exportdata_path',
+            help=(
+                'After tests complete, '
+                'runs the "export data" command, '
+                'outputting the CSV files to the specified directory.'
+            ),
             metavar='PATH')
-        parser.add_argument(
-            '-t', '--template-vars', action='store_true', dest='tplvars',
-            help='Validate the existence of all template vars (Warning)')
 
     def execute(self, *args, **options):
         if int(options['verbosity']) > 0:
@@ -74,7 +78,7 @@ class Command(BaseCommand):
 
     def handle(self, **options):
 
-        test_labels = options["experiment_name"]
+        test_labels = options["session_name"]
 
         options['verbosity'] = int(options.get('verbosity'))
         if options['verbosity'] < 3:
@@ -92,9 +96,6 @@ class Command(BaseCommand):
 
         test_runner = runner.OTreeExperimentTestRunner(**options)
 
-        if options["tplvars"]:
-            # this behavior is REAAAALY experimental
-            test_runner.patch_validate_missing_template_vars()
         if coverage:
             with runner.covering(test_labels) as coverage_report:
                 failures, data = test_runner.run_tests(
