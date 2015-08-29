@@ -18,8 +18,7 @@ import otree.management.deploy.heroku
 # =============================================================================
 
 MANAGE_URL = (
-    "https://raw.githubusercontent.com/oTree-org/oTree/master/manage.py"
-)
+    "https://raw.githubusercontent.com/oTree-org/oTree/master/manage.py")
 
 
 # =============================================================================

@@ -37,8 +37,7 @@ from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache, cache_control
 from django.http import (
-    HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
-)
+    HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound)
 from django.utils.translation import ugettext as _
 
 import vanilla
@@ -58,8 +57,7 @@ from otree.models_concrete import (
     PageCompletion, WaitPageVisit, CompletedSubsessionWaitPage,
     CompletedGroupWaitPage, SessionuserToUserLookup,
     PageTimeout, StubModel,
-    ParticipantLockModel
-)
+    ParticipantLockModel)
 
 
 # Get an instance of a logger
@@ -67,15 +65,16 @@ logger = logging.getLogger(__name__)
 
 NO_PARTICIPANTS_LEFT_MSG = (
     "No Participant objects left in this session "
-    "to assign to new visitor."
-)
+    "to assign to new visitor.")
 
 
 def get_app_name(request):
     return otree.common_internal.get_app_name_from_import_path(
         request.resolver_match.url_name)
 
+
 DebugTable = collections.namedtuple('DebugTable', ['title', 'rows'])
+
 
 class OTreeMixin(object):
     """Base mixin class for oTree views.
@@ -147,19 +146,15 @@ class FormPageOrWaitPageMixin(OTreeMixin):
             group_id = self.group.id_in_subsession
         except:
             group_id = ''
-        return [
-            DebugTable(
-                title='Basic info',
-                rows=[
-                    ('ID in group', self.player.id_in_group),
-                    ('Group', group_id),
-                    ('Round number', self.subsession.round_number),
-                    ('Participant', self.player.participant._id_in_session_display()),
-                    ('Participant label', self.player.participant.label or ''),
-                    ('Session code', self.session.code)
-                ]
-            )
-        ]
+
+        rows = [
+            ('ID in group', self.player.id_in_group),
+            ('Group', group_id),
+            ('Round number', self.subsession.round_number),
+            ('Participant', self.player.participant._id_in_session_display()),
+            ('Participant label', self.player.participant.label or ''),
+            ('Session code', self.session.code)]
+        return [DebugTable(title='Basic info', rows=rows)]
 
     def get_UserClass(self):
         return self.PlayerClass
@@ -174,7 +169,6 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
         return objs
 
-
     def load_objects(self):
         """
         Even though we only use PlayerClass in load_objects,
@@ -188,8 +182,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         # because of WaitUntilAssigned...
         user_lookup = SessionuserToUserLookup.objects.get(
             session_user_pk=self._session_user.pk,
-            page_index=self._session_user._index_in_pages,
-        )
+            page_index=self._session_user._index_in_pages)
 
         app_name = user_lookup.app_name
         user_pk = user_lookup.user_pk
@@ -225,19 +218,16 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
                 cond = (
                     self.request.is_ajax() and
-                    self.request.GET.get(constants.check_auto_submit)
-                )
+                    self.request.GET.get(constants.check_auto_submit))
 
                 # take a lock so that this same code path is not run twice
                 # for the same participant
                 ParticipantLockModel.objects.select_for_update().get(
-                    participant_code=participant_code
-                )
+                    participant_code=participant_code)
 
                 try:
                     self._session_user = Participant.objects.get(
-                        code=participant_code
-                    )
+                        code=participant_code)
                 except Participant.DoesNotExist:
                     msg = (
                         "This user ({}) does not exist in the database. "
@@ -264,8 +254,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
                 self._session_user._current_page_name = self.__class__.__name__
                 response = super(FormPageOrWaitPageMixin, self).dispatch(
-                    request, *args, **kwargs
-                )
+                    request, *args, **kwargs)
                 self._session_user.last_request_succeeded = True
                 self._session_user._last_request_timestamp = time.time()
                 self.save_objects()
@@ -299,8 +288,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         if hasattr(self, 'has_timeout') and self.has_timeout():
             PageTimeout.objects.filter(
                 participant_pk=self._session_user.pk,
-                page_index=self._session_user._index_in_pages,
-            ).delete()
+                page_index=self._session_user._index_in_pages).delete()
 
         # performance optimization:
         # we skip any page that is a sequence page where is_displayed
@@ -330,8 +318,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                 cond = (
                     hasattr(Page, 'is_displayed') and not
                     hasattr(Page, '_wait_page_flag') and not
-                    page.is_displayed()
-                )
+                    page.is_displayed())
                 if cond:
                     pages_to_jump_by += 1
                 else:
@@ -370,8 +357,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
             player_pk=self._user.pk,  # FIXME: delete?
             subsession_pk=self.subsession.pk,
             participant_pk=self._session_user.pk,
-            session_pk=self.subsession.session.pk,
-        )
+            session_pk=self.subsession.session.pk)
         completion.save()
         self._session_user.save()
 
@@ -403,15 +389,13 @@ class GenericWaitPageMixin(object):
         get_param_tvalue = constants.get_param_truth_value
         return (
             self.request.is_ajax() and
-            self.request.GET.get(check_if_wait_is_over) == get_param_tvalue
-        )
+            self.request.GET.get(check_if_wait_is_over) == get_param_tvalue)
 
     def poll_url(self):
         '''called from template'''
         return otree.common_internal.add_params_to_url(
             self.request.path,
-            {constants.check_if_wait_is_over: constants.get_param_truth_value}
-        )
+            {constants.check_if_wait_is_over: constants.get_param_truth_value})
 
     def redirect_url(self):
         '''called from template'''
@@ -427,13 +411,9 @@ class GenericWaitPageMixin(object):
         if settings.DEBUG:
             self.debug_tables = self._get_debug_tables()
         response = TemplateResponse(
-            self.request,
-            self.wait_page_template_name,
-            {'view': self}
-        )
+            self.request, self.wait_page_template_name, {'view': self})
         response[constants.wait_page_http_header] = (
-            constants.get_param_truth_value
-        )
+            constants.get_param_truth_value)
         return response
 
     def _before_returning_wait_page(self):
@@ -485,15 +465,13 @@ class InGameWaitPageMixin(object):
                     if self.wait_for_all_groups:
                         _c = CompletedSubsessionWaitPage.objects.get_or_create(
                             page_index=self._index_in_pages,
-                            session_pk=self.session.pk
-                        )
+                            session_pk=self.session.pk)
                         _, created = _c
                     else:
                         _c = CompletedGroupWaitPage.objects.get_or_create(
                             page_index=self._index_in_pages,
                             group_pk=self.group.pk,
-                            session_pk=self.session.pk
-                        )
+                            session_pk=self.session.pk)
                         _, created = _c
 
                     # run the action inside the context manager, so that the
@@ -521,9 +499,7 @@ class InGameWaitPageMixin(object):
                             kwargs={
                                 'participant_pk_set': participant_pk_set,
                                 'wait_page_index': self._index_in_pages,
-                            },
-                            countdown=10,
-                        )
+                            }, countdown=10)
                         return self._response_when_ready()
             return self._get_wait_page()
 
@@ -532,20 +508,17 @@ class InGameWaitPageMixin(object):
         if self.wait_for_all_groups:
             return CompletedSubsessionWaitPage.objects.filter(
                 page_index=self._index_in_pages,
-                session_pk=self.session.pk
-            ).exists()
+                session_pk=self.session.pk).exists()
         else:
             return CompletedGroupWaitPage.objects.filter(
                 page_index=self._index_in_pages,
                 group_pk=self.group.pk,
-                session_pk=self.session.pk
-            ).exists()
+                session_pk=self.session.pk).exists()
 
     def _ids_for_this_wait_page(self):
         return set([
             p.participant.id_in_session
-            for p in self._group_or_subsession.player_set.all()
-        ])
+            for p in self._group_or_subsession.player_set.all()])
 
     def _get_unvisited_ids(self):
         """side effect: set _waiting_for_ids"""
@@ -553,8 +526,7 @@ class InGameWaitPageMixin(object):
             WaitPageVisit.objects.filter(
                 session_pk=self.session.pk,
                 page_index=self._index_in_pages,
-            ).values_list('id_in_session', flat=True)
-        )
+            ).values_list('id_in_session', flat=True))
         ids_for_this_wait_page = self._ids_for_this_wait_page()
 
         return ids_for_this_wait_page - visited_ids
@@ -572,8 +544,7 @@ class InGameWaitPageMixin(object):
         visit, _ = WaitPageVisit.objects.get_or_create(
             session_pk=self.session.pk,
             page_index=self._index_in_pages,
-            id_in_session=self._session_user.id_in_session
-        )
+            id_in_session=self._session_user.id_in_session)
 
     def _action(self):
         # force to refresh from DB
@@ -622,8 +593,7 @@ class FormPageMixin(object):
         else:
             template_name = '{}/{}.html'.format(
                 self.__module__.rsplit('.', 1)[0],
-                self.__class__.__name__
-            )
+                self.__class__.__name__)
         return [template_name]
 
     def get_form_fields(self):
@@ -633,8 +603,7 @@ class FormPageMixin(object):
         form_class = otree.forms.modelform_factory(
             self.form_model, fields=self.get_form_fields(),
             form=otree.forms.ModelForm,
-            formfield_callback=otree.forms.formfield_callback
-        )
+            formfield_callback=otree.forms.formfield_callback)
         return form_class
 
     def before_next_page(self):
@@ -647,8 +616,7 @@ class FormPageMixin(object):
             'player': self.player,
             'group': self.group,
             'subsession': self.subsession,
-            'Constants': self._models_module.Constants,
-        })
+            'Constants': self._models_module.Constants})
         vars_for_template = self.resolve_vars_for_template()
         context.update(vars_for_template)
         self._vars_for_template = vars_for_template
@@ -682,8 +650,7 @@ class FormPageMixin(object):
     def form_invalid(self, form):
         response = super(FormPageMixin, self).form_invalid(form)
         response[constants.redisplay_with_errors_http_header] = (
-            constants.get_param_truth_value
-        )
+            constants.get_param_truth_value)
         return response
 
     def get(self, request, *args, **kwargs):
@@ -694,9 +661,7 @@ class FormPageMixin(object):
         self._session_user._current_form_page_url = self.request.path
         if self.has_timeout():
             otree.timeout.tasks.submit_expired_url.apply_async(
-                (self.request.path,),
-                countdown=self.timeout_seconds
-            )
+                (self.request.path,), countdown=self.timeout_seconds)
         return super(FormPageMixin, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -709,8 +674,7 @@ class FormPageMixin(object):
         else:
             self.timeout_happened = False
             form = self.get_form(
-                data=request.POST, files=request.FILES, instance=self.object
-            )
+                data=request.POST, files=request.FILES, instance=self.object)
             if form.is_valid():
                 self.form = form
                 self.object = form.save()
@@ -727,8 +691,7 @@ class FormPageMixin(object):
         '''
         return otree.common_internal.add_params_to_url(
             self.request.path,
-            {constants.check_auto_submit: constants.get_param_truth_value}
-        )
+            {constants.check_auto_submit: constants.get_param_truth_value})
 
     def redirect_url(self):
         '''called from template'''
@@ -764,8 +727,7 @@ class FormPageMixin(object):
         timeout, created = PageTimeout.objects.get_or_create(
             participant_pk=self._session_user.pk,
             page_index=self._session_user._index_in_pages,
-            defaults={'expiration_time': expiration_time}
-        )
+            defaults={'expiration_time': expiration_time})
 
         return timeout.expiration_time - current_time
 
@@ -775,16 +737,10 @@ class FormPageMixin(object):
         super_tables = super(FormPageMixin, self)._get_debug_tables()
         new_tables = []
         if self._vars_for_template:
+            rows = sorted(self._vars_for_template.items())
             new_tables.append(
-                DebugTable(
-                    title='vars_for_template',
-                    rows=sorted(self._vars_for_template.items())
-                ),
-            )
-
+                DebugTable(title='vars_for_template', rows=rows),)
         return super_tables + new_tables
-
-
 
 
 class PlayerUpdateView(FormPageMixin, FormPageOrWaitPageMixin,
@@ -824,8 +780,7 @@ class AssignVisitorToDefaultSessionBase(vanilla.View):
     def retrieve_existing_participant_with_these_params(self, default_session):
         params = {
             field_name: self.request.GET[get_param_name]
-            for field_name, get_param_name in self.required_params.items()
-        }
+            for field_name, get_param_name in self.required_params.items()}
         return Participant.objects.get(session=default_session, **params)
 
     def set_external_params_on_participant(self, participant):
@@ -835,8 +790,7 @@ class AssignVisitorToDefaultSessionBase(vanilla.View):
     def get(self, *args, **kwargs):
         cond = (
             self.request.GET[constants.access_code_for_default_session] ==
-            settings.ACCESS_CODE_FOR_DEFAULT_SESSION
-        )
+            settings.ACCESS_CODE_FOR_DEFAULT_SESSION)
         if not cond:
             return HttpResponseNotFound(
                 'Incorrect access code for default session'
@@ -857,18 +811,14 @@ class AssignVisitorToDefaultSessionBase(vanilla.View):
         try:
             participant = (
                 self.retrieve_existing_participant_with_these_params(
-                    default_session
-                )
-            )
+                    default_session))
         except Participant.DoesNotExist:
             with lock_on_this_code_path():
                 try:
                     participant = (
                         Participant.objects.select_for_update().filter(
                             session=default_session,
-                            visited=False
-                        )
-                    ).order_by('start_order')[0]
+                            visited=False)).order_by('start_order')[0]
                 except IndexError:
                     return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
 
@@ -897,8 +847,7 @@ class GetFloppyFormClassMixin(object):
                 msg = (
                     "'Using GenericModelView (base class of {}) without "
                     "setting either 'form_class' or the 'fields' attribute "
-                    "is pending deprecation."
-                ).format(self.__class__.__name__)
+                    "is pending deprecation.").format(self.__class__.__name__)
                 warnings.warn(msg, PendingDeprecationWarning)
             return otree.forms.modelform_factory(
                 self.model,
@@ -928,8 +877,7 @@ class AdminSessionPageMixin(GetFloppyFormClassMixin):
         context.update({
             'session': self.session,
             'is_debug': settings.DEBUG,
-            'default_session': default_session,
-        })
+            'default_session': default_session})
         return context
 
     def get_template_names(self):
@@ -939,5 +887,4 @@ class AdminSessionPageMixin(GetFloppyFormClassMixin):
         session_pk = int(kwargs['pk'])
         self.session = get_object_or_404(otree.models.Session, pk=session_pk)
         return super(AdminSessionPageMixin, self).dispatch(
-            request, *args, **kwargs
-        )
+            request, *args, **kwargs)

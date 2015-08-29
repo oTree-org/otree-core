@@ -6,7 +6,6 @@
 # =============================================================================
 
 from django.http import HttpResponseServerError
-from django.conf import settings
 
 from otree import common_internal
 
@@ -31,6 +30,3 @@ class HumanErrorMiddleware(object):
 
     def process_exception(self, request, exception):
         common_internal.reraise(exception)
-
-
-
