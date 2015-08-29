@@ -1,8 +1,10 @@
 import os
 import sys
 
-from setuptools import setup, find_packages
+from ez_setup import use_setuptools
+use_setuptools()
 
+from setuptools import setup, find_packages
 
 README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
 
