@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 
 import djcelery
 
@@ -273,3 +274,14 @@ def augment_settings(settings):
 
     for k, v in overridable_settings.items():
         settings.setdefault(k, v)
+
+    # this guarantee that the test always run on memory
+    if 'test' in sys.argv:
+        settings["DATABASES"] = {
+            "default": {
+                "ENGINE": 'django.db.backends.sqlite3',
+                "NAME": ':memory:'
+            }
+        }
+        settings["DEBUG"] = False
+        settings["TEMPLATE_DEBUG"] = False

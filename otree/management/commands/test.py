@@ -36,16 +36,6 @@ settings.SSLIFY_DISABLE = True
 
 settings.STATICFILES_STORAGE = global_settings.STATICFILES_STORAGE
 
-settings.DATABASES = {
-    "default": {
-        "ENGINE": 'django.db.backends.sqlite3',
-        "NAME": ':memory:'
-    }
-}
-
-settings.DEBUG = False
-settings.TEMPLATE_DEBUG = False
-
 
 # =============================================================================
 # COMMAND
