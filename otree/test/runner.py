@@ -207,35 +207,18 @@ class OTreeExperimentTestRunner(runner.DiscoverRunner):
 
 
 # =============================================================================
-# HELPER
-# =============================================================================
-
-def apps_from_sessions(session_names=None):
-    if session_names:
-        session_names = frozenset(session_names)
-    else:
-        session_names = frozenset(session.get_session_configs_dict().keys())
-    apps = set()
-    for sname in session_names:
-        sssn = session.get_session_configs_dict()[sname]
-        apps.update(sssn.app_sequence)
-    return apps
-
-
-# =============================================================================
 # COVERAGE CONTEXT
 # =============================================================================
 
 @contextlib.contextmanager
 def covering(session_names=None):
     package_names = set()
-    for app_label in apps_from_sessions(session_names):
+    for app_label in session.apps_from_sessions(session_names):
         for module_name in COVERAGE_MODELS:
             module = '{}.{}'.format(app_label, module_name)
             package_names.add(module)
 
     cov = coverage.coverage(source=package_names)
-
     cov.start()
     try:
         yield cov

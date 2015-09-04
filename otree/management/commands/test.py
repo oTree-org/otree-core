@@ -30,7 +30,7 @@ COVERAGE_CHOICES = (COVERAGE_ALL, COVERAGE_CONSOLE, COVERAGE_HTML)
 # LOGGER & Other Conf
 # =============================================================================
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('otree')
 
 settings.SSLIFY_DISABLE = True
 
