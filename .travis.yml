@@ -1,13 +1,11 @@
 language: python
 python: 2.7
 install:
-  - easy_install -U setuptools
-  - easy_install -U pip
-  - pip install . -U
-
   # Setup integration tests.
   - git clone https://github.com/oTree-org/oTree.git otree-lib
   - virtualenv otree-lib/.env --no-site-packages
+  - pip install -U setuptools
+  - pip install -U pip
   - otree-lib/.env/bin/pip install -r otree-lib/requirements_heroku.txt
   - otree-lib/.env/bin/python setup.py install
 before_script:
