@@ -110,7 +110,6 @@ setup(
     entry_points = {
         'console_scripts': [
             'otree=otree.management.cli:otree_cli',
-            'otree-heroku=otree.management.cli:otree_heroku_cli',
         ],
     }
 )
