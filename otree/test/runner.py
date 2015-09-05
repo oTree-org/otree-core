@@ -213,7 +213,7 @@ class OTreeExperimentTestRunner(runner.DiscoverRunner):
 @contextlib.contextmanager
 def covering(session_names=None):
     package_names = set()
-    for app_label in session.apps_from_sessions(session_names):
+    for app_label in session.app_labels_from_sessions(session_names):
         for module_name in COVERAGE_MODELS:
             module = '{}.{}'.format(app_label, module_name)
             package_names.add(module)

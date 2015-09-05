@@ -74,8 +74,8 @@ def validate_session_config(session_config):
     app_sequence = session_config['app_sequence']
     if len(app_sequence) != len(set(app_sequence)):
         msg = (
-        'app_sequence of "{}" in settings.py '
-        'must not contain duplicate elements')
+            'app_sequence of "{}" in settings.py '
+            'must not contain duplicate elements')
         raise ValueError(msg.format(session_config['name']))
 
     if len(app_sequence) == 0:
@@ -127,7 +127,7 @@ def get_session_configs_dict():
         for session_config in get_session_configs_list()}
 
 
-def apps_from_sessions(session_names=None):
+def app_labels_from_sessions(session_names=None):
     if session_names:
         session_names = frozenset(session_names)
     else:
