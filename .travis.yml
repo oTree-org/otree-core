@@ -1,12 +1,8 @@
 language: python
-python: 2.7
 install:
-  # Setup integration tests.
-  - git clone --depth=1 https://github.com/oTree-org/otree-core.git otree-core
-  - virtualenv otree-core/.env --no-site-packages
-  - otree-core/.env/bin/pip install --upgrade setuptools
-  - otree-core/.env/bin/pip install --upgrade pip
-  - otree-core/.env/bin/pip install -e .
+  - pip install tox
 script:
-  - sh -c 'cd otree-core && .env/bin/python runtests.py'
-  - sh -c 'cd tests && ls ../.env/'
+  - tox
+env:
+  - TOXENV=py2.7-unittest
+  - TOXENV=py2.7-integration
