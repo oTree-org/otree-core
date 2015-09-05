@@ -6,3 +6,4 @@ script:
 env:
   - TOXENV=py2.7-unittest
   - TOXENV=py2.7-integration
+  - TOXENV=py2.7-experiments
