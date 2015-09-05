@@ -9,4 +9,4 @@ install:
   - otree-core/.env/bin/pip install -e .
 script:
   - sh -c 'cd otree-core && .env/bin/python runtests.py'
-  - sh -c 'cd tests && pwd'
+  - sh -c 'cd tests && ls ../.env/bin/'
