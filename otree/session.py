@@ -11,8 +11,7 @@ from otree import constants_internal
 from otree.models.session import Session, Participant
 from otree.common_internal import (
     get_models_module, get_app_constants,
-    min_players_multiple,
-)
+    min_players_multiple)
 from otree.common import RealWorldCurrency
 from decimal import Decimal
 from otree.models_concrete import ParticipantLockModel
@@ -41,8 +40,7 @@ def get_lcm(session_config):
         app_constants = get_app_constants(app_name)
         # if players_per_group is None, 0, etc.
         min_multiple = min_players_multiple(
-            app_constants.players_per_group
-        )
+            app_constants.players_per_group)
         min_multiple_list.append(min_multiple)
     return lcmm(*min_multiple_list)
 
@@ -58,8 +56,7 @@ def validate_session_config(session_config):
         'real_world_currency_per_point',
         'num_demo_participants',
         'doc',
-        'group_by_arrival_time',
-    }
+        'group_by_arrival_time'}
 
     for key in required_keys:
         if key not in session_config:
@@ -71,18 +68,15 @@ def validate_session_config(session_config):
     if not re.match(r'^\w+$', st_name):
         msg = (
             'Session "{}": name must be alphanumeric with no '
-            'spaces (underscores allowed).'
-        )
+            'spaces (underscores allowed).')
         raise ValueError(msg.format(st_name))
 
     app_sequence = session_config['app_sequence']
     if len(app_sequence) != len(set(app_sequence)):
-        raise ValueError(
+        msg = (
             'app_sequence of "{}" in settings.py '
-            'must not contain duplicate elements'.format(
-                session_config['name']
-            )
-        )
+            'must not contain duplicate elements')
+        raise ValueError(msg.format(session_config['name']))
 
     if len(app_sequence) == 0:
         raise ValueError('Need at least one subsession.')
@@ -102,12 +96,10 @@ def augment_session_config(session_config):
     # in favor of participation_fee. make this required at some point.
     if 'participation_fee' not in new_session_config:
         new_session_config['participation_fee'] = (
-            new_session_config['fixed_pay']
-        )
+            new_session_config['fixed_pay'])
 
     new_session_config['participation_fee'] = RealWorldCurrency(
-        new_session_config['participation_fee']
-    )
+        new_session_config['participation_fee'])
 
     # normalize to decimal so we can do multiplications, etc
     # quantize because the original value may be a float,
@@ -126,15 +118,25 @@ def augment_session_config(session_config):
 # =============================================================================
 
 def get_session_configs_list():
-
     return [augment_session_config(s) for s in settings.SESSION_CONFIGS]
 
 
 def get_session_configs_dict():
     return {
         session_config['name']: session_config
-        for session_config in get_session_configs_list()
-    }
+        for session_config in get_session_configs_list()}
+
+
+def app_labels_from_sessions(session_names=None):
+    if session_names:
+        session_names = frozenset(session_names)
+    else:
+        session_names = frozenset(get_session_configs_dict().keys())
+    apps = set()
+    for sname in session_names:
+        sssn = get_session_configs_dict()[sname]
+        apps.update(sssn["app_sequence"])
+    return apps
 
 
 @transaction.atomic
@@ -150,22 +152,17 @@ def create_session(session_config_name, label='', num_participants=None,
         session_config = get_session_configs_dict()[session_config_name]
     except KeyError:
         msg = 'Session type "{}" not found in settings.py'
-        raise ValueError(
-            msg.format(session_config_name)
-        )
+        raise ValueError(msg.format(session_config_name))
     session = Session.objects.create(
         config=session_config,
         label=label,
-
         special_category=special_category,
-        _pre_create_id=_pre_create_id,
-    )
+        _pre_create_id=_pre_create_id,)
 
     def bulk_create(model, descriptions):
         model.objects.bulk_create([
             model(session=session, **description)
-            for description in descriptions
-        ])
+            for description in descriptions])
         return model.objects.filter(session=session).order_by('pk')
 
     if num_participants is None:
@@ -181,9 +178,9 @@ def create_session(session_config_name, label='', num_participants=None,
     if num_participants % session_lcm:
         msg = (
             'Session Config {}: Number of participants ({}) does not divide '
-            'evenly into group size ({})'
-        ).format(session_config['name'], num_participants, session_lcm)
-        raise ValueError(msg)
+            'evenly into group size ({})')
+        raise ValueError(
+            msg.format(session_config['name'], num_participants, session_lcm))
 
     start_order = range(num_participants)
     if session_config.get('random_start_order'):
@@ -192,8 +189,7 @@ def create_session(session_config_name, label='', num_participants=None,
     participants = bulk_create(
         Participant,
         [{'id_in_session': i + 1, 'start_order': j}
-         for i, j in enumerate(start_order)]
-    )
+         for i, j in enumerate(start_order)])
 
     for participant in participants:
         ParticipantLockModel(participant_code=participant.code).save()
@@ -205,10 +201,9 @@ def create_session(session_config_name, label='', num_participants=None,
 
         round_numbers = range(1, app_constants.num_rounds + 1)
 
-        subs = bulk_create(models_module.Subsession, [
-            {'round_number': round_number}
-            for round_number in round_numbers
-        ])
+        subs = bulk_create(
+            models_module.Subsession,
+            [{'round_number': round_number} for round_number in round_numbers])
 
         # Create players
         models_module.Player.objects.bulk_create([
@@ -216,11 +211,9 @@ def create_session(session_config_name, label='', num_participants=None,
                 session=session,
                 subsession=subsession,
                 round_number=round_number,
-                participant=participant
-            )
+                participant=participant)
             for round_number, subsession in zip(round_numbers, subs)
-            for participant in participants
-        ])
+            for participant in participants])
 
     session._create_groups_and_initialize()
     session.build_session_user_to_user_lookups()

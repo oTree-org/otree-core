@@ -1,63 +1,89 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-import sys
+
+# =============================================================================
+# IMPORTS
+# =============================================================================
+
+import logging
+import importlib
+
+import six
 
 from django.conf import settings
+from django.core.management.base import BaseCommand
 from django.core.management import call_command
-from django.core.management.base import NoArgsCommand
-from django.utils import six
+from django.db import connections
+from django.db.migrations import loader
 
 
-class Command(NoArgsCommand):
+from otree import session
+
+
+# =============================================================================
+# LOGGER
+# =============================================================================
+
+logger = logging.getLogger('otree')
+
+
+# =============================================================================
+# COMMAND
+# =============================================================================
+
+class Command(BaseCommand):
     help = (
         "Resets your development database to a fresh state. "
         "All data will be deleted.")
 
-    def add_arguments(self, parser):
-        ahelp = (
-            'Tells the resetdb command to NOT prompt the user '
-            'for input of any kind.')
-        parser.add_argument(
-            '--noinput', action='store_false', dest='interactive',
-            default=True, help=ahelp)
+    def _get_apps(self):
+        napps, mapps = set(), set()
+        for label in session.app_labels_from_sessions():
+            migration_module = loader.MigrationLoader.migrations_module(label)
+            try:
+                importlib.import_module(migration_module)
+            except ImportError:
+                napps.add(label)
+            else:
+                mapps.add(label)
+        return map(tuple, (napps, mapps))
 
-    def handle_noargs(self, **options):
-        self.interactive = options.get('interactive')
+    def handle(self, **options):
+        apps, mapps = self._get_apps()
 
-        default_db = settings.DATABASES['default']
-        if 'sqlite' not in default_db['ENGINE']:
-            sys.stderr.write(
-                "ERROR: cannot set back a database that is using the "
-                "{backend} backend. We only support sqlite databases so far. "
-                "You should drop the database and then run "
-                "'manage.py migrate'. "
-                "Example: \n\n"
-                "./manage.py sqlclear | ./manage.py dbshell\n"
-                "./manage.py migrate\n\n"
-                .format(backend=default_db['ENGINE']))
-            sys.exit(1)
+        # Try to make the migrations of all oTree apps with migrations
+        if mapps:
+            msg = "Making migrations of apps: {}".format("-".join(mapps))
+            logger.info(msg)
+            call_command('makemigrations', *mapps)
 
-        db_file_name = default_db['NAME']
-        # Delete DB file if it already exists.
-        if os.path.exists(db_file_name):
-            if self.interactive:
-                answer = None
-                self.stdout.write(
-                    "Resetting the DB will destroy all current data. "
-                    "The DB file {0} will be deleted.\n".format(db_file_name))
-                while not answer or answer not in "yn":
-                    answer = six.moves.input("Do you wish to proceed? [yN] ")
-                    if not answer:
-                        answer = "n"
-                        break
-                    else:
-                        answer = answer[0].lower()
-                if answer != "y":
-                    return
+        for db in six.iterkeys(settings.DATABASES):
 
-            self.stdout.write("Deleting {0} ...\n".format(db_file_name))
-            os.unlink(db_file_name)
+            # removing all data from existing databases
+            logger.info("Resetting database '{}'".format(db))
+            try:
+                call_command(
+                    'flush', database=db, interactive=False, **options)
+            except RuntimeError:
+                msg = "Database '{}' data is inconsistence".format(db)
+                logger.warning(msg)
+            else:
+                # If flush work is because the database exist and if we have
+                # oTree apps without migrations we need to drop the tables
+                if apps:
+                    logger.info("Dropping Tables...")
+                    out = six.StringIO()
+                    call_command(
+                        'sqlclear', *apps, database=db,
+                        no_color=True, stdout=out)
+                    with connections[db].cursor() as cursor:
+                        for stmt in out.getvalue().splitlines():
+                            stmt = stmt.strip()
+                            if stmt:
+                                cursor.execute(stmt)
 
-        call_command('migrate', interactive=self.interactive)
+            # finally apply all migrations
+            call_command(
+                'migrate', database=db, fake_initial=True,
+                interactive=False, **options)
