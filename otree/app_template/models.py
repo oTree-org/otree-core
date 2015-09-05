@@ -5,7 +5,6 @@ from __future__ import division
 import random
 
 import otree.models
-import otree.constants
 from otree.db import models
 from otree import widgets
 from otree.common import Currency as c, currency_range, safe_json
