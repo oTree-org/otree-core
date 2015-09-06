@@ -188,22 +188,19 @@ def export_docs(fp, app_name):
             else:
                 Model = getattr(models_module, model_name)
 
+            field_names = set(field.name for field in Model._meta.fields)
+
             members = get_all_fields(Model, for_export=True)
             doc_dict[model_name] = OrderedDict()
 
-            for i in range(len(members)):
-                member_name = members[i]
+            for member_name in members:
                 member = getattr(Model, member_name, None)
                 doc_dict[model_name][member_name] = OrderedDict()
                 if member_name == 'id':
                     doc_dict[model_name][member_name]['type'] = [
                         'positive integer']
                     doc_dict[model_name][member_name]['doc'] = ['Unique ID']
-
-                elif callable(member):
-                    doc_dict[model_name][member_name]['doc'] = [
-                        inspect.getdoc(member)]
-                else:
+                elif member_name in field_names:
                     member = Model._meta.get_field_by_name(member_name)[0]
 
                     internal_type = member.get_internal_type()
@@ -223,6 +220,11 @@ def export_docs(fp, app_name):
                     if choices:
                         doc_dict[model_name][member_name]['choices'] = (
                             choices_readable(choices))
+                elif callable(member):
+                    doc_dict[model_name][member_name]['doc'] = [
+                        inspect.getdoc(member)]
+
+
         return doc_dict
 
     def docs_as_string(doc_dict):
