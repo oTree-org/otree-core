@@ -3,6 +3,7 @@
 
 import os
 import sys
+import argparse
 
 
 base_path = os.path.dirname(os.path.abspath(__file__))
@@ -18,7 +19,7 @@ default_test_apps = [
 ]
 
 
-def runtests(*args):
+def runtests(*verbosity):
     import django
     django.setup()
 
@@ -28,8 +29,8 @@ def runtests(*args):
     settings.STATICFILES_STORAGE = global_settings.STATICFILES_STORAGE
 
     test_command = Command()
-    test_apps = list(args or default_test_apps)
-    test_command.execute(verbosity=settings.TEST_VERBOSITY, *test_apps)
+    verbosity = int(verbosity[0] if verbosity else 2)
+    test_command.execute(*default_test_apps, verbosity=verbosity)
 
 
 if __name__ == '__main__':

@@ -5,8 +5,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 PRJ_DIR = os.path.dirname(BASE_DIR)
 
-TEST_VERBOSITY = 2
-
 DEBUG = True
 
 ADMIN_PASSWORD = 'otree'

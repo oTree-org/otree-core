@@ -8,3 +8,4 @@ env:
   - TOXENV=py2.7-integration
   - TOXENV=py2.7-experiments
   - TOXENV=style
+  - TOXENV=coverage
