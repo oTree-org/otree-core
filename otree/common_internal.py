@@ -223,8 +223,6 @@ def export_docs(fp, app_name):
                 elif callable(member):
                     doc_dict[model_name][member_name]['doc'] = [
                         inspect.getdoc(member)]
-
-
         return doc_dict
 
     def docs_as_string(doc_dict):
