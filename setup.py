@@ -29,7 +29,6 @@ REQUIREMENTS = [
     'django-sslserver>=0.15',
     'django-vanilla-views>=1.0',
     'djangorestframework>=3.1',
-    'flake8>=2.4',
     'handy>=0.5.2',
     'honcho>=0.6.6',
     'IPy>=0.83',
