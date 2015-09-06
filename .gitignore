@@ -13,4 +13,5 @@ otree-core.geany
 tests/db.sqlite3
 otree_core.egg-info/
 .tox/
+.coverage/
 
