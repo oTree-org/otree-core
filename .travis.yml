@@ -1,16 +1,9 @@
 language: python
-python: 2.7
 install:
-  - pip install pip setuptools -U
-  - pip install . -U
-
-  # Setup integration tests.
-  - git clone https://github.com/oTree-org/oTree.git otree-lib
-  - virtualenv otree-lib/.env --no-site-packages
-  - otree-lib/.env/bin/pip install -r otree-lib/requirements_heroku.txt
-  - otree-lib/.env/bin/python setup.py install
-before_script:
-  - psql -c 'create database travis_ci_test;' -U postgres
+  - pip install tox
 script:
-  - python runtests.py
-  - sh -c 'export DATABASE_URL=postgres://postgres@localhost/travis_ci_test && cd otree-lib && .env/bin/python ./otree test'
+  - tox
+env:
+  - TOXENV=py2.7-unittest
+  - TOXENV=py2.7-integration
+  - TOXENV=py2.7-experiments

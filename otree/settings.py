@@ -76,6 +76,7 @@ def augment_settings(settings):
 
     )
 
+    additional_template_dirs = []
     template_dir = os.path.join(settings['BASE_DIR'], 'templates')
     if os.path.exists(template_dir):
         additional_template_dirs = [template_dir]
