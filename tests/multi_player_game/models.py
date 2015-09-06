@@ -6,6 +6,9 @@ import otree.models
 # </standard imports>
 
 
+doc = "foo"
+
+
 class Constants:
     name_in_url = 'multi_player_game'
     players_per_group = 3
