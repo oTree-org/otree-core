@@ -60,11 +60,11 @@ if sys.argv[-1] == 'publish':
     os.system(cmd)
 
     cmd = 'git tag -a %s -m "version %s"' % (version, version)
-    print cmd
+    print(cmd)
     os.system(cmd)
 
     cmd = "git push --tags"
-    print cmd
+    print(cmd)
     os.system(cmd)
 
     sys.exit()
