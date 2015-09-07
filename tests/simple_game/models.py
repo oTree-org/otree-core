@@ -8,6 +8,8 @@ from otree.common import Currency, currency_range
 import random
 # </standard imports>
 
+doc = "foo"
+
 class Constants:
     name_in_url = 'simple_game_copy'
     players_per_group = None

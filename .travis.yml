@@ -1,4 +1,5 @@
 language: python
+sudo: false
 install:
   - pip install tox
 script:
@@ -7,3 +8,6 @@ env:
   - TOXENV=py2.7-unittest
   - TOXENV=py2.7-integration
   - TOXENV=py2.7-experiments
+  - TOXENV=style
+  - TOXENV=coverage
+  - TOXENV=2to3

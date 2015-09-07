@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import six
-import unittest
 
 from django.conf import settings
 from django.core.management import call_command
@@ -63,7 +62,6 @@ class TestDataExport(TestCase):
         self.session_test("two_simple_games")
 
 
-@unittest.skip("issue #372")
 class TestDocExport(TestCase):
 
     def setUp(self):
@@ -94,12 +92,12 @@ class TestDocExport(TestCase):
 
             self.assertEqual(content_type, "text/plain")
 
-            self.assertTrue(
-                content_disposition.startswith(
-                    'attachment; filename="{} ('.format(app_format)))
+            expected_cd = 'attachment; filename="{} - documentation ('.format(
+                app_format)
+            self.assertTrue(content_disposition.startswith(expected_cd))
 
             buff = six.StringIO()
-            common_internal.export_doc(buff, app)
+            common_internal.export_docs(buff, app)
             self.assertEqual(response.content, buff.getvalue())
 
     def test_simple_game_export_data(self):

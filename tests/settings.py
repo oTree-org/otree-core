@@ -5,8 +5,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 PRJ_DIR = os.path.dirname(BASE_DIR)
 
-TEST_VERBOSITY = 2
-
 DEBUG = True
 
 ADMIN_PASSWORD = 'otree'
@@ -89,24 +87,6 @@ DEMO_PAGE_INTRO_TEXT = """"""
 
 
 ACCESS_CODE_FOR_DEFAULT_SESSION = 'idd1610'
-
-PEP8 = {
-    "check": (
-        os.path.join(PRJ_DIR, "otree"),
-        os.path.join(PRJ_DIR, "tests"),
-        os.path.join(PRJ_DIR, "runtests.py"),
-        os.path.join(PRJ_DIR, "setup.py"),
-        os.path.join(PRJ_DIR, "manage.py"),
-    ),
-    "exclude": (
-        os.path.join(PRJ_DIR, "otree", "app_template"),
-        os.path.join(PRJ_DIR, "otree", "locale"),
-        os.path.join(PRJ_DIR, "otree", "migrations"),
-        os.path.join(PRJ_DIR, "otree", "session", "migrations"),
-        os.path.join(PRJ_DIR, "tests", "simple_game"),
-        os.path.join(PRJ_DIR, "tests", "simple_game_copy"),
-    )
-}
 
 
 MTURK_WORKER_REQUIREMENTS = []

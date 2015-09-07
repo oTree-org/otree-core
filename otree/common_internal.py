@@ -223,8 +223,6 @@ def export_docs(fp, app_name):
                 elif callable(member):
                     doc_dict[model_name][member_name]['doc'] = [
                         inspect.getdoc(member)]
-
-
         return doc_dict
 
     def docs_as_string(doc_dict):
@@ -236,7 +234,7 @@ def export_docs(fp, app_name):
             first_line, second_line, '',
             'Accessed: {}'.format(datetime.date.today().isoformat()), '']
 
-        app_doc = getattr(models_module, 'doc')
+        app_doc = getattr(models_module, 'doc', '')
         if app_doc:
             lines += [app_doc, '']
 
