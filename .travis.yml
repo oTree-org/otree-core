@@ -10,3 +10,4 @@ env:
   - TOXENV=py2.7-experiments
   - TOXENV=style
   - TOXENV=coverage
+  - TOXENV=2to3
