@@ -37,6 +37,14 @@ class Command(BaseCommand):
         "Resets your development database to a fresh state. "
         "All data will be deleted.")
 
+    def add_arguments(self, parser):
+        ahelp = (
+            'Tells the resetdb command to NOT prompt the user for '
+            'input of any kind.')
+        parser.add_argument(
+            '--noinput', action='store_false', dest='interactive',
+            default=True, help=ahelp)
+
     def _get_apps(self):
         napps, mapps = set(), set()
         for label in session.app_labels_from_sessions():
@@ -50,6 +58,23 @@ class Command(BaseCommand):
         return map(tuple, (napps, mapps))
 
     def handle(self, **options):
+
+        self.interactive = options.pop("interactive")
+        if self.interactive:
+            answer = None
+            self.stdout.write(
+                "Resetting the DB will destroy all current data. ")
+            while not answer or answer not in "yn":
+                answer = six.moves.input("Do you wish to proceed? [yN] ")
+                if not answer:
+                    answer = "n"
+                    break
+                else:
+                    answer = answer[0].lower()
+            if answer != "y":
+                return
+
+        # Extract existing oTree apps
         apps, mapps = self._get_apps()
 
         # Try to make the migrations of all oTree apps with migrations
