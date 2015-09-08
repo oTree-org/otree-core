@@ -600,8 +600,15 @@ class FormPageMixin(object):
         return self.form_fields
 
     def get_form_class(self):
+        fields = self.get_form_fields()
+        if self.form_model is StubModel and fields:
+            raise Exception(
+                'Page "{}" defined form_fields but not form_model'.format(
+                    self.__class__.__name__
+                )
+            )
         form_class = otree.forms.modelform_factory(
-            self.form_model, fields=self.get_form_fields(),
+            self.form_model, fields=fields,
             form=otree.forms.ModelForm,
             formfield_callback=otree.forms.formfield_callback)
         return form_class
