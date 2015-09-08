@@ -84,8 +84,10 @@ def currency_range(first, last, increment):
         raise ValueError(
             ('currency_range() step argument must not be zero. '
              'Maybe your {} setting is '
-            'causing it to be rounded to 0.').format(setting_name)
+             'causing it to be rounded to 0.').format(setting_name)
         )
+
+    assert increment > 0 # not negative
 
     values = []
     current_value = Currency(first)
