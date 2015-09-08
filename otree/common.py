@@ -87,7 +87,7 @@ def currency_range(first, last, increment):
              'causing it to be rounded to 0.').format(setting_name)
         )
 
-    assert increment > 0 # not negative
+    assert increment > 0  # not negative
 
     values = []
     current_value = Currency(first)
