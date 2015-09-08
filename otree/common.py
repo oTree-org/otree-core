@@ -74,13 +74,22 @@ def safe_json(obj):
     return mark_safe(json.dumps(obj, cls=_CurrencyEncoder))
 
 
-# FIXME: there is a problem with currency = 0.01. this increment is too small
-# if you use points. causes the function to hang.
 def currency_range(first, last, increment):
     assert last >= first
-    assert increment >= 0
+    if Currency(increment) == 0:
+        if settings.USE_POINTS:
+            setting_name = 'POINTS_DECIMAL_PLACES'
+        else:
+            setting_name = 'REAL_WORLD_CURRENCY_DECIMAL_PLACES'
+        raise ValueError(
+            ('currency_range() step argument must not be zero. '
+             'Maybe your {} setting is '
+            'causing it to be rounded to 0.').format(setting_name)
+        )
+
     values = []
     current_value = Currency(first)
+
     while True:
         if current_value > last:
             return values
