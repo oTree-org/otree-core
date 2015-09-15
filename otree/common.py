@@ -4,12 +4,38 @@ import json
 from decimal import Decimal
 
 from django.conf import settings
-import django.utils.formats
+from django.utils import formats, numberformat
 from django.utils.safestring import mark_safe
 from django.utils.translation import ungettext
 
+import six
+
 import easymoney
 
+
+# =============================================================================
+# MONKEY PATCH
+# =============================================================================
+
+# Black Magic: The original number format of django used inside templates don't
+# work if the currency code contains non-ascii characters. This ugly hack
+# remplace the original number format and when you has a easy_money instance
+# simple use the old unicode casting.
+
+_original_number_format = numberformat.format
+
+
+def otree_number_format(number, *args, **kwargs):
+    if isinstance(number, easymoney.Money):
+        return six.text_type(number)
+    return _original_number_format(number, *args, **kwargs)
+
+numberformat.format = otree_number_format
+
+
+# =============================================================================
+# CLASSES
+# =============================================================================
 
 class RealWorldCurrency(easymoney.Money):
     '''payment currency'''
@@ -29,13 +55,13 @@ class Currency(RealWorldCurrency):
         DECIMAL_PLACES = settings.POINTS_DECIMAL_PLACES
 
     def __format__(self, format_spect):
-        return super(Currency, self).__format__('s')
+        return Decimal(self).__format__(format_spect)
 
     @classmethod
     def _format_currency(cls, number):
         if settings.USE_POINTS:
 
-            formatted_number = django.utils.formats.number_format(number)
+            formatted_number = formats.number_format(number)
 
             if hasattr(settings, 'POINTS_CUSTOM_FORMAT'):
                 return settings.POINTS_CUSTOM_FORMAT.format(formatted_number)
@@ -48,12 +74,10 @@ class Currency(RealWorldCurrency):
             # In most languages, msgstr[0] is singular,
             # and msgstr[1] is plural
             return ungettext('{} point', '{} points', number).format(
-                formatted_number
-            )
+                formatted_number)
         return super(Currency, cls)._format_currency(number)
 
     def to_real_world_currency(self, session):
-
         if settings.USE_POINTS:
             return RealWorldCurrency(
                 self.to_number() *
