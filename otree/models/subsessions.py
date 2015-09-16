@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from save_the_change.mixins import SaveTheChange
+from otree_save_the_change.mixins import SaveTheChange
 from otree.db import models
 from otree.common_internal import (
     get_models_module, get_players, get_groups, flatten)

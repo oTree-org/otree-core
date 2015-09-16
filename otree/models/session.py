@@ -39,7 +39,7 @@ class ModelWithVars(models.Model):
         self._old_vars = copy.deepcopy(self.vars)
 
     def save(self, *args, **kwargs):
-        # Trick save_the_change to update vars
+        # Trick otree_save_the_change to update vars
         if hasattr(self, '_changed_fields') and self.vars != self._old_vars:
             self._changed_fields['vars'] = self._old_vars
         super(ModelWithVars, self).save(*args, **kwargs)

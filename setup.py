@@ -32,6 +32,7 @@ REQUIREMENTS = [
     'IPy>=0.83',
     'mock>=1.0',
     'ordered-set>=1.3',
+    'otree-save-the-change>=1.1.2',
     'pytz>=2015.4',
     'raven>=5.4',
     'requests>=2.7',
