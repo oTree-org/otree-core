@@ -132,7 +132,7 @@ class Rules(object):
         try:
             with open(template_name, 'r') as f:
                 compiled_template = Template(f.read())
-        except (IOError, OSError):
+        except (IOError, OSError, TemplateSyntaxError):
             # Ignore errors that occured during file-read or compilation.
             return
 
