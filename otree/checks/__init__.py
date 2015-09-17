@@ -9,6 +9,7 @@ from django.apps import apps
 from django.conf import settings
 from django.core.checks import register, Error
 from django.template import Template
+from django.template import TemplateSyntaxError
 
 import otree.views.abstract
 
@@ -119,6 +120,35 @@ class Rules(object):
         if not inspect.isclass(cls):
             msg = 'No class "%s" in module "%s"' % (name, module.__name__)
             return self.error(msg)
+
+    @rule
+    def template_has_valid_syntax(self, template_name):
+        from otree.checks.templates import has_valid_encoding
+        from otree.checks.templates import format_source_snippet
+
+        # Only test files that are valid templates.
+        if not has_valid_encoding(template_name):
+            return
+
+        try:
+            with open(template_name, 'r') as f:
+                Template(f.read())
+        except (IOError, OSError):
+            pass
+        except TemplateSyntaxError as error:
+            template_source, position = error.django_template_source
+            snippet = format_source_snippet(
+                template_source.source,
+                arrow_position=position[0])
+            return self.error(
+                'Template syntax error in {template}\n'
+                '\n'
+                '{snippet}\n'
+                '\n'
+                'Error: {error}'.format(
+                    template=template_name,
+                    error=error,
+                    snippet=snippet))
 
     @rule
     def template_has_no_dead_code(self, template_name):
@@ -291,6 +321,12 @@ def unique_sessions_names(rules, **kwargs):
 def template_encoding(rules, **kwargs):
     for template_name in rules.get_template_names():
         rules.template_has_valid_encoding(template_name)
+
+
+@register_rules(id='otree.E008')
+def templates_have_valid_syntax(rules, **kwargs):
+    for template_name in rules.get_template_names():
+        rules.template_has_valid_syntax(template_name)
 
 
 # TODO: startapp should pass validation checks

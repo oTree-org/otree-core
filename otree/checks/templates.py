@@ -1,6 +1,9 @@
+from collections import namedtuple
 from django.template.base import TextNode
 from django.template.loader_tags import ExtendsNode, BlockNode
 from django.utils.encoding import force_text
+from itertools import chain
+
 from otree.templatetags.otree_tags import NextButtonNode
 
 
@@ -87,3 +90,75 @@ def has_valid_encoding(file_name):
     except UnicodeDecodeError:
         return False
     return True
+
+
+Line = namedtuple('Line', ('source', 'lineno', 'start', 'end'))
+
+
+def format_error_line(line):
+    return '{line.lineno:4d} | {line.source}'.format(line=line)
+
+
+def split_source_lines(source):
+    """
+    Split source string into a list of ``Line`` objects. They contain
+    contextual information like line number, start position, end position.
+    """
+    lines = source.splitlines(True)
+    start = 0
+    annotated_lines = []
+    for i, line in enumerate(lines):
+        # Windows line endings end with '\r\n'.
+        if line.endswith('\r\n'):
+            ending_length = 2
+        # In case of '\n' or '\r' ending the line.
+        else:
+            ending_length = 1
+        end = start + len(line)
+        annotated_lines.append(Line(
+            # Don't include line endings in snippet source.
+            source=line[:-ending_length],
+            lineno=i + 1,
+            start=start,
+            end=end))
+        start = end
+    return annotated_lines
+
+
+def format_source_snippet(source, arrow_position, context=5):
+    """
+    Display parts of a source file with an arrow pointing at an exact location.
+    Will display ``context`` number of lines before and after the arrow
+    position.
+
+    Example::
+
+          15 |     <p>
+          16 |         Please provide your information in the form below.
+          17 |     </p>
+          18 |
+          19 |     {% formrow form.my_field with label = "foo" %}
+        -----------^
+          20 |
+          21 |     {% next_button %}
+          22 | {% endblock %}
+    """
+    lines = split_source_lines(source)
+    error_line = 0
+    for line in lines:
+        if line.start <= arrow_position < line.end:
+            error_line = line
+            break
+    start_context = max(error_line.lineno - 1 - context, 0)
+    end_context = min(error_line.lineno + context, len(lines))
+    before = lines[start_context:error_line.lineno]
+    after = lines[error_line.lineno:end_context]
+
+    error_prefix = max(len(str(error_line.lineno)), 4) + len(' | ')
+    error_length = max(arrow_position - error_line.start, 0)
+    error_arrow = ('-' * (error_prefix + error_length)) + '^'
+    return '\n'.join(chain(
+        [format_error_line(line) for line in before],
+        [error_arrow],
+        [format_error_line(line) for line in after],
+    ))
