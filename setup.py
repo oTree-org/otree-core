@@ -1,10 +1,8 @@
 import os
 import sys
 
-from ez_setup import use_setuptools
-use_setuptools()
-
 from setuptools import setup, find_packages
+
 
 README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
 
@@ -79,13 +77,10 @@ setup(
     # otree.app_template._builtin for some reason. so instead i use
     # recursive-exclude in MANIFEST.in
     packages=find_packages(),
-
-    # this is for auto upgrade setuptools when its needed and prevent
-    # errors like the honcho and macos version not found
-    py_modules=['ez_setup'],
     description=(
         'oTree is a toolset that makes it easy to create and '
-        'administer web-based social science experiments.'),
+        'administer web-based social science experiments.'
+    ),
     long_description=README,
     url='http://otree.org/',
     author='C. Wickens',
