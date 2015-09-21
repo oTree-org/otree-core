@@ -22,7 +22,7 @@ import otree
 from otree import forms
 from otree.views.abstract import AdminSessionPageMixin
 from otree.checks.mturk import validate_session_for_mturk
-
+from otree import deprecate
 
 class MTurkError(Exception):
 
@@ -232,8 +232,16 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
 
             qualifications = mturk_settings.get('qualification_requirements')
 
-            # deprecated: remove this
-            if not qualifications:
+            # deprecated summer 2015: remove this
+            if (not qualifications
+                    and hasattr(settings, 'MTURK_WORKER_REQUIREMENTS')):
+                deprecate.dwarning(
+                    'The MTURK_WORKER_REQUIREMENTS setting has been '
+                    'deprecated. You should instead use "qualification_requirements" '
+                    'as shown here: '
+                    'https://github.com/oTree-org/oTree/blob/master/'
+                    'settings.py'
+                )
                 qualifications = settings.MTURK_WORKER_REQUIREMENTS
 
             mturk_hit_parameters = {

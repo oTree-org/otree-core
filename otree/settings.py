@@ -3,6 +3,7 @@
 
 import os
 import sys
+import warnings
 
 import djcelery
 
@@ -28,10 +29,19 @@ def collapse_to_unique_list(*args):
 def augment_settings(settings):
 
     # 2015-07-10: SESSION_TYPE is deprecated
-    if 'SESSION_CONFIGS' not in settings:
+    if (('SESSION_CONFIGS' not in settings) and
+            ('SESSION_TYPES' in settings)):
+        msg = ('SESSION_TYPES is deprecated; '
+               'you should rename it to "SESSION_CONFIGS".')
+        warnings.warn(msg, PendingDeprecationWarning)
+
         settings['SESSION_CONFIGS'] = settings['SESSION_TYPES']
 
-    if 'SESSION_CONFIG_DEFAULTS' not in settings:
+    if (('SESSION_CONFIG_DEFAULTS' not in settings) and
+            ('SESSION_TYPE_DEFAULTS' in settings)):
+        msg = ('SESSION_TYPE_DEFAULTS is deprecated; '
+               'you should rename it to "SESSION_CONFIG_DEFAULTS".')
+        warnings.warn(msg, PendingDeprecationWarning)
         settings['SESSION_CONFIG_DEFAULTS'] = settings['SESSION_TYPE_DEFAULTS']
 
     if 'POINTS_CUSTOM_NAME' in settings:
@@ -78,6 +88,10 @@ def augment_settings(settings):
 
     additional_template_dirs = []
     template_dir = os.path.join(settings['BASE_DIR'], 'templates')
+    # 2015-09-21: i won't put a deprecation warning because 'templates/'
+    # is the django convention and someone might legitimately want it.
+    # just remove this code at some point
+    # same for static/ dir below
     if os.path.exists(template_dir):
         additional_template_dirs = [template_dir]
 

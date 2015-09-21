@@ -441,16 +441,6 @@ class SessionUser(ModelWithVars):
                     }
                 )
                 return url
-            else:
-                # TODO: deprecated, remove this
-                # someone can just add a hyperlink on the last page
-                # of their app
-                redirect_url_function = self.session.config.get(
-                    'redirect_url_function'
-                )
-                if redirect_url_function:
-                    redirect_url = redirect_url_function(self)
-                    return redirect_url
             from otree.views.concrete import OutOfRangeNotification
             return OutOfRangeNotification.url(self)
 

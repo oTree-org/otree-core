@@ -15,6 +15,7 @@ from otree.common_internal import (
 from otree.common import RealWorldCurrency
 from decimal import Decimal
 from otree.models_concrete import ParticipantLockModel
+from otree import deprecate
 
 
 def gcd(a, b):
@@ -94,7 +95,12 @@ def augment_session_config(session_config):
 
     # TODO: fixed_pay is deprecated as of 2015-05-07,
     # in favor of participation_fee. make this required at some point.
-    if 'participation_fee' not in new_session_config:
+    if (('participation_fee' not in new_session_config) and
+            ('fixed_pay' in new_session_config)):
+        deprecate.dwarning(
+            '"fixed_pay" is deprecated; '
+            'you should rename it to "participation_fee".'
+        )
         new_session_config['participation_fee'] = (
             new_session_config['fixed_pay'])
 
