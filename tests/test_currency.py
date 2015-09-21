@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import random
+
 from django.template import Template, Context
 
 import six
@@ -22,3 +24,43 @@ class CurrencyTests(TestCase):
         ctx = Context({"money": money})
         rendered = template.render(ctx)
         self.assertEquals(rendered, six.text_type(money))
+
+    def test_currency_unary_operator(self):
+        # https://github.com/oTree-org/otree-core/issues/391
+        msg = "Currency operator '{}' fail"
+        for money in [c(-random.random()), c(random.random()), c(0)]:
+            self.assertIsInstance(abs(money), c, msg.format("abs()"))
+            self.assertIsInstance(-money, c, msg.format("-VALUE"))
+            self.assertIsInstance(+money, c, msg.format("+VALUE"))
+
+    def test_currency_operator(self):
+        msg = "Currency operator '{}' fail"
+        for money in [c(-random.random()), c(random.random()), c(0)]:
+            money = money + 1
+            self.assertIsInstance(money, c, msg.format("+"))
+            money = money - 1
+            self.assertIsInstance(money, c, msg.format("-"))
+            money = money / 1
+            self.assertIsInstance(money, c, msg.format("/"))
+            money = money * 1
+            self.assertIsInstance(money, c, msg.format("*"))
+            money = money ** 1
+            self.assertIsInstance(money, c, msg.format("**"))
+            money = money // 1
+            self.assertIsInstance(money, c, msg.format("//"))
+
+    def test_currency_inplace_operator(self):
+        msg = "Currency operator '{}' fail"
+        for money in [c(-random.random()), c(random.random()), c(0)]:
+            money += 1
+            self.assertIsInstance(money, c, msg.format("+="))
+            money -= 1
+            self.assertIsInstance(money, c, msg.format("-="))
+            money /= 1
+            self.assertIsInstance(money, c, msg.format("/="))
+            money *= 1
+            self.assertIsInstance(money, c, msg.format("*="))
+            money **= 1
+            self.assertIsInstance(money, c, msg.format("**="))
+            money //= 1
+            self.assertIsInstance(money, c, msg.format("//="))

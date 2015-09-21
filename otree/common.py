@@ -44,6 +44,26 @@ class RealWorldCurrency(easymoney.Money):
     LOCALE = settings.REAL_WORLD_CURRENCY_LOCALE
     DECIMAL_PLACES = settings.REAL_WORLD_CURRENCY_DECIMAL_PLACES
 
+    def __neg__(self):
+        cls = type(self)
+        val = super(RealWorldCurrency, self).__neg__()
+        return cls(val)
+
+    def __pos__(self):
+        cls = type(self)
+        val = super(RealWorldCurrency, self).__pos__()
+        return cls(val)
+
+    def __abs__(self):
+        if self < 0:
+            return -self
+        return self
+
+    def __pow__(self, other):
+        cls = type(self)
+        val = super(RealWorldCurrency, self).__pow__(other)
+        return cls(val)
+
     def to_number(self):
         return Decimal(self)
 
