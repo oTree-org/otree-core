@@ -21,6 +21,9 @@ MANAGE_URL = (
     "https://raw.githubusercontent.com/oTree-org/oTree/master/manage.py")
 
 
+IGNORE_APPS_COMMANDS = frozenset(("version", "--version", "startapp", "help"))
+
+
 # =============================================================================
 # FUNCTIONS
 # =============================================================================
@@ -39,8 +42,7 @@ def execute_from_command_line(arguments, script_file):
 
     cond = (
         platform.system() == 'Windows' and not
-        script_file.lower().endswith('.py')
-    )
+        script_file.lower().endswith('.py'))
 
     if cond:
 
@@ -59,9 +61,7 @@ def execute_from_command_line(arguments, script_file):
             error_lines.append(
                 "Please download the file {url} and save it as 'manage.py' in "
                 "the directory {directory}".format(
-                    url=MANAGE_URL, directory=scriptdir
-                )
-            )
+                    url=MANAGE_URL, directory=scriptdir))
             raise CommandError("\n".join(error_lines))
         args = [sys.executable] + [managepy] + sys.argv[1:]
         process = subprocess.Popen(args,
@@ -96,17 +96,25 @@ def otree_cli():
         sys.path.insert(0, os.getcwd())
 
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
-    style = color_style()
 
     try:
         from django.conf import settings
         settings.INSTALLED_APPS
     except ImportError:
-        print(style.ERROR(
-            "Cannot import otree settings. Please make sure that you are "
-            "in the base directory of your oTree library checkout. "
-            "This directory contains a settings.py and a manage.py file."))
+        style = color_style()
+        msg = style.ERROR(
+            "Cannot import otree settings.\n"
+            "Please make sure that you are in the base directory of your "
+            "oTree library checkout. This directory contains a settings.py "
+            "and a manage.py file.")
+        print(msg)
         sys.exit(1)
+
+    # some commands don't need the setings.INSTALLED_APPS
+    # see: https://github.com/oTree-org/otree-core/issues/388
+    ignore_apps = IGNORE_APPS_COMMANDS.intersection(sys.argv)
+    if ignore_apps:
+        settings.INSTALLED_APPS = ()
 
     execute_from_command_line(sys.argv, 'otree')
 
