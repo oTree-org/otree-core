@@ -47,7 +47,7 @@ class Player(BasePlayer):
     group = models.ForeignKey(Group, null = True)
     # </built-in>
 
-    def other_player(self):
+    def get_partner(self):
         """Returns other player in group. Only valid for 2-player groups."""
         return self.get_others_in_group()[0]
 
