@@ -260,35 +260,11 @@ def flatten(list_of_lists):
     return [item for sublist in list_of_lists for item in sublist]
 
 
-def get_app_name_from_import_path(import_path):
-    '''
-    Return the registered otree app that contains the given module.
-
-    >>> get_app_name_from_import_path('tests.simple_game.models')
-    'tests.simple_game'
-    >>> get_app_name_from_import_path(
-        'tests.simple_game.views.mixins.FancyMixin'
-    )
-    'tests.simple_game'
-    >>> get_app_name_from_import_path('unregistered_app.models')
-    Traceback (most recent call last):
-      File "<stdin>", line 1, in ?
-    ValueError: The module unregistered_app.models is not part of any
-    known otree app.
-    '''
-    app_name = import_path
-    while app_name:
-        if app_name in settings.INSTALLED_OTREE_APPS:
-            return app_name
-        if '.' in app_name:
-            # Remove everything from the last dot.
-            app_name = '.'.join(app_name.split('.')[:-1])
-        else:
-            app_name = None
-    msg = 'The module {} is not part of any known otree app.'.format(
-        import_path
-    )
-    raise ValueError(msg)
+def get_app_label_from_import_path(import_path):
+    app_label = import_path.rsplit(".", 1)[0]
+    while "." in app_label:
+        app_label = app_label.rsplit(".", 1)[-1]
+    return app_label
 
 
 def get_app_name_from_label(app_label):

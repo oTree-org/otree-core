@@ -51,7 +51,9 @@ import otree.models
 import otree.constants_internal as constants
 from otree.models.session import Participant
 from otree.models.session import GlobalSingleton
-from otree.common_internal import lock_on_this_code_path
+from otree.common_internal import (
+    lock_on_this_code_path, get_app_label_from_import_path
+)
 
 from otree.models_concrete import (
     PageCompletion, WaitPageVisit, CompletedSubsessionWaitPage,
@@ -66,11 +68,6 @@ logger = logging.getLogger(__name__)
 NO_PARTICIPANTS_LEFT_MSG = (
     "No Participant objects left in this session "
     "to assign to new visitor.")
-
-
-def get_app_name(request):
-    return otree.common_internal.get_app_name_from_import_path(
-        request.resolver_match.url_name)
 
 
 DebugTable = collections.namedtuple('DebugTable', ['title', 'rows'])
@@ -598,7 +595,7 @@ class FormPageMixin(object):
             template_name = self.template_name
         else:
             template_name = '{}/{}.html'.format(
-                self.__module__.split('.')[-2],
+                get_app_label_from_import_path(self.__module__),
                 self.__class__.__name__)
         return [template_name]
 

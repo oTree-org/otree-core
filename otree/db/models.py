@@ -18,7 +18,9 @@ from idmap.metaclass import SharedMemoryModelBase
 from idmap.models import SharedMemoryModel
 
 import otree.common
-from otree.common_internal import expand_choice_tuples
+from otree.common_internal import (
+    expand_choice_tuples, get_app_label_from_import_path
+)
 from otree.constants_internal import field_required_msg
 
 
@@ -33,9 +35,7 @@ class OTreeModelBase(SharedMemoryModelBase):
         if is_concrete and module and not app_label:
             if meta is None:
                 meta = type("Meta", (), {})
-            app_label = module.rsplit(".", 1)[0]
-            while "." in app_label:
-                app_label = app_label.rsplit(".", 1)[-1]
+            app_label = get_app_label_from_import_path(module)
             meta.app_label = app_label
             meta.db_table = "{}_{}".format(app_label, name.lower())
             attrs["Meta"] = meta
