@@ -257,6 +257,12 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                     request, *args, **kwargs)
                 self._session_user.last_request_succeeded = True
                 self._session_user._last_request_timestamp = time.time()
+
+                # need to render the response before saving objects,
+                # because the template might call a method that modifies
+                # player/group/etc.
+                if hasattr(response, 'render'):
+                    response.render()
                 self.save_objects()
                 return response
         except Exception:
@@ -592,7 +598,7 @@ class FormPageMixin(object):
             template_name = self.template_name
         else:
             template_name = '{}/{}.html'.format(
-                self.__module__.rsplit('.', 1)[0],
+                self.__module__.split('.')[-2],
                 self.__class__.__name__)
         return [template_name]
 
