@@ -58,7 +58,11 @@ class AllGroupsWaitPage(WaitPage):
 
     def after_all_players_arrive(self):
 
-        # TODO: shuffle groups
+        if self.subsession.round_number == Constants.num_rounds:
+            for p in self.subsession.get_players():
+                if p.id_in_group == 1:
+                    p.group_id_before_p1_switch = p.group.id
+            self.subsession.shuffle_p1()
 
         for p in self.subsession.get_players():
             p.in_all_groups_wait_page = 5.0
@@ -72,6 +76,11 @@ class Results(Page):
         assert self.player.from_other_player == 1
         assert self.player.in_all_groups_wait_page == 5.0
         assert self.group.in_all_groups_wait_page == 5.0
+
+        if self.subsession.round_number == Constants.num_rounds:
+            for p in self.subsession.get_players():
+                if p.id_in_group == 1:
+                    assert p.group_id_before_p1_switch != p.group.id
 
 page_sequence = [
     FieldOnOtherPlayer,

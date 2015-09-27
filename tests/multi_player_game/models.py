@@ -29,6 +29,17 @@ class Subsession(otree.models.BaseSubsession):
                 pks_reversed = list(reversed(pks))
                 assert [p.pk for p in group.get_players()] == pks_reversed
 
+    def shuffle_p1(self):
+        matrix = [g.get_players() for g in self.get_groups()]
+        p1_list = [g_list[0] for g_list in matrix]
+        p1_in_first_group = p1_list.pop()
+        p1_list.append(p1_in_first_group)
+        for i, p_list in enumerate(matrix):
+            matrix[i][0] = p1_list[i]
+        self.set_groups(matrix)
+
+
+
 
 class Group(otree.models.BaseGroup):
     # <built-in>
@@ -56,6 +67,8 @@ class Player(otree.models.BasePlayer):
 
     is_winner = models.BooleanField(initial=False)
     in_all_groups_wait_page = models.FloatField(initial=0)
+
+    group_id_before_p1_switch = models.PositiveIntegerField()
 
     def role(self):
         # you can make this depend of self.id_in_group
