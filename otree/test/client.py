@@ -257,7 +257,9 @@ class PlayerBot(object):
 
     def _refresh_models(self):
         self.player = refresh_from_db(self.player)
-        self.group = refresh_from_db(self.group)
+        # need to do self.player.group because the player might have been
+        # reassigned to a new group during the subsession
+        self.group = refresh_from_db(self.player.group)
         self.subsession = refresh_from_db(self.subsession)
 
     def submit(self, ViewClass, param_dict=None):

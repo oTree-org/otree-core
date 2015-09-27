@@ -80,6 +80,7 @@ class Results(Page):
         if self.subsession.round_number == Constants.num_rounds:
             for p in self.subsession.get_players():
                 if p.id_in_group == 1:
+
                     assert p.group_id_before_p1_switch != p.group.id
 
 page_sequence = [
