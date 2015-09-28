@@ -32,7 +32,7 @@ class Subsession(otree.models.BaseSubsession):
     def shuffle_p1(self):
         matrix = [g.get_players() for g in self.get_groups()]
         p1_list = [g_list[0] for g_list in matrix]
-        p1_in_first_group = p1_list.pop()
+        p1_in_first_group = p1_list.pop(0)
         p1_list.append(p1_in_first_group)
         for i, p_list in enumerate(matrix):
             matrix[i][0] = p1_list[i]
