@@ -223,7 +223,7 @@ class Session(ModelWithVars):
         # previous round's groups
         for subsession in self.get_subsessions():
             cond = (
-                self.config['group_by_arrival_time'] and
+                self.config.get('group_by_arrival_time') and
                 subsession._Constants.players_per_group is not None
             )
             if cond:

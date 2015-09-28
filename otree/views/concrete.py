@@ -71,7 +71,7 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin,
         # if grouping by arrival time,
         # and the player has not yet been assigned to a group,
         # we assign them.
-        elif self.session.config['group_by_arrival_time']:
+        elif self.session.config.get('group_by_arrival_time'):
             with lock_on_this_code_path():
                 # need to check again to prevent race conditions
                 if bool(self.group):

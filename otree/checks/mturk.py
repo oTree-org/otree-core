@@ -49,7 +49,7 @@ class ValidateMTurk(object):
         if no_wait_pages:
             return True
         else:
-            return self.session.config['group_by_arrival_time']
+            return self.session.config.get('group_by_arrival_time')
 
     def get_no_timeout_pages(self):
         '''
