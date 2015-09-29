@@ -114,7 +114,7 @@ def otree_cli():
     # see: https://github.com/oTree-org/otree-core/issues/388
     ignore_apps = IGNORE_APPS_COMMANDS.intersection(sys.argv)
     if ignore_apps:
-        settings.INSTALLED_APPS = ()
+        settings.INSTALLED_APPS = tuple(settings.CORE_OTREE_APPS)
 
     execute_from_command_line(sys.argv, 'otree')
 
