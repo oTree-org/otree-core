@@ -57,7 +57,7 @@ def validate_session_config(session_config):
         'real_world_currency_per_point',
         'num_demo_participants',
         'doc',
-        'group_by_arrival_time'}
+    }
 
     for key in required_keys:
         if key not in session_config:
