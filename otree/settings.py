@@ -60,7 +60,7 @@ def augment_settings(settings):
     # order is important:
     # otree unregisters User & Group, which are installed by auth.
     # otree templates need to get loaded before the admin.
-    core_otree_apps = collapse_to_unique_list([
+    no_experiment_apps = collapse_to_unique_list([
         'django.contrib.auth',
         'otree',
         'floppyforms',
@@ -80,7 +80,7 @@ def augment_settings(settings):
         'corsheaders'], settings['INSTALLED_APPS'])
 
     new_installed_apps = collapse_to_unique_list(
-        core_otree_apps, all_otree_apps)
+        no_experiment_apps, all_otree_apps)
 
     additional_template_dirs = []
     template_dir = os.path.join(settings['BASE_DIR'], 'templates')
@@ -147,7 +147,7 @@ def augment_settings(settings):
         'TEMPLATE_DIRS': new_template_dirs,
         'STATICFILES_DIRS': new_staticfiles_dirs,
         'MIDDLEWARE_CLASSES': new_middleware_classes,
-        'CORE_OTREE_APPS': core_otree_apps,
+        'NO_EXPERIMENT_APPS': no_experiment_apps,
         'INSTALLED_OTREE_APPS': all_otree_apps,
         'BROKER_URL': 'django://',
         'MESSAGE_TAGS': {messages.ERROR: 'danger'},
