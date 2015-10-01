@@ -307,6 +307,8 @@ class Session(ModelWithVars):
 # for now removing SaveTheChange
 class SessionUser(ModelWithVars):
 
+    # 2015-10-01: maybe should merge with Participant, now that we no longer have Experimenter
+
     _index_in_subsessions = models.PositiveIntegerField(default=0, null=True)
 
     _index_in_pages = models.PositiveIntegerField(default=0)
@@ -316,7 +318,6 @@ class SessionUser(ModelWithVars):
     def _id_in_session_display(self):
         return 'P{}'.format(self.id_in_session)
     _id_in_session_display.short_description = 'Participant'
-
     _waiting_for_ids = models.CharField(null=True, max_length=300)
 
     code = models.RandomCharField(
