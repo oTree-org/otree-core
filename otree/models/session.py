@@ -258,15 +258,16 @@ class Session(ModelWithVars):
         client = django.test.Client()
 
         # in case some participants haven't started
-        some_participants_not_visited = False
+        some_participants_not_on_form_page_yet = False
         for p in participants:
-            if not p.visited:
-                some_participants_not_visited = True
+            if not p._current_form_page_url:
+                some_participants_not_on_form_page_yet = True
                 client.get(p._start_url(), follow=True)
 
-        if some_participants_not_visited:
-            # refresh from DB so that _current_form_page_url gets set
-            participants = self.participant_set.all()
+        if some_participants_not_on_form_page_yet:
+            # that's it -- just visit the start URL, advancing
+            # by 1
+            return
 
         last_place_page_index = min([p._index_in_pages for p in participants])
         last_place_participants = [
@@ -275,7 +276,8 @@ class Session(ModelWithVars):
         ]
 
         for p in last_place_participants:
-            # what if current_form_page_url hasn't been set yet?
+            # the only case where _current_form_page_url
+            # is not set yet, is if the first page is a wait page.
             resp = client.post(
                 p._current_form_page_url,
                 data={constants_internal.auto_submit: True}, follow=True

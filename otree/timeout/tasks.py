@@ -35,6 +35,11 @@ def ensure_pages_visited(participant_pk_set, wait_page_index):
     )
 
     for participant in unvisited_participants:
-        # we can assume _current_form_page_url is not null because
-        # the wait page was visited
-        client.get(participant._current_form_page_url, follow=True)
+        # if the wait page is the first page,
+        # then _current_form_page_url could be null.
+        # in this case, use the start_url() instead,
+        # because that will redirect to the current wait page.
+        # (alternatively we could define _current_page_url or
+        # current_wait_page_url)
+        url = participant._current_form_page_url or participant._start_url()
+        client.get(url, follow=True)

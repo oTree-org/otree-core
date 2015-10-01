@@ -112,9 +112,6 @@ class Participant(ModelWithVars):
         if not self.visited:
             client.get(self._start_url(), follow=True)
 
-            # ensure that _current_form_page_url is set
-            self.refresh_from_db()
-
 
     def _stop_auto_play(self):
         self._is_auto_playing = False
