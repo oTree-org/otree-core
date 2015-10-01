@@ -116,7 +116,7 @@ class Participant(ModelWithVars):
             self.refresh_from_db()
 
         resp = client.post(
-            p._current_form_page_url,
+            self._current_form_page_url,
             data={constants_internal.auto_submit: True}, follow=True
         )
         assert resp.status_code < 400
