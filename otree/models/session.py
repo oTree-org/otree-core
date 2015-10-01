@@ -255,14 +255,14 @@ class Session(ModelWithVars):
     def advance_last_place_participants(self):
         participants = self.get_participants()
 
-        c = django.test.Client()
+        client = django.test.Client()
 
         # in case some participants haven't started
         some_participants_not_visited = False
         for p in participants:
             if not p.visited:
                 some_participants_not_visited = True
-                c.get(p._start_url(), follow=True)
+                client.get(p._start_url(), follow=True)
 
         if some_participants_not_visited:
             # refresh from DB so that _current_form_page_url gets set
@@ -276,7 +276,7 @@ class Session(ModelWithVars):
 
         for p in last_place_participants:
             # what if current_form_page_url hasn't been set yet?
-            resp = c.post(
+            resp = client.post(
                 p._current_form_page_url,
                 data={constants_internal.auto_submit: True}, follow=True
             )

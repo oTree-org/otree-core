@@ -1,5 +1,6 @@
 import itertools
 import time
+import django.test
 
 from otree import constants_internal
 import otree.common_internal
@@ -65,6 +66,7 @@ class Participant(ModelWithVars):
         )
     )
 
+
     last_request_succeeded = models.BooleanField(
         verbose_name='Health of last server request'
     )
@@ -98,6 +100,30 @@ class Participant(ModelWithVars):
     _current_form_page_url = models.URLField()
 
     _max_page_index = models.PositiveIntegerField()
+
+    _is_auto_playing = models.BooleanField(default=False)
+
+    def _start_auto_play(self):
+        self._is_auto_playing = True
+        self.save()
+
+        client = django.test.Client()
+
+        if not self.visited:
+            client.get(self._start_url(), follow=True)
+
+            # ensure that _current_form_page_url is set
+            self.refresh_from_db()
+
+        resp = client.post(
+            p._current_form_page_url,
+            data={constants_internal.auto_submit: True}, follow=True
+        )
+        assert resp.status_code < 400
+
+    def _stop_auto_play(self):
+        self._is_auto_playing = False
+        self.save()
 
     def _current_page(self):
         return '{}/{} pages'.format(

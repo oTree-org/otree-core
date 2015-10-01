@@ -651,7 +651,10 @@ class FormPageMixin(object):
             return self._redirect_to_page_the_user_should_be_on()
 
         self._participant._current_form_page_url = self.request.path
-        if self.has_timeout():
+        if self._participant._is_auto_playing:
+            otree.timeout.tasks.submit_expired_url.apply_async(
+                (self.request.path,), countdown=2) # 2 seconds
+        elif self.has_timeout():
             otree.timeout.tasks.submit_expired_url.apply_async(
                 (self.request.path,), countdown=self.timeout_seconds)
         return super(FormPageMixin, self).get(request, *args, **kwargs)

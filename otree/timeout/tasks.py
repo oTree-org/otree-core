@@ -11,8 +11,8 @@ from otree import constants_internal
 @shared_task
 def submit_expired_url(url):
 
-    c = django.test.Client()
-    c.post(url, data={constants_internal.auto_submit: True}, follow=True)
+    client = django.test.Client()
+    client.post(url, data={constants_internal.auto_submit: True}, follow=True)
 
 
 @shared_task
@@ -27,7 +27,7 @@ def ensure_pages_visited(participant_pk_set, wait_page_index):
     """
 
     from otree.models.participant import Participant
-    c = django.test.Client()
+    client = django.test.Client()
 
     unvisited_participants = Participant.objects.filter(
         pk__in=participant_pk_set,
@@ -37,4 +37,4 @@ def ensure_pages_visited(participant_pk_set, wait_page_index):
     for participant in unvisited_participants:
         # we can assume _current_form_page_url is not null because
         # the wait page was visited
-        c.get(participant._current_form_page_url, follow=True)
+        client.get(participant._current_form_page_url, follow=True)
