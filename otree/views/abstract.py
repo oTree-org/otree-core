@@ -487,6 +487,7 @@ class InGameWaitPageMixin(object):
                         # should ensure the next pages are visited promptly
                         # TODO: can we make this run only if next page is a
                         # timeout page?
+                        # or if a player is auto playing.
                         # we could instead make this request the current page
                         # URL, but it's different for each player
 
