@@ -4,7 +4,8 @@
 from importlib import import_module
 
 from otree.db import models
-from otree.models.session import Session, Participant
+from otree.models.session import Session
+from otree.models.participant import Participant
 
 # NOTE: this imports the following submodules and then subclasses several
 # classes importing is done via import_module rather than an ordinary import.
@@ -16,14 +17,13 @@ from otree.models.session import Session, Participant
 # who may need more assistance from their IDE, I want to try this approach out.
 # this module is also a form of documentation of the public API.
 
-subsessions = import_module('otree.models.subsessions')
-groups = import_module('otree.models.groups')
-players = import_module('otree.models.players')
-user = import_module('otree.models.user')
-session = import_module('otree.models.session')
+subsession_module = import_module('otree.models.subsession')
+group_module = import_module('otree.models.group')
+player_module = import_module('otree.models.player')
+session_module = import_module('otree.models.session')
 
 
-class BaseSubsession(subsessions.BaseSubsession):
+class BaseSubsession(subsession_module.BaseSubsession):
 
     class Meta:
         abstract = True
@@ -71,7 +71,7 @@ class BaseSubsession(subsessions.BaseSubsession):
         return super(BaseSubsession, self).before_session_starts()
 
 
-class BaseGroup(groups.BaseGroup):
+class BaseGroup(group_module.BaseGroup):
 
     class Meta:
         abstract = True
@@ -100,7 +100,7 @@ class BaseGroup(groups.BaseGroup):
         return super(BaseGroup, self).in_all_rounds()
 
 
-class BasePlayer(players.BasePlayer):
+class BasePlayer(player_module.BasePlayer):
 
     class Meta:
         abstract = True

@@ -1,18 +1,28 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from otree.models.user import User
 from otree.common_internal import get_models_module
+from otree_save_the_change.mixins import SaveTheChange
+
+from otree.db import models
+from otree.models.session import Session
 
 
-class BasePlayer(User):
+class BasePlayer(SaveTheChange, models.Model):
     """
     Base class for all players.
     """
 
-    @property
-    def _session_user(self):
-        return self.participant
+    _index_in_game_pages = models.PositiveIntegerField(
+        default=0,
+        doc='Index in the list of pages  views_module.page_sequence'
+    )
+
+    session = models.ForeignKey(
+        Session, related_name='%(app_label)s_%(class)s'
+    )
+
+    round_number = models.PositiveIntegerField()
 
     # change this to _name? but do we think people will need to refer to names?
     def name(self):
