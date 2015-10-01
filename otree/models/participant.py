@@ -115,11 +115,6 @@ class Participant(ModelWithVars):
             # ensure that _current_form_page_url is set
             self.refresh_from_db()
 
-        resp = client.post(
-            self._current_form_page_url,
-            data={constants_internal.auto_submit: True}, follow=True
-        )
-        assert resp.status_code < 400
 
     def _stop_auto_play(self):
         self._is_auto_playing = False
