@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 from rest_framework import serializers
-from otree.models.session import Participant
+from otree.models.participant import Participant
 
 
 class ParticipantSerializer(serializers.ModelSerializer):

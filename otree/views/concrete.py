@@ -25,7 +25,7 @@ from boto.mturk.connection import MTurkRequestError
 
 import otree.constants_internal as constants
 import otree.models.session
-from otree.models.session import Participant
+from otree.models.participant import Participant
 from otree.common_internal import lock_on_this_code_path
 import otree.views.admin
 from otree.views.mturk import MTurkConnection
@@ -127,7 +127,7 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin,
     def _response_when_ready(self):
         self._increment_index_in_pages()
         # so it can be shown in the admin
-        self._session_user._round_number = self.subsession.round_number
+        self._participant._round_number = self.subsession.round_number
         return self._redirect_to_page_the_user_should_be_on()
 
     def _get_debug_tables(self):
@@ -147,30 +147,30 @@ class InitializeParticipant(vanilla.UpdateView):
     @classmethod
     def url_pattern(cls):
         return r'^InitializeParticipant/(?P<{}>[a-z]+)/$'.format(
-            constants.session_user_code
+            constants.participant_code
         )
 
     def get(self, *args, **kwargs):
 
-        session_user = get_object_or_404(
-            otree.models.session.Participant,
-            code=kwargs[constants.session_user_code]
+        participant = get_object_or_404(
+            Participant,
+            code=kwargs[constants.participant_code]
         )
 
-        session_user.visited = True
+        participant.visited = True
 
-        # session_user.label might already have been set by
+        # participant.label might already have been set by
         # AssignToDefaultSession
-        session_user.label = session_user.label or self.request.GET.get(
+        participant.label = participant.label or self.request.GET.get(
             constants.participant_label
         )
-        session_user.ip_address = self.request.META['REMOTE_ADDR']
+        participant.ip_address = self.request.META['REMOTE_ADDR']
 
         now = django.utils.timezone.now()
-        session_user.time_started = now
-        session_user._last_page_timestamp = time.time()
-        session_user.save()
-        first_url = session_user._url_i_should_be_on()
+        participant.time_started = now
+        participant._last_page_timestamp = time.time()
+        participant.save()
+        first_url = participant._url_i_should_be_on()
         return HttpResponseRedirect(first_url)
 
 
