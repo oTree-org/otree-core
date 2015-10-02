@@ -12,6 +12,7 @@
 import functools
 import itertools
 import collections
+import random
 
 
 # =============================================================================
@@ -90,49 +91,74 @@ def round_robin(subssn):
     **Warning:** This is slow, really slow. Seriously, it is very slow.
 
     """
-    # all available players
-    all_players = tuple(
-        itertools.chain.from_iterable(players_x_groups(subssn)))
 
-    def players_ids(players):
-        """Generate a unique id as tuple for a group of players"""
-        return tuple(sorted(ply.participant_id for ply in players))
+    def pxg2id(players):
+        participant_ids = [player.participant_id for player in players]
+        participant_ids.sort()
+        pxg_id = "|".join(map(str, participant_ids))
+        return pxg_id
 
-    # first retrieve all existing groups count in prev rounds groped by size
-    prev_round_buff = collections.defaultdict(
-        lambda: collections.defaultdict(int))
-    for p_subssn in subssn.in_previous_rounds():
-        for players in players_x_groups(p_subssn):
-            size, ply_ids = len(players), players_ids(players)
-            prev_round_buff[size][ply_ids] += 1
+    def usage_counts(subssn):
+        counts = {}
+        for p_subssn in subssn.in_previous_rounds():
+            for players in players_x_groups(p_subssn):
+                size = len(players)
+                if size not in counts:
+                    counts[size] = collections.defaultdict(int)
+                pxg_id = pxg2id(players)
+                counts[size][pxg_id] += 1
+        return counts
 
-    # this is subroutine for select the less frequent group
-    prev_round_lfreq = {}  # lesser frequency for a given size
-    prev_round_lfreq_players = {}  # the players with the lfreq for given size
+    def combinations_by_sizes(groups, players, counts):
+        sizes, combinations = [], {}
+        for group in groups:
+            size = len(group)
+            sizes.append(size)
+            if size not in combinations:
+                combs = []
+                for players in itertools.combinations(players, size):
+                    pxg_id = pxg2id(players)
+                    count = counts[size][pxg_id]
+                    combs.append((count, players))
+                combs.sort(key=lambda e: e[0])
+                combinations[size] = [comb[1] for comb in combs]
+        return tuple(sizes), combinations
 
-    def get_less_frequent(players, size):
-        """Get the most infrequent combintation of players"""
+    def shuffle_sizes(sizes):
+        ssizes = list(sizes)
+        random.shuffle(ssizes)
+        return ssizes
 
-        for comb in itertools.combinations(players, size):
-            ply_ids = players_ids(comb)
-            freq = prev_round_buff[size][ply_ids]
-            if freq == 0:
-                return comb
-            elif size not in prev_round_lfreq:
-                prev_round_lfreq[size] = freq
-                prev_round_lfreq_players[size] = comb
-            elif freq < prev_round_lfreq[size]:
-                prev_round_lfreq[size] = freq
-                prev_round_lfreq_players[size] = comb
-        return prev_round_lfreq_players[size]
+    def create_groups(sizes, combinations):
+        groups = []
+        used_participants = set()
+        for size in sizes:
+            comb, end, candidate = combinations[size], False, None
+            while comb and not end:
+                candidate = comb.pop(0)
+                participant_ids = [p.participant_id for p in candidate]
+                if not used_participants.intersection(participant_ids):
+                    used_participants.update(participant_ids)
+                    end = True
+            groups.append(candidate)
+        return groups
 
-    groups = []
-    for ppg in subssn._get_players_per_group_list():
-        used_players = tuple(itertools.chain(*groups))
-        candidates = [ply for ply in all_players if ply not in used_players]
-        group = get_less_frequent(candidates, ppg)
-        groups.append(group)
+    def sort_by_sizes(groups, sizes):
+        by_sizes = collections.defaultdict(list)
+        for group in groups:
+            size = len(group)
+            by_sizes[size].append(group)
+        sorted_groups = [by_sizes[size].pop() for soze in sizes]
+        return sorted_groups
 
+    groups = players_x_groups(subssn)
+    players = tuple(itertools.chain.from_iterable(groups))
+
+    counts = usage_counts(subssn)
+    sizes, combinations = combinations_by_sizes(groups, players, counts)
+    ssizes = shuffle_sizes(sizes)
+    shuffled_groups = create_groups(ssizes, combinations)
+    groups = sort_by_sizes(shuffled_groups, sizes)
     return tuple(groups)
 
 
