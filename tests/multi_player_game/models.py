@@ -39,8 +39,6 @@ class Subsession(otree.models.BaseSubsession):
         self.set_groups(matrix)
 
 
-
-
 class Group(otree.models.BaseGroup):
     # <built-in>
     subsession = models.ForeignKey(Subsession)
