@@ -3,7 +3,6 @@ import django.test
 
 from otree import constants_internal
 import otree.common_internal
-from otree.common_internal import id_label_name
 from otree.db import models
 
 
@@ -296,5 +295,3 @@ class Session(ModelWithVars):
             participant.build_participant_to_player_lookups(
                 num_pages_in_each_app
             )
-
-

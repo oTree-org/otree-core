@@ -196,13 +196,15 @@ class Participant(ModelWithVars):
                 player_pk=player.pk,
             )
             for player in self.get_players()
-            for _, page_index in zip(range(pages_for_player(player) + 1), indexes)
+            for _, page_index in zip(
+                range(pages_for_player(player) + 1),
+                indexes
+            )
             # +1 is for WaitUntilAssigned...
         ])
 
         self._max_page_index = next(indexes) - 1
         self.save()
-
 
     def __unicode__(self):
         return self.name()
@@ -246,4 +248,3 @@ class Participant(ModelWithVars):
 
     def name(self):
         return id_label_name(self.pk, self.label)
-
