@@ -1,25 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
-# =============================================================================
-# DOCS
-# =============================================================================
-
-"""This module contains many of oTree's internals.
-
-The view classes in this module are just base classes, and cannot be called
-from a URL.
-
-You should inherit from these classes and put your view class in your game
-directory (under "games/")
-
-Or in the other view file in this directory, which stores shared concrete
-views that have URLs.
-
-"""
-
-
 # =============================================================================
 # IMPORTS
 # =============================================================================
@@ -49,7 +30,7 @@ import otree.models.session
 import otree.timeout.tasks
 import otree.models
 import otree.constants_internal as constants
-from otree.models.session import Participant
+from otree.models.participant import Participant
 from otree.models.session import GlobalSingleton
 from otree.common_internal import (
     lock_on_this_code_path, get_app_label_from_import_path
@@ -57,7 +38,7 @@ from otree.common_internal import (
 
 from otree.models_concrete import (
     PageCompletion, WaitPageVisit, CompletedSubsessionWaitPage,
-    CompletedGroupWaitPage, SessionuserToUserLookup,
+    CompletedGroupWaitPage, ParticipantToPlayerLookup,
     PageTimeout, StubModel,
     ParticipantLockModel)
 
@@ -111,13 +92,13 @@ class OTreeMixin(object):
 
         # shouldn't return HttpResponseRedirect to an AJAX request
         assert not self.request.is_ajax()
-        return HttpResponseRedirect(self._session_user._url_i_should_be_on())
+        return HttpResponseRedirect(self._participant._url_i_should_be_on())
 
 
 class NonSequenceUrlMixin(object):
     @classmethod
-    def url(cls, session_user):
-        return otree.common_internal.url(cls, session_user)
+    def url(cls, participant):
+        return otree.common_internal.url(cls, participant)
 
     @classmethod
     def url_pattern(cls):
@@ -131,8 +112,8 @@ class FormPageOrWaitPageMixin(OTreeMixin):
     """
 
     @classmethod
-    def url(cls, session_user, index):
-        return otree.common_internal.url(cls, session_user, index)
+    def url(cls, participant, index):
+        return otree.common_internal.url(cls, participant, index)
 
     @classmethod
     def url_pattern(cls):
@@ -157,7 +138,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         return self.PlayerClass
 
     def objects_to_save(self):
-        objs = [self._user, self._session_user, self.session]
+        objs = [self.player, self._participant, self.session]
         if self.group:
             objs.append(self.group)
             objs.extend(list(self.group._players))
@@ -177,15 +158,15 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
         # this is the most reliable way to get the app name,
         # because of WaitUntilAssigned...
-        user_lookup = SessionuserToUserLookup.objects.get(
-            session_user_pk=self._session_user.pk,
-            page_index=self._session_user._index_in_pages)
+        player_lookup = ParticipantToPlayerLookup.objects.get(
+            participant_pk=self._participant.pk,
+            page_index=self._participant._index_in_pages)
 
-        app_name = user_lookup.app_name
-        user_pk = user_lookup.user_pk
+        app_name = player_lookup.app_name
+        player_pk = player_lookup.player_pk
 
         # for the participant changelist
-        self._session_user._current_app_name = app_name
+        self._participant._current_app_name = app_name
 
         models_module = otree.common_internal.get_models_module(app_name)
         self._models_module = models_module
@@ -193,13 +174,12 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         self.GroupClass = getattr(models_module, 'Group')
         self.PlayerClass = getattr(models_module, 'Player')
 
-        self._user = self.PlayerClass.objects.get(pk=user_pk)
+        self.player = self.PlayerClass.objects.get(pk=player_pk)
 
-        self.player = self._user
         self.group = self.player.group
 
-        self.subsession = self._user.subsession
-        self.session = self._user.session
+        self.subsession = self.player.subsession
+        self.session = self.player.session
 
     @method_decorator(never_cache)
     @method_decorator(cache_control(must_revalidate=True, max_age=0,
@@ -208,7 +188,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         try:
             with otree.common_internal.transaction_atomic():
 
-                participant_code = kwargs.pop(constants.session_user_code)
+                participant_code = kwargs.pop(constants.participant_code)
 
                 self._index_in_pages = int(
                     kwargs.pop(constants.index_in_pages))
@@ -223,7 +203,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                     participant_code=participant_code)
 
                 try:
-                    self._session_user = Participant.objects.get(
+                    self._participant = Participant.objects.get(
                         code=participant_code)
                 except Participant.DoesNotExist:
                     msg = (
@@ -249,11 +229,11 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
                 self.load_objects()
 
-                self._session_user._current_page_name = self.__class__.__name__
+                self._participant._current_page_name = self.__class__.__name__
                 response = super(FormPageOrWaitPageMixin, self).dispatch(
                     request, *args, **kwargs)
-                self._session_user.last_request_succeeded = True
-                self._session_user._last_request_timestamp = time.time()
+                self._participant.last_request_succeeded = True
+                self._participant._last_request_timestamp = time.time()
 
                 # need to render the response before saving objects,
                 # because the template might call a method that modifies
@@ -263,9 +243,9 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                 self.save_objects()
                 return response
         except Exception:
-            if hasattr(self, '_session_user'):
-                self._session_user.last_request_succeeded = False
-                self._session_user.save()
+            if hasattr(self, '_participant'):
+                self._participant.last_request_succeeded = False
+                self._participant.save()
             raise
 
     # TODO: maybe this isn't necessary, because I can figure out what page
@@ -276,11 +256,11 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         and try typing it in so they don't have to play the whole game.
         We should block that."""
 
-        return self.request.path == self._session_user._url_i_should_be_on()
+        return self.request.path == self._participant._url_i_should_be_on()
 
     def _increment_index_in_pages(self):
         # when is this not the case?
-        assert self._index_in_pages == self._session_user._index_in_pages
+        assert self._index_in_pages == self._participant._index_in_pages
 
         self._record_page_completion_time()
         # we should allow a user to move beyond the last page if it's mturk
@@ -290,8 +270,8 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         # wait pages don't have a has_timeout attribute
         if hasattr(self, 'has_timeout') and self.has_timeout():
             PageTimeout.objects.filter(
-                participant_pk=self._session_user.pk,
-                page_index=self._session_user._index_in_pages).delete()
+                participant_pk=self._participant.pk,
+                page_index=self._participant._index_in_pages).delete()
 
         # performance optimization:
         # we skip any page that is a sequence page where is_displayed
@@ -303,7 +283,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
         if self.__class__ in pages:
             pages_to_jump_by = 1
-            indexes = range(self._user._index_in_game_pages + 1, len(pages))
+            indexes = range(self.player._index_in_game_pages + 1, len(pages))
             for target_index in indexes:
                 Page = pages[target_index]
 
@@ -327,10 +307,10 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                 else:
                     break
 
-            self._user._index_in_game_pages += pages_to_jump_by
-            self._session_user._index_in_pages += pages_to_jump_by
+            self.player._index_in_game_pages += pages_to_jump_by
+            self._participant._index_in_pages += pages_to_jump_by
         else:  # e.g. if it's WaitUntil...
-            self._session_user._index_in_pages += 1
+            self._participant._index_in_pages += 1
 
     def is_displayed(self):
         return True
@@ -339,30 +319,29 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
         now = int(time.time())
 
-        last_page_timestamp = self._session_user._last_page_timestamp
+        last_page_timestamp = self._participant._last_page_timestamp
         if last_page_timestamp is None:
             logger.warning(
                 'Participant {}: _last_page_timestamp is None'.format(
-                    self._session_user.code))
+                    self._participant.code))
             last_page_timestamp = now
 
         seconds_on_page = now - last_page_timestamp
 
-        self._session_user._last_page_timestamp = now
+        self._participant._last_page_timestamp = now
         page_name = self.__class__.__name__
 
-        # FIXME: what about experimenter visits?
         completion = PageCompletion(
             app_name=self.subsession._meta.app_config.name,
             page_index=self._index_in_pages,
             page_name=page_name, time_stamp=now,
             seconds_on_page=seconds_on_page,
-            player_pk=self._user.pk,  # FIXME: delete?
+            player_pk=self.player.pk,  # FIXME: delete?
             subsession_pk=self.subsession.pk,
-            participant_pk=self._session_user.pk,
+            participant_pk=self._participant.pk,
             session_pk=self.subsession.session.pk)
         completion.save()
-        self._session_user.save()
+        self._participant.save()
 
 
 class GenericWaitPageMixin(object):
@@ -453,7 +432,7 @@ class InGameWaitPageMixin(object):
         else:
             if self._is_ready():
                 return self._response_when_ready()
-            self._session_user.is_on_wait_page = True
+            self._participant.is_on_wait_page = True
             self._record_visit()
             if not self.is_displayed():
                 self._increment_index_in_pages()
@@ -538,7 +517,7 @@ class InGameWaitPageMixin(object):
         # only bother numerating if there are just a few, otherwise it's
         # distracting
         if len(unvisited_ids) <= 3:
-            self._session_user._waiting_for_ids = ', '.join(
+            self._participant._waiting_for_ids = ', '.join(
                 'P{}'.format(id_in_session)
                 for id_in_session in unvisited_ids)
 
@@ -547,7 +526,7 @@ class InGameWaitPageMixin(object):
         visit, _ = WaitPageVisit.objects.get_or_create(
             session_pk=self.session.pk,
             page_index=self._index_in_pages,
-            id_in_session=self._session_user.id_in_session)
+            id_in_session=self._participant.id_in_session)
 
     def _action(self):
         # force to refresh from DB
@@ -561,7 +540,7 @@ class InGameWaitPageMixin(object):
         return True
 
     def _response_when_ready(self):
-        self._session_user.is_on_wait_page = False
+        self._participant.is_on_wait_page = False
         self._increment_index_in_pages()
         return self._redirect_to_page_the_user_should_be_on()
 
@@ -668,7 +647,7 @@ class FormPageMixin(object):
             self._increment_index_in_pages()
             return self._redirect_to_page_the_user_should_be_on()
 
-        self._session_user._current_form_page_url = self.request.path
+        self._participant._current_form_page_url = self.request.path
         if self.has_timeout():
             otree.timeout.tasks.submit_expired_url.apply_async(
                 (self.request.path,), countdown=self.timeout_seconds)
@@ -735,8 +714,8 @@ class FormPageMixin(object):
         current_time = int(time.time())
         expiration_time = current_time + self.timeout_seconds
         timeout, created = PageTimeout.objects.get_or_create(
-            participant_pk=self._session_user.pk,
-            page_index=self._session_user._index_in_pages,
+            participant_pk=self._participant.pk,
+            page_index=self._participant._index_in_pages,
             defaults={'expiration_time': expiration_time})
 
         return timeout.expiration_time - current_time

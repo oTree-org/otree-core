@@ -65,10 +65,10 @@ def app_name_format(app_name):
     return title(app_label.replace("_", " "))
 
 
-def url(cls, session_user, index=None):
+def url(cls, participant, index=None):
     u = '/{}/{}/{}/{}/'.format(
-        session_user.user_type_in_url,
-        session_user.code,
+        participant.user_type_in_url,
+        participant.code,
         cls.get_name_in_url(),
         cls.__name__,
     )
@@ -81,7 +81,7 @@ def url(cls, session_user, index=None):
 def url_pattern(cls, is_sequence_url=False):
     p = r'(?P<{}>\w)/(?P<{}>[a-z]+)/{}/{}/'.format(
         constants_internal.user_type,
-        constants_internal.session_user_code,
+        constants_internal.participant_code,
         cls.get_name_in_url(),
         cls.__name__,
     )
@@ -110,7 +110,7 @@ def get_app_constants(app_name):
 
     Example::
 
-        >>> from otree.subsessions import get_app_constants
+        >>> from otree.common_internal import get_app_constants
         >>> get_app_constants('demo_game')
         <class demo_game.models.Constants at 0x7fed46bdb188>
 
@@ -151,7 +151,8 @@ def export_docs(fp, app_name):
     """Write the dcos of the given app name as csv into the file-like object
 
     """
-    from otree.models import session
+    from otree.models.session import Session
+    from otree.models.participant import Participant
     from otree.views.admin import get_all_fields
 
     # generate doct_dict
@@ -182,9 +183,9 @@ def export_docs(fp, app_name):
 
         for model_name in model_names:
             if model_name == 'Participant':
-                Model = session.Participant
+                Model = Participant
             elif model_name == 'Session':
-                Model = session.Session
+                Model = Session
             else:
                 Model = getattr(models_module, model_name)
 

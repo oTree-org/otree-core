@@ -8,7 +8,8 @@ from django.conf import settings
 from django.db import transaction
 
 from otree import constants_internal
-from otree.models.session import Session, Participant
+from otree.models.session import Session
+from otree.models.participant import Participant
 from otree.common_internal import (
     get_models_module, get_app_constants,
     min_players_multiple)
@@ -222,7 +223,7 @@ def create_session(session_config_name, label='', num_participants=None,
             for participant in participants])
 
     session._create_groups_and_initialize()
-    session.build_session_user_to_user_lookups()
+    session.build_participant_to_player_lookups()
     session.ready = True
     session.save()
 

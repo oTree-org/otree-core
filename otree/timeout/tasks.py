@@ -26,7 +26,7 @@ def ensure_pages_visited(participant_pk_set, wait_page_index):
 
     """
 
-    from otree.models.session import Participant
+    from otree.models.participant import Participant
     c = django.test.Client()
 
     unvisited_participants = Participant.objects.filter(
