@@ -19,14 +19,6 @@ class BaseSubsession(SaveTheChange, models.Model):
 
     code = models.RandomCharField(length=8)
 
-    # FIXME: this should start at 1, to be consistent with id_in_group
-    _index_in_subsessions = models.PositiveIntegerField(
-        null=True, doc=(
-            "starts from 0. indicates the position of this subsession "
-            "among other subsessions in the session."
-        )
-    )
-
     def in_previous_rounds(self):
         qs = type(self).objects.filter(
             session=self.session,

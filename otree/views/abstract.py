@@ -336,7 +336,6 @@ class FormPageOrWaitPageMixin(OTreeMixin):
             page_index=self._index_in_pages,
             page_name=page_name, time_stamp=now,
             seconds_on_page=seconds_on_page,
-            player_pk=self.player.pk,  # FIXME: delete?
             subsession_pk=self.subsession.pk,
             participant_pk=self._participant.pk,
             session_pk=self.subsession.session.pk)

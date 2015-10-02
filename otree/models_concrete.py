@@ -6,7 +6,6 @@ class PageCompletion(models.Model):
         app_label = "otree"
 
     app_name = models.CharField(max_length=300)
-    player_pk = models.PositiveIntegerField()
     page_index = models.PositiveIntegerField()
     page_name = models.CharField(max_length=300)
     time_stamp = models.PositiveIntegerField()

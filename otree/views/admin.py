@@ -53,7 +53,6 @@ def get_all_fields(Model, for_export=False):
             'page_name',
             'time_stamp',
             'seconds_on_page',
-            'player_pk',
             'subsession_pk',
         ]
 
@@ -161,7 +160,6 @@ def get_all_fields(Model, for_export=False):
             'label',
             'session',
             'session_access_code',
-            '_index_in_subsessions',
         },
     }[Model.__name__]
 
