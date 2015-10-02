@@ -7,7 +7,7 @@ from otree.common_internal import id_label_name
 
 from otree.common import Currency as c
 from otree.db import models
-from otree.models_concrete import ParticipantToUserLookup
+from otree.models_concrete import ParticipantToPlayerLookup
 from otree.models.session import Session, ModelWithVars
 
 
@@ -104,7 +104,7 @@ class Participant(ModelWithVars):
             self._index_in_pages, self._max_page_index
         )
 
-    def get_users(self):
+    def get_players(self):
         """Used to calculate payoffs"""
         lst = []
         app_sequence = self.session.config['app_sequence']
@@ -144,8 +144,8 @@ class Participant(ModelWithVars):
         from otree.views.concrete import WaitUntilAssignedToGroup
 
         pages = []
-        for user in self.get_users():
-            app_name = user._meta.app_config.name
+        for player in self.get_players():
+            app_name = player._meta.app_config.name
             views_module = otree.common_internal.get_views_module(app_name)
             subsession_pages = (
                 [WaitUntilAssignedToGroup] + views_module.page_sequence
@@ -181,22 +181,22 @@ class Participant(ModelWithVars):
             from otree.views.concrete import OutOfRangeNotification
             return OutOfRangeNotification.url(self)
 
-    def build_participant_to_user_lookups(self, num_pages_in_each_app):
+    def build_participant_to_player_lookups(self, num_pages_in_each_app):
 
-        def pages_for_user(user):
-            return num_pages_in_each_app[user._meta.app_config.name]
+        def pages_for_player(player):
+            return num_pages_in_each_app[player._meta.app_config.name]
 
         indexes = itertools.count()
 
-        ParticipantToUserLookup.objects.bulk_create([
-            ParticipantToUserLookup(
+        ParticipantToPlayerLookup.objects.bulk_create([
+            ParticipantToPlayerLookup(
                 participant_pk=self.pk,
                 page_index=page_index,
-                app_name=user._meta.app_config.name,
-                user_pk=user.pk,
+                app_name=player._meta.app_config.name,
+                player_pk=player.pk,
             )
-            for user in self.get_users()
-            for _, page_index in zip(range(pages_for_user(user) + 1), indexes)
+            for player in self.get_players()
+            for _, page_index in zip(range(pages_for_player(player) + 1), indexes)
             # +1 is for WaitUntilAssigned...
         ])
 
@@ -209,9 +209,6 @@ class Participant(ModelWithVars):
 
     def _start_url(self):
         return '/InitializeParticipant/{}'.format(self.code)
-
-    def get_players(self):
-        return self.get_users()
 
     @property
     def payoff(self):

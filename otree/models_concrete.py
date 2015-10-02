@@ -56,14 +56,14 @@ class CompletedSubsessionWaitPage(models.Model):
     session_pk = models.PositiveIntegerField()
 
 
-class ParticipantToUserLookup(models.Model):
+class ParticipantToPlayerLookup(models.Model):
     class Meta:
         app_label = "otree"
 
     participant_pk = models.PositiveIntegerField()
     page_index = models.PositiveIntegerField()
     app_name = models.CharField(max_length=300)
-    user_pk = models.PositiveIntegerField()
+    player_pk = models.PositiveIntegerField()
 
 
 class GroupSize(models.Model):
