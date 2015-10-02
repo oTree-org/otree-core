@@ -146,9 +146,8 @@ def round_robin(subssn):
     def sort_by_sizes(groups, sizes):
         by_sizes = collections.defaultdict(list)
         for group in groups:
-            size = len(group)
-            by_sizes[size].append(group)
-        sorted_groups = [by_sizes[size].pop() for soze in sizes]
+            by_sizes[len(group)].append(group)
+        sorted_groups = [by_sizes[size].pop() for size in sizes]
         return sorted_groups
 
     groups = players_x_groups(subssn)
