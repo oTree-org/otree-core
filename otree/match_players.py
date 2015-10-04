@@ -83,6 +83,22 @@ def players_x_groups(subssn):
 # MATCH
 # =============================================================================
 
+@match_func("random", "uniform", "players_random")
+def players_random(subssn):
+    """Random Uniform distribution of players in every group"""
+    groups = players_x_groups(subssn)
+    players = list(itertools.chain.from_iterable(groups))
+    sizes = [len(group) for group in groups]
+
+    random.shuffle(players)
+    groups, offset, limit = [], 0, 0
+    for size in sizes:
+        limit = offset + size
+        groups.append(players[offset:limit])
+        offset = limit
+    return tuple(groups)
+
+
 @match_func("perfect_strangers", "round_robin")
 def round_robin(subssn):
     """Try to generate every group of players with a lesser probabilty to mix

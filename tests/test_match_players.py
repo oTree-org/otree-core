@@ -30,12 +30,19 @@ class TestMatchPlayers(TestCase):
         actual = tuple(itertools.chain(*groups))
         self.assertItemsEqual(actual, expected)
 
+    def assert_groups_sizes(self, groups, expected):
+        actual = [len(g) for g in groups]
+        self.assertItemsEqual(actual, expected)
+
     def assert_matchs(self, names, validator):
         previous = []
         for alias in names:
             func = match_players.MATCHS[alias]
             for subssn in self.session.get_subsessions():
+                sizes = [
+                    len(g) for g in match_players.players_x_groups(subssn)]
                 groups = func(subssn)
+                self.assert_groups_sizes(groups, sizes)
                 validator(
                     groups, subssn, subssn.get_players(),
                     subssn.round_number, previous)
@@ -49,6 +56,15 @@ class TestMatchPlayers(TestCase):
         actual = [p.participant for p in actual]
         expected = [p.participant for p in expected]
         self.assertListEqual(actual, expected)
+
+    def test_random(self):
+        names = ["random", "uniform", "players_random"]
+
+        def validator(groups, subssn, players, round_number, previous):
+            self.assert_groups_contains(groups, players)
+
+        self.assert_aliases(match_players.players_random, names)
+        self.assert_matchs(names, validator)
 
     def test_round_robin(self):
         names = ["perfect_strangers", "round_robin"]
