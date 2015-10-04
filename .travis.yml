@@ -3,7 +3,7 @@ sudo: false
 install:
   - pip install tox
 script:
-  - tox
+  - tox -r
 env:
   - TOXENV=py2.7-unittest
   - TOXENV=py2.7-integration
