@@ -239,12 +239,5 @@ class Participant(ModelWithVars):
     def payoff_is_complete(self):
         return all(p.payoff is not None for p in self.get_players())
 
-    def money_to_pay_display(self):
-        complete = self.payoff_is_complete()
-        money_to_pay = self.money_to_pay()
-        if complete:
-            return money_to_pay
-        return u'{} (incomplete)'.format(money_to_pay)
-
     def name(self):
         return id_label_name(self.pk, self.label)
