@@ -51,9 +51,10 @@ class Participant(ModelWithVars):
 
     id_in_session = models.PositiveIntegerField(null=True)
 
-    def _id_in_session_display(self):
+    def _id_in_session(self):
+        """the human-readable version."""
         return 'P{}'.format(self.id_in_session)
-    _id_in_session_display.short_description = 'Participant'
+
     _waiting_for_ids = models.CharField(null=True, max_length=300)
 
     code = models.RandomCharField(

@@ -74,7 +74,7 @@ def get_all_fields(Model, for_export=False):
     if Model is Participant:
         if for_export:
             return [
-                '_id_in_session_display',
+                '_id_in_session',
                 'code',
                 'label',
                 '_current_page',
@@ -94,7 +94,7 @@ def get_all_fields(Model, for_export=False):
             ]
         else:
             return [
-                '_id_in_session_display',
+                '_id_in_session',
                 'code',
                 'label',
                 '_current_page',
@@ -714,7 +714,7 @@ class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
         session = self.session
 
         participants = session.get_participants()
-        participant_labels = [p._id_in_session_display() for p in participants]
+        participant_labels = [p._id_in_session() for p in participants]
         column_name_tuples = []
         rows = []
 

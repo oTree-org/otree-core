@@ -129,7 +129,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
             ('ID in group', self.player.id_in_group),
             ('Group', group_id),
             ('Round number', self.subsession.round_number),
-            ('Participant', self.player.participant._id_in_session_display()),
+            ('Participant', self.player.participant._id_in_session()),
             ('Participant label', self.player.participant.label or ''),
             ('Session code', self.session.code)]
         return [DebugTable(title='Basic info', rows=rows)]
