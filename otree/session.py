@@ -77,8 +77,9 @@ def validate_session_config(session_config):
     if len(app_sequence) != len(set(app_sequence)):
         msg = (
             'app_sequence of "{}" in settings.py '
-            'must not contain duplicate elements. If you want multiple '
-            'rounds, you should set Constants.num_rounds.')
+            'must not contain duplicate elements. '
+            'If you want multiple rounds, '
+            'you should set Constants.num_rounds.')
         raise ValueError(msg.format(session_config['name']))
 
     if len(app_sequence) == 0:

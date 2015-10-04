@@ -57,8 +57,11 @@ session_special_category_bots = 'bots'
 session_special_category_demo = 'demo'
 access_code_for_default_session = 'access_code_for_default_session'
 
-form_page_poll_interval_seconds = 5
-wait_page_poll_interval_seconds = 10
+form_page_poll_interval_seconds = 8
+# more important for wait page interval to be quick
+# than for form page interval, because wait pages are
+# more frequently used than the "skip forward" button.
+wait_page_poll_interval_seconds = 5
 
 exceptions_conversors = {
     utils.OperationalError: lambda exception: utils.OperationalError(
