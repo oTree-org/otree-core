@@ -213,6 +213,9 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                     raise Http404(msg)
 
                 if cond:
+                    self._participant.last_request_succeeded = True
+                    self._participant._last_request_timestamp = time.time()
+                    self._participant.save()
                     if self._user_is_on_right_page():
                         return HttpResponse('0')
                     return HttpResponse('1')
