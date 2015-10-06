@@ -36,10 +36,6 @@ class Group(BaseGroup):
     subsession = models.ForeignKey(Subsession)
     # </built-in>
 
-    def set_payoffs(self):
-        for p in self.get_players():
-            p.payoff = 0 # change to whatever the payoff should be
-
 
 class Player(BasePlayer):
     # <built-in>
