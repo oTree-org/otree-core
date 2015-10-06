@@ -729,8 +729,9 @@ class FormPageMixin(object):
         new_tables = []
         if self._vars_for_template:
             rows = sorted(self._vars_for_template.items())
-            new_tables.append(
-                DebugTable(title='vars_for_template', rows=rows),)
+            title = 'Template Vars (<code>{}</code>/<code>{}</code>)'.format(
+                'vars_for_template()', 'vars_for_all_templates()')
+            new_tables.append(DebugTable(title=title, rows=rows))
         return super_tables + new_tables
 
 

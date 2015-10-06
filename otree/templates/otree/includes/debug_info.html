@@ -7,16 +7,30 @@
 
 {% for table in view.debug_tables %}
     <div class="panel panel-warning">
-        <div class="panel-heading">{{ table.title }}</div>
-        <table class="table table-hover">
-
-            {% for k, v in table.rows %}
-                <tr><td>{{ k }}</td> <td><code>{{ v }}</code></td></tr>
-            {% endfor %}
-        </table>
+        <div class="panel-heading">{{ table.title|safe }}</div>
+        <div class="scrollable">
+            <table class="table table-hover table-debug">
+                {% for k, v in table.rows %}
+                    <tr>
+                        <td class="debug-var-name">{{ k }}</td>
+                        <td class="debug-var-value">
+                            {% if v|is_text %}
+                            <code>{{ v|strip|br }}</code>
+                            {% else %}
+                            <code>{{ v }}</code>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
     </div>
 {% endfor %}
 
-<p><small style="color: #999999">To hide debug info, set the <span style="font-family: monospace">OTREE_PRODUCTION</span>
-    environment variable to 1 (as indicated in <span style="font-family: monospace">settings.py</span>).</small></p>
+<p class="text-center text-info">
+    <small>
+        To hide debug info, set the <code>OTREE_PRODUCTION</code>
+        environment variable to 1 (as indicated in <code>settings.py</code>).
+    </small>
+</p>
 </div>
