@@ -18,7 +18,6 @@ import decimal
 from django import template
 from django.template.loader import render_to_string
 from django.core.urlresolvers import Resolver404, reverse
-from django.template.defaultfilters import stringfilter
 from django.utils.safestring import mark_safe
 
 from .otree_forms import FormNode
@@ -115,7 +114,6 @@ def as_repr(var):
 
 
 @register.filter(name='strip')
-@stringfilter
 def strip(var):
     return var.strip()
 
@@ -137,7 +135,6 @@ def is_text(var):
 
 
 @register.filter(name='br', is_safe=True)
-@stringfilter
 def br(var):
     result = var.replace("\n", "<br>")
     return mark_safe(result)
