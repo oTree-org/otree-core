@@ -6,7 +6,7 @@
 
 # start patch releases at .10, not .0 or .1,
 # because then alphabetical ordering will match lexical ordering
-# e.g. users won't think that 0.4.5 is newer than 0.4.49
+# e.g. users might think that 0.4.5 is newer than 0.4.49
 VERSION = ('0', '4', '10')
 
 __version__ = ".".join(VERSION)
