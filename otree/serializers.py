@@ -9,7 +9,7 @@ class ParticipantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Participant
         fields = [
-            '_id_in_session_display',
+            '_id_in_session',
             'code',
             'label',
             '_current_page',

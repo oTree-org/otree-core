@@ -21,7 +21,7 @@ import IPy
 import otree
 from otree import forms
 from otree.views.abstract import AdminSessionPageMixin
-from otree.checks.mturk import validate_session_for_mturk
+# from otree.checks.mturk import validate_session_for_mturk
 from otree import deprecate
 
 
@@ -121,7 +121,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             return True
 
     def get(self, request, *args, **kwargs):
-        validate_session_for_mturk(request, self.session)
+        # validate_session_for_mturk(request, self.session)
         mturk_settings = self.session.config['mturk_hit_settings']
         initial = {
             'title': mturk_settings['title'],

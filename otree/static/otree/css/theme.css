@@ -62,3 +62,23 @@ input[type=number] { -moz-appearance : textfield; }
     margin-top:5px;
     margin-bottom:5px;
 }
+
+
+/* DEBUG TOOLBAR */
+
+.scrollable {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+}
+
+table.table-debug td.debug-var-name {
+    width: 20% !important;
+
+}
+
+table.table-debug td.debug-var-value {
+    max-width: 0px;
+}

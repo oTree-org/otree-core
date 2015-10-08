@@ -38,7 +38,7 @@ from otree.common_internal import (
 
 from otree.models_concrete import (
     PageCompletion, WaitPageVisit, CompletedSubsessionWaitPage,
-    CompletedGroupWaitPage, ParticipantToUserLookup,
+    CompletedGroupWaitPage, ParticipantToPlayerLookup,
     PageTimeout, StubModel,
     ParticipantLockModel)
 
@@ -129,7 +129,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
             ('ID in group', self.player.id_in_group),
             ('Group', group_id),
             ('Round number', self.subsession.round_number),
-            ('Participant', self.player.participant._id_in_session_display()),
+            ('Participant', self.player.participant._id_in_session()),
             ('Participant label', self.player.participant.label or ''),
             ('Session code', self.session.code)]
         return [DebugTable(title='Basic info', rows=rows)]
@@ -138,7 +138,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         return self.PlayerClass
 
     def objects_to_save(self):
-        objs = [self._user, self._participant, self.session]
+        objs = [self.player, self._participant, self.session]
         if self.group:
             objs.append(self.group)
             objs.extend(list(self.group._players))
@@ -158,12 +158,12 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
         # this is the most reliable way to get the app name,
         # because of WaitUntilAssigned...
-        user_lookup = ParticipantToUserLookup.objects.get(
+        player_lookup = ParticipantToPlayerLookup.objects.get(
             participant_pk=self._participant.pk,
             page_index=self._participant._index_in_pages)
 
-        app_name = user_lookup.app_name
-        user_pk = user_lookup.user_pk
+        app_name = player_lookup.app_name
+        player_pk = player_lookup.player_pk
 
         # for the participant changelist
         self._participant._current_app_name = app_name
@@ -174,13 +174,12 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         self.GroupClass = getattr(models_module, 'Group')
         self.PlayerClass = getattr(models_module, 'Player')
 
-        self._user = self.PlayerClass.objects.get(pk=user_pk)
+        self.player = self.PlayerClass.objects.get(pk=player_pk)
 
-        self.player = self._user
         self.group = self.player.group
 
-        self.subsession = self._user.subsession
-        self.session = self._user.session
+        self.subsession = self.player.subsession
+        self.session = self.player.session
 
     @method_decorator(never_cache)
     @method_decorator(cache_control(must_revalidate=True, max_age=0,
@@ -214,6 +213,9 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                     raise Http404(msg)
 
                 if cond:
+                    self._participant.last_request_succeeded = True
+                    self._participant._last_request_timestamp = time.time()
+                    self._participant.save()
                     if self._user_is_on_right_page():
                         return HttpResponse('0')
                     return HttpResponse('1')
@@ -284,7 +286,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
 
         if self.__class__ in pages:
             pages_to_jump_by = 1
-            indexes = range(self._user._index_in_game_pages + 1, len(pages))
+            indexes = range(self.player._index_in_game_pages + 1, len(pages))
             for target_index in indexes:
                 Page = pages[target_index]
 
@@ -308,7 +310,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                 else:
                     break
 
-            self._user._index_in_game_pages += pages_to_jump_by
+            self.player._index_in_game_pages += pages_to_jump_by
             self._participant._index_in_pages += pages_to_jump_by
         else:  # e.g. if it's WaitUntil...
             self._participant._index_in_pages += 1
@@ -332,13 +334,11 @@ class FormPageOrWaitPageMixin(OTreeMixin):
         self._participant._last_page_timestamp = now
         page_name = self.__class__.__name__
 
-        # FIXME: what about experimenter visits?
         completion = PageCompletion(
             app_name=self.subsession._meta.app_config.name,
             page_index=self._index_in_pages,
             page_name=page_name, time_stamp=now,
             seconds_on_page=seconds_on_page,
-            player_pk=self._user.pk,  # FIXME: delete?
             subsession_pk=self.subsession.pk,
             participant_pk=self._participant.pk,
             session_pk=self.subsession.session.pk)
@@ -733,8 +733,9 @@ class FormPageMixin(object):
         new_tables = []
         if self._vars_for_template:
             rows = sorted(self._vars_for_template.items())
-            new_tables.append(
-                DebugTable(title='vars_for_template', rows=rows),)
+            title = 'Template Vars (<code>{}</code>/<code>{}</code>)'.format(
+                'vars_for_template()', 'vars_for_all_templates()')
+            new_tables.append(DebugTable(title=title, rows=rows))
         return super_tables + new_tables
 
 

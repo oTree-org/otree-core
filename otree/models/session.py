@@ -3,7 +3,6 @@ import django.test
 
 from otree import constants_internal
 import otree.common_internal
-from otree.common_internal import id_label_name
 from otree.db import models
 
 
@@ -284,7 +283,7 @@ class Session(ModelWithVars):
             )
             assert resp.status_code < 400
 
-    def build_participant_to_user_lookups(self):
+    def build_participant_to_player_lookups(self):
         subsession_app_names = self.config['app_sequence']
 
         num_pages_in_each_app = {}
@@ -295,8 +294,6 @@ class Session(ModelWithVars):
             num_pages_in_each_app[app_name] = num_pages
 
         for participant in self.get_participants():
-            participant.build_participant_to_user_lookups(
+            participant.build_participant_to_player_lookups(
                 num_pages_in_each_app
             )
-
-

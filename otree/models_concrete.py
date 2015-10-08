@@ -6,7 +6,6 @@ class PageCompletion(models.Model):
         app_label = "otree"
 
     app_name = models.CharField(max_length=300)
-    player_pk = models.PositiveIntegerField()
     page_index = models.PositiveIntegerField()
     page_name = models.CharField(max_length=300)
     time_stamp = models.PositiveIntegerField()
@@ -56,14 +55,14 @@ class CompletedSubsessionWaitPage(models.Model):
     session_pk = models.PositiveIntegerField()
 
 
-class ParticipantToUserLookup(models.Model):
+class ParticipantToPlayerLookup(models.Model):
     class Meta:
         app_label = "otree"
 
     participant_pk = models.PositiveIntegerField()
     page_index = models.PositiveIntegerField()
     app_name = models.CharField(max_length=300)
-    user_pk = models.PositiveIntegerField()
+    player_pk = models.PositiveIntegerField()
 
 
 class GroupSize(models.Model):

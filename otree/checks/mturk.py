@@ -37,20 +37,6 @@ class ValidateMTurk(object):
                 return False
         return True
 
-    def check_group_by_arrival_time(self):
-        '''
-        if any app contains a WaitPage then group_by_arrival_time must
-        be set to True.
-        '''
-        no_wait_pages = all(
-            self.app_has_no_wait_pages(app) for app in
-            self.session.config['app_sequence']
-        )
-        if no_wait_pages:
-            return True
-        else:
-            return self.session.config.get('group_by_arrival_time')
-
     def get_no_timeout_pages(self):
         '''
         if an app contains a WaitPage then each Page of that app
@@ -81,12 +67,6 @@ def validate_session_for_mturk(request, session):
              'When using oTree on MTurk,'
              'even the last page should have a next button.')
             % (page.get_template_names(), page.__class__.__name__)
-        )
-    if not v.check_group_by_arrival_time():
-        messages.warning(
-            request,
-            ('You should set group_by_arrival_time in settings.py, '
-             'and then create a new session')
         )
     for page in v.get_no_timeout_pages():
         messages.warning(

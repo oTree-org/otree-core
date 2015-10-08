@@ -77,7 +77,9 @@ def validate_session_config(session_config):
     if len(app_sequence) != len(set(app_sequence)):
         msg = (
             'app_sequence of "{}" in settings.py '
-            'must not contain duplicate elements')
+            'must not contain duplicate elements. '
+            'If you want multiple rounds, '
+            'you should set Constants.num_rounds.')
         raise ValueError(msg.format(session_config['name']))
 
     if len(app_sequence) == 0:
@@ -223,7 +225,7 @@ def create_session(session_config_name, label='', num_participants=None,
             for participant in participants])
 
     session._create_groups_and_initialize()
-    session.build_participant_to_user_lookups()
+    session.build_participant_to_player_lookups()
     session.ready = True
     session.save()
 
