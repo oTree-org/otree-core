@@ -21,7 +21,7 @@ import IPy
 import otree
 from otree import forms
 from otree.views.abstract import AdminSessionPageMixin
-from otree.checks.mturk import validate_session_for_mturk
+# from otree.checks.mturk import validate_session_for_mturk
 from otree import deprecate
 
 
