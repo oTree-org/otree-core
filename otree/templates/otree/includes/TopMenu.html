@@ -24,6 +24,9 @@
                 <li><a href="{% url 'persistent_lab_urls' %}">Persistent URLs</a></li>
             </ul>
             </li>
+            {% if request.user.is_authenticated %}
+                <li><a href="{% url 'logout' %}">Logout</a></li>
+            {% endif %}
         </ul>
     </div><!--/.nav-collapse -->
 </div><!--/.navbar -->
