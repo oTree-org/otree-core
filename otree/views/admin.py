@@ -318,7 +318,7 @@ class PersistentLabURLs(vanilla.TemplateView):
         for i in range(1, 20):
             data_urls = add_params_to_url(
                 default_session_base_url,
-                {otree.constants_internal.participant_label: 'P{}'.format(i)})
+                {otree.constants_internal.participant_label: 'PC-{}'.format(i)})
             default_session_example_urls.append(data_urls)
         global_singleton = GlobalSingleton.objects.get()
         default_session = global_singleton.default_session
