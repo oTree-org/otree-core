@@ -227,6 +227,7 @@ class Rules(object):
                         app_label, name, fk_name, app_label, fk_model_name)
                 return self.error(msg)
 
+
 def _get_all_configs():
     return [
         app
@@ -288,7 +289,6 @@ def model_classes(rules, **kwargs):
 
     rules.has_foreing_keys("Group", subsession="Subsession")
     rules.has_foreing_keys("Player", subsession="Subsession", group="Group")
-
 
 
 @register_rules(id='otree.E003')
