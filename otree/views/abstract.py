@@ -177,7 +177,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
 
         return [basic_info_table] + new_tables
 
-
     def get_UserClass(self):
         return self.PlayerClass
 
@@ -746,7 +745,6 @@ class FormPageMixin(object):
         return timeout.expiration_time - current_time
 
     timeout_seconds = None
-
 
 
 class PlayerUpdateView(FormPageMixin, FormPageOrInGameWaitPageMixin,

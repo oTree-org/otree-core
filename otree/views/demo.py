@@ -4,7 +4,6 @@ import threading
 import time
 
 from django.conf import settings
-from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
