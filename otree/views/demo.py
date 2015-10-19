@@ -105,7 +105,7 @@ def get_session(session_config_name):
         return sessions[0]
 
 
-class CreateDemoSession(GenericWaitPageMixin, vanilla.View):
+class CreateDemoSession(GenericWaitPageMixin, vanilla.GenericView):
 
     @classmethod
     def url_pattern(cls):
@@ -166,11 +166,6 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.View):
         self.session_config_name = kwargs['session_config']
         return super(CreateDemoSession, self).dispatch(
             request, *args, **kwargs
-        )
-
-    def _get_wait_page(self):
-        return TemplateResponse(
-            self.request, 'otree/WaitPage.html', {'view': self}
         )
 
 

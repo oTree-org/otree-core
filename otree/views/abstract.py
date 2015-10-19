@@ -105,7 +105,7 @@ class NonSequenceUrlMixin(object):
         return otree.common_internal.url_pattern(cls, False)
 
 
-class FormPageOrWaitPageMixin(OTreeMixin):
+class FormPageOrInGameWaitPageMixin(OTreeMixin):
     """
     View that manages its position in the group sequence.
     for both players and experimenters
@@ -119,20 +119,64 @@ class FormPageOrWaitPageMixin(OTreeMixin):
     def url_pattern(cls):
         return otree.common_internal.url_pattern(cls, True)
 
+    def get_context_data(self, **kwargs):
+        context = super(FormPageOrInGameWaitPageMixin,
+                        self).get_context_data(**kwargs)
+        context.update({
+            'form': kwargs.get('form'),
+            'player': self.player,
+            'group': self.group,
+            'subsession': self.subsession,
+            'Constants': self._models_module.Constants})
+        vars_for_template = self.resolve_vars_for_template()
+        context.update(vars_for_template)
+        self._vars_for_template = vars_for_template
+        if settings.DEBUG:
+            self.debug_tables = self._get_debug_tables()
+        return context
+
+    def vars_for_template(self):
+        return {}
+
+    def resolve_vars_for_template(self):
+        """Resolve all vars for template including "vars_for_all_templates"
+
+        """
+        context = {}
+        views_module = otree.common_internal.get_views_module(
+            self.subsession._meta.app_config.name)
+        if hasattr(views_module, 'vars_for_all_templates'):
+            context.update(views_module.vars_for_all_templates(self) or {})
+        context.update(self.vars_for_template() or {})
+        return context
+
     def _get_debug_tables(self):
         try:
             group_id = self.group.id_in_subsession
         except:
             group_id = ''
 
-        rows = [
-            ('ID in group', self.player.id_in_group),
-            ('Group', group_id),
-            ('Round number', self.subsession.round_number),
-            ('Participant', self.player.participant._id_in_session()),
-            ('Participant label', self.player.participant.label or ''),
-            ('Session code', self.session.code)]
-        return [DebugTable(title='Basic info', rows=rows)]
+        basic_info_table = DebugTable(
+            title='Basic info',
+            rows=[
+                ('ID in group', self.player.id_in_group),
+                ('Group', group_id),
+                ('Round number', self.subsession.round_number),
+                ('Participant', self.player.participant._id_in_session()),
+                ('Participant label', self.player.participant.label or ''),
+                ('Session code', self.session.code)
+            ]
+        )
+
+        new_tables = []
+        if self._vars_for_template:
+            rows = sorted(self._vars_for_template.items())
+            title = 'Template Vars (<code>{}</code>/<code>{}</code>)'.format(
+                'vars_for_template()', 'vars_for_all_templates()')
+            new_tables.append(DebugTable(title=title, rows=rows))
+
+        return [basic_info_table] + new_tables
+
 
     def get_UserClass(self):
         return self.PlayerClass
@@ -233,7 +277,7 @@ class FormPageOrWaitPageMixin(OTreeMixin):
                 self.load_objects()
 
                 self._participant._current_page_name = self.__class__.__name__
-                response = super(FormPageOrWaitPageMixin, self).dispatch(
+                response = super(FormPageOrInGameWaitPageMixin, self).dispatch(
                     request, *args, **kwargs)
                 self._participant.last_request_succeeded = True
                 self._participant._last_request_timestamp = time.time()
@@ -356,10 +400,7 @@ class GenericWaitPageMixin(object):
     # for duck typing, indicates this is a wait page
     _wait_page_flag = True
 
-    # TODO: this is intended to be in the user's project, not part of oTree
-    # core. But maybe have one in oTree core as a fallback in case the user
-    # doesn't have it.
-    wait_page_template_name = 'otree/WaitPage.html'
+    template_name = 'global/WaitPage.html'
 
     def title_text(self):
         # Translators: the default title of a wait page
@@ -391,11 +432,13 @@ class GenericWaitPageMixin(object):
     def _response_to_wait_page(self):
         return HttpResponse(int(bool(self._is_ready())))
 
+    def get_template_names(self):
+        """fallback to otree/WaitPage.html, which is guaranteed to exist"""
+        return [self.template_name, 'otree/WaitPage.html']
+
     def _get_wait_page(self):
-        if settings.DEBUG:
-            self.debug_tables = self._get_debug_tables()
         response = TemplateResponse(
-            self.request, self.wait_page_template_name, {'view': self})
+            self.request, self.get_template_names(), self.get_context_data())
         response[constants.wait_page_http_header] = (
             constants.get_param_truth_value)
         return response
@@ -414,6 +457,16 @@ class GenericWaitPageMixin(object):
                 return self._response_when_ready()
             self._before_returning_wait_page()
             return self._get_wait_page()
+
+    def get_context_data(self, **kwargs):
+        context = super(GenericWaitPageMixin, self).get_context_data(**kwargs)
+        title_text = self.title_text()
+        body_text = self.body_text()
+        context.update({
+            'title_text': title_text if title_text is not None else '',
+            'body_text':  body_text if body_text is not None else ''
+        })
+        return context
 
 
 class InGameWaitPageMixin(object):
@@ -600,21 +653,6 @@ class FormPageMixin(object):
     def before_next_page(self):
         pass
 
-    def get_context_data(self, **kwargs):
-        context = super(FormPageMixin, self).get_context_data(**kwargs)
-        context.update({
-            'form': kwargs.get('form'),
-            'player': self.player,
-            'group': self.group,
-            'subsession': self.subsession,
-            'Constants': self._models_module.Constants})
-        vars_for_template = self.resolve_vars_for_template()
-        context.update(vars_for_template)
-        self._vars_for_template = vars_for_template
-        if settings.DEBUG:
-            self.debug_tables = self._get_debug_tables()
-        return context
-
     def get_form(self, data=None, files=None, **kwargs):
         """Given `data` and `files` QueryDicts, and optionally other named
         arguments, and returns a form.
@@ -622,21 +660,6 @@ class FormPageMixin(object):
         """
         cls = self.get_form_class()
         return cls(data=data, files=files, view=self, **kwargs)
-
-    def vars_for_template(self):
-        return {}
-
-    def resolve_vars_for_template(self):
-        """Resolve all vars for template including "vars_for_all_templates"
-
-        """
-        context = {}
-        views_module = otree.common_internal.get_views_module(
-            self.subsession._meta.app_config.name)
-        if hasattr(views_module, 'vars_for_all_templates'):
-            context.update(views_module.vars_for_all_templates(self) or {})
-        context.update(self.vars_for_template() or {})
-        return context
 
     def form_invalid(self, form):
         response = super(FormPageMixin, self).form_invalid(form)
@@ -724,18 +747,9 @@ class FormPageMixin(object):
 
     timeout_seconds = None
 
-    def _get_debug_tables(self):
-        super_tables = super(FormPageMixin, self)._get_debug_tables()
-        new_tables = []
-        if self._vars_for_template:
-            rows = sorted(self._vars_for_template.items())
-            title = 'Template Vars (<code>{}</code>/<code>{}</code>)'.format(
-                'vars_for_template()', 'vars_for_all_templates()')
-            new_tables.append(DebugTable(title=title, rows=rows))
-        return super_tables + new_tables
 
 
-class PlayerUpdateView(FormPageMixin, FormPageOrWaitPageMixin,
+class PlayerUpdateView(FormPageMixin, FormPageOrInGameWaitPageMixin,
                        vanilla.UpdateView):
 
     def get_object(self):
@@ -748,7 +762,7 @@ class PlayerUpdateView(FormPageMixin, FormPageOrWaitPageMixin,
             return StubModel.objects.all()[0]
 
 
-class InGameWaitPage(FormPageOrWaitPageMixin, InGameWaitPageMixin,
+class InGameWaitPage(FormPageOrInGameWaitPageMixin, InGameWaitPageMixin,
                      GenericWaitPageMixin, vanilla.UpdateView):
     """public API wait page
 

@@ -32,7 +32,7 @@ from otree.views.mturk import MTurkConnection
 import otree.common_internal
 from otree.views.abstract import (
     NonSequenceUrlMixin, OTreeMixin, AssignVisitorToDefaultSessionBase,
-    GenericWaitPageMixin, FormPageOrWaitPageMixin,
+    GenericWaitPageMixin, FormPageOrInGameWaitPageMixin,
     NO_PARTICIPANTS_LEFT_MSG
 )
 from otree.models_concrete import GroupSize
@@ -48,8 +48,8 @@ class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
         )
 
 
-class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin,
-                               GenericWaitPageMixin, vanilla.View):
+class WaitUntilAssignedToGroup(FormPageOrInGameWaitPageMixin,
+                               GenericWaitPageMixin, vanilla.GenericView):
     """
     In "group by arrival time",
     we wait until enough players have arrived to form a group,

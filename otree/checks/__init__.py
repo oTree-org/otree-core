@@ -290,7 +290,8 @@ def pages_function(rules, **kwargs):
         else:
             for ViewCls in page_list:
                 cond = not issubclass(
-                    ViewCls, otree.views.abstract.FormPageOrWaitPageMixin
+                    ViewCls,
+                    otree.views.abstract.FormPageOrInGameWaitPageMixin
                 )
                 if cond:
                     msg = 'views.py: "{}" is not a valid page'.format(ViewCls)

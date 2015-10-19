@@ -367,7 +367,7 @@ class CreateSessionForm(forms.Form):
         return num_participants
 
 
-class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
+class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
 
     @classmethod
     def url_pattern(cls):
@@ -418,11 +418,6 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
         self._pre_create_id = kwargs['session_pre_create_id']
         return super(WaitUntilSessionCreated, self).dispatch(
             request, *args, **kwargs
-        )
-
-    def _get_wait_page(self):
-        return TemplateResponse(
-            self.request, 'otree/WaitPage.html', {'view': self}
         )
 
 
