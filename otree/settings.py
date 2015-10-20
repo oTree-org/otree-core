@@ -57,10 +57,7 @@ def augment_settings(settings):
             all_otree_apps_set.add(app)
     all_otree_apps = list(all_otree_apps_set)
 
-    # order is important:
-    # otree unregisters User & Group, which are installed by auth.
-    # otree templates need to get loaded before the admin.
-    no_experiment_apps = collapse_to_unique_list([
+    no_experiment_apps = [
         'django.contrib.auth',
         'otree',
         'floppyforms',
@@ -77,7 +74,18 @@ def augment_settings(settings):
         'rest_framework',
         'sslserver',
         'idmap',
-        'corsheaders'], settings['INSTALLED_APPS'])
+        'corsheaders']
+
+    if settings.get('SENTRY_DSN'):
+        no_experiment_apps.append('raven.contrib.django.raven_compat')
+
+    # order is important:
+    # otree unregisters User & Group, which are installed by auth.
+    # otree templates need to get loaded before the admin.
+    no_experiment_apps = collapse_to_unique_list(
+        no_experiment_apps,
+        settings['INSTALLED_APPS']
+    )
 
     new_installed_apps = collapse_to_unique_list(
         no_experiment_apps, all_otree_apps)
@@ -280,6 +288,7 @@ def augment_settings(settings):
         # The following setting is ratio:
         # num_participants_server / num_participants_mturk
         'MTURK_NUM_PARTICIPANTS_MULT': 2,
+        'RAVEN_CONFIG': {'dsn': settings.get('SENTRY_DSN')}
     }
 
     settings.update(augmented_settings)
