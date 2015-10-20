@@ -33,7 +33,7 @@
             </li>
             {% if session.is_demo %}
             <li role="presentation">
-                <a href="{% url 'create_demo_session' session.config.name %}" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Recreate session from scratch">
+                <a href="{% url 'create_demo_session' session.config.name %}" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Recreate session from scratch. You can also copy this link and share with others.">
                     <span class="glyphicon glyphicon-refresh"></span> New
                 </a>
             </li>
