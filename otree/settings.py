@@ -10,6 +10,8 @@ import djcelery
 from django.conf import global_settings
 from django.contrib.messages import constants as messages
 
+import otree
+
 djcelery.setup_loader()
 
 
@@ -81,6 +83,7 @@ def augment_settings(settings):
         {
             'dsn': settings.get('SENTRY_DSN'),
             'processors': ['raven.processors.SanitizePasswordsProcessor'],
+            'release': 'otree-core=={}'.format(otree.__version__)
         }
     )
     if settings['RAVEN_CONFIG'].get('dsn'):
