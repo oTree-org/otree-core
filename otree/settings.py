@@ -76,7 +76,14 @@ def augment_settings(settings):
         'idmap',
         'corsheaders']
 
-    if settings.get('SENTRY_DSN'):
+    settings.setdefault(
+        'RAVEN_CONFIG',
+        {
+            'dsn': settings.get('SENTRY_DSN'),
+            'processors': ['raven.processors.SanitizePasswordsProcessor'],
+        }
+    )
+    if settings['RAVEN_CONFIG'].get('dsn'):
         no_experiment_apps.append('raven.contrib.django.raven_compat')
 
     # order is important:
@@ -288,7 +295,6 @@ def augment_settings(settings):
         # The following setting is ratio:
         # num_participants_server / num_participants_mturk
         'MTURK_NUM_PARTICIPANTS_MULT': 2,
-        'RAVEN_CONFIG': {'dsn': settings.get('SENTRY_DSN')}
     }
 
     settings.update(augmented_settings)
