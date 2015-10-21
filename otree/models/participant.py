@@ -9,9 +9,10 @@ from otree.common import Currency as c
 from otree.db import models
 from otree.models_concrete import ParticipantToPlayerLookup
 from otree.models.session import Session, ModelWithVars
+from otree_save_the_change.mixins import SaveTheChange
 
 # 2015-10-21: is there any reason not to make this SaveTheChange?
-class Participant(ModelWithVars):
+class Participant(SaveTheChange, ModelWithVars):
 
     class Meta:
         ordering = ['pk']

@@ -534,7 +534,13 @@ class InGameWaitPageMixin(object):
         # force to refresh from DB
         self._group_or_subsession._get_players(refresh_from_db=True)
         self.after_all_players_arrive()
-        # 2015-10-21: is this necessary? because save_objects will get called
+        # 2015-10-21: this is necessary
+        # what if you do [g.get_players() for g in subsession.get_groups()]?
+        # need a more comprehensive way to handle this
+        # also, what if participants are modified?
+        for p in self._group_or_subsession.get_players():
+            p.save()
+            p.participant.save()
         self._group_or_subsession.save()
 
     def is_displayed(self):
