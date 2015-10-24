@@ -26,6 +26,7 @@ MANAGE_URL = (
 
 IGNORE_APPS_COMMANDS = frozenset(("version", "--version", "startapp", "help"))
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -42,15 +43,16 @@ class OTreeManagementUtility(django.core.management.ManagementUtility):
             limited += "..."
         return limited
 
+    def commands_dict(self):
+        return django.core.management.get_commands()
+
     def main_help_text(self, commands_only=False):
         """
         Returns the script's main help text, as a string.
         """
         if commands_only:
-            usage = sorted(get_commands().keys())
+            usage = sorted(self.commands_dict().keys())
         else:
-
-            get_commands = django.core.management.get_commands
 
             second_line = (
                 "Type {} help <subcommand>' for help on a specific "
@@ -58,7 +60,7 @@ class OTreeManagementUtility(django.core.management.ManagementUtility):
             usage = ["", second_line, "", "Available subcommands:"]
 
             commands_dict = defaultdict(lambda: [])
-            for name, app in six.iteritems(get_commands()):
+            for name, app in six.iteritems(self.commands_dict()):
                 if app == 'django.core':
                     app = 'django'
                 else:
