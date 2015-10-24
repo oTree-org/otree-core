@@ -40,7 +40,8 @@ FORMFIELD_OVERRIDES.update({
     # Binary field is never editable, so we don't need to convert it.
     models.BooleanField: {
         'form_class': forms.BooleanField,
-        'choices_form_class': forms.TypedChoiceField},
+        'choices_form_class': forms.TypedChoiceField,
+        'widget': forms.RadioSelect},
     models.CharField: {
         'form_class': forms.CharField,
         'choices_form_class': forms.TypedChoiceField},
