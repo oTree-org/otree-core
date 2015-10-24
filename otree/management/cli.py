@@ -2,12 +2,15 @@ import os
 import platform
 import subprocess
 import sys
+from collections import defaultdict
 
 import django
 import django.core.management
 from django.core.management.base import CommandError
 from django.core.management.color import color_style
 from django.conf import settings
+
+import six
 
 import otree
 import otree.management.deploy.heroku
@@ -22,6 +25,62 @@ MANAGE_URL = (
 
 
 IGNORE_APPS_COMMANDS = frozenset(("version", "--version", "startapp", "help"))
+
+# =============================================================================
+# CLASSES
+# =============================================================================
+
+class OTreeManagementUtility(django.core.management.ManagementUtility):
+
+    def limit_text(self, helptext, limit=80):
+        if len(helptext) <= limit:
+            return helptext
+        limited = helptext
+        while len(limited) > limit - 3:
+            limited = " ".join(limited.split()[:-1])
+        if limited != helptext:
+            limited += "..."
+        return limited
+
+    def main_help_text(self, commands_only=False):
+        """
+        Returns the script's main help text, as a string.
+        """
+        if commands_only:
+            usage = sorted(get_commands().keys())
+        else:
+
+            get_commands = django.core.management.get_commands
+
+            second_line = (
+                "Type {} help <subcommand>' for help on a specific "
+                "subcommand.").format(self.prog_name)
+            usage = ["", second_line, "", "Available subcommands:"]
+
+            commands_dict = defaultdict(lambda: [])
+            for name, app in six.iteritems(get_commands()):
+                if app == 'django.core':
+                    app = 'django'
+                else:
+                    app = app.rpartition('.')[-1]
+                commands_dict[app].append(name)
+            style = color_style()
+            for app in sorted(commands_dict.keys()):
+                usage.append("")
+                usage.append(style.NOTICE("[%s]" % app))
+                for name in sorted(commands_dict[app]):
+                    helptext = " ".join(
+                        self.fetch_command(name).help.splitlines())
+                    helptext = self.limit_text(helptext, 80)
+                    usage.append("  {} - {}".format(name, helptext))
+            # Output an extra note if settings are not properly configured
+            if self.settings_exception is not None:
+                usage.append(style.NOTICE(
+                    "Note that only Django core commands are listed "
+                    "as settings are not properly configured (error: %s)."
+                    % self.settings_exception))
+
+        return '\n'.join(usage)
 
 
 # =============================================================================
@@ -81,7 +140,8 @@ def execute_from_command_line(arguments, script_file):
     if "version" in arguments or "--version" in arguments:
         sys.stdout.write(otree_and_django_version() + '\n')
     else:
-        django.core.management.execute_from_command_line(sys.argv)
+        utility = OTreeManagementUtility(sys.argv)
+        utility.execute()
 
 
 def otree_cli():
