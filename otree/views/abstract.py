@@ -592,7 +592,8 @@ class InGameWaitPageMixin(object):
         # also, what if participants are modified?
         for p in self._group_or_subsession.get_players():
             p.save()
-            p.participant.save()
+            # SaveTheChange not enabled -- so this could cause race conditions
+            # p.participant.save()
         self._group_or_subsession.save()
 
     def is_displayed(self):
