@@ -11,6 +11,7 @@ from otree.models_concrete import ParticipantToPlayerLookup
 from otree.models.session import Session, ModelWithVars
 
 
+# 2015-10-21: is there any reason not to make this SaveTheChange?
 class Participant(ModelWithVars):
 
     class Meta:

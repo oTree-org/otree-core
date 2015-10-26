@@ -10,6 +10,8 @@ import djcelery
 from django.conf import global_settings
 from django.contrib.messages import constants as messages
 
+import otree
+
 djcelery.setup_loader()
 
 
@@ -57,10 +59,7 @@ def augment_settings(settings):
             all_otree_apps_set.add(app)
     all_otree_apps = list(all_otree_apps_set)
 
-    # order is important:
-    # otree unregisters User & Group, which are installed by auth.
-    # otree templates need to get loaded before the admin.
-    no_experiment_apps = collapse_to_unique_list([
+    no_experiment_apps = [
         'django.contrib.auth',
         'otree',
         'floppyforms',
@@ -77,7 +76,26 @@ def augment_settings(settings):
         'rest_framework',
         'sslserver',
         'idmap',
-        'corsheaders'], settings['INSTALLED_APPS'])
+        'corsheaders']
+
+    settings.setdefault(
+        'RAVEN_CONFIG',
+        {
+            'dsn': settings.get('SENTRY_DSN'),
+            'processors': ['raven.processors.SanitizePasswordsProcessor'],
+            'release': 'otree-core {}'.format(otree.__version__)
+        }
+    )
+    if settings['RAVEN_CONFIG'].get('dsn'):
+        no_experiment_apps.append('raven.contrib.django.raven_compat')
+
+    # order is important:
+    # otree unregisters User & Group, which are installed by auth.
+    # otree templates need to get loaded before the admin.
+    no_experiment_apps = collapse_to_unique_list(
+        no_experiment_apps,
+        settings['INSTALLED_APPS']
+    )
 
     new_installed_apps = collapse_to_unique_list(
         no_experiment_apps, all_otree_apps)
