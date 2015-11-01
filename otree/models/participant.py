@@ -31,7 +31,8 @@ class Participant(ModelWithVars):
     session = models.ForeignKey(Session)
     time_started = models.DateTimeField(null=True)
     user_type_in_url = constants_internal.user_type_participant
-    mturk_assignment_id = models.CharField(max_length=50, db_index=True, null=True)
+    mturk_assignment_id = models.CharField(
+        max_length=50, db_index=True, null=True)
     mturk_worker_id = models.CharField(max_length=50, db_index=True, null=True)
     mturk_reward_paid = models.BooleanField(default=False)
     mturk_bonus_paid = models.BooleanField(default=False)
