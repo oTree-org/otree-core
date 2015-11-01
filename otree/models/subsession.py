@@ -16,6 +16,7 @@ class BaseSubsession(SaveTheChange, models.Model):
 
     class Meta:
         abstract = True
+        index_together = ['session', 'round_number']
 
     code = models.RandomCharField(length=8)
 

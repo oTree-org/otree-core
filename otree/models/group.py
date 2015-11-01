@@ -11,9 +11,9 @@ class BaseGroup(SaveTheChange, models.Model):
     """Base class for all Groups.
     """
 
-    _is_missing_players = models.BooleanField(default=False)
+    _is_missing_players = models.BooleanField(default=False, db_index=True)
 
-    id_in_subsession = models.PositiveIntegerField()
+    id_in_subsession = models.PositiveIntegerField(db_index=True)
 
     class Meta:
         abstract = True

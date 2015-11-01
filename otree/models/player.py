@@ -22,7 +22,7 @@ class BasePlayer(SaveTheChange, models.Model):
         Session, related_name='%(app_label)s_%(class)s'
     )
 
-    round_number = models.PositiveIntegerField()
+    round_number = models.PositiveIntegerField(db_index=True)
 
     # change this to _name? but do we think people will need to refer to names?
     def name(self):
@@ -61,6 +61,7 @@ class BasePlayer(SaveTheChange, models.Model):
 
     class Meta:
         abstract = True
+        index_together = ['participant', 'round_number']
 
     def _GroupClass(self):
         return self._meta.get_field('group').rel.to

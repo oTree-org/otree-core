@@ -23,10 +23,10 @@ class WaitPageVisit(models.Model):
     class Meta:
         app_label = "otree"
 
-    session_pk = models.PositiveIntegerField()
-    page_index = models.PositiveIntegerField()
+    session_pk = models.PositiveIntegerField(db_index=True)
+    page_index = models.PositiveIntegerField(db_index=True)
 
-    id_in_session = models.PositiveIntegerField()
+    id_in_session = models.PositiveIntegerField(db_index=True)
 
 
 class PageTimeout(models.Model):
@@ -41,18 +41,20 @@ class PageTimeout(models.Model):
 class CompletedGroupWaitPage(models.Model):
     class Meta:
         app_label = "otree"
+        index_together = ['page_index', 'session_pk', 'group_pk']
 
-    page_index = models.PositiveIntegerField()
-    session_pk = models.PositiveIntegerField()
-    group_pk = models.PositiveIntegerField()
+    page_index = models.PositiveIntegerField(db_index=True)
+    session_pk = models.PositiveIntegerField(db_index=True)
+    group_pk = models.PositiveIntegerField(db_index=True)
 
 
 class CompletedSubsessionWaitPage(models.Model):
     class Meta:
         app_label = "otree"
+        index_together = ['page_index', 'session_pk']
 
-    page_index = models.PositiveIntegerField()
-    session_pk = models.PositiveIntegerField()
+    page_index = models.PositiveIntegerField(db_index=True)
+    session_pk = models.PositiveIntegerField(db_index=True)
 
 
 class ParticipantToPlayerLookup(models.Model):
@@ -69,8 +71,8 @@ class GroupSize(models.Model):
     class Meta:
         app_label = "otree"
 
-    app_label = models.CharField(max_length=300)
-    subsession_pk = models.PositiveIntegerField()
+    app_label = models.CharField(max_length=300, db_index=True)
+    subsession_pk = models.PositiveIntegerField(db_index=True)
     group_index = models.PositiveIntegerField()
     group_size = models.PositiveIntegerField()
 
