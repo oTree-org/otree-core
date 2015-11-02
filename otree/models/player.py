@@ -13,6 +13,10 @@ class BasePlayer(SaveTheChange, models.Model):
     Base class for all players.
     """
 
+    class Meta:
+        abstract = True
+        index_together = ['participant', 'round_number']
+
     _index_in_game_pages = models.PositiveIntegerField(
         default=0,
         doc='Index in the list of pages  views_module.page_sequence'
@@ -58,10 +62,6 @@ class BasePlayer(SaveTheChange, models.Model):
 
     def __unicode__(self):
         return self.name()
-
-    class Meta:
-        abstract = True
-        index_together = ['participant', 'round_number']
 
     def _GroupClass(self):
         return self._meta.get_field('group').rel.to

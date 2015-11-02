@@ -18,8 +18,6 @@ class BaseSubsession(SaveTheChange, models.Model):
         abstract = True
         index_together = ['session', 'round_number']
 
-    code = models.RandomCharField(length=8)
-
     def in_previous_rounds(self):
         qs = type(self).objects.filter(
             session=self.session,
@@ -248,10 +246,3 @@ class BaseSubsession(SaveTheChange, models.Model):
             g.save()
 
         # subsession.save() gets called in the parent method
-
-    def match_players(self, match_name):
-        if self.round_number > 1:
-            match_function = match_players.MATCHS[match_name]
-            pxg = match_function(self)
-            for group, players in zip(self.get_groups(), pxg):
-                group.set_players(players)

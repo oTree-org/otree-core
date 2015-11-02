@@ -19,6 +19,7 @@ class Participant(ModelWithVars):
     class Meta:
         ordering = ['pk']
         app_label = "otree"
+        index_together = ['session', 'mturk_worker_id', 'mturk_assignment_id']
 
     exclude_from_data_analysis = models.BooleanField(
         default=False, doc=(
@@ -32,8 +33,8 @@ class Participant(ModelWithVars):
     time_started = models.DateTimeField(null=True)
     user_type_in_url = constants_internal.user_type_participant
     mturk_assignment_id = models.CharField(
-        max_length=50, db_index=True, null=True)
-    mturk_worker_id = models.CharField(max_length=50, db_index=True, null=True)
+        max_length=50, null=True)
+    mturk_worker_id = models.CharField(max_length=50, null=True)
     mturk_reward_paid = models.BooleanField(default=False)
     mturk_bonus_paid = models.BooleanField(default=False)
 

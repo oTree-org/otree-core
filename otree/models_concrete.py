@@ -22,16 +22,18 @@ class WaitPageVisit(models.Model):
     '''
     class Meta:
         app_label = "otree"
+        index_together = ['session_pk', 'page_index', 'id_in_session']
 
-    session_pk = models.PositiveIntegerField(db_index=True)
-    page_index = models.PositiveIntegerField(db_index=True)
 
-    id_in_session = models.PositiveIntegerField(db_index=True)
+    session_pk = models.PositiveIntegerField()
+    page_index = models.PositiveIntegerField()
+    id_in_session = models.PositiveIntegerField()
 
 
 class PageTimeout(models.Model):
     class Meta:
         app_label = "otree"
+        index_together = ['participant_pk', 'page_index']
 
     participant_pk = models.PositiveIntegerField()
     page_index = models.PositiveIntegerField()
@@ -43,9 +45,9 @@ class CompletedGroupWaitPage(models.Model):
         app_label = "otree"
         index_together = ['page_index', 'session_pk', 'group_pk']
 
-    page_index = models.PositiveIntegerField(db_index=True)
-    session_pk = models.PositiveIntegerField(db_index=True)
-    group_pk = models.PositiveIntegerField(db_index=True)
+    page_index = models.PositiveIntegerField()
+    session_pk = models.PositiveIntegerField()
+    group_pk = models.PositiveIntegerField()
 
 
 class CompletedSubsessionWaitPage(models.Model):
@@ -53,13 +55,14 @@ class CompletedSubsessionWaitPage(models.Model):
         app_label = "otree"
         index_together = ['page_index', 'session_pk']
 
-    page_index = models.PositiveIntegerField(db_index=True)
-    session_pk = models.PositiveIntegerField(db_index=True)
+    page_index = models.PositiveIntegerField()
+    session_pk = models.PositiveIntegerField()
 
 
 class ParticipantToPlayerLookup(models.Model):
     class Meta:
         app_label = "otree"
+        index_together = ['participant_pk', 'page_index']
 
     participant_pk = models.PositiveIntegerField()
     page_index = models.PositiveIntegerField()
@@ -70,9 +73,10 @@ class ParticipantToPlayerLookup(models.Model):
 class GroupSize(models.Model):
     class Meta:
         app_label = "otree"
+        index_together = ['app_label', 'subsession_pk']
 
-    app_label = models.CharField(max_length=300, db_index=True)
-    subsession_pk = models.PositiveIntegerField(db_index=True)
+    app_label = models.CharField(max_length=300)
+    subsession_pk = models.PositiveIntegerField()
     group_index = models.PositiveIntegerField()
     group_size = models.PositiveIntegerField()
 
@@ -81,7 +85,7 @@ class ParticipantLockModel(models.Model):
     class Meta:
         app_label = "otree"
 
-    participant_code = models.CharField(max_length=10)
+    participant_code = models.CharField(max_length=10, db_index=True)
 
 
 class StubModel(models.Model):
