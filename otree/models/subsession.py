@@ -6,7 +6,6 @@ from otree.db import models
 from otree.common_internal import (
     get_models_module, get_players, get_groups, flatten)
 from otree.models_concrete import GroupSize
-from otree import match_players
 
 
 class BaseSubsession(SaveTheChange, models.Model):

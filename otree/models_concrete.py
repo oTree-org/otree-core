@@ -24,7 +24,6 @@ class WaitPageVisit(models.Model):
         app_label = "otree"
         index_together = ['session_pk', 'page_index', 'id_in_session']
 
-
     session_pk = models.PositiveIntegerField()
     page_index = models.PositiveIntegerField()
     id_in_session = models.PositiveIntegerField()
