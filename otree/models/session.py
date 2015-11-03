@@ -6,6 +6,7 @@ import otree.common_internal
 from otree.db import models
 from otree_save_the_change.mixins import SaveTheChange
 
+
 class GlobalSingleton(models.Model):
     """object that can hold site-wide settings. There should only be one
     GlobalSingleton object. Also used for wait page actions.

@@ -1,7 +1,6 @@
 import itertools
 import time
 
-from otree_save_the_change.mixins import SaveTheChange
 from otree import constants_internal
 import otree.common_internal
 from otree.common_internal import id_label_name
@@ -12,9 +11,6 @@ from otree.models_concrete import ParticipantToPlayerLookup
 from otree.models.session import Session, ModelWithVars
 
 
-# 2015-10-26: can't make this SaveTheChange yet,
-# because STC doesn't work with vars (i guess field not marked as dirty)
-# should make a fix to ModelWithVars
 class Participant(ModelWithVars):
 
     class Meta:
