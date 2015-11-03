@@ -1,6 +1,7 @@
 import itertools
 import time
 
+from otree_save_the_change.mixins import SaveTheChange
 from otree import constants_internal
 import otree.common_internal
 from otree.common_internal import id_label_name

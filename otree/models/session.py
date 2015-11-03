@@ -4,7 +4,7 @@ import django.test
 from otree import constants_internal
 import otree.common_internal
 from otree.db import models
-
+from otree_save_the_change.mixins import SaveTheChange
 
 class GlobalSingleton(models.Model):
     """object that can hold site-wide settings. There should only be one
@@ -21,7 +21,7 @@ class GlobalSingleton(models.Model):
     )
 
 
-class ModelWithVars(models.Model):
+class ModelWithVars(SaveTheChange, models.Model):
     vars = models.JSONField(default=dict)
 
     class Meta:
