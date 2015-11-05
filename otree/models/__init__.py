@@ -33,6 +33,7 @@ class BaseSubsession(subsession_module.BaseSubsession):
         Session, related_name='%(app_label)s_%(class)s', null=True)
 
     round_number = models.PositiveIntegerField(
+        db_index=True,
         doc='''If this subsession is repeated (i.e. has multiple rounds), this
         field stores the position (index) of this subsession, among subsessions
         in the same app.
@@ -108,6 +109,7 @@ class BasePlayer(player_module.BasePlayer):
 
     id_in_group = models.PositiveIntegerField(
         null=True,
+        db_index=True,
         doc=("Index starting from 1. In multiplayer games, "
              "indicates whether this is player 1, player 2, etc.")
     )

@@ -62,6 +62,7 @@ class Session(ModelWithVars):
         help_text='For internal record-keeping')
 
     code = models.RandomCharField(
+        db_index=True,
         length=8, doc="Randomly generated unique identifier for the session.")
 
     time_scheduled = models.DateTimeField(
@@ -96,6 +97,7 @@ class Session(ModelWithVars):
 
     archived = models.BooleanField(
         default=False,
+        db_index=True,
         doc=("If set to True the session won't be visible on the "
              "main ViewList for sessions"))
 
@@ -114,17 +116,18 @@ class Session(ModelWithVars):
     _anonymous_code = models.RandomCharField(length=10)
 
     special_category = models.CharField(
+        db_index=True,
         max_length=20, null=True,
         doc="whether it's a test session, demo session, etc.")
 
     # whether someone already viewed this session's demo links
-    demo_already_used = models.BooleanField(default=False)
+    demo_already_used = models.BooleanField(default=False, db_index=True)
 
     # indicates whether a session has been fully created (not only has the
     # model itself been created, but also the other models in the hierarchy)
     ready = models.BooleanField(default=False)
 
-    _pre_create_id = models.CharField(max_length=300, null=True)
+    _pre_create_id = models.CharField(max_length=300, db_index=True, null=True)
 
     def __unicode__(self):
         return self.code

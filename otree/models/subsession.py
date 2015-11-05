@@ -6,7 +6,6 @@ from otree.db import models
 from otree.common_internal import (
     get_models_module, get_players, get_groups, flatten)
 from otree.models_concrete import GroupSize
-from otree import match_players
 
 
 class BaseSubsession(SaveTheChange, models.Model):
@@ -16,8 +15,7 @@ class BaseSubsession(SaveTheChange, models.Model):
 
     class Meta:
         abstract = True
-
-    code = models.RandomCharField(length=8)
+        index_together = ['session', 'round_number']
 
     def in_previous_rounds(self):
         qs = type(self).objects.filter(
@@ -247,10 +245,3 @@ class BaseSubsession(SaveTheChange, models.Model):
             g.save()
 
         # subsession.save() gets called in the parent method
-
-    def match_players(self, match_name):
-        if self.round_number > 1:
-            match_function = match_players.MATCHS[match_name]
-            pxg = match_function(self)
-            for group, players in zip(self.get_groups(), pxg):
-                group.set_players(players)

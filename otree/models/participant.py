@@ -16,6 +16,7 @@ class Participant(ModelWithVars):
     class Meta:
         ordering = ['pk']
         app_label = "otree"
+        index_together = ['session', 'mturk_worker_id', 'mturk_assignment_id']
 
     exclude_from_data_analysis = models.BooleanField(
         default=False, doc=(
@@ -28,12 +29,13 @@ class Participant(ModelWithVars):
     session = models.ForeignKey(Session)
     time_started = models.DateTimeField(null=True)
     user_type_in_url = constants_internal.user_type_participant
-    mturk_assignment_id = models.CharField(max_length=50, null=True)
+    mturk_assignment_id = models.CharField(
+        max_length=50, null=True)
     mturk_worker_id = models.CharField(max_length=50, null=True)
     mturk_reward_paid = models.BooleanField(default=False)
     mturk_bonus_paid = models.BooleanField(default=False)
 
-    start_order = models.PositiveIntegerField()
+    start_order = models.PositiveIntegerField(db_index=True)
 
     # unique=True can't be set, because the same external ID could be reused
     # in multiple sequences. however, it should be unique within the sequence.
@@ -47,7 +49,7 @@ class Participant(ModelWithVars):
 
     _index_in_subsessions = models.PositiveIntegerField(default=0, null=True)
 
-    _index_in_pages = models.PositiveIntegerField(default=0)
+    _index_in_pages = models.PositiveIntegerField(default=0, db_index=True)
 
     id_in_session = models.PositiveIntegerField(null=True)
 
@@ -58,7 +60,8 @@ class Participant(ModelWithVars):
     _waiting_for_ids = models.CharField(null=True, max_length=300)
 
     code = models.RandomCharField(
-        length=8, doc=(
+        length=8, db_index=True,
+        doc=(
             "Randomly generated unique identifier for the participant. If you "
             "would like to merge this dataset with those from another "
             "subsession in the same session, you should join on this field, "
@@ -71,7 +74,7 @@ class Participant(ModelWithVars):
     )
 
     visited = models.BooleanField(
-        default=False,
+        default=False, db_index=True,
         doc="""Whether this user's start URL was opened"""
     )
 

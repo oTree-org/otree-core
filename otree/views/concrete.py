@@ -254,8 +254,7 @@ class MTurkStart(vanilla.View):
                     else:
                         raise
         try:
-            participant = Participant.objects.get(
-                session=self.session,
+            participant = self.session.participant_set.get(
                 mturk_worker_id=worker_id,
                 mturk_assignment_id=assignment_id)
         except Participant.DoesNotExist:
