@@ -100,4 +100,4 @@ class StartAppTest(TestCase):
                         call_command('check')
                     self.assertTrue(fexist.called)
                     second_run_calls = fexist.call_count
-                    self.assertTrue(second_run_calls > first_run_calls)
+                    self.assertTrue(second_run_calls >= first_run_calls)
