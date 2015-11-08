@@ -79,7 +79,6 @@ class StartAppTest(TestCase):
             with capture_stdout():
                 call_command('check')
             self.assertTrue(file_exists.called)
-            first_run_calls = file_exists.call_count
 
         with cd(self.tmp_dir):
             with capture_stdout():
