@@ -96,8 +96,8 @@ class StartAppTest(TestCase):
             ):
                 with patch.object(otree.checks.Rules, 'file_exists') as fexist:
                     fexist.return_value = True
-                    import sys; sys.stdout = sys.__stdout__
-                    call_command('check')
+                    with capture_stdout():
+                        call_command('check')
                     self.assertTrue(fexist.called)
                     second_run_calls = fexist.call_count
                     self.assertTrue(second_run_calls > first_run_calls)
