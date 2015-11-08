@@ -140,7 +140,9 @@ class ExecuteFromCommandLine(TestCase):
 
 class OTreeCli(TestCase):
 
-    def test_import_settings_fail(self):
+    @mock.patch("sys.stdout")
+    @mock.patch("sys.stderr")
+    def test_import_settings_fail(self, *args):
         with mock.patch("django.conf.settings", create=True) as settings:
             type(settings).INSTALLED_APPS = mock.PropertyMock(
                 side_effect=ImportError)
@@ -167,7 +169,9 @@ class OTreeCli(TestCase):
 
 class OTreeHerokuCli(TestCase):
 
-    def test_import_settings_fail(self):
+    @mock.patch("sys.stdout")
+    @mock.patch("sys.stderr")
+    def test_import_settings_fail(self, *args):
         with mock.patch("django.conf.settings", create=True) as settings:
             type(settings).INSTALLED_APPS = mock.PropertyMock(
                 side_effect=ImportError)

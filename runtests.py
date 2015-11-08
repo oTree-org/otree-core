@@ -12,6 +12,7 @@ sys.path.insert(0, tests_path)
 sys.path.insert(0, base_path)
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tests.settings")
+os.environ.setdefault("DJANGO_COLORS", "nocolor")
 
 default_test_apps = [
     'tests',
