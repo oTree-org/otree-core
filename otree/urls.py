@@ -35,13 +35,12 @@ def url_patterns_from_module(module_name):
     ]
 
     # see issue #273 for discussion of AUTH_LEVEL setting
-    if settings.DEBUG and settings.AUTH_LEVEL not in ['DEMO', 'EXPERIMENT']:
-        AUTH_LEVEL = 'FULL'
-    elif not settings.DEBUG and settings.AUTH_LEVEL not in ['DEMO',
-                                                            'EXPERIMENT']:
-        AUTH_LEVEL = 'EXPERIMENT'
-    else:
+    if settings.AUTH_LEVEL in {'DEMO', 'EXPERIMENT', 'STUDY'}:
         AUTH_LEVEL = settings.AUTH_LEVEL
+    elif settings.DEBUG:
+        AUTH_LEVEL = 'FULL'
+    else:
+        AUTH_LEVEL = 'DEMO'
 
     # see issue #303 for discussion of granting access with "white-list"
     if not module_name.startswith('otree.views'):
@@ -78,7 +77,7 @@ def url_patterns_from_module(module_name):
     elif AUTH_LEVEL == 'DEMO':
         unrestricted_views = unrestricted_views_demo
     else:
-        # presumably EXPERIMENT mode
+        # presumably EXPERIMENT/STUDY mode
         unrestricted_views = unrestricted_views_experiment
     view_urls = []
     for ViewCls in all_views:

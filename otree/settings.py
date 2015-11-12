@@ -83,7 +83,6 @@ def augment_settings(settings):
         {
             'dsn': settings.get('SENTRY_DSN'),
             'processors': ['raven.processors.SanitizePasswordsProcessor'],
-            'release': 'otree-core {}'.format(otree.__version__)
         }
     )
     if settings['RAVEN_CONFIG'].get('dsn'):

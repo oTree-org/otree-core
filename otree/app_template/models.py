@@ -40,7 +40,7 @@ class Group(BaseGroup):
 class Player(BasePlayer):
     # <built-in>
     subsession = models.ForeignKey(Subsession)
-    group = models.ForeignKey(Group, null = True)
+    group = models.ForeignKey(Group, null=True)
     # </built-in>
 
     def role(self):

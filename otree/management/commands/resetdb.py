@@ -55,10 +55,7 @@ class Command(NoArgsCommand):
                 "ERROR: cannot set back a database that is using the "
                 "{backend} backend. We only support sqlite databases so far. "
                 "You should drop the database and then run "
-                "'manage.py migrate'. "
-                "Example: \n\n"
-                "./manage.py sqlclear | ./manage.py dbshell\n"
-                "./manage.py migrate\n\n"
+                "'otree migrate'. "
                 .format(backend=default_db['ENGINE']))
             sys.exit(1)
 
