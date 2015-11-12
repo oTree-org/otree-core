@@ -79,7 +79,6 @@ class StartAppTest(TestCase):
             with capture_stdout():
                 call_command('check')
             self.assertTrue(file_exists.called)
-            first_run_calls = file_exists.call_count
 
         with cd(self.tmp_dir):
             with capture_stdout():
@@ -99,5 +98,3 @@ class StartAppTest(TestCase):
                     with capture_stdout():
                         call_command('check')
                     self.assertTrue(fexist.called)
-                    second_run_calls = fexist.call_count
-                    self.assertTrue(second_run_calls > first_run_calls)
