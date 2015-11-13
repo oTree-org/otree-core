@@ -37,10 +37,8 @@ def url_patterns_from_module(module_name):
     # see issue #273 for discussion of AUTH_LEVEL setting
     if settings.AUTH_LEVEL in {'DEMO', 'EXPERIMENT', 'STUDY'}:
         AUTH_LEVEL = settings.AUTH_LEVEL
-    elif settings.DEBUG:
-        AUTH_LEVEL = 'FULL'
     else:
-        AUTH_LEVEL = 'DEMO'
+        AUTH_LEVEL = 'FULL'
 
     # see issue #303 for discussion of granting access with "white-list"
     if not module_name.startswith('otree.views'):
