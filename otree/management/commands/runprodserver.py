@@ -61,12 +61,7 @@ class Command(BaseCommand):
         except (ValueError, TypeError):
             return self.default_port
 
-    def configure_production_mode(self):
-        os.environ.setdefault('OTREE_PRODUCTION', '1')
-
     def handle(self, *args, **options):
-        self.configure_production_mode()
-
         port = self.get_port(options['port'])
         procfile = options['procfile']
         collectstatic = options['collectstatic']
