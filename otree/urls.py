@@ -67,7 +67,6 @@ def url_patterns_from_module(module_name):
             '%s.%s' % (module_name, view.__name__) for view in all_views
         ]
 
-
     view_urls = []
     for ViewCls in all_views:
         if '%s.%s' % (module_name, ViewCls.__name__) in unrestricted_views:
