@@ -458,8 +458,20 @@ class GenericWaitPageMixin(object):
 
     def get_context_data(self, **kwargs):
         context = super(GenericWaitPageMixin, self).get_context_data(**kwargs)
-        title_text = self.title_text()
-        body_text = self.body_text()
+
+        # 2015-11-13: title_text() and body_text() methods deprecated
+        # they should be class attributes instead
+
+        if callable(self.title_text):
+            title_text = self.title_text()
+        else:
+            title_text = self.title_text
+
+        if callable(self.body_text):
+            body_text = self.body_text()
+        else:
+            body_text = self.body_text
+
         context.update({
             'title_text': title_text if title_text is not None else '',
             'body_text':  body_text if body_text is not None else ''
