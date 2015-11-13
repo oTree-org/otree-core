@@ -10,8 +10,6 @@ import djcelery
 from django.conf import global_settings
 from django.contrib.messages import constants as messages
 
-import otree
-
 djcelery.setup_loader()
 
 
