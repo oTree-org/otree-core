@@ -433,6 +433,7 @@ class GenericWaitPageMixin(object):
         the reason for the 'if' statement, rather than returning a list,
         is that if the user explicitly defined template_name, and that template
         does not exist, then we should not fail silently.
+        (for example, the user forgot to add it to git)
         """
         if self.template_name:
             return [self.template_name]
