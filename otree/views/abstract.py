@@ -398,8 +398,6 @@ class GenericWaitPageMixin(object):
     # for duck typing, indicates this is a wait page
     _wait_page_flag = True
 
-    template_name = 'global/WaitPage.html'
-
     def title_text(self):
         # Translators: the default title of a wait page
         return _('Please wait')
@@ -431,8 +429,14 @@ class GenericWaitPageMixin(object):
         return HttpResponse(int(bool(self._is_ready())))
 
     def get_template_names(self):
-        """fallback to otree/WaitPage.html, which is guaranteed to exist"""
-        return [self.template_name, 'otree/WaitPage.html']
+        """fallback to otree/WaitPage.html, which is guaranteed to exist.
+        the reason for the 'if' statement, rather than returning a list,
+        is that if the user explicitly defined template_name, and that template
+        does not exist, then we should not fail silently.
+        """
+        if self.template_name:
+            return [self.template_name]
+        return ['global/WaitPage.html', 'otree/WaitPage.html']
 
     def _get_wait_page(self):
         response = TemplateResponse(
