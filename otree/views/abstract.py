@@ -398,13 +398,6 @@ class GenericWaitPageMixin(object):
     # for duck typing, indicates this is a wait page
     _wait_page_flag = True
 
-    def title_text(self):
-        # Translators: the default title of a wait page
-        return _('Please wait')
-
-    def body_text(self):
-        return ''
-
     def request_is_from_wait_page(self):
         check_if_wait_is_over = constants.check_if_wait_is_over
         get_param_tvalue = constants.get_param_truth_value
@@ -461,26 +454,41 @@ class GenericWaitPageMixin(object):
             self._before_returning_wait_page()
             return self._get_wait_page()
 
-    def get_context_data(self, **kwargs):
-        context = super(GenericWaitPageMixin, self).get_context_data(**kwargs)
+    title_text = None
 
+    body_text = None
+
+    def _get_title_text(self):
         # 2015-11-13: title_text() and body_text() methods deprecated
         # they should be class attributes instead
-
         if callable(self.title_text):
             title_text = self.title_text()
         else:
             title_text = self.title_text
+        # could evaluate to false like 0
+        # Translators: the default title of a wait page
+        return title_text if title_text is not None else _('Please wait')
 
+    def _get_body_text(self):
         if callable(self.body_text):
             body_text = self.body_text()
         else:
             body_text = self.body_text
+        # could evaluate to false like 0
+        return body_text if body_text is not None else ''
 
-        context.update({
-            'title_text': title_text if title_text is not None else '',
-            'body_text':  body_text if body_text is not None else ''
-        })
+    def get_context_data(self, **kwargs):
+        context = {
+            'title_text': self._get_title_text(),
+            'body_text': self._get_body_text(),
+        }
+
+        # default title/body text can be overridden
+        # if user specifies it in vars_for_template
+        context.update(
+            super(GenericWaitPageMixin, self).get_context_data(**kwargs)
+        )
+
         return context
 
 
@@ -621,7 +629,10 @@ class InGameWaitPageMixin(object):
     def after_all_players_arrive(self):
         pass
 
-    def body_text(self):
+    def _get_body_text(self):
+        body_text = super(InGameWaitPageMixin, self)._get_body_text()
+        if body_text is not None:
+            return body_text
         num_other_players = len(self._group_or_subsession.get_players()) - 1
         if num_other_players > 1:
             return _('Waiting for the other participants.')
