@@ -458,29 +458,30 @@ class GenericWaitPageMixin(object):
 
     body_text = None
 
-    def _get_title_text(self):
+    def _get_default_title_text(self):
+        # could evaluate to false like 0
+        # Translators: the default title of a wait page
+        return _('Please wait')
+
+    def _get_default_body_text(self):
+        return ''
+
+    def get_context_data(self, **kwargs):
         # 2015-11-13: title_text() and body_text() methods deprecated
         # they should be class attributes instead
         if callable(self.title_text):
             title_text = self.title_text()
         else:
             title_text = self.title_text
-        # could evaluate to false like 0
-        # Translators: the default title of a wait page
-        return title_text if title_text is not None else _('Please wait')
-
-    def _get_body_text(self):
         if callable(self.body_text):
             body_text = self.body_text()
         else:
             body_text = self.body_text
         # could evaluate to false like 0
-        return body_text if body_text is not None else ''
 
-    def get_context_data(self, **kwargs):
         context = {
-            'title_text': self._get_title_text(),
-            'body_text': self._get_body_text(),
+            'title_text': str(title_text) or self._get_default_title_text(),
+            'body_text': str(body_text) or self._get_default_body_text(),
         }
 
         # default title/body text can be overridden
@@ -629,10 +630,7 @@ class InGameWaitPageMixin(object):
     def after_all_players_arrive(self):
         pass
 
-    def _get_body_text(self):
-        body_text = super(InGameWaitPageMixin, self)._get_body_text()
-        if body_text is not None:
-            return body_text
+    def _get_default_body_text(self):
         num_other_players = len(self._group_or_subsession.get_players()) - 1
         if num_other_players > 1:
             return _('Waiting for the other participants.')
