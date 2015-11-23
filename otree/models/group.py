@@ -19,6 +19,8 @@ class BaseGroup(SaveTheChange, models.Model):
 
     id_in_subsession = models.PositiveIntegerField(db_index=True)
 
+    round_number = models.PositiveIntegerField(db_index=True)
+
     def __unicode__(self):
         return str(self.pk)
 
@@ -53,28 +55,23 @@ class BaseGroup(SaveTheChange, models.Model):
         # so that get_players doesn't return stale cache
         self._players = players_list
 
-    def in_previous_rounds(self):
+    def in_rounds(self, first, last):
+        '''You should not use this method if
+        you are rearranging groups between rounds.'''
 
         qs = type(self).objects.filter(
             session=self.session,
             id_in_subsession=self.id_in_subsession,
-        )
+            round_number__gte=first,
+            round_number__lte=last,
+        ).order_by('round_number')
 
-        round_list = [
-            g for g in qs if
-            g.subsession.round_number < self.subsession.round_number
-        ]
+        ret = list(qs)
+        assert len(ret) == last-first+1
+        return ret
 
-        if not len(round_list) == self.subsession.round_number - 1:
-            raise ValueError(
-                'This group is missing round history. '
-                'You should not use this method if '
-                'you are rearranging groups between rounds.'
-            )
-
-        round_list.sort(key=lambda grp: grp.subsession.round_number)
-
-        return round_list
+    def in_previous_rounds(self):
+        return self.in_rounds(1, self.round_number-1)
 
     def in_all_rounds(self):
         return self.in_previous_rounds() + [self]

@@ -17,13 +17,17 @@ class BaseSubsession(SaveTheChange, models.Model):
         abstract = True
         index_together = ['session', 'round_number']
 
-    def in_previous_rounds(self):
+    def in_rounds(self, first, last):
         qs = type(self).objects.filter(
             session=self.session,
-            round_number__lt=self.round_number
+            round_number__gte=first,
+            round_number__lte=last,
         ).order_by('round_number')
 
         return list(qs)
+
+    def in_previous_rounds(self):
+        return self.in_rounds(1, self.round_number-1)
 
     def in_all_rounds(self):
         return self.in_previous_rounds() + [self]
@@ -37,10 +41,10 @@ class BaseSubsession(SaveTheChange, models.Model):
     _groups = []
     _players = []
 
-    def _in_previous_round(self):
+    def in_round(self, round_number):
         return type(self).objects.filter(
             session=self.session,
-            round_number=self.round_number - 1
+            round_number=round_number
         ).get()
 
     def _get_players_per_group_list(self):
@@ -154,7 +158,8 @@ class BaseSubsession(SaveTheChange, models.Model):
 
         '''
         GroupClass = self._GroupClass()
-        group = GroupClass(subsession=self, session=self.session)
+        group = GroupClass(subsession=self, session=self.session,
+                           round_number=self.round_number)
 
         # need to save it before you assign the player.group ForeignKey
         group.save()
@@ -196,18 +201,21 @@ class BaseSubsession(SaveTheChange, models.Model):
     def _create_groups(self):
         if self.round_number == 1:
             group_matrix = self._first_round_group_matrix()
+            self.set_groups(group_matrix)
         else:
-            previous_round = self._in_previous_round()
-            group_matrix = [
-                group._get_players(refresh_from_db=True)
-                for group in get_groups(previous_round, refresh_from_db=True)
-            ]
-            for i, group_list in enumerate(group_matrix):
-                for j, player in enumerate(group_list):
+            self.group_like_round(self.round_number - 1)
 
-                    # for every entry (i,j) in the matrix, follow the pointer
-                    # to the same person in the next round
-                    group_matrix[i][j] = player._in_next_round()
+    def group_like_round(self, round_number):
+        previous_round = self.in_round(round_number)
+        group_matrix = [
+            group._get_players(refresh_from_db=True)
+            for group in get_groups(previous_round, refresh_from_db=True)
+        ]
+        for i, group_list in enumerate(group_matrix):
+            for j, player in enumerate(group_list):
+                # for every entry (i,j) in the matrix, follow the pointer
+                # to the same person in the next round
+                group_matrix[i][j] = player.in_round(self.round_number)
 
         # save to DB
         self.set_groups(group_matrix)

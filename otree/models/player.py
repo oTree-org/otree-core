@@ -36,29 +36,26 @@ class BasePlayer(SaveTheChange, models.Model):
         # you can make this depend of self.id_in_group
         return ''
 
-    def in_previous_rounds(self):
+    def in_round(self, round_number):
+        return type(self).objects.get(
+            participant=self.participant,
+            round_number=round_number
+        )
 
+    def in_rounds(self, first, last):
         qs = type(self).objects.filter(
             participant=self.participant,
-            round_number__lt=self.round_number
+            round_number__gte=first,
+            round_number__lte=last,
         ).order_by('round_number')
 
         return list(qs)
 
+    def in_previous_rounds(self):
+        return self.in_rounds(1, self.round_number - 1)
+
     def in_all_rounds(self):
         return self.in_previous_rounds() + [self]
-
-    def _in_next_round(self):
-        return type(self).objects.get(
-            participant=self.participant,
-            round_number=self.round_number + 1
-        )
-
-    def _in_previous_round(self):
-        return type(self).objects.get(
-            participant=self.participant,
-            round_number=self.round_number - 1
-        )
 
     def __unicode__(self):
         return self.name()

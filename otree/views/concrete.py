@@ -73,10 +73,11 @@ class WaitUntilAssignedToGroup(FormPageOrInGameWaitPageMixin,
         # we assign them.
         elif self.session.config.get('group_by_arrival_time'):
             with lock_on_this_code_path():
+                round_number = self.subsession.round_number
                 # need to check again to prevent race conditions
                 if bool(self.group):
                     return not self.group._is_missing_players
-                if self.subsession.round_number == 1:
+                if round_number == 1:
                     open_group = self.subsession._get_open_group()
                     group_players = open_group.get_players()
                     group_players.append(self.player)
@@ -105,9 +106,12 @@ class WaitUntilAssignedToGroup(FormPageOrInGameWaitPageMixin,
                     # get_players() is guaranteed to return a complete group
                     # (because a player can't start round 1 before
                     # being assigned to a complete group)
+
+                    # in_next_round is clearer
                     group_players = [
-                        p._in_next_round() for p in
-                        self.player._in_previous_round().group.get_players()
+                        p.in_round(round_number) for p in
+                        self.player.in_round(round_number - 1).group
+                            .get_players()
                     ]
                     open_group = self.subsession._get_open_group()
                     open_group.set_players(group_players)
