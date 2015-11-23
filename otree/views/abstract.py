@@ -459,7 +459,6 @@ class GenericWaitPageMixin(object):
     body_text = None
 
     def _get_default_title_text(self):
-        # could evaluate to false like 0
         # Translators: the default title of a wait page
         return _('Please wait')
 
@@ -477,11 +476,16 @@ class GenericWaitPageMixin(object):
             body_text = self.body_text()
         else:
             body_text = self.body_text
+
         # could evaluate to false like 0
+        if title_text is None:
+            title_text = self._get_default_title_text()
+        if body_text is None:
+            body_text = self._get_default_body_text()
 
         context = {
-            'title_text': str(title_text) or self._get_default_title_text(),
-            'body_text': str(body_text) or self._get_default_body_text(),
+            'title_text': title_text,
+            'body_text': body_text,
         }
 
         # default title/body text can be overridden
@@ -636,10 +640,7 @@ class InGameWaitPageMixin(object):
             return _('Waiting for the other participants.')
         elif num_other_players == 1:
             return _('Waiting for the other participant.')
-        elif num_other_players == 0:
-            # Translators: the default body text on the waiting page
-            # to inform the user we are waiting.
-            return _('Waiting')
+        return ''
 
 
 class FormPageMixin(object):
