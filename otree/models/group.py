@@ -55,6 +55,16 @@ class BaseGroup(SaveTheChange, models.Model):
         # so that get_players doesn't return stale cache
         self._players = players_list
 
+    def in_round(self, round_number):
+        '''You should not use this method if
+        you are rearranging groups between rounds.'''
+
+        return type(self).objects.filter(
+            session=self.session,
+            id_in_subsession=self.id_in_subsession,
+            round_number=round_number,
+        )
+
     def in_rounds(self, first, last):
         '''You should not use this method if
         you are rearranging groups between rounds.'''
