@@ -229,9 +229,10 @@ class BaseSubsession(SaveTheChange, models.Model):
     def _get_open_group(self):
         # force refresh from DB so that next call to this function does not
         # show the group as still missing players
-        groups_missing_players = self.group_set.filter(
-            _is_missing_players=True
-        )
+        groups_missing_players = [
+            g for g in self.get_groups()
+            if g._is_missing_players
+        ]
         for group in groups_missing_players:
             if len(group.get_players()) > 0:
                 return group

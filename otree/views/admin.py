@@ -129,7 +129,7 @@ def get_all_fields(Model, for_export=False):
     last_fields = oset(last_fields)
 
     fields_for_export_but_not_view = {
-        'Player': {'id', 'label', 'subsession', 'session'},
+        'Player': {'label', 'subsession', 'session'},
         'Group': {'id'},
         'Subsession': {'id', 'round_number'},
     }[Model.__name__]
@@ -143,7 +143,7 @@ def get_all_fields(Model, for_export=False):
     fields_to_exclude_from_export_and_view = {
         'Player': {
             '_index_in_game_pages',
-            'participant',
+            # 'participant',
             'group',
             'subsession',
             'session',
