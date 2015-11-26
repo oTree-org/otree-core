@@ -283,10 +283,10 @@ def get_players(self, order_by, refresh_from_db=False):
     return sorted(self._players, key=operator.attrgetter(order_by))
 
 
-def get_groups(self, refresh_from_db=False):
+def get_groups(self, order_by, refresh_from_db=False):
     if refresh_from_db or not self._groups:
-        self._groups = self.group_set.all()
-    return list(self._groups)
+        self._groups = list(self.group_set.all())
+    return sorted(self._groups, key=operator.attrgetter(order_by))
 
 
 def expand_choice_tuples(choices):

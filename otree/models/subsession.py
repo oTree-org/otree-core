@@ -80,7 +80,13 @@ class BaseSubsession(SaveTheChange, models.Model):
         return group_cycle * num_group_cycles
 
     def get_groups(self):
-        return get_groups(self, refresh_from_db=False)
+        return self._get_groups()
+
+    def _get_groups(self, refresh_from_db=False):
+        return get_groups(
+            self, order_by='id_in_subsession',
+            refresh_from_db=refresh_from_db
+        )
 
     def _get_players(self, refresh_from_db=False):
         return get_players(
@@ -100,7 +106,7 @@ class BaseSubsession(SaveTheChange, models.Model):
         been assigned to groups yet
         '''
         players = get_players(self, order_by='id', refresh_from_db=True)
-        groups = [get_players(g, 'id', True) for g in get_groups(self, True)]
+        groups = [get_players(g, 'id', True) for g in self._get_groups(True)]
         players_from_groups = flatten(groups)
 
         assert set(players) == set(players_from_groups)
@@ -120,7 +126,7 @@ class BaseSubsession(SaveTheChange, models.Model):
         matrix = []
         for group in groups:
             if isinstance(group, self._GroupClass()):
-                matrix.append(group.player_set.all())
+                matrix.append(group.get_players())
             else:
                 players_list = group
                 matrix.append(players_list)
@@ -166,7 +172,7 @@ class BaseSubsession(SaveTheChange, models.Model):
         return group
 
     def _first_round_group_matrix(self):
-        players = list(self.player_set.all())
+        players = list(self.get_players())
 
         groups = []
         first_player_index = 0
@@ -209,7 +215,7 @@ class BaseSubsession(SaveTheChange, models.Model):
         previous_round = self.in_round(round_number)
         group_matrix = [
             group._get_players(refresh_from_db=True)
-            for group in get_groups(previous_round, refresh_from_db=True)
+            for group in previous_round._get_groups(refresh_from_db=True)
         ]
         for i, group_list in enumerate(group_matrix):
             for j, player in enumerate(group_list):

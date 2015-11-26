@@ -16,6 +16,7 @@ class BasePlayer(SaveTheChange, models.Model):
     class Meta:
         abstract = True
         index_together = ['participant', 'round_number']
+        ordering = ['pk']
 
     _index_in_game_pages = models.PositiveIntegerField(
         default=0,

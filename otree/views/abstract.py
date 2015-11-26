@@ -583,7 +583,8 @@ class InGameWaitPageMixin(object):
     def _ids_for_this_wait_page(self):
         return set([
             p.participant.id_in_session
-            for p in self._group_or_subsession.player_set.all()])
+            for p in self._group_or_subsession.player_set.all()
+        ])
 
     def _get_unvisited_ids(self):
         """side effect: set _waiting_for_ids"""
