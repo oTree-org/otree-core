@@ -129,7 +129,7 @@ def get_all_fields(Model, for_export=False):
     last_fields = oset(last_fields)
 
     fields_for_export_but_not_view = {
-        'Player': {'label', 'subsession', 'session'},
+        'Player': {'id', 'label', 'subsession', 'session'},
         'Group': {'id'},
         'Subsession': {'id', 'round_number'},
     }[Model.__name__]
@@ -143,7 +143,7 @@ def get_all_fields(Model, for_export=False):
     fields_to_exclude_from_export_and_view = {
         'Player': {
             '_index_in_game_pages',
-            # 'participant',
+            'participant',
             'group',
             'subsession',
             'session',
@@ -214,7 +214,10 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
         all_columns.extend(columns_for_this_model)
 
     if subsession_pk:
-        players = Player.objects.filter(subsession_id=subsession_pk)
+        # we had a strange result on one person's heroku instance
+        # where Meta.ordering on the Player was being ingnored
+        # when you use a filter. So we add one explicitly.
+        players = Player.objects.filter(subsession_id=subsession_pk).order_by('pk')
     else:
         players = Player.objects.all()
     session_ids = set([player.session_id for player in players])
