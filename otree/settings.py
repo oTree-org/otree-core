@@ -251,12 +251,12 @@ def augment_settings(settings):
             'django.contrib.sessions.serializers.PickleSerializer'
         ),
         'ALLOWED_HOSTS': ['*'],
-
-        'TEMPLATE_CONTEXT_PROCESSORS': (
-            global_settings.TEMPLATE_CONTEXT_PROCESSORS +
-            ['django.core.context_processors.request',
-             'otree.context_processors.otree_context']
-        ),
+        
+        'TEMPLATE_CONTEXT_PROCESSORS': collapse_to_unique_list(
+            global_settings.TEMPLATE_CONTEXT_PROCESSORS, (
+                'django.core.context_processors.request',
+                'otree.context_processors.otree_context'
+        )),
 
         # SEO AND FOOTER
         'PAGE_FOOTER': page_footer,
