@@ -14,6 +14,7 @@ class BaseGroup(SaveTheChange, models.Model):
     class Meta:
         abstract = True
         index_together = ['session', 'id_in_subsession']
+        ordering = ['pk']
 
     _is_missing_players = models.BooleanField(default=False, db_index=True)
 
