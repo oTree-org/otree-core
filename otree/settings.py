@@ -254,10 +254,8 @@ def augment_settings(settings):
 
         'TEMPLATE_CONTEXT_PROCESSORS': (
             global_settings.TEMPLATE_CONTEXT_PROCESSORS +
-            (
-                'django.core.context_processors.request',
-                'otree.context_processors.otree_context'
-            )
+            ['django.core.context_processors.request',
+             'otree.context_processors.otree_context']
         ),
 
         # SEO AND FOOTER
