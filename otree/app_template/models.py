@@ -32,16 +32,11 @@ class Subsession(BaseSubsession):
 
 
 class Group(BaseGroup):
-    # <built-in>
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
+    pass
 
 
 class Player(BasePlayer):
-    # <built-in>
-    subsession = models.ForeignKey(Subsession)
-    group = models.ForeignKey(Group, null=True)
-    # </built-in>
+    pass
 
     def role(self):
         # you can make this depend of self.id_in_group
