@@ -142,19 +142,29 @@ class Rules(object):
         except (IOError, OSError):
             pass
         except TemplateSyntaxError as error:
-            template_source, position = error.django_template_source
-            snippet = format_source_snippet(
-                template_source.source,
-                arrow_position=position[0])
-            return self.error(
-                'Template syntax error in {template}\n'
-                '\n'
-                '{snippet}\n'
-                '\n'
-                'Error: {error}'.format(
-                    template=template_name,
-                    error=error,
-                    snippet=snippet))
+            # The django_template_source attribute will only be available on
+            # DEBUG = True.
+            if hasattr(error, 'django_template_source'):
+                template_source, position = error.django_template_source
+                snippet = format_source_snippet(
+                    template_source.source,
+                    arrow_position=position[0])
+                message = (
+                    'Template syntax error in {template}\n'
+                    '\n'
+                    '{snippet}\n'
+                    '\n'
+                    'Error: {error}'.format(
+                        template=template_name,
+                        error=error,
+                        snippet=snippet))
+            else:
+                message = (
+                    'Template syntax error in {template}\n'
+                    'Error: {error}\n'
+                    'Set "DEBUG = True" to see more details.'.format(
+                        template=template_name, error=error))
+            return self.error(message)
 
     @rule
     def template_has_no_dead_code(self, template_name):
