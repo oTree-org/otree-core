@@ -6,6 +6,10 @@ import otree.forms
 from otree import widgets
 
 
+class Subsession(otree.models.BaseSubsession):
+    pass
+
+
 class SimpleModel(otree.models.BaseGroup):
     name = models.CharField()
 
