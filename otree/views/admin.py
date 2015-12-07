@@ -217,7 +217,8 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
         # we had a strange result on one person's heroku instance
         # where Meta.ordering on the Player was being ingnored
         # when you use a filter. So we add one explicitly.
-        players = Player.objects.filter(subsession_id=subsession_pk).order_by('pk')
+        players = Player.objects.filter(
+            subsession_id=subsession_pk).order_by('pk')
     else:
         players = Player.objects.all()
     session_ids = set([player.session_id for player in players])
