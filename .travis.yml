@@ -5,9 +5,9 @@ install:
 script:
   - tox -r
 env:
-  - TOXENV=py2.7-unittest
-  - TOXENV=py2.7-integration
-  - TOXENV=py2.7-experiments
+  - TOXENV=py2.7-django1.8-unittest
+  - TOXENV=py2.7-django1.8-integration
+  - TOXENV=py2.7-django1.8-experiments
   - TOXENV=style
   - TOXENV=coverage
   - TOXENV=2to3
