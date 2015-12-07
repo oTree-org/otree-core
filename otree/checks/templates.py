@@ -3,6 +3,7 @@ from django.template.base import TextNode
 from django.template.loader_tags import ExtendsNode, BlockNode
 from django.utils.encoding import force_text
 from itertools import chain
+import unicodedata
 
 from otree.templatetags.otree_tags import NextButtonNode
 
@@ -96,7 +97,12 @@ Line = namedtuple('Line', ('source', 'lineno', 'start', 'end'))
 
 
 def format_error_line(line):
-    return '{line.lineno:4d} | {line.source}'.format(line=line)
+    # We need to make sure here that the output does not contain any unicode
+    # characters. Django's check framework cannot print errors that contain
+    # unicode.
+    source = line.source
+    source = unicodedata.normalize('NFKD', source).encode('ascii', 'replace')
+    return '{line.lineno:4d} | {source}'.format(line=line, source=source)
 
 
 def split_source_lines(source):

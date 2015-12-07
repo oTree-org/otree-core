@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 import os
 from django.core.management import call_command, CommandError
 from django.template import Template
 
 from otree.checks.templates import get_unreachable_content, check_next_button
+from otree.checks.templates import format_source_snippet
 from otree.checks.templates import has_valid_encoding
 from .base import TestCase
 from .utils import capture_stdout, dummyapp
@@ -203,3 +205,14 @@ class TemplateCheckEncodingTest(TestCase):
         file_name = os.path.join(TEST_DIR, 'test_files',
                                  'good_encoding_template.html')
         self.assertTrue(has_valid_encoding(file_name))
+
+
+class FormatSourceSnippetTest(TestCase):
+    def test_unicode_contents(self):
+        """
+        Testing for the issue described in
+        https://github.com/oTree-org/otree-core/issues/408
+        """
+        source = u'{% formfield player.contribution with label = "好" %}'
+        # Should not raise UnicodeEncodeError
+        format_source_snippet(source, arrow_position=0)
