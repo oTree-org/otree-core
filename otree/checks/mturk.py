@@ -26,6 +26,9 @@ class ValidateMTurk(object):
                 if isinstance(page, Page):
                     path_template = page.get_template_names()
                     template = select_template(path_template)
+                    # The returned ``template`` variable is only a wrapper
+                    # around Django's internal ``Template`` object.
+                    template = template.template
                     if not check_next_button(template):
                         yield page
 
