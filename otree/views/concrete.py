@@ -68,57 +68,8 @@ class WaitUntilAssignedToGroup(FormPageOrInGameWaitPageMixin,
     def _is_ready(self):
         if bool(self.group):
             return not self.group._is_missing_players
-        # if grouping by arrival time,
-        # and the player has not yet been assigned to a group,
-        # we assign them.
-        elif self.session.config.get('group_by_arrival_time'):
-            with lock_on_this_code_path():
-                round_number = self.subsession.round_number
-                # need to check again to prevent race conditions
-                if bool(self.group):
-                    return not self.group._is_missing_players
-                if round_number == 1:
-                    open_group = self.subsession._get_open_group()
-                    group_players = open_group.get_players()
-                    group_players.append(self.player)
-                    open_group.set_players(group_players)
-                    group_size_obj = GroupSize.objects.filter(
-                        app_label=self.subsession._meta.app_config.name,
-                        subsession_pk=self.subsession.pk,
-                    ).order_by('group_index')[0]
-                    group_quota = group_size_obj.group_size
-                    if len(group_players) == group_quota:
-                        open_group._is_missing_players = False
-                        group_size_obj.delete()
-                        open_group.save()
-                        return True
-                    else:
-                        open_group.save()
-                        return False
-                else:
-                    # 2015-06-11: just running
-                    # self.subsession._create_groups() doesn't work
-                    # because what if some participants didn't start round 1?
-                    # following code only gets executed once
-                    # (because of self.group check above)
-                    # and doesn't get executed if ppg == None
-                    # (because if ppg == None we preassign)
-                    # get_players() is guaranteed to return a complete group
-                    # (because a player can't start round 1 before
-                    # being assigned to a complete group)
-
-                    # in_next_round is clearer
-                    group_players = [
-                        p.in_round(round_number) for p in
-                        self.player.in_round(round_number - 1).group
-                            .get_players()
-                    ]
-                    open_group = self.subsession._get_open_group()
-                    open_group.set_players(group_players)
-                    open_group._is_missing_players = False
-                    open_group.save()
-                    return True
-        # if not grouping by arrival time, but the session was just created
+        # group_by_arrival_time code used to be here
+        # if the session was just created
         # and the code to assign to groups has not executed yet
         return False
 

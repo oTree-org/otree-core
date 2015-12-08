@@ -203,32 +203,9 @@ class Session(ModelWithVars):
     payments_ready.boolean = True
 
     def _create_groups_and_initialize(self):
-        # if ppg is None, then the arrival time doesn't matter because
-        # everyone is assigned to one big group.
-        # otherwise, even in single-player games, you would have to wait
-        # for other players to arrive
-        # the drawback of this approach is that id_in_group is
-        # predetermined, rather than by arrival time.
-        # alternative design:
-        # instead of checking ppg, we could also check if the game
-        # contains a wait page
-        # another alternative:
-        # allow players to start even if the rest of the group hasn't arrived
-        # but this might break some assumptions such as len(grp.get_players())
-        # also, what happens if you get to the next round before
-        # another player has started the first? you can't clone the
-        # previous round's groups
+        # group_by_arrival_time code used to be here
         for subsession in self.get_subsessions():
-            cond = (
-                self.config.get('group_by_arrival_time') and
-                subsession._Constants.players_per_group is not None
-            )
-            if cond:
-                if subsession.round_number == 1:
-                    subsession._set_players_per_group_list()
-                subsession._create_empty_groups()
-            else:
-                subsession._create_groups()
+            subsession._create_groups()
             subsession._initialize()
             subsession.save()
         self._ready_to_play = True
