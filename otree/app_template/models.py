@@ -24,8 +24,6 @@ class Constants(BaseConstants):
     players_per_group = None
     num_rounds = 1
 
-    # define more constants here
-
 
 class Subsession(BaseSubsession):
     pass
@@ -36,8 +34,6 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
-    pass
 
     def role(self):
-        # you can make this depend of self.id_in_group
         return ''
