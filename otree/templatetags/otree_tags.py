@@ -102,6 +102,7 @@ register.tag('form_field', FormFieldNode.parse)
 # FILTERS
 # =============================================================================
 
+
 @register.filter
 def c(val):
     return Currency(val)
