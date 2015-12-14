@@ -613,8 +613,6 @@ class InGameWaitPageMixin(object):
             id_in_session=self._participant.id_in_session)
 
     def _action(self):
-        # force to refresh from DB
-        self._group_or_subsession._get_players(refresh_from_db=True)
         self.after_all_players_arrive()
         # 2015-10-21: this is necessary
         # what if you do [g.get_players() for g in subsession.get_groups()]?
