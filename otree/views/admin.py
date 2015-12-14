@@ -40,7 +40,9 @@ from otree.models.session import Session
 from otree.models.participant import Participant
 from otree.models.session import GlobalSingleton
 from otree.models_concrete import PageCompletion
-
+from django.contrib import admin
+from django.forms import TextInput, Textarea
+from django.db import models
 
 def get_all_fields(Model, for_export=False):
 
@@ -896,3 +898,15 @@ class AdminHome(vanilla.ListView):
         category = otree.constants_internal.session_special_category_demo
         return Session.objects.exclude(
             special_category=category).order_by('archived', '-pk')
+
+
+models_modul = otree.common_internal.get_models_module(app_name)
+players = models_modul.Player
+
+class playersAdmin(admin.ModelAdmin):
+    formfield_overrides={
+        models.CharField:{'widget': TextInput(attrs={'size':20})},
+        models.TextField:{'widget': Textarea(attrs={'rows':15,'cols':20})},
+    }
+
+admin.site.register(players, playersAdmin)
