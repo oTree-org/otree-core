@@ -25,16 +25,8 @@ class BaseGroup(SaveTheChange, models.Model):
     def __unicode__(self):
         return str(self.pk)
 
-    _players = []
-
-    def _get_players(self, refresh_from_db=False):
-        return get_players(
-            self, order_by='id_in_group',
-            refresh_from_db=refresh_from_db
-        )
-
     def get_players(self):
-        return self._get_players()
+        return self.player_set.all().order_by('id_in_group')
 
     def get_player_by_id(self, id_in_group):
         for p in self.get_players():

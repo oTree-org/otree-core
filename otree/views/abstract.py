@@ -543,7 +543,7 @@ class InGameWaitPageMixin(object):
                     # action is completed before the next thread does a
                     # get_or_create and sees that the action has been completed
                     if created:
-                        self._action()
+                        self.after_all_players_arrive()
 
                         # in case there is a timeout on the next page, we
                         # should ensure the next pages are visited promptly
@@ -611,16 +611,6 @@ class InGameWaitPageMixin(object):
             session_pk=self.session.pk,
             page_index=self._index_in_pages,
             id_in_session=self._participant.id_in_session)
-
-    def _action(self):
-        self.after_all_players_arrive()
-        # 2015-10-21: this is necessary
-        # what if you do [g.get_players() for g in subsession.get_groups()]?
-        # need a more comprehensive way to handle this
-        for p in self._group_or_subsession.get_players():
-            p.save()
-            p.participant.save()
-        self._group_or_subsession.save()
 
     def is_displayed(self):
         return True

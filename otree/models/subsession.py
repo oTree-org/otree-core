@@ -4,7 +4,7 @@
 from otree_save_the_change.mixins import SaveTheChange
 from otree.db import models
 from otree.common_internal import (
-    get_models_module, get_players, get_groups, flatten)
+    get_models_module, flatten)
 from otree.models_concrete import GroupSize
 
 
@@ -37,9 +37,6 @@ class BaseSubsession(SaveTheChange, models.Model):
 
     def __unicode__(self):
         return self.name()
-
-    _groups = []
-    _players = []
 
     def in_round(self, round_number):
         return type(self).objects.filter(
@@ -80,22 +77,10 @@ class BaseSubsession(SaveTheChange, models.Model):
         return group_cycle * num_group_cycles
 
     def get_groups(self):
-        return self._get_groups()
-
-    def _get_groups(self, refresh_from_db=False):
-        return get_groups(
-            self, order_by='id_in_subsession',
-            refresh_from_db=refresh_from_db
-        )
-
-    def _get_players(self, refresh_from_db=False):
-        return get_players(
-            self, order_by='pk',
-            refresh_from_db=refresh_from_db
-        )
+        return self.group_set.all().order_by('id_in_subsession')
 
     def get_players(self):
-        return self._get_players()
+        return self.player_set.all().order_by('pk')
 
     def check_group_integrity(self):
         '''
@@ -105,8 +90,8 @@ class BaseSubsession(SaveTheChange, models.Model):
         e.g., if group_by_arrival_time is true, and some players have not
         been assigned to groups yet
         '''
-        players = get_players(self, order_by='id', refresh_from_db=True)
-        groups = [get_players(g, 'id', True) for g in self._get_groups(True)]
+        players = self.get_players()
+        groups = [g.get_players() for g in self.get_groups()]
         players_from_groups = flatten(groups)
 
         assert set(players) == set(players_from_groups)
@@ -214,8 +199,8 @@ class BaseSubsession(SaveTheChange, models.Model):
     def group_like_round(self, round_number):
         previous_round = self.in_round(round_number)
         group_matrix = [
-            group._get_players(refresh_from_db=True)
-            for group in previous_round._get_groups(refresh_from_db=True)
+            group.get_players()
+            for group in previous_round.get_groups()
         ]
         for i, group_list in enumerate(group_matrix):
             for j, player in enumerate(group_list):

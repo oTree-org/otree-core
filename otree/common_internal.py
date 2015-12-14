@@ -277,17 +277,6 @@ def get_app_name_from_label(app_label):
     return apps.get_app_config(app_label).name
 
 
-def get_players(self, order_by, refresh_from_db=False):
-    if refresh_from_db or not self._players:
-        self._players = list(self.player_set.all())
-    return sorted(self._players, key=operator.attrgetter(order_by))
-
-
-def get_groups(self, order_by, refresh_from_db=False):
-    if refresh_from_db or not self._groups:
-        self._groups = list(self.group_set.all())
-    return sorted(self._groups, key=operator.attrgetter(order_by))
-
 
 def expand_choice_tuples(choices):
     '''allows the programmer to define choices as a list of values rather
