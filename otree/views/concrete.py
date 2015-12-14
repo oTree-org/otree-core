@@ -35,7 +35,7 @@ from otree.views.abstract import (
     GenericWaitPageMixin, FormPageOrInGameWaitPageMixin,
     NO_PARTICIPANTS_LEFT_MSG
 )
-from otree.models_concrete import GroupSize
+from otree.models_concrete import GroupSize  # noqa
 from otree.models.session import GlobalSingleton
 
 

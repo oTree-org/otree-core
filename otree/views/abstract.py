@@ -32,6 +32,7 @@ import otree.models
 import otree.constants_internal as constants
 from otree.models.participant import Participant
 from otree.models.session import GlobalSingleton
+from otree.models.session import Session
 from otree.common_internal import (
     lock_on_this_code_path, get_app_label_from_import_path)
 
@@ -40,6 +41,7 @@ from otree.models_concrete import (
     CompletedGroupWaitPage, ParticipantToPlayerLookup,
     PageTimeout, StubModel,
     ParticipantLockModel)
+from otree_save_the_change.mixins import SaveTheChange
 
 
 # Get an instance of a logger
@@ -53,7 +55,60 @@ NO_PARTICIPANTS_LEFT_MSG = (
 DebugTable = collections.namedtuple('DebugTable', ['title', 'rows'])
 
 
-class OTreeMixin(object):
+class SaveObjectsMixin(object):
+    """
+    Provide a ``save_objects`` method that will save all model instances that
+    were changed during this request.
+    """
+
+    def _get_save_objects_models(self):
+        """
+        Return the models that shall be saved automatically if they have
+        changed during the request.
+        """
+        return (
+            self.PlayerClass,
+            self.GroupClass,
+            self.SubsessionClass,
+            Participant,
+            Session,
+        )
+
+    def _get_save_objects_model_instances(self):
+        """
+        Get all model instances that should be saved. This implementation uses
+        the idmap cache to determine which instances have been loaded.
+        """
+        import idmap.tls
+        cache = getattr(idmap.tls._tls, 'idmap_cache', {})
+        instances = []
+        monitored_classes = self._get_save_objects_models()
+        for model_class, model_cache in cache.items():
+            # Collect instances if it's a subclass of one of the monitored
+            # models.
+            is_monitored = issubclass(model_class, monitored_classes)
+            if is_monitored:
+                cached_instances = model_cache.values()
+                instances.extend(cached_instances)
+        return instances
+
+    def _save_objects_shall_save(self, instance):
+        # If ``SaveTheChange`` has recoreded any changes, then save.
+        if isinstance(instance, SaveTheChange):
+            if getattr(instance, '_changed_fields', None):
+                return True
+            else:
+                return False
+        # Save always if the model is not a SaveTheChange instance.
+        return True
+
+    def save_objects(self):
+        for instance in self._get_save_objects_model_instances():
+            if self._save_objects_shall_save(instance):
+                instance.save()
+
+
+class OTreeMixin(SaveObjectsMixin, object):
     """Base mixin class for oTree views.
 
     Takes care of:
@@ -65,11 +120,6 @@ class OTreeMixin(object):
 
     is_debug = settings.DEBUG
     is_otree_dot_org = 'IS_OTREE_DOT_ORG' in os.environ
-
-    def save_objects(self):
-        for obj in self.objects_to_save():
-            if obj:
-                obj.save()
 
     @classmethod
     def get_name_in_url(cls):
@@ -178,16 +228,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
 
     def get_UserClass(self):
         return self.PlayerClass
-
-    def objects_to_save(self):
-        objs = [self.player, self._participant, self.session]
-        if self.group:
-            objs.append(self.group)
-            objs.extend(list(self.group._players))
-        objs.extend(list(self.subsession._players))
-        objs.extend(list(self.subsession._groups))
-
-        return objs
 
     def load_objects(self):
         """
