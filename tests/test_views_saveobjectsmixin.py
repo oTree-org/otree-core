@@ -109,7 +109,8 @@ class SaveObjectsMixinTest(TestCase):
             all_instances)
 
         # No queries are executed. The group model shall be saved, but we
-        # mocked out the save method. All other models should be left untouched.
+        # mocked out the save method. All other models should be left
+        # untouched.
         with self.assertNumQueries(0):
             mixin.save_objects()
 
