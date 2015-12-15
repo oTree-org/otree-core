@@ -154,6 +154,7 @@ def get_all_fields(Model, for_export=False):
             'id_in_subsession',
             'session',
             '_is_missing_players',
+            'round_number',
         },
         'Subsession': {
             'code',
