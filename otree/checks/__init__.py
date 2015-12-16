@@ -19,6 +19,12 @@ from otree.db import models
 
 import otree.views.abstract
 
+import sys
+stdin, stdout, stderr = sys.stdin, sys.stdout, sys.stderr
+reload(sys)
+sys.stdin, sys.stdout, sys.stderr = stdin, stdout, stderr
+sys.setdefaultencoding('utf-8')
+
 
 class Rules(object):
     """A helper class incapsulating common checks.
@@ -193,12 +199,13 @@ class Rules(object):
             format_content(bit)
             for bit in contents)
         if contents:
-            return self.error(
-                'Template contains the following text outside of a '
-                '{% block %}. This text will never be displayed.'
-                '\n\n' + content_bits,
-                obj=os.path.join(self.config.label,
-                                 self.get_rel_path(template_name)))
+            None
+             #return self.error(
+             #   'Template contains the following text outside of a '
+             #   '{% block %}. This text will never be displayed.'
+             #   '\n\n' + content_bits,
+             #   obj=os.path.join(self.config.label,
+             #                    self.get_rel_path(template_name)))
 
     @rule
     def template_has_valid_encoding(self, template_name):
