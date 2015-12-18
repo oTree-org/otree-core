@@ -34,6 +34,4 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
-
-    def role(self):
-        return ''
+    pass
