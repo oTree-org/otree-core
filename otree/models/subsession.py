@@ -77,10 +77,10 @@ class BaseSubsession(SaveTheChange, models.Model):
         return group_cycle * num_group_cycles
 
     def get_groups(self):
-        return self.group_set.all().order_by('id_in_subsession')
+        return list(self.group_set.all().order_by('id_in_subsession'))
 
     def get_players(self):
-        return self.player_set.all().order_by('pk')
+        return list(self.player_set.all().order_by('pk'))
 
     def check_group_integrity(self):
         '''
@@ -199,7 +199,7 @@ class BaseSubsession(SaveTheChange, models.Model):
     def group_like_round(self, round_number):
         previous_round = self.in_round(round_number)
         group_matrix = [
-            group.get_players()
+            list(group.get_players())
             for group in previous_round.get_groups()
         ]
         for i, group_list in enumerate(group_matrix):
