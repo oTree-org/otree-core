@@ -1,10 +1,9 @@
-import copy
 import django.test
 
 from otree import constants_internal
 import otree.common_internal
 from otree.db import models
-from otree_save_the_change.mixins import SaveTheChange
+from .varsmixin import ModelWithVars
 
 
 class GlobalSingleton(models.Model):
@@ -20,23 +19,6 @@ class GlobalSingleton(models.Model):
         length=8, doc=('used for authentication to things only the '
                        'admin/experimenter should access')
     )
-
-
-class ModelWithVars(SaveTheChange, models.Model):
-    vars = models.JSONField(default=dict)
-
-    class Meta:
-        abstract = True
-
-    def __init__(self, *args, **kwargs):
-        super(ModelWithVars, self).__init__(*args, **kwargs)
-        self._old_vars = copy.deepcopy(self.vars)
-
-    def save(self, *args, **kwargs):
-        # Trick otree_save_the_change to update vars
-        if hasattr(self, '_changed_fields') and self.vars != self._old_vars:
-            self._changed_fields['vars'] = self._old_vars
-        super(ModelWithVars, self).save(*args, **kwargs)
 
 
 # for now removing SaveTheChange

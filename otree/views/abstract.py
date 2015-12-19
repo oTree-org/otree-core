@@ -42,6 +42,7 @@ from otree.models_concrete import (
     PageTimeout, StubModel,
     ParticipantLockModel)
 from otree_save_the_change.mixins import SaveTheChange
+from otree.models.varsmixin import ModelWithVars
 
 
 # Get an instance of a logger
@@ -95,10 +96,14 @@ class SaveObjectsMixin(object):
     def _save_objects_shall_save(self, instance):
         # If ``SaveTheChange`` has recoreded any changes, then save.
         if isinstance(instance, SaveTheChange):
-            if getattr(instance, '_changed_fields', None):
+            if instance._changed_fields:
                 return True
-            else:
-                return False
+            # We need special support for the vars JSONField as SaveTheChange
+            # does not detect the change.
+            if isinstance(instance, ModelWithVars):
+                if instance._vars_have_changed():
+                    return True
+            return False
         # Save always if the model is not a SaveTheChange instance.
         return True
 
