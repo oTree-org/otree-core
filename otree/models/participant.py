@@ -8,7 +8,8 @@ from otree.common_internal import id_label_name
 from otree.common import Currency as c
 from otree.db import models
 from otree.models_concrete import ParticipantToPlayerLookup
-from otree.models.session import Session, ModelWithVars
+from otree.models.session import Session
+from otree.models.varsmixin import ModelWithVars
 
 
 class Participant(ModelWithVars):

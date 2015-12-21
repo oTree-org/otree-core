@@ -646,7 +646,10 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
                 workers_with_submit = [
                     completed_assignment.WorkerId
                     for completed_assignment in
-                    mturk_connection.get_assignments(session.mturk_HITId)
+                    mturk_connection.get_assignments(
+                        session.mturk_HITId,
+                        page_size=session.mturk_num_participants
+                    )
                 ]
                 participants = session.participant_set.filter(
                     mturk_worker_id__in=workers_with_submit
