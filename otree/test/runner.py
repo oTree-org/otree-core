@@ -151,15 +151,15 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         pending = PendingBuffer()
         while pending or submit_groups:
 
-            seen_pending_boots = set()
+            seen_pending_bots = set()
             for submit, attempts in pending:
                 if attempts > MAX_ATTEMPTS:
                     msg = "Max attepts reached in  submit '{}'"
                     raise AssertionError(msg.format(submit))
-                if submit.bot not in seen_pending_boots and submit.execute():
+                if submit.bot not in seen_pending_bots and submit.execute():
                     pending.remove(submit)
                 else:
-                    seen_pending_boots.add(submit.bot)
+                    seen_pending_bots.add(submit.bot)
 
             group = submit_groups.pop(0) if submit_groups else ()
             for submit in group:

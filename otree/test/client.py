@@ -77,9 +77,14 @@ class Submit(object):
         """
         if self.bot.on_wait_page():
             try:
+                # 2015-12-20: i think what happens here is we
+                # try to get to the next page
+                # then on the next call to execute_core,
+                # maybe on_wait_page will return False
                 self.bot.response = self.bot.get(self.bot.url, follow=True)
                 self.bot.check_200()
                 self.bot.set_path()
+            # need finally because check_200 could throw
             finally:
                 return False
 

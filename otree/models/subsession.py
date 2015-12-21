@@ -199,7 +199,7 @@ class BaseSubsession(SaveTheChange, models.Model):
     def group_like_round(self, round_number):
         previous_round = self.in_round(round_number)
         group_matrix = [
-            list(group.get_players())
+            group.get_players()
             for group in previous_round.get_groups()
         ]
         for i, group_list in enumerate(group_matrix):

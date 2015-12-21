@@ -590,6 +590,7 @@ class InGameWaitPageMixin(object):
                     if created:
                         self.after_all_players_arrive()
 
+
                         # in case there is a timeout on the next page, we
                         # should ensure the next pages are visited promptly
                         # TODO: can we make this run only if next page is a
