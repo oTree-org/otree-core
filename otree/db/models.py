@@ -62,6 +62,8 @@ def make_get_display(field):
 
 
 class OTreeModel(SharedMemoryModel):
+    use_strong_refs = True
+
     __metaclass__ = OTreeModelBase
 
     class Meta:
