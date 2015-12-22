@@ -7,7 +7,6 @@ import urllib
 import urlparse
 import csv
 import datetime
-import operator
 import contextlib
 import inspect
 from os.path import dirname, join
@@ -275,7 +274,6 @@ def get_app_name_from_label(app_label):
 
     '''
     return apps.get_app_config(app_label).name
-
 
 
 def expand_choice_tuples(choices):
