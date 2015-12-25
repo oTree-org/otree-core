@@ -40,6 +40,9 @@ class OTreeModelBase(SharedMemoryModelBase):
             meta.db_table = "{}_{}".format(app_label, name.lower())
             attrs["Meta"] = meta
 
+
+        # 2015-12-22: this probably doesn't work anymore,
+        # since we moved _choices to views.py
         new_class = super(OTreeModelBase, cls).__new__(cls, name, bases, attrs)
         for f in new_class._meta.fields:
             if hasattr(new_class, f.name + '_choices'):
