@@ -8,6 +8,7 @@ import six
 from django.core.management.base import CommandError
 
 from otree.management import cli
+from otree.management.commands import resetdb
 
 from .base import TestCase
 
@@ -26,6 +27,7 @@ class OTreeAndDjangoVersion(TestCase):
 
 
 class OTreeManagementUtility(TestCase):
+
 
     @mock.patch("sys.argv", new=["otree", "--help"])
     @mock.patch("platform.system", return_value="No-Windows")
