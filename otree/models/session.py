@@ -240,7 +240,8 @@ class Session(ModelWithVars):
         ]
 
         for p in last_place_participants:
-            assert p._current_form_page_url
+            if not p._current_form_page_url:
+                raise
             resp = c.post(
                 p._current_form_page_url,
                 data={constants_internal.auto_submit: True}, follow=True
