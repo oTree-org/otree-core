@@ -231,7 +231,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
 
         return [basic_info_table] + new_tables
 
-
     def load_objects(self):
         """
         Even though we only use PlayerClass in load_objects,

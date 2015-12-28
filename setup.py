@@ -28,7 +28,7 @@ REQUIREMENTS = [
     'handy>=0.5.2',
     'honcho>=0.6.6',
     'IPy>=0.83',
-    'kombu==3.0.31', # because kombu 0.3.32 is broken apparently
+    'kombu==3.0.31',  # because kombu 0.3.32 is broken apparently
     'mock>=1.0',
     'ordered-set>=1.3',
     'otree-save-the-change>=1.1.3',
