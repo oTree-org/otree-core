@@ -13,7 +13,7 @@ class TestAdminBasic(TestCase):
     def setUp(self):
         self.browser = django.test.client.Client()
 
-    def _test_tabs(self):
+    def test_admin_basic(self):
         for tab in [
             'demo',
             'admin',
