@@ -220,15 +220,18 @@ class Session(ModelWithVars):
         c = django.test.Client()
 
         # in case some participants haven't started
-        some_participants_not_visited = False
+        unvisited_participants = []
         for p in participants:
             if not p.visited:
-                some_participants_not_visited = True
+                unvisited_participants.append(p)
                 c.get(p._start_url(), follow=True)
 
-        if some_participants_not_visited:
-            # refresh from DB so that _current_form_page_url gets set
-            participants = self.participant_set.all()
+        if unvisited_participants:
+            from otree.models import Participant
+            for p in unvisited_participants:
+                p.save()
+                Participant.flush_cached_instance(p)
+            participants = self.get_participants()
 
         last_place_page_index = min([p._index_in_pages for p in participants])
         last_place_participants = [
@@ -237,7 +240,7 @@ class Session(ModelWithVars):
         ]
 
         for p in last_place_participants:
-            # what if current_form_page_url hasn't been set yet?
+            assert p._current_form_page_url
             resp = c.post(
                 p._current_form_page_url,
                 data={constants_internal.auto_submit: True}, follow=True

@@ -1,23 +1,14 @@
-
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-import itertools
-
-from mock import patch
-
-import six
 
 from django.core.management import call_command
 
 from otree.models import Session
-from otree import match_players
 import django.test.client
 from .base import TestCase
-from .multi_player_game import models as mpg_models
 
 
-class TestMatchPlayers(TestCase):
+class TestSessionAdmin(TestCase):
 
     def setUp(self):
         call_command('create_session', 'multi_player_game', "9")
@@ -25,15 +16,26 @@ class TestMatchPlayers(TestCase):
         self.browser = django.test.client.Client()
 
     def test_tabs(self):
-        for tab in [
+        tabs = [
             'SessionDescription',
             'SessionMonitor',
             'SessionPayments',
             'SessionResults',
             'SessionStartLinks',
-        ]:
-            response = self.browser.get('/{}/1/'.format(tab), follow=True)
-            self.assertEqual(response.status_code, 200)
+            'AdvanceSession',
+            'SessionFullscreen',
+            'AdvanceSession', # a second time
+        ]
+        urls = ['/{}/1'.format(PageName) for PageName in tabs]
+
+        urls.append([
+            '/sessions/1/participants/',
+        ])
+
+        for url in urls:
+            response = self.browser.get(url, follow=True)
+            if response.status_code != 200:
+                raise Exception('{} returned 400'.format(url))
 
 
 
