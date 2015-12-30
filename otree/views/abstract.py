@@ -585,7 +585,16 @@ class InGameWaitPageMixin(object):
                     # action is completed before the next thread does a
                     # get_or_create and sees that the action has been completed
                     if created:
+
+                        # block users from accessing self.player inside
+                        # after_all_players_arrive, because conceptually
+                        # there is no single player in this context
+                        # (method is executed once for the whole group)
+
+                        player = self.player
+                        del self.player
                         self.after_all_players_arrive()
+                        self.player = player
 
                         # in case there is a timeout on the next page, we
                         # should ensure the next pages are visited promptly
