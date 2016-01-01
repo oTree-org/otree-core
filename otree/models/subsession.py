@@ -6,7 +6,7 @@ from otree.db import models
 from otree.common_internal import (
     get_models_module, flatten)
 from otree.models_concrete import GroupSize
-
+from otree import match_players
 
 class BaseSubsession(SaveTheChange, models.Model):
     """Base class for all Subsessions.
@@ -245,3 +245,10 @@ class BaseSubsession(SaveTheChange, models.Model):
             g.save()
 
         # subsession.save() gets called in the parent method
+
+    def match_players(self, match_name):
+        if self.round_number > 1:
+            match_function = match_players.MATCHS[match_name]
+            pxg = match_function(self)
+            for group, players in zip(self.get_groups(), pxg):
+                group.set_players(players)
