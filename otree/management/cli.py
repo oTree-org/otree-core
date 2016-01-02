@@ -24,8 +24,10 @@ MANAGE_URL = (
     "https://raw.githubusercontent.com/oTree-org/oTree/master/manage.py")
 
 
-IGNORE_APPS_COMMANDS = frozenset(("version", "--version", "startapp", "help"))
-
+NO_SETTINGS_COMMANDS = frozenset((
+    'help', 'version', '--help', '--version', '-h', 'compilemessages',
+    'makemessages', 'startapp', 'startproject',
+))
 
 # =============================================================================
 # CLASSES
@@ -150,6 +152,17 @@ def otree_cli():
     This function is the entry point for the ``otree`` console script.
     """
 
+    try:
+        subcommand = sys.argv[1]
+    except IndexError:
+        subcommand = 'help' # default
+
+    if subcommand == 'startproject':
+        # print os.environ['DJANGO_SETTINGS_MODULE']
+        utility = OTreeManagementUtility(sys.argv)
+        utility.execute()
+        return
+
     # We need to add the current directory to the python path as this is not
     # set by default when no using "python <script>" but a standalone script
     # like ``otree``.
@@ -173,8 +186,7 @@ def otree_cli():
 
     # some commands don't need the setings.INSTALLED_APPS
     # see: https://github.com/oTree-org/otree-core/issues/388
-    ignore_apps = IGNORE_APPS_COMMANDS.intersection(sys.argv)
-    if ignore_apps:
+    if subcommand in NO_SETTINGS_COMMANDS:
         settings.INSTALLED_APPS = tuple(settings.NO_EXPERIMENT_APPS)
 
     execute_from_command_line(sys.argv, 'otree')
