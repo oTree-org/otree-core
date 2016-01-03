@@ -24,7 +24,7 @@ MANAGE_URL = (
     "https://raw.githubusercontent.com/oTree-org/oTree/master/manage.py")
 
 
-NO_SETTINGS_COMMANDS = frozenset((
+IGNORE_APPS_COMMANDS = frozenset((
     'help', 'version', '--help', '--version', '-h', 'compilemessages',
     'makemessages', 'startapp', 'startproject',
 ))
@@ -158,7 +158,8 @@ def otree_cli():
         subcommand = 'help' # default
 
     if subcommand == 'startproject':
-        # print os.environ['DJANGO_SETTINGS_MODULE']
+        from django.conf import settings
+        settings.configure()
         utility = OTreeManagementUtility(sys.argv)
         utility.execute()
         return
@@ -186,7 +187,7 @@ def otree_cli():
 
     # some commands don't need the setings.INSTALLED_APPS
     # see: https://github.com/oTree-org/otree-core/issues/388
-    if subcommand in NO_SETTINGS_COMMANDS:
+    if subcommand in IGNORE_APPS_COMMANDS:
         settings.INSTALLED_APPS = tuple(settings.NO_EXPERIMENT_APPS)
 
     execute_from_command_line(sys.argv, 'otree')
