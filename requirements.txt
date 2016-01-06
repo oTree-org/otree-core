@@ -28,6 +28,7 @@ IPy==0.83
 kombu==3.0.31
 mock==1.3.0
 ordered-set==1.4.0
+otree-save-the-change==1.1.3
 pbr==1.8.1
 pytz==2015.7
 raven==5.9.2
