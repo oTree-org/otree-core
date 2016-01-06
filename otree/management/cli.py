@@ -29,6 +29,7 @@ IGNORE_APPS_COMMANDS = frozenset((
     'makemessages', 'startapp', 'startproject',
 ))
 
+
 # =============================================================================
 # CLASSES
 # =============================================================================
@@ -155,7 +156,7 @@ def otree_cli():
     try:
         subcommand = sys.argv[1]
     except IndexError:
-        subcommand = 'help' # default
+        subcommand = 'help'  # default
 
     if subcommand == 'startproject':
         from django.conf import settings

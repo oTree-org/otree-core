@@ -35,6 +35,3 @@ class TestSessionAdmin(TestCase):
             response = self.browser.get(url, follow=True)
             if response.status_code != 200:
                 raise Exception('{} returned 400'.format(url))
-
-
-

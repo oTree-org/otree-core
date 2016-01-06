@@ -8,6 +8,7 @@ from otree.common_internal import (
 from otree.models_concrete import GroupSize
 from otree import match_players
 
+
 class BaseSubsession(SaveTheChange, models.Model):
     """Base class for all Subsessions.
 
