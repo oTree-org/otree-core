@@ -1,6 +1,5 @@
 import os
 import sys
-from pip.req import parse_requirements
 from setuptools import setup, find_packages
 
 README = open(os.path.join(os.path.dirname(__file__), 'README.md')).read()
