@@ -14,8 +14,6 @@ version = __import__('otree').get_version()
 with open('requirements.txt', 'r') as f:
     required = f.read().splitlines()
 
-print required
-
 if sys.argv[-1] == 'publish':
 
     cmd = "python setup.py sdist upload"
