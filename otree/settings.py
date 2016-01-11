@@ -97,7 +97,9 @@ def get_default_settings(initial=None):
 
         'SESSION_SAVE_EVERY_REQUEST': True,
         'TEMPLATE_DEBUG': initial.get('DEBUG', False),
-        'STATIC_ROOT': os.path.join(initial.get('BASE_DIR', ''), '_static_root'),
+        'STATIC_ROOT': os.path.join(
+            initial.get('BASE_DIR', ''),
+            '_static_root'),
         'STATIC_URL': '/static/',
         'STATICFILES_STORAGE': (
             'whitenoise.django.GzipManifestStaticFilesStorage'

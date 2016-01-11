@@ -161,6 +161,14 @@ def execute_from_command_line(arguments, script_file):
         utility.execute()
 
 
+SETTINGS_NOT_FOUND_MESSAGE = (
+    "Cannot import otree settings.\n"
+    "Please make sure that you are in the base directory of your "
+    "oTree library checkout. This directory contains a settings.py "
+    "and a manage.py file."
+)
+
+
 def otree_cli():
     """
     This function is the entry point for the ``otree`` console script.
@@ -198,11 +206,7 @@ def otree_cli():
             settings.INSTALLED_APPS
         except ImportError:
             style = color_style()
-            msg = style.ERROR(
-                "Cannot import otree settings.\n"
-                "Please make sure that you are in the base directory of your "
-                "oTree library checkout. This directory contains a settings.py "
-                "and a manage.py file.")
+            msg = style.ERROR(SETTINGS_NOT_FOUND_MESSAGE)
             print(msg)
             sys.exit(1)
     else:
@@ -229,10 +233,7 @@ def otree_heroku_cli():
         from django.conf import settings
         settings.INSTALLED_APPS
     except ImportError:
-        print(style.ERROR(
-            "Cannot import otree settings. Please make sure that you are "
-            "in the base directory of your oTree library checkout. "
-            "This directory contains a settings.py and a manage.py file."))
+        print(style.ERROR(SETTINGS_NOT_FOUND_MESSAGE))
         sys.exit(1)
 
     otree.management.deploy.heroku.execute_from_command_line(sys.argv)
