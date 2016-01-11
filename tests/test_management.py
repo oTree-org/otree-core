@@ -82,7 +82,7 @@ class ExecuteFromCommandLine(TestCase):
     def test_execute_from_command_line_windows_fails(self, *args):
         exists, wait, Popen, sexit, system = args
         with self.assertRaises(CommandError):
-            cli.execute_from_command_line(["foo"], "script")
+            cli.execute_from_command_line(["foo", "runserver"], "script")
         self.assertTrue(exists.called)
         self.assertFalse(wait.called)
         self.assertFalse(Popen.called)
@@ -99,7 +99,7 @@ class ExecuteFromCommandLine(TestCase):
     @mock.patch("otree.management.cli.OTreeManagementUtility")
     def test_execute_from_command_line_windows(self, *args):
         management, stdout, stderr, stdin, exists, Popen, sexit, system = args
-        cli.execute_from_command_line(["foo"], "script")
+        cli.execute_from_command_line(["foo", "runserver"], "script")
         self.assertEquals(
             Popen.call_args[1:][0],
             {"stdin": stdin, "stdout": stdout, "stderr": stderr})
@@ -109,21 +109,19 @@ class ExecuteFromCommandLine(TestCase):
         self.assertTrue(exists.called)
         self.assertTrue(management.called)
 
-    @mock.patch("sys.argv", new=["foo", "runserver"])
     @mock.patch("platform.system", return_value="No-Windows")
     @mock.patch("otree.management.cli.OTreeManagementUtility")
     def test_execute_from_command_line_runserver(self, *args):
         management, system = args
-        cli.execute_from_command_line(["foo"], "script.py")
+        cli.execute_from_command_line(["foo", "runserver"], "script.py")
         management.assert_called_with(["foo", "runserver"])
 
-    @mock.patch("sys.argv", new=["foo", "runserver"])
     @mock.patch("platform.system", return_value="No-Windows")
     @mock.patch("otree.management.cli.OTreeManagementUtility")
     @mock.patch("django.conf.LazySettings.AWS_ACCESS_KEY_ID", create=True)
     def test_execute_from_command_line_runserver_ssh(self, *args):
         key, management, system = args
-        cli.execute_from_command_line(["foo"], "script.py")
+        cli.execute_from_command_line(["foo", "runserver"], "script.py")
         management.assert_called_with(["foo", "runsslserver"])
 
     @mock.patch("platform.system", return_value="No-Windows")

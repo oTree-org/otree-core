@@ -114,7 +114,7 @@ def otree_and_django_version(*args, **kwargs):
 def execute_from_command_line(arguments, script_file):
 
     try:
-        subcommand = sys.argv[1]
+        subcommand = arguments
     except IndexError:
         subcommand = 'help'  # default
 
@@ -125,7 +125,7 @@ def execute_from_command_line(arguments, script_file):
     cond = (
         platform.system() == 'Windows' and
         not script_file.lower().endswith('.py')
-        # and not subcommand in NO_SETTINGS_COMMANDS
+        and subcommand not in NO_SETTINGS_COMMANDS
     )
 
     if cond:
@@ -147,7 +147,7 @@ def execute_from_command_line(arguments, script_file):
                 "the directory {directory}".format(
                     url=MANAGE_URL, directory=scriptdir))
             raise CommandError("\n".join(error_lines))
-        args = [sys.executable] + [managepy] + sys.argv[1:]
+        args = [sys.executable] + [managepy] + arguments[1:]
         process = subprocess.Popen(args,
                                    stdin=sys.stdin,
                                    stdout=sys.stdout,
@@ -157,15 +157,15 @@ def execute_from_command_line(arguments, script_file):
 
     # in issue #300 we agreed that sslserver should
     # run only if user has specified credentials for AWS
-    if (len(sys.argv) >= 2 and sys.argv[1] == 'runserver' and
+    if (len(arguments) >= 2 and arguments[1] == 'runserver' and
        settings.AWS_ACCESS_KEY_ID):
-            sys.argv[1] = 'runsslserver'
+            arguments[1] = 'runsslserver'
 
     # only monkey patch when is necesary
     if "version" in arguments or "--version" in arguments:
         sys.stdout.write(otree_and_django_version() + '\n')
     else:
-        utility = OTreeManagementUtility(sys.argv)
+        utility = OTreeManagementUtility(arguments)
         utility.execute()
 
 
