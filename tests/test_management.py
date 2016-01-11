@@ -5,7 +5,6 @@ import mock
 
 import six
 
-from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import CommandError
 
 from otree.management import cli
@@ -144,7 +143,10 @@ class OTreeCli(TestCase):
     @mock.patch("sys.stderr")
     @mock.patch("sys.argv", new=["otree", "runserver"])
     def test_import_settings_fail(self, *args):
-        with mock.patch("otree.management.cli.settings", create=True) as settings:
+        settings_patch = mock.patch(
+            "otree.management.cli.settings",
+            create=True)
+        with settings_patch as settings:
             type(settings).INSTALLED_APPS = mock.PropertyMock(
                 side_effect=ImportError)
             with self.assertRaises(SystemExit):

@@ -7,7 +7,6 @@ from importlib import import_module
 
 import django
 import django.core.management
-from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import CommandError
 from django.core.management.color import color_style
 from django.conf import settings
