@@ -114,7 +114,7 @@ def otree_and_django_version(*args, **kwargs):
 def execute_from_command_line(arguments, script_file):
 
     try:
-        subcommand = arguments
+        subcommand = arguments[1]
     except IndexError:
         subcommand = 'help'  # default
 
