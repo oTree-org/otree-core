@@ -7,6 +7,7 @@ from importlib import import_module
 
 import django
 import django.core.management
+from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import CommandError
 from django.core.management.color import color_style
 from django.conf import settings
@@ -154,10 +155,10 @@ def execute_from_command_line(arguments, script_file):
             sys.argv[1] = 'runsslserver'
 
     # only monkey patch when is necesary
-    if arguments[1] == "version" or arguments[1:] == ["--version"]:
+    if "version" in arguments or "--version" in arguments:
         sys.stdout.write(otree_and_django_version() + '\n')
     else:
-        utility = OTreeManagementUtility(arguments)
+        utility = OTreeManagementUtility(sys.argv)
         utility.execute()
 
 
@@ -179,38 +180,28 @@ def otree_cli():
     except IndexError:
         subcommand = 'help'  # default
 
-    if subcommand == 'startproject':
-        from django.conf import settings
-        settings.configure()
-        utility = OTreeManagementUtility(sys.argv)
-        utility.execute()
-        return
-
     # We need to add the current directory to the python path as this is not
     # set by default when no using "python <script>" but a standalone script
     # like ``otree``.
     if os.getcwd() not in sys.path:
         sys.path.insert(0, os.getcwd())
 
-    argv = sys.argv[:]
+    argv = sys.argv
 
-    from django.conf import settings
-
-    if argv[1] not in NO_SETTINGS_COMMANDS:
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
 
     # some commands don't need the setings.INSTALLED_APPS
     # see: https://github.com/oTree-org/otree-core/issues/388
-    if subcommand in NO_SETTINGS_COMMANDS:
-        try:
-            settings.INSTALLED_APPS
-        except ImportError:
+    try:
+        settings.INSTALLED_APPS
+    except ImportError:
+        if subcommand in NO_SETTINGS_COMMANDS:
+            settings.configure(**get_default_settings())
+        else:
             style = color_style()
             msg = style.ERROR(SETTINGS_NOT_FOUND_MESSAGE)
             print(msg)
             sys.exit(1)
-    else:
-        settings.configure(**get_default_settings())
 
     execute_from_command_line(argv, 'otree')
 
