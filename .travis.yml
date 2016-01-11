@@ -11,6 +11,3 @@ env:
   - TOXENV=py2.7-django1.8-unittest
   - TOXENV=py2.7-django1.8-integration
   - TOXENV=py2.7-django1.8-experiments
-os:
-  - linux
-  - osx
