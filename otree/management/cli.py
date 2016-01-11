@@ -112,15 +112,20 @@ def otree_and_django_version(*args, **kwargs):
 
 
 def execute_from_command_line(arguments, script_file):
+
+    try:
+        subcommand = sys.argv[1]
+    except IndexError:
+        subcommand = 'help'  # default
+
     # Workaround for windows. Celery (more precicely the billard library) will
     # complain if the script you are using to initialize celery does not end
     # on '.py'. That's why we require a manage.py file to be around.
     # See https://github.com/celery/billiard/issues/129 for more details.
-
     cond = (
-        platform.system() == 'Windows' and not
-        script_file.lower().endswith('.py') and not
-        arguments[1] in NO_SETTINGS_COMMANDS
+        platform.system() == 'Windows' and
+        not script_file.lower().endswith('.py')
+        # and not subcommand in NO_SETTINGS_COMMANDS
     )
 
     if cond:
