@@ -25,6 +25,7 @@ class Command(startproject.Command):
         ahelp = (
             'Tells the command to NOT prompt the user '
             'for input of any kind.')
+        parser.add_argument('name', help='Name of the project.')
         parser.add_argument(
             '--noinput', action='store_false', dest='interactive',
             default=True, help=ahelp)
