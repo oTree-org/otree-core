@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import division
+
 import six
 from six.moves import range
 from six.moves import zip
@@ -78,7 +80,7 @@ class BaseSubsession(SaveTheChange, models.Model):
             assert isinstance(ppg, six.integer_types) and ppg > 1
             group_cycle = [ppg]
 
-        num_group_cycles = subsession_size / sum(group_cycle)
+        num_group_cycles = subsession_size // sum(group_cycle)
         return group_cycle * num_group_cycles
 
     def get_groups(self):
