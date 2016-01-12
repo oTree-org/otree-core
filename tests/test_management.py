@@ -3,7 +3,7 @@
 
 import mock
 
-import six
+from six import StringIO
 
 from django.core.management.base import CommandError
 
@@ -31,12 +31,12 @@ class OTreeManagementUtility(TestCase):
     def test_help(self, *args):
         arguments = ["otree", "--help"]
 
-        expected = six.StringIO()
+        expected = StringIO()
         with mock.patch("sys.stdout", new=expected):
             cli.execute_from_command_line(arguments, "otree")
 
         utility = cli.OTreeManagementUtility(arguments)
-        actual = six.StringIO()
+        actual = StringIO()
         with mock.patch("sys.stdout", new=actual):
             utility.execute()
 
