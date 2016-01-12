@@ -371,7 +371,8 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
 
         if self.__class__ in pages:
             pages_to_jump_by = 1
-            indexes = list(range(self.player._index_in_game_pages + 1, len(pages)))
+            indexes = list(range(self.player._index_in_game_pages + 1,
+                                 len(pages)))
             for target_index in indexes:
                 Page = pages[target_index]
 

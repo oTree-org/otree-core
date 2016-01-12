@@ -6,7 +6,6 @@ except ImportError:
 
 from django.db import models
 from django import forms
-from django.utils.translation import ugettext_lazy as _
 from importlib import import_module
 import binascii
 import json
@@ -42,7 +41,9 @@ def encode_object(obj):
             decode, data = data
         else:
             decode = default_decode
-            data = ('%s.%s' % (obj.__class__.__module__, obj.__class__.__name__), data)
+            data = ('%s.%s' % (
+                obj.__class__.__module__,
+                obj.__class__.__name__), data)
 
         if callable(decode):
             decode = '%s.%s' % (decode.__module__, decode.__name__)
@@ -88,7 +89,8 @@ class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
         if value == "" or value is None:
             return None
 
-        value = json.dumps(value, default=encode_object, ensure_ascii=False, separators=(',',':'))
+        value = json.dumps(value, default=encode_object, ensure_ascii=False,
+                           separators=(',', ':'))
 
         return super(JSONField, self).get_prep_value(value)
 
@@ -109,7 +111,8 @@ class JSONTextarea(forms.Textarea):
         return json.loads(value)
 
     def render(self, name, value, attrs=None):
-        return super(JSONTextarea, self).render(name, json.dumps(value), attrs=attrs)
+        return super(JSONTextarea, self).render(
+            name, json.dumps(value), attrs=attrs)
 
 
 class PickleField(six.with_metaclass(models.SubfieldBase, models.TextField)):
