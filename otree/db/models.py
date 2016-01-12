@@ -12,7 +12,8 @@ from django.core import exceptions
 from django.utils.translation import ugettext_lazy
 from django.apps import apps
 
-from handy.models import JSONField, PickleField
+from .serializedfields import JSONField as _JSONField
+from .serializedfields import PickleField as _PickleField
 
 import easymoney
 
@@ -232,11 +233,11 @@ class RandomCharField(_OtreeNotNullableModelFieldMixin, models.CharField):
         return "CharField"
 
 
-class PickleField(_OtreeNullableModelFieldMixin, PickleField):
+class PickleField(_OtreeNullableModelFieldMixin, _PickleField):
     pass
 
 
-class JSONField(_OtreeNullableModelFieldMixin, JSONField):
+class JSONField(_OtreeNullableModelFieldMixin, _JSONField):
     pass
 
 

@@ -22,7 +22,6 @@ django-sslserver==0.18
 django-vanilla-views==1.0.4
 djangorestframework==3.3.2
 funcsigs==0.4
-handy==0.5.3
 honcho==0.6.6
 IPy==0.83
 kombu==3.0.31
