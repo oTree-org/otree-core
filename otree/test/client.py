@@ -14,12 +14,12 @@
 # =============================================================================
 
 import re
-import urlparse
 import decimal
 import logging
 import abc
 import six
 from importlib import import_module
+from six.moves import urllib
 
 from django import test
 
@@ -209,7 +209,7 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
     def set_path(self):
         try:
             self.url = self.response.redirect_chain[-1][0]
-            self.path = urlparse.urlsplit(self.url).path
+            self.path = urllib.parse.urlsplit(self.url).path
         except IndexError:
             pass
 

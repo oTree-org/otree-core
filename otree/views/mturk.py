@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import urlparse
+from six.moves import urllib
 import datetime
 
 from django.conf import settings
@@ -144,8 +144,8 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
         url = self.request.build_absolute_uri(
             reverse('session_create_hit', args=(self.session.pk,))
         )
-        secured_url = urlparse.urlunparse(
-            urlparse.urlparse(url)._replace(scheme='https')
+        secured_url = urllib.parse.urlunparse(
+            urllib.parse.urlparse(url)._replace(scheme='https')
         )
         context['secured_url'] = secured_url
 
@@ -196,8 +196,8 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
 
             # updating schema from http to https
             # this is compulsory for MTurk exteranlQuestion
-            secured_url_landing_page = urlparse.urlunparse(
-                urlparse.urlparse(url_landing_page)._replace(scheme='https'))
+            secured_url_landing_page = urllib.parse.urlunparse(
+                urllib.parse.urlparse(url_landing_page)._replace(scheme='https'))
 
             # TODO: validate, that the server support https
             #       (heroku does support by default)
