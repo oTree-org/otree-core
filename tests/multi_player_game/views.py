@@ -3,6 +3,7 @@ from __future__ import division
 from ._builtin import Page, WaitPage
 from .models import Constants
 import random
+from six.moves import range
 
 
 class Page(Page):
@@ -19,7 +20,7 @@ class FieldOnOtherPlayer(Page):
             p.from_other_player = 1
         in_all_rounds = self.player.in_all_rounds()
         assert ([p.subsession.round_number for p in in_all_rounds] ==
-                range(1, self.subsession.round_number + 1))
+                list(range(1, self.subsession.round_number + 1)))
         assert in_all_rounds[-1].from_other_player == 1
 
 

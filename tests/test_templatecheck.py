@@ -8,6 +8,7 @@ from otree.checks.templates import format_source_snippet
 from otree.checks.templates import has_valid_encoding
 from .base import TestCase
 from .utils import capture_stdout, dummyapp
+import six
 
 
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -173,7 +174,7 @@ class TemplateCheckInSystemCheckTest(TestCase):
                 with capture_stdout():
                     call_command('check')
             except CommandError as e:
-                message = unicode(e)
+                message = six.text_type(e)
             else:
                 self.fail('Expected check command to fail.')
 

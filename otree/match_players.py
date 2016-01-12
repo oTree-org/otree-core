@@ -13,6 +13,7 @@ import functools
 import itertools
 import collections
 import random
+from six.moves import map
 
 
 # =============================================================================
@@ -193,6 +194,6 @@ def players_reversed(subssn):
         return list(reversed(g))
 
     p_subssn = players_x_groups(subssn)
-    rev_p = map(reverse_group, p_subssn)
+    rev_p = tuple(map(reverse_group, p_subssn))
 
-    return tuple(rev_p)
+    return rev_p

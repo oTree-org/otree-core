@@ -10,6 +10,7 @@ import logging
 import time
 import warnings
 import collections
+from six.moves import range
 
 from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
@@ -89,7 +90,7 @@ class SaveObjectsMixin(object):
             # models.
             is_monitored = issubclass(model_class, monitored_classes)
             if is_monitored:
-                cached_instances = model_cache.values()
+                cached_instances = list(model_cache.values())
                 instances.extend(cached_instances)
         return instances
 
@@ -370,7 +371,8 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
 
         if self.__class__ in pages:
             pages_to_jump_by = 1
-            indexes = range(self.player._index_in_game_pages + 1, len(pages))
+            indexes = list(range(self.player._index_in_game_pages + 1,
+                                 len(pages)))
             for target_index in indexes:
                 Page = pages[target_index]
 

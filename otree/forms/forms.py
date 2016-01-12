@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import copy
+import six
 from decimal import Decimal
+from six.moves import map
 
 import floppyforms.__future__ as forms
 from floppyforms.__future__.models import (
@@ -153,8 +155,8 @@ class BaseModelFormMetaclass(FloppyformsModelFormMetaclass):
             mcs, name, bases, attrs)
 
 
-class BaseModelForm(forms.ModelForm):
-    __metaclass__ = BaseModelFormMetaclass
+class BaseModelForm(
+        six.with_metaclass(BaseModelFormMetaclass, forms.ModelForm)):
 
     def __init__(self, *args, **kwargs):
         """Special handling for 'choices' argument, BooleanFields, and

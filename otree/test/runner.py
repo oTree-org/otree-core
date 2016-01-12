@@ -20,7 +20,7 @@ import itertools
 import time
 import random
 
-import six
+from six import StringIO
 
 from django import test
 from django.test import runner
@@ -105,14 +105,14 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
     def zip_submits(self, bots):
         bots = list(bots)
         random.shuffle(bots)
-        submits = map(lambda b: b.submits, bots)
+        submits = [b.submits for b in bots]
         return list(itertools.izip_longest(*submits))
 
     def tearDown(self):
         if self.preserve_data:
             logger.info(
                 "Recolecting data for session '{}'".format(self.session_name))
-            buff = six.StringIO()
+            buff = StringIO()
             common_internal.export_data(buff, self.session_name)
             self._data = buff.getvalue()
 

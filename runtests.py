@@ -14,24 +14,26 @@ sys.path.insert(0, base_path)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tests.settings")
 os.environ.setdefault("DJANGO_COLORS", "nocolor")
 
-default_test_apps = [
+default_test_apps = (
     'tests',
-]
+)
 
 
-def runtests(*verbosity):
+def runtests(argv):
     import django
     django.setup()
 
-    from django.conf import settings, global_settings
     from django.core.management.commands.test import Command
 
-    settings.STATICFILES_STORAGE = global_settings.STATICFILES_STORAGE
+    class TestCommand(Command):
+        def execute(self, *args, **options):
+            if not args:
+                args = default_test_apps
+            return super(TestCommand, self).execute(*args, **options)
 
-    test_command = Command()
-    verbosity = int(verbosity[0] if verbosity else 2)
-    test_command.execute(*default_test_apps, verbosity=verbosity)
+    test_command = TestCommand()
+    test_command.run_from_argv(argv[0:1] + ['test'] + argv[1:])
 
 
 if __name__ == '__main__':
-    runtests(*sys.argv[1:])
+    runtests(sys.argv)

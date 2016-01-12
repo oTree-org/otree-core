@@ -6,7 +6,7 @@ import tempfile
 from django.conf import settings
 from django.core.management import call_command
 from django.test.utils import override_settings
-from StringIO import StringIO
+from six import StringIO
 
 
 @contextlib.contextmanager

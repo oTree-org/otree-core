@@ -88,7 +88,7 @@ class Rules(object):
         path = self.get_path('templates')
         template_names = []
         for root, dirs, files in os.walk(path):
-            for filename in filter(lambda f: f.endswith('.html'), files):
+            for filename in [f for f in files if f.endswith('.html')]:
                 template_names.append(os.path.join(root, filename))
         return template_names
 

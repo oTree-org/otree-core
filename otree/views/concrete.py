@@ -274,7 +274,7 @@ class AssignVisitorToDefaultSession(AssignVisitorToDefaultSessionBase):
 
     def incorrect_parameters_in_url_message(self):
         return 'Missing parameter(s) in URL: {}'.format(
-            self.required_params.values()
+            list(self.required_params.values())
         )
 
     @classmethod

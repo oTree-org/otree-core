@@ -14,6 +14,7 @@ import six
 from otree.common import Currency as c
 
 from .base import TestCase
+from six.moves import range
 
 
 class TestFilters(TestCase):

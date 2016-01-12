@@ -3,6 +3,8 @@
 
 import random
 import string
+import six
+from six.moves import range
 
 from django.db import models
 from django.db.models.fields import related
@@ -10,7 +12,8 @@ from django.core import exceptions
 from django.utils.translation import ugettext_lazy
 from django.apps import apps
 
-from handy.models import JSONField, PickleField
+from .serializedfields import JSONField as _JSONField
+from .serializedfields import PickleField as _PickleField
 
 import easymoney
 
@@ -63,10 +66,8 @@ def make_get_display(field):
     return get_FIELD_display
 
 
-class OTreeModel(SharedMemoryModel):
+class OTreeModel(six.with_metaclass(OTreeModelBase, SharedMemoryModel)):
     use_strong_refs = True
-
-    __metaclass__ = OTreeModelBase
 
     class Meta:
         abstract = True
@@ -232,11 +233,11 @@ class RandomCharField(_OtreeNotNullableModelFieldMixin, models.CharField):
         return "CharField"
 
 
-class PickleField(_OtreeNullableModelFieldMixin, PickleField):
+class PickleField(_OtreeNullableModelFieldMixin, _PickleField):
     pass
 
 
-class JSONField(_OtreeNullableModelFieldMixin, JSONField):
+class JSONField(_OtreeNullableModelFieldMixin, _JSONField):
     pass
 
 

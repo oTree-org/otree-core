@@ -3,8 +3,6 @@
 
 import os
 import sys
-import urllib
-import urlparse
 import csv
 import datetime
 import contextlib
@@ -12,6 +10,8 @@ import inspect
 from os.path import dirname, join
 from collections import OrderedDict
 from importlib import import_module
+import six
+from six.moves import urllib
 
 from django.db import transaction
 from django.db import connection
@@ -19,20 +19,19 @@ from django.apps import apps
 from django.conf import settings
 from django.template.defaultfilters import title
 
-import six
 
 from otree import constants_internal
 
 
 def add_params_to_url(url, params):
-    url_parts = list(urlparse.urlparse(url))
+    url_parts = list(urllib.parse.urlparse(url))
 
     # use OrderedDict because sometimes we want certain params at end
     # for readability/consistency
-    query = OrderedDict(urlparse.parse_qsl(url_parts[4]))
+    query = OrderedDict(urllib.parse.parse_qsl(url_parts[4]))
     query.update(params)
-    url_parts[4] = urllib.urlencode(query)
-    return urlparse.urlunparse(url_parts)
+    url_parts[4] = urllib.parse.urlencode(query)
+    return urllib.parse.urlunparse(url_parts)
 
 
 def id_label_name(id, label):
@@ -164,7 +163,7 @@ def export_docs(fp, app_name):
         lines = []
         for value, name in choices:
             # unicode() call is for lazy translation strings
-            lines.append(u'{}: {}'.format(value, unicode(name)))
+            lines.append(u'{}: {}'.format(value, six.text_type(name)))
         return lines
 
     def generate_doc_dict():
@@ -303,7 +302,7 @@ def contract_choice_tuples(choices):
 def min_players_multiple(players_per_group):
     ppg = players_per_group
 
-    if isinstance(ppg, (int, long)) and ppg >= 1:
+    if isinstance(ppg, six.integer_types) and ppg >= 1:
         return ppg
     if isinstance(ppg, (list, tuple)):
         return sum(ppg)
@@ -321,9 +320,9 @@ def reraise(original):
         conversor = constants_internal.exceptions_conversors[original_cls]
         new = conversor(original)
         new_cls = type(new)
-        six.reraise(new_cls, new, sys.exc_traceback)
+        six.reraise(new_cls, new, sys.exc_info()[2])
     else:
-        six.reraise(original_cls, original, sys.exc_traceback)
+        six.reraise(original_cls, original, sys.exc_info()[2])
 
 
 def db_table_exists(table_name):
