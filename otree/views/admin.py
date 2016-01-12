@@ -6,6 +6,8 @@ import time
 import urllib
 import uuid
 import itertools
+from six.moves import range
+from six.moves import zip
 
 from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect, JsonResponse
@@ -13,6 +15,7 @@ from django.core.urlresolvers import reverse
 from django.forms.forms import pretty_name
 from django.conf import settings
 from django.contrib import messages
+from django.utils.encoding import force_text
 
 import vanilla
 
@@ -286,7 +289,7 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
             elif for_export and isinstance(value, easymoney.Money):
                 # remove currency formatting for easier analysis
                 value = easymoney.to_dec(value)
-            value = unicode(value).encode('UTF-8')
+            value = force_text(value)
             value = value.replace('\n', ' ').replace('\r', ' ')
             row[i] = value
 
@@ -827,7 +830,7 @@ def info_about_session_config(session_config):
             'keywords': keywords_links(getattr(models_module, 'keywords', [])),
             'name': formatted_app_name,
         }
-        seo.update(map(lambda (a, b): a, subsssn["keywords"]))
+        seo.update([keywords[0] for keywords in subsssn["keywords"]])
         app_sequence.append(subsssn)
     return {
         'doc': session_config['doc'],

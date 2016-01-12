@@ -18,6 +18,7 @@ import urlparse
 import decimal
 import logging
 import abc
+import six
 from importlib import import_module
 
 from django import test
@@ -130,9 +131,7 @@ class Submit(object):
 # BASE CLIENT
 # =============================================================================
 
-class ParticipantBot(test.Client):
-
-    __metaclass__ = abc.ABCMeta
+class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
 
     def __init__(self, participant, **kwargs):
         self.participant = participant
@@ -152,7 +151,7 @@ class ParticipantBot(test.Client):
                 test_module = import_module(test_module_name)
                 logger.info("Found test '{}'".format(test_module_name))
             except ImportError as err:
-                self.fail(unicode(err))
+                self.fail(six.text_type(err))
 
             player_bot = test_module.PlayerBot(
                 player=player,

@@ -164,7 +164,7 @@ def export_docs(fp, app_name):
         lines = []
         for value, name in choices:
             # unicode() call is for lazy translation strings
-            lines.append(u'{}: {}'.format(value, unicode(name)))
+            lines.append(u'{}: {}'.format(value, six.text_type(name)))
         return lines
 
     def generate_doc_dict():
@@ -303,7 +303,7 @@ def contract_choice_tuples(choices):
 def min_players_multiple(players_per_group):
     ppg = players_per_group
 
-    if isinstance(ppg, (int, long)) and ppg >= 1:
+    if isinstance(ppg, six.integer_types) and ppg >= 1:
         return ppg
     if isinstance(ppg, (list, tuple)):
         return sum(ppg)
@@ -321,9 +321,9 @@ def reraise(original):
         conversor = constants_internal.exceptions_conversors[original_cls]
         new = conversor(original)
         new_cls = type(new)
-        six.reraise(new_cls, new, sys.exc_traceback)
+        six.reraise(new_cls, new, sys.exc_info()[2])
     else:
-        six.reraise(original_cls, original, sys.exc_traceback)
+        six.reraise(original_cls, original, sys.exc_info()[2])
 
 
 def db_table_exists(table_name):

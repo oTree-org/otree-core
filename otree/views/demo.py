@@ -17,6 +17,7 @@ from otree.session import (
     create_session, get_session_configs_dict, get_session_configs_list
 )
 import otree.session
+from six.moves import range
 
 # if it's debug mode, we should always generate a new session
 # because a bug might have been fixed

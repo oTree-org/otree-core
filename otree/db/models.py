@@ -3,6 +3,8 @@
 
 import random
 import string
+import six
+from six.moves import range
 
 from django.db import models
 from django.db.models.fields import related
@@ -63,10 +65,8 @@ def make_get_display(field):
     return get_FIELD_display
 
 
-class OTreeModel(SharedMemoryModel):
+class OTreeModel(six.with_metaclass(OTreeModelBase, SharedMemoryModel)):
     use_strong_refs = True
-
-    __metaclass__ = OTreeModelBase
 
     class Meta:
         abstract = True

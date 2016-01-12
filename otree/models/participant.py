@@ -1,5 +1,7 @@
 import itertools
 import time
+from six.moves import range
+from six.moves import zip
 
 from otree import constants_internal
 import otree.common_internal

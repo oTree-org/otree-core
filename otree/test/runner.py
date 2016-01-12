@@ -105,7 +105,7 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
     def zip_submits(self, bots):
         bots = list(bots)
         random.shuffle(bots)
-        submits = map(lambda b: b.submits, bots)
+        submits = [b.submits for b in bots]
         return list(itertools.izip_longest(*submits))
 
     def tearDown(self):
