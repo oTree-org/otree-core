@@ -5,8 +5,8 @@ from django.core.management import call_command
 from otree.models import Session
 
 from .base import TestCase
-from tests.simple_game import models as sg_models
-from tests.single_player_game import models as sgc_models
+from .simple_game import models as sg_models
+from .single_player_game import models as sgc_models
 import six
 from six.moves import range
 

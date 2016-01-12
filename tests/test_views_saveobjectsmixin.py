@@ -73,9 +73,9 @@ class SaveObjectsMixinTest(TestCase):
     def test_with_app_models(self):
         call_command('create_session', 'simple_game', '2')
 
-        from simple_game.models import Group
-        from simple_game.models import Player
-        from simple_game.models import Subsession
+        from .simple_game.models import Group
+        from .simple_game.models import Player
+        from .simple_game.models import Subsession
 
         mixin = SaveObjectsMixin()
         mixin.GroupClass = Group
