@@ -1,5 +1,7 @@
 import os
 import otree.settings
+from django.conf.global_settings import STATICFILES_STORAGE  # noqa
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 

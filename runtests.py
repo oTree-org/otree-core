@@ -23,10 +23,7 @@ def runtests(*verbosity):
     import django
     django.setup()
 
-    from django.conf import settings, global_settings
     from django.core.management.commands.test import Command
-
-    settings.STATICFILES_STORAGE = global_settings.STATICFILES_STORAGE
 
     test_command = Command()
     verbosity = int(verbosity[0] if verbosity else 2)
