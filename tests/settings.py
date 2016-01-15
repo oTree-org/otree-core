@@ -1,6 +1,10 @@
 import os
+from os import environ
+
 import otree.settings
 from django.conf.global_settings import STATICFILES_STORAGE  # noqa
+
+from boto.mturk import qualification
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -12,7 +16,7 @@ DEBUG = True
 ADMIN_PASSWORD = 'otree'
 SECRET_KEY = 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz'
 
-AUTH_LEVEL = os.environ.get('OTREE_AUTH_LEVEL', 'DEMO')
+AUTH_LEVEL = environ.get('OTREE_AUTH_LEVEL')
 
 DATABASES = {
     'default': {
@@ -41,6 +45,22 @@ INSTALLED_APPS = [
     'tests',
     'tests.demo',
 ]
+mturk_hit_settings = {
+    'keywords': ['easy', 'bonus', 'choice', 'study'],
+    'title': 'Title for your experiment',
+    'description': 'Description for your experiment',
+    'frame_height': 500,
+    'preview_template': 'global/MTurkPreview.html',
+    'minutes_allotted_per_assignment': 60,
+    'expiration_hours': 7*24, # 7 days
+    'grant_qualification_id': 'YOUR_QUALIFICATION_ID_HERE',# to prevent retakes
+    'qualification_requirements': [
+        qualification.LocaleRequirement("EqualTo", "US"),
+        qualification.PercentAssignmentsApprovedRequirement("GreaterThanOrEqualTo", 50),
+        qualification.NumberHitsApprovedRequirement("GreaterThanOrEqualTo", 5),
+        #qualification.Requirement('YOUR_QUALIFICATION_ID_HERE', 'DoesNotExist')
+    ]
+}
 
 
 SESSION_CONFIG_DEFAULTS = {
@@ -48,7 +68,7 @@ SESSION_CONFIG_DEFAULTS = {
     'participation_fee': 10.00,
     'num_bots': 12,
     'doc': "",
-    'group_by_arrival_time': False,
+    'mturk_hit_settings': mturk_hit_settings,
 }
 
 
