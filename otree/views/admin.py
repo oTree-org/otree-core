@@ -3,10 +3,11 @@
 
 import threading
 import time
-import urllib
 import uuid
 import itertools
 from six.moves import range
+from six.moves.urllib.parse import unquote_plus
+from six.moves.urllib.parse import urlencode
 from six.moves import zip
 
 from django.template.response import TemplateResponse
@@ -455,7 +456,7 @@ class CreateSession(vanilla.FormView):
         return 'session_create'
 
     def dispatch(self, request, *args, **kwargs):
-        session_config_name = urllib.unquote_plus(kwargs.pop('session_config'))
+        session_config_name = unquote_plus(kwargs.pop('session_config'))
         self.session_config = get_session_configs_dict()[session_config_name]
         self.for_mturk = (int(self.request.GET.get('mturk', 0)) == 1)
         return super(CreateSession, self).dispatch(request, *args, **kwargs)
@@ -854,7 +855,7 @@ def keywords_links(keywords):
     for kw in keywords:
         kw = kw.strip()
         if kw:
-            args = urllib.urlencode({"q": kw + " game theory", "t": "otree"})
+            args = urlencode({"q": kw + " game theory", "t": "otree"})
             link = "https://duckduckgo.com/?{}".format(args)
             links.append((kw, link))
     return links
