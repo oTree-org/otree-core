@@ -16,11 +16,11 @@
 import logging
 import contextlib
 import collections
-import itertools
 import time
 import random
 
 from six import StringIO
+from six.moves import zip_longest
 
 from django import test
 from django.test import runner
@@ -109,7 +109,7 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         bots = list(bots)
         random.shuffle(bots)
         submits = [b.submits for b in bots]
-        return list(itertools.zip_longest(*submits))
+        return list(zip_longest(*submits))
 
     def tearDown(self):
         if self.preserve_data:
