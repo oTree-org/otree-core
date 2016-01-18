@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import collections
 import threading
 import time
 import uuid
@@ -262,7 +263,7 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
                     model_instance = parent_objects[Model][parent_object_id]
 
             attr = getattr(model_instance, field_name, '')
-            if callable(attr):
+            if isinstance(attr, collections.Callable):
                 if Model == Player and field_name == 'role' \
                         and model_instance.group is None:
                     attr = ''
@@ -540,7 +541,7 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
             row = []
             for fn in field_names:
                 attr = getattr(p, fn)
-                if callable(attr):
+                if isinstance(attr, collections.Callable):
                     attr = attr()
                 row.append(attr)
             rows.append(row)

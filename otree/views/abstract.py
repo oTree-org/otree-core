@@ -513,11 +513,11 @@ class GenericWaitPageMixin(object):
     def get_context_data(self, **kwargs):
         # 2015-11-13: title_text() and body_text() methods deprecated
         # they should be class attributes instead
-        if callable(self.title_text):
+        if isinstance(self.title_text, collections.Callable):
             title_text = self.title_text()
         else:
             title_text = self.title_text
-        if callable(self.body_text):
+        if isinstance(self.body_text, collections.Callable):
             body_text = self.body_text()
         else:
             body_text = self.body_text
