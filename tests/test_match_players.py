@@ -26,13 +26,19 @@ class TestMatchPlayers(TestCase):
         call_command('create_session', 'multi_player_game', "9")
         self.session = Session.objects.get()
 
+    def assertCountEqual(self, *args, **kwargs):
+        # In Python 2, this method is called ``assertItemsEqual``.
+        if six.PY2:
+            return self.assertItemsEqual(*args, **kwargs)
+        return super(TestMatchPlayers, self).assertCountEqual(*args, **kwargs)
+
     def assert_groups_contains(self, groups, expected):
         actual = tuple(itertools.chain(*groups))
-        self.assertItemsEqual(actual, expected)
+        self.assertCountEqual(actual, expected)
 
     def assert_groups_sizes(self, groups, expected):
         actual = [len(g) for g in groups]
-        self.assertItemsEqual(actual, expected)
+        self.assertCountEqual(actual, expected)
 
     def assert_matchs(self, names, validator):
         previous = []
@@ -50,7 +56,7 @@ class TestMatchPlayers(TestCase):
 
     def assert_aliases(self, fnc, expected):
         actual = [k for k, v in match_players.MATCHS.items() if v is fnc]
-        self.assertItemsEqual(actual, expected)
+        self.assertCountEqual(actual, expected)
 
     def assert_same_order_participants(self, actual, expected):
         actual = [p.participant for p in actual]
