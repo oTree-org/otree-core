@@ -47,7 +47,7 @@ def deserialize_from_string(data):
     return pickle.loads(binascii.a2b_base64(data.encode('utf-8')))
 
 
-def encode_object(obj):
+def json_encode_object(obj):
     if hasattr(obj, '__json__'):
         data = obj.__json__()
         if isinstance(data, tuple):
@@ -70,7 +70,7 @@ def encode_object(obj):
         return dict(__pickled__=data_string)
 
 
-def decode_object(d):
+def json_decode_object(d):
     if '__decode__' in d:
         return get_module_attr(d['__decode__'])(d['__data__'])
     elif '__pickled__' in d:
@@ -91,7 +91,7 @@ class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
 
         try:
             if isinstance(value, six.string_types):
-                return json.loads(value, object_hook=decode_object)
+                return json.loads(value, object_hook=json_decode_object)
         except ValueError:
             pass
 
@@ -102,7 +102,7 @@ class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
         if value == "" or value is None:
             return None
 
-        value = json.dumps(value, default=encode_object, ensure_ascii=False,
+        value = json.dumps(value, default=json_encode_object, ensure_ascii=False,
                            separators=(',', ':'))
 
         return super(JSONField, self).get_prep_value(value)
