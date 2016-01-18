@@ -77,8 +77,7 @@ class BaseMoneyInput(forms.NumberInput):
         currency_symbol_is_prefix = False
     else:
         locale = Locale.parse(settings.REAL_WORLD_CURRENCY_LOCALE)
-        format = locale.currency_formats.get(None)
-        pattern = babel.numbers.parse_pattern(format)
+        pattern = locale.currency_formats['standard']
         currency_symbol_is_prefix = u'\xa4' in pattern.prefix[0]
 
     def _format_value(self, value):
