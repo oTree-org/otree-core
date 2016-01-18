@@ -13,10 +13,10 @@ from .base import TestCase
 class DeprecateTest(TestCase):
 
     def random_string(self):
-        chars = list(string.letters + string.digits)
+        chars = list(string.ascii_letters + string.digits)
         idx = random.randint(5, len(chars) - 1)
         random.shuffle(chars)
-        return random.choice(string.letters) + "".join(chars[:idx])
+        return random.choice(string.ascii_letters) + "".join(chars[:idx])
 
     def extract_otree_dwarn(self, l):
         for w in l:
