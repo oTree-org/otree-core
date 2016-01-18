@@ -102,8 +102,8 @@ class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
         if value == "" or value is None:
             return None
 
-        value = json.dumps(value, default=json_encode_object, ensure_ascii=False,
-                           separators=(',', ':'))
+        value = json.dumps(value, default=json_encode_object,
+                           ensure_ascii=False, separators=(',', ':'))
 
         return super(JSONField, self).get_prep_value(value)
 

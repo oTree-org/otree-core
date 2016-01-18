@@ -310,8 +310,9 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                 # or if they hit the back button to a previous subsession
                 # in the sequence.
                 #
-                if (not self.request.is_ajax()
-                        and not self._user_is_on_right_page()):
+                if (
+                        not self.request.is_ajax() and
+                        not self._user_is_on_right_page()):
                     # then bring them back to where they should be
                     return self._redirect_to_page_the_user_should_be_on()
 

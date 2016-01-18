@@ -4,7 +4,9 @@ from os import environ
 import otree.settings
 from django.conf.global_settings import STATICFILES_STORAGE  # noqa
 
-from boto.mturk import qualification
+from boto.mturk.qualification import LocaleRequirement
+from boto.mturk.qualification import PercentAssignmentsApprovedRequirement
+from boto.mturk.qualification import NumberHitsApprovedRequirement
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -52,13 +54,14 @@ mturk_hit_settings = {
     'frame_height': 500,
     'preview_template': 'global/MTurkPreview.html',
     'minutes_allotted_per_assignment': 60,
-    'expiration_hours': 7*24, # 7 days
-    'grant_qualification_id': 'YOUR_QUALIFICATION_ID_HERE',# to prevent retakes
+    'expiration_hours': 7*24,  # 7 days
+    # to prevent retakes
+    'grant_qualification_id': 'YOUR_QUALIFICATION_ID_HERE',
     'qualification_requirements': [
-        qualification.LocaleRequirement("EqualTo", "US"),
-        qualification.PercentAssignmentsApprovedRequirement("GreaterThanOrEqualTo", 50),
-        qualification.NumberHitsApprovedRequirement("GreaterThanOrEqualTo", 5),
-        #qualification.Requirement('YOUR_QUALIFICATION_ID_HERE', 'DoesNotExist')
+        LocaleRequirement("EqualTo", "US"),
+        PercentAssignmentsApprovedRequirement("GreaterThanOrEqualTo", 50),
+        NumberHitsApprovedRequirement("GreaterThanOrEqualTo", 5),
+        # Requirement('YOUR_QUALIFICATION_ID_HERE', 'DoesNotExist'),
     ]
 }
 

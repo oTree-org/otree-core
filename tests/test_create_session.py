@@ -71,6 +71,7 @@ class TestCreateSessionsCommand(TestCase):
         # test the random key value in second subsession
         self.assertEqual(player1.participant.vars.get(key), value)
 
+
 class TestCreateSessionView(TestCase):
 
     def test_create_session(self):

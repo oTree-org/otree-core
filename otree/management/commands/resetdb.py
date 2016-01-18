@@ -7,21 +7,19 @@
 # =============================================================================
 
 import logging
+import os
+import sys
 from django.conf import settings
 from django.core.management import call_command
+from django.core.management.base import NoArgsCommand
+from django.utils import six
+
 
 # =============================================================================
 # LOGGER
 # =============================================================================
 
 logger = logging.getLogger('otree')
-
-
-import os
-import sys
-
-from django.core.management.base import NoArgsCommand
-from django.utils import six
 
 
 class Command(NoArgsCommand):

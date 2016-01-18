@@ -6,7 +6,6 @@ import decimal
 import string
 
 from django.template import Context, Template
-from django.conf import settings
 from django.utils import html
 
 import six
