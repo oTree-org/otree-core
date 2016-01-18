@@ -62,8 +62,11 @@ class PendingBuffer(object):
     def __len__(self):
         return len(self.storage)
 
-    def __nonzero__(self):
+    def __bool__(self):
         return bool(self.storage)
+
+    # For Python 2 compatibiliy.
+    __nonzero__ = __bool__
 
     def __iter__(self):
         for k, v in self.storage.items():
@@ -106,7 +109,7 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         bots = list(bots)
         random.shuffle(bots)
         submits = [b.submits for b in bots]
-        return list(itertools.izip_longest(*submits))
+        return list(itertools.zip_longest(*submits))
 
     def tearDown(self):
         if self.preserve_data:
