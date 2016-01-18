@@ -5,6 +5,7 @@ import string
 import random
 import warnings
 
+from django.utils.encoding import force_text
 from otree import deprecate
 
 from .base import TestCase
@@ -49,7 +50,7 @@ class DeprecateTest(TestCase):
             dfunction()
             dw = self.extract_otree_dwarn(warns)
             self.assertTrue(dw)
-            self.assertEqual(dw.message.message, msg)
+            self.assertEqual(force_text(dw.message), msg)
 
         alternative = self.random_string()
 
@@ -62,7 +63,7 @@ class DeprecateTest(TestCase):
             dfunction()
             dw = self.extract_otree_dwarn(warns)
             self.assertTrue(dw)
-            self.assertEqual(dw.message.message, msg)
+            self.assertEqual(force_text(dw.message), msg)
 
     def test_dwarning(self):
 
@@ -71,7 +72,7 @@ class DeprecateTest(TestCase):
             deprecate.dwarning(msg)
             dw = self.extract_otree_dwarn(warns)
             self.assertTrue(dw)
-            self.assertEqual(dw.message.message, msg)
+            self.assertEqual(force_text(dw.message), msg)
 
         with warnings.catch_warnings(record=True) as warns:
             warnings.simplefilter("ignore", deprecate.OTreeDeprecationWarning)
@@ -85,4 +86,4 @@ class DeprecateTest(TestCase):
             msg = self.random_string()
             with self.assertRaises(deprecate.OTreeDeprecationWarning) as cm:
                 deprecate.dwarning(msg)
-            self.assertEqual(cm.exception.message, msg)
+            self.assertEqual(force_text(cm.exception), msg)
