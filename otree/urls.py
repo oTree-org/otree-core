@@ -38,30 +38,31 @@ def url_patterns_from_module(module_name):
     # see issue #303 for discussion of granting access with "white-list"
     # 2015-11-13: EXPERIMENT deprecated, renamed to STUDY
     # remove EXPERIMENT eventually
-    if (settings.AUTH_LEVEL in {'DEMO', 'EXPERIMENT', 'STUDY'}
-            and module_name.startswith('otree.views')):
-            unrestricted_views = {
-                'otree.views.concrete.AssignVisitorToDefaultSession',
-                'otree.views.concrete.InitializeParticipant',
-                'otree.views.concrete.MTurkLandingPage',
-                'otree.views.concrete.MTurkStart',
-                'otree.views.concrete.JoinSessionAnonymously',
-                'otree.views.concrete.OutOfRangeNotification',
-                'otree.views.concrete.WaitUntilAssignedToGroup',
-            }
+    if (
+            settings.AUTH_LEVEL in {'DEMO', 'EXPERIMENT', 'STUDY'} and
+            module_name.startswith('otree.views')):
+        unrestricted_views = {
+            'otree.views.concrete.AssignVisitorToDefaultSession',
+            'otree.views.concrete.InitializeParticipant',
+            'otree.views.concrete.MTurkLandingPage',
+            'otree.views.concrete.MTurkStart',
+            'otree.views.concrete.JoinSessionAnonymously',
+            'otree.views.concrete.OutOfRangeNotification',
+            'otree.views.concrete.WaitUntilAssignedToGroup',
+        }
 
-            if settings.AUTH_LEVEL == 'DEMO':
-                unrestricted_views.update({
-                    'otree.views.concrete.AdvanceSession',
-                    'otree.views.demo.CreateDemoSession',
-                    'otree.views.demo.DemoIndex',
-                    'otree.views.demo.SessionFullscreen',
-                    'otree.views.admin.SessionDescription',
-                    'otree.views.admin.SessionMonitor',
-                    'otree.views.admin.SessionPayments',
-                    'otree.views.admin.SessionResults',
-                    'otree.views.admin.SessionStartLinks',
-                })
+        if settings.AUTH_LEVEL == 'DEMO':
+            unrestricted_views.update({
+                'otree.views.concrete.AdvanceSession',
+                'otree.views.demo.CreateDemoSession',
+                'otree.views.demo.DemoIndex',
+                'otree.views.demo.SessionFullscreen',
+                'otree.views.admin.SessionDescription',
+                'otree.views.admin.SessionMonitor',
+                'otree.views.admin.SessionPayments',
+                'otree.views.admin.SessionResults',
+                'otree.views.admin.SessionStartLinks',
+            })
     else:
         unrestricted_views = [
             '%s.%s' % (module_name, view.__name__) for view in all_views

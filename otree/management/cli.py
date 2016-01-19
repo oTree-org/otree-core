@@ -125,8 +125,8 @@ def execute_from_command_line(arguments, script_file):
     # See https://github.com/celery/billiard/issues/129 for more details.
     cond = (
         platform.system() == 'Windows' and
-        not script_file.lower().endswith('.py')
-        and subcommand not in NO_SETTINGS_COMMANDS
+        not script_file.lower().endswith('.py') and
+        subcommand not in NO_SETTINGS_COMMANDS
     )
 
     if cond:

@@ -149,7 +149,7 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
                     player.subsession.app_name
                 )
                 test_module = import_module(test_module_name)
-                logger.info("Found test '{}'".format(test_module_name))
+                logger.debug("Found test '{}'".format(test_module_name))
             except ImportError as err:
                 self.fail(six.text_type(err))
 

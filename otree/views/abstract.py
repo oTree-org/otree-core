@@ -310,8 +310,9 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                 # or if they hit the back button to a previous subsession
                 # in the sequence.
                 #
-                if (not self.request.is_ajax()
-                        and not self._user_is_on_right_page()):
+                if (
+                        not self.request.is_ajax() and
+                        not self._user_is_on_right_page()):
                     # then bring them back to where they should be
                     return self._redirect_to_page_the_user_should_be_on()
 
@@ -512,11 +513,11 @@ class GenericWaitPageMixin(object):
     def get_context_data(self, **kwargs):
         # 2015-11-13: title_text() and body_text() methods deprecated
         # they should be class attributes instead
-        if callable(self.title_text):
+        if isinstance(self.title_text, collections.Callable):
             title_text = self.title_text()
         else:
             title_text = self.title_text
-        if callable(self.body_text):
+        if isinstance(self.body_text, collections.Callable):
             body_text = self.body_text()
         else:
             body_text = self.body_text
@@ -838,73 +839,6 @@ class InGameWaitPage(FormPageOrInGameWaitPageMixin, InGameWaitPageMixin,
 
     """
     pass
-
-
-class AssignVisitorToDefaultSessionBase(vanilla.View):
-    # TODO: merge this with AssignVisitorToDefaultSession.
-    # we used to have the MTurk version but it has been removed.
-
-    def incorrect_parameters_in_url_message(self):
-        return 'Missing or incorrect parameters in URL'
-
-    def url_has_correct_parameters(self):
-        for i, get_param_name in self.required_params.items():
-            if get_param_name not in self.request.GET:
-                return False
-        return True
-
-    def retrieve_existing_participant_with_these_params(self, default_session):
-        params = {
-            field_name: self.request.GET[get_param_name]
-            for field_name, get_param_name in self.required_params.items()}
-        return Participant.objects.get(session=default_session, **params)
-
-    def set_external_params_on_participant(self, participant):
-        for field_name, get_param_name in self.required_params.items():
-            setattr(participant, field_name, self.request.GET[get_param_name])
-
-    def get(self, *args, **kwargs):
-        cond = (
-            self.request.GET[constants.access_code_for_default_session] ==
-            settings.ACCESS_CODE_FOR_DEFAULT_SESSION)
-        if not cond:
-            return HttpResponseNotFound(
-                'Incorrect access code for default session'
-            )
-
-        global_singleton = GlobalSingleton.objects.get()
-        default_session = global_singleton.default_session
-
-        if not default_session:
-            return HttpResponseNotFound(
-                'No session is currently open. Make sure to create '
-                'a session and set is as default.'
-            )
-        if not self.url_has_correct_parameters():
-            return HttpResponseNotFound(
-                self.incorrect_parameters_in_url_message()
-            )
-        try:
-            participant = (
-                self.retrieve_existing_participant_with_these_params(
-                    default_session))
-        except Participant.DoesNotExist:
-            with lock_on_this_code_path():
-                try:
-                    participant = (
-                        Participant.objects.select_for_update().filter(
-                            session=default_session,
-                            visited=False)).order_by('start_order')[0]
-                except IndexError:
-                    return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
-
-            self.set_external_params_on_participant(participant)
-            # 2014-10-17: needs to be here even if it's also set in
-            # the next view to prevent race conditions
-            participant.visited = True
-            participant.save()
-
-        return HttpResponseRedirect(participant._start_url())
 
 
 class GetFloppyFormClassMixin(object):

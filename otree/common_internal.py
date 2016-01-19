@@ -5,6 +5,7 @@ import os
 import sys
 import csv
 import datetime
+import collections
 import contextlib
 import inspect
 from os.path import dirname, join
@@ -209,7 +210,7 @@ def export_docs(fp, app_name):
                     if choices:
                         doc_dict[model_name][member_name]['choices'] = (
                             choices_readable(choices))
-                elif callable(member):
+                elif isinstance(member, collections.Callable):
                     doc_dict[model_name][member_name]['doc'] = [
                         inspect.getdoc(member)]
         return doc_dict

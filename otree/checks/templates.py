@@ -84,9 +84,9 @@ def check_next_button(root):
 
 
 def has_valid_encoding(file_name):
-    with open(file_name, 'r') as f:
-        template_string = f.read()
     try:
+        with open(file_name, 'r') as f:
+            template_string = f.read()
         force_text(template_string)
     except UnicodeDecodeError:
         return False

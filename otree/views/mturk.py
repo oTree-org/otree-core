@@ -211,15 +211,16 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             qualifications = mturk_settings.get('qualification_requirements')
 
             # deprecated summer 2015: remove this
-            if (not qualifications
-               and hasattr(settings, 'MTURK_WORKER_REQUIREMENTS')):
-                    deprecate.dwarning(
-                        'The MTURK_WORKER_REQUIREMENTS setting has been '
-                        'deprecated. You should instead use '
-                        '"qualification_requirements" as shown here: '
-                        'https://github.com/oTree-org/oTree/blob/master/'
-                        'settings.py')
-                    qualifications = settings.MTURK_WORKER_REQUIREMENTS
+            if (
+                    not qualifications and
+                    hasattr(settings, 'MTURK_WORKER_REQUIREMENTS')):
+                deprecate.dwarning(
+                    'The MTURK_WORKER_REQUIREMENTS setting has been '
+                    'deprecated. You should instead use '
+                    '"qualification_requirements" as shown here: '
+                    'https://github.com/oTree-org/oTree/blob/master/'
+                    'settings.py')
+                qualifications = settings.MTURK_WORKER_REQUIREMENTS
 
             mturk_hit_parameters = {
                 'title': form.cleaned_data['title'],

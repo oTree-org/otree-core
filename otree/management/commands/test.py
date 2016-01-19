@@ -45,6 +45,12 @@ class Command(BaseCommand):
     help = ('Discover and run experiment tests in the specified '
             'modules or the current directory.')
 
+    def _get_action(self, parser, signature):
+        option_strings = list(signature)
+        for idx, action in enumerate(parser._actions):
+            if action.option_strings == option_strings:
+                return parser._actions[idx]
+
     def add_arguments(self, parser):
         # Positional arguments
         parser.add_argument(
@@ -66,25 +72,41 @@ class Command(BaseCommand):
                 'outputting the CSV files to the specified directory.'),
             metavar='PATH')
 
+        v_action = self._get_action(parser, ("-v", "--verbosity"))
+        v_action.default = '2'
+        v_action.help = (
+            'Verbosity level; 0=minimal output, 1=normal output,'
+            '2=verbose output (DEFAULT), 3=very verbose output')
+
     def execute(self, *args, **options):
-        if int(options['verbosity']) > 0:
+        if int(options['verbosity']) > 3:
             logger = logging.getLogger('py.warnings')
             handler = logging.StreamHandler()
             logger.addHandler(handler)
         super(Command, self).execute(*args, **options)
-        if int(options['verbosity']) > 0:
+        if int(options['verbosity']) > 3:
             logger.removeHandler(handler)
 
     def handle(self, **options):
-
         test_labels = options["session_name"]
 
-        options['verbosity'] = int(options.get('verbosity'))
-        if options['verbosity'] < 3:
-            logging.basicConfig(level=logging.WARNING)
-            logging.getLogger("otree").setLevel(logging.WARNING)
-            runner.logger.setLevel(logging.WARNING)
-            client.logger.setLevel(logging.WARNING)
+        if options['verbosity'] == 0:
+            level = logging.ERROR
+        elif options['verbosity'] == 1:
+            level = logging.WARNING
+        elif options['verbosity'] == 2:
+            level = logging.INFO
+        else:  # 3
+            level = logging.DEBUG
+
+        options['verbosity'] = (
+            options['verbosity'] if options['verbosity'] > 2 else 1)
+
+        logging.basicConfig(level=level)
+        logging.getLogger("otree").setLevel(level)
+        runner.logger.setLevel(level)
+        client.logger.setLevel(level)
+
         coverage = options["coverage"]
 
         exportdata_path = options["exportdata_path"]

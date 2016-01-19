@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import collections
 import threading
 import time
-import urllib
 import uuid
 import itertools
 from six.moves import range
+from six.moves.urllib.parse import unquote_plus
+from six.moves.urllib.parse import urlencode
 from six.moves import zip
 
 from django.template.response import TemplateResponse
@@ -261,7 +263,7 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
                     model_instance = parent_objects[Model][parent_object_id]
 
             attr = getattr(model_instance, field_name, '')
-            if callable(attr):
+            if isinstance(attr, collections.Callable):
                 if Model == Player and field_name == 'role' \
                         and model_instance.group is None:
                     attr = ''
@@ -318,16 +320,19 @@ class PersistentLabURLs(vanilla.TemplateView):
         context = super(PersistentLabURLs, self).get_context_data(**kwargs)
 
         # default session stuff
-        from otree.views.concrete import AssignVisitorToDefaultSession
         default_session_base_url = self.request.build_absolute_uri(
-            AssignVisitorToDefaultSession.url()
+            reverse('assign_visitor_to_default_session')
         )
         default_session_example_urls = []
         for i in range(1, 20):
             data_urls = add_params_to_url(
                 default_session_base_url,
-                {otree.constants_internal.participant_label:
-                 'PC-{}'.format(i)})
+                {
+                    'participant_label': 'PC-{}'.format(i),
+                    'access_code_for_default_session':
+                    settings.ACCESS_CODE_FOR_DEFAULT_SESSION
+                }
+            )
             default_session_example_urls.append(data_urls)
         global_singleton = GlobalSingleton.objects.get()
         default_session = global_singleton.default_session
@@ -455,7 +460,7 @@ class CreateSession(vanilla.FormView):
         return 'session_create'
 
     def dispatch(self, request, *args, **kwargs):
-        session_config_name = urllib.unquote_plus(kwargs.pop('session_config'))
+        session_config_name = unquote_plus(kwargs.pop('session_config'))
         self.session_config = get_session_configs_dict()[session_config_name]
         self.for_mturk = (int(self.request.GET.get('mturk', 0)) == 1)
         return super(CreateSession, self).dispatch(request, *args, **kwargs)
@@ -539,7 +544,7 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
             row = []
             for fn in field_names:
                 attr = getattr(p, fn)
-                if callable(attr):
+                if isinstance(attr, collections.Callable):
                     attr = attr()
                 row.append(attr)
             rows.append(row)
@@ -854,7 +859,7 @@ def keywords_links(keywords):
     for kw in keywords:
         kw = kw.strip()
         if kw:
-            args = urllib.urlencode({"q": kw + " game theory", "t": "otree"})
+            args = urlencode({"q": kw + " game theory", "t": "otree"})
             link = "https://duckduckgo.com/?{}".format(args)
             links.append((kw, link))
     return links

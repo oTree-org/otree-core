@@ -5,6 +5,7 @@ import string
 import random
 import warnings
 
+from django.utils.encoding import force_text
 from otree import deprecate
 
 from .base import TestCase
@@ -13,10 +14,10 @@ from .base import TestCase
 class DeprecateTest(TestCase):
 
     def random_string(self):
-        chars = list(string.letters + string.digits)
+        chars = list(string.ascii_letters + string.digits)
         idx = random.randint(5, len(chars) - 1)
         random.shuffle(chars)
-        return random.choice(string.letters) + "".join(chars[:idx])
+        return random.choice(string.ascii_letters) + "".join(chars[:idx])
 
     def extract_otree_dwarn(self, l):
         for w in l:
@@ -49,7 +50,7 @@ class DeprecateTest(TestCase):
             dfunction()
             dw = self.extract_otree_dwarn(warns)
             self.assertTrue(dw)
-            self.assertEqual(dw.message.message, msg)
+            self.assertEqual(force_text(dw.message), msg)
 
         alternative = self.random_string()
 
@@ -62,7 +63,7 @@ class DeprecateTest(TestCase):
             dfunction()
             dw = self.extract_otree_dwarn(warns)
             self.assertTrue(dw)
-            self.assertEqual(dw.message.message, msg)
+            self.assertEqual(force_text(dw.message), msg)
 
     def test_dwarning(self):
 
@@ -71,7 +72,7 @@ class DeprecateTest(TestCase):
             deprecate.dwarning(msg)
             dw = self.extract_otree_dwarn(warns)
             self.assertTrue(dw)
-            self.assertEqual(dw.message.message, msg)
+            self.assertEqual(force_text(dw.message), msg)
 
         with warnings.catch_warnings(record=True) as warns:
             warnings.simplefilter("ignore", deprecate.OTreeDeprecationWarning)
@@ -85,4 +86,4 @@ class DeprecateTest(TestCase):
             msg = self.random_string()
             with self.assertRaises(deprecate.OTreeDeprecationWarning) as cm:
                 deprecate.dwarning(msg)
-            self.assertEqual(cm.exception.message, msg)
+            self.assertEqual(force_text(cm.exception), msg)

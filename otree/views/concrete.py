@@ -31,7 +31,7 @@ import otree.views.admin
 from otree.views.mturk import MTurkConnection
 import otree.common_internal
 from otree.views.abstract import (
-    NonSequenceUrlMixin, OTreeMixin, AssignVisitorToDefaultSessionBase,
+    NonSequenceUrlMixin, OTreeMixin,
     GenericWaitPageMixin, FormPageOrInGameWaitPageMixin,
     NO_PARTICIPANTS_LEFT_MSG
 )
@@ -270,29 +270,75 @@ class JoinSessionAnonymously(vanilla.View):
         return HttpResponseRedirect(participant._start_url())
 
 
-class AssignVisitorToDefaultSession(AssignVisitorToDefaultSessionBase):
-
-    def incorrect_parameters_in_url_message(self):
-        return 'Missing parameter(s) in URL: {}'.format(
-            list(self.required_params.values())
-        )
+class AssignVisitorToDefaultSession(vanilla.View):
 
     @classmethod
-    def url(cls):
-        return otree.common_internal.add_params_to_url(
-            '/{}'.format(cls.__name__), {
-                otree.constants_internal.access_code_for_default_session:
-                    settings.ACCESS_CODE_FOR_DEFAULT_SESSION
-            }
-        )
+    def url_name(cls):
+        return 'assign_visitor_to_default_session'
 
     @classmethod
     def url_pattern(cls):
         return r'^{}/$'.format(cls.__name__)
 
-    required_params = {
-        'label': otree.constants_internal.participant_label,
-    }
+    def get(self, *args, **kwargs):
+
+        participant_label = self.request.GET.get(
+            'participant_label'
+        )
+        if not participant_label:
+            return HttpResponseNotFound(
+                'Missing or empty participant label'
+            )
+
+        access_code_for_default_session = self.request.GET.get(
+            'access_code_for_default_session'
+        )
+        if not access_code_for_default_session:
+            return HttpResponseNotFound(
+                'Missing or empty access code for default session'
+            )
+
+        cond = (
+            access_code_for_default_session ==
+            settings.ACCESS_CODE_FOR_DEFAULT_SESSION
+        )
+        if not cond:
+            return HttpResponseNotFound(
+                'Incorrect access code for default session'
+            )
+
+        global_singleton = GlobalSingleton.objects.get()
+        default_session = global_singleton.default_session
+
+        if not default_session:
+            return HttpResponseNotFound(
+                'No session is currently open. Make sure to create '
+                'a session and set is as default.'
+            )
+
+        try:
+            participant = Participant.objects.get(
+                session=default_session,
+                label=participant_label
+            )
+        except Participant.DoesNotExist:
+            with lock_on_this_code_path():
+                try:
+                    participant = (
+                        Participant.objects.select_for_update().filter(
+                            session=default_session,
+                            visited=False)
+                    ).order_by('start_order')[0]
+                except IndexError:
+                    return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
+
+                participant.label = participant_label
+                # 2014-10-17: needs to be here even if it's also set in
+                # the next view to prevent race conditions
+                participant.visited = True
+                participant.save()
+
+        return HttpResponseRedirect(participant._start_url())
 
 
 class AdvanceSession(vanilla.View):
