@@ -144,20 +144,6 @@ class Session(ModelWithVars):
             constants_internal.session_special_category_demo
         )
 
-    def subsession_names(self):
-        names = []
-        for subsession in self.get_subsessions():
-            app_name = subsession._meta.app_config.name
-            name = '{} {}'.format(
-                otree.common_internal.app_name_format(app_name),
-                subsession.name()
-            )
-            names.append(name)
-        if names:
-            return ', '.join(names)
-        else:
-            return '[empty sequence]'
-
     def get_subsessions(self):
         lst = []
         app_sequence = self.config['app_sequence']
@@ -176,13 +162,6 @@ class Session(ModelWithVars):
 
     def get_participants(self):
         return self.participant_set.all()
-
-    def payments_ready(self):
-        for participants in self.get_participants():
-            if not participants.payoff_is_complete():
-                return False
-        return True
-    payments_ready.boolean = True
 
     def _create_groups_and_initialize(self):
         # group_by_arrival_time code used to be here

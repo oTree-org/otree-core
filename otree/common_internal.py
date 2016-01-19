@@ -39,16 +39,6 @@ def id_label_name(id, label):
         return '{} (label: {})'.format(id, label)
     return '{}'.format(id)
 
-
-def is_subsession_app(app_name):
-    try:
-        models_module = import_module('{}.models'.format(app_name))
-    except ImportError:
-        return False
-    class_names = ['Player', 'Group', 'Subsession']
-    return all(hasattr(models_module, ClassName) for ClassName in class_names)
-
-
 def git_commit_timestamp():
     root_dir = dirname(settings.BASE_DIR)
     try:
