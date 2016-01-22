@@ -395,13 +395,14 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
         for t in threading.enumerate():
             if t.name == self._pre_create_id:
                 thread_create_session = t
-        session_exists = Session.objects.filter(
-            _pre_create_id=self._pre_create_id
-        ).exists()
         thread_alive = (
             thread_create_session and
             thread_create_session.isAlive()
         )
+        session_exists = Session.objects.filter(
+            _pre_create_id=self._pre_create_id
+        ).exists()
+
         if not thread_alive and not session_exists:
             raise Exception("Thread failed to create new session")
         return session_exists
