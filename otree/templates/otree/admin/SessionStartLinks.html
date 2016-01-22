@@ -20,7 +20,7 @@
 
     <p>
     {% for participant_url in participant_urls %}
-            <a href="{{ participant_url }}" class="participant-link" target="_blank">{{ participant_url }}</a>
+            P{{ forloop.counter }}: <a href="{{ participant_url }}" class="participant-link" target="_blank">{{ participant_url }}</a>
             <br/>
     {% endfor %}
     </p>

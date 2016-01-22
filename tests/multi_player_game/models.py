@@ -40,9 +40,6 @@ class Subsession(otree.models.BaseSubsession):
 
 
 class Group(otree.models.BaseGroup):
-    # <built-in>
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
 
     def set_payoffs(self):
         for p in self.get_players():
@@ -52,10 +49,6 @@ class Group(otree.models.BaseGroup):
 
 
 class Player(otree.models.BasePlayer):
-    # <built-in>
-    subsession = models.ForeignKey(Subsession)
-    group = models.ForeignKey(Group, null=True)
-    # </built-in>
 
     def other_player(self):
         """Returns other player in group. Only valid for 2-player groups."""

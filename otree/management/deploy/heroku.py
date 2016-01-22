@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import argparse
 import os
 import sys
@@ -95,7 +97,7 @@ COMMANDS['help'] = show_help
 ###########################################################################
 
 
-parser.add_argument('subcommand', nargs=1, choices=COMMANDS.keys())
+parser.add_argument('subcommand', nargs=1, choices=list(COMMANDS.keys()))
 
 
 def execute_from_command_line(argv):

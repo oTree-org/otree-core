@@ -3,6 +3,8 @@
 
 import random
 import string
+import six
+from six.moves import range
 
 from django.db import models
 from django.db.models.fields import related
@@ -10,7 +12,8 @@ from django.core import exceptions
 from django.utils.translation import ugettext_lazy
 from django.apps import apps
 
-from handy.models import JSONField, PickleField
+from .serializedfields import JSONField as _JSONField
+from .serializedfields import PickleField as _PickleField
 
 import easymoney
 
@@ -40,6 +43,10 @@ class OTreeModelBase(SharedMemoryModelBase):
             meta.db_table = "{}_{}".format(app_label, name.lower())
             attrs["Meta"] = meta
 
+        # 2015-12-22: this probably doesn't work anymore,
+        # since we moved _choices to views.py
+        # but we can tell users they can define FOO_choices in models.py,
+        # and then call it in the equivalent method in views.py
         new_class = super(OTreeModelBase, cls).__new__(cls, name, bases, attrs)
         for f in new_class._meta.fields:
             if hasattr(new_class, f.name + '_choices'):
@@ -61,8 +68,8 @@ def make_get_display(field):
     return get_FIELD_display
 
 
-class OTreeModel(SharedMemoryModel):
-    __metaclass__ = OTreeModelBase
+class OTreeModel(six.with_metaclass(OTreeModelBase, SharedMemoryModel)):
+    use_strong_refs = True
 
     class Meta:
         abstract = True
@@ -228,11 +235,11 @@ class RandomCharField(_OtreeNotNullableModelFieldMixin, models.CharField):
         return "CharField"
 
 
-class PickleField(_OtreeNullableModelFieldMixin, PickleField):
+class PickleField(_OtreeNullableModelFieldMixin, _PickleField):
     pass
 
 
-class JSONField(_OtreeNullableModelFieldMixin, JSONField):
+class JSONField(_OtreeNullableModelFieldMixin, _JSONField):
     pass
 
 

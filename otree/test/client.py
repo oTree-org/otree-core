@@ -14,11 +14,12 @@
 # =============================================================================
 
 import re
-import urlparse
 import decimal
 import logging
 import abc
+import six
 from importlib import import_module
+from six.moves import urllib
 
 from django import test
 
@@ -77,9 +78,14 @@ class Submit(object):
         """
         if self.bot.on_wait_page():
             try:
+                # 2015-12-20: i think what happens here is we
+                # try to get to the next page
+                # then on the next call to execute_core,
+                # maybe on_wait_page will return False
                 self.bot.response = self.bot.get(self.bot.url, follow=True)
                 self.bot.check_200()
                 self.bot.set_path()
+            # need finally because check_200 could throw
             finally:
                 return False
 
@@ -125,9 +131,7 @@ class Submit(object):
 # BASE CLIENT
 # =============================================================================
 
-class ParticipantBot(test.Client):
-
-    __metaclass__ = abc.ABCMeta
+class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
 
     def __init__(self, participant, **kwargs):
         self.participant = participant
@@ -145,9 +149,9 @@ class ParticipantBot(test.Client):
                     player.subsession.app_name
                 )
                 test_module = import_module(test_module_name)
-                logger.info("Found test '{}'".format(test_module_name))
+                logger.debug("Found test '{}'".format(test_module_name))
             except ImportError as err:
-                self.fail(unicode(err))
+                self.fail(six.text_type(err))
 
             player_bot = test_module.PlayerBot(
                 player=player,
@@ -205,7 +209,7 @@ class ParticipantBot(test.Client):
     def set_path(self):
         try:
             self.url = self.response.redirect_chain[-1][0]
-            self.path = urlparse.urlsplit(self.url).path
+            self.path = urllib.parse.urlsplit(self.url).path
         except IndexError:
             pass
 

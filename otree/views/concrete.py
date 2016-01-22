@@ -31,11 +31,11 @@ import otree.views.admin
 from otree.views.mturk import MTurkConnection
 import otree.common_internal
 from otree.views.abstract import (
-    NonSequenceUrlMixin, OTreeMixin, AssignVisitorToDefaultSessionBase,
-    GenericWaitPageMixin, FormPageOrWaitPageMixin,
+    NonSequenceUrlMixin, OTreeMixin,
+    GenericWaitPageMixin, FormPageOrInGameWaitPageMixin,
     NO_PARTICIPANTS_LEFT_MSG
 )
-from otree.models_concrete import GroupSize
+from otree.models_concrete import GroupSize  # noqa
 from otree.models.session import GlobalSingleton
 
 
@@ -48,8 +48,8 @@ class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
         )
 
 
-class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin,
-                               GenericWaitPageMixin, vanilla.View):
+class WaitUntilAssignedToGroup(FormPageOrInGameWaitPageMixin,
+                               GenericWaitPageMixin, vanilla.GenericView):
     """
     In "group by arrival time",
     we wait until enough players have arrived to form a group,
@@ -68,53 +68,8 @@ class WaitUntilAssignedToGroup(FormPageOrWaitPageMixin,
     def _is_ready(self):
         if bool(self.group):
             return not self.group._is_missing_players
-        # if grouping by arrival time,
-        # and the player has not yet been assigned to a group,
-        # we assign them.
-        elif self.session.config.get('group_by_arrival_time'):
-            with lock_on_this_code_path():
-                # need to check again to prevent race conditions
-                if bool(self.group):
-                    return not self.group._is_missing_players
-                if self.subsession.round_number == 1:
-                    open_group = self.subsession._get_open_group()
-                    group_players = open_group.get_players()
-                    group_players.append(self.player)
-                    open_group.set_players(group_players)
-                    group_size_obj = GroupSize.objects.filter(
-                        app_label=self.subsession._meta.app_config.name,
-                        subsession_pk=self.subsession.pk,
-                    ).order_by('group_index')[0]
-                    group_quota = group_size_obj.group_size
-                    if len(group_players) == group_quota:
-                        open_group._is_missing_players = False
-                        group_size_obj.delete()
-                        open_group.save()
-                        return True
-                    else:
-                        open_group.save()
-                        return False
-                else:
-                    # 2015-06-11: just running
-                    # self.subsession._create_groups() doesn't work
-                    # because what if some participants didn't start round 1?
-                    # following code only gets executed once
-                    # (because of self.group check above)
-                    # and doesn't get executed if ppg == None
-                    # (because if ppg == None we preassign)
-                    # get_players() is guaranteed to return a complete group
-                    # (because a player can't start round 1 before
-                    # being assigned to a complete group)
-                    group_players = [
-                        p._in_next_round() for p in
-                        self.player._in_previous_round().group.get_players()
-                    ]
-                    open_group = self.subsession._get_open_group()
-                    open_group.set_players(group_players)
-                    open_group._is_missing_players = False
-                    open_group.save()
-                    return True
-        # if not grouping by arrival time, but the session was just created
+        # group_by_arrival_time code used to be here
+        # if the session was just created
         # and the code to assign to groups has not executed yet
         return False
 
@@ -254,8 +209,7 @@ class MTurkStart(vanilla.View):
                     else:
                         raise
         try:
-            participant = Participant.objects.get(
-                session=self.session,
+            participant = self.session.participant_set.get(
                 mturk_worker_id=worker_id,
                 mturk_assignment_id=assignment_id)
         except Participant.DoesNotExist:
@@ -316,29 +270,75 @@ class JoinSessionAnonymously(vanilla.View):
         return HttpResponseRedirect(participant._start_url())
 
 
-class AssignVisitorToDefaultSession(AssignVisitorToDefaultSessionBase):
-
-    def incorrect_parameters_in_url_message(self):
-        return 'Missing parameter(s) in URL: {}'.format(
-            self.required_params.values()
-        )
+class AssignVisitorToDefaultSession(vanilla.View):
 
     @classmethod
-    def url(cls):
-        return otree.common_internal.add_params_to_url(
-            '/{}'.format(cls.__name__), {
-                otree.constants_internal.access_code_for_default_session:
-                    settings.ACCESS_CODE_FOR_DEFAULT_SESSION
-            }
-        )
+    def url_name(cls):
+        return 'assign_visitor_to_default_session'
 
     @classmethod
     def url_pattern(cls):
         return r'^{}/$'.format(cls.__name__)
 
-    required_params = {
-        'label': otree.constants_internal.participant_label,
-    }
+    def get(self, *args, **kwargs):
+
+        participant_label = self.request.GET.get(
+            'participant_label'
+        )
+        if not participant_label:
+            return HttpResponseNotFound(
+                'Missing or empty participant label'
+            )
+
+        access_code_for_default_session = self.request.GET.get(
+            'access_code_for_default_session'
+        )
+        if not access_code_for_default_session:
+            return HttpResponseNotFound(
+                'Missing or empty access code for default session'
+            )
+
+        cond = (
+            access_code_for_default_session ==
+            settings.ACCESS_CODE_FOR_DEFAULT_SESSION
+        )
+        if not cond:
+            return HttpResponseNotFound(
+                'Incorrect access code for default session'
+            )
+
+        global_singleton = GlobalSingleton.objects.get()
+        default_session = global_singleton.default_session
+
+        if not default_session:
+            return HttpResponseNotFound(
+                'No session is currently open. Make sure to create '
+                'a session and set is as default.'
+            )
+
+        try:
+            participant = Participant.objects.get(
+                session=default_session,
+                label=participant_label
+            )
+        except Participant.DoesNotExist:
+            with lock_on_this_code_path():
+                try:
+                    participant = (
+                        Participant.objects.select_for_update().filter(
+                            session=default_session,
+                            visited=False)
+                    ).order_by('start_order')[0]
+                except IndexError:
+                    return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
+
+                participant.label = participant_label
+                # 2014-10-17: needs to be here even if it's also set in
+                # the next view to prevent race conditions
+                participant.visited = True
+                participant.save()
+
+        return HttpResponseRedirect(participant._start_url())
 
 
 class AdvanceSession(vanilla.View):

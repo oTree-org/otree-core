@@ -3,6 +3,9 @@
 
 import re
 import random
+from six.moves import range
+from six.moves import zip
+from functools import reduce
 
 from django.conf import settings
 from django.db import transaction
@@ -191,7 +194,7 @@ def create_session(session_config_name, label='', num_participants=None,
         raise ValueError(
             msg.format(session_config['name'], num_participants, session_lcm))
 
-    start_order = range(num_participants)
+    start_order = list(range(num_participants))
     if session_config.get('random_start_order'):
         random.shuffle(start_order)
 
@@ -208,7 +211,7 @@ def create_session(session_config_name, label='', num_participants=None,
         models_module = get_models_module(app_name)
         app_constants = get_app_constants(app_name)
 
-        round_numbers = range(1, app_constants.num_rounds + 1)
+        round_numbers = list(range(1, app_constants.num_rounds + 1))
 
         subs = bulk_create(
             models_module.Subsession,

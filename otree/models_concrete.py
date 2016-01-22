@@ -22,16 +22,17 @@ class WaitPageVisit(models.Model):
     '''
     class Meta:
         app_label = "otree"
+        index_together = ['session_pk', 'page_index', 'id_in_session']
 
     session_pk = models.PositiveIntegerField()
     page_index = models.PositiveIntegerField()
-
     id_in_session = models.PositiveIntegerField()
 
 
 class PageTimeout(models.Model):
     class Meta:
         app_label = "otree"
+        index_together = ['participant_pk', 'page_index']
 
     participant_pk = models.PositiveIntegerField()
     page_index = models.PositiveIntegerField()
@@ -41,6 +42,7 @@ class PageTimeout(models.Model):
 class CompletedGroupWaitPage(models.Model):
     class Meta:
         app_label = "otree"
+        index_together = ['page_index', 'session_pk', 'group_pk']
 
     page_index = models.PositiveIntegerField()
     session_pk = models.PositiveIntegerField()
@@ -50,6 +52,7 @@ class CompletedGroupWaitPage(models.Model):
 class CompletedSubsessionWaitPage(models.Model):
     class Meta:
         app_label = "otree"
+        index_together = ['page_index', 'session_pk']
 
     page_index = models.PositiveIntegerField()
     session_pk = models.PositiveIntegerField()
@@ -58,6 +61,7 @@ class CompletedSubsessionWaitPage(models.Model):
 class ParticipantToPlayerLookup(models.Model):
     class Meta:
         app_label = "otree"
+        index_together = ['participant_pk', 'page_index']
 
     participant_pk = models.PositiveIntegerField()
     page_index = models.PositiveIntegerField()
@@ -68,6 +72,7 @@ class ParticipantToPlayerLookup(models.Model):
 class GroupSize(models.Model):
     class Meta:
         app_label = "otree"
+        index_together = ['app_label', 'subsession_pk']
 
     app_label = models.CharField(max_length=300)
     subsession_pk = models.PositiveIntegerField()
@@ -79,7 +84,7 @@ class ParticipantLockModel(models.Model):
     class Meta:
         app_label = "otree"
 
-    participant_code = models.CharField(max_length=10)
+    participant_code = models.CharField(max_length=10, db_index=True)
 
 
 class StubModel(models.Model):

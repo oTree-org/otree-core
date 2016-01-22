@@ -3,16 +3,16 @@
 
 import os
 import sys
-import urllib
-import urlparse
 import csv
 import datetime
-import operator
+import collections
 import contextlib
 import inspect
 from os.path import dirname, join
 from collections import OrderedDict
 from importlib import import_module
+import six
+from six.moves import urllib
 
 from django.db import transaction
 from django.db import connection
@@ -20,36 +20,25 @@ from django.apps import apps
 from django.conf import settings
 from django.template.defaultfilters import title
 
-import six
 
 from otree import constants_internal
 
 
 def add_params_to_url(url, params):
-    url_parts = list(urlparse.urlparse(url))
+    url_parts = list(urllib.parse.urlparse(url))
 
     # use OrderedDict because sometimes we want certain params at end
     # for readability/consistency
-    query = OrderedDict(urlparse.parse_qsl(url_parts[4]))
+    query = OrderedDict(urllib.parse.parse_qsl(url_parts[4]))
     query.update(params)
-    url_parts[4] = urllib.urlencode(query)
-    return urlparse.urlunparse(url_parts)
+    url_parts[4] = urllib.parse.urlencode(query)
+    return urllib.parse.urlunparse(url_parts)
 
 
 def id_label_name(id, label):
     if label:
         return '{} (label: {})'.format(id, label)
     return '{}'.format(id)
-
-
-def is_subsession_app(app_name):
-    try:
-        models_module = import_module('{}.models'.format(app_name))
-    except ImportError:
-        return False
-    class_names = ['Player', 'Group', 'Subsession']
-    return all(hasattr(models_module, ClassName) for ClassName in class_names)
-
 
 def git_commit_timestamp():
     root_dir = dirname(settings.BASE_DIR)
@@ -165,7 +154,7 @@ def export_docs(fp, app_name):
         lines = []
         for value, name in choices:
             # unicode() call is for lazy translation strings
-            lines.append(u'{}: {}'.format(value, unicode(name)))
+            lines.append(u'{}: {}'.format(value, six.text_type(name)))
         return lines
 
     def generate_doc_dict():
@@ -221,7 +210,7 @@ def export_docs(fp, app_name):
                     if choices:
                         doc_dict[model_name][member_name]['choices'] = (
                             choices_readable(choices))
-                elif callable(member):
+                elif isinstance(member, collections.Callable):
                     doc_dict[model_name][member_name]['doc'] = [
                         inspect.getdoc(member)]
         return doc_dict
@@ -277,18 +266,6 @@ def get_app_name_from_label(app_label):
     return apps.get_app_config(app_label).name
 
 
-def get_players(self, order_by, refresh_from_db=False):
-    if refresh_from_db or not self._players:
-        self._players = list(self.player_set.all())
-    return sorted(self._players, key=operator.attrgetter(order_by))
-
-
-def get_groups(self, refresh_from_db=False):
-    if refresh_from_db or not self._groups:
-        self._groups = self.group_set.all()
-    return list(self._groups)
-
-
 def expand_choice_tuples(choices):
     '''allows the programmer to define choices as a list of values rather
     than (value, display_value)
@@ -316,7 +293,7 @@ def contract_choice_tuples(choices):
 def min_players_multiple(players_per_group):
     ppg = players_per_group
 
-    if isinstance(ppg, (int, long)) and ppg >= 1:
+    if isinstance(ppg, six.integer_types) and ppg >= 1:
         return ppg
     if isinstance(ppg, (list, tuple)):
         return sum(ppg)
@@ -334,9 +311,9 @@ def reraise(original):
         conversor = constants_internal.exceptions_conversors[original_cls]
         new = conversor(original)
         new_cls = type(new)
-        six.reraise(new_cls, new, sys.exc_traceback)
+        six.reraise(new_cls, new, sys.exc_info()[2])
     else:
-        six.reraise(original_cls, original, sys.exc_traceback)
+        six.reraise(original_cls, original, sys.exc_info()[2])
 
 
 def db_table_exists(table_name):

@@ -21,10 +21,6 @@ class Subsession(otree.models.BaseSubsession):
 
 
 class Group(otree.models.BaseGroup):
-    # <built-in>
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
-
     players_per_group = None
 
     def set_payoffs(self):
@@ -33,9 +29,4 @@ class Group(otree.models.BaseGroup):
 
 
 class Player(otree.models.BasePlayer):
-    # <built-in>
-    subsession = models.ForeignKey(Subsession)
-    group = models.ForeignKey(Group, null = True)
-    # </built-in>
-
     my_field = models.CurrencyField()

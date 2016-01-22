@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import six
+from six import StringIO
 
 from django.conf import settings
 from django.core.management import call_command
@@ -45,9 +45,9 @@ class TestDataExport(TestCase):
                 content_disposition.startswith(
                     'attachment; filename="{} ('.format(app_format)))
 
-            buff = six.StringIO()
+            buff = StringIO()
             common_internal.export_data(buff, app)
-            self.assertEqual(response.content, buff.getvalue())
+            self.assertEqual(response.content, buff.getvalue().encode('utf-8'))
 
     def test_simple_game_export_data(self):
         self.session_test("simple_game")
@@ -96,9 +96,9 @@ class TestDocExport(TestCase):
                 app_format)
             self.assertTrue(content_disposition.startswith(expected_cd))
 
-            buff = six.StringIO()
+            buff = StringIO()
             common_internal.export_docs(buff, app)
-            self.assertEqual(response.content, buff.getvalue())
+            self.assertEqual(response.content, buff.getvalue().encode('utf-8'))
 
     def test_simple_game_export_data(self):
         self.session_test("simple_game")
@@ -129,6 +129,6 @@ class TestTimeSpentExport(TestCase):
         content_type = response["content-type"]
         self.assertEqual(content_type, "text/csv")
 
-        buff = six.StringIO()
+        buff = StringIO()
         common_internal.export_time_spent(buff)
-        self.assertEqual(response.content, buff.getvalue())
+        self.assertEqual(response.content, buff.getvalue().encode('utf-8'))

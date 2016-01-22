@@ -1,7 +1,10 @@
+from __future__ import print_function
 import os
 import platform
 import subprocess
 import sys
+from collections import defaultdict
+from importlib import import_module
 
 import django
 import django.core.management
@@ -9,6 +12,9 @@ from django.core.management.base import CommandError
 from django.core.management.color import color_style
 from django.conf import settings
 
+import six
+
+from otree.settings import get_default_settings
 import otree
 import otree.management.deploy.heroku
 
@@ -21,7 +27,79 @@ MANAGE_URL = (
     "https://raw.githubusercontent.com/oTree-org/oTree/master/manage.py")
 
 
-IGNORE_APPS_COMMANDS = frozenset(("version", "--version", "startapp", "help"))
+NO_SETTINGS_COMMANDS = [
+    'help', 'version', '--help', '--version', '-h',
+    'compilemessages', 'makemessages',
+    'startapp', 'startproject',
+]
+
+
+OVERRIDE_DJANGO_COMMANDS = ['startapp', 'startproject']
+
+
+# =============================================================================
+# CLASSES
+# =============================================================================
+
+class OTreeManagementUtility(django.core.management.ManagementUtility):
+
+    def limit_text(self, helptext, limit=80):
+        if len(helptext) <= limit:
+            return helptext
+        limited = helptext
+        while len(limited) > limit - 3:
+            limited = " ".join(limited.split()[:-1])
+        if limited != helptext:
+            limited += "..."
+        return limited
+
+    def get_commands(self):
+        return django.core.management.get_commands()
+
+    def main_help_text(self, commands_only=False):
+        """
+        Returns the script's main help text, as a string.
+        """
+        if commands_only:
+            usage = sorted(self.get_commands().keys())
+        else:
+
+            second_line = (
+                "Type {} help <subcommand>' for help on a specific "
+                "subcommand.").format(self.prog_name)
+            usage = ["", second_line, "", "Available subcommands:"]
+
+            commands_dict = defaultdict(lambda: [])
+            for name, app in six.iteritems(self.get_commands()):
+                if app == 'django.core':
+                    app = 'django'
+                else:
+                    app = app.rpartition('.')[-1]
+                commands_dict[app].append(name)
+            style = color_style()
+            for app in sorted(commands_dict.keys()):
+                usage.append("")
+                usage.append(style.NOTICE("[%s]" % app))
+                for name in sorted(commands_dict[app]):
+                    helptext = " ".join(
+                        self.fetch_command(name).help.splitlines())
+                    helptext = self.limit_text(helptext, 80)
+                    usage.append("  {} - {}".format(name, helptext))
+            # Output an extra note if settings are not properly configured
+            if self.settings_exception is not None:
+                usage.append(style.NOTICE(
+                    "Note that only Django core commands are listed "
+                    "as settings are not properly configured (error: %s)."
+                    % self.settings_exception))
+
+        return '\n'.join(usage)
+
+    def fetch_command(self, subcommand):
+        if subcommand in OVERRIDE_DJANGO_COMMANDS:
+            command_module = import_module(
+                'otree.management.commands.{}'.format(subcommand))
+            return command_module.Command()
+        return super(OTreeManagementUtility, self).fetch_command(subcommand)
 
 
 # =============================================================================
@@ -35,14 +113,21 @@ def otree_and_django_version(*args, **kwargs):
 
 
 def execute_from_command_line(arguments, script_file):
+
+    try:
+        subcommand = arguments[1]
+    except IndexError:
+        subcommand = 'help'  # default
+
     # Workaround for windows. Celery (more precicely the billard library) will
     # complain if the script you are using to initialize celery does not end
     # on '.py'. That's why we require a manage.py file to be around.
     # See https://github.com/celery/billiard/issues/129 for more details.
-
     cond = (
-        platform.system() == 'Windows' and not
-        script_file.lower().endswith('.py'))
+        platform.system() == 'Windows' and
+        not script_file.lower().endswith('.py') and
+        subcommand not in NO_SETTINGS_COMMANDS
+    )
 
     if cond:
 
@@ -63,7 +148,7 @@ def execute_from_command_line(arguments, script_file):
                 "the directory {directory}".format(
                     url=MANAGE_URL, directory=scriptdir))
             raise CommandError("\n".join(error_lines))
-        args = [sys.executable] + [managepy] + sys.argv[1:]
+        args = [sys.executable] + [managepy] + arguments[1:]
         process = subprocess.Popen(args,
                                    stdin=sys.stdin,
                                    stdout=sys.stdout,
@@ -73,15 +158,24 @@ def execute_from_command_line(arguments, script_file):
 
     # in issue #300 we agreed that sslserver should
     # run only if user has specified credentials for AWS
-    if (len(sys.argv) >= 2 and sys.argv[1] == 'runserver' and
+    if (len(arguments) >= 2 and arguments[1] == 'runserver' and
        settings.AWS_ACCESS_KEY_ID):
-            sys.argv[1] = 'runsslserver'
+            arguments[1] = 'runsslserver'
 
     # only monkey patch when is necesary
     if "version" in arguments or "--version" in arguments:
         sys.stdout.write(otree_and_django_version() + '\n')
     else:
-        django.core.management.execute_from_command_line(sys.argv)
+        utility = OTreeManagementUtility(arguments)
+        utility.execute()
+
+
+SETTINGS_NOT_FOUND_MESSAGE = (
+    "Cannot import otree settings.\n"
+    "Please make sure that you are in the base directory of your "
+    "oTree library checkout. This directory contains a settings.py "
+    "and a manage.py file."
+)
 
 
 def otree_cli():
@@ -89,34 +183,35 @@ def otree_cli():
     This function is the entry point for the ``otree`` console script.
     """
 
+    try:
+        subcommand = sys.argv[1]
+    except IndexError:
+        subcommand = 'help'  # default
+
     # We need to add the current directory to the python path as this is not
     # set by default when no using "python <script>" but a standalone script
     # like ``otree``.
     if os.getcwd() not in sys.path:
         sys.path.insert(0, os.getcwd())
 
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
+    argv = sys.argv
 
-    try:
-        from django.conf import settings
-        settings.INSTALLED_APPS
-    except ImportError:
-        style = color_style()
-        msg = style.ERROR(
-            "Cannot import otree settings.\n"
-            "Please make sure that you are in the base directory of your "
-            "oTree library checkout. This directory contains a settings.py "
-            "and a manage.py file.")
-        print(msg)
-        sys.exit(1)
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
 
     # some commands don't need the setings.INSTALLED_APPS
     # see: https://github.com/oTree-org/otree-core/issues/388
-    ignore_apps = IGNORE_APPS_COMMANDS.intersection(sys.argv)
-    if ignore_apps:
-        settings.INSTALLED_APPS = tuple(settings.NO_EXPERIMENT_APPS)
+    try:
+        settings.INSTALLED_APPS
+    except ImportError:
+        if subcommand in NO_SETTINGS_COMMANDS:
+            settings.configure(**get_default_settings())
+        else:
+            style = color_style()
+            msg = style.ERROR(SETTINGS_NOT_FOUND_MESSAGE)
+            print(msg)
+            sys.exit(1)
 
-    execute_from_command_line(sys.argv, 'otree')
+    execute_from_command_line(argv, 'otree')
 
 
 def otree_heroku_cli():
@@ -137,10 +232,7 @@ def otree_heroku_cli():
         from django.conf import settings
         settings.INSTALLED_APPS
     except ImportError:
-        print(style.ERROR(
-            "Cannot import otree settings. Please make sure that you are "
-            "in the base directory of your oTree library checkout. "
-            "This directory contains a settings.py and a manage.py file."))
+        print(style.ERROR(SETTINGS_NOT_FOUND_MESSAGE))
         sys.exit(1)
 
     otree.management.deploy.heroku.execute_from_command_line(sys.argv)

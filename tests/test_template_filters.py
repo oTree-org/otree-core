@@ -6,7 +6,6 @@ import decimal
 import string
 
 from django.template import Context, Template
-from django.conf import settings
 from django.utils import html
 
 import six
@@ -14,6 +13,7 @@ import six
 from otree.common import Currency as c
 
 from .base import TestCase
+from six.moves import range
 
 
 class TestFilters(TestCase):
@@ -46,7 +46,7 @@ class TestFilters(TestCase):
     def test_as_repr(self):
         for value in [0, 1, random.random(), None, "something"]:
             rendered = self.render("{{value|repr}}", context={'value': value})
-            expected = repr(value).decode(settings.DEFAULT_CHARSET)
+            expected = repr(value)
             if isinstance(value, six.string_types):
                 expected = html.escape(expected)
             self.assertEquals(rendered, expected)

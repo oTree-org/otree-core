@@ -4,7 +4,6 @@ import threading
 import time
 
 from django.conf import settings
-from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect, Http404
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
@@ -18,6 +17,7 @@ from otree.session import (
     create_session, get_session_configs_dict, get_session_configs_list
 )
 import otree.session
+from six.moves import range
 
 # if it's debug mode, we should always generate a new session
 # because a bug might have been fixed
@@ -105,7 +105,7 @@ def get_session(session_config_name):
         return sessions[0]
 
 
-class CreateDemoSession(GenericWaitPageMixin, vanilla.View):
+class CreateDemoSession(GenericWaitPageMixin, vanilla.GenericView):
 
     @classmethod
     def url_pattern(cls):
@@ -166,11 +166,6 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.View):
         self.session_config_name = kwargs['session_config']
         return super(CreateDemoSession, self).dispatch(
             request, *args, **kwargs
-        )
-
-    def _get_wait_page(self):
-        return TemplateResponse(
-            self.request, 'otree/WaitPage.html', {'view': self}
         )
 
 

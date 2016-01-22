@@ -28,11 +28,11 @@ class WaitPage(abstract.InGameWaitPage):
 
     wait_for_all_groups = False
 
-    def body_text(self):
-        return super(WaitPage, self).body_text()
+    title_text = None
 
-    def title_text(self):
-        return super(WaitPage, self).title_text()
+    body_text = None
+
+    template_name = None
 
     def after_all_players_arrive(self):
         return super(WaitPage, self).after_all_players_arrive()

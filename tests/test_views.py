@@ -4,9 +4,9 @@ from django.test.client import RequestFactory
 from otree import constants_internal
 from otree.models.participant import Participant
 
-from tests.simple_game.views import MyPage
-from tests.simple_game.models import Player
-from tests.utils import capture_stdout
+from .simple_game.views import MyPage
+from .simple_game.models import Player
+from .utils import capture_stdout
 from .base import TestCase
 
 

@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import copy
+import six
 from decimal import Decimal
+from six.moves import map
 
 import floppyforms.__future__ as forms
 from floppyforms.__future__.models import (
@@ -40,7 +42,8 @@ FORMFIELD_OVERRIDES.update({
     # Binary field is never editable, so we don't need to convert it.
     models.BooleanField: {
         'form_class': forms.BooleanField,
-        'choices_form_class': forms.TypedChoiceField},
+        'choices_form_class': forms.TypedChoiceField,
+        'widget': forms.RadioSelect},
     models.CharField: {
         'form_class': forms.CharField,
         'choices_form_class': forms.TypedChoiceField},
@@ -152,8 +155,8 @@ class BaseModelFormMetaclass(FloppyformsModelFormMetaclass):
             mcs, name, bases, attrs)
 
 
-class BaseModelForm(forms.ModelForm):
-    __metaclass__ = BaseModelFormMetaclass
+class BaseModelForm(
+        six.with_metaclass(BaseModelFormMetaclass, forms.ModelForm)):
 
     def __init__(self, *args, **kwargs):
         """Special handling for 'choices' argument, BooleanFields, and

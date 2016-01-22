@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import six
+
 
 class BaseConstantsMeta(type):
 
@@ -9,6 +11,6 @@ class BaseConstantsMeta(type):
         raise AttributeError(msg)
 
 
-class BaseConstants(object):
+class BaseConstants(six.with_metaclass(BaseConstantsMeta, object)):
 
-    __metaclass__ = BaseConstantsMeta
+    pass

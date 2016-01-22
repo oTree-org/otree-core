@@ -1,7 +1,7 @@
 from otree import forms
 from otree import widgets
 from otree.common import currency_range
-from tests.models import FormFieldModel
+from ..models import FormFieldModel
 
 
 default_choices = (

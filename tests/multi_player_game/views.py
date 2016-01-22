@@ -3,6 +3,7 @@ from __future__ import division
 from ._builtin import Page, WaitPage
 from .models import Constants
 import random
+from six.moves import range
 
 
 class Page(Page):
@@ -19,7 +20,7 @@ class FieldOnOtherPlayer(Page):
             p.from_other_player = 1
         in_all_rounds = self.player.in_all_rounds()
         assert ([p.subsession.round_number for p in in_all_rounds] ==
-                range(1, self.subsession.round_number + 1))
+                list(range(1, self.subsession.round_number + 1)))
         assert in_all_rounds[-1].from_other_player == 1
 
 
@@ -29,6 +30,9 @@ class PickWinner(WaitPage):
         # testing that this code only gets executed once
         winner = random.choice(self.group.get_players())
         winner.is_winner = True
+
+        for p in self.group.get_players():
+            p.participant.vars['set in wait page'] = True
 
 
 class ResultsWaitPage(WaitPage):
@@ -76,6 +80,8 @@ class Results(Page):
         assert self.player.from_other_player == 1
         assert self.player.in_all_groups_wait_page == 5.0
         assert self.group.in_all_groups_wait_page == 5.0
+
+        assert self.player.participant.vars['set in wait page']
 
         if self.subsession.round_number == Constants.num_rounds:
             for p in self.subsession.get_players():

@@ -89,7 +89,8 @@ class ResultsWaitPage(WaitPage):
     def after_all_players_arrive(self):
         assert self.session.vars['a'] == 2
         self.group.set_payoffs()
-        self.player.participant.vars['a'] = 2
+        for player in self.group.get_players():
+            player.participant.vars['a'] = 2
 
 
 class Results(Page):

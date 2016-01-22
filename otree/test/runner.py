@@ -16,11 +16,11 @@
 import logging
 import contextlib
 import collections
-import itertools
 import time
 import random
 
-import six
+from six import StringIO
+from six.moves import zip_longest
 
 from django import test
 from django.test import runner
@@ -62,8 +62,11 @@ class PendingBuffer(object):
     def __len__(self):
         return len(self.storage)
 
-    def __nonzero__(self):
+    def __bool__(self):
         return bool(self.storage)
+
+    # For Python 2 compatibiliy.
+    __nonzero__ = __bool__
 
     def __iter__(self):
         for k, v in self.storage.items():
@@ -105,14 +108,14 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
     def zip_submits(self, bots):
         bots = list(bots)
         random.shuffle(bots)
-        submits = map(lambda b: b.submits, bots)
-        return list(itertools.izip_longest(*submits))
+        submits = [b.submits for b in bots]
+        return list(zip_longest(*submits))
 
     def tearDown(self):
         if self.preserve_data:
             logger.info(
                 "Recolecting data for session '{}'".format(self.session_name))
-            buff = six.StringIO()
+            buff = StringIO()
             common_internal.export_data(buff, self.session_name)
             self._data = buff.getvalue()
 
@@ -151,15 +154,15 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         pending = PendingBuffer()
         while pending or submit_groups:
 
-            seen_pending_boots = set()
+            seen_pending_bots = set()
             for submit, attempts in pending:
                 if attempts > MAX_ATTEMPTS:
                     msg = "Max attepts reached in  submit '{}'"
                     raise AssertionError(msg.format(submit))
-                if submit.bot not in seen_pending_boots and submit.execute():
+                if submit.bot not in seen_pending_bots and submit.execute():
                     pending.remove(submit)
                 else:
-                    seen_pending_boots.add(submit.bot)
+                    seen_pending_bots.add(submit.bot)
 
             group = submit_groups.pop(0) if submit_groups else ()
             for submit in group:

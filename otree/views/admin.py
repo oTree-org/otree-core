@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import collections
 import threading
 import time
-import urllib
 import uuid
 import itertools
+from six.moves import range
+from six.moves.urllib.parse import unquote_plus
+from six.moves.urllib.parse import urlencode
+from six.moves import zip
 
 from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect, JsonResponse
@@ -13,6 +17,7 @@ from django.core.urlresolvers import reverse
 from django.forms.forms import pretty_name
 from django.conf import settings
 from django.contrib import messages
+from django.utils.encoding import force_text
 
 import vanilla
 
@@ -154,6 +159,7 @@ def get_all_fields(Model, for_export=False):
             'id_in_subsession',
             'session',
             '_is_missing_players',
+            'round_number',
         },
         'Subsession': {
             'code',
@@ -214,7 +220,11 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
         all_columns.extend(columns_for_this_model)
 
     if subsession_pk:
-        players = Player.objects.filter(subsession_id=subsession_pk)
+        # we had a strange result on one person's heroku instance
+        # where Meta.ordering on the Player was being ingnored
+        # when you use a filter. So we add one explicitly.
+        players = Player.objects.filter(
+            subsession_id=subsession_pk).order_by('pk')
     else:
         players = Player.objects.all()
     session_ids = set([player.session_id for player in players])
@@ -253,7 +263,7 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
                     model_instance = parent_objects[Model][parent_object_id]
 
             attr = getattr(model_instance, field_name, '')
-            if callable(attr):
+            if isinstance(attr, collections.Callable):
                 if Model == Player and field_name == 'role' \
                         and model_instance.group is None:
                     attr = ''
@@ -281,7 +291,7 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
             elif for_export and isinstance(value, easymoney.Money):
                 # remove currency formatting for easier analysis
                 value = easymoney.to_dec(value)
-            value = unicode(value).encode('UTF-8')
+            value = force_text(value)
             value = value.replace('\n', ' ').replace('\r', ' ')
             row[i] = value
 
@@ -310,15 +320,19 @@ class PersistentLabURLs(vanilla.TemplateView):
         context = super(PersistentLabURLs, self).get_context_data(**kwargs)
 
         # default session stuff
-        from otree.views.concrete import AssignVisitorToDefaultSession
         default_session_base_url = self.request.build_absolute_uri(
-            AssignVisitorToDefaultSession.url()
+            reverse('assign_visitor_to_default_session')
         )
         default_session_example_urls = []
         for i in range(1, 20):
             data_urls = add_params_to_url(
                 default_session_base_url,
-                {otree.constants_internal.participant_label: 'PC-{}'.format(i)})
+                {
+                    'participant_label': 'PC-{}'.format(i),
+                    'access_code_for_default_session':
+                    settings.ACCESS_CODE_FOR_DEFAULT_SESSION
+                }
+            )
             default_session_example_urls.append(data_urls)
         global_singleton = GlobalSingleton.objects.get()
         default_session = global_singleton.default_session
@@ -366,7 +380,7 @@ class CreateSessionForm(forms.Form):
         return num_participants
 
 
-class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
+class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
 
     @classmethod
     def url_pattern(cls):
@@ -381,13 +395,14 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
         for t in threading.enumerate():
             if t.name == self._pre_create_id:
                 thread_create_session = t
-        session_exists = Session.objects.filter(
-            _pre_create_id=self._pre_create_id
-        ).exists()
         thread_alive = (
             thread_create_session and
             thread_create_session.isAlive()
         )
+        session_exists = Session.objects.filter(
+            _pre_create_id=self._pre_create_id
+        ).exists()
+
         if not thread_alive and not session_exists:
             raise Exception("Thread failed to create new session")
         return session_exists
@@ -419,11 +434,6 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.View):
             request, *args, **kwargs
         )
 
-    def _get_wait_page(self):
-        return TemplateResponse(
-            self.request, 'otree/WaitPage.html', {'view': self}
-        )
-
 
 def sleep_then_create_session(**kwargs):
 
@@ -451,7 +461,7 @@ class CreateSession(vanilla.FormView):
         return 'session_create'
 
     def dispatch(self, request, *args, **kwargs):
-        session_config_name = urllib.unquote_plus(kwargs.pop('session_config'))
+        session_config_name = unquote_plus(kwargs.pop('session_config'))
         self.session_config = get_session_configs_dict()[session_config_name]
         self.for_mturk = (int(self.request.GET.get('mturk', 0)) == 1)
         return super(CreateSession, self).dispatch(request, *args, **kwargs)
@@ -535,7 +545,7 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
             row = []
             for fn in field_names:
                 attr = getattr(p, fn)
-                if callable(attr):
+                if isinstance(attr, collections.Callable):
                     attr = attr()
                 row.append(attr)
             rows.append(row)
@@ -646,7 +656,10 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
                 workers_with_submit = [
                     completed_assignment.WorkerId
                     for completed_assignment in
-                    mturk_connection.get_assignments(session.mturk_HITId)
+                    mturk_connection.get_assignments(
+                        session.mturk_HITId,
+                        page_size=session.mturk_num_participants
+                    )
                 ]
                 participants = session.participant_set.filter(
                     mturk_worker_id__in=workers_with_submit
@@ -823,7 +836,7 @@ def info_about_session_config(session_config):
             'keywords': keywords_links(getattr(models_module, 'keywords', [])),
             'name': formatted_app_name,
         }
-        seo.update(map(lambda (a, b): a, subsssn["keywords"]))
+        seo.update([keywords[0] for keywords in subsssn["keywords"]])
         app_sequence.append(subsssn)
     return {
         'doc': session_config['doc'],
@@ -847,7 +860,7 @@ def keywords_links(keywords):
     for kw in keywords:
         kw = kw.strip()
         if kw:
-            args = urllib.urlencode({"q": kw + " game theory", "t": "otree"})
+            args = urlencode({"q": kw + " game theory", "t": "otree"})
             link = "https://duckduckgo.com/?{}".format(args)
             links.append((kw, link))
     return links

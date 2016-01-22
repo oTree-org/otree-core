@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import os.path
 import sys
 import warnings
 
@@ -11,6 +12,28 @@ from django.conf import global_settings
 from django.contrib.messages import constants as messages
 
 djcelery.setup_loader()
+
+
+DEFAULT_MIDDLEWARE_CLASSES = (
+    # this middlewware is for generate human redeable errors
+    'otree.middleware.CheckDBMiddleware',
+    'otree.middleware.HumanErrorMiddleware',
+    # 2015-08-19: temporarily commented out because
+    # a user got this error: http://dpaste.com/3E7JKCP
+    # 'otree.middleware.DebugTableMiddleware',
+
+    # alwaws before CommonMiddleware
+    'corsheaders.middleware.CorsMiddleware',
+
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    # 'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    # 2015-04-08: disabling SSLify until we make this work better
+    # 'sslify.middleware.SSLifyMiddleware',
+)
 
 
 def collapse_to_unique_list(*args):
@@ -24,6 +47,119 @@ def collapse_to_unique_list(*args):
             if elem not in combined:
                 combined.append(elem)
     return combined
+
+
+def get_default_settings(initial=None):
+    if initial is None:
+        initial = {}
+    logging = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'root': {
+            'level': 'DEBUG',
+            'handlers': ['console']
+        },
+        'formatters': {
+            'verbose': {
+                'format': '[%(levelname)s|%(asctime)s] %(name)s > %(message)s'
+            },
+            'simple': {
+                'format': '%(levelname)s %(message)s'
+            },
+        },
+        'handlers': {
+            'console': {
+                'level': 'INFO',
+                'class': 'logging.StreamHandler',
+                'formatter': 'verbose'
+            },
+        },
+        'loggers': {
+            'otree.test.core': {
+                'handlers': ['console'],
+                'propagate': False,
+                'level': 'INFO',
+            },
+        }
+    }
+
+    page_footer = (
+        'Powered By <a href="http://otree.org" target="_blank">oTree</a>'
+    )
+
+    return {
+        # pages with a time limit for the player can have a grace period
+        # to compensate for network latency.
+        # the timer is started and stopped server-side,
+        # so this grace period should account for time spent during
+        # download, upload, page rendering, etc.
+        'TIMEOUT_LATENCY_ALLOWANCE_SECONDS': 10,
+
+        'SESSION_SAVE_EVERY_REQUEST': True,
+        'TEMPLATE_DEBUG': initial.get('DEBUG', False),
+        'STATIC_ROOT': os.path.join(
+            initial.get('BASE_DIR', ''),
+            '_static_root'),
+        'STATIC_URL': '/static/',
+        'STATICFILES_STORAGE': (
+            'whitenoise.django.GzipManifestStaticFilesStorage'
+        ),
+        'ROOT_URLCONF': 'otree.default_urls',
+
+        'TIME_ZONE': 'UTC',
+        'USE_TZ': True,
+        'SESSION_SERIALIZER': (
+            'django.contrib.sessions.serializers.PickleSerializer'
+        ),
+        'ALLOWED_HOSTS': ['*'],
+
+        'TEMPLATE_CONTEXT_PROCESSORS': collapse_to_unique_list(
+            global_settings.TEMPLATE_CONTEXT_PROCESSORS, (
+                'django.core.context_processors.request',
+                'otree.context_processors.otree_context'
+            )
+        ),
+
+        # SEO AND FOOTER
+        'PAGE_FOOTER': page_footer,
+
+        # list of extra string to positioning you experiments on search engines
+        # Also if you want to add a particular set of SEO words to a particular
+        # page add to template context "page_seo" variable.
+        # See: http://en.wikipedia.org/wiki/Search_engine_optimization
+        'SEO': (),
+
+        'LOGGING': logging,
+
+        'REAL_WORLD_CURRENCY_CODE': 'USD',
+        'REAL_WORLD_CURRENCY_LOCALE': 'en_US',
+        'REAL_WORLD_CURRENCY_DECIMAL_PLACES': 2,
+        'USE_POINTS': True,
+
+        'POINTS_DECIMAL_PLACES': 0,
+
+        # eventually can remove this,
+        # when it's present in otree-library
+        # that most people downloaded
+        'USE_L10N': True,
+
+        'WSGI_APPLICATION': 'otree.wsgi.application',
+        'SECURE_PROXY_SSL_HEADER': ('HTTP_X_FORWARDED_PROTO', 'https'),
+        'MTURK_HOST': 'mechanicalturk.amazonaws.com',
+        'MTURK_SANDBOX_HOST': 'mechanicalturk.sandbox.amazonaws.com',
+        'CREATE_DEFAULT_SUPERUSER': True,
+
+        'CELERY_APP': 'otree.celery.app:app',
+
+        # since workers on Amazon MTurk can return the hit
+        # we need extra participants created on the
+        # server.
+        # The following setting is ratio:
+        # num_participants_server / num_participants_mturk
+        'MTURK_NUM_PARTICIPANTS_MULT': 2,
+
+        'MIDDLEWARE_CLASSES': DEFAULT_MIDDLEWARE_CLASSES,
+    }
 
 
 def augment_settings(settings):
@@ -57,10 +193,7 @@ def augment_settings(settings):
             all_otree_apps_set.add(app)
     all_otree_apps = list(all_otree_apps_set)
 
-    # order is important:
-    # otree unregisters User & Group, which are installed by auth.
-    # otree templates need to get loaded before the admin.
-    no_experiment_apps = collapse_to_unique_list([
+    no_experiment_apps = [
         'django.contrib.auth',
         'otree',
         'floppyforms',
@@ -77,7 +210,25 @@ def augment_settings(settings):
         'rest_framework',
         'sslserver',
         'idmap',
-        'corsheaders'], settings['INSTALLED_APPS'])
+        'corsheaders']
+
+    settings.setdefault(
+        'RAVEN_CONFIG',
+        {
+            'dsn': settings.get('SENTRY_DSN'),
+            'processors': ['raven.processors.SanitizePasswordsProcessor'],
+        }
+    )
+    if settings['RAVEN_CONFIG'].get('dsn'):
+        no_experiment_apps.append('raven.contrib.django.raven_compat')
+
+    # order is important:
+    # otree unregisters User & Group, which are installed by auth.
+    # otree templates need to get loaded before the admin.
+    no_experiment_apps = collapse_to_unique_list(
+        no_experiment_apps,
+        settings['INSTALLED_APPS']
+    )
 
     new_installed_apps = collapse_to_unique_list(
         no_experiment_apps, all_otree_apps)
@@ -119,28 +270,8 @@ def augment_settings(settings):
     )
 
     new_middleware_classes = collapse_to_unique_list(
-        [
-            # this middlewware is for generate human redeable errors
-            'otree.middleware.CheckDBMiddleware',
-            'otree.middleware.HumanErrorMiddleware',
-            # 2015-08-19: temporarily commented out because
-            # a user got this error: http://dpaste.com/3E7JKCP
-            # 'otree.middleware.DebugTableMiddleware',
-
-            # alwaws before CommonMiddleware
-            'corsheaders.middleware.CorsMiddleware',
-
-            'django.contrib.sessions.middleware.SessionMiddleware',
-            # 'django.middleware.locale.LocaleMiddleware',
-            'django.middleware.common.CommonMiddleware',
-            'django.middleware.csrf.CsrfViewMiddleware',
-            'django.contrib.auth.middleware.AuthenticationMiddleware',
-            'django.contrib.messages.middleware.MessageMiddleware',
-            # 2015-04-08: disabling SSLify until we make this work better
-            # 'sslify.middleware.SSLifyMiddleware',
-        ],
-        settings.get('MIDDLEWARE_CLASSES')
-    )
+        DEFAULT_MIDDLEWARE_CLASSES,
+        settings.get('MIDDLEWARE_CLASSES'))
 
     augmented_settings = {
         'INSTALLED_APPS': new_installed_apps,
@@ -176,111 +307,7 @@ def augment_settings(settings):
 
     settings.setdefault('CURRENCY_LOCALE', CURRENCY_LOCALE.replace('-', '_'))
 
-    logging = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'root': {
-            'level': 'DEBUG',
-            'handlers': ['console']
-        },
-        'formatters': {
-            'verbose': {
-                'format': '[%(levelname)s|%(asctime)s] %(name)s > %(message)s'
-            },
-            'simple': {
-                'format': '%(levelname)s %(message)s'
-            },
-        },
-        'handlers': {
-            'console': {
-                'level': 'INFO',
-                'class': 'logging.StreamHandler',
-                'formatter': 'verbose'
-            },
-        },
-        'loggers': {
-            'otree.test.core': {
-                'handlers': ['console'],
-                'propagate': False,
-                'level': 'INFO',
-            },
-        }
-    }
-
-    page_footer = (
-        'Powered By <a href="http://otree.org" target="_blank">oTree</a>'
-    )
-
-    overridable_settings = {
-
-        # pages with a time limit for the player can have a grace period
-        # to compensate for network latency.
-        # the timer is started and stopped server-side,
-        # so this grace period should account for time spent during
-        # download, upload, page rendering, etc.
-        'TIMEOUT_LATENCY_ALLOWANCE_SECONDS': 10,
-
-        'SESSION_SAVE_EVERY_REQUEST': True,
-        'TEMPLATE_DEBUG': settings['DEBUG'],
-        'STATIC_ROOT': 'staticfiles',
-        'STATIC_URL': '/static/',
-        'STATICFILES_STORAGE': (
-            'whitenoise.django.GzipManifestStaticFilesStorage'
-        ),
-        'ROOT_URLCONF': 'otree.default_urls',
-
-        'TIME_ZONE': 'UTC',
-        'USE_TZ': True,
-        'SESSION_SERIALIZER': (
-            'django.contrib.sessions.serializers.PickleSerializer'
-        ),
-        'ALLOWED_HOSTS': ['*'],
-
-        'TEMPLATE_CONTEXT_PROCESSORS': (
-            global_settings.TEMPLATE_CONTEXT_PROCESSORS +
-            (
-                'django.core.context_processors.request',
-                'otree.context_processors.otree_context'
-            )
-        ),
-
-        # SEO AND FOOTER
-        'PAGE_FOOTER': page_footer,
-
-        # list of extra string to positioning you experiments on search engines
-        # Also if you want to add a particular set of SEO words to a particular
-        # page add to template context "page_seo" variable.
-        # See: http://en.wikipedia.org/wiki/Search_engine_optimization
-        'SEO': (),
-
-        'LOGGING': logging,
-
-        'REAL_WORLD_CURRENCY_CODE': 'USD',
-        'REAL_WORLD_CURRENCY_LOCALE': 'en_US',
-        'REAL_WORLD_CURRENCY_DECIMAL_PLACES': 2,
-
-        'POINTS_DECIMAL_PLACES': 0,
-
-        # eventually can remove this,
-        # when it's present in otree-library
-        # that most people downloaded
-        'USE_L10N': True,
-
-        'WSGI_APPLICATION': 'otree.wsgi.application',
-        'SECURE_PROXY_SSL_HEADER': ('HTTP_X_FORWARDED_PROTO', 'https'),
-        'MTURK_HOST': 'mechanicalturk.amazonaws.com',
-        'MTURK_SANDBOX_HOST': 'mechanicalturk.sandbox.amazonaws.com',
-        'CREATE_DEFAULT_SUPERUSER': True,
-
-        'CELERY_APP': 'otree.celery.app:app',
-
-        # since workers on Amazon MTurk can return the hit
-        # we need extra participants created on the
-        # server.
-        # The following setting is ratio:
-        # num_participants_server / num_participants_mturk
-        'MTURK_NUM_PARTICIPANTS_MULT': 2,
-    }
+    overridable_settings = get_default_settings(settings)
 
     settings.update(augmented_settings)
 

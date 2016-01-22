@@ -13,6 +13,11 @@ class BasePlayer(SaveTheChange, models.Model):
     Base class for all players.
     """
 
+    class Meta:
+        abstract = True
+        index_together = ['participant', 'round_number']
+        ordering = ['pk']
+
     _index_in_game_pages = models.PositiveIntegerField(
         default=0,
         doc='Index in the list of pages  views_module.page_sequence'
@@ -22,7 +27,7 @@ class BasePlayer(SaveTheChange, models.Model):
         Session, related_name='%(app_label)s_%(class)s'
     )
 
-    round_number = models.PositiveIntegerField()
+    round_number = models.PositiveIntegerField(db_index=True)
 
     # change this to _name? but do we think people will need to refer to names?
     def name(self):
@@ -32,35 +37,29 @@ class BasePlayer(SaveTheChange, models.Model):
         # you can make this depend of self.id_in_group
         return ''
 
-    def in_previous_rounds(self):
+    def in_round(self, round_number):
+        return type(self).objects.get(
+            participant=self.participant,
+            round_number=round_number
+        )
 
+    def in_rounds(self, first, last):
         qs = type(self).objects.filter(
             participant=self.participant,
-            round_number__lt=self.round_number
+            round_number__gte=first,
+            round_number__lte=last,
         ).order_by('round_number')
 
         return list(qs)
 
+    def in_previous_rounds(self):
+        return self.in_rounds(1, self.round_number - 1)
+
     def in_all_rounds(self):
         return self.in_previous_rounds() + [self]
 
-    def _in_next_round(self):
-        return type(self).objects.get(
-            participant=self.participant,
-            round_number=self.round_number + 1
-        )
-
-    def _in_previous_round(self):
-        return type(self).objects.get(
-            participant=self.participant,
-            round_number=self.round_number - 1
-        )
-
     def __unicode__(self):
         return self.name()
-
-    class Meta:
-        abstract = True
 
     def _GroupClass(self):
         return self._meta.get_field('group').rel.to

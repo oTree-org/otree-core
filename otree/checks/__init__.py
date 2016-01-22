@@ -1,15 +1,21 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import os
 import glob
 import types
+import inspect
 from importlib import import_module
 from functools import wraps
-import inspect
+
+import six
 
 from django.apps import apps
 from django.conf import settings
 from django.core.checks import register, Error
 from django.template import Template
 from django.template import TemplateSyntaxError
+from otree.db import models
 
 import otree.views.abstract
 
@@ -82,7 +88,7 @@ class Rules(object):
         path = self.get_path('templates')
         template_names = []
         for root, dirs, files in os.walk(path):
-            for filename in filter(lambda f: f.endswith('.html'), files):
+            for filename in [f for f in files if f.endswith('.html')]:
                 template_names.append(os.path.join(root, filename))
         return template_names
 
@@ -136,19 +142,29 @@ class Rules(object):
         except (IOError, OSError):
             pass
         except TemplateSyntaxError as error:
-            template_source, position = error.django_template_source
-            snippet = format_source_snippet(
-                template_source.source,
-                arrow_position=position[0])
-            return self.error(
-                'Template syntax error in {template}\n'
-                '\n'
-                '{snippet}\n'
-                '\n'
-                'Error: {error}'.format(
-                    template=template_name,
-                    error=error,
-                    snippet=snippet))
+            # The django_template_source attribute will only be available on
+            # DEBUG = True.
+            if hasattr(error, 'django_template_source'):
+                template_source, position = error.django_template_source
+                snippet = format_source_snippet(
+                    template_source.source,
+                    arrow_position=position[0])
+                message = (
+                    'Template syntax error in {template}\n'
+                    '\n'
+                    '{snippet}\n'
+                    '\n'
+                    'Error: {error}'.format(
+                        template=template_name,
+                        error=error,
+                        snippet=snippet))
+            else:
+                message = (
+                    'Template syntax error in {template}\n'
+                    'Error: {error}\n'
+                    'Set "DEBUG = True" to see more details.'.format(
+                        template=template_name, error=error))
+            return self.error(message)
 
     @rule
     def template_has_no_dead_code(self, template_name):
@@ -194,6 +210,32 @@ class Rules(object):
                 'Please configure your text editor to always save files '
                 'as UTF-8. Then open the file and save it again.'
                 .format(template=self.get_rel_path(template_name)))
+
+    @rule
+    def has_foreing_keys(self, name, **to_models):
+
+        def get_model_field(model, fieldname):
+            for field in model._meta.fields:
+                if field.name == fieldname:
+                    return field
+
+        from_model = self.config.get_model(name)
+        for fk_name, fk_model_name in six.iteritems(to_models):
+            field = get_model_field(from_model, fk_name)
+            fk_model = self.config.get_model(fk_model_name)
+
+            check_status = (
+                field is None or not
+                isinstance(field, models.ForeignKey) or
+                field.related_model != fk_model)
+
+            if check_status:
+                app_label = self.config.label
+                msg = (
+                    "The model '{}.{}' must have a ForeignKey with name '{}' "
+                    "to the model '{}.{}").format(
+                        app_label, name, fk_name, app_label, fk_model_name)
+                return self.error(msg)
 
 
 def _get_all_configs():
@@ -255,6 +297,9 @@ def model_classes(rules, **kwargs):
     rules.model_exists('Group')
     rules.model_exists('Player')
 
+    rules.has_foreing_keys("Group", subsession="Subsession")
+    rules.has_foreing_keys("Player", subsession="Subsession", group="Group")
+
 
 @register_rules(id='otree.E003')
 def constants(rules, **kwargs):
@@ -290,7 +335,8 @@ def pages_function(rules, **kwargs):
         else:
             for ViewCls in page_list:
                 cond = not issubclass(
-                    ViewCls, otree.views.abstract.FormPageOrWaitPageMixin
+                    ViewCls,
+                    otree.views.abstract.FormPageOrInGameWaitPageMixin
                 )
                 if cond:
                     msg = 'views.py: "{}" is not a valid page'.format(ViewCls)

@@ -5,8 +5,10 @@ from django.core.management import call_command
 from otree.models import Session
 
 from .base import TestCase
-from tests.simple_game import models as sg_models
-from tests.single_player_game import models as sgc_models
+from .simple_game import models as sg_models
+from .single_player_game import models as sgc_models
+import six
+from six.moves import range
 
 
 class TestCreateSessionsCommand(TestCase):
@@ -34,8 +36,8 @@ class TestCreateSessionsCommand(TestCase):
         self.assertEqual(player.subsession, subsession)
 
     def test_session_vars(self):
-        key = unicode(uuid.uuid4())
-        value = unicode(uuid.uuid4())
+        key = six.text_type(uuid.uuid4())
+        value = six.text_type(uuid.uuid4())
 
         call_command('create_session', 'two_simple_games', "1")
 
@@ -68,3 +70,9 @@ class TestCreateSessionsCommand(TestCase):
 
         # test the random key value in second subsession
         self.assertEqual(player1.participant.vars.get(key), value)
+
+
+class TestCreateSessionView(TestCase):
+
+    def test_create_session(self):
+        pass

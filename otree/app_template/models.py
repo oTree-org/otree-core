@@ -24,29 +24,14 @@ class Constants(BaseConstants):
     players_per_group = None
     num_rounds = 1
 
-    # define more constants here
-
 
 class Subsession(BaseSubsession):
     pass
 
 
 class Group(BaseGroup):
-    # <built-in>
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
+    pass
 
 
 class Player(BasePlayer):
-    # <built-in>
-    subsession = models.ForeignKey(Subsession)
-    group = models.ForeignKey(Group, null = True)
-    # </built-in>
-
-    def get_partner(self):
-        """Returns other player in group. Only valid for 2-player groups."""
-        return self.get_others_in_group()[0]
-
-    def role(self):
-        # you can make this depend of self.id_in_group
-        return ''
+    pass

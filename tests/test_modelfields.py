@@ -4,6 +4,7 @@
 import json
 
 from six.moves import cPickle as pickle
+from binascii import b2a_base64
 
 from otree.db import models
 import otree.forms
@@ -92,6 +93,8 @@ class JSONPickleFieldTests(TestCase):
             if value is None:
                 self.assertIsNone(serialized)
             else:
-                self.assertEqual(pickle.dumps(value), serialized)
+                self.assertEqual(
+                    b2a_base64(pickle.dumps(value)).decode('utf-8'),
+                    serialized)
             restored = field.to_python(serialized)
             self.assertEqual(value, restored)

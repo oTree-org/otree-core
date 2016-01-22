@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import urlparse
+from six.moves.urllib.parse import urlparse
+from six.moves.urllib.parse import urlunparse
 import datetime
 
 from django.conf import settings
@@ -21,7 +22,7 @@ import IPy
 import otree
 from otree import forms
 from otree.views.abstract import AdminSessionPageMixin
-# from otree.checks.mturk import validate_session_for_mturk
+from otree.checks.mturk import validate_session_for_mturk
 from otree import deprecate
 
 
@@ -121,7 +122,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             return True
 
     def get(self, request, *args, **kwargs):
-        # validate_session_for_mturk(request, self.session)
+        validate_session_for_mturk(request, self.session)
         mturk_settings = self.session.config['mturk_hit_settings']
         initial = {
             'title': mturk_settings['title'],
@@ -144,9 +145,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
         url = self.request.build_absolute_uri(
             reverse('session_create_hit', args=(self.session.pk,))
         )
-        secured_url = urlparse.urlunparse(
-            urlparse.urlparse(url)._replace(scheme='https')
-        )
+        secured_url = urlunparse(urlparse(url)._replace(scheme='https'))
         context['secured_url'] = secured_url
 
         return self.render_to_response(context)
@@ -196,8 +195,8 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
 
             # updating schema from http to https
             # this is compulsory for MTurk exteranlQuestion
-            secured_url_landing_page = urlparse.urlunparse(
-                urlparse.urlparse(url_landing_page)._replace(scheme='https'))
+            secured_url_landing_page = urlunparse(
+                urlparse(url_landing_page)._replace(scheme='https'))
 
             # TODO: validate, that the server support https
             #       (heroku does support by default)
@@ -212,15 +211,16 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             qualifications = mturk_settings.get('qualification_requirements')
 
             # deprecated summer 2015: remove this
-            if (not qualifications
-               and hasattr(settings, 'MTURK_WORKER_REQUIREMENTS')):
-                    deprecate.dwarning(
-                        'The MTURK_WORKER_REQUIREMENTS setting has been '
-                        'deprecated. You should instead use '
-                        '"qualification_requirements" as shown here: '
-                        'https://github.com/oTree-org/oTree/blob/master/'
-                        'settings.py')
-                    qualifications = settings.MTURK_WORKER_REQUIREMENTS
+            if (
+                    not qualifications and
+                    hasattr(settings, 'MTURK_WORKER_REQUIREMENTS')):
+                deprecate.dwarning(
+                    'The MTURK_WORKER_REQUIREMENTS setting has been '
+                    'deprecated. You should instead use '
+                    '"qualification_requirements" as shown here: '
+                    'https://github.com/oTree-org/oTree/blob/master/'
+                    'settings.py')
+                qualifications = settings.MTURK_WORKER_REQUIREMENTS
 
             mturk_hit_parameters = {
                 'title': form.cleaned_data['title'],

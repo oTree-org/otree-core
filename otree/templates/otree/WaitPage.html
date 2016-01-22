@@ -1,10 +1,10 @@
 {% extends 'otree/Base.html' %}
 {% load i18n %}
 {% load staticfiles %}
-{% block head_title %}{{ view.title_text }}{% endblock %}
+{% block head_title %}{{ title_text }}{% endblock %}
 
-
-{% block content_main %}
+{% block internal_styles %}
+    {{ block.super }}
     <style>
         body {
             background-color: #c0c0c0;
@@ -27,17 +27,22 @@
            border: 1px solid #c0c0c0;
         }
     </style>
+{% endblock %}
+
+{% block content_main %}
 
 <div class="container" style='max-width:970px'>
     <div class="panel panel-primary">
         <div class="panel-heading">
-            <h3 class="panel-title">{{ view.title_text|default_if_none:'' }}</h3>
+            <h3 class="panel-title">{% block title %}{{ title_text }}{% endblock %}</h3>
         </div>
         <div class="panel-body">
             <div class="alert alert-danger error-notice" style="display:none">
                 {% blocktrans %}An error occurred. Please check the logs or ask the administrator for help.{% endblocktrans %}
             </div>
-            <p>{{ view.body_text|default_if_none:'' }}</p>
+            {% block content %}
+            <p>{{ body_text }}</p>
+            {% endblock %}
             <div class="progress progress-striped active" id='waitingIndicator'>
                 <div class="progress-bar progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
             </div>
@@ -48,6 +53,7 @@
     {% endif %}
 </div>
 {% endblock %}
+
 {% block internal_scripts %}
     {{ block.super }}
     {% include 'otree/includes/PollServerThenRedirect.html' %}
