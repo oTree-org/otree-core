@@ -886,11 +886,11 @@ class AdminHome(vanilla.ListView):
 
     @classmethod
     def url_pattern(cls):
-        return r"^admin/(?P<archive>archive)?$"
+        return r"^sessions/(?P<archive>archive)?$"
 
     @classmethod
     def url_name(cls):
-        return 'admin_home'
+        return 'sessions'
 
     def get_context_data(self, **kwargs):
         context = super(AdminHome, self).get_context_data(**kwargs)
