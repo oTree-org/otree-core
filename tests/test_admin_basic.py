@@ -13,7 +13,7 @@ class TestAdminBasic(TestCase):
     def test_admin_basic(self):
         for tab in [
             'demo',
-            'admin',
+            'sessions',
             'persistent_lab_urls',
             'create_session',
             'create_session/multi_player_game'

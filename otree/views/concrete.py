@@ -411,7 +411,7 @@ class SetDefaultSession(vanilla.View):
             reverse('persistent_lab_urls'),
         )
         messages.success(request, msg, extra_tags='safe')
-        return HttpResponseRedirect(reverse('admin_home'))
+        return HttpResponseRedirect(reverse('sessions'))
 
 
 class UnsetDefaultSession(vanilla.View):
@@ -445,7 +445,7 @@ class UnsetDefaultSession(vanilla.View):
         messages.success(
             request, "You have successfully reset the default session"
         )
-        return HttpResponseRedirect(reverse('admin_home'))
+        return HttpResponseRedirect(reverse('sessions'))
 
 
 class ToggleArchivedSessions(vanilla.View):
@@ -487,4 +487,4 @@ class DeleteSessions(vanilla.View):
                 otree.models.session.Session, pk=pk
             )
             session.delete()
-        return HttpResponseRedirect(reverse('admin_home'))
+        return HttpResponseRedirect(reverse('sessions'))

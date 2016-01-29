@@ -249,6 +249,7 @@ class BooleanField(_OtreeNullableModelFieldMixin, models.NullBooleanField):
 
     def __init__(self, *args,  **kwargs):
         # 2015-1-19: why is this here? isn't this the default behavior?
+        # 2013-1-26: ah, because we don't want the "----" (None) choice
         if 'choices' not in kwargs:
             kwargs['choices'] = (
                 (True, ugettext_lazy('Yes')),

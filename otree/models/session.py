@@ -1,3 +1,4 @@
+import copy
 import django.test
 
 from otree import constants_internal
@@ -201,7 +202,7 @@ class Session(ModelWithVars):
         # in case some participants haven't started
         unvisited_participants = []
         for p in participants:
-            if not p.visited:
+            if not p._current_form_page_url:
                 unvisited_participants.append(p)
                 c.get(p._start_url(), follow=True)
 
@@ -210,8 +211,10 @@ class Session(ModelWithVars):
             for p in unvisited_participants:
                 p.save()
                 Participant.flush_cached_instance(p)
-            participants = self.get_participants()
-
+            # that's it -- just visit the start URL, advancing
+            # by 1
+            return 
+        
         last_place_page_index = min([p._index_in_pages for p in participants])
         last_place_participants = [
             p for p in participants
@@ -220,6 +223,7 @@ class Session(ModelWithVars):
 
         for p in last_place_participants:
             if not p._current_form_page_url:
+                # what if first page is wait page?
                 raise
             resp = c.post(
                 p._current_form_page_url,

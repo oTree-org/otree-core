@@ -283,7 +283,7 @@ def augment_settings(settings):
         'BROKER_URL': 'django://',
         'MESSAGE_TAGS': {messages.ERROR: 'danger'},
         'CELERY_ACCEPT_CONTENT': ['pickle', 'json', 'msgpack', 'yaml'],
-        'LOGIN_REDIRECT_URL': 'admin_home',
+        'LOGIN_REDIRECT_URL': 'sessions',
     }
 
     # CORS CONFS
