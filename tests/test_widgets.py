@@ -135,7 +135,6 @@ class CheckboxInputTests(TestCase):
         self.assertTrue(form.cleaned_data['booleanfield'] is False)
 
 
-
 class SliderInputTests(TestCase):
     maxDiff = None
 
