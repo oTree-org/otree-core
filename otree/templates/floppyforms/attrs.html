@@ -1,5 +1,5 @@
-{% if "class" in attrs %}
+{% load l10n %}{% localize off %}{% if "class" in attrs %}
 {% for name, value in attrs.items %} {{ name }}{% if name == "class" %}="form-control {{ value }}"{% else %}{% if value != True %}="{{ value }}"{% endif %}{% endif %}{% endfor %}
 {% else %}
 {% for name, value in attrs.items %} {{ name }}{% if value != True %}="{{ value }}"{% endif %}{% endfor %} class="form-control"
-{% endif %}
+{% endif %}{% endlocalize %}

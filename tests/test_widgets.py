@@ -2,11 +2,13 @@
 
 import easymoney
 
+from django.utils import translation
 from django.utils.encoding import force_text
 
 import floppyforms.__future__ as forms
 import floppyforms.widgets
 
+import otree.db.models
 import otree.forms
 import otree.widgets
 from .base import TestCase
@@ -109,3 +111,46 @@ class RadioSelectHorizontalTests(TestCase):
                     value="3" required /> 3
             </label>
             """)
+
+
+class SliderInputTests(TestCase):
+    maxDiff = None
+
+    class SlideInputTestsModel(otree.db.models.Model):
+        floatfield = otree.db.models.FloatField(
+            min=0, max=2.5, default=0,
+            widget=otree.widgets.SliderInput(attrs={'step': '0.01'}))
+
+    def test_sliderinput_with_float_field(self):
+        class Form(otree.forms.ModelForm):
+            class Meta:
+                model = self.SlideInputTestsModel
+                fields = ('floatfield',)
+
+        form = Form()
+        self.assertHTMLEqual(
+            force_text(form['floatfield']),
+            '''
+            <div class="input-group slider" data-slider>
+                <input
+                    type="range"
+                    name="floatfield"
+                    value="0"
+                    required
+                    max="2.5"
+                    step="0.01"
+                    id="id_floatfield"
+                    min="0"
+                    class="form-control"
+                >
+                <span
+                    class="input-group-addon"
+                    data-slider-value
+                    title="current value"
+                ></span>
+            </div>
+            ''')
+
+    def test_sliderinput_with_float_field_and_locale_set(self):
+        with translation.override('de-de'):
+            self.test_sliderinput_with_float_field()
