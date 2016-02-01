@@ -40,6 +40,7 @@ def id_label_name(id, label):
         return '{} (label: {})'.format(id, label)
     return '{}'.format(id)
 
+
 def git_commit_timestamp():
     root_dir = dirname(settings.BASE_DIR)
     try:

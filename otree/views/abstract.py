@@ -19,7 +19,7 @@ from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache, cache_control
 from django.http import (
-    HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound)
+    HttpResponse, HttpResponseRedirect, Http404)
 from django.utils.translation import ugettext as _
 
 import vanilla
@@ -748,7 +748,7 @@ class FormPageMixin(object):
         self._participant._current_form_page_url = self.request.path
         if self._participant._is_auto_playing:
             otree.timeout.tasks.submit_expired_url.apply_async(
-                (self.request.path,), countdown=2) # 2 seconds
+                (self.request.path,), countdown=2)  # 2 seconds
         elif self.has_timeout():
             otree.timeout.tasks.submit_expired_url.apply_async(
                 (self.request.path,), countdown=self.timeout_seconds)
