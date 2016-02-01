@@ -113,6 +113,29 @@ class RadioSelectHorizontalTests(TestCase):
             """)
 
 
+class CheckboxInputTests(TestCase):
+    maxDiff = None
+
+    class CheckboxInputTestsModel(otree.db.models.Model):
+        booleanfield = otree.db.models.BooleanField(
+            widget=otree.widgets.CheckboxInput)
+
+    def test_with_booleanfield(self):
+        class Form(otree.forms.ModelForm):
+            class Meta:
+                model = self.CheckboxInputTestsModel
+                fields = ('booleanfield',)
+
+        form = Form(data={'booleanfield': 'on'})
+        self.assertTrue(form.is_valid())
+        self.assertTrue(form.cleaned_data['booleanfield'] is True)
+
+        form = Form(data={})
+        self.assertTrue(form.is_valid())
+        self.assertTrue(form.cleaned_data['booleanfield'] is False)
+
+
+
 class SliderInputTests(TestCase):
     maxDiff = None
 
