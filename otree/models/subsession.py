@@ -4,7 +4,6 @@
 from __future__ import division
 
 import six
-from six.moves import range
 from six.moves import zip
 
 from otree_save_the_change.mixins import SaveTheChange

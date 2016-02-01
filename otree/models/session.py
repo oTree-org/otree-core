@@ -1,4 +1,3 @@
-import copy
 import django.test
 
 from otree import constants_internal
@@ -213,8 +212,8 @@ class Session(ModelWithVars):
                 Participant.flush_cached_instance(p)
             # that's it -- just visit the start URL, advancing
             # by 1
-            return 
-        
+            return
+
         last_place_page_index = min([p._index_in_pages for p in participants])
         last_place_participants = [
             p for p in participants

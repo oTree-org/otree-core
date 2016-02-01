@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 import django.test.client
 
-from otree.models import Session, Participant
+from otree.models import Session
 from otree.models.session import GlobalSingleton
 from .base import TestCase
 

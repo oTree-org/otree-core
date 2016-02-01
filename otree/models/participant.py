@@ -118,7 +118,6 @@ class Participant(ModelWithVars):
         if not self.visited:
             client.get(self._start_url(), follow=True)
 
-
     def _stop_auto_play(self):
         self._is_auto_playing = False
         self.save()
