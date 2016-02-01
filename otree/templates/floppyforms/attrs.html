@@ -1,5 +1,1 @@
-{% load l10n %}{% localize off %}{% if "class" in attrs %}
-{% for name, value in attrs.items %} {{ name }}{% if name == "class" %}="form-control {{ value }}"{% else %}{% if value != True %}="{{ value }}"{% endif %}{% endif %}{% endfor %}
-{% else %}
-{% for name, value in attrs.items %} {{ name }}{% if value != True %}="{{ value }}"{% endif %}{% endfor %} class="form-control"
-{% endif %}{% endlocalize %}
+{% load floppyforms_internals l10n %}{% localize off %}{% for name, value in attrs.items %} {{ name }}{% if name == "class" %}="form-control {{ value }}"{% else %}{% if not value|istrue %}="{{ value }}"{% endif %}{% endif %}{% endfor %}{% if "class" not in attrs %} class="form-control"{% endif %}{% endlocalize %}
