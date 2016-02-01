@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import easymoney
-import random
 
 from django.utils import translation
 from django.utils.encoding import force_text
