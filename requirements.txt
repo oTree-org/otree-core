@@ -15,7 +15,7 @@ django-countries==3.4.1
 django-easymoney==0.5
 django-extensions==1.6.1
 django-floppyforms==1.6.1
-django-idmap==0.4
+django-idmap==0.4.1
 django-inspect-model==0.7
 django-sslify==0.2.7
 django-sslserver==0.18
