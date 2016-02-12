@@ -64,7 +64,7 @@ class Command(BaseCommand):
             '--noinput', action='store_false', dest='interactive',
             default=True, help=ahelp)
 
-    def _do_reset(self):
+    def _cancel_reset(self):
         answer = None
         self.stdout.write(
             "Resetting the DB will destroy all current data. ")
