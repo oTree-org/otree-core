@@ -107,7 +107,6 @@ class Command(BaseCommand):
         for db, dbconf in six.iteritems(settings.DATABASES):
             logger.info("Selecting DROP TABLE Statement...")
             dt_stmt = self._drop_table_stmt(dbconf)
-            print dt_stmt
 
             logger.info("Retrieving Existing Tables...")
             tables = self._get_tables(db)
