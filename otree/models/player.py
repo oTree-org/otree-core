@@ -29,7 +29,8 @@ class BasePlayer(SaveTheChange, models.Model):
 
     round_number = models.PositiveIntegerField(db_index=True)
 
-    # it's _name instead of name because people might define their own name field
+    # it's _name instead of name because people might define
+    # their own name field
     def _name(self):
         return self.participant.__unicode__()
 
