@@ -15,11 +15,6 @@ from .base import TestCase
 
 
 class BasicWidgetTests(TestCase):
-    def test_all_widgets_are_available(self):
-        for widget_name in floppyforms.widgets.__all__:
-            self.assertTrue(hasattr(otree.widgets, widget_name),
-                            'otree.widgets is missing the widget {0}'.format(
-                                widget_name))
 
     def test_attrs_yield_form_control_class(self):
         class Form(otree.forms.Form):
@@ -33,36 +28,6 @@ class BasicWidgetTests(TestCase):
         self.assertHTMLEqual(rendered, elem)
 
 
-class CheckboxSelectMultipleHorizontalTests(TestCase):
-    maxDiff = None
-
-    class CheckboxForm(forms.Form):
-        numbers = forms.MultipleChoiceField(choices=(
-            ('1', '1'),
-            ('2', '2'),
-            ('3', '3'),
-        ), widget=otree.forms.CheckboxSelectMultipleHorizontal)
-
-    def test_widget(self):
-        form = self.CheckboxForm()
-
-        rendered = force_text(form['numbers'])
-        self.assertHTMLEqual(
-            rendered,
-            """
-            <label class="checkbox-inline" for="id_numbers_1">
-                <input type="checkbox" id="id_numbers_1" name="numbers"
-                    value="1" /> 1
-            </label>
-            <label class="checkbox-inline" for="id_numbers_2">
-                <input type="checkbox" id="id_numbers_2" name="numbers"
-                    value="2" /> 2
-            </label>
-            <label class="checkbox-inline" for="id_numbers_3">
-                <input type="checkbox" id="id_numbers_3" name="numbers"
-                    value="3" /> 3
-            </label>
-            """)
 
 
 class CurrencyInputTests(TestCase):

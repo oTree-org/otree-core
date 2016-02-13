@@ -99,9 +99,6 @@ FORMFIELD_OVERRIDES.update({
     models.URLField: {
         'form_class': forms.URLField,
         'choices_form_class': forms.TypedChoiceField},
-    models.ManyToManyField: {
-        'form_class': forms.ModelMultipleChoiceField,
-        'choices_form_class': forms.TypedChoiceField},
     models.OneToOneField: {
         'form_class': forms.ModelChoiceField,
         'choices_form_class': forms.TypedChoiceField},

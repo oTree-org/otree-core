@@ -12,14 +12,13 @@ import floppyforms.widgets
 
 
 __all__ = (
-    'BaseMoneyInput', 'CheckboxInput', 'CheckboxSelectMultiple',
-    'CheckboxSelectMultipleHorizontal', 'ClearableFileInput', 'ColorInput',
+    'BaseMoneyInput', 'CheckboxInput',
+    'ClearableFileInput', 'ColorInput',
     'CurrencyInput', 'DateInput', 'DateTimeInput', 'EmailInput', 'FileInput',
     'HiddenInput', 'IPAddressInput', 'Input', 'CurrencyInput', 'CurrencyInput',
-    'MultiWidget',
-    'MultipleHiddenInput', 'NullBooleanSelect', 'NumberInput', 'PasswordInput',
+    'NullBooleanSelect', 'NumberInput', 'PasswordInput',
     'PhoneNumberInput', 'RadioSelect', 'RadioSelectHorizontal', 'RangeInput',
-    'SearchInput', 'Select', 'SelectDateWidget', 'SelectMultiple',
+    'SearchInput', 'Select', 'SelectDateWidget',
     'SliderInput', 'SlugInput', 'SplitDateTimeWidget',
     'SplitHiddenDateTimeWidget', 'TextInput', 'Textarea', 'TimeInput',
     'URLInput', 'Widget',
@@ -31,7 +30,6 @@ Input = floppyforms.widgets.Input
 TextInput = floppyforms.widgets.TextInput
 PasswordInput = floppyforms.widgets.PasswordInput
 HiddenInput = floppyforms.widgets.HiddenInput
-MultipleHiddenInput = floppyforms.widgets.MultipleHiddenInput
 SlugInput = floppyforms.widgets.SlugInput
 IPAddressInput = floppyforms.widgets.IPAddressInput
 FileInput = floppyforms.widgets.FileInput
@@ -50,17 +48,18 @@ PhoneNumberInput = floppyforms.widgets.PhoneNumberInput
 CheckboxInput = floppyforms.widgets.CheckboxInput
 Select = floppyforms.widgets.Select
 NullBooleanSelect = floppyforms.widgets.NullBooleanSelect
-SelectMultiple = floppyforms.widgets.SelectMultiple
 RadioSelect = floppyforms.widgets.RadioSelect
-CheckboxSelectMultiple = floppyforms.widgets.CheckboxSelectMultiple
-MultiWidget = floppyforms.widgets.MultiWidget
 SplitDateTimeWidget = floppyforms.widgets.SplitDateTimeWidget
 SplitHiddenDateTimeWidget = floppyforms.widgets.SplitHiddenDateTimeWidget
 SelectDateWidget = floppyforms.widgets.SelectDateWidget
 
-
-class CheckboxSelectMultipleHorizontal(forms.CheckboxSelectMultiple):
-    template_name = 'floppyforms/checkbox_select_horizontal.html'
+# don't use Multiple widgets because they don't correspond to any model field
+# CheckboxSelectMultiple = floppyforms.widgets.CheckboxSelectMultiple
+# MultiWidget = floppyforms.widgets.MultiWidget
+# SelectMultiple = floppyforms.widgets.SelectMultiple
+# MultipleHiddenInput = floppyforms.widgets.MultipleHiddenInput
+# class CheckboxSelectMultipleHorizontal(forms.CheckboxSelectMultiple):
+#    template_name = 'floppyforms/checkbox_select_horizontal.html'
 
 
 class BaseMoneyInput(forms.NumberInput):
