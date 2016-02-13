@@ -6,8 +6,6 @@ from django.utils import translation
 from django.utils.encoding import force_text
 
 import floppyforms.__future__ as forms
-import floppyforms.widgets
-
 import otree.db.models
 import otree.forms
 import otree.widgets
@@ -26,8 +24,6 @@ class BasicWidgetTests(TestCase):
             'required class="form-control" id="id_first_name" />'
         )
         self.assertHTMLEqual(rendered, elem)
-
-
 
 
 class CurrencyInputTests(TestCase):
