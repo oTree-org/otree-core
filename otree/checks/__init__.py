@@ -8,14 +8,11 @@ import inspect
 from importlib import import_module
 from functools import wraps
 
-import six
-
 from django.apps import apps
 from django.conf import settings
 from django.core.checks import register, Error
 from django.template import Template
 from django.template import TemplateSyntaxError
-from otree.db import models
 
 import otree.views.abstract
 
@@ -270,7 +267,6 @@ def model_classes(rules, **kwargs):
     rules.model_exists('Subsession')
     rules.model_exists('Group')
     rules.model_exists('Player')
-
 
 
 @register_rules(id='otree.E003')
