@@ -211,32 +211,6 @@ class Rules(object):
                 'as UTF-8. Then open the file and save it again.'
                 .format(template=self.get_rel_path(template_name)))
 
-    @rule
-    def has_foreing_keys(self, name, **to_models):
-
-        def get_model_field(model, fieldname):
-            for field in model._meta.fields:
-                if field.name == fieldname:
-                    return field
-
-        from_model = self.config.get_model(name)
-        for fk_name, fk_model_name in six.iteritems(to_models):
-            field = get_model_field(from_model, fk_name)
-            fk_model = self.config.get_model(fk_model_name)
-
-            check_status = (
-                field is None or not
-                isinstance(field, models.ForeignKey) or
-                field.related_model != fk_model)
-
-            if check_status:
-                app_label = self.config.label
-                msg = (
-                    "The model '{}.{}' must have a ForeignKey with name '{}' "
-                    "to the model '{}.{}").format(
-                        app_label, name, fk_name, app_label, fk_model_name)
-                return self.error(msg)
-
 
 def _get_all_configs():
     return [
@@ -297,8 +271,6 @@ def model_classes(rules, **kwargs):
     rules.model_exists('Group')
     rules.model_exists('Player')
 
-    rules.has_foreing_keys("Group", subsession="Subsession")
-    rules.has_foreing_keys("Player", subsession="Subsession", group="Group")
 
 
 @register_rules(id='otree.E003')
