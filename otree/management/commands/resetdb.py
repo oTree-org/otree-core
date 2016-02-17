@@ -49,8 +49,6 @@ CUSTOM_RESETDB_DROP_TABLES = getattr(
 # COMMND
 # =============================================================================
 
-# not working yet because of issue #386
-# so using old version above instead
 class Command(BaseCommand):
     help = (
         "Resets your development database to a fresh state. "
