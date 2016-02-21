@@ -624,7 +624,8 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
             config[
                 'real_world_currency_per_point'
             ] = real_world_currency_per_point
-        self.session.config = config
+        # use .copy() to force marking this field as dirty/changed
+        self.session.config = config.copy()
         self.session.save()
         messages.success(self.request, 'Properties have been updated')
         return HttpResponseRedirect(self.get_success_url())

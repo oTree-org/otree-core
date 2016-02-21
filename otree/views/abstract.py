@@ -284,18 +284,19 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
 
                 # take a lock so that this same code path is not run twice
                 # for the same participant
-                ParticipantLockModel.objects.select_for_update().get(
-                    participant_code=participant_code)
-
                 try:
-                    self._participant = Participant.objects.get(
-                        code=participant_code)
-                except Participant.DoesNotExist:
+                    ParticipantLockModel.objects.select_for_update().get(
+                        participant_code=participant_code)
+                except ParticipantLockModel.DoesNotExist:
                     msg = (
                         "This user ({}) does not exist in the database. "
                         "Maybe the database was recreated."
                     ).format(participant_code)
                     raise Http404(msg)
+
+                self._participant = Participant.objects.get(
+                    code=participant_code)
+
 
                 if cond:
                     self._participant.last_request_succeeded = True
