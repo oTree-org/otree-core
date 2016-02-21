@@ -278,13 +278,10 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                 self._index_in_pages = int(
                     kwargs.pop(constants.index_in_pages))
 
-                cond = (
-                    self.request.is_ajax() and
-                    self.request.GET.get(constants.check_auto_submit))
-
                 # take a lock so that this same code path is not run twice
                 # for the same participant
                 try:
+                    # this works because we are inside a transaction.
                     ParticipantLockModel.objects.select_for_update().get(
                         participant_code=participant_code)
                 except ParticipantLockModel.DoesNotExist:
@@ -297,8 +294,8 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                 self._participant = Participant.objects.get(
                     code=participant_code)
 
-
-                if cond:
+                if (self.request.is_ajax() and
+                        self.request.GET.get(constants.check_auto_submit)):
                     self._participant.last_request_succeeded = True
                     self._participant._last_request_timestamp = time.time()
                     self._participant.save()
