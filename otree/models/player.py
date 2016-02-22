@@ -29,8 +29,9 @@ class BasePlayer(SaveTheChange, models.Model):
 
     round_number = models.PositiveIntegerField(db_index=True)
 
-    # change this to _name? but do we think people will need to refer to names?
-    def name(self):
+    # it's _name instead of name because people might define
+    # their own name field
+    def _name(self):
         return self.participant.__unicode__()
 
     def role(self):
@@ -59,7 +60,7 @@ class BasePlayer(SaveTheChange, models.Model):
         return self.in_previous_rounds() + [self]
 
     def __unicode__(self):
-        return self.name()
+        return self._name()
 
     def _GroupClass(self):
         return self._meta.get_field('group').rel.to

@@ -30,12 +30,6 @@ class WidgetDemoForm(forms.Form):
     radio_select_horizontal = forms.ChoiceField(
         choices=default_choices,
         widget=forms.RadioSelectHorizontal)
-    checkbox_select = forms.MultipleChoiceField(
-        choices=default_choices,
-        widget=forms.CheckboxSelectMultiple)
-    checkbox_select_horizontal = forms.MultipleChoiceField(
-        choices=default_choices,
-        widget=forms.CheckboxSelectMultipleHorizontal)
 
     currency = forms.CurrencyField()
     currency_choice = forms.CurrencyChoiceField(

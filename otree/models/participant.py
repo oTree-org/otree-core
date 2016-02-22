@@ -1,5 +1,6 @@
 import itertools
 import time
+import django.test
 from six.moves import range
 from six.moves import zip
 
@@ -105,6 +106,21 @@ class Participant(ModelWithVars):
     _current_form_page_url = models.URLField()
 
     _max_page_index = models.PositiveIntegerField()
+
+    _is_auto_playing = models.BooleanField(default=False)
+
+    def _start_auto_play(self):
+        self._is_auto_playing = True
+        self.save()
+
+        client = django.test.Client()
+
+        if not self.visited:
+            client.get(self._start_url(), follow=True)
+
+    def _stop_auto_play(self):
+        self._is_auto_playing = False
+        self.save()
 
     def _current_page(self):
         return '{}/{} pages'.format(

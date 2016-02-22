@@ -144,20 +144,6 @@ class Session(ModelWithVars):
             constants_internal.session_special_category_demo
         )
 
-    def subsession_names(self):
-        names = []
-        for subsession in self.get_subsessions():
-            app_name = subsession._meta.app_config.name
-            name = '{} {}'.format(
-                otree.common_internal.app_name_format(app_name),
-                subsession.name()
-            )
-            names.append(name)
-        if names:
-            return ', '.join(names)
-        else:
-            return '[empty sequence]'
-
     def get_subsessions(self):
         lst = []
         app_sequence = self.config['app_sequence']
@@ -176,13 +162,6 @@ class Session(ModelWithVars):
 
     def get_participants(self):
         return self.participant_set.all()
-
-    def payments_ready(self):
-        for participants in self.get_participants():
-            if not participants.payoff_is_complete():
-                return False
-        return True
-    payments_ready.boolean = True
 
     def _create_groups_and_initialize(self):
         # group_by_arrival_time code used to be here
@@ -222,7 +201,7 @@ class Session(ModelWithVars):
         # in case some participants haven't started
         unvisited_participants = []
         for p in participants:
-            if not p.visited:
+            if not p._current_form_page_url:
                 unvisited_participants.append(p)
                 c.get(p._start_url(), follow=True)
 
@@ -231,7 +210,9 @@ class Session(ModelWithVars):
             for p in unvisited_participants:
                 p.save()
                 Participant.flush_cached_instance(p)
-            participants = self.get_participants()
+            # that's it -- just visit the start URL, advancing
+            # by 1
+            return
 
         last_place_page_index = min([p._index_in_pages for p in participants])
         last_place_participants = [
@@ -241,6 +222,7 @@ class Session(ModelWithVars):
 
         for p in last_place_participants:
             if not p._current_form_page_url:
+                # what if first page is wait page?
                 raise
             resp = c.post(
                 p._current_form_page_url,

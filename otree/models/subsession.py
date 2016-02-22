@@ -4,7 +4,6 @@
 from __future__ import division
 
 import six
-from six.moves import range
 from six.moves import zip
 
 from otree_save_the_change.mixins import SaveTheChange
@@ -185,17 +184,6 @@ class BaseSubsession(SaveTheChange, models.Model):
                 group_size=group_size,
             ).save()
 
-    def _create_empty_groups(self):
-        num_groups = len(self._get_players_per_group_list())
-        self._set_groups(
-            [[] for i in range(num_groups)],
-            check_integrity=False
-        )
-        groups = self.get_groups()
-        for group in groups:
-            group._is_missing_players = True
-            group.save()
-
     def _create_groups(self):
         if self.round_number == 1:
             group_matrix = self._first_round_group_matrix()
@@ -217,18 +205,6 @@ class BaseSubsession(SaveTheChange, models.Model):
 
         # save to DB
         self.set_groups(group_matrix)
-
-    def _get_open_group(self):
-        # force refresh from DB so that next call to this function does not
-        # show the group as still missing players
-        groups_missing_players = [
-            g for g in self.get_groups()
-            if g._is_missing_players
-        ]
-        for group in groups_missing_players:
-            if len(group.get_players()) > 0:
-                return group
-        return groups_missing_players[0]
 
     def before_session_starts(self):
         '''This gets called at the beginning of every subsession, before the

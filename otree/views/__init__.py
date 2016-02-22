@@ -34,6 +34,9 @@ class WaitPage(abstract.InGameWaitPage):
 
     template_name = None
 
+    def is_displayed(self):
+        return super(WaitPage, self).is_displayed()
+
     def after_all_players_arrive(self):
         return super(WaitPage, self).after_all_players_arrive()
 

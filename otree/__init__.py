@@ -7,7 +7,9 @@
 # start patch releases at .10, not .0 or .1,
 # because then alphabetical ordering will match lexical ordering
 # e.g. users might think that 0.4.5 is newer than 0.4.49
-VERSION = ('0', '4', '27')
+
+# REMEMBER TO ALSO UPDATE THE PROJECT TEMPLATE
+VERSION = ('0', '4', '29')
 
 __version__ = ".".join(VERSION)
 

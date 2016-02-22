@@ -89,10 +89,6 @@ class UseFloppyformWidgetsTests(TestCase):
             TestModelForm.base_fields['url'], floppyforms.URLField
         )
         self.assertIsInstance(
-            TestModelForm.base_fields['many_to_many'],
-            floppyforms.ModelMultipleChoiceField
-        )
-        self.assertIsInstance(
             TestModelForm.base_fields['one_to_one'],
             floppyforms.ModelChoiceField
         )

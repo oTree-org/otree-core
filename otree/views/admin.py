@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import collections
 import threading
 import time
 import uuid
@@ -262,7 +263,7 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
                     model_instance = parent_objects[Model][parent_object_id]
 
             attr = getattr(model_instance, field_name, '')
-            if callable(attr):
+            if isinstance(attr, collections.Callable):
                 if Model == Player and field_name == 'role' \
                         and model_instance.group is None:
                     attr = ''
@@ -319,16 +320,19 @@ class PersistentLabURLs(vanilla.TemplateView):
         context = super(PersistentLabURLs, self).get_context_data(**kwargs)
 
         # default session stuff
-        from otree.views.concrete import AssignVisitorToDefaultSession
         default_session_base_url = self.request.build_absolute_uri(
-            AssignVisitorToDefaultSession.url()
+            reverse('assign_visitor_to_default_session')
         )
         default_session_example_urls = []
         for i in range(1, 20):
             data_urls = add_params_to_url(
                 default_session_base_url,
-                {otree.constants_internal.participant_label:
-                 'PC-{}'.format(i)})
+                {
+                    'participant_label': 'PC-{}'.format(i),
+                    'access_code_for_default_session':
+                    settings.ACCESS_CODE_FOR_DEFAULT_SESSION
+                }
+            )
             default_session_example_urls.append(data_urls)
         global_singleton = GlobalSingleton.objects.get()
         default_session = global_singleton.default_session
@@ -391,13 +395,14 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
         for t in threading.enumerate():
             if t.name == self._pre_create_id:
                 thread_create_session = t
-        session_exists = Session.objects.filter(
-            _pre_create_id=self._pre_create_id
-        ).exists()
         thread_alive = (
             thread_create_session and
             thread_create_session.isAlive()
         )
+        session_exists = Session.objects.filter(
+            _pre_create_id=self._pre_create_id
+        ).exists()
+
         if not thread_alive and not session_exists:
             raise Exception("Thread failed to create new session")
         return session_exists
@@ -540,7 +545,7 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
             row = []
             for fn in field_names:
                 attr = getattr(p, fn)
-                if callable(attr):
+                if isinstance(attr, collections.Callable):
                     attr = attr()
                 row.append(attr)
             rows.append(row)
@@ -619,7 +624,8 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
             config[
                 'real_world_currency_per_point'
             ] = real_world_currency_per_point
-        self.session.config = config
+        # use .copy() to force marking this field as dirty/changed
+        self.session.config = config.copy()
         self.session.save()
         messages.success(self.request, 'Properties have been updated')
         return HttpResponseRedirect(self.get_success_url())
@@ -881,11 +887,11 @@ class AdminHome(vanilla.ListView):
 
     @classmethod
     def url_pattern(cls):
-        return r"^admin/(?P<archive>archive)?$"
+        return r"^sessions/(?P<archive>archive)?$"
 
     @classmethod
     def url_name(cls):
-        return 'admin_home'
+        return 'sessions'
 
     def get_context_data(self, **kwargs):
         context = super(AdminHome, self).get_context_data(**kwargs)

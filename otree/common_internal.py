@@ -5,6 +5,7 @@ import os
 import sys
 import csv
 import datetime
+import collections
 import contextlib
 import inspect
 from os.path import dirname, join
@@ -38,15 +39,6 @@ def id_label_name(id, label):
     if label:
         return '{} (label: {})'.format(id, label)
     return '{}'.format(id)
-
-
-def is_subsession_app(app_name):
-    try:
-        models_module = import_module('{}.models'.format(app_name))
-    except ImportError:
-        return False
-    class_names = ['Player', 'Group', 'Subsession']
-    return all(hasattr(models_module, ClassName) for ClassName in class_names)
 
 
 def git_commit_timestamp():
@@ -219,7 +211,7 @@ def export_docs(fp, app_name):
                     if choices:
                         doc_dict[model_name][member_name]['choices'] = (
                             choices_readable(choices))
-                elif callable(member):
+                elif isinstance(member, collections.Callable):
                     doc_dict[model_name][member_name]['doc'] = [
                         inspect.getdoc(member)]
         return doc_dict

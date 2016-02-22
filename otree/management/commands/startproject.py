@@ -24,7 +24,7 @@ class Command(startproject.Command):
     def handle(self, *args, **options):
         answer = None
         while not answer or answer not in "yn":
-            answer = six.moves.input("Include sample games? [Yn] ")
+            answer = six.moves.input("Include sample games? (y or n): ")
             if not answer:
                 answer = "y"
                 break

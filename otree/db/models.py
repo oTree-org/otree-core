@@ -45,6 +45,8 @@ class OTreeModelBase(SharedMemoryModelBase):
 
         # 2015-12-22: this probably doesn't work anymore,
         # since we moved _choices to views.py
+        # but we can tell users they can define FOO_choices in models.py,
+        # and then call it in the equivalent method in views.py
         new_class = super(OTreeModelBase, cls).__new__(cls, name, bases, attrs)
         for f in new_class._meta.fields:
             if hasattr(new_class, f.name + '_choices'):
@@ -247,6 +249,7 @@ class BooleanField(_OtreeNullableModelFieldMixin, models.NullBooleanField):
 
     def __init__(self, *args,  **kwargs):
         # 2015-1-19: why is this here? isn't this the default behavior?
+        # 2013-1-26: ah, because we don't want the "----" (None) choice
         if 'choices' not in kwargs:
             kwargs['choices'] = (
                 (True, ugettext_lazy('Yes')),

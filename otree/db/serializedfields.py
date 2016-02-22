@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
-
 from django.db import models
 from django import forms
 from django.utils.encoding import force_text
 from importlib import import_module
+from six.moves import cPickle as pickle
 import binascii
+import collections
 import json
 import six
 
@@ -58,7 +55,7 @@ def json_encode_object(obj):
                 obj.__class__.__module__,
                 obj.__class__.__name__), data)
 
-        if callable(decode):
+        if isinstance(decode, collections.Callable):
             decode = '%s.%s' % (decode.__module__, decode.__name__)
 
         return {

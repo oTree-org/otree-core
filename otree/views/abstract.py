@@ -19,7 +19,7 @@ from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache, cache_control
 from django.http import (
-    HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound)
+    HttpResponse, HttpResponseRedirect, Http404)
 from django.utils.translation import ugettext as _
 
 import vanilla
@@ -278,26 +278,24 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                 self._index_in_pages = int(
                     kwargs.pop(constants.index_in_pages))
 
-                cond = (
-                    self.request.is_ajax() and
-                    self.request.GET.get(constants.check_auto_submit))
-
                 # take a lock so that this same code path is not run twice
                 # for the same participant
-                ParticipantLockModel.objects.select_for_update().get(
-                    participant_code=participant_code)
-
                 try:
-                    self._participant = Participant.objects.get(
-                        code=participant_code)
-                except Participant.DoesNotExist:
+                    # this works because we are inside a transaction.
+                    ParticipantLockModel.objects.select_for_update().get(
+                        participant_code=participant_code)
+                except ParticipantLockModel.DoesNotExist:
                     msg = (
                         "This user ({}) does not exist in the database. "
                         "Maybe the database was recreated."
                     ).format(participant_code)
                     raise Http404(msg)
 
-                if cond:
+                self._participant = Participant.objects.get(
+                    code=participant_code)
+
+                if (self.request.is_ajax() and
+                        self.request.GET.get(constants.check_auto_submit)):
                     self._participant.last_request_succeeded = True
                     self._participant._last_request_timestamp = time.time()
                     self._participant.save()
@@ -513,11 +511,11 @@ class GenericWaitPageMixin(object):
     def get_context_data(self, **kwargs):
         # 2015-11-13: title_text() and body_text() methods deprecated
         # they should be class attributes instead
-        if callable(self.title_text):
+        if isinstance(self.title_text, collections.Callable):
             title_text = self.title_text()
         else:
             title_text = self.title_text
-        if callable(self.body_text):
+        if isinstance(self.body_text, collections.Callable):
             body_text = self.body_text()
         else:
             body_text = self.body_text
@@ -603,6 +601,7 @@ class InGameWaitPageMixin(object):
                         # should ensure the next pages are visited promptly
                         # TODO: can we make this run only if next page is a
                         # timeout page?
+                        # or if a player is auto playing.
                         # we could instead make this request the current page
                         # URL, but it's different for each player
 
@@ -745,7 +744,10 @@ class FormPageMixin(object):
             return self._redirect_to_page_the_user_should_be_on()
 
         self._participant._current_form_page_url = self.request.path
-        if self.has_timeout():
+        if self._participant._is_auto_playing:
+            otree.timeout.tasks.submit_expired_url.apply_async(
+                (self.request.path,), countdown=2)  # 2 seconds
+        elif self.has_timeout():
             otree.timeout.tasks.submit_expired_url.apply_async(
                 (self.request.path,), countdown=self.timeout_seconds)
         return super(FormPageMixin, self).get(request, *args, **kwargs)
@@ -839,73 +841,6 @@ class InGameWaitPage(FormPageOrInGameWaitPageMixin, InGameWaitPageMixin,
 
     """
     pass
-
-
-class AssignVisitorToDefaultSessionBase(vanilla.View):
-    # TODO: merge this with AssignVisitorToDefaultSession.
-    # we used to have the MTurk version but it has been removed.
-
-    def incorrect_parameters_in_url_message(self):
-        return 'Missing or incorrect parameters in URL'
-
-    def url_has_correct_parameters(self):
-        for i, get_param_name in self.required_params.items():
-            if get_param_name not in self.request.GET:
-                return False
-        return True
-
-    def retrieve_existing_participant_with_these_params(self, default_session):
-        params = {
-            field_name: self.request.GET[get_param_name]
-            for field_name, get_param_name in self.required_params.items()}
-        return Participant.objects.get(session=default_session, **params)
-
-    def set_external_params_on_participant(self, participant):
-        for field_name, get_param_name in self.required_params.items():
-            setattr(participant, field_name, self.request.GET[get_param_name])
-
-    def get(self, *args, **kwargs):
-        cond = (
-            self.request.GET[constants.access_code_for_default_session] ==
-            settings.ACCESS_CODE_FOR_DEFAULT_SESSION)
-        if not cond:
-            return HttpResponseNotFound(
-                'Incorrect access code for default session'
-            )
-
-        global_singleton = GlobalSingleton.objects.get()
-        default_session = global_singleton.default_session
-
-        if not default_session:
-            return HttpResponseNotFound(
-                'No session is currently open. Make sure to create '
-                'a session and set is as default.'
-            )
-        if not self.url_has_correct_parameters():
-            return HttpResponseNotFound(
-                self.incorrect_parameters_in_url_message()
-            )
-        try:
-            participant = (
-                self.retrieve_existing_participant_with_these_params(
-                    default_session))
-        except Participant.DoesNotExist:
-            with lock_on_this_code_path():
-                try:
-                    participant = (
-                        Participant.objects.select_for_update().filter(
-                            session=default_session,
-                            visited=False)).order_by('start_order')[0]
-                except IndexError:
-                    return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
-
-            self.set_external_params_on_participant(participant)
-            # 2014-10-17: needs to be here even if it's also set in
-            # the next view to prevent race conditions
-            participant.visited = True
-            participant.save()
-
-        return HttpResponseRedirect(participant._start_url())
 
 
 class GetFloppyFormClassMixin(object):
