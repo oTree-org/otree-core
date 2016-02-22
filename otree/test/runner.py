@@ -69,7 +69,7 @@ class PendingBuffer(object):
     __nonzero__ = __bool__
 
     def __iter__(self):
-        for k, v in self.storage.items():
+        for k, v in list(self.storage.items()):
             yield k, v
             if k in self.storage:
                 self.storage[k] += 1
