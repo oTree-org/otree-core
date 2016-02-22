@@ -11,7 +11,7 @@ script:
 env:
   - TOXENV=style
   - TOXENV=coverage
-  - TOXENV=2to3
+  - TOXENV=python3-warnings
   - TOXENV=py2.7-django1.8-unittest
   - TOXENV=py2.7-django1.8-integration
   - TOXENV=py2.7-django1.8-experiments
