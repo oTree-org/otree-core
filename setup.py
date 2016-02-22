@@ -52,6 +52,7 @@ setup(
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
+        'Framework :: Django :: 1.8',
         'Intended Audience :: Developers',
         # example license
         'License :: OSI Approved :: MIT License',
