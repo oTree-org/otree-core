@@ -24,6 +24,7 @@ from six.moves import zip_longest
 
 from django import test
 from django.test import runner
+from unittest import TestSuite
 
 import otree.models
 from otree import constants_internal, session, common_internal
@@ -69,7 +70,7 @@ class PendingBuffer(object):
     __nonzero__ = __bool__
 
     def __iter__(self):
-        for k, v in self.storage.items():
+        for k, v in list(self.storage.items()):
             yield k, v
             if k in self.storage:
                 self.storage[k] += 1
@@ -180,7 +181,20 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
 # RUNNER
 # =============================================================================
 
+class OTreeExperimentTestSuite(TestSuite):
+    def _removeTestAtIndex(self, index):
+        # In Python 3.4 and above, is the TestSuite clearing all references to
+        # the test cases after the suite has finished. That way, the
+        # ``OTreeExperimentTestRunner.suite_result`` cannot retrieve the data
+        # in order to prepare it for CSV test data export.
+
+        # We overwrite this function in order to keep the testcase instances
+        # around.
+        pass
+
+
 class OTreeExperimentTestRunner(runner.DiscoverRunner):
+    test_suite = OTreeExperimentTestSuite
 
     def build_suite(self, session_names, extra_tests, preserve_data, **kwargs):
         suite = self.test_suite()
