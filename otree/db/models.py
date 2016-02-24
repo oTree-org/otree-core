@@ -255,7 +255,15 @@ class BooleanField(_OtreeNullableModelFieldMixin, models.NullBooleanField):
                 (True, ugettext_lazy('Yes')),
                 (False, ugettext_lazy('No'))
             )
+
         super(BooleanField, self).__init__(*args, **kwargs)
+
+        # you should be able to leave a checkbox blank
+        # that's how you indicate "False"
+        # however, maybe the checkbox is mandatory
+        # e.g. approve terms and conditions
+        if self.widget.__class__.__name__ == 'CheckboxInput':
+            kwargs.setdefault('blank', True)
 
         # you cant override "blank" or you will destroy the migration system
         self.allow_blank = bool(kwargs.get("blank"))
