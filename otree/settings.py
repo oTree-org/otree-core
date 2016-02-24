@@ -49,9 +49,9 @@ def collapse_to_unique_list(*args):
     return combined
 
 
-def get_default_settings(initial=None):
-    if initial is None:
-        initial = {}
+def get_default_settings(initial_settings=None):
+    if initial_settings is None:
+        initial_settings = {}
     logging = {
         'version': 1,
         'disable_existing_loggers': False,
@@ -96,9 +96,9 @@ def get_default_settings(initial=None):
         'TIMEOUT_LATENCY_ALLOWANCE_SECONDS': 10,
 
         'SESSION_SAVE_EVERY_REQUEST': True,
-        'TEMPLATE_DEBUG': initial.get('DEBUG', False),
+        'TEMPLATE_DEBUG': initial_settings.get('DEBUG', False),
         'STATIC_ROOT': os.path.join(
-            initial.get('BASE_DIR', ''),
+            initial_settings.get('BASE_DIR', ''),
             '_static_root'),
         'STATIC_URL': '/static/',
         'STATICFILES_STORAGE': (
@@ -159,6 +159,9 @@ def get_default_settings(initial=None):
         'MTURK_NUM_PARTICIPANTS_MULT': 2,
 
         'MIDDLEWARE_CLASSES': DEFAULT_MIDDLEWARE_CLASSES,
+        'LOCALE_PATHS': [
+            os.path.join(initial_settings.get('BASE_DIR', ''), 'locale')
+        ]
     }
 
 
