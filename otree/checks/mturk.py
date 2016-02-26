@@ -30,6 +30,9 @@ class ValidateMTurk(object):
                     # around Django's internal ``Template`` object.
                     template = template.template
                     if not check_next_button(template):
+                        # can't use template.origin.name because it's not
+                        # available when DEBUG is off. So use path_template
+                        # instead
                         yield page, path_template
 
     def app_has_no_wait_pages(self, app):
@@ -66,7 +69,7 @@ def validate_session_for_mturk(request, session):
     for page, template_name in v.get_no_next_buttons_pages():
         messages.warning(
             request,
-            ('Template "%s" for page "%s" has no next button. '
+            ('Template %s for page %s has no next button. '
              'When using oTree on MTurk, '
              'even the last page should have a next button.')
             % (template_name, page.__class__.__name__)
