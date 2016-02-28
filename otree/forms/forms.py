@@ -306,11 +306,19 @@ class BaseModelForm(
                         raise forms.ValidationError(msg)
 
                 lower, upper = self._get_field_boundaries(name)
-                if lower is not None and value < lower:
+
+                # allow blank=True and min/max to be used together
+                # the field is optional, but
+                # if a value is submitted, it must be within [min,max]
+                if lower is None or value is None:
+                    pass
+                elif value < lower:
                     msg = _('Value must be greater than or equal to {}.')
                     raise forms.ValidationError(msg.format(lower))
 
-                if upper is not None and value > upper:
+                if upper is None or value is None:
+                    pass
+                elif value > upper:
                     msg = _('Value must be less than or equal to {}.')
                     raise forms.ValidationError(msg.format(upper))
 
