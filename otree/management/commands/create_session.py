@@ -26,7 +26,9 @@ class Command(BaseCommand):
         num_participants = options["num_participants"]
         label = options['label']
 
-        create_session(
+        session = create_session(
             session_config_name=session_config_name,
-            num_participants=num_participants, label=label
-        )
+            num_participants=num_participants, label=label)
+
+        print("Created session with code: {}".format(session.code))
+        print("")
