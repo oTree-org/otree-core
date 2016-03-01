@@ -7,6 +7,7 @@ from .models import Constants
 
 class MyPage(Page):
 
+    form_fields = ['my_field']
     form_model = models.Player
 
 class ResultsWaitPage(WaitPage):
