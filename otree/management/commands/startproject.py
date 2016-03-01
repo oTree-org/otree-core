@@ -8,12 +8,22 @@
 
 import sys
 import os
+import platform
 
 from django.core.management.commands import startproject
 
 import six
 
 import otree
+
+
+# =============================================================================
+# CONSTANTS
+# =============================================================================
+
+IMPLEMENTATIONS_ALIAS = {
+    "CPython": "python"
+}
 
 
 # =============================================================================
@@ -30,11 +40,14 @@ class Command(startproject.Command):
         else:
             top_dir = os.path.abspath(os.path.expanduser(target))
 
-        runtime_path = os.path.join(top_dir, "runtime.txt")
-        version = ".".join(map(str, sys.version_info[:3])) + "\n"
+        imp = platform.python_implementation()
+        implementation_name = IMPLEMENTATIONS_ALIAS.get(imp, imp).lower()
+        version = ".".join(map(str, sys.version_info[:3]))
+        runtime_string = "{}-{}\n".format(implementation_name, version)
 
+        runtime_path = os.path.join(top_dir, "runtime.txt")
         with open(runtime_path, "w") as fp:
-            fp.write(version)
+            fp.write(runtime_string)
 
     def handle(self, *args, **options):
         answer = None
