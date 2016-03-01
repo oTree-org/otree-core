@@ -36,7 +36,6 @@ class Command(startproject.Command):
         with open(runtime_path, "w") as fp:
             fp.write(version)
 
-
     def handle(self, *args, **options):
         answer = None
         while not answer or answer not in "yn":
@@ -57,4 +56,3 @@ class Command(startproject.Command):
         super(Command, self).handle(*args, **options)
 
         self.render_runtime(options)
-
