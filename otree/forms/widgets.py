@@ -115,6 +115,11 @@ class SliderInput(forms.RangeInput):
             self.show_value = show_value
         super(SliderInput, self).__init__(*args, **kwargs)
 
+    def _format_value(self, value):
+        if isinstance(value, easymoney.Money):
+            value = Decimal(value)
+        return force_text(value)
+
     def get_context(self, *args, **kwargs):
         context = super(SliderInput, self).get_context(*args, **kwargs)
         context['show_value'] = self.show_value

@@ -184,10 +184,31 @@ class FormFieldNode(Node):
                     "{tagname}'s second argument must be 'with'.".format(
                         tagname=tagname))
             with_arguments = token_kwargs(bits, parser, support_legacy=False)
+
+            # Validate against spaces around the '='.
+            has_lonely_equal_sign = any(
+                bit == '=' or bit.startswith('=') or bit.endswith('=')
+                for bit in bits)
+            if has_lonely_equal_sign:
+                # If '=' is leading/trailing or is the own char in the token,
+                # then the user has used spaces around it. We can use a
+                # distinct error message for this to aid the user.
+                raise TemplateSyntaxError(
+                    "The keyword arguments after 'with' in {tagname} tag "
+                    "must not contain spaces around the '='. "
+                    "A keyword argument must be in the form of "
+                    "{example}.".format(
+                        tagname=tagname,
+                        example='{% formfield ... with name="value" %}'))
+
             if not with_arguments:
+                example = '{% formfield ... with name="value" %}'
                 raise TemplateSyntaxError(
                     "'with' in {tagname} tag needs at least one keyword "
-                    "argument.".format(tagname=tagname))
+                    "argument. A keyword argument must be in the form of "
+                    "{example}.".format(
+                        tagname=tagname,
+                        example=example))
         else:
             with_arguments = {}
         if bits:
