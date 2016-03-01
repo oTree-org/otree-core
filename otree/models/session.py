@@ -126,12 +126,6 @@ class Session(ModelWithVars):
         but still useful internally (like data export)'''
         return self.config['real_world_currency_per_point']
 
-    @property
-    def session_type(self):
-        '''2015-07-10: session_type is deprecated
-        this shim method will be removed eventually'''
-        return self.config
-
     def is_open(self):
         return GlobalSingleton.objects.get().default_session == self
 

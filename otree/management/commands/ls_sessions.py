@@ -22,12 +22,12 @@ class Command(BaseCommand):
     def handle(self, **options):
         rows = []
         for session in Session.objects.all():
-            stype = session.session_type
+            sconfig = session.config
             rows.append({
-                "name": stype["display_name"],
+                "name": sconfig["display_name"],
                 "code": session.code,
                 "participants": str(session.participant_set.count()),
-                "appsequence": ", ".join(stype["app_sequence"])
+                "appsequence": ", ".join(sconfig["app_sequence"])
             })
 
         if rows:

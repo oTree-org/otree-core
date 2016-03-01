@@ -167,23 +167,6 @@ def get_default_settings(initial_settings=None):
 
 def augment_settings(settings):
 
-    # 2015-07-10: SESSION_TYPE is deprecated
-    if (('SESSION_CONFIGS' not in settings) and
-            ('SESSION_TYPES' in settings)):
-        # FIXME: this is not getting displayed
-        msg = ('SESSION_TYPES is deprecated; '
-               'you should rename it to "SESSION_CONFIGS".')
-        warnings.warn(msg, DeprecationWarning)
-
-        settings['SESSION_CONFIGS'] = settings['SESSION_TYPES']
-
-    if (('SESSION_CONFIG_DEFAULTS' not in settings) and
-            ('SESSION_TYPE_DEFAULTS' in settings)):
-        msg = ('SESSION_TYPE_DEFAULTS is deprecated; '
-               'you should rename it to "SESSION_CONFIG_DEFAULTS".')
-        warnings.warn(msg, DeprecationWarning)
-        settings['SESSION_CONFIG_DEFAULTS'] = settings['SESSION_TYPE_DEFAULTS']
-
     if 'POINTS_CUSTOM_NAME' in settings:
         settings.setdefault(
             'POINTS_CUSTOM_FORMAT',
