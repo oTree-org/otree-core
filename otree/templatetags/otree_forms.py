@@ -199,10 +199,10 @@ class FormFieldNode(Node):
                     "A keyword argument must be in the form of "
                     "{example}.".format(
                         tagname=tagname,
-                        example='{% formfield ... with name="value" %}'))
+                        example='{% formfield ... with label="value" %}'))
 
             if not with_arguments:
-                example = '{% formfield ... with name="value" %}'
+                example = '{% formfield ... with label="value" %}'
                 raise TemplateSyntaxError(
                     "'with' in {tagname} tag needs at least one keyword "
                     "argument. A keyword argument must be in the form of "
@@ -213,7 +213,7 @@ class FormFieldNode(Node):
             with_arguments = {}
         if bits:
             raise TemplateSyntaxError(
-                'Unkown argument for {tagname} tag: {bits!r}'.format(
+                'Unknown argument for {tagname} tag: {bits!r}'.format(
                     tagname=tagname,
                     bits=bits))
         return cls(field, with_arguments)
