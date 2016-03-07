@@ -3,7 +3,7 @@
 
 import os
 import sys
-import csv
+import unicodecsv
 import datetime
 import collections
 import contextlib
@@ -116,7 +116,7 @@ def export_data(fp, app_name):
     colnames, rows = get_display_table_rows(
         app_name, for_export=True, subsession_pk=None)
     colnames = ['{}.{}'.format(k, v) for k, v in colnames]
-    writer = csv.writer(fp)
+    writer = unicodecsv.writer(fp, encoding='utf-8')
     writer.writerows([colnames])
     writer.writerows(rows)
 
@@ -132,7 +132,7 @@ def export_time_spent(fp):
     columns = get_all_fields(PageCompletion)
     rows = PageCompletion.objects.order_by(
         'session_pk', 'participant_pk', 'page_index').values_list(*columns)
-    writer = csv.writer(fp)
+    writer = unicodecsv.writer(fp, encoding='utf-8')
     writer.writerows([columns])
     writer.writerows(rows)
 
