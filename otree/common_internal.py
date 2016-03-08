@@ -3,7 +3,6 @@
 
 import os
 import sys
-import sys
 if sys.version_info[0] == 2:
     import unicodecsv as csv
 else:
