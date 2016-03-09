@@ -3,7 +3,10 @@
 
 import os
 import sys
-import csv
+if sys.version_info[0] == 2:
+    import unicodecsv as csv
+else:
+    import csv
 import datetime
 import collections
 import contextlib
