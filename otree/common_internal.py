@@ -3,10 +3,6 @@
 
 import os
 import sys
-if sys.version_info[0] == 2:
-    import unicodecsv as csv
-else:
-    import csv
 import datetime
 import collections
 import contextlib
@@ -23,8 +19,12 @@ from django.apps import apps
 from django.conf import settings
 from django.template.defaultfilters import title
 
-
 from otree import constants_internal
+
+if sys.version_info[0] == 2:
+    import unicodecsv as csv
+else:
+    import csv
 
 
 def add_params_to_url(url, params):

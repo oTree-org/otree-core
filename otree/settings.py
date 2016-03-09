@@ -4,7 +4,6 @@
 import os
 import os.path
 import sys
-import warnings
 
 import djcelery
 
