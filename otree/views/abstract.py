@@ -419,6 +419,10 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         self._participant._last_page_timestamp = now
         page_name = self.__class__.__name__
 
+        timeout_happened = bool(
+            hasattr(self, 'timeout_happened') and self.timeout_happened
+        )
+
         completion = PageCompletion(
             app_name=self.subsession._meta.app_config.name,
             page_index=self._index_in_pages,
@@ -426,7 +430,8 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             seconds_on_page=seconds_on_page,
             subsession_pk=self.subsession.pk,
             participant_pk=self._participant.pk,
-            session_pk=self.subsession.session.pk)
+            session_pk=self.subsession.session.pk,
+            auto_submitted=timeout_happened)
         completion.save()
         self._participant.save()
 

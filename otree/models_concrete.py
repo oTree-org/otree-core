@@ -13,6 +13,7 @@ class PageCompletion(models.Model):
     subsession_pk = models.PositiveIntegerField()
     participant_pk = models.PositiveIntegerField()
     session_pk = models.PositiveIntegerField()
+    auto_submitted = models.BooleanField()
 
 
 class WaitPageVisit(models.Model):
