@@ -59,6 +59,7 @@ def get_all_fields(Model, for_export=False):
             'time_stamp',
             'seconds_on_page',
             'subsession_pk',
+            'auto_submitted',
         ]
 
     if Model is Session:

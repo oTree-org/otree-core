@@ -132,11 +132,11 @@ def export_time_spent(fp):
     from otree.models_concrete import PageCompletion
     from otree.views.admin import get_all_fields
 
-    columns = get_all_fields(PageCompletion)
+    column_names = get_all_fields(PageCompletion)
     rows = PageCompletion.objects.order_by(
-        'session_pk', 'participant_pk', 'page_index').values_list(*columns)
+        'session_pk', 'participant_pk', 'page_index').values_list(*column_names)
     writer = csv.writer(fp)
-    writer.writerows([columns])
+    writer.writerows([column_names])
     writer.writerows(rows)
 
 
