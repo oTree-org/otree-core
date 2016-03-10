@@ -256,14 +256,13 @@ class BooleanField(_OtreeNullableModelFieldMixin, models.NullBooleanField):
                 (False, ugettext_lazy('No'))
             )
 
-        super(BooleanField, self).__init__(*args, **kwargs)
+        # We need to store whether blank is explicitly specified or not. If
+        # it's not specified explicitly (which will make it default to False)
+        # we need to special case validation logic in the form field if a
+        # checkbox input is used.
+        self._blank_is_explicit = 'blank' in kwargs
 
-        # you should be able to leave a checkbox blank
-        # that's how you indicate "False"
-        # however, maybe the checkbox is mandatory
-        # e.g. approve terms and conditions
-        # if self.widget.__class__.__name__ == 'CheckboxInput':
-        #    kwargs.setdefault('blank', True)
+        super(BooleanField, self).__init__(*args, **kwargs)
 
         # you cant override "blank" or you will destroy the migration system
         self.allow_blank = bool(kwargs.get("blank"))
@@ -276,8 +275,15 @@ class BooleanField(_OtreeNullableModelFieldMixin, models.NullBooleanField):
         return super(BooleanField, self).clean(value, model_instance)
 
     def formfield(self, *args, **kwargs):
-        # this use the allow_blank for the form fields
-        kwargs["required"] = not self.allow_blank
+        from otree import widgets
+
+        is_checkbox_widget = isinstance(self.widget, widgets.CheckboxInput)
+        if not self._blank_is_explicit and is_checkbox_widget:
+            kwargs.setdefault('required', False)
+        else:
+            # this use the allow_blank for the form fields
+            kwargs.setdefault('required', not self.allow_blank)
+
         return super(BooleanField, self).formfield(*args, **kwargs)
 
 
