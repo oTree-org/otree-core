@@ -43,7 +43,6 @@ from otree.models_concrete import (
     PageTimeout, StubModel,
     ParticipantLockModel)
 from otree_save_the_change.mixins import SaveTheChange
-from otree.models.varsmixin import ModelWithVars
 
 
 # Get an instance of a logger
