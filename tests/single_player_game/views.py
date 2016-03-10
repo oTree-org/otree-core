@@ -46,6 +46,11 @@ class FieldErrorMessage(Page):
         if value % 2:
             return 'Must be an even number'
 
+    def is_displayed(self):
+        # make sure it's available during pre-fetch
+        assert self.session
+        return True
+
 
 class DynamicChoices(Page):
 
