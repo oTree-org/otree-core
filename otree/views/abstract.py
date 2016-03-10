@@ -182,6 +182,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             'player': self.player,
             'group': self.group,
             'subsession': self.subsession,
+            'session': self.session,
             'Constants': self._models_module.Constants})
         vars_for_template = self.resolve_vars_for_template()
         context.update(vars_for_template)
@@ -382,6 +383,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                 page.player = self.player
                 page.group = self.group
                 page.subsession = self.subsession
+                page.session = self.session
 
                 # don't skip wait pages
                 # because the user has to pass through them
