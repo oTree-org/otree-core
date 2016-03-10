@@ -101,8 +101,9 @@ class SaveObjectsMixin(object):
                 return True
             # We need special support for the vars JSONField as SaveTheChange
             # does not detect the change.
-            if isinstance(instance, ModelWithVars):
-                if instance._vars_have_changed():
+            if hasattr(instance, '_save_the_change_update_changed_fields'):
+                instance._save_the_change_update_changed_fields()
+                if instance._changed_fields:
                     return True
             return False
         # Save always if the model is not a SaveTheChange instance.
