@@ -19,9 +19,11 @@
             <li role="presentation" class="{% active_page request 'session_start_links' session.pk %}">
                 <a href="{% url 'session_start_links' session.pk %}"><span class="glyphicon glyphicon-link"></span> Links</a>
             </li>
+            {% if not session.is_demo %}
             <li role="presentation" class="{% active_page request 'session_edit' session.pk %}">
                 <a href="{% url 'session_edit' session.pk %}"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
             </li>
+            {% endif %}
             <li role="presentation" class="{% active_page request 'session_monitor' session.pk %}">
                 <a href="{% url 'session_monitor' session.pk %}"><span class="glyphicon glyphicon-eye-open"></span> Monitor</a>
             </li>
