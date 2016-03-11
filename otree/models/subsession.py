@@ -189,7 +189,7 @@ class BaseSubsession(SaveTheChange, models.Model):
             group_matrix = self._first_round_group_matrix()
             self.set_groups(group_matrix)
         else:
-            self.group_like_round(self.round_number - 1)
+            self.group_like_round(1)
 
     def group_like_round(self, round_number):
         previous_round = self.in_round(round_number)

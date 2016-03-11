@@ -73,7 +73,7 @@ class Command(BaseCommand):
                 'or an auto-generated one.'),
             )
         parser.add_argument(
-            '--save', action='store_true',
+            '--save', nargs='?', const='auto_name',
             help=(
                 'Alias for --export.'),
             )
