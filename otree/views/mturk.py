@@ -4,6 +4,7 @@
 from six.moves.urllib.parse import urlparse
 from six.moves.urllib.parse import urlunparse
 import datetime
+from collections import defaultdict
 
 from django.conf import settings
 from django.contrib import messages
@@ -59,6 +60,31 @@ class MTurkConnection(boto.mturk.connection.MTurkConnection):
         if exc_type is MTurkRequestError:
             MTurkError(self.request, value.message)
         return False
+
+    def get_workers_by_status(self, hit_id):
+        all_assignments = self.get_all_assignments(hit_id)
+        workers_by_status = defaultdict(list)
+        for assignment in all_assignments:
+            workers_by_status[
+                assignment.AssignmentStatus
+            ].append(assignment.WorkerId)
+        return workers_by_status
+
+
+    def get_all_assignments(self, hit_id, status=None):
+        # Accumulate all relevant assignments, one page of results at
+        # a time.
+        assignments = []
+        page = 1
+        while True:
+            rs = self.get_assignments(
+                hit_id=hit,
+                page_size=100,
+                page_number=page,
+                status=status)
+            if len(assignments) >= int(rs.TotalNumResults):
+                break
+            page += 1
 
 
 class SessionCreateHitForm(forms.Form):

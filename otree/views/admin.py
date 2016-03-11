@@ -656,16 +656,15 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
             with MTurkConnection(
                 self.request, session.mturk_sandbox
             ) as mturk_connection:
-                workers_with_submit = [
-                    completed_assignment.WorkerId
-                    for completed_assignment in
-                    mturk_connection.get_assignments(
-                        session.mturk_HITId,
-                        page_size=session.mturk_num_participants
-                    )
-                ]
-                participants = session.participant_set.filter(
-                    mturk_worker_id__in=workers_with_submit
+                workers_by_status = self.get_workers_by_status()
+                participants_submitted = session.participant_set.filter(
+                    mturk_worker_id__in=workers_by_status['Submitted']
+                )
+                participants_approved = session.participant_set.filter(
+                    mturk_worker_id__in=workers_by_status['Approved']
+                )
+                participants_rejected = session.participant_set.filter(
+                    mturk_worker_id__in=workers_by_status['Rejected']
                 )
         else:
             participants = session.get_participants()
