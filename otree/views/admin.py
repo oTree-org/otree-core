@@ -33,7 +33,7 @@ from otree.session import (
     create_session, get_session_configs_dict, get_session_configs_list,
     get_lcm
 )
-from otree import forms, widgets
+from otree import forms
 from otree.common import RealWorldCurrency
 from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
 from otree.views.mturk import MTurkConnection
