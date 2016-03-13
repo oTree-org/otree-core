@@ -65,7 +65,7 @@ wait_page_poll_interval_seconds = 5
 
 exceptions_conversors = {
     utils.OperationalError: lambda exception: utils.OperationalError(
-        "{} - Try resetting the database.".format(exception.message)
+        "{} - Try resetting the database.".format(exception)
     )
 }
 

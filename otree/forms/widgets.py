@@ -15,7 +15,7 @@ __all__ = (
     'BaseMoneyInput', 'CheckboxInput',
     'ClearableFileInput', 'ColorInput',
     'CurrencyInput', 'DateInput', 'DateTimeInput', 'EmailInput', 'FileInput',
-    'HiddenInput', 'IPAddressInput', 'Input', 'CurrencyInput', 'CurrencyInput',
+    'HiddenInput', 'IPAddressInput', 'Input', 'RealWorldCurrencyInput',
     'NullBooleanSelect', 'NumberInput', 'PasswordInput',
     'PhoneNumberInput', 'RadioSelect', 'RadioSelectHorizontal', 'RangeInput',
     'SearchInput', 'Select', 'SelectDateWidget',
