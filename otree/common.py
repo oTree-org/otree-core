@@ -71,6 +71,7 @@ class RealWorldCurrency(easymoney.Money):
     def __repr__(self):
         return 'Currency({})'.format(self)
 
+
 class Currency(RealWorldCurrency):
     '''game currency'''
 
