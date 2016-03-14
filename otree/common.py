@@ -67,6 +67,9 @@ class RealWorldCurrency(easymoney.Money):
     def to_number(self):
         return Decimal(self)
 
+    # temporary fix for https://github.com/oTree-org/otree-core/issues/444
+    def __repr__(self):
+        return 'Currency({})'.format(self)
 
 class Currency(RealWorldCurrency):
     '''game currency'''
