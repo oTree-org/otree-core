@@ -656,8 +656,8 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
             with MTurkConnection(
                 self.request, session.mturk_sandbox
             ) as mturk_connection:
-                workers_by_status = self.get_workers_by_status()
-                participants_submitted = session.participant_set.filter(
+                workers_by_status = mturk_connection.get_workers_by_status()
+                participants_not_reviewed = session.participant_set.filter(
                     mturk_worker_id__in=workers_by_status['Submitted']
                 )
                 participants_approved = session.participant_set.filter(
@@ -678,7 +678,9 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
 
         context = super(SessionPayments, self).get_context_data(**kwargs)
         context.update({
-            'participants': participants,
+            'participants_approved': participants_approved,
+            'participants_rejected': participants_rejected,
+            'participants_not_reviewed': participants_not_reviewed,
             'total_payments': total_payments,
             'mean_payment': mean_payment,
             'participation_fee': session.config['participation_fee'],

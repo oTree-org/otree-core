@@ -294,35 +294,27 @@ class PayMTurk(vanilla.View):
         return '/PayMTurk/{}/'.format(session.pk)
 
     def post(self, request, *args, **kwargs):
-        session = get_object_or_404(
-            otree.models.session.Session, pk=kwargs['session_pk'])
+        session = get_object_or_404(otree.models.session.Session,
+                                    pk=kwargs['session_pk'])
         with MTurkConnection(self.request,
                              session.mturk_sandbox) as mturk_connection:
-            workers_with_submit = [
-                completed_assignment.WorkerId
-                for completed_assignment in
-                mturk_connection.get_assignments(session.mturk_HITId)]
-            participants = session.participant_set.filter(
-                mturk_worker_id__in=workers_with_submit)
-            participants_reward = [
-                participants.get(mturk_assignment_id=assignment_id)
-                for assignment_id in request.POST.getlist('reward')]
-            for p in participants_reward:
+            participants_to_pay = session.participant_set.filter(
+                mturk_assignment_id__in=request.POST.getlist('payment')
+            )
+            for p in participants_to_pay:
+                # approve assignment
                 mturk_connection.approve_assignment(p.mturk_assignment_id)
                 p.mturk_reward_paid = True
-                p.save()
-
-            participants_bonus = [
-                participants.get(mturk_assignment_id=assignment_id)
-                for assignment_id in request.POST.getlist('bonus')]
-            for p in participants_bonus:
+                # grant bonus
                 bonus = boto.mturk.price.Price(
                     amount=p.payoff_in_real_world_currency().to_number())
-                mturk_connection.grant_bonus(
-                    p.mturk_worker_id, p.mturk_assignment_id,
-                    bonus, reason="Thank you.")
+                mturk_connection.grant_bonus(p.mturk_worker_id,
+                                             p.mturk_assignment_id,
+                                             bonus, reason="Thank you for "
+                                                           "participating.")
                 p.mturk_bonus_paid = True
                 p.save()
+
         messages.success(request, "Your payment was successful")
         return HttpResponseRedirect(
             reverse('session_payments', args=(session.pk,)))
