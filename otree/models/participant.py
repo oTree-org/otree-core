@@ -36,8 +36,6 @@ class Participant(ModelWithVars):
     mturk_assignment_id = models.CharField(
         max_length=50, null=True)
     mturk_worker_id = models.CharField(max_length=50, null=True)
-    mturk_reward_paid = models.BooleanField(default=False)
-    mturk_bonus_paid = models.BooleanField(default=False)
 
     start_order = models.PositiveIntegerField(db_index=True)
 
