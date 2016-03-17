@@ -61,30 +61,33 @@ class MTurkConnection(boto.mturk.connection.MTurkConnection):
             MTurkError(self.request, value.message)
         return False
 
-    def get_workers_by_status(self, hit_id):
-        all_assignments = self.get_all_assignments(hit_id)
-        workers_by_status = defaultdict(list)
-        for assignment in all_assignments:
-            workers_by_status[
-                assignment.AssignmentStatus
-            ].append(assignment.WorkerId)
-        return workers_by_status
+
+def get_workers_by_status(mturk, hit_id):
+    all_assignments = get_all_assignments(mturk, hit_id)
+    workers_by_status = defaultdict(list)
+    for assignment in all_assignments:
+        workers_by_status[
+            assignment.AssignmentStatus
+        ].append(assignment.WorkerId)
+    return workers_by_status
 
 
-    def get_all_assignments(self, hit_id, status=None):
-        # Accumulate all relevant assignments, one page of results at
-        # a time.
-        assignments = []
-        page = 1
-        while True:
-            rs = self.get_assignments(
-                hit_id=hit,
-                page_size=100,
-                page_number=page,
-                status=status)
-            if len(assignments) >= int(rs.TotalNumResults):
-                break
-            page += 1
+def get_all_assignments(mturk, hit_id, status=None):
+    # Accumulate all relevant assignments, one page of results at
+    # a time.
+    assignments = []
+    page = 1
+    while True:
+        rs = mturk.get_assignments(
+            hit_id=hit_id,
+            page_size=100,
+            page_number=page,
+            status=status)
+        assignments.extend(rs)
+        if len(assignments) >= int(rs.TotalNumResults):
+            break
+        page += 1
+    return assignments
 
 
 class SessionCreateHitForm(forms.Form):
@@ -289,6 +292,43 @@ class PayMTurk(vanilla.View):
     def url_name(cls):
         return 'pay_mturk'
 
+    def post(self, request, *args, **kwargs):
+        session = get_object_or_404(otree.models.session.Session,
+                                    pk=kwargs['session_pk'])
+        with MTurkConnection(self.request,
+                             session.mturk_sandbox) as mturk_connection:
+            for p in session.participant_set.filter(
+                mturk_assignment_id__in=request.POST.getlist('payment')
+            ):
+                # approve assignment
+                mturk_connection.approve_assignment(p.mturk_assignment_id)
+                # grant bonus
+                # TODO: check if bonus was already paid before, perhaps through
+                # mturk requester webinterface
+                bonus_amount = p.payoff_in_real_world_currency().to_number()
+                if bonus_amount > 0:
+                    bonus = boto.mturk.price.Price(amount=bonus_amount)
+                    mturk_connection.grant_bonus(p.mturk_worker_id,
+                                                 p.mturk_assignment_id,
+                                                 bonus,
+                                                 reason="Thank you for "
+                                                        "participating.")
+
+        messages.success(request, "Your payment was successful")
+        return HttpResponseRedirect(
+            reverse('session_mturk_payments', args=(session.pk,)))
+
+
+class RejectMTurk(vanilla.View):
+
+    @classmethod
+    def url_pattern(cls):
+        return r'^RejectMTurk/(?P<{}>[0-9]+)/$'.format('session_pk')
+
+    @classmethod
+    def url_name(cls):
+        return 'reject_mturk'
+
     @classmethod
     def url(cls, session):
         return '/PayMTurk/{}/'.format(session.pk)
@@ -298,23 +338,12 @@ class PayMTurk(vanilla.View):
                                     pk=kwargs['session_pk'])
         with MTurkConnection(self.request,
                              session.mturk_sandbox) as mturk_connection:
-            participants_to_pay = session.participant_set.filter(
+            for p in session.participant_set.filter(
                 mturk_assignment_id__in=request.POST.getlist('payment')
-            )
-            for p in participants_to_pay:
-                # approve assignment
-                mturk_connection.approve_assignment(p.mturk_assignment_id)
-                p.mturk_reward_paid = True
-                # grant bonus
-                bonus = boto.mturk.price.Price(
-                    amount=p.payoff_in_real_world_currency().to_number())
-                mturk_connection.grant_bonus(p.mturk_worker_id,
-                                             p.mturk_assignment_id,
-                                             bonus, reason="Thank you for "
-                                                           "participating.")
-                p.mturk_bonus_paid = True
-                p.save()
+            ):
+                mturk_connection.reject_assignment(p.mturk_assignment_id)
 
-        messages.success(request, "Your payment was successful")
+        messages.success(request, "You successfully rejected "
+                                  "selected assignments")
         return HttpResponseRedirect(
-            reverse('session_payments', args=(session.pk,)))
+            reverse('session_mturk_payments', args=(session.pk,)))

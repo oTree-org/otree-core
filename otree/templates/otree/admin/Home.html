@@ -187,7 +187,7 @@ Sessions
             <a href="{% url 'session_results' s.pk %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-list-alt"></span> Results
             </a>
-            <a href="{% url 'session_payments' s.pk %}" class="btn btn-primary btn-sm" role="button">
+            <a href="{% if s.is_for_mturk %}{% url 'session_mturk_payments' s.pk %}{% else %}{% url 'session_payments' s.pk %}{% endif %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-usd"></span> Payments
             </a>
             {% if s != default_session %}

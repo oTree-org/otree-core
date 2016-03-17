@@ -11,13 +11,19 @@ payment
 ****************************
 */
 $(document).ready(function() {
-    $('#form').on('submit', function(ev) {
-        if (($("input[name=in_sandbox]:checked").length == 0) && !($("#mturk-payment").hasClass('in'))) {
-            $('#mturk-payment').modal({
-                show: 'false'
-            });
-            ev.preventDefault();
-        }
+    $('#pay').click(function() {
+        $('#mturk-payment').modal({
+            show: 'true'
+        });
+        return false;
+    })
+});
+$(document).ready(function() {
+    $('#reject').click(function() {
+        $('#mturk-reject').modal({
+            show: 'true'
+        });
+        return false;
     })
 });
 /*
@@ -55,6 +61,7 @@ Smart Pay Button
 */
 $(function() {
     $('input[name=payment]').change(function () {
+        var sum = 0.00;
         $('input[name=payment]:checked:enabled').each(function( index, element ){
             sum += parseFloat($(this).data('value'));
         });
@@ -149,8 +156,10 @@ $(function() {
             </tr>
             {% endfor %}
         </table>
-        <button style="float: right;" type="submit" class="btn btn-primary" id="pay" formmethod="POST" formaction="{% url 'pay_mturk' session.pk %}" disabled>Pay via MTurk</button>
-        <button style="float: right;" type="submit" class="btn btn-primary" id="reject" formmethod="POST" formaction="{% url 'reject_mturk' session.pk %}" disabled>Reject</button>
+        <div class="btn-group" style="float: right;">
+            <button class="btn btn-primary" id="pay" disabled>Pay via MTurk</button>
+            <button class="btn btn-primary" id="reject" disabled>Reject</button>
+        </div>
     {% endif %}
     {% if participants_approved %}
         <h3>Approved assignments</h3>
@@ -220,12 +229,13 @@ $(function() {
         <p>You have no participants who finished the experiment.</p>
     {% endif %}
 </div>
-<div class="modal fade" id="mturk-payment" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<!--Modal window to confirm payment for assignments-->
+<div class="modal fade" id="mturk-payment" tabindex="-1" role="dialog" aria-labelledby="MTurkPaymentModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content panel-warning">
       <div class="modal-header panel-heading">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="exampleModalLabel">Pay via MTurk?</h4>
+          <h4 class="modal-title" id="exampleModalLabel">Pay via Mechanical Turk?</h4>
       </div>
       <div class="modal-body">
           <p>
@@ -234,7 +244,27 @@ $(function() {
       </div>
       <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Pay</button>
+          <button type="submit" class="btn btn-default" formaction="{% url 'pay_mturk' session.pk %}">Pay</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!--Modal window to confirm rejection of assignments-->
+<div class="modal fade" id="mturk-reject" tabindex="-1" role="dialog" aria-labelledby="MTurkRejectModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content panel-warning">
+      <div class="modal-header panel-heading">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="exampleModalLabel">Reject assignments?</h4>
+      </div>
+      <div class="modal-body">
+          <p>
+            You are about to reject selected assignments at your own risk.
+          </p>
+      </div>
+      <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-default" formaction="{% url 'reject_mturk' session.pk %}">Reject</button>
       </div>
     </div>
   </div>
