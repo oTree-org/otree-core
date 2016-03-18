@@ -7,17 +7,18 @@
 // show modal warning window if user tries to create hit in non-sandbox mode
 // and if we are not already showing this modal to user
 $(document).ready(function() {
+    // this select text in text input box so it is easier to change it
     $("input[type=text]").click(function() {
         $(this).select();
     });
-        $('#form').on('submit', function(ev) {
-            if (($("input[name=in_sandbox]:checked").length == 0) && !($("#mturk-production").hasClass('in'))) {
-                $('#mturk-production').modal({
-                    show: 'false'
-                });
-                ev.preventDefault();
-            }
-        })
+    $('#form').on('submit', function(ev) {
+        if (($("input[name=in_sandbox]:checked").length == 0) && !($("#mturk-production").hasClass('in'))) {
+            $('#mturk-production').modal({
+                show: 'false'
+            });
+            ev.preventDefault();
+        }
+    })
 });
 </script>
 {% endblock %}

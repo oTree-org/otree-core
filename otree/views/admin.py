@@ -36,7 +36,7 @@ from otree.session import (
 from otree import forms
 from otree.common import RealWorldCurrency
 from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
-from otree.views.mturk import MTurkConnection
+from otree.views.mturk import MTurkConnection, get_workers_by_status
 
 import otree.constants_internal
 import otree.models.session
@@ -639,12 +639,6 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
     def url_name(cls):
         return 'session_payments'
 
-    def get_template_names(self):
-        if self.session.mturk_HITId:
-            return ['otree/admin/SessionMTurkPayments.html']
-        else:
-            return ['otree/admin/SessionPayments.html']
-
     def get(self, *args, **kwargs):
         response = super(SessionPayments, self).get(*args, **kwargs)
         return response
@@ -652,23 +646,7 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
     def get_context_data(self, **kwargs):
 
         session = self.session
-        if session.mturk_HITId:
-            with MTurkConnection(
-                self.request, session.mturk_sandbox
-            ) as mturk_connection:
-                workers_with_submit = [
-                    completed_assignment.WorkerId
-                    for completed_assignment in
-                    mturk_connection.get_assignments(
-                        session.mturk_HITId,
-                        page_size=session.mturk_num_participants
-                    )
-                ]
-                participants = session.participant_set.filter(
-                    mturk_worker_id__in=workers_with_submit
-                )
-        else:
-            participants = session.get_participants()
+        participants = session.get_participants()
         total_payments = 0.0
         mean_payment = 0.0
         if participants:
@@ -682,6 +660,46 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
             'participants': participants,
             'total_payments': total_payments,
             'mean_payment': mean_payment,
+            'participation_fee': session.config['participation_fee'],
+        })
+
+        return context
+
+
+class SessionMTurkPayments(AdminSessionPageMixin, vanilla.TemplateView):
+
+    @classmethod
+    def url_name(cls):
+        return 'session_mturk_payments'
+
+    def get(self, *args, **kwargs):
+        response = super(SessionMTurkPayments, self).get(*args, **kwargs)
+        return response
+
+    def get_context_data(self, **kwargs):
+
+        session = self.session
+        with MTurkConnection(
+            self.request, session.mturk_sandbox
+        ) as mturk_connection:
+            workers_by_status = get_workers_by_status(
+                mturk_connection,
+                session.mturk_HITId
+            )
+            participants_not_reviewed = session.participant_set.filter(
+                mturk_worker_id__in=workers_by_status['Submitted']
+            )
+            participants_approved = session.participant_set.filter(
+                mturk_worker_id__in=workers_by_status['Approved']
+            )
+            participants_rejected = session.participant_set.filter(
+                mturk_worker_id__in=workers_by_status['Rejected']
+            )
+        context = super(SessionMTurkPayments, self).get_context_data(**kwargs)
+        context.update({
+            'participants_approved': participants_approved,
+            'participants_rejected': participants_rejected,
+            'participants_not_reviewed': participants_not_reviewed,
             'participation_fee': session.config['participation_fee'],
         })
 

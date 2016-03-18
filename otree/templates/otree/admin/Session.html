@@ -30,8 +30,15 @@
             <li role="presentation" class="{% active_page request 'session_results' session.pk %}">
                 <a href="{% url 'session_results' session.pk %}"><span class="glyphicon glyphicon-list-alt"></span> Results</a>
             </li>
+            {% if session.is_for_mturk %}
+            <li role="presentation" class="{% active_page request 'session_mturk_payments' session.pk %}">
+                <a href="{% url 'session_mturk_payments' session.pk %}">
+            {% else %}
             <li role="presentation" class="{% active_page request 'session_payments' session.pk %}">
-                <a href="{% url 'session_payments' session.pk %}"><span class="glyphicon glyphicon-usd"></span> Payments</a>
+                <a href="{% url 'session_payments' session.pk %}">
+            {% endif %}
+                    <span class="glyphicon glyphicon-usd"></span> Payments
+                </a>
             </li>
             {% if session.is_demo %}
             <li role="presentation">

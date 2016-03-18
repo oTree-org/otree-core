@@ -17,7 +17,7 @@ from otree.models import Session
 # =============================================================================
 
 class Command(BaseCommand):
-    help = ("List al available sessions")
+    help = ("List all available sessions")
 
     def handle(self, **options):
         rows = []
