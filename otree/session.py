@@ -6,6 +6,7 @@ import random
 from six.moves import range
 from six.moves import zip
 from functools import reduce
+from collections import OrderedDict
 
 from django.conf import settings
 from django.db import transaction
@@ -124,30 +125,16 @@ def augment_session_config(session_config):
     validate_session_config(new_session_config)
     return new_session_config
 
-
-# =============================================================================
-# FUNCTIONS
-# =============================================================================
-
-def get_session_configs_list():
-    return [augment_session_config(s) for s in settings.SESSION_CONFIGS]
+SESSION_CONFIGS_DICT = OrderedDict()
+for config in settings.SESSION_CONFIGS:
+    SESSION_CONFIGS_DICT[config['name']] = augment_session_config(config)
 
 
-def get_session_configs_dict():
-    return {
-        session_config['name']: session_config
-        for session_config in get_session_configs_list()}
-
-
-def app_labels_from_sessions(session_names=None):
-    if session_names:
-        session_names = frozenset(session_names)
-    else:
-        session_names = frozenset(get_session_configs_dict().keys())
+def app_labels_from_sessions(config_names):
     apps = set()
-    for sname in session_names:
-        sssn = get_session_configs_dict()[sname]
-        apps.update(sssn["app_sequence"])
+    for config_name in config_names:
+        config = SESSION_CONFIGS_DICT[config_name]
+        apps.update(config["app_sequence"])
     return apps
 
 
@@ -161,7 +148,7 @@ def create_session(session_config_name, label='', num_participants=None,
     # 2014-9-22: preassign to groups for demo mode.
 
     try:
-        session_config = get_session_configs_dict()[session_config_name]
+        session_config = SESSION_CONFIGS_DICT[session_config_name]
     except KeyError:
         msg = 'Session type "{}" not found in settings.py'
         raise ValueError(msg.format(session_config_name))

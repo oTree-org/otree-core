@@ -14,7 +14,7 @@ import otree.constants_internal as constants
 from otree.views.abstract import GenericWaitPageMixin
 from otree.models.session import Session
 from otree.session import (
-    create_session, get_session_configs_dict, get_session_configs_list
+    create_session, SESSION_CONFIGS_DICT
 )
 import otree.session
 from six.moves import range
@@ -42,7 +42,7 @@ class DemoIndex(vanilla.TemplateView):
         context = super(DemoIndex, self).get_context_data(**kwargs)
 
         session_info = []
-        for session_config in get_session_configs_list():
+        for session_config in SESSION_CONFIGS_DICT:
             session_info.append(
                 {
                     'name': session_config['name'],
@@ -120,9 +120,8 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.GenericView):
         return bool(session)
 
     def _before_returning_wait_page(self):
-        session_configs = get_session_configs_dict()
         try:
-            session_config = session_configs[self.session_config_name]
+            session_config = SESSION_CONFIGS_DICT[self.session_config_name]
         except KeyError:
             msg = (
                 "Session type '{}' not found"

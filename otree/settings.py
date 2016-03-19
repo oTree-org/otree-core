@@ -176,6 +176,7 @@ def augment_settings(settings):
     for s in settings['SESSION_CONFIGS']:
         for app in s['app_sequence']:
             all_otree_apps_set.add(app)
+
     all_otree_apps = list(all_otree_apps_set)
 
     no_experiment_apps = [

@@ -30,7 +30,7 @@ from otree.common_internal import (
     get_models_module, app_name_format, add_params_to_url
 )
 from otree.session import (
-    create_session, get_session_configs_dict, get_session_configs_list,
+    create_session, SESSION_CONFIGS_DICT,
     get_lcm
 )
 from otree import forms
@@ -463,7 +463,7 @@ class CreateSession(vanilla.FormView):
 
     def dispatch(self, request, *args, **kwargs):
         session_config_name = unquote_plus(kwargs.pop('session_config'))
-        self.session_config = get_session_configs_dict()[session_config_name]
+        self.session_config = SESSION_CONFIGS_DICT[session_config_name]
         self.for_mturk = (int(self.request.GET.get('mturk', 0)) == 1)
         return super(CreateSession, self).dispatch(request, *args, **kwargs)
 
@@ -521,10 +521,12 @@ class SessionConfigsToCreate(vanilla.View):
 
     def get(self, *args, **kwargs):
         session_configs_info = []
-        for session_config in get_session_configs_list():
-            session_name = session_config['name']
-            key = self.request.GET.get('mturk', 0)
-            url = '/create_session/{}/?mturk={}'.format(session_name, key)
+        for session_config in SESSION_CONFIGS_DICT.values():
+            url = reverse(
+                'session_create', args=(session_config['name'],)
+            )
+            if self.request.GET.get('mturk'):
+                url = add_params_to_url(url, {'mturk': 1})
             session_configs_info.append(
                 {'display_name': session_config['display_name'], 'url': url})
         return TemplateResponse(
@@ -893,10 +895,7 @@ def session_description_dict(session):
         'display_name': session.config['display_name'],
     }
 
-    session_config = get_session_configs_dict(
-
-    )[session.config['name']]
-    context_data.update(info_about_session_config(session_config))
+    context_data.update(info_about_session_config(session.config))
 
     return context_data
 

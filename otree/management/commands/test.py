@@ -14,7 +14,7 @@ from django.core.management.base import BaseCommand
 
 from otree.test import runner, client
 from otree.management.cli import otree_and_django_version
-
+from otree.session import SESSION_CONFIGS_DICT
 
 # =============================================================================
 # CONSTANTS
@@ -94,7 +94,10 @@ class Command(BaseCommand):
             logger.removeHandler(handler)
 
     def handle(self, **options):
-        test_labels = options["session_name"]
+        session_config_names = options["session_name"]
+        if not session_config_names:
+            # default to all session configs
+            session_config_names = SESSION_CONFIGS_DICT.keys()
 
         if options['verbosity'] == 0:
             level = logging.ERROR
@@ -121,12 +124,12 @@ class Command(BaseCommand):
         coverage = options["coverage"]
 
         if coverage:
-            with runner.covering(test_labels) as coverage_report:
+            with runner.covering(session_config_names) as coverage_report:
                 failures, data = test_runner.run_tests(
-                    test_labels, preserve_data=preserve_data)
+                    session_config_names, preserve_data=preserve_data)
         else:
             failures, data = test_runner.run_tests(
-                test_labels, preserve_data=preserve_data)
+                session_config_names, preserve_data=preserve_data)
         if coverage:
             logger.info("Coverage Report")
             if coverage in [COVERAGE_CONSOLE, COVERAGE_ALL]:

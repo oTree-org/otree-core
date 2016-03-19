@@ -7,6 +7,7 @@ from django.conf import settings
 from django.core.management import call_command
 
 from otree import common_internal
+from otree.session import SESSION_CONFIGS_DICT
 
 from .base import TestCase
 
@@ -16,14 +17,9 @@ class TestDataExport(TestCase):
     def setUp(self):
         self.client.login()
 
-    def get_session_conf(self, session_name):
-        for current_session_conf in settings.SESSION_CONFIGS:
-            if current_session_conf["name"] == session_name:
-                return current_session_conf
-
     def session_test(self, session_name):
 
-        session_conf = self.get_session_conf(session_name)
+        session_conf = SESSION_CONFIGS_DICT[session_name]
         app_sequence = session_conf["app_sequence"]
         npar = session_conf["num_demo_participants"]
 
@@ -67,14 +63,9 @@ class TestDocExport(TestCase):
     def setUp(self):
         self.client.login()
 
-    def get_session_conf(self, session_name):
-        for current_session_conf in settings.SESSION_CONFIGS:
-            if current_session_conf["name"] == session_name:
-                return current_session_conf
-
     def session_test(self, session_name):
 
-        session_conf = self.get_session_conf(session_name)
+        session_conf = SESSION_CONFIGS_DICT[session_name]
         app_sequence = session_conf["app_sequence"]
         npar = session_conf["num_demo_participants"]
 

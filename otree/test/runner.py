@@ -30,6 +30,7 @@ import otree.models
 from otree import constants_internal, session, common_internal
 from otree.test.client import ParticipantBot
 
+
 import coverage
 
 # =============================================================================
@@ -198,8 +199,6 @@ class OTreeExperimentTestRunner(runner.DiscoverRunner):
 
     def build_suite(self, session_names, extra_tests, preserve_data, **kwargs):
         suite = self.test_suite()
-        if not session_names:
-            session_names = sorted(session.get_session_configs_dict().keys())
         for session_name in session_names:
             case = OTreeExperimentFunctionTest(session_name, preserve_data)
             suite.addTest(case)
