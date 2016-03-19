@@ -164,7 +164,9 @@ def execute_from_command_line(arguments, script_file):
     )
     if runsslserver:
         arguments[1] = 'runsslserver'
-        sys.stdout.write('Note: your server URL will start with https, not http (because the env var AWS_ACCESS_KEY_ID was found)\n')
+        sys.stdout.write(
+            'Note: your server URL will start with https, not http '
+            '(because the env var AWS_ACCESS_KEY_ID was found)\n')
 
     # only monkey patch when is necesary
     if "version" in arguments or "--version" in arguments:
@@ -172,8 +174,6 @@ def execute_from_command_line(arguments, script_file):
     else:
         utility = OTreeManagementUtility(arguments)
         utility.execute()
-
-
 
 
 SETTINGS_NOT_FOUND_MESSAGE = (

@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
-from collections import namedtuple
 from django.core.management import call_command
 from django.core.urlresolvers import reverse
 
