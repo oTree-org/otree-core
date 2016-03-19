@@ -158,9 +158,13 @@ def execute_from_command_line(arguments, script_file):
 
     # in issue #300 we agreed that sslserver should
     # run only if user has specified credentials for AWS
-    if (len(arguments) >= 2 and arguments[1] == 'runserver' and
-       settings.AWS_ACCESS_KEY_ID):
-            arguments[1] = 'runsslserver'
+    runsslserver = (
+        len(arguments) >= 2 and arguments[1] == 'runserver' and
+        settings.AWS_ACCESS_KEY_ID
+    )
+    if runsslserver:
+        arguments[1] = 'runsslserver'
+        sys.stdout.write('Note: your server URL will start with https, not http (because the env var AWS_ACCESS_KEY_ID was found)\n')
 
     # only monkey patch when is necesary
     if "version" in arguments or "--version" in arguments:
@@ -168,6 +172,8 @@ def execute_from_command_line(arguments, script_file):
     else:
         utility = OTreeManagementUtility(arguments)
         utility.execute()
+
+
 
 
 SETTINGS_NOT_FOUND_MESSAGE = (
