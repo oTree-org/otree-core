@@ -42,7 +42,7 @@ class DemoIndex(vanilla.TemplateView):
         context = super(DemoIndex, self).get_context_data(**kwargs)
 
         session_info = []
-        for session_config in SESSION_CONFIGS_DICT:
+        for session_config in SESSION_CONFIGS_DICT.values():
             session_info.append(
                 {
                     'name': session_config['name'],
