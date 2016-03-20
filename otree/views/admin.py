@@ -349,6 +349,48 @@ class PersistentLabURLs(vanilla.TemplateView):
         return context
 
 
+class SessionConfigsToCreate(vanilla.View):
+
+    @classmethod
+    def url(cls):
+        return "/create_session/"
+
+    @classmethod
+    def url_name(cls):
+        return 'session_configs_create'
+
+    @classmethod
+    def url_pattern(cls):
+        return r"^create_session/$"
+
+    def get(self, *args, **kwargs):
+        session_configs_info = []
+        for session_config in SESSION_CONFIGS_DICT.values():
+            url = reverse(
+                'session_create', args=(session_config['name'],)
+            )
+            if self.request.GET.get('mturk'):
+                url = add_params_to_url(url, {'mturk': 1})
+            session_configs_info.append(
+                {'display_name': session_config['display_name'], 'url': url})
+        return TemplateResponse(
+            self.request, 'otree/admin/SessionListing.html',
+            {'session_configs_info': session_configs_info})
+
+
+
+def sleep_then_create_session(**kwargs):
+
+    # hack: this sleep is to prevent locks on SQLite. This gives time to let
+    # the page request finish before create_session is called,
+    # because creating the session involves a lot of database I/O, which seems
+    # to cause locks when multiple threads access at the same time.
+    if settings.DATABASES['default']['ENGINE'].endswith('sqlite3'):
+        time.sleep(5)
+
+    create_session(**kwargs)
+
+
 class CreateSessionForm(forms.Form):
 
     num_participants = forms.IntegerField()
@@ -379,73 +421,6 @@ class CreateSessionForm(forms.Form):
                 'Number of participants must be a multiple of {}'.format(lcm)
             )
         return num_participants
-
-
-class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
-
-    @classmethod
-    def url_pattern(cls):
-        return r"^WaitUntilSessionCreated/(?P<session_pre_create_id>.+)/$"
-
-    @classmethod
-    def url_name(cls):
-        return 'wait_until_session_created'
-
-    def _is_ready(self):
-        thread_create_session = None
-        for t in threading.enumerate():
-            if t.name == self._pre_create_id:
-                thread_create_session = t
-        thread_alive = (
-            thread_create_session and
-            thread_create_session.isAlive()
-        )
-        session_exists = Session.objects.filter(
-            _pre_create_id=self._pre_create_id
-        ).exists()
-
-        if not thread_alive and not session_exists:
-            raise Exception("Thread failed to create new session")
-        return session_exists
-
-    def body_text(self):
-        return 'Waiting until session created'
-
-    def _response_when_ready(self):
-        session = Session.objects.get(_pre_create_id=self._pre_create_id)
-        if self.request.session.get('for_mturk', False):
-            session.mturk_num_participants = (
-                len(session.get_participants()) /
-                settings.MTURK_NUM_PARTICIPANTS_MULT
-            )
-        session.save()
-        if session.is_for_mturk():
-            session_home_url = reverse(
-                'session_create_hit', args=(session.pk,)
-            )
-        else:
-            session_home_url = reverse(
-                'session_start_links', args=(session.pk,)
-            )
-        return HttpResponseRedirect(session_home_url)
-
-    def dispatch(self, request, *args, **kwargs):
-        self._pre_create_id = kwargs['session_pre_create_id']
-        return super(WaitUntilSessionCreated, self).dispatch(
-            request, *args, **kwargs
-        )
-
-
-def sleep_then_create_session(**kwargs):
-
-    # hack: this sleep is to prevent locks on SQLite. This gives time to let
-    # the page request finish before create_session is called,
-    # because creating the session involves a lot of database I/O, which seems
-    # to cause locks when multiple threads access at the same time.
-    if settings.DATABASES['default']['ENGINE'].endswith('sqlite3'):
-        time.sleep(5)
-
-    create_session(**kwargs)
 
 
 class CreateSession(vanilla.FormView):
@@ -505,33 +480,59 @@ class CreateSession(vanilla.FormView):
         return HttpResponseRedirect(wait_until_session_created_url)
 
 
-class SessionConfigsToCreate(vanilla.View):
-
-    @classmethod
-    def url(cls):
-        return "/create_session/"
-
-    @classmethod
-    def url_name(cls):
-        return 'session_configs_create'
+class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
 
     @classmethod
     def url_pattern(cls):
-        return r"^create_session/$"
+        return r"^WaitUntilSessionCreated/(?P<session_pre_create_id>.+)/$"
 
-    def get(self, *args, **kwargs):
-        session_configs_info = []
-        for session_config in SESSION_CONFIGS_DICT.values():
-            url = reverse(
-                'session_create', args=(session_config['name'],)
+    @classmethod
+    def url_name(cls):
+        return 'wait_until_session_created'
+
+    def _is_ready(self):
+        thread_create_session = None
+        for t in threading.enumerate():
+            if t.name == self._pre_create_id:
+                thread_create_session = t
+        thread_alive = (
+            thread_create_session and
+            thread_create_session.isAlive()
+        )
+        session_exists = Session.objects.filter(
+            _pre_create_id=self._pre_create_id
+        ).exists()
+
+        if not thread_alive and not session_exists:
+            raise Exception("Thread failed to create new session")
+        return session_exists
+
+    def body_text(self):
+        return 'Waiting until session created'
+
+    def _response_when_ready(self):
+        session = Session.objects.get(_pre_create_id=self._pre_create_id)
+        if self.request.session.get('for_mturk', False):
+            session.mturk_num_participants = (
+                len(session.get_participants()) /
+                settings.MTURK_NUM_PARTICIPANTS_MULT
             )
-            if self.request.GET.get('mturk'):
-                url = add_params_to_url(url, {'mturk': 1})
-            session_configs_info.append(
-                {'display_name': session_config['display_name'], 'url': url})
-        return TemplateResponse(
-            self.request, 'otree/admin/SessionListing.html',
-            {'session_configs_info': session_configs_info})
+        session.save()
+        if session.is_for_mturk():
+            session_home_url = reverse(
+                'session_create_hit', args=(session.pk,)
+            )
+        else:
+            session_home_url = reverse(
+                'session_start_links', args=(session.pk,)
+            )
+        return HttpResponseRedirect(session_home_url)
+
+    def dispatch(self, request, *args, **kwargs):
+        self._pre_create_id = kwargs['session_pre_create_id']
+        return super(WaitUntilSessionCreated, self).dispatch(
+            request, *args, **kwargs
+        )
 
 
 class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
