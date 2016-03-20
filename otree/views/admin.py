@@ -395,6 +395,9 @@ class CreateSessionForm(forms.Form):
 
     num_participants = forms.IntegerField()
 
+    
+
+
     def __init__(self, *args, **kwargs):
         self.session_config = kwargs.pop('session_config')
         for_mturk = kwargs.pop('for_mturk')
@@ -478,6 +481,34 @@ class CreateSession(vanilla.FormView):
             'wait_until_session_created', args=(pre_create_id,)
         )
         return HttpResponseRedirect(wait_until_session_created_url)
+
+class Rooms(vanilla.TemplateView):
+
+    template_name = 'otree/admin/Rooms.html'
+
+    def get_context_data(self, **kwargs):
+        # TODO: get list of rooms, and the sessions in each room
+        return {}
+
+
+class Room(CreateSession):
+
+    template_name = 'otree/admin/Room.html'
+
+    @classmethod
+    def url_pattern(cls):
+        return r"^rooms/(?P<room_name>.+)/$"
+
+    @classmethod
+    def url_name(cls):
+        return 'session_create'
+
+    def get_context_data(self, **kwargs):
+
+        # TODO:
+        # build links, like in persistent links, above
+
+        return super(CreateSession, self).get_context_data(**kwargs)
 
 
 class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
