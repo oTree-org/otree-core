@@ -99,3 +99,7 @@ class StubModel(models.Model):
         app_label = "otree"
 
     pass
+
+class RoomSession(models.Model):
+    room_name = models.CharField()
+    session_pk = models.PositiveIntegerField()
