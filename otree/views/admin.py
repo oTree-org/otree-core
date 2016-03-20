@@ -378,7 +378,6 @@ class SessionConfigsToCreate(vanilla.View):
             {'session_configs_info': session_configs_info})
 
 
-
 def sleep_then_create_session(**kwargs):
 
     # hack: this sleep is to prevent locks on SQLite. This gives time to let
