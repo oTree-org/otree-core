@@ -81,9 +81,9 @@ class Currency(RealWorldCurrency):
     def __format__(self, format_spect):
         return Decimal(self).__format__(format_spect)
 
-    @classmethod
-    def _format_currency(cls, number):
-        if settings.USE_POINTS:
+    if settings.USE_POINTS:
+        @classmethod
+        def _format_currency(cls, number):
 
             formatted_number = formats.number_format(number)
 
@@ -99,7 +99,6 @@ class Currency(RealWorldCurrency):
             # and msgstr[1] is plural
             return ungettext('{} point', '{} points', number).format(
                 formatted_number)
-        return super(Currency, cls)._format_currency(number)
 
     def to_real_world_currency(self, session):
         if settings.USE_POINTS:

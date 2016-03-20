@@ -24,7 +24,11 @@ $(document).ready(function() {
 {% endblock %}
 {% block content %}
 {{ block.super }}
-{% if not mturk_enabled %}
+{% if py3 %}
+    <p>oTree's MTurk integration currently does not work on Python 3.
+       To use MTurk, you need to reinstall oTree on Python 2.7.
+    </p>
+{% elif not mturk_enabled %}
 <p> MTurk is currently disabled.
 If you want to publish your HIT on MTurk please do the following steps:
 <ol>
@@ -32,8 +36,8 @@ If you want to publish your HIT on MTurk please do the following steps:
     <li>restart the server</li>
     <li>access this page via secured url <a href="{{ secured_url }}">{{ secured_url }}</a></li>
 </ol>
-You can read more about Amazon Mechanical Turk integration 
-<a href="https://github.com/oTree-org/oTree#amazon-mechanical-turk" target="_blank">here</a>.
+You can read more about Amazon Mechanical Turk integration
+<a href="http://otree.readthedocs.org/en/latest/mturk.html" target="_blank">here</a>.
 </p>
 {% else %}
 <div class="modal fade" id="mturk-production" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
