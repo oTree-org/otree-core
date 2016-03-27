@@ -28,6 +28,7 @@ from otree.checks.mturk import validate_session_for_mturk
 from otree import deprecate
 from otree.forms import widgets
 
+
 class MTurkError(Exception):
 
     def __init__(self, request, message):
