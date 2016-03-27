@@ -26,7 +26,7 @@ from otree import forms
 from otree.views.abstract import AdminSessionPageMixin
 from otree.checks.mturk import validate_session_for_mturk
 from otree import deprecate
-
+from otree.forms import widgets
 
 class MTurkError(Exception):
 
@@ -99,7 +99,11 @@ class SessionCreateHitForm(forms.Form):
     title = forms.CharField()
     description = forms.CharField()
     keywords = forms.CharField()
-    money_reward = forms.RealWorldCurrencyField()
+    money_reward = forms.RealWorldCurrencyField(
+        # it seems that if this is omitted, the step defaults to an integer,
+        # meaninng fractional inputs are not accepted
+        widget=widgets.RealWorldCurrencyInput(attrs={'step': 0.01})
+    )
     assignments = forms.IntegerField(
         label="Number of assignments",
         help_text="How many unique Workers do you want to work on the HIT?")

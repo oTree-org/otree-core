@@ -34,6 +34,7 @@ from otree.session import (
     get_lcm
 )
 from otree import forms
+from otree.forms import widgets
 from otree.common import RealWorldCurrency
 from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
 from otree.views.mturk import MTurkConnection, get_workers_by_status
@@ -565,7 +566,12 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
 
 class EditSessionPropertiesForm(forms.ModelForm):
 
-    participation_fee = forms.RealWorldCurrencyField(required=False)
+    participation_fee = forms.RealWorldCurrencyField(
+        required=False,
+        # it seems that if this is omitted, the step defaults to an integer,
+        # meaninng fractional inputs are not accepted
+        widget=widgets.RealWorldCurrencyInput(attrs={'step': 0.01})
+    )
     real_world_currency_per_point = forms.DecimalField(
         decimal_places=5, max_digits=12,
         required=False
