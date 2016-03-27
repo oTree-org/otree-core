@@ -1,1 +1,1 @@
-otree-core==0.4.41
+otree-core==0.4.42
