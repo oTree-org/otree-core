@@ -183,6 +183,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             'group': self.group,
             'subsession': self.subsession,
             'session': self.session,
+            'participant': self.participant,
             'Constants': self._models_module.Constants})
         vars_for_template = self.resolve_vars_for_template()
         context.update(vars_for_template)
