@@ -82,7 +82,7 @@ class WaitUntilAssignedToGroup(FormPageOrInGameWaitPageMixin,
     def _response_when_ready(self):
         self._increment_index_in_pages()
         # so it can be shown in the admin
-        self._participant._round_number = self.subsession.round_number
+        self.participant._round_number = self.subsession.round_number
         return self._redirect_to_page_the_user_should_be_on()
 
     def _get_debug_tables(self):
