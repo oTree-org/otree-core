@@ -46,7 +46,7 @@ from otree.models.session import Session
 from otree.models.participant import Participant
 from otree.models.session import GlobalSingleton
 from otree.models_concrete import PageCompletion
-
+from otree.room import ROOM_DICT
 
 def get_all_fields(Model, for_export=False):
 
@@ -395,8 +395,10 @@ class CreateSessionForm(forms.Form):
 
     num_participants = forms.IntegerField()
 
+    session_configs = SESSION_CONFIGS_DICT.values()
+
     # TODO: add session config to this form
-    session_config = forms.CharField(choices= # ...)
+    session_config = forms.CharField(choices = [[s['name'], s['display_name']] for s in session_configs])
 
 
     def __init__(self, *args, **kwargs):
@@ -468,6 +470,11 @@ class CreateSession(vanilla.FormView):
         else:
             kwargs['num_participants'] = form.cleaned_data['num_participants']
 
+        # TODO:
+        # Refactor when we upgrade to push
+        if hasattr(self, "room"):
+            kwargs['room'] = self.room
+
         thread_create_session = threading.Thread(
             target=sleep_then_create_session,
             kwargs=kwargs,
@@ -486,13 +493,20 @@ class Rooms(vanilla.TemplateView):
 
     template_name = 'otree/admin/Rooms.html'
 
+    @classmethod
+    def url_pattern(cls):
+        return r"^rooms/$"
+
+    @classmethod
+    def url_name(cls):
+        return 'rooms'
+
     def get_context_data(self, **kwargs):
-        # TODO: get list of rooms, and the sessions in each room
-        # RoomSession.objects.all()
-        return {}
+        return {'rooms': ROOM_DICT.values()}
 
 
 class Room(CreateSession):
+
 
     template_name = 'otree/admin/Room.html'
 
@@ -502,15 +516,37 @@ class Room(CreateSession):
 
     @classmethod
     def url_name(cls):
-        return 'session_create'
+        return 'room'
 
-    # TODO: dispatch should redirect to session if there is a session in that room
+    def dispatch(self, request, *args, **kwargs):
+        self.room = ROOM_DICT[kwargs['room_name']]
+        if self.room.session:
+            return HttpResponseRedirect(reverse('session_monitor', args=(self.room.session.pk,)))
+        return super(Room, self).dispatch(
+            request, *args, **kwargs
+        )
 
     def get_context_data(self, **kwargs):
 
         # TODO:
-        # build links, like in persistent links, above
         # eventually, show who is waiting in this room
+        participant_urls = []
+        if self.room.has_participant_labels():
+            default_session_base_url = self.request.build_absolute_uri(
+                reverse('assign_visitor_to_room')
+            )
+            for label in self.room.get_participant_labels():
+                participant_url = add_params_to_url(
+                    default_session_base_url,
+                    {
+                        'room': self.room.name,
+                        'participant_label': label
+                    }
+                )
+                participant_urls.append(participant_url)
+
+        context = {'participant_urls': participant_urls}
+        kwargs.update(context)
 
         return super(CreateSession, self).get_context_data(**kwargs)
 
@@ -518,6 +554,21 @@ class Room(CreateSession):
     #
     # - override start links page (so need to store on the session that it's in this room? hm, no)
     #
+
+class CloseRoom(vanilla.View):
+
+    @classmethod
+    def url_pattern(cls):
+        return r"^CloseRoom/(?P<room_name>.+)/$"
+
+    @classmethod
+    def url_name(cls):
+        return 'close_room'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.room = ROOM_DICT[kwargs['room_name']]
+        self.room.session = None
+        return HttpResponseRedirect(reverse('rooms'))
 
 class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
 
