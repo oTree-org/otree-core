@@ -18,7 +18,7 @@ django-floppyforms==1.6.1
 django-idmap==0.4.1
 django-inspect-model==0.7
 django-sslify==0.2.7
-django-sslserver==0.18
+django-sslserver==0.19
 django-vanilla-views==1.0.4
 djangorestframework==3.3.2
 funcsigs==0.4

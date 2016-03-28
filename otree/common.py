@@ -14,7 +14,7 @@ import easymoney
 
 
 # =============================================================================
-# MONKEY PATCH
+# MONKEY PATCH - fix for https://github.com/oTree-org/otree-core/issues/387
 # =============================================================================
 
 # Black Magic: The original number format of django used inside templates don't
@@ -71,6 +71,13 @@ class RealWorldCurrency(easymoney.Money):
     def __repr__(self):
         return 'Currency({})'.format(self)
 
+    # fix for https://github.com/oTree-org/otree-core/issues/362
+    def __format__(self, format_spect):
+        return Decimal(self).__format__(format_spect)
+
+    def to_real_world_currency(self, session):
+        return self
+
 
 class Currency(RealWorldCurrency):
     '''game currency'''
@@ -78,12 +85,8 @@ class Currency(RealWorldCurrency):
     if settings.USE_POINTS:
         DECIMAL_PLACES = settings.POINTS_DECIMAL_PLACES
 
-    def __format__(self, format_spect):
-        return Decimal(self).__format__(format_spect)
-
-    @classmethod
-    def _format_currency(cls, number):
-        if settings.USE_POINTS:
+        @classmethod
+        def _format_currency(cls, number):
 
             formatted_number = formats.number_format(number)
 
@@ -99,15 +102,11 @@ class Currency(RealWorldCurrency):
             # and msgstr[1] is plural
             return ungettext('{} point', '{} points', number).format(
                 formatted_number)
-        return super(Currency, cls)._format_currency(number)
 
-    def to_real_world_currency(self, session):
-        if settings.USE_POINTS:
+        def to_real_world_currency(self, session):
             return RealWorldCurrency(
                 self.to_number() *
                 session.config['real_world_currency_per_point'])
-        else:
-            return self
 
 
 class _CurrencyEncoder(json.JSONEncoder):
