@@ -395,11 +395,11 @@ class CreateSessionForm(forms.Form):
 
     num_participants = forms.IntegerField()
 
-    
+    # TODO: add session config to this form
+    session_config = forms.CharField(choices= # ...)
 
 
     def __init__(self, *args, **kwargs):
-        self.session_config = kwargs.pop('session_config')
         for_mturk = kwargs.pop('for_mturk')
         super(CreateSessionForm, self).__init__(*args, **kwargs)
         if for_mturk:
@@ -416,8 +416,8 @@ class CreateSessionForm(forms.Form):
             self.fields['num_participants'].label = "Number of participants"
 
     def clean_num_participants(self):
-
-        lcm = get_lcm(self.session_config)
+        session_config_name = self.cleaned_data['session_config']
+        lcm = get_lcm(session_config_name)
         num_participants = self.cleaned_data['num_participants']
         if num_participants % lcm:
             raise forms.ValidationError(
@@ -440,25 +440,24 @@ class CreateSession(vanilla.FormView):
         return 'session_create'
 
     def dispatch(self, request, *args, **kwargs):
-        session_config_name = unquote_plus(kwargs.pop('session_config'))
-        self.session_config = SESSION_CONFIGS_DICT[session_config_name]
         self.for_mturk = (int(self.request.GET.get('mturk', 0)) == 1)
         return super(CreateSession, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = info_about_session_config(self.session_config)
-        kwargs.update(context)
+        # TODO: dynamically populate info about session configs
+        # and validate number of participants
+        #context = info_about_session_config(self.session_config)
+        #kwargs.update(context)
         return super(CreateSession, self).get_context_data(**kwargs)
 
     def get_form(self, data=None, files=None, **kwargs):
-        kwargs['session_config'] = self.session_config
         kwargs['for_mturk'] = self.for_mturk
         return super(CreateSession, self).get_form(data, files, **kwargs)
 
     def form_valid(self, form):
         pre_create_id = uuid.uuid4().hex
         kwargs = {
-            'session_config_name': self.session_config['name'],
+            'session_config_name': form.cleaned_data['session_config'],
             '_pre_create_id': pre_create_id,
         }
         if self.for_mturk:
@@ -482,12 +481,14 @@ class CreateSession(vanilla.FormView):
         )
         return HttpResponseRedirect(wait_until_session_created_url)
 
+
 class Rooms(vanilla.TemplateView):
 
     template_name = 'otree/admin/Rooms.html'
 
     def get_context_data(self, **kwargs):
         # TODO: get list of rooms, and the sessions in each room
+        # RoomSession.objects.all()
         return {}
 
 
@@ -503,13 +504,20 @@ class Room(CreateSession):
     def url_name(cls):
         return 'session_create'
 
+    # TODO: dispatch should redirect to session if there is a session in that room
+
     def get_context_data(self, **kwargs):
 
         # TODO:
         # build links, like in persistent links, above
+        # eventually, show who is waiting in this room
 
         return super(CreateSession, self).get_context_data(**kwargs)
 
+    # TODO:
+    #
+    # - override start links page (so need to store on the session that it's in this room? hm, no)
+    #
 
 class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
 
