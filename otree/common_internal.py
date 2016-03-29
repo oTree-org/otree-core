@@ -306,21 +306,6 @@ def min_players_multiple(players_per_group):
     return 1
 
 
-def reraise(original):
-    """Convert an exception in another type specified by
-    ``constants.exception_conversors``
-
-    """
-    original_cls = type(original)
-    if original_cls in constants_internal.exceptions_conversors:
-        conversor = constants_internal.exceptions_conversors[original_cls]
-        new = conversor(original)
-        new_cls = type(new)
-        six.reraise(new_cls, new, sys.exc_info()[2])
-    else:
-        six.reraise(original_cls, original, sys.exc_info()[2])
-
-
 def db_table_exists(table_name):
     """Return True if a table already exists"""
     return table_name in connection.introspection.table_names()
@@ -328,7 +313,7 @@ def db_table_exists(table_name):
 
 def db_status_ok():
     """Try to execute a simple select * for every model registered
-
+    "Your DB is not ready. Try resetting the database."
     """
     for Model in apps.get_models():
         table_name = Model._meta.db_table
