@@ -173,6 +173,15 @@ def augment_settings(settings):
         )
 
     all_otree_apps_set = set()
+
+    if ('SESSION_CONFIGS' not in settings
+            and 'SESSION_TYPES' in settings):
+        raise ValueError(
+            'In settings.py, you should rename '
+            'SESSION_TYPES to SESSION_CONFIGS, and '
+            'SESSION_TYPE_DEFAULTS to SESSION_CONFIG_DEFAULTS.'
+        )
+
     for s in settings['SESSION_CONFIGS']:
         for app in s['app_sequence']:
             all_otree_apps_set.add(app)
