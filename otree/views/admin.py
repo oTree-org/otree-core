@@ -500,6 +500,7 @@ class Rooms(vanilla.TemplateView):
 
 class Room(CreateSession):
     template_name = 'otree/admin/Room.html'
+    room = None
 
     @classmethod
     def url_pattern(cls):
@@ -511,17 +512,14 @@ class Room(CreateSession):
 
     def dispatch(self, request, *args, **kwargs):
         self.room = ROOM_DICT[kwargs['room_name']]
-        session = self.room.get_session()
-        if session is not None:
-            return HttpResponseRedirect(reverse('session_monitor', args=(session.pk,)))
+        if self.room.has_session():
+            return HttpResponseRedirect(reverse('session_monitor', args=(self.room.session.pk,)))
         return super(Room, self).dispatch(
             request, *args, **kwargs
         )
 
     def get_context_data(self, **kwargs):
 
-        # TODO:
-        # eventually, show who is waiting in this room
         participant_urls = []
         if self.room.has_participant_labels():
             default_session_base_url = self.request.build_absolute_uri(
@@ -537,7 +535,14 @@ class Room(CreateSession):
                 )
                 participant_urls.append(participant_url)
 
-        context = {'participant_urls': participant_urls}
+
+
+        # TODO:
+        # List names (or identifiers) of whos waiting
+        # Display count of waiting participants
+        context = {'participant_urls': participant_urls,
+                   'participant_names': [],
+                   'participant_count': str(0)}
         kwargs.update(context)
 
         return super(CreateSession, self).get_context_data(**kwargs)

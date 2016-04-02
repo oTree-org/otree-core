@@ -28,4 +28,11 @@
 
     {% next_button %}
 
+    <hr/>
+    <h4>Participants waiting: ({{ participant_count }})</h4>
+
+    {% for participant in participant_names %}
+        <p>{{ participant }}</p>
+    {% endfor %}
+
 {% endblock %}

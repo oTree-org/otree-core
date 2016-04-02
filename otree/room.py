@@ -11,18 +11,23 @@ class Room(object):
         self.name = name
         self.display_name = display_name
 
-    def get_session(self):
+    def has_session(self):
+        return self.session is not None
+
+    @property
+    def session(self):
         try:
             session_pk = RoomSession.objects.get(room_name=self.name).session_pk
             return Session.objects.get(pk=session_pk)
-        except RoomSession.DoesNotExist:
+        except (RoomSession.DoesNotExist, Session.DoesNotExist):
             return None
 
-    def set_session(self, session):
+    @session.setter
+    def session(self, session):
         if session is None:
             RoomSession.objects.filter(room_name=self.name).delete()
         else:
-            room_session = RoomSession.objects.get_or_create(room_name=self.name)
+            room_session, created = RoomSession.objects.get_or_create(room_name=self.name)
             room_session.session_pk = session.pk
             room_session.save()
 
