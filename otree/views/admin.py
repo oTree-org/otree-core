@@ -397,7 +397,7 @@ class CreateSessionForm(forms.Form):
     session_configs = SESSION_CONFIGS_DICT.values()
 
     # TODO: add session config to this form
-    session_config = forms.CharField(choices = [[s['name'], s['display_name']] for s in session_configs])
+    session_config = forms.MultipleChoiceField(choices=[[s['name'], s['display_name']] for s in session_configs])
 
     def __init__(self, *args, **kwargs):
         for_mturk = kwargs.pop('for_mturk')
