@@ -44,7 +44,6 @@ class Room(object):
     def url_close(self):
         return reverse('close_room', args=(self.name,))
 
-
 ROOM_DICT = OrderedDict()
 for room in settings.ROOMS:
     ROOM_DICT[room['name']] = Room(room['name'], room['display_name'], room.get('participant_label_file'))

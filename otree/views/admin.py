@@ -394,12 +394,10 @@ def sleep_then_create_session(**kwargs):
 class CreateSessionForm(forms.Form):
 
     num_participants = forms.IntegerField()
-
     session_configs = SESSION_CONFIGS_DICT.values()
 
     # TODO: add session config to this form
     session_config = forms.CharField(choices = [[s['name'], s['display_name']] for s in session_configs])
-
 
     def __init__(self, *args, **kwargs):
         for_mturk = kwargs.pop('for_mturk')
@@ -504,9 +502,7 @@ class Rooms(vanilla.TemplateView):
     def get_context_data(self, **kwargs):
         return {'rooms': ROOM_DICT.values()}
 
-
 class Room(CreateSession):
-
 
     template_name = 'otree/admin/Room.html'
 
@@ -525,6 +521,7 @@ class Room(CreateSession):
         return super(Room, self).dispatch(
             request, *args, **kwargs
         )
+
 
     def get_context_data(self, **kwargs):
 
