@@ -11,11 +11,7 @@
 
     <h3>Create a new session</h3>
 
-    {% formrow form.session_config %}
-
-    {% formrow form.num_participants %}
-
-    {% next_button %}
+    {% include "otree/includes/CreateSessionForm.html" %}
 
     <hr/>
     <h4>Participants waiting: ({{ participant_count }})</h4>

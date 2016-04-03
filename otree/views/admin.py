@@ -34,6 +34,7 @@ from otree.session import (
     get_lcm
 )
 from otree import forms
+from django import forms as django_forms
 from otree.forms import widgets
 from otree.common import RealWorldCurrency
 from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
@@ -320,7 +321,7 @@ def sleep_then_create_session(**kwargs):
 class CreateSessionForm(forms.Form):
     session_configs = SESSION_CONFIGS_DICT.values()
 
-    session_config = forms.ChoiceField(choices=[[s['name'], s['display_name']] for s in session_configs])
+    session_config = forms.ChoiceField(choices=[['', '-----']] + [[s['name'], s['display_name']] for s in session_configs], required=True)
 
     num_participants = forms.IntegerField()
 
@@ -341,14 +342,18 @@ class CreateSessionForm(forms.Form):
             self.fields['num_participants'].label = "Number of participants"
 
     def clean_num_participants(self):
-        session_config_name = self.cleaned_data['session_config']
-        lcm = get_lcm(SESSION_CONFIGS_DICT[session_config_name])
-        num_participants = self.cleaned_data['num_participants']
-        if num_participants % lcm:
-            raise forms.ValidationError(
-                'Number of participants must be a multiple of {}'.format(lcm)
-            )
-        return num_participants
+        session_config_name = self.cleaned_data.get('session_config')
+
+        # We must check for an empty string in case validation is not run
+        if session_config_name != '':
+            lcm = get_lcm(SESSION_CONFIGS_DICT[session_config_name])
+            num_participants = self.cleaned_data['num_participants']
+            if num_participants % lcm:
+                raise forms.ValidationError(
+                    'Number of participants must be a multiple of {}'.format(lcm)
+                )
+            return num_participants
+
 
 
 class CreateSession(vanilla.FormView):
@@ -370,8 +375,8 @@ class CreateSession(vanilla.FormView):
     def get_context_data(self, **kwargs):
         # TODO: dynamically populate info about session configs
         # and validate number of participants
-        # context = info_about_session_config(self.session_config)
-        # kwargs.update(context)
+        session_config_summaries = [info_about_session_config(session_config) for session_config in SESSION_CONFIGS_DICT.values()]
+        kwargs.update({'session_config_summaries': session_config_summaries})
         return super(CreateSession, self).get_context_data(**kwargs)
 
     def get_form(self, data=None, files=None, **kwargs):
@@ -885,7 +890,9 @@ def info_about_session_config(session_config):
     return {
         'doc': session_config['doc'],
         'app_sequence': app_sequence,
-        'page_seo': seo
+        'page_seo': seo,
+        'name': session_config['name'],
+        'display_name': session_config['display_name']
     }
 
 

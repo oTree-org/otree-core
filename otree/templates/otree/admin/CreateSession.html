@@ -7,12 +7,6 @@
 
 {% block content %}
 
-    {% formrow form.session_config %}
-
-    {% formrow form.num_participants %}
-
-    {% next_button %}
-
-    {% include 'otree/includes/SessionInfo.html' %}
+{% include "otree/includes/CreateSessionForm.html" %}
 
 {% endblock %}

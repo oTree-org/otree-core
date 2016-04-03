@@ -1,0 +1,21 @@
+{% load otree_tags floppyforms %}
+
+{% formrow form.session_config %}
+
+{% formrow form.num_participants %}
+
+{% next_button %}
+
+{% for summary in session_config_summaries %}
+{% include "otree/includes/SessionInfo.html" with name=summary.name display_name=summary.display_name doc=summary.doc app_sequence=summary.app_sequence summary_display="none" %}
+{% endfor %}
+
+<script type="text/javascript">
+$(document).ready(function () {
+  $('.summary').hide();
+  $('#id_session_config').change(function () {
+    $('.summary').hide();
+    $('#session-config-'+$(this).val()).show();
+  })
+});
+</script>
