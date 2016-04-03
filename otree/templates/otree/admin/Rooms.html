@@ -1,0 +1,19 @@
+{% extends "otree/BaseSite.html" %}
+
+{% block title %}
+    Rooms
+{% endblock %}
+
+{% block content %}
+
+{% for room in rooms %}
+        <h4>
+        <a href="{{ room.url }}">{{ room.display_name }}</a>
+        {% if room.has_session %}
+            <a href="{{ room.url_close }}" style="padding-left:100px;">Close this room.</a>
+        {%  endif %}
+        </h4>
+{% endfor %}
+
+
+{% endblock %}

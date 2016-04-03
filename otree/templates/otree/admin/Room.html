@@ -1,0 +1,38 @@
+{% extends "otree/BaseSite.html" %}
+{% load otree_tags floppyforms %}
+
+{% block title %}
+    {{ room.display_name }}
+{% endblock %}
+
+{% block content %}
+
+    <h3>Persistent URLs</h3>
+
+    <p>
+    These are the persistent URLs you can use in the lab. They will stay constant for new sessions, even if the database is recreated.
+    </p>
+
+    <p>
+    {% for url in participant_urls %}
+        <a href="{{ url }}">{{ url }}</a>
+        <br/>
+    {% endfor %}
+    </p>
+
+    <h3>Create a new session</h3>
+
+    {% formrow form.session_config %}
+
+    {% formrow form.num_participants %}
+
+    {% next_button %}
+
+    <hr/>
+    <h4>Participants waiting: ({{ participant_count }})</h4>
+
+    {% for participant in participant_names %}
+        <p>{{ participant }}</p>
+    {% endfor %}
+
+{% endblock %}
