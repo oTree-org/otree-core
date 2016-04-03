@@ -14,7 +14,7 @@ class TestAdminBasic(TestCase):
         for tab in [
             'demo',
             'sessions',
-            'persistent_lab_urls',
+            'rooms',
             'create_session',
             'create_session/multi_player_game'
         ]:

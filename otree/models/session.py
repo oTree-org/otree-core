@@ -14,7 +14,6 @@ class GlobalSingleton(models.Model):
     class Meta:
         app_label = "otree"
 
-    default_session = models.ForeignKey('Session', null=True, blank=True)
     admin_access_code = models.RandomCharField(
         length=8, doc=('used for authentication to things only the '
                        'admin/experimenter should access')
@@ -125,9 +124,6 @@ class Session(ModelWithVars):
         '''This method is deprecated from public API,
         but still useful internally (like data export)'''
         return self.config['real_world_currency_per_point']
-
-    def is_open(self):
-        return GlobalSingleton.objects.get().default_session == self
 
     def is_for_mturk(self):
         return (not self.is_demo()) and (self.mturk_num_participants > 0)

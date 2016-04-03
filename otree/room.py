@@ -3,6 +3,7 @@ from django.conf import settings
 from otree.models import Session
 from otree.models_concrete import RoomSession
 from django.core.urlresolvers import reverse
+from otree.common_internal import add_params_to_url
 
 class Room(object):
 
@@ -41,8 +42,25 @@ class Room(object):
                 return labels
         raise Exception('no guestlist')
 
+    def get_participant_links(self):
+        participant_urls = []
+        room_base_url = add_params_to_url(reverse('assign_visitor_to_room'), {'room': self.name})
+        if self.has_participant_labels():
+            for label in self.get_participant_labels():
+                participant_url = add_params_to_url(
+                    room_base_url,
+                    {
+                        'participant_label': label
+                    }
+                )
+                participant_urls.append(participant_url)
+        else:
+            participant_urls = [room_base_url]
+
+        return participant_urls
+
     def url(self):
-        return reverse('room', args=(self.name,))
+        return reverse('room_without_session', args=(self.name,))
 
     def url_close(self):
         return reverse('close_room', args=(self.name,))

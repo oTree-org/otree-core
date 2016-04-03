@@ -42,7 +42,7 @@ def url_patterns_from_module(module_name):
             settings.AUTH_LEVEL in {'DEMO', 'EXPERIMENT', 'STUDY'} and
             module_name.startswith('otree.views')):
         unrestricted_views = {
-            'otree.views.concrete.AssignVisitorToDefaultSession',
+            'otree.views.concrete.AssignVisitorToRoom',
             'otree.views.concrete.InitializeParticipant',
             'otree.views.concrete.MTurkLandingPage',
             'otree.views.concrete.MTurkStart',

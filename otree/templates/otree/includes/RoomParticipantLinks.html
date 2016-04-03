@@ -1,0 +1,13 @@
+<h3>Persistent URLs</h3>
+
+<p>
+    These are the persistent URLs you can use in the lab. They will stay constant for new sessions, even if the database is recreated.
+</p>
+<p>
+{% for url in participant_urls %}
+    <a href="{{ url }}">{{ url }}</a>
+    <br/>
+{% endfor %}
+</p>
+
+<hr/>

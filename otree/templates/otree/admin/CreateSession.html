@@ -2,12 +2,12 @@
 {% load otree_tags floppyforms %}
 
 {% block title %}
-    {{ session_config.name }}
+    Create a new session
 {% endblock %}
 
 {% block content %}
 
-    <h3>Create a new session</h3>
+    {% formrow form.session_config %}
 
     {% formrow form.num_participants %}
 
