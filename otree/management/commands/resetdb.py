@@ -14,6 +14,8 @@ from django.core.management import call_command
 from django.db import connections
 
 import six
+import mock
+from django.db.migrations.loader import MigrationLoader
 
 
 # =============================================================================
@@ -98,7 +100,10 @@ class Command(BaseCommand):
                 stmt = dt_stmt.format(table=table)
                 cursor.execute(stmt)
 
+
     def handle(self, **options):
+        print('verbosity: {}'.format(options['verbosity']))
+        options.setdefault('verbosity', 0)
         if options.pop("interactive") and self._cancel_reset():
             return
 
@@ -113,6 +118,12 @@ class Command(BaseCommand):
             self._drop_tables(tables, db, dt_stmt)
 
             logger.info("Creating Database '{}'...".format(db))
+
+
+            with mock.patch.object(MigrationLoader, 'migrations_module', return_value = 'migrations nonexistent hack'):
+                call_command(
+                    'migrate', database=db, #fake_initial=True,
+                    interactive=False, **options)
             call_command(
-                'migrate', database=db, fake_initial=True,
+                'migrate', database=db, fake=True,
                 interactive=False, **options)
