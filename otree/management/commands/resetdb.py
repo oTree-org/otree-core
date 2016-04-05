@@ -15,7 +15,6 @@ from django.db import connections
 
 import six
 
-
 # =============================================================================
 # LOGGER
 # =============================================================================
@@ -101,6 +100,7 @@ class Command(BaseCommand):
     def handle(self, **options):
         if options.pop("interactive") and self._cancel_reset():
             return
+
 
         for db, dbconf in six.iteritems(settings.DATABASES):
             logger.info("Selecting DROP TABLE Statement for the engine...")

@@ -7,11 +7,15 @@ import datetime
 import collections
 import contextlib
 import inspect
+import json
+import re
 from os.path import dirname, join
 from collections import OrderedDict
 from importlib import import_module
 import six
 from six.moves import urllib
+import requests
+import logging
 
 from django.db import transaction
 from django.db import connection
@@ -20,11 +24,14 @@ from django.conf import settings
 from django.template.defaultfilters import title
 
 from otree import constants_internal
+import otree
+
 
 if sys.version_info[0] == 2:
     import unicodecsv as csv
 else:
     import csv
+
 
 
 def add_params_to_url(url, params):
@@ -359,3 +366,36 @@ def lock_on_this_code_path():
         from otree.models.session import GlobalSingleton
         GlobalSingleton.objects.select_for_update().get()
         yield
+
+
+def check_pypi_for_updates():
+    try:
+        logging.getLogger("requests").setLevel(logging.WARNING)
+        response = requests.get('http://pypi.python.org/pypi/otree-core/json')
+        data = json.loads(response.content.decode())
+        newest_dotted = data['info']['version'].strip()
+        installed_dotted = otree.__version__
+
+        semver_re = re.compile(r'^(\d+)\.(\d+)\.(\d+).*$')
+
+        newest = [int(n) for n in semver_re.match(newest_dotted).groups()]
+        installed = [int(n) for n in semver_re.match(installed_dotted).groups()]
+
+        # only care about patch versions if you are >= 5 versions behind
+        if newest > installed and (newest[0] > installed[0]
+                                   or newest[1] > installed[1]
+                                   or newest[2] - installed[2] > 5):
+            if sys.version_info[0] == 3:
+                pip_command = 'pip3'
+            else:
+                pip_command = 'pip'
+            print(
+                'Your otree-core package is out-of-date '
+                '(version {}; latest is {}). '
+                'You should upgrade with:\n'
+                '{} install --upgrade otree-core\n'.format(
+                    installed_dotted, newest_dotted, pip_command
+                )
+            )
+    except Exception as err:
+        pass

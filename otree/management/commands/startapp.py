@@ -6,7 +6,7 @@ import os
 from django.core.management.commands import startapp
 
 import otree
-
+from otree.common_internal import check_pypi_for_updates
 
 class Command(startapp.Command):
     def get_default_template(self):
@@ -17,3 +17,5 @@ class Command(startapp.Command):
         if options.get('template', None) is None:
             options['template'] = self.get_default_template()
         super(Command, self).handle(*args, **options)
+        check_pypi_for_updates()
+

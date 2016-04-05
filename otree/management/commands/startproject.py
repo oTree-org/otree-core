@@ -15,7 +15,7 @@ from django.core.management.commands import startproject
 import six
 
 import otree
-
+from otree.common_internal import check_pypi_for_updates
 
 # =============================================================================
 # CONSTANTS
@@ -69,3 +69,4 @@ class Command(startproject.Command):
         super(Command, self).handle(*args, **options)
 
         self.render_runtime(options)
+        check_pypi_for_updates()
