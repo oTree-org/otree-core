@@ -99,7 +99,6 @@ class Command(BaseCommand):
                 stmt = dt_stmt.format(table=table)
                 cursor.execute(stmt)
 
-
     def handle(self, **options):
         print('verbosity: {}'.format(options['verbosity']))
         options.setdefault('verbosity', 0)
@@ -118,11 +117,38 @@ class Command(BaseCommand):
 
             logger.info("Creating Database '{}'...".format(db))
 
+            # Hack so that migrate can't find migrations files
+            # this way, syncdb will be run instead of migrate.
+            # This is preferable because
+            # users who are used to running "otree resetdb"
+            # may not know how to run 'otree makemigrations'.
+            # This means their migration files will not be up to date,
+            # ergo migrate will create tables with an outdated schema.
 
-            with mock.patch.object(MigrationLoader, 'migrations_module', return_value = 'migrations nonexistent hack'):
+            # after the majority of oTree users have this new version
+            # of resetdb, we can add a migrations/ folder to each app
+            # in the sample games and the app template,
+            # and deprecate resetdb
+            # and instead use "otree makemigrations" and "otree migrate".
+
+            # patch .migrations_module() to return a nonexistent module,
+            # instead of app_name.migrations.
+            # because this module is not found,
+            # migration system will assume the app has no migrations,
+            # and run syncdb instead.
+            with mock.patch.object(
+                    MigrationLoader,
+                    'migrations_module',
+                    return_value='migrations nonexistent hack'
+            ):
+                # note: In 1.9, will need to pass --run-syncdb flag
                 call_command(
-                    'migrate', database=db, #fake_initial=True,
+                    'migrate', database=db,
                     interactive=False, **options)
+
+            # second call to 'migrate', simply to
+            # fake migrations so that runserver doesn't complain
+            # about unapplied migrations
             call_command(
                 'migrate', database=db, fake=True,
                 interactive=False, **options)
