@@ -101,7 +101,6 @@ class Command(BaseCommand):
         if options.pop("interactive") and self._cancel_reset():
             return
 
-
         for db, dbconf in six.iteritems(settings.DATABASES):
             logger.info("Selecting DROP TABLE Statement for the engine...")
             dt_stmt = self._drop_table_stmt(dbconf)

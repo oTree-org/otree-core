@@ -33,7 +33,6 @@ else:
     import csv
 
 
-
 def add_params_to_url(url, params):
     url_parts = list(urllib.parse.urlparse(url))
 
@@ -378,13 +377,17 @@ def check_pypi_for_updates():
 
         semver_re = re.compile(r'^(\d+)\.(\d+)\.(\d+).*$')
 
-        newest = [int(n) for n in semver_re.match(newest_dotted).groups()]
-        installed = [int(n) for n in semver_re.match(installed_dotted).groups()]
+        newest = [
+            int(n) for n in semver_re.match(newest_dotted).groups()
+        ]
+        installed = [
+            int(n) for n in semver_re.match(installed_dotted).groups()
+        ]
 
         # only care about patch versions if you are >= 5 versions behind
-        if newest > installed and (newest[0] > installed[0]
-                                   or newest[1] > installed[1]
-                                   or newest[2] - installed[2] > 5):
+        if newest > installed and (newest[0] > installed[0] or
+                                   newest[1] > installed[1] or
+                                   newest[2] - installed[2] > 5):
             if sys.version_info[0] == 3:
                 pip_command = 'pip3'
             else:
@@ -397,5 +400,5 @@ def check_pypi_for_updates():
                     installed_dotted, newest_dotted, pip_command
                 )
             )
-    except Exception as err:
+    except Exception:
         pass
