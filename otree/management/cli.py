@@ -17,7 +17,7 @@ import six
 from otree.settings import get_default_settings
 import otree
 import otree.management.deploy.heroku
-
+from otree.common_internal import check_pypi_for_updates
 
 # =============================================================================
 # CONSTANTS
@@ -171,6 +171,7 @@ def execute_from_command_line(arguments, script_file):
     # only monkey patch when is necesary
     if "version" in arguments or "--version" in arguments:
         sys.stdout.write(otree_and_django_version() + '\n')
+        check_pypi_for_updates()
     else:
         utility = OTreeManagementUtility(arguments)
         utility.execute()
