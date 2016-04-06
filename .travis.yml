@@ -12,9 +12,9 @@ env:
   - TOXENV=style
   - TOXENV=coverage
   - TOXENV=python3-warnings
-  - TOXENV=py2.7-django1.8-unittest
-  - TOXENV=py2.7-django1.8-integration
-  - TOXENV=py2.7-django1.8-experiments
-  - TOXENV=py3.5-django1.8-unittest
-  - TOXENV=py3.5-django1.8-integration
-  - TOXENV=py3.5-django1.8-experiments
+  - TOXENV=py2.7-unittest
+  - TOXENV=py2.7-integration
+  - TOXENV=py2.7-experiments
+  - TOXENV=py3.5-unittest
+  - TOXENV=py3.5-integration
+  - TOXENV=py3.5-experiments
