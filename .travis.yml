@@ -12,9 +12,9 @@ env:
   - TOXENV=style
   - TOXENV=coverage
   - TOXENV=python3-warnings
-  - TOXENV=py2.7-unittest
-  - TOXENV=py2.7-integration
-  - TOXENV=py2.7-experiments
-  - TOXENV=py3.5-unittest
-  - TOXENV=py3.5-integration
-  - TOXENV=py3.5-experiments
+  - TOXENV=py27-unittest
+  - TOXENV=py27-integration
+  - TOXENV=py27-experiments
+  - TOXENV=py35-unittest
+  - TOXENV=py35-integration
+  - TOXENV=py35-experiments
