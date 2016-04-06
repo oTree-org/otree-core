@@ -148,6 +148,17 @@ def get_default_settings(initial_settings=None):
         'MTURK_SANDBOX_HOST': 'mechanicalturk.sandbox.amazonaws.com',
         'CREATE_DEFAULT_SUPERUSER': True,
 
+        # The project can override the routing.py used as entry point by
+        # setting CHANNEL_DEFAULT_ROUTING.
+        'CHANNEL_LAYERS': {
+            'default': {
+                'BACKEND': 'channels.database_layer.DatabaseChannelLayer',
+                'ROUTING': initial_settings.get(
+                    'CHANNEL_DEFAULT_ROUTING',
+                    'otree.default_routing.channel_routing'),
+            },
+        },
+
         'CELERY_APP': 'otree.celery.app:app',
 
         # since workers on Amazon MTurk can return the hit
@@ -200,6 +211,7 @@ def augment_settings(settings):
         'django.contrib.staticfiles',
         'otree.models_concrete',
         'otree.timeout',
+        'channels',
         'djcelery',
         'kombu.transport.django',
         'rest_framework',
