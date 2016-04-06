@@ -1,0 +1,74 @@
+{% extends "demo/Base.html" %}
+
+
+{% block title %}The oTree Chat{% endblock %}
+
+
+{% block content %}
+<div id="messages">
+</div>
+
+<div>
+    Your message:
+    <input name="message" id="messageInput" />
+    <button type="submit" id="submitMessage" autocomplete="off">Submit</button>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function () {
+    var $input = $('#messageInput');
+    var $messages = $('#messages');
+
+    var socket;
+
+    initWebSocket();
+
+    $('#form').on('submit', function (e) {
+        e.preventDefault();
+        submitMessage();
+    });
+
+    $input.focus();
+
+    function initWebSocket() {
+        socket = new WebSocket("ws://127.0.0.1:8000/chat/");
+        socket.onmessage = function(e) {
+            console.log('Received message', e.data);
+            var data = JSON.parse(e.data);
+            addMessage(data);
+        }
+        socket.onopen = function() {
+            console.log('WebSocket connected');
+        }
+        socket.onclose = function() {
+            console.log('WebSocket disconnected');
+        }
+    }
+
+    function addMessage(data) {
+        if (data.message !== undefined) {
+            var now = new Date();
+            var timestamp = (
+                '' +
+                now.getHours() +
+                ':' +
+                now.getMinutes() +
+                ':' +
+                now.getSeconds());
+            $messages.append(
+                $('<div />').text(timestamp + ' ' + data.message)
+            );
+        }
+    }
+
+    function submitMessage() {
+        var message = $input.val();
+        if (message === '') {
+            return;
+        }
+        socket.send(JSON.stringify({'message': message}));
+        $input.val('');
+    }
+});
+</script>
+{% endblock %}
