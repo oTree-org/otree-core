@@ -100,8 +100,6 @@ class Command(BaseCommand):
                 cursor.execute(stmt)
 
     def handle(self, **options):
-        print('verbosity: {}'.format(options['verbosity']))
-        options.setdefault('verbosity', 0)
         if options.pop("interactive") and self._cancel_reset():
             return
 
