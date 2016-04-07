@@ -168,10 +168,7 @@ class Participant(ModelWithVars):
         for player in self.get_players():
             app_name = player._meta.app_config.name
             views_module = otree.common_internal.get_views_module(app_name)
-            subsession_pages = (
-                [WaitUntilAssignedToGroup] + views_module.page_sequence
-            )
-            pages.extend(subsession_pages)
+            pages.extend(views_module.page_sequence)
         return pages
 
     def _pages_as_urls(self):
@@ -218,10 +215,9 @@ class Participant(ModelWithVars):
             )
             for player in self.get_players()
             for _, page_index in zip(
-                range(pages_for_player(player) + 1),
+                range(pages_for_player(player)),
                 indexes
             )
-            # +1 is for WaitUntilAssigned...
         ])
 
         self._max_page_index = next(indexes) - 1

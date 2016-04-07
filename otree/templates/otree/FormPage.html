@@ -3,5 +3,35 @@
 
 {% block internal_scripts %}
     {{ block.super }}
-    {% include 'otree/includes/PollServerThenRedirect.html' %}
+    <!-- this is an HTML file rather than JavaScript static file because context variables need to be passed to it -->
+<script type="text/javascript">
+$(document).ready(function () {
+
+    var socket;
+    // TODO: add to view
+    var index_in_pages = {{ view.index_in_pages }};
+
+    initWebSocket();
+
+
+
+    function initWebSocket() {
+        socket = new WebSocket("ws://{{ view.socket_url }}/");
+        socket.onmessage = function(e) {
+            console.log('Received redirect message', e.data);
+            var data = JSON.parse(e.data);
+            if (data['new_index_in_pages'] > index_in_pages) {
+                window.location.href = '{{ view.redirect_url }}';
+            }
+        }
+        socket.onopen = function() {
+            console.log('WebSocket connected');
+        }
+        socket.onclose = function() {
+            console.log('WebSocket disconnected');
+        }
+    }
+
+});
+</script>
 {% endblock %}

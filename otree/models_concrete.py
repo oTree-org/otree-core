@@ -48,7 +48,7 @@ class CompletedGroupWaitPage(models.Model):
     page_index = models.PositiveIntegerField()
     session_pk = models.PositiveIntegerField()
     group_pk = models.PositiveIntegerField()
-
+    after_all_players_arrive_run = models.BooleanField(default=False)
 
 class CompletedSubsessionWaitPage(models.Model):
     class Meta:
@@ -57,7 +57,7 @@ class CompletedSubsessionWaitPage(models.Model):
 
     page_index = models.PositiveIntegerField()
     session_pk = models.PositiveIntegerField()
-
+    after_all_players_arrive_run = models.BooleanField(default=False)
 
 class ParticipantToPlayerLookup(models.Model):
     class Meta:

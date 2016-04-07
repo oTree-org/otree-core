@@ -48,7 +48,6 @@ def url_patterns_from_module(module_name):
             'otree.views.concrete.MTurkStart',
             'otree.views.concrete.JoinSessionAnonymously',
             'otree.views.concrete.OutOfRangeNotification',
-            'otree.views.concrete.WaitUntilAssignedToGroup',
         }
 
         if settings.AUTH_LEVEL == 'DEMO':

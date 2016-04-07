@@ -13,7 +13,7 @@ Django==1.8.8
 django-celery==3.1.17
 django-cors-headers==1.1.0
 django-countries==3.4.1
-django-easymoney==0.6
+django-easymoney==0.7
 django-extensions==1.6.1
 django-floppyforms==1.6.1
 django-idmap==0.4.1

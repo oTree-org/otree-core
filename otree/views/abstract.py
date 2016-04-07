@@ -22,6 +22,8 @@ from django.http import (
     HttpResponse, HttpResponseRedirect, Http404)
 from django.utils.translation import ugettext as _
 
+import channels
+
 import vanilla
 
 import otree.forms
@@ -245,6 +247,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
 
         # this is the most reliable way to get the app name,
         # because of WaitUntilAssigned...
+        # 2016-04-07: WaitUntilAssigned removed
         player_lookup = ParticipantToPlayerLookup.objects.get(
             participant_pk=self.participant.pk,
             page_index=self.participant._index_in_pages)
@@ -296,23 +299,13 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                 self.participant = Participant.objects.get(
                     code=participant_code)
 
-                if (self.request.is_ajax() and
-                        self.request.GET.get(constants.check_auto_submit)):
-                    self.participant.last_request_succeeded = True
-                    self.participant._last_request_timestamp = time.time()
-                    self.participant.save()
-                    if self._user_is_on_right_page():
-                        return HttpResponse('0')
-                    return HttpResponse('1')
 
                 # if the player tried to skip past a part of the subsession
                 # (e.g. by typing in a future URL)
                 # or if they hit the back button to a previous subsession
                 # in the sequence.
                 #
-                if (
-                        not self.request.is_ajax() and
-                        not self._user_is_on_right_page()):
+                if not self._user_is_on_right_page():
                     # then bring them back to where they should be
                     return self._redirect_to_page_the_user_should_be_on()
 
@@ -391,7 +384,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                 # so we record that they visited
                 cond = (
                     hasattr(Page, 'is_displayed') and not
-                    hasattr(Page, '_wait_page_flag') and not
                     page.is_displayed())
                 if cond:
                     pages_to_jump_by += 1
@@ -402,6 +394,11 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             self.participant._index_in_pages += pages_to_jump_by
         else:  # e.g. if it's WaitUntil...
             self.participant._index_in_pages += 1
+        channels.Group(
+            'auto_advance_{}'.format(self.participant.code)
+        ).send_message(
+            self.participant._index_in_pages
+        )
 
     def is_displayed(self):
         return True
@@ -449,28 +446,13 @@ class GenericWaitPageMixin(object):
     # for duck typing, indicates this is a wait page
     _wait_page_flag = True
 
-    def request_is_from_wait_page(self):
-        check_if_wait_is_over = constants.check_if_wait_is_over
-        get_param_tvalue = constants.get_param_truth_value
-        return (
-            self.request.is_ajax() and
-            self.request.GET.get(check_if_wait_is_over) == get_param_tvalue)
-
-    def poll_url(self):
+    def socket_url(self):
         '''called from template'''
-        return otree.common_internal.add_params_to_url(
-            self.request.path,
-            {constants.check_if_wait_is_over: constants.get_param_truth_value})
+        raise NotImplementedError()
 
     def redirect_url(self):
         '''called from template'''
         return self.request.path
-
-    # called from template
-    poll_interval_seconds = constants.wait_page_poll_interval_seconds
-
-    def _response_to_wait_page(self):
-        return HttpResponse(int(bool(self._is_ready())))
 
     def get_template_names(self):
         """fallback to otree/WaitPage.html, which is guaranteed to exist.
@@ -497,13 +479,10 @@ class GenericWaitPageMixin(object):
         raise NotImplementedError()
 
     def dispatch(self, request, *args, **kwargs):
-        if self.request_is_from_wait_page():
-            return self._response_to_wait_page()
-        else:
-            if self._is_ready():
-                return self._response_when_ready()
-            self._before_returning_wait_page()
-            return self._get_wait_page()
+        if self._is_ready():
+            return self._response_when_ready()
+        self._before_returning_wait_page()
+        return self._get_wait_page()
 
     title_text = None
 
@@ -559,130 +538,144 @@ class InGameWaitPageMixin(object):
             self._group_or_subsession = self.subsession
         else:
             self._group_or_subsession = self.group
-        if self.request_is_from_wait_page():
-            unvisited_ids = self._get_unvisited_ids()
-            self._record_unvisited_ids(unvisited_ids)
-            return self._response_to_wait_page()
-        else:
-            if self._is_ready():
-                return self._response_when_ready()
-            self.participant.is_on_wait_page = True
-            self._record_visit()
-            if not self.is_displayed():
-                self._increment_index_in_pages()
-                return self._redirect_to_page_the_user_should_be_on()
-            unvisited_ids = self._get_unvisited_ids()
-            self._record_unvisited_ids(unvisited_ids)
-            if len(unvisited_ids) == 0:
+        if self._is_ready():
+            return self._response_when_ready()
+        self.participant.is_on_wait_page = True
+        self._record_visit()
+        if not self.is_displayed():
+            self._increment_index_in_pages()
+            return self._redirect_to_page_the_user_should_be_on()
+        unvisited = self._tally_unvisited()
+        if not unvisited:
 
-                # on SQLite, transaction.atomic causes database to lock,
-                # so we use no-op context manager instead
-                with lock_on_this_code_path():
-                    if self.wait_for_all_groups:
-                        _c = CompletedSubsessionWaitPage.objects.get_or_create(
-                            page_index=self._index_in_pages,
-                            session_pk=self.session.pk)
-                        _, created = _c
-                    else:
-                        _c = CompletedGroupWaitPage.objects.get_or_create(
-                            page_index=self._index_in_pages,
-                            group_pk=self.group.pk,
-                            session_pk=self.session.pk)
-                        _, created = _c
+            # on SQLite, transaction.atomic causes database to lock,
+            # so we use no-op context manager instead
+            with lock_on_this_code_path():
+                if self.wait_for_all_groups:
+                    _c = CompletedSubsessionWaitPage.objects.get_or_create(
+                        page_index=self._index_in_pages,
+                        session_pk=self.session.pk)
+                    completion, created = _c
+                else:
+                    _c = CompletedGroupWaitPage.objects.get_or_create(
+                        page_index=self._index_in_pages,
+                        group_pk=self.group.pk,
+                        session_pk=self.session.pk)
+                    completion, created = _c
 
-                    # run the action inside the context manager, so that the
-                    # action is completed before the next thread does a
-                    # get_or_create and sees that the action has been completed
-                    if created:
+                # run the action inside the context manager, so that the
+                # action is completed before the next thread does a
+                # get_or_create and sees that the action has been completed
+                if created:
 
-                        # block users from accessing self.player inside
-                        # after_all_players_arrive, because conceptually
-                        # there is no single player in this context
-                        # (method is executed once for the whole group)
+                    # block users from accessing self.player inside
+                    # after_all_players_arrive, because conceptually
+                    # there is no single player in this context
+                    # (method is executed once for the whole group)
 
-                        player = self.player
-                        del self.player
-                        self.after_all_players_arrive()
-                        self.player = player
+                    player = self.player
+                    del self.player
+                    self.after_all_players_arrive()
+                    self.player = player
 
-                        # in case there is a timeout on the next page, we
-                        # should ensure the next pages are visited promptly
-                        # TODO: can we make this run only if next page is a
-                        # timeout page?
-                        # or if a player is auto playing.
-                        # we could instead make this request the current page
-                        # URL, but it's different for each player
+                    completion.after_all_players_arrive_run = True
+                    completion.save()
 
-                        # 2015-07-27:
-                        #   why not check if the next page has_timeout?
+                    # send a message to the channel to move forward
 
-                        participant_pk_set = set([
-                            p.participant.pk
-                            for p in self._group_or_subsession.player_set.all()
-                        ])
+                    channels.Group(self.channels_group_name()).send(
+                        {'text': 'ready'}
+                    )
 
-                        otree.timeout.tasks.ensure_pages_visited.apply_async(
-                            kwargs={
-                                'participant_pk_set': participant_pk_set,
-                                'wait_page_index': self._index_in_pages,
-                            }, countdown=10)
-                        return self._response_when_ready()
-            return self._get_wait_page()
+                    # in case there is a timeout on the next page, we
+                    # should ensure the next pages are visited promptly
+                    # TODO: can we make this run only if next page is a
+                    # timeout page?
+                    # or if a player is auto playing.
+                    # we could instead make this request the current page
+                    # URL, but it's different for each player
+
+                    # 2015-07-27:
+                    #   why not check if the next page has_timeout?
+
+                    participant_pk_set = set([
+                        p.participant.pk
+                        for p in self._group_or_subsession.player_set.all()
+                    ])
+
+                    otree.timeout.tasks.ensure_pages_visited.apply_async(
+                        kwargs={
+                            'participant_pk_set': participant_pk_set,
+                            'wait_page_index': self._index_in_pages,
+                        }, countdown=10)
+                    return self._response_when_ready()
+        return self._get_wait_page()
+
+    def channels_group_name(self):
+        group_name = 'session{}-page{}'.format(
+            self.session.pk, self._index_in_pages,
+        )
+
+        if not self.wait_for_all_groups:
+            group_name += '-group{}'.format(self.group.pk)
+
+        return group_name
+
+    def socket_url(self):
+        return '/wait_page/{}'.format(self.channels_group_name())
 
     def _is_ready(self):
         """all participants visited, AND action has been run"""
         if self.wait_for_all_groups:
             return CompletedSubsessionWaitPage.objects.filter(
                 page_index=self._index_in_pages,
-                session_pk=self.session.pk).exists()
+                session_pk=self.session.pk,
+                after_all_players_arrive_run=True).exists()
         else:
             return CompletedGroupWaitPage.objects.filter(
                 page_index=self._index_in_pages,
                 group_pk=self.group.pk,
-                session_pk=self.session.pk).exists()
-
-    def _ids_for_this_wait_page(self):
-        return set([
-            p.participant.id_in_session
-            for p in self._group_or_subsession.player_set.all()
-        ])
-
-    def _get_unvisited_ids(self):
-        """side effect: set _waiting_for_ids"""
-        visited_ids = set(
-            WaitPageVisit.objects.filter(
                 session_pk=self.session.pk,
-                page_index=self._index_in_pages,
-            ).values_list('id_in_session', flat=True))
-        ids_for_this_wait_page = self._ids_for_this_wait_page()
+                after_all_players_arrive_run=True).exists()
 
-        return ids_for_this_wait_page - visited_ids
+    def _tally_unvisited(self):
+        """side effect: set _waiting_for_ids"""
+        participants_for_this_page = set(
+            p.participant for p in self._group_or_subsession.player_set.all()
+        )
 
-    def _record_unvisited_ids(self, unvisited_ids):
-        # only bother numerating if there are just a few, otherwise it's
-        # distracting
-        if len(unvisited_ids) <= 3:
-            self.participant._waiting_for_ids = ', '.join(
-                'P{}'.format(id_in_session)
-                for id_in_session in unvisited_ids)
+        unvisited = set(
+            p for p in participants_for_this_page if
+            p._index_in_pages < self._index_in_pages
+        )
 
-    def _record_visit(self):
-        """record that this player visited"""
-        visit, _ = WaitPageVisit.objects.get_or_create(
-            session_pk=self.session.pk,
-            page_index=self._index_in_pages,
-            id_in_session=self.participant.id_in_session)
+        visited = participants_for_this_page - unvisited
+
+        if 1 <= len(unvisited) <= 3:
+
+            waiting_for_ids = ', '.join(
+                'P{}'.format(p.id_in_session)
+                for p in unvisited)
+
+            for p in visited:
+                p._waiting_for_ids = waiting_for_ids
+
+        return unvisited
+
 
     def is_displayed(self):
         return True
 
     def _response_when_ready(self):
         self.participant.is_on_wait_page = False
+        self.participant._waiting_for_ids = None
         self._increment_index_in_pages()
         return self._redirect_to_page_the_user_should_be_on()
 
     def after_all_players_arrive(self):
         pass
+
+
 
     def _get_default_body_text(self):
         num_other_players = len(self._group_or_subsession.get_players()) - 1
@@ -780,7 +773,7 @@ class FormPageMixin(object):
         self._increment_index_in_pages()
         return self._redirect_to_page_the_user_should_be_on()
 
-    def poll_url(self):
+    def socket_url(self):
         '''called from template. can't start with underscore because used
         in template
 
