@@ -162,8 +162,6 @@ class Participant(ModelWithVars):
         return 'Playing'
 
     def _pages(self):
-        from otree.views.concrete import WaitUntilAssignedToGroup
-
         pages = []
         for player in self.get_players():
             app_name = player._meta.app_config.name

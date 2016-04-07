@@ -48,47 +48,6 @@ class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
         )
 
 
-class WaitUntilAssignedToGroup(FormPageOrInGameWaitPageMixin,
-                               GenericWaitPageMixin, vanilla.GenericView):
-    """
-    In "group by arrival time",
-    we wait until enough players have arrived to form a group,
-    then they all start at the same time.
-
-    It would be bad if some players started before others
-
-    The exception is if players_per_group = None.
-    Then the players should be preassigned, and start right away.
-
-    If we're not grouping by arrival time
-
-    """
-    name_in_url = 'shared'
-
-    def _is_ready(self):
-        if bool(self.group):
-            return not self.group._is_missing_players
-        # group_by_arrival_time code used to be here
-        # if the session was just created
-        # and the code to assign to groups has not executed yet
-        return False
-
-    def body_text(self):
-        return _(
-            'Waiting until other participants or '
-            'the study supervisor are ready.'
-        )
-
-    def _response_when_ready(self):
-        self._increment_index_in_pages()
-        # so it can be shown in the admin
-        self.participant._round_number = self.subsession.round_number
-        return self._redirect_to_page_the_user_should_be_on()
-
-    def _get_debug_tables(self):
-        return []
-
-
 class InitializeParticipant(vanilla.UpdateView):
     """just collects data and sets properties. not essential to functionality.
     the only exception is if the participant needs to be assigned to groups on
