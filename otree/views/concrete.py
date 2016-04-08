@@ -32,7 +32,7 @@ from otree.views.mturk import MTurkConnection
 import otree.common_internal
 from otree.views.abstract import (
     NonSequenceUrlMixin, OTreeMixin,
-    GenericWaitPageMixin, FormPageOrInGameWaitPageMixin,
+
     NO_PARTICIPANTS_LEFT_MSG
 )
 from otree.models_concrete import GroupSize  # noqa

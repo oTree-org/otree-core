@@ -16,12 +16,15 @@ $(document).ready(function () {
 
 
     function initWebSocket() {
-        socket = new WebSocket("ws://{{ view.socket_url }}/");
+        var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+        var ws_path = ws_scheme + '://' + window.location.host + "{{ view.socket_url|escapejs }}";
+
+        socket = new WebSocket(ws_path);
         socket.onmessage = function(e) {
             console.log('Received redirect message', e.data);
             var data = JSON.parse(e.data);
-            if (data['new_index_in_pages'] > index_in_pages) {
-                window.location.href = '{{ view.redirect_url }}';
+            if (data.new_index_in_pages > index_in_pages) {
+                window.location.href = '{{ view.absolute_redirect_url|escapejs }}';
             }
         }
         socket.onopen = function() {

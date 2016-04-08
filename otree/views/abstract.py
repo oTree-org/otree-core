@@ -11,6 +11,7 @@ import time
 import warnings
 import collections
 from six.moves import range
+import json
 
 from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
@@ -40,7 +41,7 @@ from otree.common_internal import (
     lock_on_this_code_path, get_app_label_from_import_path)
 
 from otree.models_concrete import (
-    PageCompletion, WaitPageVisit, CompletedSubsessionWaitPage,
+    PageCompletion, CompletedSubsessionWaitPage,
     CompletedGroupWaitPage, ParticipantToPlayerLookup,
     PageTimeout, StubModel,
     ParticipantLockModel)
@@ -395,9 +396,10 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         else:  # e.g. if it's WaitUntil...
             self.participant._index_in_pages += 1
         channels.Group(
-            'auto_advance_{}'.format(self.participant.code)
-        ).send_message(
-            self.participant._index_in_pages
+            'auto-advance-{}'.format(self.participant.code)
+        ).send(
+            {'text': json.dumps(
+                {'new_index_in_pages': self.participant._index_in_pages})}
         )
 
     def is_displayed(self):
@@ -443,14 +445,12 @@ class GenericWaitPageMixin(object):
 
     """
 
-    # for duck typing, indicates this is a wait page
-    _wait_page_flag = True
-
     def socket_url(self):
         '''called from template'''
         raise NotImplementedError()
 
-    def redirect_url(self):
+
+    def absolute_redirect_url(self):
         '''called from template'''
         return self.request.path
 
@@ -538,16 +538,13 @@ class InGameWaitPageMixin(object):
             self._group_or_subsession = self.subsession
         else:
             self._group_or_subsession = self.group
-        if self._is_ready():
+        if self._is_ready() or not self.is_displayed():
             return self._response_when_ready()
         self.participant.is_on_wait_page = True
-        self._record_visit()
-        if not self.is_displayed():
-            self._increment_index_in_pages()
-            return self._redirect_to_page_the_user_should_be_on()
-        unvisited = self._tally_unvisited()
-        if not unvisited:
-
+        unvisited_participants = self._tally_unvisited()
+        if unvisited_participants:
+            return self._get_wait_page()
+        else:
             # on SQLite, transaction.atomic causes database to lock,
             # so we use no-op context manager instead
             with lock_on_this_code_path():
@@ -583,8 +580,9 @@ class InGameWaitPageMixin(object):
 
                     # send a message to the channel to move forward
 
-                    channels.Group(self.channels_group_name()).send(
-                        {'text': 'ready'}
+                    channels.Group(self.channels_group_internal_name()).send(
+                        {'text': json.dumps(
+                            {'status': 'ready'})}
                     )
 
                     # in case there is a timeout on the next page, we
@@ -609,9 +607,9 @@ class InGameWaitPageMixin(object):
                             'wait_page_index': self._index_in_pages,
                         }, countdown=10)
                     return self._response_when_ready()
-        return self._get_wait_page()
 
-    def channels_group_name(self):
+
+    def channels_group_external_name(self):
         group_name = 'session{}-page{}'.format(
             self.session.pk, self._index_in_pages,
         )
@@ -621,8 +619,12 @@ class InGameWaitPageMixin(object):
 
         return group_name
 
+    def channels_group_internal_name(self):
+        # need prefix for security
+        return 'wait-page-' + self.channels_group_external_name()
+
     def socket_url(self):
-        return '/wait_page/{}'.format(self.channels_group_name())
+        return '/wait_page/{}'.format(self.channels_group_external_name())
 
     def _is_ready(self):
         """all participants visited, AND action has been run"""
@@ -778,11 +780,10 @@ class FormPageMixin(object):
         in template
 
         '''
-        return otree.common_internal.add_params_to_url(
-            self.request.path,
-            {constants.check_auto_submit: constants.get_param_truth_value})
+        # TODO: use named URL
+        return '/auto_advance/{}'.format(self.participant.code)
 
-    def redirect_url(self):
+    def absolute_redirect_url(self):
         '''called from template'''
         return self.request.path
 

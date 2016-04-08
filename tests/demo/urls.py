@@ -4,7 +4,6 @@ from django.conf.urls import patterns, url
 urlpatterns = patterns(
     '',
     url(r'^$', 'tests.demo.views.index', name='index'),
-    url(r'^chat/$', 'tests.demo.chat.views.chat', name='chat'),
     url(r'^latex/$', 'django.shortcuts.render',
         {'template_name': 'demo/latex.html'}, name='latex'),
     url(r'^widgets/$', 'tests.demo.views.widgets', name='widgets'),

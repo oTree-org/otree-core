@@ -65,11 +65,15 @@ $(document).ready(function () {
     initWebSocket();
 
     function initWebSocket() {
-        socket = new WebSocket("ws://{{ view.socket_url }}/");
+
+        var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+        var ws_path = ws_scheme + '://' + window.location.host + "{{ view.socket_url }}";
+        socket = new WebSocket(ws_path);
         socket.onmessage = function(e) {
             console.log('Received redirect message', e.data);
             var data = JSON.parse(e.data);
-            window.location.href = '{{ view.redirect_url }}';
+            window.location.href = '{{ view.absolute_redirect_url }}';
+
         }
         socket.onopen = function() {
             console.log('WebSocket connected');

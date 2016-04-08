@@ -16,20 +16,6 @@ class PageCompletion(models.Model):
     auto_submitted = models.BooleanField()
 
 
-class WaitPageVisit(models.Model):
-    '''difference between this and PageVisit model is that this is run
-    when the player first loads the page, rather than when they leave
-
-    '''
-    class Meta:
-        app_label = "otree"
-        index_together = ['session_pk', 'page_index', 'id_in_session']
-
-    session_pk = models.PositiveIntegerField()
-    page_index = models.PositiveIntegerField()
-    id_in_session = models.PositiveIntegerField()
-
-
 class PageTimeout(models.Model):
     class Meta:
         app_label = "otree"
