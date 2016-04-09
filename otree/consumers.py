@@ -1,13 +1,14 @@
 from channels import Group
 
 
-def connect_wait_page(message, group_name):
-    group = Group('wait_page_{}'.format(group_name))
+def connect_wait_page(message, external_group_name):
+    print('in connect_wait_page, group {}'.format(external_group_name))
+    group = Group('wait-page-{}'.format(external_group_name))
     group.add(message.reply_channel)
 
 
-def disconnect_wait_page(message, group_name):
-    group = Group('wait-page-{}'.format(group_name))
+def disconnect_wait_page(message, external_group_name):
+    group = Group('wait-page-{}'.format(external_group_name))
     group.discard(message.reply_channel)
 
 

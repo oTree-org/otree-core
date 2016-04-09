@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # =============================================================================
@@ -283,6 +282,9 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
 
                 self._index_in_pages = int(
                     kwargs.pop(constants.index_in_pages))
+                # temp, for page template
+                self.index_in_pages = self._index_in_pages
+
 
                 # take a lock so that this same code path is not run twice
                 # for the same participant
@@ -401,6 +403,8 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             {'text': json.dumps(
                 {'new_index_in_pages': self.participant._index_in_pages})}
         )
+        print('Participant {} advanced to page {}'.format(self.participant.code, self.participant._index_in_pages))
+
 
     def is_displayed(self):
         return True
@@ -580,10 +584,12 @@ class InGameWaitPageMixin(object):
 
                     # send a message to the channel to move forward
 
+
                     channels.Group(self.channels_group_internal_name()).send(
                         {'text': json.dumps(
                             {'status': 'ready'})}
                     )
+                    print('Sending message to {}'.format(self.channels_group_internal_name()))
 
                     # in case there is a timeout on the next page, we
                     # should ensure the next pages are visited promptly
@@ -624,7 +630,7 @@ class InGameWaitPageMixin(object):
         return 'wait-page-' + self.channels_group_external_name()
 
     def socket_url(self):
-        return '/wait_page/{}'.format(self.channels_group_external_name())
+        return '/wait_page/{}/'.format(self.channels_group_external_name())
 
     def _is_ready(self):
         """all participants visited, AND action has been run"""
@@ -781,7 +787,7 @@ class FormPageMixin(object):
 
         '''
         # TODO: use named URL
-        return '/auto_advance/{}'.format(self.participant.code)
+        return '/auto_advance/{}/'.format(self.participant.code)
 
     def absolute_redirect_url(self):
         '''called from template'''
