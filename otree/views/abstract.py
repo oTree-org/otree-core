@@ -403,8 +403,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             {'text': json.dumps(
                 {'new_index_in_pages': self.participant._index_in_pages})}
         )
-        print('Participant {} advanced to page {}'.format(self.participant.code, self.participant._index_in_pages))
-
 
     def is_displayed(self):
         return True
@@ -585,11 +583,11 @@ class InGameWaitPageMixin(object):
                     # send a message to the channel to move forward
 
 
-                    channels.Group(self.channels_group_internal_name()).send(
+                    channels.Group(self.channels_group_name()).send(
                         {'text': json.dumps(
                             {'status': 'ready'})}
                     )
-                    print('Sending message to {}'.format(self.channels_group_internal_name()))
+                    print('Sending message to {}'.format(self.channels_group_name()))
 
                     # in case there is a timeout on the next page, we
                     # should ensure the next pages are visited promptly
@@ -615,22 +613,35 @@ class InGameWaitPageMixin(object):
                     return self._response_when_ready()
 
 
-    def channels_group_external_name(self):
-        group_name = 'session{}-page{}'.format(
-            self.session.pk, self._index_in_pages,
+    def channels_group_name(self):
+        if self.wait_for_all_groups:
+            model_name = 'subsession'
+        else:
+            model_name = 'group'
+
+        return otree.common_internal.channels_wait_page_group_name(
+            app_label=self._group_or_subsession._meta.app_label,
+            page_index=self._index_in_pages,
+            model_name=model_name,
+            model_pk=self._group_or_subsession.pk,
         )
 
-        if not self.wait_for_all_groups:
-            group_name += '-group{}'.format(self.group.pk)
-
-        return group_name
-
-    def channels_group_internal_name(self):
-        # need prefix for security
-        return 'wait-page-' + self.channels_group_external_name()
 
     def socket_url(self):
-        return '/wait_page/{}/'.format(self.channels_group_external_name())
+        base_url = '/wait_page/'
+
+        if self.wait_for_all_groups:
+            model_name = 'subsession'
+        else:
+            model_name = 'group'
+
+        return otree.common_internal.get_wait_page_socket_url(
+            base_url=base_url,
+            app_label=self._group_or_subsession._meta.app_label,
+            page_index=self._index_in_pages,
+            model_name=model_name,
+            model_pk=self._group_or_subsession.pk
+        )
 
     def _is_ready(self):
         """all participants visited, AND action has been run"""
@@ -648,6 +659,7 @@ class InGameWaitPageMixin(object):
 
     def _tally_unvisited(self):
         """side effect: set _waiting_for_ids"""
+
         participants_for_this_page = set(
             p.participant for p in self._group_or_subsession.player_set.all()
         )

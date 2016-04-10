@@ -19,6 +19,8 @@ from django.conf import settings
 from django.contrib import messages
 from django.utils.encoding import force_text
 
+from channels.handler import AsgiHandler
+import channels
 import vanilla
 
 from ordered_set import OrderedSet as oset
@@ -466,18 +468,23 @@ class CreateSession(vanilla.FormView):
         else:
             kwargs['num_participants'] = form.cleaned_data['num_participants']
 
-        thread_create_session = threading.Thread(
-            target=sleep_then_create_session,
-            kwargs=kwargs,
-        )
-        thread_create_session.setName(pre_create_id)
-        thread_create_session.start()
+
 
         self.request.session['for_mturk'] = self.for_mturk
         wait_until_session_created_url = reverse(
             'wait_until_session_created', args=(pre_create_id,)
         )
-        return HttpResponseRedirect(wait_until_session_created_url)
+        response = HttpResponseRedirect(wait_until_session_created_url)
+
+        channels_group = channels.Group('session-create-{}'.format(pre_create_id))
+        for chunk in AsgiHandler.encode_response(response):
+            channels_group.send(chunk)
+
+            message.reply_channel.send(chunk)
+
+        sleep_then_create_session(**kwargs)
+
+
 
 
 class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
