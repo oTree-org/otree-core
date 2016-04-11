@@ -1,6 +1,5 @@
 from channels import Group
-from otree.models_concrete import ParticipantToPlayerLookup
-import re
+from otree.models import Participant
 from otree import common_internal
 import sys
 import json
@@ -12,15 +11,17 @@ else:
     from urllib.parse import parse_qs
 
 
-def connect_wait_page(message):
+def connect_wait_page(message, params):
+    try:
+        params = parse_qs(str(message.content['query_string']))
 
+        app_label = params['app_label'][0]
+        page_index = int(params['page_index'][0])
+        model_name = params['model_name'][0]
+        model_pk = int(params['model_pk'][0])
+    except Exception as e:
+        raise e
 
-    params = parse_qs(message.content['query_string'])
-
-    app_label = params['app_label'][0]
-    page_index = int(params['page_index'][0])
-    model_name = params['model_name'][0]
-    model_pk = int(params['model_pk'][0])
 
     group_name = common_internal.channels_wait_page_group_name(
         app_label, page_index, model_name, model_pk
@@ -56,14 +57,16 @@ def connect_wait_page(message):
                 {'status': 'ready'})})
 
 
+def disconnect_wait_page(message, params):
+    try:
+        params = parse_qs(str(message.content['query_string']))
 
-def disconnect_wait_page(message):
-    params = parse_qs(message.content['query_string'])
-
-    app_label = params['app_label'][0]
-    page_index = int(params['page_index'][0])
-    model_name = params['model_name'][0]
-    model_pk = int(params['model_pk'][0])
+        app_label = params['app_label'][0]
+        page_index = int(params['page_index'][0])
+        model_name = params['model_name'][0]
+        model_pk = int(params['model_pk'][0])
+    except Exception as e:
+        raise e
 
     group_name = common_internal.channels_wait_page_group_name(
         app_label, page_index, model_name, model_pk
@@ -74,15 +77,36 @@ def disconnect_wait_page(message):
     group.discard(message.reply_channel)
 
 
-def connect_auto_advance(message, participant_code):
+def connect_auto_advance(message, params):
+    try:
+        params = parse_qs(str(message.content['query_string']))
+        participant_code = params['participant_code'][0]
+        page_index = int(params['page_index'][0])
+    except Exception as e:
+        raise e
+
     group = Group('auto-advance-{}'.format(participant_code))
     group.add(message.reply_channel)
 
+    # redundant check in case there is a rare race condition
+    participant = Participant.objects.get(code=participant_code)
+    if participant._index_in_pages > page_index:
+        message.reply_channel.send(
+            {'text': json.dumps(
+                {'new_index_in_pages': participant._index_in_pages})}
+        )
 
-def disconnect_auto_advance(message, participant_code):
+
+def disconnect_auto_advance(message, params):
+    try:
+        params = parse_qs(str(message.content['query_string']))
+        participant_code = params['participant_code'][0]
+    except Exception as e:
+        raise e
+
+
     group = Group('auto-advance-{}'.format(participant_code))
     group.discard(message.reply_channel)
-
 
 
 '''

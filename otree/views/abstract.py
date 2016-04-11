@@ -397,12 +397,16 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             self.participant._index_in_pages += pages_to_jump_by
         else:  # e.g. if it's WaitUntil...
             self.participant._index_in_pages += 1
+
+
         channels.Group(
             'auto-advance-{}'.format(self.participant.code)
         ).send(
             {'text': json.dumps(
                 {'new_index_in_pages': self.participant._index_in_pages})}
         )
+
+
 
     def is_displayed(self):
         return True
@@ -581,13 +585,10 @@ class InGameWaitPageMixin(object):
                     completion.save()
 
                     # send a message to the channel to move forward
-
-
                     channels.Group(self.channels_group_name()).send(
                         {'text': json.dumps(
                             {'status': 'ready'})}
                     )
-                    print('Sending message to {}'.format(self.channels_group_name()))
 
                     # in case there is a timeout on the next page, we
                     # should ensure the next pages are visited promptly
@@ -798,8 +799,11 @@ class FormPageMixin(object):
         in template
 
         '''
-        # TODO: use named URL
-        return '/auto_advance/{}/'.format(self.participant.code)
+        return otree.common_internal.add_params_to_url(
+            '/auto_advance/',
+            {'participant_code': self.participant.code,
+             'page_index': self._index_in_pages}
+        )
 
     def absolute_redirect_url(self):
         '''called from template'''
