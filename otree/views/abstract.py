@@ -202,8 +202,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
 
         """
         context = {}
-        views_module = otree.common_internal.get_views_module(
-            self.subsession._meta.app_config.name)
+        views_module = self.__module__
         if hasattr(views_module, 'vars_for_all_templates'):
             context.update(views_module.vars_for_all_templates(self) or {})
         context.update(self.vars_for_template() or {})
@@ -352,13 +351,14 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             PageTimeout.objects.filter(
                 participant_pk=self.participant.pk,
                 page_index=self.participant._index_in_pages).delete()
+        ParticipantToPlayerLookup.objects.filter(
+            participant_pk=self.participant.pk,
+            page_index=self.participant._index_in_pages).delete()
 
         # performance optimization:
         # we skip any page that is a sequence page where is_displayed
         # evaluates to False to eliminate unnecessary redirection
-        views_module = otree.common_internal.get_views_module(
-            self.subsession._meta.app_config.name
-        )
+        views_module = self.__module__
         pages = views_module.page_sequence
 
         if self.__class__ in pages:
@@ -690,8 +690,6 @@ class InGameWaitPageMixin(object):
 
     def after_all_players_arrive(self):
         pass
-
-
 
     def _get_default_body_text(self):
         num_other_players = len(self._group_or_subsession.get_players()) - 1
