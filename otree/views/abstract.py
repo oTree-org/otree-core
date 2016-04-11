@@ -629,20 +629,19 @@ class InGameWaitPageMixin(object):
 
 
     def socket_url(self):
-        base_url = '/wait_page/'
-
         if self.wait_for_all_groups:
             model_name = 'subsession'
         else:
             model_name = 'group'
 
-        return otree.common_internal.get_wait_page_socket_url(
-            base_url=base_url,
-            app_label=self._group_or_subsession._meta.app_label,
-            page_index=self._index_in_pages,
-            model_name=model_name,
-            model_pk=self._group_or_subsession.pk
-        )
+        params = ','.join([
+            self._group_or_subsession._meta.app_label,
+            str(self._index_in_pages),
+            model_name,
+            str(self._group_or_subsession.pk)
+        ])
+
+        return '/wait_page/{}/'.format(params)
 
     def _is_ready(self):
         """all participants visited, AND action has been run"""
@@ -799,11 +798,8 @@ class FormPageMixin(object):
         in template
 
         '''
-        return otree.common_internal.add_params_to_url(
-            '/auto_advance/',
-            {'participant_code': self.participant.code,
-             'page_index': self._index_in_pages}
-        )
+        params = ','.join([self.participant.code, str(self._index_in_pages)])
+        return '/auto_advance/{}/'.format(params)
 
     def absolute_redirect_url(self):
         '''called from template'''

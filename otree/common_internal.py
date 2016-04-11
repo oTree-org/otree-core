@@ -404,18 +404,6 @@ def check_pypi_for_updates():
         pass
 
 
-def get_wait_page_socket_url(base_url, app_label, page_index, model_name, model_pk):
-
-    param_dict = {
-        'app_label': app_label,
-        'page_index': page_index,
-        'model_name': model_name,
-        'model_pk': model_pk,
-    }
-
-    return add_params_to_url(base_url, param_dict)
-
-
 def channels_wait_page_group_name(app_label, page_index, model_name, model_pk):
 
     return 'wait-page-{}-page{}-{}{}'.format(
