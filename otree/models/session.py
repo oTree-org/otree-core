@@ -4,7 +4,7 @@ from otree import constants_internal
 import otree.common_internal
 from otree.db import models
 from .varsmixin import ModelWithVars
-
+from otree.models_concrete import ParticipantToPlayerLookup
 
 class GlobalSingleton(models.Model):
     """object that can hold site-wide settings. There should only be one
@@ -227,14 +227,28 @@ class Session(ModelWithVars):
     def build_participant_to_player_lookups(self):
         subsession_app_names = self.config['app_sequence']
 
-        num_pages_in_each_app = {}
+        views_modules = {}
         for app_name in subsession_app_names:
-            views_module = otree.common_internal.get_views_module(app_name)
+            views_modules[app_name] = (
+                otree.common_internal.get_views_module(app_name))
 
-            num_pages = len(views_module.page_sequence)
-            num_pages_in_each_app[app_name] = num_pages
+        def views_module_for_player(player):
+            return views_modules[player._meta.app_config.name]
 
         for participant in self.get_participants():
-            participant.build_participant_to_player_lookups(
-                num_pages_in_each_app
-            )
+
+            page_index = 0
+            for player in participant.get_players():
+                for View in views_module_for_player(player).page_sequence:
+                    ParticipantToPlayerLookup(
+                        participant_pk=participant.pk,
+                        page_index=page_index,
+                        app_name=player._meta.app_config.name,
+                        player_pk=player.pk,
+                        url=View.url(participant, page_index)
+                    ).save()
+                    page_index += 1
+
+            # technically could be stored at the session level
+            participant._max_page_index = page_index
+            participant.save()

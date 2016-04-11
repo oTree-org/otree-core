@@ -245,12 +245,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         because used by all views, not just sequence
         """
 
-        # this is the most reliable way to get the app name,
-        # because of WaitUntilAssigned...
-        # 2016-04-07: WaitUntilAssigned removed
-        player_lookup = ParticipantToPlayerLookup.objects.get(
-            participant_pk=self.participant.pk,
-            page_index=self.participant._index_in_pages)
+        player_lookup = self.participant.player_lookup()
 
         app_name = player_lookup.app_name
         player_pk = player_lookup.player_pk

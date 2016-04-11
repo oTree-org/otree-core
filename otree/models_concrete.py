@@ -54,6 +54,7 @@ class ParticipantToPlayerLookup(models.Model):
     page_index = models.PositiveIntegerField()
     app_name = models.CharField(max_length=300)
     player_pk = models.PositiveIntegerField()
+    url = models.CharField(max_length=300)
 
 
 class GroupSize(models.Model):

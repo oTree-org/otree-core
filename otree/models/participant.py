@@ -120,6 +120,14 @@ class Participant(ModelWithVars):
         self._is_auto_playing = False
         self.save()
 
+    def player_lookup(self):
+        # this is the most reliable way to get the app name,
+        # because of WaitUntilAssigned...
+        # 2016-04-07: WaitUntilAssigned removed
+        return ParticipantToPlayerLookup.objects.get(
+            participant_pk=self.pk,
+            page_index=self._index_in_pages)
+
     def _current_page(self):
         return '{}/{} pages'.format(
             self._index_in_pages, self._max_page_index
@@ -154,29 +162,16 @@ class Participant(ModelWithVars):
                 time.time() - self._last_request_timestamp
             )
         if time_since_last_request > max_seconds_since_last_request:
-            return 'Disconnected'
+            return 'Inactive'
         if self.is_on_wait_page:
             if self._waiting_for_ids:
                 return 'Waiting for {}'.format(self._waiting_for_ids)
             return 'Waiting'
         return 'Playing'
 
-    def _pages(self):
-        pages = []
-        for player in self.get_players():
-            app_name = player._meta.app_config.name
-            views_module = otree.common_internal.get_views_module(app_name)
-            pages.extend(views_module.page_sequence)
-        return pages
-
-    def _pages_as_urls(self):
-        return [
-            View.url(self, index) for index, View in enumerate(self._pages())
-        ]
-
     def _url_i_should_be_on(self):
         if self._index_in_pages <= self._max_page_index:
-            return self._pages_as_urls()[self._index_in_pages]
+            return self.player_lookup().url
         else:
             if self.session.mturk_HITId:
                 assignment_id = self.mturk_assignment_id
@@ -196,30 +191,6 @@ class Participant(ModelWithVars):
                 return url
             from otree.views.concrete import OutOfRangeNotification
             return OutOfRangeNotification.url(self)
-
-    def build_participant_to_player_lookups(self, num_pages_in_each_app):
-
-        def pages_for_player(player):
-            return num_pages_in_each_app[player._meta.app_config.name]
-
-        indexes = itertools.count()
-
-        ParticipantToPlayerLookup.objects.bulk_create([
-            ParticipantToPlayerLookup(
-                participant_pk=self.pk,
-                page_index=page_index,
-                app_name=player._meta.app_config.name,
-                player_pk=player.pk,
-            )
-            for player in self.get_players()
-            for _, page_index in zip(
-                range(pages_for_player(player)),
-                indexes
-            )
-        ])
-
-        self._max_page_index = next(indexes) - 1
-        self.save()
 
     def __unicode__(self):
         return self.name()
