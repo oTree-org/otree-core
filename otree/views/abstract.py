@@ -202,7 +202,8 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
 
         """
         context = {}
-        views_module = self.__module__
+        views_module = otree.common_internal.get_views_module(
+            self.subsession._meta.app_config.name)
         if hasattr(views_module, 'vars_for_all_templates'):
             context.update(views_module.vars_for_all_templates(self) or {})
         context.update(self.vars_for_template() or {})
@@ -358,7 +359,8 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         # performance optimization:
         # we skip any page that is a sequence page where is_displayed
         # evaluates to False to eliminate unnecessary redirection
-        views_module = self.__module__
+        views_module = otree.common_internal.get_views_module(
+            self.subsession._meta.app_config.name)
         pages = views_module.page_sequence
 
         if self.__class__ in pages:
