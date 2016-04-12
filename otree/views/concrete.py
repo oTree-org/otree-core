@@ -60,7 +60,7 @@ class InitializeParticipant(vanilla.UpdateView):
 
     @classmethod
     def url_pattern(cls):
-        return r'^InitializeParticipant/(?P<{}>[a-z]+)/$'.format(
+        return r'^InitializeParticipant/(?P<{}>[a-z0-9]+)/$'.format(
             constants.participant_code
         )
 
@@ -96,7 +96,7 @@ class MTurkLandingPage(vanilla.TemplateView):
 
     @classmethod
     def url_pattern(cls):
-        return r"^MTurkLandingPage/(?P<session_code>[a-z]+)/$"
+        return r"^MTurkLandingPage/(?P<session_code>[a-z0-9]+)/$"
 
     @classmethod
     def url_name(cls):
@@ -132,7 +132,7 @@ class MTurkStart(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r"^MTurkStart/(?P<session_code>[a-z]+)/$"
+        return r"^MTurkStart/(?P<session_code>[a-z0-9]+)/$"
 
     @classmethod
     def url_name(cls):
@@ -196,7 +196,7 @@ class JoinSessionAnonymously(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r'^join/(?P<anonymous_code>[a-z]+)/$'
+        return r'^join/(?P<anonymous_code>[a-z0-9]+)/$'
 
     @classmethod
     def url_name(cls):

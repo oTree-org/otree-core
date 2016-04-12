@@ -34,7 +34,6 @@ mturk_worker_id = 'mturk_worker_id'
 debug_values_built_in = 'debug_values_built_in'
 debug_values = 'debug_values'
 get_param_truth_value = '1'
-admin_access_code = 'admin_access_code'
 index_in_pages = 'index_in_pages'
 
 timeout_seconds = 'timeout_seconds'

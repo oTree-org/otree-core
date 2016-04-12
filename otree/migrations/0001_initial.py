@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
+import otree.common_internal
 import otree.db.models
 import otree.models.varsmixin
 
@@ -15,7 +16,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='CompletedGroupWaitPage',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('page_index', otree.db.models.PositiveIntegerField(null=True)),
                 ('session_pk', otree.db.models.PositiveIntegerField(null=True)),
                 ('group_pk', otree.db.models.PositiveIntegerField(null=True)),
@@ -24,7 +25,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='CompletedSubsessionWaitPage',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('page_index', otree.db.models.PositiveIntegerField(null=True)),
                 ('session_pk', otree.db.models.PositiveIntegerField(null=True)),
             ],
@@ -32,15 +33,14 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='GlobalSingleton',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('admin_access_code', otree.db.models.RandomCharField(blank=True, max_length=8)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
             ],
         ),
         migrations.CreateModel(
             name='GroupSize',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('app_label', otree.db.models.CharField(null=True, max_length=300)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('app_label', otree.db.models.CharField(max_length=300, null=True)),
                 ('subsession_pk', otree.db.models.PositiveIntegerField(null=True)),
                 ('group_index', otree.db.models.PositiveIntegerField(null=True)),
                 ('group_size', otree.db.models.PositiveIntegerField(null=True)),
@@ -49,10 +49,10 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='PageCompletion',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('app_name', otree.db.models.CharField(null=True, max_length=300)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('app_name', otree.db.models.CharField(max_length=300, null=True)),
                 ('page_index', otree.db.models.PositiveIntegerField(null=True)),
-                ('page_name', otree.db.models.CharField(null=True, max_length=300)),
+                ('page_name', otree.db.models.CharField(max_length=300, null=True)),
                 ('time_stamp', otree.db.models.PositiveIntegerField(null=True)),
                 ('seconds_on_page', otree.db.models.PositiveIntegerField(null=True)),
                 ('subsession_pk', otree.db.models.PositiveIntegerField(null=True)),
@@ -64,7 +64,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='PageTimeout',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('participant_pk', otree.db.models.PositiveIntegerField(null=True)),
                 ('page_index', otree.db.models.PositiveIntegerField(null=True)),
                 ('expiration_time', otree.db.models.PositiveIntegerField(null=True)),
@@ -73,27 +73,27 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Participant',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('vars', otree.db.models.JSONField(null=True, default=dict)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('vars', otree.db.models.JSONField(default=dict, null=True)),
                 ('exclude_from_data_analysis', otree.db.models.BooleanField(default=False, choices=[(True, 'Yes'), (False, 'No')])),
                 ('time_started', otree.db.models.DateTimeField(null=True)),
-                ('mturk_assignment_id', otree.db.models.CharField(null=True, max_length=50)),
-                ('mturk_worker_id', otree.db.models.CharField(null=True, max_length=50)),
-                ('start_order', otree.db.models.PositiveIntegerField(db_index=True, null=True)),
-                ('label', otree.db.models.CharField(null=True, max_length=50)),
-                ('_index_in_subsessions', otree.db.models.PositiveIntegerField(null=True, default=0)),
-                ('_index_in_pages', otree.db.models.PositiveIntegerField(db_index=True, null=True, default=0)),
+                ('mturk_assignment_id', otree.db.models.CharField(max_length=50, null=True)),
+                ('mturk_worker_id', otree.db.models.CharField(max_length=50, null=True)),
+                ('start_order', otree.db.models.PositiveIntegerField(null=True, db_index=True)),
+                ('label', otree.db.models.CharField(max_length=50, null=True)),
+                ('_index_in_subsessions', otree.db.models.PositiveIntegerField(default=0, null=True)),
+                ('_index_in_pages', otree.db.models.PositiveIntegerField(default=0, null=True, db_index=True)),
                 ('id_in_session', otree.db.models.PositiveIntegerField(null=True)),
-                ('_waiting_for_ids', otree.db.models.CharField(null=True, max_length=300)),
-                ('code', otree.db.models.RandomCharField(blank=True, max_length=8, db_index=True)),
-                ('last_request_succeeded', otree.db.models.BooleanField(choices=[(True, 'Yes'), (False, 'No')], verbose_name='Health of last server request')),
-                ('visited', otree.db.models.BooleanField(choices=[(True, 'Yes'), (False, 'No')], default=False, db_index=True)),
+                ('_waiting_for_ids', otree.db.models.CharField(max_length=300, null=True)),
+                ('code', otree.db.models.CharField(default=otree.common_internal.random_chars_8, max_length=8, null=True, db_index=True)),
+                ('last_request_succeeded', otree.db.models.BooleanField(verbose_name=b'Health of last server request', choices=[(True, 'Yes'), (False, 'No')])),
+                ('visited', otree.db.models.BooleanField(default=False, db_index=True, choices=[(True, 'Yes'), (False, 'No')])),
                 ('ip_address', otree.db.models.GenericIPAddressField(null=True)),
                 ('_last_page_timestamp', otree.db.models.PositiveIntegerField(null=True)),
                 ('_last_request_timestamp', otree.db.models.PositiveIntegerField(null=True)),
                 ('is_on_wait_page', otree.db.models.BooleanField(default=False, choices=[(True, 'Yes'), (False, 'No')])),
-                ('_current_page_name', otree.db.models.CharField(verbose_name='page', null=True, max_length=200)),
-                ('_current_app_name', otree.db.models.CharField(verbose_name='app', null=True, max_length=200)),
+                ('_current_page_name', otree.db.models.CharField(max_length=200, null=True, verbose_name=b'page')),
+                ('_current_app_name', otree.db.models.CharField(max_length=200, null=True, verbose_name=b'app')),
                 ('_round_number', otree.db.models.PositiveIntegerField(null=True)),
                 ('_current_form_page_url', otree.db.models.URLField(null=True)),
                 ('_max_page_index', otree.db.models.PositiveIntegerField(null=True)),
@@ -107,45 +107,45 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ParticipantLockModel',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('participant_code', otree.db.models.CharField(db_index=True, null=True, max_length=10)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('participant_code', otree.db.models.CharField(max_length=10, null=True, db_index=True)),
             ],
         ),
         migrations.CreateModel(
             name='ParticipantToPlayerLookup',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('participant_pk', otree.db.models.PositiveIntegerField(null=True)),
                 ('page_index', otree.db.models.PositiveIntegerField(null=True)),
-                ('app_name', otree.db.models.CharField(null=True, max_length=300)),
+                ('app_name', otree.db.models.CharField(max_length=300, null=True)),
                 ('player_pk', otree.db.models.PositiveIntegerField(null=True)),
             ],
         ),
         migrations.CreateModel(
             name='Session',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('vars', otree.db.models.JSONField(null=True, default=dict)),
-                ('config', otree.db.models.JSONField(null=True, default=dict)),
-                ('label', otree.db.models.CharField(blank=True, null=True, max_length=300, help_text='For internal record-keeping')),
-                ('experimenter_name', otree.db.models.CharField(blank=True, null=True, max_length=300, help_text='For internal record-keeping')),
-                ('code', otree.db.models.RandomCharField(blank=True, max_length=8, db_index=True)),
-                ('time_scheduled', otree.db.models.DateTimeField(blank=True, null=True, help_text='For internal record-keeping')),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('vars', otree.db.models.JSONField(default=dict, null=True)),
+                ('config', otree.db.models.JSONField(default=dict, null=True)),
+                ('label', otree.db.models.CharField(help_text=b'For internal record-keeping', max_length=300, null=True, blank=True)),
+                ('experimenter_name', otree.db.models.CharField(help_text=b'For internal record-keeping', max_length=300, null=True, blank=True)),
+                ('code', otree.db.models.CharField(default=otree.common_internal.random_chars_8, max_length=8, null=True, db_index=True)),
+                ('time_scheduled', otree.db.models.DateTimeField(help_text=b'For internal record-keeping', null=True, blank=True)),
                 ('time_started', otree.db.models.DateTimeField(null=True)),
-                ('mturk_HITId', otree.db.models.CharField(blank=True, null=True, max_length=300, help_text='Hit id for this session on MTurk')),
-                ('mturk_HITGroupId', otree.db.models.CharField(blank=True, null=True, max_length=300, help_text='Hit id for this session on MTurk')),
-                ('mturk_qualification_type_id', otree.db.models.CharField(blank=True, null=True, max_length=300, help_text='Qualification type that is assigned to each worker taking hit')),
-                ('mturk_num_participants', otree.db.models.IntegerField(null=True, default=-1, help_text='Number of participants on MTurk')),
-                ('mturk_sandbox', otree.db.models.BooleanField(default=True, help_text='Should this session be created in mturk sandbox?', choices=[(True, 'Yes'), (False, 'No')])),
-                ('archived', otree.db.models.BooleanField(choices=[(True, 'Yes'), (False, 'No')], default=False, db_index=True)),
-                ('git_commit_timestamp', otree.db.models.CharField(null=True, max_length=200)),
-                ('comment', otree.db.models.TextField(blank=True, null=True)),
+                ('mturk_HITId', otree.db.models.CharField(help_text=b'Hit id for this session on MTurk', max_length=300, null=True, blank=True)),
+                ('mturk_HITGroupId', otree.db.models.CharField(help_text=b'Hit id for this session on MTurk', max_length=300, null=True, blank=True)),
+                ('mturk_qualification_type_id', otree.db.models.CharField(help_text=b'Qualification type that is assigned to each worker taking hit', max_length=300, null=True, blank=True)),
+                ('mturk_num_participants', otree.db.models.IntegerField(default=-1, help_text=b'Number of participants on MTurk', null=True)),
+                ('mturk_sandbox', otree.db.models.BooleanField(default=True, help_text=b'Should this session be created in mturk sandbox?', choices=[(True, 'Yes'), (False, 'No')])),
+                ('archived', otree.db.models.BooleanField(default=False, db_index=True, choices=[(True, 'Yes'), (False, 'No')])),
+                ('git_commit_timestamp', otree.db.models.CharField(max_length=200, null=True)),
+                ('comment', otree.db.models.TextField(null=True, blank=True)),
                 ('_ready_to_play', otree.db.models.BooleanField(default=False, choices=[(True, 'Yes'), (False, 'No')])),
-                ('_anonymous_code', otree.db.models.RandomCharField(blank=True, max_length=8)),
-                ('special_category', otree.db.models.CharField(db_index=True, null=True, max_length=20)),
-                ('demo_already_used', otree.db.models.BooleanField(choices=[(True, 'Yes'), (False, 'No')], default=False, db_index=True)),
+                ('_anonymous_code', otree.db.models.CharField(default=otree.common_internal.random_chars_10, max_length=8, null=True, db_index=True)),
+                ('special_category', otree.db.models.CharField(max_length=20, null=True, db_index=True)),
+                ('demo_already_used', otree.db.models.BooleanField(default=False, db_index=True, choices=[(True, 'Yes'), (False, 'No')])),
                 ('ready', otree.db.models.BooleanField(default=False, choices=[(True, 'Yes'), (False, 'No')])),
-                ('_pre_create_id', otree.db.models.CharField(db_index=True, null=True, max_length=300)),
+                ('_pre_create_id', otree.db.models.CharField(max_length=300, null=True, db_index=True)),
             ],
             options={
                 'ordering': ['pk'],
@@ -155,13 +155,13 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='StubModel',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
             ],
         ),
         migrations.CreateModel(
             name='WaitPageVisit',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('session_pk', otree.db.models.PositiveIntegerField(null=True)),
                 ('page_index', otree.db.models.PositiveIntegerField(null=True)),
                 ('id_in_session', otree.db.models.PositiveIntegerField(null=True)),
@@ -191,7 +191,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='globalsingleton',
             name='default_session',
-            field=otree.db.models.ForeignKey(blank=True, null=True, to='otree.Session'),
+            field=otree.db.models.ForeignKey(blank=True, to='otree.Session', null=True),
         ),
         migrations.AlterIndexTogether(
             name='completedsubsessionwaitpage',
