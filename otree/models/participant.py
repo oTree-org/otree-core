@@ -124,9 +124,12 @@ class Participant(ModelWithVars):
         # this is the most reliable way to get the app name,
         # because of WaitUntilAssigned...
         # 2016-04-07: WaitUntilAssigned removed
-        return ParticipantToPlayerLookup.objects.get(
-            participant_pk=self.pk,
-            page_index=self._index_in_pages)
+        try:
+            return ParticipantToPlayerLookup.objects.get(
+                participant_pk=self.pk,
+                page_index=self._index_in_pages)
+        except:
+            pass
 
     def _current_page(self):
         return '{}/{} pages'.format(

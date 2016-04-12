@@ -352,9 +352,10 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             PageTimeout.objects.filter(
                 participant_pk=self.participant.pk,
                 page_index=self.participant._index_in_pages).delete()
-        ParticipantToPlayerLookup.objects.filter(
-            participant_pk=self.participant.pk,
-            page_index=self.participant._index_in_pages).delete()
+        # this is causing crashes because of the weird DB issue
+        # ParticipantToPlayerLookup.objects.filter(
+        #    participant_pk=self.participant.pk,
+        #    page_index=self.participant._index_in_pages).delete()
 
         # performance optimization:
         # we skip any page that is a sequence page where is_displayed

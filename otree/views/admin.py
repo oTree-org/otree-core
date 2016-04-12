@@ -855,7 +855,6 @@ class SessionDescription(AdminSessionPageMixin, vanilla.TemplateView):
 def info_about_session_config(session_config):
 
     app_sequence = []
-    seo = set()
     for app_name in session_config['app_sequence']:
         models_module = get_models_module(app_name)
         num_rounds = models_module.Constants.num_rounds
@@ -866,40 +865,16 @@ def info_about_session_config(session_config):
             )
         subsssn = {
             'doc': getattr(models_module, 'doc', ''),
-            'source_code': getattr(models_module, 'source_code', ''),
             'bibliography': getattr(models_module, 'bibliography', []),
-            'links': sort_links(getattr(models_module, 'links', {})),
-            'keywords': keywords_links(getattr(models_module, 'keywords', [])),
             'name': formatted_app_name,
         }
-        seo.update([keywords[0] for keywords in subsssn["keywords"]])
         app_sequence.append(subsssn)
     return {
         'doc': session_config['doc'],
         'app_sequence': app_sequence,
-        'page_seo': seo
     }
 
 
-def sort_links(links):
-    """Return the sorted .items() result from a dictionary
-
-    """
-    return sorted(links.items())
-
-
-def keywords_links(keywords):
-    """Create a duckduckgo.com link for every keyword
-
-    """
-    links = []
-    for kw in keywords:
-        kw = kw.strip()
-        if kw:
-            args = urlencode({"q": kw + " game theory", "t": "otree"})
-            link = "https://duckduckgo.com/?{}".format(args)
-            links.append((kw, link))
-    return links
 
 
 def session_description_dict(session):
