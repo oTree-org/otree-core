@@ -6,7 +6,7 @@ from six.moves import zip
 
 from otree import constants_internal
 import otree.common_internal
-from otree.common_internal import id_label_name
+from otree.common_internal import id_label_name, random_chars_8
 
 from otree.common import Currency as c
 from otree.db import models
@@ -61,8 +61,11 @@ class Participant(ModelWithVars):
 
     _waiting_for_ids = models.CharField(null=True, max_length=300)
 
-    code = models.RandomCharField(
-        length=8, db_index=True,
+    code = models.CharField(
+        default=random_chars_8,
+        max_length=8,
+        null=False,
+        db_index=True,
         doc=(
             "Randomly generated unique identifier for the participant. If you "
             "would like to merge this dataset with those from another "

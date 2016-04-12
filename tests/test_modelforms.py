@@ -95,9 +95,6 @@ class UseFloppyformWidgetsTests(TestCase):
 
     def test_custom_fields(self):
         self.assertIsInstance(
-            TestModelForm.base_fields['random_char'], floppyforms.CharField
-        )
-        self.assertIsInstance(
             TestModelForm.base_fields['sent_amount'],
             otree.forms.CurrencyChoiceField
         )

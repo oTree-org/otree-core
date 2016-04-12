@@ -9,6 +9,8 @@ import contextlib
 import inspect
 import json
 import re
+import string
+import random
 from os.path import dirname, join
 from collections import OrderedDict
 from importlib import import_module
@@ -58,6 +60,14 @@ def git_commit_timestamp():
     except IOError:
         return ''
 
+def random_chars_8():
+    chars=string.ascii_lowercase + string.digits
+    return ''.join(random.choice(chars) for _ in range(8))
+
+def random_chars_10():
+    chars=string.ascii_lowercase + string.digits
+    return ''.join(random.choice(chars) for _ in range(8))
+
 
 def app_name_format(app_name):
     app_label = app_name.split('.')[-1]
@@ -78,7 +88,7 @@ def url(cls, participant, index=None):
 
 
 def url_pattern(cls, is_sequence_url=False):
-    p = r'(?P<{}>\w)/(?P<{}>[a-z]+)/{}/{}/'.format(
+    p = r'(?P<{}>\w)/(?P<{}>[a-z0-9]+)/{}/{}/'.format(
         constants_internal.user_type,
         constants_internal.participant_code,
         cls.get_name_in_url(),

@@ -108,7 +108,7 @@ def augment_urlpatterns(urlpatterns):
     rest_api_urlpatterns = (
         urls.url(r'^ping/$', Ping.as_view(), name="ping"),
         urls.url(
-            r'^sessions/(?P<session_code>[a-z]+)/participants/$',
+            r'^sessions/(?P<session_code>[a-z0-9]+)/participants/$',
             SessionParticipantsList.as_view(),
             name="session_participants_list")
     )

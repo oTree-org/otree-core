@@ -2,6 +2,7 @@ import django.test
 
 from otree import constants_internal
 import otree.common_internal
+from otree.common_internal import random_chars_8, random_chars_10
 from otree.db import models
 from .varsmixin import ModelWithVars
 
@@ -15,10 +16,6 @@ class GlobalSingleton(models.Model):
         app_label = "otree"
 
     default_session = models.ForeignKey('Session', null=True, blank=True)
-    admin_access_code = models.RandomCharField(
-        length=8, doc=('used for authentication to things only the '
-                       'admin/experimenter should access')
-    )
 
 
 # for now removing SaveTheChange
@@ -43,9 +40,12 @@ class Session(ModelWithVars):
         max_length=300, null=True, blank=True,
         help_text='For internal record-keeping')
 
-    code = models.RandomCharField(
+    code = models.CharField(
+        default=random_chars_8,
+        max_length=8,
+        null=False,
         db_index=True,
-        length=8, doc="Randomly generated unique identifier for the session.")
+        doc="Randomly generated unique identifier for the session.")
 
     time_scheduled = models.DateTimeField(
         null=True, doc="The time at which the session is scheduled",
@@ -95,7 +95,13 @@ class Session(ModelWithVars):
 
     _ready_to_play = models.BooleanField(default=False)
 
-    _anonymous_code = models.RandomCharField(length=10)
+    _anonymous_code = models.CharField(
+        default=random_chars_10,
+        max_length=8,
+        null=False,
+        db_index=True
+    )
+
 
     special_category = models.CharField(
         db_index=True,
