@@ -152,7 +152,10 @@ def get_default_settings(initial_settings=None):
         # setting CHANNEL_DEFAULT_ROUTING.
         'CHANNEL_LAYERS': {
             'default': {
-                'BACKEND': 'channels.database_layer.DatabaseChannelLayer',
+                "BACKEND": "asgi_redis.RedisChannelLayer",
+                "CONFIG": {
+                    "hosts": [("localhost", 6379)],
+                },
                 'ROUTING': initial_settings.get(
                     'CHANNEL_DEFAULT_ROUTING',
                     'otree.channels.default_routing.channel_routing'),
