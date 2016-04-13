@@ -155,7 +155,7 @@ def get_default_settings(initial_settings=None):
                 'BACKEND': 'channels.database_layer.DatabaseChannelLayer',
                 'ROUTING': initial_settings.get(
                     'CHANNEL_DEFAULT_ROUTING',
-                    'otree.default_routing.channel_routing'),
+                    'otree.channels.default_routing.channel_routing'),
             },
         },
 

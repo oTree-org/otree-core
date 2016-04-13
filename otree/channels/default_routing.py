@@ -1,7 +1,6 @@
-from channels.routing import route, include
+from channels.routing import route
 
-from otree import consumers
-
+from otree.channels import consumers
 
 channel_routing = [
     route(
