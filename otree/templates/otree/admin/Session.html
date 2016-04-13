@@ -16,9 +16,15 @@
             <li role="presentation" class="{% active_page request 'session_description' session.pk %}">
                 <a href="{% url 'session_description' session.pk %}"><span class="glyphicon glyphicon-pushpin"></span> Description</a>
             </li>
+            {% if session.get_room %}
+            <li role="presentation" class="{% active_page request 'session_start_links_room' session.pk %}">
+                <a href="{% url 'session_start_links_room' session.pk %}"><span class="glyphicon glyphicon-link"></span> Links</a>
+            </li>
+            {% else %}
             <li role="presentation" class="{% active_page request 'session_start_links' session.pk %}">
                 <a href="{% url 'session_start_links' session.pk %}"><span class="glyphicon glyphicon-link"></span> Links</a>
             </li>
+            {% endif %}
             {% if not session.is_demo %}
             <li role="presentation" class="{% active_page request 'session_edit' session.pk %}">
                 <a href="{% url 'session_edit' session.pk %}"><span class="glyphicon glyphicon-pencil"></span> Edit</a>

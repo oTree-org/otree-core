@@ -26,7 +26,7 @@ from boto.mturk.connection import MTurkRequestError
 import otree.constants_internal as constants
 import otree.models.session
 from otree.models.participant import Participant
-from otree.common_internal import lock_on_this_code_path
+from otree.common_internal import lock_on_this_code_path, make_hash
 import otree.views.admin
 from otree.views.mturk import MTurkConnection
 import otree.common_internal
@@ -270,7 +270,8 @@ class JoinSessionAnonymously(vanilla.View):
         return HttpResponseRedirect(participant._start_url())
 
 
-class AssignVisitorToRoom(vanilla.View):
+class AssignVisitorToRoom(vanilla.TemplateView):
+    template_name = "otree/InputParticipantLabel.html"
 
     @classmethod
     def url_name(cls):
@@ -289,15 +290,26 @@ class AssignVisitorToRoom(vanilla.View):
             room = ROOM_DICT[room_name]
         except KeyError:
             return HttpResponseNotFound('Invalid room specified in url')
-        session = room.session
-        if session is None:
-            return HttpResponse('No session in room. Refresh the page.')
 
         participant_label = self.request.GET.get(
             'participant_label'
         )
-        if room.has_participant_labels() and participant_label not in room.get_participant_labels():
-            return HttpResponseNotFound('Participant is not expected in this room')
+        if room.has_participant_labels():
+            if not participant_label:
+                if not room.use_hashes:
+                    return super(AssignVisitorToRoom, self).get(args, kwargs)
+
+            if participant_label not in room.get_participant_labels():
+                return HttpResponseNotFound('Participant is not expected in this room. Please contact the session supervisor.')
+
+            if room.use_hashes:
+                hash = self.request.GET.get('hash')
+                if hash != make_hash(participant_label):
+                    return HttpResponseNotFound('Invalid hash parameter.')
+
+        session = room.session
+        if session is None:
+            return HttpResponse('No session in room. Refresh the page.')
 
         assign_new = not room.has_participant_labels()
         if not assign_new:
@@ -328,6 +340,8 @@ class AssignVisitorToRoom(vanilla.View):
 
         return HttpResponseRedirect(participant._start_url())
 
+    def get_context_data(self, **kwargs):
+        return {'room': self.request.GET.get('room')}
 
 class AdvanceSession(vanilla.View):
 

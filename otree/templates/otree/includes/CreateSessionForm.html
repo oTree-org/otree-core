@@ -2,7 +2,18 @@
 
 {% formrow form.session_config %}
 
-{% formrow form.num_participants %}
+<div class="form-group{% if form.num_participants.errors %} has-error{% endif %} required">
+    <label class="control-label" for="id_num_participants">Number of participants:</label>
+        <div class="controls  field-num_participants">
+            {% block widget %}{% formfield form.num_participants %}{% endblock %}
+            {% if form.num_participants.errors %}
+            {% block errors %}{% include "floppyforms/errors.html" with errors=form.num_participants.errors %}{% endblock %}
+            {% endif %}
+            {% for summary in session_config_summaries %}
+            <div id="lcm-{{ summary.name }}" class="lcm" style="display:none"><p>Must be a multiple of {{ summary.lcm }}</p></div>
+            {% endfor %}
+        </div>
+</div>
 
 {% next_button %}
 
@@ -11,11 +22,23 @@
 {% endfor %}
 
 <script type="text/javascript">
+function showSessionConfigInfo(sessionconfigname) {
+  $('.summary').hide();
+  $('#session-config-' + sessionconfigname).show();
+  $('.lcm').hide();
+  $('#lcm-' + sessionconfigname).show();
+}
+
 $(document).ready(function () {
   $('.summary').hide();
+  $('.lcm').hide();
+  var current_session_config = $('#id_session_config').val()
+  if (current_session_config) {
+    showSessionConfigInfo(current_session_config);
+  }
+
   $('#id_session_config').change(function () {
-    $('.summary').hide();
-    $('#session-config-'+$(this).val()).show();
+    showSessionConfigInfo($(this).val());
   })
 });
 </script>

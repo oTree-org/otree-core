@@ -46,7 +46,7 @@ from otree.common import Currency as c
 from otree.models.session import Session
 from otree.models.participant import Participant
 from otree.models.session import GlobalSingleton
-from otree.models_concrete import PageCompletion
+from otree.models_concrete import PageCompletion, RoomSession
 from otree.room import ROOM_DICT
 
 
@@ -350,7 +350,7 @@ class CreateSessionForm(forms.Form):
             num_participants = self.cleaned_data['num_participants']
             if num_participants % lcm:
                 raise forms.ValidationError(
-                    'Number of participants must be a multiple of {}'.format(lcm)
+                    'Please enter a valid number of participants.'
                 )
             return num_participants
 
@@ -769,6 +769,21 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
         return context
 
 
+class SessionStartLinksRoom(AdminSessionPageMixin, vanilla.TemplateView):
+    @classmethod
+    def url_name(cls):
+        return 'session_start_links_room'
+
+    def get_context_data(self, **kwargs):
+        session = self.session
+        room = session.get_room()
+
+        context = {'participant_urls': room.get_participant_links(),
+                   'room': room}
+        kwargs.update(context)
+
+        return super(SessionStartLinksRoom, self).get_context_data(**kwargs)
+
 class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
     @classmethod
     def url_name(cls):
@@ -892,7 +907,8 @@ def info_about_session_config(session_config):
         'app_sequence': app_sequence,
         'page_seo': seo,
         'name': session_config['name'],
-        'display_name': session_config['display_name']
+        'display_name': session_config['display_name'],
+        'lcm': get_lcm(session_config)
     }
 
 

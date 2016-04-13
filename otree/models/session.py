@@ -4,7 +4,7 @@ from otree import constants_internal
 import otree.common_internal
 from otree.db import models
 from .varsmixin import ModelWithVars
-
+from otree.models_concrete import RoomSession
 
 class GlobalSingleton(models.Model):
     """object that can hold site-wide settings. There should only be one
@@ -234,3 +234,11 @@ class Session(ModelWithVars):
             participant.build_participant_to_player_lookups(
                 num_pages_in_each_app
             )
+
+    def get_room(self):
+        from otree.room import ROOM_DICT
+        room_name = RoomSession.objects.get(session_pk=self.pk).room_name
+        if room_name:
+            return ROOM_DICT[room_name]
+        else:
+            return None
