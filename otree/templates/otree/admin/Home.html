@@ -107,7 +107,7 @@ $(document).ready(function() {
 oTree 
 Sessions
 <div class="btn-group" style="float: right;">
-    <a class="btn btn-primary" href="{% url 'session_configs_create' %}">
+    <a class="btn btn-primary" href="{% url 'session_create' %}">
         <span class="glyphicon glyphicon-plus"></span> Create new session
     </a>
     <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
@@ -115,7 +115,7 @@ Sessions
         <span class="sr-only">Toggle Dropdown</span>
     </button>
     <ul class="dropdown-menu" role="menu">
-        <li><a href="{% url 'session_configs_create' %}?mturk=1">For MTurk</a></li>
+        <li><a href="{% url 'session_create' %}?mturk=1">For MTurk</a></li>
     </ul>
 </div>
 {% endblock %}
@@ -190,15 +190,6 @@ Sessions
             <a href="{% if s.is_for_mturk %}{% url 'session_mturk_payments' s.pk %}{% else %}{% url 'session_payments' s.pk %}{% endif %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-usd"></span> Payments
             </a>
-            {% if s != default_session %}
-            <a href="{% url 'set_default_session' s.pk %}" class="btn btn-primary btn-sm" data-toggle="popover" data-trigger="hover" data-content="You can route the participants to this session by clicking the button." data-placement="bottom">
-                <span class="glyphicon glyphicon-home"></span> Default
-            </a>
-            {% else %}
-            <a href="{% url 'unset_default_session' %}" class="btn btn-success btn-sm" data-toggle="popover" data-trigger="hover" data-content="The participants are routed to this session. By clicking the button you can unset it." data-placement="bottom">
-                <span class="glyphicon glyphicon-home"></span> Default
-            </a>
-            {% endif %}
             {% if s.is_for_mturk %}
                 {% if not s.mturk_HITId %}
                 <a href="{% url 'session_create_hit' s.pk %}" class="btn btn-primary btn-sm" role="button">

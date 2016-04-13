@@ -4,7 +4,7 @@ from otree import constants_internal
 import otree.common_internal
 from otree.db import models
 from .varsmixin import ModelWithVars
-
+from otree.models_concrete import RoomSession
 
 class GlobalSingleton(models.Model):
     """object that can hold site-wide settings. There should only be one
@@ -14,7 +14,6 @@ class GlobalSingleton(models.Model):
     class Meta:
         app_label = "otree"
 
-    default_session = models.ForeignKey('Session', null=True, blank=True)
     admin_access_code = models.RandomCharField(
         length=8, doc=('used for authentication to things only the '
                        'admin/experimenter should access')
@@ -126,9 +125,6 @@ class Session(ModelWithVars):
         but still useful internally (like data export)'''
         return self.config['real_world_currency_per_point']
 
-    def is_open(self):
-        return GlobalSingleton.objects.get().default_session == self
-
     def is_for_mturk(self):
         return (not self.is_demo()) and (self.mturk_num_participants > 0)
 
@@ -238,3 +234,11 @@ class Session(ModelWithVars):
             participant.build_participant_to_player_lookups(
                 num_pages_in_each_app
             )
+
+    def get_room(self):
+        from otree.room import ROOM_DICT
+        room_name = RoomSession.objects.get(session_pk=self.pk).room_name
+        if room_name:
+            return ROOM_DICT[room_name]
+        else:
+            return None

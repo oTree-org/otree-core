@@ -2,17 +2,11 @@
 {% load otree_tags floppyforms %}
 
 {% block title %}
-    {{ session_config.name }}
+    Create a new session
 {% endblock %}
 
 {% block content %}
 
-    <h3>Create a new session</h3>
-
-    {% formrow form.num_participants %}
-
-    {% next_button %}
-
-    {% include 'otree/includes/SessionInfo.html' %}
+{% include "otree/includes/CreateSessionForm.html" %}
 
 {% endblock %}

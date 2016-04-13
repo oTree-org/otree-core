@@ -1,11 +1,15 @@
+<div id="session-config-{{ name }}" class="summary" style="display:{{ summary_display|default_if_none:"block" }}">
+
+<h3>{{ display_name }}</h3>
+
 {% if doc %}
-    <h3>Session description</h3>
+    <h4>Session description</h4>
     <p>
     {{ doc }}
     </p>
 {% endif %}
 
-<h3>Description</h3>
+<h4>Description</h4>
 <table class="table table-hover">
 
 {% for app in app_sequence %}
@@ -41,3 +45,5 @@
 
 {% endfor %}
 </table>
+
+</div>

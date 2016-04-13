@@ -34,6 +34,7 @@ from otree.session import (
     get_lcm
 )
 from otree import forms
+from django import forms as django_forms
 from otree.forms import widgets
 from otree.common import RealWorldCurrency
 from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
@@ -45,7 +46,7 @@ from otree.common import Currency as c
 from otree.models.session import Session
 from otree.models.participant import Participant
 from otree.models.session import GlobalSingleton
-from otree.models_concrete import PageCompletion
+from otree.models_concrete import PageCompletion, RoomSession
 from otree.room import ROOM_DICT
 
 
@@ -306,77 +307,6 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
     return column_display_names, all_rows
 
 
-class PersistentLabURLs(vanilla.TemplateView):
-    @classmethod
-    def url_pattern(cls):
-        return r"^persistent_lab_urls/$"
-
-    @classmethod
-    def url_name(cls):
-        return 'persistent_lab_urls'
-
-    template_name = 'otree/admin/PersistentLabURLs.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(PersistentLabURLs, self).get_context_data(**kwargs)
-
-        # default session stuff
-        default_session_base_url = self.request.build_absolute_uri(
-            reverse('assign_visitor_to_default_session')
-        )
-        default_session_example_urls = []
-        for i in range(1, 20):
-            data_urls = add_params_to_url(
-                default_session_base_url,
-                {
-                    'participant_label': 'PC-{}'.format(i),
-                    'access_code_for_default_session':
-                        settings.ACCESS_CODE_FOR_DEFAULT_SESSION
-                }
-            )
-            default_session_example_urls.append(data_urls)
-        global_singleton = GlobalSingleton.objects.get()
-        default_session = global_singleton.default_session
-
-        context.update({
-            'default_session_example_urls': default_session_example_urls,
-            'access_code_for_default_session': (
-                otree.constants_internal.access_code_for_default_session
-            ),
-            'participant_label': otree.constants_internal.participant_label,
-            'default_session': default_session,
-        })
-        return context
-
-
-class SessionConfigsToCreate(vanilla.View):
-    @classmethod
-    def url(cls):
-        return "/create_session/"
-
-    @classmethod
-    def url_name(cls):
-        return 'session_configs_create'
-
-    @classmethod
-    def url_pattern(cls):
-        return r"^create_session/$"
-
-    def get(self, *args, **kwargs):
-        session_configs_info = []
-        for session_config in SESSION_CONFIGS_DICT.values():
-            url = reverse(
-                'session_create', args=(session_config['name'],)
-            )
-            if self.request.GET.get('mturk'):
-                url = add_params_to_url(url, {'mturk': 1})
-            session_configs_info.append(
-                {'display_name': session_config['display_name'], 'url': url})
-        return TemplateResponse(
-            self.request, 'otree/admin/SessionListing.html',
-            {'session_configs_info': session_configs_info})
-
-
 def sleep_then_create_session(**kwargs):
     # hack: this sleep is to prevent locks on SQLite. This gives time to let
     # the page request finish before create_session is called,
@@ -391,8 +321,7 @@ def sleep_then_create_session(**kwargs):
 class CreateSessionForm(forms.Form):
     session_configs = SESSION_CONFIGS_DICT.values()
 
-    # TODO: add session config to this form
-    session_config = forms.ChoiceField(choices=[[s['name'], s['display_name']] for s in session_configs])
+    session_config = forms.ChoiceField(choices=[['', '-----']] + [[s['name'], s['display_name']] for s in session_configs], required=True)
 
     num_participants = forms.IntegerField()
 
@@ -413,14 +342,18 @@ class CreateSessionForm(forms.Form):
             self.fields['num_participants'].label = "Number of participants"
 
     def clean_num_participants(self):
-        session_config_name = self.cleaned_data['session_config']
-        lcm = get_lcm(SESSION_CONFIGS_DICT[session_config_name])
-        num_participants = self.cleaned_data['num_participants']
-        if num_participants % lcm:
-            raise forms.ValidationError(
-                'Number of participants must be a multiple of {}'.format(lcm)
-            )
-        return num_participants
+        session_config_name = self.cleaned_data.get('session_config')
+
+        # We must check for an empty string in case validation is not run
+        if session_config_name != '':
+            lcm = get_lcm(SESSION_CONFIGS_DICT[session_config_name])
+            num_participants = self.cleaned_data['num_participants']
+            if num_participants % lcm:
+                raise forms.ValidationError(
+                    'Please enter a valid number of participants.'
+                )
+            return num_participants
+
 
 
 class CreateSession(vanilla.FormView):
@@ -429,7 +362,7 @@ class CreateSession(vanilla.FormView):
 
     @classmethod
     def url_pattern(cls):
-        return r"^create_session/(?P<session_config>.+)/$"
+        return r"^create_session/$"
 
     @classmethod
     def url_name(cls):
@@ -442,8 +375,8 @@ class CreateSession(vanilla.FormView):
     def get_context_data(self, **kwargs):
         # TODO: dynamically populate info about session configs
         # and validate number of participants
-        # context = info_about_session_config(self.session_config)
-        # kwargs.update(context)
+        session_config_summaries = [info_about_session_config(session_config) for session_config in SESSION_CONFIGS_DICT.values()]
+        kwargs.update({'session_config_summaries': session_config_summaries})
         return super(CreateSession, self).get_context_data(**kwargs)
 
     def get_form(self, data=None, files=None, **kwargs):
@@ -498,59 +431,70 @@ class Rooms(vanilla.TemplateView):
         return {'rooms': ROOM_DICT.values()}
 
 
-class Room(CreateSession):
-    template_name = 'otree/admin/Room.html'
+class RoomWithoutSession(CreateSession):
+    template_name = 'otree/admin/RoomWithoutSession.html'
     room = None
 
     @classmethod
     def url_pattern(cls):
-        return r"^rooms/(?P<room_name>.+)/$"
+        return r"^room_without_session/(?P<room_name>.+)/$"
 
     @classmethod
     def url_name(cls):
-        return 'room'
+        return 'room_without_session'
 
     def dispatch(self, request, *args, **kwargs):
         self.room = ROOM_DICT[kwargs['room_name']]
         if self.room.has_session():
-            return HttpResponseRedirect(reverse('session_monitor', args=(self.room.session.pk,)))
-        return super(Room, self).dispatch(
+            return HttpResponseRedirect(reverse('room_with_session', args=[kwargs['room_name']]))
+        return super(RoomWithoutSession, self).dispatch(
             request, *args, **kwargs
         )
 
     def get_context_data(self, **kwargs):
-
-        participant_urls = []
-        if self.room.has_participant_labels():
-            default_session_base_url = self.request.build_absolute_uri(
-                reverse('assign_visitor_to_room')
-            )
-            for label in self.room.get_participant_labels():
-                participant_url = add_params_to_url(
-                    default_session_base_url,
-                    {
-                        'room': self.room.name,
-                        'participant_label': label
-                    }
-                )
-                participant_urls.append(participant_url)
-
-
-
         # TODO:
         # List names (or identifiers) of whos waiting
         # Display count of waiting participants
-        context = {'participant_urls': participant_urls,
+        context = {'participant_urls': self.room.get_participant_links(),
                    'participant_names': [],
-                   'participant_count': str(0)}
+                   'participant_count': str(0),
+                   'room': self.room}
         kwargs.update(context)
 
-        return super(CreateSession, self).get_context_data(**kwargs)
+        return super(RoomWithoutSession, self).get_context_data(**kwargs)
 
         # TODO:
         #
         # - override start links page (so need to store on the session that it's in this room? hm, no)
         #
+
+class RoomWithSession(vanilla.TemplateView):
+    template_name = 'otree/admin/RoomWithSession.html'
+    room = None
+
+    @classmethod
+    def url_pattern(cls):
+        return r"^room_with_session/(?P<room_name>.+)/$"
+
+    @classmethod
+    def url_name(cls):
+        return 'room_with_session'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.room = ROOM_DICT[kwargs['room_name']]
+        if not self.room.has_session():
+            return HttpResponseRedirect(reverse('room_without_session', args=[kwargs['room_name']]))
+        return super(RoomWithSession, self).dispatch(
+            request, *args, **kwargs
+        )
+
+    def get_context_data(self, **kwargs):
+        context = {'participant_urls': self.room.get_participant_links(),
+                   'session_url': reverse('session_monitor', args=(self.room.session.pk,)),
+                   'room': self.room}
+        kwargs.update(context)
+
+        return super(RoomWithSession, self).get_context_data(**kwargs)
 
 
 class CloseRoom(vanilla.View):
@@ -565,7 +509,7 @@ class CloseRoom(vanilla.View):
     def dispatch(self, request, *args, **kwargs):
         self.room = ROOM_DICT[kwargs['room_name']]
         self.room.session = None
-        return HttpResponseRedirect(reverse('rooms'))
+        return HttpResponseRedirect(reverse('room_without_session', args=[kwargs['room_name']]))
 
 
 class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
@@ -825,6 +769,21 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
         return context
 
 
+class SessionStartLinksRoom(AdminSessionPageMixin, vanilla.TemplateView):
+    @classmethod
+    def url_name(cls):
+        return 'session_start_links_room'
+
+    def get_context_data(self, **kwargs):
+        session = self.session
+        room = session.get_room()
+
+        context = {'participant_urls': room.get_participant_links(),
+                   'room': room}
+        kwargs.update(context)
+
+        return super(SessionStartLinksRoom, self).get_context_data(**kwargs)
+
 class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
     @classmethod
     def url_name(cls):
@@ -946,7 +905,10 @@ def info_about_session_config(session_config):
     return {
         'doc': session_config['doc'],
         'app_sequence': app_sequence,
-        'page_seo': seo
+        'page_seo': seo,
+        'name': session_config['name'],
+        'display_name': session_config['display_name'],
+        'lcm': get_lcm(session_config)
     }
 
 
@@ -994,10 +956,7 @@ class AdminHome(vanilla.ListView):
 
     def get_context_data(self, **kwargs):
         context = super(AdminHome, self).get_context_data(**kwargs)
-        global_singleton = GlobalSingleton.objects.get()
-        default_session = global_singleton.default_session
         context.update({
-            'default_session': default_session,
             'is_debug': settings.DEBUG,
         })
         return context

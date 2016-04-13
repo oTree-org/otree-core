@@ -7,6 +7,7 @@ import datetime
 import collections
 import contextlib
 import inspect
+import hashlib
 from os.path import dirname, join
 from collections import OrderedDict
 from importlib import import_module
@@ -321,6 +322,10 @@ def db_status_ok():
             return False
     return True
 
+
+def make_hash(s):
+    s += settings.SECRET_KEY
+    return hashlib.sha224(s.encode()).hexdigest()[:8]
 
 @contextlib.contextmanager
 def no_op_context_manager():

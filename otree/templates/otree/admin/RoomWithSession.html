@@ -1,0 +1,15 @@
+{% extends "otree/BaseSite.html" %}
+{% load otree_tags floppyforms %}
+
+{% block title %}
+    {{ room.display_name }}
+{% endblock %}
+
+{% block content %}
+
+    {% include "otree/includes/RoomParticipantLinks.html" %}
+
+    <h4><a href="{{ session_url }}">Go to active session.</a></h4>
+    <h4><a href="{{ room.url_close }}">Close this room.</a></h4>
+
+{% endblock %}

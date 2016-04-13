@@ -892,12 +892,9 @@ class AdminSessionPageMixin(GetFloppyFormClassMixin):
 
     def get_context_data(self, **kwargs):
         context = super(AdminSessionPageMixin, self).get_context_data(**kwargs)
-        global_singleton = GlobalSingleton.objects.get()
-        default_session = global_singleton.default_session
         context.update({
             'session': self.session,
-            'is_debug': settings.DEBUG,
-            'default_session': default_session})
+            'is_debug': settings.DEBUG})
         return context
 
     def get_template_names(self):
