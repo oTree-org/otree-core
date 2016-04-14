@@ -406,10 +406,13 @@ class CreateSession(vanilla.FormView):
 
         channels_group_name = 'wait_for_session_{}'.format(pre_create_id)
         wait_until_session_created_url = reverse(
-            'wait_until_session_created', args=(channels_group_name,)
+            'wait_until_session_created', args=(pre_create_id,)
         )
 
-        channels.Channel('otree.create_session').send({'kwargs': kwargs})
+        channels.Channel('otree.create_session').send({
+            'kwargs': kwargs,
+            'channels_group_name': channels_group_name
+        })
 
         return HttpResponseRedirect(wait_until_session_created_url)
 
@@ -513,7 +516,7 @@ class CloseRoom(vanilla.View):
 class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
     @classmethod
     def url_pattern(cls):
-        return r"^WaitUntilSessionCreated/(?P<session_pre_create_id>.+)/$"
+        return r"^WaitUntilSessionCreated/(?P<pre_create_id>.+)/$"
 
     @classmethod
     def url_name(cls):
@@ -543,10 +546,13 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
         return HttpResponseRedirect(session_home_url)
 
     def dispatch(self, request, *args, **kwargs):
-        self._pre_create_id = kwargs['session_pre_create_id']
+        self._pre_create_id = kwargs['pre_create_id']
         return super(WaitUntilSessionCreated, self).dispatch(
             request, *args, **kwargs
         )
+
+    def socket_url(self):
+        return '/wait_until_session_created/{}/'.format(self._pre_create_id)
 
 
 class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
@@ -883,6 +889,9 @@ def info_about_session_config(session_config):
     return {
         'doc': session_config['doc'],
         'app_sequence': app_sequence,
+        'name': session_config['name'],
+        'display_name': session_config['display_name'],
+        'lcm': get_lcm(session_config)
     }
 
 

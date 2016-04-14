@@ -79,6 +79,6 @@ def augment_room(room):
     return new_room
 
 ROOM_DICT = OrderedDict()
-for room in settings.ROOMS:
+for room in getattr(settings, 'ROOMS', []):
     room = augment_room(room)
     ROOM_DICT[room['name']] = Room(room)

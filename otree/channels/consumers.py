@@ -60,8 +60,6 @@ def disconnect_wait_page(message, params):
         app_label, page_index, model_name, model_pk
     )
     group = Group(group_name)
-    group.add(message.reply_channel)
-
     group.discard(message.reply_channel)
 
 
@@ -89,12 +87,22 @@ def disconnect_auto_advance(message, params):
 
 
 def create_session(message):
-    otree.session.create_session(message['kwargs'])
+    otree.session.create_session(**message['kwargs'])
 
-    Group(message['group_name']).send(
+    Group(message['channels_group_name']).send(
         {'text': json.dumps(
             {'status': 'ready'})}
         )
+
+def connect_wait_until_session_created(message, pre_create_id):
+    group = Group('create_session_{}'.format(pre_create_id))
+    group.add(message.reply_channel)
+
+
+def disconnect_wait_until_session_created(message, pre_create_id):
+    group = Group('create_session_{}'.format(pre_create_id))
+    group.discard(message.reply_channel)
+
 
 '''
 def connect_admin_lobby(message):

@@ -115,9 +115,11 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.GenericView):
     def url_name(cls):
         return 'create_demo_session'
 
+    body_text = 'Creating a session'
+
     def _is_ready(self):
-        session = get_session(self.session_config_name)
-        return bool(session)
+        self.session = get_session(self.session_config_name)
+        return bool(self.session)
 
     def _before_returning_wait_page(self):
         try:
@@ -147,11 +149,9 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.GenericView):
         )
         t.start()
 
-    def body_text(self):
-        return 'Creating a session'
 
     def _response_when_ready(self):
-        session = get_session(self.session_config_name)
+        session = self.session
         session.demo_already_used = True
         session.save()
 
