@@ -459,32 +459,25 @@ class CreateSession(vanilla.FormView):
         kwargs = {
             'session_config_name': self.session_config['name'],
             '_pre_create_id': pre_create_id,
+            'for_mturk': self.for_mturk
         }
         if self.for_mturk:
             kwargs['num_participants'] = (
                 form.cleaned_data['num_participants'] *
                 settings.MTURK_NUM_PARTICIPANTS_MULT
             )
+
         else:
             kwargs['num_participants'] = form.cleaned_data['num_participants']
 
-
-
-        self.request.session['for_mturk'] = self.for_mturk
+        channels_group_name = 'wait_for_session_{}'.format(pre_create_id)
         wait_until_session_created_url = reverse(
-            'wait_until_session_created', args=(pre_create_id,)
+            'wait_until_session_created', args=(channels_group_name,)
         )
-        response = HttpResponseRedirect(wait_until_session_created_url)
 
-        channels_group = channels.Group('session-create-{}'.format(pre_create_id))
-        for chunk in AsgiHandler.encode_response(response):
-            channels_group.send(chunk)
+        channels.Channel('otree.create_session').send({'kwargs': kwargs})
 
-            message.reply_channel.send(chunk)
-
-        sleep_then_create_session(**kwargs)
-
-
+        return HttpResponseRedirect(wait_until_session_created_url)
 
 
 class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
@@ -497,34 +490,19 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
     def url_name(cls):
         return 'wait_until_session_created'
 
+    body_text = 'Waiting until session created'
+
     def _is_ready(self):
-        thread_create_session = None
-        for t in threading.enumerate():
-            if t.name == self._pre_create_id:
-                thread_create_session = t
-        thread_alive = (
-            thread_create_session and
-            thread_create_session.isAlive()
-        )
-        session_exists = Session.objects.filter(
-            _pre_create_id=self._pre_create_id
-        ).exists()
-
-        if not thread_alive and not session_exists:
-            raise Exception("Thread failed to create new session")
-        return session_exists
-
-    def body_text(self):
-        return 'Waiting until session created'
+        try:
+            self.session = Session.objects.get(
+                _pre_create_id=self._pre_create_id
+            )
+            return True
+        except Session.DoesNotExist:
+            return False
 
     def _response_when_ready(self):
-        session = Session.objects.get(_pre_create_id=self._pre_create_id)
-        if self.request.session.get('for_mturk', False):
-            session.mturk_num_participants = (
-                len(session.get_participants()) /
-                settings.MTURK_NUM_PARTICIPANTS_MULT
-            )
-        session.save()
+        session = self.session
         if session.is_for_mturk():
             session_home_url = reverse(
                 'session_create_hit', args=(session.pk,)

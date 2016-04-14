@@ -14,7 +14,9 @@ djcelery.setup_loader()
 
 
 DEFAULT_MIDDLEWARE_CLASSES = (
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     # this middlewware is for generate human redeable errors
+
     'otree.middleware.CheckDBMiddleware',
     'otree.middleware.HumanErrorMiddleware',
     # 2015-08-19: temporarily commented out because
@@ -30,6 +32,7 @@ DEFAULT_MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+
     # 2015-04-08: disabling SSLify until we make this work better
     # 'sslify.middleware.SSLifyMiddleware',
 )

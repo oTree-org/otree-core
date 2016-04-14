@@ -19,4 +19,6 @@ channel_routing = [
         'websocket.disconnect',
              consumers.disconnect_auto_advance,
         path=r'^/auto_advance/(?P<params>[\w,]+)/$'),
+    route('otree.create_session',
+          consumers.create_session)
 ]

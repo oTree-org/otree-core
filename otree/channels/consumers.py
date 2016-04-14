@@ -3,7 +3,7 @@ from otree.models import Participant
 from otree import common_internal
 import sys
 import json
-
+import otree.session
 
 if sys.version_info[0] == 2:
     from urlparse import parse_qs
@@ -87,6 +87,14 @@ def disconnect_auto_advance(message, params):
     group = Group('auto-advance-{}'.format(participant_code))
     group.discard(message.reply_channel)
 
+
+def create_session(message):
+    otree.session.create_session(message['kwargs'])
+
+    Group(message['group_name']).send(
+        {'text': json.dumps(
+            {'status': 'ready'})}
+        )
 
 '''
 def connect_admin_lobby(message):
