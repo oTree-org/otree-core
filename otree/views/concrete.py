@@ -15,7 +15,7 @@ from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.contrib import messages
 from django.http import (
-    HttpResponseRedirect, HttpResponseNotFound
+    HttpResponse, HttpResponseRedirect, HttpResponseNotFound
 )
 from django.utils.translation import ugettext as _
 
@@ -26,7 +26,7 @@ from boto.mturk.connection import MTurkRequestError
 import otree.constants_internal as constants
 import otree.models.session
 from otree.models.participant import Participant
-from otree.common_internal import lock_on_this_code_path
+from otree.common_internal import lock_on_this_code_path, make_hash
 import otree.views.admin
 from otree.views.mturk import MTurkConnection
 import otree.common_internal
@@ -37,6 +37,7 @@ from otree.views.abstract import (
 )
 from otree.models_concrete import GroupSize  # noqa
 from otree.models.session import GlobalSingleton
+from otree.room import ROOM_DICT
 
 
 class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
@@ -73,8 +74,7 @@ class InitializeParticipant(vanilla.UpdateView):
 
         participant.visited = True
 
-        # participant.label might already have been set by
-        # AssignToDefaultSession
+        # participant.label might already have been set
         participant.label = participant.label or self.request.GET.get(
             constants.participant_label
         )
@@ -229,11 +229,12 @@ class JoinSessionAnonymously(vanilla.View):
         return HttpResponseRedirect(participant._start_url())
 
 
-class AssignVisitorToDefaultSession(vanilla.View):
+class AssignVisitorToRoom(vanilla.TemplateView):
+    template_name = "otree/InputParticipantLabel.html"
 
     @classmethod
     def url_name(cls):
-        return 'assign_visitor_to_default_session'
+        return 'assign_visitor_to_room'
 
     @classmethod
     def url_pattern(cls):
@@ -241,51 +242,50 @@ class AssignVisitorToDefaultSession(vanilla.View):
 
     def get(self, *args, **kwargs):
 
+        room_name = self.request.GET.get(
+            'room'
+        )
+        try:
+            room = ROOM_DICT[room_name]
+        except KeyError:
+            return HttpResponseNotFound('Invalid room specified in url')
+
         participant_label = self.request.GET.get(
             'participant_label'
         )
-        if not participant_label:
-            return HttpResponseNotFound(
-                'Missing or empty participant label'
-            )
+        if room.has_participant_labels():
+            if not participant_label:
+                if not room.use_hashes:
+                    return super(AssignVisitorToRoom, self).get(args, kwargs)
 
-        access_code_for_default_session = self.request.GET.get(
-            'access_code_for_default_session'
-        )
-        if not access_code_for_default_session:
-            return HttpResponseNotFound(
-                'Missing or empty access code for default session'
-            )
+            if participant_label not in room.get_participant_labels():
+                return HttpResponseNotFound('Participant is not expected in this room. Please contact the session supervisor.')
 
-        cond = (
-            access_code_for_default_session ==
-            settings.ACCESS_CODE_FOR_DEFAULT_SESSION
-        )
-        if not cond:
-            return HttpResponseNotFound(
-                'Incorrect access code for default session'
-            )
+            if room.use_hashes:
+                hash = self.request.GET.get('hash')
+                if hash != make_hash(participant_label):
+                    return HttpResponseNotFound('Invalid hash parameter.')
 
-        global_singleton = GlobalSingleton.objects.get()
-        default_session = global_singleton.default_session
+        session = room.session
+        if session is None:
+            return HttpResponse('No session in room. Refresh the page.')
 
-        if not default_session:
-            return HttpResponseNotFound(
-                'No session is currently open. Make sure to create '
-                'a session and set is as default.'
-            )
+        assign_new = not room.has_participant_labels()
+        if not assign_new:
+            try:
+                participant = Participant.objects.get(
+                    session=session,
+                    label=participant_label
+                )
+            except Participant.DoesNotExist:
+                assign_new = True
 
-        try:
-            participant = Participant.objects.get(
-                session=default_session,
-                label=participant_label
-            )
-        except Participant.DoesNotExist:
+        if assign_new:
             with lock_on_this_code_path():
                 try:
                     participant = (
                         Participant.objects.select_for_update().filter(
-                            session=default_session,
+                            session=session,
                             visited=False)
                     ).order_by('start_order')[0]
                 except IndexError:
@@ -299,6 +299,8 @@ class AssignVisitorToDefaultSession(vanilla.View):
 
         return HttpResponseRedirect(participant._start_url())
 
+    def get_context_data(self, **kwargs):
+        return {'room': self.request.GET.get('room')}
 
 class AdvanceSession(vanilla.View):
 
@@ -326,85 +328,6 @@ class AdvanceSession(vanilla.View):
         self.session.advance_last_place_participants()
         redirect_url = reverse('session_monitor', args=(self.session.pk,))
         return HttpResponseRedirect(redirect_url)
-
-
-class SetDefaultSession(vanilla.View):
-    '''
-        This view sets the default ("landing") session
-        for persistent urls and amt urls.
-        Globally we can have only one default_session.
-    '''
-
-    @classmethod
-    def url_pattern(cls):
-        return r'^SetDefaultSession/(?P<{}>[0-9]+)/$'.format('session_pk')
-
-    @classmethod
-    def url_name(cls):
-        return 'set_default_session'
-
-    @classmethod
-    def url(cls, session):
-        return '/SetDefaultSession/{}/'.format(session.pk)
-
-    def dispatch(self, request, *args, **kwargs):
-        self.session = get_object_or_404(
-            otree.models.session.Session, pk=kwargs['session_pk']
-        )
-        return super(SetDefaultSession, self).dispatch(
-            request, *args, **kwargs
-        )
-
-    def get(self, request, *args, **kwargs):
-        global_singleton = GlobalSingleton.objects.get()
-        global_singleton.default_session = self.session
-        global_singleton.save()
-
-        msg = (
-            'You have set the default session to <a href="{}">{}</a>. '
-            'All participants using <a href="{}">Persistent URLs</a> '
-            'are going to be routed to this session. '
-        ).format(
-            reverse('session_description', args=(self.session.pk,)),
-            self.session.code,
-            reverse('persistent_lab_urls'),
-        )
-        messages.success(request, msg, extra_tags='safe')
-        return HttpResponseRedirect(reverse('sessions'))
-
-
-class UnsetDefaultSession(vanilla.View):
-    '''
-        This view unsets the default ("landing") session
-        for persistent urls and amt urls.
-        This is the opposite action to SetDefaultSession
-    '''
-
-    @classmethod
-    def url_pattern(cls):
-        return r'^UnsetDefaultSession/'
-
-    @classmethod
-    def url_name(cls):
-        return 'unset_default_session'
-
-    @classmethod
-    def url(cls, session):
-        return '/UnsetDefaultSession/'
-
-    def dispatch(self, request, *args, **kwargs):
-        return super(UnsetDefaultSession, self).dispatch(
-            request, *args, **kwargs
-        )
-
-    def get(self, request, *args, **kwargs):
-        global_singleton = GlobalSingleton.objects.get()
-        global_singleton.default_session = None
-        global_singleton.save()
-        messages.success(
-            request, "You have successfully reset the default session"
-        )
-        return HttpResponseRedirect(reverse('sessions'))
 
 
 class ToggleArchivedSessions(vanilla.View):

@@ -36,6 +36,7 @@ from otree.session import (
     get_lcm
 )
 from otree import forms
+from django import forms as django_forms
 from otree.forms import widgets
 from otree.common import RealWorldCurrency
 from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
@@ -47,11 +48,11 @@ from otree.common import Currency as c
 from otree.models.session import Session
 from otree.models.participant import Participant
 from otree.models.session import GlobalSingleton
-from otree.models_concrete import PageCompletion
+from otree.models_concrete import PageCompletion, RoomSession
+from otree.room import ROOM_DICT
 
 
 def get_all_fields(Model, for_export=False):
-
     if Model is PageCompletion:
         return [
             'session_pk',
@@ -220,7 +221,7 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
         field_names = get_all_fields(Model, for_export)
         columns_for_this_model = [
             (Model, field_name) for field_name in field_names
-        ]
+            ]
         all_columns.extend(columns_for_this_model)
 
     if subsession_pk:
@@ -238,18 +239,18 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
 
     parent_models = [
         Model for Model in model_order if Model not in {Player, Session}
-    ]
+        ]
 
     for Model in parent_models:
         parent_objects[Model] = {
             obj.pk: obj
             for obj in Model.objects.filter(session_id__in=session_ids)
-        }
+            }
 
     if Session in model_order:
         parent_objects[Session] = {
             obj.pk: obj for obj in Session.objects.filter(pk__in=session_ids)
-        }
+            }
 
     all_rows = []
     for player in players:
@@ -308,81 +309,7 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
     return column_display_names, all_rows
 
 
-class PersistentLabURLs(vanilla.TemplateView):
-
-    @classmethod
-    def url_pattern(cls):
-        return r"^persistent_lab_urls/$"
-
-    @classmethod
-    def url_name(cls):
-        return 'persistent_lab_urls'
-
-    template_name = 'otree/admin/PersistentLabURLs.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(PersistentLabURLs, self).get_context_data(**kwargs)
-
-        # default session stuff
-        default_session_base_url = self.request.build_absolute_uri(
-            reverse('assign_visitor_to_default_session')
-        )
-        default_session_example_urls = []
-        for i in range(1, 20):
-            data_urls = add_params_to_url(
-                default_session_base_url,
-                {
-                    'participant_label': 'PC-{}'.format(i),
-                    'access_code_for_default_session':
-                    settings.ACCESS_CODE_FOR_DEFAULT_SESSION
-                }
-            )
-            default_session_example_urls.append(data_urls)
-        global_singleton = GlobalSingleton.objects.get()
-        default_session = global_singleton.default_session
-
-        context.update({
-            'default_session_example_urls': default_session_example_urls,
-            'access_code_for_default_session': (
-                otree.constants_internal.access_code_for_default_session
-            ),
-            'participant_label': otree.constants_internal.participant_label,
-            'default_session': default_session,
-        })
-        return context
-
-
-class SessionConfigsToCreate(vanilla.View):
-
-    @classmethod
-    def url(cls):
-        return "/create_session/"
-
-    @classmethod
-    def url_name(cls):
-        return 'session_configs_create'
-
-    @classmethod
-    def url_pattern(cls):
-        return r"^create_session/$"
-
-    def get(self, *args, **kwargs):
-        session_configs_info = []
-        for session_config in SESSION_CONFIGS_DICT.values():
-            url = reverse(
-                'session_create', args=(session_config['name'],)
-            )
-            if self.request.GET.get('mturk'):
-                url = add_params_to_url(url, {'mturk': 1})
-            session_configs_info.append(
-                {'display_name': session_config['display_name'], 'url': url})
-        return TemplateResponse(
-            self.request, 'otree/admin/SessionListing.html',
-            {'session_configs_info': session_configs_info})
-
-
 def sleep_then_create_session(**kwargs):
-
     # hack: this sleep is to prevent locks on SQLite. This gives time to let
     # the page request finish before create_session is called,
     # because creating the session involves a lot of database I/O, which seems
@@ -394,11 +321,13 @@ def sleep_then_create_session(**kwargs):
 
 
 class CreateSessionForm(forms.Form):
+    session_configs = SESSION_CONFIGS_DICT.values()
+
+    session_config = forms.ChoiceField(choices=[['', '-----']] + [[s['name'], s['display_name']] for s in session_configs], required=True)
 
     num_participants = forms.IntegerField()
 
     def __init__(self, *args, **kwargs):
-        self.session_config = kwargs.pop('session_config')
         for_mturk = kwargs.pop('for_mturk')
         super(CreateSessionForm, self).__init__(*args, **kwargs)
         if for_mturk:
@@ -415,49 +344,49 @@ class CreateSessionForm(forms.Form):
             self.fields['num_participants'].label = "Number of participants"
 
     def clean_num_participants(self):
+        session_config_name = self.cleaned_data.get('session_config')
 
-        lcm = get_lcm(self.session_config)
-        num_participants = self.cleaned_data['num_participants']
-        if num_participants % lcm:
-            raise forms.ValidationError(
-                'Number of participants must be a multiple of {}'.format(lcm)
-            )
-        return num_participants
+        # We must check for an empty string in case validation is not run
+        if session_config_name != '':
+            lcm = get_lcm(SESSION_CONFIGS_DICT[session_config_name])
+            num_participants = self.cleaned_data['num_participants']
+            if num_participants % lcm:
+                raise forms.ValidationError(
+                    'Please enter a valid number of participants.'
+                )
+            return num_participants
+
 
 
 class CreateSession(vanilla.FormView):
-
     form_class = CreateSessionForm
     template_name = 'otree/admin/CreateSession.html'
 
     @classmethod
     def url_pattern(cls):
-        return r"^create_session/(?P<session_config>.+)/$"
+        return r"^create_session/$"
 
     @classmethod
     def url_name(cls):
         return 'session_create'
 
     def dispatch(self, request, *args, **kwargs):
-        session_config_name = unquote_plus(kwargs.pop('session_config'))
-        self.session_config = SESSION_CONFIGS_DICT[session_config_name]
         self.for_mturk = (int(self.request.GET.get('mturk', 0)) == 1)
         return super(CreateSession, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = info_about_session_config(self.session_config)
-        kwargs.update(context)
+        session_config_summaries = [info_about_session_config(session_config) for session_config in SESSION_CONFIGS_DICT.values()]
+        kwargs.update({'session_config_summaries': session_config_summaries})
         return super(CreateSession, self).get_context_data(**kwargs)
 
     def get_form(self, data=None, files=None, **kwargs):
-        kwargs['session_config'] = self.session_config
         kwargs['for_mturk'] = self.for_mturk
         return super(CreateSession, self).get_form(data, files, **kwargs)
 
     def form_valid(self, form):
         pre_create_id = uuid.uuid4().hex
         kwargs = {
-            'session_config_name': self.session_config['name'],
+            'session_config_name': form.cleaned_data['session_config'],
             '_pre_create_id': pre_create_id,
             'for_mturk': self.for_mturk
         }
@@ -470,6 +399,11 @@ class CreateSession(vanilla.FormView):
         else:
             kwargs['num_participants'] = form.cleaned_data['num_participants']
 
+        # TODO:
+        # Refactor when we upgrade to push
+        if hasattr(self, "room"):
+            kwargs['room'] = self.room
+
         channels_group_name = 'wait_for_session_{}'.format(pre_create_id)
         wait_until_session_created_url = reverse(
             'wait_until_session_created', args=(channels_group_name,)
@@ -480,8 +414,103 @@ class CreateSession(vanilla.FormView):
         return HttpResponseRedirect(wait_until_session_created_url)
 
 
-class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
+class Rooms(vanilla.TemplateView):
+    template_name = 'otree/admin/Rooms.html'
 
+    @classmethod
+    def url_pattern(cls):
+        return r"^rooms/$"
+
+    @classmethod
+    def url_name(cls):
+        return 'rooms'
+
+    def get_context_data(self, **kwargs):
+        return {'rooms': ROOM_DICT.values()}
+
+
+class RoomWithoutSession(CreateSession):
+    template_name = 'otree/admin/RoomWithoutSession.html'
+    room = None
+
+    @classmethod
+    def url_pattern(cls):
+        return r"^room_without_session/(?P<room_name>.+)/$"
+
+    @classmethod
+    def url_name(cls):
+        return 'room_without_session'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.room = ROOM_DICT[kwargs['room_name']]
+        if self.room.has_session():
+            return HttpResponseRedirect(reverse('room_with_session', args=[kwargs['room_name']]))
+        return super(RoomWithoutSession, self).dispatch(
+            request, *args, **kwargs
+        )
+
+    def get_context_data(self, **kwargs):
+        # TODO:
+        # List names (or identifiers) of whos waiting
+        # Display count of waiting participants
+        context = {'participant_urls': self.room.get_participant_links(),
+                   'participant_names': [],
+                   'participant_count': str(0),
+                   'room': self.room}
+        kwargs.update(context)
+
+        return super(RoomWithoutSession, self).get_context_data(**kwargs)
+
+        # TODO:
+        #
+        # - override start links page (so need to store on the session that it's in this room? hm, no)
+        #
+
+class RoomWithSession(vanilla.TemplateView):
+    template_name = 'otree/admin/RoomWithSession.html'
+    room = None
+
+    @classmethod
+    def url_pattern(cls):
+        return r"^room_with_session/(?P<room_name>.+)/$"
+
+    @classmethod
+    def url_name(cls):
+        return 'room_with_session'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.room = ROOM_DICT[kwargs['room_name']]
+        if not self.room.has_session():
+            return HttpResponseRedirect(reverse('room_without_session', args=[kwargs['room_name']]))
+        return super(RoomWithSession, self).dispatch(
+            request, *args, **kwargs
+        )
+
+    def get_context_data(self, **kwargs):
+        context = {'participant_urls': self.room.get_participant_links(),
+                   'session_url': reverse('session_monitor', args=(self.room.session.pk,)),
+                   'room': self.room}
+        kwargs.update(context)
+
+        return super(RoomWithSession, self).get_context_data(**kwargs)
+
+
+class CloseRoom(vanilla.View):
+    @classmethod
+    def url_pattern(cls):
+        return r"^CloseRoom/(?P<room_name>.+)/$"
+
+    @classmethod
+    def url_name(cls):
+        return 'close_room'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.room = ROOM_DICT[kwargs['room_name']]
+        self.room.session = None
+        return HttpResponseRedirect(reverse('room_without_session', args=[kwargs['room_name']]))
+
+
+class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
     @classmethod
     def url_pattern(cls):
         return r"^WaitUntilSessionCreated/(?P<session_pre_create_id>.+)/$"
@@ -521,7 +550,6 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
 
 
 class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
-
     @classmethod
     def url_name(cls):
         return 'session_monitor'
@@ -543,14 +571,13 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
         context.update({
             'column_names': [
                 pretty_name(field.strip('_')) for field in field_names
-            ],
+                ],
             'rows': rows,
         })
         return context
 
 
 class EditSessionPropertiesForm(forms.ModelForm):
-
     participation_fee = forms.RealWorldCurrencyField(
         required=False,
         # it seems that if this is omitted, the step defaults to an integer,
@@ -576,7 +603,6 @@ class EditSessionPropertiesForm(forms.ModelForm):
 
 
 class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
-
     model = Session
     form_class = EditSessionPropertiesForm
     template_name = 'otree/admin/EditSessionProperties.html'
@@ -584,7 +610,7 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
     def get_form(self, data=None, files=None, **kwargs):
         form = super(
             EditSessionProperties, self
-        ).get_form(data, files, ** kwargs)
+        ).get_form(data, files, **kwargs)
         config = self.session.config
         form.fields[
             'participation_fee'
@@ -627,7 +653,6 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
 
 
 class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
-
     @classmethod
     def url_name(cls):
         return 'session_payments'
@@ -637,7 +662,6 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
         return response
 
     def get_context_data(self, **kwargs):
-
         session = self.session
         participants = session.get_participants()
         total_payments = 0.0
@@ -660,7 +684,6 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
 
 
 class SessionMTurkPayments(AdminSessionPageMixin, vanilla.TemplateView):
-
     @classmethod
     def url_name(cls):
         return 'session_mturk_payments'
@@ -670,10 +693,9 @@ class SessionMTurkPayments(AdminSessionPageMixin, vanilla.TemplateView):
         return response
 
     def get_context_data(self, **kwargs):
-
         session = self.session
         with MTurkConnection(
-            self.request, session.mturk_sandbox
+                self.request, session.mturk_sandbox
         ) as mturk_connection:
             workers_by_status = get_workers_by_status(
                 mturk_connection,
@@ -700,7 +722,6 @@ class SessionMTurkPayments(AdminSessionPageMixin, vanilla.TemplateView):
 
 
 class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
-
     @classmethod
     def url_name(cls):
         return 'session_start_links'
@@ -711,7 +732,7 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
         participant_urls = [
             self.request.build_absolute_uri(participant._start_url())
             for participant in session.get_participants()
-        ]
+            ]
 
         anonymous_url = self.request.build_absolute_uri(
             reverse(
@@ -731,8 +752,22 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
         return context
 
 
-class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
+class SessionStartLinksRoom(AdminSessionPageMixin, vanilla.TemplateView):
+    @classmethod
+    def url_name(cls):
+        return 'session_start_links_room'
 
+    def get_context_data(self, **kwargs):
+        session = self.session
+        room = session.get_room()
+
+        context = {'participant_urls': room.get_participant_links(),
+                   'room': room}
+        kwargs.update(context)
+
+        return super(SessionStartLinksRoom, self).get_context_data(**kwargs)
+
+class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
     @classmethod
     def url_name(cls):
         return 'session_results'
@@ -779,18 +814,18 @@ class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
             (pretty_name(key), len(list(group)))
             for key, group in
             itertools.groupby(column_name_tuples, key=lambda x: x[0])
-        ]
+            ]
 
         model_headers = [
             (pretty_name(key[1]), len(list(group)))
             for key, group in
             itertools.groupby(column_name_tuples, key=lambda x: (x[0], x[1]))
-        ]
+            ]
 
         field_headers = [
             pretty_name(key[2]) for key, group in
             itertools.groupby(column_name_tuples, key=lambda x: x)
-        ]
+            ]
 
         # dictionary for json response
         # will be used only if json request  is done
@@ -819,7 +854,6 @@ class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
 
 
 class SessionDescription(AdminSessionPageMixin, vanilla.TemplateView):
-
     @classmethod
     def url_name(cls):
         return 'session_description'
@@ -831,7 +865,6 @@ class SessionDescription(AdminSessionPageMixin, vanilla.TemplateView):
 
 
 def info_about_session_config(session_config):
-
     app_sequence = []
     for app_name in session_config['app_sequence']:
         models_module = get_models_module(app_name)
@@ -856,7 +889,6 @@ def info_about_session_config(session_config):
 
 
 def session_description_dict(session):
-
     context_data = {
         'display_name': session.config['display_name'],
     }
@@ -867,7 +899,6 @@ def session_description_dict(session):
 
 
 class AdminHome(vanilla.ListView):
-
     template_name = 'otree/admin/Home.html'
 
     @classmethod
@@ -880,10 +911,7 @@ class AdminHome(vanilla.ListView):
 
     def get_context_data(self, **kwargs):
         context = super(AdminHome, self).get_context_data(**kwargs)
-        global_singleton = GlobalSingleton.objects.get()
-        default_session = global_singleton.default_session
         context.update({
-            'default_session': default_session,
             'is_debug': settings.DEBUG,
         })
         return context

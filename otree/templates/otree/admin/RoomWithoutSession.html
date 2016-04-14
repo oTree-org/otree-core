@@ -1,0 +1,23 @@
+{% extends "otree/BaseSite.html" %}
+{% load otree_tags floppyforms %}
+
+{% block title %}
+    {{ room.display_name }}
+{% endblock %}
+
+{% block content %}
+
+    {% include "otree/includes/RoomParticipantLinks.html" %}
+
+    <h3>Create a new session</h3>
+
+    {% include "otree/includes/CreateSessionForm.html" %}
+
+    <hr/>
+    <h4>Participants waiting: ({{ participant_count }})</h4>
+
+    {% for participant in participant_names %}
+        <p>{{ participant }}</p>
+    {% endfor %}
+
+{% endblock %}

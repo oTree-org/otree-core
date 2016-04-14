@@ -1,0 +1,32 @@
+{% extends "otree/BaseSite.html" %}
+{% load otree_tags floppyforms %}
+
+{% block title %}
+    {{ room.display_name }}
+{% endblock %}
+
+{% block content %}
+
+
+
+    {% if room.has_session %}
+    <h4><a href="{{ room.url_close }}">Close this room.</a></h4>
+    <h4><a href=""</h4>
+    {% else %}
+    <h3>Create a new session</h3>
+
+    {% formrow form.session_config %}
+
+    {% formrow form.num_participants %}
+
+    {% next_button %}
+    {% endif %}
+
+    <hr/>
+    <h4>Participants waiting: ({{ participant_count }})</h4>
+
+    {% for participant in participant_names %}
+        <p>{{ participant }}</p>
+    {% endfor %}
+
+{% endblock %}

@@ -53,7 +53,6 @@ success = True
 failure = False
 session_special_category_bots = 'bots'
 session_special_category_demo = 'demo'
-access_code_for_default_session = 'access_code_for_default_session'
 
 form_page_poll_interval_seconds = 8
 # more important for wait page interval to be quick

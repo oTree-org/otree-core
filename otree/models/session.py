@@ -6,6 +6,7 @@ from otree.common_internal import random_chars_8, random_chars_10
 from otree.db import models
 from .varsmixin import ModelWithVars
 from otree.models_concrete import ParticipantToPlayerLookup
+from otree.models_concrete import RoomSession
 
 class GlobalSingleton(models.Model):
     """object that can hold site-wide settings. There should only be one
@@ -15,7 +16,7 @@ class GlobalSingleton(models.Model):
     class Meta:
         app_label = "otree"
 
-    default_session = models.ForeignKey('Session', null=True, blank=True)
+    # fixme: do i need at least one field on the model?
 
 
 # for now removing SaveTheChange
@@ -131,9 +132,6 @@ class Session(ModelWithVars):
         '''This method is deprecated from public API,
         but still useful internally (like data export)'''
         return self.config['real_world_currency_per_point']
-
-    def is_open(self):
-        return GlobalSingleton.objects.get().default_session == self
 
     def is_for_mturk(self):
         return (not self.is_demo()) and (self.mturk_num_participants > 0)
@@ -258,3 +256,11 @@ class Session(ModelWithVars):
             # technically could be stored at the session level
             participant._max_page_index = page_index
             participant.save()
+
+    def get_room(self):
+        from otree.room import ROOM_DICT
+        room_name = RoomSession.objects.get(session_pk=self.pk).room_name
+        if room_name:
+            return ROOM_DICT[room_name]
+        else:
+            return None

@@ -49,14 +49,6 @@ DATABASES = {
 
 AUTH_LEVEL = environ.get('OTREE_AUTH_LEVEL')
 
-# ACCESS_CODE_FOR_DEFAULT_SESSION:
-# If you have a "default session" set,
-# then an access code will be appended to the URL for authentication.
-# You can change this as frequently as you'd like,
-# to prevent unauthorized server access.
-
-ACCESS_CODE_FOR_DEFAULT_SESSION = 'my_access_code'
-
 # setting for integration with AWS Mturk
 AWS_ACCESS_KEY_ID = environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = environ.get('AWS_SECRET_ACCESS_KEY')
