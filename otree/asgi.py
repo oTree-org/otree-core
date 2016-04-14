@@ -1,3 +1,4 @@
+from __future__ import absolute_import # for channels module
 import os
 import channels.asgi
 
