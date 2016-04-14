@@ -164,7 +164,7 @@ def get_default_settings(initial_settings=None):
              'default': {
                  "BACKEND": "asgi_redis.RedisChannelLayer",
                  "CONFIG": {
-                     "hosts": [("localhost", 6379)],
+                     "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
                  },
                  'ROUTING': initial_settings.get(
                      'CHANNEL_DEFAULT_ROUTING',
