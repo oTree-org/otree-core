@@ -157,7 +157,6 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.GenericView):
             'kwargs': kwargs,
             'channels_group_name': channels_group_name
         })
-        print('********************************sent command to create demo session')
 
     def _response_when_ready(self):
         session = self.session

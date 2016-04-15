@@ -244,6 +244,7 @@ class Session(ModelWithVars):
             page_index = 0
             for player in participant.get_players():
                 for View in views_module_for_player(player).page_sequence:
+                    page_index += 1
                     ParticipantToPlayerLookup(
                         participant_pk=participant.pk,
                         page_index=page_index,
@@ -251,7 +252,7 @@ class Session(ModelWithVars):
                         player_pk=player.pk,
                         url=View.url(participant, page_index)
                     ).save()
-                    page_index += 1
+
 
             # technically could be stored at the session level
             participant._max_page_index = page_index
