@@ -152,23 +152,9 @@ class Participant(ModelWithVars):
         return lst
 
     def status(self):
+        # TODO: status could be a field that gets set imperatively
         if not self.visited:
             return 'Not visited yet'
-
-        # check if they are disconnected
-        max_seconds_since_last_request = max(
-            constants_internal.form_page_poll_interval_seconds,
-            constants_internal.wait_page_poll_interval_seconds,
-        ) + 10  # for latency
-        if self._last_request_timestamp is None:
-            # it shouldn't be None, but sometimes is...race condition?
-            time_since_last_request = 0
-        else:
-            time_since_last_request = (
-                time.time() - self._last_request_timestamp
-            )
-        if time_since_last_request > max_seconds_since_last_request:
-            return 'Inactive'
         if self.is_on_wait_page:
             if self._waiting_for_ids:
                 return 'Waiting for {}'.format(self._waiting_for_ids)
