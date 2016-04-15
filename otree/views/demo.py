@@ -9,6 +9,7 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
 
 import vanilla
+import channels
 
 import otree.constants_internal as constants
 from otree.views.abstract import GenericWaitPageMixin
@@ -17,6 +18,7 @@ from otree.session import (
     create_session, SESSION_CONFIGS_DICT
 )
 import otree.session
+from otree.common_internal import channels_create_demo_session_group_name
 from six.moves import range
 
 # if it's debug mode, we should always generate a new session
@@ -126,7 +128,7 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.GenericView):
             session_config = SESSION_CONFIGS_DICT[self.session_config_name]
         except KeyError:
             msg = (
-                "Session type '{}' not found"
+                "Session config '{}' not found"
             ).format(self.session_config_name)
             raise Http404(msg)
         # check that it divides evenly
@@ -143,12 +145,19 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.GenericView):
                 session_lcm
             )
             raise Http404(msg)
-        t = threading.Thread(
-            target=ensure_enough_spare_sessions,
-            args=(self.session_config_name,)
-        )
-        t.start()
 
+        kwargs = {
+            'special_category': constants.session_special_category_demo,
+            'session_config_name': self.session_config_name,
+        }
+
+        channels_group_name = channels_create_demo_session_group_name(
+            self.session_config_name)
+        channels.Channel('otree.create_session').send({
+            'kwargs': kwargs,
+            'channels_group_name': channels_group_name
+        })
+        print('********************************sent command to create demo session')
 
     def _response_when_ready(self):
         session = self.session
@@ -166,6 +175,9 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.GenericView):
         return super(CreateDemoSession, self).dispatch(
             request, *args, **kwargs
         )
+
+    def socket_url(self):
+        return '/wait_for_demo_session/{}/'.format(self.session_config_name)
 
 
 class SessionFullscreen(vanilla.TemplateView):

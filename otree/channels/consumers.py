@@ -1,9 +1,16 @@
 from channels import Group
 from otree.models import Participant
 from otree import common_internal
+from otree.common_internal import (
+    channels_wait_page_group_name,
+    channels_create_session_group_name,
+    channels_create_demo_session_group_name
+)
 import sys
 import json
 import otree.session
+from otree.views.demo import get_session
+from otree.models import Session
 
 if sys.version_info[0] == 2:
     from urlparse import parse_qs
@@ -17,7 +24,7 @@ def connect_wait_page(message, params):
     model_pk = int(model_pk)
 
 
-    group_name = common_internal.channels_wait_page_group_name(
+    group_name = channels_wait_page_group_name(
         app_label, page_index, model_name, model_pk
     )
     group = Group(group_name)
@@ -56,7 +63,7 @@ def disconnect_wait_page(message, params):
     page_index = int(page_index)
     model_pk = int(model_pk)
 
-    group_name = common_internal.channels_wait_page_group_name(
+    group_name = channels_wait_page_group_name(
         app_label, page_index, model_name, model_pk
     )
     group = Group(group_name)
@@ -94,13 +101,40 @@ def create_session(message):
             {'status': 'ready'})}
         )
 
-def connect_wait_until_session_created(message, pre_create_id):
-    group = Group('create_session_{}'.format(pre_create_id))
+
+def connect_wait_for_session(message, pre_create_id):
+    group = Group(channels_create_session_group_name(pre_create_id))
     group.add(message.reply_channel)
 
+    # in case race condition
+    if Session.objects.filter(_pre_create_id=pre_create_id):
+        group.send(
+        {'text': json.dumps(
+            {'status': 'ready'})}
+        )
 
-def disconnect_wait_until_session_created(message, pre_create_id):
-    group = Group('create_session_{}'.format(pre_create_id))
+
+def disconnect_wait_for_session(message, pre_create_id):
+    group = Group(
+        channels_create_session_group_name(pre_create_id)
+    )
+    group.discard(message.reply_channel)
+
+
+def connect_wait_for_demo_session(message, session_config_name):
+    group = Group(channels_create_demo_session_group_name(session_config_name))
+    group.add(message.reply_channel)
+
+    # redundant check in case race condition
+    if get_session(session_config_name):
+        group.send(
+            {'text': json.dumps(
+                {'status': 'ready'})}
+            )
+
+
+def disconnect_wait_for_demo_session(message, session_config_name):
+    group = Group(channels_create_demo_session_group_name(session_config_name))
     group.discard(message.reply_channel)
 
 
