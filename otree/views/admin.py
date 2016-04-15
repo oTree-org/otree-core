@@ -29,7 +29,8 @@ from collections import OrderedDict
 import easymoney
 
 from otree.common_internal import (
-    get_models_module, app_name_format, add_params_to_url
+    get_models_module, app_name_format, add_params_to_url,
+    channels_create_session_group_name
 )
 from otree.session import (
     create_session, SESSION_CONFIGS_DICT,
@@ -404,16 +405,16 @@ class CreateSession(vanilla.FormView):
         if hasattr(self, "room"):
             kwargs['room'] = self.room
 
-        channels_group_name = 'wait_for_session_{}'.format(pre_create_id)
-        wait_for_session_url = reverse(
-            'wait_for_session', args=(pre_create_id,)
-        )
-
+        channels_group_name = channels_create_session_group_name(
+            pre_create_id)
         channels.Channel('otree.create_session').send({
             'kwargs': kwargs,
             'channels_group_name': channels_group_name
         })
 
+        wait_for_session_url = reverse(
+            'wait_for_session', args=(pre_create_id,)
+        )
         return HttpResponseRedirect(wait_for_session_url)
 
 
