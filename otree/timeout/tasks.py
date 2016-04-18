@@ -13,6 +13,7 @@ def submit_expired_url(url):
 
     client = django.test.Client()
     client.post(url, data={constants_internal.auto_submit: True}, follow=True)
+    print('*********submitted {}'.format(url))
 
 
 @shared_task

@@ -17,5 +17,6 @@ from otree.celery.setup import setup_celery_app
 
 app = setup_celery_app()
 app.conf.update(
-    CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend',
+    #CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend',
+    CELERY_RESULT_BACKEND='redis://localhost:6379/0'
 )
