@@ -1,6 +1,7 @@
 from channels.management.commands.runworker import Command as RunworkerCommand
 import redis.exceptions
 import sys
+import os
 
 class Command(RunworkerCommand):
 
@@ -13,5 +14,6 @@ class Command(RunworkerCommand):
             else:
                 # .with_traceback only works on Py3
                 raise Exception('You need to install and run Redis.').with_traceback(e.__traceback__)
+        if os.
 
 

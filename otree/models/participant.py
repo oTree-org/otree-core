@@ -63,7 +63,7 @@ class Participant(ModelWithVars):
 
     code = models.CharField(
         default=random_chars_8,
-        max_length=8,
+        max_length=16,
         null=False,
         db_index=True,
         doc=(

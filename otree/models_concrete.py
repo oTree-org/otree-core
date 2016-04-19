@@ -72,7 +72,7 @@ class ParticipantLockModel(models.Model):
     class Meta:
         app_label = "otree"
 
-    participant_code = models.CharField(max_length=10, db_index=True)
+    participant_code = models.CharField(max_length=16, db_index=True)
 
 
 class StubModel(models.Model):
