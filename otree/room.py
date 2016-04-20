@@ -12,7 +12,7 @@ class Room(object):
         self.participant_label_file = room_config_dict.get('participant_label_file')
         self.name = room_config_dict['name']
         self.display_name = room_config_dict['display_name']
-        self.use_secure_urls = room_config_dict['use_secure_urls']
+        self.use_secure_urls = room_config_dict.get('use_secure_urls', True)
 
     def has_session(self):
         return self.session is not None
@@ -74,7 +74,7 @@ class Room(object):
 
 def augment_room(room):
     new_room = {'doc': ''}
-    new_room.update(settings.ROOM_DEFAULTS)
+    new_room.update(getattr(settings, 'ROOM_DEFAULTS', {}))
     new_room.update(room)
     return new_room
 
