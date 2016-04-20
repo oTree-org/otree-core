@@ -12,7 +12,7 @@ class Room(object):
         self.participant_label_file = room_config_dict.get('participant_label_file')
         self.name = room_config_dict['name']
         self.display_name = room_config_dict['display_name']
-        self.use_hashes = room_config_dict['use_hashes']
+        self.use_secure_urls = room_config_dict['use_secure_urls']
 
     def has_session(self):
         return self.session is not None
@@ -57,7 +57,7 @@ class Room(object):
         if self.has_participant_labels():
             for label in self.get_participant_labels():
                 params = {'participant_label': label}
-                if self.use_hashes:
+                if self.use_secure_urls:
                     params['hash'] = make_hash(label)
                 participant_url = add_params_to_url(room_base_url, params)
                 participant_urls.append(participant_url)

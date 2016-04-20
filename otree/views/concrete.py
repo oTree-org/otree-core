@@ -255,13 +255,13 @@ class AssignVisitorToRoom(vanilla.TemplateView):
         )
         if room.has_participant_labels():
             if not participant_label:
-                if not room.use_hashes:
+                if not room.use_secure_urls:
                     return super(AssignVisitorToRoom, self).get(args, kwargs)
 
             if participant_label not in room.get_participant_labels():
                 return HttpResponseNotFound('Participant is not expected in this room. Please contact the session supervisor.')
 
-            if room.use_hashes:
+            if room.use_secure_urls:
                 hash = self.request.GET.get('hash')
                 if hash != make_hash(participant_label):
                     return HttpResponseNotFound('Invalid hash parameter.')
