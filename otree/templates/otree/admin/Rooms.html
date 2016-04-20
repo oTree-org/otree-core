@@ -18,7 +18,7 @@
 
     <p>
         To create a room, add to your <code>settings.py</code>
-        a setting <code>ROOMS</code>.
+        a setting <code>ROOMS</code> (and, optionally, <code>ROOM_DEFAULTS</code>).
     </p>
 
     <p>
@@ -29,6 +29,10 @@
     <p>For example:</p>
 
     <pre><code>
+    ROOM_DEFAULTS = {
+        'use_secure_urls': True,
+    }
+
     ROOMS = [
         {
             'name': 'ec101',
@@ -46,13 +50,22 @@
     <p>Here are the available keys:</p>
 
     <ul>
-        <li><code>name</code>: internal name (required)</li>
-        <li><code>display_name</code>: display name (required)</li>
+        <li><code>name</code>: (required) internal name</li>
+        <li><code>display_name</code>: (required) display name</li>
         <li>
             <code>participant_label_file</code>: a path to a text file with the "guest list"
             for this room. Should have one participant label per line.
         </li>
-        <li><code>use_secure_urls</code>: whether oTree should add hashes to URLs for extra security.</li>
+        <li><code>use_secure_urls</code>: whether oTree should add unique secret keys to URLs,
+            so that even if someone can guess another participant's <code>participant_label</code>,
+            they can't guess that person's start URL.
+        </li>
     </ul>
+
+    <p>
+        <code>ROOM_DEFAULTS</code> is
+        a dict that defines settings to be inherited by all rooms unless
+        explicitly overridden (works in an analogous way to <code>SESSION_CONFIG_DEFAULTS</code>).
+    </p>
 
 {% endblock %}
