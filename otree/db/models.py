@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 
 import random
 import string
@@ -17,8 +18,8 @@ from .serializedfields import PickleField as _PickleField
 
 import easymoney
 
-from idmap.metaclass import SharedMemoryModelBase
-from idmap.models import SharedMemoryModel
+from .idmap import SharedMemoryModelBase
+from .idmap import SharedMemoryModel
 
 import otree.common
 from otree.common_internal import (

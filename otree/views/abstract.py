@@ -32,6 +32,7 @@ import otree.common_internal
 import otree.models.session
 import otree.timeout.tasks
 import otree.models
+import otree.db.idmap
 import otree.constants_internal as constants
 from otree.models.participant import Participant
 from otree.models.session import GlobalSingleton
@@ -274,7 +275,10 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                                     no_cache=True, no_store=True))
     def dispatch(self, request, *args, **kwargs):
         try:
-            with otree.common_internal.transaction_atomic():
+            with (
+                    otree.common_internal.transaction_atomic() and
+                    otree.db.idmap.use_cache()
+            ):
 
                 participant_code = kwargs.pop(constants.participant_code)
 
