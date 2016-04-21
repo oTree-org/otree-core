@@ -48,28 +48,6 @@ class Command(BaseCommand):
         return env
 
     def handle(self, *args, **options):
-
-        # check if redis is running
-
-
-        """
-        start = time.time()
-        layer_config = settings.CHANNEL_LAYERS['default']
-        if layer_config['BACKEND'] == "asgi_redis.RedisChannelLayer":
-            channel_layer = channel_layers['default']
-            CONNECTION_INDEX = 0
-            redis_conn = channel_layer.connection(CONNECTION_INDEX)
-            print('*********getting redis layer took {}s'.format(time.time() - start))
-            try:
-                redis_conn.ping()
-            except redis.exceptions.ConnectionError:
-                redis_url = channel_layer.hosts[CONNECTION_INDEX]
-                raise redis.exceptions.ConnectionError(
-                    'You need to install redis and '
-                    'run a server at {}'.format(redis_url)
-                )
-        print('*********redis check ran in {}s'.format(time.time() - start))
-        """
         manager = Manager()
 
         manager.add_process(

@@ -159,7 +159,7 @@ def get_default_settings(initial_settings=None):
 
         'CHANNEL_LAYERS': {
              'default': {
-                 "BACKEND": "asgi_redis.RedisChannelLayer",
+                 "BACKEND": "otree.channels.asgi_redis.RedisChannelLayer",
                  "CONFIG": {
                      "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
                  },
