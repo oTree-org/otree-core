@@ -259,6 +259,9 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         self.GroupClass = getattr(models_module, 'Group')
         self.PlayerClass = getattr(models_module, 'Player')
 
+        print('**********ID map cache:')
+        print(self._get_save_objects_model_instances())
+
         self.player = self.PlayerClass.objects.get(pk=player_pk)
 
         self.group = self.player.group
@@ -293,6 +296,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                         "Maybe the database was recreated."
                     ).format(participant_code)
                     raise Http404(msg)
+
 
                 self.participant = Participant.objects.get(
                     code=participant_code)
