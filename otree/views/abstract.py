@@ -261,10 +261,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         self.GroupClass = getattr(models_module, 'Group')
         self.PlayerClass = getattr(models_module, 'Player')
 
-        print('**********ID map cache:')
-        for obj in self._get_save_objects_model_instances():
-            print((obj, obj.pk))
-
         self.player = self.PlayerClass.objects.get(pk=player_pk)
 
         self.group = self.player.group
