@@ -1,3 +1,4 @@
+from __future__ import absolute_import # for channels module
 import asgi_redis
 import redis.exceptions
 import six
