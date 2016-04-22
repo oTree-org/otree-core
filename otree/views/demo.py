@@ -67,31 +67,6 @@ class DemoIndex(vanilla.TemplateView):
         return context
 
 
-def ensure_enough_spare_sessions(session_config_name):
-
-    # hack: this sleep is to prevent locks on SQLite. This gives time to let
-    # the page request finish before create_session is called, because creating
-    # the session involves a lot of database I/O, which seems to cause locks
-    # when multiple threads access at the same time.
-    if settings.DATABASES['default']['ENGINE'].endswith('sqlite3'):
-        time.sleep(5)
-
-    spare_sessions = Session.objects.filter(
-        special_category=constants.session_special_category_demo,
-        demo_already_used=False,
-    )
-    spare_sessions = [
-        s for s in spare_sessions
-        if s.config['name'] == session_config_name
-    ]
-
-    # fill in whatever gap exists. want at least 3 sessions waiting.
-    for i in range(MAX_SESSIONS_TO_CREATE - len(spare_sessions)):
-        create_session(
-            special_category=constants.session_special_category_demo,
-            session_config_name=session_config_name,
-        )
-
 
 def get_session(session_config_name):
 

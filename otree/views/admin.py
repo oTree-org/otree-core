@@ -310,17 +310,6 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
     return column_display_names, all_rows
 
 
-def sleep_then_create_session(**kwargs):
-    # hack: this sleep is to prevent locks on SQLite. This gives time to let
-    # the page request finish before create_session is called,
-    # because creating the session involves a lot of database I/O, which seems
-    # to cause locks when multiple threads access at the same time.
-    if settings.DATABASES['default']['ENGINE'].endswith('sqlite3'):
-        time.sleep(5)
-
-    create_session(**kwargs)
-
-
 class CreateSessionForm(forms.Form):
     session_configs = SESSION_CONFIGS_DICT.values()
 
