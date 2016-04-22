@@ -515,6 +515,9 @@ class CloseRoom(vanilla.View):
 
 
 class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
+
+
+
     @classmethod
     def url_pattern(cls):
         return r"^WaitUntilSessionCreated/(?P<pre_create_id>.+)/$"
@@ -540,10 +543,15 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
             session_home_url = reverse(
                 'session_create_hit', args=(session.pk,)
             )
-        else:
+        # demo mode
+        elif self.request.GET.get('fullscreen'):
+            session_home_url = reverse(
+                'session_fullscreen', args=(session.pk,))
+        else: # typical case
             session_home_url = reverse(
                 'session_start_links', args=(session.pk,)
             )
+
         return HttpResponseRedirect(session_home_url)
 
     def dispatch(self, request, *args, **kwargs):
