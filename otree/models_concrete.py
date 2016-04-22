@@ -90,3 +90,6 @@ class StubModel(models.Model):
 class RoomSession(models.Model):
     room_name = models.CharField()
     session_pk = models.PositiveIntegerField()
+
+class FailedSessionCreation(models.Model):
+    pre_create_id = models.CharField(max_length=100)

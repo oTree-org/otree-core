@@ -30,9 +30,7 @@ def connect_wait_page(message, params):
     group = Group(group_name)
     group.add(message.reply_channel)
 
-    # safeguard (redundant) check, in case the message
-    # was sent from the server between page load and web socket connect time
-
+    # in case message was sent before this web socket connects
     # fixme: app name or app label?
     models_module = common_internal.get_models_module(app_label)
 
@@ -77,7 +75,7 @@ def connect_auto_advance(message, params):
     group = Group('auto-advance-{}'.format(participant_code))
     group.add(message.reply_channel)
 
-    # redundant check in case there is a rare race condition
+    # in case message was sent before this web socket connects
     participant = Participant.objects.get(code=participant_code)
     if participant._index_in_pages > page_index:
         message.reply_channel.send(
@@ -94,19 +92,29 @@ def disconnect_auto_advance(message, params):
 
 
 def create_session(message):
-    otree.session.create_session(**message['kwargs'])
 
-    Group(message['channels_group_name']).send(
+    group = Group(message['channels_group_name'])
+
+    try:
+        otree.session.create_session(**message['kwargs'])
+    except Exception as e:
+        group.send(
+            {'text': json.dumps(
+                {'error': 'Failed to create session. Check the server logs.'})}
+        )
+        raise e
+
+    group.send(
         {'text': json.dumps(
             {'status': 'ready'})}
-        )
+)
 
 
 def connect_wait_for_session(message, pre_create_id):
     group = Group(channels_create_session_group_name(pre_create_id))
     group.add(message.reply_channel)
 
-    # in case race condition
+    # in case message was sent before this web socket connects
     if Session.objects.filter(_pre_create_id=pre_create_id):
         group.send(
         {'text': json.dumps(
@@ -121,17 +129,18 @@ def disconnect_wait_for_session(message, pre_create_id):
     group.discard(message.reply_channel)
 
 
+'''
 def connect_wait_for_demo_session(message, session_config_name):
     group = Group(channels_create_demo_session_group_name(session_config_name))
     group.add(message.reply_channel)
 
-    # redundant check in case race condition
+    # in case message was sent before this web socket connects
     if get_session(session_config_name):
         group.send(
             {'text': json.dumps(
                 {'status': 'ready'})}
             )
-
+'''
 
 def disconnect_wait_for_demo_session(message, session_config_name):
     group = Group(channels_create_demo_session_group_name(session_config_name))

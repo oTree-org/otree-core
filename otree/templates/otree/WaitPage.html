@@ -70,8 +70,16 @@ $(document).ready(function () {
         var ws_path = ws_scheme + '://' + window.location.host + "{{ view.socket_url|safe }}";
         socket = new ReconnectingWebSocket(ws_path);
         socket.onmessage = function(e) {
-            console.log('Received redirect message', e.data);
+
             var data = JSON.parse(e.data);
+
+            // Handle errors
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            console.log('Received redirect message', e.data);
             window.location.href = '{{ view.absolute_redirect_url|safe }}';
 
         }

@@ -107,7 +107,7 @@ def get_session(session_config_name):
         return sessions[0]
 
 
-class CreateDemoSession(GenericWaitPageMixin, vanilla.GenericView):
+class CreateDemoSession(vanilla.GenericView):
 
     @classmethod
     def url_pattern(cls):
@@ -117,19 +117,24 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.GenericView):
     def url_name(cls):
         return 'create_demo_session'
 
-    body_text = 'Creating a session'
-
-    def _is_ready(self):
-        self.session = get_session(self.session_config_name)
-        return bool(self.session)
 
     def _before_returning_wait_page(self):
+
+    def _response_when_ready(self):
+        session = self.session
+        session.demo_already_used = True
+        session.save()
+
+        return HttpResponseRedirect(landing_url)
+
+    def dispatch(self, request, *args, **kwargs):
+        session_config_name = kwargs['session_config']
         try:
-            session_config = SESSION_CONFIGS_DICT[self.session_config_name]
+            session_config = SESSION_CONFIGS_DICT[session_config_name]
         except KeyError:
             msg = (
                 "Session config '{}' not found"
-            ).format(self.session_config_name)
+            ).format(session_config_name)
             raise Http404(msg)
         # check that it divides evenly
         # need to check here so that the user knows upfront
@@ -140,7 +145,7 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.GenericView):
                 'Session Config {}: Number of participants ({}) does not '
                 'divide evenly into group size ({})'
             ).format(
-                self.session_config_name,
+                session_config_name,
                 num_participants,
                 session_lcm
             )
@@ -148,35 +153,16 @@ class CreateDemoSession(GenericWaitPageMixin, vanilla.GenericView):
 
         kwargs = {
             'special_category': constants.session_special_category_demo,
-            'session_config_name': self.session_config_name,
+            'session_config_name': session_config_name,
         }
 
         channels_group_name = channels_create_demo_session_group_name(
-            self.session_config_name)
+            session_config_name)
         channels.Channel('otree.create_session').send({
             'kwargs': kwargs,
             'channels_group_name': channels_group_name
         })
 
-    def _response_when_ready(self):
-        session = self.session
-        session.demo_already_used = True
-        session.save()
-
-        if 'fullscreen' in self.request.GET and self.request.GET['fullscreen']:
-            landing_url = reverse('session_fullscreen', args=(session.pk,))
-        else:
-            landing_url = reverse('session_start_links', args=(session.pk,))
-        return HttpResponseRedirect(landing_url)
-
-    def dispatch(self, request, *args, **kwargs):
-        self.session_config_name = kwargs['session_config']
-        return super(CreateDemoSession, self).dispatch(
-            request, *args, **kwargs
-        )
-
-    def socket_url(self):
-        return '/wait_for_demo_session/{}/'.format(self.session_config_name)
 
 
 class SessionFullscreen(vanilla.TemplateView):
