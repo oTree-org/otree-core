@@ -25,12 +25,6 @@ channel_routing = [
     route('websocket.disconnect',
           consumers.disconnect_wait_for_session,
           path=r'^/wait_for_session/(?P<pre_create_id>\w+)/$'),
-    route('websocket.connect',
-          consumers.connect_wait_for_demo_session,
-          path=r'^/wait_for_demo_session/(?P<session_config_name>\w+)/$'),
-    route('websocket.disconnect',
-          consumers.disconnect_wait_for_demo_session,
-          path=r'^/wait_for_demo_session/(?P<session_config_name>\w+)/$'),
     route('otree.create_session',
           consumers.create_session)
 ]

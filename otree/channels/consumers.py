@@ -11,6 +11,8 @@ import json
 import otree.session
 from otree.views.demo import get_session
 from otree.models import Session
+from otree.models_concrete import FailedSessionCreation
+
 
 if sys.version_info[0] == 2:
     from urlparse import parse_qs
@@ -95,13 +97,15 @@ def create_session(message):
 
     group = Group(message['channels_group_name'])
 
+    kwargs = message['kwargs']
     try:
-        otree.session.create_session(**message['kwargs'])
+        otree.session.create_session(**kwargs)
     except Exception as e:
         group.send(
             {'text': json.dumps(
                 {'error': 'Failed to create session. Check the server logs.'})}
         )
+        FailedSessionCreation(pre_create_id=kwargs['_pre_create_id']).save()
         raise e
 
     group.send(
@@ -120,6 +124,13 @@ def connect_wait_for_session(message, pre_create_id):
         {'text': json.dumps(
             {'status': 'ready'})}
         )
+    elif FailedSessionCreation.objects.filter(
+        pre_create_id=pre_create_id
+    ).exists():
+        group.send(
+            {'text': json.dumps(
+                {'error': 'Failed to create session. Check the server logs.'})}
+        )
 
 
 def disconnect_wait_for_session(message, pre_create_id):
@@ -128,23 +139,6 @@ def disconnect_wait_for_session(message, pre_create_id):
     )
     group.discard(message.reply_channel)
 
-
-'''
-def connect_wait_for_demo_session(message, session_config_name):
-    group = Group(channels_create_demo_session_group_name(session_config_name))
-    group.add(message.reply_channel)
-
-    # in case message was sent before this web socket connects
-    if get_session(session_config_name):
-        group.send(
-            {'text': json.dumps(
-                {'status': 'ready'})}
-            )
-'''
-
-def disconnect_wait_for_demo_session(message, session_config_name):
-    group = Group(channels_create_demo_session_group_name(session_config_name))
-    group.discard(message.reply_channel)
 
 
 '''

@@ -19,7 +19,9 @@ from otree.common_internal import (
     min_players_multiple)
 from otree.common import RealWorldCurrency
 from decimal import Decimal
-from otree.models_concrete import ParticipantLockModel
+from otree.models_concrete import (
+    ParticipantLockModel,
+)
 from otree import deprecate
 
 
