@@ -408,10 +408,6 @@ def channels_create_session_group_name(pre_create_id):
     return 'wait_for_session_{}'.format(pre_create_id)
 
 
-def channels_create_demo_session_group_name(session_config_name):
-    return 'wait_for_demo_session_{}'.format(session_config_name)
-
-
 def channels_wait_page_group_name(app_label, page_index, model_name, model_pk):
 
     return 'wait-page-{}-page{}-{}{}'.format(
