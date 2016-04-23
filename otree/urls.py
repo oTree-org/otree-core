@@ -61,6 +61,8 @@ def url_patterns_from_module(module_name):
                 'otree.views.admin.SessionPayments',
                 'otree.views.admin.SessionResults',
                 'otree.views.admin.SessionStartLinks',
+                'otree.views.admin.SessionStartLinks',
+                'otree.views.admin.WaitUntilSessionCreated',
             })
     else:
         unrestricted_views = [

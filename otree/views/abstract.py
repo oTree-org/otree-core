@@ -35,7 +35,6 @@ import otree.models
 import otree.db.idmap
 import otree.constants_internal as constants
 from otree.models.participant import Participant
-from otree.models.session import GlobalSingleton
 from otree.models.session import Session
 from otree.common_internal import (
     lock_on_this_code_path, get_app_label_from_import_path)

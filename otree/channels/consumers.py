@@ -4,7 +4,6 @@ from otree import common_internal
 from otree.common_internal import (
     channels_wait_page_group_name,
     channels_create_session_group_name,
-    channels_create_demo_session_group_name
 )
 import sys
 import json

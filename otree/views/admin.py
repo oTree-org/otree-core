@@ -48,7 +48,6 @@ import otree.models.session
 from otree.common import Currency as c
 from otree.models.session import Session
 from otree.models.participant import Participant
-from otree.models.session import GlobalSingleton
 from otree.models_concrete import PageCompletion, RoomSession
 from otree.room import ROOM_DICT
 
