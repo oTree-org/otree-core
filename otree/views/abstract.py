@@ -272,7 +272,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
     def dispatch(self, request, *args, **kwargs):
         try:
             with (
-                    otree.common_internal.transaction_atomic() and
+                    otree.common_internal.transaction_atomic(),
                     otree.db.idmap.use_cache()
             ):
 
