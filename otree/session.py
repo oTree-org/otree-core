@@ -11,6 +11,7 @@ from collections import OrderedDict
 from django.conf import settings
 from django.db import transaction
 
+import otree.db.idmap
 from otree import constants_internal
 from otree.models.session import Session
 from otree.models.participant import Participant
@@ -149,6 +150,8 @@ def create_session(session_config_name, label='', num_participants=None,
     # be a bit discouraged: http://goo.gl/dEXZpv
     # 2014-9-22: preassign to groups for demo mode.
 
+    otree.db.idmap.activate_cache()
+
     try:
         session_config = SESSION_CONFIGS_DICT[session_config_name]
     except KeyError:
@@ -229,6 +232,7 @@ def create_session(session_config_name, label='', num_participants=None,
         room.session = session
     session.ready = True
     session.save()
+    otree.db.idmap.deactivate_cache()
 
     return session
 
