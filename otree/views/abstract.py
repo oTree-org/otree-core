@@ -37,7 +37,9 @@ import otree.constants_internal as constants
 from otree.models.participant import Participant
 from otree.models.session import Session
 from otree.common_internal import (
-    lock_on_this_code_path, get_app_label_from_import_path)
+    lock_on_this_code_path, get_app_label_from_import_path,
+    transaction_atomic
+)
 
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
@@ -271,10 +273,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                                     no_cache=True, no_store=True))
     def dispatch(self, request, *args, **kwargs):
         try:
-            with (
-                    otree.common_internal.transaction_atomic(),
-                    otree.db.idmap.use_cache()
-            ):
+            with transaction_atomic(), otree.db.idmap.use_cache():
 
                 participant_code = kwargs.pop(constants.participant_code)
 
