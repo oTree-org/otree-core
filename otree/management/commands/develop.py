@@ -52,7 +52,7 @@ class Command(BaseCommand):
 
         manager.add_process(
             'web',
-            'otree runweb --reload',
+            'otree runweb',
             quiet=False,
             env=self.get_env(options))
         manager.add_process(
