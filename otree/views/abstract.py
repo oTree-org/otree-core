@@ -548,6 +548,7 @@ class InGameWaitPageMixin(object):
         if self._is_ready() or not self.is_displayed():
             return self._response_when_ready()
         self.participant.is_on_wait_page = True
+        # take a lock because we set "waiting for" list here
         with lock_on_this_code_path():
             unvisited_participants = self._tally_unvisited()
         if unvisited_participants:
