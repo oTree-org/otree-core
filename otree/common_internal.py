@@ -385,14 +385,21 @@ def check_pypi_for_updates():
         newest_dotted = data['info']['version'].strip()
         installed_dotted = otree.__version__
 
-        semver_re = re.compile(r'^(\d+)\.(\d+)\.(\d+).*$')
+        semver_re = re.compile(r'^(\d+)\.(\d+)\.(\d+)$')
+        newest_match = semver_re.match(newest_dotted)
+        installed_match = semver_re.match(installed_dotted)
+
+        if not (newest_match and installed_match):
+            # maybe a pre-release like 0.5.0.dev1
+            # ignore those
+            return
 
         newest = [
-            int(n) for n in semver_re.match(newest_dotted).groups()
-        ]
+            int(n) for n in newest_match.groups()
+            ]
         installed = [
-            int(n) for n in semver_re.match(installed_dotted).groups()
-        ]
+            int(n) for n in installed_match.groups()
+            ]
 
         # only care about patch versions if you are >= 5 versions behind
         if newest > installed and (newest[0] > installed[0] or
