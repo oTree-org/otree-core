@@ -1,12 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import os
+import otree
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')  # noqa
+procfile_path = os.path.join(
+    os.path.dirname(otree.__file__), 'project_template', 'Procfile')
 
-from django.core.wsgi import get_wsgi_application
-from whitenoise.django import DjangoWhiteNoise
+with open(procfile_path, 'r') as procfile:
+    procfile_contents = procfile.read()
 
-application = get_wsgi_application()
-application = DjangoWhiteNoise(application)
+DEPRECATION_STRING = '''
+oTree is using a new server. You should start it with a different command.
+You should change your Procfile to the below:
+
+{}
+'''.format(procfile_contents)
+
+print(DEPRECATION_STRING)

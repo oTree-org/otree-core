@@ -36,7 +36,6 @@ from otree.views.abstract import (
     NO_PARTICIPANTS_LEFT_MSG
 )
 from otree.models_concrete import GroupSize  # noqa
-from otree.models.session import GlobalSingleton
 from otree.room import ROOM_DICT
 
 class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):

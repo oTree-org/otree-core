@@ -8,6 +8,8 @@ install:
   - pip install tox
 script:
   - tox -r
+services:
+  - redis-server
 env:
   - TOXENV=style
   - TOXENV=coverage

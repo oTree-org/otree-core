@@ -9,6 +9,7 @@
 import sys
 import os
 import platform
+import shutil
 
 from django.core.management.commands import startproject
 
@@ -33,21 +34,26 @@ IMPLEMENTATIONS_ALIAS = {
 class Command(startproject.Command):
     help = ("Creates a new oTree project.")
 
-    def render_runtime(self, options):
+    def modify_project_files(self, options):
         project_name, target = options['name'], options['directory']
         if target is None:
-            top_dir = os.path.join(os.getcwd(), project_name)
+            project_root_dir = os.path.join(os.getcwd(), project_name)
         else:
-            top_dir = os.path.abspath(os.path.expanduser(target))
+            project_root_dir = os.path.abspath(os.path.expanduser(target))
 
         imp = platform.python_implementation()
         implementation_name = IMPLEMENTATIONS_ALIAS.get(imp, imp).lower()
         version = ".".join(map(str, sys.version_info[:3]))
         runtime_string = "{}-{}\n".format(implementation_name, version)
 
-        runtime_path = os.path.join(top_dir, "runtime.txt")
+        runtime_path = os.path.join(project_root_dir, "runtime.txt")
         with open(runtime_path, "w") as fp:
             fp.write(runtime_string)
+
+        # overwrite Procfile with new channels/asgi one
+        procfile_path = os.path.join(
+            self.core_project_template_path, 'Procfile')
+        shutil.copy(procfile_path, project_root_dir)
 
     def handle(self, *args, **options):
         answer = None
@@ -59,14 +65,19 @@ class Command(startproject.Command):
             else:
                 answer = answer[0].lower()
 
-        if answer == "y":
-            location = "https://github.com/oTree-org/oTree/archive/master.zip"
-        else:
-            location = os.path.join(
+        self.core_project_template_path = os.path.join(
                 os.path.dirname(otree.__file__), 'project_template')
+        if answer == "y":
+            project_template_path = "https://github.com/oTree-org/oTree/archive/master.zip"
+        else:
+            project_template_path = self.core_project_template_path
         if options.get('template', None) is None:
-            options['template'] = location
+            options['template'] = project_template_path
         super(Command, self).handle(*args, **options)
 
-        self.render_runtime(options)
-        check_pypi_for_updates()
+
+        self.modify_project_files(options)
+        try:
+            check_pypi_for_updates()
+        except:
+            pass

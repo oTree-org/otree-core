@@ -48,7 +48,6 @@ import otree.models.session
 from otree.common import Currency as c
 from otree.models.session import Session
 from otree.models.participant import Participant
-from otree.models.session import GlobalSingleton
 from otree.models_concrete import PageCompletion, RoomSession
 from otree.room import ROOM_DICT
 
@@ -310,17 +309,6 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
     return column_display_names, all_rows
 
 
-def sleep_then_create_session(**kwargs):
-    # hack: this sleep is to prevent locks on SQLite. This gives time to let
-    # the page request finish before create_session is called,
-    # because creating the session involves a lot of database I/O, which seems
-    # to cause locks when multiple threads access at the same time.
-    if settings.DATABASES['default']['ENGINE'].endswith('sqlite3'):
-        time.sleep(5)
-
-    create_session(**kwargs)
-
-
 class CreateSessionForm(forms.Form):
     session_configs = SESSION_CONFIGS_DICT.values()
 
@@ -515,6 +503,9 @@ class CloseRoom(vanilla.View):
 
 
 class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
+
+
+
     @classmethod
     def url_pattern(cls):
         return r"^WaitUntilSessionCreated/(?P<pre_create_id>.+)/$"
@@ -540,10 +531,15 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
             session_home_url = reverse(
                 'session_create_hit', args=(session.pk,)
             )
-        else:
+        # demo mode
+        elif self.request.GET.get('fullscreen'):
+            session_home_url = reverse(
+                'session_fullscreen', args=(session.pk,))
+        else: # typical case
             session_home_url = reverse(
                 'session_start_links', args=(session.pk,)
             )
+
         return HttpResponseRedirect(session_home_url)
 
     def dispatch(self, request, *args, **kwargs):

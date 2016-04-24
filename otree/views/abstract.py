@@ -35,10 +35,11 @@ import otree.models
 import otree.db.idmap
 import otree.constants_internal as constants
 from otree.models.participant import Participant
-from otree.models.session import GlobalSingleton
 from otree.models.session import Session
 from otree.common_internal import (
-    lock_on_this_code_path, get_app_label_from_import_path)
+    lock_on_this_code_path, get_app_label_from_import_path,
+    transaction_atomic
+)
 
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
@@ -272,10 +273,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                                     no_cache=True, no_store=True))
     def dispatch(self, request, *args, **kwargs):
         try:
-            with (
-                    otree.common_internal.transaction_atomic() and
-                    otree.db.idmap.use_cache()
-            ):
+            with transaction_atomic(), otree.db.idmap.use_cache():
 
                 participant_code = kwargs.pop(constants.participant_code)
 
@@ -550,6 +548,7 @@ class InGameWaitPageMixin(object):
         if self._is_ready() or not self.is_displayed():
             return self._response_when_ready()
         self.participant.is_on_wait_page = True
+        # take a lock because we set "waiting for" list here
         with lock_on_this_code_path():
             unvisited_participants = self._tally_unvisited()
         if unvisited_participants:
@@ -558,6 +557,7 @@ class InGameWaitPageMixin(object):
             # on SQLite, transaction.atomic causes database to lock,
             # so we use no-op context manager instead
             with lock_on_this_code_path():
+                print('<***STARTLOCK {}>'.format(self.participant.code))
                 if self.wait_for_all_groups:
                     _c = CompletedSubsessionWaitPage.objects.get_or_create(
                         page_index=self._index_in_pages,
@@ -615,7 +615,13 @@ class InGameWaitPageMixin(object):
                             'participant_pk_set': participant_pk_set,
                             'wait_page_index': self._index_in_pages,
                         }, countdown=10)
-                    return self._response_when_ready()
+                # we can assume it's ready because
+                # even if it wasn't created, that means someone else
+                # created it, and therefore that whole code block
+                # finished executing (including the after_all_players_arrive)
+                # inside the transaction
+                print('<***ENDLOCK {}>'.format(self.participant.code))
+            return self._response_when_ready()
 
 
     def channels_group_name(self):

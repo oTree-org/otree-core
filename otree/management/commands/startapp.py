@@ -18,4 +18,7 @@ class Command(startapp.Command):
         if options.get('template', None) is None:
             options['template'] = self.get_default_template()
         super(Command, self).handle(*args, **options)
-        check_pypi_for_updates()
+        try:
+            check_pypi_for_updates()
+        except:
+            pass
