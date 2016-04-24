@@ -614,7 +614,12 @@ class InGameWaitPageMixin(object):
                             'participant_pk_set': participant_pk_set,
                             'wait_page_index': self._index_in_pages,
                         }, countdown=10)
-                    return self._response_when_ready()
+                # we can assume it's ready because
+                # even if it wasn't created, that means someone else
+                # created it, and therefore that whole code block
+                # finished executing (including the after_all_players_arrive)
+                # inside the transaction
+                return self._response_when_ready()
 
 
     def channels_group_name(self):
