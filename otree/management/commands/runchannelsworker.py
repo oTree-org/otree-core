@@ -5,13 +5,21 @@ from channels import channel_layers, DEFAULT_CHANNEL_LAYER
 from channels.log import setup_logger
 import time
 
-NUM_WORKER_THREADS = 4
-
 
 class Command(RunworkerCommand):
+
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument(
+            '--num-threads', action='store', dest='num_threads', default=4,
+            type=int,
+            help='Number of worker threads')
+
+
     def handle(self, *args, **options):
         # Get the backend to use
         self.verbosity = options.get("verbosity", 1)
+
         self.logger = setup_logger('django.channels', self.verbosity)
         self.channel_layer = channel_layers[options.get("layer", DEFAULT_CHANNEL_LAYER)]
         # Check that handler isn't inmemory
@@ -24,13 +32,10 @@ class Command(RunworkerCommand):
         self.channel_layer.router.check_default()
         # Launch a worker
         self.logger.info("Running worker against channel layer %s", self.channel_layer)
-        # Optionally provide an output callback
-        callback = None
-        if self.verbosity > 1:
-            callback = self.consumer_called
         # Run the worker
         worker_threads = []
-        for _ in range(NUM_WORKER_THREADS):
+        num_threads = options['num_threads']
+        for _ in range(num_threads):
             worker = WorkerThread(self.channel_layer, self.logger)
             worker.daemon = True
             worker.start()
