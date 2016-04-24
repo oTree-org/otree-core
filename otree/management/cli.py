@@ -171,7 +171,10 @@ def execute_from_command_line(arguments, script_file):
     # only monkey patch when is necesary
     if "version" in arguments or "--version" in arguments:
         sys.stdout.write(otree_and_django_version() + '\n')
-        check_pypi_for_updates()
+        try:
+            check_pypi_for_updates()
+        except:
+            pass
     else:
         utility = OTreeManagementUtility(arguments)
         utility.execute()

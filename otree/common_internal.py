@@ -368,40 +368,44 @@ def lock_on_this_code_path():
 
 
 def check_pypi_for_updates():
-    try:
-        logging.getLogger("requests").setLevel(logging.WARNING)
-        response = requests.get('http://pypi.python.org/pypi/otree-core/json')
-        data = json.loads(response.content.decode())
-        newest_dotted = data['info']['version'].strip()
-        installed_dotted = otree.__version__
+    logging.getLogger("requests").setLevel(logging.WARNING)
+    response = requests.get('http://pypi.python.org/pypi/otree-core/json')
+    data = json.loads(response.content.decode())
+    newest_dotted = data['info']['version'].strip()
+    installed_dotted = otree.__version__
 
-        semver_re = re.compile(r'^(\d+)\.(\d+)\.(\d+).*?$')
+    semver_re = re.compile(r'^(\d+)\.(\d+)\.(\d+)$')
+    newest_match = semver_re.match(newest_dotted)
+    installed_match = semver_re.match(installed_dotted)
 
-        newest = [
-            int(n) for n in semver_re.match(newest_dotted).groups()
-        ]
-        installed = [
-            int(n) for n in semver_re.match(installed_dotted).groups()
-        ]
+    if not (newest_match and installed_match):
+        # maybe a pre-release like 0.5.0.dev1
+        # ignore those
+        return
 
-        # only care about patch versions if you are >= 5 versions behind
-        if newest > installed and (newest[0] > installed[0] or
-                                   newest[1] > installed[1] or
-                                   newest[2] - installed[2] > 5):
-            if sys.version_info[0] == 3:
-                pip_command = 'pip3'
-            else:
-                pip_command = 'pip'
-            print(
-                'Your otree-core package is out-of-date '
-                '(version {}; latest is {}). '
-                'You should upgrade with:\n'
-                '{} install --upgrade otree-core\n'.format(
-                    installed_dotted, newest_dotted, pip_command
-                )
+    newest = [
+        int(n) for n in newest_match.groups()
+    ]
+    installed = [
+        int(n) for n in installed_match.groups()
+    ]
+
+    # only care about patch versions if you are >= 5 versions behind
+    if newest > installed and (newest[0] > installed[0] or
+                               newest[1] > installed[1] or
+                               newest[2] - installed[2] > 5):
+        if sys.version_info[0] == 3:
+            pip_command = 'pip3'
+        else:
+            pip_command = 'pip'
+        print(
+            'Your otree-core package is out-of-date '
+            '(version {}; latest is {}). '
+            'You should upgrade with:\n'
+            '{} install --upgrade otree-core\n'.format(
+                installed_dotted, newest_dotted, pip_command
             )
-    except Exception:
-        pass
+        )
 
 
 def channels_create_session_group_name(pre_create_id):

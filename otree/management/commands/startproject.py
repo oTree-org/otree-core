@@ -77,4 +77,7 @@ class Command(startproject.Command):
 
 
         self.modify_project_files(options)
-        check_pypi_for_updates()
+        try:
+            check_pypi_for_updates()
+        except:
+            pass
