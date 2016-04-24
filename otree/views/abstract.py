@@ -461,7 +461,7 @@ class GenericWaitPageMixin(object):
 
     def absolute_redirect_url(self):
         '''called from template'''
-        return self.request.path
+        return self.request.get_full_path()
 
     def get_template_names(self):
         """fallback to otree/WaitPage.html, which is guaranteed to exist.

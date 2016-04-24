@@ -31,14 +31,13 @@ import otree.views.admin
 from otree.views.mturk import MTurkConnection
 import otree.common_internal
 from otree.views.abstract import (
-    NonSequenceUrlMixin, OTreeMixin,
+    NonSequenceUrlMixin, OTreeMixin, GenericWaitPageMixin,
 
     NO_PARTICIPANTS_LEFT_MSG
 )
 from otree.models_concrete import GroupSize  # noqa
 from otree.models.session import GlobalSingleton
 from otree.room import ROOM_DICT
-
 
 class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
     name_in_url = 'shared'
@@ -229,7 +228,7 @@ class JoinSessionAnonymously(vanilla.View):
         return HttpResponseRedirect(participant._start_url())
 
 
-class AssignVisitorToRoom(vanilla.TemplateView):
+class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
     template_name = "otree/InputParticipantLabel.html"
 
     @classmethod
@@ -240,11 +239,12 @@ class AssignVisitorToRoom(vanilla.TemplateView):
     def url_pattern(cls):
         return r'^{}/$'.format(cls.__name__)
 
-    def get(self, *args, **kwargs):
+    def dispatch(self, request, *args, **kwargs):
 
         room_name = self.request.GET.get(
             'room'
         )
+        self.room_name = room_name
         try:
             room = ROOM_DICT[room_name]
         except KeyError:
@@ -268,7 +268,7 @@ class AssignVisitorToRoom(vanilla.TemplateView):
 
         session = room.session
         if session is None:
-            return HttpResponse('No session in room. Refresh the page.')
+            return self._get_wait_page()
 
         assign_new = not room.has_participant_labels()
         if not assign_new:
@@ -301,6 +301,9 @@ class AssignVisitorToRoom(vanilla.TemplateView):
 
     def get_context_data(self, **kwargs):
         return {'room': self.request.GET.get('room')}
+
+    def socket_url(self):
+        return '/wait_for_session_in_room/{}/'.format(self.room_name)
 
 class AdvanceSession(vanilla.View):
 

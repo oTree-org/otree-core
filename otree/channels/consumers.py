@@ -137,7 +137,6 @@ def disconnect_wait_for_demo_session(message, session_config_name):
     group = Group(channels_create_demo_session_group_name(session_config_name))
     group.discard(message.reply_channel)
 
-
 '''
 def connect_admin_lobby(message):
 
@@ -147,13 +146,15 @@ def connect_admin_lobby(message):
 
 
 def connect_participant_lobby(message):
-
+    group = Group('room-{}-participants')
+    group.add(message.reply_channel)
     ParticipantVisit(participant_id).save()
     Group('admin_lobby').send({'participant': participant_id})
 
 def disconnect_participant_lobby(message):
-
+    group = Group('room-{}-participants')
+    group.discard(message.reply_channel)
     Group('admin_lobby').send({'participant': participant_id, 'action': 'Leaving'})
     ParticipantVisit(participant_id).delete()
-'''
 
+'''
