@@ -1,5 +1,5 @@
 from channels.management.commands.runworker import Command as RunworkerCommand
-from channels.management.commands.runserver import WorkerThread
+from channels.management.commands.runserver import WorkerThread, Worker
 from django.core.management import BaseCommand, CommandError
 from channels import channel_layers, DEFAULT_CHANNEL_LAYER
 from channels.log import setup_logger
@@ -11,7 +11,7 @@ class Command(RunworkerCommand):
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
         parser.add_argument(
-            '--num-threads', action='store', dest='num_threads', default=4,
+            '--num-threads', action='store', dest='num_threads', default=1,
             type=int,
             help='Number of worker threads')
 
@@ -33,12 +33,15 @@ class Command(RunworkerCommand):
         # Launch a worker
         self.logger.info("Running worker against channel layer %s", self.channel_layer)
         # Run the worker
-        worker_threads = []
         num_threads = options['num_threads']
-        for _ in range(num_threads):
-            worker = WorkerThread(self.channel_layer, self.logger)
-            worker.daemon = True
-            worker.start()
-            worker_threads.append(worker)
-        while True:
-            time.sleep(5)
+        if num_threads == 1:
+            Worker(channel_layer=self.channel_layer).run()
+        else:
+            worker_threads = []
+            for _ in range(num_threads):
+                worker = WorkerThread(self.channel_layer, self.logger)
+                worker.daemon = True
+                worker.start()
+                worker_threads.append(worker)
+            while True:
+                time.sleep(5)
