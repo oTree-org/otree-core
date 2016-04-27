@@ -67,12 +67,20 @@ class Command(startproject.Command):
 
         # for each app in the project folder,
         # add a migrations folder
-
-        subfolders = next(os.walk('.'))[1]
+        # we do it here instead of modifying the games repo directly,
+        # because people on older versions of oTree also install
+        # from the same repo,
+        # and the old resetdb chokes when it encounters an app with migrations
+        subfolders = next(os.walk(project_root_dir))[1]
         for subfolder in subfolders:
+            # ignore folders that start with "." or "_" etc...
             if subfolder[0] in string.ascii_letters:
-                # FIXME - add a migrations folder
-                pass
+                migrations_folder_path = os.path.join(project_root_dir, subfolder, 'migrations')
+                make_sure_path_exists(migrations_folder_path)
+                init_file_path = os.path.join(migrations_folder_path, '__init__.py')
+                with open(init_file_path, 'w') as f:
+                    f.write('')
+
 
 
     def handle(self, *args, **options):
