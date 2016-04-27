@@ -10,6 +10,8 @@ import sys
 import os
 import platform
 import shutil
+import string
+import errno
 
 from django.core.management.commands import startproject
 
@@ -30,6 +32,14 @@ IMPLEMENTATIONS_ALIAS = {
 # =============================================================================
 # COMMAND
 # =============================================================================
+
+
+def make_sure_path_exists(path):
+    try:
+        os.makedirs(path)
+    except OSError as exception:
+        if exception.errno != errno.EEXIST:
+            raise exception
 
 class Command(startproject.Command):
     help = ("Creates a new oTree project.")
@@ -54,6 +64,16 @@ class Command(startproject.Command):
         procfile_path = os.path.join(
             self.core_project_template_path, 'Procfile')
         shutil.copy(procfile_path, project_root_dir)
+
+        # for each app in the project folder,
+        # add a migrations folder
+
+        subfolders = next(os.walk('.'))[1]
+        for subfolder in subfolders:
+            if subfolder[0] in string.ascii_letters:
+                # FIXME - add a migrations folder
+                pass
+
 
     def handle(self, *args, **options):
         answer = None
