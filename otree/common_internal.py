@@ -29,6 +29,9 @@ from django.template.defaultfilters import title
 from otree import constants_internal
 import otree
 
+import string
+import errno
+
 
 if sys.version_info[0] == 2:
     import unicodecsv as csv
@@ -420,3 +423,31 @@ def channels_wait_page_group_name(app_label, page_index, model_name, model_pk):
         model_name,
         model_pk
     )
+
+def make_sure_path_exists(path):
+    try:
+        os.makedirs(path)
+    except OSError as exception:
+        if exception.errno != errno.EEXIST:
+            raise exception
+
+def add_empty_migrations_to_all_apps(project_root):
+    # for each app in the project folder,
+    # add a migrations folder
+    # we do it here instead of modifying the games repo directly,
+    # because people on older versions of oTree also install
+    # from the same repo,
+    # and the old resetdb chokes when it encounters an app with migrations
+    subfolders = next(os.walk(project_root))[1]
+    for subfolder in subfolders:
+        # ignore folders that start with "." etc...
+        if subfolder[0] in string.ascii_letters + '_':
+            app_folder = os.path.join(project_root, subfolder)
+            models_file_path = os.path.join(app_folder, 'models.py')
+            if os.path.isfile(models_file_path):
+                migrations_folder_path = os.path.join(app_folder, 'migrations')
+                make_sure_path_exists(migrations_folder_path)
+                init_file_path = os.path.join(migrations_folder_path, '__init__.py')
+                with open(init_file_path, 'a') as f:
+                    f.write('')
+

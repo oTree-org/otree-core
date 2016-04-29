@@ -15,7 +15,7 @@ from django.db import connections
 from django.db.migrations.loader import MigrationLoader
 
 import six
-
+from otree.common_internal import add_empty_migrations_to_all_apps
 import mock
 
 
@@ -155,3 +155,7 @@ class Command(BaseCommand):
             call_command(
                 'migrate', database=db, fake=True,
                 interactive=False, **options)
+
+        project_root = getattr(settings, 'BASE_DIR', None)
+        if project_root:
+            add_empty_migrations_to_all_apps(project_root)
