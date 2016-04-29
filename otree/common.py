@@ -36,7 +36,9 @@ numberformat.format = otree_number_format
 # =============================================================================
 # CLASSES
 # =============================================================================
+from django.utils.deconstruct import deconstructible
 
+#@deconstructible
 class RealWorldCurrency(easymoney.Money):
     '''payment currency'''
 
@@ -80,6 +82,12 @@ class RealWorldCurrency(easymoney.Money):
     def to_real_world_currency(self, session):
         return self
 
+    def deconstruct(self):
+        return [
+            self.__class__.__name__,
+            [self.amount],
+            {}
+        ]
 
 class Currency(RealWorldCurrency):
     '''game currency'''
