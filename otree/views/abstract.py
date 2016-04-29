@@ -690,19 +690,6 @@ class InGameWaitPageMixin(object):
             for p in visited:
                 p._waiting_for_ids = waiting_for_ids
 
-        # flush player objects from cache so that if they are loaded in
-        # after_all_players_arrive, we can be sure that the query happens after
-        # the query for the participant objects above.
-        # this means that all players fully finished the previous page,
-        # and all fields have been set on the player object.
-        self_player_pk = self.player.pk
-        del self.player
-        for p in players_for_this_page:
-            p.save()
-            self.PlayerClass.flush_cached_instance(p)
-        self.player = self.PlayerClass.objects.get(pk=self_player_pk)
-
-
         return unvisited
 
 
