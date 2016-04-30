@@ -7,18 +7,17 @@ import datetime
 import collections
 import contextlib
 import inspect
-import json
 import re
-import string
 import random
 from os.path import dirname, join
 from collections import OrderedDict
 from importlib import import_module
 import six
 from six.moves import urllib
-import requests
 import logging
 import hashlib
+import requests
+import json
 
 from django.db import transaction
 from django.db import connection
@@ -369,46 +368,65 @@ def lock_on_this_code_path():
         GlobalSingleton.objects.select_for_update().get()
         yield
 
-
-def check_pypi_for_updates():
+def check_pypi_for_updates(print_message = True):
     logging.getLogger("requests").setLevel(logging.WARNING)
     response = requests.get('http://pypi.python.org/pypi/otree-core/json')
     data = json.loads(response.content.decode())
-    newest_dotted = data['info']['version'].strip()
-    installed_dotted = otree.__version__
 
     semver_re = re.compile(r'^(\d+)\.(\d+)\.(\d+)$')
-    newest_match = semver_re.match(newest_dotted)
+
+    installed_dotted = otree.__version__
     installed_match = semver_re.match(installed_dotted)
 
-    if not (newest_match and installed_match):
-        # maybe a pre-release like 0.5.0.dev1
-        # ignore those
-        return
+    if installed_match:
+        # compare to the latest stable release
 
-    newest = [
-        int(n) for n in newest_match.groups()
-    ]
-    installed = [
-        int(n) for n in installed_match.groups()
-    ]
+        installed_tuple = [int(n) for n in installed_match.groups()]
 
-    # only care about patch versions if you are >= 5 versions behind
-    if newest > installed and (newest[0] > installed[0] or
-                               newest[1] > installed[1] or
-                               newest[2] - installed[2] > 5):
+        releases = data['releases']
+        newest_tuple = [0,0,0]
+        newest_dotted = ''
+        for release in releases:
+            release_match = semver_re.match(release)
+            if release_match:
+                release_tuple = [int(n) for n in release_match.groups()]
+                if release_tuple > newest_tuple:
+                    newest_tuple = release_tuple
+                    newest_dotted = release
+        newest = newest_tuple
+        installed = installed_tuple
+
+        needs_update = (newest > installed and (
+                newest[0] > installed[0] or
+                newest[1] > installed[1] or
+                newest[2] - installed[2] > 5
+            )
+        )
+
+    else:
+        # compare to the latest release, whether stable or not
+        newest_dotted = data['info']['version'].strip()
+        needs_update = newest_dotted != installed_dotted
+
+    if needs_update:
         if sys.version_info[0] == 3:
             pip_command = 'pip3'
         else:
             pip_command = 'pip'
-        print(
+        update_message = (
             'Your otree-core package is out-of-date '
             '(version {}; latest is {}). '
-            'You should upgrade with:\n'
-            '{} install --upgrade otree-core\n'.format(
+            'You should upgrade with:\n '
+            '"{} install --upgrade otree-core"\n '
+            'and update your requirements_base.txt.'
+                .format(
                 installed_dotted, newest_dotted, pip_command
             )
         )
+        if print_message:
+            print(update_message)
+        else:
+            return update_message
 
 
 def channels_create_session_group_name(pre_create_id):
