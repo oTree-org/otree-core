@@ -557,7 +557,6 @@ class InGameWaitPageMixin(object):
             # on SQLite, transaction.atomic causes database to lock,
             # so we use no-op context manager instead
             with lock_on_this_code_path():
-                print('<***STARTLOCK {}>'.format(self.participant.code))
                 if self.wait_for_all_groups:
                     _c = CompletedSubsessionWaitPage.objects.get_or_create(
                         page_index=self._index_in_pages,
@@ -620,7 +619,6 @@ class InGameWaitPageMixin(object):
                 # created it, and therefore that whole code block
                 # finished executing (including the after_all_players_arrive)
                 # inside the transaction
-                print('<***ENDLOCK {}>'.format(self.participant.code))
             return self._response_when_ready()
 
 
@@ -691,19 +689,6 @@ class InGameWaitPageMixin(object):
 
             for p in visited:
                 p._waiting_for_ids = waiting_for_ids
-
-        # flush player objects from cache so that if they are loaded in
-        # after_all_players_arrive, we can be sure that the query happens after
-        # the query for the participant objects above.
-        # this means that all players fully finished the previous page,
-        # and all fields have been set on the player object.
-        self_player_pk = self.player.pk
-        del self.player
-        for p in players_for_this_page:
-            p.save()
-            self.PlayerClass.flush_cached_instance(p)
-        self.player = self.PlayerClass.objects.get(pk=self_player_pk)
-
 
         return unvisited
 

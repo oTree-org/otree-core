@@ -229,14 +229,14 @@ def augment_settings(settings):
         'idmap',
         'corsheaders']
 
-    settings.setdefault(
-        'RAVEN_CONFIG',
-        {
-            'dsn': settings.get('SENTRY_DSN'),
-            'processors': ['raven.processors.SanitizePasswordsProcessor'],
-        }
-    )
-    if settings['RAVEN_CONFIG'].get('dsn'):
+    if settings.get('SENTRY_DSN'):
+        settings.setdefault(
+            'RAVEN_CONFIG',
+            {
+                'dsn': settings['SENTRY_DSN'],
+                'processors': ['raven.processors.SanitizePasswordsProcessor'],
+            }
+        )
         no_experiment_apps.append('raven.contrib.django.raven_compat')
 
     # order is important:

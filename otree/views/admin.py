@@ -10,6 +10,7 @@ from six.moves import range
 from six.moves.urllib.parse import unquote_plus
 from six.moves.urllib.parse import urlencode
 from six.moves import zip
+import os
 
 from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect, JsonResponse
@@ -30,7 +31,8 @@ import easymoney
 
 from otree.common_internal import (
     get_models_module, app_name_format, add_params_to_url,
-    channels_create_session_group_name
+    channels_create_session_group_name,
+    check_pypi_for_updates
 )
 from otree.session import (
     create_session, SESSION_CONFIGS_DICT,
@@ -42,7 +44,6 @@ from otree.forms import widgets
 from otree.common import RealWorldCurrency
 from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
 from otree.views.mturk import MTurkConnection, get_workers_by_status
-
 import otree.constants_internal
 import otree.models.session
 from otree.common import Currency as c
@@ -926,3 +927,61 @@ class AdminHome(vanilla.ListView):
         category = otree.constants_internal.session_special_category_demo
         return Session.objects.exclude(
             special_category=category).order_by('archived', '-pk')
+
+class ServerCheck(vanilla.TemplateView):
+    template_name = 'otree/admin/ServerCheck.html'
+
+    @classmethod
+    def url_pattern(cls):
+        return r"^server_check/$"
+
+    @classmethod
+    def url_name(cls):
+        return 'server_check'
+
+    def celery_is_running(self):
+
+        '''
+        NOT WORKING
+
+        import celery.bin.base
+        import celery.bin.celery
+        import celery.platforms
+
+        status = celery.bin.celery.CeleryCommand.commands['status']()
+        status.app = status.get_app()
+
+        try:
+            status.run()
+            return True
+        except celery.bin.base.Error as e:
+            if e.status == celery.platforms.EX_UNAVAILABLE:
+                return False
+            raise e
+        '''
+
+        return False
+
+    def app_is_on_heroku(self):
+        return 'heroku' in self.request.get_host()
+
+    def get_context_data(self, **kwargs):
+        sqlite = settings.DATABASES['default']['ENGINE'].endswith('sqlite3')
+        debug = settings.DEBUG
+        update_message = check_pypi_for_updates(print_message=False)
+        regular_sentry = hasattr(settings, 'RAVEN_CONFIG')
+        heroku_sentry = os.environ.get('SENTRY_DSN')
+        sentry = regular_sentry or heroku_sentry
+        auth_level = settings.AUTH_LEVEL in {'DEMO', 'STUDY'}
+        celery = self.celery_is_running()
+        heroku = self.app_is_on_heroku()
+
+        return {
+            'sqlite': sqlite,
+            'debug': debug,
+            'update_message': update_message,
+            'sentry': sentry,
+            'auth_level': auth_level,
+            'celery': celery,
+            'heroku': heroku
+        }
