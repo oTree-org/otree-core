@@ -23,7 +23,7 @@
     {% endif %}
 
     {% if debug %}
-        <div class="alert alert-warning">
+        <div class="alert alert-danger">
             <strong>DEBUG mode is on</strong>
             You should only use DEBUG mode during development and testing
             of your app.
@@ -64,7 +64,7 @@
         </div>
     {% else %}
         <div class="alert alert-success">
-            <strong>Sentry is configured.</strong>
+            Sentry is configured.
         </div>
     {% endif %}
 
@@ -76,11 +76,12 @@
         </div>
     {% else %}
         <div class="alert alert-success">
-            <strong>Password protection is on</strong>
+            Password protection is on.
             Your app's <code>AUTH_LEVEL</code> is <code>{{ auth_level }}</code>.
         </div>
     {% endif %}
 
+    <!--
     {% if not celery %}
         <div class="alert alert-warning">
             <strong>No Celery found</strong>
@@ -98,8 +99,8 @@
         </div>
     {% else %}
         <div class="alert alert-success">
-            <strong>Celery is on</strong>
+            Celery is on.
         </div>
     {% endif %}
-
+    -->
 {% endblock %}
