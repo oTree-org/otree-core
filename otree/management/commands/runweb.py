@@ -115,7 +115,6 @@ class Command(RunserverCommand):
                 host=self.addr,
                 port=int(self.port),
                 signal_handlers=not options['use_reloader'],
-                action_logger=self.log_action,
             ).run()
             self.logger.debug("Daphne exited")
         except KeyboardInterrupt:
@@ -123,36 +122,3 @@ class Command(RunserverCommand):
             if shutdown_message:
                 self.stdout.write(shutdown_message)
             return
-
-    def log_action(self, protocol, action, details):
-        """
-        Logs various different kinds of requests to the console.
-        """
-        msg = ""
-        # HTTP requests
-        if protocol == "http" and action == "complete":
-            msg += "HTTP %(method)s %(path)s %(status)s [%(time_taken).2f, %(client)s]\n" % details
-            # Utilize terminal colors, if available
-            if 200 <= details['status'] < 300:
-                # Put 2XX first, since it should be the common case
-                msg = self.style.HTTP_SUCCESS(msg)
-            elif 100 <= details['status'] < 200:
-                msg = self.style.HTTP_INFO(msg)
-            elif details['status'] == 304:
-                msg = self.style.HTTP_NOT_MODIFIED(msg)
-            elif 300 <= details['status'] < 400:
-                msg = self.style.HTTP_REDIRECT(msg)
-            elif details['status'] == 404:
-                msg = self.style.HTTP_NOT_FOUND(msg)
-            elif 400 <= details['status'] < 500:
-                msg = self.style.HTTP_BAD_REQUEST(msg)
-            else:
-                # Any 5XX, or any other response
-                msg = self.style.HTTP_SERVER_ERROR(msg)
-        # Websocket requests
-        elif protocol == "websocket" and action == "connected":
-            msg += "WebSocket CONNECT %(path)s [%(client)s]\n" % details
-        elif protocol == "websocket" and action == "disconnected":
-            msg += "WebSocket DISCONNECT %(path)s [%(client)s]\n" % details
-
-        sys.stderr.write(msg)
