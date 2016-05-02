@@ -3,6 +3,7 @@
 
 import os
 import otree
+import re
 import sys
 
 from django.conf import settings
@@ -10,10 +11,19 @@ from channels import DEFAULT_CHANNEL_LAYER, channel_layers
 from channels.handler import ViewConsumer
 from channels.log import setup_logger
 from django.core.management.base import BaseCommand
+from django.core.management.base import CommandError
 import django.core.management.commands.runserver
 
 
 RunserverCommand = django.core.management.commands.runserver.Command
+
+
+naiveip_re = re.compile(r"""^
+(?P<addr>
+    (?P<ipv4>\d{1,3}(?:\.\d{1,3}){3}) |         # IPv4 address
+    (?P<ipv6>\[[a-fA-F0-9:]+\]) |               # IPv6 address
+    (?P<fqdn>[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*) # FQDN
+)$""", re.X)
 
 
 class Command(RunserverCommand):
@@ -35,6 +45,9 @@ class Command(RunserverCommand):
         parser.add_argument(
             '--port', action='store', type=int, dest='port', default=None,
             help=ahelp)
+        parser.add_argument(
+            '--addr', action='store', type=str, dest='addr', default='0.0.0.0',
+            help=ahelp)
 
     def get_port(self, suggested_port):
         if suggested_port is None:
@@ -43,6 +56,11 @@ class Command(RunserverCommand):
             return int(suggested_port)
         except (ValueError, TypeError):
             return self.default_port
+
+    def get_addr(self, suggested_addr):
+        if not naiveip_re.match(suggested_addr):
+            raise CommandError('--addr option must be a valid IP address.')
+        return suggested_addr
 
     def handle(self, *args, **options):
         self.verbosity = options.get('verbosity', 1)
@@ -55,6 +73,9 @@ class Command(RunserverCommand):
         self.channel_layer.router.check_default(
             http_consumer=ViewConsumer(),
         )
+
+        self.addr = self.get_addr(options['addr'])
+        self.port = self.get_port(options['port'])
 
         # Run checks
         self.stdout.write("Performing system checks...\n\n")
