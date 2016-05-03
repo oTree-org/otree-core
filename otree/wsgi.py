@@ -17,3 +17,11 @@ You should change your Procfile to the below:
 '''.format(procfile_contents)
 
 print(DEPRECATION_STRING)
+
+def application(environ, start_response):
+    data = DEPRECATION_STRING.encode('utf-8')
+    start_response("200 OK", [
+        ("Content-Type", "text/plain"),
+        ("Content-Length", str(len(data)))
+    ])
+    return iter([data])

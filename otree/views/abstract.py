@@ -545,12 +545,16 @@ class InGameWaitPageMixin(object):
             self._group_or_subsession = self.subsession
         else:
             self._group_or_subsession = self.group
-        if self._is_ready() or not self.is_displayed():
+        if self._is_ready():
+            return self._response_when_ready()
+        with lock_on_this_code_path():
+            unvisited_participants = self._tally_unvisited()
+        # this needs to come after tally_unvisited, so that
+        # even if player skips this wait page, they still update the tally
+        if not self.is_displayed():
             return self._response_when_ready()
         self.participant.is_on_wait_page = True
         # take a lock because we set "waiting for" list here
-        with lock_on_this_code_path():
-            unvisited_participants = self._tally_unvisited()
         if unvisited_participants:
             return self._get_wait_page()
         else:
