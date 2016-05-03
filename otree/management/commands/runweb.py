@@ -3,6 +3,7 @@
 
 import os
 import otree
+import re
 import sys
 
 from django.conf import settings
@@ -10,10 +11,19 @@ from channels import DEFAULT_CHANNEL_LAYER, channel_layers
 from channels.handler import ViewConsumer
 from channels.log import setup_logger
 from django.core.management.base import BaseCommand
+from django.core.management.base import CommandError
 import django.core.management.commands.runserver
 
 
 RunserverCommand = django.core.management.commands.runserver.Command
+
+
+naiveip_re = re.compile(r"""^
+(?P<addr>
+    (?P<ipv4>\d{1,3}(?:\.\d{1,3}){3}) |         # IPv4 address
+    (?P<ipv6>\[[a-fA-F0-9:]+\]) |               # IPv6 address
+    (?P<fqdn>[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*) # FQDN
+)$""", re.X)
 
 
 class Command(RunserverCommand):
@@ -35,6 +45,9 @@ class Command(RunserverCommand):
         parser.add_argument(
             '--port', action='store', type=int, dest='port', default=None,
             help=ahelp)
+        parser.add_argument(
+            '--addr', action='store', type=str, dest='addr', default='0.0.0.0',
+            help=ahelp)
 
     def get_port(self, suggested_port):
         if suggested_port is None:
@@ -43,6 +56,11 @@ class Command(RunserverCommand):
             return int(suggested_port)
         except (ValueError, TypeError):
             return self.default_port
+
+    def get_addr(self, suggested_addr):
+        if not naiveip_re.match(suggested_addr):
+            raise CommandError('--addr option must be a valid IP address.')
+        return suggested_addr
 
     def handle(self, *args, **options):
         self.verbosity = options.get('verbosity', 1)
@@ -55,6 +73,9 @@ class Command(RunserverCommand):
         self.channel_layer.router.check_default(
             http_consumer=ViewConsumer(),
         )
+
+        self.addr = self.get_addr(options['addr'])
+        self.port = self.get_port(options['port'])
 
         # Run checks
         self.stdout.write("Performing system checks...\n\n")
@@ -94,7 +115,6 @@ class Command(RunserverCommand):
                 host=self.addr,
                 port=int(self.port),
                 signal_handlers=not options['use_reloader'],
-                action_logger=self.log_action,
             ).run()
             self.logger.debug("Daphne exited")
         except KeyboardInterrupt:
@@ -102,36 +122,3 @@ class Command(RunserverCommand):
             if shutdown_message:
                 self.stdout.write(shutdown_message)
             return
-
-    def log_action(self, protocol, action, details):
-        """
-        Logs various different kinds of requests to the console.
-        """
-        msg = ""
-        # HTTP requests
-        if protocol == "http" and action == "complete":
-            msg += "HTTP %(method)s %(path)s %(status)s [%(time_taken).2f, %(client)s]\n" % details
-            # Utilize terminal colors, if available
-            if 200 <= details['status'] < 300:
-                # Put 2XX first, since it should be the common case
-                msg = self.style.HTTP_SUCCESS(msg)
-            elif 100 <= details['status'] < 200:
-                msg = self.style.HTTP_INFO(msg)
-            elif details['status'] == 304:
-                msg = self.style.HTTP_NOT_MODIFIED(msg)
-            elif 300 <= details['status'] < 400:
-                msg = self.style.HTTP_REDIRECT(msg)
-            elif details['status'] == 404:
-                msg = self.style.HTTP_NOT_FOUND(msg)
-            elif 400 <= details['status'] < 500:
-                msg = self.style.HTTP_BAD_REQUEST(msg)
-            else:
-                # Any 5XX, or any other response
-                msg = self.style.HTTP_SERVER_ERROR(msg)
-        # Websocket requests
-        elif protocol == "websocket" and action == "connected":
-            msg += "WebSocket CONNECT %(path)s [%(client)s]\n" % details
-        elif protocol == "websocket" and action == "disconnected":
-            msg += "WebSocket DISCONNECT %(path)s [%(client)s]\n" % details
-
-        sys.stderr.write(msg)
