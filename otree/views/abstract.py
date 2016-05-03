@@ -581,6 +581,10 @@ class InGameWaitPageMixin(object):
 
                     player = self.player
                     del self.player
+                    # make sure we get the most up-to-date player objects
+                    # e.g. if they were queried in is_displayed(),
+                    # then they could be out of date
+                    self.PlayerClass.flush_instance_cache()
                     self.after_all_players_arrive()
                     self.player = player
 
