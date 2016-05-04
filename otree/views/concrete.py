@@ -82,6 +82,7 @@ class InitializeParticipant(vanilla.UpdateView):
         now = django.utils.timezone.now()
         participant.time_started = now
         participant._last_page_timestamp = time.time()
+        participant._index_in_pages = 1
         participant.save()
         first_url = participant._url_i_should_be_on()
         return HttpResponseRedirect(first_url)

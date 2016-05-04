@@ -51,7 +51,7 @@ class Participant(ModelWithVars):
 
     _index_in_subsessions = models.PositiveIntegerField(default=0, null=True)
 
-    _index_in_pages = models.PositiveIntegerField(default=1, db_index=True)
+    _index_in_pages = models.PositiveIntegerField(default=0, db_index=True)
 
     id_in_session = models.PositiveIntegerField(null=True)
 
