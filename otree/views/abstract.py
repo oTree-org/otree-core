@@ -118,6 +118,7 @@ class SaveObjectsMixin(object):
                 instance.save()
 
 
+
 class OTreeMixin(SaveObjectsMixin, object):
     """Base mixin class for oTree views.
 
@@ -367,38 +368,48 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             self.subsession._meta.app_config.name)
         pages = views_module.page_sequence
 
-        if self.__class__ in pages:
-            pages_to_jump_by = 1
-            indexes = list(range(self.player._index_in_game_pages + 1,
-                                 len(pages)))
-            for target_index in indexes:
-                Page = pages[target_index]
+        assert self.__class__ in pages
+        pages_to_jump_by = 1
+        indexes = list(range(self.player._index_in_game_pages + 1,
+                             len(pages)))
+        for target_index in indexes:
+            Page = pages[target_index]
 
-                # FIXME: are there other attributes? should i do As_view,
-                # or simulate the
-                # request?
-                page = Page()
-                page.player = self.player
-                page.group = self.group
-                page.subsession = self.subsession
-                page.session = self.session
+            # FIXME: are there other attributes? should i do As_view,
+            # or simulate the
+            # request?
+            page = Page()
+            page.player = self.player
+            page.group = self.group
+            page.subsession = self.subsession
+            page.session = self.session
 
-                # don't skip wait pages
-                # because the user has to pass through them
-                # so we record that they visited
-                cond = (
-                    hasattr(Page, 'is_displayed') and not
-                    page.is_displayed())
-                if cond:
-                    pages_to_jump_by += 1
-                else:
-                    break
+            # don't skip wait pages
+            # because the user has to pass through them
+            # so we record that they visited
+            if hasattr(Page, 'is_displayed') and not page.is_displayed():
+                if hasattr(Page, '_tally_unvisited'):
+                    page._index_in_pages = self._index_in_pages + pages_to_jump_by
+                    if page.wait_for_all_groups:
+                        page._group_or_subsession = self.subsession
+                    else:
+                        page._group_or_subsession = self.group
+                    with lock_on_this_code_path():
+                        unvisited_participants = page._tally_unvisited()
+                    # don't count myself; i only need to visit this page
+                    # if everybody else already passed it
+                    unvisited_participants.discard(self.participant.code)
+                    if not unvisited_participants:
+                        # if it's the last person
+                        # because they need to complete the wait page
+                        # don't skip past the wait page
+                        break
+                pages_to_jump_by += 1
+            else:
+                break
 
-            self.player._index_in_game_pages += pages_to_jump_by
-            self.participant._index_in_pages += pages_to_jump_by
-        else:  # e.g. if it's WaitUntil...
-            self.participant._index_in_pages += 1
-
+        self.player._index_in_game_pages += pages_to_jump_by
+        self.participant._index_in_pages += pages_to_jump_by
 
         channels.Group(
             'auto-advance-{}'.format(self.participant.code)
@@ -406,8 +417,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             {'text': json.dumps(
                 {'new_index_in_pages': self.participant._index_in_pages})}
         )
-
-
 
     def is_displayed(self):
         return True
@@ -547,15 +556,18 @@ class InGameWaitPageMixin(object):
             self._group_or_subsession = self.group
         if self._is_ready():
             return self._response_when_ready()
+        # take a lock because we set "waiting for" list here
         with lock_on_this_code_path():
             unvisited_participants = self._tally_unvisited()
-        # this needs to come after tally_unvisited, so that
-        # even if player skips this wait page, they still update the tally
-        if not self.is_displayed():
-            return self._response_when_ready()
-        self.participant.is_on_wait_page = True
-        # take a lock because we set "waiting for" list here
         if unvisited_participants:
+            # only skip the wait page if there are still
+            # unvisited participants. otherwise, you need to
+            # mark the page as completed.
+            # see _increment_index_in_pages, which needs to
+            # handle this case also
+            if not self.is_displayed():
+                return self._response_when_ready()
+            self.participant.is_on_wait_page = True
             return self._get_wait_page()
         else:
             # on SQLite, transaction.atomic causes database to lock,
@@ -578,6 +590,10 @@ class InGameWaitPageMixin(object):
                 # get_or_create and sees that the action has been completed
                 if created:
 
+                    # need to check this before deleting
+                    # reference to self.player
+                    is_displayed = self.is_displayed()
+
                     # block users from accessing self.player inside
                     # after_all_players_arrive, because conceptually
                     # there is no single player in this context
@@ -585,11 +601,33 @@ class InGameWaitPageMixin(object):
 
                     player = self.player
                     del self.player
+
                     # make sure we get the most up-to-date player objects
                     # e.g. if they were queried in is_displayed(),
                     # then they could be out of date
-                    self.PlayerClass.flush_instance_cache()
-                    self.after_all_players_arrive()
+                    # but don't delete the current player from cache
+                    # because we need it to be saved at the end
+                    import idmap.tls
+                    cache = getattr(idmap.tls._tls, 'idmap_cache', {})
+                    for p in list(cache.get(self.PlayerClass, {}).values()):
+                        if p != player:
+                            self.PlayerClass.flush_cached_instance(p)
+
+                    # if any player can skip the wait page,
+                    # then we shouldn't run after_all_players_arrive
+                    # because if some players are able to proceed to the next page
+                    # before after_all_players_arrive is run,
+                    # then after_all_players_arrive is probably not essential.
+                    # often, there are some wait pages that all players skip,
+                    # because they should only be shown in certain rounds.
+                    # maybe the fields that after_all_players_arrive depends on
+                    # are null
+                    # something to think about: ideally, should we check if
+                    # all players skipped, or any player skipped?
+                    # as a shortcut, we just check if is_displayed is true
+                    # for the last player.
+                    if is_displayed:
+                        self.after_all_players_arrive()
                     self.player = player
 
                     completion.after_all_players_arrive_run = True
@@ -698,7 +736,7 @@ class InGameWaitPageMixin(object):
             for p in visited:
                 p._waiting_for_ids = waiting_for_ids
 
-        return unvisited
+        return {p.code for p in unvisited}
 
 
     def is_displayed(self):
