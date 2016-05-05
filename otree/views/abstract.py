@@ -270,6 +270,9 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         self.session = self.player.session
         self.participant._round_number = self.subsession.round_number
 
+        # for public API
+        self.round_number = self.subsession.round_number
+
     @method_decorator(never_cache)
     @method_decorator(cache_control(must_revalidate=True, max_age=0,
                                     no_cache=True, no_store=True))
