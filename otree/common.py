@@ -84,8 +84,8 @@ class RealWorldCurrency(easymoney.Money):
 
     def deconstruct(self):
         return [
-            self.__class__.__name__,
-            [self.amount],
+            '{}.{}'.format(self.__module__ , self.__class__.__name__)   ,
+            [Decimal.__str__(self)],
             {}
         ]
 
