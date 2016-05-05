@@ -84,15 +84,15 @@ def get_default_settings(initial_settings=None):
     )
 
     return {
-        # pages with a time limit for the player can have a grace period
-        # to compensate for network latency.
-        # the timer is started and stopped server-side,
-        # so this grace period should account for time spent during
-        # download, upload, page rendering, etc.
-        'TIMEOUT_LATENCY_ALLOWANCE_SECONDS': 10,
-
-        'SESSION_SAVE_EVERY_REQUEST': True,
-        'TEMPLATE_DEBUG': initial_settings.get('DEBUG', False),
+        # set to True so that if there is an error in an {% include %}'d
+        # template, it doesn't just fail silently. instead should raise
+        # an error (and send through Sentry etc)
+        'TEMPLATE_DEBUG': True,
+        'TEMPLATE_CONTEXT_PROCESSORS': collapse_to_unique_list(
+            global_settings.TEMPLATE_CONTEXT_PROCESSORS, (
+                'django.core.context_processors.request',
+            )
+        ),
         'STATIC_ROOT': os.path.join(
             initial_settings.get('BASE_DIR', ''),
             '_static_root'),
@@ -104,17 +104,7 @@ def get_default_settings(initial_settings=None):
 
         'TIME_ZONE': 'UTC',
         'USE_TZ': True,
-        'SESSION_SERIALIZER': (
-            'django.contrib.sessions.serializers.PickleSerializer'
-        ),
         'ALLOWED_HOSTS': ['*'],
-
-        'TEMPLATE_CONTEXT_PROCESSORS': collapse_to_unique_list(
-            global_settings.TEMPLATE_CONTEXT_PROCESSORS, (
-                'django.core.context_processors.request',
-                'otree.context_processors.otree_context'
-            )
-        ),
 
         # SEO AND FOOTER
         'PAGE_FOOTER': page_footer,
@@ -138,8 +128,6 @@ def get_default_settings(initial_settings=None):
         # when it's present in otree-library
         # that most people downloaded
         'USE_L10N': True,
-
-        'WSGI_APPLICATION': 'otree.wsgi.application',
         'SECURE_PROXY_SSL_HEADER': ('HTTP_X_FORWARDED_PROTO', 'https'),
         'MTURK_HOST': 'mechanicalturk.amazonaws.com',
         'MTURK_SANDBOX_HOST': 'mechanicalturk.sandbox.amazonaws.com',
@@ -297,7 +285,6 @@ def augment_settings(settings):
         'MIDDLEWARE_CLASSES': new_middleware_classes,
         'NO_EXPERIMENT_APPS': no_experiment_apps,
         'INSTALLED_OTREE_APPS': all_otree_apps,
-        'BROKER_URL': 'django://',
         'MESSAGE_TAGS': {messages.ERROR: 'danger'},
         'CELERY_ACCEPT_CONTENT': ['pickle', 'json', 'msgpack', 'yaml'],
         'LOGIN_REDIRECT_URL': 'sessions',

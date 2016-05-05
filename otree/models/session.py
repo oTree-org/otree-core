@@ -1,3 +1,4 @@
+import logging
 import django.test
 
 from otree import constants_internal
@@ -7,6 +8,11 @@ from otree.db import models
 from .varsmixin import ModelWithVars
 from otree.models_concrete import ParticipantToPlayerLookup
 from otree.models_concrete import RoomSession
+
+
+logger = logging.getLogger('otree')
+
+client = django.test.Client()
 
 class GlobalSingleton(models.Model):
     """object that can hold site-wide settings. There should only be one
@@ -194,14 +200,14 @@ class Session(ModelWithVars):
     def advance_last_place_participants(self):
         participants = self.get_participants()
 
-        c = django.test.Client()
+
 
         # in case some participants haven't started
         unvisited_participants = []
         for p in participants:
             if not p._current_form_page_url:
                 unvisited_participants.append(p)
-                c.get(p._start_url(), follow=True)
+                client.get(p._start_url(), follow=True)
 
         if unvisited_participants:
             from otree.models import Participant
@@ -221,11 +227,18 @@ class Session(ModelWithVars):
         for p in last_place_participants:
             if not p._current_form_page_url:
                 # what if first page is wait page?
+                # that shouldn't happen, because then they must be
+                # waiting for some other players who are even further back
                 raise
-            resp = c.post(
-                p._current_form_page_url,
-                data={constants_internal.auto_submit: True}, follow=True
-            )
+            try:
+                resp = client.post(
+                    p._current_form_page_url,
+                    data={constants_internal.auto_submit: True}, follow=True
+                )
+            except Exception as e:
+                logging.exception("Failed to advance participants.")
+                raise e
+
             assert resp.status_code < 400
 
     def build_participant_to_player_lookups(self):
