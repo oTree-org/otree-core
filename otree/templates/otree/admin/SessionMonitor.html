@@ -33,6 +33,8 @@ function ajax_advance() {
             type: 'GET',
             error: function(jqXHR, textStatus) {
                 $( "div#auto_advance_server_error" ).show();
+                // enable the button so they can try again?
+                $('#advance_users').attr("disabled", false);
             },
             success: function() {
                 $( "div#auto_advance_server_error" ).hide();
@@ -107,7 +109,7 @@ Advance slowest user(s)
 <div id="auto_advance_server_error" class="alert alert-danger" style="display: none;">
     <a href="#" class="close" data-dismiss="alert">&times;</a>
     An error occurred and participants could not be advanced.
-    See the logs.
+    See the server logs.
 </div>
 
 

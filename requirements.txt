@@ -14,7 +14,6 @@ coverage==4.0.3
 daphne==0.10.3
 dj-database-url==0.3.0
 Django==1.8.8
-django-celery==3.1.17
 django-cors-headers==1.1.0
 django-countries==3.4.1
 django-easymoney==0.7

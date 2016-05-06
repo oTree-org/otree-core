@@ -5,12 +5,9 @@ import os
 import os.path
 import sys
 
-import djcelery
-
 from django.conf import global_settings
 from django.contrib.messages import constants as messages
 
-djcelery.setup_loader()
 
 
 DEFAULT_MIDDLEWARE_CLASSES = (
@@ -83,6 +80,8 @@ def get_default_settings(initial_settings=None):
         'Powered By <a href="http://otree.org" target="_blank">oTree</a>'
     )
 
+    REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379')
+
     return {
         # set to True so that if there is an error in an {% include %}'d
         # template, it doesn't just fail silently. instead should raise
@@ -149,7 +148,7 @@ def get_default_settings(initial_settings=None):
              'default': {
                  "BACKEND": "otree.channels.asgi_redis.RedisChannelLayer",
                  "CONFIG": {
-                     "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
+                     "hosts": [REDIS_URL],
                  },
                  'ROUTING': initial_settings.get(
                      'CHANNEL_DEFAULT_ROUTING',
@@ -157,7 +156,11 @@ def get_default_settings(initial_settings=None):
              },
          },
 
+        # celery settings
+        'BROKER_URL': REDIS_URL,
         'CELERY_APP': 'otree.celery.app:app',
+        'CELERY_RESULT_BACKEND': REDIS_URL,
+
 
         # since workers on Amazon MTurk can return the hit
         # we need extra participants created on the
@@ -210,7 +213,6 @@ def augment_settings(settings):
         'otree.models_concrete',
         'otree.timeout',
         'channels',
-        'djcelery',
         'kombu.transport.django',
         'rest_framework',
         'sslserver',

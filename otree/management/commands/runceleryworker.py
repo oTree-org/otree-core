@@ -1,8 +1,11 @@
-from django.core.management.base import CommandError
-from djcelery.management.commands.celery import Command as CeleryCommand
+from django.core.management.base import CommandError, BaseCommand
 
+class Command(BaseCommand):
 
-class Command(CeleryCommand):
+    def run_from_argv(self, argv):
+        raise NotImplementedError()
+
+    '''
     def run_from_argv(self, argv):
         if len(argv) > 2:
             raise CommandError('runceleryworker does not take arguments')
@@ -14,3 +17,4 @@ class Command(CeleryCommand):
             '--loglevel=INFO'
         ]
         return super(Command, self).run_from_argv(argv)
+    '''
