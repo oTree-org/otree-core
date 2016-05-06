@@ -71,19 +71,21 @@ class InitializeParticipant(vanilla.UpdateView):
             code=kwargs[constants.participant_code]
         )
 
-        participant.visited = True
+        if participant._index_in_pages == 0:
+            participant._index_in_pages = 1
+            participant.visited = True
 
-        # participant.label might already have been set
-        participant.label = participant.label or self.request.GET.get(
-            constants.participant_label
-        )
-        participant.ip_address = self.request.META['REMOTE_ADDR']
+            # participant.label might already have been set
+            participant.label = participant.label or self.request.GET.get(
+                constants.participant_label
+            )
+            participant.ip_address = self.request.META['REMOTE_ADDR']
 
-        now = django.utils.timezone.now()
-        participant.time_started = now
-        participant._last_page_timestamp = time.time()
-        participant._index_in_pages = 1
-        participant.save()
+            now = django.utils.timezone.now()
+            participant.time_started = now
+            participant._last_page_timestamp = time.time()
+
+            participant.save()
         first_url = participant._url_i_should_be_on()
         return HttpResponseRedirect(first_url)
 

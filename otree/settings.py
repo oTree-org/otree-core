@@ -158,9 +158,8 @@ def get_default_settings(initial_settings=None):
 
         # celery settings
         'BROKER_URL': REDIS_URL,
-        'CELERY_APP': 'otree.celery.app:app',
         'CELERY_RESULT_BACKEND': REDIS_URL,
-
+        'CELERY_APP': 'otree.celery.app:app',
 
         # since workers on Amazon MTurk can return the hit
         # we need extra participants created on the
