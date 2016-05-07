@@ -37,7 +37,7 @@
             <h3 class="panel-title">{% block title %}{{ title_text }}{% endblock %}</h3>
         </div>
         <div class="panel-body">
-            <div class="alert alert-danger error-notice" style="display:none">
+            <div id="error-notice" class="alert alert-danger" style="display:none">
                 {% blocktrans %}An error occurred. Please check the logs or ask the administrator for help.{% endblocktrans %}
             </div>
             {% block content %}
@@ -75,7 +75,7 @@ $(document).ready(function () {
 
             // Handle errors
             if (data.error) {
-                alert(data.error);
+                $("#error-notice").show();
                 return;
             }
 

@@ -1,5 +1,9 @@
 from channels import Group
 from otree.models import Participant
+from otree.models_concrete import (
+    CompletedGroupWaitPage,
+    CompletedSubsessionWaitPage,
+)
 from otree import common_internal
 from otree.common_internal import (
     channels_wait_page_group_name,
@@ -20,38 +24,31 @@ else:
 
 
 def connect_wait_page(message, params):
-    app_label, page_index, model_name, model_pk = params.split(',')
+    session_pk, page_index, model_name, model_pk = params.split(',')
+    session_pk = int(session_pk)
     page_index = int(page_index)
     model_pk = int(model_pk)
 
-
     group_name = channels_wait_page_group_name(
-        app_label, page_index, model_name, model_pk
+        session_pk, page_index, model_name, model_pk
     )
     group = Group(group_name)
     group.add(message.reply_channel)
 
     # in case message was sent before this web socket connects
-    # fixme: app name or app label?
-    models_module = common_internal.get_models_module(app_label)
 
-    GroupOrSubsession = {
-        'subsession': getattr(models_module, 'Subsession'),
-        'group': getattr(models_module, 'Group')
-    }[model_name]
-
-    group_or_subsession = GroupOrSubsession.objects.get(pk=model_pk)
-
-    participants_for_this_page = set(
-        p.participant for p in group_or_subsession.player_set.all()
-    )
-
-    unvisited = set(
-        p for p in participants_for_this_page if
-        p._index_in_pages < page_index
-    )
-
-    if not unvisited:
+    if model_name == 'group':
+        ready = CompletedGroupWaitPage.objects.filter(
+            page_index=page_index,
+            group_pk=model_pk,
+            session_pk=session_pk,
+            after_all_players_arrive_run=True).exists()
+    else: # subsession
+        ready = CompletedSubsessionWaitPage.objects.filter(
+            page_index=page_index,
+            session_pk=session_pk,
+            after_all_players_arrive_run=True).exists()
+    if ready:
         message.reply_channel.send(
             {'text': json.dumps(
                 {'status': 'ready'})})
@@ -77,7 +74,16 @@ def connect_auto_advance(message, params):
     group.add(message.reply_channel)
 
     # in case message was sent before this web socket connects
-    participant = Participant.objects.get(code=participant_code)
+
+    try:
+        participant = Participant.objects.get(code=participant_code)
+    except Participant.DoesNotExist:
+        message.reply_channel.send(
+            {'text': json.dumps(
+                # doesn't get shown because not yet localized
+                {'error': 'Participant not found in database.'})}
+        )
+        return
     if participant._index_in_pages > page_index:
         message.reply_channel.send(
             {'text': json.dumps(
@@ -102,6 +108,7 @@ def create_session(message):
     except Exception as e:
         group.send(
             {'text': json.dumps(
+                # doesn't get shown because not yet localized
                 {'error': 'Failed to create session. Check the server logs.'})}
         )
         FailedSessionCreation(pre_create_id=kwargs['_pre_create_id']).save()

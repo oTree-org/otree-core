@@ -433,10 +433,10 @@ def channels_create_session_group_name(pre_create_id):
     return 'wait_for_session_{}'.format(pre_create_id)
 
 
-def channels_wait_page_group_name(app_label, page_index, model_name, model_pk):
+def channels_wait_page_group_name(session_pk, page_index, model_name, model_pk):
 
     return 'wait-page-{}-page{}-{}{}'.format(
-        app_label,
+        session_pk,
         page_index,
         model_name,
         model_pk

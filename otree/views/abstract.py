@@ -11,7 +11,8 @@ import warnings
 import collections
 from six.moves import range
 import json
-
+import contextlib
+import django.db
 from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
 from django.shortcuts import get_object_or_404
@@ -58,6 +59,38 @@ NO_PARTICIPANTS_LEFT_MSG = (
 
 
 DebugTable = collections.namedtuple('DebugTable', ['title', 'rows'])
+
+
+@contextlib.contextmanager
+def participant_lock(participant_code):
+    '''
+    prevent the same participant from executing the page twice
+    use this instead of a transaction because it's more lightweight.
+    transactions make it harder to reason about wait pages
+    '''
+    TIMEOUT = 5
+    start_time = time.time()
+    while time.time() - start_time < TIMEOUT:
+        try:
+            lock = ParticipantLockModel.objects.get(
+                participant_code=participant_code,
+            )
+        except ParticipantLockModel.DoesNotExist:
+            raise Http404((
+                "This user ({}) does not exist in the database. "
+                "Maybe the database was recreated."
+            ).format(participant_code))
+        if lock.locked:
+            time.sleep(0.5)
+        else:
+            lock.locked = True
+            lock.save()
+            yield
+            lock.locked = False
+            lock.save()
+            return
+    raise Exception(
+        'Request for participant {} is stuck'.format(participant_code))
 
 
 class SaveObjectsMixin(object):
@@ -277,64 +310,49 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
     @method_decorator(cache_control(must_revalidate=True, max_age=0,
                                     no_cache=True, no_store=True))
     def dispatch(self, request, *args, **kwargs):
-        try:
-            with transaction_atomic(), otree.db.idmap.use_cache():
+        participant_code = kwargs.pop(constants.participant_code)
 
-                participant_code = kwargs.pop(constants.participant_code)
+        with participant_lock(participant_code), otree.db.idmap.use_cache():
 
-                self._index_in_pages = int(
-                    kwargs.pop(constants.index_in_pages))
-                # temp, for page template
-                self.index_in_pages = self._index_in_pages
+            self._index_in_pages = int(
+                kwargs.pop(constants.index_in_pages))
+            # temp, for page template
+            self.index_in_pages = self._index_in_pages
 
-
-                # take a lock so that this same code path is not run twice
-                # for the same participant
-                try:
-                    # this works because we are inside a transaction.
-                    ParticipantLockModel.objects.select_for_update().get(
-                        participant_code=participant_code)
-                except ParticipantLockModel.DoesNotExist:
-                    msg = (
-                        "This user ({}) does not exist in the database. "
-                        "Maybe the database was recreated."
-                    ).format(participant_code)
-                    raise Http404(msg)
-
-
+            try:
                 self.participant = Participant.objects.get(
                     code=participant_code)
+            except Participant.DoesNotExist:
+                msg = (
+                    "This user ({}) does not exist in the database. "
+                    "Maybe the database was recreated."
+                ).format(participant_code)
+                raise Http404(msg)
 
+            # if the player tried to skip past a part of the subsession
+            # (e.g. by typing in a future URL)
+            # or if they hit the back button to a previous subsession
+            # in the sequence.
+            #
+            if not self._user_is_on_right_page():
+                # then bring them back to where they should be
+                return self._redirect_to_page_the_user_should_be_on()
 
-                # if the player tried to skip past a part of the subsession
-                # (e.g. by typing in a future URL)
-                # or if they hit the back button to a previous subsession
-                # in the sequence.
-                #
-                if not self._user_is_on_right_page():
-                    # then bring them back to where they should be
-                    return self._redirect_to_page_the_user_should_be_on()
+            self.load_objects()
 
-                self.load_objects()
+            self.participant._current_page_name = self.__class__.__name__
+            response = super(FormPageOrInGameWaitPageMixin, self).dispatch(
+                request, *args, **kwargs)
+            self.participant.last_request_succeeded = True
+            self.participant._last_request_timestamp = time.time()
 
-                self.participant._current_page_name = self.__class__.__name__
-                response = super(FormPageOrInGameWaitPageMixin, self).dispatch(
-                    request, *args, **kwargs)
-                self.participant.last_request_succeeded = True
-                self.participant._last_request_timestamp = time.time()
-
-                # need to render the response before saving objects,
-                # because the template might call a method that modifies
-                # player/group/etc.
-                if hasattr(response, 'render'):
-                    response.render()
-                self.save_objects()
-                return response
-        except Exception:
-            if hasattr(self, 'participant'):
-                self.participant.last_request_succeeded = False
-                self.participant.save()
-            raise
+            # need to render the response before saving objects,
+            # because the template might call a method that modifies
+            # player/group/etc.
+            if hasattr(response, 'render'):
+                response.render()
+            self.save_objects()
+            return response
 
     # TODO: maybe this isn't necessary, because I can figure out what page
     # they should be on, from looking up index_in_pages
@@ -598,6 +616,25 @@ class InGameWaitPageMixin(object):
                     # reference to self.player
                     is_displayed = self.is_displayed()
 
+                    # in case there is a timeout on the next page, we
+                    # should ensure the next pages are visited promptly
+                    # TODO: can we make this run only if next page is a
+                    # timeout page?
+                    # or if a player is auto playing.
+                    # we could instead make this request the current page
+                    # URL, but it's different for each player
+
+                    # _group_or_subsession might be deleted
+                    # in after_all_players_arrive, so calculate this first
+                    participant_pk_set = set([
+                        p.participant.pk
+                        for p in self._group_or_subsession.player_set.all()
+                    ])
+
+                    # _group_or_subsession might be deleted
+                    # in after_all_players_arrive, so calculate this first
+                    channels_group_name = self.channels_group_name()
+
                     # block users from accessing self.player inside
                     # after_all_players_arrive, because conceptually
                     # there is no single player in this context
@@ -634,41 +671,30 @@ class InGameWaitPageMixin(object):
                         self.after_all_players_arrive()
                     self.player = player
 
-                    completion.after_all_players_arrive_run = True
-                    completion.save()
-
-                    # send a message to the channel to move forward
-                    channels.Group(self.channels_group_name()).send(
-                        {'text': json.dumps(
-                            {'status': 'ready'})}
-                    )
-
-                    # in case there is a timeout on the next page, we
-                    # should ensure the next pages are visited promptly
-                    # TODO: can we make this run only if next page is a
-                    # timeout page?
-                    # or if a player is auto playing.
-                    # we could instead make this request the current page
-                    # URL, but it's different for each player
 
                     # 2015-07-27:
                     #   why not check if the next page has_timeout?
-
-                    participant_pk_set = set([
-                        p.participant.pk
-                        for p in self._group_or_subsession.player_set.all()
-                    ])
-
                     otree.timeout.tasks.ensure_pages_visited.apply_async(
                         kwargs={
                             'participant_pk_set': participant_pk_set,
                             'wait_page_index': self._index_in_pages,
                         }, countdown=10)
-                # we can assume it's ready because
-                # even if it wasn't created, that means someone else
-                # created it, and therefore that whole code block
-                # finished executing (including the after_all_players_arrive)
-                # inside the transaction
+
+                    completion.after_all_players_arrive_run = True
+                    completion.save()
+
+                    # send a message to the channel to move forward
+                    # this should happen at the very end,
+                    channels.Group(channels_group_name).send(
+                        {'text': json.dumps(
+                            {'status': 'ready'})}
+                    )
+
+            # we can assume it's ready because
+            # even if it wasn't created, that means someone else
+            # created it, and therefore that whole code block
+            # finished executing (including the after_all_players_arrive)
+            # inside the transaction
             return self._response_when_ready()
 
 
@@ -679,7 +705,7 @@ class InGameWaitPageMixin(object):
             model_name = 'group'
 
         return otree.common_internal.channels_wait_page_group_name(
-            app_label=self._group_or_subsession._meta.app_label,
+            session_pk=self.session.pk,
             page_index=self._index_in_pages,
             model_name=model_name,
             model_pk=self._group_or_subsession.pk,
@@ -693,7 +719,7 @@ class InGameWaitPageMixin(object):
             model_name = 'group'
 
         params = ','.join([
-            self._group_or_subsession._meta.app_label,
+            str(self.session.pk),
             str(self._index_in_pages),
             model_name,
             str(self._group_or_subsession.pk)

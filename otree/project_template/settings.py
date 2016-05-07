@@ -118,5 +118,6 @@ SESSION_CONFIGS = [
     # }
 ]
 
-# don't put anything after this line.
+# anything you put after the below line will override
+# oTree's default settings. Use with caution.
 otree.settings.augment_settings(globals())

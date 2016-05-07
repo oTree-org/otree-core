@@ -23,6 +23,12 @@ $(document).ready(function () {
         socket.onmessage = function(e) {
             console.log('Received redirect message', e.data);
             var data = JSON.parse(e.data);
+
+            if (data.error) {
+                $("#error-notice").show();
+                return;
+            }
+
             if (data.new_index_in_pages > index_in_pages) {
                 window.location.href = '{{ view.absolute_redirect_url|safe }}';
             }
