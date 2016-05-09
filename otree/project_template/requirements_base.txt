@@ -1,2 +1,2 @@
-otree-core==0.5.0.dev11
+otree-core==0.5.0.dev12
 Django # for heroku, needs to be explicitly in requirements file
