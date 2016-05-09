@@ -69,9 +69,7 @@ def lock_on_this_code_path():
             locked=False
         ).update(locked=True)
         if not updated_locks:
-            print('***waiting for global lock')
             time.sleep(0.1)
-
         else:
             yield
             GlobalSingleton.objects.update(locked=False)
@@ -624,17 +622,10 @@ class InGameWaitPageMixin(object):
                         group_pk=self.group.pk,
                         session_pk=self.session.pk
                     )
-                e = completion
-                print('***creating completion')
-                print(e.page_index, e.group_pk, e.session_pk)
                 completion.save()
-
             # if the record already exists
             # (enforced through unique_together)
             except django.db.IntegrityError:
-                print('*********integrity error')
-                e = completion
-                print(e.page_index, e.group_pk, e.session_pk)
                 self.participant.is_on_wait_page = True
                 return self._get_wait_page()
 
