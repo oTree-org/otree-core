@@ -632,64 +632,68 @@ class InGameWaitPageMixin(object):
             except django.db.IntegrityError:
                 self.participant.is_on_wait_page = True
                 return self._get_wait_page()
+            try:
+                # need to check this before deleting
+                # reference to self.player
+                is_displayed = self.is_displayed()
 
-            # need to check this before deleting
-            # reference to self.player
-            is_displayed = self.is_displayed()
+                # in case there is a timeout on the next page, we
+                # should ensure the next pages are visited promptly
+                # TODO: can we make this run only if next page is a
+                # timeout page?
+                # or if a player is auto playing.
+                # we could instead make this request the current page
+                # URL, but it's different for each player
 
-            # in case there is a timeout on the next page, we
-            # should ensure the next pages are visited promptly
-            # TODO: can we make this run only if next page is a
-            # timeout page?
-            # or if a player is auto playing.
-            # we could instead make this request the current page
-            # URL, but it's different for each player
+                # _group_or_subsession might be deleted
+                # in after_all_players_arrive, so calculate this first
+                participant_pk_set = set([
+                    p.participant.pk
+                    for p in self._group_or_subsession.player_set.all()
+                ])
 
-            # _group_or_subsession might be deleted
-            # in after_all_players_arrive, so calculate this first
-            participant_pk_set = set([
-                p.participant.pk
-                for p in self._group_or_subsession.player_set.all()
-            ])
+                # _group_or_subsession might be deleted
+                # in after_all_players_arrive, so calculate this first
+                channels_group_name = self.channels_group_name()
 
-            # _group_or_subsession might be deleted
-            # in after_all_players_arrive, so calculate this first
-            channels_group_name = self.channels_group_name()
+                # block users from accessing self.player inside
+                # after_all_players_arrive, because conceptually
+                # there is no single player in this context
+                # (method is executed once for the whole group)
 
-            # block users from accessing self.player inside
-            # after_all_players_arrive, because conceptually
-            # there is no single player in this context
-            # (method is executed once for the whole group)
+                player = self.player
+                del self.player
 
-            player = self.player
-            del self.player
+                # make sure we get the most up-to-date player objects
+                # e.g. if they were queried in is_displayed(),
+                # then they could be out of date
+                # but don't delete the current player from cache
+                # because we need it to be saved at the end
+                import idmap.tls
+                cache = getattr(idmap.tls._tls, 'idmap_cache', {})
+                for p in list(cache.get(self.PlayerClass, {}).values()):
+                    if p != player:
+                        self.PlayerClass.flush_cached_instance(p)
 
-            # make sure we get the most up-to-date player objects
-            # e.g. if they were queried in is_displayed(),
-            # then they could be out of date
-            # but don't delete the current player from cache
-            # because we need it to be saved at the end
-            import idmap.tls
-            cache = getattr(idmap.tls._tls, 'idmap_cache', {})
-            for p in list(cache.get(self.PlayerClass, {}).values()):
-                if p != player:
-                    self.PlayerClass.flush_cached_instance(p)
+                # if any player can skip the wait page,
+                # then we shouldn't run after_all_players_arrive
+                # because if some players are able to proceed to the next page
+                # before after_all_players_arrive is run,
+                # then after_all_players_arrive is probably not essential.
+                # often, there are some wait pages that all players skip,
+                # because they should only be shown in certain rounds.
+                # maybe the fields that after_all_players_arrive depends on
+                # are null
+                # something to think about: ideally, should we check if
+                # all players skipped, or any player skipped?
+                # as a shortcut, we just check if is_displayed is true
+                # for the last player.
+                if is_displayed:
+                    self.after_all_players_arrive()
+            except Exception as e:
+                completion.delete()
+                raise e
 
-            # if any player can skip the wait page,
-            # then we shouldn't run after_all_players_arrive
-            # because if some players are able to proceed to the next page
-            # before after_all_players_arrive is run,
-            # then after_all_players_arrive is probably not essential.
-            # often, there are some wait pages that all players skip,
-            # because they should only be shown in certain rounds.
-            # maybe the fields that after_all_players_arrive depends on
-            # are null
-            # something to think about: ideally, should we check if
-            # all players skipped, or any player skipped?
-            # as a shortcut, we just check if is_displayed is true
-            # for the last player.
-            if is_displayed:
-                self.after_all_players_arrive()
             self.player = player
 
 
@@ -717,6 +721,7 @@ class InGameWaitPageMixin(object):
             # finished executing (including the after_all_players_arrive)
             # inside the transaction
             return self._response_when_ready()
+
 
 
     def channels_group_name(self):
