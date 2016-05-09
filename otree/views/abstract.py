@@ -71,8 +71,10 @@ def lock_on_this_code_path():
         if not updated_locks:
             time.sleep(0.1)
         else:
-            yield
-            GlobalSingleton.objects.update(locked=False)
+            try:
+                yield
+            finally:
+                GlobalSingleton.objects.update(locked=False)
             return
     raise Exception('Request for global lock is stuck')
 
@@ -94,10 +96,12 @@ def participant_lock(participant_code):
         if not updated_locks:
             time.sleep(0.2)
         else:
-            yield
-            ParticipantLockModel.objects.filter(
-                participant_code=participant_code,
-            ).update(locked=False)
+            try:
+                yield
+            finally:
+                ParticipantLockModel.objects.filter(
+                    participant_code=participant_code,
+                ).update(locked=False)
             return
     exists = ParticipantLockModel.objects.filter(
         participant_code=participant_code
