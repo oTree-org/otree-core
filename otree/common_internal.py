@@ -359,14 +359,6 @@ def transaction_atomic():
             yield
 
 
-@contextlib.contextmanager
-def lock_on_this_code_path():
-    with transaction_atomic():
-        # take a lock on this singleton, so that only 1 person can
-        # be completing this code path at once
-        from otree.models.session import GlobalSingleton
-        GlobalSingleton.objects.select_for_update().get()
-        yield
 
 def check_pypi_for_updates(print_message = True):
     logging.getLogger("requests").setLevel(logging.WARNING)

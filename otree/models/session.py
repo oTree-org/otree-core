@@ -22,7 +22,7 @@ class GlobalSingleton(models.Model):
     class Meta:
         app_label = "otree"
 
-    # fixme: do i need at least one field on the model?
+    locked = models.BooleanField(default=False)
 
 
 # for now removing SaveTheChange

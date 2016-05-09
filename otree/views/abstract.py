@@ -38,7 +38,7 @@ import otree.constants_internal as constants
 from otree.models.participant import Participant
 from otree.models.session import Session
 from otree.common_internal import (
-    lock_on_this_code_path, get_app_label_from_import_path,
+    get_app_label_from_import_path,
     transaction_atomic
 )
 
@@ -48,7 +48,7 @@ from otree.models_concrete import (
     PageTimeout, StubModel,
     ParticipantLockModel)
 from otree_save_the_change.mixins import SaveTheChange
-
+from otree.models.session import GlobalSingleton
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -59,6 +59,24 @@ NO_PARTICIPANTS_LEFT_MSG = (
 
 
 DebugTable = collections.namedtuple('DebugTable', ['title', 'rows'])
+
+@contextlib.contextmanager
+def lock_on_this_code_path():
+    TIMEOUT = 5
+    start_time = time.time()
+    while time.time() - start_time < TIMEOUT:
+        updated_locks = GlobalSingleton.objects.filter(
+            locked=False
+        ).update(locked=True)
+        if not updated_locks:
+            print('***waiting for global lock')
+            time.sleep(0.1)
+
+        else:
+            yield
+            GlobalSingleton.objects.update(locked=False)
+            return
+    raise Exception('Request for global lock is stuck')
 
 
 @contextlib.contextmanager
@@ -71,24 +89,26 @@ def participant_lock(participant_code):
     TIMEOUT = 5
     start_time = time.time()
     while time.time() - start_time < TIMEOUT:
-        try:
-            lock = ParticipantLockModel.objects.get(
-                participant_code=participant_code,
-            )
-        except ParticipantLockModel.DoesNotExist:
-            raise Http404((
-                "This user ({}) does not exist in the database. "
-                "Maybe the database was recreated."
-            ).format(participant_code))
-        if lock.locked:
-            time.sleep(0.5)
+        updated_locks = ParticipantLockModel.objects.filter(
+            participant_code=participant_code,
+            locked=False
+        ).update(locked=True)
+        if not updated_locks:
+            time.sleep(0.2)
         else:
-            lock.locked = True
-            lock.save()
             yield
-            lock.locked = False
-            lock.save()
+            ParticipantLockModel.objects.filter(
+                participant_code=participant_code,
+            ).update(locked=False)
             return
+    exists = ParticipantLockModel.objects.filter(
+        participant_code=participant_code
+    ).exists()
+    if not exists:
+        raise Http404((
+            "This user ({}) does not exist in the database. "
+            "Maybe the database was recreated."
+        ).format(participant_code))
     raise Exception(
         'Request for participant {} is stuck'.format(participant_code))
 
@@ -592,103 +612,109 @@ class InGameWaitPageMixin(object):
             self.participant.is_on_wait_page = True
             return self._get_wait_page()
         else:
-            # on SQLite, transaction.atomic causes database to lock,
-            # so we use no-op context manager instead
-            with lock_on_this_code_path():
+            try:
                 if self.wait_for_all_groups:
-                    _c = CompletedSubsessionWaitPage.objects.get_or_create(
+                    completion = CompletedSubsessionWaitPage(
                         page_index=self._index_in_pages,
-                        session_pk=self.session.pk)
-                    completion, created = _c
+                        session_pk=self.session.pk
+                    )
                 else:
-                    _c = CompletedGroupWaitPage.objects.get_or_create(
+                    completion = CompletedGroupWaitPage(
                         page_index=self._index_in_pages,
                         group_pk=self.group.pk,
-                        session_pk=self.session.pk)
-                    completion, created = _c
-
-                # run the action inside the context manager, so that the
-                # action is completed before the next thread does a
-                # get_or_create and sees that the action has been completed
-                if created:
-
-                    # need to check this before deleting
-                    # reference to self.player
-                    is_displayed = self.is_displayed()
-
-                    # in case there is a timeout on the next page, we
-                    # should ensure the next pages are visited promptly
-                    # TODO: can we make this run only if next page is a
-                    # timeout page?
-                    # or if a player is auto playing.
-                    # we could instead make this request the current page
-                    # URL, but it's different for each player
-
-                    # _group_or_subsession might be deleted
-                    # in after_all_players_arrive, so calculate this first
-                    participant_pk_set = set([
-                        p.participant.pk
-                        for p in self._group_or_subsession.player_set.all()
-                    ])
-
-                    # _group_or_subsession might be deleted
-                    # in after_all_players_arrive, so calculate this first
-                    channels_group_name = self.channels_group_name()
-
-                    # block users from accessing self.player inside
-                    # after_all_players_arrive, because conceptually
-                    # there is no single player in this context
-                    # (method is executed once for the whole group)
-
-                    player = self.player
-                    del self.player
-
-                    # make sure we get the most up-to-date player objects
-                    # e.g. if they were queried in is_displayed(),
-                    # then they could be out of date
-                    # but don't delete the current player from cache
-                    # because we need it to be saved at the end
-                    import idmap.tls
-                    cache = getattr(idmap.tls._tls, 'idmap_cache', {})
-                    for p in list(cache.get(self.PlayerClass, {}).values()):
-                        if p != player:
-                            self.PlayerClass.flush_cached_instance(p)
-
-                    # if any player can skip the wait page,
-                    # then we shouldn't run after_all_players_arrive
-                    # because if some players are able to proceed to the next page
-                    # before after_all_players_arrive is run,
-                    # then after_all_players_arrive is probably not essential.
-                    # often, there are some wait pages that all players skip,
-                    # because they should only be shown in certain rounds.
-                    # maybe the fields that after_all_players_arrive depends on
-                    # are null
-                    # something to think about: ideally, should we check if
-                    # all players skipped, or any player skipped?
-                    # as a shortcut, we just check if is_displayed is true
-                    # for the last player.
-                    if is_displayed:
-                        self.after_all_players_arrive()
-                    self.player = player
-
-
-                    # 2015-07-27:
-                    #   why not check if the next page has_timeout?
-                    otree.timeout.tasks.ensure_pages_visited.apply_async(
-                        kwargs={
-                            'participant_pk_set': participant_pk_set,
-                            'wait_page_index': self._index_in_pages,
-                        }, countdown=10)
-
-                    completion.after_all_players_arrive_run = True
-                    completion.save()
-
-                    # send a message to the channel to move forward
-                    # this should happen at the very end,
-                    channels.Group(channels_group_name).send(
-                        {'text': json.dumps(
-                            {'status': 'ready'})}
+                        session_pk=self.session.pk
                     )
+                e = completion
+                print('***creating completion')
+                print(e.page_index, e.group_pk, e.session_pk)
+                completion.save()
+
+            # if the record already exists
+            # (enforced through unique_together)
+            except django.db.IntegrityError:
+                print('*********integrity error')
+                e = completion
+                print(e.page_index, e.group_pk, e.session_pk)
+                self.participant.is_on_wait_page = True
+                return self._get_wait_page()
+
+            # need to check this before deleting
+            # reference to self.player
+            is_displayed = self.is_displayed()
+
+            # in case there is a timeout on the next page, we
+            # should ensure the next pages are visited promptly
+            # TODO: can we make this run only if next page is a
+            # timeout page?
+            # or if a player is auto playing.
+            # we could instead make this request the current page
+            # URL, but it's different for each player
+
+            # _group_or_subsession might be deleted
+            # in after_all_players_arrive, so calculate this first
+            participant_pk_set = set([
+                p.participant.pk
+                for p in self._group_or_subsession.player_set.all()
+            ])
+
+            # _group_or_subsession might be deleted
+            # in after_all_players_arrive, so calculate this first
+            channels_group_name = self.channels_group_name()
+
+            # block users from accessing self.player inside
+            # after_all_players_arrive, because conceptually
+            # there is no single player in this context
+            # (method is executed once for the whole group)
+
+            player = self.player
+            del self.player
+
+            # make sure we get the most up-to-date player objects
+            # e.g. if they were queried in is_displayed(),
+            # then they could be out of date
+            # but don't delete the current player from cache
+            # because we need it to be saved at the end
+            import idmap.tls
+            cache = getattr(idmap.tls._tls, 'idmap_cache', {})
+            for p in list(cache.get(self.PlayerClass, {}).values()):
+                if p != player:
+                    self.PlayerClass.flush_cached_instance(p)
+
+            # if any player can skip the wait page,
+            # then we shouldn't run after_all_players_arrive
+            # because if some players are able to proceed to the next page
+            # before after_all_players_arrive is run,
+            # then after_all_players_arrive is probably not essential.
+            # often, there are some wait pages that all players skip,
+            # because they should only be shown in certain rounds.
+            # maybe the fields that after_all_players_arrive depends on
+            # are null
+            # something to think about: ideally, should we check if
+            # all players skipped, or any player skipped?
+            # as a shortcut, we just check if is_displayed is true
+            # for the last player.
+            if is_displayed:
+                self.after_all_players_arrive()
+            self.player = player
+
+
+            # 2015-07-27:
+            #   why not check if the next page has_timeout?
+            otree.timeout.tasks.ensure_pages_visited.apply_async(
+                kwargs={
+                    'participant_pk_set': participant_pk_set,
+                    'wait_page_index': self._index_in_pages,
+                }, countdown=10)
+
+            completion.after_all_players_arrive_run = True
+            completion.save()
+
+            # send a message to the channel to move forward
+            # this should happen at the very end,
+            channels.Group(channels_group_name).send(
+                {'text': json.dumps(
+                    {'status': 'ready'})}
+            )
 
             # we can assume it's ready because
             # even if it wasn't created, that means someone else

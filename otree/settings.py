@@ -167,8 +167,6 @@ def get_default_settings(initial_settings=None):
         # The following setting is ratio:
         # num_participants_server / num_participants_mturk
         'MTURK_NUM_PARTICIPANTS_MULT': 2,
-
-        'MIDDLEWARE_CLASSES': DEFAULT_MIDDLEWARE_CLASSES,
         'LOCALE_PATHS': [
             os.path.join(initial_settings.get('BASE_DIR', ''), 'locale')
         ]

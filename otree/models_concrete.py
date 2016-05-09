@@ -29,7 +29,9 @@ class PageTimeout(models.Model):
 class CompletedGroupWaitPage(models.Model):
     class Meta:
         app_label = "otree"
+        unique_together = ['page_index', 'session_pk', 'group_pk']
         index_together = ['page_index', 'session_pk', 'group_pk']
+
 
     page_index = models.PositiveIntegerField()
     session_pk = models.PositiveIntegerField()
@@ -39,7 +41,9 @@ class CompletedGroupWaitPage(models.Model):
 class CompletedSubsessionWaitPage(models.Model):
     class Meta:
         app_label = "otree"
+        unique_together = ['page_index', 'session_pk']
         index_together = ['page_index', 'session_pk']
+
 
     page_index = models.PositiveIntegerField()
     session_pk = models.PositiveIntegerField()
@@ -55,17 +59,6 @@ class ParticipantToPlayerLookup(models.Model):
     app_name = models.CharField(max_length=300)
     player_pk = models.PositiveIntegerField()
     url = models.CharField(max_length=300)
-
-
-class GroupSize(models.Model):
-    class Meta:
-        app_label = "otree"
-        index_together = ['app_label', 'subsession_pk']
-
-    app_label = models.CharField(max_length=300)
-    subsession_pk = models.PositiveIntegerField()
-    group_index = models.PositiveIntegerField()
-    group_size = models.PositiveIntegerField()
 
 
 class ParticipantLockModel(models.Model):
