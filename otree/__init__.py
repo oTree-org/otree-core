@@ -9,7 +9,7 @@
 # e.g. users might think that 0.4.5 is newer than 0.4.49
 
 # REMEMBER TO ALSO UPDATE THE PROJECT TEMPLATE
-VERSION = ('0', '5', '0.dev14')
+VERSION = ('0', '5', '0.dev15')
 
 __version__ = ".".join(VERSION)
 
