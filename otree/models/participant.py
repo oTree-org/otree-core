@@ -66,6 +66,7 @@ class Participant(ModelWithVars):
         max_length=16,
         null=False,
         db_index=True,
+        unique=True,
         doc=(
             "Randomly generated unique identifier for the participant. If you "
             "would like to merge this dataset with those from another "

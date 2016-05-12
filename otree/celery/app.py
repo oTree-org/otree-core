@@ -12,6 +12,8 @@ To run celery, execute::
 See http://www.celeryproject.org/ for more information.
 """
 import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
+
 from otree.celery.setup import setup_celery_app
 
 

@@ -959,6 +959,7 @@ class ServerCheck(vanilla.TemplateView):
         sqlite = settings.DATABASES['default']['ENGINE'].endswith('sqlite3')
         debug = settings.DEBUG
         update_message = check_pypi_for_updates(print_message=False)
+        otree_version = otree.__version__
         regular_sentry = hasattr(settings, 'RAVEN_CONFIG')
         heroku_sentry = os.environ.get('SENTRY_DSN')
         sentry = regular_sentry or heroku_sentry
@@ -970,6 +971,7 @@ class ServerCheck(vanilla.TemplateView):
             'sqlite': sqlite,
             'debug': debug,
             'update_message': update_message,
+            'otree_version': otree_version,
             'sentry': sentry,
             'auth_level': auth_level,
             'celery': celery,

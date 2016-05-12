@@ -699,14 +699,14 @@ class InGameWaitPageMixin(object):
 
             # 2015-07-27:
             #   why not check if the next page has_timeout?
-            '''
+
             # not working, redis connection error on Heroku
             otree.timeout.tasks.ensure_pages_visited.apply_async(
                 kwargs={
                     'participant_pk_set': participant_pk_set,
                     'wait_page_index': self._index_in_pages,
                 }, countdown=10)
-            '''
+            
 
             completion.after_all_players_arrive_run = True
             completion.save()
