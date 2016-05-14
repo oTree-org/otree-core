@@ -85,7 +85,7 @@ class StubModel(models.Model):
     pass
 
 class RoomSession(models.Model):
-    room_name = models.CharField()
+    room_name = models.CharField(unique=True)
     session_pk = models.PositiveIntegerField()
 
 class FailedSessionCreation(models.Model):
