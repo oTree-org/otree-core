@@ -64,7 +64,7 @@ msgstr ""
 msgid "points"
 msgstr ""
 
-#: .\templates\otree\BaseExperiment.html:18 .\templates\otree\BaseSite.html:34
+#: .\templates\otree\BaseExperiment.html:18 .\templates\otree\BaseAdmin.html:34
 msgid "Please fix the errors in the form."
 msgstr ""
 
