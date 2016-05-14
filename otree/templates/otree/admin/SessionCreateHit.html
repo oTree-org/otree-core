@@ -24,11 +24,7 @@ $(document).ready(function() {
 {% endblock %}
 {% block content %}
 {{ block.super }}
-{% if py3 %}
-    <p>oTree's MTurk integration currently does not work on Python 3.
-       To use MTurk, you need to reinstall oTree on Python 2.7.
-    </p>
-{% elif not mturk_enabled %}
+{% if not mturk_enabled %}
 <p> MTurk is currently disabled.
 If you want to publish your HIT on MTurk please do the following steps:
 <ol>

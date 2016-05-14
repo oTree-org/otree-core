@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import sys
 from six.moves.urllib.parse import urlparse
 from six.moves.urllib.parse import urlunparse
 import datetime
@@ -173,7 +172,6 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
         }
         form = self.get_form(initial=initial)
         context = self.get_context_data(form=form)
-        context['py3'] = sys.version_info >= (3, 0)
         context['mturk_enabled'] = (
             bool(settings.AWS_ACCESS_KEY_ID) and
             bool(settings.AWS_SECRET_ACCESS_KEY)
