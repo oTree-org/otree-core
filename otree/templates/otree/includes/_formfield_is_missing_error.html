@@ -35,7 +35,7 @@
 
     var remove = function (element) {
         element.parentNode.removeChild(element);
-    }
+    };
 
     var checkUnrenderedFields = function () {
         var warnings = document.querySelectorAll('.unrendered-fields-warning');
@@ -48,7 +48,7 @@
             };
 
             forEach(getMissingFields(), function (missingField) {
-                var fieldName = missingField.dataset.fieldName
+                var fieldName = missingField.dataset.fieldName;
                 if (fieldDoesExist(fieldName)) {
                     remove(missingField);
                 }
