@@ -253,9 +253,9 @@ class Session(ModelWithVars):
         def views_module_for_player(player):
             return views_modules[player._meta.app_config.name]
 
-        for participant in self.get_participants():
+        records_to_create = []
 
-            records_to_create = []
+        for participant in self.get_participants():
             page_index = 0
             for player in participant.get_players():
                 for View in views_module_for_player(player).page_sequence:
@@ -267,11 +267,11 @@ class Session(ModelWithVars):
                         player_pk=player.pk,
                         url=View.url(participant, page_index)
                     ))
-            ParticipantToPlayerLookup.objects.bulk_create(records_to_create)
 
             # technically could be stored at the session level
             participant._max_page_index = page_index
             participant.save()
+        ParticipantToPlayerLookup.objects.bulk_create(records_to_create)
 
     def get_room(self):
         from otree.room import ROOM_DICT
