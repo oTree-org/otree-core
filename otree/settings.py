@@ -5,6 +5,13 @@ import os
 import os.path
 import sys
 
+import sys
+if sys.version_info[0] == 2:
+    import urlparse
+else:
+    import urllib.parse as urlparse
+
+
 from django.conf import global_settings
 from django.contrib.messages import constants as messages
 
@@ -156,7 +163,10 @@ def get_default_settings(initial_settings=None):
              },
          },
 
+        # for convenience within oTree
+        'REDIS_URL': REDIS_URL,
         # celery settings
+
         'BROKER_URL': REDIS_URL,
         'CELERY_RESULT_BACKEND': REDIS_URL,
         'CELERY_APP': 'otree.celery.app:app',
@@ -298,6 +308,7 @@ def augment_settings(settings):
 
     settings.setdefault('LANGUAGE_CODE', global_settings.LANGUAGE_CODE)
 
+
     CURRENCY_LOCALE = settings.get('CURRENCY_LOCALE', None)
     if not CURRENCY_LOCALE:
 
@@ -316,6 +327,20 @@ def augment_settings(settings):
 
     for k, v in overridable_settings.items():
         settings.setdefault(k, v)
+
+    redis_url = urlparse.urlparse(settings.get('REDIS_URL'))
+    CACHES = {
+        "default": {
+            "BACKEND": "redis_cache.RedisCache",
+            "LOCATION": "{0}:{1}".format(redis_url.hostname, redis_url.port),
+            "OPTIONS": {
+                "PASSWORD": redis_url.password,
+                "DB": 0,
+            }
+        }
+    }
+
+    settings['CACHES'] = CACHES
 
     # this guarantee that the test always run on memory
     if 'test' in sys.argv:
