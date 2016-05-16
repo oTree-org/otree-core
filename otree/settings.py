@@ -166,10 +166,11 @@ def get_default_settings(initial_settings=None):
         # for convenience within oTree
         'REDIS_URL': REDIS_URL,
         # celery settings
-
         'BROKER_URL': REDIS_URL,
         'CELERY_RESULT_BACKEND': REDIS_URL,
         'CELERY_APP': 'otree.celery.app:app',
+        # otherwise get max conn error on heroku
+        'BROKER_POOL_LIMIT': 0,
 
         # since workers on Amazon MTurk can return the hit
         # we need extra participants created on the
@@ -297,6 +298,7 @@ def augment_settings(settings):
         'MESSAGE_TAGS': {messages.ERROR: 'danger'},
         'CELERY_ACCEPT_CONTENT': ['pickle', 'json', 'msgpack', 'yaml'],
         'LOGIN_REDIRECT_URL': 'sessions',
+
     }
 
     # CORS CONFS
