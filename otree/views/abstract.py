@@ -317,7 +317,10 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         self.GroupClass = getattr(models_module, 'Group')
         self.PlayerClass = getattr(models_module, 'Player')
 
-        self.player = self.PlayerClass.objects.get(pk=player_pk)
+        self.player = self.PlayerClass.objects\
+            .select_related(
+                'group', 'subsession', 'session'
+            ).get(pk=player_pk)
 
         self.group = self.player.group
 
