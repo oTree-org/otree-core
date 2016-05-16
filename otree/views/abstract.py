@@ -62,7 +62,7 @@ DebugTable = collections.namedtuple('DebugTable', ['title', 'rows'])
 
 @contextlib.contextmanager
 def lock_on_this_code_path():
-    TIMEOUT = 5
+    TIMEOUT = 10
     start_time = time.time()
     while time.time() - start_time < TIMEOUT:
         updated_locks = GlobalSingleton.objects.filter(
@@ -86,7 +86,7 @@ def participant_lock(participant_code):
     use this instead of a transaction because it's more lightweight.
     transactions make it harder to reason about wait pages
     '''
-    TIMEOUT = 5
+    TIMEOUT = 10
     start_time = time.time()
     while time.time() - start_time < TIMEOUT:
         updated_locks = ParticipantLockModel.objects.filter(
