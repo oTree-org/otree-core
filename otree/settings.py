@@ -218,9 +218,10 @@ def augment_settings(settings):
         'django.contrib.sessions',
         'django.contrib.messages',
         'django.contrib.staticfiles',
-        'otree.models_concrete',
+        #'otree.models_concrete',
         'otree.timeout',
         'channels',
+        'huey.contrib.djhuey',
         'kombu.transport.django',
         'rest_framework',
         'sslserver',
@@ -343,6 +344,16 @@ def augment_settings(settings):
     }
 
     settings['CACHES'] = CACHES
+
+    from huey import RedisHuey
+    settings['HUEY'] = {
+        'name': 'test-django',
+        'always_eager': False,
+        'consumer': {
+            'workers': 2,
+            'scheduler_interval': 5,
+        },
+    }
 
     # this guarantee that the test always run on memory
     if 'test' in sys.argv:

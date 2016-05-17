@@ -703,11 +703,11 @@ class InGameWaitPageMixin(object):
             # 2015-07-27:
             #   why not check if the next page has_timeout?
 
-            otree.timeout.tasks.ensure_pages_visited.apply_async(
+            otree.timeout.tasks.ensure_pages_visited.schedule(
                 kwargs={
                     'participant_pk_set': participant_pk_set,
                     'wait_page_index': self._index_in_pages,
-                }, countdown=10)
+                }, delay=10)
 
 
             completion.after_all_players_arrive_run = True
@@ -881,11 +881,11 @@ class FormPageMixin(object):
 
         self.participant._current_form_page_url = self.request.path
         if self.participant._is_auto_playing:
-            otree.timeout.tasks.submit_expired_url.apply_async(
-                (self.request.path,), countdown=2)  # 2 seconds
+            otree.timeout.tasks.submit_expired_url.schedule(
+                (self.request.path,), delay=2)  # 2 seconds
         elif self.has_timeout():
-            otree.timeout.tasks.submit_expired_url.apply_async(
-                (self.request.path,), countdown=self.timeout_seconds)
+            otree.timeout.tasks.submit_expired_url.schedule(
+                (self.request.path,), delay=self.timeout_seconds)
 
         return super(FormPageMixin, self).get(request, *args, **kwargs)
 

@@ -65,4 +65,4 @@ class OtreeConfig(AppConfig):
         if getattr(settings, 'CREATE_DEFAULT_SUPERUSER', False):
             self.setup_create_default_superuser()
 
-        self.init_celery()
+        #self.init_celery()

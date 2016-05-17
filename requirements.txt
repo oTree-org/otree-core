@@ -28,6 +28,7 @@ django-vanilla-views==1.0.4
 djangorestframework==3.3.3
 funcsigs==1.0.2
 honcho==0.7.1
+huey==1.1.2
 IPy==0.83
 kombu==3.0.35
 mock==2.0.0

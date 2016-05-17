@@ -17,4 +17,4 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
 from otree.celery.setup import setup_celery_app
 
 
-app = setup_celery_app()
+#app = setup_celery_app()

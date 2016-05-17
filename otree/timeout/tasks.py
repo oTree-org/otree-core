@@ -3,21 +3,21 @@
 
 import django.test
 
-from celery import shared_task
+from huey.contrib.djhuey import task, db_task
 
 from otree import constants_internal
 
 
 test_client = django.test.Client()
 
-@shared_task
+@task()
 def submit_expired_url(url):
 
     test_client.post(
         url, data={constants_internal.auto_submit: True}, follow=True)
 
 
-@shared_task
+@db_task()
 def ensure_pages_visited(participant_pk_set, wait_page_index):
 
     """
