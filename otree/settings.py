@@ -94,11 +94,6 @@ def get_default_settings(initial_settings=None):
         # template, it doesn't just fail silently. instead should raise
         # an error (and send through Sentry etc)
         'TEMPLATE_DEBUG': True,
-        'TEMPLATE_CONTEXT_PROCESSORS': collapse_to_unique_list(
-            global_settings.TEMPLATE_CONTEXT_PROCESSORS, (
-                'django.core.context_processors.request',
-            )
-        ),
         'STATIC_ROOT': os.path.join(
             initial_settings.get('BASE_DIR', ''),
             '_static_root'),
@@ -290,7 +285,23 @@ def augment_settings(settings):
 
     augmented_settings = {
         'INSTALLED_APPS': new_installed_apps,
-        'TEMPLATE_DIRS': new_template_dirs,
+        'TEMPLATES': [{
+            'BACKEND': 'django.template.backends.django.DjangoTemplates',
+            'DIRS': new_template_dirs,
+            'OPTIONS': {
+                'loaders': [
+                    ('django.template.loaders.cached.Loader', [
+                        'django.template.loaders.filesystem.Loader',
+                        'django.template.loaders.app_directories.Loader',
+                    ]),
+                ],
+                'context_processors': collapse_to_unique_list(
+                    global_settings.TEMPLATE_CONTEXT_PROCESSORS, (
+                        'django.core.context_processors.request',
+                    )
+                ),
+            },
+        }],
         'STATICFILES_DIRS': new_staticfiles_dirs,
         'MIDDLEWARE_CLASSES': new_middleware_classes,
         'NO_EXPERIMENT_APPS': no_experiment_apps,
