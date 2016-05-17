@@ -348,7 +348,7 @@ def augment_settings(settings):
     from huey import RedisHuey
     settings['HUEY'] = {
         'name': 'test-django',
-        'connection': {'host': redis_url.hostname, 'port': redis_url.port},
+        'connection': {'host': redis_url.hostname, 'port': redis_url.port, 'password': redis_url.password},
         'always_eager': False,
         'result_store': False,
         'consumer': {
