@@ -222,7 +222,6 @@ def augment_settings(settings):
         'otree.timeout',
         'channels',
         'huey.contrib.djhuey',
-        'kombu.transport.django',
         'rest_framework',
         'sslserver',
         'idmap',

@@ -1,3 +1,2 @@
 web: python manage.py runweb
 worker: python manage.py runworkers
-celeryworker: celery worker --app=otree.celery.app:app --loglevel=INFO

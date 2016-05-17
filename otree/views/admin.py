@@ -929,29 +929,6 @@ class ServerCheck(vanilla.TemplateView):
     def url_name(cls):
         return 'server_check'
 
-    def celery_is_running(self):
-
-        '''
-        NOT WORKING
-
-        import celery.bin.base
-        import celery.bin.celery
-        import celery.platforms
-
-        status = celery.bin.celery.CeleryCommand.commands['status']()
-        status.app = status.get_app()
-
-        try:
-            status.run()
-            return True
-        except celery.bin.base.Error as e:
-            if e.status == celery.platforms.EX_UNAVAILABLE:
-                return False
-            raise e
-        '''
-
-        return False
-
     def app_is_on_heroku(self):
         return 'heroku' in self.request.get_host()
 
@@ -964,7 +941,6 @@ class ServerCheck(vanilla.TemplateView):
         heroku_sentry = os.environ.get('SENTRY_DSN')
         sentry = regular_sentry or heroku_sentry
         auth_level = settings.AUTH_LEVEL in {'DEMO', 'STUDY'}
-        celery = self.celery_is_running()
         heroku = self.app_is_on_heroku()
 
         return {
@@ -974,6 +950,5 @@ class ServerCheck(vanilla.TemplateView):
             'otree_version': otree_version,
             'sentry': sentry,
             'auth_level': auth_level,
-            'celery': celery,
             'heroku': heroku
         }
