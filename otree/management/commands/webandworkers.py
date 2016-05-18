@@ -5,6 +5,7 @@ import os
 import otree
 import re
 import sys
+from honcho.manager import Manager
 
 from django.conf import settings
 from channels import DEFAULT_CHANNEL_LAYER, channel_layers
@@ -13,6 +14,7 @@ from channels.log import setup_logger
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 import django.core.management.commands.runserver
+
 
 
 RunserverCommand = django.core.management.commands.runserver.Command
@@ -48,6 +50,9 @@ class Command(RunserverCommand):
         parser.add_argument(
             '--addr', action='store', type=str, dest='addr', default='0.0.0.0',
             help=ahelp)
+
+    def get_env(self, options):
+        return os.environ.copy()
 
     def get_port(self, suggested_port):
         if suggested_port is None:
@@ -108,17 +113,20 @@ class Command(RunserverCommand):
         self.logger.debug("Daphne running, listening on %s:%s",
                           self.addr, self.port)
 
-        try:
-            from daphne.server import Server
-            Server(
-                channel_layer=self.channel_layer,
-                host=self.addr,
-                port=int(self.port),
-                signal_handlers=not options['use_reloader'],
-            ).run()
-            self.logger.debug("Daphne exited")
-        except KeyboardInterrupt:
-            shutdown_message = options.get('shutdown_message', '')
-            if shutdown_message:
-                self.stdout.write(shutdown_message)
-            return
+        manager = Manager()
+
+        daphne_cmd = 'daphne otree.asgi:channel_layer -b {} -p {}'.format(
+            self.addr,
+            self.port
+        )
+        print(daphne_cmd)
+
+        manager.add_process('daphne', daphne_cmd, env=self.get_env(options))
+        for i in range(3):
+            manager.add_process(
+                'worker{}'.format(i),
+                'otree channelsworker',
+                env=self.get_env(options))
+        manager.loop()
+
+        sys.exit(manager.returncode)
