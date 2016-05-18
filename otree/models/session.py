@@ -1,3 +1,4 @@
+import logging
 import django.test
 
 from otree import constants_internal
@@ -8,6 +9,11 @@ from .varsmixin import ModelWithVars
 from otree.models_concrete import ParticipantToPlayerLookup
 from otree.models_concrete import RoomSession
 
+
+logger = logging.getLogger('otree')
+
+client = django.test.Client()
+
 class GlobalSingleton(models.Model):
     """object that can hold site-wide settings. There should only be one
     GlobalSingleton object. Also used for wait page actions.
@@ -16,7 +22,7 @@ class GlobalSingleton(models.Model):
     class Meta:
         app_label = "otree"
 
-    # fixme: do i need at least one field on the model?
+    locked = models.BooleanField(default=False)
 
 
 # for now removing SaveTheChange
@@ -45,6 +51,7 @@ class Session(ModelWithVars):
         default=random_chars_8,
         max_length=16,
         null=False,
+        unique=True,
         db_index=True,
         doc="Randomly generated unique identifier for the session.")
 
@@ -194,14 +201,14 @@ class Session(ModelWithVars):
     def advance_last_place_participants(self):
         participants = self.get_participants()
 
-        c = django.test.Client()
+
 
         # in case some participants haven't started
         unvisited_participants = []
         for p in participants:
             if not p._current_form_page_url:
                 unvisited_participants.append(p)
-                c.get(p._start_url(), follow=True)
+                client.get(p._start_url(), follow=True)
 
         if unvisited_participants:
             from otree.models import Participant
@@ -221,11 +228,18 @@ class Session(ModelWithVars):
         for p in last_place_participants:
             if not p._current_form_page_url:
                 # what if first page is wait page?
+                # that shouldn't happen, because then they must be
+                # waiting for some other players who are even further back
                 raise
-            resp = c.post(
-                p._current_form_page_url,
-                data={constants_internal.auto_submit: True}, follow=True
-            )
+            try:
+                resp = client.post(
+                    p._current_form_page_url,
+                    data={constants_internal.auto_submit: True}, follow=True
+                )
+            except Exception as e:
+                logging.exception("Failed to advance participants.")
+                raise e
+
             assert resp.status_code < 400
 
     def build_participant_to_player_lookups(self):
@@ -239,24 +253,25 @@ class Session(ModelWithVars):
         def views_module_for_player(player):
             return views_modules[player._meta.app_config.name]
 
-        for participant in self.get_participants():
+        records_to_create = []
 
+        for participant in self.get_participants():
             page_index = 0
             for player in participant.get_players():
                 for View in views_module_for_player(player).page_sequence:
                     page_index += 1
-                    ParticipantToPlayerLookup(
+                    records_to_create.append(ParticipantToPlayerLookup(
                         participant_pk=participant.pk,
                         page_index=page_index,
                         app_name=player._meta.app_config.name,
                         player_pk=player.pk,
                         url=View.url(participant, page_index)
-                    ).save()
-
+                    ))
 
             # technically could be stored at the session level
             participant._max_page_index = page_index
             participant.save()
+        ParticipantToPlayerLookup.objects.bulk_create(records_to_create)
 
     def get_room(self):
         from otree.room import ROOM_DICT

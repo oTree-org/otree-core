@@ -182,8 +182,8 @@ def execute_from_command_line(arguments, script_file):
 
 SETTINGS_NOT_FOUND_MESSAGE = (
     "Cannot import otree settings.\n"
-    "Please make sure that you are in the base directory of your "
-    "oTree library checkout. This directory contains a settings.py "
+    "Please make sure that you are in the root directory of your "
+    "oTree project. This directory contains a settings.py "
     "and a manage.py file."
 )
 

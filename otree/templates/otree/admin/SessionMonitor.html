@@ -32,10 +32,12 @@ function ajax_advance() {
             url: '{% url 'session_advance' session.pk %}',
             type: 'GET',
             error: function(jqXHR, textStatus) {
-                $( "div#server_error" ).show();
+                $( "div#auto_advance_server_error" ).show();
+                // enable the button so they can try again?
+                $('#advance_users').attr("disabled", false);
             },
             success: function() {
-                $( "div#server_error" ).hide();
+                $( "div#auto_advance_server_error" ).hide();
                 ajax_json_participants();
                 $('#advance_users').attr("disabled", false);
             }
@@ -48,10 +50,10 @@ function ajax_json_participants() {
         url: '{% url "session_participants_list" session.code %}',
         type: 'GET',
         error: function(jqXHR, textStatus) {
-            $( "div#server_error" ).show();
+            $( "div#refresh_server_error" ).show();
         },
         success: function(new_json) {
-            $( "div#server_error" ).hide();
+            $( "div#refresh_server_error" ).hide();
             var old_json = $( "table" ).data("raw");
             // build table for the first time
             if ( old_json === undefined ) {
@@ -99,8 +101,14 @@ function ajax_json_participants() {
 data-content="Advance the slowest user(s) by one page, by forcing a timeout on their current page.">
 Advance slowest user(s)
 </a>
-<div id="server_error" class="alert alert-danger" style="display: none;"> 
-    <a href="#" class="close" data-dismiss="alert">&times;</a>
-    "Failed to connect to server"
+<div id="refresh_server_error" class="alert alert-danger" style="display: none;">
+    Failed to refresh data from the server.
 </div>
+
+<div id="auto_advance_server_error" class="alert alert-danger" style="display: none;">
+    An error occurred and participants could not be advanced.
+    See the server logs.
+</div>
+
+
 {% endblock %}

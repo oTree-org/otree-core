@@ -1,6 +1,6 @@
 {% extends "otree/Base.html" %}
 {% load i18n %}
-{% load floppyforms otree_tags %}
+{% load floppyforms otree_tags staticfiles %}
 {% block internal_scripts %}
 {{ block.super }}
 <script type="text/javascript" charset="utf-8">
@@ -17,6 +17,12 @@ $(function(){
     });
 });
 </script>
+
+<script src="{% static 'otree/js/jquery.color-2.1.2.min.js' %}"></script>
+<script src="{% static 'otree/js/jquery.timeago.js' %}"></script>
+<script src="{% static 'otree/js/jsondiffpatch.min.js' %}"></script>
+<script src="{% static 'otree/js/json-to-table.js' %}"></script>
+
 {% endblock %}
 {% block content_at_top_of_body %}
 {{ block.super }}

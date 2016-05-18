@@ -1,3 +1,4 @@
+import six
 from collections import OrderedDict
 from django.conf import settings
 from otree.models import Session
@@ -8,11 +9,11 @@ import codecs
 
 class Room(object):
 
-    def __init__(self, room_config_dict):
-        self.participant_label_file = room_config_dict.get('participant_label_file')
-        self.name = room_config_dict['name']
-        self.display_name = room_config_dict['display_name']
-        self.use_secure_urls = room_config_dict.get('use_secure_urls', True)
+    def __init__(self, config_dict):
+        self.participant_label_file = config_dict.get('participant_label_file')
+        self.name = config_dict['name']
+        self.display_name = config_dict['display_name']
+        self.use_secure_urls = config_dict.get('use_secure_urls', True)
 
     def has_session(self):
         return self.session is not None
@@ -47,6 +48,14 @@ class Room(object):
                         return labels
                 except UnicodeDecodeError:
                     continue
+                except FileNotFoundError as exception:
+                    raise IOError(
+                        'The room "{}" references nonexistent participant_label_file '
+                        '"{}". Check your settings.py.'.format(
+                            self.name,
+                            self.participant_label_file
+                        )
+                    )
 
             raise Exception('Failed to decode guest list.')
         raise Exception('no guestlist')

@@ -1,4 +1,4 @@
-{% extends "otree/BaseSite.html" %}
+{% extends "otree/BaseAdmin.html" %}
 {% load otree_tags floppyforms %}
 
 {% block internal_scripts %}
@@ -216,7 +216,7 @@ Sessions
     <a href="#">Show archived sessions</a>
 </div>
 {% else %}
-    <p>No sessions available.</p>
+    <p>No sessions yet. Click the button to create a new session.</p>
 {% endif %}
 {% include "otree/includes/messages.html" %}
 {% endblock %}

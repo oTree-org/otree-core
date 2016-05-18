@@ -64,7 +64,7 @@ msgstr "La valeur doit prendre une des modalités suivantes : {}"
 msgid "points"
 msgstr "points"
 
-#: .\templates\otree\BaseExperiment.html:18 .\templates\otree\BaseSite.html:34
+#: .\templates\otree\BaseExperiment.html:18 .\templates\otree\BaseAdmin.html:34
 msgid "Please fix the errors in the form."
 msgstr "S'il vous plaît, veuillez corriger les erreurs dans le formulaire."
 

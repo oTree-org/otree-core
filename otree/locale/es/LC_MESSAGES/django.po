@@ -65,7 +65,7 @@ msgstr "El valor debe ser uno de: {}"
 msgid "points"
 msgstr "puntos"
 
-#: .\templates\otree\BaseExperiment.html:18 .\templates\otree\BaseSite.html:34
+#: .\templates\otree\BaseExperiment.html:18 .\templates\otree\BaseAdmin.html:34
 msgid "Please fix the errors in the form."
 msgstr "Por favor corrija los errores en el formulario"
 

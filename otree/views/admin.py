@@ -104,18 +104,8 @@ def get_all_fields(Model, for_export=False):
                 'mturk_assignment_id',
             ]
         else:
-            return [
-                '_id_in_session',
-                'code',
-                'label',
-                '_current_page',
-                '_current_app_name',
-                '_round_number',
-                '_current_page_name',
-                'status',
-                'last_request_succeeded',
-                '_last_page_timestamp',
-            ]
+            # not used; see ParticipantSerializer
+            return []
 
     first_fields = {
         'Player':
@@ -939,29 +929,6 @@ class ServerCheck(vanilla.TemplateView):
     def url_name(cls):
         return 'server_check'
 
-    def celery_is_running(self):
-
-        '''
-        NOT WORKING
-
-        import celery.bin.base
-        import celery.bin.celery
-        import celery.platforms
-
-        status = celery.bin.celery.CeleryCommand.commands['status']()
-        status.app = status.get_app()
-
-        try:
-            status.run()
-            return True
-        except celery.bin.base.Error as e:
-            if e.status == celery.platforms.EX_UNAVAILABLE:
-                return False
-            raise e
-        '''
-
-        return False
-
     def app_is_on_heroku(self):
         return 'heroku' in self.request.get_host()
 
@@ -969,19 +936,19 @@ class ServerCheck(vanilla.TemplateView):
         sqlite = settings.DATABASES['default']['ENGINE'].endswith('sqlite3')
         debug = settings.DEBUG
         update_message = check_pypi_for_updates(print_message=False)
+        otree_version = otree.__version__
         regular_sentry = hasattr(settings, 'RAVEN_CONFIG')
         heroku_sentry = os.environ.get('SENTRY_DSN')
         sentry = regular_sentry or heroku_sentry
         auth_level = settings.AUTH_LEVEL in {'DEMO', 'STUDY'}
-        celery = self.celery_is_running()
         heroku = self.app_is_on_heroku()
 
         return {
             'sqlite': sqlite,
             'debug': debug,
             'update_message': update_message,
+            'otree_version': otree_version,
             'sentry': sentry,
             'auth_level': auth_level,
-            'celery': celery,
             'heroku': heroku
         }

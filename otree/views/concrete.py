@@ -26,16 +26,15 @@ from boto.mturk.connection import MTurkRequestError
 import otree.constants_internal as constants
 import otree.models.session
 from otree.models.participant import Participant
-from otree.common_internal import lock_on_this_code_path, make_hash
+from otree.common_internal import make_hash
 import otree.views.admin
 from otree.views.mturk import MTurkConnection
 import otree.common_internal
 from otree.views.abstract import (
     NonSequenceUrlMixin, OTreeMixin, GenericWaitPageMixin,
-
+    lock_on_this_code_path,
     NO_PARTICIPANTS_LEFT_MSG
 )
-from otree.models_concrete import GroupSize  # noqa
 from otree.room import ROOM_DICT
 
 class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
@@ -70,18 +69,21 @@ class InitializeParticipant(vanilla.UpdateView):
             code=kwargs[constants.participant_code]
         )
 
-        participant.visited = True
+        if participant._index_in_pages == 0:
+            participant._index_in_pages = 1
+            participant.visited = True
 
-        # participant.label might already have been set
-        participant.label = participant.label or self.request.GET.get(
-            constants.participant_label
-        )
-        participant.ip_address = self.request.META['REMOTE_ADDR']
+            # participant.label might already have been set
+            participant.label = participant.label or self.request.GET.get(
+                constants.participant_label
+            )
+            participant.ip_address = self.request.META['REMOTE_ADDR']
 
-        now = django.utils.timezone.now()
-        participant.time_started = now
-        participant._last_page_timestamp = time.time()
-        participant.save()
+            now = django.utils.timezone.now()
+            participant.time_started = now
+            participant._last_page_timestamp = time.time()
+
+            participant.save()
         first_url = participant._url_i_should_be_on()
         return HttpResponseRedirect(first_url)
 
@@ -173,7 +175,7 @@ class MTurkStart(vanilla.View):
             with lock_on_this_code_path():
                 try:
                     participant = (
-                        Participant.objects.select_for_update().filter(
+                        Participant.objects.filter(
                             session=self.session,
                             visited=False
                         )
@@ -209,7 +211,7 @@ class JoinSessionAnonymously(vanilla.View):
         with lock_on_this_code_path():
             try:
                 participant = (
-                    Participant.objects.select_for_update().filter(
+                    Participant.objects.filter(
                         session=session,
                         visited=False
                     )
@@ -283,7 +285,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
             with lock_on_this_code_path():
                 try:
                     participant = (
-                        Participant.objects.select_for_update().filter(
+                        Participant.objects.filter(
                             session=session,
                             visited=False)
                     ).order_by('start_order')[0]

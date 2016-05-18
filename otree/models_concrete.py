@@ -29,7 +29,9 @@ class PageTimeout(models.Model):
 class CompletedGroupWaitPage(models.Model):
     class Meta:
         app_label = "otree"
+        unique_together = ['page_index', 'session_pk', 'group_pk']
         index_together = ['page_index', 'session_pk', 'group_pk']
+
 
     page_index = models.PositiveIntegerField()
     session_pk = models.PositiveIntegerField()
@@ -39,7 +41,9 @@ class CompletedGroupWaitPage(models.Model):
 class CompletedSubsessionWaitPage(models.Model):
     class Meta:
         app_label = "otree"
+        unique_together = ['page_index', 'session_pk']
         index_together = ['page_index', 'session_pk']
+
 
     page_index = models.PositiveIntegerField()
     session_pk = models.PositiveIntegerField()
@@ -57,22 +61,15 @@ class ParticipantToPlayerLookup(models.Model):
     url = models.CharField(max_length=300)
 
 
-class GroupSize(models.Model):
-    class Meta:
-        app_label = "otree"
-        index_together = ['app_label', 'subsession_pk']
-
-    app_label = models.CharField(max_length=300)
-    subsession_pk = models.PositiveIntegerField()
-    group_index = models.PositiveIntegerField()
-    group_size = models.PositiveIntegerField()
-
-
 class ParticipantLockModel(models.Model):
     class Meta:
         app_label = "otree"
 
-    participant_code = models.CharField(max_length=16, db_index=True)
+    participant_code = models.CharField(
+        max_length=16, db_index=True, unique=True
+    )
+
+    locked = models.BooleanField(default=False)
 
 
 class StubModel(models.Model):
@@ -88,7 +85,7 @@ class StubModel(models.Model):
     pass
 
 class RoomSession(models.Model):
-    room_name = models.CharField()
+    room_name = models.CharField(unique=True)
     session_pk = models.PositiveIntegerField()
 
 class FailedSessionCreation(models.Model):

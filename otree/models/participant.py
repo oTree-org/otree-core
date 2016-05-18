@@ -51,7 +51,7 @@ class Participant(ModelWithVars):
 
     _index_in_subsessions = models.PositiveIntegerField(default=0, null=True)
 
-    _index_in_pages = models.PositiveIntegerField(default=1, db_index=True)
+    _index_in_pages = models.PositiveIntegerField(default=0, db_index=True)
 
     id_in_session = models.PositiveIntegerField(null=True)
 
@@ -66,6 +66,7 @@ class Participant(ModelWithVars):
         max_length=16,
         null=False,
         db_index=True,
+        unique=True,
         doc=(
             "Randomly generated unique identifier for the participant. If you "
             "would like to merge this dataset with those from another "

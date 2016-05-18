@@ -3,19 +3,21 @@
 
 import django.test
 
-from celery import shared_task
+from huey.contrib.djhuey import task, db_task
 
 from otree import constants_internal
 
 
-@shared_task
+test_client = django.test.Client()
+
+@task()
 def submit_expired_url(url):
 
-    client = django.test.Client()
-    client.post(url, data={constants_internal.auto_submit: True}, follow=True)
+    test_client.post(
+        url, data={constants_internal.auto_submit: True}, follow=True)
 
 
-@shared_task
+@db_task()
 def ensure_pages_visited(participant_pk_set, wait_page_index):
 
     """
@@ -27,14 +29,14 @@ def ensure_pages_visited(participant_pk_set, wait_page_index):
     """
 
     from otree.models.participant import Participant
-    client = django.test.Client()
+
 
     unvisited_participants = Participant.objects.filter(
         pk__in=participant_pk_set,
         _index_in_pages__lte=wait_page_index,
     )
-
     for participant in unvisited_participants:
+
         # if the wait page is the first page,
         # then _current_form_page_url could be null.
         # in this case, use the start_url() instead,
@@ -42,4 +44,4 @@ def ensure_pages_visited(participant_pk_set, wait_page_index):
         # (alternatively we could define _current_page_url or
         # current_wait_page_url)
         url = participant._current_form_page_url or participant._start_url()
-        client.get(url, follow=True)
+        test_client.get(url, follow=True)

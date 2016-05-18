@@ -80,6 +80,12 @@ class RealWorldCurrency(easymoney.Money):
     def to_real_world_currency(self, session):
         return self
 
+    def deconstruct(self):
+        return [
+            '{}.{}'.format(self.__module__ , self.__class__.__name__),
+            [Decimal.__str__(self)],
+            {}
+        ]
 
 class Currency(RealWorldCurrency):
     '''game currency'''

@@ -1,4 +1,4 @@
-{% extends "otree/BaseSite.html" %}
+{% extends "otree/BaseAdmin.html" %}
 
 {% block title %}
     Rooms
@@ -16,56 +16,10 @@
 
 <hr/>
 
-    <p>
-        To create a room, add to your <code>settings.py</code>
-        a setting <code>ROOMS</code> (and, optionally, <code>ROOM_DEFAULTS</code>).
-    </p>
+<div class="alert alert-warning">
+    This feature is under construction.
+</div>
 
-    <p>
-        <code>ROOMS</code> should be a list of dictionaries;
-        each dictionary defines the configuration of a room.
-    </p>
-
-    <p>For example:</p>
-
-    <pre><code>
-    ROOM_DEFAULTS = {
-        'use_secure_urls': True,
-    }
-
-    ROOMS = [
-        {
-            'name': 'ec101',
-            'display_name': 'Econ 101',
-            'participant_label_file': 'econ101.txt',
-        },
-        {
-            'name': 'ec102',
-            'display_name': 'Econ 102',
-            'participant_label_file': 'econ102.txt',
-        },
-    ]
-    </code></pre>
-
-    <p>Here are the available keys:</p>
-
-    <ul>
-        <li><code>name</code>: (required) internal name</li>
-        <li><code>display_name</code>: (required) display name</li>
-        <li>
-            <code>participant_label_file</code>: a path to a text file with the "guest list"
-            for this room. Should have one participant label per line.
-        </li>
-        <li><code>use_secure_urls</code>: whether oTree should add unique secret keys to URLs,
-            so that even if someone can guess another participant's <code>participant_label</code>,
-            they can't guess that person's start URL.
-        </li>
-    </ul>
-
-    <p>
-        <code>ROOM_DEFAULTS</code> is
-        a dict that defines settings to be inherited by all rooms unless
-        explicitly overridden (works in an analogous way to <code>SESSION_CONFIG_DEFAULTS</code>).
-    </p>
+<p>See docs about rooms <a href="http://otree.readthedocs.io/en/latest/rooms.html">here</a>.</p>
 
 {% endblock %}

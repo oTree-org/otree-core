@@ -5,12 +5,16 @@ import os
 import os.path
 import sys
 
-import djcelery
+import sys
+if sys.version_info[0] == 2:
+    import urlparse
+else:
+    import urllib.parse as urlparse
+
 
 from django.conf import global_settings
 from django.contrib.messages import constants as messages
 
-djcelery.setup_loader()
 
 
 DEFAULT_MIDDLEWARE_CLASSES = (
@@ -83,16 +87,12 @@ def get_default_settings(initial_settings=None):
         'Powered By <a href="http://otree.org" target="_blank">oTree</a>'
     )
 
-    return {
-        # pages with a time limit for the player can have a grace period
-        # to compensate for network latency.
-        # the timer is started and stopped server-side,
-        # so this grace period should account for time spent during
-        # download, upload, page rendering, etc.
-        'TIMEOUT_LATENCY_ALLOWANCE_SECONDS': 10,
+    REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379')
 
-        'SESSION_SAVE_EVERY_REQUEST': True,
-        'TEMPLATE_DEBUG': initial_settings.get('DEBUG', False),
+    return {
+        # set to True so that if there is an error in an {% include %}'d
+        # template, it doesn't just fail silently. instead should raise
+        # an error (and send through Sentry etc)
         'STATIC_ROOT': os.path.join(
             initial_settings.get('BASE_DIR', ''),
             '_static_root'),
@@ -104,17 +104,7 @@ def get_default_settings(initial_settings=None):
 
         'TIME_ZONE': 'UTC',
         'USE_TZ': True,
-        'SESSION_SERIALIZER': (
-            'django.contrib.sessions.serializers.PickleSerializer'
-        ),
         'ALLOWED_HOSTS': ['*'],
-
-        'TEMPLATE_CONTEXT_PROCESSORS': collapse_to_unique_list(
-            global_settings.TEMPLATE_CONTEXT_PROCESSORS, (
-                'django.core.context_processors.request',
-                'otree.context_processors.otree_context'
-            )
-        ),
 
         # SEO AND FOOTER
         'PAGE_FOOTER': page_footer,
@@ -138,8 +128,6 @@ def get_default_settings(initial_settings=None):
         # when it's present in otree-library
         # that most people downloaded
         'USE_L10N': True,
-
-        'WSGI_APPLICATION': 'otree.wsgi.application',
         'SECURE_PROXY_SSL_HEADER': ('HTTP_X_FORWARDED_PROTO', 'https'),
         'MTURK_HOST': 'mechanicalturk.amazonaws.com',
         'MTURK_SANDBOX_HOST': 'mechanicalturk.sandbox.amazonaws.com',
@@ -161,7 +149,7 @@ def get_default_settings(initial_settings=None):
              'default': {
                  "BACKEND": "otree.channels.asgi_redis.RedisChannelLayer",
                  "CONFIG": {
-                     "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
+                     "hosts": [REDIS_URL],
                  },
                  'ROUTING': initial_settings.get(
                      'CHANNEL_DEFAULT_ROUTING',
@@ -169,7 +157,8 @@ def get_default_settings(initial_settings=None):
              },
          },
 
-        'CELERY_APP': 'otree.celery.app:app',
+        # for convenience within oTree
+        'REDIS_URL': REDIS_URL,
 
         # since workers on Amazon MTurk can return the hit
         # we need extra participants created on the
@@ -177,8 +166,6 @@ def get_default_settings(initial_settings=None):
         # The following setting is ratio:
         # num_participants_server / num_participants_mturk
         'MTURK_NUM_PARTICIPANTS_MULT': 2,
-
-        'MIDDLEWARE_CLASSES': DEFAULT_MIDDLEWARE_CLASSES,
         'LOCALE_PATHS': [
             os.path.join(initial_settings.get('BASE_DIR', ''), 'locale')
         ]
@@ -219,11 +206,10 @@ def augment_settings(settings):
         'django.contrib.sessions',
         'django.contrib.messages',
         'django.contrib.staticfiles',
-        'otree.models_concrete',
+        #'otree.models_concrete',
         'otree.timeout',
         'channels',
-        'djcelery',
-        'kombu.transport.django',
+        'huey.contrib.djhuey',
         'rest_framework',
         'sslserver',
         'idmap',
@@ -292,15 +278,31 @@ def augment_settings(settings):
 
     augmented_settings = {
         'INSTALLED_APPS': new_installed_apps,
-        'TEMPLATE_DIRS': new_template_dirs,
+        'TEMPLATES': [{
+            'BACKEND': 'django.template.backends.django.DjangoTemplates',
+            'DIRS': new_template_dirs,
+            'OPTIONS': {
+                'debug': True,
+                'loaders': [
+                    ('django.template.loaders.cached.Loader', [
+                        'django.template.loaders.filesystem.Loader',
+                        'django.template.loaders.app_directories.Loader',
+                    ]),
+                ],
+                'context_processors': collapse_to_unique_list(
+                    global_settings.TEMPLATE_CONTEXT_PROCESSORS, (
+                        'django.core.context_processors.request',
+                    )
+                ),
+            },
+        }],
         'STATICFILES_DIRS': new_staticfiles_dirs,
         'MIDDLEWARE_CLASSES': new_middleware_classes,
         'NO_EXPERIMENT_APPS': no_experiment_apps,
         'INSTALLED_OTREE_APPS': all_otree_apps,
-        'BROKER_URL': 'django://',
         'MESSAGE_TAGS': {messages.ERROR: 'danger'},
-        'CELERY_ACCEPT_CONTENT': ['pickle', 'json', 'msgpack', 'yaml'],
         'LOGIN_REDIRECT_URL': 'sessions',
+
     }
 
     # CORS CONFS
@@ -311,6 +313,7 @@ def augment_settings(settings):
     })
 
     settings.setdefault('LANGUAGE_CODE', global_settings.LANGUAGE_CODE)
+
 
     CURRENCY_LOCALE = settings.get('CURRENCY_LOCALE', None)
     if not CURRENCY_LOCALE:
@@ -330,6 +333,23 @@ def augment_settings(settings):
 
     for k, v in overridable_settings.items():
         settings.setdefault(k, v)
+
+    redis_url = urlparse.urlparse(settings.get('REDIS_URL'))
+
+    settings['HUEY'] = {
+        'name': 'test-django',
+        'connection': {
+            'host': redis_url.hostname,
+            'port': redis_url.port,
+            'password': redis_url.password
+        },
+        'always_eager': False,
+        'result_store': False,
+        'consumer': {
+            'workers': 2,
+            'scheduler_interval': 5,
+        },
+    }
 
     # this guarantee that the test always run on memory
     if 'test' in sys.argv:
