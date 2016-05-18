@@ -82,18 +82,18 @@
     {% endif %}
 
     <!--
-    {% if not celery %}
+    {% if not huey %}
         <div class="alert alert-warning">
-            <strong>No Celery found</strong>
+            <strong>No timeout worker found</strong>
             <p>
             If your study has timeouts on pages (with <code>timeout_seconds</code>,
-            we recommend turning on Celery.
+            we recommend turning on the timeoutworker dyno.
             This will ensure that the page timeouts will be enforced even if a user closes their browser.
             </p>
             {% if heroku %}
-                <p>In your app dashboard, make sure your Celery worker dyno is turned on.</p>
+                <p>In your app dashboard, make sure your timeoutworker dyno is turned on.</p>
             {% else %}
-                <p>Make sure you are running the celery worker.</p>
+                <p>Make sure you are running the timeoutworker process.</p>
             {% endif %}
 
         </div>

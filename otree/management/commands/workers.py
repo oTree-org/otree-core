@@ -3,9 +3,8 @@ from honcho.manager import Manager
 import os
 import sys
 
-
 class Command(BaseCommand):
-    help = 'Will run celery and channels worker'
+    help = 'Will run channels workers'
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
@@ -23,7 +22,7 @@ class Command(BaseCommand):
         for i in range(options['num_workers']):
             manager.add_process(
                 'worker{}'.format(i),
-                'otree runchannelsworker',
+                'otree channelsworker',
                 quiet=False,
                 env=self.get_env(options))
 

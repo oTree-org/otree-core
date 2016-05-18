@@ -93,7 +93,6 @@ def get_default_settings(initial_settings=None):
         # set to True so that if there is an error in an {% include %}'d
         # template, it doesn't just fail silently. instead should raise
         # an error (and send through Sentry etc)
-        'TEMPLATE_DEBUG': True,
         'STATIC_ROOT': os.path.join(
             initial_settings.get('BASE_DIR', ''),
             '_static_root'),
@@ -160,12 +159,6 @@ def get_default_settings(initial_settings=None):
 
         # for convenience within oTree
         'REDIS_URL': REDIS_URL,
-        # celery settings
-        'BROKER_URL': REDIS_URL,
-        'CELERY_RESULT_BACKEND': REDIS_URL,
-        'CELERY_APP': 'otree.celery.app:app',
-        # otherwise get max conn error on heroku
-        'BROKER_POOL_LIMIT': 0,
 
         # since workers on Amazon MTurk can return the hit
         # we need extra participants created on the
@@ -289,6 +282,7 @@ def augment_settings(settings):
             'BACKEND': 'django.template.backends.django.DjangoTemplates',
             'DIRS': new_template_dirs,
             'OPTIONS': {
+                'debug': True,
                 'loaders': [
                     ('django.template.loaders.cached.Loader', [
                         'django.template.loaders.filesystem.Loader',
@@ -307,7 +301,6 @@ def augment_settings(settings):
         'NO_EXPERIMENT_APPS': no_experiment_apps,
         'INSTALLED_OTREE_APPS': all_otree_apps,
         'MESSAGE_TAGS': {messages.ERROR: 'danger'},
-        'CELERY_ACCEPT_CONTENT': ['pickle', 'json', 'msgpack', 'yaml'],
         'LOGIN_REDIRECT_URL': 'sessions',
 
     }
