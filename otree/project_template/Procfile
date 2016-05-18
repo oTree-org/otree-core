@@ -1,2 +1,2 @@
 web: python manage.py runweb
-worker: python manage.py runworkers
+worker: python manage.py workers

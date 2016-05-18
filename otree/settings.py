@@ -342,23 +342,14 @@ def augment_settings(settings):
         settings.setdefault(k, v)
 
     redis_url = urlparse.urlparse(settings.get('REDIS_URL'))
-    CACHES = {
-        "default": {
-            "BACKEND": "redis_cache.RedisCache",
-            "LOCATION": "{0}:{1}".format(redis_url.hostname, redis_url.port),
-            "OPTIONS": {
-                "PASSWORD": redis_url.password,
-                "DB": 0,
-            }
-        }
-    }
 
-    settings['CACHES'] = CACHES
-
-    from huey import RedisHuey
     settings['HUEY'] = {
         'name': 'test-django',
-        'connection': {'host': redis_url.hostname, 'port': redis_url.port, 'password': redis_url.password},
+        'connection': {
+            'host': redis_url.hostname,
+            'port': redis_url.port,
+            'password': redis_url.password
+        },
         'always_eager': False,
         'result_store': False,
         'consumer': {
