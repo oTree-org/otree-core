@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import collections
+import sys
 import threading
 import time
 import uuid
@@ -942,6 +943,7 @@ class ServerCheck(vanilla.TemplateView):
         sentry = regular_sentry or heroku_sentry
         auth_level = settings.AUTH_LEVEL in {'DEMO', 'STUDY'}
         heroku = self.app_is_on_heroku()
+        runserver = 'runserver' in sys.argv
 
         return {
             'sqlite': sqlite,
@@ -950,5 +952,6 @@ class ServerCheck(vanilla.TemplateView):
             'otree_version': otree_version,
             'sentry': sentry,
             'auth_level': auth_level,
-            'heroku': heroku
+            'heroku': heroku,
+            'runserver': runserver,
         }
