@@ -22,7 +22,7 @@ class Command(BaseCommand):
         for i in range(options['num_workers']):
             manager.add_process(
                 'worker{}'.format(i),
-                'otree channelsworker',
+                'otree runworker',
                 quiet=False,
                 env=self.get_env(options))
 

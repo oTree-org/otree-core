@@ -53,6 +53,19 @@
         </div>
     {% endif %}
 
+    {% if runserver %}
+        <div class="alert alert-danger">
+            <strong>You are using <code>runserver</code></strong>,
+            which is only suitable for local development.
+            When launching a real study, you should run a proper multi-process server.
+        </div>
+    {% else %}
+        <div class="alert alert-success">
+          You are using a server other than <code>runserver</code>.
+        </div>
+    {% endif %}
+
+
     {% if not sentry %}
         <div class="alert alert-danger">
             <strong>Sentry not configured</strong>
@@ -80,6 +93,7 @@
             Your app's <code>AUTH_LEVEL</code> is <code>{{ auth_level }}</code>.
         </div>
     {% endif %}
+
 
     <!--
     {% if not huey %}

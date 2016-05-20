@@ -31,12 +31,13 @@ import otree
 import string
 import errno
 
+# set to False if using runserver
+USE_REDIS = True
 
 if sys.version_info[0] == 2:
     import unicodecsv as csv
 else:
     import csv
-
 
 def add_params_to_url(url, params):
     url_parts = list(urllib.parse.urlparse(url))

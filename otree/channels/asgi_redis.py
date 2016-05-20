@@ -12,8 +12,8 @@ class RedisChannelLayer(asgi_redis.RedisChannelLayer):
             return super(RedisChannelLayer, self).receive_many(channels, block)
         except redis.exceptions.ConnectionError as exception:
             msg = (
-                "oTree now requires Redis to be installed "
-                "and running."
+                "oTree 0.5+ requires Redis to be installed "
+                "and running. See http://otree.readthedocs.io/en/latest/v0.5.html ."
             )
             six.reraise(
                 type(exception),
@@ -25,8 +25,8 @@ class RedisChannelLayer(asgi_redis.RedisChannelLayer):
             return super(RedisChannelLayer, self).new_channel(pattern)
         except redis.exceptions.ConnectionError as exception:
             msg = (
-                "oTree now requires Redis to be installed "
-                "and running."
+                "oTree 0.5+ requires Redis to be installed "
+                "and running. See http://otree.readthedocs.io/en/latest/v0.5.html ."
             )
             six.reraise(
                 type(exception),

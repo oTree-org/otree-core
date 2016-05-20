@@ -11,9 +11,14 @@ with open(procfile_path, 'r') as procfile:
 
 DEPRECATION_STRING = '''
 oTree is using a new server. You should start it with a different command.
-You should change your Procfile to the below:
+In your project's root directory, find the file called 'Procfile',
+and change its contents to the following:
 
 {}
+
+If using Heroku, you should also install the Heroku Redis add-on.
+
+More information here: http://otree.readthedocs.io/en/latest/v0.5.html
 '''.format(procfile_contents)
 
 print(DEPRECATION_STRING)
