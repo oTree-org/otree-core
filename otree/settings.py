@@ -354,6 +354,7 @@ def augment_settings(settings):
         'consumer': {
             'workers': 2,
             'scheduler_interval': 5,
+            'loglevel': 'warning',
         },
     }
 
