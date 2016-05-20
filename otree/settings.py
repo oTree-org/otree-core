@@ -146,16 +146,22 @@ def get_default_settings(initial_settings=None):
         # },
 
         'CHANNEL_LAYERS': {
-             'default': {
-                 "BACKEND": "otree.channels.asgi_redis.RedisChannelLayer",
-                 "CONFIG": {
-                     "hosts": [REDIS_URL],
-                 },
-                 'ROUTING': initial_settings.get(
-                     'CHANNEL_DEFAULT_ROUTING',
-                     'otree.channels.default_routing.channel_routing'),
-             },
-         },
+            'default': {
+                "BACKEND": "otree.channels.asgi_redis.RedisChannelLayer",
+                "CONFIG": {
+                    "hosts": [REDIS_URL],
+                },
+                'ROUTING': initial_settings.get(
+                    'CHANNEL_DEFAULT_ROUTING',
+                    'otree.channels.default_routing.channel_routing'),
+            },
+            'inmemory': {
+                "BACKEND": "asgiref.inmemory.ChannelLayer",
+                'ROUTING': initial_settings.get(
+                    'CHANNEL_DEFAULT_ROUTING',
+                    'otree.channels.default_routing.channel_routing'),
+            },
+        },
 
         # for convenience within oTree
         'REDIS_URL': REDIS_URL,
@@ -282,7 +288,7 @@ def augment_settings(settings):
             'BACKEND': 'django.template.backends.django.DjangoTemplates',
             'DIRS': new_template_dirs,
             'OPTIONS': {
-                'debug': True,
+                'debug': False,
                 'loaders': [
                     ('django.template.loaders.cached.Loader', [
                         'django.template.loaders.filesystem.Loader',

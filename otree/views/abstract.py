@@ -699,15 +699,14 @@ class InGameWaitPageMixin(object):
 
             self.player = player
 
-
-            # 2015-07-27:
-            #   why not check if the next page has_timeout?
-
-            otree.timeout.tasks.ensure_pages_visited.schedule(
-                kwargs={
-                    'participant_pk_set': participant_pk_set,
-                    'wait_page_index': self._index_in_pages,
-                }, delay=10)
+            if otree.common_internal.USE_REDIS:
+                # 2015-07-27:
+                #   why not check if the next page has_timeout?
+                otree.timeout.tasks.ensure_pages_visited.schedule(
+                    kwargs={
+                        'participant_pk_set': participant_pk_set,
+                        'wait_page_index': self._index_in_pages,
+                    }, delay=10)
 
 
             completion.after_all_players_arrive_run = True
@@ -880,12 +879,13 @@ class FormPageMixin(object):
             return self._redirect_to_page_the_user_should_be_on()
 
         self.participant._current_form_page_url = self.request.path
-        if self.participant._is_auto_playing:
-            otree.timeout.tasks.submit_expired_url.schedule(
-                (self.request.path,), delay=2)  # 2 seconds
-        elif self.has_timeout():
-            otree.timeout.tasks.submit_expired_url.schedule(
-                (self.request.path,), delay=self.timeout_seconds)
+        if otree.common_internal.USE_REDIS:
+            if self.participant._is_auto_playing:
+                otree.timeout.tasks.submit_expired_url.schedule(
+                    (self.request.path,), delay=2)  # 2 seconds
+            elif self.has_timeout():
+                otree.timeout.tasks.submit_expired_url.schedule(
+                    (self.request.path,), delay=self.timeout_seconds)
 
         return super(FormPageMixin, self).get(request, *args, **kwargs)
 

@@ -28,8 +28,8 @@ msgstr ""
 #: .\common.py:100
 msgid "{} point"
 msgid_plural "{} points"
-msgstr[0] "punt"
-msgstr[1] "punten"
+msgstr[0] "{} punt"
+msgstr[1] "{} punten"
 
 #. Translators: for required form fields
 #: .\constants_internal.py:73

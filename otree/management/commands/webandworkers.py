@@ -125,7 +125,7 @@ class Command(RunserverCommand):
         for i in range(3):
             manager.add_process(
                 'worker{}'.format(i),
-                'otree channelsworker',
+                'otree runworker',
                 env=self.get_env(options))
         manager.loop()
 
