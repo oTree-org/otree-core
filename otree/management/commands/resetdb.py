@@ -31,7 +31,7 @@ logger = logging.getLogger('otree')
 # =============================================================================
 
 RESETDB_DROP_TABLES = {
-    "django.db.backends.sqlite3": 'DROP TABLE "{table}";',
+    "django.db.backends.sqlite3": 'DROP TABLE {table};',
     "django.db.backends.oracle": 'DROP TABLE "{table}" CASCADE CONSTRAINTS;',
     "django.db.backends.postgresql": 'DROP TABLE "{table}" CASCADE;',
     "django.db.backends.mysql": (
