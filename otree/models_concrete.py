@@ -84,9 +84,17 @@ class StubModel(models.Model):
 
     pass
 
+
 class RoomSession(models.Model):
     room_name = models.CharField(unique=True)
     session_pk = models.PositiveIntegerField()
 
+
 class FailedSessionCreation(models.Model):
     pre_create_id = models.CharField(max_length=100, db_index=True)
+
+
+class ParticipantVisit(models.Model):
+    room_name = models.CharField()
+    participant_id = models.CharField(unique=True)
+    duplicate_connection_count = models.PositiveIntegerField()

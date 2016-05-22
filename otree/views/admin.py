@@ -450,6 +450,9 @@ class RoomWithoutSession(CreateSession):
         # - override start links page (so need to store on the session that it's in this room? hm, no)
         #
 
+    def socket_url(self):
+        return '/room_without_session/{}/'.format(self.room.name)
+
 class RoomWithSession(vanilla.TemplateView):
     template_name = 'otree/admin/RoomWithSession.html'
     room = None

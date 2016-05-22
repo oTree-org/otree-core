@@ -238,7 +238,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
 
     @classmethod
     def url_pattern(cls):
-        return r'^{}/$'.format(cls.__name__)
+        return r'^AssignVisitorToRoom/$'
 
     def dispatch(self, request, *args, **kwargs):
 
@@ -254,6 +254,8 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
         participant_label = self.request.GET.get(
             'participant_label'
         )
+        # If a hash is needed then it will be added, else pass it as an empty string
+        hash = ''
         if room.has_participant_labels():
             if not participant_label:
                 if not room.use_secure_urls:
@@ -269,7 +271,12 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
 
         session = room.session
         if session is None:
-            return self._get_wait_page()
+            params = ','.join([
+                self.room_name,
+                participant_label,
+                hash
+            ])
+            return HttpResponseRedirect(reverse('wait_for_session_in_room', kwargs={'params': params}))
 
         assign_new = not room.has_participant_labels()
         if not assign_new:
@@ -303,8 +310,26 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
     def get_context_data(self, **kwargs):
         return {'room': self.request.GET.get('room')}
 
+
+class WaitForSessionPage(vanilla.TemplateView):
+    template_name = 'otree/WaitForSessionPage.html'
+
+    @classmethod
+    def url_name(cls):
+        return 'wait_for_session_in_room'
+
+    @classmethod
+    def url_pattern(cls):
+        return r'^wait_for_session_in_room/(?P<params>.+)/$'
+
+    def dispatch(self, request, *args, **kwargs):
+        self._params = kwargs['params']
+        return super(vanilla.TemplateView, self).dispatch(
+            request, *args, **kwargs
+        )
+
     def socket_url(self):
-        return '/wait_for_session_in_room/{}/'.format(self.room_name)
+        return '/wait_for_session_in_room/{}/'.format(self._params)
 
 class AdvanceSession(vanilla.View):
 
@@ -374,3 +399,4 @@ class DeleteSessions(vanilla.View):
             )
             session.delete()
         return HttpResponseRedirect(reverse('sessions'))
+

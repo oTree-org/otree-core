@@ -17,7 +17,7 @@ channel_routing = [
         path=r'^/auto_advance/(?P<params>[\w,]+)/$'),
     route(
         'websocket.disconnect',
-             consumers.disconnect_auto_advance,
+        consumers.disconnect_auto_advance,
         path=r'^/auto_advance/(?P<params>[\w,]+)/$'),
     route('websocket.connect',
           consumers.connect_wait_for_session,
@@ -26,5 +26,17 @@ channel_routing = [
           consumers.disconnect_wait_for_session,
           path=r'^/wait_for_session/(?P<pre_create_id>\w+)/$'),
     route('otree.create_session',
-          consumers.create_session)
+          consumers.create_session),
+    route('websocket.connect',
+          consumers.connect_participant_lobby,
+          path=r'^/wait_for_session_in_room/(?P<params>[\w,]+)/$'),
+    route('websocket.disconnect',
+          consumers.disconnect_participant_lobby,
+          path=r'^/wait_for_session_in_room/(?P<params>[\w,]+)/$'),
+    route('websocket.connect',
+          consumers.connect_admin_lobby,
+          path=r'^/room_without_session/(?P<room>\w+)/$'),
+    route('websocket.disconnect',
+          consumers.disconnect_admin_lobby,
+          path=r'^/room_without_session/(?P<room>\w+)/$')
 ]

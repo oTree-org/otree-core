@@ -14,7 +14,7 @@ import json
 import otree.session
 from otree.views.demo import get_session
 from otree.models import Session
-from otree.models_concrete import FailedSessionCreation
+from otree.models_concrete import FailedSessionCreation, ParticipantVisit
 
 
 if sys.version_info[0] == 2:
@@ -162,24 +162,61 @@ def disconnect_wait_for_demo_session(message, session_config_name):
     group = Group(channels_create_demo_session_group_name(session_config_name))
     group.discard(message.reply_channel)
 
-'''
-def connect_admin_lobby(message):
 
-    Group('admin_lobby').add(message.)
-    ids = ParticipantVisit.objects.all()
-    Group('admin_lobby').send(ids)
+def connect_admin_lobby(message, room):
+    Group('admin_lobby').add(message.reply_channel)
+    get_and_send_participants(room)
 
 
-def connect_participant_lobby(message):
-    group = Group('room-{}-participants')
-    group.add(message.reply_channel)
-    ParticipantVisit(participant_id).save()
-    Group('admin_lobby').send({'participant': participant_id})
+def disconnect_admin_lobby(message, room):
+    Group('admin_lobby').discard(message.reply_channel)
 
-def disconnect_participant_lobby(message):
-    group = Group('room-{}-participants')
-    group.discard(message.reply_channel)
-    Group('admin_lobby').send({'participant': participant_id, 'action': 'Leaving'})
-    ParticipantVisit(participant_id).delete()
 
-'''
+def connect_participant_lobby(message, params):
+    args = params.split(',')
+    room_name = args[0]
+    participant_label = args[1]
+
+    # Check that a participant hasn't opened multiple connections
+    try:
+        participant = ParticipantVisit.objects.get(participant_id=participant_label, room_name=room_name)
+        participant.duplicate_connection_count += 1
+        participant.save()
+
+        group = Group('error')
+        group.add(message.reply_channel)
+        group.send({'text': json.dumps({
+            'status': 'error_duplicate'
+        })})
+        group.discard(message.reply_channel)
+
+    except ParticipantVisit.DoesNotExist:
+        # Add the participant if they are new
+        ParticipantVisit(participant_id=participant_label, room_name=room_name, duplicate_connection_count=0).save()
+
+        # Add this participant to the room lobby and update the admin list
+        Group('room-{}-participants'.format(room_name)).add(message.reply_channel)
+        get_and_send_participants(room_name)
+
+
+def disconnect_participant_lobby(message, params):
+    args = params.split(',')
+    room_name = args[0]
+    participant_label = args[1]
+
+    participant = ParticipantVisit.objects.get(participant_id=participant_label, room_name=room_name)
+    if participant.duplicate_connection_count > 0:
+        participant.duplicate_connection_count -= 1
+        participant.save()
+    else:
+        participant.delete()
+        get_and_send_participants(room_name)
+        Group('room-{}-participants'.format(room_name)).discard(message.reply_channel)
+
+
+def get_and_send_participants(room):
+    participant_list = list(ParticipantVisit.objects.filter(room_name=room).values_list('participant_id', flat=True))
+    Group('admin_lobby').send({'text': json.dumps({
+        'status': 'update_list',
+        'participants': participant_list
+    })})
