@@ -22,3 +22,4 @@ class Command(startapp.Command):
             check_pypi_for_updates()
         except:
             pass
+        print('Created app folder.')

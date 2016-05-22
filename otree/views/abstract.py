@@ -61,7 +61,7 @@ NO_PARTICIPANTS_LEFT_MSG = (
 DebugTable = collections.namedtuple('DebugTable', ['title', 'rows'])
 
 @contextlib.contextmanager
-def lock_on_this_code_path():
+def lock_on_this_code_path(recheck_interval=0.1):
     TIMEOUT = 10
     start_time = time.time()
     while time.time() - start_time < TIMEOUT:
@@ -69,7 +69,7 @@ def lock_on_this_code_path():
             locked=False
         ).update(locked=True)
         if not updated_locks:
-            time.sleep(0.1)
+            time.sleep(recheck_interval)
         else:
             try:
                 yield
@@ -445,7 +445,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                         unvisited_participants = page._tally_unvisited()
                     # don't count myself; i only need to visit this page
                     # if everybody else already passed it
-                    unvisited_participants.discard(self.participant.code)
+                    unvisited_participants.discard(self.participant.id)
                     if not unvisited_participants:
                         # if it's the last person
                         # because they need to complete the wait page
@@ -774,29 +774,37 @@ class InGameWaitPageMixin(object):
     def _tally_unvisited(self):
         """side effect: set _waiting_for_ids"""
 
-        players_for_this_page = self._group_or_subsession.player_set.all()
-
-        participants_for_this_page = set(
-            p.participant for p in players_for_this_page
+        participant_ids = set(
+            self._group_or_subsession.player_set.values_list(
+                'participant_id',
+                flat=True
+            )
         )
 
-        unvisited = set(
-            p for p in participants_for_this_page if
-            p._index_in_pages < self._index_in_pages
-        )
+        participant_data = Participant.objects.filter(
+                id__in=participant_ids
+            ).values('id', 'id_in_session', '_index_in_pages')
 
-        visited = participants_for_this_page - unvisited
+        visited = []
+        unvisited = []
+        for p in participant_data:
+            if p['_index_in_pages'] < self._index_in_pages:
+                unvisited.append(p)
+            else:
+                visited.append(p)
 
         if 1 <= len(unvisited) <= 3:
 
-            waiting_for_ids = ', '.join(
-                'P{}'.format(p.id_in_session)
-                for p in unvisited)
+            unvisited_description = ', '.join(
+                'P{}'.format(p['id_in_session']) for p in unvisited
+            )
 
-            for p in visited:
-                p._waiting_for_ids = waiting_for_ids
+            visited_ids = [p['id'] for p in visited]
+            Participant.objects.filter(id__in=visited_ids).update(
+                _waiting_for_ids = unvisited_description
+            )
 
-        return {p.code for p in unvisited}
+        return {p['id'] for p in unvisited}
 
 
     def is_displayed(self):

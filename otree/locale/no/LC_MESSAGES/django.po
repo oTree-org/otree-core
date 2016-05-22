@@ -25,11 +25,12 @@ msgstr ""
 #. Explanation at http://bit.ly/1IurMu7
 #. In most languages, msgstr[0] is singular,
 #. and msgstr[1] is plural
+#. Don't delete the {}! That is where the number will go.
 #: .\common.py:100
 msgid "{} point"
 msgid_plural "{} points"
-msgstr[0] "Poeng"
-msgstr[1] "Poeng"
+msgstr[0] "{} poeng"
+msgstr[1] "{} poeng"
 
 #. Translators: for required form fields
 #: .\constants_internal.py:73
