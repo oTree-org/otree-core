@@ -119,10 +119,6 @@ class Session(ModelWithVars):
     # whether someone already viewed this session's demo links
     demo_already_used = models.BooleanField(default=False, db_index=True)
 
-    # indicates whether a session has been fully created (not only has the
-    # model itself been created, but also the other models in the hierarchy)
-    ready = models.BooleanField(default=False)
-
     _pre_create_id = models.CharField(max_length=300, db_index=True, null=True)
 
     def __unicode__(self):
