@@ -139,12 +139,6 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         # we need to wait for that to complete.
         logger.info("Adding bots on session '{}'".format(self.session_name))
 
-        while True:
-            sssn = otree.models.Session.objects.get(id=sssn.pk)
-            if sssn._ready_to_play:
-                break
-            time.sleep(1)
-
         msg = "'GET' over first page of all '{}' participants"
         logger.info(msg.format(self.session_name))
 

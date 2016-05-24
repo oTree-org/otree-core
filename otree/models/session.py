@@ -101,8 +101,6 @@ class Session(ModelWithVars):
 
     comment = models.TextField(blank=True)
 
-    _ready_to_play = models.BooleanField(default=False)
-
     _anonymous_code = models.CharField(
         default=random_chars_10,
         max_length=8,
@@ -115,9 +113,6 @@ class Session(ModelWithVars):
         db_index=True,
         max_length=20, null=True,
         doc="whether it's a test session, demo session, etc.")
-
-    # whether someone already viewed this session's demo links
-    demo_already_used = models.BooleanField(default=False, db_index=True)
 
     _pre_create_id = models.CharField(max_length=300, db_index=True, null=True)
 
@@ -170,7 +165,6 @@ class Session(ModelWithVars):
             subsession._create_groups()
             subsession._initialize()
             subsession.save()
-        self._ready_to_play = True
         # assert self is subsession.session
         self.save()
 
