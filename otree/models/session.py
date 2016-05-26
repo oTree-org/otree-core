@@ -101,8 +101,6 @@ class Session(ModelWithVars):
 
     comment = models.TextField(blank=True)
 
-    _ready_to_play = models.BooleanField(default=False)
-
     _anonymous_code = models.CharField(
         default=random_chars_10,
         max_length=8,
@@ -115,13 +113,6 @@ class Session(ModelWithVars):
         db_index=True,
         max_length=20, null=True,
         doc="whether it's a test session, demo session, etc.")
-
-    # whether someone already viewed this session's demo links
-    demo_already_used = models.BooleanField(default=False, db_index=True)
-
-    # indicates whether a session has been fully created (not only has the
-    # model itself been created, but also the other models in the hierarchy)
-    ready = models.BooleanField(default=False)
 
     _pre_create_id = models.CharField(max_length=300, db_index=True, null=True)
 
@@ -174,7 +165,6 @@ class Session(ModelWithVars):
             subsession._create_groups()
             subsession._initialize()
             subsession.save()
-        self._ready_to_play = True
         # assert self is subsession.session
         self.save()
 
@@ -226,19 +216,18 @@ class Session(ModelWithVars):
         ]
 
         for p in last_place_participants:
-            if not p._current_form_page_url:
-                # what if first page is wait page?
-                # that shouldn't happen, because then they must be
-                # waiting for some other players who are even further back
-                raise
+            # what if first page is wait page?
+            # that shouldn't happen, because then they must be
+            # waiting for some other players who are even further back
+            assert p._current_form_page_url
             try:
                 resp = client.post(
                     p._current_form_page_url,
                     data={constants_internal.auto_submit: True}, follow=True
                 )
-            except Exception as e:
+            except:
                 logging.exception("Failed to advance participants.")
-                raise e
+                raise
 
             assert resp.status_code < 400
 

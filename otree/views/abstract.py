@@ -693,9 +693,9 @@ class InGameWaitPageMixin(object):
                 # for the last player.
                 if is_displayed:
                     self.after_all_players_arrive()
-            except Exception as e:
+            except:
                 completion.delete()
-                raise e
+                raise
 
             self.player = player
 

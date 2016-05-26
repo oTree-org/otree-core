@@ -53,6 +53,7 @@ class ParticipantToPlayerLookup(models.Model):
     class Meta:
         app_label = "otree"
         index_together = ['participant_pk', 'page_index']
+        unique_together = ['participant_pk', 'page_index']
 
     participant_pk = models.PositiveIntegerField()
     page_index = models.PositiveIntegerField()

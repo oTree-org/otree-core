@@ -12,7 +12,6 @@ from otree.common_internal import (
 import sys
 import json
 import otree.session
-from otree.views.demo import get_session
 from otree.models import Session
 from otree.models_concrete import FailedSessionCreation, ParticipantVisit
 
@@ -105,14 +104,14 @@ def create_session(message):
     kwargs = message['kwargs']
     try:
         otree.session.create_session(**kwargs)
-    except Exception as e:
+    except:
         group.send(
             {'text': json.dumps(
                 # doesn't get shown because not yet localized
                 {'error': 'Failed to create session. Check the server logs.'})}
         )
         FailedSessionCreation(pre_create_id=kwargs['_pre_create_id']).save()
-        raise e
+        raise
 
     group.send(
         {'text': json.dumps(

@@ -67,22 +67,6 @@ class DemoIndex(vanilla.TemplateView):
         return context
 
 
-
-def get_session(session_config_name):
-
-    sessions = Session.objects.filter(
-        special_category=constants.session_special_category_demo,
-        demo_already_used=False,
-        ready=True,
-    )
-    sessions = [
-        s for s in sessions
-        if s.config['name'] == session_config_name
-    ]
-    if len(sessions):
-        return sessions[0]
-
-
 class CreateDemoSession(vanilla.GenericView):
 
     @classmethod

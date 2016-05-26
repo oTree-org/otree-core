@@ -227,7 +227,6 @@ def create_session(session_config_name, label='', num_participants=None,
     session.build_participant_to_player_lookups()
     if room is not None:
         room.session = session
-    session.ready = True
     session.save()
     otree.db.idmap.deactivate_cache()
 
