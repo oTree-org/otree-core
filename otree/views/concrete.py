@@ -11,7 +11,7 @@ import time
 import django.utils.timezone
 from django.core.urlresolvers import reverse
 from django.conf import settings
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render_to_response
 from django.template.response import TemplateResponse
 from django.contrib import messages
 from django.http import (
@@ -26,7 +26,7 @@ from boto.mturk.connection import MTurkRequestError
 import otree.constants_internal as constants
 import otree.models.session
 from otree.models.participant import Participant
-from otree.common_internal import make_hash
+from otree.common_internal import make_hash, add_params_to_url
 import otree.views.admin
 from otree.views.mturk import MTurkConnection
 import otree.common_internal
@@ -119,7 +119,7 @@ class MTurkLandingPage(vanilla.TemplateView):
         )
         if assignment_id and assignment_id != 'ASSIGNMENT_ID_NOT_AVAILABLE':
             url_start = reverse('mturk_start', args=(self.session.code,))
-            url_start = otree.common_internal.add_params_to_url(url_start, {
+            url_start = add_params_to_url(url_start, {
                 'assignmentId': self.request.GET['assignmentId'],
                 'workerId': self.request.GET['workerId']})
             return HttpResponseRedirect(url_start)
@@ -232,6 +232,8 @@ class JoinSessionAnonymously(vanilla.View):
 class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
     template_name = "otree/InputParticipantLabel.html"
 
+    hash = None
+
     @classmethod
     def url_name(cls):
         return 'assign_visitor_to_room'
@@ -241,49 +243,49 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
         return r'^AssignVisitorToRoom/$'
 
     def dispatch(self, request, *args, **kwargs):
-
-        room_name = self.request.GET.get(
+        self.room_name = self.request.GET.get(
             'room'
         )
-        self.room_name = room_name
         try:
-            room = ROOM_DICT[room_name]
+            room = ROOM_DICT[self.room_name]
         except KeyError:
             return HttpResponseNotFound('Invalid room specified in url')
 
-        participant_label = self.request.GET.get(
+        self.participant_label = self.request.GET.get(
             'participant_label'
         )
+
         # If a hash is needed then it will be added, else pass it as an empty string
         hash = ''
         if room.has_participant_labels():
-            if not participant_label:
+            if not self.participant_label:
                 if not room.use_secure_urls:
                     return super(AssignVisitorToRoom, self).get(args, kwargs)
 
-            if participant_label not in room.get_participant_labels():
+            if self.participant_label not in room.get_participant_labels():
                 return HttpResponseNotFound('Participant is not expected in this room. Please contact the session supervisor.')
 
             if room.use_secure_urls:
                 hash = self.request.GET.get('hash')
-                if hash != make_hash(participant_label):
+                self.hash = hash
+                if hash != make_hash(self.participant_label):
                     return HttpResponseNotFound('Invalid hash parameter.')
 
         session = room.session
         if session is None:
-            params = ','.join([
+            self._params = ','.join([
                 self.room_name,
-                participant_label,
+                self.participant_label,
                 hash
             ])
-            return HttpResponseRedirect(reverse('wait_for_session_in_room', kwargs={'params': params}))
+            return render_to_response("otree/WaitForSessionPage.html", {'view': self})
 
         assign_new = not room.has_participant_labels()
         if not assign_new:
             try:
                 participant = Participant.objects.get(
                     session=session,
-                    label=participant_label
+                    label=self.participant_label
                 )
             except Participant.DoesNotExist:
                 assign_new = True
@@ -299,7 +301,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
                 except IndexError:
                     return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
 
-                participant.label = participant_label
+                participant.label = self.participant_label
                 # 2014-10-17: needs to be here even if it's also set in
                 # the next view to prevent race conditions
                 participant.visited = True
@@ -310,26 +312,17 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
     def get_context_data(self, **kwargs):
         return {'room': self.request.GET.get('room')}
 
-
-class WaitForSessionPage(vanilla.TemplateView):
-    template_name = 'otree/WaitForSessionPage.html'
-
-    @classmethod
-    def url_name(cls):
-        return 'wait_for_session_in_room'
-
-    @classmethod
-    def url_pattern(cls):
-        return r'^wait_for_session_in_room/(?P<params>.+)/$'
-
-    def dispatch(self, request, *args, **kwargs):
-        self._params = kwargs['params']
-        return super(vanilla.TemplateView, self).dispatch(
-            request, *args, **kwargs
-        )
-
     def socket_url(self):
         return '/wait_for_session_in_room/{}/'.format(self._params)
+
+    def absolute_redirect_url(self):
+        url = reverse('assign_visitor_to_room')
+        params = {'room': self.room_name, 'participant_label': self.participant_label}
+        if self.hash:
+            params['hash'] = self.hash
+        url = add_params_to_url(url, params)
+        return url
+
 
 class AdvanceSession(vanilla.View):
 

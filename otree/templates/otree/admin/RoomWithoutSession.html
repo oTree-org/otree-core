@@ -7,15 +7,19 @@
 
 {% block content %}
 
-    {% include "otree/includes/RoomParticipantLinks.html" %}
-
     <h3>Create a new session</h3>
 
     {% include "otree/includes/CreateSessionForm.html" %}
 
     <hr/>
-    <h4 id="participant_count">Participants Waiting (0)</h4>
-    <ul id="participant_list"></ul>
+    <h4 id="participants_waiting_count">Participants Ready (0)</h4>
+    <ul id="participants_waiting_list"></ul>
+    <h4 id="pacticipants_not_waiting_count">Participants Not Present (0)</h4>
+    <ul id="participants_not_waiting_list"></ul>
+
+    <hr/>
+
+    {% include "otree/includes/RoomParticipantLinks.html" %}
 
 {% endblock %}
 
@@ -46,7 +50,6 @@ $(document).ready(function () {
 
             // Allow for future messages of different kinds
             var status = data["status"];
-            document.getElementById("participant_count").innerHTML = status;
             if (status == "update_list") {
                 // Replace the existing list of participants with our new list
                 var participants = data["participants"];
@@ -63,7 +66,7 @@ $(document).ready(function () {
 
     function replaceUL(array) {
         // Create the list element:
-        var list = document.getElementById("participant_list");
+        var list = document.getElementById("participants_waiting_list");
         while (list.firstChild) {
             list.removeChild(list.firstChild);
         }
@@ -79,7 +82,7 @@ $(document).ready(function () {
             list.appendChild(item);
         }
 
-        document.getElementById("participant_count").innerHTML = "Participants Waiting (" + list.childElementCount + ")";
+        document.getElementById("participants_waiting_count").innerHTML = "Participants Ready (" + list.childElementCount + ")";
     }
 
 });

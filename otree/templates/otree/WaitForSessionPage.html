@@ -31,19 +31,18 @@ $(document).ready(function () {
 
             var status = data["status"];
             if (status == "error_duplicate") {
-                console.log('Duplicate participant detected');
                 document.getElementById("welcome_message").innerHTML = "Only one session is allowed per participant.";
                 socket.close();
             } else if (status == "session_ready") {
                 window.location.href = "{{ view.absolute_redirect_url|safe }}"
             }
-        }
+        };
         socket.onopen = function() {
             console.log('WebSocket connected');
-        }
+        };
         socket.onclose = function() {
             console.log('WebSocket disconnected');
-        }
+        };
     }
 
 });

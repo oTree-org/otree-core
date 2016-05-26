@@ -98,7 +98,6 @@ def disconnect_auto_advance(message, params):
 
 
 def create_session(message):
-
     group = Group(message['channels_group_name'])
 
     kwargs = message['kwargs']
@@ -116,7 +115,13 @@ def create_session(message):
     group.send(
         {'text': json.dumps(
             {'status': 'ready'})}
-)
+    )
+
+    room_name = kwargs['room'].name
+    Group('room-{}-participants'.format(room_name)).send(
+        {'text': json.dumps(
+            {'status': 'session_ready'})}
+    )
 
 
 def connect_wait_for_session(message, pre_create_id):
@@ -145,6 +150,7 @@ def disconnect_wait_for_session(message, pre_create_id):
     group.discard(message.reply_channel)
 
 
+'''
 def connect_wait_for_demo_session(message, session_config_name):
     group = Group(channels_create_demo_session_group_name(session_config_name))
     group.add(message.reply_channel)
@@ -160,15 +166,16 @@ def connect_wait_for_demo_session(message, session_config_name):
 def disconnect_wait_for_demo_session(message, session_config_name):
     group = Group(channels_create_demo_session_group_name(session_config_name))
     group.discard(message.reply_channel)
+'''
 
 
 def connect_admin_lobby(message, room):
-    Group('admin_lobby').add(message.reply_channel)
+    Group('admin-lobby-{}'.format(room)).add(message.reply_channel)
     get_and_send_participants(room)
 
 
 def disconnect_admin_lobby(message, room):
-    Group('admin_lobby').discard(message.reply_channel)
+    Group('admin-lobby-{}'.format(room)).discard(message.reply_channel)
 
 
 def connect_participant_lobby(message, params):
@@ -176,26 +183,11 @@ def connect_participant_lobby(message, params):
     room_name = args[0]
     participant_label = args[1]
 
-    # Check that a participant hasn't opened multiple connections
-    try:
-        participant = ParticipantVisit.objects.get(participant_id=participant_label, room_name=room_name)
-        participant.duplicate_connection_count += 1
-        participant.save()
+    ParticipantVisit(participant_id=participant_label, room_name=room_name).save()
 
-        group = Group('error')
-        group.add(message.reply_channel)
-        group.send({'text': json.dumps({
-            'status': 'error_duplicate'
-        })})
-        group.discard(message.reply_channel)
-
-    except ParticipantVisit.DoesNotExist:
-        # Add the participant if they are new
-        ParticipantVisit(participant_id=participant_label, room_name=room_name, duplicate_connection_count=0).save()
-
-        # Add this participant to the room lobby and update the admin list
-        Group('room-{}-participants'.format(room_name)).add(message.reply_channel)
-        get_and_send_participants(room_name)
+    # Add this participant to the room lobby and update the admin list
+    Group('room-{}-participants'.format(room_name)).add(message.reply_channel)
+    get_and_send_participants(room_name)
 
 
 def disconnect_participant_lobby(message, params):
@@ -203,19 +195,14 @@ def disconnect_participant_lobby(message, params):
     room_name = args[0]
     participant_label = args[1]
 
-    participant = ParticipantVisit.objects.get(participant_id=participant_label, room_name=room_name)
-    if participant.duplicate_connection_count > 0:
-        participant.duplicate_connection_count -= 1
-        participant.save()
-    else:
-        participant.delete()
-        get_and_send_participants(room_name)
-        Group('room-{}-participants'.format(room_name)).discard(message.reply_channel)
+    ParticipantVisit.objects.filter(participant_id=participant_label, room_name=room_name)[0].delete()
+    get_and_send_participants(room_name)
+    Group('room-{}-participants'.format(room_name)).discard(message.reply_channel)
 
 
 def get_and_send_participants(room):
-    participant_list = list(ParticipantVisit.objects.filter(room_name=room).values_list('participant_id', flat=True))
-    Group('admin_lobby').send({'text': json.dumps({
+    participant_list = list(ParticipantVisit.objects.filter(room_name=room).distinct().values_list('participant_id', flat=True))
+    Group('admin-lobby-{}'.format(room)).send({'text': json.dumps({
         'status': 'update_list',
         'participants': participant_list
     })})

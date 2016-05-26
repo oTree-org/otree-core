@@ -97,5 +97,4 @@ class FailedSessionCreation(models.Model):
 
 class ParticipantVisit(models.Model):
     room_name = models.CharField()
-    participant_id = models.CharField(unique=True)
-    duplicate_connection_count = models.PositiveIntegerField()
+    participant_id = models.CharField()
