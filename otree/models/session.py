@@ -216,19 +216,18 @@ class Session(ModelWithVars):
         ]
 
         for p in last_place_participants:
-            if not p._current_form_page_url:
-                # what if first page is wait page?
-                # that shouldn't happen, because then they must be
-                # waiting for some other players who are even further back
-                raise
+            # what if first page is wait page?
+            # that shouldn't happen, because then they must be
+            # waiting for some other players who are even further back
+            assert p._current_form_page_url
             try:
                 resp = client.post(
                     p._current_form_page_url,
                     data={constants_internal.auto_submit: True}, follow=True
                 )
-            except Exception as e:
+            except:
                 logging.exception("Failed to advance participants.")
-                raise e
+                raise
 
             assert resp.status_code < 400
 
