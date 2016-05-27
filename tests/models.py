@@ -54,7 +54,6 @@ class FormFieldModel(otree.models.BaseGroup):
     currency = models.CurrencyField()
     currency_choice = models.CurrencyField(
         choices=[('0.01', '0.01'), ('1.20', '1.20')])
-    random_char = models.RandomCharField()
 
     sent_amount = models.CurrencyField(choices=currency_range(0, 0.75, 0.05))
     slider_widget = models.IntegerField(widget=widgets.SliderInput())

@@ -11,9 +11,12 @@ import logging
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
-from django.db import connections
+from django.db import connections, transaction
+from django.db.migrations.loader import MigrationLoader
 
 import six
+from otree.common_internal import add_empty_migrations_to_all_apps
+import mock
 
 
 # =============================================================================
@@ -29,15 +32,15 @@ logger = logging.getLogger('otree')
 
 RESETDB_DROP_TABLES = {
     "django.db.backends.sqlite3": 'DROP TABLE {table};',
-    "django.db.backends.oracle": 'DROP TABLE {table} CASCADE CONSTRAINTS;',
-    "django.db.backends.postgresql": 'DROP TABLE {table} CASCADE;',
+    "django.db.backends.oracle": 'DROP TABLE "{table}" CASCADE CONSTRAINTS;',
+    "django.db.backends.postgresql": 'DROP TABLE "{table}" CASCADE;',
     "django.db.backends.mysql": (
         'SET FOREIGN_KEY_CHECKS = 0;'
         'DROP TABLE {table} CASCADE;'
         'SET FOREIGN_KEY_CHECKS = 1;'),
 
     # DJANGO < 1.9
-    "django.db.backends.postgresql_psycopg2": 'DROP TABLE {table} CASCADE;',
+    "django.db.backends.postgresql_psycopg2": 'DROP TABLE "{table}" CASCADE;',
 }
 
 
@@ -110,9 +113,57 @@ class Command(BaseCommand):
             tables = self._get_tables(db)
 
             logger.info("Dropping Tables...")
-            self._drop_tables(tables, db, dt_stmt)
 
-            logger.info("Creating Database '{}'...".format(db))
-            call_command(
-                'migrate', database=db, fake_initial=True,
-                interactive=False, **options)
+            # use a transaction to prevent the DB from getting in an erroneous
+            # state, which can result in a different error message when resetdb
+            # is run again, making the original error hard to trace.
+            with transaction.atomic(
+                    using=connections[db].alias,
+                    savepoint=connections[db].features.can_rollback_ddl
+            ):
+                self._drop_tables(tables, db, dt_stmt)
+
+                logger.info("Creating Database '{}'...".format(db))
+
+                # Hack so that migrate can't find migrations files
+                # this way, syncdb will be run instead of migrate.
+                # This is preferable because
+                # users who are used to running "otree resetdb"
+                # may not know how to run 'otree makemigrations'.
+                # This means their migration files will not be up to date,
+                # ergo migrate will create tables with an outdated schema.
+
+                # after the majority of oTree users have this new version
+                # of resetdb, we can add a migrations/ folder to each app
+                # in the sample games and the app template,
+                # and deprecate resetdb
+                # and instead use "otree makemigrations" and "otree migrate".
+
+                # also, syncdb is faster than migrate, and there is no advantage
+                # to migrate since it's being run on a newly created DB anyway.
+
+                # patch .migrations_module() to return a nonexistent module,
+                # instead of app_name.migrations.
+                # because this module is not found,
+                # migration system will assume the app has no migrations,
+                # and run syncdb instead.
+                with mock.patch.object(
+                        MigrationLoader,
+                        'migrations_module',
+                        return_value='migrations nonexistent hack'
+                ):
+                    # note: In 1.9, will need to pass --run-syncdb flag
+                    call_command(
+                        'migrate', database=db,
+                        interactive=False, **options)
+
+                # second call to 'migrate', simply to
+                # fake migrations so that runserver doesn't complain
+                # about unapplied migrations
+                call_command(
+                    'migrate', database=db, fake=True,
+                    interactive=False, **options)
+
+        project_root = getattr(settings, 'BASE_DIR', None)
+        if project_root:
+            add_empty_migrations_to_all_apps(project_root)

@@ -37,7 +37,7 @@
             <h3 class="panel-title">{% block title %}{{ title_text }}{% endblock %}</h3>
         </div>
         <div class="panel-body">
-            <div class="alert alert-danger error-notice" style="display:none">
+            <div id="error-notice" class="alert alert-danger" style="display:none">
                 {% blocktrans %}An error occurred. Please check the logs or ask the administrator for help.{% endblocktrans %}
             </div>
             {% block content %}
@@ -56,8 +56,44 @@
 
 {% block internal_scripts %}
     {{ block.super }}
-    {% include 'otree/includes/PollServerThenRedirect.html' %}
-{% endblock %}
+    <!-- this is an HTML file rather than JavaScript static file because context variables need to be passed to it -->
+<script type="text/javascript">
+$(document).ready(function () {
+
+    var socket;
+
+    initWebSocket();
+
+    function initWebSocket() {
+
+        var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+        var ws_path = ws_scheme + '://' + window.location.host + "{{ view.socket_url|safe }}";
+        socket = new ReconnectingWebSocket(ws_path);
+        socket.onmessage = function(e) {
+
+            var data = JSON.parse(e.data);
+
+            // Handle errors
+            if (data.error) {
+                $("#error-notice").show();
+                return;
+            }
+
+            console.log('Received redirect message', e.data);
+            window.location.href = '{{ view.absolute_redirect_url|safe }}';
+
+        }
+        socket.onopen = function() {
+            console.log('WebSocket connected');
+        }
+        socket.onclose = function() {
+            console.log('WebSocket disconnected');
+        }
+    }
+
+ });
+ </script>
+ {% endblock %}
 
 {# never show footer here #}
 {% block page_footer  %}{% endblock %}

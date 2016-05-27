@@ -18,10 +18,12 @@ import contextlib
 import collections
 import time
 import random
+import mock
 
 from six import StringIO
 from six.moves import zip_longest
 
+from django.db.migrations.loader import MigrationLoader
 from django import test
 from django.test import runner
 from unittest import TestSuite
@@ -137,12 +139,6 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         # we need to wait for that to complete.
         logger.info("Adding bots on session '{}'".format(self.session_name))
 
-        while True:
-            sssn = otree.models.Session.objects.get(id=sssn.pk)
-            if sssn._ready_to_play:
-                break
-            time.sleep(1)
-
         msg = "'GET' over first page of all '{}' participants"
         logger.info(msg.format(self.session_name))
 
@@ -214,7 +210,15 @@ class OTreeExperimentTestRunner(runner.DiscoverRunner):
                   preserve_data=False, **kwargs):
         self.setup_test_environment()
         suite = self.build_suite(test_labels, extra_tests, preserve_data)
-        old_config = self.setup_databases()
+        # same hack as in resetdb code
+        # because this method uses the serializer
+        # it breaks if the app has migrations but they aren't up to date
+        with mock.patch.object(
+                MigrationLoader,
+                'migrations_module',
+                return_value='migrations nonexistent hack'
+        ):
+            old_config = self.setup_databases()
         result = self.run_suite(suite)
         failures, data = self.suite_result(suite, result)
         self.teardown_databases(old_config)

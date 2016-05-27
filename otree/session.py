@@ -11,6 +11,7 @@ from collections import OrderedDict
 from django.conf import settings
 from django.db import transaction
 
+import otree.db.idmap
 from otree import constants_internal
 from otree.models.session import Session
 from otree.models.participant import Participant
@@ -19,9 +20,8 @@ from otree.common_internal import (
     min_players_multiple)
 from otree.common import RealWorldCurrency
 from decimal import Decimal
-from otree.models_concrete import ParticipantLockModel
 from otree import deprecate
-
+from otree.models_concrete import ParticipantLockModel
 
 def gcd(a, b):
     """Return greatest common divisor using Euclid's Algorithm."""
@@ -140,12 +140,14 @@ def app_labels_from_sessions(config_names):
 
 @transaction.atomic
 def create_session(session_config_name, label='', num_participants=None,
-                   special_category=None, _pre_create_id=None, room=None):
+                   special_category=None, _pre_create_id=None, room=None, for_mturk=False):
 
     # 2014-5-2: i could implement this by overriding the __init__ on the
     # Session model, but I don't really know how that works, and it seems to
     # be a bit discouraged: http://goo.gl/dEXZpv
     # 2014-9-22: preassign to groups for demo mode.
+
+    otree.db.idmap.activate_cache()
 
     try:
         session_config = SESSION_CONFIGS_DICT[session_config_name]
@@ -180,6 +182,13 @@ def create_session(session_config_name, label='', num_participants=None,
             'evenly into group size ({})')
         raise ValueError(
             msg.format(session_config['name'], num_participants, session_lcm))
+
+    if for_mturk:
+        session.mturk_num_participants = (
+                num_participants /
+                settings.MTURK_NUM_PARTICIPANTS_MULT
+        )
+
 
     start_order = list(range(num_participants))
     if session_config.get('random_start_order'):
@@ -218,8 +227,8 @@ def create_session(session_config_name, label='', num_participants=None,
     session.build_participant_to_player_lookups()
     if room is not None:
         room.session = session
-    session.ready = True
     session.save()
+    otree.db.idmap.deactivate_cache()
 
     return session
 

@@ -11,7 +11,7 @@ import time
 import django.utils.timezone
 from django.core.urlresolvers import reverse
 from django.conf import settings
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render_to_response
 from django.template.response import TemplateResponse
 from django.contrib import messages
 from django.http import (
@@ -26,19 +26,16 @@ from boto.mturk.connection import MTurkRequestError
 import otree.constants_internal as constants
 import otree.models.session
 from otree.models.participant import Participant
-from otree.common_internal import lock_on_this_code_path, make_hash
+from otree.common_internal import make_hash, add_params_to_url
 import otree.views.admin
 from otree.views.mturk import MTurkConnection
 import otree.common_internal
 from otree.views.abstract import (
-    NonSequenceUrlMixin, OTreeMixin,
-    GenericWaitPageMixin, FormPageOrInGameWaitPageMixin,
+    NonSequenceUrlMixin, OTreeMixin, GenericWaitPageMixin,
+    lock_on_this_code_path,
     NO_PARTICIPANTS_LEFT_MSG
 )
-from otree.models_concrete import GroupSize  # noqa
-from otree.models.session import GlobalSingleton
 from otree.room import ROOM_DICT
-
 
 class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
     name_in_url = 'shared'
@@ -47,47 +44,6 @@ class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
         return TemplateResponse(
             request, 'otree/OutOfRangeNotification.html'
         )
-
-
-class WaitUntilAssignedToGroup(FormPageOrInGameWaitPageMixin,
-                               GenericWaitPageMixin, vanilla.GenericView):
-    """
-    In "group by arrival time",
-    we wait until enough players have arrived to form a group,
-    then they all start at the same time.
-
-    It would be bad if some players started before others
-
-    The exception is if players_per_group = None.
-    Then the players should be preassigned, and start right away.
-
-    If we're not grouping by arrival time
-
-    """
-    name_in_url = 'shared'
-
-    def _is_ready(self):
-        if bool(self.group):
-            return not self.group._is_missing_players
-        # group_by_arrival_time code used to be here
-        # if the session was just created
-        # and the code to assign to groups has not executed yet
-        return False
-
-    def body_text(self):
-        return _(
-            'Waiting until other participants or '
-            'the study supervisor are ready.'
-        )
-
-    def _response_when_ready(self):
-        self._increment_index_in_pages()
-        # so it can be shown in the admin
-        self.participant._round_number = self.subsession.round_number
-        return self._redirect_to_page_the_user_should_be_on()
-
-    def _get_debug_tables(self):
-        return []
 
 
 class InitializeParticipant(vanilla.UpdateView):
@@ -102,7 +58,7 @@ class InitializeParticipant(vanilla.UpdateView):
 
     @classmethod
     def url_pattern(cls):
-        return r'^InitializeParticipant/(?P<{}>[a-z]+)/$'.format(
+        return r'^InitializeParticipant/(?P<{}>[a-z0-9]+)/$'.format(
             constants.participant_code
         )
 
@@ -113,18 +69,21 @@ class InitializeParticipant(vanilla.UpdateView):
             code=kwargs[constants.participant_code]
         )
 
-        participant.visited = True
+        if participant._index_in_pages == 0:
+            participant._index_in_pages = 1
+            participant.visited = True
 
-        # participant.label might already have been set
-        participant.label = participant.label or self.request.GET.get(
-            constants.participant_label
-        )
-        participant.ip_address = self.request.META['REMOTE_ADDR']
+            # participant.label might already have been set
+            participant.label = participant.label or self.request.GET.get(
+                constants.participant_label
+            )
+            participant.ip_address = self.request.META['REMOTE_ADDR']
 
-        now = django.utils.timezone.now()
-        participant.time_started = now
-        participant._last_page_timestamp = time.time()
-        participant.save()
+            now = django.utils.timezone.now()
+            participant.time_started = now
+            participant._last_page_timestamp = time.time()
+
+            participant.save()
         first_url = participant._url_i_should_be_on()
         return HttpResponseRedirect(first_url)
 
@@ -137,7 +96,7 @@ class MTurkLandingPage(vanilla.TemplateView):
 
     @classmethod
     def url_pattern(cls):
-        return r"^MTurkLandingPage/(?P<session_code>[a-z]+)/$"
+        return r"^MTurkLandingPage/(?P<session_code>[a-z0-9]+)/$"
 
     @classmethod
     def url_name(cls):
@@ -160,7 +119,7 @@ class MTurkLandingPage(vanilla.TemplateView):
         )
         if assignment_id and assignment_id != 'ASSIGNMENT_ID_NOT_AVAILABLE':
             url_start = reverse('mturk_start', args=(self.session.code,))
-            url_start = otree.common_internal.add_params_to_url(url_start, {
+            url_start = add_params_to_url(url_start, {
                 'assignmentId': self.request.GET['assignmentId'],
                 'workerId': self.request.GET['workerId']})
             return HttpResponseRedirect(url_start)
@@ -173,7 +132,7 @@ class MTurkStart(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r"^MTurkStart/(?P<session_code>[a-z]+)/$"
+        return r"^MTurkStart/(?P<session_code>[a-z0-9]+)/$"
 
     @classmethod
     def url_name(cls):
@@ -216,7 +175,7 @@ class MTurkStart(vanilla.View):
             with lock_on_this_code_path():
                 try:
                     participant = (
-                        Participant.objects.select_for_update().filter(
+                        Participant.objects.filter(
                             session=self.session,
                             visited=False
                         )
@@ -237,7 +196,7 @@ class JoinSessionAnonymously(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r'^join/(?P<anonymous_code>[a-z]+)/$'
+        return r'^join/(?P<anonymous_code>[a-z0-9]+)/$'
 
     @classmethod
     def url_name(cls):
@@ -252,7 +211,7 @@ class JoinSessionAnonymously(vanilla.View):
         with lock_on_this_code_path():
             try:
                 participant = (
-                    Participant.objects.select_for_update().filter(
+                    Participant.objects.filter(
                         session=session,
                         visited=False
                     )
@@ -270,8 +229,10 @@ class JoinSessionAnonymously(vanilla.View):
         return HttpResponseRedirect(participant._start_url())
 
 
-class AssignVisitorToRoom(vanilla.TemplateView):
+class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
     template_name = "otree/InputParticipantLabel.html"
+
+    hash = None
 
     @classmethod
     def url_name(cls):
@@ -279,44 +240,52 @@ class AssignVisitorToRoom(vanilla.TemplateView):
 
     @classmethod
     def url_pattern(cls):
-        return r'^{}/$'.format(cls.__name__)
+        return r'^AssignVisitorToRoom/$'
 
-    def get(self, *args, **kwargs):
-
-        room_name = self.request.GET.get(
+    def dispatch(self, request, *args, **kwargs):
+        self.room_name = self.request.GET.get(
             'room'
         )
         try:
-            room = ROOM_DICT[room_name]
+            room = ROOM_DICT[self.room_name]
         except KeyError:
             return HttpResponseNotFound('Invalid room specified in url')
 
-        participant_label = self.request.GET.get(
+        self.participant_label = self.request.GET.get(
             'participant_label'
         )
+
+        # If a hash is needed then it will be added, else pass it as an empty string
+        hash = ''
         if room.has_participant_labels():
-            if not participant_label:
-                if not room.use_hashes:
+            if not self.participant_label:
+                if not room.use_secure_urls:
                     return super(AssignVisitorToRoom, self).get(args, kwargs)
 
-            if participant_label not in room.get_participant_labels():
+            if self.participant_label not in room.get_participant_labels():
                 return HttpResponseNotFound('Participant is not expected in this room. Please contact the session supervisor.')
 
-            if room.use_hashes:
+            if room.use_secure_urls:
                 hash = self.request.GET.get('hash')
-                if hash != make_hash(participant_label):
+                self.hash = hash
+                if hash != make_hash(self.participant_label):
                     return HttpResponseNotFound('Invalid hash parameter.')
 
         session = room.session
         if session is None:
-            return HttpResponse('No session in room. Refresh the page.')
+            self._params = ','.join([
+                self.room_name,
+                self.participant_label,
+                hash
+            ])
+            return render_to_response("otree/WaitForSessionPage.html", {'view': self})
 
         assign_new = not room.has_participant_labels()
         if not assign_new:
             try:
                 participant = Participant.objects.get(
                     session=session,
-                    label=participant_label
+                    label=self.participant_label
                 )
             except Participant.DoesNotExist:
                 assign_new = True
@@ -325,14 +294,14 @@ class AssignVisitorToRoom(vanilla.TemplateView):
             with lock_on_this_code_path():
                 try:
                     participant = (
-                        Participant.objects.select_for_update().filter(
+                        Participant.objects.filter(
                             session=session,
                             visited=False)
                     ).order_by('start_order')[0]
                 except IndexError:
                     return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
 
-                participant.label = participant_label
+                participant.label = self.participant_label
                 # 2014-10-17: needs to be here even if it's also set in
                 # the next view to prevent race conditions
                 participant.visited = True
@@ -342,6 +311,18 @@ class AssignVisitorToRoom(vanilla.TemplateView):
 
     def get_context_data(self, **kwargs):
         return {'room': self.request.GET.get('room')}
+
+    def socket_url(self):
+        return '/wait_for_session_in_room/{}/'.format(self._params)
+
+    def absolute_redirect_url(self):
+        url = reverse('assign_visitor_to_room')
+        params = {'room': self.room_name, 'participant_label': self.participant_label}
+        if self.hash:
+            params['hash'] = self.hash
+        url = add_params_to_url(url, params)
+        return url
+
 
 class AdvanceSession(vanilla.View):
 
@@ -411,3 +392,4 @@ class DeleteSessions(vanilla.View):
             )
             session.delete()
         return HttpResponseRedirect(reverse('sessions'))
+

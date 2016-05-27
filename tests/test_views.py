@@ -56,12 +56,3 @@ class TestPageView(BaseViewTestCase):
         self.view = MyPage.as_view()
 
         self.reload_objects()
-
-    def test_status_ok(self):
-        request = self.factory.get(
-            '/{0}/{1}/shared/WaitUntilAssignedToGroup/0/'.format(
-                self.kwargs[constants_internal.user_type],
-                self.kwargs[constants_internal.participant_code]))
-
-        response = self.view(request, **self.kwargs)
-        self.assertEqual(response.status_code, 200)

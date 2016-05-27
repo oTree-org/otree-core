@@ -10,7 +10,6 @@ from otree_save_the_change.mixins import SaveTheChange
 from otree.db import models
 from otree.common_internal import (
     get_models_module, flatten)
-from otree.models_concrete import GroupSize
 from otree import match_players
 
 
@@ -174,15 +173,6 @@ class BaseSubsession(SaveTheChange, models.Model):
             )
             first_player_index += group_size
         return groups
-
-    def _set_players_per_group_list(self):
-        for index, group_size in enumerate(self._get_players_per_group_list()):
-            GroupSize(
-                app_label=self._meta.app_config.name,
-                subsession_pk=self.pk,
-                group_index=index,
-                group_size=group_size,
-            ).save()
 
     def _create_groups(self):
         if self.round_number == 1:

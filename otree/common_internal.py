@@ -7,12 +7,17 @@ import datetime
 import collections
 import contextlib
 import inspect
-import hashlib
+import re
+import random
 from os.path import dirname, join
 from collections import OrderedDict
 from importlib import import_module
 import six
 from six.moves import urllib
+import logging
+import hashlib
+import requests
+import json
 
 from django.db import transaction
 from django.db import connection
@@ -21,12 +26,18 @@ from django.conf import settings
 from django.template.defaultfilters import title
 
 from otree import constants_internal
+import otree
+
+import string
+import errno
+
+# set to False if using runserver
+USE_REDIS = True
 
 if sys.version_info[0] == 2:
     import unicodecsv as csv
 else:
     import csv
-
 
 def add_params_to_url(url, params):
     url_parts = list(urllib.parse.urlparse(url))
@@ -53,6 +64,14 @@ def git_commit_timestamp():
     except IOError:
         return ''
 
+def random_chars_8():
+    chars=string.ascii_lowercase + string.digits
+    return ''.join(random.choice(chars) for _ in range(8))
+
+def random_chars_10():
+    chars=string.ascii_lowercase + string.digits
+    return ''.join(random.choice(chars) for _ in range(8))
+
 
 def app_name_format(app_name):
     app_label = app_name.split('.')[-1]
@@ -73,7 +92,7 @@ def url(cls, participant, index=None):
 
 
 def url_pattern(cls, is_sequence_url=False):
-    p = r'(?P<{}>\w)/(?P<{}>[a-z]+)/{}/{}/'.format(
+    p = r'(?P<{}>\w)/(?P<{}>[a-z0-9]+)/{}/{}/'.format(
         constants_internal.user_type,
         constants_internal.participant_code,
         cls.get_name_in_url(),
@@ -341,11 +360,105 @@ def transaction_atomic():
             yield
 
 
-@contextlib.contextmanager
-def lock_on_this_code_path():
-    with transaction_atomic():
-        # take a lock on this singleton, so that only 1 person can
-        # be completing this code path at once
-        from otree.models.session import GlobalSingleton
-        GlobalSingleton.objects.select_for_update().get()
-        yield
+
+def check_pypi_for_updates(print_message = True):
+    logging.getLogger("requests").setLevel(logging.WARNING)
+    response = requests.get('http://pypi.python.org/pypi/otree-core/json')
+    data = json.loads(response.content.decode())
+
+    semver_re = re.compile(r'^(\d+)\.(\d+)\.(\d+)$')
+
+    installed_dotted = otree.__version__
+    installed_match = semver_re.match(installed_dotted)
+
+    if installed_match:
+        # compare to the latest stable release
+
+        installed_tuple = [int(n) for n in installed_match.groups()]
+
+        releases = data['releases']
+        newest_tuple = [0,0,0]
+        newest_dotted = ''
+        for release in releases:
+            release_match = semver_re.match(release)
+            if release_match:
+                release_tuple = [int(n) for n in release_match.groups()]
+                if release_tuple > newest_tuple:
+                    newest_tuple = release_tuple
+                    newest_dotted = release
+        newest = newest_tuple
+        installed = installed_tuple
+
+        needs_update = (newest > installed and (
+                newest[0] > installed[0] or
+                newest[1] > installed[1] or
+                newest[2] - installed[2] > 5
+            )
+        )
+
+    else:
+        # compare to the latest release, whether stable or not
+        newest_dotted = data['info']['version'].strip()
+        needs_update = newest_dotted != installed_dotted
+
+    if needs_update:
+        if sys.version_info[0] == 3:
+            pip_command = 'pip3'
+        else:
+            pip_command = 'pip'
+        update_message = (
+            'Your otree-core package is out-of-date '
+            '(version {}; latest is {}). '
+            'You should upgrade with:\n '
+            '"{} install --upgrade otree-core"\n '
+            'and update your requirements_base.txt.'
+                .format(
+                installed_dotted, newest_dotted, pip_command
+            )
+        )
+        if print_message:
+            print(update_message)
+        else:
+            return update_message
+
+
+def channels_create_session_group_name(pre_create_id):
+    return 'wait_for_session_{}'.format(pre_create_id)
+
+
+def channels_wait_page_group_name(session_pk, page_index, model_name, model_pk):
+
+    return 'wait-page-{}-page{}-{}{}'.format(
+        session_pk,
+        page_index,
+        model_name,
+        model_pk
+    )
+
+def make_sure_path_exists(path):
+    try:
+        os.makedirs(path)
+    except OSError as exception:
+        if exception.errno != errno.EEXIST:
+            raise exception
+
+def add_empty_migrations_to_all_apps(project_root):
+    # for each app in the project folder,
+    # add a migrations folder
+    # we do it here instead of modifying the games repo directly,
+    # because people on older versions of oTree also install
+    # from the same repo,
+    # and the old resetdb chokes when it encounters an app with migrations
+    subfolders = next(os.walk(project_root))[1]
+    for subfolder in subfolders:
+        # ignore folders that start with "." etc...
+        if subfolder[0] in string.ascii_letters + '_':
+            app_folder = os.path.join(project_root, subfolder)
+            models_file_path = os.path.join(app_folder, 'models.py')
+            if os.path.isfile(models_file_path):
+                migrations_folder_path = os.path.join(app_folder, 'migrations')
+                make_sure_path_exists(migrations_folder_path)
+                init_file_path = os.path.join(migrations_folder_path, '__init__.py')
+                with open(init_file_path, 'a') as f:
+                    f.write('')
+

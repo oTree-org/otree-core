@@ -20,6 +20,11 @@
             </div>
         {% endif %}
 
+        <div id="error-notice" class="alert alert-danger" style="display:none">
+            {% blocktrans %}An error occurred. Please check the logs or ask the administrator for help.{% endblocktrans %}
+        </div>
+
+
         <form action="" method="post" role="form" class="form" id="form" onsubmit="return markFormSubmitted()">{% csrf_token %}
             <input type="hidden" value="{{ request.path }}" name="origin_url" />
             {% pageform form using %}

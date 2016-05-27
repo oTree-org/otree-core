@@ -16,11 +16,14 @@
 
     <p>Open each link in its own browser tab.</p>
 
-    <ul>
-        {% for participant_url in participant_urls %}
-        <li><strong>P{{ forloop.counter }}:</strong> <a href="{{ participant_url }}" class="participant-link" target="_blank">{{ participant_url }}</a></li>
-        {% endfor %}
-    </ul>
+    <table class="table">
+    {% for participant_url in participant_urls %}
+        <tr>
+            <td><strong>P{{ forloop.counter }}</strong></td>
+            <td><a href="{{ participant_url }}" class="participant-link" target="_blank">{{ participant_url }}</a></td>
+        </tr>
+    {% endfor %}
+    </table>
 
     <h4>Anonymous mode</h4>
     <p>
@@ -40,3 +43,4 @@
     </ul>
     <p>To run your experiment in a lab, see the <a href="{% url 'rooms' %}">Rooms</a> page.</p>
 {% endblock %}
+

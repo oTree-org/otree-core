@@ -1,10 +1,18 @@
+import logging
 import django.test
 
 from otree import constants_internal
 import otree.common_internal
+from otree.common_internal import random_chars_8, random_chars_10
 from otree.db import models
 from .varsmixin import ModelWithVars
+from otree.models_concrete import ParticipantToPlayerLookup
 from otree.models_concrete import RoomSession
+
+
+logger = logging.getLogger('otree')
+
+client = django.test.Client()
 
 class GlobalSingleton(models.Model):
     """object that can hold site-wide settings. There should only be one
@@ -14,10 +22,7 @@ class GlobalSingleton(models.Model):
     class Meta:
         app_label = "otree"
 
-    admin_access_code = models.RandomCharField(
-        length=8, doc=('used for authentication to things only the '
-                       'admin/experimenter should access')
-    )
+    locked = models.BooleanField(default=False)
 
 
 # for now removing SaveTheChange
@@ -42,9 +47,13 @@ class Session(ModelWithVars):
         max_length=300, null=True, blank=True,
         help_text='For internal record-keeping')
 
-    code = models.RandomCharField(
+    code = models.CharField(
+        default=random_chars_8,
+        max_length=16,
+        null=False,
+        unique=True,
         db_index=True,
-        length=8, doc="Randomly generated unique identifier for the session.")
+        doc="Randomly generated unique identifier for the session.")
 
     time_scheduled = models.DateTimeField(
         null=True, doc="The time at which the session is scheduled",
@@ -92,21 +101,18 @@ class Session(ModelWithVars):
 
     comment = models.TextField(blank=True)
 
-    _ready_to_play = models.BooleanField(default=False)
+    _anonymous_code = models.CharField(
+        default=random_chars_10,
+        max_length=8,
+        null=False,
+        db_index=True
+    )
 
-    _anonymous_code = models.RandomCharField(length=10)
 
     special_category = models.CharField(
         db_index=True,
         max_length=20, null=True,
         doc="whether it's a test session, demo session, etc.")
-
-    # whether someone already viewed this session's demo links
-    demo_already_used = models.BooleanField(default=False, db_index=True)
-
-    # indicates whether a session has been fully created (not only has the
-    # model itself been created, but also the other models in the hierarchy)
-    ready = models.BooleanField(default=False)
 
     _pre_create_id = models.CharField(max_length=300, db_index=True, null=True)
 
@@ -159,7 +165,6 @@ class Session(ModelWithVars):
             subsession._create_groups()
             subsession._initialize()
             subsession.save()
-        self._ready_to_play = True
         # assert self is subsession.session
         self.save()
 
@@ -186,14 +191,14 @@ class Session(ModelWithVars):
     def advance_last_place_participants(self):
         participants = self.get_participants()
 
-        c = django.test.Client()
+
 
         # in case some participants haven't started
         unvisited_participants = []
         for p in participants:
             if not p._current_form_page_url:
                 unvisited_participants.append(p)
-                c.get(p._start_url(), follow=True)
+                client.get(p._start_url(), follow=True)
 
         if unvisited_participants:
             from otree.models import Participant
@@ -211,29 +216,51 @@ class Session(ModelWithVars):
         ]
 
         for p in last_place_participants:
-            if not p._current_form_page_url:
-                # what if first page is wait page?
+            # what if first page is wait page?
+            # that shouldn't happen, because then they must be
+            # waiting for some other players who are even further back
+            assert p._current_form_page_url
+            try:
+                resp = client.post(
+                    p._current_form_page_url,
+                    data={constants_internal.auto_submit: True}, follow=True
+                )
+            except:
+                logging.exception("Failed to advance participants.")
                 raise
-            resp = c.post(
-                p._current_form_page_url,
-                data={constants_internal.auto_submit: True}, follow=True
-            )
+
             assert resp.status_code < 400
 
     def build_participant_to_player_lookups(self):
         subsession_app_names = self.config['app_sequence']
 
-        num_pages_in_each_app = {}
+        views_modules = {}
         for app_name in subsession_app_names:
-            views_module = otree.common_internal.get_views_module(app_name)
+            views_modules[app_name] = (
+                otree.common_internal.get_views_module(app_name))
 
-            num_pages = len(views_module.page_sequence)
-            num_pages_in_each_app[app_name] = num_pages
+        def views_module_for_player(player):
+            return views_modules[player._meta.app_config.name]
+
+        records_to_create = []
 
         for participant in self.get_participants():
-            participant.build_participant_to_player_lookups(
-                num_pages_in_each_app
-            )
+            page_index = 0
+            for player in participant.get_players():
+                for View in views_module_for_player(player).page_sequence:
+                    page_index += 1
+                    records_to_create.append(ParticipantToPlayerLookup(
+                        participant_pk=participant.pk,
+                        page_index=page_index,
+                        app_name=player._meta.app_config.name,
+                        player_pk=player.pk,
+                        url=View.url(participant, page_index)
+                    ))
+
+            # technically could be stored at the session level
+            participant._max_page_index = page_index
+            participant.save()
+        ParticipantToPlayerLookup.objects.bulk_create(records_to_create)
 
     def get_room(self):
         from otree.room import ROOM_DICT

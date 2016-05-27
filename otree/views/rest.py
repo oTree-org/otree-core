@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from otree.models.session import Session
 from rest_framework import generics, permissions
 from otree.serializers import ParticipantSerializer
-
+from django.http import Http404
 
 class Ping(View):
 
@@ -23,4 +23,8 @@ class SessionParticipantsList(generics.ListCreateAPIView):
 
     def get_queryset(self):
         session_code = self.kwargs['session_code']
-        return Session.objects.get(code=session_code).get_participants()
+        try:
+            session = Session.objects.get(code=session_code)
+        except Session.DoesNotExist:
+            raise Http404('This session no longer exists.')
+        return session.get_participants()

@@ -44,6 +44,8 @@ class RealWorldCurrency(easymoney.Money):
     LOCALE = settings.REAL_WORLD_CURRENCY_LOCALE
     DECIMAL_PLACES = settings.REAL_WORLD_CURRENCY_DECIMAL_PLACES
 
+    __hash__ = Decimal.__hash__
+
     def __neg__(self):
         cls = type(self)
         val = super(RealWorldCurrency, self).__neg__()
@@ -78,6 +80,12 @@ class RealWorldCurrency(easymoney.Money):
     def to_real_world_currency(self, session):
         return self
 
+    def deconstruct(self):
+        return [
+            '{}.{}'.format(self.__module__ , self.__class__.__name__),
+            [Decimal.__str__(self)],
+            {}
+        ]
 
 class Currency(RealWorldCurrency):
     '''game currency'''

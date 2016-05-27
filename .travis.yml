@@ -8,13 +8,15 @@ install:
   - pip install tox
 script:
   - tox -r
+services:
+  - redis-server
 env:
   - TOXENV=style
   - TOXENV=coverage
   - TOXENV=python3-warnings
-  - TOXENV=py2.7-django1.8-unittest
-  - TOXENV=py2.7-django1.8-integration
-  - TOXENV=py2.7-django1.8-experiments
-  - TOXENV=py3.5-django1.8-unittest
-  - TOXENV=py3.5-django1.8-integration
-  - TOXENV=py3.5-django1.8-experiments
+  - TOXENV=py27-unittest
+  - TOXENV=py27-integration
+  - TOXENV=py27-experiments
+  - TOXENV=py35-unittest
+  - TOXENV=py35-integration
+  - TOXENV=py35-experiments

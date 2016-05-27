@@ -1,0 +1,50 @@
+{% extends 'otree/Base.html' %}
+
+{% block content_main %}
+<h2 id="welcome_message">Please wait for your session to begin.</h2>
+{% endblock %}
+
+{% block internal_scripts %}
+    {{ block.super }}
+    <!-- this is an HTML file rather than JavaScript static file because context variables need to be passed to it -->
+<script type="text/javascript">
+$(document).ready(function () {
+
+    var socket;
+
+    initWebSocket();
+
+    function initWebSocket() {
+
+        var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+        var ws_path = ws_scheme + '://' + window.location.host + "{{ view.socket_url|safe }}";
+        socket = new ReconnectingWebSocket(ws_path);
+        socket.onmessage = function(e) {
+
+            var data = JSON.parse(e.data);
+
+            // Handle errors
+            if (data.error) {
+                $("#error-notice").show();
+                return;
+            }
+
+            var status = data["status"];
+            if (status == "error_duplicate") {
+                document.getElementById("welcome_message").innerHTML = "Only one session is allowed per participant.";
+                socket.close();
+            } else if (status == "session_ready") {
+                window.location.href = "{{ view.absolute_redirect_url|safe }}"
+            }
+        };
+        socket.onopen = function() {
+            console.log('WebSocket connected');
+        };
+        socket.onclose = function() {
+            console.log('WebSocket disconnected');
+        };
+    }
+
+});
+</script>
+{% endblock %}

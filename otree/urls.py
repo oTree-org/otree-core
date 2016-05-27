@@ -48,7 +48,6 @@ def url_patterns_from_module(module_name):
             'otree.views.concrete.MTurkStart',
             'otree.views.concrete.JoinSessionAnonymously',
             'otree.views.concrete.OutOfRangeNotification',
-            'otree.views.concrete.WaitUntilAssignedToGroup',
         }
 
         if settings.AUTH_LEVEL == 'DEMO':
@@ -62,6 +61,8 @@ def url_patterns_from_module(module_name):
                 'otree.views.admin.SessionPayments',
                 'otree.views.admin.SessionResults',
                 'otree.views.admin.SessionStartLinks',
+                'otree.views.admin.SessionStartLinks',
+                'otree.views.admin.WaitUntilSessionCreated',
             })
     else:
         unrestricted_views = [
@@ -108,7 +109,7 @@ def augment_urlpatterns(urlpatterns):
     rest_api_urlpatterns = (
         urls.url(r'^ping/$', Ping.as_view(), name="ping"),
         urls.url(
-            r'^sessions/(?P<session_code>[a-z]+)/participants/$',
+            r'^sessions/(?P<session_code>[a-z0-9]+)/participants/$',
             SessionParticipantsList.as_view(),
             name="session_participants_list")
     )

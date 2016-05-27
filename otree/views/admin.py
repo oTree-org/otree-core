@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import collections
+import sys
 import threading
 import time
 import uuid
@@ -10,6 +11,7 @@ from six.moves import range
 from six.moves.urllib.parse import unquote_plus
 from six.moves.urllib.parse import urlencode
 from six.moves import zip
+import os
 
 from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect, JsonResponse
@@ -19,6 +21,8 @@ from django.conf import settings
 from django.contrib import messages
 from django.utils.encoding import force_text
 
+from channels.handler import AsgiHandler
+import channels
 import vanilla
 
 from ordered_set import OrderedSet as oset
@@ -27,7 +31,9 @@ from collections import OrderedDict
 import easymoney
 
 from otree.common_internal import (
-    get_models_module, app_name_format, add_params_to_url
+    get_models_module, app_name_format, add_params_to_url,
+    channels_create_session_group_name,
+    check_pypi_for_updates
 )
 from otree.session import (
     create_session, SESSION_CONFIGS_DICT,
@@ -39,13 +45,11 @@ from otree.forms import widgets
 from otree.common import RealWorldCurrency
 from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
 from otree.views.mturk import MTurkConnection, get_workers_by_status
-
 import otree.constants_internal
 import otree.models.session
 from otree.common import Currency as c
 from otree.models.session import Session
 from otree.models.participant import Participant
-from otree.models.session import GlobalSingleton
 from otree.models_concrete import PageCompletion, RoomSession
 from otree.room import ROOM_DICT
 
@@ -101,18 +105,8 @@ def get_all_fields(Model, for_export=False):
                 'mturk_assignment_id',
             ]
         else:
-            return [
-                '_id_in_session',
-                'code',
-                'label',
-                '_current_page',
-                '_current_app_name',
-                '_round_number',
-                '_current_page_name',
-                'status',
-                'last_request_succeeded',
-                '_last_page_timestamp',
-            ]
+            # not used; see ParticipantSerializer
+            return []
 
     first_fields = {
         'Player':
@@ -307,17 +301,6 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
     return column_display_names, all_rows
 
 
-def sleep_then_create_session(**kwargs):
-    # hack: this sleep is to prevent locks on SQLite. This gives time to let
-    # the page request finish before create_session is called,
-    # because creating the session involves a lot of database I/O, which seems
-    # to cause locks when multiple threads access at the same time.
-    if settings.DATABASES['default']['ENGINE'].endswith('sqlite3'):
-        time.sleep(5)
-
-    create_session(**kwargs)
-
-
 class CreateSessionForm(forms.Form):
     session_configs = SESSION_CONFIGS_DICT.values()
 
@@ -373,8 +356,6 @@ class CreateSession(vanilla.FormView):
         return super(CreateSession, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        # TODO: dynamically populate info about session configs
-        # and validate number of participants
         session_config_summaries = [info_about_session_config(session_config) for session_config in SESSION_CONFIGS_DICT.values()]
         kwargs.update({'session_config_summaries': session_config_summaries})
         return super(CreateSession, self).get_context_data(**kwargs)
@@ -388,12 +369,14 @@ class CreateSession(vanilla.FormView):
         kwargs = {
             'session_config_name': form.cleaned_data['session_config'],
             '_pre_create_id': pre_create_id,
+            'for_mturk': self.for_mturk
         }
         if self.for_mturk:
             kwargs['num_participants'] = (
                 form.cleaned_data['num_participants'] *
                 settings.MTURK_NUM_PARTICIPANTS_MULT
             )
+
         else:
             kwargs['num_participants'] = form.cleaned_data['num_participants']
 
@@ -402,18 +385,17 @@ class CreateSession(vanilla.FormView):
         if hasattr(self, "room"):
             kwargs['room'] = self.room
 
-        thread_create_session = threading.Thread(
-            target=sleep_then_create_session,
-            kwargs=kwargs,
-        )
-        thread_create_session.setName(pre_create_id)
-        thread_create_session.start()
+        channels_group_name = channels_create_session_group_name(
+            pre_create_id)
+        channels.Channel('otree.create_session').send({
+            'kwargs': kwargs,
+            'channels_group_name': channels_group_name
+        })
 
-        self.request.session['for_mturk'] = self.for_mturk
-        wait_until_session_created_url = reverse(
-            'wait_until_session_created', args=(pre_create_id,)
+        wait_for_session_url = reverse(
+            'wait_for_session', args=(pre_create_id,)
         )
-        return HttpResponseRedirect(wait_until_session_created_url)
+        return HttpResponseRedirect(wait_for_session_url)
 
 
 class Rooms(vanilla.TemplateView):
@@ -468,6 +450,9 @@ class RoomWithoutSession(CreateSession):
         # - override start links page (so need to store on the session that it's in this room? hm, no)
         #
 
+    def socket_url(self):
+        return '/room_without_session/{}/'.format(self.room.name)
+
 class RoomWithSession(vanilla.TemplateView):
     template_name = 'otree/admin/RoomWithSession.html'
     room = None
@@ -513,57 +498,53 @@ class CloseRoom(vanilla.View):
 
 
 class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
+
+
+
     @classmethod
     def url_pattern(cls):
-        return r"^WaitUntilSessionCreated/(?P<session_pre_create_id>.+)/$"
+        return r"^WaitUntilSessionCreated/(?P<pre_create_id>.+)/$"
 
     @classmethod
     def url_name(cls):
-        return 'wait_until_session_created'
+        return 'wait_for_session'
+
+    body_text = 'Waiting until session created'
 
     def _is_ready(self):
-        thread_create_session = None
-        for t in threading.enumerate():
-            if t.name == self._pre_create_id:
-                thread_create_session = t
-        thread_alive = (
-            thread_create_session and
-            thread_create_session.isAlive()
-        )
-        session_exists = Session.objects.filter(
-            _pre_create_id=self._pre_create_id
-        ).exists()
-
-        if not thread_alive and not session_exists:
-            raise Exception("Thread failed to create new session")
-        return session_exists
-
-    def body_text(self):
-        return 'Waiting until session created'
+        try:
+            self.session = Session.objects.get(
+                _pre_create_id=self._pre_create_id
+            )
+            return True
+        except Session.DoesNotExist:
+            return False
 
     def _response_when_ready(self):
-        session = Session.objects.get(_pre_create_id=self._pre_create_id)
-        if self.request.session.get('for_mturk', False):
-            session.mturk_num_participants = (
-                len(session.get_participants()) /
-                settings.MTURK_NUM_PARTICIPANTS_MULT
-            )
-        session.save()
+        session = self.session
         if session.is_for_mturk():
             session_home_url = reverse(
                 'session_create_hit', args=(session.pk,)
             )
-        else:
+        # demo mode
+        elif self.request.GET.get('fullscreen'):
+            session_home_url = reverse(
+                'session_fullscreen', args=(session.pk,))
+        else: # typical case
             session_home_url = reverse(
                 'session_start_links', args=(session.pk,)
             )
+
         return HttpResponseRedirect(session_home_url)
 
     def dispatch(self, request, *args, **kwargs):
-        self._pre_create_id = kwargs['session_pre_create_id']
+        self._pre_create_id = kwargs['pre_create_id']
         return super(WaitUntilSessionCreated, self).dispatch(
             request, *args, **kwargs
         )
+
+    def socket_url(self):
+        return '/wait_for_session/{}/'.format(self._pre_create_id)
 
 
 class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
@@ -883,7 +864,6 @@ class SessionDescription(AdminSessionPageMixin, vanilla.TemplateView):
 
 def info_about_session_config(session_config):
     app_sequence = []
-    seo = set()
     for app_name in session_config['app_sequence']:
         models_module = get_models_module(app_name)
         num_rounds = models_module.Constants.num_rounds
@@ -894,43 +874,19 @@ def info_about_session_config(session_config):
             )
         subsssn = {
             'doc': getattr(models_module, 'doc', ''),
-            'source_code': getattr(models_module, 'source_code', ''),
             'bibliography': getattr(models_module, 'bibliography', []),
-            'links': sort_links(getattr(models_module, 'links', {})),
-            'keywords': keywords_links(getattr(models_module, 'keywords', [])),
             'name': formatted_app_name,
         }
-        seo.update([keywords[0] for keywords in subsssn["keywords"]])
         app_sequence.append(subsssn)
     return {
         'doc': session_config['doc'],
         'app_sequence': app_sequence,
-        'page_seo': seo,
         'name': session_config['name'],
         'display_name': session_config['display_name'],
         'lcm': get_lcm(session_config)
     }
 
 
-def sort_links(links):
-    """Return the sorted .items() result from a dictionary
-
-    """
-    return sorted(links.items())
-
-
-def keywords_links(keywords):
-    """Create a duckduckgo.com link for every keyword
-
-    """
-    links = []
-    for kw in keywords:
-        kw = kw.strip()
-        if kw:
-            args = urlencode({"q": kw + " game theory", "t": "otree"})
-            link = "https://duckduckgo.com/?{}".format(args)
-            links.append((kw, link))
-    return links
 
 
 def session_description_dict(session):
@@ -965,3 +921,40 @@ class AdminHome(vanilla.ListView):
         category = otree.constants_internal.session_special_category_demo
         return Session.objects.exclude(
             special_category=category).order_by('archived', '-pk')
+
+class ServerCheck(vanilla.TemplateView):
+    template_name = 'otree/admin/ServerCheck.html'
+
+    @classmethod
+    def url_pattern(cls):
+        return r"^server_check/$"
+
+    @classmethod
+    def url_name(cls):
+        return 'server_check'
+
+    def app_is_on_heroku(self):
+        return 'heroku' in self.request.get_host()
+
+    def get_context_data(self, **kwargs):
+        sqlite = settings.DATABASES['default']['ENGINE'].endswith('sqlite3')
+        debug = settings.DEBUG
+        update_message = check_pypi_for_updates(print_message=False)
+        otree_version = otree.__version__
+        regular_sentry = hasattr(settings, 'RAVEN_CONFIG')
+        heroku_sentry = os.environ.get('SENTRY_DSN')
+        sentry = regular_sentry or heroku_sentry
+        auth_level = settings.AUTH_LEVEL in {'DEMO', 'STUDY'}
+        heroku = self.app_is_on_heroku()
+        runserver = 'runserver' in sys.argv
+
+        return {
+            'sqlite': sqlite,
+            'debug': debug,
+            'update_message': update_message,
+            'otree_version': otree_version,
+            'sentry': sentry,
+            'auth_level': auth_level,
+            'heroku': heroku,
+            'runserver': runserver,
+        }
