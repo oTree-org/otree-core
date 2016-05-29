@@ -12,10 +12,14 @@
     {% include "otree/includes/CreateSessionForm.html" %}
 
     <hr/>
-    <h4 id="participants_waiting_count">Participants Ready (0)</h4>
-    <ul id="participants_waiting_list"></ul>
-    <h4 id="pacticipants_not_waiting_count">Participants Not Present (0)</h4>
-    <ul id="participants_not_waiting_list"></ul>
+    <details>
+        <summary id="participants_waiting_count">Participants Ready (0)</summary>
+        <ul id="participants_waiting_list"></ul>
+    </details>
+    <details>
+        <summary id="participants_not_waiting_count">Participants Not Present (0)</summary>
+        <ul id="participants_not_waiting_list"></ul>
+    </details>
 
     <hr/>
 
@@ -55,13 +59,13 @@ $(document).ready(function () {
                 var participants = data["participants"];
                 replaceUL(participants);
             }
-        }
+        };
         socket.onopen = function() {
             console.log('WebSocket connected');
-        }
+        };
         socket.onclose = function() {
             console.log('WebSocket disconnected');
-        }
+        };
     }
 
     function replaceUL(array) {

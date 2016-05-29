@@ -278,7 +278,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
                 self.participant_label,
                 hash
             ])
-            return render_to_response("otree/WaitForSessionPage.html", {'view': self})
+            return render_to_response("otree/WaitPage.html", {'view': self, 'title_text': 'Please wait', 'body_text': 'Waiting for your session to begin'})
 
         assign_new = not room.has_participant_labels()
         if not assign_new:
