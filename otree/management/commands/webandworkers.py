@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import os
-import otree
 import re
 import sys
+
 from honcho.manager import Manager
 
 from django.conf import settings
@@ -15,6 +15,7 @@ from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 import django.core.management.commands.runserver
 
+import otree
 
 
 RunserverCommand = django.core.management.commands.runserver.Command

@@ -3,13 +3,14 @@
 
 import re
 import random
-from six.moves import range
-from six.moves import zip
 from functools import reduce
 from collections import OrderedDict
 
 from django.conf import settings
 from django.db import transaction
+
+from six.moves import range
+from six.moves import zip
 
 import otree.db.idmap
 from otree import constants_internal
@@ -22,6 +23,7 @@ from otree.common import RealWorldCurrency
 from decimal import Decimal
 from otree import deprecate
 from otree.models_concrete import ParticipantLockModel
+
 
 def gcd(a, b):
     """Return greatest common divisor using Euclid's Algorithm."""
@@ -140,7 +142,8 @@ def app_labels_from_sessions(config_names):
 
 @transaction.atomic
 def create_session(session_config_name, label='', num_participants=None,
-                   special_category=None, _pre_create_id=None, room=None, for_mturk=False):
+                   special_category=None, _pre_create_id=None,
+                   room=None, for_mturk=False):
 
     # 2014-5-2: i could implement this by overriding the __init__ on the
     # Session model, but I don't really know how that works, and it seems to
@@ -186,9 +189,7 @@ def create_session(session_config_name, label='', num_participants=None,
     if for_mturk:
         session.mturk_num_participants = (
                 num_participants /
-                settings.MTURK_NUM_PARTICIPANTS_MULT
-        )
-
+                settings.MTURK_NUM_PARTICIPANTS_MULT)
 
     start_order = list(range(num_participants))
     if session_config.get('random_start_order'):

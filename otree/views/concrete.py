@@ -10,14 +10,10 @@ import time
 
 import django.utils.timezone
 from django.core.urlresolvers import reverse
-from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
-from django.contrib import messages
 from django.http import (
-    HttpResponse, HttpResponseRedirect, HttpResponseNotFound
-)
-from django.utils.translation import ugettext as _
+    HttpResponse, HttpResponseRedirect, HttpResponseNotFound)
 
 import vanilla
 
@@ -260,8 +256,9 @@ class AssignVisitorToRoom(vanilla.TemplateView):
                     return super(AssignVisitorToRoom, self).get(args, kwargs)
 
             if participant_label not in room.get_participant_labels():
-                return HttpResponseNotFound('Participant is not expected in this room. Please contact the session supervisor.')
-
+                return HttpResponseNotFound(
+                    'Participant is not expected in this room. '
+                    'Please contact the session supervisor.')
             if room.use_secure_urls:
                 hash = self.request.GET.get('hash')
                 if hash != make_hash(participant_label):
@@ -302,6 +299,7 @@ class AssignVisitorToRoom(vanilla.TemplateView):
 
     def get_context_data(self, **kwargs):
         return {'room': self.request.GET.get('room')}
+
 
 class AdvanceSession(vanilla.View):
 

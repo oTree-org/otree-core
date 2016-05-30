@@ -1,25 +1,19 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import json
+
 from channels import Group
+
 from otree.models import Participant
 from otree.models_concrete import (
-    CompletedGroupWaitPage,
-    CompletedSubsessionWaitPage,
-)
-from otree import common_internal
+    CompletedGroupWaitPage, CompletedSubsessionWaitPage)
 from otree.common_internal import (
-    channels_wait_page_group_name,
-    channels_create_session_group_name,
-)
-import sys
-import json
+    channels_wait_page_group_name, channels_create_session_group_name)
+
 import otree.session
 from otree.models import Session
 from otree.models_concrete import FailedSessionCreation
-
-
-if sys.version_info[0] == 2:
-    from urlparse import parse_qs
-else:
-    from urllib.parse import parse_qs
 
 
 def connect_wait_page(message, params):
@@ -35,14 +29,13 @@ def connect_wait_page(message, params):
     group.add(message.reply_channel)
 
     # in case message was sent before this web socket connects
-
     if model_name == 'group':
         ready = CompletedGroupWaitPage.objects.filter(
             page_index=page_index,
             group_pk=model_pk,
             session_pk=session_pk,
             after_all_players_arrive_run=True).exists()
-    else: # subsession
+    else:  # subsession
         ready = CompletedSubsessionWaitPage.objects.filter(
             page_index=page_index,
             session_pk=session_pk,
@@ -80,14 +73,12 @@ def connect_auto_advance(message, params):
         message.reply_channel.send(
             {'text': json.dumps(
                 # doesn't get shown because not yet localized
-                {'error': 'Participant not found in database.'})}
-        )
+                {'error': 'Participant not found in database.'})})
         return
     if participant._index_in_pages > page_index:
         message.reply_channel.send(
             {'text': json.dumps(
-                {'new_index_in_pages': participant._index_in_pages})}
-        )
+                {'new_index_in_pages': participant._index_in_pages})})
 
 
 def disconnect_auto_advance(message, params):
@@ -112,11 +103,7 @@ def create_session(message):
         )
         FailedSessionCreation(pre_create_id=kwargs['_pre_create_id']).save()
         raise
-
-    group.send(
-        {'text': json.dumps(
-            {'status': 'ready'})}
-)
+    group.send({'text': json.dumps({'status': 'ready'})})
 
 
 def connect_wait_for_session(message, pre_create_id):
@@ -125,10 +112,7 @@ def connect_wait_for_session(message, pre_create_id):
 
     # in case message was sent before this web socket connects
     if Session.objects.filter(_pre_create_id=pre_create_id):
-        group.send(
-        {'text': json.dumps(
-            {'status': 'ready'})}
-        )
+        group.send({'text': json.dumps({'status': 'ready'})})
     elif FailedSessionCreation.objects.filter(
         pre_create_id=pre_create_id
     ).exists():
@@ -145,23 +129,20 @@ def disconnect_wait_for_session(message, pre_create_id):
     group.discard(message.reply_channel)
 
 
+# def connect_admin_lobby(message):
 
-'''
-def connect_admin_lobby(message):
-
-    Group('admin_lobby').add(message.)
-    ids = ParticipantVisit.objects.all()
-    Group('admin_lobby').send(ids)
+    # Group('admin_lobby').add(message.)
+    # ids = ParticipantVisit.objects.all()
+    # Group('admin_lobby').send(ids)
 
 
-def connect_participant_lobby(message):
+# def connect_participant_lobby(message):
 
-    ParticipantVisit(participant_id).save()
-    Group('admin_lobby').send({'participant': participant_id})
+    # ParticipantVisit(participant_id).save()
+    # Group('admin_lobby').send({'participant': participant_id})
 
-def disconnect_participant_lobby(message):
+# def disconnect_participant_lobby(message):
 
-    Group('admin_lobby').send({'participant': participant_id, 'action': 'Leaving'})
-    ParticipantVisit(participant_id).delete()
-'''
-
+    # Group('admin_lobby').send(
+    #     {'participant': participant_id, 'action': 'Leaving'})
+    # ParticipantVisit(participant_id).delete()

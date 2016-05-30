@@ -5,8 +5,6 @@
 # IMPORTS
 # =============================================================================
 
-from django.http import HttpResponseServerError
+from django.http import HttpResponseServerError  # noqa
 
-from otree import common_internal
-
-
+from otree import common_internal  # noqa

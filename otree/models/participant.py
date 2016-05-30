@@ -1,13 +1,11 @@
-import itertools
-import time
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import django.test
-from six.moves import range
-from six.moves import zip
 
 from otree import constants_internal
 import otree.common_internal
 from otree.common_internal import id_label_name, random_chars_8
-
 from otree.common import Currency as c
 from otree.db import models
 from otree.models_concrete import ParticipantToPlayerLookup
@@ -132,11 +130,8 @@ class Participant(ModelWithVars):
             participant_pk=self.pk,
             page_index=self._index_in_pages)
 
-
     def _current_page(self):
-        return '{}/{} pages'.format(
-            self._index_in_pages, self._max_page_index
-        )
+        return '{}/{} pages'.format(self._index_in_pages, self._max_page_index)
 
     def get_players(self):
         """Used to calculate payoffs"""

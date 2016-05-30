@@ -17,8 +17,8 @@ import six
 
 import otree
 from otree.common_internal import (
-    check_pypi_for_updates, add_empty_migrations_to_all_apps
-)
+    check_pypi_for_updates, add_empty_migrations_to_all_apps)
+
 
 # =============================================================================
 # CONSTANTS
@@ -60,7 +60,6 @@ class Command(startproject.Command):
         # migrations
         add_empty_migrations_to_all_apps(project_root_dir)
 
-
     def handle(self, *args, **options):
         answer = None
         while not answer or answer not in "yn":
@@ -74,13 +73,13 @@ class Command(startproject.Command):
         self.core_project_template_path = os.path.join(
                 os.path.dirname(otree.__file__), 'project_template')
         if answer == "y":
-            project_template_path = "https://github.com/oTree-org/oTree/archive/master.zip"
+            project_template_path = (
+                "https://github.com/oTree-org/oTree/archive/master.zip")
         else:
             project_template_path = self.core_project_template_path
         if options.get('template', None) is None:
             options['template'] = project_template_path
         super(Command, self).handle(*args, **options)
-
 
         self.modify_project_files(options)
         try:

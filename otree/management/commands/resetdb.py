@@ -139,8 +139,9 @@ class Command(BaseCommand):
                 # and deprecate resetdb
                 # and instead use "otree makemigrations" and "otree migrate".
 
-                # also, syncdb is faster than migrate, and there is no advantage
-                # to migrate since it's being run on a newly created DB anyway.
+                # also, syncdb is faster than migrate, and there is no
+                # advantage to migrate since it's being run on a newly
+                # created DB anyway.
 
                 # patch .migrations_module() to return a nonexistent module,
                 # instead of app_name.migrations.
