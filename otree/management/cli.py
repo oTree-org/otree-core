@@ -16,7 +16,6 @@ import six
 
 from otree.settings import get_default_settings
 import otree
-import otree.management.deploy.heroku
 from otree.common_internal import check_pypi_for_updates
 
 # =============================================================================
@@ -226,25 +225,3 @@ def otree_cli():
     execute_from_command_line(argv, 'otree')
 
 
-def otree_heroku_cli():
-    """
-    This function is the entry point for the ``otree-heroku`` console script.
-    """
-
-    # We need to add the current directory to the python path as this is not
-    # set by default when no using "python <script>" but a standalone script
-    # like ``otree``.
-    if os.getcwd() not in sys.path:
-        sys.path.insert(0, os.getcwd())
-
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
-    style = color_style()
-
-    try:
-        from django.conf import settings
-        settings.INSTALLED_APPS
-    except ImportError:
-        print(style.ERROR(SETTINGS_NOT_FOUND_MESSAGE))
-        sys.exit(1)
-
-    otree.management.deploy.heroku.execute_from_command_line(sys.argv)
