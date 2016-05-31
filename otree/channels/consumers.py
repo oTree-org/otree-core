@@ -13,7 +13,11 @@ import sys
 import json
 import otree.session
 from otree.models import Session
-from otree.models_concrete import FailedSessionCreation
+from otree.models_concrete import (
+    FailedSessionCreation,
+    FAILURE_MESSAGE_MAX_LENGTH,
+)
+
 
 
 if sys.version_info[0] == 2:
@@ -104,13 +108,17 @@ def create_session(message):
     kwargs = message['kwargs']
     try:
         otree.session.create_session(**kwargs)
-    except:
+    except Exception as e:
+        error_message = 'Failed to create session: "{}" - Check the server logs'.format(
+                    str(e))
         group.send(
             {'text': json.dumps(
-                # doesn't get shown because not yet localized
-                {'error': 'Failed to create session. Check the server logs.'})}
+                {'error': error_message})}
         )
-        FailedSessionCreation(pre_create_id=kwargs['_pre_create_id']).save()
+        FailedSessionCreation(
+            pre_create_id=kwargs['_pre_create_id'],
+            message=error_message[:FAILURE_MESSAGE_MAX_LENGTH]
+        ).save()
         raise
 
     group.send(
@@ -129,13 +137,16 @@ def connect_wait_for_session(message, pre_create_id):
         {'text': json.dumps(
             {'status': 'ready'})}
         )
-    elif FailedSessionCreation.objects.filter(
-        pre_create_id=pre_create_id
-    ).exists():
-        group.send(
-            {'text': json.dumps(
-                {'error': 'Failed to create session. Check the server logs.'})}
+    else:
+        failures = FailedSessionCreation.objects.filter(
+            pre_create_id=pre_create_id
         )
+        if failures:
+            failure = failures[0]
+            group.send(
+                {'text': json.dumps(
+                    {'error': failure.message})}
+            )
 
 
 def disconnect_wait_for_session(message, pre_create_id):

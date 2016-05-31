@@ -18,7 +18,9 @@ from otree.session import (
     create_session, SESSION_CONFIGS_DICT
 )
 import otree.session
-from otree.common_internal import channels_create_session_group_name
+from otree.common_internal import (
+    channels_create_session_group_name,
+)
 from six.moves import range
 import uuid
 
@@ -41,6 +43,7 @@ class DemoIndex(vanilla.TemplateView):
         return 'demo_index'
 
     def get_context_data(self, **kwargs):
+
         intro_text = settings.DEMO_PAGE_INTRO_TEXT
         context = super(DemoIndex, self).get_context_data(**kwargs)
 
@@ -62,7 +65,7 @@ class DemoIndex(vanilla.TemplateView):
         context.update({
             'session_info': session_info,
             'intro_text': intro_text,
-            'is_debug': settings.DEBUG
+            'is_debug': settings.DEBUG,
         })
         return context
 

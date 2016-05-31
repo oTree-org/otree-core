@@ -75,6 +75,8 @@ $(document).ready(function () {
 
             // Handle errors
             if (data.error) {
+                // maybe the div's default text doesn't get shown
+                $("#error-notice").text(data.error);
                 $("#error-notice").show();
                 return;
             }

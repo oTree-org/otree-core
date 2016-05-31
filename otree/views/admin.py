@@ -33,7 +33,8 @@ import easymoney
 from otree.common_internal import (
     get_models_module, app_name_format, add_params_to_url,
     channels_create_session_group_name,
-    check_pypi_for_updates
+    check_pypi_for_updates,
+    db_status_ok
 )
 from otree.session import (
     create_session, SESSION_CONFIGS_DICT,
@@ -944,6 +945,7 @@ class ServerCheck(vanilla.TemplateView):
         auth_level = settings.AUTH_LEVEL in {'DEMO', 'STUDY'}
         heroku = self.app_is_on_heroku()
         runserver = 'runserver' in sys.argv
+        db_synced = db_status_ok(cached_per_process=False)
 
         return {
             'sqlite': sqlite,
@@ -954,4 +956,5 @@ class ServerCheck(vanilla.TemplateView):
             'auth_level': auth_level,
             'heroku': heroku,
             'runserver': runserver,
+            'db_synced': db_synced
         }

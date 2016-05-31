@@ -331,14 +331,22 @@ def db_table_exists(table_name):
     return table_name in connection.introspection.table_names()
 
 
-def db_status_ok():
+db_synced = None
+
+def db_status_ok(cached_per_process=False):
     """Try to execute a simple select * for every model registered
     "Your DB is not ready. Try resetting the database."
     """
+    if cached_per_process and db_synced is not None:
+        return db_synced
+    print('Checking DB tables')
+    global db_synced
     for Model in apps.get_models():
         table_name = Model._meta.db_table
         if not db_table_exists(table_name):
+            db_synced = False
             return False
+    db_synced = True
     return True
 
 

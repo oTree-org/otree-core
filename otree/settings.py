@@ -18,6 +18,7 @@ from django.contrib.messages import constants as messages
 
 
 DEFAULT_MIDDLEWARE_CLASSES = (
+    'otree.middleware.CheckDBMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     # this middlewware is for generate human redeable errors
 

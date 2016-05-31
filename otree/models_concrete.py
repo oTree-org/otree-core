@@ -89,5 +89,7 @@ class RoomSession(models.Model):
     room_name = models.CharField(unique=True, max_length=255)
     session_pk = models.PositiveIntegerField()
 
+FAILURE_MESSAGE_MAX_LENGTH = 300
 class FailedSessionCreation(models.Model):
     pre_create_id = models.CharField(max_length=100, db_index=True)
+    message = models.CharField(max_length=FAILURE_MESSAGE_MAX_LENGTH)

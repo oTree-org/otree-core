@@ -94,6 +94,17 @@
         </div>
     {% endif %}
 
+    {% if not db_synced %}
+        <div class="alert alert-danger">
+            <strong>Database is missing tables</strong>
+            You should run <code>otree resetdb</code>.
+        </div>
+    {% else %}
+        <div class="alert alert-success">
+            Your database appears to be synced.
+        </div>
+    {% endif %}
+
 
     <!--
     {% if not huey %}

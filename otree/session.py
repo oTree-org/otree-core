@@ -5,11 +5,15 @@ import re
 import random
 from six.moves import range
 from six.moves import zip
+import six
 from functools import reduce
 from collections import OrderedDict
+import sys
+
 
 from django.conf import settings
 from django.db import transaction
+from django.db.utils import OperationalError
 
 import otree.db.idmap
 from otree import constants_internal
@@ -202,28 +206,42 @@ def create_session(session_config_name, label='', num_participants=None,
     for participant in participants:
         ParticipantLockModel(participant_code=participant.code).save()
 
-    for app_name in session_config['app_sequence']:
+    try:
+        for app_name in session_config['app_sequence']:
 
-        models_module = get_models_module(app_name)
-        app_constants = get_app_constants(app_name)
+            models_module = get_models_module(app_name)
+            app_constants = get_app_constants(app_name)
 
-        round_numbers = list(range(1, app_constants.num_rounds + 1))
+            round_numbers = list(range(1, app_constants.num_rounds + 1))
 
-        subs = bulk_create(
-            models_module.Subsession,
-            [{'round_number': round_number} for round_number in round_numbers])
+            subs = bulk_create(
+                models_module.Subsession,
+                [{'round_number': round_number} for round_number in round_numbers])
 
-        # Create players
-        models_module.Player.objects.bulk_create([
-            models_module.Player(
-                session=session,
-                subsession=subsession,
-                round_number=round_number,
-                participant=participant)
-            for round_number, subsession in zip(round_numbers, subs)
-            for participant in participants])
+            # Create players
+            models_module.Player.objects.bulk_create([
+                models_module.Player(
+                    session=session,
+                    subsession=subsession,
+                    round_number=round_number,
+                    participant=participant)
+                for round_number, subsession in zip(round_numbers, subs)
+                for participant in participants])
 
-    session._create_groups_and_initialize()
+        session._create_groups_and_initialize()
+    # handle case where DB has missing column or table
+    # missing table: OperationalError: no such table: pg_subsession
+    # missing column: OperationalError: table pg_player has no column named contribution2
+    except OperationalError as exception:
+        exception_str = str(exception)
+        if 'table' in exception_str:
+            six.reraise(
+                type(exception),
+                type(exception)('{} - Try resetting the database.'.format(exception_str)),
+                sys.exc_info()[2])
+        raise
+
+
     session.build_participant_to_player_lookups()
     if room is not None:
         room.session = session
