@@ -40,15 +40,12 @@ class BasePlayer(SaveTheChange, models.Model):
 
     def in_round(self, round_number):
         return type(self).objects.get(
-            participant=self.participant,
-            round_number=round_number
+            participant=self.participant, round_number=round_number
         )
 
     def in_rounds(self, first, last):
         qs = type(self).objects.filter(
-            participant=self.participant,
-            round_number__gte=first,
-            round_number__lte=last,
+            participant=self.participant, round_number__range=(first, last),
         ).order_by('round_number')
 
         return list(qs)

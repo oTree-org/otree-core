@@ -50,8 +50,7 @@ class TemplateCheckContent(object):
             return []
 
         textnodes = self.get_toplevel_content_nodes(self.root)
-        content = [node.s for node in textnodes]
-        return content
+        return [node.s for node in textnodes]
 
 
 def get_unreachable_content(root):

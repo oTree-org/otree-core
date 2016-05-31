@@ -77,6 +77,7 @@ def validate_session_config(session_config):
             raise AttributeError(msg.format(key, session_config))
 
     st_name = session_config['name']
+    # TODO: Replace with `not st_name.isidentifier()` when we drop Python 2.
     if not re.match(r'^\w+$', st_name):
         msg = (
             'Session "{}": name must be alphanumeric with no '
