@@ -28,8 +28,7 @@ def mark_field_as_rendered(context, bound_field):
 class FormNode(floppyforms_templatetags.FormNode):
     def get_form_instance(self, context):
         extra_context = self.get_extra_context(context)
-        form = extra_context[self.single_template_var]
-        return form
+        return extra_context[self.single_template_var]
 
     def get_rendered_fields(self, context):
         return getattr(context, '_rendered_fields', [])

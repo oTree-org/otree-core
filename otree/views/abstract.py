@@ -282,14 +282,14 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             ]
         )
 
-        new_tables = []
+        new_tables = [basic_info_table]
         if self._vars_for_template:
             rows = sorted(self._vars_for_template.items())
             title = 'Template Vars (<code>{}</code>/<code>{}</code>)'.format(
                 'vars_for_template()', 'vars_for_all_templates()')
             new_tables.append(DebugTable(title=title, rows=rows))
 
-        return [basic_info_table] + new_tables
+        return new_tables
 
     def load_objects(self):
         """
@@ -422,11 +422,8 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             # FIXME: are there other attributes? should i do As_view,
             # or simulate the
             # request?
-            page = Page()
-            page.player = self.player
-            page.group = self.group
-            page.subsession = self.subsession
-            page.session = self.session
+            page = Page(player=self.player, group=self.group,
+                        subsession=self.subsession, session=self.session)
 
             # don't skip wait pages
             # because the user has to pass through them
@@ -486,7 +483,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             hasattr(self, 'timeout_happened') and self.timeout_happened
         )
 
-        completion = PageCompletion(
+        PageCompletion.objects.create(
             app_name=self.subsession._meta.app_config.name,
             page_index=self._index_in_pages,
             page_name=page_name, time_stamp=now,
@@ -495,7 +492,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             participant_pk=self.participant.pk,
             session_pk=self.subsession.session.pk,
             auto_submitted=timeout_happened)
-        completion.save()
         self.participant.save()
 
 
@@ -558,14 +554,12 @@ class GenericWaitPageMixin(object):
     def get_context_data(self, **kwargs):
         # 2015-11-13: title_text() and body_text() methods deprecated
         # they should be class attributes instead
-        if isinstance(self.title_text, collections.Callable):
-            title_text = self.title_text()
-        else:
-            title_text = self.title_text
-        if isinstance(self.body_text, collections.Callable):
-            body_text = self.body_text()
-        else:
-            body_text = self.body_text
+        title_text = self.title_text
+        if callable(title_text):
+            title_text = title_text()
+        body_text = self.body_text
+        if callable(body_text):
+            body_text = body_text()
 
         # could evaluate to false like 0
         if title_text is None:
@@ -594,10 +588,8 @@ class InGameWaitPageMixin(object):
     """
 
     def dispatch(self, request, *args, **kwargs):
-        if self.wait_for_all_groups:
-            self._group_or_subsession = self.subsession
-        else:
-            self._group_or_subsession = self.group
+        self._group_or_subsession = (
+            self.subsession if self.wait_for_all_groups else self.group)
         if self._is_ready():
             return self._response_when_ready()
         # take a lock because we set "waiting for" list here
@@ -613,119 +605,115 @@ class InGameWaitPageMixin(object):
                 return self._response_when_ready()
             self.participant.is_on_wait_page = True
             return self._get_wait_page()
-        else:
-            try:
-                if self.wait_for_all_groups:
-                    completion = CompletedSubsessionWaitPage(
-                        page_index=self._index_in_pages,
-                        session_pk=self.session.pk
-                    )
-                else:
-                    completion = CompletedGroupWaitPage(
-                        page_index=self._index_in_pages,
-                        group_pk=self.group.pk,
-                        session_pk=self.session.pk
-                    )
-                completion.save()
-            # if the record already exists
-            # (enforced through unique_together)
-            except django.db.IntegrityError:
-                self.participant.is_on_wait_page = True
-                return self._get_wait_page()
-            try:
-                # need to check this before deleting
-                # reference to self.player
-                is_displayed = self.is_displayed()
 
-                # in case there is a timeout on the next page, we
-                # should ensure the next pages are visited promptly
-                # TODO: can we make this run only if next page is a
-                # timeout page?
-                # or if a player is auto playing.
-                # we could instead make this request the current page
-                # URL, but it's different for each player
-
-                # _group_or_subsession might be deleted
-                # in after_all_players_arrive, so calculate this first
-                participant_pk_set = set([
-                    p.participant.pk
-                    for p in self._group_or_subsession.player_set.all()
-                ])
-
-                # _group_or_subsession might be deleted
-                # in after_all_players_arrive, so calculate this first
-                channels_group_name = self.channels_group_name()
-
-                # block users from accessing self.player inside
-                # after_all_players_arrive, because conceptually
-                # there is no single player in this context
-                # (method is executed once for the whole group)
-
-                player = self.player
-                del self.player
-
-                # make sure we get the most up-to-date player objects
-                # e.g. if they were queried in is_displayed(),
-                # then they could be out of date
-                # but don't delete the current player from cache
-                # because we need it to be saved at the end
-                import idmap.tls
-                cache = getattr(idmap.tls._tls, 'idmap_cache', {})
-                for p in list(cache.get(self.PlayerClass, {}).values()):
-                    if p != player:
-                        self.PlayerClass.flush_cached_instance(p)
-
-                # if any player can skip the wait page,
-                # then we shouldn't run after_all_players_arrive
-                # because if some players are able to proceed to the next page
-                # before after_all_players_arrive is run,
-                # then after_all_players_arrive is probably not essential.
-                # often, there are some wait pages that all players skip,
-                # because they should only be shown in certain rounds.
-                # maybe the fields that after_all_players_arrive depends on
-                # are null
-                # something to think about: ideally, should we check if
-                # all players skipped, or any player skipped?
-                # as a shortcut, we just check if is_displayed is true
-                # for the last player.
-                if is_displayed:
-                    self.after_all_players_arrive()
-            except:
-                completion.delete()
-                raise
-
-            self.player = player
-
-            if otree.common_internal.USE_REDIS:
-                # 2015-07-27:
-                #   why not check if the next page has_timeout?
-                otree.timeout.tasks.ensure_pages_visited.schedule(
-                    kwargs={
-                        'participant_pk_set': participant_pk_set,
-                        'wait_page_index': self._index_in_pages}, delay=10)
-
-            completion.after_all_players_arrive_run = True
+        try:
+            if self.wait_for_all_groups:
+                completion = CompletedSubsessionWaitPage(
+                    page_index=self._index_in_pages,
+                    session_pk=self.session.pk
+                )
+            else:
+                completion = CompletedGroupWaitPage(
+                    page_index=self._index_in_pages,
+                    group_pk=self.group.pk,
+                    session_pk=self.session.pk
+                )
             completion.save()
+        # if the record already exists
+        # (enforced through unique_together)
+        except django.db.IntegrityError:
+            self.participant.is_on_wait_page = True
+            return self._get_wait_page()
+        try:
+            # need to check this before deleting
+            # reference to self.player
+            is_displayed = self.is_displayed()
 
-            # send a message to the channel to move forward
-            # this should happen at the very end,
-            channels.Group(channels_group_name).send(
-                {'text': json.dumps(
-                    {'status': 'ready'})}
-            )
+            # in case there is a timeout on the next page, we
+            # should ensure the next pages are visited promptly
+            # TODO: can we make this run only if next page is a
+            # timeout page?
+            # or if a player is auto playing.
+            # we could instead make this request the current page
+            # URL, but it's different for each player
 
-            # we can assume it's ready because
-            # even if it wasn't created, that means someone else
-            # created it, and therefore that whole code block
-            # finished executing (including the after_all_players_arrive)
-            # inside the transaction
-            return self._response_when_ready()
+            # _group_or_subsession might be deleted
+            # in after_all_players_arrive, so calculate this first
+            participant_pk_set = set(
+                self._group_or_subsession.player_set
+                .values_list('participant__pk', flat=True))
+
+            # _group_or_subsession might be deleted
+            # in after_all_players_arrive, so calculate this first
+            channels_group_name = self.channels_group_name()
+
+            # block users from accessing self.player inside
+            # after_all_players_arrive, because conceptually
+            # there is no single player in this context
+            # (method is executed once for the whole group)
+
+            player = self.player
+            del self.player
+
+            # make sure we get the most up-to-date player objects
+            # e.g. if they were queried in is_displayed(),
+            # then they could be out of date
+            # but don't delete the current player from cache
+            # because we need it to be saved at the end
+            import idmap.tls
+            cache = getattr(idmap.tls._tls, 'idmap_cache', {})
+            for p in list(cache.get(self.PlayerClass, {}).values()):
+                if p != player:
+                    self.PlayerClass.flush_cached_instance(p)
+
+            # if any player can skip the wait page,
+            # then we shouldn't run after_all_players_arrive
+            # because if some players are able to proceed to the next page
+            # before after_all_players_arrive is run,
+            # then after_all_players_arrive is probably not essential.
+            # often, there are some wait pages that all players skip,
+            # because they should only be shown in certain rounds.
+            # maybe the fields that after_all_players_arrive depends on
+            # are null
+            # something to think about: ideally, should we check if
+            # all players skipped, or any player skipped?
+            # as a shortcut, we just check if is_displayed is true
+            # for the last player.
+            if is_displayed:
+                self.after_all_players_arrive()
+        except:
+            completion.delete()
+            raise
+
+        self.player = player
+
+        if otree.common_internal.USE_REDIS:
+            # 2015-07-27:
+            #   why not check if the next page has_timeout?
+            otree.timeout.tasks.ensure_pages_visited.schedule(
+                kwargs={
+                    'participant_pk_set': participant_pk_set,
+                    'wait_page_index': self._index_in_pages}, delay=10)
+
+        completion.after_all_players_arrive_run = True
+        completion.save()
+
+        # send a message to the channel to move forward
+        # this should happen at the very end,
+        channels.Group(channels_group_name).send(
+            {'text': json.dumps(
+                {'status': 'ready'})}
+        )
+
+        # we can assume it's ready because
+        # even if it wasn't created, that means someone else
+        # created it, and therefore that whole code block
+        # finished executing (including the after_all_players_arrive)
+        # inside the transaction
+        return self._response_when_ready()
 
     def channels_group_name(self):
-        if self.wait_for_all_groups:
-            model_name = 'subsession'
-        else:
-            model_name = 'group'
+        model_name = 'subsession' if self.wait_for_all_groups else 'group'
 
         return otree.common_internal.channels_wait_page_group_name(
             session_pk=self.session.pk,
@@ -734,10 +722,7 @@ class InGameWaitPageMixin(object):
             model_pk=self._group_or_subsession.pk)
 
     def socket_url(self):
-        if self.wait_for_all_groups:
-            model_name = 'subsession'
-        else:
-            model_name = 'group'
+        model_name = 'subsession' if self.wait_for_all_groups else 'group'
 
         params = ','.join([
             str(self.session.pk),
@@ -755,12 +740,11 @@ class InGameWaitPageMixin(object):
                 page_index=self._index_in_pages,
                 session_pk=self.session.pk,
                 after_all_players_arrive_run=True).exists()
-        else:
-            return CompletedGroupWaitPage.objects.filter(
-                page_index=self._index_in_pages,
-                group_pk=self.group.pk,
-                session_pk=self.session.pk,
-                after_all_players_arrive_run=True).exists()
+        return CompletedGroupWaitPage.objects.filter(
+            page_index=self._index_in_pages,
+            group_pk=self.group.pk,
+            session_pk=self.session.pk,
+            after_all_players_arrive_run=True).exists()
 
     def _tally_unvisited(self):
         """side effect: set _waiting_for_ids"""
@@ -809,7 +793,7 @@ class InGameWaitPageMixin(object):
         num_other_players = len(self._group_or_subsession.get_players()) - 1
         if num_other_players > 1:
             return _('Waiting for the other participants.')
-        elif num_other_players == 1:
+        if num_other_players == 1:
             return _('Waiting for the other participant.')
         return ''
 
@@ -826,12 +810,10 @@ class FormPageMixin(object):
 
     def get_template_names(self):
         if self.template_name is not None:
-            template_name = self.template_name
-        else:
-            template_name = '{}/{}.html'.format(
-                get_app_label_from_import_path(self.__module__),
-                self.__class__.__name__)
-        return [template_name]
+            return [self.template_name]
+        return ['{}/{}.html'.format(
+            get_app_label_from_import_path(self.__module__),
+            self.__class__.__name__)]
 
     def get_form_fields(self):
         return self.form_fields
@@ -844,11 +826,10 @@ class FormPageMixin(object):
                     self.__class__.__name__
                 )
             )
-        form_class = otree.forms.modelform_factory(
+        return otree.forms.modelform_factory(
             self.form_model, fields=fields,
             form=otree.forms.ModelForm,
             formfield_callback=otree.forms.formfield_callback)
-        return form_class
 
     def before_next_page(self):
         pass
@@ -959,9 +940,9 @@ class PlayerUpdateView(FormPageMixin, FormPageOrInGameWaitPageMixin,
         Cls = self.form_model
         if Cls == self.GroupClass:
             return self.group
-        elif Cls == self.PlayerClass:
+        if Cls == self.PlayerClass:
             return self.player
-        elif Cls == StubModel:
+        if Cls == StubModel:
             return StubModel.objects.all()[0]
 
 

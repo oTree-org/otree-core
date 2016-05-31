@@ -3,13 +3,13 @@
 
 from __future__ import division
 
+from django.db.models import Prefetch
 import six
 from six.moves import zip
 
 from otree_save_the_change.mixins import SaveTheChange
 from otree.db import models
-from otree.common_internal import (
-    get_models_module, flatten)
+from otree.common_internal import get_models_module
 from otree import match_players
 
 
@@ -44,10 +44,10 @@ class BaseSubsession(SaveTheChange, models.Model):
         return self.name()
 
     def in_round(self, round_number):
-        return type(self).objects.filter(
+        return type(self).objects.get(
             session=self.session,
             round_number=round_number
-        ).get()
+        )
 
     def _get_players_per_group_list(self):
         """get a list whose elements are the number of players in each group
@@ -95,10 +95,9 @@ class BaseSubsession(SaveTheChange, models.Model):
         e.g., if group_by_arrival_time is true, and some players have not
         been assigned to groups yet
         '''
-        players = self.get_players()
-        groups = [g.get_players() for g in self.get_groups()]
-        players_from_groups = flatten(groups)
-
+        players = self.player_set.all()
+        players_from_groups = self._PlayerClass().objects.filter(
+            group__subsession=self)
         assert set(players) == set(players_from_groups)
 
     def _set_groups(self, groups, check_integrity=True):
@@ -122,10 +121,10 @@ class BaseSubsession(SaveTheChange, models.Model):
                 matrix.append(players_list)
                 # assume it's an iterable containing the players
         # Before deleting groups, Need to set the foreignkeys to None
-        for g in matrix:
-            for p in g:
-                p.group = None
-                p.save()
+        player_pk_list = [p.pk for g in matrix for p in g]
+        self._PlayerClass().objects.filter(
+            pk__in=player_pk_list).update(group=None)
+
         self.group_set.all().delete()
         for i, row in enumerate(matrix, start=1):
             group = self._create_group()
@@ -145,6 +144,9 @@ class BaseSubsession(SaveTheChange, models.Model):
     def _GroupClass(self):
         return models.get_model(self._meta.app_config.label, 'Group')
 
+    def _PlayerClass(self):
+        return models.get_model(self._meta.app_config.label, 'Player')
+
     def _create_group(self):
         '''should not be public API, because could leave the players in an
         inconsistent state,
@@ -154,12 +156,9 @@ class BaseSubsession(SaveTheChange, models.Model):
 
         '''
         GroupClass = self._GroupClass()
-        group = GroupClass(subsession=self, session=self.session,
-                           round_number=self.round_number)
-
-        # need to save it before you assign the player.group ForeignKey
-        group.save()
-        return group
+        return GroupClass.objects.create(
+            subsession=self, session=self.session,
+            round_number=self.round_number)
 
     def _first_round_group_matrix(self):
         players = list(self.get_players())
@@ -184,8 +183,11 @@ class BaseSubsession(SaveTheChange, models.Model):
     def group_like_round(self, round_number):
         previous_round = self.in_round(round_number)
         group_matrix = [
-            group.get_players()
-            for group in previous_round.get_groups()
+            group._ordered_players
+            for group in previous_round.group_set.prefetch_related(
+                Prefetch('player_set',
+                         queryset=self._PlayerClass().objects.order_by('pk'),
+                         to_attr='_ordered_players'))
         ]
         for i, group_list in enumerate(group_matrix):
             for j, player in enumerate(group_list):

@@ -116,7 +116,7 @@ class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
 class JSONTextarea(forms.Textarea):
     def value_from_datadict(self, data, files, name):
         value = data.get(name, '').strip()
-        if value in ['', None]:
+        if value is None or value == '':
             return {}
         return json.loads(value)
 

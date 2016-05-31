@@ -38,10 +38,8 @@ class Room(object):
         if session is None:
             RoomSession.objects.filter(room_name=self.name).delete()
         else:
-            room_session, created = RoomSession.objects.get_or_create(
-                room_name=self.name)
-            room_session.session_pk = session.pk
-            room_session.save()
+            RoomSession.objects.get_or_create(
+                room_name=self.name, session_pk=session.pk)
 
     def has_participant_labels(self):
         return bool(self.participant_label_file)
