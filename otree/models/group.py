@@ -5,6 +5,7 @@ from otree_save_the_change.mixins import SaveTheChange
 
 from otree.db import models
 from otree.common_internal import get_models_module
+from otree.models.fieldchecks import ensure_field
 
 
 class BaseGroup(SaveTheChange, models.Model):
@@ -82,3 +83,15 @@ class BaseGroup(SaveTheChange, models.Model):
     @property
     def _Constants(self):
         return get_models_module(self._meta.app_config.name).Constants
+
+
+    @classmethod
+    def _ensure_required_fields(cls):
+        """
+        Every ``Group`` model requires a foreign key to the ``Subsession``
+        model of the same app.
+        """
+        subsession_model = '{app_label}.Subsession'.format(
+            app_label=cls._meta.app_label)
+        subsession_field = models.ForeignKey(subsession_model)
+        ensure_field(cls, 'subsession', subsession_field)

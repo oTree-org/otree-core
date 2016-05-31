@@ -54,6 +54,9 @@ class Page(abstract.PlayerUpdateView):
 
     template_name = None
 
+    def get_form_fields(self):
+        return super(Page, self).get_form_fields()
+
     # prefix with "form_" so that it's clear these refer to the form
     # otherwise someone might confuse 'fields' with vars_for_template
     form_model = abstract.PlayerUpdateView.model

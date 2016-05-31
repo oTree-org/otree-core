@@ -6,7 +6,7 @@ from otree_save_the_change.mixins import SaveTheChange
 
 from otree.db import models
 from otree.models.session import Session
-
+from otree.models.fieldchecks import ensure_field
 
 class BasePlayer(SaveTheChange, models.Model):
     """
@@ -21,10 +21,6 @@ class BasePlayer(SaveTheChange, models.Model):
     _index_in_game_pages = models.PositiveIntegerField(
         default=0,
         doc='Index in the list of pages  views_module.page_sequence'
-    )
-
-    session = models.ForeignKey(
-        Session, related_name='%(app_label)s_%(class)s'
     )
 
     round_number = models.PositiveIntegerField(db_index=True)
@@ -68,3 +64,20 @@ class BasePlayer(SaveTheChange, models.Model):
     @property
     def _Constants(self):
         return get_models_module(self._meta.app_config.name).Constants
+
+
+    @classmethod
+    def _ensure_required_fields(cls):
+        """
+        Every ``Player`` model requires a foreign key to the ``Subsession`` and
+        ``Group`` model of the same app.
+        """
+        subsession_model = '{app_label}.Subsession'.format(
+            app_label=cls._meta.app_label)
+        subsession_field = models.ForeignKey(subsession_model)
+        ensure_field(cls, 'subsession', subsession_field)
+
+        group_model = '{app_label}.Group'.format(
+            app_label=cls._meta.app_label)
+        group_field = models.ForeignKey(group_model, null=True)
+        ensure_field(cls, 'group', group_field)
