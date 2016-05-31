@@ -2,10 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-import random
-import string
 import six
-from six.moves import range
 
 from django.db import models
 from django.db.models.fields import related
@@ -23,8 +20,7 @@ from .idmap import SharedMemoryModel
 
 import otree.common
 from otree.common_internal import (
-    expand_choice_tuples, get_app_label_from_import_path
-)
+    expand_choice_tuples, get_app_label_from_import_path)
 from otree.constants_internal import field_required_msg
 
 

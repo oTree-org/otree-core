@@ -5,6 +5,7 @@ from six.moves.urllib.parse import urlparse
 from six.moves.urllib.parse import urlunparse
 import datetime
 from collections import defaultdict
+import sys
 
 from django.conf import settings
 from django.contrib import messages
@@ -176,6 +177,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             bool(settings.AWS_ACCESS_KEY_ID) and
             bool(settings.AWS_SECRET_ACCESS_KEY)
         )
+        context['runserver'] = 'runserver' in sys.argv
         url = self.request.build_absolute_uri(
             reverse('session_create_hit', args=(self.session.pk,))
         )

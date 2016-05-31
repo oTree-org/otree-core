@@ -10,14 +10,10 @@ import time
 
 import django.utils.timezone
 from django.core.urlresolvers import reverse
-from django.conf import settings
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template.response import TemplateResponse
-from django.contrib import messages
 from django.http import (
-    HttpResponse, HttpResponseRedirect, HttpResponseNotFound
-)
-from django.utils.translation import ugettext as _
+    HttpResponse, HttpResponseRedirect, HttpResponseNotFound)
 
 import vanilla
 
@@ -264,6 +260,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
 
             if self.participant_label not in room.get_participant_labels():
                 return HttpResponseNotFound('Participant is not expected in this room. Please contact the session supervisor.')
+
 
             if room.use_secure_urls:
                 hash = self.request.GET.get('hash')

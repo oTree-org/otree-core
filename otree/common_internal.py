@@ -9,15 +9,20 @@ import contextlib
 import inspect
 import re
 import random
-from os.path import dirname, join
-from collections import OrderedDict
-from importlib import import_module
-import six
-from six.moves import urllib
+import string
+import errno
 import logging
 import hashlib
 import requests
 import json
+
+
+from os.path import dirname, join
+from collections import OrderedDict
+from importlib import import_module
+
+import six
+from six.moves import urllib
 
 from django.db import transaction
 from django.db import connection
@@ -28,8 +33,6 @@ from django.template.defaultfilters import title
 from otree import constants_internal
 import otree
 
-import string
-import errno
 
 # set to False if using runserver
 USE_REDIS = True
@@ -38,6 +41,7 @@ if sys.version_info[0] == 2:
     import unicodecsv as csv
 else:
     import csv
+
 
 def add_params_to_url(url, params):
     url_parts = list(urllib.parse.urlparse(url))
@@ -64,12 +68,14 @@ def git_commit_timestamp():
     except IOError:
         return ''
 
+
 def random_chars_8():
-    chars=string.ascii_lowercase + string.digits
+    chars = string.ascii_lowercase + string.digits
     return ''.join(random.choice(chars) for _ in range(8))
 
+
 def random_chars_10():
-    chars=string.ascii_lowercase + string.digits
+    chars = string.ascii_lowercase + string.digits
     return ''.join(random.choice(chars) for _ in range(8))
 
 
@@ -331,20 +337,29 @@ def db_table_exists(table_name):
     return table_name in connection.introspection.table_names()
 
 
-def db_status_ok():
+db_synced = None
+
+def db_status_ok(cached_per_process=False):
     """Try to execute a simple select * for every model registered
     "Your DB is not ready. Try resetting the database."
     """
+    if cached_per_process and db_synced is not None:
+        return db_synced
+    print('Checking DB tables')
+    global db_synced
     for Model in apps.get_models():
         table_name = Model._meta.db_table
         if not db_table_exists(table_name):
+            db_synced = False
             return False
+    db_synced = True
     return True
 
 
 def make_hash(s):
     s += settings.SECRET_KEY
     return hashlib.sha224(s.encode()).hexdigest()[:8]
+
 
 @contextlib.contextmanager
 def no_op_context_manager():
@@ -360,8 +375,7 @@ def transaction_atomic():
             yield
 
 
-
-def check_pypi_for_updates(print_message = True):
+def check_pypi_for_updates(print_message=True):
     logging.getLogger("requests").setLevel(logging.WARNING)
     response = requests.get('http://pypi.python.org/pypi/otree-core/json')
     data = json.loads(response.content.decode())
@@ -377,7 +391,7 @@ def check_pypi_for_updates(print_message = True):
         installed_tuple = [int(n) for n in installed_match.groups()]
 
         releases = data['releases']
-        newest_tuple = [0,0,0]
+        newest_tuple = [0, 0, 0]
         newest_dotted = ''
         for release in releases:
             release_match = semver_re.match(release)
@@ -390,11 +404,8 @@ def check_pypi_for_updates(print_message = True):
         installed = installed_tuple
 
         needs_update = (newest > installed and (
-                newest[0] > installed[0] or
-                newest[1] > installed[1] or
-                newest[2] - installed[2] > 5
-            )
-        )
+                newest[0] > installed[0] or newest[1] > installed[1] or
+                newest[2] - installed[2] > 5))
 
     else:
         # compare to the latest release, whether stable or not
@@ -411,11 +422,8 @@ def check_pypi_for_updates(print_message = True):
             '(version {}; latest is {}). '
             'You should upgrade with:\n '
             '"{} install --upgrade otree-core"\n '
-            'and update your requirements_base.txt.'
-                .format(
-                installed_dotted, newest_dotted, pip_command
-            )
-        )
+            'and update your requirements_base.txt.'.format(
+                installed_dotted, newest_dotted, pip_command))
         if print_message:
             print(update_message)
         else:
@@ -426,14 +434,12 @@ def channels_create_session_group_name(pre_create_id):
     return 'wait_for_session_{}'.format(pre_create_id)
 
 
-def channels_wait_page_group_name(session_pk, page_index, model_name, model_pk):
+def channels_wait_page_group_name(session_pk, page_index,
+                                  model_name, model_pk):
 
     return 'wait-page-{}-page{}-{}{}'.format(
-        session_pk,
-        page_index,
-        model_name,
-        model_pk
-    )
+        session_pk, page_index, model_name, model_pk)
+
 
 def make_sure_path_exists(path):
     try:
@@ -441,6 +447,7 @@ def make_sure_path_exists(path):
     except OSError as exception:
         if exception.errno != errno.EEXIST:
             raise exception
+
 
 def add_empty_migrations_to_all_apps(project_root):
     # for each app in the project folder,
@@ -458,7 +465,7 @@ def add_empty_migrations_to_all_apps(project_root):
             if os.path.isfile(models_file_path):
                 migrations_folder_path = os.path.join(app_folder, 'migrations')
                 make_sure_path_exists(migrations_folder_path)
-                init_file_path = os.path.join(migrations_folder_path, '__init__.py')
+                init_file_path = os.path.join(
+                    migrations_folder_path, '__init__.py')
                 with open(init_file_path, 'a') as f:
                     f.write('')
-

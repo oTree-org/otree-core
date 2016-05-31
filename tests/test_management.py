@@ -166,32 +166,3 @@ class OTreeCli(TestCase):
             self.assertEquals(path, ["foo"])
         self.assertTrue(gcwd.called)
         execute_from_command_line.assert_called_with(["--version"], "otree")
-
-
-class OTreeHerokuCli(TestCase):
-
-    @mock.patch("sys.stdout")
-    @mock.patch("sys.stderr")
-    def test_import_settings_fail(self, *args):
-        with mock.patch("django.conf.settings", create=True) as settings:
-            type(settings).INSTALLED_APPS = mock.PropertyMock(
-                side_effect=ImportError)
-            with self.assertRaises(SystemExit):
-                cli.otree_heroku_cli()
-
-    @mock.patch("sys.argv", new=["--version"])
-    @mock.patch("otree.management.deploy.heroku.execute_from_command_line")
-    def test_clean_run(self, execute_from_command_line):
-        cli.otree_heroku_cli()
-        execute_from_command_line.assert_called_with(["--version"])
-
-    @mock.patch("sys.argv", new=["--version"])
-    @mock.patch("otree.management.deploy.heroku.execute_from_command_line")
-    @mock.patch("os.getcwd", return_value="foo")
-    def test_add_pwd(self, *args):
-        gcwd, execute_from_command_line = args
-        with mock.patch("sys.path", new=[]) as path:
-            cli.otree_heroku_cli()
-            self.assertEquals(path, ["foo"])
-        self.assertTrue(gcwd.called)
-        execute_from_command_line.assert_called_with(["--version"])

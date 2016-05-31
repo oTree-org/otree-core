@@ -16,7 +16,6 @@
 import logging
 import contextlib
 import collections
-import time
 import random
 import mock
 
@@ -28,7 +27,6 @@ from django import test
 from django.test import runner
 from unittest import TestSuite
 
-import otree.models
 from otree import constants_internal, session, common_internal
 from otree.test.client import ParticipantBot
 

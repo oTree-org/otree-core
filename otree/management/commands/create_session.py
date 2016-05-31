@@ -8,6 +8,7 @@ from django.core.management.base import BaseCommand
 from otree.session import create_session
 from otree.room import ROOM_DICT
 
+
 class Command(BaseCommand):
     help = "oTree: Create a session."
 
@@ -22,7 +23,8 @@ class Command(BaseCommand):
             dest="label", default='', help="label for the created session")
         parser.add_argument(
             "--room", action="store", type=six.u,
-            dest="room", default=None, help="Name of room to create the session in")
+            dest="room", default=None,
+            help="Name of room to create the session in")
 
     def handle(self, *args, **options):
         session_config_name = options["session_config_name"]
@@ -41,4 +43,3 @@ class Command(BaseCommand):
             ))
         else:
             print("Created session with code {}\n".format(session.code))
-
