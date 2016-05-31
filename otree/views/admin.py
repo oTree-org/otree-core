@@ -723,44 +723,37 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
 
     def get_context_data(self, **kwargs):
         session = self.session
-
-        participant_urls = [
-            self.request.build_absolute_uri(participant._start_url())
-            for participant in session.get_participants()
-            ]
-
-        anonymous_url = self.request.build_absolute_uri(
-            reverse(
-                'join_session_anonymously',
-                args=(session._anonymous_code,)
-            )
-        )
+        room = session.get_room()
 
         context = super(SessionStartLinks, self).get_context_data(**kwargs)
 
-        context.update({
-            'participant_urls': participant_urls,
-            'anonymous_url': anonymous_url,
-            'num_participants': len(participant_urls),
-            'fullscreen_mode_on': len(participant_urls) <= 3
-        })
+        if room:
+            context.update(
+            {
+                'participant_urls': room.get_participant_links(),
+                'room': room
+            })
+        else:
+            participant_urls = [
+                self.request.build_absolute_uri(participant._start_url())
+                for participant in session.get_participants()
+                ]
+
+            anonymous_url = self.request.build_absolute_uri(
+                reverse(
+                    'join_session_anonymously',
+                    args=(session._anonymous_code,)
+                )
+            )
+
+            context.update({
+                'participant_urls': participant_urls,
+                'anonymous_url': anonymous_url,
+                'num_participants': len(participant_urls),
+                'fullscreen_mode_on': len(participant_urls) <= 3
+            })
+
         return context
-
-
-class SessionStartLinksRoom(AdminSessionPageMixin, vanilla.TemplateView):
-    @classmethod
-    def url_name(cls):
-        return 'session_start_links_room'
-
-    def get_context_data(self, **kwargs):
-        session = self.session
-        room = session.get_room()
-
-        context = {'participant_urls': room.get_participant_links(),
-                   'room': room}
-        kwargs.update(context)
-
-        return super(SessionStartLinksRoom, self).get_context_data(**kwargs)
 
 
 class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):

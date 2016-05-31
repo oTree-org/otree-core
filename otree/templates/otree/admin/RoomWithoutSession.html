@@ -12,14 +12,17 @@
     {% include "otree/includes/CreateSessionForm.html" %}
 
     <hr/>
-    <details>
-        <summary id="participants_waiting_count">Participants Ready (0)</summary>
+    <h3 id="participants_waiting_count">Participants Ready (0)</h3>
+    <button class="btn" type="button" data-toggle="collapse" data-target="#participants_waiting_container">Expand/Collapse ID List</button>
+    <div id="participants_waiting_container" class="collapse">
         <ul id="participants_waiting_list"></ul>
-    </details>
-    <details>
-        <summary id="participants_not_waiting_count">Participants Not Present (0)</summary>
+    </div>
+
+    <h3 id="participants_not_waiting_count">Participants Not Present (0)</h3>
+    <button class="btn" type="button" data-toggle="collapse" data-target="#participants_not_waiting_container">Expand/Collapse ID List</button>
+    <div id="participants_not_waiting_container" class="collapse">
         <ul id="participants_not_waiting_list"></ul>
-    </details>
+    </div>
 
     <hr/>
 
@@ -56,7 +59,7 @@ $(document).ready(function () {
             var status = data["status"];
             if (status == "update_list") {
                 // Replace the existing list of participants with our new list
-                var participants = data["participants"];
+                var participants = data["participants_"];
                 replaceUL(participants);
             }
         };

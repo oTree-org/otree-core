@@ -73,8 +73,10 @@ class Room(object):
 
     def get_participant_links(self):
         participant_urls = []
-        room_base_url = add_params_to_url(
-            reverse('assign_visitor_to_room'), {'room': self.name})
+        room_base_url = reverse('assign_visitor_to_room', args=(self.name,))
+        if not self.use_secure_urls:
+            participant_urls.append(room_base_url)
+
         if self.has_participant_labels():
             for label in self.get_participant_labels():
                 params = {'participant_label': label}
@@ -82,8 +84,6 @@ class Room(object):
                     params['hash'] = make_hash(label)
                 participant_url = add_params_to_url(room_base_url, params)
                 participant_urls.append(participant_url)
-        else:
-            participant_urls = [room_base_url]
 
         return participant_urls
 

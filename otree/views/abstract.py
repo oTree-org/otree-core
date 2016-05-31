@@ -50,9 +50,7 @@ from otree.models.session import GlobalSingleton
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
-NO_PARTICIPANTS_LEFT_MSG = (
-    "No Participant objects left in this session "
-    "to assign to new visitor.")
+NO_PARTICIPANTS_LEFT_MSG = "The maximum number of participants for this session has been exceeded."
 
 
 DebugTable = collections.namedtuple('DebugTable', ['title', 'rows'])
