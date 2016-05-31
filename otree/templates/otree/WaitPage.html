@@ -75,6 +75,8 @@ $(document).ready(function () {
 
             // Handle errors
             if (data.error) {
+                // maybe the div's default text doesn't get shown
+                $("#error-notice").text(data.error);
                 $("#error-notice").show();
                 return;
             }
@@ -82,13 +84,13 @@ $(document).ready(function () {
             console.log('Received redirect message', e.data);
             window.location.href = '{{ view.absolute_redirect_url|safe }}';
 
-        }
+        };
         socket.onopen = function() {
             console.log('WebSocket connected');
-        }
+        };
         socket.onclose = function() {
             console.log('WebSocket disconnected');
-        }
+        };
     }
 
  });

@@ -1,4 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from __future__ import print_function
+
 import os
 import platform
 import subprocess
@@ -14,10 +18,10 @@ from django.conf import settings
 
 import six
 
-from otree.settings import get_default_settings
 import otree
-import otree.management.deploy.heroku
+from otree.settings import get_default_settings
 from otree.common_internal import check_pypi_for_updates
+
 
 # =============================================================================
 # CONSTANTS
@@ -158,6 +162,8 @@ def execute_from_command_line(arguments, script_file):
 
     # in issue #300 we agreed that sslserver should
     # run only if user has specified credentials for AWS
+    # 2016-05-27: not working because we switched to Daphne
+    '''
     runsslserver = (
         len(arguments) >= 2 and arguments[1] == 'runserver' and
         settings.AWS_ACCESS_KEY_ID
@@ -167,7 +173,7 @@ def execute_from_command_line(arguments, script_file):
         sys.stdout.write(
             'Note: your server URL will start with https, not http '
             '(because the env var AWS_ACCESS_KEY_ID was found)\n')
-
+    '''
     # only monkey patch when is necesary
     if "version" in arguments or "--version" in arguments:
         sys.stdout.write(otree_and_django_version() + '\n')
@@ -184,8 +190,7 @@ SETTINGS_NOT_FOUND_MESSAGE = (
     "Cannot import otree settings.\n"
     "Please make sure that you are in the root directory of your "
     "oTree project. This directory contains a settings.py "
-    "and a manage.py file."
-)
+    "and a manage.py file.")
 
 
 def otree_cli():
@@ -222,27 +227,3 @@ def otree_cli():
             sys.exit(1)
 
     execute_from_command_line(argv, 'otree')
-
-
-def otree_heroku_cli():
-    """
-    This function is the entry point for the ``otree-heroku`` console script.
-    """
-
-    # We need to add the current directory to the python path as this is not
-    # set by default when no using "python <script>" but a standalone script
-    # like ``otree``.
-    if os.getcwd() not in sys.path:
-        sys.path.insert(0, os.getcwd())
-
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
-    style = color_style()
-
-    try:
-        from django.conf import settings
-        settings.INSTALLED_APPS
-    except ImportError:
-        print(style.ERROR(SETTINGS_NOT_FOUND_MESSAGE))
-        sys.exit(1)
-
-    otree.management.deploy.heroku.execute_from_command_line(sys.argv)

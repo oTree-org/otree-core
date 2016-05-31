@@ -10,6 +10,7 @@ from otree import constants_internal
 
 test_client = django.test.Client()
 
+
 @task()
 def submit_expired_url(url):
 
@@ -19,9 +20,7 @@ def submit_expired_url(url):
 
 @db_task()
 def ensure_pages_visited(participant_pk_set, wait_page_index):
-
-    """
-    This is necessary when a wait page is followed by a timeout page.
+    """This is necessary when a wait page is followed by a timeout page.
     We can't guarantee the user's browser will properly continue to poll
     the wait page and get redirected, so after a grace period we load the page
     automatically, to kick off the expiration timer of the timeout page.
@@ -29,7 +28,6 @@ def ensure_pages_visited(participant_pk_set, wait_page_index):
     """
 
     from otree.models.participant import Participant
-
 
     unvisited_participants = Participant.objects.filter(
         pk__in=participant_pk_set,

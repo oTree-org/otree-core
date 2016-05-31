@@ -1,25 +1,25 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import json
+
 from channels import Group
+
 from otree.models import Participant
 from otree.models_concrete import (
-    CompletedGroupWaitPage,
-    CompletedSubsessionWaitPage,
-)
-from otree import common_internal
+    CompletedGroupWaitPage, CompletedSubsessionWaitPage)
 from otree.common_internal import (
-    channels_wait_page_group_name,
-    channels_create_session_group_name,
-)
-import sys
-import json
+    channels_wait_page_group_name, channels_create_session_group_name)
+
 import otree.session
 from otree.models import Session
-from otree.models_concrete import FailedSessionCreation, ParticipantVisit
-
-
-if sys.version_info[0] == 2:
-    from urlparse import parse_qs
-else:
-    from urllib.parse import parse_qs
+from otree.models_concrete import (
+    FailedSessionCreation,
+    ParticipantVisit,
+    FAILURE_MESSAGE_MAX_LENGTH,
+)
+from otree.views.abstract import lock_on_this_code_path
+from otree.room import ROOM_DICT
 
 
 def connect_wait_page(message, params):
@@ -35,14 +35,13 @@ def connect_wait_page(message, params):
     group.add(message.reply_channel)
 
     # in case message was sent before this web socket connects
-
     if model_name == 'group':
         ready = CompletedGroupWaitPage.objects.filter(
             page_index=page_index,
             group_pk=model_pk,
             session_pk=session_pk,
             after_all_players_arrive_run=True).exists()
-    else: # subsession
+    else:  # subsession
         ready = CompletedSubsessionWaitPage.objects.filter(
             page_index=page_index,
             session_pk=session_pk,
@@ -80,14 +79,12 @@ def connect_auto_advance(message, params):
         message.reply_channel.send(
             {'text': json.dumps(
                 # doesn't get shown because not yet localized
-                {'error': 'Participant not found in database.'})}
-        )
+                {'error': 'Participant not found in database.'})})
         return
     if participant._index_in_pages > page_index:
         message.reply_channel.send(
             {'text': json.dumps(
-                {'new_index_in_pages': participant._index_in_pages})}
-        )
+                {'new_index_in_pages': participant._index_in_pages})})
 
 
 def disconnect_auto_advance(message, params):
@@ -103,13 +100,17 @@ def create_session(message):
     kwargs = message['kwargs']
     try:
         otree.session.create_session(**kwargs)
-    except:
+    except Exception as e:
+        error_message = 'Failed to create session: "{}" - Check the server logs'.format(
+                    str(e))
         group.send(
             {'text': json.dumps(
-                # doesn't get shown because not yet localized
-                {'error': 'Failed to create session. Check the server logs.'})}
+                {'error': error_message})}
         )
-        FailedSessionCreation(pre_create_id=kwargs['_pre_create_id']).save()
+        FailedSessionCreation(
+            pre_create_id=kwargs['_pre_create_id'],
+            message=error_message[:FAILURE_MESSAGE_MAX_LENGTH]
+        ).save()
         raise
 
     group.send(
@@ -117,11 +118,13 @@ def create_session(message):
             {'status': 'ready'})}
     )
 
-    room_name = kwargs['room'].name
-    Group('room-{}-participants'.format(room_name)).send(
-        {'text': json.dumps(
-            {'status': 'session_ready'})}
-    )
+    if 'room' in kwargs:
+        room_name = kwargs['room'].name
+        Group('room-{}-participants'.format(room_name)).send(
+            {'text': json.dumps(
+                {'status': 'session_ready'})}
+        )
+        ParticipantVisit.objects.filter(room_name=room_name).delete()
 
 
 def connect_wait_for_session(message, pre_create_id):
@@ -134,13 +137,16 @@ def connect_wait_for_session(message, pre_create_id):
         {'text': json.dumps(
             {'status': 'ready'})}
         )
-    elif FailedSessionCreation.objects.filter(
-        pre_create_id=pre_create_id
-    ).exists():
-        group.send(
-            {'text': json.dumps(
-                {'error': 'Failed to create session. Check the server logs.'})}
+    else:
+        failures = FailedSessionCreation.objects.filter(
+            pre_create_id=pre_create_id
         )
+        if failures:
+            failure = failures[0]
+            group.send(
+                {'text': json.dumps(
+                    {'error': failure.message})}
+            )
 
 
 def disconnect_wait_for_session(message, pre_create_id):
@@ -171,7 +177,18 @@ def disconnect_wait_for_demo_session(message, session_config_name):
 
 def connect_admin_lobby(message, room):
     Group('admin-lobby-{}'.format(room)).add(message.reply_channel)
-    get_and_send_participants(room)
+
+    room = ROOM_DICT[room]
+    all_participant_list = room.get_participant_labels()
+    with lock_on_this_code_path():
+        participant_list = list(ParticipantVisit.objects.filter(room_name=room).distinct().values_list('participant_id', flat=True))
+        not_present_list = all_participant_list - participant_list
+
+        message.reply_channel.send({'text': json.dumps({
+            'status': 'load_participant_lists',
+            'participants_present': participant_list,
+            'participants_not_present': None
+        })})
 
 
 def disconnect_admin_lobby(message, room):
@@ -183,11 +200,20 @@ def connect_participant_lobby(message, params):
     room_name = args[0]
     participant_label = args[1]
 
-    ParticipantVisit(participant_id=participant_label, room_name=room_name).save()
+    room = ROOM_DICT[room_name]
+    if room.has_session():
+        message.reply_channel.send("session_ready")
+    else:
+        with lock_on_this_code_path():
+            Group('room-{}-participants'.format(room_name)).add(message.reply_channel)
 
-    # Add this participant to the room lobby and update the admin list
-    Group('room-{}-participants'.format(room_name)).add(message.reply_channel)
-    get_and_send_participants(room_name)
+            ParticipantVisit(participant_id=participant_label, room_name=room_name).save()
+
+            Group('admin-lobby-{}'.format(room_name)).send({'text': json.dumps({
+                'status': 'add_participant',
+                'participant': participant_label,
+                'has_participant_labels_list': room.has_participant_labels()
+            })})
 
 
 def disconnect_participant_lobby(message, params):
@@ -195,14 +221,18 @@ def disconnect_participant_lobby(message, params):
     room_name = args[0]
     participant_label = args[1]
 
-    ParticipantVisit.objects.filter(participant_id=participant_label, room_name=room_name)[0].delete()
-    get_and_send_participants(room_name)
-    Group('room-{}-participants'.format(room_name)).discard(message.reply_channel)
+    room = ROOM_DICT[room_name]
+    try:
+        with lock_on_this_code_path():
+            Group('room-{}-participants'.format(room_name)).discard(message.reply_channel)
 
+            ParticipantVisit.objects.get(participant_id=participant_label, room_name=room_name).delete()
 
-def get_and_send_participants(room):
-    participant_list = list(ParticipantVisit.objects.filter(room_name=room).distinct().values_list('participant_id', flat=True))
-    Group('admin-lobby-{}'.format(room)).send({'text': json.dumps({
-        'status': 'update_list',
-        'participants': participant_list
-    })})
+            Group('admin-lobby-{}'.format(room_name)).send({'text': json.dumps({
+                'status': 'remove_participant',
+                'participant': participant_label,
+                'has_participant_labels_list': room.has_participant_labels()
+            })})
+    except IndexError:
+        # This error will occur for every participant when they are forwarded from the wait page to a new session
+        pass

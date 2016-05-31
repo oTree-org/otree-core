@@ -3,6 +3,10 @@
 
 {% block content %}
 {{ block.super }}
+
+{% if room %}
+{% include "otree/includes/RoomParticipantLinks.html" %}
+{% else %}
     <p>There are several modes to play this session.</p>
 
     {% if fullscreen_mode_on %}
@@ -42,5 +46,5 @@
         <li>If you already clicked the participant links for this session, you cannot use anonymous mode.</li>
     </ul>
     <p>To run your experiment in a lab, see the <a href="{% url 'rooms' %}">Rooms</a> page.</p>
+{% endif %}
 {% endblock %}
-

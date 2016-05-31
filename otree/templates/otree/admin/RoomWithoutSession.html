@@ -12,10 +12,17 @@
     {% include "otree/includes/CreateSessionForm.html" %}
 
     <hr/>
-    <h4 id="participants_waiting_count">Participants Ready (0)</h4>
-    <ul id="participants_waiting_list"></ul>
-    <h4 id="pacticipants_not_waiting_count">Participants Not Present (0)</h4>
-    <ul id="participants_not_waiting_list"></ul>
+    <h3 id="participants_waiting_count">Participants Ready (0)</h3>
+    <button class="btn" type="button" data-toggle="collapse" data-target="#participants_waiting_container">Expand/Collapse ID List</button>
+    <div id="participants_waiting_container" class="collapse">
+        <ul id="participants_waiting_list"></ul>
+    </div>
+
+    <h3 id="participants_not_waiting_count">Participants Not Present (0)</h3>
+    <button class="btn" type="button" data-toggle="collapse" data-target="#participants_not_waiting_container">Expand/Collapse ID List</button>
+    <div id="participants_not_waiting_container" class="collapse">
+        <ul id="participants_not_waiting_list"></ul>
+    </div>
 
     <hr/>
 
@@ -52,16 +59,16 @@ $(document).ready(function () {
             var status = data["status"];
             if (status == "update_list") {
                 // Replace the existing list of participants with our new list
-                var participants = data["participants"];
+                var participants = data["participants_"];
                 replaceUL(participants);
             }
-        }
+        };
         socket.onopen = function() {
             console.log('WebSocket connected');
-        }
+        };
         socket.onclose = function() {
             console.log('WebSocket disconnected');
-        }
+        };
     }
 
     function replaceUL(array) {

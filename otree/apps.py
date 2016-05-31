@@ -13,7 +13,7 @@ from otree.models.session import GlobalSingleton
 
 
 logger = logging.getLogger('otree')
-import_module('otree.checks')  # this made that style check work
+import_module('otree.checks')   # this made that style check work
 
 
 def create_default_superuser(sender, **kwargs):
@@ -59,5 +59,4 @@ class OtreeConfig(AppConfig):
         self.setup_create_singleton_objects()
         if getattr(settings, 'CREATE_DEFAULT_SUPERUSER', False):
             self.setup_create_default_superuser()
-
-        #self.init_celery()
+        # self.init_celery()

@@ -1,4 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import logging
+
 import django.test
 
 from otree import constants_internal
@@ -6,13 +10,12 @@ import otree.common_internal
 from otree.common_internal import random_chars_8, random_chars_10
 from otree.db import models
 from .varsmixin import ModelWithVars
-from otree.models_concrete import ParticipantToPlayerLookup
-from otree.models_concrete import RoomSession
-
+from otree.models_concrete import ParticipantToPlayerLookup, RoomSession
 
 logger = logging.getLogger('otree')
 
 client = django.test.Client()
+
 
 class GlobalSingleton(models.Model):
     """object that can hold site-wide settings. There should only be one
@@ -102,16 +105,10 @@ class Session(ModelWithVars):
     comment = models.TextField(blank=True)
 
     _anonymous_code = models.CharField(
-        default=random_chars_10,
-        max_length=8,
-        null=False,
-        db_index=True
-    )
-
+        default=random_chars_10, max_length=8, null=False, db_index=True)
 
     special_category = models.CharField(
-        db_index=True,
-        max_length=20, null=True,
+        db_index=True, max_length=20, null=True,
         doc="whether it's a test session, demo session, etc.")
 
     _pre_create_id = models.CharField(max_length=300, db_index=True, null=True)
@@ -191,8 +188,6 @@ class Session(ModelWithVars):
     def advance_last_place_participants(self):
         participants = self.get_participants()
 
-
-
         # in case some participants haven't started
         unvisited_participants = []
         for p in participants:
@@ -205,8 +200,7 @@ class Session(ModelWithVars):
             for p in unvisited_participants:
                 p.save()
                 Participant.flush_cached_instance(p)
-            # that's it -- just visit the start URL, advancing
-            # by 1
+            # that's it -- just visit the start URL, advancing by 1
             return
 
         last_place_page_index = min([p._index_in_pages for p in participants])
@@ -264,8 +258,8 @@ class Session(ModelWithVars):
 
     def get_room(self):
         from otree.room import ROOM_DICT
-        room_name = RoomSession.objects.get(session_pk=self.pk).room_name
-        if room_name:
+        try:
+            room_name = RoomSession.objects.get(session_pk=self.pk).room_name
             return ROOM_DICT[room_name]
-        else:
+        except RoomSession.DoesNotExist:
             return None

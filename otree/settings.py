@@ -1,23 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
 import os
 import os.path
-import sys
-
-import sys
-if sys.version_info[0] == 2:
-    import urlparse
-else:
-    import urllib.parse as urlparse
-
 
 from django.conf import global_settings
 from django.contrib.messages import constants as messages
 
+from six.moves.urllib import parse as urlparse
 
 
 DEFAULT_MIDDLEWARE_CLASSES = (
+    'otree.middleware.CheckDBMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     # this middlewware is for generate human redeable errors
 
@@ -136,7 +131,7 @@ def get_default_settings(initial_settings=None):
         # The project can override the routing.py used as entry point by
         # setting CHANNEL_DEFAULT_ROUTING.
 
-        #'CHANNEL_LAYERS': {
+        # 'CHANNEL_LAYERS': {
         #     'default': {
         #         'BACKEND': 'channels.database_layer.DatabaseChannelLayer',
         #         'ROUTING': initial_settings.get(
@@ -212,7 +207,7 @@ def augment_settings(settings):
         'django.contrib.sessions',
         'django.contrib.messages',
         'django.contrib.staticfiles',
-        #'otree.models_concrete',
+        # 'otree.models_concrete',
         'otree.timeout',
         'channels',
         'huey.contrib.djhuey',
@@ -319,7 +314,6 @@ def augment_settings(settings):
     })
 
     settings.setdefault('LANGUAGE_CODE', global_settings.LANGUAGE_CODE)
-
 
     CURRENCY_LOCALE = settings.get('CURRENCY_LOCALE', None)
     if not CURRENCY_LOCALE:
