@@ -82,10 +82,9 @@ class RealWorldCurrency(easymoney.Money):
 
     def deconstruct(self):
         return [
-            '{}.{}'.format(self.__module__ , self.__class__.__name__),
-            [Decimal.__str__(self)],
-            {}
-        ]
+            '{}.{}'.format(self.__module__, self.__class__.__name__),
+            [Decimal.__str__(self)], {}]
+
 
 class Currency(RealWorldCurrency):
     '''game currency'''

@@ -3,11 +3,13 @@
 
 from django.views.generic import View
 from django.http import JsonResponse
+from django.http import Http404
+
+from rest_framework import generics, permissions
 
 from otree.models.session import Session
-from rest_framework import generics, permissions
 from otree.serializers import ParticipantSerializer
-from django.http import Http404
+
 
 class Ping(View):
 

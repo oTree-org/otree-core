@@ -1,4 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from __future__ import print_function
+
 import os
 import platform
 import subprocess
@@ -14,9 +18,10 @@ from django.conf import settings
 
 import six
 
-from otree.settings import get_default_settings
 import otree
+from otree.settings import get_default_settings
 from otree.common_internal import check_pypi_for_updates
+
 
 # =============================================================================
 # CONSTANTS
@@ -185,8 +190,7 @@ SETTINGS_NOT_FOUND_MESSAGE = (
     "Cannot import otree settings.\n"
     "Please make sure that you are in the root directory of your "
     "oTree project. This directory contains a settings.py "
-    "and a manage.py file."
-)
+    "and a manage.py file.")
 
 
 def otree_cli():
@@ -223,5 +227,3 @@ def otree_cli():
             sys.exit(1)
 
     execute_from_command_line(argv, 'otree')
-
-

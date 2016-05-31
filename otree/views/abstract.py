@@ -9,9 +9,9 @@ import logging
 import time
 import warnings
 import collections
-from six.moves import range
 import json
 import contextlib
+
 import django.db
 from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
@@ -19,9 +19,10 @@ from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache, cache_control
-from django.http import (
-    HttpResponse, HttpResponseRedirect, Http404)
+from django.http import HttpResponseRedirect, Http404
 from django.utils.translation import ugettext as _
+
+from six.moves import range
 
 import channels
 
@@ -37,18 +38,14 @@ import otree.db.idmap
 import otree.constants_internal as constants
 from otree.models.participant import Participant
 from otree.models.session import Session
-from otree.common_internal import (
-    get_app_label_from_import_path,
-    transaction_atomic
-)
+from otree.common_internal import get_app_label_from_import_path
 
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
-    CompletedGroupWaitPage, ParticipantToPlayerLookup,
-    PageTimeout, StubModel,
-    ParticipantLockModel)
+    CompletedGroupWaitPage, PageTimeout, StubModel, ParticipantLockModel)
 from otree_save_the_change.mixins import SaveTheChange
 from otree.models.session import GlobalSingleton
+
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -59,6 +56,7 @@ NO_PARTICIPANTS_LEFT_MSG = (
 
 
 DebugTable = collections.namedtuple('DebugTable', ['title', 'rows'])
+
 
 @contextlib.contextmanager
 def lock_on_this_code_path(recheck_interval=0.1):
@@ -171,7 +169,6 @@ class SaveObjectsMixin(object):
         for instance in self._get_save_objects_model_instances():
             if self._save_objects_shall_save(instance):
                 instance.save()
-
 
 
 class OTreeMixin(SaveObjectsMixin, object):
@@ -436,7 +433,8 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             # so we record that they visited
             if hasattr(Page, 'is_displayed') and not page.is_displayed():
                 if hasattr(Page, '_tally_unvisited'):
-                    page._index_in_pages = self._index_in_pages + pages_to_jump_by
+                    page._index_in_pages = (
+                        self._index_in_pages + pages_to_jump_by)
                     if page.wait_for_all_groups:
                         page._group_or_subsession = self.subsession
                     else:
@@ -511,7 +509,6 @@ class GenericWaitPageMixin(object):
     def socket_url(self):
         '''called from template'''
         raise NotImplementedError()
-
 
     def absolute_redirect_url(self):
         '''called from template'''
@@ -705,9 +702,7 @@ class InGameWaitPageMixin(object):
                 otree.timeout.tasks.ensure_pages_visited.schedule(
                     kwargs={
                         'participant_pk_set': participant_pk_set,
-                        'wait_page_index': self._index_in_pages,
-                    }, delay=10)
-
+                        'wait_page_index': self._index_in_pages}, delay=10)
 
             completion.after_all_players_arrive_run = True
             completion.save()
@@ -726,8 +721,6 @@ class InGameWaitPageMixin(object):
             # inside the transaction
             return self._response_when_ready()
 
-
-
     def channels_group_name(self):
         if self.wait_for_all_groups:
             model_name = 'subsession'
@@ -738,9 +731,7 @@ class InGameWaitPageMixin(object):
             session_pk=self.session.pk,
             page_index=self._index_in_pages,
             model_name=model_name,
-            model_pk=self._group_or_subsession.pk,
-        )
-
+            model_pk=self._group_or_subsession.pk)
 
     def socket_url(self):
         if self.wait_for_all_groups:
@@ -776,14 +767,11 @@ class InGameWaitPageMixin(object):
 
         participant_ids = set(
             self._group_or_subsession.player_set.values_list(
-                'participant_id',
-                flat=True
-            )
-        )
+                'participant_id', flat=True))
 
         participant_data = Participant.objects.filter(
-                id__in=participant_ids
-            ).values('id', 'id_in_session', '_index_in_pages')
+            id__in=participant_ids
+        ).values('id', 'id_in_session', '_index_in_pages')
 
         visited = []
         unvisited = []
@@ -796,16 +784,14 @@ class InGameWaitPageMixin(object):
         if 1 <= len(unvisited) <= 3:
 
             unvisited_description = ', '.join(
-                'P{}'.format(p['id_in_session']) for p in unvisited
-            )
+                'P{}'.format(p['id_in_session']) for p in unvisited)
 
             visited_ids = [p['id'] for p in visited]
-            Participant.objects.filter(id__in=visited_ids).update(
-                _waiting_for_ids = unvisited_description
-            )
+            Participant.objects.filter(
+                id__in=visited_ids
+            ).update(_waiting_for_ids=unvisited_description)
 
         return {p['id'] for p in unvisited}
-
 
     def is_displayed(self):
         return True

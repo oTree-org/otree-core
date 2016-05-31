@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from otree.db import models
 
 
@@ -32,11 +35,11 @@ class CompletedGroupWaitPage(models.Model):
         unique_together = ['page_index', 'session_pk', 'group_pk']
         index_together = ['page_index', 'session_pk', 'group_pk']
 
-
     page_index = models.PositiveIntegerField()
     session_pk = models.PositiveIntegerField()
     group_pk = models.PositiveIntegerField()
     after_all_players_arrive_run = models.BooleanField(default=False)
+
 
 class CompletedSubsessionWaitPage(models.Model):
     class Meta:
@@ -44,10 +47,10 @@ class CompletedSubsessionWaitPage(models.Model):
         unique_together = ['page_index', 'session_pk']
         index_together = ['page_index', 'session_pk']
 
-
     page_index = models.PositiveIntegerField()
     session_pk = models.PositiveIntegerField()
     after_all_players_arrive_run = models.BooleanField(default=False)
+
 
 class ParticipantToPlayerLookup(models.Model):
     class Meta:
@@ -85,11 +88,13 @@ class StubModel(models.Model):
 
     pass
 
+
 class RoomSession(models.Model):
     room_name = models.CharField(unique=True, max_length=255)
     session_pk = models.PositiveIntegerField()
 
 FAILURE_MESSAGE_MAX_LENGTH = 300
+
 class FailedSessionCreation(models.Model):
     pre_create_id = models.CharField(max_length=100, db_index=True)
     message = models.CharField(max_length=FAILURE_MESSAGE_MAX_LENGTH)

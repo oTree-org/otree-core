@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import threading
-import time
+import uuid
 
 from django.conf import settings
 from django.http import HttpResponseRedirect, Http404
@@ -9,20 +8,15 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
 
 import vanilla
+
 import channels
 
-import otree.constants_internal as constants
-from otree.views.abstract import GenericWaitPageMixin
-from otree.models.session import Session
-from otree.session import (
-    create_session, SESSION_CONFIGS_DICT
-)
 import otree.session
-from otree.common_internal import (
-    channels_create_session_group_name,
-)
-from six.moves import range
-import uuid
+import otree.constants_internal as constants
+from otree.models.session import Session
+from otree.session import SESSION_CONFIGS_DICT
+from otree.common_internal import channels_create_session_group_name
+
 
 # if it's debug mode, we should always generate a new session
 # because a bug might have been fixed
@@ -43,7 +37,6 @@ class DemoIndex(vanilla.TemplateView):
         return 'demo_index'
 
     def get_context_data(self, **kwargs):
-
         intro_text = settings.DEMO_PAGE_INTRO_TEXT
         context = super(DemoIndex, self).get_context_data(**kwargs)
 

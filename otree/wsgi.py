@@ -3,11 +3,13 @@
 import os
 import otree
 
+
 procfile_path = os.path.join(
     os.path.dirname(otree.__file__), 'project_template', 'Procfile')
 
 with open(procfile_path, 'r') as procfile:
     procfile_contents = procfile.read()
+
 
 DEPRECATION_STRING = '''
 oTree is using a new server. You should start it with a different command.
@@ -23,6 +25,7 @@ More information here: http://otree.readthedocs.io/en/latest/v0.5.html
 '''.format(procfile_contents)
 
 print(DEPRECATION_STRING)
+
 
 def application(environ, start_response):
     data = DEPRECATION_STRING.encode('utf-8')
