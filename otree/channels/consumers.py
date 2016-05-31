@@ -106,10 +106,10 @@ def create_session(message):
             {'text': json.dumps(
                 {'error': error_message})}
         )
-        FailedSessionCreation(
+        FailedSessionCreation.objects.create(
             pre_create_id=kwargs['_pre_create_id'],
             message=error_message[:FAILURE_MESSAGE_MAX_LENGTH]
-        ).save()
+        )
         raise
     group.send({'text': json.dumps({'status': 'ready'})})
 

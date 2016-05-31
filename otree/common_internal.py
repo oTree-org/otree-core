@@ -277,10 +277,6 @@ def export_docs(fp, app_name):
     fp.write(doc)
 
 
-def flatten(list_of_lists):
-    return [item for sublist in list_of_lists for item in sublist]
-
-
 def get_app_label_from_import_path(import_path):
     app_label = import_path.rsplit(".", 1)[0]
     while "." in app_label:
@@ -304,7 +300,7 @@ def expand_choice_tuples(choices):
     '''
     if not choices:
         return None
-    elif not isinstance(choices[0], (list, tuple)):
+    if not isinstance(choices[0], (list, tuple)):
         choices = [(value, value) for value in choices]
     return choices
 
@@ -316,7 +312,7 @@ def contract_choice_tuples(choices):
     '''
     if not choices:
         return None
-    elif not isinstance(choices[0], (list, tuple)):
+    if not isinstance(choices[0], (list, tuple)):
         return choices
     return [value for value, _ in choices]
 
