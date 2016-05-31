@@ -60,5 +60,3 @@ class SharedMemoryModel(idmap.models.SharedMemoryModel):
     def get_cached_instance(cls, pk):
         if is_active():
             return idmap.tls.get_cached_instance(cls, pk)
-        else:
-            return None
