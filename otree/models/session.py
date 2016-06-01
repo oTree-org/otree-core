@@ -53,9 +53,7 @@ class Session(ModelWithVars):
     code = models.CharField(
         default=random_chars_8,
         max_length=16,
-        null=False,
         unique=True,
-        db_index=True,
         doc="Randomly generated unique identifier for the session.")
 
     time_scheduled = models.DateTimeField(

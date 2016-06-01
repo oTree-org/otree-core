@@ -62,8 +62,6 @@ class Participant(ModelWithVars):
     code = models.CharField(
         default=random_chars_8,
         max_length=16,
-        null=False,
-        db_index=True,
         unique=True,
         doc=(
             "Randomly generated unique identifier for the participant. If you "
