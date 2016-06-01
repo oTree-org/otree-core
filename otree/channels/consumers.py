@@ -107,10 +107,10 @@ def create_session(message):
             {'text': json.dumps(
                 {'error': error_message})}
         )
-        FailedSessionCreation(
+        FailedSessionCreation.objects.create(
             pre_create_id=kwargs['_pre_create_id'],
             message=error_message[:FAILURE_MESSAGE_MAX_LENGTH]
-        ).save()
+        )
         raise
 
     group.send(
@@ -156,27 +156,8 @@ def disconnect_wait_for_session(message, pre_create_id):
     group.discard(message.reply_channel)
 
 
-'''
-def connect_wait_for_demo_session(message, session_config_name):
-    group = Group(channels_create_demo_session_group_name(session_config_name))
-    group.add(message.reply_channel)
-
-    # redundant check in case race condition
-    if get_session(session_config_name):
-        group.send(
-            {'text': json.dumps(
-                {'status': 'ready'})}
-            )
-
-
-def disconnect_wait_for_demo_session(message, session_config_name):
-    group = Group(channels_create_demo_session_group_name(session_config_name))
-    group.discard(message.reply_channel)
-'''
-
-
-def connect_admin_lobby(message, room):
-    Group('admin-lobby-{}'.format(room)).add(message.reply_channel)
+def connect_room_admin(message, room):
+    Group('room-admin-{}'.format(room)).add(message.reply_channel)
 
     room = ROOM_DICT[room]
     all_participant_list = room.get_participant_labels()
@@ -191,11 +172,11 @@ def connect_admin_lobby(message, room):
         })})
 
 
-def disconnect_admin_lobby(message, room):
-    Group('admin-lobby-{}'.format(room)).discard(message.reply_channel)
+def disconnect_room_admin(message, room):
+    Group('room-admin-{}'.format(room)).discard(message.reply_channel)
 
 
-def connect_participant_lobby(message, params):
+def connect_room_participant(message, params):
     args = params.split(',')
     room_name = args[0]
     participant_label = args[1]
@@ -209,14 +190,14 @@ def connect_participant_lobby(message, params):
 
             ParticipantVisit(participant_id=participant_label, room_name=room_name).save()
 
-            Group('admin-lobby-{}'.format(room_name)).send({'text': json.dumps({
+            Group('room-admin-{}'.format(room_name)).send({'text': json.dumps({
                 'status': 'add_participant',
                 'participant': participant_label,
                 'has_participant_labels_list': room.has_participant_labels()
             })})
 
 
-def disconnect_participant_lobby(message, params):
+def disconnect_room_participant(message, params):
     args = params.split(',')
     room_name = args[0]
     participant_label = args[1]
@@ -228,7 +209,7 @@ def disconnect_participant_lobby(message, params):
 
             ParticipantVisit.objects.get(participant_id=participant_label, room_name=room_name).delete()
 
-            Group('admin-lobby-{}'.format(room_name)).send({'text': json.dumps({
+            Group('room-admin-{}'.format(room_name)).send({'text': json.dumps({
                 'status': 'remove_participant',
                 'participant': participant_label,
                 'has_participant_labels_list': room.has_participant_labels()

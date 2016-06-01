@@ -277,10 +277,6 @@ def export_docs(fp, app_name):
     fp.write(doc)
 
 
-def flatten(list_of_lists):
-    return [item for sublist in list_of_lists for item in sublist]
-
-
 def get_app_label_from_import_path(import_path):
     app_label = import_path.rsplit(".", 1)[0]
     while "." in app_label:
@@ -304,7 +300,7 @@ def expand_choice_tuples(choices):
     '''
     if not choices:
         return None
-    elif not isinstance(choices[0], (list, tuple)):
+    if not isinstance(choices[0], (list, tuple)):
         choices = [(value, value) for value in choices]
     return choices
 
@@ -316,7 +312,7 @@ def contract_choice_tuples(choices):
     '''
     if not choices:
         return None
-    elif not isinstance(choices[0], (list, tuple)):
+    if not isinstance(choices[0], (list, tuple)):
         return choices
     return [value for value, _ in choices]
 
@@ -339,14 +335,15 @@ def db_table_exists(table_name):
 
 db_synced = None
 
-def db_status_ok(cached_per_process=False):
+def db_status_ok(cache=False):
     """Try to execute a simple select * for every model registered
     "Your DB is not ready. Try resetting the database."
     """
-    if cached_per_process and db_synced is not None:
-        return db_synced
-    print('Checking DB tables')
     global db_synced
+
+    # cache per process
+    if cache and db_synced is not None:
+        return db_synced
     for Model in apps.get_models():
         table_name = Model._meta.db_table
         if not db_table_exists(table_name):
@@ -359,20 +356,6 @@ def db_status_ok(cached_per_process=False):
 def make_hash(s):
     s += settings.SECRET_KEY
     return hashlib.sha224(s.encode()).hexdigest()[:8]
-
-
-@contextlib.contextmanager
-def no_op_context_manager():
-    yield
-
-
-@contextlib.contextmanager
-def transaction_atomic():
-    if settings.DATABASES['default']['ENGINE'].endswith('sqlite3'):
-        yield
-    else:
-        with transaction.atomic():
-            yield
 
 
 def check_pypi_for_updates(print_message=True):

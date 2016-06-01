@@ -6,7 +6,7 @@ from otree_save_the_change.mixins import SaveTheChange
 
 from otree.db import models
 from otree.models.session import Session
-
+from otree.models.fieldchecks import ensure_field
 
 class BasePlayer(SaveTheChange, models.Model):
     """
@@ -23,10 +23,6 @@ class BasePlayer(SaveTheChange, models.Model):
         doc='Index in the list of pages  views_module.page_sequence'
     )
 
-    session = models.ForeignKey(
-        Session, related_name='%(app_label)s_%(class)s'
-    )
-
     round_number = models.PositiveIntegerField(db_index=True)
 
     # it's _name instead of name because people might define
@@ -40,15 +36,12 @@ class BasePlayer(SaveTheChange, models.Model):
 
     def in_round(self, round_number):
         return type(self).objects.get(
-            participant=self.participant,
-            round_number=round_number
+            participant=self.participant, round_number=round_number
         )
 
     def in_rounds(self, first, last):
         qs = type(self).objects.filter(
-            participant=self.participant,
-            round_number__gte=first,
-            round_number__lte=last,
+            participant=self.participant, round_number__range=(first, last),
         ).order_by('round_number')
 
         return list(qs)
@@ -68,3 +61,20 @@ class BasePlayer(SaveTheChange, models.Model):
     @property
     def _Constants(self):
         return get_models_module(self._meta.app_config.name).Constants
+
+
+    @classmethod
+    def _ensure_required_fields(cls):
+        """
+        Every ``Player`` model requires a foreign key to the ``Subsession`` and
+        ``Group`` model of the same app.
+        """
+        subsession_model = '{app_label}.Subsession'.format(
+            app_label=cls._meta.app_label)
+        subsession_field = models.ForeignKey(subsession_model)
+        ensure_field(cls, 'subsession', subsession_field)
+
+        group_model = '{app_label}.Group'.format(
+            app_label=cls._meta.app_label)
+        group_field = models.ForeignKey(group_model, null=True)
+        ensure_field(cls, 'group', group_field)

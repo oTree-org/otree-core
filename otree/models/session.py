@@ -176,14 +176,12 @@ class Session(ModelWithVars):
 
     def mturk_worker_url(self):
         if self.mturk_sandbox:
-            worker_url = (
+            return (
                 "https://workersandbox.mturk.com/mturk/preview?groupId={}"
             ).format(self.mturk_HITGroupId)
-        else:
-            worker_url = (
-                "https://www.mturk.com/mturk/preview?groupId={}"
-            ).format(self.mturk_HITGroupId)
-        return worker_url
+        return (
+            "https://www.mturk.com/mturk/preview?groupId={}"
+        ).format(self.mturk_HITGroupId)
 
     def advance_last_place_participants(self):
         participants = self.get_participants()
