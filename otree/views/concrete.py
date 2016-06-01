@@ -306,7 +306,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
     def socket_url(self):
         return '/wait_for_session_in_room/{}/'.format(self._params)
 
-    def absolute_redirect_url(self):
+    def redirect_url(self):
         return self.request.get_full_path()
 
 

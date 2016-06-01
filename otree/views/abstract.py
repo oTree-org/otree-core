@@ -504,7 +504,7 @@ class GenericWaitPageMixin(object):
         '''called from template'''
         raise NotImplementedError()
 
-    def absolute_redirect_url(self):
+    def redirect_url(self):
         '''called from template'''
         # need get_full_path because we use query string here
         return self.request.get_full_path()
@@ -891,8 +891,9 @@ class FormPageMixin(object):
         params = ','.join([self.participant.code, str(self._index_in_pages)])
         return '/auto_advance/{}/'.format(params)
 
-    def absolute_redirect_url(self):
+    def redirect_url(self):
         '''called from template'''
+        # need full path because we use query string
         return self.request.get_full_path()
 
     # called from template

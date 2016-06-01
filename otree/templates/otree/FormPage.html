@@ -30,7 +30,7 @@ $(document).ready(function () {
             }
 
             if (data.new_index_in_pages > index_in_pages) {
-                window.location.href = '{{ view.absolute_redirect_url|safe }}';
+                window.location.href = '{{ view.redirect_url|safe }}';
             }
         }
         socket.onopen = function() {

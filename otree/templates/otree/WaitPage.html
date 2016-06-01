@@ -82,7 +82,7 @@ $(document).ready(function () {
             }
 
             console.log('Received redirect message', e.data);
-            window.location.href = '{{ view.absolute_redirect_url|safe }}';
+            window.location.href = '{{ view.redirect_url|safe }}';
 
         };
         socket.onopen = function() {
