@@ -37,7 +37,7 @@ class ValidateMTurk(object):
 
     def app_has_no_wait_pages(self, app):
         views_module = otree.common_internal.get_views_module(app)
-        return not any(isinstance(page_class(), WaitPage)
+        return not any(issubclass(page_class, WaitPage)
                        for page_class in views_module.page_sequence)
 
     def get_no_timeout_pages(self):

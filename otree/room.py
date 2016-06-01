@@ -39,7 +39,7 @@ class Room(object):
             RoomSession.objects.filter(room_name=self.name).delete()
         else:
             RoomSession.objects.get_or_create(
-                room_name=self.name, session_pk=session.pk)
+                room_name=self.name, defaults={'session_pk':session.pk})
 
     def has_participant_labels(self):
         return bool(self.participant_label_file)

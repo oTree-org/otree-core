@@ -506,6 +506,7 @@ class GenericWaitPageMixin(object):
 
     def absolute_redirect_url(self):
         '''called from template'''
+        # need get_full_path because we use query string here
         return self.request.get_full_path()
 
     def get_template_names(self):
@@ -892,7 +893,7 @@ class FormPageMixin(object):
 
     def absolute_redirect_url(self):
         '''called from template'''
-        return self.request.path
+        return self.request.get_full_path()
 
     # called from template
     poll_interval_seconds = constants.form_page_poll_interval_seconds

@@ -184,9 +184,9 @@ class BaseSubsession(SaveTheChange, models.Model):
         previous_round = self.in_round(round_number)
         group_matrix = [
             group._ordered_players
-            for group in previous_round.group_set.prefetch_related(
+            for group in previous_round.group_set.order_by('id_in_subsession').prefetch_related(
                 Prefetch('player_set',
-                         queryset=self._PlayerClass().objects.order_by('pk'),
+                         queryset=self._PlayerClass().objects.order_by('id_in_group'),
                          to_attr='_ordered_players'))
         ]
         for i, group_list in enumerate(group_matrix):
