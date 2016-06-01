@@ -75,28 +75,6 @@ class CreateDemoSession(vanilla.GenericView):
 
     def dispatch(self, request, *args, **kwargs):
         session_config_name = kwargs['session_config']
-        try:
-            session_config = SESSION_CONFIGS_DICT[session_config_name]
-        except KeyError:
-            msg = (
-                "Session config '{}' not found"
-            ).format(session_config_name)
-            raise Http404(msg)
-        # check that it divides evenly
-        # need to check here so that the user knows upfront
-        session_lcm = otree.session.get_lcm(session_config)
-        num_participants = session_config['num_demo_participants']
-        if num_participants % session_lcm:
-            msg = (
-                'Session Config {}: Number of participants ({}) does not '
-                'divide evenly into group size ({})'
-            ).format(
-                session_config_name,
-                num_participants,
-                session_lcm
-            )
-            raise Http404(msg)
-
         pre_create_id = uuid.uuid4().hex
         kwargs = {
             'special_category': constants.session_special_category_demo,

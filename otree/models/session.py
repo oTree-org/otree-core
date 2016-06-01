@@ -10,7 +10,7 @@ import otree.common_internal
 from otree.common_internal import random_chars_8, random_chars_10
 from otree.db import models
 from .varsmixin import ModelWithVars
-from otree.models_concrete import ParticipantToPlayerLookup, RoomSession
+from otree.models_concrete import ParticipantToPlayerLookup, RoomToSession
 
 logger = logging.getLogger('otree')
 
@@ -257,7 +257,7 @@ class Session(ModelWithVars):
     def get_room(self):
         from otree.room import ROOM_DICT
         try:
-            room_name = RoomSession.objects.get(session_pk=self.pk).room_name
+            room_name = RoomToSession.objects.get(session_pk=self.pk).room_name
             return ROOM_DICT[room_name]
-        except RoomSession.DoesNotExist:
+        except RoomToSession.DoesNotExist:
             return None

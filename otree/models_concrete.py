@@ -89,7 +89,7 @@ class StubModel(models.Model):
     pass
 
 
-class RoomSession(models.Model):
+class RoomToSession(models.Model):
     room_name = models.CharField(unique=True, max_length=255)
     session_pk = models.PositiveIntegerField()
 
