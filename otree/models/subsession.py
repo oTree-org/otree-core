@@ -208,17 +208,6 @@ class BaseSubsession(SaveTheChange, models.Model):
         '''
         pass
 
-    def _initialize(self):
-        '''wrapper method for self.before_session_starts()'''
-        self.before_session_starts()
-        # needs to be get_players and get_groups instead of
-        # self.player_set.all() because that would just send a new query
-        # to the DB
-        for p in self.get_players():
-            p.save()
-        for g in self.get_groups():
-            g.save()
-
         # subsession.save() gets called in the parent method
 
     def match_players(self, match_name):

@@ -37,13 +37,11 @@ import otree.models
 import otree.db.idmap
 import otree.constants_internal as constants
 from otree.models.participant import Participant
-from otree.models.session import Session
 from otree.common_internal import get_app_label_from_import_path
 
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
     CompletedGroupWaitPage, PageTimeout, StubModel, ParticipantLockModel)
-from otree_save_the_change.mixins import SaveTheChange
 from otree.models.session import GlobalSingleton
 
 
@@ -112,61 +110,13 @@ def participant_lock(participant_code):
 
 
 class SaveObjectsMixin(object):
-    """
-    Provide a ``save_objects`` method that will save all model instances that
-    were changed during this request.
-    """
-
-    def _get_save_objects_models(self):
-        """
-        Return the models that shall be saved automatically if they have
-        changed during the request.
-        """
-        return (
-            self.PlayerClass,
-            self.GroupClass,
-            self.SubsessionClass,
-            Participant,
-            Session,
-        )
-
+    '''maybe doesn't need to be a mixin, but i am keeping it that way
+    for now so that the test_views_saveobjectsmixin.py still works'''
     def _get_save_objects_model_instances(self):
-        """
-        Get all model instances that should be saved. This implementation uses
-        the idmap cache to determine which instances have been loaded.
-        """
-        import idmap.tls
-        cache = getattr(idmap.tls._tls, 'idmap_cache', {})
-        instances = []
-        monitored_classes = self._get_save_objects_models()
-        for model_class, model_cache in cache.items():
-            # Collect instances if it's a subclass of one of the monitored
-            # models.
-            is_monitored = issubclass(model_class, monitored_classes)
-            if is_monitored:
-                cached_instances = list(model_cache.values())
-                instances.extend(cached_instances)
-        return instances
-
-    def _save_objects_shall_save(self, instance):
-        # If ``SaveTheChange`` has recoreded any changes, then save.
-        if isinstance(instance, SaveTheChange):
-            if instance._changed_fields:
-                return True
-            # We need special support for the vars JSONField as SaveTheChange
-            # does not detect the change.
-            if hasattr(instance, '_save_the_change_update_changed_fields'):
-                instance._save_the_change_update_changed_fields()
-                if instance._changed_fields:
-                    return True
-            return False
-        # Save always if the model is not a SaveTheChange instance.
-        return True
+        return otree.db.idmap._get_save_objects_model_instances()
 
     def save_objects(self):
-        for instance in self._get_save_objects_model_instances():
-            if self._save_objects_shall_save(instance):
-                instance.save()
+        return otree.db.idmap.save_objects()
 
 
 class OTreeMixin(SaveObjectsMixin, object):

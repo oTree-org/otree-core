@@ -243,11 +243,12 @@ def create_session(session_config_name, label='', num_participants=None,
                 sys.exc_info()[2])
         raise
 
-
     session.build_participant_to_player_lookups()
     if room is not None:
         room.session = session
-    session.save()
+    # automatically save all objects since the cache was activated:
+    # Player, Group, Subsession, Participant, Session
+    otree.db.idmap.save_objects()
     otree.db.idmap.deactivate_cache()
 
     return session

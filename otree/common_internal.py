@@ -452,3 +452,4 @@ def add_empty_migrations_to_all_apps(project_root):
                     migrations_folder_path, '__init__.py')
                 with open(init_file_path, 'a') as f:
                     f.write('')
+

@@ -22,8 +22,6 @@ class BaseGroup(SaveTheChange, models.Model):
 
     id_in_subsession = models.PositiveIntegerField(db_index=True)
 
-    round_number = models.PositiveIntegerField(db_index=True)
-
     def __unicode__(self):
         return str(self.pk)
 

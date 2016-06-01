@@ -23,8 +23,6 @@ class BasePlayer(SaveTheChange, models.Model):
         doc='Index in the list of pages  views_module.page_sequence'
     )
 
-    round_number = models.PositiveIntegerField(db_index=True)
-
     # it's _name instead of name because people might define
     # their own name field
     def _name(self):

@@ -104,6 +104,8 @@ class BaseGroup(group_module.BaseGroup):
         Session, related_name='%(app_label)s_%(class)s'
     )
 
+    round_number = models.PositiveIntegerField(db_index=True)
+
     def set_players(self, players_list):
         return super(BaseGroup, self).set_players(players_list)
 
@@ -155,6 +157,7 @@ class BasePlayer(player_module.BasePlayer):
         Session, related_name='%(app_label)s_%(class)s'
     )
 
+    round_number = models.PositiveIntegerField(db_index=True)
 
     def in_previous_rounds(self):
         return super(BasePlayer, self).in_previous_rounds()

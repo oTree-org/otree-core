@@ -160,10 +160,8 @@ class Session(ModelWithVars):
         # group_by_arrival_time code used to be here
         for subsession in self.get_subsessions():
             subsession._create_groups()
-            subsession._initialize()
+            subsession.before_session_starts()
             subsession.save()
-        # assert self is subsession.session
-        self.save()
 
     def mturk_requester_url(self):
         if self.mturk_sandbox:

@@ -4,7 +4,7 @@ from idmap.metaclass import SharedMemoryModelBase  # noqa
 import idmap.models
 import idmap.tls
 import threading
-
+from otree_save_the_change.mixins import SaveTheChange
 
 _toggle = threading.local()
 
@@ -60,3 +60,51 @@ class SharedMemoryModel(idmap.models.SharedMemoryModel):
     def get_cached_instance(cls, pk):
         if is_active():
             return idmap.tls.get_cached_instance(cls, pk)
+
+CLASSES_TO_SAVE = {
+    'Session',
+    'Participant',
+    'Subsession',
+    'Group',
+    'Player'
+}
+
+
+def _get_save_objects_model_instances():
+    """
+    Get all model instances that should be saved. This implementation uses
+    the idmap cache to determine which instances have been loaded.
+    """
+    import idmap.tls
+    cache = getattr(idmap.tls._tls, 'idmap_cache', {})
+    instances = []
+    for model_class, model_cache in cache.items():
+        # Collect instances if it's a subclass of one of the monitored
+        # models.
+        is_monitored = model_class.__name__ in CLASSES_TO_SAVE
+        if is_monitored:
+            cached_instances = list(model_cache.values())
+            instances.extend(cached_instances)
+    return instances
+
+
+def _save_objects_shall_save(instance):
+    # If ``SaveTheChange`` has recoreded any changes, then save.
+    if isinstance(instance, SaveTheChange):
+        if instance._changed_fields:
+            return True
+        # We need special support for the vars JSONField as SaveTheChange
+        # does not detect the change.
+        if hasattr(instance, '_save_the_change_update_changed_fields'):
+            instance._save_the_change_update_changed_fields()
+            if instance._changed_fields:
+                return True
+        return False
+    # Save always if the model is not a SaveTheChange instance.
+    return True
+
+
+def save_objects():
+    for instance in _get_save_objects_model_instances():
+        if _save_objects_shall_save(instance):
+            instance.save()
