@@ -41,7 +41,7 @@ from otree.views.mturk import MTurkConnection, get_workers_by_status
 from otree.common import Currency as c
 from otree.models.session import Session
 from otree.models.participant import Participant
-from otree.models_concrete import PageCompletion
+from otree.models_concrete import PageCompletion, ParticipantRoomVisit
 from otree.room import ROOM_DICT
 
 
@@ -491,10 +491,15 @@ class CloseRoom(vanilla.View):
         return 'close_room'
 
     def dispatch(self, request, *args, **kwargs):
-        self.room = ROOM_DICT[kwargs['room_name']]
+        room_name = kwargs['room_name']
+        self.room = ROOM_DICT[room_name]
         self.room.session = None
+        # in case any failed to be cleared through regular ws.disconnect
+        ParticipantRoomVisit.objects.filter(
+            room_name=room_name,
+        ).delete()
         return HttpResponseRedirect(
-            reverse('room_without_session', args=[kwargs['room_name']]))
+            reverse('room_without_session', args=[room_name]))
 
 
 class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):

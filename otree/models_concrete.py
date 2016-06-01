@@ -102,6 +102,7 @@ class FailedSessionCreation(models.Model):
     message = models.CharField(max_length=FAILURE_MESSAGE_MAX_LENGTH)
 
 
-class ParticipantVisit(models.Model):
+class ParticipantRoomVisit(models.Model):
     room_name = models.CharField()
-    participant_id = models.CharField()
+    participant_label = models.CharField()
+    random_code = models.CharField(max_length=20)

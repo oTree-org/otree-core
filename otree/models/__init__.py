@@ -88,7 +88,7 @@ class BaseSubsession(subsession_module.BaseSubsession):
         return super(BaseSubsession, self).before_session_starts()
 
     def in_round(self, round_number):
-        return super(BaseSubsession, self).in_round(self, round_number)
+        return super(BaseSubsession, self).in_round(round_number)
 
     def in_rounds(self, first, last):
         return super(BaseSubsession, self).in_rounds(first, last)
@@ -123,7 +123,7 @@ class BaseGroup(group_module.BaseGroup):
         return super(BaseGroup, self).in_all_rounds()
 
     def in_round(self, round_number):
-        return super(BaseGroup, self).in_round(self, round_number)
+        return super(BaseGroup, self).in_round(round_number)
 
     def in_rounds(self, first, last):
         return super(BaseGroup, self).in_rounds(first, last)
@@ -172,7 +172,7 @@ class BasePlayer(player_module.BasePlayer):
         return super(BasePlayer, self).role()
 
     def in_round(self, round_number):
-        return super(BasePlayer, self).in_round(self, round_number)
+        return super(BasePlayer, self).in_round(round_number)
 
     def in_rounds(self, first, last):
         return super(BasePlayer, self).in_rounds(first, last)

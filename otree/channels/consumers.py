@@ -15,7 +15,7 @@ import otree.session
 from otree.models import Session
 from otree.models_concrete import (
     FailedSessionCreation,
-    ParticipantVisit,
+    ParticipantRoomVisit,
     FAILURE_MESSAGE_MAX_LENGTH,
 )
 from otree.views.abstract import lock_on_this_code_path
@@ -120,11 +120,10 @@ def create_session(message):
 
     if 'room' in kwargs:
         room_name = kwargs['room'].name
-        Group('room-{}-participants'.format(room_name)).send(
+        Group('room-participants-{}'.format(room_name)).send(
             {'text': json.dumps(
                 {'status': 'session_ready'})}
         )
-        ParticipantVisit.objects.filter(room_name=room_name).delete()
 
 
 def connect_wait_for_session(message, pre_create_id):
@@ -160,16 +159,20 @@ def connect_room_admin(message, room):
     Group('room-admin-{}'.format(room)).add(message.reply_channel)
 
     room = ROOM_DICT[room]
-    all_participant_list = room.get_participant_labels()
-    with lock_on_this_code_path():
-        participant_list = list(ParticipantVisit.objects.filter(room_name=room).distinct().values_list('participant_id', flat=True))
-        not_present_list = all_participant_list - participant_list
+    all_participants = room.get_participant_labels()
 
-        message.reply_channel.send({'text': json.dumps({
-            'status': 'load_participant_lists',
-            'participants_present': participant_list,
-            'participants_not_present': None
-        })})
+    present = ParticipantRoomVisit.objects.filter(
+            room_name=room
+    ).distinct().values_list('participant_id', flat=True)
+
+    present_set = set(present)
+    absent = [p for p in all_participants if p not in present_set]
+
+    message.reply_channel.send({'text': json.dumps({
+        'status': 'load_participant_lists',
+        'participants_present': present,
+        'participants_not_present': absent
+    })})
 
 
 def disconnect_room_admin(message, room):
@@ -177,43 +180,43 @@ def disconnect_room_admin(message, room):
 
 
 def connect_room_participant(message, params):
-    args = params.split(',')
-    room_name = args[0]
-    participant_label = args[1]
-
+    room_name, participant_label, random_code = params.split(',')
     room = ROOM_DICT[room_name]
+
+    Group('room-participants-{}'.format(room_name)).add(message.reply_channel)
+
+    ParticipantRoomVisit.objects.create(
+        participant_id=participant_label,
+        room_name=room_name,
+        random_code=random_code
+    )
+
+    Group('room-admin-{}'.format(room_name)).send({'text': json.dumps({
+        'status': 'add_participant',
+        'participant': participant_label,
+        'has_participant_labels_list': room.has_participant_labels()
+    })})
+
     if room.has_session():
-        message.reply_channel.send("session_ready")
-    else:
-        with lock_on_this_code_path():
-            Group('room-{}-participants'.format(room_name)).add(message.reply_channel)
-
-            ParticipantVisit(participant_id=participant_label, room_name=room_name).save()
-
-            Group('room-admin-{}'.format(room_name)).send({'text': json.dumps({
-                'status': 'add_participant',
-                'participant': participant_label,
-                'has_participant_labels_list': room.has_participant_labels()
-            })})
+        message.reply_channel.send(
+            {'text': json.dumps({'status': 'session_ready'})}
+        )
 
 
 def disconnect_room_participant(message, params):
-    args = params.split(',')
-    room_name = args[0]
-    participant_label = args[1]
-
+    room_name, participant_label, random_code = params.split(',')
     room = ROOM_DICT[room_name]
-    try:
-        with lock_on_this_code_path():
-            Group('room-{}-participants'.format(room_name)).discard(message.reply_channel)
 
-            ParticipantVisit.objects.get(participant_id=participant_label, room_name=room_name).delete()
+    Group('room-participants-{}'.format(room_name)).discard(message.reply_channel)
 
-            Group('room-admin-{}'.format(room_name)).send({'text': json.dumps({
-                'status': 'remove_participant',
-                'participant': participant_label,
-                'has_participant_labels_list': room.has_participant_labels()
-            })})
-    except IndexError:
-        # This error will occur for every participant when they are forwarded from the wait page to a new session
-        pass
+    ParticipantRoomVisit.objects.get(
+        participant_id=participant_label,
+        room_name=room_name,
+        random_code=random_code
+    ).delete()
+
+    Group('room-admin-{}'.format(room_name)).send({'text': json.dumps({
+        'status': 'remove_participant',
+        'participant': participant_label,
+        'has_participant_labels_list': room.has_participant_labels()
+    })})

@@ -234,7 +234,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
 
     @classmethod
     def url_pattern(cls):
-        return r'^AssignVisitorToRoom/(?P<room>\w+)/$'
+        return r'^room/(?P<room>\w+)/$'
 
     def dispatch(self, request, *args, **kwargs):
         self.room_name = kwargs['room']
@@ -265,7 +265,9 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
         if session is None:
             self._params = ','.join([
                 self.room_name,
-                participant_label
+                participant_label,
+                # random chars in case the participant has multiple tabs open
+                otree.common_internal.random_chars_10()
             ])
             return render_to_response("otree/WaitPage.html", {'view': self, 'title_text': 'Please wait', 'body_text': 'Waiting for your session to begin'})
 
