@@ -335,14 +335,15 @@ def db_table_exists(table_name):
 
 db_synced = None
 
-def db_status_ok(cached_per_process=False):
+def db_status_ok(cache=False):
     """Try to execute a simple select * for every model registered
     "Your DB is not ready. Try resetting the database."
     """
-    if cached_per_process and db_synced is not None:
-        return db_synced
-    print('Checking DB tables')
     global db_synced
+
+    # cache per process
+    if cache and db_synced is not None:
+        return db_synced
     for Model in apps.get_models():
         table_name = Model._meta.db_table
         if not db_table_exists(table_name):
@@ -355,20 +356,6 @@ def db_status_ok(cached_per_process=False):
 def make_hash(s):
     s += settings.SECRET_KEY
     return hashlib.sha224(s.encode()).hexdigest()[:8]
-
-
-@contextlib.contextmanager
-def no_op_context_manager():
-    yield
-
-
-@contextlib.contextmanager
-def transaction_atomic():
-    if settings.DATABASES['default']['ENGINE'].endswith('sqlite3'):
-        yield
-    else:
-        with transaction.atomic():
-            yield
 
 
 def check_pypi_for_updates(print_message=True):

@@ -941,7 +941,7 @@ class ServerCheck(vanilla.TemplateView):
         auth_level = settings.AUTH_LEVEL in {'DEMO', 'STUDY'}
         heroku = self.app_is_on_heroku()
         runserver = 'runserver' in sys.argv
-        db_synced = db_status_ok(cached_per_process=False)
+        db_synced = db_status_ok(cache=False)
 
         return {
             'sqlite': sqlite,
