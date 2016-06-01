@@ -594,7 +594,6 @@ class EditSessionPropertiesForm(forms.ModelForm):
         fields = [
             'label',
             'experimenter_name',
-            'time_scheduled',
             'comment',
         ]
 
