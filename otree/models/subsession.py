@@ -109,7 +109,12 @@ class BaseSubsession(SaveTheChange, models.Model):
         """
 
         # validate input
-        matrix_pks = sorted([p.pk for g in matrix for p in g])
+        try:
+            matrix_pks = sorted([p.pk for g in matrix for p in g])
+        except TypeError:
+            raise TypeError(
+                'Argument to set_groups() must be a list of lists.'
+            )
         existing_pks = list(self.player_set.values_list('pk', flat=True).order_by('pk'))
         if matrix_pks != existing_pks:
             raise ValueError(
