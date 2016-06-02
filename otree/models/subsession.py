@@ -179,12 +179,17 @@ class BaseSubsession(SaveTheChange, models.Model):
     def group_like_round(self, round_number):
         previous_round = self.in_round(round_number)
         group_matrix = [
-            self._PlayerClass().objects.filter(
-                participant__in=[p.participant
-                                 for p in group.player_set.all()],
-                round_number=self.round_number).order_by('id_in_group')
-            for group in previous_round.group_set.order_by('id_in_subsession')
-                         .prefetch_related('player_set__participant')]
+            group._ordered_players
+            for group in previous_round.group_set.order_by('id_in_subsession').prefetch_related(
+                Prefetch('player_set',
+                         queryset=self._PlayerClass().objects.order_by('id_in_group'),
+                         to_attr='_ordered_players'))
+        ]
+        for i, group_list in enumerate(group_matrix):
+            for j, player in enumerate(group_list):
+                # for every entry (i,j) in the matrix, follow the pointer
+                # to the same person in the next round
+                group_matrix[i][j] = player.in_round(self.round_number)
 
         # save to DB
         self.set_groups(group_matrix)
