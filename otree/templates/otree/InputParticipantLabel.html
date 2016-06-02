@@ -10,6 +10,12 @@
     <br/>
     <input type="text" id="participant_label" name="participant_label" />
     <br/>
+    {% if uses_pin %}
+    <label for="pin">Please enter the session PIN code:</label>
+    <br/>
+    <input type="text" id="pin" name="pin" />
+    <br/>
+    {% endif %}
     <br/>
     {% next_button %}
 </form>

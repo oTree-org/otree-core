@@ -105,3 +105,8 @@ class FailedSessionCreation(models.Model):
 class ParticipantVisit(models.Model):
     room_name = models.CharField()
     participant_id = models.CharField()
+
+
+class ExpectedParticipant(models.Model):
+    room_name = models.CharField()
+    participant_id = models.CharField()
