@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from django.db.models import Case, When, Value
 from otree_save_the_change.mixins import SaveTheChange
 
 from otree.db import models

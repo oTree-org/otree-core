@@ -3,7 +3,7 @@
 
 from __future__ import division
 
-from django.db.models import Case, When, Value, Prefetch
+from django.db.models import Prefetch
 import six
 from six.moves import zip
 
