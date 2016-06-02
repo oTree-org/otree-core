@@ -3,13 +3,13 @@
 
 from __future__ import division
 
+from django.db.models import Prefetch
 import six
 from six.moves import zip
 
 from otree_save_the_change.mixins import SaveTheChange
 from otree.db import models
-from otree.common_internal import (
-    get_models_module, flatten)
+from otree.common_internal import get_models_module
 from otree import match_players
 
 
@@ -25,8 +25,7 @@ class BaseSubsession(SaveTheChange, models.Model):
     def in_rounds(self, first, last):
         qs = type(self).objects.filter(
             session=self.session,
-            round_number__gte=first,
-            round_number__lte=last,
+            round_number__range=(first, last),
         ).order_by('round_number')
 
         return list(qs)
@@ -44,10 +43,10 @@ class BaseSubsession(SaveTheChange, models.Model):
         return self.name()
 
     def in_round(self, round_number):
-        return type(self).objects.filter(
+        return type(self).objects.get(
             session=self.session,
             round_number=round_number
-        ).get()
+        )
 
     def _get_players_per_group_list(self):
         """get a list whose elements are the number of players in each group
@@ -66,7 +65,7 @@ class BaseSubsession(SaveTheChange, models.Model):
         """
 
         ppg = self._Constants.players_per_group
-        subsession_size = len(self.get_players())
+        subsession_size = self.player_set.count()
         if ppg is None:
             return [subsession_size]
 
@@ -82,10 +81,19 @@ class BaseSubsession(SaveTheChange, models.Model):
         return group_cycle * num_group_cycles
 
     def get_groups(self):
-        return list(self.group_set.all().order_by('id_in_subsession'))
+        return list(self.group_set.order_by('id_in_subsession'))
 
     def get_players(self):
-        return list(self.player_set.all().order_by('pk'))
+        return list(self.player_set.order_by('pk'))
+
+    def get_grouped_players(self):
+        players_prefetch = Prefetch(
+            'player_set',
+            queryset=self._PlayerClass().objects.order_by('id_in_group'),
+            to_attr='_ordered_players')
+        return [group._ordered_players
+                for group in self.group_set.order_by('id_in_subsession')
+                                 .prefetch_related(players_prefetch)]
 
     def check_group_integrity(self):
         '''
@@ -95,10 +103,9 @@ class BaseSubsession(SaveTheChange, models.Model):
         e.g., if group_by_arrival_time is true, and some players have not
         been assigned to groups yet
         '''
-        players = self.get_players()
-        groups = [g.get_players() for g in self.get_groups()]
-        players_from_groups = flatten(groups)
-
+        players = self.player_set.values_list('pk', flat=True)
+        players_from_groups = self._PlayerClass().objects.filter(
+            group__subsession=self).values_list('pk', flat=True)
         assert set(players) == set(players_from_groups)
 
     def _set_groups(self, groups, check_integrity=True):
@@ -122,15 +129,16 @@ class BaseSubsession(SaveTheChange, models.Model):
                 matrix.append(players_list)
                 # assume it's an iterable containing the players
         # Before deleting groups, Need to set the foreignkeys to None
-        for g in matrix:
-            for p in g:
-                p.group = None
-                p.save()
+        player_pk_list = [p.pk for g in matrix for p in g]
+        players_qs = self._PlayerClass().objects.filter(pk__in=player_pk_list)
+        players_qs.update(group=None)
+
         self.group_set.all().delete()
         for i, row in enumerate(matrix, start=1):
-            group = self._create_group()
+            group = self._GroupClass().objects.create(
+                subsession=self, id_in_subsession=i,
+                session=self.session, round_number=self.round_number)
             group.set_players(row)
-            group.id_in_subsession = i
 
         if check_integrity:
             self.check_group_integrity()
@@ -145,21 +153,8 @@ class BaseSubsession(SaveTheChange, models.Model):
     def _GroupClass(self):
         return models.get_model(self._meta.app_config.label, 'Group')
 
-    def _create_group(self):
-        '''should not be public API, because could leave the players in an
-        inconsistent state,
-
-        where id_in_group is not updated. the only call should be to
-        subsession.create_groups()
-
-        '''
-        GroupClass = self._GroupClass()
-        group = GroupClass(subsession=self, session=self.session,
-                           round_number=self.round_number)
-
-        # need to save it before you assign the player.group ForeignKey
-        group.save()
-        return group
+    def _PlayerClass(self):
+        return models.get_model(self._meta.app_config.label, 'Player')
 
     def _first_round_group_matrix(self):
         players = list(self.get_players())
@@ -184,14 +179,12 @@ class BaseSubsession(SaveTheChange, models.Model):
     def group_like_round(self, round_number):
         previous_round = self.in_round(round_number)
         group_matrix = [
-            group.get_players()
-            for group in previous_round.get_groups()
-        ]
-        for i, group_list in enumerate(group_matrix):
-            for j, player in enumerate(group_list):
-                # for every entry (i,j) in the matrix, follow the pointer
-                # to the same person in the next round
-                group_matrix[i][j] = player.in_round(self.round_number)
+            self._PlayerClass().objects.filter(
+                participant__in=[p.participant
+                                 for p in group.player_set.all()],
+                round_number=self.round_number).order_by('id_in_group')
+            for group in previous_round.group_set.order_by('id_in_subsession')
+                         .prefetch_related('player_set__participant')]
 
         # save to DB
         self.set_groups(group_matrix)
@@ -205,19 +198,6 @@ class BaseSubsession(SaveTheChange, models.Model):
 
         '''
         pass
-
-    def _initialize(self):
-        '''wrapper method for self.before_session_starts()'''
-        self.before_session_starts()
-        # needs to be get_players and get_groups instead of
-        # self.player_set.all() because that would just send a new query
-        # to the DB
-        for p in self.get_players():
-            p.save()
-        for g in self.get_groups():
-            g.save()
-
-        # subsession.save() gets called in the parent method
 
     def match_players(self, match_name):
         if self.round_number > 1:

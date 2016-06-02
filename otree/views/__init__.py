@@ -25,14 +25,11 @@ abstract = import_module('otree.views.abstract')
 
 
 class WaitPage(abstract.InGameWaitPage):
-
     wait_for_all_groups = False
-
     title_text = None
-
     body_text = None
-
     template_name = None
+    round_number = None
 
     def is_displayed(self):
         return super(WaitPage, self).is_displayed()
@@ -42,6 +39,18 @@ class WaitPage(abstract.InGameWaitPage):
 
 
 class Page(abstract.PlayerUpdateView):
+    round_number = None
+    template_name = None
+    timeout_seconds = None
+    timeout_submission = {}
+
+    # prefix with "form_" so that it's clear these refer to the form
+    # otherwise someone might confuse 'fields' with vars_for_template
+    form_model = abstract.PlayerUpdateView.model
+    form_fields = abstract.PlayerUpdateView.fields
+
+    def get_form_fields(self):
+        return super(Page, self).get_form_fields()
 
     def vars_for_template(self):
         return super(Page, self).vars_for_template()
@@ -51,13 +60,3 @@ class Page(abstract.PlayerUpdateView):
 
     def is_displayed(self):
         return super(Page, self).is_displayed()
-
-    template_name = None
-
-    # prefix with "form_" so that it's clear these refer to the form
-    # otherwise someone might confuse 'fields' with vars_for_template
-    form_model = abstract.PlayerUpdateView.model
-    form_fields = abstract.PlayerUpdateView.fields
-
-    timeout_seconds = None
-    timeout_submission = {}

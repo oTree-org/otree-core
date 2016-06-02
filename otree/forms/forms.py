@@ -233,8 +233,6 @@ class BaseModelForm(
         except FieldDoesNotExist:
             return [None, None]
 
-        min_value, max_value = None, None
-
         min_method_name = '%s_min' % field_name
         if hasattr(self.view, min_method_name):
             min_value = getattr(self.view, min_method_name)()

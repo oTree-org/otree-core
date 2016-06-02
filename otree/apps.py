@@ -34,7 +34,7 @@ def create_default_superuser(sender, **kwargs):
 
 
 def create_singleton_objects(sender, **kwargs):
-    for ModelClass in [StubModel, GlobalSingleton]:
+    for ModelClass in (StubModel, GlobalSingleton):
         # if it doesn't already exist, create one.
         ModelClass.objects.get_or_create()
 

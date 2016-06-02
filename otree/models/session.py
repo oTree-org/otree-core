@@ -10,7 +10,7 @@ import otree.common_internal
 from otree.common_internal import random_chars_8, random_chars_10
 from otree.db import models
 from .varsmixin import ModelWithVars
-from otree.models_concrete import ParticipantToPlayerLookup, RoomSession
+from otree.models_concrete import ParticipantToPlayerLookup, RoomToSession
 
 logger = logging.getLogger('otree')
 
@@ -53,9 +53,7 @@ class Session(ModelWithVars):
     code = models.CharField(
         default=random_chars_8,
         max_length=16,
-        null=False,
         unique=True,
-        db_index=True,
         doc="Randomly generated unique identifier for the session.")
 
     time_scheduled = models.DateTimeField(
@@ -160,10 +158,8 @@ class Session(ModelWithVars):
         # group_by_arrival_time code used to be here
         for subsession in self.get_subsessions():
             subsession._create_groups()
-            subsession._initialize()
+            subsession.before_session_starts()
             subsession.save()
-        # assert self is subsession.session
-        self.save()
 
     def mturk_requester_url(self):
         if self.mturk_sandbox:
@@ -176,14 +172,12 @@ class Session(ModelWithVars):
 
     def mturk_worker_url(self):
         if self.mturk_sandbox:
-            worker_url = (
+            return (
                 "https://workersandbox.mturk.com/mturk/preview?groupId={}"
             ).format(self.mturk_HITGroupId)
-        else:
-            worker_url = (
-                "https://www.mturk.com/mturk/preview?groupId={}"
-            ).format(self.mturk_HITGroupId)
-        return worker_url
+        return (
+            "https://www.mturk.com/mturk/preview?groupId={}"
+        ).format(self.mturk_HITGroupId)
 
     def advance_last_place_participants(self):
         participants = self.get_participants()
@@ -259,7 +253,7 @@ class Session(ModelWithVars):
     def get_room(self):
         from otree.room import ROOM_DICT
         try:
-            room_name = RoomSession.objects.get(session_pk=self.pk).room_name
+            room_name = RoomToSession.objects.get(session_pk=self.pk).room_name
             return ROOM_DICT[room_name]
-        except RoomSession.DoesNotExist:
+        except RoomToSession.DoesNotExist:
             return None

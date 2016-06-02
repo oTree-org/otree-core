@@ -62,8 +62,6 @@ class Participant(ModelWithVars):
     code = models.CharField(
         default=random_chars_8,
         max_length=16,
-        null=False,
-        db_index=True,
         unique=True,
         doc=(
             "Randomly generated unique identifier for the participant. If you "
@@ -158,25 +156,22 @@ class Participant(ModelWithVars):
     def _url_i_should_be_on(self):
         if self._index_in_pages <= self._max_page_index:
             return self.player_lookup().url
-        else:
-            if self.session.mturk_HITId:
-                assignment_id = self.mturk_assignment_id
-                if self.session.mturk_sandbox:
-                    url = (
-                        'https://workersandbox.mturk.com/mturk/externalSubmit'
-                    )
-                else:
-                    url = "https://www.mturk.com/mturk/externalSubmit"
-                url = otree.common_internal.add_params_to_url(
-                    url,
-                    {
-                        'assignmentId': assignment_id,
-                        'extra_param': '1'  # required extra param?
-                    }
-                )
-                return url
-            from otree.views.concrete import OutOfRangeNotification
-            return OutOfRangeNotification.url(self)
+        if self.session.mturk_HITId:
+            assignment_id = self.mturk_assignment_id
+            if self.session.mturk_sandbox:
+                url = 'https://workersandbox.mturk.com/mturk/externalSubmit'
+            else:
+                url = "https://www.mturk.com/mturk/externalSubmit"
+            url = otree.common_internal.add_params_to_url(
+                url,
+                {
+                    'assignmentId': assignment_id,
+                    'extra_param': '1'  # required extra param?
+                }
+            )
+            return url
+        from otree.views.concrete import OutOfRangeNotification
+        return OutOfRangeNotification.url(self)
 
     def __unicode__(self):
         return self.name()

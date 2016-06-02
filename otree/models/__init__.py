@@ -7,7 +7,7 @@ from importlib import import_module
 from otree.db import models
 from otree.models.session import Session
 from otree.models.participant import Participant
-from otree.models.fieldchecks import ensure_field
+
 
 # NOTE: this imports the following submodules and then subclasses several
 # classes importing is done via import_module rather than an ordinary import.
@@ -87,6 +87,12 @@ class BaseSubsession(subsession_module.BaseSubsession):
     def before_session_starts(self):
         return super(BaseSubsession, self).before_session_starts()
 
+    def in_round(self, round_number):
+        return super(BaseSubsession, self).in_round(round_number)
+
+    def in_rounds(self, first, last):
+        return super(BaseSubsession, self).in_rounds(first, last)
+
 
 class BaseGroup(group_module.BaseGroup):
 
@@ -98,16 +104,7 @@ class BaseGroup(group_module.BaseGroup):
         Session, related_name='%(app_label)s_%(class)s'
     )
 
-    @classmethod
-    def _ensure_required_fields(cls):
-        """
-        Every ``Group`` model requires a foreign key to the ``Subsession``
-        model of the same app.
-        """
-        subsession_model = '{app_label}.Subsession'.format(
-            app_label=cls._meta.app_label)
-        subsession_field = models.ForeignKey(subsession_model)
-        ensure_field(cls, 'subsession', subsession_field)
+    round_number = models.PositiveIntegerField(db_index=True)
 
     def set_players(self, players_list):
         return super(BaseGroup, self).set_players(players_list)
@@ -126,6 +123,12 @@ class BaseGroup(group_module.BaseGroup):
 
     def in_all_rounds(self):
         return super(BaseGroup, self).in_all_rounds()
+
+    def in_round(self, round_number):
+        return super(BaseGroup, self).in_round(round_number)
+
+    def in_rounds(self, first, last):
+        return super(BaseGroup, self).in_rounds(first, last)
 
 
 class BasePlayer(player_module.BasePlayer):
@@ -150,21 +153,11 @@ class BasePlayer(player_module.BasePlayer):
         Participant, related_name='%(app_label)s_%(class)s'
     )
 
-    @classmethod
-    def _ensure_required_fields(cls):
-        """
-        Every ``Player`` model requires a foreign key to the ``Subsession`` and
-        ``Group`` model of the same app.
-        """
-        subsession_model = '{app_label}.Subsession'.format(
-            app_label=cls._meta.app_label)
-        subsession_field = models.ForeignKey(subsession_model)
-        ensure_field(cls, 'subsession', subsession_field)
+    session = models.ForeignKey(
+        Session, related_name='%(app_label)s_%(class)s'
+    )
 
-        group_model = '{app_label}.Group'.format(
-            app_label=cls._meta.app_label)
-        group_field = models.ForeignKey(group_model, null=True)
-        ensure_field(cls, 'group', group_field)
+    round_number = models.PositiveIntegerField(db_index=True)
 
     def in_previous_rounds(self):
         return super(BasePlayer, self).in_previous_rounds()
@@ -180,3 +173,9 @@ class BasePlayer(player_module.BasePlayer):
 
     def role(self):
         return super(BasePlayer, self).role()
+
+    def in_round(self, round_number):
+        return super(BasePlayer, self).in_round(round_number)
+
+    def in_rounds(self, first, last):
+        return super(BasePlayer, self).in_rounds(first, last)

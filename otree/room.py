@@ -9,7 +9,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 
 from otree.models import Session
-from otree.models_concrete import RoomSession, ExpectedParticipant, ParticipantVisit
+from otree.models_concrete import RoomToSession, ExpectedParticipant, ParticipantVisit
 from otree.common_internal import add_params_to_url, make_hash
 
 
@@ -27,22 +27,17 @@ class Room(object):
 
     @property
     def session(self):
-        try:
-            session_pk = RoomSession.objects.get(
-                room_name=self.name).session_pk
-            return Session.objects.get(pk=session_pk)
-        except (RoomSession.DoesNotExist, Session.DoesNotExist):
-            return None
+        session_pk_qs = RoomToSession.objects.filter(
+            room_name=self.name).values('session_pk')
+        return Session.objects.filter(pk__in=session_pk_qs).first()
 
     @session.setter
     def session(self, session):
         if session is None:
-            RoomSession.objects.filter(room_name=self.name).delete()
+            RoomToSession.objects.filter(room_name=self.name).delete()
         else:
-            room_session, created = RoomSession.objects.get_or_create(
-                room_name=self.name)
-            room_session.session_pk = session.pk
-            room_session.save()
+            RoomToSession.objects.get_or_create(
+                room_name=self.name, defaults={'session_pk': session.pk})
 
     def has_participant_labels(self):
         return bool(self.participant_label_file)

@@ -70,7 +70,7 @@ class ParticipantLockModel(models.Model):
         app_label = "otree"
 
     participant_code = models.CharField(
-        max_length=16, db_index=True, unique=True
+        max_length=16, unique=True
     )
 
     locked = models.BooleanField(default=False)
@@ -89,7 +89,7 @@ class StubModel(models.Model):
     pass
 
 
-class RoomSession(models.Model):
+class RoomToSession(models.Model):
     room_name = models.CharField(unique=True, max_length=255)
     session_pk = models.PositiveIntegerField()
 
@@ -102,11 +102,12 @@ class FailedSessionCreation(models.Model):
     message = models.CharField(max_length=FAILURE_MESSAGE_MAX_LENGTH)
 
 
-class ParticipantVisit(models.Model):
+class ParticipantRoomVisit(models.Model):
     room_name = models.CharField()
-    participant_id = models.CharField()
+    participant_label = models.CharField()
+    random_code = models.CharField(max_length=20)
 
 
 class ExpectedParticipant(models.Model):
     room_name = models.CharField()
-    participant_id = models.CharField()
+    participant_label = models.CharField()

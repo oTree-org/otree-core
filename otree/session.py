@@ -77,6 +77,7 @@ def validate_session_config(session_config):
             raise AttributeError(msg.format(key, session_config))
 
     st_name = session_config['name']
+    # TODO: Replace with `not st_name.isidentifier()` when we drop Python 2.
     if not re.match(r'^\w+$', st_name):
         msg = (
             'Session "{}": name must be alphanumeric with no '
@@ -204,8 +205,9 @@ def create_session(session_config_name, label='', num_participants=None,
         [{'id_in_session': i + 1, 'start_order': j}
          for i, j in enumerate(start_order)])
 
-    for participant in participants:
-        ParticipantLockModel(participant_code=participant.code).save()
+    ParticipantLockModel.objects.bulk_create([
+        ParticipantLockModel(participant_code=participant.code)
+        for participant in participants])
 
     try:
         for app_name in session_config['app_sequence']:
@@ -242,11 +244,12 @@ def create_session(session_config_name, label='', num_participants=None,
                 sys.exc_info()[2])
         raise
 
-
     session.build_participant_to_player_lookups()
     if room is not None:
         room.session = session
-    session.save()
+    # automatically save all objects since the cache was activated:
+    # Player, Group, Subsession, Participant, Session
+    otree.db.idmap.save_objects()
     otree.db.idmap.deactivate_cache()
 
     return session

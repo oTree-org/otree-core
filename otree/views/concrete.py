@@ -13,7 +13,7 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template.response import TemplateResponse
 from django.http import (
-    HttpResponse, HttpResponseRedirect, HttpResponseNotFound)
+    HttpResponse, HttpResponseRedirect, HttpResponseNotFound, Http404)
 
 import vanilla
 
@@ -119,9 +119,9 @@ class MTurkLandingPage(vanilla.TemplateView):
                 'assignmentId': self.request.GET['assignmentId'],
                 'workerId': self.request.GET['workerId']})
             return HttpResponseRedirect(url_start)
-        else:
-            context = super(MTurkLandingPage, self).get_context_data(**kwargs)
-            return self.render_to_response(context)
+
+        context = super(MTurkLandingPage, self).get_context_data(**kwargs)
+        return self.render_to_response(context)
 
 
 class MTurkStart(vanilla.View):
@@ -234,7 +234,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
 
     @classmethod
     def url_pattern(cls):
-        return r'^AssignVisitorToRoom/(?P<room>\w+)/$'
+        return r'^room/(?P<room>\w+)/$'
 
     def dispatch(self, request, *args, **kwargs):
         self.room_name = kwargs['room']
@@ -274,7 +274,9 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
         if session is None:
             self._params = ','.join([
                 self.room_name,
-                participant_label
+                participant_label,
+                # random chars in case the participant has multiple tabs open
+                otree.common_internal.random_chars_10()
             ])
             return render_to_response("otree/WaitPage.html", {'view': self, 'title_text': 'Please wait', 'body_text': 'Waiting for your session to begin'})
 
@@ -313,7 +315,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
     def socket_url(self):
         return '/wait_for_session_in_room/{}/'.format(self._params)
 
-    def absolute_redirect_url(self):
+    def redirect_url(self):
         return self.request.get_full_path()
 
 
@@ -356,15 +358,24 @@ class ToggleArchivedSessions(vanilla.View):
         return 'toggle_archived_sessions'
 
     def post(self, request, *args, **kwargs):
-        for pk in request.POST.getlist('item-action'):
-            session = get_object_or_404(
-                otree.models.session.Session, pk=pk
-            )
-            if session.archived:
-                session.archived = False
-            else:
-                session.archived = True
-            session.save()
+        pk_list = request.POST.getlist('item-action')
+        sessions = otree.models.session.Session.objects.filter(pk__in=pk_list)
+        pk_dict = {True: [], False: []}
+        for pk, archived in sessions.filter(
+                archived=True).values_list('pk', 'archived'):
+            pk_dict[archived].append(pk)
+
+        for pk in pk_list:
+            if not (pk in pk_dict[True] or pk in pk_dict[False]):
+                raise Http404('No session with the id %s.' % pk)
+
+        # TODO: When `F` implements a toggle, use this instead:
+        #       sessions.update(archived=~F('archived'))
+        otree.models.session.Session.objects.filter(
+            pk__in=pk_dict[True]).update(archived=False)
+        otree.models.session.Session.objects.filter(
+            pk__in=pk_dict[False]).update(archived=True)
+
         return HttpResponseRedirect(request.POST['origin_url'])
 
 
