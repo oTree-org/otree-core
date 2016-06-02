@@ -78,7 +78,7 @@ $(document).ready(function () {
                     if (participants_not_waiting_list != null) {
                         participants_not_waiting_list.removeChild(current_element);
                     }
-                    participants_waiting_list.appendChild(current_element);
+                    participants_waiting_list.appendChild(createListElement(participantName));
                 } else if (status == "remove_participant") {
                     participants_waiting_list.removeChild(current_element);
                     if (participants_not_waiting_list != null) {
