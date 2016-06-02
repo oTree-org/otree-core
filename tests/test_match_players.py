@@ -46,7 +46,7 @@ class TestMatchPlayers(TestCase):
             func = match_players.MATCHS[alias]
             for subssn in self.session.get_subsessions():
                 sizes = [
-                    len(g) for g in match_players.players_x_groups(subssn)]
+                    len(g) for g in subssn.get_grouped_players()]
                 groups = func(subssn)
                 self.assert_groups_sizes(groups, sizes)
                 validator(

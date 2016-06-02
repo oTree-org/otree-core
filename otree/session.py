@@ -205,8 +205,9 @@ def create_session(session_config_name, label='', num_participants=None,
         [{'id_in_session': i + 1, 'start_order': j}
          for i, j in enumerate(start_order)])
 
-    for participant in participants:
-        ParticipantLockModel(participant_code=participant.code).save()
+    ParticipantLockModel.objects.bulk_create([
+        ParticipantLockModel(participant_code=participant.code)
+        for participant in participants])
 
     try:
         for app_name in session_config['app_sequence']:

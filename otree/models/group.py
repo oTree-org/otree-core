@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from django.db.models import Case, When, Value
 from otree_save_the_change.mixins import SaveTheChange
 
 from otree.db import models
@@ -26,7 +27,7 @@ class BaseGroup(SaveTheChange, models.Model):
         return str(self.pk)
 
     def get_players(self):
-        return list(self.player_set.all().order_by('id_in_group'))
+        return list(self.player_set.order_by('id_in_group'))
 
     def get_player_by_id(self, id_in_group):
         try:
@@ -42,12 +43,15 @@ class BaseGroup(SaveTheChange, models.Model):
         raise ValueError('No player with role {}'.format(role))
 
     def set_players(self, players_list):
+        pk_list = []
+        conditions = []
         for i, player in enumerate(players_list, start=1):
-            player.group = self
+            pk_list.append(player.pk)
+            conditions.append(When(pk=player.pk, then=Value(i)))
+            # TODO: Remove this line if we drop django-idmap.
             player.id_in_group = i
-            player.save()
-        # so that get_players doesn't return stale cache
-        self._players = players_list
+        self._PlayerClass().objects.filter(pk__in=pk_list) \
+            .update(group=self, id_in_group=Case(*conditions))
 
     def in_round(self, round_number):
         '''You should not use this method if
@@ -66,8 +70,7 @@ class BaseGroup(SaveTheChange, models.Model):
         qs = type(self).objects.filter(
             session=self.session,
             id_in_subsession=self.id_in_subsession,
-            round_number__gte=first,
-            round_number__lte=last,
+            round_number__range=(first, last),
         ).order_by('round_number')
 
         ret = list(qs)
@@ -84,6 +87,8 @@ class BaseGroup(SaveTheChange, models.Model):
     def _Constants(self):
         return get_models_module(self._meta.app_config.name).Constants
 
+    def _PlayerClass(self):
+        return models.get_model(self._meta.app_config.label, 'Player')
 
     @classmethod
     def _ensure_required_fields(cls):
