@@ -106,3 +106,8 @@ class ParticipantRoomVisit(models.Model):
     room_name = models.CharField()
     participant_label = models.CharField()
     random_code = models.CharField(max_length=20)
+
+
+class ExpectedParticipant(models.Model):
+    room_name = models.CharField()
+    participant_label = models.CharField()

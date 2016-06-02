@@ -243,6 +243,8 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
         except KeyError:
             return HttpResponseNotFound('Invalid room specified in url')
 
+        self.uses_pin = room.has_pin_code()
+
         participant_label = self.request.GET.get(
             'participant_label'
         )
@@ -253,13 +255,20 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
                     return super(AssignVisitorToRoom, self).get(args, kwargs)
 
             if participant_label not in room.get_participant_labels():
-                return HttpResponseNotFound('Participant is not expected in this room. Please contact the session supervisor.')
-
+                return HttpResponseNotFound('The given participant name was not expected.')
 
             if room.use_secure_urls:
                 hash = self.request.GET.get('hash')
                 if hash != make_hash(participant_label):
                     return HttpResponseNotFound('Invalid hash parameter.')
+
+        if self.uses_pin:
+            pin_code = self.request.GET.get('pin')
+            if not pin_code:
+                return super(AssignVisitorToRoom, self).get(args, kwargs)
+
+            if pin_code != room.get_pin_code():
+                return HttpResponseNotFound('The given pin code is incorrect.')
 
         session = room.session
         if session is None:
@@ -301,7 +310,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
         return HttpResponseRedirect(participant._start_url())
 
     def get_context_data(self, **kwargs):
-        return {'room': self.request.GET.get('room')}
+        return {'room': self.room_name, 'uses_pin': self.uses_pin}
 
     def socket_url(self):
         return '/wait_for_session_in_room/{}/'.format(self._params)

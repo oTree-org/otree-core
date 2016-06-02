@@ -18,11 +18,13 @@
         <ul id="participants_waiting_list"></ul>
     </div>
 
+    {% if has_expected_participant_list %}
     <h3 id="participants_not_waiting_count">Participants Not Present (0)</h3>
     <button class="btn" type="button" data-toggle="collapse" data-target="#participants_not_waiting_container">Expand/Collapse ID List</button>
     <div id="participants_not_waiting_container" class="collapse">
         <ul id="participants_not_waiting_list"></ul>
     </div>
+    {% endif %}
 
     <hr/>
 
@@ -46,7 +48,7 @@ $(document).ready(function () {
         var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
         var ws_path = ws_scheme + '://' + window.location.host + "{{ view.socket_url|safe }}";
         socket = new ReconnectingWebSocket(ws_path);
-        socket.onmessage = function(e) {
+        socket.onmessage = function (e) {
             var data = JSON.parse(e.data);
 
             // Handle errors
@@ -55,41 +57,61 @@ $(document).ready(function () {
                 return;
             }
 
-            // Allow for future messages of different kinds
+            var participants_waiting_list = document.getElementById("participants_waiting_list");
+            var participants_not_waiting_list = document.getElementById("participants_not_waiting_list");
+            var participants_waiting_count = document.getElementById("participants_waiting_count");
+            var participants_not_waiting_count = document.getElementById("participants_not_waiting_count");
+
             var status = data["status"];
-            if (status == "update_list") {
-                // Replace the existing list of participants with our new list
-                var participants = data["participants_"];
-                replaceUL(participants);
+            if (status == "load_participant_lists") {
+                var participantsPresent = data["participants_present"];
+                createUL(participantsPresent, participants_waiting_list);
+                if (participants_not_waiting_list != null) {
+                    var participantsNotPresent = data["participants_not_present"];
+                    createUL(participantsNotPresent, participants_not_waiting_list);
+                }
+            } else {
+                var participantName = data["participant"];
+                var current_element = document.getElementById(participantName);
+
+                if (status == "add_participant") {
+                    if (participants_not_waiting_list != null) {
+                        participants_not_waiting_list.removeChild(current_element);
+                    }
+                    participants_waiting_list.appendChild(createListElement(participantName));
+                } else if (status == "remove_participant") {
+                    participants_waiting_list.removeChild(current_element);
+                    if (participants_not_waiting_list != null) {
+                        participants_not_waiting_list.appendChild(current_element);
+                    }
+                } else {
+                    return;
+                }
             }
+
+            participants_waiting_count.innerHTML = "Participants Ready (" + participants_waiting_list.childElementCount + ")";
+            participants_not_waiting_count.innerHTML = "Participants Not Present (" + participants_not_waiting_list.childElementCount + ")";
         };
-        socket.onopen = function() {
+        socket.onopen = function () {
             console.log('WebSocket connected');
         };
-        socket.onclose = function() {
+        socket.onclose = function () {
             console.log('WebSocket disconnected');
         };
     }
 
-    function replaceUL(array) {
-        // Create the list element:
-        var list = document.getElementById("participants_waiting_list");
-        while (list.firstChild) {
-            list.removeChild(list.firstChild);
+    function createUL(array, parentElement) {
+        for (var i = 0; i < array.length; i++) {
+            var item = createListElement(array[i]);
+            parentElement.appendChild(item);
         }
+    }
 
-        for(var i = 0; i < array.length; i++) {
-            // Create the list item:
-            var item = document.createElement('li');
-
-            // Set its contents:
-            item.appendChild(document.createTextNode(array[i]));
-
-            // Add it to the list:
-            list.appendChild(item);
-        }
-
-        document.getElementById("participants_waiting_count").innerHTML = "Participants Ready (" + list.childElementCount + ")";
+    function createListElement(text) {
+        var item = document.createElement('li');
+        item.id = text;
+        item.appendChild(document.createTextNode(text));
+        return item;
     }
 
 });

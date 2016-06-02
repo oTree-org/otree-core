@@ -430,22 +430,14 @@ class RoomWithoutSession(CreateSession):
             request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        # TODO:
-        # List names (or identifiers) of whos waiting
-        # Display count of waiting participants
         context = {'participant_urls': self.room.get_participant_links(),
                    'participant_names': [],
                    'participant_count': str(0),
-                   'room': self.room}
+                   'room': self.room,
+                   'has_expected_participant_list': self.room.has_participant_labels()}
         kwargs.update(context)
 
         return super(RoomWithoutSession, self).get_context_data(**kwargs)
-
-        # TODO:
-        #
-        # - override start links page (so need to store on the session that
-        #   it's in this room? hm, no)
-        #
 
     def socket_url(self):
         return '/room_without_session/{}/'.format(self.room.name)
