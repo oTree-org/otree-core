@@ -115,6 +115,12 @@ class BaseSubsession(SaveTheChange, models.Model):
             raise TypeError(
                 'Argument to set_groups() must be a list of lists.'
             )
+        except AttributeError:
+            raise TypeError(
+                'The elements of the matrix passed to set_groups() '
+                'must be Player objects, '
+                'i.e. as returned by self.get_players().'
+            )
         existing_pks = list(self.player_set.values_list('pk', flat=True).order_by('pk'))
         if matrix_pks != existing_pks:
             raise ValueError(
