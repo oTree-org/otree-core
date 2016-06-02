@@ -81,9 +81,6 @@ class BaseGroup(SaveTheChange, models.Model):
     def _Constants(self):
         return get_models_module(self._meta.app_config.name).Constants
 
-    def _PlayerClass(self):
-        return models.get_model(self._meta.app_config.label, 'Player')
-
     @classmethod
     def _ensure_required_fields(cls):
         """

@@ -96,53 +96,40 @@ class BaseSubsession(SaveTheChange, models.Model):
                                  .prefetch_related(players_prefetch)]
 
     def check_group_integrity(self):
+        ''' should be moved from here to a test case'''
         players = self.player_set.values_list('pk', flat=True)
-        players_from_groups = self._PlayerClass().objects.filter(
+        players_from_groups = self.player_set.filter(
             group__subsession=self).values_list('pk', flat=True)
         assert set(players) == set(players_from_groups)
 
-    def _set_groups(self, groups, check_integrity=True):
-        """elements in the list can be sublists, or group objects.
-
-        Maybe this should be re-run after before_session_starts() to ensure
-        that id_in_groups are consistent. Or at least we should validate.
-
-
+    def set_groups(self, matrix):
+        """
         warning: this deletes the groups and any data stored on them
         TODO: we should indicate this in docs
         """
 
+        # validate input
+        matrix_pks = sorted([p.pk for g in matrix for p in g])
+        existing_pks = list(self.player_set.values_list('pk', flat=True).order_by('pk'))
+        if matrix_pks != existing_pks:
+            raise ValueError(
+                'Matrix passed to set_groups() must contain '
+                'each player in the subsession exactly once.')
 
-        # first, get players in each group
-        matrix = []
-        for group in groups:
-            if isinstance(group, self._GroupClass()):
-                matrix.append(group.get_players())
-            else:
-                players_list = group
-                matrix.append(players_list)
-                # assume it's an iterable containing the players
         # Before deleting groups, Need to set the foreignkeys to None
-        player_pk_list = [p.pk for g in matrix for p in g]
-        players_qs = self._PlayerClass().objects.filter(pk__in=player_pk_list)
-        players_qs.update(group=None)
+        self.player_set.update(group=None)
 
         players_count_start = self.player_set.count()
         self.group_set.all().delete()
         assert players_count_start == self.player_set.count()
+
+        GroupClass = self._GroupClass()
         for i, row in enumerate(matrix, start=1):
-            group = self._GroupClass().objects.create(
+            group = GroupClass.objects.create(
                 subsession=self, id_in_subsession=i,
                 session=self.session, round_number=self.round_number)
             group.set_players(row)
 
-
-        if check_integrity:
-            self.check_group_integrity()
-
-
-    def set_groups(self, groups):
-        self._set_groups(groups, check_integrity=True)
 
     @property
     def _Constants(self):
@@ -153,6 +140,7 @@ class BaseSubsession(SaveTheChange, models.Model):
 
     def _PlayerClass(self):
         return models.get_model(self._meta.app_config.label, 'Player')
+
 
     def _first_round_group_matrix(self):
         players = list(self.get_players())
