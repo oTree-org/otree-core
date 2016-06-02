@@ -26,12 +26,9 @@ class Room(object):
 
     @property
     def session(self):
-        try:
-            session_pk = RoomToSession.objects.get(
-                room_name=self.name).session_pk
-            return Session.objects.get(pk=session_pk)
-        except (RoomToSession.DoesNotExist, Session.DoesNotExist):
-            return None
+        session_pk_qs = RoomToSession.objects.filter(
+            room_name=self.name).values('session_pk')
+        return Session.objects.filter(pk__in=session_pk_qs).first()
 
     @session.setter
     def session(self, session):
@@ -39,7 +36,7 @@ class Room(object):
             RoomToSession.objects.filter(room_name=self.name).delete()
         else:
             RoomToSession.objects.get_or_create(
-                room_name=self.name, defaults={'session_pk':session.pk})
+                room_name=self.name, defaults={'session_pk': session.pk})
 
     def has_participant_labels(self):
         return bool(self.participant_label_file)

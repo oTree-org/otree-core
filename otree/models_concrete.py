@@ -70,7 +70,7 @@ class ParticipantLockModel(models.Model):
         app_label = "otree"
 
     participant_code = models.CharField(
-        max_length=16, db_index=True, unique=True
+        max_length=16, unique=True
     )
 
     locked = models.BooleanField(default=False)

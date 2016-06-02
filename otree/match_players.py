@@ -60,7 +60,7 @@ def match_func(*names):
         @functools.wraps(func)
         def _dec(subssn):
             if subssn.round_number == 1:
-                return players_x_groups(subssn)
+                return subssn.get_grouped_players()
             return func(subssn)
 
         for name in names:
@@ -71,24 +71,13 @@ def match_func(*names):
 
 
 # =============================================================================
-# MATCHS
-# =============================================================================
-
-def players_x_groups(subssn):
-    """Conver a subssn in a tuple of list of players
-
-    """
-    return tuple(g.get_players() for g in subssn.get_groups())
-
-
-# =============================================================================
 # MATCH
 # =============================================================================
 
 @match_func("random", "uniform", "players_random")
 def players_random(subssn):
     """Random Uniform distribution of players in every group"""
-    groups = players_x_groups(subssn)
+    groups = subssn.get_grouped_players()
     players = list(itertools.chain.from_iterable(groups))
     sizes = [len(group) for group in groups]
 
@@ -113,13 +102,12 @@ def round_robin(subssn):
     def pxg2id(players):
         participant_ids = [player.participant_id for player in players]
         participant_ids.sort()
-        pxg_id = "|".join(map(str, participant_ids))
-        return pxg_id
+        return "|".join(map(str, participant_ids))
 
     def usage_counts(subssn):
         counts = {}
         for p_subssn in subssn.in_previous_rounds():
-            for players in players_x_groups(p_subssn):
+            for players in p_subssn.get_grouped_players():
                 size = len(players)
                 if size not in counts:
                     counts[size] = collections.defaultdict(int)
@@ -168,7 +156,7 @@ def round_robin(subssn):
         sorted_groups = [by_sizes[size].pop() for size in sizes]
         return sorted_groups
 
-    groups = players_x_groups(subssn)
+    groups = subssn.get_grouped_players()
     players = tuple(itertools.chain.from_iterable(groups))
 
     counts = usage_counts(subssn)
@@ -182,19 +170,16 @@ def round_robin(subssn):
 @match_func("partners")
 def partners(subssn):
     """Every player go with the same player in every round"""
-    return players_x_groups(subssn)
+    return subssn.get_grouped_players()
 
 
 @match_func("reversed", "players_reversed")
 def players_reversed(subssn):
-    """Change the order of a players ina group. In a even group the central
+    """Change the order of a players in a group. In an even group the central
     player never change
 
     """
     def reverse_group(g):
         return list(reversed(g))
 
-    p_subssn = players_x_groups(subssn)
-    rev_p = tuple(map(reverse_group, p_subssn))
-
-    return rev_p
+    return [reverse_group(p) for p in subssn.get_grouped_players()]

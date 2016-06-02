@@ -233,6 +233,8 @@ class BinaryField(_OtreeNullableModelFieldMixin, models.BinaryField):
     pass
 
 
+# FIXME: CharField should never be nullable, otherwise we have to check for two
+#        empty values: None and the empty string.
 class CharField(_OtreeNullableModelFieldMixin, models.CharField):
     def __init__(self, *args,  **kwargs):
         kwargs.setdefault('max_length', 500)

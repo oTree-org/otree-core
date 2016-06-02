@@ -439,6 +439,7 @@ def add_empty_migrations_to_all_apps(project_root):
     # because people on older versions of oTree also install
     # from the same repo,
     # and the old resetdb chokes when it encounters an app with migrations
+    # TODO: Simplify all this with pathlib when Python support >= 3.4.
     subfolders = next(os.walk(project_root))[1]
     for subfolder in subfolders:
         # ignore folders that start with "." etc...
