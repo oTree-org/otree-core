@@ -162,7 +162,7 @@ def connect_room_admin(message, room):
     room_object = ROOM_DICT[room]
     all_participants_list = room_object.get_participant_labels()
     with lock_on_this_code_path():
-        present_list = set(ParticipantRoomVisit.objects.filter(room_name=room_object.name).distinct().values_list('participant_id', flat=True))
+        present_list = set(ParticipantRoomVisit.objects.filter(room_name=room_object.name).distinct().values_list('participant_label', flat=True))
         not_present_list = list(all_participants_list - present_list)
         present_list = list(present_list)
 
@@ -187,8 +187,8 @@ def connect_room_participant(message, params):
         message.reply_channel.send(
             {'text': json.dumps({'status': 'session_ready'})}
         )
-
-        if not ParticipantRoomVisit.objects.filter(participant_id=participant_label, room_name=room_name).exists():
+    else:
+        if not ParticipantRoomVisit.objects.filter(participant_label=participant_label, room_name=room_name).exists():
             Group('room-admin-{}'.format(room_name)).send({'text': json.dumps({
                 'status': 'add_participant',
                 'participant': participant_label
@@ -203,24 +203,14 @@ def connect_room_participant(message, params):
 
 def disconnect_room_participant(message, params):
     room_name, participant_label, random_code = params.split(',')
-    room = ROOM_DICT[room_name]
 
     Group('room-participants-{}'.format(room_name)).discard(message.reply_channel)
 
-    ParticipantRoomVisit.objects.get(
-        participant_label=participant_label,
-        room_name=room_name,
-        random_code=random_code
-    ).delete()
-
-    room = ROOM_DICT[room_name]
     try:
         with lock_on_this_code_path():
-            Group('room-{}-participants'.format(room_name)).discard(message.reply_channel)
-
-            ParticipantRoomVisit.objects.filter(participant_id=participant_label, room_name=room_name)[0].delete()
+            ParticipantRoomVisit.objects.filter(participant_label=participant_label, room_name=room_name, random_code=random_code)[0].delete()
             # Only send a remove message if a participant has no more tabs connected
-            if not ParticipantRoomVisit.objects.filter(participant_id=participant_label, room_name=room_name).exists():
+            if not ParticipantRoomVisit.objects.filter(participant_label=participant_label, room_name=room_name).exists():
                 Group('room-admin-{}'.format(room_name)).send({'text': json.dumps({
                     'status': 'remove_participant',
                     'participant': participant_label

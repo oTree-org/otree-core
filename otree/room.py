@@ -9,7 +9,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 
 from otree.models import Session
-from otree.models_concrete import RoomToSession, ExpectedParticipant, ParticipantVisit
+from otree.models_concrete import RoomToSession, ExpectedParticipant, ParticipantRoomVisit
 from otree.common_internal import add_params_to_url, make_hash
 
 
@@ -69,7 +69,7 @@ class Room(object):
 
     def get_participant_labels(self):
         if self.has_participant_labels():
-            return set(ExpectedParticipant.objects.filter(room_name=self.name).values_list('participant_id', flat=True))
+            return set(ExpectedParticipant.objects.filter(room_name=self.name).values_list('participant_label', flat=True))
         raise Exception('no guestlist')
 
     def get_participant_links(self):
@@ -109,7 +109,7 @@ def augment_room(room):
 
 
 # If the server is restarted then forget all waiting participants and reload all participant labels
-ParticipantVisit.objects.all().delete()
+ParticipantRoomVisit.objects.all().delete()
 ExpectedParticipant.objects.all().delete()
 
 ROOM_DICT = OrderedDict()
@@ -118,5 +118,5 @@ for room in getattr(settings, 'ROOMS', []):
     room_object = Room(room)
     room_name = room_object.name
     for participant_label in room_object.load_participant_labels_from_file():
-        ExpectedParticipant(room_name=room_name, participant_id=participant_label).save()
+        ExpectedParticipant(room_name=room_name, participant_label=participant_label).save()
     ROOM_DICT[room_name] = room_object
