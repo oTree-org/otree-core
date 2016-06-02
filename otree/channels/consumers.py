@@ -163,7 +163,7 @@ def connect_room_admin(message, room):
 
     present = ParticipantRoomVisit.objects.filter(
             room_name=room
-    ).distinct().values_list('participant_id', flat=True)
+    ).distinct().values_list('participant_label', flat=True)
 
     present_set = set(present)
     absent = [p for p in all_participants if p not in present_set]
@@ -186,7 +186,7 @@ def connect_room_participant(message, params):
     Group('room-participants-{}'.format(room_name)).add(message.reply_channel)
 
     ParticipantRoomVisit.objects.create(
-        participant_id=participant_label,
+        participant_label=participant_label,
         room_name=room_name,
         random_code=random_code
     )
@@ -210,7 +210,7 @@ def disconnect_room_participant(message, params):
     Group('room-participants-{}'.format(room_name)).discard(message.reply_channel)
 
     ParticipantRoomVisit.objects.get(
-        participant_id=participant_label,
+        participant_label=participant_label,
         room_name=room_name,
         random_code=random_code
     ).delete()
