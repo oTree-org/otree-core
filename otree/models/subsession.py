@@ -96,13 +96,6 @@ class BaseSubsession(SaveTheChange, models.Model):
                                  .prefetch_related(players_prefetch)]
 
     def check_group_integrity(self):
-        '''
-
-        2015-4-17: can't check this from set_players,
-        because sometimes we are intentionally in an inconsistent state
-        e.g., if group_by_arrival_time is true, and some players have not
-        been assigned to groups yet
-        '''
         players = self.player_set.values_list('pk', flat=True)
         players_from_groups = self._PlayerClass().objects.filter(
             group__subsession=self).values_list('pk', flat=True)
@@ -119,6 +112,7 @@ class BaseSubsession(SaveTheChange, models.Model):
         TODO: we should indicate this in docs
         """
 
+
         # first, get players in each group
         matrix = []
         for group in groups:
@@ -133,15 +127,19 @@ class BaseSubsession(SaveTheChange, models.Model):
         players_qs = self._PlayerClass().objects.filter(pk__in=player_pk_list)
         players_qs.update(group=None)
 
+        players_count_start = self.player_set.count()
         self.group_set.all().delete()
+        assert players_count_start == self.player_set.count()
         for i, row in enumerate(matrix, start=1):
             group = self._GroupClass().objects.create(
                 subsession=self, id_in_subsession=i,
                 session=self.session, round_number=self.round_number)
             group.set_players(row)
 
+
         if check_integrity:
             self.check_group_integrity()
+
 
     def set_groups(self, groups):
         self._set_groups(groups, check_integrity=True)
