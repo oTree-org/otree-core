@@ -134,24 +134,11 @@ class BaseSubsession(SaveTheChange, models.Model):
         players_qs.update(group=None)
 
         self.group_set.all().delete()
-        self._GroupClass().objects.bulk_create([
-            self._GroupClass()(
+        for i, row in enumerate(matrix, start=1):
+            group = self._GroupClass().objects.create(
                 subsession=self, id_in_subsession=i,
                 session=self.session, round_number=self.round_number)
-            for i in range(1, len(matrix)+1)])
-
-        group_conditions = []
-        id_conditions = []
-        for group, row in zip(self.group_set.order_by('id_in_subsession'),
-                              matrix):
-            for i, player in enumerate(row, start=1):
-                group_conditions.append(When(pk=player.pk, then=Value(group.pk)))
-                id_conditions.append(When(pk=player.pk, then=Value(i)))
-                # TODO: Remove these 2 lines if we drop django-idmap.
-                player.group = group
-                player.id_in_group = i
-        players_qs.update(group=Case(*group_conditions),
-                          id_in_group=Case(*id_conditions))
+            group.set_players(row)
 
         if check_integrity:
             self.check_group_integrity()

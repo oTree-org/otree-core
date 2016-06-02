@@ -43,15 +43,10 @@ class BaseGroup(SaveTheChange, models.Model):
         raise ValueError('No player with role {}'.format(role))
 
     def set_players(self, players_list):
-        pk_list = []
-        conditions = []
         for i, player in enumerate(players_list, start=1):
-            pk_list.append(player.pk)
-            conditions.append(When(pk=player.pk, then=Value(i)))
-            # TODO: Remove this line if we drop django-idmap.
+            player.group = self
             player.id_in_group = i
-        self._PlayerClass().objects.filter(pk__in=pk_list) \
-            .update(group=self, id_in_group=Case(*conditions))
+            player.save()
 
     def in_round(self, round_number):
         '''You should not use this method if
