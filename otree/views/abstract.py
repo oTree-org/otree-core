@@ -700,7 +700,7 @@ class InGameWaitPageMixin(object):
 
         participant_ids = set(
             self._group_or_subsession.player_set.values_list(
-                'participant_label', flat=True))
+                'participant_id', flat=True))
 
         participant_data = Participant.objects.filter(
             id__in=participant_ids

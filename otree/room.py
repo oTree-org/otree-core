@@ -72,9 +72,10 @@ class Room(object):
             return set(ExpectedParticipant.objects.filter(room_name=self.name).values_list('participant_label', flat=True))
         raise Exception('no guestlist')
 
-    def get_participant_links(self):
+    def get_participant_links(self, request):
         participant_urls = []
         room_base_url = reverse('assign_visitor_to_room', args=(self.name,))
+        room_base_url = request.build_absolute_uri(room_base_url)
         if not self.use_secure_urls:
             participant_urls.append(room_base_url)
 

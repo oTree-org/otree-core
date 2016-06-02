@@ -430,7 +430,7 @@ class RoomWithoutSession(CreateSession):
             request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = {'participant_urls': self.room.get_participant_links(),
+        context = {'participant_urls': self.room.get_participant_links(self.request),
                    'participant_names': [],
                    'participant_count': str(0),
                    'room': self.room,
@@ -464,7 +464,7 @@ class RoomWithSession(vanilla.TemplateView):
             request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = {'participant_urls': self.room.get_participant_links(),
+        context = {'participant_urls': self.room.get_participant_links(self.request),
                    'session_url': reverse('session_monitor',
                                           args=(self.room.session.pk,)),
                    'room': self.room}
@@ -726,7 +726,7 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
         if room:
             context.update(
             {
-                'participant_urls': room.get_participant_links(),
+                'participant_urls': room.get_participant_links(self.request),
                 'room': room
             })
         else:
