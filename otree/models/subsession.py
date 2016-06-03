@@ -129,10 +129,7 @@ class BaseSubsession(SaveTheChange, models.Model):
 
         # Before deleting groups, Need to set the foreignkeys to None
         self.player_set.update(group=None)
-
-        players_count_start = self.player_set.count()
         self.group_set.all().delete()
-        assert players_count_start == self.player_set.count()
 
         GroupClass = self._GroupClass()
         for i, row in enumerate(matrix, start=1):
