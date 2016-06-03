@@ -95,14 +95,7 @@ class BaseSubsession(SaveTheChange, models.Model):
                 for group in self.group_set.order_by('id_in_subsession')
                                  .prefetch_related(players_prefetch)]
 
-    def check_group_integrity(self):
-        ''' should be moved from here to a test case'''
-        players = self.player_set.values_list('pk', flat=True)
-        players_from_groups = self.player_set.filter(
-            group__subsession=self).values_list('pk', flat=True)
-        assert set(players) == set(players_from_groups)
-
-    def set_groups(self, matrix):
+    def set_grouped_players(self, matrix):
         """
         warning: this deletes the groups and any data stored on them
         TODO: we should indicate this in docs
@@ -138,6 +131,16 @@ class BaseSubsession(SaveTheChange, models.Model):
                 session=self.session, round_number=self.round_number)
             group.set_players(row)
 
+    def set_groups(self, matrix):
+        '''renamed this to set_grouped_players, but keeping in for compat'''
+        return self.set_grouped_players(matrix)
+
+    def check_group_integrity(self):
+        ''' should be moved from here to a test case'''
+        players = self.player_set.values_list('pk', flat=True)
+        players_from_groups = self.player_set.filter(
+            group__subsession=self).values_list('pk', flat=True)
+        assert set(players) == set(players_from_groups)
 
     @property
     def _Constants(self):
