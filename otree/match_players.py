@@ -167,12 +167,6 @@ def round_robin(subssn):
     return tuple(groups)
 
 
-@match_func("partners")
-def partners(subssn):
-    """Every player go with the same player in every round"""
-    return subssn.get_grouped_players()
-
-
 @match_func("reversed", "players_reversed")
 def players_reversed(subssn):
     """Change the order of a players in a group. In an even group the central

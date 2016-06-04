@@ -81,18 +81,6 @@ class TestMatchPlayers(TestCase):
         self.assert_aliases(match_players.round_robin, names)
         self.assert_matchs(names, validator)
 
-    def test_partners(self):
-        names = ["partners"]
-
-        def validator(groups, subssn, players, round_number, previous):
-            self.assert_groups_contains(groups, players)
-            if previous:
-                for ag, pg in six.moves.zip(groups, previous[-1]):
-                    self.assert_same_order_participants(ag, pg)
-
-        self.assert_aliases(match_players.partners, names)
-        self.assert_matchs(names, validator)
-
     def test_reversed(self):
         names = ["reversed", "players_reversed"]
 

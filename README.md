@@ -14,6 +14,7 @@ These are the core oTree libraries.
 pip install --upgrade otree-core
 otree startproject oTree
 otree resetdb
+otree runserver
 ```
 
 ### Core dev setup
@@ -26,6 +27,7 @@ pip install -e .
 cd .. # or wherever you will start your project
 otree startproject oTree
 otree resetdb
+otree runserver
 ```
 
 See [this](http://otree.readthedocs.io/en/latest/django.html)
