@@ -108,6 +108,10 @@ def augment_room(room):
     new_room.update(room)
     return new_room
 
+# FIXME: should not delete/add models in module-level code
+# this gets loaded multiple times. should do somewhere else,
+# preferably in a lazy way, given that many people
+# dont even use the rooms feature
 
 # If the server is restarted then forget all waiting participants and reload all participant labels
 ParticipantRoomVisit.objects.all().delete()
@@ -119,5 +123,6 @@ for room in getattr(settings, 'ROOMS', []):
     room_object = Room(room)
     room_name = room_object.name
     for participant_label in room_object.load_participant_labels_from_file():
+        # FIXME: see above note about models in module-level code
         ExpectedParticipant(room_name=room_name, participant_label=participant_label).save()
     ROOM_DICT[room_name] = room_object

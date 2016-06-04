@@ -68,6 +68,9 @@ class BaseSubsession(subsession_module.BaseSubsession):
     def set_groups(self, groups_list):
         return super(BaseSubsession, self).set_groups(groups_list)
 
+    def set_grouped_players(self, grouped_players):
+        return super(BaseSubsession, self).set_groups(grouped_players)
+
     def get_groups(self):
         return super(BaseSubsession, self).get_groups()
 
