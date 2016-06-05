@@ -181,20 +181,17 @@ class Session(ModelWithVars):
         ).format(self.mturk_HITGroupId)
 
     def advance_last_place_participants(self):
+
         participants = self.get_participants()
 
         # in case some participants haven't started
         unvisited_participants = []
         for p in participants:
-            if not p._current_form_page_url:
+            if p._index_in_pages == 0:
                 unvisited_participants.append(p)
                 client.get(p._start_url(), follow=True)
 
         if unvisited_participants:
-            from otree.models import Participant
-            for p in unvisited_participants:
-                p.save()
-                Participant.flush_cached_instance(p)
             # that's it -- just visit the start URL, advancing by 1
             return
 
