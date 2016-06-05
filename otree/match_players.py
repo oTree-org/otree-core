@@ -16,81 +16,40 @@ import random
 
 from six.moves import map
 
-
-# =============================================================================
-# CONSTANTS
-# =============================================================================
-
-MATCHS = {}
-
-
-# =============================================================================
-# DECORATOR
-# =============================================================================
-
-def match_func(*names):
-    """Register a matching function with diferent aliases
-
-    Example:
-
-    ::
-
-        @match_func("fancy_name", "ugly_name")
-        def matching_function(subssn):
-            ...
-
-    Then you can use this this function in you ``before_session_starts`` method
-    as:
-
-    ::
-
-        def before_session_starts(self):
-            self.match_players("fancy_name")
-
-    or
-
-    ::
-
-        def before_session_starts(self):
-            self.match_players("ugly_name")
-
-    """
-    def _wrap(func):
-
-        @functools.wraps(func)
-        def _dec(subssn):
-            if subssn.round_number == 1:
-                return subssn.get_grouped_players()
-            return func(subssn)
-
-        for name in names:
-            MATCHS[name] = _dec
-        return _dec
-
-    return _wrap
-
-
 # =============================================================================
 # MATCH
 # =============================================================================
 
-@match_func("random", "uniform", "players_random")
-def players_random(subssn):
+def by_rank(ranked_list, players_per_group):
+    ppg = players_per_group
+    players = ranked_list
+    group_matrix = []
+    for i in range(0, len(players), ppg):
+        group_matrix.append(players[i:i + ppg])
+    return group_matrix
+
+
+def randomly(group_matrix, fixed_id_in_group=False):
     """Random Uniform distribution of players in every group"""
-    groups = subssn.get_grouped_players()
-    players = list(itertools.chain.from_iterable(groups))
-    sizes = [len(group) for group in groups]
 
-    random.shuffle(players)
-    groups, offset, limit = [], 0, 0
-    for size in sizes:
-        limit = offset + size
-        groups.append(players[offset:limit])
-        offset = limit
-    return tuple(groups)
+    players = list(itertools.chain.from_iterable(group_matrix))
+    sizes = [len(group) for group in group_matrix]
+    if sizes and any(size != sizes[0] for size in sizes):
+        raise ValueError(
+            'This algorithm does not work with unevenly sized groups'
+        )
+    players_per_group = sizes[0]
+
+    if fixed_id_in_group:
+        group_matrix = [list(col) for col in zip(*group_matrix)]
+        for column in group_matrix:
+            random.shuffle(column)
+        return list(zip(*group_matrix))
+    else:
+        random.shuffle(players)
+        return by_rank(players, players_per_group)
 
 
-@match_func("perfect_strangers", "round_robin")
 def round_robin(subssn):
     """Try to generate every group of players with a lesser probabilty to mix
     the same players twice.
@@ -107,7 +66,7 @@ def round_robin(subssn):
     def usage_counts(subssn):
         counts = {}
         for p_subssn in subssn.in_previous_rounds():
-            for players in p_subssn.get_grouped_players():
+            for players in p_subssn.get_group_matrix():
                 size = len(players)
                 if size not in counts:
                     counts[size] = collections.defaultdict(int)
@@ -156,7 +115,7 @@ def round_robin(subssn):
         sorted_groups = [by_sizes[size].pop() for size in sizes]
         return sorted_groups
 
-    groups = subssn.get_grouped_players()
+    groups = subssn.get_group_matrix()
     players = tuple(itertools.chain.from_iterable(groups))
 
     counts = usage_counts(subssn)
@@ -167,13 +126,3 @@ def round_robin(subssn):
     return tuple(groups)
 
 
-@match_func("reversed", "players_reversed")
-def players_reversed(subssn):
-    """Change the order of a players in a group. In an even group the central
-    player never change
-
-    """
-    def reverse_group(g):
-        return list(reversed(g))
-
-    return [reverse_group(p) for p in subssn.get_grouped_players()]

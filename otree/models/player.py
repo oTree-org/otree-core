@@ -28,6 +28,19 @@ class BasePlayer(SaveTheChange, models.Model):
     def _name(self):
         return self.participant.__unicode__()
 
+    @property
+    def id_in_subsession(self):
+        return self.participant.id_in_session
+
+    def __repr__(self):
+        id_in_subsession = self.id_in_subsession
+        if id_in_subsession < 10:
+            # 2 spaces so that it lines up if printing a matrix
+            fmt_string = '<Player  {}>'
+        else:
+            fmt_string = '<Player {}>'
+        return fmt_string.format(id_in_subsession)
+
     def role(self):
         # you can make this depend of self.id_in_group
         return ''

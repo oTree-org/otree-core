@@ -86,7 +86,7 @@ class BaseSubsession(SaveTheChange, models.Model):
     def get_players(self):
         return list(self.player_set.order_by('pk'))
 
-    def get_grouped_players(self):
+    def get_group_matrix(self):
         players_prefetch = Prefetch(
             'player_set',
             queryset=self._PlayerClass().objects.order_by('id_in_group'),
@@ -95,30 +95,49 @@ class BaseSubsession(SaveTheChange, models.Model):
                 for group in self.group_set.order_by('id_in_subsession')
                                  .prefetch_related(players_prefetch)]
 
-    def set_grouped_players(self, matrix):
+    def set_group_matrix(self, matrix):
         """
         warning: this deletes the groups and any data stored on them
         TODO: we should indicate this in docs
         """
 
         # validate input
+
         try:
-            matrix_pks = sorted([p.pk for g in matrix for p in g])
+            players_flat = [p for g in matrix for p in g]
         except TypeError:
             raise TypeError(
                 'Argument to set_groups() must be a list of lists.'
             )
+        try:
+            matrix_pks = sorted(p.pk for p in players_flat)
         except AttributeError:
-            raise TypeError(
-                'The elements of the matrix passed to set_groups() '
-                'must be Player objects, '
-                'i.e. as returned by self.get_players().'
-            )
-        existing_pks = list(self.player_set.values_list('pk', flat=True).order_by('pk'))
-        if matrix_pks != existing_pks:
-            raise ValueError(
-                'Matrix passed to set_groups() must contain '
-                'each player in the subsession exactly once.')
+            # if integers, it's OK
+            if isinstance(players_flat[0], int):
+                players_flat = sorted(players_flat)
+                if players_flat == list(range(1, len(players_flat) + 1)):
+                    players = self.get_players()
+                    for i, row in enumerate(matrix):
+                        for j, val in enumerate(row):
+                            matrix[i][j] = players[val - 1]
+                else:
+                    raise ValueError(
+                        'If you pass a matrix of integers to this function, '
+                        'It must contain all integers from 1 to the number of players '
+                        'in the subsession.'
+                    )
+            else:
+                raise TypeError(
+                    'The elements of the matrix passed to set_group_matrix() '
+                    'must either be Player objects or integers.'
+                )
+
+        else:
+            existing_pks = list(self.player_set.values_list('pk', flat=True).order_by('pk'))
+            if matrix_pks != existing_pks:
+                raise ValueError(
+                    'Matrix passed to set_groups() must contain '
+                    'each player in the subsession exactly once.')
 
         # Before deleting groups, Need to set the foreignkeys to None
         self.player_set.update(group=None)
@@ -129,11 +148,13 @@ class BaseSubsession(SaveTheChange, models.Model):
             group = GroupClass.objects.create(
                 subsession=self, id_in_subsession=i,
                 session=self.session, round_number=self.round_number)
+
             group.set_players(row)
 
     def set_groups(self, matrix):
-        '''renamed this to set_grouped_players, but keeping in for compat'''
-        return self.set_grouped_players(matrix)
+        '''renamed this to set_group_matrix, but keeping in for compat'''
+        return self.set_group_matrix(matrix)
+
 
     def check_group_integrity(self):
         ''' should be moved from here to a test case'''
@@ -188,8 +209,22 @@ class BaseSubsession(SaveTheChange, models.Model):
                 # to the same person in the next round
                 group_matrix[i][j] = player.in_round(self.round_number)
 
-        # save to DB
         self.set_groups(group_matrix)
+
+    def group_randomly(self, fixed_id_in_group):
+        group_matrix = self.get_group_matrix()
+        group_matrix = match_players.randomly(
+            group_matrix,
+            fixed_id_in_group)
+        self.set_group_matrix(group_matrix)
+
+    def group_by_rank(self, ranked_list):
+        group_matrix = match_players.by_rank(
+            ranked_list,
+            self._Constants.players_per_group
+        )
+        self.set_group_matrix(group_matrix)
+
 
     def before_session_starts(self):
         '''This gets called at the beginning of every subsession, before the
@@ -200,10 +235,3 @@ class BaseSubsession(SaveTheChange, models.Model):
 
         '''
         pass
-
-    def match_players(self, match_name):
-        if self.round_number > 1:
-            match_function = match_players.MATCHS[match_name]
-            pxg = match_function(self)
-            for group, players in zip(self.get_groups(), pxg):
-                group.set_players(players)

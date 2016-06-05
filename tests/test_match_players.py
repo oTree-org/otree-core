@@ -40,23 +40,17 @@ class TestMatchPlayers(TestCase):
         actual = [len(g) for g in groups]
         self.assertCountEqual(actual, expected)
 
-    def assert_matchs(self, names, validator):
+    def assert_matchs(self, matching_algorithm, validator):
         previous = []
-        for alias in names:
-            func = match_players.MATCHS[alias]
-            for subssn in self.session.get_subsessions():
-                sizes = [
-                    len(g) for g in subssn.get_grouped_players()]
-                groups = func(subssn)
-                self.assert_groups_sizes(groups, sizes)
-                validator(
-                    groups, subssn, subssn.get_players(),
-                    subssn.round_number, previous)
-                previous.append(groups)
-
-    def assert_aliases(self, fnc, expected):
-        actual = [k for k, v in match_players.MATCHS.items() if v is fnc]
-        self.assertCountEqual(actual, expected)
+        for subssn in self.session.get_subsessions():
+            sizes = [
+                len(g) for g in subssn.get_group_matrix()]
+            new_group_matrix = matching_algorithm(subssn)
+            self.assert_groups_sizes(new_group_matrix, sizes)
+            validator(
+                new_group_matrix, subssn, subssn.get_players(),
+                subssn.round_number, previous)
+            previous.append(new_group_matrix)
 
     def assert_same_order_participants(self, actual, expected):
         actual = [p.participant for p in actual]
@@ -64,31 +58,15 @@ class TestMatchPlayers(TestCase):
         self.assertListEqual(actual, expected)
 
     def test_random(self):
-        names = ["random", "uniform", "players_random"]
-
         def validator(groups, subssn, players, round_number, previous):
             self.assert_groups_contains(groups, players)
 
-        self.assert_aliases(match_players.players_random, names)
-        self.assert_matchs(names, validator)
+        self.assert_matchs(match_players.randomly, validator)
 
     def test_round_robin(self):
-        names = ["perfect_strangers", "round_robin"]
 
         def validator(groups, subssn, players, round_number, previous):
             self.assert_groups_contains(groups, players)
 
-        self.assert_aliases(match_players.round_robin, names)
-        self.assert_matchs(names, validator)
+        self.assert_matchs(match_players.round_robin, validator)
 
-    def test_reversed(self):
-        names = ["reversed", "players_reversed"]
-
-        def validator(groups, subssn, players, round_number, previous):
-            self.assert_groups_contains(groups, players)
-            if previous:
-                for ag, pg in six.moves.zip(groups, previous[-1]):
-                    self.assert_same_order_participants(ag, reversed(pg))
-
-        self.assert_aliases(match_players.players_reversed, names)
-        self.assert_matchs(names, validator)
