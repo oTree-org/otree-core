@@ -17,7 +17,7 @@ from otree.models_concrete import (
     FailedSessionCreation,
     ParticipantRoomVisit,
     FAILURE_MESSAGE_MAX_LENGTH,
-    ExpectedParticipant
+    ExpectedRoomParticipant
 )
 from otree.views.abstract import lock_on_this_code_path
 from otree.room import ROOM_DICT

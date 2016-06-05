@@ -9,9 +9,9 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 
 from otree.models import Session
-from otree.models_concrete import RoomToSession, ExpectedParticipant, ParticipantRoomVisit
+from otree.models_concrete import RoomToSession, ExpectedRoomParticipant, ParticipantRoomVisit
 from otree.common_internal import add_params_to_url, make_hash
-
+from django.db import transaction
 
 class Room(object):
 
@@ -21,6 +21,7 @@ class Room(object):
         self.display_name = config_dict['display_name']
         self.use_secure_urls = config_dict.get('use_secure_urls', True)
         self.pin_code = config_dict.get('pin_code')
+        self._participant_labels_loaded = False
 
     def has_session(self):
         return self.session is not None
@@ -69,7 +70,23 @@ class Room(object):
 
     def get_participant_labels(self):
         if self.has_participant_labels():
-            return set(ExpectedParticipant.objects.filter(room_name=self.name).values_list('participant_label', flat=True))
+            if not self._participant_labels_loaded:
+                with transaction.atomic():
+                    # use select_for_update to prevent race conditions
+                    ExpectedRoomParticipant.objects.select_for_update()
+                    ExpectedRoomParticipant.objects.all().delete()
+                    ExpectedRoomParticipant.objects.bulk_create(
+                        ExpectedRoomParticipant(
+                            room_name=room_name,
+                            participant_label=participant_label
+                        ) for participant_label in self.load_participant_labels_from_file()
+                    )
+                    self._participant_labels_loaded = True
+            return set(
+                ExpectedRoomParticipant.objects.filter(
+                    room_name=self.name
+                ).values_list('participant_label', flat=True)
+            )
         raise Exception('no guestlist')
 
     def get_participant_links(self, request):
@@ -108,21 +125,9 @@ def augment_room(room):
     new_room.update(room)
     return new_room
 
-# FIXME: should not delete/add models in module-level code
-# this gets loaded multiple times. should do somewhere else,
-# preferably in a lazy way, given that many people
-# dont even use the rooms feature
-
-# If the server is restarted then forget all waiting participants and reload all participant labels
-ParticipantRoomVisit.objects.all().delete()
-ExpectedParticipant.objects.all().delete()
-
 ROOM_DICT = OrderedDict()
 for room in getattr(settings, 'ROOMS', []):
     room = augment_room(room)
     room_object = Room(room)
     room_name = room_object.name
-    for participant_label in room_object.load_participant_labels_from_file():
-        # FIXME: see above note about models in module-level code
-        ExpectedParticipant(room_name=room_name, participant_label=participant_label).save()
     ROOM_DICT[room_name] = room_object

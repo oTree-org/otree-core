@@ -8,7 +8,7 @@ from django.apps import AppConfig, apps
 from django.conf import settings
 from django.db.models import signals
 
-from otree.models_concrete import StubModel
+from otree.models_concrete import StubModel, ParticipantRoomVisit
 from otree.models.session import GlobalSingleton
 
 
@@ -59,4 +59,5 @@ class OtreeConfig(AppConfig):
         self.setup_create_singleton_objects()
         if getattr(settings, 'CREATE_DEFAULT_SUPERUSER', False):
             self.setup_create_default_superuser()
-        # self.init_celery()
+        ParticipantRoomVisit.objects.all().delete()
+
