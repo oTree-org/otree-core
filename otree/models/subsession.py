@@ -101,13 +101,11 @@ class BaseSubsession(SaveTheChange, models.Model):
         TODO: we should indicate this in docs
         """
 
-        # validate input
-
         try:
             players_flat = [p for g in matrix for p in g]
         except TypeError:
             raise TypeError(
-                'Argument to set_groups() must be a list of lists.'
+                'Group matrix must be a list of lists.'
             )
         try:
             matrix_pks = sorted(p.pk for p in players_flat)
@@ -128,16 +126,17 @@ class BaseSubsession(SaveTheChange, models.Model):
                     )
             else:
                 raise TypeError(
-                    'The elements of the matrix passed to set_group_matrix() '
-                    'must either be Player objects or integers.'
+                    'The elements of the group matrix '
+                    'must either be Player objects, or integers.'
                 )
 
         else:
             existing_pks = list(self.player_set.values_list('pk', flat=True).order_by('pk'))
             if matrix_pks != existing_pks:
                 raise ValueError(
-                    'Matrix passed to set_groups() must contain '
-                    'each player in the subsession exactly once.')
+                    'The group matrix must contain each player '
+                    'in the subsession exactly once.'
+                )
 
         # Before deleting groups, Need to set the foreignkeys to None
         self.player_set.update(group=None)
