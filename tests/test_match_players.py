@@ -57,16 +57,3 @@ class TestMatchPlayers(TestCase):
         expected = [p.participant for p in expected]
         self.assertListEqual(actual, expected)
 
-    def test_random(self):
-        def validator(groups, subssn, players, round_number, previous):
-            self.assert_groups_contains(groups, players)
-
-        self.assert_matchs(match_players.randomly, validator)
-
-    def test_round_robin(self):
-
-        def validator(groups, subssn, players, round_number, previous):
-            self.assert_groups_contains(groups, players)
-
-        self.assert_matchs(match_players.round_robin, validator)
-
