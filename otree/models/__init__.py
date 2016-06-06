@@ -170,6 +170,10 @@ class BasePlayer(player_module.BasePlayer):
 
     round_number = models.PositiveIntegerField(db_index=True)
 
+    @property
+    def id_in_subsession(self):
+        return super(BasePlayer, self).id_in_subsession()
+
     def in_previous_rounds(self):
         return super(BasePlayer, self).in_previous_rounds()
 
