@@ -11,6 +11,10 @@ import otree.common_internal
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
+        # clear any room visit records that didn't get cleared on previous server run
+        # e.g. because server was killed before the disconnect consumer get executed
+        from otree.models_concrete import ParticipantRoomVisit
+        ParticipantRoomVisit.objects.all().delete()
         # use in-memory.
         # this is the simplest way to patch runserver to use in-memory,
         # while still using Redis in production
