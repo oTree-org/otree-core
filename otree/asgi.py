@@ -8,6 +8,14 @@ import channels.asgi
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 
 from otree.models_concrete import ParticipantRoomVisit
-ParticipantRoomVisit.objects.all().delete()
+
+
+try:
+    ParticipantRoomVisit.objects.all().delete()
+except:  # e.g. DB not created yet
+    # OK to ignore, because we only need to delete if
+    # if there are stale ParticipantRoomVisit records
+    # in the DB.
+    pass
 
 channel_layer = channels.asgi.get_channel_layer()

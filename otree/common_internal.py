@@ -337,16 +337,17 @@ db_synced = None
 
 def db_status_ok(cache=False):
     """Try to execute a simple select * for every model registered
-    "Your DB is not ready. Try resetting the database."
     """
     global db_synced
 
     # cache per process
-    if cache and db_synced is not None:
-        return db_synced
+    if cache and db_synced is True:
+        return True
+    # if it returned False last time, check again.
     for Model in apps.get_models():
         table_name = Model._meta.db_table
         if not db_table_exists(table_name):
+            print('**** table does not exist: {}'.format(table_name))
             db_synced = False
             return False
     db_synced = True
