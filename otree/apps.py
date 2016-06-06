@@ -59,5 +59,4 @@ class OtreeConfig(AppConfig):
         self.setup_create_singleton_objects()
         if getattr(settings, 'CREATE_DEFAULT_SUPERUSER', False):
             self.setup_create_default_superuser()
-        ParticipantRoomVisit.objects.all().delete()
 
