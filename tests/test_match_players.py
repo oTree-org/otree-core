@@ -40,12 +40,12 @@ class TestMatchPlayers(TestCase):
         actual = [len(g) for g in groups]
         self.assertCountEqual(actual, expected)
 
-    def assert_matchs(self, matching_algorithm, validator):
+    def assert_matchs(self, matching_function, validator):
         previous = []
         for subssn in self.session.get_subsessions():
             sizes = [
                 len(g) for g in subssn.get_group_matrix()]
-            new_group_matrix = matching_algorithm(subssn)
+            new_group_matrix = matching_function(subssn)
             self.assert_groups_sizes(new_group_matrix, sizes)
             validator(
                 new_group_matrix, subssn, subssn.get_players(),
