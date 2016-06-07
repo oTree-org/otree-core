@@ -1,2 +1,1 @@
 selenium==2.53.2
-psutil==4.2.0

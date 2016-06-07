@@ -2,18 +2,28 @@
 
 from __future__ import unicode_literals, division, print_function
 from collections import OrderedDict
+try:
+    from http.client import CannotSendRequest
+except ImportError:  # Python 2.7
+    from httplib import CannotSendRequest
 import json
+import os
 import platform
 import re
+from signal import SIGINT
 from socket import socket
 from subprocess import call, Popen, PIPE, STDOUT, CalledProcessError
 from time import time, sleep
 import uuid
 
-from psutil import Process, virtual_memory
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import Firefox
 from selenium.webdriver.support.select import Select
+
+
+DJANGO_SETTINGS_MODULE = os.environ.get('DJANGO_SETTINGS_MODULE',
+                                        'tests.settings')
+PROCFILE_PATH = 'otree/project_template/Procfile'
 
 
 def is_port_available(host, port):
@@ -136,11 +146,11 @@ class Graph:
 
 class StressTest:
     browser_timeout = 20
-    timeit_iterations = 3
+    timeit_iterations = 5
     num_participants = OrderedDict((
-        ('Simple Game', range(9, 189, 9)),
-        ('Multi Player Game', range(9, 189, 9)),
-        ('2 Simple Games', range(9, 189, 9)),
+        ('Simple Game', range(9, 279, 9)),
+        ('Multi Player Game', range(9, 279, 9)),
+        ('2 Simple Games', range(9, 279, 9)),
     ))
 
     def __init__(self):
@@ -154,12 +164,19 @@ class StressTest:
 
     def get_conditions(self):
         versions = OrderedDict()
+        # TODO: This works only on Linux.
         with open('/proc/cpuinfo') as f:
             versions['CPU'] = re.search(r'^model name\s+: (.+)$', f.read(),
                                         flags=re.MULTILINE).group(1)
-        GiB = 1 << 30
+        # TODO: This works only on Linux.
+        with open('/proc/meminfo') as f:
+            ram = re.search(r'^MemTotal:\s+(\d+) kB$', f.read(),
+                            flags=re.MULTILINE).group(1)
+            ram = int(ram) * 1024  # Since meminfo in fact uses kiB, not kB.
+            GiB = 1 << 30
+            versions['RAM'] = '%.2f GiB' % (ram / GiB)
         versions.update((
-            ('RAM', '%.2f GiB' % (virtual_memory().total / GiB)),
+            # TODO: This works only on Linux.
             ('Linux distribution', ' '.join(
                 platform.linux_distribution()).strip()),
             ('Python', platform.python_version()),
@@ -172,11 +189,15 @@ class StressTest:
         port = 1024  # First port available to users.
         while not is_port_available('localhost', port):
             port += 1
-        command_args = ('./manage.py', 'runserver', str(port))
-        self.runserver_process = Popen(command_args,
-                                       stdout=PIPE, stderr=STDOUT)
+        command_args = ('otree', 'runprodserver', '--port', str(port),
+                        '--procfile', PROCFILE_PATH)
+        env = os.environ.copy()
+        env['DJANGO_SETTINGS_MODULE'] = DJANGO_SETTINGS_MODULE
+        self.runserver_process = Popen(
+            command_args, stdin=PIPE, stdout=PIPE, stderr=STDOUT, env=env)
         self.server_url = 'http://localhost:%d' % port
 
+        # Waits for the server to be successfully started.
         while is_port_available('localhost', port):
             return_code = self.runserver_process.poll()
             if return_code is not None and return_code != 0:
@@ -187,11 +208,7 @@ class StressTest:
 
     def stop_server(self):
         print('Stopping oTree server...')
-        process = Process(self.runserver_process.pid)
-        # We send ctrl+c to each subprocess of the server, the server process
-        # will exit once each child exited.
-        for child in process.children():
-            child.kill()
+        self.runserver_process.send_signal(SIGINT)
         self.runserver_process.wait()
 
     def create_session(self, config, num_participants=6):
@@ -257,6 +274,8 @@ class StressTest:
         except WebDriverException:
             self.selenium.save_screenshot('selenium_error.png')
             raise
+        except KeyboardInterrupt:
+            pass
         finally:
             with open('stress_test_report.html', 'w') as f:
                 f.write(REPORT_TEMPLATE % {
@@ -266,8 +285,13 @@ class StressTest:
                 })
             print('Report generated in stress_test_report.html')
             self.stop_server()
-            self.selenium.quit()
+            try:
+                self.selenium.quit()
+            except CannotSendRequest:  # Occurs when quitting selenium
+                                       # in the middle of a request.
+                pass
             notify('Stress test finished!')
+
 
 if __name__ == '__main__':
     StressTest().run()
