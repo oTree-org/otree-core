@@ -3,9 +3,9 @@
 from __future__ import unicode_literals, division, print_function
 from collections import OrderedDict, defaultdict
 try:
-    from http.client import CannotSendRequest
+    from http.client import CannotSendRequest, BadStatusLine
 except ImportError:  # Python 2.7
-    from httplib import CannotSendRequest
+    from httplib import CannotSendRequest, BadStatusLine
 import json
 import os
 import platform
@@ -16,13 +16,12 @@ from time import time, sleep
 import uuid
 
 from django.core.management.base import BaseCommand
+from django.core.urlresolvers import reverse
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import Firefox
 from selenium.webdriver.support.select import Select
 
 
-DJANGO_SETTINGS_MODULE = os.environ.get('DJANGO_SETTINGS_MODULE',
-                                        'tests.settings')
 PROCFILE_PATH = 'otree/management/commands/stress_test_procfile'
 
 
@@ -39,7 +38,7 @@ def notify(message):
     """
     try:
         call(('notify-send', message))
-    except FileNotFoundError:
+    except OSError:
         pass
 
 
@@ -212,11 +211,11 @@ class Report:
 
 class StressTest:
     browser_timeout = 20
-    timeit_iterations = 3
+    timeit_iterations = 10
     num_participants = OrderedDict((
-        ('Simple Game', range(9, 18, 9)),
-        ('Multi Player Game', range(9, 18, 9)),
-        ('2 Simple Games', range(9, 18, 9)),
+        ('Simple Game', range(9, 279, 9)),
+        ('Multi Player Game', range(9, 279, 9)),
+        ('2 Simple Games', range(9, 279, 9)),
     ))
 
     def __init__(self):
@@ -237,10 +236,7 @@ class StressTest:
             port += 1
         command_args = ('honcho', 'start', '-f', PROCFILE_PATH)
         env = os.environ.copy()
-        env.update(
-            DJANGO_SETTINGS_MODULE=DJANGO_SETTINGS_MODULE,
-            OTREE_PORT=str(port),
-        )
+        env['OTREE_PORT'] = str(port)
         self.runserver_process = Popen(
             command_args, stdin=PIPE, stdout=PIPE, stderr=STDOUT, env=env)
         self.server_url = 'http://localhost:%d' % port
@@ -257,8 +253,12 @@ class StressTest:
     def stop_server(self):
         print('Stopping oTree server...')
         self.runserver_process.terminate()
+        self.runserver_process.wait()
 
-    def create_session(self, config, num_participants=6):
+    def get_url(self, view_name, args=None, kwargs=None):
+        return self.server_url + reverse(view_name, args=args, kwargs=kwargs)
+
+    def create_session(self, config, num_participants):
         self.selenium.get(self.server_url + '/sessions/')
         self.selenium.find_element_by_link_text('Create new session').click()
         select = Select(self.selenium.find_element_by_name('session_config'))
@@ -274,11 +274,10 @@ class StressTest:
         session_id = re.match(
             r'^%s/SessionStartLinks/(\d+)/$' % re.escape(self.server_url),
             self.selenium.current_url).group(1)
-        deletion_time = self.delete_session(session_id)
-        return creation_time, deletion_time
+        return session_id, creation_time
 
     def delete_session(self, session_id):
-        self.selenium.get(self.server_url + '/sessions/')
+        self.selenium.get(self.get_url('sessions'))
         self.selenium.find_element_by_css_selector(
             '[name="item-action"][value="%s"]' % session_id).click()
         self.selenium.find_element_by_id('action-delete').click()
@@ -289,18 +288,47 @@ class StressTest:
         self.selenium.find_element_by_link_text('Create new session')
         return time() - start
 
+    def participate(self, session_id, participant_number):
+        self.selenium.get(self.get_url('session_start_links', (session_id,)))
+        link = self.selenium.find_element_by_xpath(
+            '(//a[text()[contains(., "/InitializeParticipant/")]])[%d]'
+            % participant_number)
+        url = link.get_attribute('href')
+        start = time()
+        self.selenium.get(url)
+        # Waits until the page fully loads.
+        self.selenium.find_element_by_xpath('//input[@value = "Next"]')
+        return time() - start
+
+    def open_results_page(self, num_participants):
+        link = self.selenium.find_element_by_link_text('Results')
+        start = time()
+        link.click()
+        # Waits until the page fully loads.
+        self.selenium.find_element_by_xpath(
+            '//td[@data-field = "participant_label" and text() = "P%d"]'
+            % num_participants)
+        return time() - start
+
     def test_large_sessions(self, config):
         print('Testing large sessions (%s)...' % config)
         graph = self.report.create_graph(
             'oTree performance when creating large sessions', '(%s)' % config)
         creation_series = graph.create_series('Creation')
         deletion_series = graph.create_series('Deletion')
+        results_series = graph.create_series('Results page')
+        participant_series = graph.create_series('Participant first page')
         for num_participants in self.num_participants[config]:
             print('Testing with %d participants...' % num_participants)
             for _ in range(self.timeit_iterations):
-                creation_time, deletion_time = self.create_session(
+                session_id, creation_time = self.create_session(
                     config, num_participants=num_participants)
                 creation_series.add(num_participants, creation_time)
+                results_page_time = self.open_results_page(num_participants)
+                results_series.add(num_participants, results_page_time)
+                participant_time = self.participate(session_id, 1)
+                participant_series.add(num_participants, participant_time)
+                deletion_time = self.delete_session(session_id)
                 deletion_series.add(num_participants, deletion_time)
             self.report.generate()
 
@@ -312,15 +340,17 @@ class StressTest:
         except WebDriverException:
             self.selenium.save_screenshot('selenium_error.png')
             raise
+        except BadStatusLine:
+            pass  # Occurs when the browser is closed prematurely.
         except KeyboardInterrupt:
             pass
         finally:
             self.report.generate()
             try:
                 self.selenium.quit()
-            except CannotSendRequest:  # Occurs when quitting selenium
-                # in the middle of a request.
-                pass
+            except CannotSendRequest:
+                pass  # Occurs when something wrong happens
+                      # in the middle of a request.
             self.stop_server()
             notify('Stress test finished!')
 
