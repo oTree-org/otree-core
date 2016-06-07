@@ -132,10 +132,13 @@ def augment_session_config(session_config):
     validate_session_config(new_session_config)
     return new_session_config
 
-SESSION_CONFIGS_DICT = OrderedDict()
-for config in settings.SESSION_CONFIGS:
-    SESSION_CONFIGS_DICT[config['name']] = augment_session_config(config)
+def get_session_configs_dict():
+    SESSION_CONFIGS_DICT = OrderedDict()
+    for config in settings.SESSION_CONFIGS:
+        SESSION_CONFIGS_DICT[config['name']] = augment_session_config(config)
+    return SESSION_CONFIGS_DICT
 
+SESSION_CONFIGS_DICT = get_session_configs_dict()
 
 def app_labels_from_sessions(config_names):
     apps = set()
