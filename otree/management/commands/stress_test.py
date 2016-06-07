@@ -15,6 +15,7 @@ from subprocess import call, Popen, PIPE, STDOUT, CalledProcessError
 from time import time, sleep
 import uuid
 
+from django.core.management.base import BaseCommand
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import Firefox
 from selenium.webdriver.support.select import Select
@@ -22,7 +23,7 @@ from selenium.webdriver.support.select import Select
 
 DJANGO_SETTINGS_MODULE = os.environ.get('DJANGO_SETTINGS_MODULE',
                                         'tests.settings')
-PROCFILE_PATH = 'stress_test_procfile'
+PROCFILE_PATH = 'otree/management/commands/stress_test_procfile'
 
 
 def is_port_available(host, port):
@@ -324,5 +325,8 @@ class StressTest:
             notify('Stress test finished!')
 
 
-if __name__ == '__main__':
-    StressTest().run()
+class Command(BaseCommand):
+    help = 'Tests oTree performance under a lot of stress.'
+
+    def handle(self, *args, **options):
+        StressTest().run()
