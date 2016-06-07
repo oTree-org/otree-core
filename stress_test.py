@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import unicode_literals, division, print_function
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 try:
     from http.client import CannotSendRequest
 except ImportError:  # Python 2.7
@@ -10,7 +10,6 @@ import json
 import os
 import platform
 import re
-from signal import SIGINT
 from socket import socket
 from subprocess import call, Popen, PIPE, STDOUT, CalledProcessError
 from time import time, sleep
@@ -23,7 +22,7 @@ from selenium.webdriver.support.select import Select
 
 DJANGO_SETTINGS_MODULE = os.environ.get('DJANGO_SETTINGS_MODULE',
                                         'tests.settings')
-PROCFILE_PATH = 'otree/project_template/Procfile'
+PROCFILE_PATH = 'stress_test_procfile'
 
 
 def is_port_available(host, port):
@@ -43,40 +42,78 @@ def notify(message):
         pass
 
 
-REPORT_TEMPLATE = """
-<!DOCTYPE html>
-<html>
-    <head>
-        <style>
-            dt {
-                font-weight: bold;
-            }
-        </style>
-        <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
-        <script src="https://code.highcharts.com/highcharts.js"></script>
-    </head>
-    <body>
-        <h1>Conditions</h1>
-        %(conditions)s
-
-        <h1>Measures</h1>
-
-        %(graphs)s
-    </body>
-</html>
-"""
-
-
 class Series:
-    def __init__(self, name):
+    def __init__(self, graph, name):
+        self.graph = graph
         self.name = name
-        self.data = []
+        self.data = defaultdict(list)
+        self.averages = OrderedDict()
+
+    def add(self, x, y):
+        self.data[x].append(y)
+        if x not in self.graph.x_labels:
+            self.graph.x_labels.append(x)
+        self.set_average(x)
+
+    def set_average(self, x):
+        l = self.data[x].copy()
+        if len(l) > 2:
+            # We make an average without the extreme values.
+            l.remove(min(l))
+            l.remove(max(l))
+            self.averages[x] = sum(l) / len(l)
 
     def to_dict(self):
-        return {'name': self.name, 'data': self.data}
+        return {'name': self.name,
+                'data': list(self.averages.values())}
 
 
 class Graph:
+    template = """
+    <div id="container-%(id)s" style="width: 800px; height: 400px;">
+    </div>
+    <script>
+        $(function () {
+            $('#container-%(id)s').highcharts({
+                title: {
+                    text: %(title)s,
+                    x: -20 // compensates the legend width.
+                },
+                subtitle: {
+                    text: %(subtitle)s,
+                    x: -20 // compensates the legend width.
+                },
+                xAxis: {
+                    title: {
+                        text: %(x_title)s
+                    },
+                    categories: %(x_labels)s
+                },
+                yAxis: {
+                    title: {
+                        text: %(y_title)s
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+                },
+                tooltip: {
+                    pointFormat: '{point.y:.2f} ' + %(y_unit)s
+                },
+                legend: {
+                    layout: 'vertical',
+                    align: 'right',
+                    verticalAlign: 'middle',
+                    borderWidth: 0
+                },
+                series: %(all_series)s
+            });
+        });
+    </script>
+    """
+
     def __init__(self, title, subtitle='', x_title='Number of participants',
                  y_title='Time (s)', y_unit='s'):
         self.id = uuid.uuid4()
@@ -88,8 +125,13 @@ class Graph:
         self.x_labels = []
         self.all_series = []
 
+    def create_series(self, name):
+        series = Series(self, name)
+        self.all_series.append(series)
+        return series
+
     def to_html(self):
-        kwargs = {
+        return self.template % {
             'id': self.id, 'title': json.dumps(self.title),
             'subtitle': json.dumps(self.subtitle),
             'x_title': json.dumps(self.x_title),
@@ -98,69 +140,38 @@ class Graph:
             'x_labels': json.dumps(self.x_labels),
             'all_series': json.dumps([s.to_dict() for s in self.all_series]),
         }
-        return """
-        <div id="container-%(id)s" style="width: 800px; height: 400px;">
-        </div>
-        <script>
-            $(function () {
-                $('#container-%(id)s').highcharts({
-                    title: {
-                        text: %(title)s,
-                        x: -20 // compensates the legend width.
-                    },
-                    subtitle: {
-                        text: %(subtitle)s,
-                        x: -20 // compensates the legend width.
-                    },
-                    xAxis: {
-                        title: {
-                            text: %(x_title)s
-                        },
-                        categories: %(x_labels)s
-                    },
-                    yAxis: {
-                        title: {
-                            text: %(y_title)s
-                        },
-                        plotLines: [{
-                            value: 0,
-                            width: 1,
-                            color: '#808080'
-                        }]
-                    },
-                    tooltip: {
-                        pointFormat: '{point.y:.2f} ' + %(y_unit)s
-                    },
-                    legend: {
-                        layout: 'vertical',
-                        align: 'right',
-                        verticalAlign: 'middle',
-                        borderWidth: 0
-                    },
-                    series: %(all_series)s
-                });
-            });
-        </script>
-        """ % kwargs
 
 
-class StressTest:
-    browser_timeout = 20
-    timeit_iterations = 5
-    num_participants = OrderedDict((
-        ('Simple Game', range(9, 279, 9)),
-        ('Multi Player Game', range(9, 279, 9)),
-        ('2 Simple Games', range(9, 279, 9)),
-    ))
+class Report:
+    template = """
+    <!DOCTYPE html>
+    <html>
+        <head>
+            <style>
+                dt {
+                    font-weight: bold;
+                }
+            </style>
+            <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+            <script src="https://code.highcharts.com/highcharts.js"></script>
+        </head>
+        <body>
+            <h1>Conditions</h1>
+            %(conditions)s
+
+            <h1>Measures</h1>
+
+            %(graphs)s
+        </body>
+    </html>
+    """
 
     def __init__(self):
         self.graphs = []
+        self.filename = 'stress_test_report.html'
+        print('The report will be generated in %s' % self.filename)
 
-        print('Starting web browser...')
-        self.selenium = Firefox()
-        self.selenium.implicitly_wait(self.browser_timeout)
-        self.selenium.set_script_timeout(self.browser_timeout)
-        self.selenium.set_page_load_timeout(self.browser_timeout)
+        self.conditions = self.get_conditions()
 
     def get_conditions(self):
         versions = OrderedDict()
@@ -181,18 +192,54 @@ class StressTest:
                 platform.linux_distribution()).strip()),
             ('Python', platform.python_version()),
         ))
-        return '<dl>%s</dl>' % ''.join([
-            '<dt>%s</dt><dd>%s</dd>' % (k, v) for k, v in versions.items()])
+        return '<dl>%s</dl>' % ''.join(['<dt>%s</dt><dd>%s</dd>' % (k, v)
+                                        for k, v in versions.items()])
+
+    def create_graph(self, title, subtitle):
+        graph = Graph(title, subtitle)
+        self.graphs.append(graph)
+        return graph
+
+    def generate(self):
+        with open(self.filename, 'w') as f:
+            f.write(self.template % {
+                'conditions': self.conditions,
+                'graphs': ''.join([graph.to_html()
+                                   for graph in self.graphs]),
+            })
+
+
+class StressTest:
+    browser_timeout = 20
+    timeit_iterations = 3
+    num_participants = OrderedDict((
+        ('Simple Game', range(9, 18, 9)),
+        ('Multi Player Game', range(9, 18, 9)),
+        ('2 Simple Games', range(9, 18, 9)),
+    ))
+
+    def __init__(self):
+        self.report = Report()
+        if self.timeit_iterations < 3:
+            raise ValueError('timeit_iterations must be at least 3.')
+
+        print('Starting web browser...')
+        self.selenium = Firefox()
+        self.selenium.implicitly_wait(self.browser_timeout)
+        self.selenium.set_script_timeout(self.browser_timeout)
+        self.selenium.set_page_load_timeout(self.browser_timeout)
 
     def start_server(self):
         print('Starting oTree server...')
         port = 1024  # First port available to users.
         while not is_port_available('localhost', port):
             port += 1
-        command_args = ('otree', 'runprodserver', '--port', str(port),
-                        '--procfile', PROCFILE_PATH)
+        command_args = ('honcho', 'start', '-f', PROCFILE_PATH)
         env = os.environ.copy()
-        env['DJANGO_SETTINGS_MODULE'] = DJANGO_SETTINGS_MODULE
+        env.update(
+            DJANGO_SETTINGS_MODULE=DJANGO_SETTINGS_MODULE,
+            OTREE_PORT=str(port),
+        )
         self.runserver_process = Popen(
             command_args, stdin=PIPE, stdout=PIPE, stderr=STDOUT, env=env)
         self.server_url = 'http://localhost:%d' % port
@@ -208,8 +255,7 @@ class StressTest:
 
     def stop_server(self):
         print('Stopping oTree server...')
-        self.runserver_process.send_signal(SIGINT)
-        self.runserver_process.wait()
+        self.runserver_process.terminate()
 
     def create_session(self, config, num_participants=6):
         self.selenium.get(self.server_url + '/sessions/')
@@ -244,27 +290,18 @@ class StressTest:
 
     def test_large_sessions(self, config):
         print('Testing large sessions (%s)...' % config)
-        graph = Graph('oTree performance when creating large sessions',
-                      '(%s)' % config)
-        self.graphs.append(graph)
-        creation_series = Series('Creation')
-        deletion_series = Series('Deletion')
-        graph.all_series.append(creation_series)
-        graph.all_series.append(deletion_series)
+        graph = self.report.create_graph(
+            'oTree performance when creating large sessions', '(%s)' % config)
+        creation_series = graph.create_series('Creation')
+        deletion_series = graph.create_series('Deletion')
         for num_participants in self.num_participants[config]:
             print('Testing with %d participants...' % num_participants)
-            creation_times = []
-            deletion_times = []
             for _ in range(self.timeit_iterations):
                 creation_time, deletion_time = self.create_session(
                     config, num_participants=num_participants)
-                creation_times.append(creation_time)
-                deletion_times.append(deletion_time)
-            graph.x_labels.append(num_participants)
-            creation_series.data.append(
-                sum(creation_times) / self.timeit_iterations)
-            deletion_series.data.append(
-                sum(deletion_times) / self.timeit_iterations)
+                creation_series.add(num_participants, creation_time)
+                deletion_series.add(num_participants, deletion_time)
+            self.report.generate()
 
     def run(self):
         try:
@@ -277,19 +314,13 @@ class StressTest:
         except KeyboardInterrupt:
             pass
         finally:
-            with open('stress_test_report.html', 'w') as f:
-                f.write(REPORT_TEMPLATE % {
-                    'conditions': self.get_conditions(),
-                    'graphs': ''.join([graph.to_html()
-                                       for graph in self.graphs]),
-                })
-            print('Report generated in stress_test_report.html')
-            self.stop_server()
+            self.report.generate()
             try:
                 self.selenium.quit()
             except CannotSendRequest:  # Occurs when quitting selenium
-                                       # in the middle of a request.
+                # in the middle of a request.
                 pass
+            self.stop_server()
             notify('Stress test finished!')
 
 
