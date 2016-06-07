@@ -83,7 +83,7 @@ class Room(object):
                     ExpectedRoomParticipant.objects.all().delete()
                     ExpectedRoomParticipant.objects.bulk_create(
                         ExpectedRoomParticipant(
-                            room_name=room_name,
+                            room_name=self.name,
                             participant_label=participant_label
                         ) for participant_label in self.load_participant_labels_from_file()
                     )
@@ -131,9 +131,14 @@ def augment_room(room):
     new_room.update(room)
     return new_room
 
-ROOM_DICT = OrderedDict()
-for room in getattr(settings, 'ROOMS', []):
-    room = augment_room(room)
-    room_object = Room(room)
-    room_name = room_object.name
-    ROOM_DICT[room_name] = room_object
+def get_room_dict():
+    ROOM_DICT = OrderedDict()
+    for room in getattr(settings, 'ROOMS', []):
+        room = augment_room(room)
+        room_object = Room(room)
+        room_name = room_object.name
+        ROOM_DICT[room_object.name] = room_object
+    return ROOM_DICT
+
+ROOM_DICT = get_room_dict()
+
