@@ -19,9 +19,15 @@ class Room(object):
         self.participant_label_file = config_dict.get('participant_label_file')
         self.name = config_dict['name']
         self.display_name = config_dict['display_name']
-        self.use_secure_urls = config_dict.get('use_secure_urls', True)
+        # secure URLs are complicated, don't use them by default
+        self.use_secure_urls = config_dict.get('use_secure_urls', False)
         self.pin_code = config_dict.get('pin_code')
         self._participant_labels_loaded = False
+        if self.use_secure_urls and not self.participant_label_file:
+            raise ValueError(
+                'Room "{}": you must either set "participant_label_file", '
+                'or set "use_secure_urls": False'
+            )
 
     def has_session(self):
         return self.session is not None

@@ -10,7 +10,7 @@ from six.moves import zip
 from otree_save_the_change.mixins import SaveTheChange
 from otree.db import models
 from otree.common_internal import get_models_module
-from otree import match_players
+from otree import matching
 
 
 class BaseSubsession(SaveTheChange, models.Model):
@@ -212,13 +212,13 @@ class BaseSubsession(SaveTheChange, models.Model):
 
     def group_randomly(self, fixed_id_in_group):
         group_matrix = self.get_group_matrix()
-        group_matrix = match_players.randomly(
+        group_matrix = matching.randomly(
             group_matrix,
             fixed_id_in_group)
         self.set_group_matrix(group_matrix)
 
     def group_by_rank(self, ranked_list):
-        group_matrix = match_players.by_rank(
+        group_matrix = matching.by_rank(
             ranked_list,
             self._Constants.players_per_group
         )

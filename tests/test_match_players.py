@@ -10,7 +10,7 @@ import six
 from django.core.management import call_command
 
 from otree.models import Session
-from otree import match_players
+from otree import matching
 
 from .base import TestCase
 from .multi_player_game import models as mpg_models
