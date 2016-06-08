@@ -119,9 +119,8 @@ def create_session(message):
             {'status': 'ready'})}
     )
 
-    if 'room' in kwargs:
-        room_name = kwargs['room'].name
-        Group('room-participants-{}'.format(room_name)).send(
+    if 'room_name' in kwargs:
+        Group('room-participants-{}'.format(kwargs['room_name'])).send(
             {'text': json.dumps(
                 {'status': 'session_ready'})}
         )

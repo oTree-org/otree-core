@@ -358,23 +358,22 @@ class ToggleArchivedSessions(vanilla.View):
         return 'toggle_archived_sessions'
 
     def post(self, request, *args, **kwargs):
-        pk_list = request.POST.getlist('item-action')
-        sessions = otree.models.session.Session.objects.filter(pk__in=pk_list)
-        pk_dict = {True: [], False: []}
-        for pk, archived in sessions.filter(
-                archived=True).values_list('pk', 'archived'):
-            pk_dict[archived].append(pk)
+        code_list = request.POST.getlist('item-action')
+        sessions = otree.models.session.Session.objects.filter(code__in=code_list)
+        code_dict = {True: [], False: []}
+        for code, archived in sessions.values_list('code', 'archived'):
+            code_dict[archived].append(code)
 
-        for pk in pk_list:
-            if not (pk in pk_dict[True] or pk in pk_dict[False]):
-                raise Http404('No session with the id %s.' % pk)
+        for code in code_list:
+            if not (code in code_dict[True] or code in code_dict[False]):
+                raise Http404('No session with the code %s.' % code)
 
         # TODO: When `F` implements a toggle, use this instead:
         #       sessions.update(archived=~F('archived'))
         otree.models.session.Session.objects.filter(
-            pk__in=pk_dict[True]).update(archived=False)
+            code__in=code_dict[True]).update(archived=False)
         otree.models.session.Session.objects.filter(
-            pk__in=pk_dict[False]).update(archived=True)
+            code__in=code_dict[False]).update(archived=True)
 
         return HttpResponseRedirect(request.POST['origin_url'])
 
@@ -390,9 +389,9 @@ class DeleteSessions(vanilla.View):
         return 'delete_sessions'
 
     def post(self, request, *args, **kwargs):
-        for pk in request.POST.getlist('item-action'):
+        for code in request.POST.getlist('item-action'):
             session = get_object_or_404(
-                otree.models.session.Session, pk=pk
+                otree.models.session.Session, code=code
             )
             session.delete()
         return HttpResponseRedirect(reverse('sessions'))

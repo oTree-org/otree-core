@@ -379,7 +379,7 @@ class CreateSession(vanilla.FormView):
         # TODO:
         # Refactor when we upgrade to push
         if hasattr(self, "room"):
-            kwargs['room'] = self.room
+            kwargs['room_name'] = self.room.name
 
         channels_group_name = channels_create_session_group_name(
             pre_create_id)

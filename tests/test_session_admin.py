@@ -25,7 +25,8 @@ class TestSessionAdmin(TestCase):
             'AdvanceSession',
             'SessionFullscreen',
         ]
-        urls = ['/{}/1'.format(PageName) for PageName in tabs]
+        urls = ['/{}/{}'.format(PageName, self.session.code) for
+                PageName in tabs]
 
         urls.extend([
             '/sessions/{}/participants/'.format(self.session.code),
