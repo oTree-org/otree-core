@@ -179,7 +179,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
         )
         context['runserver'] = 'runserver' in sys.argv
         url = self.request.build_absolute_uri(
-            reverse('session_create_hit', args=(self.session.pk,))
+            reverse('session_create_hit', args=(self.session.code,))
         )
         secured_url = urlunparse(urlparse(url)._replace(scheme='https'))
         context['secured_url'] = secured_url
@@ -222,7 +222,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
                         msg = msg.format('grant_qualification_id')
                         messages.error(request, msg)
                         return HttpResponseRedirect(
-                            reverse('session_create_hit', args=(session.pk,)))
+                            reverse('session_create_hit', args=(session.code,)))
                 else:
                     session.mturk_qualification_type_id = qualification_id
 
@@ -286,7 +286,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             session.save()
 
         return HttpResponseRedirect(
-            reverse('session_create_hit', args=(session.pk,)))
+            reverse('session_create_hit', args=(session.code,)))
 
 
 class PayMTurk(vanilla.View):
@@ -323,7 +323,7 @@ class PayMTurk(vanilla.View):
 
         messages.success(request, "Your payment was successful")
         return HttpResponseRedirect(
-            reverse('session_mturk_payments', args=(session.pk,)))
+            reverse('session_mturk_payments', args=(session.code,)))
 
 
 class RejectMTurk(vanilla.View):
@@ -338,7 +338,7 @@ class RejectMTurk(vanilla.View):
 
     @classmethod
     def url(cls, session):
-        return '/PayMTurk/{}/'.format(session.pk)
+        return '/PayMTurk/{}/'.format(session.code)
 
     def post(self, request, *args, **kwargs):
         session = get_object_or_404(otree.models.session.Session,
@@ -353,4 +353,4 @@ class RejectMTurk(vanilla.View):
         messages.success(request, "You successfully rejected "
                                   "selected assignments")
         return HttpResponseRedirect(
-            reverse('session_mturk_payments', args=(session.pk,)))
+            reverse('session_mturk_payments', args=(session.code,)))

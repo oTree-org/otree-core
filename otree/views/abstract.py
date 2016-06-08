@@ -937,11 +937,11 @@ class AdminSessionPageMixin(GetFloppyFormClassMixin):
 
     @classmethod
     def url_pattern(cls):
-        return r"^{}/(?P<pk>\d+)/$".format(cls.__name__)
+        return r"^{}/(?P<code>[a-z0-9]+)/$".format(cls.__name__)
 
     @classmethod
-    def url(cls, session_pk):
-        return '/{}/{}/'.format(cls.__name__, session_pk)
+    def url(cls, session_code):
+        return '/{}/{}/'.format(cls.__name__, session_code)
 
     def get_context_data(self, **kwargs):
         context = super(AdminSessionPageMixin, self).get_context_data(**kwargs)
@@ -954,7 +954,7 @@ class AdminSessionPageMixin(GetFloppyFormClassMixin):
         return ['otree/admin/{}.html'.format(self.__class__.__name__)]
 
     def dispatch(self, request, *args, **kwargs):
-        session_pk = int(kwargs['pk'])
-        self.session = get_object_or_404(otree.models.Session, pk=session_pk)
+        session_code = kwargs['code']
+        self.session = get_object_or_404(otree.models.Session, code=session_code)
         return super(AdminSessionPageMixin, self).dispatch(
             request, *args, **kwargs)

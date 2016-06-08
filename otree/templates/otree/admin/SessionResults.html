@@ -10,7 +10,7 @@ $(document).ready(
 );
 function ajax_json_results() {
     $.ajax({
-        url: '{% url "session_results" session.pk %}',
+        url: '{% url "session_results" session.code %}',
         type: 'GET',
         contentType: "application/json",
         error: function(jqXHR, textStatus) {

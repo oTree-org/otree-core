@@ -466,7 +466,7 @@ class RoomWithSession(vanilla.TemplateView):
     def get_context_data(self, **kwargs):
         context = {'participant_urls': self.room.get_participant_links(self.request),
                    'session_url': reverse('session_monitor',
-                                          args=(self.room.session.pk,)),
+                                          args=(self.room.session.code,)),
                    'room': self.room}
         kwargs.update(context)
 
@@ -519,15 +519,15 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
         session = self.session
         if session.is_for_mturk():
             session_home_url = reverse(
-                'session_create_hit', args=(session.pk,)
+                'session_create_hit', args=(session.code,)
             )
         # demo mode
         elif self.request.GET.get('fullscreen'):
             session_home_url = reverse(
-                'session_fullscreen', args=(session.pk,))
+                'session_fullscreen', args=(session.code,))
         else:  # typical case
             session_home_url = reverse(
-                'session_start_links', args=(session.pk,))
+                'session_start_links', args=(session.code,))
 
         return HttpResponseRedirect(session_home_url)
 
@@ -539,6 +539,28 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
 
     def socket_url(self):
         return '/wait_for_session/{}/'.format(self._pre_create_id)
+
+
+class SessionFullscreen(AdminSessionPageMixin, vanilla.TemplateView):
+    '''Launch the session in fullscreen mode
+    only used in demo mode
+    '''
+
+    @classmethod
+    def url_name(cls):
+        return 'session_fullscreen'
+
+    def get_context_data(self, **kwargs):
+        context = super(SessionFullscreen, self).get_context_data(**kwargs)
+        participant_urls = [
+            self.request.build_absolute_uri(participant._start_url())
+            for participant in self.session.get_participants()
+        ]
+        context.update({
+            'session': self.session,
+            'participant_urls': participant_urls
+        })
+        return context
 
 
 class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
@@ -618,7 +640,7 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
         return 'session_edit'
 
     def get_success_url(self):
-        return reverse('session_edit', args=(self.session.pk,))
+        return reverse('session_edit', args=(self.session.code,))
 
     def form_valid(self, form):
         super(EditSessionProperties, self).form_valid(form)

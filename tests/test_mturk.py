@@ -21,7 +21,7 @@ class TestMTurk(TestCase):
         self.browser = django.test.client.Client()
 
     def test_get_create_hit(self):
-        url = reverse('session_create_hit', args=(self.session.pk,))
+        url = reverse('session_create_hit', args=(self.session.code,))
         response = self.browser.get(url, follow=True)
         if response.status_code != 200:
             raise Exception('{} returned 400'.format(url))
@@ -34,7 +34,7 @@ class TestMTurk(TestCase):
         magic = MagicMock()
         magic.create_hit.return_value = [hit]
         mocked_enter.return_value = magic
-        url = reverse('session_create_hit', args=(self.session.pk,))
+        url = reverse('session_create_hit', args=(self.session.code,))
         response = self.browser.post(
             url,
             data={
@@ -65,7 +65,7 @@ class TestMTurk(TestCase):
         mocked_connection = MagicMock()
         mocked_enter.return_value = mocked_connection
         mocked_connection.get_assignments.return_value = assignments
-        url = reverse('pay_mturk', args=(self.session.pk,))
+        url = reverse('pay_mturk', args=(self.session.code,))
         p0 = participants[0]
         response = self.browser.post(
             url,

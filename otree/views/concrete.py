@@ -323,7 +323,7 @@ class AdvanceSession(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r'^AdvanceSession/(?P<{}>[0-9]+)/$'.format('session_pk')
+        return r'^AdvanceSession/(?P<session_code>[a-z0-9]+)/$'
 
     @classmethod
     def url_name(cls):
@@ -331,11 +331,11 @@ class AdvanceSession(vanilla.View):
 
     @classmethod
     def url(cls, session):
-        return '/AdvanceSession/{}/'.format(session.pk)
+        return '/AdvanceSession/{}/'.format(session.code)
 
     def dispatch(self, request, *args, **kwargs):
         self.session = get_object_or_404(
-            otree.models.session.Session, pk=kwargs['session_pk']
+            otree.models.session.Session, code=kwargs['session_code']
         )
         return super(AdvanceSession, self).dispatch(
             request, *args, **kwargs
@@ -343,7 +343,7 @@ class AdvanceSession(vanilla.View):
 
     def get(self, request, *args, **kwargs):
         self.session.advance_last_place_participants()
-        redirect_url = reverse('session_monitor', args=(self.session.pk,))
+        redirect_url = reverse('session_monitor', args=(self.session.code,))
         return HttpResponseRedirect(redirect_url)
 
 
