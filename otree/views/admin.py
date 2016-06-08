@@ -611,11 +611,11 @@ class EditSessionPropertiesForm(forms.ModelForm):
             'comment',
         ]
 
-    def __init__(self, *args, **kwargs):
-        super(EditSessionPropertiesForm, self).__init__(*args, **kwargs)
-
 
 class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
+
+    # required for vanilla.UpdateView
+    lookup_field = 'code'
     model = Session
     form_class = EditSessionPropertiesForm
     template_name = 'otree/admin/EditSessionProperties.html'
