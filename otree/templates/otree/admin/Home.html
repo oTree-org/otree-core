@@ -169,30 +169,30 @@ Sessions
     {% for s in object_list %}
     <tr {% add_class s.archived 'hidden' %}>
         <td>
-            <input name="item-action" type="checkbox" value="{{ s.pk }}">
+            <input name="item-action" type="checkbox" value="{{ s.code }}">
         </td>
-        <td><a href="{% url 'session_description' s.pk %}">{{ s.code }}</a></td>
+        <td><a href="{% url 'session_description' s.code %}">{{ s.code }}</a></td>
         <td>{{ s.label }}</td>
         <td>{{ s.config.name }}</td>
         <td>
-            <a href="{% url 'session_start_links' s.pk %}" class="btn btn-primary btn-sm" role="button">
+            <a href="{% url 'session_start_links' s.code %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-link"></span> Links
             </a>
-            <a href="{% url 'session_edit' s.pk %}" class="btn btn-primary btn-sm" role="button">
+            <a href="{% url 'session_edit' s.code %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-pencil"></span> Edit
             </a>
-            <a href="{% url 'session_monitor' s.pk %}" class="btn btn-primary btn-sm" role="button">
+            <a href="{% url 'session_monitor' s.code %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-eye-open"></span> Monitor
             </a>
-            <a href="{% url 'session_results' s.pk %}" class="btn btn-primary btn-sm" role="button">
+            <a href="{% url 'session_results' s.code %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-list-alt"></span> Results
             </a>
-            <a href="{% if s.is_for_mturk %}{% url 'session_mturk_payments' s.pk %}{% else %}{% url 'session_payments' s.pk %}{% endif %}" class="btn btn-primary btn-sm" role="button">
+            <a href="{% if s.is_for_mturk %}{% url 'session_mturk_payments' s.code %}{% else %}{% url 'session_payments' s.code %}{% endif %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-usd"></span> Payments
             </a>
             {% if s.is_for_mturk %}
                 {% if not s.mturk_HITId %}
-                <a href="{% url 'session_create_hit' s.pk %}" class="btn btn-primary btn-sm" role="button">
+                <a href="{% url 'session_create_hit' s.code %}" class="btn btn-primary btn-sm" role="button">
                     <span class="glyphicon glyphicon-cloud"></span> MTurk&nbsp;&nbsp;&nbsp;
                 </a>
                 {% else %}
