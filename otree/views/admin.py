@@ -946,3 +946,27 @@ class ServerCheck(vanilla.TemplateView):
             'runserver': runserver,
             'db_synced': db_synced
         }
+
+class OtreeCoreUpdateCheck(vanilla.View):
+
+    @classmethod
+    def url_pattern(cls):
+        return r"^pypi_updates/$"
+
+    @classmethod
+    def url_name(cls):
+        return 'pypi_updates'
+
+    # cached per process
+    needs_update = None
+
+    def get(self, request, *args, **kwargs):
+        if OtreeCoreUpdateCheck.needs_update is None:
+            OtreeCoreUpdateCheck.needs_update = bool(
+                check_pypi_for_updates(print_message=False))
+
+        context = {
+            'pypi_updates': OtreeCoreUpdateCheck.needs_update
+        }
+
+        return JsonResponse(context, safe=True)

@@ -6,20 +6,12 @@ import re
 import sys
 
 from honcho.manager import Manager
-
-from django.conf import settings
-from channels import DEFAULT_CHANNEL_LAYER, channel_layers
-from channels.handler import ViewConsumer
 from channels.log import setup_logger
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 import django.core.management.commands.runserver
 
-import otree
-
-
 RunserverCommand = django.core.management.commands.runserver.Command
-
 
 naiveip_re = re.compile(r"""^
 (?P<addr>
