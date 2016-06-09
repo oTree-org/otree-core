@@ -23,6 +23,7 @@ class TestSessionAdmin(TestCase):
             'SessionResults',
             'SessionStartLinks',
             'AdvanceSession',
+            'EditSessionProperties',
             'SessionFullscreen',
         ]
         urls = ['/{}/{}'.format(PageName, self.session.code) for

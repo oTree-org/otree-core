@@ -293,7 +293,7 @@ class PayMTurk(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r'^PayMTurk/(?P<{}>[0-9]+)/$'.format('session_pk')
+        return r'^PayMTurk/(?P<session_code>[a-z0-9]+)/$'
 
     @classmethod
     def url_name(cls):
@@ -301,7 +301,7 @@ class PayMTurk(vanilla.View):
 
     def post(self, request, *args, **kwargs):
         session = get_object_or_404(otree.models.session.Session,
-                                    pk=kwargs['session_pk'])
+                                    code=kwargs['session_code'])
         with MTurkConnection(self.request,
                              session.mturk_sandbox) as mturk_connection:
             for p in session.participant_set.filter(
@@ -330,19 +330,15 @@ class RejectMTurk(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r'^RejectMTurk/(?P<{}>[0-9]+)/$'.format('session_pk')
+        return r'^RejectMTurk/(?P<session_code>[a-z0-9]+)/$'
 
     @classmethod
     def url_name(cls):
         return 'reject_mturk'
 
-    @classmethod
-    def url(cls, session):
-        return '/PayMTurk/{}/'.format(session.code)
-
     def post(self, request, *args, **kwargs):
         session = get_object_or_404(otree.models.session.Session,
-                                    pk=kwargs['session_pk'])
+                                    code=kwargs['session_code'])
         with MTurkConnection(self.request,
                              session.mturk_sandbox) as mturk_connection:
             for p in session.participant_set.filter(
