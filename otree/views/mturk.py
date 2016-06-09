@@ -27,7 +27,7 @@ from otree.views.abstract import AdminSessionPageMixin
 from otree.checks.mturk import validate_session_for_mturk
 from otree import deprecate
 from otree.forms import widgets
-
+from otree.common import RealWorldCurrency
 
 class MTurkError(Exception):
 
@@ -231,14 +231,22 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
 
             # updating schema from http to https
             # this is compulsory for MTurk exteranlQuestion
+            # TODO: validate, that the server support https
+            #       (heroku does support by default)
             secured_url_landing_page = urlunparse(
                 urlparse(url_landing_page)._replace(scheme='https'))
 
-            # TODO: validate, that the server support https
-            #       (heroku does support by default)
             # TODO: validate that there is enought money for the hit
+            money_reward = form.data['money_reward']
             reward = boto.mturk.price.Price(
-                amount=float(form.data['money_reward']))
+                amount=float(money_reward))
+
+            # assign back to participation_fee, in case it was changed
+            # in the form
+            # TODO: why do I have to explicitly convert back to RealWorldCurrency?
+            # shouldn't it already be that?
+            session.config['participation_fee'] = RealWorldCurrency(
+                money_reward)
 
             # creating external questions, that would be passed to the hit
             external_question = boto.mturk.question.ExternalQuestion(
