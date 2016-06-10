@@ -72,8 +72,6 @@ class Series:
 
     def add(self, x, y):
         self.data[x].append(y)
-        if x not in self.graph.x_labels:
-            self.graph.x_labels.append(x)
         self.set_average(x)
 
     def set_average(self, x):
@@ -86,7 +84,7 @@ class Series:
 
     def to_dict(self):
         return {'name': self.name,
-                'data': list(self.averages.values())}
+                'data': list(self.averages.items())}
 
 
 class Graph:
@@ -108,7 +106,6 @@ class Graph:
                     title: {
                         text: %(x_title)s
                     },
-                    categories: %(x_labels)s
                 },
                 yAxis: {
                     title: {
@@ -143,7 +140,6 @@ class Graph:
         self.x_title = x_title
         self.y_title = y_title
         self.y_unit = y_unit
-        self.x_labels = []
         self.all_series = {}
 
     def get_series(self, name):
@@ -160,7 +156,6 @@ class Graph:
             'x_title': json.dumps(self.x_title),
             'y_title': json.dumps(self.y_title),
             'y_unit': json.dumps(self.y_unit),
-            'x_labels': json.dumps(self.x_labels),
             'all_series': json.dumps([s.to_dict()
                                       for s in self.all_series.values()]),
         }
@@ -236,6 +231,7 @@ class Report:
 class Browser:
     timeout = 20
     selenium_driver = Chrome
+    # Installed by chromium-chromedriver under Ubuntu 14.04
     executable_path = '/usr/lib/chromium-browser/chromedriver'
 
     def start(self):
@@ -475,8 +471,7 @@ bot_registry = BotRegistry()
 
 class StressTest:
     timeit_iterations = 3
-    steps = 20
-    min_step_size = 10
+    steps_count = 8
 
     def __init__(self):
         self.report = Report()
@@ -492,16 +487,18 @@ class StressTest:
         self.bots = [bot_class(self.server, self.browser, self.report)
                      for bot_class in bot_registry]
         start = lcm([bot.num_participants for bot in self.bots])
+
+        self.steps = []
         step = start
-        while step < self.min_step_size:
-            step += start
-        self.steps_iterator = range(step, step * (self.steps + 1), step)
+        while len(self.steps) < self.steps_count:
+            self.steps.append(step)
+            step *= 2
 
     def run(self):
         try:
             for bot in self.bots:
                 print('Testing large sessions (%s)...' % bot.session_config)
-                for num_participants in self.steps_iterator:
+                for num_participants in self.steps:
                     print('Testing with %d participants...' % num_participants,
                           end='\r')
                     bot.num_participants = num_participants
