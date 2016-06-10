@@ -18,12 +18,15 @@ from time import time, sleep
 import uuid
 
 from django.core.management.base import BaseCommand
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, resolve
 from selenium.common.exceptions import (
     NoSuchElementException, WebDriverException,
 )
 from selenium.webdriver import Chrome
 from selenium.webdriver.support.select import Select
+from tqdm import tqdm
+
+from otree.models import Session
 
 
 def is_port_available(host, port):
@@ -76,11 +79,7 @@ class Series:
 
     def set_average(self, x):
         l = self.data[x].copy()
-        if len(l) > 2:
-            # We make an average without the extreme values.
-            l.remove(min(l))
-            l.remove(max(l))
-            self.averages[x] = sum(l) / len(l)
+        self.averages[x] = sum(l) / len(l)
 
     def to_dict(self):
         return {'name': self.name,
@@ -140,7 +139,7 @@ class Graph:
         self.x_title = x_title
         self.y_title = y_title
         self.y_unit = y_unit
-        self.all_series = {}
+        self.all_series = OrderedDict()
 
     def get_series(self, name):
         if name in self.all_series:
@@ -250,8 +249,8 @@ class Browser:
             pass  # Occurs when something wrong happens
             # in the middle of a request.
 
-    def get(self, *args, **kwargs):
-        return self.selenium.get(*args, **kwargs)
+    def get(self, url):
+        return self.selenium.get(url)
 
     @property
     def current_url(self):
@@ -314,15 +313,18 @@ class Server:
 
     def stop(self):
         print('Stopping oTree server...')
-        self.runserver_process.kill()
-        self.runserver_process.wait()
+        self.runserver_process.terminate()
+        self.runserver_process.wait(5)
 
     def get_url(self, view_name, args=None, kwargs=None):
         return self.url + reverse(view_name, args=args, kwargs=kwargs)
 
 
+class SkipPage(Exception):
+    pass
+
+
 class Bot:
-    name = 'oTree performance when creating large sessions'
     session_config = None
     num_participants = 1
 
@@ -332,7 +334,9 @@ class Bot:
         if self.session_config is None:
             raise ValueError(
                 'You must fill the class attribute `session_config`.')
-        self.graph = report.create_graph(self.name, self.session_config)
+        self.graph = report.create_graph('', self.session_config)
+        self.session = None
+        self.id_in_session = 1
 
     def time(self, series_name):
         return self.graph.get_series(series_name).time(self.num_participants)
@@ -362,6 +366,9 @@ class Bot:
     def submit(self, *args, **kwargs):
         return self.browser.submit(*args, **kwargs)
 
+    def skip_page(self):
+        raise SkipPage
+
     def find_xpath(self, *args, **kwargs):
         return self.browser.find_xpath(*args, **kwargs)
 
@@ -378,14 +385,14 @@ class Bot:
             form.submit()
             # Waits until the page loads.
             self.find_link('Description')
-        self.session_id = re.match(
-            r'^%s/SessionStartLinks/(\d+)/$' % re.escape(self.server.url),
-            self.current_url).group(1)
+        relative_url = self.current_url[len(self.server.url):]
+        self.session = Session.objects.get(
+            pk=resolve(relative_url).kwargs['pk'])
 
     def delete_session(self):
         self.get(self.server.get_url('sessions'))
-        self.find(
-            '[name="item-action"][value="%s"]' % self.session_id).click()
+        self.find('[name="item-action"][value="%s"]'
+                  % self.session.pk).click()
         self.find('#action-delete').click()
         confirm = self.find('.modal.in #action-delete-confirm')
         with self.time('Deletion'):
@@ -399,7 +406,8 @@ class Bot:
     def tear_down(self):
         self.delete_session()
 
-    def run(self):
+    def run(self, graph_title=''):
+        self.graph.title = graph_title
         self.set_up()
 
         test_page_re = re.compile('^test_page_(\d+)$')
@@ -418,46 +426,62 @@ class Bot:
         last_page = max(test_page_methods)
         test_pages = sorted(test_page_methods.items(), key=lambda t: t[0])
         for i, test_page in test_pages:
-            for participant_number in range(1, self.num_participants + 1):
-                self.participate(participant_number)
-                test_page()
+            for id_in_session in range(1, self.num_participants + 1):
+                self.id_in_session = id_in_session
+                self.participate()
+                try:
+                    test_page()
+                except SkipPage:
+                    continue
 
                 is_last_page = i == last_page
                 page_name = 'finished' if is_last_page else i + 1
                 with self.time('Participant page %s' % page_name):
                     self.submit()
-                    # Waits until the page fully loads.
-                    if is_last_page \
-                            or participant_number == self.num_participants:
-                        # The next page only appears if we are
-                        # at the last page or the last to submit the form,
-                        # otherwise it is the wait page below.
-                        self.find('input[name="csrfmiddlewaretoken"]')
-                    else:
-                        self.find_xpath('//h3[@class = "panel-title" '
-                                        'and text() = "Please wait"]')
 
         self.tear_down()
 
+    def test_description_page(self):
+        url = self.server.get_url('session_description', (self.session.pk,))
+        with self.time('Description page'):
+            self.get(url)
+
+    def test_links_page(self):
+        url = self.server.get_url('session_start_links', (self.session.pk,))
+        with self.time('Links page'):
+            self.get(url)
+
+    def test_monitor_page(self):
+        url = self.server.get_url('session_monitor', (self.session.pk,))
+        with self.time('Monitor page'):
+            self.get(url)
+            # Waits until the page fully loads.
+            self.find_xpath(
+                '//td[@data-field = "_id_in_session" and text() = "P%d"]'
+                % self.num_participants)
+
     def test_results_page(self):
-        link = self.find_link('Results')
+        url = self.server.get_url('session_results', (self.session.pk,))
         with self.time('Results page'):
-            link.click()
+            self.get(url)
             # Waits until the page fully loads.
             self.find_xpath(
                 '//td[@data-field = "participant_label" and text() = "P%d"]'
                 % self.num_participants)
 
-    def participate(self, participant_number=1):
+    def test_payments_page(self):
+        url = self.server.get_url('session_payments', (self.session.pk,))
+        with self.time('Payments page'):
+            self.get(url)
+
+    def participate(self):
         self.get(self.server.get_url('session_start_links',
-                                     (self.session_id,)))
+                                     (self.session.pk,)))
         link = self.find_all(
-            'a[href*="/InitializeParticipant/"]')[participant_number - 1]
+            'a[href*="/InitializeParticipant/"]')[self.id_in_session - 1]
         url = link.get_attribute('href')
         with self.time('Participant page 1'):
             self.get(url)
-            # Waits until the page fully loads.
-            self.find('input[name="csrfmiddlewaretoken"]')
 
 
 class BotRegistry(list):
@@ -471,12 +495,10 @@ bot_registry = BotRegistry()
 
 class StressTest:
     timeit_iterations = 3
-    steps_count = 8
+    large_sessions_steps = 8
 
     def __init__(self):
         self.report = Report()
-        if self.timeit_iterations < 3:
-            raise ValueError('timeit_iterations must be at least 3.')
 
         self.browser = Browser()
         self.browser.start()
@@ -486,27 +508,36 @@ class StressTest:
 
         self.bots = [bot_class(self.server, self.browser, self.report)
                      for bot_class in bot_registry]
-        start = lcm([bot.num_participants for bot in self.bots])
+        self.num_participants = lcm([bot.num_participants
+                                     for bot in self.bots])
 
-        self.steps = []
-        step = start
-        while len(self.steps) < self.steps_count:
-            self.steps.append(step)
+    def test_large_sessions(self):
+        title = 'oTree speed when creating large sessions'
+
+        steps = []
+        step = self.num_participants
+        while len(steps) < self.large_sessions_steps:
+            steps.append(step)
             step *= 2
 
+        for bot in self.bots:
+            progress = tqdm(range(steps[-1]), leave=True,
+                            desc='Large sessions (%s)' % bot.session_config)
+            for num_participants in steps:
+                bot.num_participants = num_participants
+                bot.run(graph_title=title)
+                self.report.generate()  # Updates the report on each iteration.
+                progress.update(num_participants - progress.n)
+
     def run(self):
+        print('Running all tests %d times...' % self.timeit_iterations)
         try:
-            for bot in self.bots:
-                print('Testing large sessions (%s)...' % bot.session_config)
-                for num_participants in self.steps:
-                    print('Testing with %d participants...' % num_participants,
-                          end='\r')
-                    bot.num_participants = num_participants
-                    for _ in range(self.timeit_iterations):
-                        bot.run()
-                        # Updates the report on each iteration.
-                        self.report.generate()
-                print()  # Leaves the last printed line of the iteration.
+            # The timeit iteration is outside and not inside each operation,
+            # so we can see approximate results first THEN wait to refine them.
+            # This is possible since we measure slow operations. On operations
+            # shorter than a millisecond, the timeit loop must be inside.
+            for _ in range(self.timeit_iterations):
+                self.test_large_sessions()
         except WebDriverException:
             self.browser.save_screenshot('selenium_error.png')
             raise
