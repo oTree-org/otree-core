@@ -22,7 +22,7 @@ from django.core.urlresolvers import reverse
 from selenium.common.exceptions import (
     NoSuchElementException, WebDriverException,
 )
-from selenium.webdriver import Firefox
+from selenium.webdriver import Chrome
 from selenium.webdriver.support.select import Select
 
 
@@ -235,11 +235,13 @@ class Report:
 
 class Browser:
     timeout = 20
-    selenium_driver = Firefox
+    selenium_driver = Chrome
+    executable_path = '/usr/lib/chromium-browser/chromedriver'
 
     def start(self):
         print('Starting web browser...')
-        self.selenium = self.selenium_driver()
+        self.selenium = self.selenium_driver(
+            executable_path=self.executable_path)
         self.selenium.implicitly_wait(self.timeout)
         self.selenium.set_script_timeout(self.timeout)
         self.selenium.set_page_load_timeout(self.timeout)
@@ -316,7 +318,7 @@ class Server:
 
     def stop(self):
         print('Stopping oTree server...')
-        self.runserver_process.terminate()
+        self.runserver_process.kill()
         self.runserver_process.wait()
 
     def get_url(self, view_name, args=None, kwargs=None):
@@ -389,7 +391,7 @@ class Bot:
         self.find(
             '[name="item-action"][value="%s"]' % self.session_id).click()
         self.find('#action-delete').click()
-        confirm = self.find('#action-delete-confirm')
+        confirm = self.find('.modal.in #action-delete-confirm')
         with self.time('Deletion'):
             confirm.click()
             # Waits until the page loads.
