@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from otree.common_internal import get_models_module
 from otree.db import models
 
 
@@ -63,6 +64,12 @@ class ParticipantToPlayerLookup(models.Model):
     app_name = models.CharField(max_length=300)
     player_pk = models.PositiveIntegerField()
     url = models.CharField(max_length=300)
+
+    def get_player_model(self):
+        return getattr(get_models_module(self.app_name), 'Player')
+
+    def get_player(self):
+        return self.get_player_model().objects.get(pk=self.player_pk)
 
 
 class ParticipantLockModel(models.Model):

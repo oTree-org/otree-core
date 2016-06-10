@@ -19,6 +19,8 @@ import uuid
 
 from django.core.management.base import BaseCommand
 from django.core.urlresolvers import reverse, resolve
+from django.utils.formats import date_format
+from django.utils.timezone import now
 from selenium.common.exceptions import (
     NoSuchElementException, WebDriverException,
 )
@@ -26,7 +28,7 @@ from selenium.webdriver import Chrome
 from selenium.webdriver.support.select import Select
 from tqdm import tqdm
 
-from otree.models import Session
+from otree.models import Session, Participant
 
 
 def is_port_available(host, port):
@@ -175,6 +177,7 @@ class Report:
         </head>
         <body>
             <h1>Conditions</h1>
+            Stress test started on %(datetime)s
             %(conditions)s
 
             <h1>Measures</h1>
@@ -221,6 +224,7 @@ class Report:
     def generate(self):
         with open(self.filename, 'w') as f:
             f.write(self.template % {
+                'datetime': date_format(now(), 'DATETIME_FORMAT'),
                 'conditions': self.conditions,
                 'graphs': ''.join([graph.to_html()
                                    for graph in self.graphs]),
@@ -245,9 +249,9 @@ class Browser:
         print('Stopping web browser...')
         try:
             self.selenium.quit()
-        except CannotSendRequest:
+        except (CannotSendRequest, ConnectionResetError):
             pass  # Occurs when something wrong happens
-            # in the middle of a request.
+                  # in the middle of a request.
 
     def get(self, url):
         return self.selenium.get(url)
@@ -277,7 +281,7 @@ class Browser:
         n_forms = len(forms)
         if n_forms != 1:
             raise NoSuchElementException(
-                "Don't know which form to submit, found %d" % forms)
+                "Don't know which form to submit, found %d." % len(forms))
         forms[0].submit()
 
     def find_xpath(self, xpath):
@@ -314,7 +318,7 @@ class Server:
     def stop(self):
         print('Stopping oTree server...')
         self.runserver_process.terminate()
-        self.runserver_process.wait(5)
+        self.runserver_process.wait(3)
 
     def get_url(self, view_name, args=None, kwargs=None):
         return self.url + reverse(view_name, args=args, kwargs=kwargs)
@@ -336,7 +340,9 @@ class Bot:
                 'You must fill the class attribute `session_config`.')
         self.graph = report.create_graph('', self.session_config)
         self.session = None
-        self.id_in_session = 1
+        self.id_in_session = None
+        self.participant = None
+        self.player = None
 
     def time(self, series_name):
         return self.graph.get_series(series_name).time(self.num_participants)
@@ -483,6 +489,11 @@ class Bot:
         with self.time('Participant page 1'):
             self.get(url)
 
+        relative_url = url[len(self.server.url):] + '/'
+        self.participant = Participant.objects.get(
+            code=resolve(relative_url).kwargs['participant_code'])
+        self.player = self.participant.get_current_player()
+
 
 class BotRegistry(list):
     def add(self, bot_class):
@@ -566,15 +577,31 @@ class MultiPlayerGameBot(Bot):
     num_participants = 3
 
     def test_page_1(self):
-        pass
+        if self.player.id_in_group != 1:
+            self.skip_page()
 
     def test_page_2(self):
+        self.skip_page()
+
+    def test_page_3(self):
+        pass
+
+    def test_page_4(self):
+        if self.player.id_in_group != 1:
+            self.skip_page()
+
+    def test_page_5(self):
+        self.skip_page()
+
+    def test_page_6(self):
         pass
 
 
 @bot_registry.add
 class TwoSimpleGamesBot(Bot):
     session_config = '2 Simple Games'
+
+    # FIXME: This application is broken, write the page tests when it is fixed.
 
 
 class Command(BaseCommand):
