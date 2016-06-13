@@ -644,7 +644,6 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
 
     def form_valid(self, form):
         super(EditSessionProperties, self).form_valid(form)
-        config = self.session.config
         participation_fee = form.cleaned_data[
             'participation_fee'
         ]
@@ -652,14 +651,13 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
             'real_world_currency_per_point'
         ]
         if form.cleaned_data['participation_fee']:
-            config['participation_fee'] = RealWorldCurrency(participation_fee)
+            self.session.config[
+                'participation_fee'
+            ] = RealWorldCurrency(participation_fee)
         if form.cleaned_data['real_world_currency_per_point']:
-            config[
+            self.session.config[
                 'real_world_currency_per_point'
             ] = real_world_currency_per_point
-        # use .copy() to force marking this field as dirty/changed
-        # FIXME: i don't need the below line anymore
-        self.session.config = config.copy()
         self.session.save()
         messages.success(self.request, 'Properties have been updated')
         return HttpResponseRedirect(self.get_success_url())
