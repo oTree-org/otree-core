@@ -36,6 +36,15 @@ IMPLEMENTATIONS_ALIAS = {
 class Command(startproject.Command):
     help = ("Creates a new oTree project.")
 
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        ahelp = (
+            'Tells the command to NOT prompt the user for '
+            'input of any kind.')
+        parser.add_argument(
+            '--noinput', action='store_false', dest='interactive',
+            default=True, help=ahelp)
+
     def modify_project_files(self, options):
         project_name, target = options['name'], options['directory']
         if target is None:
@@ -61,15 +70,17 @@ class Command(startproject.Command):
         add_empty_migrations_to_all_apps(project_root_dir)
 
     def handle(self, *args, **options):
-        answer = None
-        while not answer or answer not in "yn":
-            answer = six.moves.input("Include sample games? (y or n): ")
-            if not answer:
-                answer = "y"
-                break
-            else:
-                answer = answer[0].lower()
-
+        if options["interactive"]:
+            answer = None
+            while not answer or answer not in "yn":
+                answer = six.moves.input("Include sample games? (y or n): ")
+                if not answer:
+                    answer = "y"
+                    break
+                else:
+                    answer = answer[0].lower()
+        else:
+            answer = 'n'
         self.core_project_template_path = os.path.join(
                 os.path.dirname(otree.__file__), 'project_template')
         if answer == "y":
