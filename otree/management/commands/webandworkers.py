@@ -32,7 +32,7 @@ naiveip_re = re.compile(r"""^
 class Command(RunserverCommand):
     help = 'Run otree web services for the production environment.'
 
-    default_port = 5000
+    default_port = 8000
 
     def add_arguments(self, parser):
         BaseCommand.add_arguments(self, parser)
