@@ -25,6 +25,10 @@ class FieldOnOtherPlayer(Page):
 
 
 class PickWinner(WaitPage):
+    
+    def is_displayed(self):
+        # show to everybody but player 1
+        return not self.player.id_in_subsession == 1
 
     def after_all_players_arrive(self):
         # testing that this code only gets executed once
