@@ -84,6 +84,8 @@ class Command(RunserverCommand):
             self.port
         )
 
+        print('Starting daphne server on {}:{}'.format(self.addr, self.port))
+
         manager.add_process('daphne', daphne_cmd, env=self.get_env(options))
         for i in range(3):
             manager.add_process(

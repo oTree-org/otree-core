@@ -6,6 +6,7 @@ from six.moves.urllib.parse import urlunparse
 import datetime
 from collections import defaultdict
 import sys
+import logging
 
 from django.conf import settings
 from django.contrib import messages
@@ -28,6 +29,9 @@ from otree.checks.mturk import validate_session_for_mturk
 from otree import deprecate
 from otree.forms import widgets
 from otree.common import RealWorldCurrency
+
+logger = logging.getLogger('otree')
+
 
 class MTurkError(Exception):
 
@@ -64,8 +68,8 @@ class MTurkConnection(boto.mturk.connection.MTurkConnection):
         return False
 
 
-def get_workers_by_status(mturk, hit_id):
-    all_assignments = get_all_assignments(mturk, hit_id)
+def get_workers_by_status(conn, hit_id):
+    all_assignments = get_all_assignments(conn, hit_id)
     workers_by_status = defaultdict(list)
     for assignment in all_assignments:
         workers_by_status[
@@ -74,13 +78,13 @@ def get_workers_by_status(mturk, hit_id):
     return workers_by_status
 
 
-def get_all_assignments(mturk, hit_id, status=None):
+def get_all_assignments(conn, hit_id, status=None):
     # Accumulate all relevant assignments, one page of results at
     # a time.
     assignments = []
     page = 1
     while True:
-        rs = mturk.get_assignments(
+        rs = conn.get_assignments(
             hit_id=hit_id,
             page_size=100,
             page_number=page,
@@ -310,26 +314,42 @@ class PayMTurk(vanilla.View):
     def post(self, request, *args, **kwargs):
         session = get_object_or_404(otree.models.session.Session,
                                     code=kwargs['session_code'])
+        payments_succeeded = 0
+        payments_failed = 0
         with MTurkConnection(self.request,
                              session.mturk_sandbox) as mturk_connection:
             for p in session.participant_set.filter(
                 mturk_assignment_id__in=request.POST.getlist('payment')
             ):
-                # approve assignment
-                mturk_connection.approve_assignment(p.mturk_assignment_id)
-                # grant bonus
-                # TODO: check if bonus was already paid before, perhaps through
-                # mturk requester webinterface
-                bonus_amount = p.payoff_in_real_world_currency().to_number()
-                if bonus_amount > 0:
-                    bonus = boto.mturk.price.Price(amount=bonus_amount)
-                    mturk_connection.grant_bonus(p.mturk_worker_id,
-                                                 p.mturk_assignment_id,
-                                                 bonus,
-                                                 reason="Thank you for "
-                                                        "participating.")
-
-        messages.success(request, "Your payment was successful")
+                try:
+                    # approve assignment
+                    mturk_connection.approve_assignment(p.mturk_assignment_id)
+                except boto.mturk.connection.MTurkRequestError as e:
+                    msg = ('Could not pay {} because of an error communicating '
+                        'with MTurk: {}'.format(p._id_in_session(), str(e)))
+                    messages.error(request, msg)
+                    logger.error(msg)
+                    payments_failed += 1
+                else:
+                    payments_succeeded += 1
+                    # grant bonus
+                    # TODO: check if bonus was already paid before, perhaps through
+                    # mturk requester webinterface
+                    bonus_amount = p.payoff_in_real_world_currency().to_number()
+                    if bonus_amount > 0:
+                        bonus = boto.mturk.price.Price(amount=bonus_amount)
+                        mturk_connection.grant_bonus(
+                            p.mturk_worker_id,
+                            p.mturk_assignment_id,
+                            bonus,
+                            reason="Thank you for "
+                            "participating.")
+        msg = 'Successfully made {} payments.'.format(payments_succeeded)
+        if payments_failed > 0:
+            msg += ' {} payments failed.'.format(payments_failed)
+            messages.warning(request, msg)
+        else:
+            messages.success(request, msg)
         return HttpResponseRedirect(
             reverse('session_mturk_payments', args=(session.code,)))
 
