@@ -24,11 +24,11 @@ class FieldOnOtherPlayer(Page):
         assert in_all_rounds[-1].from_other_player == 1
 
 
-class PickWinner(WaitPage):
-    
+class WaitPageSkipped(WaitPage):
     def is_displayed(self):
-        # show to everybody but player 1
-        return not self.player.id_in_subsession == 1
+        return self.player.id_in_group != 1
+
+class PickWinner(WaitPage):
 
     def after_all_players_arrive(self):
         # testing that this code only gets executed once
@@ -96,6 +96,7 @@ class Results(Page):
 page_sequence = [
     FieldOnOtherPlayer,
     PickWinner,
+    WaitPageSkipped,
     ResultsWaitPage,
     AllGroupsWaitPage,
     Results
