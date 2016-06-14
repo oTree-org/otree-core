@@ -314,8 +314,8 @@ class PayMTurk(vanilla.View):
     def post(self, request, *args, **kwargs):
         session = get_object_or_404(otree.models.session.Session,
                                     code=kwargs['session_code'])
-        payments_succeeded = 0
-        payments_failed = 0
+        successful_payments = 0
+        failed_payments = 0
         with MTurkConnection(self.request,
                              session.mturk_sandbox) as mturk_connection:
             for p in session.participant_set.filter(
@@ -329,9 +329,9 @@ class PayMTurk(vanilla.View):
                         'with MTurk: {}'.format(p._id_in_session(), str(e)))
                     messages.error(request, msg)
                     logger.error(msg)
-                    payments_failed += 1
+                    failed_payments += 1
                 else:
-                    payments_succeeded += 1
+                    successful_payments += 1
                     # grant bonus
                     # TODO: check if bonus was already paid before, perhaps through
                     # mturk requester webinterface
@@ -344,9 +344,9 @@ class PayMTurk(vanilla.View):
                             bonus,
                             reason="Thank you for "
                             "participating.")
-        msg = 'Successfully made {} payments.'.format(payments_succeeded)
-        if payments_failed > 0:
-            msg += ' {} payments failed.'.format(payments_failed)
+        msg = 'Successfully made {} payments.'.format(successful_payments)
+        if failed_payments > 0:
+            msg += ' {} payments failed.'.format(failed_payments)
             messages.warning(request, msg)
         else:
             messages.success(request, msg)

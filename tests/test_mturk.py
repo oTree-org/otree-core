@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
+from collections import namedtuple
 from django.core.management import call_command
 from django.core.urlresolvers import reverse
 
@@ -52,7 +53,6 @@ class TestMTurk(TestCase):
         if response.status_code != 200:
             raise Exception('{} returned 400'.format(url))
 
-    '''
     @mock.patch.object(MTurkConnection, '__enter__')
     def test_pay_mturk(self, mocked_enter):
         participants = self.session.get_participants()
@@ -60,24 +60,36 @@ class TestMTurk(TestCase):
             p.mturk_worker_id = str(i)
             p.mturk_assignment_id = str(i)
             p.save()
-        Assignment = namedtuple('Assignment', ['WorkerId'])
-        assignments = [Assignment(p.mturk_worker_id) for p in participants]
+        Assignment = namedtuple('Assignment', ['WorkerId', 'AssignmentStatus'])
+
+        class MockResultSet(list):
+            TotalNumResults = 1
+
+        assignments = MockResultSet(
+            [Assignment(p.mturk_worker_id, 'Submitted') for p in participants])
         mocked_connection = MagicMock()
         mocked_enter.return_value = mocked_connection
         mocked_connection.get_assignments.return_value = assignments
-        url = reverse('pay_mturk', args=(self.session.code,))
+
+
+        url = reverse('session_mturk_payments', args=[self.session.code])
+        response = self.browser.get(
+            url,
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+
+        url = reverse('pay_mturk', args=[self.session.code])
         p0 = participants[0]
         response = self.browser.post(
             url,
             data={
-                'reward': [p0.mturk_assignment_id],
-                'bonus': [p0.mturk_assignment_id]
+                'payment': [p0.mturk_assignment_id],
             },
             follow=True
         )
-        if response.status_code != 200:
-            raise Exception('{} returned 400'.format(url))
-    '''
+        self.assertEqual(response.status_code, 200)
+
 
     @mock.patch.object(MTurkConnection, '__enter__')
     def test_mturk_start(self, mocked_enter):
