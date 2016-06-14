@@ -70,5 +70,8 @@ setup(
         'console_scripts': [
             'otree=otree.management.cli:otree_cli',
         ],
-    }
+    },
+
+    zip_safe=False,
+    include_package_data=True,
 )
