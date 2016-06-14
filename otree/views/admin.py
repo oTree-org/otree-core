@@ -650,12 +650,13 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
         real_world_currency_per_point = form.cleaned_data[
             'real_world_currency_per_point'
         ]
-        if form.cleaned_data['participation_fee']:
-            self.session.config[
+        config = self.session.config
+        if form.cleaned_data['participation_fee'] is not None:
+            config[
                 'participation_fee'
             ] = RealWorldCurrency(participation_fee)
-        if form.cleaned_data['real_world_currency_per_point']:
-            self.session.config[
+        if form.cleaned_data['real_world_currency_per_point'] is not None:
+            config[
                 'real_world_currency_per_point'
             ] = real_world_currency_per_point
         self.session.save()

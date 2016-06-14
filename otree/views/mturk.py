@@ -114,18 +114,16 @@ class SessionCreateHitForm(forms.Form):
         help_text="How many unique Workers do you want to work on the HIT?")
     minutes_allotted_per_assignment = forms.IntegerField(
         label="Minutes allotted per assignment",
-        required=False,
         help_text=(
             "Number of minutes, that a Worker has to "
             "complete the HIT after accepting it."
-            "Leave it blank if you don't want to specify it."))
+        ))
     expiration_hours = forms.IntegerField(
         label="Hours until HIT expiration",
-        required=False,
         help_text=(
             "Number of hours after which the HIT "
             "is no longer available for users to accept. "
-            "Leave it blank if you don't want to specify it."))
+        ))
 
     def __init__(self, *args, **kwargs):
         super(SessionCreateHitForm, self).__init__(*args, **kwargs)
@@ -281,15 +279,12 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
                 'reward': reward,
                 'response_groups': ('Minimal', 'HITDetail'),
                 'qualifications': Qualifications(qualifications),
-            }
-            if form.cleaned_data['minutes_allotted_per_assignment']:
-                mturk_hit_parameters['duration'] = datetime.timedelta(
+                'duration': datetime.timedelta(
                     minutes=(
-                        form.cleaned_data['minutes_allotted_per_assignment']))
-
-            if form.cleaned_data['expiration_hours']:
-                mturk_hit_parameters['lifetime'] = datetime.timedelta(
+                        form.cleaned_data['minutes_allotted_per_assignment'])),
+                'lifetime': datetime.timedelta(
                     hours=form.cleaned_data['expiration_hours'])
+            }
 
             hit = mturk_connection.create_hit(**mturk_hit_parameters)
             session.mturk_HITId = hit[0].HITId
