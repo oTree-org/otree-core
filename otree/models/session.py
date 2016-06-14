@@ -93,14 +93,6 @@ class Session(ModelWithVars):
         doc=("If set to True the session won't be visible on the "
              "main ViewList for sessions"))
 
-    git_commit_timestamp = models.CharField(
-        max_length=200, null=True,
-        doc=(
-            "Indicates the version of the code (as recorded by Git) that was "
-            "used to run the session, so that the session can be replicated "
-            "later.\n Search through the Git commit log to find a commit that "
-            "was made at this time."))
-
     comment = models.TextField(blank=True)
 
     _anonymous_code = models.CharField(

@@ -19,8 +19,6 @@ django-extensions==1.6.7
 django-floppyforms==1.6.2
 django-idmap==0.4.1
 django-inspect-model==0.7
-django-sslify==0.2.7
-django-sslserver==0.19
 django-vanilla-views==1.0.4
 djangorestframework==3.3.3
 funcsigs==1.0.2
@@ -32,10 +30,12 @@ msgpack-python==0.4.7
 ordered-set==2.0.1
 otree-save-the-change==1.1.3
 pbr==1.9.1
+pyOpenSSL==16.0.0
 pytz==2016.4
 raven==5.17.0
 redis==2.10.5
 requests==2.10.0
+service-identity==16.0.0
 six==1.10.0
 Twisted==16.1.1
 txaio==2.5.1
@@ -47,7 +47,3 @@ zope.interface==4.1.3
 
 # Stress test
 selenium==2.53.2
-
-# SSL
-pyOpenSSL==16.0.0
-service-identity==16.0.0

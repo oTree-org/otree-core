@@ -54,44 +54,6 @@ class TestMTurk(TestCase):
             raise Exception('{} returned 400'.format(url))
 
     @mock.patch.object(MTurkConnection, '__enter__')
-    def test_pay_mturk(self, mocked_enter):
-        participants = self.session.get_participants()
-        for (i, p) in enumerate(participants):
-            p.mturk_worker_id = str(i)
-            p.mturk_assignment_id = str(i)
-            p.save()
-        Assignment = namedtuple('Assignment', ['WorkerId', 'AssignmentStatus'])
-
-        class MockResultSet(list):
-            TotalNumResults = 1
-
-        assignments = MockResultSet(
-            [Assignment(p.mturk_worker_id, 'Submitted') for p in participants])
-        mocked_connection = MagicMock()
-        mocked_enter.return_value = mocked_connection
-        mocked_connection.get_assignments.return_value = assignments
-
-
-        url = reverse('session_mturk_payments', args=[self.session.code])
-        response = self.browser.get(
-            url,
-            follow=True
-        )
-        self.assertEqual(response.status_code, 200)
-
-        url = reverse('pay_mturk', args=[self.session.code])
-        p0 = participants[0]
-        response = self.browser.post(
-            url,
-            data={
-                'payment': [p0.mturk_assignment_id],
-            },
-            follow=True
-        )
-        self.assertEqual(response.status_code, 200)
-
-
-    @mock.patch.object(MTurkConnection, '__enter__')
     def test_mturk_start(self, mocked_enter):
         mocked_connection = MagicMock()
         mocked_enter.return_value = mocked_connection
@@ -143,3 +105,66 @@ class TestMTurk(TestCase):
         )
         if response.status_code != 200:
             raise Exception('{} returned 400'.format(url))
+
+
+Assignment = namedtuple('Assignment', ['WorkerId', 'AssignmentStatus'])
+
+
+class MockResultSet(list):
+    @property
+    def TotalNumResults(self):
+        return len(self)
+
+
+class PayMTurk(TestCase):
+
+    def setUp(self):
+        call_command('create_session', 'multi_player_game', "9")
+        self.session = Session.objects.get()
+        self.browser = django.test.client.Client()
+        self.participants = self.session.get_participants()
+
+        for (i, p) in enumerate(self.participants):
+            p.mturk_worker_id = str(i)
+            p.mturk_assignment_id = str(i)
+            p.save()
+
+
+    @mock.patch.object(MTurkConnection, '__enter__')
+    def test_pay_mturk(self, mocked_enter):
+        assignments = MockResultSet(
+            [Assignment(p.mturk_worker_id, 'Submitted') for p in self.participants])
+        mocked_connection = MagicMock()
+        mocked_enter.return_value = mocked_connection
+        mocked_connection.get_assignments.return_value = assignments
+
+        url = reverse('session_mturk_payments', args=[self.session.code])
+        response = self.browser.get(
+            url,
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+
+        reject_participants = [p for p in self.participants if p.id % 2]
+        accept_participants = [p for p in self.participants if not p.id % 2]
+
+        url = reverse('pay_mturk', args=[self.session.code])
+        response = self.browser.post(
+            url,
+            data={
+                'payment': [p.mturk_assignment_id for p in accept_participants],
+            },
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+
+        url = reverse('reject_mturk', args=[self.session.code])
+        response = self.browser.post(
+            url,
+            data={
+                'payment': [p.mturk_assignment_id for p in reject_participants],
+            },
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+
