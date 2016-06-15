@@ -15,7 +15,7 @@ from django.core.management.base import BaseCommand
 from otree.test import runner, client
 from otree.management.cli import otree_and_django_version
 from otree.session import SESSION_CONFIGS_DICT
-
+import otree.common_internal
 # =============================================================================
 # CONSTANTS
 # =============================================================================
@@ -94,6 +94,14 @@ class Command(BaseCommand):
             logger.removeHandler(handler)
 
     def handle(self, **options):
+        # use in-memory.
+        # this is the simplest way to patch runserver to use in-memory,
+        # while still using Redis in production
+        settings.CHANNEL_LAYERS['default'] = (
+            settings.CHANNEL_LAYERS['inmemory'])
+        # so we know not to use Huey
+        otree.common_internal.USE_REDIS = False
+
         session_config_names = options["session_name"]
         if not session_config_names:
             # default to all session configs
