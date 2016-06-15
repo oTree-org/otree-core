@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from otree.db import models
-
+from django.db import models
+from datetime import datetime
 
 class PageCompletion(models.Model):
     class Meta:
@@ -90,6 +90,9 @@ class StubModel(models.Model):
 
 
 class RoomToSession(models.Model):
+    class Meta:
+        app_label = "otree"
+
     room_name = models.CharField(unique=True, max_length=255)
     session_pk = models.PositiveIntegerField()
 
@@ -98,17 +101,27 @@ FAILURE_MESSAGE_MAX_LENGTH = 300
 
 
 class FailedSessionCreation(models.Model):
+    class Meta:
+        app_label = "otree"
+
     pre_create_id = models.CharField(max_length=100, db_index=True)
     message = models.CharField(max_length=FAILURE_MESSAGE_MAX_LENGTH)
 
 
 class ParticipantRoomVisit(models.Model):
-    room_name = models.CharField()
-    participant_label = models.CharField()
-    random_code = models.CharField(max_length=20)
+    class Meta:
+        app_label = "otree"
+
+    room_name = models.CharField(max_length=50)
+    participant_label = models.CharField(max_length=200)
+    tab_unique_id = models.CharField(max_length=20, unique=True)
+    last_updated = models.DateTimeField(auto_now=True)
 
 
 class ExpectedRoomParticipant(models.Model):
-    room_name = models.CharField()
-    participant_label = models.CharField()
+    class Meta:
+        app_label = "otree"
+
+    room_name = models.CharField(max_length=50)
+    participant_label = models.CharField(max_length=200)
 

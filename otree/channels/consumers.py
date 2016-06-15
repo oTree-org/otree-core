@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import json
+import django.db
+import django.utils.timezone
+from datetime import timedelta
 
 from channels import Group
 
@@ -159,17 +162,21 @@ def connect_room_admin(message, room):
     Group('room-admin-{}'.format(room)).add(message.reply_channel)
 
     room_object = ROOM_DICT[room]
-    all_participants_list = room_object.get_participant_labels()
-    with lock_on_this_code_path():
-        present_list = set(ParticipantRoomVisit.objects.filter(room_name=room_object.name).distinct().values_list('participant_label', flat=True))
-        not_present_list = list(all_participants_list - present_list)
-        present_list = list(present_list)
 
-        message.reply_channel.send({'text': json.dumps({
-            'status': 'load_participant_lists',
-            'participants_present': present_list,
-            'participants_not_present': not_present_list
-        })})
+    time_threshold = django.utils.timezone.now() - timedelta(seconds=20)
+    present_list = ParticipantRoomVisit.objects.filter(
+        room_name=room_object.name,
+        last_updated__gte=time_threshold,
+
+    ).values_list('participant_label', flat=True)
+
+    # make it JSON serializable
+    present_list = list(present_list)
+
+    message.reply_channel.send({'text': json.dumps({
+        'status': 'load_participant_lists',
+        'participants_present': present_list,
+    })})
 
 
 def disconnect_room_admin(message, room):
@@ -177,7 +184,7 @@ def disconnect_room_admin(message, room):
 
 
 def connect_room_participant(message, params):
-    room_name, participant_label, random_code = params.split(',')
+    room_name, participant_label, tab_unique_id = params.split(',')
     room = ROOM_DICT[room_name]
 
     Group('room-participants-{}'.format(room_name)).add(message.reply_channel)
@@ -187,34 +194,48 @@ def connect_room_participant(message, params):
             {'text': json.dumps({'status': 'session_ready'})}
         )
     else:
-        if not ParticipantRoomVisit.objects.filter(participant_label=participant_label, room_name=room_name).exists():
-            Group('room-admin-{}'.format(room_name)).send({'text': json.dumps({
-                'status': 'add_participant',
-                'participant': participant_label
-            })})
-
-        ParticipantRoomVisit.objects.create(
-            participant_label=participant_label,
-            room_name=room_name,
-            random_code=random_code
-        )
+        try:
+            ParticipantRoomVisit.objects.create(
+                participant_label=participant_label,
+                room_name=room_name,
+                tab_unique_id=tab_unique_id
+            )
+        except django.db.IntegrityError:
+            # possible that the tab connected twice
+            # without disconnecting in between
+            # because of WebSocket failure
+            # tab_unique_id is unique=True,
+            # so this will throw an integrity error.
+            pass
+        Group('room-admin-{}'.format(room_name)).send({'text': json.dumps({
+            'status': 'add_participant',
+            'participant': participant_label
+        })})
 
 
 def disconnect_room_participant(message, params):
-    room_name, participant_label, random_code = params.split(',')
+    room_name, participant_label, tab_unique_id = params.split(',')
+    room = ROOM_DICT[room_name]
 
     Group('room-participants-{}'.format(room_name)).discard(message.reply_channel)
 
-    try:
-        with lock_on_this_code_path():
-            ParticipantRoomVisit.objects.filter(participant_label=participant_label, room_name=room_name, random_code=random_code)[0].delete()
-            # Only send a remove message if a participant has no more tabs connected
-            if not ParticipantRoomVisit.objects.filter(participant_label=participant_label, room_name=room_name).exists():
-                Group('room-admin-{}'.format(room_name)).send({'text': json.dumps({
-                    'status': 'remove_participant',
-                    'participant': participant_label
-                })})
+    ParticipantRoomVisit.objects.get(
+        participant_label=participant_label,
+        room_name=room_name,
+        tab_unique_id=tab_unique_id).delete()
 
-    except IndexError:
-        # This error will occur for every participant when they are forwarded from the wait page to a new session
-        pass
+    if room.has_participant_labels():
+        if not ParticipantRoomVisit.objects.filter(
+            participant_label=participant_label,
+            room_name=room_name
+        ).exists():
+            # it's ok if there is a race condition --
+            # in JS removing a participant is idempotent
+            Group('room-admin-{}'.format(room_name)).send({'text': json.dumps({
+                'status': 'remove_participant',
+                'participant': participant_label
+            })})
+    else:
+        Group('room-admin-{}'.format(room_name)).send({'text': json.dumps({
+            'status': 'remove_participant',
+        })})

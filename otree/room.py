@@ -13,6 +13,24 @@ from otree.models_concrete import RoomToSession, ExpectedRoomParticipant, Partic
 from otree.common_internal import add_params_to_url, make_hash
 from django.db import transaction
 
+ILLEGAL_PARTICIPANT_LABEL_CHARS = {'"', '<', '>', '&'}
+
+def validate_label(label):
+    # participant label is used in the id of their span,
+    # so it shouldn't contain any chars that are escaped
+    # by HTML, like &quot; &gt; etc.
+    for char in label:
+        if char in ILLEGAL_PARTICIPANT_LABEL_CHARS:
+            raise ValueError(
+                'Participant label "{}" contains one of the following '
+                'disallowed characters: {}'.format(
+                    label,
+                    ' '.join(ILLEGAL_PARTICIPANT_LABEL_CHARS)
+                )
+            )
+    return label
+
+
 class Room(object):
 
     def __init__(self, config_dict):
@@ -56,7 +74,9 @@ class Room(object):
                 try:
                     plabel_path = self.participant_label_file
                     with codecs.open(plabel_path, "r", encoding=e) as f:
-                        labels = [line.strip() for line in f if line.strip()]
+                        labels = [
+                            validate_label(line.strip()) for line in f if line.strip()
+                        ]
                         return labels
                 except UnicodeDecodeError:
                     continue
@@ -88,19 +108,24 @@ class Room(object):
                         ) for participant_label in self.load_participant_labels_from_file()
                     )
                     self._participant_labels_loaded = True
-            return set(
-                ExpectedRoomParticipant.objects.filter(
+            return ExpectedRoomParticipant.objects.filter(
                     room_name=self.name
-                ).values_list('participant_label', flat=True)
-            )
+                ).order_by('id').values_list('participant_label', flat=True)
         raise Exception('no guestlist')
 
-    def get_participant_links(self, request):
+    def num_participant_labels(self):
+        return ExpectedRoomParticipant.objects.filter(
+            room_name=self.name
+        ).count()
+
+    def get_room_wide_url(self, request):
+        url = reverse('assign_visitor_to_room', args=(self.name,))
+        return request.build_absolute_uri(url)
+
+    def get_participant_urls(self, request):
         participant_urls = []
         room_base_url = reverse('assign_visitor_to_room', args=(self.name,))
         room_base_url = request.build_absolute_uri(room_base_url)
-        if not self.use_secure_urls:
-            participant_urls.append(room_base_url)
 
         if self.has_participant_labels():
             for label in self.get_participant_labels():

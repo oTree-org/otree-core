@@ -430,11 +430,12 @@ class RoomWithoutSession(CreateSession):
             request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = {'participant_urls': self.room.get_participant_links(self.request),
-                   'participant_names': [],
-                   'participant_count': str(0),
-                   'room': self.room,
-                   'has_expected_participant_list': self.room.has_participant_labels()}
+        context = {
+            'participant_urls': self.room.get_participant_urls(self.request),
+            'room_wide_url': self.room.get_room_wide_url(self.request),
+            'room': self.room,
+            'collapse_links': True,
+        }
         kwargs.update(context)
 
         return super(RoomWithoutSession, self).get_context_data(**kwargs)
@@ -464,10 +465,14 @@ class RoomWithSession(vanilla.TemplateView):
             request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = {'participant_urls': self.room.get_participant_links(self.request),
-                   'session_url': reverse('session_monitor',
-                                          args=(self.room.session.code,)),
-                   'room': self.room}
+        context = {
+            'participant_urls': self.room.get_participant_urls(self.request),
+            'room_wide_url': self.room.get_room_wide_url(self.request),
+            'session_url': reverse('session_monitor',
+                                  args=(self.room.session.code,)),
+            'room': self.room,
+            'collapse_links': True,
+        }
         kwargs.update(context)
 
         return super(RoomWithSession, self).get_context_data(**kwargs)
@@ -747,8 +752,9 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
         if room:
             context.update(
             {
-                'participant_urls': room.get_participant_links(self.request),
-                'room': room
+                'participant_urls': room.get_participant_urls(self.request),
+                'room_wide_url': room.get_room_wide_url(self.request),
+                'room': room,
             })
         else:
             participant_urls = [
