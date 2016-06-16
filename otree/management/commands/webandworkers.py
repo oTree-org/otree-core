@@ -79,13 +79,14 @@ class Command(RunserverCommand):
 
         manager = Manager()
 
-        print('Starting daphne server on {}:{}'.format(self.addr, self.port))
-        daphne_cmd = 'otree runweb --addr {} --port {}'.format(
+        daphne_cmd = 'daphne otree.asgi:channel_layer -b {} -p {}'.format(
             self.addr,
             self.port
         )
-        manager.add_process('daphne', daphne_cmd, env=self.get_env(options))
 
+        print('Starting daphne server on {}:{}'.format(self.addr, self.port))
+
+        manager.add_process('daphne', daphne_cmd, env=self.get_env(options))
         for i in range(3):
             manager.add_process(
                 'worker{}'.format(i),
