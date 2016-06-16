@@ -111,7 +111,20 @@ SESSION_CONFIGS = [
 DEMO_PAGE_INTRO_TEXT = """"""
 
 
-MTURK_WORKER_REQUIREMENTS = []
+ROOM_DEFAULTS = [
+]
 
+ROOMS = [
+    {
+        'name': 'default',
+        'display_name': 'Default',
+        'participant_label_file': 'tests/participant_labels.txt',
+        'use_secure_urls': False
+    },
+    {
+        'name': 'anon',
+        'display_name': 'Anonymous',
+    }
+]
 
 otree.settings.augment_settings(globals())

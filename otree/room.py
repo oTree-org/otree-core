@@ -3,32 +3,25 @@
 
 import codecs
 import errno
+import re
 from collections import OrderedDict
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
 from otree.models import Session
-from otree.models_concrete import RoomToSession, ExpectedRoomParticipant, ParticipantRoomVisit
+from otree.models_concrete import RoomToSession, ExpectedRoomParticipant
 from otree.common_internal import add_params_to_url, make_hash
 from django.db import transaction
 
-ILLEGAL_PARTICIPANT_LABEL_CHARS = {'"', '<', '>', '&'}
 
 def validate_label(label):
-    # participant label is used in the id of their span,
-    # so it shouldn't contain any chars that are escaped
-    # by HTML, like &quot; &gt; etc.
-    for char in label:
-        if char in ILLEGAL_PARTICIPANT_LABEL_CHARS:
-            raise ValueError(
-                'Participant label "{}" contains one of the following '
-                'disallowed characters: {}'.format(
-                    label,
-                    ' '.join(ILLEGAL_PARTICIPANT_LABEL_CHARS)
-                )
-            )
-    return label
+    if re.match(r'^[a-zA-Z0-9_]+$', label):
+        return label
+    raise ValueError(
+        'Error in participant label "{}": participant labels must contain '
+        'only the following characters: a-z, A-Z, 0-9, _.'.format(label)
+    )
 
 
 class Room(object):
@@ -67,9 +60,9 @@ class Room(object):
     def has_participant_labels(self):
         return bool(self.participant_label_file)
 
-    def load_participant_labels_from_file(self):
+    def load_participant_labels_to_db(self):
         if self.has_participant_labels():
-            encodings = ['utf-8', 'utf-16', 'ascii']
+            encodings = ['ascii', 'utf-8', 'utf-16']
             for e in encodings:
                 try:
                     plabel_path = self.participant_label_file
@@ -77,7 +70,6 @@ class Room(object):
                         labels = [
                             validate_label(line.strip()) for line in f if line.strip()
                         ]
-                        return labels
                 except UnicodeDecodeError:
                     continue
                 except OSError as err:
@@ -91,29 +83,35 @@ class Room(object):
                         raise IOError(
                             msg.format(self.name, self.participant_label_file))
                     raise err
+                else:
+                    with transaction.atomic():
+                        # use select_for_update to prevent race conditions
+                        ExpectedRoomParticipant.objects.select_for_update()
+                        ExpectedRoomParticipant.objects.filter(
+                            room_name=self.name).delete()
+                        ExpectedRoomParticipant.objects.bulk_create(
+                            ExpectedRoomParticipant(
+                                room_name=self.name,
+                                participant_label=participant_label
+                            ) for participant_label in labels
+                        )
+                    self._participant_labels_loaded = True
+                    return
             raise Exception('Failed to decode guest list.')
         raise Exception('no guestlist')
 
     def get_participant_labels(self):
         if self.has_participant_labels():
             if not self._participant_labels_loaded:
-                with transaction.atomic():
-                    # use select_for_update to prevent race conditions
-                    ExpectedRoomParticipant.objects.select_for_update()
-                    ExpectedRoomParticipant.objects.all().delete()
-                    ExpectedRoomParticipant.objects.bulk_create(
-                        ExpectedRoomParticipant(
-                            room_name=self.name,
-                            participant_label=participant_label
-                        ) for participant_label in self.load_participant_labels_from_file()
-                    )
-                    self._participant_labels_loaded = True
+                self.load_participant_labels_to_db()
             return ExpectedRoomParticipant.objects.filter(
                     room_name=self.name
                 ).order_by('id').values_list('participant_label', flat=True)
         raise Exception('no guestlist')
 
     def num_participant_labels(self):
+        if not self._participant_labels_loaded:
+            self.load_participant_labels_to_db()
         return ExpectedRoomParticipant.objects.filter(
             room_name=self.name
         ).count()

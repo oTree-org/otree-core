@@ -488,6 +488,8 @@ class CloseRoom(vanilla.View):
         return 'close_room'
 
     def dispatch(self, request, *args, **kwargs):
+        # TODO: should make this POST not GET,
+        # but then have to refactor the HTML button
         room_name = kwargs['room_name']
         self.room = ROOM_DICT[room_name]
         self.room.session = None

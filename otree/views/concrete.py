@@ -278,7 +278,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
         session = room.session
         if session is None:
             self.tab_unique_id = otree.common_internal.random_chars_10()
-            self._params = ','.join([
+            self._socket_url_params = ','.join([
                 self.room_name,
                 participant_label,
                 # random chars in case the participant has multiple tabs open
@@ -322,7 +322,9 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
         }
 
     def socket_url(self):
-        return '/wait_for_session_in_room/{}/'.format(self._params)
+        return '/wait_for_session_in_room/{}/'.format(
+            self._socket_url_params
+        )
 
     def redirect_url(self):
         return self.request.get_full_path()
@@ -339,9 +341,13 @@ class StaleRoomVisits(vanilla.View):
         return 'stale_room_visits'
 
     def get(self, request, *args, **kwargs):
-        time_threshold = django.utils.timezone.now() - timedelta(seconds=15)
+
+        now = django.utils.timezone.now()
+
+        stale_threshold = now - timedelta(seconds=15)
         stale_participant_labels = ParticipantRoomVisit.objects.filter(
-            last_updated__lt=time_threshold
+            room_name=kwargs['room'],
+            last_updated__lt=stale_threshold
         ).values_list('participant_label', flat=True)
 
         # make json serializable
@@ -363,6 +369,7 @@ class ActiveRoomParticipantsCount(vanilla.View):
     def get(self, request, *args, **kwargs):
         time_threshold = django.utils.timezone.now() - timedelta(seconds=20)
         count = ParticipantRoomVisit.objects.filter(
+            room_name=kwargs['room'],
             last_updated__gte=time_threshold
         ).count()
 

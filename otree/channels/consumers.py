@@ -20,9 +20,7 @@ from otree.models_concrete import (
     FailedSessionCreation,
     ParticipantRoomVisit,
     FAILURE_MESSAGE_MAX_LENGTH,
-    ExpectedRoomParticipant
 )
-from otree.views.abstract import lock_on_this_code_path
 from otree.room import ROOM_DICT
 
 
@@ -163,11 +161,11 @@ def connect_room_admin(message, room):
 
     room_object = ROOM_DICT[room]
 
-    time_threshold = django.utils.timezone.now() - timedelta(seconds=20)
+    now = django.utils.timezone.now()
+    stale_threshold = now - timedelta(seconds=15)
     present_list = ParticipantRoomVisit.objects.filter(
         room_name=room_object.name,
-        last_updated__gte=time_threshold,
-
+        last_updated__gte=stale_threshold,
     ).values_list('participant_label', flat=True)
 
     # make it JSON serializable
@@ -177,6 +175,14 @@ def connect_room_admin(message, room):
         'status': 'load_participant_lists',
         'participants_present': present_list,
     })})
+
+    # prune very old visits -- don't want a resource leak
+    # because sometimes not getting deleted on WebSocket disconnect
+    very_stale_threshold = now - timedelta(minutes=10)
+    ParticipantRoomVisit.objects.filter(
+        room_name=room_object.name,
+        last_updated__lt=very_stale_threshold,
+    ).delete()
 
 
 def disconnect_room_admin(message, room):

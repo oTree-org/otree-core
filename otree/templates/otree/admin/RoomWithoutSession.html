@@ -85,7 +85,7 @@ $(document).ready(function () {
                 participant_labels = data.participant_labels;
                 if (participant_labels.length > 0) {
                     for (var i = 0; i < participant_labels.length; i++) {
-                        setParticipantVisibility(participant_labels[i], false);
+                        setParticipantPresence(participant_labels[i], false);
                     }
                     calcCountsFromDOM();
                 }
@@ -114,11 +114,11 @@ $(document).ready(function () {
     }
 
 
-    function setParticipantVisibility(participant_label, on) {
+    function setParticipantPresence(participant_label, is_present) {
         var pres_el = $('#present-participant-label-' + participant_label);
         var abs_el = $('#absent-participant-label-' + participant_label);
 
-        if (on) {
+        if (is_present) {
             show_el = pres_el;
             hide_el = abs_el;
         } else {
@@ -161,15 +161,15 @@ $(document).ready(function () {
                 if (status == "load_participant_lists") {
                     participant_labels = data["participants_present"];
                     for (var i = 0; i < participant_labels.length; i++) {
-                        setParticipantVisibility(participant_labels[i], true);
+                        setParticipantPresence(participant_labels[i], true);
                     }
                 }
                 if (status == "add_participant") {
-                    setParticipantVisibility(data["participant"], true);
+                    setParticipantPresence(data["participant"], true);
 
                 }
                 if (status == "remove_participant") {
-                    setParticipantVisibility(data["participant"], false);
+                    setParticipantPresence(data["participant"], false);
                 }
                 calcCountsFromDOM();
             } else {
