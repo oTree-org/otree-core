@@ -125,7 +125,7 @@ class ExecuteFromCommandLine(TestCase):
         cli.execute_from_command_line(["foo", "runserver"], "script.py")
         management.assert_called_with(["foo", "runsslserver"])
     '''
-    
+
     @mock.patch("platform.system", return_value="No-Windows")
     @mock.patch("sys.stdout")
     @mock.patch("otree.management.cli.otree_and_django_version",
