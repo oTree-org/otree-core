@@ -243,7 +243,7 @@ class Session(ModelWithVars):
     def get_room(self):
         from otree.room import ROOM_DICT
         try:
-            room_name = RoomToSession.objects.get(session_pk=self.pk).room_name
+            room_name = RoomToSession.objects.get(session=self).room_name
             return ROOM_DICT[room_name]
         except RoomToSession.DoesNotExist:
             return None

@@ -94,7 +94,7 @@ class RoomToSession(models.Model):
         app_label = "otree"
 
     room_name = models.CharField(unique=True, max_length=255)
-    session_pk = models.PositiveIntegerField()
+    session = models.ForeignKey('otree.Session')
 
 
 FAILURE_MESSAGE_MAX_LENGTH = 300

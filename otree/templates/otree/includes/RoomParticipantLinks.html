@@ -28,9 +28,10 @@
 <button class="btn" type="button" data-toggle="collapse" data-target="#participant_links">
         Expand/Collapse Participant Links
 </button>
+<br>
 {% endif %}
 
-<div id="participant_links" {% if collapse_links %}class="collapsed"{% endif %}>
+<div id="participant_links" {% if collapse_links %}class="collapse"{% endif %}>
 
 <table class="table">
 {% for participant_url in participant_urls %}

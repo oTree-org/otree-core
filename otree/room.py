@@ -37,7 +37,7 @@ class Room(object):
         if self.use_secure_urls and not self.participant_label_file:
             raise ValueError(
                 'Room "{}": you must either set "participant_label_file", '
-                'or set "use_secure_urls": False'
+                'or set "use_secure_urls": False'.format(self.name)
             )
 
     def has_session(self):
@@ -45,17 +45,20 @@ class Room(object):
 
     @property
     def session(self):
-        session_pk_qs = RoomToSession.objects.filter(
-            room_name=self.name).values('session_pk')
-        return Session.objects.filter(pk__in=session_pk_qs).first()
+        try:
+            return RoomToSession.objects.select_related('session').get(
+                room_name=self.name).session
+        except RoomToSession.DoesNotExist:
+            return None
 
     @session.setter
     def session(self, session):
-        if session is None:
-            RoomToSession.objects.filter(room_name=self.name).delete()
-        else:
-            RoomToSession.objects.get_or_create(
-                room_name=self.name, defaults={'session_pk': session.pk})
+        RoomToSession.objects.filter(room_name=self.name).delete()
+        if session:
+            RoomToSession.objects.create(
+                room_name=self.name,
+                session=session
+            )
 
     def has_participant_labels(self):
         return bool(self.participant_label_file)

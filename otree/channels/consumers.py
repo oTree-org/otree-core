@@ -225,7 +225,10 @@ def disconnect_room_participant(message, params):
 
     Group('room-participants-{}'.format(room_name)).discard(message.reply_channel)
 
-    ParticipantRoomVisit.objects.get(
+    # should use filter instead of get,
+    # because if the DB is recreated,
+    # the record could already be deleted
+    ParticipantRoomVisit.objects.filter(
         participant_label=participant_label,
         room_name=room_name,
         tab_unique_id=tab_unique_id).delete()
