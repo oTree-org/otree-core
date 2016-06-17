@@ -15,13 +15,14 @@ from django.db.utils import OperationalError
 
 from six.moves import range
 from six.moves import zip
+import schema
 
 import otree.db.idmap
 from otree import constants_internal
 from otree.models.session import Session
 from otree.models.participant import Participant
 from otree.common_internal import (
-    get_models_module, get_app_constants,
+    get_models_module, get_app_constants, validate_identifier,
     min_players_multiple)
 from otree.common import RealWorldCurrency
 from decimal import Decimal
@@ -59,42 +60,40 @@ def get_lcm(session_config):
 
 def validate_session_config(session_config):
 
-    required_keys = {
-        'name',
-        'app_sequence',
-        'participation_fee',
-        'num_bots',
-        'display_name',
-        'real_world_currency_per_point',
-        'num_demo_participants',
-        'doc',
-    }
+    config_schema = schema.Schema({
+        'name': str,
+        'app_sequence': list,
+        'participation_fee': object,
+        'num_bots': int,
+        'display_name': str,
+        'real_world_currency_per_point': object,
+        'num_demo_participants': int,
+        'doc': str,
+        object: object,
+    })
 
-    for key in required_keys:
-        if key not in session_config:
-            msg = ('Required key "{}" is missing from '
-                   'session_config: {} dictionary')
-            raise AttributeError(msg.format(key, session_config))
+    try:
+        session_config = config_schema.validate(session_config)
+    except schema.SchemaError as e:
+        raise (ValueError('settings.SESSION_CONFIGS: {}'.format(e)))
 
-    st_name = session_config['name']
-    # TODO: Replace with `not st_name.isidentifier()` when we drop Python 2.
-    if not re.match(r'^\w+$', st_name):
-        msg = (
-            'Session "{}": name must be alphanumeric with no '
-            'spaces (underscores allowed).')
-        raise ValueError(msg.format(st_name))
+    validate_identifier(
+        session_config['name'],
+        identifier_description='settings.SESSION_CONFIG name'
+    )
 
     app_sequence = session_config['app_sequence']
     if len(app_sequence) != len(set(app_sequence)):
         msg = (
-            'app_sequence of "{}" in settings.py '
+            'settings.SESSION_CONFIGS: '
+            'app_sequence of "{}" '
             'must not contain duplicate elements. '
             'If you want multiple rounds, '
             'you should set Constants.num_rounds.')
         raise ValueError(msg.format(session_config['name']))
 
     if len(app_sequence) == 0:
-        raise ValueError('Need at least one subsession.')
+        raise ValueError('settings.SESSION_CONFIGS: Need at least one subsession.')
 
 
 def augment_session_config(session_config):

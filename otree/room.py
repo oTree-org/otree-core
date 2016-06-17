@@ -3,35 +3,27 @@
 
 import codecs
 import errno
-import re
 from collections import OrderedDict
-
+import schema
 from django.conf import settings
 from django.core.urlresolvers import reverse
-
-from otree.models import Session
 from otree.models_concrete import RoomToSession, ExpectedRoomParticipant
-from otree.common_internal import add_params_to_url, make_hash
+from otree.common_internal import (
+    add_params_to_url, make_hash, validate_identifier
+)
 from django.db import transaction
-
-
-def validate_label(label):
-    if re.match(r'^[a-zA-Z0-9_]+$', label):
-        return label
-    raise ValueError(
-        'Error in participant label "{}": participant labels must contain '
-        'only the following characters: a-z, A-Z, 0-9, _.'.format(label)
-    )
 
 
 class Room(object):
 
     def __init__(self, config_dict):
         self.participant_label_file = config_dict.get('participant_label_file')
-        self.name = config_dict['name']
+
+        self.name = validate_identifier(
+            config_dict['name'], identifier_description='settings.ROOMS room name')
         self.display_name = config_dict['display_name']
         # secure URLs are complicated, don't use them by default
-        self.use_secure_urls = config_dict.get('use_secure_urls', False)
+        self.use_secure_urls = config_dict['use_secure_urls']
         self.pin_code = config_dict.get('pin_code')
         self._participant_labels_loaded = False
         if self.use_secure_urls and not self.participant_label_file:
@@ -70,9 +62,19 @@ class Room(object):
                 try:
                     plabel_path = self.participant_label_file
                     with codecs.open(plabel_path, "r", encoding=e) as f:
-                        labels = [
-                            validate_label(line.strip()) for line in f if line.strip()
-                        ]
+                        seen = set()
+                        labels = []
+                        for line in f:
+                            label = line.strip()
+                            if not label:
+                                pass
+                            label = validate_identifier(
+                                line.strip(),
+                                identifier_description='participant label'
+                            )
+                            if label not in seen:
+                                labels.append(label)
+                                seen.add(label)
                 except UnicodeDecodeError:
                     continue
                 except OSError as err:
@@ -151,18 +153,45 @@ class Room(object):
         return reverse('close_room', args=(self.name,))
 
 
-def augment_room(room):
+def augment_room(room, ROOM_DEFAULTS):
     new_room = {'doc': ''}
-    new_room.update(getattr(settings, 'ROOM_DEFAULTS', {}))
+    new_room.update(ROOM_DEFAULTS)
     new_room.update(room)
     return new_room
 
+
 def get_room_dict():
+    room_defaults_schema = schema.Schema(
+        {
+            schema.Optional('use_secure_urls', default=False): bool,
+            schema.Optional('participant_label_file'): str,
+            schema.Optional('doc'): str,
+        }
+    )
+
+    room_schema = schema.Schema(
+        {
+            'name': str,
+            'display_name': str,
+            schema.Optional('use_secure_urls'): bool,
+            schema.Optional('participant_label_file'): str,
+            schema.Optional('doc'): str,
+        }
+    )
+
     ROOM_DICT = OrderedDict()
+    ROOM_DEFAULTS = getattr(settings, 'ROOM_DEFAULTS', {})
+    try:
+        ROOM_DEFAULTS = room_defaults_schema.validate(ROOM_DEFAULTS)
+    except schema.SchemaError as e:
+        raise (ValueError('settings.ROOM_DEFAULTS: {}'.format(e)))
     for room in getattr(settings, 'ROOMS', []):
-        room = augment_room(room)
+        room = augment_room(room, ROOM_DEFAULTS)
+        try:
+            room = room_schema.validate(room)
+        except schema.SchemaError as e:
+            raise(ValueError('settings.ROOMS: {}'.format(e)))
         room_object = Room(room)
-        room_name = room_object.name
         ROOM_DICT[room_object.name] = room_object
     return ROOM_DICT
 

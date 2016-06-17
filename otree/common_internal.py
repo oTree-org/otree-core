@@ -444,3 +444,14 @@ def add_empty_migrations_to_all_apps(project_root):
                 with open(init_file_path, 'a') as f:
                     f.write('')
 
+
+def validate_identifier(identifier, identifier_description):
+    if re.match(r'^[a-zA-Z0-9_]+$', identifier):
+        return identifier
+    raise ValueError(
+        '{} "{}" can only contain letters, numbers, '
+        'and underscores (_)'.format(
+            identifier_description,
+            identifier
+        )
+    )

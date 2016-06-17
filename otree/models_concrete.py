@@ -121,6 +121,7 @@ class ParticipantRoomVisit(models.Model):
 class ExpectedRoomParticipant(models.Model):
     class Meta:
         app_label = "otree"
+        unique_together = ['room_name', 'participant_label']
 
     room_name = models.CharField(max_length=50)
     participant_label = models.CharField(max_length=200)

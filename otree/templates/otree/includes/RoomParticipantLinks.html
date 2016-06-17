@@ -18,10 +18,12 @@
         {% endif %}
     </p>
 
-    <p><a href="{{ room_wide_url }}">{{ room_wide_url }}</a></p>
+    <p><a href="{{ room_wide_url }}" target="_blank">{{ room_wide_url }}</a></p>
 {% endif %}
 
 <br>
+
+{% if room.has_participant_labels %}
 <h4>Participant-specific URLs</h4>
 
 {% if collapse_links %}
@@ -44,4 +46,5 @@
 
 
 <hr/>
+{% endif %}
 </div>
