@@ -228,7 +228,7 @@ class Session(ModelWithVars):
                 for View in views_module_for_player(player).page_sequence:
                     page_index += 1
                     records_to_create.append(ParticipantToPlayerLookup(
-                        participant_pk=participant.pk,
+                        participant=participant,
                         page_index=page_index,
                         app_name=player._meta.app_config.name,
                         player_pk=player.pk,

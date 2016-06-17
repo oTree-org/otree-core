@@ -48,8 +48,8 @@ from otree.room import ROOM_DICT
 def get_all_fields(Model, for_export=False):
     if Model is PageCompletion:
         return [
-            'session_pk',
-            'participant_pk',
+            'session',
+            'participant',
             'page_index',
             'app_name',
             'page_name',

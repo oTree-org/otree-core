@@ -14,17 +14,17 @@ class PageCompletion(models.Model):
     time_stamp = models.PositiveIntegerField()
     seconds_on_page = models.PositiveIntegerField()
     subsession_pk = models.PositiveIntegerField()
-    participant_pk = models.PositiveIntegerField()
-    session_pk = models.PositiveIntegerField()
+    participant = models.ForeignKey('otree.Participant')
+    session = models.ForeignKey('otree.Session')
     auto_submitted = models.BooleanField()
 
 
 class PageTimeout(models.Model):
     class Meta:
         app_label = "otree"
-        index_together = ['participant_pk', 'page_index']
+        index_together = ['participant', 'page_index']
 
-    participant_pk = models.PositiveIntegerField()
+    participant = models.ForeignKey('otree.Participant')
     page_index = models.PositiveIntegerField()
     expiration_time = models.PositiveIntegerField()
 
@@ -32,11 +32,11 @@ class PageTimeout(models.Model):
 class CompletedGroupWaitPage(models.Model):
     class Meta:
         app_label = "otree"
-        unique_together = ['page_index', 'session_pk', 'group_pk']
-        index_together = ['page_index', 'session_pk', 'group_pk']
+        unique_together = ['page_index', 'session', 'group_pk']
+        index_together = ['page_index', 'session', 'group_pk']
 
     page_index = models.PositiveIntegerField()
-    session_pk = models.PositiveIntegerField()
+    session = models.ForeignKey('otree.Session')
     group_pk = models.PositiveIntegerField()
     after_all_players_arrive_run = models.BooleanField(default=False)
 
@@ -44,21 +44,21 @@ class CompletedGroupWaitPage(models.Model):
 class CompletedSubsessionWaitPage(models.Model):
     class Meta:
         app_label = "otree"
-        unique_together = ['page_index', 'session_pk']
-        index_together = ['page_index', 'session_pk']
+        unique_together = ['page_index', 'session']
+        index_together = ['page_index', 'session']
 
     page_index = models.PositiveIntegerField()
-    session_pk = models.PositiveIntegerField()
+    session = models.ForeignKey('otree.Session')
     after_all_players_arrive_run = models.BooleanField(default=False)
 
 
 class ParticipantToPlayerLookup(models.Model):
     class Meta:
         app_label = "otree"
-        index_together = ['participant_pk', 'page_index']
-        unique_together = ['participant_pk', 'page_index']
+        index_together = ['participant', 'page_index']
+        unique_together = ['participant', 'page_index']
 
-    participant_pk = models.PositiveIntegerField()
+    participant = models.ForeignKey('otree.Participant')
     page_index = models.PositiveIntegerField()
     app_name = models.CharField(max_length=300)
     player_pk = models.PositiveIntegerField()

@@ -160,7 +160,7 @@ def export_time_spent(fp):
 
     column_names = get_all_fields(PageCompletion)
     rows = PageCompletion.objects.order_by(
-        'session_pk', 'participant_pk', 'page_index'
+        'session', 'participant', 'page_index'
     ).values_list(*column_names)
     writer = csv.writer(fp)
     writer.writerows([column_names])

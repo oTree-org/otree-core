@@ -41,12 +41,12 @@ def connect_wait_page(message, params):
         ready = CompletedGroupWaitPage.objects.filter(
             page_index=page_index,
             group_pk=model_pk,
-            session_pk=session_pk,
+            session_id=session_pk,
             after_all_players_arrive_run=True).exists()
     else:  # subsession
         ready = CompletedSubsessionWaitPage.objects.filter(
             page_index=page_index,
-            session_pk=session_pk,
+            session_id=session_pk,
             after_all_players_arrive_run=True).exists()
     if ready:
         message.reply_channel.send(

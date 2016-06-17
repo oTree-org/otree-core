@@ -126,7 +126,7 @@ class Participant(ModelWithVars):
         # because of WaitUntilAssigned...
         # 2016-04-07: WaitUntilAssigned removed
         return ParticipantToPlayerLookup.objects.get(
-            participant_pk=self.pk,
+            participant=self.pk,
             page_index=self._index_in_pages)
 
     def _current_page(self):

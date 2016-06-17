@@ -346,11 +346,11 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         # wait pages don't have a has_timeout attribute
         if hasattr(self, 'has_timeout') and self.has_timeout():
             PageTimeout.objects.filter(
-                participant_pk=self.participant.pk,
+                participant=self.participant,
                 page_index=self.participant._index_in_pages).delete()
         # this is causing crashes because of the weird DB issue
         # ParticipantToPlayerLookup.objects.filter(
-        #    participant_pk=self.participant.pk,
+        #    participant=self.participant.pk,
         #    page_index=self.participant._index_in_pages).delete()
 
         # performance optimization:
@@ -437,8 +437,8 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             page_name=page_name, time_stamp=now,
             seconds_on_page=seconds_on_page,
             subsession_pk=self.subsession.pk,
-            participant_pk=self.participant.pk,
-            session_pk=self.subsession.session.pk,
+            participant=self.participant,
+            session=self.session,
             auto_submitted=timeout_happened)
         self.participant.save()
 
@@ -565,7 +565,7 @@ class InGameWaitPageMixin(object):
                 completion = CompletedGroupWaitPage(
                     page_index=self._index_in_pages,
                     group_pk=self.group.pk,
-                    session_pk=self.session.pk
+                    session=self.session
                 )
             completion.save()
         # if the record already exists
@@ -692,7 +692,7 @@ class InGameWaitPageMixin(object):
         return CompletedGroupWaitPage.objects.filter(
             page_index=self._index_in_pages,
             group_pk=self.group.pk,
-            session_pk=self.session.pk,
+            session=self.session,
             after_all_players_arrive_run=True).exists()
 
     def _tally_unvisited(self):
@@ -874,7 +874,7 @@ class FormPageMixin(object):
         current_time = int(time.time())
         expiration_time = current_time + self.timeout_seconds
         timeout, created = PageTimeout.objects.get_or_create(
-            participant_pk=self.participant.pk,
+            participant=self.participant,
             page_index=self.participant._index_in_pages,
             defaults={'expiration_time': expiration_time})
 
