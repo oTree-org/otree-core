@@ -212,7 +212,6 @@ def augment_settings(settings):
         'channels',
         'huey.contrib.djhuey',
         'rest_framework',
-        'sslserver',
         'idmap',
         'corsheaders']
 

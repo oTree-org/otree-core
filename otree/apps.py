@@ -8,13 +8,13 @@ from django.apps import AppConfig, apps
 from django.conf import settings
 from django.db.models import signals
 
-from otree.models_concrete import StubModel, ParticipantRoomVisit
+from otree.models_concrete import StubModel, ExpectedRoomParticipant
 from otree.models.session import GlobalSingleton
+import otree
 
 
 logger = logging.getLogger('otree')
 import_module('otree.checks')   # this made that style check work
-
 
 def create_default_superuser(sender, **kwargs):
     """
@@ -59,4 +59,13 @@ class OtreeConfig(AppConfig):
         self.setup_create_singleton_objects()
         if getattr(settings, 'CREATE_DEFAULT_SUPERUSER', False):
             self.setup_create_default_superuser()
-
+        # patch settings with info that is only available
+        # after other settings loaded
+        if hasattr(settings, 'RAVEN_CONFIG'):
+            settings.RAVEN_CONFIG['release'] = '{}{}'.format(
+                otree.get_version(),
+                # need to pass the server if it's DEBUG
+                # mode. could do this in extra context or tags,
+                # but this seems the most straightforward way
+                ',dbg' if settings.DEBUG else ''
+        )

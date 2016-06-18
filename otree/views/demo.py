@@ -16,7 +16,7 @@ import otree.constants_internal as constants
 from otree.models.session import Session
 from otree.session import SESSION_CONFIGS_DICT
 from otree.common_internal import channels_create_session_group_name
-
+from otree.views.abstract import AdminSessionPageMixin
 
 # if it's debug mode, we should always generate a new session
 # because a bug might have been fixed
@@ -95,35 +95,3 @@ class CreateDemoSession(vanilla.GenericView):
         return HttpResponseRedirect(wait_for_session_url)
 
 
-class SessionFullscreen(vanilla.TemplateView):
-    '''Launch the session in fullscreen mode
-    '''
-
-    template_name = 'otree/demo/SessionFullscreen.html'
-
-    @classmethod
-    def url_name(cls):
-        return 'session_fullscreen'
-
-    @classmethod
-    def url_pattern(cls):
-        return r"^SessionFullscreen/(?P<pk>\d+)/$"
-
-    def dispatch(self, request, *args, **kwargs):
-        session_pk = int(kwargs['pk'])
-        self.session = get_object_or_404(Session, pk=session_pk)
-        return super(SessionFullscreen, self).dispatch(
-            request, *args, **kwargs
-        )
-
-    def get_context_data(self, **kwargs):
-        context = super(SessionFullscreen, self).get_context_data(**kwargs)
-        participant_urls = [
-            self.request.build_absolute_uri(participant._start_url())
-            for participant in self.session.get_participants()
-        ]
-        context.update({
-            'session': self.session,
-            'participant_urls': participant_urls
-        })
-        return context

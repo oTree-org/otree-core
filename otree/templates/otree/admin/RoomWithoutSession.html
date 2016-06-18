@@ -2,7 +2,7 @@
 {% load otree_tags floppyforms %}
 
 {% block title %}
-    {{ room.display_name }}
+    Room: {{ room.display_name }}
 {% endblock %}
 
 {% block content %}
@@ -12,23 +12,53 @@
     {% include "otree/includes/CreateSessionForm.html" %}
 
     <hr/>
-    <h3 id="participants_waiting_count">Participants Ready (0)</h3>
-    <button class="btn" type="button" data-toggle="collapse" data-target="#participants_waiting_container">Expand/Collapse ID List</button>
-    <div id="participants_waiting_container" class="collapse">
-        <ul id="participants_waiting_list"></ul>
+    <h3>Participants Ready: <span id="present_count"></span></h3>
+
+    {% if room.has_participant_labels %}
+    <button class="btn" type="button" data-toggle="collapse" data-target="#participants_waiting_list">
+        Expand/Collapse
+    </button>
+
+    <div id="participants_waiting_list" class="collapse">
+        {% for participant_label in room.get_participant_labels %}
+            <span style="display: none" class="label label-success present-participant-label" id="present-participant-label-{{ participant_label|escape }}">
+                {{ participant_label }}
+            </span>
+        {% endfor %}
     </div>
 
-    {% if has_expected_participant_list %}
-    <h3 id="participants_not_waiting_count">Participants Not Present (0)</h3>
-    <button class="btn" type="button" data-toggle="collapse" data-target="#participants_not_waiting_container">Expand/Collapse ID List</button>
-    <div id="participants_not_waiting_container" class="collapse">
-        <ul id="participants_not_waiting_list"></ul>
+    {% endif %}
+
+    {% if room.has_participant_labels %}
+    {# if there's no participant labels, there's no concept of participants absent #}
+    <h3>Participants Not Present: <span id="absent_count"></span></h3>
+    <button class="btn" type="button" data-toggle="collapse" data-target="#participants_not_waiting_list">
+        Expand/Collapse
+    </button>
+
+    <div id="participants_not_waiting_list" class="collapse">
+        {% for participant_label in room.get_participant_labels %}
+            <span class="label label-default absent-participant-label count-this" id="absent-participant-label-{{ participant_label|escape }}">{{ participant_label }}</span>
+        {% endfor %}
     </div>
+
     {% endif %}
 
     <hr/>
 
+
     {% include "otree/includes/RoomParticipantLinks.html" %}
+
+{% endblock %}
+
+{% block internal_styles %}
+    {{ block.super }}
+
+    <style>
+    .label {
+        margin-left: 5px;
+    }
+    </style>
 
 {% endblock %}
 
@@ -39,11 +69,81 @@
 <script type="text/javascript">
 $(document).ready(function () {
 
-    var socket;
+    calcCountsFromDOM();
 
+    var has_participant_labels = {{ room.has_participant_labels|yesno:"true,false" }};
+    var no_labels_present_count = 0;
+
+    var socket;
     initWebSocket();
 
+    function getStaleParticipantVisits() {
+        var args = {
+            type: "GET",
+            url: '{% url "stale_room_visits" room.name %}',
+            success: function(data) {
+                participant_labels = data.participant_labels;
+                if (participant_labels.length > 0) {
+                    for (var i = 0; i < participant_labels.length; i++) {
+                        setParticipantPresence(participant_labels[i], false);
+                    }
+                    calcCountsFromDOM();
+                }
+            }
+        };
+        $.ajax(args);
+    }
+
+    function getActiveParticipantCount() {
+        var args = {
+            type: "GET",
+            url: '{% url "active_room_participants_count" room.name %}',
+            success: function(data) {
+                no_labels_present_count = data.count;
+                $('#present_count').text(no_labels_present_count);
+            }
+        };
+        $.ajax(args);
+    }
+
+    var SECOND = 1000;
+    if (has_participant_labels) {
+        window.setInterval(getStaleParticipantVisits, 4 * SECOND);
+    } else {
+        window.setInterval(getActiveParticipantCount, 4 * SECOND);
+    }
+
+
+    function setParticipantPresence(participant_label, is_present) {
+        var pres_el = $('#present-participant-label-' + participant_label);
+        var abs_el = $('#absent-participant-label-' + participant_label);
+
+        if (is_present) {
+            show_el = pres_el;
+            hide_el = abs_el;
+        } else {
+            show_el = abs_el;
+            hide_el = pres_el;
+        }
+
+        show_el.show();
+        show_el.addClass('count-this');
+
+        hide_el.hide();
+        hide_el.removeClass('count-this');
+
+    }
+
+    function calcCountsFromDOM() {
+        var present_count = $('.present-participant-label.count-this').length;
+        var absent_count = $('.absent-participant-label.count-this').length;
+        $('#present_count').text(present_count);
+        $('#absent_count').text(absent_count);
+    }
+
     function initWebSocket() {
+
+        console.log('hello');
 
         var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
         var ws_path = ws_scheme + '://' + window.location.host + "{{ view.socket_url|safe }}";
@@ -51,46 +151,41 @@ $(document).ready(function () {
         socket.onmessage = function (e) {
             var data = JSON.parse(e.data);
 
-            // Handle errors
             if (data.error) {
                 $("#error-notice").show();
                 return;
             }
 
-            var participants_waiting_list = document.getElementById("participants_waiting_list");
-            var participants_not_waiting_list = document.getElementById("participants_not_waiting_list");
-            var participants_waiting_count = document.getElementById("participants_waiting_count");
-            var participants_not_waiting_count = document.getElementById("participants_not_waiting_count");
-
             var status = data["status"];
-            if (status == "load_participant_lists") {
-                var participantsPresent = data["participants_present"];
-                createUL(participantsPresent, participants_waiting_list);
-                if (participants_not_waiting_list != null) {
-                    var participantsNotPresent = data["participants_not_present"];
-                    createUL(participantsNotPresent, participants_not_waiting_list);
+            if (has_participant_labels) {
+                if (status == "load_participant_lists") {
+                    participant_labels = data["participants_present"];
+                    for (var i = 0; i < participant_labels.length; i++) {
+                        setParticipantPresence(participant_labels[i], true);
+                    }
                 }
-            } else {
-                var participantName = data["participant"];
-                var current_element = document.getElementById(participantName);
-
                 if (status == "add_participant") {
-                    if (participants_not_waiting_list != null) {
-                        participants_not_waiting_list.removeChild(current_element);
-                    }
-                    participants_waiting_list.appendChild(createListElement(participantName));
-                } else if (status == "remove_participant") {
-                    participants_waiting_list.removeChild(current_element);
-                    if (participants_not_waiting_list != null) {
-                        participants_not_waiting_list.appendChild(current_element);
-                    }
-                } else {
-                    return;
+                    setParticipantPresence(data["participant"], true);
+
                 }
+                if (status == "remove_participant") {
+                    setParticipantPresence(data["participant"], false);
+                }
+                calcCountsFromDOM();
+            } else {
+                if (status == "load_participant_lists") {
+                    participant_labels = data["participants_present"];
+                    no_labels_present_count = participant_labels.length;
+                }
+                if (status == "add_participant") {
+                    no_labels_present_count++;
+                }
+                if (status == "remove_participant") {
+                    no_labels_present_count--;
+                }
+                $('#present_count').text(no_labels_present_count);
             }
 
-            participants_waiting_count.innerHTML = "Participants Ready (" + participants_waiting_list.childElementCount + ")";
-            participants_not_waiting_count.innerHTML = "Participants Not Present (" + participants_not_waiting_list.childElementCount + ")";
         };
         socket.onopen = function () {
             console.log('WebSocket connected');
@@ -98,20 +193,6 @@ $(document).ready(function () {
         socket.onclose = function () {
             console.log('WebSocket disconnected');
         };
-    }
-
-    function createUL(array, parentElement) {
-        for (var i = 0; i < array.length; i++) {
-            var item = createListElement(array[i]);
-            parentElement.appendChild(item);
-        }
-    }
-
-    function createListElement(text) {
-        var item = document.createElement('li');
-        item.id = text;
-        item.appendChild(document.createTextNode(text));
-        return item;
     }
 
 });

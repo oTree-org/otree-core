@@ -44,7 +44,7 @@ class Page(abstract.PlayerUpdateView):
     round_number = None
     template_name = None
     timeout_seconds = None
-    timeout_submission = {}
+    timeout_submission = None
     participant = None
     session = None
 

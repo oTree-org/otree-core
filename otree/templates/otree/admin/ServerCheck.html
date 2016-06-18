@@ -11,6 +11,17 @@
         see <a href="http://otree.readthedocs.io/en/latest/server.html">here</a>.
     </p>
 
+        {% if update_message %}
+        <div class="alert alert-danger">
+            <strong>You are using an old oTree version</strong>
+            {{ update_message }}
+        </div>
+    {% else %}
+        <div class="alert alert-success">
+          You have a recent version of oTree ({{ otree_version }}).
+        </div>
+    {% endif %}
+
     {% if sqlite %}
         <div class="alert alert-danger">
             <strong>Using SQLite</strong> You are using SQLite, which is only suitable during development and testing
@@ -39,17 +50,6 @@
     {% else %}
         <div class="alert alert-success">
           DEBUG mode is off
-        </div>
-    {% endif %}
-
-    {% if update_message %}
-        <div class="alert alert-danger">
-            <strong>You are using an old oTree version</strong>
-            {{ update_message }}
-        </div>
-    {% else %}
-        <div class="alert alert-success">
-          You have a recent version of oTree ({{ otree_version }}).
         </div>
     {% endif %}
 

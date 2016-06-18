@@ -33,7 +33,7 @@
     </script>
     </head>
     <body>
-        <iframe class="monitor-frame" src="{% url 'session_monitor' session.pk %}"></iframe>
+        <iframe class="monitor-frame" src="{% url 'session_monitor' session.code %}"></iframe>
         <table border="0" cellspacing="0" cellpadding="0">
             <tr>
                 {% for participant_url in participant_urls %}

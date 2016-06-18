@@ -29,7 +29,7 @@ function ajax_advance() {
     $('#advance_users').on('click', function () {
         $('#advance_users').attr("disabled", true);
         $.ajax({
-            url: '{% url 'session_advance' session.pk %}',
+            url: '{% url 'session_advance' session.code %}',
             type: 'GET',
             error: function(jqXHR, textStatus) {
                 $( "div#auto_advance_server_error" ).show();

@@ -1,13 +1,50 @@
 <h3>Persistent URLs</h3>
 
 <p>
-    These are the persistent URLs you can use in the lab. They will stay constant for new sessions, even if the database is recreated.
-</p>
-<p>
-{% for url in participant_urls %}
-    <a target="_blank" href="{{ url }}">{{ url }}</a>
-    <br/>
-{% endfor %}
+    These are the persistent URLs you can use in the lab.
+    They will stay constant for new sessions, even if the database is recreated.
 </p>
 
+{% if room.use_secure_urls %}
+    {# then dont use room-wide URL #}
+{% else %}
+    <br>
+    <h4>Room-wide URL</h4>
+    <p>
+        Here is the room-wide URL anyone can use.
+        {% if room.has_participant_labels %}
+            Users will be prompted to enter their participant label,
+            which will be validated against your participant_label_file.
+        {% endif %}
+    </p>
+
+    <p><a href="{{ room_wide_url }}" target="_blank">{{ room_wide_url }}</a></p>
+{% endif %}
+
+<br>
+
+{% if room.has_participant_labels %}
+<h4>Participant-specific URLs</h4>
+
+{% if collapse_links %}
+<button class="btn" type="button" data-toggle="collapse" data-target="#participant_links">
+        Expand/Collapse Participant Links
+</button>
+<br>
+{% endif %}
+
+<div id="participant_links" {% if collapse_links %}class="collapse"{% endif %}>
+
+<table class="table">
+{% for participant_url in participant_urls %}
+    <tr>
+        {# eventually add participant labels #}
+        <td><a href="{{ participant_url }}" class="participant-link" target="_blank">{{ participant_url }}</a></td>
+    </tr>
+{% endfor %}
+</table>
+
+
 <hr/>
+{% endif %}
+</div>

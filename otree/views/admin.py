@@ -48,8 +48,8 @@ from otree.room import ROOM_DICT
 def get_all_fields(Model, for_export=False):
     if Model is PageCompletion:
         return [
-            'session_pk',
-            'participant_pk',
+            'session_id',
+            'participant_id',
             'page_index',
             'app_name',
             'page_name',
@@ -379,7 +379,7 @@ class CreateSession(vanilla.FormView):
         # TODO:
         # Refactor when we upgrade to push
         if hasattr(self, "room"):
-            kwargs['room'] = self.room
+            kwargs['room_name'] = self.room.name
 
         channels_group_name = channels_create_session_group_name(
             pre_create_id)
@@ -430,11 +430,12 @@ class RoomWithoutSession(CreateSession):
             request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = {'participant_urls': self.room.get_participant_links(self.request),
-                   'participant_names': [],
-                   'participant_count': str(0),
-                   'room': self.room,
-                   'has_expected_participant_list': self.room.has_participant_labels()}
+        context = {
+            'participant_urls': self.room.get_participant_urls(self.request),
+            'room_wide_url': self.room.get_room_wide_url(self.request),
+            'room': self.room,
+            'collapse_links': True,
+        }
         kwargs.update(context)
 
         return super(RoomWithoutSession, self).get_context_data(**kwargs)
@@ -464,10 +465,14 @@ class RoomWithSession(vanilla.TemplateView):
             request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = {'participant_urls': self.room.get_participant_links(self.request),
-                   'session_url': reverse('session_monitor',
-                                          args=(self.room.session.pk,)),
-                   'room': self.room}
+        context = {
+            'participant_urls': self.room.get_participant_urls(self.request),
+            'room_wide_url': self.room.get_room_wide_url(self.request),
+            'session_url': reverse('session_monitor',
+                                  args=(self.room.session.code,)),
+            'room': self.room,
+            'collapse_links': True,
+        }
         kwargs.update(context)
 
         return super(RoomWithSession, self).get_context_data(**kwargs)
@@ -483,6 +488,8 @@ class CloseRoom(vanilla.View):
         return 'close_room'
 
     def dispatch(self, request, *args, **kwargs):
+        # TODO: should make this POST not GET,
+        # but then have to refactor the HTML button
         room_name = kwargs['room_name']
         self.room = ROOM_DICT[room_name]
         self.room.session = None
@@ -519,15 +526,15 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
         session = self.session
         if session.is_for_mturk():
             session_home_url = reverse(
-                'session_create_hit', args=(session.pk,)
+                'session_create_hit', args=(session.code,)
             )
         # demo mode
         elif self.request.GET.get('fullscreen'):
             session_home_url = reverse(
-                'session_fullscreen', args=(session.pk,))
+                'session_fullscreen', args=(session.code,))
         else:  # typical case
             session_home_url = reverse(
-                'session_start_links', args=(session.pk,))
+                'session_start_links', args=(session.code,))
 
         return HttpResponseRedirect(session_home_url)
 
@@ -539,6 +546,28 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
 
     def socket_url(self):
         return '/wait_for_session/{}/'.format(self._pre_create_id)
+
+
+class SessionFullscreen(AdminSessionPageMixin, vanilla.TemplateView):
+    '''Launch the session in fullscreen mode
+    only used in demo mode
+    '''
+
+    @classmethod
+    def url_name(cls):
+        return 'session_fullscreen'
+
+    def get_context_data(self, **kwargs):
+        context = super(SessionFullscreen, self).get_context_data(**kwargs)
+        participant_urls = [
+            self.request.build_absolute_uri(participant._start_url())
+            for participant in self.session.get_participants()
+        ]
+        context.update({
+            'session': self.session,
+            'participant_urls': participant_urls
+        })
+        return context
 
 
 class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
@@ -589,11 +618,11 @@ class EditSessionPropertiesForm(forms.ModelForm):
             'comment',
         ]
 
-    def __init__(self, *args, **kwargs):
-        super(EditSessionPropertiesForm, self).__init__(*args, **kwargs)
-
 
 class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
+
+    # required for vanilla.UpdateView
+    lookup_field = 'code'
     model = Session
     form_class = EditSessionPropertiesForm
     template_name = 'otree/admin/EditSessionProperties.html'
@@ -618,26 +647,25 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
         return 'session_edit'
 
     def get_success_url(self):
-        return reverse('session_edit', args=(self.session.pk,))
+        return reverse('session_edit', args=(self.session.code,))
 
     def form_valid(self, form):
         super(EditSessionProperties, self).form_valid(form)
-        config = self.session.config
         participation_fee = form.cleaned_data[
             'participation_fee'
         ]
         real_world_currency_per_point = form.cleaned_data[
             'real_world_currency_per_point'
         ]
-        if form.cleaned_data['participation_fee']:
-            config['participation_fee'] = RealWorldCurrency(participation_fee)
-        if form.cleaned_data['real_world_currency_per_point']:
+        config = self.session.config
+        if form.cleaned_data['participation_fee'] is not None:
+            config[
+                'participation_fee'
+            ] = RealWorldCurrency(participation_fee)
+        if form.cleaned_data['real_world_currency_per_point'] is not None:
             config[
                 'real_world_currency_per_point'
             ] = real_world_currency_per_point
-        # use .copy() to force marking this field as dirty/changed
-        # FIXME: i don't need the below line anymore
-        self.session.config = config.copy()
         self.session.save()
         messages.success(self.request, 'Properties have been updated')
         return HttpResponseRedirect(self.get_success_url())
@@ -726,8 +754,9 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
         if room:
             context.update(
             {
-                'participant_urls': room.get_participant_links(self.request),
-                'room': room
+                'participant_urls': room.get_participant_urls(self.request),
+                'room_wide_url': room.get_room_wide_url(self.request),
+                'room': room,
             })
         else:
             participant_urls = [
@@ -951,7 +980,7 @@ class OtreeCoreUpdateCheck(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r"^pypi_updates/$"
+        return r"^version_cached/$"
 
     @classmethod
     def url_name(cls):

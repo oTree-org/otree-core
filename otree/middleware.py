@@ -15,9 +15,7 @@ class CheckDBMiddleware(object):
 
     def process_request(self, request):
         if not CheckDBMiddleware.synced:
-            print('***Checking DB status')
             CheckDBMiddleware.synced = db_status_ok()
-
             if not CheckDBMiddleware.synced:
                 msg = "Your database is not ready. Try running 'otree resetdb'."
                 return HttpResponseServerError(msg)

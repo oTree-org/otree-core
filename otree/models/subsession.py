@@ -11,7 +11,7 @@ from otree_save_the_change.mixins import SaveTheChange
 from otree.db import models
 from otree.common_internal import get_models_module
 from otree import matching
-
+import copy
 
 class BaseSubsession(SaveTheChange, models.Model):
     """Base class for all Subsessions.
@@ -112,6 +112,8 @@ class BaseSubsession(SaveTheChange, models.Model):
         except AttributeError:
             # if integers, it's OK
             if isinstance(players_flat[0], int):
+                # deep copy so that we don't modify the input arg
+                matrix = copy.deepcopy(matrix)
                 players_flat = sorted(players_flat)
                 if players_flat == list(range(1, len(players_flat) + 1)):
                     players = self.get_players()
@@ -154,13 +156,14 @@ class BaseSubsession(SaveTheChange, models.Model):
         '''renamed this to set_group_matrix, but keeping in for compat'''
         return self.set_group_matrix(matrix)
 
-
     def check_group_integrity(self):
         ''' should be moved from here to a test case'''
         players = self.player_set.values_list('pk', flat=True)
         players_from_groups = self.player_set.filter(
             group__subsession=self).values_list('pk', flat=True)
-        assert set(players) == set(players_from_groups)
+        if not set(players) == set(players_from_groups):
+            raise Exception('Group integrity check failed')
+
 
     @property
     def _Constants(self):

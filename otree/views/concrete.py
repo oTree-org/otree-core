@@ -8,12 +8,16 @@
 
 import time
 
+from datetime import timedelta
+
 import django.utils.timezone
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template.response import TemplateResponse
 from django.http import (
-    HttpResponse, HttpResponseRedirect, HttpResponseNotFound, Http404)
+    HttpResponse, HttpResponseRedirect, HttpResponseNotFound, Http404,
+    JsonResponse
+)
 
 import vanilla
 
@@ -32,6 +36,7 @@ from otree.views.abstract import (
     NO_PARTICIPANTS_LEFT_MSG
 )
 from otree.room import ROOM_DICT
+from otree.models_concrete import ParticipantRoomVisit
 
 class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
     name_in_url = 'shared'
@@ -246,7 +251,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
         self.uses_pin = room.has_pin_code()
 
         participant_label = self.request.GET.get(
-            'participant_label'
+            'participant_label', ''
         )
 
         if room.has_participant_labels():
@@ -272,13 +277,14 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
 
         session = room.session
         if session is None:
-            self._params = ','.join([
+            self.tab_unique_id = otree.common_internal.random_chars_10()
+            self._socket_url_params = ','.join([
                 self.room_name,
                 participant_label,
                 # random chars in case the participant has multiple tabs open
-                otree.common_internal.random_chars_10()
+                self.tab_unique_id,
             ])
-            return render_to_response("otree/WaitPage.html", {'view': self, 'title_text': 'Please wait', 'body_text': 'Waiting for your session to begin'})
+            return render_to_response("otree/WaitPageRoom.html", {'view': self, 'title_text': 'Please wait', 'body_text': 'Waiting for your session to begin'})
 
         assign_new = not room.has_participant_labels()
         if not assign_new:
@@ -310,20 +316,89 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
         return HttpResponseRedirect(participant._start_url())
 
     def get_context_data(self, **kwargs):
-        return {'room': self.room_name, 'uses_pin': self.uses_pin}
+        return {
+            'room': self.room_name,
+            'uses_pin': self.uses_pin,
+        }
 
     def socket_url(self):
-        return '/wait_for_session_in_room/{}/'.format(self._params)
+        return '/wait_for_session_in_room/{}/'.format(
+            self._socket_url_params
+        )
 
     def redirect_url(self):
         return self.request.get_full_path()
+
+
+class StaleRoomVisits(vanilla.View):
+
+    @classmethod
+    def url_pattern(cls):
+        return r'^StaleRoomVisits/(?P<room>\w+)/$'
+
+    @classmethod
+    def url_name(cls):
+        return 'stale_room_visits'
+
+    def get(self, request, *args, **kwargs):
+
+        now = django.utils.timezone.now()
+
+        stale_threshold = now - timedelta(seconds=15)
+        stale_participant_labels = ParticipantRoomVisit.objects.filter(
+            room_name=kwargs['room'],
+            last_updated__lt=stale_threshold
+        ).values_list('participant_label', flat=True)
+
+        # make json serializable
+        stale_participant_labels = list(stale_participant_labels)
+
+        return JsonResponse({'participant_labels': stale_participant_labels})
+
+
+class ActiveRoomParticipantsCount(vanilla.View):
+
+    @classmethod
+    def url_pattern(cls):
+        return r'^ActiveRoomParticipantsCount/(?P<room>\w+)/$'
+
+    @classmethod
+    def url_name(cls):
+        return 'active_room_participants_count'
+
+    def get(self, request, *args, **kwargs):
+        time_threshold = django.utils.timezone.now() - timedelta(seconds=20)
+        count = ParticipantRoomVisit.objects.filter(
+            room_name=kwargs['room'],
+            last_updated__gte=time_threshold
+        ).count()
+
+        return JsonResponse({'count': count})
+
+
+class ParticipantRoomPing(vanilla.View):
+
+    @classmethod
+    def url_pattern(cls):
+        return r'^ParticipantRoomPing/(?P<tab_unique_id>\w+)/$'
+
+    @classmethod
+    def url_name(cls):
+        return 'participant_room_ping'
+
+    def get(self, request, *args, **kwargs):
+        visit = get_object_or_404(
+            ParticipantRoomVisit, tab_unique_id=kwargs['tab_unique_id']
+        )
+        visit.save() # save just to update auto_now timestamp
+        return HttpResponse('')
 
 
 class AdvanceSession(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r'^AdvanceSession/(?P<{}>[0-9]+)/$'.format('session_pk')
+        return r'^AdvanceSession/(?P<session_code>[a-z0-9]+)/$'
 
     @classmethod
     def url_name(cls):
@@ -331,11 +406,11 @@ class AdvanceSession(vanilla.View):
 
     @classmethod
     def url(cls, session):
-        return '/AdvanceSession/{}/'.format(session.pk)
+        return '/AdvanceSession/{}/'.format(session.code)
 
     def dispatch(self, request, *args, **kwargs):
         self.session = get_object_or_404(
-            otree.models.session.Session, pk=kwargs['session_pk']
+            otree.models.session.Session, code=kwargs['session_code']
         )
         return super(AdvanceSession, self).dispatch(
             request, *args, **kwargs
@@ -343,7 +418,7 @@ class AdvanceSession(vanilla.View):
 
     def get(self, request, *args, **kwargs):
         self.session.advance_last_place_participants()
-        redirect_url = reverse('session_monitor', args=(self.session.pk,))
+        redirect_url = reverse('session_monitor', args=(self.session.code,))
         return HttpResponseRedirect(redirect_url)
 
 
@@ -358,23 +433,22 @@ class ToggleArchivedSessions(vanilla.View):
         return 'toggle_archived_sessions'
 
     def post(self, request, *args, **kwargs):
-        pk_list = request.POST.getlist('item-action')
-        sessions = otree.models.session.Session.objects.filter(pk__in=pk_list)
-        pk_dict = {True: [], False: []}
-        for pk, archived in sessions.filter(
-                archived=True).values_list('pk', 'archived'):
-            pk_dict[archived].append(pk)
+        code_list = request.POST.getlist('item-action')
+        sessions = otree.models.session.Session.objects.filter(code__in=code_list)
+        code_dict = {True: [], False: []}
+        for code, archived in sessions.values_list('code', 'archived'):
+            code_dict[archived].append(code)
 
-        for pk in pk_list:
-            if not (pk in pk_dict[True] or pk in pk_dict[False]):
-                raise Http404('No session with the id %s.' % pk)
+        for code in code_list:
+            if not (code in code_dict[True] or code in code_dict[False]):
+                raise Http404('No session with the code %s.' % code)
 
         # TODO: When `F` implements a toggle, use this instead:
         #       sessions.update(archived=~F('archived'))
         otree.models.session.Session.objects.filter(
-            pk__in=pk_dict[True]).update(archived=False)
+            code__in=code_dict[True]).update(archived=False)
         otree.models.session.Session.objects.filter(
-            pk__in=pk_dict[False]).update(archived=True)
+            code__in=code_dict[False]).update(archived=True)
 
         return HttpResponseRedirect(request.POST['origin_url'])
 
@@ -390,9 +464,9 @@ class DeleteSessions(vanilla.View):
         return 'delete_sessions'
 
     def post(self, request, *args, **kwargs):
-        for pk in request.POST.getlist('item-action'):
+        for code in request.POST.getlist('item-action'):
             session = get_object_or_404(
-                otree.models.session.Session, pk=pk
+                otree.models.session.Session, code=code
             )
             session.delete()
         return HttpResponseRedirect(reverse('sessions'))
