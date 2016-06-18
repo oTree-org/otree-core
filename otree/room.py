@@ -82,9 +82,9 @@ class Room(object):
                     # but works in py2 and py3
                     if err.errno == errno.ENOENT:
                         msg = (
-                            'The room "{}" references nonexistent '
-                            'participant_label_file "{}". '
-                            'Check your settings.py.')
+                            'settings.ROOMS: The room "{}" references '
+                            ' nonexistent participant_label_file "{}".'
+                        )
                         raise IOError(
                             msg.format(self.name, self.participant_label_file))
                     raise err
@@ -102,7 +102,10 @@ class Room(object):
                         )
                     self._participant_labels_loaded = True
                     return
-            raise Exception('Failed to decode guest list.')
+            raise Exception(
+                'settings.ROOMS: participant_label_file "{}" '
+                'not encoded correctly.'.format(self.participant_label_file)
+            )
         raise Exception('no guestlist')
 
     def get_participant_labels(self):

@@ -162,7 +162,7 @@ def create_session(session_config_name, label='', num_participants=None,
     try:
         session_config = SESSION_CONFIGS_DICT[session_config_name]
     except KeyError:
-        msg = 'Session type "{}" not found in settings.py'
+        msg = 'Session config "{}" not found in settings.SESSION_CONFIGS.'
         raise ValueError(msg.format(session_config_name))
     session = Session.objects.create(
         config=session_config,
