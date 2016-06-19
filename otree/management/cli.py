@@ -20,7 +20,7 @@ import six
 
 import otree
 from otree.settings import get_default_settings
-from otree.common_internal import check_pypi_for_updates
+from otree.common_internal import pypi_updates_cli
 
 
 # =============================================================================
@@ -178,7 +178,7 @@ def execute_from_command_line(arguments, script_file):
     if "version" in arguments or "--version" in arguments:
         sys.stdout.write(otree_and_django_version() + '\n')
         try:
-            check_pypi_for_updates()
+            pypi_updates_cli()
         except:
             pass
     else:

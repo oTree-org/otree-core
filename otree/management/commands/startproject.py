@@ -17,7 +17,7 @@ import six
 
 import otree
 from otree.common_internal import (
-    check_pypi_for_updates, add_empty_migrations_to_all_apps)
+    pypi_updates_cli, add_empty_migrations_to_all_apps)
 
 
 # =============================================================================
@@ -94,7 +94,7 @@ class Command(startproject.Command):
 
         self.modify_project_files(options)
         try:
-            check_pypi_for_updates()
+            pypi_updates_cli()
         except:
             pass
         print('Created project folder.')

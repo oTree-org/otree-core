@@ -149,12 +149,6 @@ class Room(object):
     def get_pin_code(self):
         return self.pin_code
 
-    def url(self):
-        return reverse('room_without_session', args=(self.name,))
-
-    def url_close(self):
-        return reverse('close_room', args=(self.name,))
-
 
 def augment_room(room, ROOM_DEFAULTS):
     new_room = {'doc': ''}

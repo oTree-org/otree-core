@@ -111,8 +111,8 @@ SESSION_CONFIGS = [
 DEMO_PAGE_INTRO_TEXT = """"""
 
 
-ROOM_DEFAULTS = [
-]
+ROOM_DEFAULTS = {}
+
 
 ROOMS = [
     {

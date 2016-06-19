@@ -6,7 +6,7 @@ import sys
 import uuid
 import itertools
 import os
-
+import requests.exceptions
 from six.moves import range
 from six.moves import zip
 
@@ -913,8 +913,8 @@ def session_description_dict(session):
     return context_data
 
 
-class AdminHome(vanilla.ListView):
-    template_name = 'otree/admin/Home.html'
+class Sessions(vanilla.ListView):
+    template_name = 'otree/admin/Sessions.html'
 
     @classmethod
     def url_pattern(cls):
@@ -925,7 +925,7 @@ class AdminHome(vanilla.ListView):
         return 'sessions'
 
     def get_context_data(self, **kwargs):
-        context = super(AdminHome, self).get_context_data(**kwargs)
+        context = super(Sessions, self).get_context_data(**kwargs)
         context.update({
             'is_debug': settings.DEBUG,
         })
@@ -954,8 +954,6 @@ class ServerCheck(vanilla.TemplateView):
     def get_context_data(self, **kwargs):
         sqlite = settings.DATABASES['default']['ENGINE'].endswith('sqlite3')
         debug = settings.DEBUG
-        update_message = check_pypi_for_updates(print_message=False)
-        otree_version = otree.__version__
         regular_sentry = hasattr(settings, 'RAVEN_CONFIG')
         heroku_sentry = os.environ.get('SENTRY_DSN')
         sentry = regular_sentry or heroku_sentry
@@ -963,17 +961,17 @@ class ServerCheck(vanilla.TemplateView):
         heroku = self.app_is_on_heroku()
         runserver = 'runserver' in sys.argv
         db_synced = db_status_ok()
+        pypi_results = check_pypi_for_updates()
 
         return {
             'sqlite': sqlite,
             'debug': debug,
-            'update_message': update_message,
-            'otree_version': otree_version,
             'sentry': sentry,
             'auth_level': auth_level,
             'heroku': heroku,
             'runserver': runserver,
-            'db_synced': db_synced
+            'db_synced': db_synced,
+            'pypi_results': pypi_results
         }
 
 class OtreeCoreUpdateCheck(vanilla.View):
@@ -987,15 +985,10 @@ class OtreeCoreUpdateCheck(vanilla.View):
         return 'pypi_updates'
 
     # cached per process
-    needs_update = None
+    results = None
 
     def get(self, request, *args, **kwargs):
-        if OtreeCoreUpdateCheck.needs_update is None:
-            OtreeCoreUpdateCheck.needs_update = bool(
-                check_pypi_for_updates(print_message=False))
+        if OtreeCoreUpdateCheck.results is None:
+            OtreeCoreUpdateCheck.results = check_pypi_for_updates()
+        return JsonResponse(OtreeCoreUpdateCheck.results, safe=True)
 
-        context = {
-            'pypi_updates': OtreeCoreUpdateCheck.needs_update
-        }
-
-        return JsonResponse(context, safe=True)
