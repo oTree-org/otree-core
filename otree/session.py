@@ -75,7 +75,7 @@ def validate_session_config(session_config):
     try:
         session_config = config_schema.validate(session_config)
     except schema.SchemaError as e:
-        raise (ValueError('settings.SESSION_CONFIGS: {}'.format(e)))
+        raise ValueError('settings.SESSION_CONFIGS: {}'.format(e))
 
     validate_identifier(
         session_config['name'],

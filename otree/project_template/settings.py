@@ -59,9 +59,9 @@ REAL_WORLD_CURRENCY_CODE = 'USD'
 USE_POINTS = True
 
 
-# e.g. en-gb, de-de, it-it, fr-fr.
-# see: https://docs.djangoproject.com/en/1.6/topics/i18n/
-LANGUAGE_CODE = 'en-us'
+# e.g. en, de, fr, it, ja, zh-hans
+# see: https://docs.djangoproject.com/en/1.9/topics/i18n/#term-language-code
+LANGUAGE_CODE = 'en'
 
 # if an app is included in SESSION_CONFIGS, you don't need to list it here
 INSTALLED_APPS = []
