@@ -16,10 +16,10 @@
 
     {% if room.has_participant_labels %}
     <button class="btn" type="button" data-toggle="collapse" data-target="#participants_waiting_list">
-        Expand/Collapse
+        Show/Hide
     </button>
 
-    <div id="participants_waiting_list" class="collapse">
+    <div id="participants_waiting_list" class="collapse" style="font-size:20px">
         {% for participant_label in room.get_participant_labels %}
             <span style="display: none" class="label label-success present-participant-label" id="present-participant-label-{{ participant_label|escape }}">
                 {{ participant_label }}
@@ -33,10 +33,10 @@
     {# if there's no participant labels, there's no concept of participants absent #}
     <h3>Participants Not Present: <span id="absent_count"></span></h3>
     <button class="btn" type="button" data-toggle="collapse" data-target="#participants_not_waiting_list">
-        Expand/Collapse
+        Show/Hide
     </button>
 
-    <div id="participants_not_waiting_list" class="collapse">
+    <div id="participants_not_waiting_list" class="collapse" style="font-size:20px">
         {% for participant_label in room.get_participant_labels %}
             <span class="label label-default absent-participant-label count-this" id="absent-participant-label-{{ participant_label|escape }}">{{ participant_label }}</span>
         {% endfor %}

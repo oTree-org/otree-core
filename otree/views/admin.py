@@ -750,6 +750,7 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
         room = session.get_room()
 
         context = super(SessionStartLinks, self).get_context_data(**kwargs)
+        context['use_browser_bots'] = settings.USE_BROWSER_BOTS
 
         if room:
             context.update(
@@ -757,6 +758,7 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
                 'participant_urls': room.get_participant_urls(self.request),
                 'room_wide_url': room.get_room_wide_url(self.request),
                 'room': room,
+                'collapse_links': True,
             })
         else:
             participant_urls = [

@@ -832,12 +832,18 @@ class FormPageMixin(object):
                     participant=self.participant,
                 ).first()
                 if submit_model:
-                    if not submit_model.page_name == self.__class__.__name__:
+                    this_page_dotted = '{}.{}'.format(
+                        self.__module__,
+                        self.__class__.__name__
+                    )
+                    if not submit_model.page_dotted_name == this_page_dotted:
                         raise ValueError(
-                            "Bot expects page {}, "
-                            "but current page is {}".format(
-                                submit_model.page_name,
-                                self.__class__.__name__
+                            "Bot is trying to submit page {}, "
+                            "but current page is {}. "
+                            "Check your bot in tests.py, "
+                            "then create a new session.".format(
+                                submit_model.page_dotted_name,
+                                this_page_dotted
                             )
                         )
                     post_data.update(submit_model.param_dict)
@@ -857,8 +863,9 @@ class FormPageMixin(object):
                     errors = [
                         "{}: {}".format(k, repr(v)) for k, v in form.errors.items()]
                     raise ValueError(
-                        'Auto-submitted form did not validate: {}'
-                        'Make sure you include all fields in timeout_submission'.format(
+                        'Some fields failed validation: {} '
+                        'Check your bot in tests.py, '
+                        'then create a new session.'.format(
                             errors
                         )
                     )

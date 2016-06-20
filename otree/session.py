@@ -256,7 +256,7 @@ def create_session(session_config_name, label='', num_participants=None,
     otree.db.idmap.save_objects()
     otree.db.idmap.deactivate_cache()
 
-    if getattr(settings, 'USE_BROWSER_BOTS', False):
+    if settings.USE_BROWSER_BOTS:
         from otree.test.browser_bots import load_submits_to_db
         load_submits_to_db(session)
 

@@ -11,9 +11,13 @@ def load_submits_to_db(session):
             player_bot.play_round()
         for submit in participant_bot.submits:
             if submit.input_is_valid:
+
                 submit_model = BrowserBotSubmit(
                     participant=participant,
-                    page_name=submit.ViewClass.__name__,
+                    page_dotted_name='{}.{}'.format(
+                        submit.ViewClass.__module__,
+                        submit.ViewClass.__name__
+                    ),
                     param_dict=submit.data
                 )
                 submit_models.append(submit_model)

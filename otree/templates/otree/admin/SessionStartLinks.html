@@ -4,6 +4,13 @@
 {% block content %}
 {{ block.super }}
 
+    {% if use_browser_bots %}
+        <div class="alert alert-info" role="alert">
+            Links will play automatically with browser bots.
+            To disable, go to settings.py and set <code>USE_BROWSER_BOTS = False</code>.
+        </div>
+    {% endif %}
+
 {% if room %}
     <p>
         This session is taking place in the room

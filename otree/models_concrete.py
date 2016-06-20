@@ -127,11 +127,12 @@ class ExpectedRoomParticipant(models.Model):
     room_name = models.CharField(max_length=50)
     participant_label = models.CharField(max_length=200)
 
+
 class BrowserBotSubmit(models.Model):
     class Meta:
         app_label = "otree"
         ordering = ['id']
 
     participant = models.ForeignKey('otree.Participant', db_index=True)
-    page_name = models.CharField(max_length=150)
+    page_dotted_name = models.CharField(max_length=200)
     param_dict = JSONField()
