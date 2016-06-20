@@ -133,9 +133,7 @@ class OTreeMixin(SaveObjectsMixin, object):
 
     is_debug = settings.DEBUG
     is_otree_dot_org = 'IS_OTREE_DOT_ORG' in os.environ
-
-    def use_browser_bots(self):
-        return getattr(settings, 'USE_BROWSER_BOTS', False)
+    use_browser_bots = settings.USE_BROWSER_BOTS
 
     @classmethod
     def get_name_in_url(cls):
@@ -827,7 +825,7 @@ class FormPageMixin(object):
             self._set_auto_submit_values()
         else:
             self.timeout_happened = False
-            if self.use_browser_bots():
+            if settings.USE_BROWSER_BOTS:
                 # maybe request.POST has important stuff like CSRF?
                 post_data = dict(request.POST)
                 submit_model = BrowserBotSubmit.objects.filter(
@@ -855,7 +853,7 @@ class FormPageMixin(object):
                 self.form = form
                 self.object = form.save()
             else:
-                if self.use_browser_bots():
+                if settings.USE_BROWSER_BOTS:
                     errors = [
                         "{}: {}".format(k, repr(v)) for k, v in form.errors.items()]
                     raise ValueError(

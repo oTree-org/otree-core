@@ -169,7 +169,8 @@ def get_default_settings(initial_settings=None):
         'MTURK_NUM_PARTICIPANTS_MULT': 2,
         'LOCALE_PATHS': [
             os.path.join(initial_settings.get('BASE_DIR', ''), 'locale')
-        ]
+        ],
+        'USE_BROWSER_BOTS': False,
     }
 
 

@@ -130,9 +130,8 @@ class ExpectedRoomParticipant(models.Model):
 class BrowserBotSubmit(models.Model):
     class Meta:
         app_label = "otree"
-        ordering = ['submit_index']
+        ordering = ['id']
 
     participant = models.ForeignKey('otree.Participant', db_index=True)
-    submit_index = models.PositiveIntegerField()
     page_name = models.CharField(max_length=150)
     param_dict = JSONField()
