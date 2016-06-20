@@ -30,7 +30,7 @@ import vanilla
 
 import otree.forms
 import otree.common_internal
-
+from otree.common import Currency
 import otree.models.session
 import otree.timeout.tasks
 import otree.models
@@ -41,7 +41,9 @@ from otree.common_internal import get_app_label_from_import_path
 
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
-    CompletedGroupWaitPage, PageTimeout, StubModel, ParticipantLockModel)
+    CompletedGroupWaitPage, PageTimeout, StubModel, ParticipantLockModel,
+    BrowserBotSubmit
+)
 from otree.models.session import GlobalSingleton
 
 
@@ -131,6 +133,9 @@ class OTreeMixin(SaveObjectsMixin, object):
 
     is_debug = settings.DEBUG
     is_otree_dot_org = 'IS_OTREE_DOT_ORG' in os.environ
+
+    def use_browser_bots(self):
+        return getattr(settings, 'USE_BROWSER_BOTS', False)
 
     @classmethod
     def get_name_in_url(cls):
@@ -822,12 +827,43 @@ class FormPageMixin(object):
             self._set_auto_submit_values()
         else:
             self.timeout_happened = False
+            if self.use_browser_bots():
+                # maybe request.POST has important stuff like CSRF?
+                post_data = dict(request.POST)
+                submit_model = BrowserBotSubmit.objects.filter(
+                    participant=self.participant,
+                ).first()
+                if submit_model:
+                    if not submit_model.page_name == self.__class__.__name__:
+                        raise ValueError(
+                            "Bot expects page {}, "
+                            "but current page is {}".format(
+                                submit_model.page_name,
+                                self.__class__.__name__
+                            )
+                        )
+                    post_data.update(submit_model.param_dict)
+                    for key, value in post_data.items():
+                        if isinstance(value, Currency):
+                            post_data[key] = value.to_number()
+                    submit_model.delete()
+            else:
+                post_data = request.POST
             form = self.get_form(
-                data=request.POST, files=request.FILES, instance=self.object)
+                data=post_data, files=request.FILES, instance=self.object)
             if form.is_valid():
                 self.form = form
                 self.object = form.save()
             else:
+                if self.use_browser_bots():
+                    errors = [
+                        "{}: {}".format(k, repr(v)) for k, v in form.errors.items()]
+                    raise ValueError(
+                        'Auto-submitted form did not validate: {}'
+                        'Make sure you include all fields in timeout_submission'.format(
+                            errors
+                        )
+                    )
                 return self.form_invalid(form)
         self.before_next_page()
         self._increment_index_in_pages()
@@ -849,21 +885,25 @@ class FormPageMixin(object):
     # called from template
     poll_interval_seconds = constants.form_page_poll_interval_seconds
 
-    def _set_auto_submit_values(self):
+    def _get_auto_submit_values(self):
         # TODO: auto_submit_values deprecated on 2015-05-28
         auto_submit_values = getattr(self, 'auto_submit_values', {})
         timeout_submission = self.timeout_submission or auto_submit_values
         for field_name in self.form_fields:
-            if field_name in timeout_submission:
-                value = timeout_submission[field_name]
-            else:
+            if field_name not in timeout_submission:
                 # get default value for datatype if the user didn't specify
                 ModelField = self.form_model._meta.get_field_by_name(
                     field_name
                 )[0]
                 # TODO: should we warn if the attribute doesn't exist?
                 value = getattr(ModelField, 'auto_submit_default', None)
-            setattr(self.object, field_name, value)
+                timeout_submission[field_name] = value
+        return timeout_submission
+
+    def _set_auto_submit_values(self):
+        auto_submit_dict = self._get_auto_submit_values()
+        for field_name in auto_submit_dict:
+            setattr(self.object, field_name, auto_submit_dict[field_name])
 
     def has_timeout(self):
         return self.timeout_seconds is not None and self.timeout_seconds > 0

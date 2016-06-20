@@ -3,6 +3,7 @@
 
 from django.db import models
 from datetime import datetime
+from otree.db.models import JSONField
 
 class PageCompletion(models.Model):
     class Meta:
@@ -126,3 +127,12 @@ class ExpectedRoomParticipant(models.Model):
     room_name = models.CharField(max_length=50)
     participant_label = models.CharField(max_length=200)
 
+class BrowserBotSubmit(models.Model):
+    class Meta:
+        app_label = "otree"
+        ordering = ['submit_index']
+
+    participant = models.ForeignKey('otree.Participant', db_index=True)
+    submit_index = models.PositiveIntegerField()
+    page_name = models.CharField(max_length=150)
+    param_dict = JSONField()
