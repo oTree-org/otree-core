@@ -160,7 +160,7 @@ def export_time_spent(fp):
 
     column_names = get_all_fields(PageCompletion)
     rows = PageCompletion.objects.order_by(
-        'session_pk', 'participant_pk', 'page_index'
+        'session', 'participant', 'page_index'
     ).values_list(*column_names)
     writer = csv.writer(fp)
     writer.writerows([column_names])
@@ -333,23 +333,13 @@ def db_table_exists(table_name):
     return table_name in connection.introspection.table_names()
 
 
-db_synced = None
-
-def db_status_ok(cache=False):
+def db_status_ok():
     """Try to execute a simple select * for every model registered
-    "Your DB is not ready. Try resetting the database."
     """
-    global db_synced
-
-    # cache per process
-    if cache and db_synced is not None:
-        return db_synced
     for Model in apps.get_models():
         table_name = Model._meta.db_table
         if not db_table_exists(table_name):
-            db_synced = False
             return False
-    db_synced = True
     return True
 
 
@@ -358,9 +348,19 @@ def make_hash(s):
     return hashlib.sha224(s.encode()).hexdigest()[:8]
 
 
-def check_pypi_for_updates(print_message=True):
+def check_pypi_for_updates():
     logging.getLogger("requests").setLevel(logging.WARNING)
-    response = requests.get('http://pypi.python.org/pypi/otree-core/json')
+
+    try:
+        response = requests.get(
+            'http://pypi.python.org/pypi/otree-core/json',
+            timeout=5,
+        )
+    except:
+        # could be requests.exceptions.Timeout
+        # or another error (404? 500? firewall issue etc)
+        return {'pypi_connection_error': True}
+
     data = json.loads(response.content.decode())
 
     semver_re = re.compile(r'^(\d+)\.(\d+)\.(\d+)$')
@@ -386,16 +386,16 @@ def check_pypi_for_updates(print_message=True):
         newest = newest_tuple
         installed = installed_tuple
 
-        needs_update = (newest > installed and (
+        update_needed = (newest > installed and (
                 newest[0] > installed[0] or newest[1] > installed[1] or
                 newest[2] - installed[2] > 5))
 
     else:
         # compare to the latest release, whether stable or not
         newest_dotted = data['info']['version'].strip()
-        needs_update = newest_dotted != installed_dotted
+        update_needed = newest_dotted != installed_dotted
 
-    if needs_update:
+    if update_needed:
         if sys.version_info[0] == 3:
             pip_command = 'pip3'
         else:
@@ -407,11 +407,22 @@ def check_pypi_for_updates(print_message=True):
             '"{} install --upgrade otree-core"\n '
             'and update your requirements_base.txt.'.format(
                 installed_dotted, newest_dotted, pip_command))
-        if print_message:
-            print(update_message)
-        else:
-            return update_message
+    else:
+        update_message = ''
+    return {
+        'pypi_connection_error': False,
+        'update_needed': update_needed,
+        'installed_version': installed_dotted,
+        'newest_version': newest_dotted,
+        'update_message': update_message,
+    }
 
+def pypi_updates_cli():
+    result = check_pypi_for_updates()
+    if result['pypi_connection_error']:
+        return
+    if result['update_needed']:
+        print(result['update_message'])
 
 def channels_create_session_group_name(pre_create_id):
     return 'wait_for_session_{}'.format(pre_create_id)
@@ -454,3 +465,14 @@ def add_empty_migrations_to_all_apps(project_root):
                 with open(init_file_path, 'a') as f:
                     f.write('')
 
+
+def validate_identifier(identifier, identifier_description):
+    if re.match(r'^[a-zA-Z0-9_]+$', identifier):
+        return identifier
+    raise ValueError(
+        '{} "{}" can only contain letters, numbers, '
+        'and underscores (_)'.format(
+            identifier_description,
+            identifier
+        )
+    )

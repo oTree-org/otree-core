@@ -30,7 +30,7 @@ import vanilla
 
 import otree.forms
 import otree.common_internal
-
+from otree.common import Currency
 import otree.models.session
 import otree.timeout.tasks
 import otree.models
@@ -41,7 +41,9 @@ from otree.common_internal import get_app_label_from_import_path
 
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
-    CompletedGroupWaitPage, PageTimeout, StubModel, ParticipantLockModel)
+    CompletedGroupWaitPage, PageTimeout, StubModel, ParticipantLockModel,
+    BrowserBotSubmit
+)
 from otree.models.session import GlobalSingleton
 
 
@@ -131,6 +133,7 @@ class OTreeMixin(SaveObjectsMixin, object):
 
     is_debug = settings.DEBUG
     is_otree_dot_org = 'IS_OTREE_DOT_ORG' in os.environ
+    use_browser_bots = settings.USE_BROWSER_BOTS
 
     @classmethod
     def get_name_in_url(cls):
@@ -233,8 +236,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         new_tables = [basic_info_table]
         if self._vars_for_template:
             rows = sorted(self._vars_for_template.items())
-            title = 'Template Vars (<code>{}</code>/<code>{}</code>)'.format(
-                'vars_for_template()', 'vars_for_all_templates()')
+            title = '<code>vars_for_template()</code>'
             new_tables.append(DebugTable(title=title, rows=rows))
 
         return new_tables
@@ -346,11 +348,11 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         # wait pages don't have a has_timeout attribute
         if hasattr(self, 'has_timeout') and self.has_timeout():
             PageTimeout.objects.filter(
-                participant_pk=self.participant.pk,
+                participant=self.participant,
                 page_index=self.participant._index_in_pages).delete()
         # this is causing crashes because of the weird DB issue
         # ParticipantToPlayerLookup.objects.filter(
-        #    participant_pk=self.participant.pk,
+        #    participant=self.participant.pk,
         #    page_index=self.participant._index_in_pages).delete()
 
         # performance optimization:
@@ -437,8 +439,8 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             page_name=page_name, time_stamp=now,
             seconds_on_page=seconds_on_page,
             subsession_pk=self.subsession.pk,
-            participant_pk=self.participant.pk,
-            session_pk=self.subsession.session.pk,
+            participant=self.participant,
+            session=self.session,
             auto_submitted=timeout_happened)
         self.participant.save()
 
@@ -565,7 +567,7 @@ class InGameWaitPageMixin(object):
                 completion = CompletedGroupWaitPage(
                     page_index=self._index_in_pages,
                     group_pk=self.group.pk,
-                    session_pk=self.session.pk
+                    session=self.session
                 )
             completion.save()
         # if the record already exists
@@ -692,7 +694,7 @@ class InGameWaitPageMixin(object):
         return CompletedGroupWaitPage.objects.filter(
             page_index=self._index_in_pages,
             group_pk=self.group.pk,
-            session_pk=self.session.pk,
+            session=self.session,
             after_all_players_arrive_run=True).exists()
 
     def _tally_unvisited(self):
@@ -822,16 +824,60 @@ class FormPageMixin(object):
             self._set_auto_submit_values()
         else:
             self.timeout_happened = False
+            if settings.USE_BROWSER_BOTS:
+                post_data = self._get_browser_bot_submission()
+            else:
+                post_data = request.POST
             form = self.get_form(
-                data=request.POST, files=request.FILES, instance=self.object)
+                data=post_data, files=request.FILES, instance=self.object)
             if form.is_valid():
                 self.form = form
                 self.object = form.save()
             else:
+                if settings.USE_BROWSER_BOTS:
+                    errors = [
+                        "{}: {}".format(k, repr(v)) for k, v in form.errors.items()]
+                    raise ValueError(
+                        'Some fields failed validation: {} '
+                        'Check your bot in tests.py, '
+                        'then create a new session.'.format(
+                            errors
+                        )
+                    )
                 return self.form_invalid(form)
         self.before_next_page()
         self._increment_index_in_pages()
         return self._redirect_to_page_the_user_should_be_on()
+
+    def _get_browser_bot_submission(self):
+        # request.POST contains CSRF token and maybe other important stuff
+        post_data = dict(self.request.POST)
+        submit_model = BrowserBotSubmit.objects.filter(
+            participant=self.participant,
+        ).first()
+        if submit_model:
+            this_page_dotted = '{}.{}'.format(
+                self.__module__,
+                self.__class__.__name__
+            )
+            if not submit_model.page_dotted_name == this_page_dotted:
+                raise ValueError(
+                    "Bot is trying to submit page {}, "
+                    "but current page is {}. "
+                    "Check your bot in tests.py, "
+                    "then create a new session.".format(
+                        submit_model.page_dotted_name,
+                        this_page_dotted
+                    )
+                )
+            post_data.update(submit_model.param_dict)
+            submit_model.delete()
+        else:
+            import redis
+            bot_completion = redis.StrictRedis(db=15)
+            bot_completion.rpush(
+                self.session.code, True)
+        return post_data
 
     def socket_url(self):
         '''called from template. can't start with underscore because used
@@ -846,24 +892,25 @@ class FormPageMixin(object):
         # need full path because we use query string
         return self.request.get_full_path()
 
-    # called from template
-    poll_interval_seconds = constants.form_page_poll_interval_seconds
-
-    def _set_auto_submit_values(self):
+    def _get_auto_submit_values(self):
         # TODO: auto_submit_values deprecated on 2015-05-28
         auto_submit_values = getattr(self, 'auto_submit_values', {})
         timeout_submission = self.timeout_submission or auto_submit_values
         for field_name in self.form_fields:
-            if field_name in timeout_submission:
-                value = timeout_submission[field_name]
-            else:
+            if field_name not in timeout_submission:
                 # get default value for datatype if the user didn't specify
                 ModelField = self.form_model._meta.get_field_by_name(
                     field_name
                 )[0]
                 # TODO: should we warn if the attribute doesn't exist?
                 value = getattr(ModelField, 'auto_submit_default', None)
-            setattr(self.object, field_name, value)
+                timeout_submission[field_name] = value
+        return timeout_submission
+
+    def _set_auto_submit_values(self):
+        auto_submit_dict = self._get_auto_submit_values()
+        for field_name in auto_submit_dict:
+            setattr(self.object, field_name, auto_submit_dict[field_name])
 
     def has_timeout(self):
         return self.timeout_seconds is not None and self.timeout_seconds > 0
@@ -874,7 +921,7 @@ class FormPageMixin(object):
         current_time = int(time.time())
         expiration_time = current_time + self.timeout_seconds
         timeout, created = PageTimeout.objects.get_or_create(
-            participant_pk=self.participant.pk,
+            participant=self.participant,
             page_index=self.participant._index_in_pages,
             defaults={'expiration_time': expiration_time})
 
@@ -937,11 +984,11 @@ class AdminSessionPageMixin(GetFloppyFormClassMixin):
 
     @classmethod
     def url_pattern(cls):
-        return r"^{}/(?P<pk>\d+)/$".format(cls.__name__)
+        return r"^{}/(?P<code>[a-z0-9]+)/$".format(cls.__name__)
 
     @classmethod
-    def url(cls, session_pk):
-        return '/{}/{}/'.format(cls.__name__, session_pk)
+    def url(cls, session_code):
+        return '/{}/{}/'.format(cls.__name__, session_code)
 
     def get_context_data(self, **kwargs):
         context = super(AdminSessionPageMixin, self).get_context_data(**kwargs)
@@ -954,7 +1001,7 @@ class AdminSessionPageMixin(GetFloppyFormClassMixin):
         return ['otree/admin/{}.html'.format(self.__class__.__name__)]
 
     def dispatch(self, request, *args, **kwargs):
-        session_pk = int(kwargs['pk'])
-        self.session = get_object_or_404(otree.models.Session, pk=session_pk)
+        session_code = kwargs['code']
+        self.session = get_object_or_404(otree.models.Session, code=session_code)
         return super(AdminSessionPageMixin, self).dispatch(
             request, *args, **kwargs)

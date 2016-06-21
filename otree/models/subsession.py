@@ -10,8 +10,8 @@ from six.moves import zip
 from otree_save_the_change.mixins import SaveTheChange
 from otree.db import models
 from otree.common_internal import get_models_module
-from otree import match_players
-
+from otree import matching
+import copy
 
 class BaseSubsession(SaveTheChange, models.Model):
     """Base class for all Subsessions.
@@ -86,7 +86,7 @@ class BaseSubsession(SaveTheChange, models.Model):
     def get_players(self):
         return list(self.player_set.order_by('pk'))
 
-    def get_grouped_players(self):
+    def get_group_matrix(self):
         players_prefetch = Prefetch(
             'player_set',
             queryset=self._PlayerClass().objects.order_by('id_in_group'),
@@ -95,56 +95,75 @@ class BaseSubsession(SaveTheChange, models.Model):
                 for group in self.group_set.order_by('id_in_subsession')
                                  .prefetch_related(players_prefetch)]
 
-    def check_group_integrity(self):
-        '''
-
-        2015-4-17: can't check this from set_players,
-        because sometimes we are intentionally in an inconsistent state
-        e.g., if group_by_arrival_time is true, and some players have not
-        been assigned to groups yet
-        '''
-        players = self.player_set.values_list('pk', flat=True)
-        players_from_groups = self._PlayerClass().objects.filter(
-            group__subsession=self).values_list('pk', flat=True)
-        assert set(players) == set(players_from_groups)
-
-    def _set_groups(self, groups, check_integrity=True):
-        """elements in the list can be sublists, or group objects.
-
-        Maybe this should be re-run after before_session_starts() to ensure
-        that id_in_groups are consistent. Or at least we should validate.
-
-
+    def set_group_matrix(self, matrix):
+        """
         warning: this deletes the groups and any data stored on them
         TODO: we should indicate this in docs
         """
 
-        # first, get players in each group
-        matrix = []
-        for group in groups:
-            if isinstance(group, self._GroupClass()):
-                matrix.append(group.get_players())
+        try:
+            players_flat = [p for g in matrix for p in g]
+        except TypeError:
+            raise TypeError(
+                'Group matrix must be a list of lists.'
+            )
+        try:
+            matrix_pks = sorted(p.pk for p in players_flat)
+        except AttributeError:
+            # if integers, it's OK
+            if isinstance(players_flat[0], int):
+                # deep copy so that we don't modify the input arg
+                matrix = copy.deepcopy(matrix)
+                players_flat = sorted(players_flat)
+                if players_flat == list(range(1, len(players_flat) + 1)):
+                    players = self.get_players()
+                    for i, row in enumerate(matrix):
+                        for j, val in enumerate(row):
+                            matrix[i][j] = players[val - 1]
+                else:
+                    raise ValueError(
+                        'If you pass a matrix of integers to this function, '
+                        'It must contain all integers from 1 to the number of players '
+                        'in the subsession.'
+                    )
             else:
-                players_list = group
-                matrix.append(players_list)
-                # assume it's an iterable containing the players
-        # Before deleting groups, Need to set the foreignkeys to None
-        player_pk_list = [p.pk for g in matrix for p in g]
-        players_qs = self._PlayerClass().objects.filter(pk__in=player_pk_list)
-        players_qs.update(group=None)
+                raise TypeError(
+                    'The elements of the group matrix '
+                    'must either be Player objects, or integers.'
+                )
 
+        else:
+            existing_pks = list(self.player_set.values_list('pk', flat=True).order_by('pk'))
+            if matrix_pks != existing_pks:
+                raise ValueError(
+                    'The group matrix must contain each player '
+                    'in the subsession exactly once.'
+                )
+
+        # Before deleting groups, Need to set the foreignkeys to None
+        self.player_set.update(group=None)
         self.group_set.all().delete()
+
+        GroupClass = self._GroupClass()
         for i, row in enumerate(matrix, start=1):
-            group = self._GroupClass().objects.create(
+            group = GroupClass.objects.create(
                 subsession=self, id_in_subsession=i,
                 session=self.session, round_number=self.round_number)
+
             group.set_players(row)
 
-        if check_integrity:
-            self.check_group_integrity()
+    def set_groups(self, matrix):
+        '''renamed this to set_group_matrix, but keeping in for compat'''
+        return self.set_group_matrix(matrix)
 
-    def set_groups(self, groups):
-        self._set_groups(groups, check_integrity=True)
+    def check_group_integrity(self):
+        ''' should be moved from here to a test case'''
+        players = self.player_set.values_list('pk', flat=True)
+        players_from_groups = self.player_set.filter(
+            group__subsession=self).values_list('pk', flat=True)
+        if not set(players) == set(players_from_groups):
+            raise Exception('Group integrity check failed')
+
 
     @property
     def _Constants(self):
@@ -155,6 +174,7 @@ class BaseSubsession(SaveTheChange, models.Model):
 
     def _PlayerClass(self):
         return models.get_model(self._meta.app_config.label, 'Player')
+
 
     def _first_round_group_matrix(self):
         players = list(self.get_players())
@@ -179,15 +199,34 @@ class BaseSubsession(SaveTheChange, models.Model):
     def group_like_round(self, round_number):
         previous_round = self.in_round(round_number)
         group_matrix = [
-            self._PlayerClass().objects.filter(
-                participant__in=[p.participant
-                                 for p in group.player_set.all()],
-                round_number=self.round_number).order_by('id_in_group')
-            for group in previous_round.group_set.order_by('id_in_subsession')
-                         .prefetch_related('player_set__participant')]
+            group._ordered_players
+            for group in previous_round.group_set.order_by('id_in_subsession').prefetch_related(
+                Prefetch('player_set',
+                         queryset=self._PlayerClass().objects.order_by('id_in_group'),
+                         to_attr='_ordered_players'))
+        ]
+        for i, group_list in enumerate(group_matrix):
+            for j, player in enumerate(group_list):
+                # for every entry (i,j) in the matrix, follow the pointer
+                # to the same person in the next round
+                group_matrix[i][j] = player.in_round(self.round_number)
 
-        # save to DB
         self.set_groups(group_matrix)
+
+    def group_randomly(self, fixed_id_in_group):
+        group_matrix = self.get_group_matrix()
+        group_matrix = matching.randomly(
+            group_matrix,
+            fixed_id_in_group)
+        self.set_group_matrix(group_matrix)
+
+    def group_by_rank(self, ranked_list):
+        group_matrix = matching.by_rank(
+            ranked_list,
+            self._Constants.players_per_group
+        )
+        self.set_group_matrix(group_matrix)
+
 
     def before_session_starts(self):
         '''This gets called at the beginning of every subsession, before the
@@ -198,10 +237,3 @@ class BaseSubsession(SaveTheChange, models.Model):
 
         '''
         pass
-
-    def match_players(self, match_name):
-        if self.round_number > 1:
-            match_function = match_players.MATCHS[match_name]
-            pxg = match_function(self)
-            for group, players in zip(self.get_groups(), pxg):
-                group.set_players(players)

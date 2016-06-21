@@ -10,15 +10,17 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="/">oTree 0.5</a>
+        <a class="navbar-brand" href="/">oTree 0.6 beta </a>
     </div>
     <div class="collapse navbar-collapse">
         <ul class="nav navbar-nav">
             <li class="{% active_page request 'demo_index' %}"><a href="{% url 'demo_index' %}">Demo</a></li>
             <li class="{% active_page request 'sessions' %}"><a href="{% url 'sessions' %}">Sessions</a></li>
             <li class="{% active_page request 'rooms' %}"><a href="{% url 'rooms' %}">Rooms</a></li>
-            <li class="{% active_page request 'export' %}"><a href="{% url 'export' %}">Export</a></li>
+            <li class="{% active_page request 'export' %}"><a href="{% url 'export' %}">Data</a></li>
             <li class="{% active_page request 'server_check' %}"><a href="{% url 'server_check' %}">Server Check</a></li>
+            <span class="otree-core-updates"></span>
+
             {% if request.user.is_authenticated %}
                 <li><a href="{% url 'logout' %}">Logout</a></li>
             {% endif %}

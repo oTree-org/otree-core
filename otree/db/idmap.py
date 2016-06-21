@@ -33,8 +33,10 @@ def activate_cache():
 @contextmanager
 def use_cache():
     activate_cache()
-    yield
-    deactivate_cache()
+    try:
+        yield
+    finally:
+        deactivate_cache()
 
 
 class SharedMemoryModel(idmap.models.SharedMemoryModel):

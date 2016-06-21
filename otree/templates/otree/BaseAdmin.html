@@ -16,6 +16,21 @@ $(function(){
         }
     });
 });
+$(function () {
+    $.ajax({
+        url: '{% url 'pypi_updates' %}',
+        type: 'GET',
+        success: function(data) {
+            if (!data.pypi_connection_error) {
+                if (data.update_needed) {
+                    $('.otree-core-updates').html(
+                        '<a class="navbar-brand" href="{% url 'server_check' %}"><span class="glyphicon glyphicon-refresh" title="Newer version of oTree available"></span></a>')
+                }
+            }
+        }
+    });
+});
+
 </script>
 
 <script src="{% static 'otree/js/jquery.color-2.1.2.min.js' %}"></script>

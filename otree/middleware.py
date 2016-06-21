@@ -11,10 +11,13 @@ from otree.common_internal import db_status_ok
 
 class CheckDBMiddleware(object):
 
+    synced = None
+
     def process_request(self, request):
-        synced = db_status_ok(cache=True)
-        if not synced:
-            msg = "Your DB is not ready. Try resetting the database."
-            return HttpResponseServerError(msg)
+        if not CheckDBMiddleware.synced:
+            CheckDBMiddleware.synced = db_status_ok()
+            if not CheckDBMiddleware.synced:
+                msg = "Your database is not ready. Try running 'otree resetdb'."
+                return HttpResponseServerError(msg)
 
 

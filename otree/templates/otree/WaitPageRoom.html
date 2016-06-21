@@ -1,0 +1,21 @@
+{% extends 'otree/WaitPage.html' %}
+{% load i18n %}
+{% load staticfiles %}
+{% block internal_scripts %}
+    {{ block.super }}
+    <!-- this is an HTML file rather than JavaScript static file because context variables need to be passed to it -->
+
+    <script type="text/javascript">
+        function pingServer() {
+        var args = {
+            type: "GET",
+            url: '{% url "participant_room_ping" view.tab_unique_id %}',
+        };
+        $.ajax(args);
+    }
+
+    var SECOND = 1000;
+    window.setInterval(pingServer, 10 * SECOND);
+    </script>
+
+ {% endblock %}

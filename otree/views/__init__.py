@@ -30,6 +30,8 @@ class WaitPage(abstract.InGameWaitPage):
     body_text = None
     template_name = None
     round_number = None
+    participant = None
+    session = None
 
     def is_displayed(self):
         return super(WaitPage, self).is_displayed()
@@ -42,7 +44,9 @@ class Page(abstract.PlayerUpdateView):
     round_number = None
     template_name = None
     timeout_seconds = None
-    timeout_submission = {}
+    timeout_submission = None
+    participant = None
+    session = None
 
     # prefix with "form_" so that it's clear these refer to the form
     # otherwise someone might confuse 'fields' with vars_for_template

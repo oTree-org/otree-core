@@ -107,6 +107,8 @@ class Currency(RealWorldCurrency):
             # Explanation at http://bit.ly/1IurMu7
             # In most languages, msgstr[0] is singular,
             # and msgstr[1] is plural
+            # the {} represents the number;
+            # don't forget to include it in your translation
             return ungettext('{} point', '{} points', number).format(
                 formatted_number)
 

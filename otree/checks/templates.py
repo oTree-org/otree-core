@@ -4,6 +4,7 @@ from django.template.loader_tags import ExtendsNode, BlockNode
 from django.utils.encoding import force_text
 from itertools import chain
 import unicodedata
+import io
 
 from otree.templatetags.otree_tags import NextButtonNode
 
@@ -84,7 +85,10 @@ def check_next_button(root):
 
 def has_valid_encoding(file_name):
     try:
-        with open(file_name, 'r') as f:
+        # need to open the file with an explicit encoding='utf8'
+        # otherwise Windows may use another encoding if.
+        # io.open provides the encoding= arg and is Py2/Py3 compatible
+        with io.open(file_name, 'r', encoding='utf8') as f:
             template_string = f.read()
         force_text(template_string)
     except UnicodeDecodeError:

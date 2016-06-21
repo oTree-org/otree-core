@@ -13,29 +13,29 @@
 <nav class="navbar">
     <div class="container-fluid">
         <ul class="nav nav-pills nav-justified">
-            <li role="presentation" class="{% active_page request 'session_description' session.pk %}">
-                <a href="{% url 'session_description' session.pk %}"><span class="glyphicon glyphicon-pushpin"></span> Description</a>
+            <li role="presentation" class="{% active_page request 'session_description' session.code %}">
+                <a href="{% url 'session_description' session.code %}"><span class="glyphicon glyphicon-pushpin"></span> Description</a>
             </li>
-            <li role="presentation" class="{% active_page request 'session_start_links' session.pk %}">
-                <a href="{% url 'session_start_links' session.pk %}"><span class="glyphicon glyphicon-link"></span> Links</a>
+            <li role="presentation" class="{% active_page request 'session_start_links' session.code %}">
+                <a href="{% url 'session_start_links' session.code %}"><span class="glyphicon glyphicon-link"></span> Links</a>
             </li>
             {% if not session.is_demo %}
-            <li role="presentation" class="{% active_page request 'session_edit' session.pk %}">
-                <a href="{% url 'session_edit' session.pk %}"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
+            <li role="presentation" class="{% active_page request 'session_edit' session.code %}">
+                <a href="{% url 'session_edit' session.code %}"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
             </li>
             {% endif %}
-            <li role="presentation" class="{% active_page request 'session_monitor' session.pk %}">
-                <a href="{% url 'session_monitor' session.pk %}"><span class="glyphicon glyphicon-eye-open"></span> Monitor</a>
+            <li role="presentation" class="{% active_page request 'session_monitor' session.code %}">
+                <a href="{% url 'session_monitor' session.code %}"><span class="glyphicon glyphicon-eye-open"></span> Monitor</a>
             </li>
-            <li role="presentation" class="{% active_page request 'session_results' session.pk %}">
-                <a href="{% url 'session_results' session.pk %}"><span class="glyphicon glyphicon-list-alt"></span> Results</a>
+            <li role="presentation" class="{% active_page request 'session_results' session.code %}">
+                <a href="{% url 'session_results' session.code %}"><span class="glyphicon glyphicon-list-alt"></span> Results</a>
             </li>
             {% if session.is_for_mturk %}
-            <li role="presentation" class="{% active_page request 'session_mturk_payments' session.pk %}">
-                <a href="{% url 'session_mturk_payments' session.pk %}">
+            <li role="presentation" class="{% active_page request 'session_mturk_payments' session.code %}">
+                <a href="{% url 'session_mturk_payments' session.code %}">
             {% else %}
-            <li role="presentation" class="{% active_page request 'session_payments' session.pk %}">
-                <a href="{% url 'session_payments' session.pk %}">
+            <li role="presentation" class="{% active_page request 'session_payments' session.code %}">
+                <a href="{% url 'session_payments' session.code %}">
             {% endif %}
                     <span class="glyphicon glyphicon-usd"></span> Payments
                 </a>
@@ -48,8 +48,8 @@
             </li>
             {% endif %}
             {% if session.is_for_mturk %}
-            <li role="presentation" class="{% active_page request 'session_create_hit' session.pk %}">
-                <a href="{% url 'session_create_hit' session.pk %}"><span class="glyphicon glyphicon-cloud"></span> MTurk</a>
+            <li role="presentation" class="{% active_page request 'session_create_hit' session.code %}">
+                <a href="{% url 'session_create_hit' session.code %}"><span class="glyphicon glyphicon-cloud"></span> MTurk</a>
             </li>
             {% endif %}
         </ul>

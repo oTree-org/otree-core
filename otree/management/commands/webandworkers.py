@@ -6,20 +6,12 @@ import re
 import sys
 
 from honcho.manager import Manager
-
-from django.conf import settings
-from channels import DEFAULT_CHANNEL_LAYER, channel_layers
-from channels.handler import ViewConsumer
 from channels.log import setup_logger
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 import django.core.management.commands.runserver
 
-import otree
-
-
 RunserverCommand = django.core.management.commands.runserver.Command
-
 
 naiveip_re = re.compile(r"""^
 (?P<addr>
@@ -32,7 +24,7 @@ naiveip_re = re.compile(r"""^
 class Command(RunserverCommand):
     help = 'Run otree web services for the production environment.'
 
-    default_port = 5000
+    default_port = 8000
 
     def add_arguments(self, parser):
         BaseCommand.add_arguments(self, parser)
@@ -73,46 +65,9 @@ class Command(RunserverCommand):
         self.logger = setup_logger('django.channels', self.verbosity)
         return super(Command, self).handle(*args, **options)
 
-    def inner_run(self, *args, **options):
-        # Check a handler is registered for http reqs; if not, add default one
-        self.channel_layer = channel_layers[DEFAULT_CHANNEL_LAYER]
-        self.channel_layer.router.check_default(
-            http_consumer=ViewConsumer(),
-        )
-
+    def get_honcho_manager(self, options):
         self.addr = self.get_addr(options['addr'])
         self.port = self.get_port(options['port'])
-
-        # Run checks
-        self.stdout.write("Performing system checks...\n\n")
-        self.check(display_num_errors=True)
-        self.check_migrations()
-
-        # Print helpful text
-        quit_command = 'CTRL-BREAK' if sys.platform == 'win32' else 'CONTROL-C'
-        self.stdout.write((
-            "\n"
-            "otree-core version %(otree_version)s, "
-            "Django version %(django_version)s, "
-            "using settings %(settings)r\n"
-            "Starting web server at http://%(addr)s:%(port)s/\n"
-            # "Channel layer %(layer)s\n"
-            "Quit the server with %(quit_command)s.\n"
-        ) % {
-            "django_version": self.get_version(),
-            "otree_version": otree.__version__,
-            "settings": settings.SETTINGS_MODULE,
-            "addr": '[%s]' % self.addr if self._raw_ipv6 else self.addr,
-            "port": self.port,
-            "quit_command": quit_command,
-            "layer": self.channel_layer,
-        })
-        self.stdout.flush()
-
-        # Launch server in 'main' thread. Signals are disabled as it's still
-        # actually a subthread under the autoreloader.
-        self.logger.debug("Daphne running, listening on %s:%s",
-                          self.addr, self.port)
 
         manager = Manager()
 
@@ -120,7 +75,8 @@ class Command(RunserverCommand):
             self.addr,
             self.port
         )
-        print(daphne_cmd)
+
+        print('Starting daphne server on {}:{}'.format(self.addr, self.port))
 
         manager.add_process('daphne', daphne_cmd, env=self.get_env(options))
         for i in range(3):
@@ -128,6 +84,12 @@ class Command(RunserverCommand):
                 'worker{}'.format(i),
                 'otree runworker',
                 env=self.get_env(options))
+        return manager
+
+    def inner_run(self, *args, **options):
+        print('in webandworkers')
+
+        manager = self.get_honcho_manager(options)
         manager.loop()
 
         sys.exit(manager.returncode)

@@ -42,5 +42,13 @@ $(document).ready(function () {
     }
 
 });
+
+{% if view.use_browser_bots %}
+    {# submit the form instantly #}
+    $('#form').submit();
+{% endif %}
+
 </script>
+
+
 {% endblock %}

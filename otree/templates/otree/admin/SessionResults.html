@@ -10,7 +10,7 @@ $(document).ready(
 );
 function ajax_json_results() {
     $.ajax({
-        url: '{% url "session_results" session.pk %}',
+        url: '{% url "session_results" session.code %}',
         type: 'GET',
         contentType: "application/json",
         error: function(jqXHR, textStatus) {
@@ -64,7 +64,7 @@ function ajax_json_results() {
 <table class="header-fixed table table-bordered table-hover table-condensed">
     <thead>
         <tr>
-            <th rowspan="3" class="text-center">Player label</th>
+            <th rowspan="3" class="text-center">ID in session</th>
             {% for header, colspan in subsession_headers %}
                 <th colspan="{{ colspan }}">{{ header }}</th>
             {% endfor %}

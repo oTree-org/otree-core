@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import json
+import django.db
+import django.utils.timezone
+from datetime import timedelta
 
 from channels import Group
 
@@ -18,7 +21,6 @@ from otree.models_concrete import (
     ParticipantRoomVisit,
     FAILURE_MESSAGE_MAX_LENGTH,
 )
-from otree.views.abstract import lock_on_this_code_path
 from otree.room import ROOM_DICT
 
 
@@ -39,12 +41,12 @@ def connect_wait_page(message, params):
         ready = CompletedGroupWaitPage.objects.filter(
             page_index=page_index,
             group_pk=model_pk,
-            session_pk=session_pk,
+            session_id=session_pk,
             after_all_players_arrive_run=True).exists()
     else:  # subsession
         ready = CompletedSubsessionWaitPage.objects.filter(
             page_index=page_index,
-            session_pk=session_pk,
+            session_id=session_pk,
             after_all_players_arrive_run=True).exists()
     if ready:
         message.reply_channel.send(
@@ -118,9 +120,8 @@ def create_session(message):
             {'status': 'ready'})}
     )
 
-    if 'room' in kwargs:
-        room_name = kwargs['room'].name
-        Group('room-participants-{}'.format(room_name)).send(
+    if 'room_name' in kwargs:
+        Group('room-participants-{}'.format(kwargs['room_name'])).send(
             {'text': json.dumps(
                 {'status': 'session_ready'})}
         )
@@ -158,21 +159,30 @@ def disconnect_wait_for_session(message, pre_create_id):
 def connect_room_admin(message, room):
     Group('room-admin-{}'.format(room)).add(message.reply_channel)
 
-    room = ROOM_DICT[room]
-    all_participants = room.get_participant_labels()
+    room_object = ROOM_DICT[room]
 
-    present = ParticipantRoomVisit.objects.filter(
-            room_name=room
-    ).distinct().values_list('participant_id', flat=True)
+    now = django.utils.timezone.now()
+    stale_threshold = now - timedelta(seconds=15)
+    present_list = ParticipantRoomVisit.objects.filter(
+        room_name=room_object.name,
+        last_updated__gte=stale_threshold,
+    ).values_list('participant_label', flat=True)
 
-    present_set = set(present)
-    absent = [p for p in all_participants if p not in present_set]
+    # make it JSON serializable
+    present_list = list(present_list)
 
     message.reply_channel.send({'text': json.dumps({
         'status': 'load_participant_lists',
-        'participants_present': present,
-        'participants_not_present': absent
+        'participants_present': present_list,
     })})
+
+    # prune very old visits -- don't want a resource leak
+    # because sometimes not getting deleted on WebSocket disconnect
+    very_stale_threshold = now - timedelta(minutes=10)
+    ParticipantRoomVisit.objects.filter(
+        room_name=room_object.name,
+        last_updated__lt=very_stale_threshold,
+    ).delete()
 
 
 def disconnect_room_admin(message, room):
@@ -180,43 +190,61 @@ def disconnect_room_admin(message, room):
 
 
 def connect_room_participant(message, params):
-    room_name, participant_label, random_code = params.split(',')
+    room_name, participant_label, tab_unique_id = params.split(',')
     room = ROOM_DICT[room_name]
 
     Group('room-participants-{}'.format(room_name)).add(message.reply_channel)
-
-    ParticipantRoomVisit.objects.create(
-        participant_id=participant_label,
-        room_name=room_name,
-        random_code=random_code
-    )
-
-    Group('room-admin-{}'.format(room_name)).send({'text': json.dumps({
-        'status': 'add_participant',
-        'participant': participant_label,
-        'has_participant_labels_list': room.has_participant_labels()
-    })})
 
     if room.has_session():
         message.reply_channel.send(
             {'text': json.dumps({'status': 'session_ready'})}
         )
+    else:
+        try:
+            ParticipantRoomVisit.objects.create(
+                participant_label=participant_label,
+                room_name=room_name,
+                tab_unique_id=tab_unique_id
+            )
+        except django.db.IntegrityError:
+            # possible that the tab connected twice
+            # without disconnecting in between
+            # because of WebSocket failure
+            # tab_unique_id is unique=True,
+            # so this will throw an integrity error.
+            pass
+        Group('room-admin-{}'.format(room_name)).send({'text': json.dumps({
+            'status': 'add_participant',
+            'participant': participant_label
+        })})
 
 
 def disconnect_room_participant(message, params):
-    room_name, participant_label, random_code = params.split(',')
+    room_name, participant_label, tab_unique_id = params.split(',')
     room = ROOM_DICT[room_name]
 
     Group('room-participants-{}'.format(room_name)).discard(message.reply_channel)
 
-    ParticipantRoomVisit.objects.get(
-        participant_id=participant_label,
+    # should use filter instead of get,
+    # because if the DB is recreated,
+    # the record could already be deleted
+    ParticipantRoomVisit.objects.filter(
+        participant_label=participant_label,
         room_name=room_name,
-        random_code=random_code
-    ).delete()
+        tab_unique_id=tab_unique_id).delete()
 
-    Group('room-admin-{}'.format(room_name)).send({'text': json.dumps({
-        'status': 'remove_participant',
-        'participant': participant_label,
-        'has_participant_labels_list': room.has_participant_labels()
-    })})
+    if room.has_participant_labels():
+        if not ParticipantRoomVisit.objects.filter(
+            participant_label=participant_label,
+            room_name=room_name
+        ).exists():
+            # it's ok if there is a race condition --
+            # in JS removing a participant is idempotent
+            Group('room-admin-{}'.format(room_name)).send({'text': json.dumps({
+                'status': 'remove_participant',
+                'participant': participant_label
+            })})
+    else:
+        Group('room-admin-{}'.format(room_name)).send({'text': json.dumps({
+            'status': 'remove_participant',
+        })})

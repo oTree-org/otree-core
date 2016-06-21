@@ -6,7 +6,7 @@ import os
 from django.core.management.commands import startapp
 
 import otree
-from otree.common_internal import check_pypi_for_updates
+from otree.common_internal import pypi_updates_cli
 
 
 class Command(startapp.Command):
@@ -19,7 +19,7 @@ class Command(startapp.Command):
             options['template'] = self.get_default_template()
         super(Command, self).handle(*args, **options)
         try:
-            check_pypi_for_updates()
+            pypi_updates_cli()
         except:
             pass
         print('Created app folder.')

@@ -6,6 +6,7 @@ from six.moves.urllib.parse import urlunparse
 import datetime
 from collections import defaultdict
 import sys
+import logging
 
 from django.conf import settings
 from django.contrib import messages
@@ -27,6 +28,9 @@ from otree.views.abstract import AdminSessionPageMixin
 from otree.checks.mturk import validate_session_for_mturk
 from otree import deprecate
 from otree.forms import widgets
+from otree.common import RealWorldCurrency
+
+logger = logging.getLogger('otree')
 
 
 class MTurkError(Exception):
@@ -64,8 +68,8 @@ class MTurkConnection(boto.mturk.connection.MTurkConnection):
         return False
 
 
-def get_workers_by_status(mturk, hit_id):
-    all_assignments = get_all_assignments(mturk, hit_id)
+def get_workers_by_status(conn, hit_id):
+    all_assignments = get_all_assignments(conn, hit_id)
     workers_by_status = defaultdict(list)
     for assignment in all_assignments:
         workers_by_status[
@@ -74,13 +78,13 @@ def get_workers_by_status(mturk, hit_id):
     return workers_by_status
 
 
-def get_all_assignments(mturk, hit_id, status=None):
+def get_all_assignments(conn, hit_id, status=None):
     # Accumulate all relevant assignments, one page of results at
     # a time.
     assignments = []
     page = 1
     while True:
-        rs = mturk.get_assignments(
+        rs = conn.get_assignments(
             hit_id=hit_id,
             page_size=100,
             page_number=page,
@@ -110,18 +114,16 @@ class SessionCreateHitForm(forms.Form):
         help_text="How many unique Workers do you want to work on the HIT?")
     minutes_allotted_per_assignment = forms.IntegerField(
         label="Minutes allotted per assignment",
-        required=False,
         help_text=(
             "Number of minutes, that a Worker has to "
             "complete the HIT after accepting it."
-            "Leave it blank if you don't want to specify it."))
+        ))
     expiration_hours = forms.IntegerField(
         label="Hours until HIT expiration",
-        required=False,
         help_text=(
             "Number of hours after which the HIT "
             "is no longer available for users to accept. "
-            "Leave it blank if you don't want to specify it."))
+        ))
 
     def __init__(self, *args, **kwargs):
         super(SessionCreateHitForm, self).__init__(*args, **kwargs)
@@ -179,7 +181,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
         )
         context['runserver'] = 'runserver' in sys.argv
         url = self.request.build_absolute_uri(
-            reverse('session_create_hit', args=(self.session.pk,))
+            reverse('session_create_hit', args=(self.session.code,))
         )
         secured_url = urlunparse(urlparse(url)._replace(scheme='https'))
         context['secured_url'] = secured_url
@@ -222,7 +224,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
                         msg = msg.format('grant_qualification_id')
                         messages.error(request, msg)
                         return HttpResponseRedirect(
-                            reverse('session_create_hit', args=(session.pk,)))
+                            reverse('session_create_hit', args=(session.code,)))
                 else:
                     session.mturk_qualification_type_id = qualification_id
 
@@ -231,14 +233,22 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
 
             # updating schema from http to https
             # this is compulsory for MTurk exteranlQuestion
+            # TODO: validate, that the server support https
+            #       (heroku does support by default)
             secured_url_landing_page = urlunparse(
                 urlparse(url_landing_page)._replace(scheme='https'))
 
-            # TODO: validate, that the server support https
-            #       (heroku does support by default)
             # TODO: validate that there is enought money for the hit
+            money_reward = form.data['money_reward']
             reward = boto.mturk.price.Price(
-                amount=float(form.data['money_reward']))
+                amount=float(money_reward))
+
+            # assign back to participation_fee, in case it was changed
+            # in the form
+            # TODO: why do I have to explicitly convert back to RealWorldCurrency?
+            # shouldn't it already be that?
+            session.config['participation_fee'] = RealWorldCurrency(
+                money_reward)
 
             # creating external questions, that would be passed to the hit
             external_question = boto.mturk.question.ExternalQuestion(
@@ -269,15 +279,12 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
                 'reward': reward,
                 'response_groups': ('Minimal', 'HITDetail'),
                 'qualifications': Qualifications(qualifications),
-            }
-            if form.cleaned_data['minutes_allotted_per_assignment']:
-                mturk_hit_parameters['duration'] = datetime.timedelta(
+                'duration': datetime.timedelta(
                     minutes=(
-                        form.cleaned_data['minutes_allotted_per_assignment']))
-
-            if form.cleaned_data['expiration_hours']:
-                mturk_hit_parameters['lifetime'] = datetime.timedelta(
+                        form.cleaned_data['minutes_allotted_per_assignment'])),
+                'lifetime': datetime.timedelta(
                     hours=form.cleaned_data['expiration_hours'])
+            }
 
             hit = mturk_connection.create_hit(**mturk_hit_parameters)
             session.mturk_HITId = hit[0].HITId
@@ -286,14 +293,14 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             session.save()
 
         return HttpResponseRedirect(
-            reverse('session_create_hit', args=(session.pk,)))
+            reverse('session_create_hit', args=(session.code,)))
 
 
 class PayMTurk(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r'^PayMTurk/(?P<{}>[0-9]+)/$'.format('session_pk')
+        return r'^PayMTurk/(?P<session_code>[a-z0-9]+)/$'
 
     @classmethod
     def url_name(cls):
@@ -301,48 +308,60 @@ class PayMTurk(vanilla.View):
 
     def post(self, request, *args, **kwargs):
         session = get_object_or_404(otree.models.session.Session,
-                                    pk=kwargs['session_pk'])
+                                    code=kwargs['session_code'])
+        successful_payments = 0
+        failed_payments = 0
         with MTurkConnection(self.request,
                              session.mturk_sandbox) as mturk_connection:
             for p in session.participant_set.filter(
                 mturk_assignment_id__in=request.POST.getlist('payment')
             ):
-                # approve assignment
-                mturk_connection.approve_assignment(p.mturk_assignment_id)
-                # grant bonus
-                # TODO: check if bonus was already paid before, perhaps through
-                # mturk requester webinterface
-                bonus_amount = p.payoff_in_real_world_currency().to_number()
-                if bonus_amount > 0:
-                    bonus = boto.mturk.price.Price(amount=bonus_amount)
-                    mturk_connection.grant_bonus(p.mturk_worker_id,
-                                                 p.mturk_assignment_id,
-                                                 bonus,
-                                                 reason="Thank you for "
-                                                        "participating.")
-
-        messages.success(request, "Your payment was successful")
+                try:
+                    # approve assignment
+                    mturk_connection.approve_assignment(p.mturk_assignment_id)
+                except boto.mturk.connection.MTurkRequestError as e:
+                    msg = ('Could not pay {} because of an error communicating '
+                        'with MTurk: {}'.format(p._id_in_session(), str(e)))
+                    messages.error(request, msg)
+                    logger.error(msg)
+                    failed_payments += 1
+                else:
+                    successful_payments += 1
+                    # grant bonus
+                    # TODO: check if bonus was already paid before, perhaps through
+                    # mturk requester webinterface
+                    bonus_amount = p.payoff_in_real_world_currency().to_number()
+                    if bonus_amount > 0:
+                        bonus = boto.mturk.price.Price(amount=bonus_amount)
+                        mturk_connection.grant_bonus(
+                            p.mturk_worker_id,
+                            p.mturk_assignment_id,
+                            bonus,
+                            reason="Thank you for "
+                            "participating.")
+        msg = 'Successfully made {} payments.'.format(successful_payments)
+        if failed_payments > 0:
+            msg += ' {} payments failed.'.format(failed_payments)
+            messages.warning(request, msg)
+        else:
+            messages.success(request, msg)
         return HttpResponseRedirect(
-            reverse('session_mturk_payments', args=(session.pk,)))
+            reverse('session_mturk_payments', args=(session.code,)))
 
 
 class RejectMTurk(vanilla.View):
 
     @classmethod
     def url_pattern(cls):
-        return r'^RejectMTurk/(?P<{}>[0-9]+)/$'.format('session_pk')
+        return r'^RejectMTurk/(?P<session_code>[a-z0-9]+)/$'
 
     @classmethod
     def url_name(cls):
         return 'reject_mturk'
 
-    @classmethod
-    def url(cls, session):
-        return '/PayMTurk/{}/'.format(session.pk)
-
     def post(self, request, *args, **kwargs):
         session = get_object_or_404(otree.models.session.Session,
-                                    pk=kwargs['session_pk'])
+                                    code=kwargs['session_code'])
         with MTurkConnection(self.request,
                              session.mturk_sandbox) as mturk_connection:
             for p in session.participant_set.filter(
@@ -353,4 +372,4 @@ class RejectMTurk(vanilla.View):
         messages.success(request, "You successfully rejected "
                                   "selected assignments")
         return HttpResponseRedirect(
-            reverse('session_mturk_payments', args=(session.pk,)))
+            reverse('session_mturk_payments', args=(session.code,)))

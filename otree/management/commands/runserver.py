@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from channels.management.commands.runserver import Command as BaseCommand
+from channels.management.commands.runserver import Command as RunserverCommand
 
 from django.conf import settings
-
 import otree.common_internal
 
 
-class Command(BaseCommand):
+class Command(RunserverCommand):
 
     def handle(self, *args, **options):
         # use in-memory.

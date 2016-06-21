@@ -46,8 +46,8 @@ setup(
     ),
     long_description=README,
     url='http://otree.org/',
-    author='C. Wickens',
-    author_email='c.wickens+otree@googlemail.com',
+    author='chris@otree.org',
+    author_email='chris@otree.org',
     install_requires=required,
     classifiers=[
         'Environment :: Web Environment',
@@ -70,5 +70,7 @@ setup(
         'console_scripts': [
             'otree=otree.management.cli:otree_cli',
         ],
-    }
+    },
+
+    zip_safe=False,
 )

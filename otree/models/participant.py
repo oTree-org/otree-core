@@ -62,6 +62,7 @@ class Participant(ModelWithVars):
     code = models.CharField(
         default=random_chars_8,
         max_length=16,
+        null=False, # set non-nullable, until we make our CharField non-nullable
         unique=True,
         doc=(
             "Randomly generated unique identifier for the participant. If you "
@@ -125,7 +126,7 @@ class Participant(ModelWithVars):
         # because of WaitUntilAssigned...
         # 2016-04-07: WaitUntilAssigned removed
         return ParticipantToPlayerLookup.objects.get(
-            participant_pk=self.pk,
+            participant=self.pk,
             page_index=self._index_in_pages)
 
     def get_current_player(self):

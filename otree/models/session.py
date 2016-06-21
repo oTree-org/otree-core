@@ -53,6 +53,7 @@ class Session(ModelWithVars):
     code = models.CharField(
         default=random_chars_8,
         max_length=16,
+        null=False, # set non-nullable, until we make our CharField non-nullable
         unique=True,
         doc="Randomly generated unique identifier for the session.")
 
@@ -91,14 +92,6 @@ class Session(ModelWithVars):
         db_index=True,
         doc=("If set to True the session won't be visible on the "
              "main ViewList for sessions"))
-
-    git_commit_timestamp = models.CharField(
-        max_length=200, null=True,
-        doc=(
-            "Indicates the version of the code (as recorded by Git) that was "
-            "used to run the session, so that the session can be replicated "
-            "later.\n Search through the Git commit log to find a commit that "
-            "was made at this time."))
 
     comment = models.TextField(blank=True)
 
@@ -180,20 +173,17 @@ class Session(ModelWithVars):
         ).format(self.mturk_HITGroupId)
 
     def advance_last_place_participants(self):
+
         participants = self.get_participants()
 
         # in case some participants haven't started
         unvisited_participants = []
         for p in participants:
-            if not p._current_form_page_url:
+            if p._index_in_pages == 0:
                 unvisited_participants.append(p)
                 client.get(p._start_url(), follow=True)
 
         if unvisited_participants:
-            from otree.models import Participant
-            for p in unvisited_participants:
-                p.save()
-                Participant.flush_cached_instance(p)
             # that's it -- just visit the start URL, advancing by 1
             return
 
@@ -238,7 +228,7 @@ class Session(ModelWithVars):
                 for View in views_module_for_player(player).page_sequence:
                     page_index += 1
                     records_to_create.append(ParticipantToPlayerLookup(
-                        participant_pk=participant.pk,
+                        participant=participant,
                         page_index=page_index,
                         app_name=player._meta.app_config.name,
                         player_pk=player.pk,
@@ -253,7 +243,7 @@ class Session(ModelWithVars):
     def get_room(self):
         from otree.room import ROOM_DICT
         try:
-            room_name = RoomToSession.objects.get(session_pk=self.pk).room_name
+            room_name = RoomToSession.objects.get(session=self).room_name
             return ROOM_DICT[room_name]
         except RoomToSession.DoesNotExist:
             return None

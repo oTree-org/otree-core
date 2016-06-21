@@ -11,6 +11,23 @@
         see <a href="http://otree.readthedocs.io/en/latest/server.html">here</a>.
     </p>
 
+    {% if pypi_results.pypi_connection_error %}
+        <div class="alert alert-warning">
+            <strong>Update status unknown</strong>
+            Could not connect to <a href="https://pypi.python.org/pypi/otree-core">PyPI</a>
+            to check if your otree-core package is up to date.
+        </div>
+    {% elif pypi_results.update_needed %}
+        <div class="alert alert-danger">
+            <strong>You are using an old oTree version</strong>
+            {{ pypi_results.update_message }}
+        </div>
+    {% else %}
+        <div class="alert alert-success">
+          You have a recent version of oTree ({{ pypi_results.installed_version }}).
+        </div>
+    {% endif %}
+
     {% if sqlite %}
         <div class="alert alert-danger">
             <strong>Using SQLite</strong> You are using SQLite, which is only suitable during development and testing
@@ -42,22 +59,12 @@
         </div>
     {% endif %}
 
-    {% if update_message %}
-        <div class="alert alert-danger">
-            <strong>You are using an old oTree version</strong>
-            {{ update_message }}
-        </div>
-    {% else %}
-        <div class="alert alert-success">
-          You have a recent version of oTree ({{ otree_version }}).
-        </div>
-    {% endif %}
-
     {% if runserver %}
         <div class="alert alert-danger">
-            <strong>You are using <code>runserver</code></strong>,
+            <strong>You are using <code>otree runserver</code></strong>,
             which is only suitable for local development.
-            When launching a real study, you should run a proper multi-process server.
+            When launching a real study, you should run a proper multi-process server,
+            e.g. <code>otree runprodserver</code>.
         </div>
     {% else %}
         <div class="alert alert-success">
@@ -129,3 +136,4 @@
     {% endif %}
     -->
 {% endblock %}
+

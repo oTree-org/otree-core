@@ -68,6 +68,7 @@ class StartAppTest(TestCase):
                 def run_check():
                         with capture_stdout():
                             call_command('check')
+
                 self.assertRaises(CommandError, run_check)
 
     def test_startapp_is_checked_with_system_check(self):

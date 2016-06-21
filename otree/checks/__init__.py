@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import io
 import glob
 import types
 import inspect
@@ -134,7 +135,7 @@ class Rules(object):
             return
 
         try:
-            with open(template_name, 'r') as f:
+            with io.open(template_name, 'r', encoding='utf8') as f:
                 Template(f.read())
         except (IOError, OSError):
             pass
@@ -173,7 +174,7 @@ class Rules(object):
             return
 
         try:
-            with open(template_name, 'r') as f:
+            with io.open(template_name, 'r', encoding='utf8') as f:
                 compiled_template = Template(f.read())
         except (IOError, OSError, TemplateSyntaxError):
             # Ignore errors that occured during file-read or compilation.

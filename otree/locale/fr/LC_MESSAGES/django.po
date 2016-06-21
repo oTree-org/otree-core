@@ -105,7 +105,7 @@ msgstr "En attente des autres participants."
 
 #: .\views\abstract.py:615
 msgid "Waiting for the other participant."
-msgstr "En attente de l'autre particpant."
+msgstr "En attente de l'autre participant."
 
 #. Translators: the default body text on the waiting page
 #. to inform the user we are waiting.

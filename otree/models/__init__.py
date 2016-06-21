@@ -65,11 +65,17 @@ class BaseSubsession(subsession_module.BaseSubsession):
         '''
     )
 
+    def get_groups(self):
+        return super(BaseSubsession, self).get_groups()
+
     def set_groups(self, groups_list):
         return super(BaseSubsession, self).set_groups(groups_list)
 
-    def get_groups(self):
-        return super(BaseSubsession, self).get_groups()
+    def get_group_matrix(self):
+        return super(BaseSubsession, self).get_group_matrix()
+
+    def set_group_matrix(self, group_matrix):
+        return super(BaseSubsession, self).set_group_matrix(group_matrix)
 
     def get_players(self):
         return super(BaseSubsession, self).get_players()
@@ -93,6 +99,11 @@ class BaseSubsession(subsession_module.BaseSubsession):
     def in_rounds(self, first, last):
         return super(BaseSubsession, self).in_rounds(first, last)
 
+    def group_like_round(self, round_number):
+        return super(BaseSubsession, self).group_like_round(round_number)
+
+    def group_randomly(self, fixed_id_in_group=False):
+        return super(BaseSubsession, self).group_randomly(fixed_id_in_group)
 
 class BaseGroup(group_module.BaseGroup):
 
