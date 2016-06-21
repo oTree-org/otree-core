@@ -75,6 +75,11 @@ def get_default_settings(initial_settings=None):
                 'propagate': False,
                 'level': 'INFO',
             },
+            'otree.test.browser_bots': {
+                'handlers': ['console'],
+                'propagate': False,
+                'level': 'INFO',
+            },
         }
     }
 

@@ -90,7 +90,6 @@ def get_all_fields(Model, for_export=False):
                 'time_started',
                 'exclude_from_data_analysis',
                 'name',
-                'session',
                 'visited',
                 'mturk_worker_id',
                 'mturk_assignment_id',

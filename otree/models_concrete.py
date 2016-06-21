@@ -133,6 +133,7 @@ class BrowserBotSubmit(models.Model):
         app_label = "otree"
         ordering = ['id']
 
+    session = models.ForeignKey('otree.Session')
     participant = models.ForeignKey('otree.Participant', db_index=True)
     page_dotted_name = models.CharField(max_length=200)
     param_dict = JSONField()

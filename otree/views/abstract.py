@@ -826,31 +826,7 @@ class FormPageMixin(object):
         else:
             self.timeout_happened = False
             if settings.USE_BROWSER_BOTS:
-                # maybe request.POST has important stuff like CSRF?
-                post_data = dict(request.POST)
-                submit_model = BrowserBotSubmit.objects.filter(
-                    participant=self.participant,
-                ).first()
-                if submit_model:
-                    this_page_dotted = '{}.{}'.format(
-                        self.__module__,
-                        self.__class__.__name__
-                    )
-                    if not submit_model.page_dotted_name == this_page_dotted:
-                        raise ValueError(
-                            "Bot is trying to submit page {}, "
-                            "but current page is {}. "
-                            "Check your bot in tests.py, "
-                            "then create a new session.".format(
-                                submit_model.page_dotted_name,
-                                this_page_dotted
-                            )
-                        )
-                    post_data.update(submit_model.param_dict)
-                    for key, value in post_data.items():
-                        if isinstance(value, Currency):
-                            post_data[key] = value.to_number()
-                    submit_model.delete()
+                post_data = self._get_browser_bot_submission()
             else:
                 post_data = request.POST
             form = self.get_form(
@@ -874,6 +850,51 @@ class FormPageMixin(object):
         self._increment_index_in_pages()
         return self._redirect_to_page_the_user_should_be_on()
 
+    def _get_browser_bot_submission(self):
+        # request.POST contains CSRF token and maybe other important stuff
+        post_data = dict(self.request.POST)
+        submit_model = BrowserBotSubmit.objects.filter(
+            participant=self.participant,
+        ).first()
+        if submit_model:
+            this_page_dotted = '{}.{}'.format(
+                self.__module__,
+                self.__class__.__name__
+            )
+            if not submit_model.page_dotted_name == this_page_dotted:
+                raise ValueError(
+                    "Bot is trying to submit page {}, "
+                    "but current page is {}. "
+                    "Check your bot in tests.py, "
+                    "then create a new session.".format(
+                        submit_model.page_dotted_name,
+                        this_page_dotted
+                    )
+                )
+            post_data.update(submit_model.param_dict)
+            for key, value in post_data.items():
+                if isinstance(value, Currency):
+                    post_data[key] = value.to_number()
+            submit_model.delete()
+        else:
+            browser_bot_logger = logging.getLogger('otree.test.browser_bots')
+            browser_bot_logger.info(
+                'Session {}: Browser bots finished for participant {}'.format(
+                    self.session.code,
+                    self.participant.id_in_session,
+                )
+            )
+            # might print more than once because of race condition,
+            # it's OK
+            if not BrowserBotSubmit.objects.filter(
+                    session=self.session).exists():
+                browser_bot_logger.info(
+                    'Session {}: all browser bots finished'.format(
+                        self.session.code,
+                    )
+                )
+        return post_data
+
     def socket_url(self):
         '''called from template. can't start with underscore because used
         in template
@@ -886,9 +907,6 @@ class FormPageMixin(object):
         '''called from template'''
         # need full path because we use query string
         return self.request.get_full_path()
-
-    # called from template
-    poll_interval_seconds = constants.form_page_poll_interval_seconds
 
     def _get_auto_submit_values(self):
         # TODO: auto_submit_values deprecated on 2015-05-28

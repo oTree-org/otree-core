@@ -13,6 +13,7 @@ def load_submits_to_db(session):
             if submit.input_is_valid:
 
                 submit_model = BrowserBotSubmit(
+                    session=session,
                     participant=participant,
                     page_dotted_name='{}.{}'.format(
                         submit.ViewClass.__module__,
