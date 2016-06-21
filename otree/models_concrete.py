@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from otree.common_internal import get_models_module
-from otree.db import models
+from django.db import models
+
+from .common_internal import get_models_module
+from .db.models import JSONField
 
 
 class PageCompletion(models.Model):
