@@ -18,7 +18,7 @@ from requests.packages.urllib3.exceptions import NewConnectionError
 
 
 class Command(BaseCommand):
-    help = "oTree: Create a session."
+    help = "oTree: Run browser bots."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -36,12 +36,16 @@ class Command(BaseCommand):
         num_participants = options['num_participants']
         base_url = options['base_url']
 
+        # however, need to set USE_BROWSER_BOTS = True
+        # in settings.py, because the server process needs
+        # to read this also
+        # TODO: maybe pass it through CLI arg, or env var
         settings.USE_BROWSER_BOTS = True
         session = create_session(
             session_config_name=session_config_name,
             num_participants=num_participants)
 
-        # change to runprodserver
+        # TODO: change to runprodserver
         t = Thread(target=call_command, args=['runserver', '--noreload'], daemon=True)
         t.start()
 
@@ -65,16 +69,9 @@ class Command(BaseCommand):
                     SERVER_STARTUP_TIMEOUT)
             )
 
-        participant_codes = Participant.objects.filter(
-            session=session).values_list('code', flat=True)
-        assert len(participant_codes) == num_participants
+        start_urls = [urllib.parse.urljoin(base_url, p._start_url())
+                      for p in session.get_participants()]
 
-        start_urls = [urllib.parse.urljoin(base_url, 'InitializeParticipant/{}'.format(code))
-                      for code in participant_codes]
-
-        # hack: Logically this should be a boolean
-        # but I need to mutate it inside the ListenFilter
-        # so just used a list...maybe there is a smarter way
         all_bots_finished = Queue()
 
         class ListenFilter(logging.Filter):
@@ -87,13 +84,17 @@ class Command(BaseCommand):
         filter = ListenFilter()
         logger.addFilter(filter)
 
+        # hack: open a tab then sleep a few seconds
+        # on Firefox, this seems like a way to get each URL
+        # being opened in tabs rather than windows.
+        # (even if i use open_new_tab)
         webbrowser.open_new_tab(base_url)
         time.sleep(3)
 
+        bot_start_time = time.time()
         for url in start_urls:
             webbrowser.open_new_tab(url)
-        bot_start_time = time.time()
-
+        
         # queue blocks until an item is available
         all_bots_finished.get()
         print('{}: {} bots finished in {} seconds'.format(
