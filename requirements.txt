@@ -47,4 +47,5 @@ zope.interface==4.1.3
 
 # Stress test
 selenium==2.53.2
+psutil==4.2.0
 tqdm==4.7.4
