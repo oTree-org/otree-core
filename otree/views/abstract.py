@@ -236,8 +236,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         new_tables = [basic_info_table]
         if self._vars_for_template:
             rows = sorted(self._vars_for_template.items())
-            title = 'Template Vars (<code>{}</code>/<code>{}</code>)'.format(
-                'vars_for_template()', 'vars_for_all_templates()')
+            title = '<code>vars_for_template()</code>'
             new_tables.append(DebugTable(title=title, rows=rows))
 
         return new_tables
@@ -872,27 +871,12 @@ class FormPageMixin(object):
                     )
                 )
             post_data.update(submit_model.param_dict)
-            for key, value in post_data.items():
-                if isinstance(value, Currency):
-                    post_data[key] = value.to_number()
             submit_model.delete()
         else:
-            browser_bot_logger = logging.getLogger('otree.test.browser_bots')
-            browser_bot_logger.info(
-                'Session {}: Browser bots finished for participant {}'.format(
-                    self.session.code,
-                    self.participant.id_in_session,
-                )
-            )
-            # might print more than once because of race condition,
-            # it's OK
-            if not BrowserBotSubmit.objects.filter(
-                    session=self.session).exists():
-                browser_bot_logger.info(
-                    'Session {}: all browser bots finished'.format(
-                        self.session.code,
-                    )
-                )
+            import redis
+            bot_completion = redis.StrictRedis(db=15)
+            bot_completion.rpush(
+                self.session.code, True)
         return post_data
 
     def socket_url(self):

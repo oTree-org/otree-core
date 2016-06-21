@@ -87,6 +87,7 @@ class Command(RunserverCommand):
         return manager
 
     def inner_run(self, *args, **options):
+        print('in webandworkers')
 
         manager = self.get_honcho_manager(options)
         manager.loop()
