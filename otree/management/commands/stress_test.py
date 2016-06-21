@@ -4,8 +4,6 @@ from __future__ import unicode_literals, division, print_function
 from collections import OrderedDict, defaultdict
 from fractions import gcd
 from functools import reduce
-from django.conf import settings
-from django.db import connection
 try:
     from http.client import CannotSendRequest, BadStatusLine
 except ImportError:  # Python 2.7
@@ -16,16 +14,19 @@ import os
 import platform
 import re
 from socket import socket
+import sqlite3
 from subprocess import call, Popen, PIPE, STDOUT, CalledProcessError
 from threading import Thread, local
 from time import time, sleep
 import uuid
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.urlresolvers import reverse, resolve
+from django.db import connection
 from django.utils.formats import date_format
 from django.utils.timezone import now
-from psutil import Process, NoSuchProcess
+from psutil import Process, NoSuchProcess, virtual_memory
 from selenium.common.exceptions import (
     NoSuchElementException, NoSuchWindowException
 )
@@ -33,7 +34,9 @@ from selenium.webdriver import Chrome
 from selenium.webdriver.support.select import Select
 from tqdm import tqdm
 
+from otree import __version__ as otree_version
 from otree.models import Session, Participant
+from otree.session import create_session
 
 
 def is_port_available(host, port):
@@ -102,11 +105,11 @@ class Graph:
             $('#container-%(id)s').highcharts({
                 title: {
                     text: %(title)s,
-                    x: -20 // compensates the legend width.
+                    x: -70 // compensates the legend width.
                 },
                 subtitle: {
                     text: %(subtitle)s,
-                    x: -20 // compensates the legend width.
+                    x: -70 // compensates the legend width.
                 },
                 xAxis: {
                     title: {
@@ -193,31 +196,56 @@ class Report:
     """
 
     def __init__(self):
-        self.graphs = {}
+        self.graphs = OrderedDict()
         self.filename = 'stress_test_report.html'
         print('The report will be generated in %s' % self.filename)
 
         self.conditions = self.get_conditions()
 
     def get_conditions(self):
-        versions = OrderedDict()
-        # TODO: This works only on Linux.
-        with open('/proc/cpuinfo') as f:
-            versions['CPU'] = re.search(r'^model name\s+: (.+)$', f.read(),
-                                        flags=re.MULTILINE).group(1)
-        # TODO: This works only on Linux.
-        with open('/proc/meminfo') as f:
-            ram = re.search(r'^MemTotal:\s+(\d+) kB$', f.read(),
-                            flags=re.MULTILINE).group(1)
-            ram = int(ram) * 1024  # Since meminfo in fact uses kiB, not kB.
-            GiB = 1 << 30
-            versions['RAM'] = '%.2f GiB' % (ram / GiB)
-        versions.update((
-            # TODO: This works only on Linux.
-            ('Linux distribution', ' '.join(
-                platform.linux_distribution()).strip()),
+        versions = OrderedDict((
+            ('oTree', otree_version),
             ('Python', platform.python_version()),
         ))
+
+        # CPU
+        cpuinfo_path = '/proc/cpuinfo'
+        if os.path.exists(cpuinfo_path):
+            # TODO: This works only on Linux.
+            with open(cpuinfo_path) as f:
+                versions['CPU'] = re.search(r'^model name\s+: (.+)$', f.read(),
+                                            flags=re.MULTILINE).group(1)
+
+        # RAM
+        ram = virtual_memory().total
+        GiB = 1 << 30
+        versions['RAM'] = '%.2f GiB' % (ram / GiB)
+
+        # OS
+        linux_dist = ' '.join(platform.linux_distribution()).strip()
+        if linux_dist:
+            versions['Linux distribution'] = linux_dist
+        else:
+            versions['OS'] = platform.system() + ' ' + platform.release()
+
+        with connection.cursor() as cursor:
+            if connection.vendor == 'postgresql':
+                db_engine = 'PostgreSQL'
+                cursor.execute('SELECT version();')
+                db_version = re.match(r'^PostgreSQL ([\d\.]+) on .+$',
+                                      cursor.fetchone()[0]).group(1)
+            elif connection.vendor == 'mysql':
+                db_engine = 'MySQL'
+                cursor.execute('SELECT version();')
+                db_version = cursor.fetchone()[0]
+            elif connection.vendor == 'sqlite':
+                db_engine = 'SQLite'
+                db_version = sqlite3.sqlite_version
+            else:
+                db_engine = connection.vendor
+                db_version = ''
+        versions['Database'] = ('%s %s' % (db_engine, db_version)).strip()
+
         return '<dl>%s</dl>' % ''.join(['<dt>%s</dt><dd>%s</dd>' % (k, v)
                                         for k, v in versions.items()])
 
@@ -253,6 +281,12 @@ class Browser:
         self.x = x
         self.y = y
 
+    def update_window(self):
+        if self.width is not None and self.height is not None:
+            self.selenium.set_window_size(self.width, self.height)
+        if self.x is not None and self.y is not None:
+            self.selenium.set_window_position(self.x, self.y)
+
     def start(self):
         self.selenium = self.selenium_driver(
             executable_path=self.executable_path)
@@ -260,10 +294,7 @@ class Browser:
         self.selenium.set_script_timeout(self.timeout)
         self.selenium.set_page_load_timeout(self.timeout)
 
-        if self.width is not None and self.height is not None:
-            self.selenium.set_window_size(self.width, self.height)
-        if self.x is not None and self.y is not None:
-            self.selenium.set_window_position(self.x, self.y)
+        self.update_window()
 
     def stop(self):
         try:
@@ -312,32 +343,69 @@ class Browser:
     def save_screenshot(self, filename):
         self.selenium.save_screenshot(filename)
 
+    def error_screenshot(self):
+        filename = 'error_browser_%d.png' % self.id
+        try:
+            self.save_screenshot(filename.encode())
+            print('Screenshot saved in %s' % filename)
+        except NoSuchWindowException:
+            pass
+
 
 class ParallelBrowsers:
     max_width = 1920
     max_height = 1080
     ideal_window_ratio = max_width / max_height
 
-    def __init__(self, amount=1):
+    def __init__(self, amount=0):
+        self.browsers = []
+        self._amount = 0
         self.amount = amount
+        self.tasks = []
 
+    @property
+    def amount(self):
+        return self._amount
+
+    @amount.setter
+    def amount(self, value):
+        diff = value - self.amount
+        if diff == 0:
+            return
+
+        self._amount = value
+
+        if diff > 0:
+            while len(self.browsers) < self.amount:
+                new_browser = Browser(len(self.browsers))
+                self.browsers.append(new_browser)
+                new_browser.start()
+        elif diff < 0:
+            while len(self.browsers) > self.amount:
+                self.browsers.pop().stop()
+
+        self.reset()
+        self.update_windows()
+
+    def update_windows(self):
         columns, rows = self.find_best_window_grid()
         width = self.max_width // columns
         height = self.max_height // rows
 
         column = 0
         row = 0
-        self.browsers = []
-        for i in range(amount):
+        for i in range(self.amount):
             x = column * width
             y = row * height
-            self.browsers.append(Browser(i, width, height, x, y))
+            self[i].width = width
+            self[i].height = height
+            self[i].x = x
+            self[i].y = y
+            self[i].update_window()
             column += 1
             if column == columns:
                 column = 0
                 row += 1
-
-        self.tasks = []
 
     def find_best_window_grid(self):
         if self.amount == 0:
@@ -354,10 +422,6 @@ class ParallelBrowsers:
         ratio, columns, rows = min(ratios, key=lambda t: t[0])
         return columns, rows
 
-    def start(self):
-        for browser in self.browsers:
-            browser.start()
-
     def stop(self):
         while self.busy:
             sleep(0.001)
@@ -369,6 +433,10 @@ class ParallelBrowsers:
         for browser in self.browsers:
             browser.reset()
 
+    def error_screenshot(self):
+        for browser in self.browsers:
+            browser.error_screenshot()
+
     def garbage_collect_tasks(self):
         for task in self.tasks.copy():
             if not task.is_alive():
@@ -376,14 +444,18 @@ class ParallelBrowsers:
                 if task.exception is not None:
                     raise task.exception
 
-        # FIXME: This closes idle PostgreSQL connections because we face an
-        #        open connection leak. When the leak is fixed, remove this.
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                SELECT pg_terminate_backend(pid)
-                FROM pg_stat_activity
-                WHERE usename = %s AND state = 'idle';
-            """, params=(settings.DATABASES['default']['USER'],))
+        if connection.vendor == 'postgresql':
+            # FIXME: This closes idle PostgreSQL connections because we face an
+            #        open connection leak. When the leak is fixed, remove this.
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT pg_terminate_backend(pid)
+                    FROM pg_stat_activity
+                    WHERE usename = %s
+                        AND state = 'idle'
+                        AND query_start < (CURRENT_TIMESTAMP
+                                           - INTERVAL '5 seconds');
+                """, params=(settings.DATABASES['default']['USER'],))
 
     @property
     def busy(self):
@@ -430,12 +502,7 @@ class BrowserTask(Thread):
         try:
             self.func()
         except Exception as exception:
-            filename = 'error.png'
-            try:
-                self.browser.save_screenshot(filename.encode())
-                print('Screenshot saved in %s' % filename)
-            except NoSuchWindowException:
-                pass
+            self.browser.error_screenshot()
             self.exception = exception
 
 
@@ -495,6 +562,14 @@ class Bot:
         if self.session_config is None:
             raise ValueError(
                 'You must fill the class attribute `session_config`.')
+        for config in settings.SESSION_CONFIGS:
+            if config['name'] == self.session_config:
+                self.session_config_verbose = config.get('display_name',
+                                                         config['name'])
+                break
+        else:
+            raise ValueError('%s is not a valid `session_config`.'
+                             % repr(self.session_config))
         self.report = report
         self.graph = None
         self.graph_title = ''
@@ -504,6 +579,7 @@ class Bot:
         self.id_in_session = None
         self.participant = None
         self.player = None
+        self.view = None
 
     @property
     def browser(self):
@@ -514,30 +590,6 @@ class Bot:
     @browser.setter
     def browser(self, browser):
         self.thread_local.browser = browser
-
-    @property
-    def id_in_session(self):
-        return self.thread_local.id_in_session
-
-    @id_in_session.setter
-    def id_in_session(self, id_in_session):
-        self.thread_local.id_in_session = id_in_session
-
-    @property
-    def player(self):
-        return self.thread_local.player
-
-    @player.setter
-    def player(self, player):
-        self.thread_local.player = player
-
-    @property
-    def participant(self):
-        return self.thread_local.participant
-
-    @participant.setter
-    def participant(self, participant):
-        self.thread_local.participant = participant
 
     def time(self, series_name):
         return self.graph.get_series(
@@ -579,9 +631,43 @@ class Bot:
         return self.browser.save_screenshot(*args, **kwargs)
 
     def create_session(self):
+        self.session = create_session(self.session_config,
+                                      num_participants=self.num_participants)
+
+    def delete_session(self):
+        self.session.delete()
+
+    def set_up(self):
+        self.graph = self.report.get_graph(self.graph_title,
+                                           self.__class__.__name__)
+        self.graph.x_title = self.graph_x_title
+        self.create_session()
+
+    def tear_down(self):
+        self.browsers.reset()
+        self.delete_session()
+
+    def get_test_methods(self):
+        for attr in dir(self):
+            if attr.startswith('test_'):
+                method = getattr(self, attr)
+                if callable(method):
+                    yield attr, method
+
+    def run(self):
+        self.set_up()
+
+        for name, method in self.get_test_methods():
+            method()
+
+        self.tear_down()
+
+
+class AdminBot(Bot):
+    def create_session(self):
         self.get(self.server.get_url('sessions'))
         self.find_link('Create new session').click()
-        self.dropdown_choose('session_config', self.session_config)
+        self.dropdown_choose('session_config', self.session_config_verbose)
         self.type('num_participants', self.num_participants)
         form = self.find('#form')
         with self.time('Creation'):
@@ -590,12 +676,12 @@ class Bot:
             self.find_link('Description')
         relative_url = self.current_url[len(self.server.url):]
         self.session = Session.objects.get(
-            pk=resolve(relative_url).kwargs['pk'])
+            code=resolve(relative_url).kwargs['code'])
 
     def delete_session(self):
         self.get(self.server.get_url('sessions'))
         self.find('[name="item-action"][value="%s"]'
-                  % self.session.pk).click()
+                  % self.session.code).click()
         self.find('#action-delete').click()
         confirm = self.find('.modal.in #action-delete-confirm')
         with self.time('Deletion'):
@@ -603,15 +689,72 @@ class Bot:
             # Waits until the page loads.
             self.find_link('Create new session')
 
-    def set_up(self):
-        self.graph = self.report.get_graph(self.graph_title,
-                                           self.session_config)
-        self.graph.x_title = self.graph_x_title
-        self.create_session()
+    def test_description_page(self):
+        url = self.server.get_url('session_description', (self.session.code,))
+        with self.time('Description page'):
+            self.get(url)
 
-    def tear_down(self):
-        self.browsers.reset()
-        self.delete_session()
+    def test_links_page(self):
+        url = self.server.get_url('session_start_links', (self.session.code,))
+        with self.time('Links page'):
+            self.get(url)
+
+    def test_monitor_page(self):
+        url = self.server.get_url('session_monitor', (self.session.code,))
+        with self.time('Monitor page'):
+            self.get(url)
+            # Waits until the page fully loads.
+            self.find_xpath(
+                '//td[@data-field = "_id_in_session" and text() = "P%d"]'
+                % self.num_participants)
+
+    def test_results_page(self):
+        url = self.server.get_url('session_results', (self.session.code,))
+        with self.time('Results page'):
+            self.get(url)
+            # Waits until the page fully loads.
+            self.find_xpath(
+                '//td[@data-field = "participant_label" and text() = "P%d"]'
+                % self.num_participants)
+
+    def test_payments_page(self):
+        url = self.server.get_url('session_payments', (self.session.code,))
+        with self.time('Payments page'):
+            self.get(url)
+
+
+class PlayerBot(Bot):
+    @property
+    def id_in_session(self):
+        return self.thread_local.id_in_session
+
+    @id_in_session.setter
+    def id_in_session(self, id_in_session):
+        self.thread_local.id_in_session = id_in_session
+
+    @property
+    def player(self):
+        return self.thread_local.player
+
+    @player.setter
+    def player(self, player):
+        self.thread_local.player = player
+
+    @property
+    def participant(self):
+        return self.thread_local.participant
+
+    @participant.setter
+    def participant(self, participant):
+        self.thread_local.participant = participant
+
+    @property
+    def view(self):
+        return self.thread_local.view
+
+    @view.setter
+    def view(self, view):
+        self.thread_local.view = view
 
     def participate(self, page_number):
         participants = self.session.get_participants()
@@ -626,6 +769,7 @@ class Bot:
         # by the view.
         self.participant = Participant.objects.get(pk=self.participant.pk)
         self.player = self.participant.get_current_player()
+        self.view = resolve(self.current_url[len(self.server.url):]).func
 
     def run_participant(self, browser, id_in_session, page_number, last_page,
                         test_page_method):
@@ -647,15 +791,9 @@ class Bot:
 
         test_page_re = re.compile('^test_page_(\d+)$')
         test_page_methods = {}
-        for attr in dir(self):
-            if attr.startswith('test_'):
-                method = getattr(self, attr)
-                if callable(method):
-                    page_match = test_page_re.match(attr)
-                    if page_match is None:
-                        method()
-                    else:
-                        test_page_methods[int(page_match.group(1))] = method
+        for name, method in self.get_test_methods():
+            page_match = test_page_re.match(name)
+            test_page_methods[int(page_match.group(1))] = method
 
         # Runs the test_page_1, 2, 3... methods.
         last_page = max(test_page_methods) if test_page_methods else 1
@@ -672,39 +810,6 @@ class Bot:
 
         self.tear_down()
 
-    def test_description_page(self):
-        url = self.server.get_url('session_description', (self.session.pk,))
-        with self.time('Description page'):
-            self.get(url)
-
-    def test_links_page(self):
-        url = self.server.get_url('session_start_links', (self.session.pk,))
-        with self.time('Links page'):
-            self.get(url)
-
-    def test_monitor_page(self):
-        url = self.server.get_url('session_monitor', (self.session.pk,))
-        with self.time('Monitor page'):
-            self.get(url)
-            # Waits until the page fully loads.
-            self.find_xpath(
-                '//td[@data-field = "_id_in_session" and text() = "P%d"]'
-                % self.num_participants)
-
-    def test_results_page(self):
-        url = self.server.get_url('session_results', (self.session.pk,))
-        with self.time('Results page'):
-            self.get(url)
-            # Waits until the page fully loads.
-            self.find_xpath(
-                '//td[@data-field = "participant_label" and text() = "P%d"]'
-                % self.num_participants)
-
-    def test_payments_page(self):
-        url = self.server.get_url('session_payments', (self.session.pk,))
-        with self.time('Payments page'):
-            self.get(url)
-
 
 class BotRegistry(list):
     def add(self, bot_class):
@@ -717,14 +822,14 @@ bot_registry = BotRegistry()
 
 class StressTest:
     timeit_iterations = 3
-    concurrent_users_steps = 16
+    concurrent_users_steps = 12
     large_sessions_steps = 8
     large_sessions_concurrent_users = 2
 
     def __init__(self):
         self.report = Report()
 
-        self.browsers = ParallelBrowsers(0)
+        self.browsers = ParallelBrowsers()
 
         self.server = Server()
         self.server.start()
@@ -742,28 +847,29 @@ class StressTest:
                  % num_participants)
 
         steps = list(range(1, self.concurrent_users_steps + 1))
-        progress = tqdm(range(steps[-1]), leave=True,
-                        desc='Concurrent users')
+        progress = tqdm(range(steps[-1]), leave=True)
         for concurrent_users in steps:
-            self.browsers = ParallelBrowsers(concurrent_users)
-            self.browsers.start()
+            self.browsers.amount = concurrent_users
             for bot in self.bots:
-                bot.browsers = self.browsers
+                if isinstance(bot, AdminBot):
+                    # Testing admin with multiple concurrent browsers
+                    # is not pertinent, so we skip it.
+                    continue
+                progress.set_description('Concurrent users (%s)'
+                                         % bot.__class__.__name__)
                 bot.graph_title = title
                 bot.graph_x_title = 'Number of concurrent users'
                 bot.graph_variable = lambda bot: bot.browsers.amount
                 bot.num_participants = num_participants
                 bot.run()
                 self.report.generate()  # Updates the report on each iteration.
-            self.browsers.stop()
             progress.update()
 
     def test_large_sessions(self):
         title = ('oTree speed with large sessions and %d concurrent users'
                  % self.large_sessions_concurrent_users)
 
-        self.browsers = ParallelBrowsers(self.large_sessions_concurrent_users)
-        self.browsers.start()
+        self.browsers.amount = self.large_sessions_concurrent_users
 
         steps = []
         step = self.num_participants
@@ -772,19 +878,17 @@ class StressTest:
             step *= 2
 
         for bot in self.bots:
-            bot.browsers = self.browsers
             bot.graph_title = title
             bot.graph_variable = lambda bot: bot.num_participants
             bot.graph_x_title = 'Number of participants'
             progress = tqdm(range(steps[-1]), leave=True,
-                            desc='Large sessions (%s)' % bot.session_config)
+                            desc='Large sessions (%s)'
+                                 % bot.__class__.__name__)
             for num_participants in steps:
                 bot.num_participants = num_participants
                 bot.run()
                 self.report.generate()  # Updates the report on each iteration.
                 progress.update(num_participants - progress.n)
-
-        self.browsers.stop()
 
     def run(self):
         print('Running all tests %d times...' % self.timeit_iterations)
@@ -796,8 +900,9 @@ class StressTest:
             for _ in range(self.timeit_iterations):
                 self.test_concurrent_users()
                 self.test_large_sessions()
-        except BadStatusLine:
-            pass  # Occurs when the browser is closed prematurely.
+        except:
+            self.browsers.error_screenshot()
+            raise
         finally:
             self.browsers.stop()
             self.server.stop()
@@ -805,8 +910,13 @@ class StressTest:
 
 
 @bot_registry.add
-class SimpleGameBot(Bot):
-    session_config = 'Simple Game'
+class SimpleGameAdminBot(AdminBot):
+    session_config = 'simple_game'
+
+
+@bot_registry.add
+class SimpleGamePlayerBot(PlayerBot):
+    session_config = 'simple_game'
 
     def test_page_1(self):
         self.type('my_field', 10)
@@ -816,8 +926,14 @@ class SimpleGameBot(Bot):
 
 
 @bot_registry.add
-class MultiPlayerGameBot(Bot):
-    session_config = 'Multi Player Game'
+class MultiPlayerGameAdminBot(AdminBot):
+    session_config = 'multi_player_game'
+    num_participants = 3
+
+
+# @bot_registry.add
+class MultiPlayerGamePlayerBot(PlayerBot):
+    session_config = 'multi_player_game'
     num_participants = 3
 
     def test_page_1(self):
@@ -842,8 +958,13 @@ class MultiPlayerGameBot(Bot):
 
 
 @bot_registry.add
-class TwoSimpleGamesBot(Bot):
-    session_config = '2 Simple Games'
+class TwoSimpleGamesAdminBot(AdminBot):
+    session_config = 'two_simple_games'
+
+
+# @bot_registry.add
+class TwoSimpleGamesPlayerBot(PlayerBot):
+    session_config = 'two_simple_games'
 
     # FIXME: This application is broken, write the page tests when it is fixed.
 
