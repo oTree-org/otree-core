@@ -28,7 +28,13 @@ class Room(object):
 
     def __init__(self, config_dict):
         self.participant_label_file = config_dict.get('participant_label_file')
-        self.name = config_dict['name']
+        name = config_dict['name']
+        if not re.match(r'^[a-zA-Z0-9_]+$', name):
+            raise ValueError(
+                'settings.ROOMS: "name" must be alphanumeric '
+                '(underscores allowed).'
+            )
+        self.name = name
         self.display_name = config_dict['display_name']
         # secure URLs are complicated, don't use them by default
         self.use_secure_urls = config_dict.get('use_secure_urls', False)
