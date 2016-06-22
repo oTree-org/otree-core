@@ -1,6 +1,7 @@
 from .client import ParticipantBot
 from otree.models_concrete import BrowserBotSubmit
 
+
 def load_submits_to_db(session):
     submit_models = []
     for participant in session.get_participants():
@@ -23,5 +24,3 @@ def load_submits_to_db(session):
                 )
                 submit_models.append(submit_model)
     BrowserBotSubmit.objects.bulk_create(submit_models)
-
-

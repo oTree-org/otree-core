@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from django.core.management import call_command
 from django.core.urlresolvers import reverse
 from six.moves import urllib
-from otree.models import Session
 import django.test.client
 import unittest
-import time
 from otree.session import create_session
+
 
 def has_header(response, header_name):
     return header_name in response
 
+
 def is_wait_page(response):
     return has_header(response, 'oTree-Wait-Page')
+
 
 def get_path(response, if_no_redirect):
     try:
@@ -24,13 +24,16 @@ def get_path(response, if_no_redirect):
     else:
         return urllib.parse.urlsplit(url).path
 
+
 def get_html(response):
     return response.content.decode('utf-8')
+
 
 def participant_initialized(response):
     print('redirect chain', response.redirect_chain)
     redirect_chain = [ele[0] for ele in response.redirect_chain]
     return any('InitializeParticipant' in url for url in redirect_chain)
+
 
 class RoomTestCase(unittest.TestCase):
     '''Subclassed from unittest.TestCase,
@@ -60,7 +63,6 @@ class TestRoomWithoutSession(RoomTestCase):
     def setUp(self):
         self.browser = django.test.client.Client()
 
-
     def test_open_admin_links(self):
         urls = [
             reverse('rooms'),
@@ -69,7 +71,7 @@ class TestRoomWithoutSession(RoomTestCase):
         ]
 
         for url in urls:
-            response = self.get(url)
+            self.get(url)
 
     def test_open_participant_links(self):
         room_with_labels = reverse('assign_visitor_to_room', args=['default'])
@@ -99,6 +101,7 @@ class TestRoomWithoutSession(RoomTestCase):
     def test_ping(self):
         pass
 
+
 class TestRoomWithSession(RoomTestCase):
     def setUp(self):
         self.browser = django.test.client.Client()
@@ -115,7 +118,7 @@ class TestRoomWithSession(RoomTestCase):
         )
 
     def test_open_admin_links(self):
-        resp = self.get(reverse('room_with_session', args=['default']))
+        self.get(reverse('room_with_session', args=['default']))
         self.assertTrue('room_with_session' in self.path)
 
     def test_open_participant_links(self):
@@ -147,7 +150,7 @@ class TestRoomWithSession(RoomTestCase):
         url = reverse('close_room', args=['default'])
         self.get(url)
 
-        resp = self.get(reverse('room_with_session', args=['default']))
+        self.get(reverse('room_with_session', args=['default']))
         self.assertTrue('room_without_session' in self.path)
 
     def test_delete_session_in_room(self):

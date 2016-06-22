@@ -224,7 +224,8 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
                         msg = msg.format('grant_qualification_id')
                         messages.error(request, msg)
                         return HttpResponseRedirect(
-                            reverse('session_create_hit', args=(session.code,)))
+                            reverse(
+                                'session_create_hit', args=(session.code,)))
                 else:
                     session.mturk_qualification_type_id = qualification_id
 
@@ -245,7 +246,8 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
 
             # assign back to participation_fee, in case it was changed
             # in the form
-            # TODO: why do I have to explicitly convert back to RealWorldCurrency?
+            # TODO: why do I have to explicitly
+            # convert back to RealWorldCurrency?
             # shouldn't it already be that?
             session.config['participation_fee'] = RealWorldCurrency(
                 money_reward)
@@ -272,7 +274,8 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
                 'title': form.cleaned_data['title'],
                 'description': form.cleaned_data['description'],
                 'keywords': [
-                    k.strip() for k in form.cleaned_data['keywords'].split(',')
+                    k.strip() for k in
+                    form.cleaned_data['keywords'].split(',')
                 ],
                 'question': external_question,
                 'max_assignments': form.cleaned_data['assignments'],
@@ -281,7 +284,8 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
                 'qualifications': Qualifications(qualifications),
                 'duration': datetime.timedelta(
                     minutes=(
-                        form.cleaned_data['minutes_allotted_per_assignment'])),
+                        form.cleaned_data['minutes_allotted_per_assignment']
+                    )),
                 'lifetime': datetime.timedelta(
                     hours=form.cleaned_data['expiration_hours'])
             }
@@ -320,7 +324,8 @@ class PayMTurk(vanilla.View):
                     # approve assignment
                     mturk_connection.approve_assignment(p.mturk_assignment_id)
                 except boto.mturk.connection.MTurkRequestError as e:
-                    msg = ('Could not pay {} because of an error communicating '
+                    msg = (
+                        'Could not pay {} because of an error communicating '
                         'with MTurk: {}'.format(p._id_in_session(), str(e)))
                     messages.error(request, msg)
                     logger.error(msg)
@@ -328,11 +333,12 @@ class PayMTurk(vanilla.View):
                 else:
                     successful_payments += 1
                     # grant bonus
-                    # TODO: check if bonus was already paid before, perhaps through
+                    # TODO: check if bonus was already paid before,
+                    # perhaps through
                     # mturk requester webinterface
-                    bonus_amount = p.payoff_in_real_world_currency().to_number()
-                    if bonus_amount > 0:
-                        bonus = boto.mturk.price.Price(amount=bonus_amount)
+                    payoff = p.payoff_in_real_world_currency().to_number()
+                    if payoff > 0:
+                        bonus = boto.mturk.price.Price(amount=payoff)
                         mturk_connection.grant_bonus(
                             p.mturk_worker_id,
                             p.mturk_assignment_id,

@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from django.db import models
-from datetime import datetime
 from otree.db.models import JSONField
+
 
 class PageCompletion(models.Model):
     class Meta:

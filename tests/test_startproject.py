@@ -2,14 +2,11 @@ import os
 import shutil
 import tempfile
 
-from django.conf import settings
-from django.core.management import call_command, CommandError
+from django.core.management import call_command
 
-from mock import patch
-
-import otree.checks
 from .base import TestCase
-from .utils import add_path, capture_stdout, cd
+from .utils import capture_stdout, cd
+
 
 class StartProjectTest(TestCase):
     def setUp(self):

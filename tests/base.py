@@ -4,7 +4,6 @@
 from django.conf import settings
 import django.test
 
-import idmap.tls
 
 # 2016-06-16: is this still needed? TODO
 class OTreeTestClient(django.test.client.Client):

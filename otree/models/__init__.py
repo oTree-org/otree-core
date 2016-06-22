@@ -105,6 +105,7 @@ class BaseSubsession(subsession_module.BaseSubsession):
     def group_randomly(self, fixed_id_in_group=False):
         return super(BaseSubsession, self).group_randomly(fixed_id_in_group)
 
+
 class BaseGroup(group_module.BaseGroup):
 
     class Meta:

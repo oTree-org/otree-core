@@ -129,11 +129,11 @@ class PayMTurk(TestCase):
             p.mturk_assignment_id = str(i)
             p.save()
 
-
     @mock.patch.object(MTurkConnection, '__enter__')
     def test_pay_mturk(self, mocked_enter):
         assignments = MockResultSet(
-            [Assignment(p.mturk_worker_id, 'Submitted') for p in self.participants])
+            [Assignment(p.mturk_worker_id, 'Submitted') for
+             p in self.participants])
         mocked_connection = MagicMock()
         mocked_enter.return_value = mocked_connection
         mocked_connection.get_assignments.return_value = assignments
@@ -152,7 +152,8 @@ class PayMTurk(TestCase):
         response = self.browser.post(
             url,
             data={
-                'payment': [p.mturk_assignment_id for p in accept_participants],
+                'payment': [p.mturk_assignment_id
+                            for p in accept_participants],
             },
             follow=True
         )
@@ -162,9 +163,9 @@ class PayMTurk(TestCase):
         response = self.browser.post(
             url,
             data={
-                'payment': [p.mturk_assignment_id for p in reject_participants],
+                'payment': [p.mturk_assignment_id
+                            for p in reject_participants],
             },
             follow=True
         )
         self.assertEqual(response.status_code, 200)
-

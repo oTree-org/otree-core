@@ -5,8 +5,8 @@ from otree.common_internal import get_models_module
 from otree_save_the_change.mixins import SaveTheChange
 
 from otree.db import models
-from otree.models.session import Session
 from otree.models.fieldchecks import ensure_field
+
 
 class BasePlayer(SaveTheChange, models.Model):
     """
@@ -72,7 +72,6 @@ class BasePlayer(SaveTheChange, models.Model):
     @property
     def _Constants(self):
         return get_models_module(self._meta.app_config.name).Constants
-
 
     @classmethod
     def _ensure_required_fields(cls):

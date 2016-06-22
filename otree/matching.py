@@ -9,7 +9,6 @@
 # IMPORTS
 # =============================================================================
 
-import functools
 import itertools
 import collections
 import random
@@ -19,6 +18,7 @@ from six.moves import map
 # =============================================================================
 # MATCH
 # =============================================================================
+
 
 def by_rank(ranked_list, players_per_group):
     ppg = players_per_group
@@ -124,5 +124,3 @@ def round_robin(subssn):
     shuffled_groups = create_groups(ssizes, combinations)
     groups = sort_by_sizes(shuffled_groups, sizes)
     return tuple(groups)
-
-

@@ -8,13 +8,14 @@ from django.apps import AppConfig, apps
 from django.conf import settings
 from django.db.models import signals
 
-from otree.models_concrete import StubModel, ExpectedRoomParticipant
+from otree.models_concrete import StubModel
 from otree.models.session import GlobalSingleton
 import otree
 
 
 logger = logging.getLogger('otree')
 import_module('otree.checks')   # this made that style check work
+
 
 def create_default_superuser(sender, **kwargs):
     """
@@ -68,4 +69,4 @@ class OtreeConfig(AppConfig):
                 # mode. could do this in extra context or tags,
                 # but this seems the most straightforward way
                 ',dbg' if settings.DEBUG else ''
-        )
+            )

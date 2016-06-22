@@ -349,8 +349,9 @@ class StressTest:
             try:
                 self.selenium.quit()
             except CannotSendRequest:
-                pass  # Occurs when something wrong happens
-                      # in the middle of a request.
+                # Occurs when something wrong happens
+                # in the middle of a request.
+                pass
             self.stop_server()
             notify('Stress test finished!')
 

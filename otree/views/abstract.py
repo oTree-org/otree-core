@@ -30,7 +30,6 @@ import vanilla
 
 import otree.forms
 import otree.common_internal
-from otree.common import Currency
 import otree.models.session
 import otree.timeout.tasks
 import otree.models
@@ -50,7 +49,9 @@ from otree.models.session import GlobalSingleton
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
-NO_PARTICIPANTS_LEFT_MSG = "The maximum number of participants for this session has been exceeded."
+NO_PARTICIPANTS_LEFT_MSG = (
+    "The maximum number of participants for this session has been exceeded."
+)
 
 
 DebugTable = collections.namedtuple('DebugTable', ['title', 'rows'])
@@ -836,7 +837,8 @@ class FormPageMixin(object):
             else:
                 if settings.USE_BROWSER_BOTS:
                     errors = [
-                        "{}: {}".format(k, repr(v)) for k, v in form.errors.items()]
+                        "{}: {}".format(k, repr(v))
+                        for k, v in form.errors.items()]
                     raise ValueError(
                         'Some fields failed validation: {} '
                         'Check your bot in tests.py, '
@@ -1002,6 +1004,7 @@ class AdminSessionPageMixin(GetFloppyFormClassMixin):
 
     def dispatch(self, request, *args, **kwargs):
         session_code = kwargs['code']
-        self.session = get_object_or_404(otree.models.Session, code=session_code)
+        self.session = get_object_or_404(
+            otree.models.Session, code=session_code)
         return super(AdminSessionPageMixin, self).dispatch(
             request, *args, **kwargs)

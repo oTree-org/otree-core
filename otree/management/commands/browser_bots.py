@@ -2,19 +2,16 @@
 # -*- coding: utf-8 -*-
 
 import time
-from threading import Thread
 import six
 import requests
-from queue import Queue
 from django.core.management.base import BaseCommand
-from otree.models import Participant
 from otree.session import create_session
-from django.core.management import call_command
 from six.moves import urllib
 import webbrowser
 import redis
 
 from django.conf import settings
+
 
 class Command(BaseCommand):
     help = "oTree: Run browser bots."
@@ -48,49 +45,35 @@ class Command(BaseCommand):
             session_config_name=session_config_name,
             num_participants=num_participants)
 
-
         # TODO: change to runprodserver
-        #t = Thread(
+        # t = Thread(
         #    target=call_command,
         #    #args=['runserver', '--noreload'],
         #    args=['webandworkers', '--addr=127.0.0.1'],
         #    #daemon=True
-        #)
-        #t.start()
+        # )
+        # t.start()
 
-        SERVER_STARTUP_TIMEOUT = 5
-        start_time = time.time()
-        ping_ok = False
-        while time.time() - start_time < SERVER_STARTUP_TIMEOUT:
-            try:
-                resp = requests.get(base_url)
-                if resp.ok:
-                    ping_ok = True
-                    break
-            except:
-                # raises various errors: ConnectionRefusedError, NewConnectionError,
-                # etc.
-                pass
-            time.sleep(1)
-        if not ping_ok:
+        try:
+            requests.get(base_url)
+        except:
             raise Exception(
-                'Could not connect to server at {} within {} seconds. '
-                'Before running this command, you need to run the server. '.format(
-                    base_url,
-                    SERVER_STARTUP_TIMEOUT)
+                'Could not connect to server at {}.'
+                'Before running this command, '
+                'you need to run the server.'.format(
+                    base_url)
             )
 
         start_urls = [urllib.parse.urljoin(base_url, p._start_url())
                       for p in session.get_participants()]
-
 
         # hack: open a tab then sleep a few seconds
         # on Firefox, this seems like a way to get each URL
         # being opened in tabs rather than windows.
         # (even if i use open_new_tab)
         browser = webbrowser.get('chrome')
-        #b.open_new_tab(base_url)
-        #time.sleep(3)
+        # b.open_new_tab(base_url)
+        # time.sleep(3)
 
         bot_start_time = time.time()
         for url in start_urls:
@@ -109,8 +92,3 @@ class Command(BaseCommand):
         ))
 
         session.delete()
-
-
-
-
-

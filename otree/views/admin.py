@@ -6,7 +6,6 @@ import sys
 import uuid
 import itertools
 import os
-import requests.exceptions
 from six.moves import range
 from six.moves import zip
 
@@ -467,8 +466,9 @@ class RoomWithSession(vanilla.TemplateView):
         context = {
             'participant_urls': self.room.get_participant_urls(self.request),
             'room_wide_url': self.room.get_room_wide_url(self.request),
-            'session_url': reverse('session_monitor',
-                                  args=(self.room.session.code,)),
+            'session_url': reverse(
+                'session_monitor',
+                args=(self.room.session.code,)),
             'room': self.room,
             'collapse_links': True,
         }
@@ -753,12 +753,13 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
 
         if room:
             context.update(
-            {
-                'participant_urls': room.get_participant_urls(self.request),
-                'room_wide_url': room.get_room_wide_url(self.request),
-                'room': room,
-                'collapse_links': True,
-            })
+                {
+                    'participant_urls':
+                        room.get_participant_urls(self.request),
+                    'room_wide_url': room.get_room_wide_url(self.request),
+                    'room': room,
+                    'collapse_links': True,
+                })
         else:
             participant_urls = [
                 self.request.build_absolute_uri(participant._start_url())
@@ -975,6 +976,7 @@ class ServerCheck(vanilla.TemplateView):
             'pypi_results': pypi_results
         }
 
+
 class OtreeCoreUpdateCheck(vanilla.View):
 
     @classmethod
@@ -992,4 +994,3 @@ class OtreeCoreUpdateCheck(vanilla.View):
         if OtreeCoreUpdateCheck.results is None:
             OtreeCoreUpdateCheck.results = check_pypi_for_updates()
         return JsonResponse(OtreeCoreUpdateCheck.results, safe=True)
-

@@ -103,8 +103,9 @@ def create_session(message):
     try:
         otree.session.create_session(**kwargs)
     except Exception as e:
-        error_message = 'Failed to create session: "{}" - Check the server logs'.format(
-                    str(e))
+        error_message = (
+            'Failed to create session: "{}" - Check the server logs'.format(
+                    str(e)))
         group.send(
             {'text': json.dumps(
                 {'error': error_message})}
@@ -134,8 +135,8 @@ def connect_wait_for_session(message, pre_create_id):
     # in case message was sent before this web socket connects
     if Session.objects.filter(_pre_create_id=pre_create_id):
         group.send(
-        {'text': json.dumps(
-            {'status': 'ready'})}
+            {'text': json.dumps(
+                {'status': 'ready'})}
         )
     else:
         failures = FailedSessionCreation.objects.filter(
@@ -223,7 +224,8 @@ def disconnect_room_participant(message, params):
     room_name, participant_label, tab_unique_id = params.split(',')
     room = ROOM_DICT[room_name]
 
-    Group('room-participants-{}'.format(room_name)).discard(message.reply_channel)
+    Group('room-participants-{}'.format(room_name)).discard(
+        message.reply_channel)
 
     # should use filter instead of get,
     # because if the DB is recreated,

@@ -15,6 +15,7 @@ REDIS_MSG = (
     "See http://otree.readthedocs.io/en/latest/v0.5.html ."
 )
 
+
 class RedisChannelLayer(asgi_redis.RedisChannelLayer):
     def receive_many(self, channels, block=False):
         try:
