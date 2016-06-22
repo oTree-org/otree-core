@@ -36,7 +36,7 @@ from tqdm import tqdm
 
 from otree import __version__ as otree_version
 from otree.models import Session, Participant
-from otree.session import create_session
+from otree.session import create_session, SESSION_CONFIGS_DICT
 
 
 def is_port_available(host, port):
@@ -324,7 +324,7 @@ class Browser:
 
     def dropdown_choose(self, dropdown_name, value):
         select = Select(self.selenium.find_element_by_name(dropdown_name))
-        select.select_by_visible_text(value)
+        select.select_by_value(value)
 
     def type(self, input_name, value):
         self.selenium.find_element_by_name(input_name).send_keys(str(value))
@@ -507,22 +507,50 @@ class BrowserTask(Thread):
 
 
 class Server:
+    default_port = 8000
+    first_port = 1024  # First port available to users.
     procfile_path = 'otree/management/commands/stress_test_procfile'
 
-    def start(self):
-        print('Starting oTree server...')
-        port = 1024  # First port available to users.
-        while not is_port_available('localhost', port):
+    def __init__(self, address=None, port=None):
+        self.is_external = address is not None
+
+        self.address = 'localhost' if address is None else address
+
+        if port is None:
+            port = (self.default_port
+                    if self.is_external else self.get_available_port())
+        self.port = port
+
+        self.url = 'http://%s:%d' % (self.address, self.port)
+
+        port_available = is_port_available(self.address, self.port)
+        if port_available and self.is_external:
+            # TODO: Replace this with a ConnectionError when dropping Python 2.
+            raise OSError('Cannot connect to %s.' % self.url)
+        if not port_available or port < self.first_port:
+            # TODO: Replace this with a ConnectionError when dropping Python 2.
+            raise OSError('Port %d is not available to create a server.'
+                          % self.port)
+
+    def get_available_port(self):
+        port = self.first_port
+        while not is_port_available(self.address, port):
             port += 1
+        return port
+
+    def start(self):
+        if self.is_external:
+            return
+
+        print('Starting oTree server on %s...' % self.url)
         command_args = ('honcho', 'start', '-f', self.procfile_path)
         env = os.environ.copy()
-        env['OTREE_PORT'] = str(port)
+        env['OTREE_PORT'] = str(self.port)
         self.runserver_process = Popen(
             command_args, stdin=PIPE, stdout=PIPE, stderr=STDOUT, env=env)
-        self.url = 'http://localhost:%d' % port
 
         # Waits for the server to be successfully started.
-        while is_port_available('localhost', port):
+        while is_port_available(self.address, self.port):
             return_code = self.runserver_process.poll()
             if return_code is not None and return_code != 0:
                 raise CalledProcessError(
@@ -531,6 +559,9 @@ class Server:
             sleep(0.1)
 
     def stop(self):
+        if self.is_external:
+            return
+
         print('Stopping oTree server...')
         process = Process(self.runserver_process.pid)
         # We kill each subprocess of the server,
@@ -551,35 +582,17 @@ class SkipPage(Exception):
 
 
 class Bot:
-    session_config = None
-    num_participants = 1
-
     def __init__(self, server, browsers, report):
         self.server = server
         self.browsers = browsers
         self.thread_local = local()
         self.browser = None
-        if self.session_config is None:
-            raise ValueError(
-                'You must fill the class attribute `session_config`.')
-        for config in settings.SESSION_CONFIGS:
-            if config['name'] == self.session_config:
-                self.session_config_verbose = config.get('display_name',
-                                                         config['name'])
-                break
-        else:
-            raise ValueError('%s is not a valid `session_config`.'
-                             % repr(self.session_config))
         self.report = report
         self.graph = None
         self.graph_title = ''
         self.graph_x_title = ''
         self.graph_variable = lambda: 0
         self.session = None
-        self.id_in_session = None
-        self.participant = None
-        self.player = None
-        self.view = None
 
     @property
     def browser(self):
@@ -590,6 +603,23 @@ class Bot:
     @browser.setter
     def browser(self, browser):
         self.thread_local.browser = browser
+
+    @property
+    def session_name(self):
+        if self.session is not None:
+            return self.session.config['name']
+        if hasattr(self, '_session_config'):
+            return self._session_config
+        raise ValueError('You must fill the attribute `session_config`.')
+
+    @session_name.setter
+    def session_name(self, value):
+        try:
+            config = SESSION_CONFIGS_DICT[value]
+        except KeyError:
+            raise KeyError('%s is not a valid `session_config`.' % repr(value))
+        self._session_config = value
+        self.num_participants = config['num_demo_participants']
 
     def time(self, series_name):
         return self.graph.get_series(
@@ -631,21 +661,22 @@ class Bot:
         return self.browser.save_screenshot(*args, **kwargs)
 
     def create_session(self):
-        self.session = create_session(self.session_config,
+        self.session = create_session(self.session_name,
                                       num_participants=self.num_participants)
 
     def delete_session(self):
         self.session.delete()
 
-    def set_up(self):
-        self.graph = self.report.get_graph(self.graph_title,
-                                           self.__class__.__name__)
+    def set_up(self, alter_sessions=True):
+        self.graph = self.report.get_graph(self.graph_title, self.session_name)
         self.graph.x_title = self.graph_x_title
-        self.create_session()
+        if alter_sessions:
+            self.create_session()
 
-    def tear_down(self):
+    def tear_down(self, alter_sessions=True):
         self.browsers.reset()
-        self.delete_session()
+        if alter_sessions:
+            self.delete_session()
 
     def get_test_methods(self):
         for attr in dir(self):
@@ -654,20 +685,20 @@ class Bot:
                 if callable(method):
                     yield attr, method
 
-    def run(self):
-        self.set_up()
+    def run(self, alter_sessions=True):
+        self.set_up(alter_sessions)
 
         for name, method in self.get_test_methods():
             method()
 
-        self.tear_down()
+        self.tear_down(alter_sessions)
 
 
 class AdminBot(Bot):
     def create_session(self):
         self.get(self.server.get_url('sessions'))
         self.find_link('Create new session').click()
-        self.dropdown_choose('session_config', self.session_config_verbose)
+        self.dropdown_choose('session_config', self.session_name)
         self.type('num_participants', self.num_participants)
         form = self.find('#form')
         with self.time('Creation'):
@@ -724,6 +755,14 @@ class AdminBot(Bot):
 
 
 class PlayerBot(Bot):
+    def __init__(self, *args, **kwargs):
+        super(PlayerBot, self).__init__(*args, **kwargs)
+
+        self.id_in_session = None
+        self.participant = None
+        self.player = None
+        self.view = None
+
     @property
     def id_in_session(self):
         return self.thread_local.id_in_session
@@ -786,8 +825,8 @@ class PlayerBot(Bot):
         with self.time('Participant page %s' % page_name):
             self.submit()
 
-    def run(self):
-        self.set_up()
+    def run(self, alter_sessions=True):
+        self.set_up(alter_sessions)
 
         test_page_re = re.compile('^test_page_(\d+)$')
         test_page_methods = {}
@@ -808,16 +847,33 @@ class PlayerBot(Bot):
                         test_page_method))
             self.browsers.wait_until_all_available()
 
-        self.tear_down()
+        self.tear_down(alter_sessions)
 
 
-class BotRegistry(list):
-    def add(self, bot_class):
-        self.append(bot_class)
-        return bot_class
+class PlayerBotRegistry:
+    def __init__(self):
+        self.bots = {}
+
+    def add(self, app_name):
+        def inner(bot_class):
+            if app_name in self.bots:
+                raise ValueError("A bot is already registered for '%s'"
+                                 % app_name)
+            self.bots[app_name] = bot_class
+            return bot_class
+        return inner
+
+    def get_bots_for(self, session_name):
+        session = SESSION_CONFIGS_DICT[session_name]
+        return [self.bots[app_name] for app_name in session['app_sequence']
+                if app_name in self.bots]
+
+    def __iter__(self):
+        for app_name, bot in self.bots.items():
+            yield app_name, bot
 
 
-bot_registry = BotRegistry()
+player_bots = PlayerBotRegistry()
 
 
 class StressTest:
@@ -826,18 +882,32 @@ class StressTest:
     large_sessions_steps = 8
     large_sessions_concurrent_users = 2
 
-    def __init__(self):
+    def __init__(self, sessions_names, server_address, server_port):
+        if not sessions_names:
+            sessions_names = tuple(SESSION_CONFIGS_DICT.keys())
+        self.sessions = OrderedDict()
+        for session_name in sessions_names:
+            try:
+                self.sessions[session_name] = \
+                    SESSION_CONFIGS_DICT[session_name]
+            except KeyError:
+                raise KeyError("Undefined session config '%s'." % session_name)
+
         self.report = Report()
 
         self.browsers = ParallelBrowsers()
 
-        self.server = Server()
+        self.server = Server(server_address, server_port)
         self.server.start()
 
-        self.bots = [bot_class(self.server, self.browsers, self.report)
-                     for bot_class in bot_registry]
-        self.num_participants = lcm([bot.num_participants
-                                     for bot in self.bots])
+        self.bots_per_session = OrderedDict([
+            (session_name,
+             [bot_class(self.server, self.browsers, self.report)
+              for bot_class in player_bots.get_bots_for(session_name)])
+            for session_name in self.sessions
+        ])
+        self.num_participants = lcm([session['num_demo_participants']
+                                     for session in self.sessions.values()])
 
     def test_concurrent_users(self):
         num_participants = (self.num_participants
@@ -850,18 +920,27 @@ class StressTest:
         progress = tqdm(range(steps[-1]), leave=True)
         for concurrent_users in steps:
             self.browsers.amount = concurrent_users
-            for bot in self.bots:
-                if isinstance(bot, AdminBot):
-                    # Testing admin with multiple concurrent browsers
-                    # is not pertinent, so we skip it.
-                    continue
+            for session_name, bots in self.bots_per_session.items():
                 progress.set_description('Concurrent users (%s)'
-                                         % bot.__class__.__name__)
-                bot.graph_title = title
-                bot.graph_x_title = 'Number of concurrent users'
-                bot.graph_variable = lambda bot: bot.browsers.amount
-                bot.num_participants = num_participants
-                bot.run()
+                                         % session_name)
+
+                admin_bot = AdminBot(self.server, self.browsers, self.report)
+                admin_bot.session_name = session_name
+                admin_bot.graph_title = '%s (admin)' % title
+                admin_bot.graph_x_title = 'Number of concurrent users'
+                admin_bot.graph_variable = lambda bot: bot.browsers.amount
+                admin_bot.num_participants = num_participants
+                admin_bot.set_up()
+
+                for bot in bots:
+                    bot.session = admin_bot.session
+                    bot.graph_title = title
+                    bot.graph_x_title = 'Number of concurrent users'
+                    bot.graph_variable = lambda bot: bot.browsers.amount
+                    bot.num_participants = num_participants
+                    bot.run(alter_sessions=False)
+
+                admin_bot.tear_down()
                 self.report.generate()  # Updates the report on each iteration.
             progress.update()
 
@@ -877,16 +956,28 @@ class StressTest:
             steps.append(step)
             step *= 2
 
-        for bot in self.bots:
-            bot.graph_title = title
-            bot.graph_variable = lambda bot: bot.num_participants
-            bot.graph_x_title = 'Number of participants'
+        for session_name, bots in self.bots_per_session.items():
             progress = tqdm(range(steps[-1]), leave=True,
-                            desc='Large sessions (%s)'
-                                 % bot.__class__.__name__)
+                            desc='Large sessions (%s)' % session_name)
             for num_participants in steps:
-                bot.num_participants = num_participants
-                bot.run()
+                admin_bot = AdminBot(self.server, self.browsers, self.report)
+                admin_bot.session_name = session_name
+                admin_bot.graph_title = '%s (admin)' % title
+                admin_bot.graph_x_title = 'Number of participants'
+                admin_bot.graph_variable = lambda bot: bot.num_participants
+                admin_bot.num_participants = num_participants
+                admin_bot.set_up()
+                admin_bot.run(alter_sessions=False)
+
+                for bot in bots:
+                    bot.session = admin_bot.session
+                    bot.graph_title = title
+                    bot.graph_x_title = 'Number of participants'
+                    bot.graph_variable = lambda bot: bot.num_participants
+                    bot.num_participants = num_participants
+                    bot.run(alter_sessions=False)
+
+                admin_bot.tear_down()
                 self.report.generate()  # Updates the report on each iteration.
                 progress.update(num_participants - progress.n)
 
@@ -909,15 +1000,8 @@ class StressTest:
             notify('Stress test finished!')
 
 
-@bot_registry.add
-class SimpleGameAdminBot(AdminBot):
-    session_config = 'simple_game'
-
-
-@bot_registry.add
+@player_bots.add('tests.simple_game')
 class SimpleGamePlayerBot(PlayerBot):
-    session_config = 'simple_game'
-
     def test_page_1(self):
         self.type('my_field', 10)
 
@@ -925,17 +1009,8 @@ class SimpleGamePlayerBot(PlayerBot):
         pass
 
 
-@bot_registry.add
-class MultiPlayerGameAdminBot(AdminBot):
-    session_config = 'multi_player_game'
-    num_participants = 3
-
-
-# @bot_registry.add
+@player_bots.add('tests.multi_player_game')
 class MultiPlayerGamePlayerBot(PlayerBot):
-    session_config = 'multi_player_game'
-    num_participants = 3
-
     def test_page_1(self):
         if self.player.id_in_group != 1:
             self.skip_page()
@@ -957,20 +1032,24 @@ class MultiPlayerGamePlayerBot(PlayerBot):
         pass
 
 
-@bot_registry.add
-class TwoSimpleGamesAdminBot(AdminBot):
-    session_config = 'two_simple_games'
-
-
-# @bot_registry.add
-class TwoSimpleGamesPlayerBot(PlayerBot):
-    session_config = 'two_simple_games'
-
-    # FIXME: This application is broken, write the page tests when it is fixed.
-
-
 class Command(BaseCommand):
     help = 'Tests oTree performance under a lot of stress.'
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            'session_name', type=str, nargs='*',
+            help='If omitted, all sessions in SESSION_CONFIGS are run')
+        parser.add_argument(
+            '-a', '--address', action='store', type=str, dest='server_address',
+            help='Server domain or IP to be used, '
+                 '(if omitted, a server will be started)')
+        parser.add_argument(
+            '-p', '--port', action='store', type=int, dest='server_port',
+            help='Server port')
+        # TODO: Add arguments to specify the browser path.
+
     def handle(self, *args, **options):
-        StressTest().run()
+        sessions_names = options['session_name']
+        server_address = options['server_address']
+        server_port = options['server_port']
+        StressTest(sessions_names, server_address, server_port).run()
