@@ -88,12 +88,14 @@ class Command(BaseCommand):
         # on Firefox, this seems like a way to get each URL
         # being opened in tabs rather than windows.
         # (even if i use open_new_tab)
-        webbrowser.open_new_tab(base_url)
-        time.sleep(3)
+        browser = webbrowser.get('chrome')
+        #b.open_new_tab(base_url)
+        #time.sleep(3)
 
         bot_start_time = time.time()
         for url in start_urls:
-            webbrowser.open_new_tab(url)
+            browser = webbrowser.get('chrome')
+            browser.open_new_tab(url)
 
         # queue blocks until an item is available
         bots_finished = redis.StrictRedis(db=15)

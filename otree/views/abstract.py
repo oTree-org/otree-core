@@ -852,7 +852,7 @@ class FormPageMixin(object):
     def _get_browser_bot_submission(self):
         # request.POST contains CSRF token and maybe other important stuff
         post_data = dict(self.request.POST)
-        submit_model = BrowserBotSubmit.objects.filter(
+        submit_model = BrowserBotSubmit.objects.order_by('id').filter(
             participant=self.participant,
         ).first()
         if submit_model:

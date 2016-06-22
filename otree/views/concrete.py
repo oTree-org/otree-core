@@ -344,7 +344,7 @@ class StaleRoomVisits(vanilla.View):
 
         now = django.utils.timezone.now()
 
-        stale_threshold = now - timedelta(seconds=15)
+        stale_threshold = now - timedelta(seconds=20)
         stale_participant_labels = ParticipantRoomVisit.objects.filter(
             room_name=kwargs['room'],
             last_updated__lt=stale_threshold
