@@ -562,7 +562,7 @@ class InGameWaitPageMixin(object):
             if self.wait_for_all_groups:
                 completion = CompletedSubsessionWaitPage(
                     page_index=self._index_in_pages,
-                    session_pk=self.session.pk
+                    session=self.session
                 )
             else:
                 completion = CompletedGroupWaitPage(
@@ -690,7 +690,7 @@ class InGameWaitPageMixin(object):
         if self.wait_for_all_groups:
             return CompletedSubsessionWaitPage.objects.filter(
                 page_index=self._index_in_pages,
-                session_pk=self.session.pk,
+                session=self.session,
                 after_all_players_arrive_run=True).exists()
         return CompletedGroupWaitPage.objects.filter(
             page_index=self._index_in_pages,
