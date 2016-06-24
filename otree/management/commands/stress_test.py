@@ -762,128 +762,6 @@ class AdminBot(Bot):
             self.get(url)
 
 
-class PlayerBot(Bot):
-    def __init__(self, *args, **kwargs):
-        super(PlayerBot, self).__init__(*args, **kwargs)
-
-        self.id_in_session = None
-        self.participant = None
-        self.player = None
-        self.view = None
-
-    @property
-    def id_in_session(self):
-        return self.thread_local.id_in_session
-
-    @id_in_session.setter
-    def id_in_session(self, id_in_session):
-        self.thread_local.id_in_session = id_in_session
-
-    @property
-    def player(self):
-        return self.thread_local.player
-
-    @player.setter
-    def player(self, player):
-        self.thread_local.player = player
-
-    @property
-    def participant(self):
-        return self.thread_local.participant
-
-    @participant.setter
-    def participant(self, participant):
-        self.thread_local.participant = participant
-
-    @property
-    def view(self):
-        return self.thread_local.view
-
-    @view.setter
-    def view(self, view):
-        self.thread_local.view = view
-
-    def participate(self, page_number):
-        participants = self.session.get_participants()
-        self.participant = participants.get(id_in_session=self.id_in_session)
-        url = self.server.url + self.participant._start_url()
-        if page_number == 1:
-            with self.time('Participant page 1'):
-                self.get(url)
-        else:
-            self.get(url)
-        # We need to fetch the participant object again since it was modified
-        # by the view.
-        self.participant = Participant.objects.get(pk=self.participant.pk)
-        self.player = self.participant.get_current_player()
-        self.view = resolve(self.current_url[len(self.server.url):]).func
-
-    def run_participant(self, browser, id_in_session, page_number, last_page,
-                        test_page_method):
-        self.browser = browser
-        self.id_in_session = id_in_session
-        self.participate(page_number)
-        try:
-            test_page_method()
-        except SkipPage:
-            return
-
-        is_last_page = page_number == last_page
-        page_name = 'finished' if is_last_page else page_number + 1
-        with self.time('Participant page %s' % page_name):
-            self.submit()
-
-    def run(self, alter_sessions=True):
-        self.set_up(alter_sessions)
-
-        test_page_re = re.compile('^test_page_(\d+)$')
-        test_page_methods = {}
-        for name, method in self.get_test_methods():
-            page_match = test_page_re.match(name)
-            test_page_methods[int(page_match.group(1))] = method
-
-        # Runs the test_page_1, 2, 3... methods.
-        last_page = max(test_page_methods) if test_page_methods else 1
-        test_pages = sorted(test_page_methods.items(), key=lambda t: t[0])
-        for page_number, test_page_method in test_pages:
-            for id_in_session in range(1, self.num_participants + 1):
-                browser = self.browsers.get_available_browser()
-                self.browsers.add_task(
-                    browser,
-                    lambda: self.run_participant(
-                        browser, id_in_session, page_number, last_page,
-                        test_page_method))
-            self.browsers.wait_until_all_available()
-
-        self.tear_down(alter_sessions)
-
-
-class PlayerBotRegistry:
-    def __init__(self):
-        self.bots = {}
-
-    def add(self, app_name):
-        def inner(bot_class):
-            if app_name in self.bots:
-                raise ValueError("A bot is already registered for '%s'"
-                                 % app_name)
-            self.bots[app_name] = bot_class
-            return bot_class
-        return inner
-
-    def get_bots_for(self, session_name):
-        session = SESSION_CONFIGS_DICT[session_name]
-        return [self.bots[app_name] for app_name in session['app_sequence']
-                if app_name in self.bots]
-
-    def __iter__(self):
-        for app_name, bot in self.bots.items():
-            yield app_name, bot
-
-
-player_bots = PlayerBotRegistry()
-
-
 def get_cache_key(participant_code, index, event):
     return 'bots:%s:%s:%s' % (participant_code, index, event)
 
@@ -979,6 +857,9 @@ class StressTest:
             except KeyError:
                 raise KeyError("Undefined session config '%s'." % session_name)
 
+        self.num_participants = lcm([session['num_demo_participants']
+                                     for session in self.sessions.values()])
+
         self.report = Report()
 
         self.browsers = ParallelBrowsers()
@@ -988,15 +869,6 @@ class StressTest:
 
         self.server = Server(server_address, server_port)
         self.server.start()
-
-        self.bots_per_session = OrderedDict([
-            (session_name,
-             [bot_class(self.server, self.browsers, self.report)
-              for bot_class in player_bots.get_bots_for(session_name)])
-            for session_name in self.sessions
-        ])
-        self.num_participants = lcm([session['num_demo_participants']
-                                     for session in self.sessions.values()])
 
     def test_concurrent_users(self):
         num_participants = (self.num_participants
@@ -1101,38 +973,6 @@ class StressTest:
             self.browser_process.kill()
             self.server.stop()
             notify('Stress test finished!')
-
-
-@player_bots.add('tests.simple_game')
-class SimpleGamePlayerBot(PlayerBot):
-    def test_page_1(self):
-        self.type('my_field', 10)
-
-    def test_page_2(self):
-        pass
-
-
-@player_bots.add('tests.multi_player_game')
-class MultiPlayerGamePlayerBot(PlayerBot):
-    def test_page_1(self):
-        if self.player.id_in_group != 1:
-            self.skip_page()
-
-    def test_page_2(self):
-        self.skip_page()
-
-    def test_page_3(self):
-        pass
-
-    def test_page_4(self):
-        if self.player.id_in_group != 1:
-            self.skip_page()
-
-    def test_page_5(self):
-        self.skip_page()
-
-    def test_page_6(self):
-        pass
 
 
 class Command(BaseCommand):
