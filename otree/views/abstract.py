@@ -25,6 +25,7 @@ from django.utils.translation import ugettext as _
 from six.moves import range
 
 import channels
+from huey.contrib.djhuey import HUEY
 
 import vanilla
 
@@ -133,7 +134,6 @@ class OTreeMixin(SaveObjectsMixin, object):
 
     is_debug = settings.DEBUG
     is_otree_dot_org = 'IS_OTREE_DOT_ORG' in os.environ
-    use_browser_bots = settings.USE_BROWSER_BOTS
 
     @classmethod
     def get_name_in_url(cls):
@@ -873,10 +873,7 @@ class FormPageMixin(object):
             post_data.update(submit_model.param_dict)
             submit_model.delete()
         else:
-            import redis
-            bot_completion = redis.StrictRedis(db=15)
-            bot_completion.rpush(
-                self.session.code, True)
+            HUEY.storage.conn.rpush(self.session.code, True)
         return post_data
 
     def socket_url(self):

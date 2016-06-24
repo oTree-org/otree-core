@@ -7,4 +7,6 @@ from django.conf import settings
 def otree_context(request):
     return {
         "PAGE_FOOTER": settings.PAGE_FOOTER,
-        "SEO": getattr(settings, "SEO", None) or ()}
+        "SEO": getattr(settings, "SEO", None) or (),
+        'USE_BROWSER_BOTS': settings.USE_BROWSER_BOTS,
+    }

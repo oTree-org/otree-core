@@ -3,6 +3,7 @@
 
 import time
 from threading import Thread
+from huey.contrib.djhuey import HUEY
 import six
 import requests
 from queue import Queue
@@ -96,9 +97,8 @@ class Command(BaseCommand):
             webbrowser.open_new_tab(url)
 
         # queue blocks until an item is available
-        bots_finished = redis.StrictRedis(db=15)
         for i in range(num_participants):
-            bots_finished.blpop(session.code)
+            HUEY.storage.conn.blpop(session.code)
 
         print('{}: {} bots finished in {} seconds'.format(
             session_config_name,

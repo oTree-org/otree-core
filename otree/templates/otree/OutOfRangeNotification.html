@@ -12,3 +12,21 @@
     </p>
 
 {% endblock %}
+
+{% block internal_scripts %}
+    {{ block.super }}
+
+    {% if USE_BROWSER_BOTS %}
+        <script type="text/javascript">
+            $(function () {
+                $.ajax('{% url 'browser_bots_data' %}',
+                       {async: false,
+                        data: {participant: '{{ participant_code }}',
+                               event: 'finished',
+                               timestamp: new Date() / 1000}});
+                window.close();
+            });
+        </script>
+    {% endif %}
+
+{% endblock %}

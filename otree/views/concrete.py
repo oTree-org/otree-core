@@ -43,7 +43,8 @@ class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
 
     def dispatch(self, request, *args, **kwargs):
         return TemplateResponse(
-            request, 'otree/OutOfRangeNotification.html'
+            request, 'otree/OutOfRangeNotification.html', context={
+                'participant_code': self.kwargs[constants.participant_code]}
         )
 
 
@@ -62,6 +63,10 @@ class InitializeParticipant(vanilla.UpdateView):
         return r'^InitializeParticipant/(?P<{}>[a-z0-9]+)/$'.format(
             constants.participant_code
         )
+
+    @classmethod
+    def url_name(cls):
+        return 'initialize_participant'
 
     def get(self, *args, **kwargs):
 

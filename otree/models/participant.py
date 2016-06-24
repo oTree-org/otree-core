@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from django.db.models import permalink
 
 import django.test
 
@@ -135,6 +136,9 @@ class Participant(ModelWithVars):
     def _current_page(self):
         return '{}/{} pages'.format(self._index_in_pages, self._max_page_index)
 
+    def is_finished(self):
+        return self._index_in_pages > self._max_page_index
+
     def get_players(self):
         """Used to calculate payoffs"""
         lst = []
@@ -158,7 +162,7 @@ class Participant(ModelWithVars):
         return 'Playing'
 
     def _url_i_should_be_on(self):
-        if self._index_in_pages <= self._max_page_index:
+        if not self.is_finished():
             return self.player_lookup().url
         if self.session.mturk_HITId:
             assignment_id = self.mturk_assignment_id
@@ -180,8 +184,9 @@ class Participant(ModelWithVars):
     def __unicode__(self):
         return self.name()
 
+    @permalink
     def _start_url(self):
-        return '/InitializeParticipant/{}'.format(self.code)
+        return 'initialize_participant', (self.code,)
 
     @property
     def payoff(self):

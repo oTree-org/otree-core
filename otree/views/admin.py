@@ -3,6 +3,7 @@
 
 import collections
 import sys
+from time import time
 import uuid
 import itertools
 import os
@@ -18,6 +19,7 @@ from django.contrib import messages
 from django.utils.encoding import force_text
 
 import channels
+from huey.contrib.djhuey import HUEY
 import vanilla
 
 from ordered_set import OrderedSet as oset
@@ -26,6 +28,7 @@ from collections import OrderedDict
 import easymoney
 
 import otree.constants_internal
+from otree.management.commands.stress_test import get_cache_key
 import otree.models.session
 from otree.common_internal import (
     get_models_module, app_name_format,
@@ -749,7 +752,6 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
         room = session.get_room()
 
         context = super(SessionStartLinks, self).get_context_data(**kwargs)
-        context['use_browser_bots'] = settings.USE_BROWSER_BOTS
 
         if room:
             context.update(
@@ -993,3 +995,28 @@ class OtreeCoreUpdateCheck(vanilla.View):
             OtreeCoreUpdateCheck.results = check_pypi_for_updates()
         return JsonResponse(OtreeCoreUpdateCheck.results, safe=True)
 
+
+class BrowserBotsDataExchange(vanilla.View):
+    @classmethod
+    def url_pattern(cls):
+        return r'^browser-bots-data$'
+
+    @classmethod
+    def url_name(cls):
+        return 'browser_bots_data'
+
+    def get(self, request, *args, **kwargs):
+        participant_code = request.GET.get('participant')
+        index_in_pages = request.GET.get('index_in_pages')
+        if participant_code is None and index_in_pages is None:
+            raise ValueError
+        event = request.GET.get('event')
+        timestamp = request.GET.get('timestamp')
+        if timestamp is None:
+            timestamp = time()
+        else:
+            timestamp = float(timestamp)
+        cache_key = get_cache_key(participant_code, index_in_pages, event)
+        HUEY.storage.conn.set(cache_key, timestamp)
+        return JsonResponse(
+            {'use_browser_bots': settings.USE_BROWSER_BOTS})

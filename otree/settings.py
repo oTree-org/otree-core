@@ -175,7 +175,8 @@ def get_default_settings(initial_settings=None):
         'LOCALE_PATHS': [
             os.path.join(initial_settings.get('BASE_DIR', ''), 'locale')
         ],
-        'USE_BROWSER_BOTS': False,
+        'USE_BROWSER_BOTS': os.environ.get('USE_BROWSER_BOTS',
+                                           'False') == 'True'
     }
 
 
@@ -298,6 +299,7 @@ def augment_settings(settings):
                 'context_processors': collapse_to_unique_list(
                     global_settings.TEMPLATE_CONTEXT_PROCESSORS, (
                         'django.core.context_processors.request',
+                        'otree.context_processors.otree_context',
                     )
                 ),
             },

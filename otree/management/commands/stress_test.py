@@ -15,7 +15,7 @@ import platform
 import re
 from socket import socket
 import sqlite3
-from subprocess import call, Popen, PIPE, STDOUT, CalledProcessError
+from subprocess import call, Popen, PIPE, STDOUT, CalledProcessError, DEVNULL
 from threading import Thread, local
 from time import time, sleep
 import uuid
@@ -26,6 +26,7 @@ from django.core.urlresolvers import reverse, resolve
 from django.db import connection
 from django.utils.formats import date_format
 from django.utils.timezone import now
+from huey.contrib.djhuey import HUEY
 from psutil import Process, NoSuchProcess, virtual_memory
 from selenium.common.exceptions import (
     NoSuchElementException, NoSuchWindowException
@@ -37,6 +38,7 @@ from tqdm import tqdm
 from otree import __version__ as otree_version
 from otree.models import Session, Participant
 from otree.session import create_session, SESSION_CONFIGS_DICT
+from otree.test.client import refresh_from_db
 
 
 def is_port_available(host, port):
@@ -84,8 +86,9 @@ class Series:
         return Time()
 
     def add(self, x, y):
-        self.data[x].append(y)
-        self.set_average(x)
+        if y is not None:
+            self.data[x].append(y)
+            self.set_average(x)
 
     def set_average(self, x):
         l = self.data[x].copy()
@@ -524,10 +527,12 @@ class Server:
         self.url = 'http://%s:%d' % (self.address, self.port)
 
         port_available = is_port_available(self.address, self.port)
-        if port_available and self.is_external:
-            # TODO: Replace this with a ConnectionError when dropping Python 2.
-            raise OSError('Cannot connect to %s.' % self.url)
-        if not port_available or port < self.first_port:
+        if self.is_external:
+            if port_available:
+                # TODO: Replace this with a ConnectionError
+                # when dropping Python 2.
+                raise OSError('Cannot connect to %s.' % self.url)
+        elif not port_available or port < self.first_port:
             # TODO: Replace this with a ConnectionError when dropping Python 2.
             raise OSError('Port %d is not available to create a server.'
                           % self.port)
@@ -545,7 +550,10 @@ class Server:
         print('Starting oTree server on %s...' % self.url)
         command_args = ('honcho', 'start', '-f', self.procfile_path)
         env = os.environ.copy()
-        env['OTREE_PORT'] = str(self.port)
+        env.update(
+            OTREE_PORT=str(self.port),
+            USE_BROWSER_BOTS='True',
+        )
         self.runserver_process = Popen(
             command_args, stdin=PIPE, stdout=PIPE, stderr=STDOUT, env=env)
 
@@ -876,13 +884,91 @@ class PlayerBotRegistry:
 player_bots = PlayerBotRegistry()
 
 
+def get_cache_key(participant_code, index, event):
+    return 'bots:%s:%s:%s' % (participant_code, index, event)
+
+
+class NewPlayerBot:
+    def __init__(self, server, participant):
+        self.server = server
+        self.participant = participant
+        self.start_url = self.server.url + participant._start_url()
+        self.forms_data = OrderedDict()
+
+    @staticmethod
+    def start_bots(browser_path, bots):
+        args = browser_path.split()[:1]
+        for bot in bots:
+            args.extend(browser_path.split()[1:])
+            args.append(bot.start_url)
+        p = Popen(args, stdout=DEVNULL, stderr=DEVNULL, stdin=DEVNULL)
+        start = time()
+        p.wait(10)
+        for bot in bots:
+            HUEY.storage.conn.setnx(bot._get_cache_key(0, 'unload'), start)
+
+    @property
+    def participant(self):
+        return refresh_from_db(self._participant)
+
+    @participant.setter
+    def participant(self, value):
+        self._participant = value
+
+    @property
+    def player(self):
+        return self.participant.get_current_player()
+
+    @property
+    def view(self):
+        return resolve(self.player.url).func
+
+    def __repr__(self):
+        return '<PlayerBot %d>' % self.participant.id_in_session
+
+    def _get_cache_key(self, index, event):
+        return get_cache_key(self.participant.code, index, event)
+
+    def _get_event_data(self, index, event):
+        measured_time = HUEY.storage.conn.get(self._get_cache_key(index,
+                                                                  event))
+        if measured_time is None:
+            return
+        return float(measured_time)
+
+    def _get_data(self):
+        last_page = self.participant._max_page_index
+        for page_index in range(1, last_page+1):
+            new_start = self._get_event_data(page_index - 1, 'unload')
+            if new_start is not None:
+                start = new_start
+            end = self._get_event_data(page_index, 'load')
+            elapsed_time = (None if start is None or end is None
+                            else end - start)
+            yield page_index, elapsed_time
+        yield 'finished', (self._get_event_data(None, 'finished')
+                           - self._get_event_data(last_page, 'unload'))
+
+    def is_waiting(self):
+        return self.participant.is_on_wait_page
+
+    def is_finished(self):
+        return self._get_event_data(None, 'finished') is not None
+
+    def is_stuck(self):
+        return self.is_waiting() or self.is_finished()
+
+    def submit(self, view_func, form_data):
+        self.forms_data[view_func] = form_data
+
+
 class StressTest:
     timeit_iterations = 3
     concurrent_users_steps = 12
     large_sessions_steps = 8
-    large_sessions_concurrent_users = 2
 
-    def __init__(self, sessions_names, server_address, server_port):
+    def __init__(self, sessions_names, browser_path,
+                 server_address, server_port):
         if not sessions_names:
             sessions_names = tuple(SESSION_CONFIGS_DICT.keys())
         self.sessions = OrderedDict()
@@ -896,6 +982,9 @@ class StressTest:
         self.report = Report()
 
         self.browsers = ParallelBrowsers()
+        self.browser_path = browser_path
+        self.browser_process = Popen(self.browser_path.split(), stdout=DEVNULL,
+                                     stderr=DEVNULL, stdin=DEVNULL)
 
         self.server = Server(server_address, server_port)
         self.server.start()
@@ -917,38 +1006,43 @@ class StressTest:
                  % num_participants)
 
         steps = list(range(1, self.concurrent_users_steps + 1))
-        progress = tqdm(range(steps[-1]), leave=True)
-        for concurrent_users in steps:
-            self.browsers.amount = concurrent_users
-            for session_name, bots in self.bots_per_session.items():
-                progress.set_description('Concurrent users (%s)'
-                                         % session_name)
+        for session_name in self.sessions:
+            progress = tqdm(range(steps[-1]), leave=True,
+                            desc='Concurrent users (%s)' % session_name)
 
-                admin_bot = AdminBot(self.server, self.browsers, self.report)
-                admin_bot.session_name = session_name
-                admin_bot.graph_title = '%s (admin)' % title
-                admin_bot.graph_x_title = 'Number of concurrent users'
-                admin_bot.graph_variable = lambda bot: bot.browsers.amount
-                admin_bot.num_participants = num_participants
-                admin_bot.set_up()
+            graph = self.report.get_graph(title, session_name)
+            graph.x_title = 'Number of concurrent users'
+
+            for concurrent_users in steps:
+                session = create_session(
+                    session_name, num_participants=num_participants)
+
+                participants = list(session.get_participants())
+                while not all(p.is_finished() for p in session.get_participants()):
+                    for i in range(0, num_participants, concurrent_users):
+                        bots = []
+                        for participant in participants[i:i+concurrent_users]:
+                            bots.append(NewPlayerBot(self.server, participant))
+                        NewPlayerBot.start_bots(
+                            self.browser_path, bots[-concurrent_users:])
+                        while not all(bot.is_stuck() for bot in bots):
+                            sleep(0.001)
 
                 for bot in bots:
-                    bot.session = admin_bot.session
-                    bot.graph_title = title
-                    bot.graph_x_title = 'Number of concurrent users'
-                    bot.graph_variable = lambda bot: bot.browsers.amount
-                    bot.num_participants = num_participants
-                    bot.run(alter_sessions=False)
+                    for page_index, elapsed_time in bot._get_data():
+                        series = graph.get_series('Participant page %s'
+                                                  % page_index)
+                        series.add(concurrent_users, elapsed_time)
 
-                admin_bot.tear_down()
                 self.report.generate()  # Updates the report on each iteration.
-            progress.update()
+                progress.update()
+
+                session.delete()
 
     def test_large_sessions(self):
-        title = ('oTree speed with large sessions and %d concurrent users'
-                 % self.large_sessions_concurrent_users)
+        title = 'oTree speed with large sessions'
 
-        self.browsers.amount = self.large_sessions_concurrent_users
+        self.browsers.amount = 1
 
         steps = []
         step = self.num_participants
@@ -956,7 +1050,7 @@ class StressTest:
             steps.append(step)
             step *= 2
 
-        for session_name, bots in self.bots_per_session.items():
+        for session_name in self.sessions:
             progress = tqdm(range(steps[-1]), leave=True,
                             desc='Large sessions (%s)' % session_name)
             for num_participants in steps:
@@ -969,13 +1063,21 @@ class StressTest:
                 admin_bot.set_up()
                 admin_bot.run(alter_sessions=False)
 
+                graph = self.report.get_graph(title, session_name)
+                graph.x_title = 'Number of participants'
+
+                bots = []
+                for participant in admin_bot.session.get_participants():
+                    bots.append(NewPlayerBot(self.server, participant))
+                NewPlayerBot.start_bots(self.browser_path, bots)
+                while not all(bot.is_finished() for bot in bots):
+                    sleep(0.001)
+
                 for bot in bots:
-                    bot.session = admin_bot.session
-                    bot.graph_title = title
-                    bot.graph_x_title = 'Number of participants'
-                    bot.graph_variable = lambda bot: bot.num_participants
-                    bot.num_participants = num_participants
-                    bot.run(alter_sessions=False)
+                    for page_index, elapsed_time in bot._get_data():
+                        series = graph.get_series('Participant page %s'
+                                                  % page_index)
+                        series.add(num_participants, elapsed_time)
 
                 admin_bot.tear_down()
                 self.report.generate()  # Updates the report on each iteration.
@@ -996,6 +1098,7 @@ class StressTest:
             raise
         finally:
             self.browsers.stop()
+            self.browser_process.kill()
             self.server.stop()
             notify('Stress test finished!')
 
@@ -1039,17 +1142,24 @@ class Command(BaseCommand):
         parser.add_argument(
             'session_name', type=str, nargs='*',
             help='If omitted, all sessions in SESSION_CONFIGS are run')
+        # If you use Firefox, you need to set a setting using 'about:config':
+        # 'dom.allow_scripts_to_close_windows' must be true.
         parser.add_argument(
-            '-a', '--address', action='store', type=str, dest='server_address',
+            '-b', '--browser', action='store', type=str, dest='browser_path',
+            default='google-chrome',
+            help='Path to the browser executable, like "firefox --new-tab"')
+        parser.add_argument(
+            '--host', action='store', type=str, dest='server_address',
             help='Server domain or IP to be used, '
                  '(if omitted, a server will be started)')
         parser.add_argument(
             '-p', '--port', action='store', type=int, dest='server_port',
             help='Server port')
-        # TODO: Add arguments to specify the browser path.
 
     def handle(self, *args, **options):
         sessions_names = options['session_name']
+        browser_path = options['browser_path']
         server_address = options['server_address']
         server_port = options['server_port']
-        StressTest(sessions_names, server_address, server_port).run()
+        StressTest(sessions_names, browser_path,
+                   server_address, server_port).run()
