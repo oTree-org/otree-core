@@ -766,7 +766,7 @@ def get_cache_key(participant_code, index, event):
     return 'bots:%s:%s:%s' % (participant_code, index, event)
 
 
-class NewPlayerBot:
+class PlayerBot:
     def __init__(self, server, participant):
         self.server = server
         self.participant = participant
@@ -780,8 +780,8 @@ class NewPlayerBot:
             args.extend(browser_path.split()[1:])
             args.append(bot.start_url)
         p = Popen(args, stdout=DEVNULL, stderr=DEVNULL, stdin=DEVNULL)
-        start = time()
         p.wait(10)
+        start = time()
         for bot in bots:
             HUEY.storage.conn.setnx(bot._get_cache_key(0, 'unload'), start)
 
@@ -842,8 +842,8 @@ class NewPlayerBot:
 
 class StressTest:
     timeit_iterations = 3
-    concurrent_users_steps = 12
-    large_sessions_steps = 8
+    concurrent_users_steps = 24
+    large_sessions_steps = 7
 
     def __init__(self, sessions_names, browser_path,
                  server_address, server_port):
@@ -890,12 +890,13 @@ class StressTest:
                     session_name, num_participants=num_participants)
 
                 participants = list(session.get_participants())
-                while not all(p.is_finished() for p in session.get_participants()):
+                while not all(p.is_finished()
+                              for p in session.get_participants()):
                     for i in range(0, num_participants, concurrent_users):
                         bots = []
                         for participant in participants[i:i+concurrent_users]:
-                            bots.append(NewPlayerBot(self.server, participant))
-                        NewPlayerBot.start_bots(
+                            bots.append(PlayerBot(self.server, participant))
+                        PlayerBot.start_bots(
                             self.browser_path, bots[-concurrent_users:])
                         while not all(bot.is_stuck() for bot in bots):
                             sleep(0.001)
@@ -938,12 +939,14 @@ class StressTest:
                 graph = self.report.get_graph(title, session_name)
                 graph.x_title = 'Number of participants'
 
-                bots = []
-                for participant in admin_bot.session.get_participants():
-                    bots.append(NewPlayerBot(self.server, participant))
-                NewPlayerBot.start_bots(self.browser_path, bots)
-                while not all(bot.is_finished() for bot in bots):
-                    sleep(0.001)
+                while not all(p.is_finished()
+                              for p in admin_bot.session.get_participants()):
+                    bots = []
+                    for participant in admin_bot.session.get_participants():
+                        bots.append(PlayerBot(self.server, participant))
+                    PlayerBot.start_bots(self.browser_path, bots)
+                    while not all(bot.is_stuck() for bot in bots):
+                        sleep(0.001)
 
                 for bot in bots:
                     for page_index, elapsed_time in bot._get_data():
