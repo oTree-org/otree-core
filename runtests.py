@@ -3,6 +3,9 @@
 
 import os
 import sys
+import logging
+
+from raven.base import Client
 
 
 base_path = os.path.dirname(os.path.abspath(__file__))
@@ -14,9 +17,9 @@ sys.path.insert(0, base_path)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tests.settings")
 os.environ.setdefault("DJANGO_COLORS", "nocolor")
 
-default_test_apps = (
-    'tests',
-)
+default_test_apps = ('tests',)
+
+Client.logger.setLevel(logging.CRITICAL)
 
 
 def runtests(argv):
