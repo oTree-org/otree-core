@@ -48,7 +48,8 @@ def get_all_fields(Model, for_export=False):
     if Model is PageCompletion:
         return [
             'session_id',
-            'participant_id',
+            'participant__id_in_session',
+            'participant__code',
             'page_index',
             'app_name',
             'page_name',
