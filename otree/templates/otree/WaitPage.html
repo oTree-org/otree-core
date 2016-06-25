@@ -93,6 +93,7 @@ $(document).ready(function () {
         };
     }
 
+    {% comment %}
     {% if USE_BROWSER_BOTS and participant %}
         $.ajax('{% url 'browser_bots_data' %}',
                {async: false,
@@ -110,10 +111,13 @@ $(document).ready(function () {
 
         window.close();
     {% endif %}
+    {% endcomment %}
 
  });
  </script>
  {% endblock %}
+
+
 
 {# never show footer here #}
 {% block page_footer  %}{% endblock %}

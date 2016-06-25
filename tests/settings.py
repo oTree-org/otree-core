@@ -124,6 +124,10 @@ ROOMS = [
     {
         'name': 'anon',
         'display_name': 'Anonymous',
+    },
+    {
+        'name': 'browser_bots',
+        'display_name': 'For Browser Bots & Stress Test',
     }
 ]
 

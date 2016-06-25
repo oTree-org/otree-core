@@ -779,7 +779,8 @@ class PlayerBot:
         for bot in bots:
             args.extend(browser_path.split()[1:])
             args.append(bot.start_url)
-        p = Popen(args, stdout=DEVNULL, stderr=DEVNULL, stdin=DEVNULL)
+        print('**********args:', args)
+        p = Popen(args)
         p.wait(10)
         start = time()
         for bot in bots:
@@ -864,53 +865,42 @@ class StressTest:
 
         self.browsers = ParallelBrowsers()
         self.browser_path = browser_path
-        self.browser_process = Popen(self.browser_path.split(), stdout=DEVNULL,
-                                     stderr=DEVNULL, stdin=DEVNULL)
 
         self.server = Server(server_address, server_port)
         self.server.start()
 
-    def test_concurrent_users(self):
-        num_participants = (self.num_participants
-                            * ceil(self.concurrent_users_steps
-                                   / self.num_participants))
-        title = ('oTree speed with concurrent users and %d participants'
-                 % num_participants)
 
-        steps = list(range(1, self.concurrent_users_steps + 1))
+    def test_concurrent_users(self):
+
+        session_sizes = [2, 6, 12, 24, 48]
+
+        '''
+        title = ('oTree speed for players')
+
         for session_name in self.sessions:
-            progress = tqdm(range(steps[-1]), leave=True,
-                            desc='Concurrent users (%s)' % session_name)
 
             graph = self.report.get_graph(title, session_name)
             graph.x_title = 'Number of concurrent users'
 
-            for concurrent_users in steps:
+            for num_participants in session_sizes:
                 session = create_session(
                     session_name, num_participants=num_participants)
 
-                participants = list(session.get_participants())
-                while not all(p.is_finished()
-                              for p in session.get_participants()):
-                    for i in range(0, num_participants, concurrent_users):
-                        bots = []
-                        for participant in participants[i:i+concurrent_users]:
-                            bots.append(PlayerBot(self.server, participant))
-                        PlayerBot.start_bots(
-                            self.browser_path, bots[-concurrent_users:])
-                        while not all(bot.is_stuck() for bot in bots):
-                            sleep(0.001)
+                participants = session.get_participants()
+                bots = [PlayerBot(self.server, p) for p in participants]
 
-                for bot in bots:
-                    for page_index, elapsed_time in bot._get_data():
-                        series = graph.get_series('Participant page %s'
-                                                  % page_index)
-                        series.add(concurrent_users, elapsed_time)
+                PlayerBot.start_bots(
+                    self.browser_path, bots)
+
+                # queue blocks until an item is available
+                for i in range(num_participants):
+                    HUEY.storage.conn.blpop(session.code)
 
                 self.report.generate()  # Updates the report on each iteration.
                 progress.update()
 
                 session.delete()
+        '''
 
     def test_large_sessions(self):
         title = 'oTree speed with large sessions'
@@ -973,7 +963,6 @@ class StressTest:
             raise
         finally:
             self.browsers.stop()
-            self.browser_process.kill()
             self.server.stop()
             notify('Stress test finished!')
 

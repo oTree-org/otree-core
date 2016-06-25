@@ -7,6 +7,7 @@
 <script type="text/javascript">
 $(document).ready(function () {
 
+
     var socket;
     // TODO: add to view
     var index_in_pages = {{ view.index_in_pages }};
@@ -41,24 +42,12 @@ $(document).ready(function () {
         }
     }
 
+
+
     {% if USE_BROWSER_BOTS %}
-        $.ajax('{% url 'browser_bots_data' %}',
-               {async: false,
-                data: {participant: '{{ participant.code }}',
-                       index_in_pages: '{{ view.index_in_pages }}',
-                       event: 'load', timestamp: new Date() / 1000}});
-
-        window.onbeforeunload = function () {
-            $.ajax('{% url 'browser_bots_data' %}',
-                   {async: false,
-                    data: {participant: '{{ participant.code }}',
-                           index_in_pages: '{{ view.index_in_pages }}',
-                           event: 'unload'}});
-        };
-
-        {# submit the form instantly #}
         $('#form').submit();
     {% endif %}
+
 
 });
 

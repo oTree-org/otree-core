@@ -873,7 +873,11 @@ class FormPageMixin(object):
             post_data.update(submit_model.param_dict)
             submit_model.delete()
         else:
-            HUEY.storage.conn.rpush(self.session.code, True)
+            self.participant.browser_bot_finished = True
+            import redis
+            bot_completion = redis.StrictRedis(db=15)
+            bot_completion.rpush(
+                self.session.code, True)
         return post_data
 
     def socket_url(self):

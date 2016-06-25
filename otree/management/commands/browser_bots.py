@@ -16,6 +16,10 @@ import webbrowser
 import redis
 
 from django.conf import settings
+from subprocess import call, Popen, PIPE, STDOUT, CalledProcessError, DEVNULL
+
+FIREFOX_PATH_MSWIN = "C:/Program Files (x86)/Mozilla Firefox/firefox.exe"
+CHROME_PATH_MSWIN = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe'
 
 class Command(BaseCommand):
     help = "oTree: Run browser bots."
@@ -24,16 +28,12 @@ class Command(BaseCommand):
         parser.add_argument(
             'session_config_name', type=six.u, help="The session config name")
         parser.add_argument(
-            'num_participants', type=int,
-            help="Number of participants for the created session")
-        parser.add_argument(
             '--base_url', action='store', type=str, dest='base_url',
             default='http://127.0.0.1:8000',
             help='Base URL')
 
     def handle(self, *args, **options):
         session_config_name = options["session_config_name"]
-        num_participants = options['num_participants']
         base_url = options['base_url']
 
         # need to set USE_BROWSER_BOTS = True
@@ -45,70 +45,66 @@ class Command(BaseCommand):
                 'You need to set USE_BROWSER_BOTS = True '
                 'in settings.py, before running this command.'
             )
-        session = create_session(
-            session_config_name=session_config_name,
-            num_participants=num_participants)
 
-
-        # TODO: change to runprodserver
-        #t = Thread(
-        #    target=call_command,
-        #    #args=['runserver', '--noreload'],
-        #    args=['webandworkers', '--addr=127.0.0.1'],
-        #    #daemon=True
-        #)
-        #t.start()
-
-        SERVER_STARTUP_TIMEOUT = 5
-        start_time = time.time()
-        ping_ok = False
-        while time.time() - start_time < SERVER_STARTUP_TIMEOUT:
-            try:
-                resp = requests.get(base_url)
-                if resp.ok:
-                    ping_ok = True
-                    break
-            except:
-                # raises various errors: ConnectionRefusedError, NewConnectionError,
-                # etc.
-                pass
-            time.sleep(1)
-        if not ping_ok:
+        try:
+            resp = requests.get(base_url)
+            assert resp.ok
+        except:
             raise Exception(
-                'Could not connect to server at {} within {} seconds. '
-                'Before running this command, you need to run the server. '.format(
-                    base_url,
-                    SERVER_STARTUP_TIMEOUT)
+                'Could not connect to server at {}.'
+                'Before running this command, '
+                'you need to run the server.'.format(
+                    base_url)
             )
 
-        start_urls = [urllib.parse.urljoin(base_url, p._start_url())
-                      for p in session.get_participants()]
+
+        session_sizes = [6, 12, 24, 36]
+
+        for num_participants in session_sizes:
+
+            try:
+                start_url = urllib.parse.urljoin(base_url, '/room/browser_bots/')
+                args = [FIREFOX_PATH_MSWIN]
+                for i in range(num_participants):
+                    args.append(start_url)
+
+                browser_process = Popen(args)
+
+                bots_finished = redis.StrictRedis(db=15)
+
+                print('Creating a session with {} participants'.format(num_participants))
+                session = create_session(
+                    session_config_name=session_config_name,
+                    num_participants=num_participants,
+                    room_name='browser_bots'
+                )
+
+                bot_start_time = time.time()
+
+                #browser_process.wait()
+                participants_finished = 0
+                while True:
+                    if bots_finished.lpop(session.code):
+                        participants_finished += 1
+                        if participants_finished == num_participants:
+                            break
+                    else:
+                        time.sleep(0.1)
 
 
-        # hack: open a tab then sleep a few seconds
-        # on Firefox, this seems like a way to get each URL
-        # being opened in tabs rather than windows.
-        # (even if i use open_new_tab)
-        webbrowser.open_new_tab(base_url)
-        time.sleep(3)
+                #for i in range(num_participants):
+                #    bots_finished.blpop(session.code)
+                #    print('{} participants finished'.format(i + 1))
 
-        bot_start_time = time.time()
-        for url in start_urls:
-            webbrowser.open_new_tab(url)
+                print('{}: {} bots finished in {} seconds'.format(
+                    session_config_name,
+                    num_participants,
+                    round(time.time() - bot_start_time, 2),
+                ))
 
-        # queue blocks until an item is available
-        for i in range(num_participants):
-            HUEY.storage.conn.blpop(session.code)
-
-        print('{}: {} bots finished in {} seconds'.format(
-            session_config_name,
-            num_participants,
-            round(time.time() - bot_start_time, 2),
-        ))
-
-        session.delete()
-
-
-
-
+                # .terminate() is not doing anything for me on Firefox
+                browser_process.kill()
+            except:
+                session.delete()
+                raise
 
