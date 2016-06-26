@@ -16,9 +16,6 @@ DEFAULT_MIDDLEWARE_CLASSES = (
     'whitenoise.middleware.WhiteNoiseMiddleware',
     # this middlewware is for generate human redeable errors
 
-    # alwaws before CommonMiddleware
-    'corsheaders.middleware.CorsMiddleware',
-
     'django.contrib.sessions.middleware.SessionMiddleware',
     # 'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -218,7 +215,7 @@ def augment_settings(settings):
         'huey.contrib.djhuey',
         'rest_framework',
         'idmap',
-        'corsheaders']
+    ]
 
     if settings.get('SENTRY_DSN'):
         settings.setdefault(
@@ -310,13 +307,6 @@ def augment_settings(settings):
         'LOGIN_REDIRECT_URL': 'sessions',
 
     }
-
-    # CORS CONFS
-    augmented_settings.update({
-        'CORS_ORIGIN_ALLOW_ALL': True,
-        'CORS_URLS_REGEX': r'^ping/$',
-        'CORS_ALLOW_METHODS': ('GET',)
-    })
 
     settings.setdefault('LANGUAGE_CODE', global_settings.LANGUAGE_CODE)
 
