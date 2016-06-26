@@ -314,6 +314,8 @@ def augment_settings(settings):
 
     }
 
+
+
     # CORS CONFS
     augmented_settings.update({
         'CORS_ORIGIN_ALLOW_ALL': True,
