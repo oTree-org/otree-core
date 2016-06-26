@@ -1,5 +1,0 @@
-web: daphne otree.asgi:channel_layer -b 0.0.0.0 -p $OTREE_PORT
-worker1: otree runworker
-worker2: otree runworker
-worker3: otree runworker
-timeoutworker: otree timeoutworker
