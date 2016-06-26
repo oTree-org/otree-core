@@ -873,15 +873,15 @@ class FormPageMixin(object):
                     )
                 )
             post_data.update(submit_model.param_dict)
-            submit_invalid = submit_model.submit_invalid
+            input_intentionally_invalid = not submit_model.input_is_valid
             submit_model.delete()
         else:
-            submit_invalid = False
+            input_intentionally_invalid = False
             import redis
             bot_completion = redis.StrictRedis(db=15)
             bot_completion.rpush(
                 self.session.code, True)
-        return post_data, submit_invalid
+        return post_data, input_intentionally_invalid
 
     def socket_url(self):
         '''called from template. can't start with underscore because used
