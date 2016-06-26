@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import logging
+
 import six
 
 from django.core.management.base import BaseCommand
@@ -8,6 +10,17 @@ from django.core.management.base import BaseCommand
 from otree.session import create_session
 from otree.room import ROOM_DICT
 
+
+# =============================================================================
+# LOGGING
+# =============================================================================
+
+logger = logging.getLogger('otree')
+
+
+# =============================================================================
+# COMMAND
+# =============================================================================
 
 class Command(BaseCommand):
     help = "oTree: Create a session."
@@ -38,8 +51,7 @@ class Command(BaseCommand):
         if options['room']:
             room = ROOM_DICT[options['room']]
             room.session = session
-            print("Created session with code {} in room '{}'\n".format(
-                session.code, options['room']
-            ))
+            logger.info("Created session with code {} in room '{}'\n".format(
+                session.code, options['room']))
         else:
-            print("Created session with code {}\n".format(session.code))
+            logger.info("Created session with code {}\n".format(session.code))
