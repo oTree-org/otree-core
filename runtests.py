@@ -9,7 +9,6 @@ import os
 import sys
 import logging
 
-from raven.base import Client
 
 # =============================================================================
 # CONF

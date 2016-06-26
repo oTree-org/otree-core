@@ -23,8 +23,11 @@ import otree.common_internal
 # =============================================================================
 
 COVERAGE_CONSOLE = "console"
+
 COVERAGE_HTML = "HTML"
+
 COVERAGE_ALL = "all"
+
 COVERAGE_CHOICES = (COVERAGE_ALL, COVERAGE_CONSOLE, COVERAGE_HTML)
 
 
