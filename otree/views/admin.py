@@ -750,7 +750,13 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
         room = session.get_room()
 
         context = super(SessionStartLinks, self).get_context_data(**kwargs)
-        context['use_browser_bots'] = session._use_browser_bots
+
+        sqlite = settings.DATABASES['default']['ENGINE'].endswith('sqlite3')
+        context.update({
+            'use_browser_bots': session._use_browser_bots,
+            'sqlite': sqlite,
+            'runserver': 'runserver' in sys.argv
+        })
 
         if room:
             context.update(

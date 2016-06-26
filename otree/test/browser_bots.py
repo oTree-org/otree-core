@@ -10,7 +10,9 @@ def store_submits_in_db(session):
             # this appends the Submit objects
             # to participant_bot.submits
             player_bot.play_round()
-        for submit in participant_bot.submits:
+        submits = participant_bot.submits
+        num_submits = len(submits)
+        for i, submit in enumerate(submits, start=1):
             submit_model = BrowserBotSubmit(
                 session=session,
                 participant=participant,
@@ -22,4 +24,6 @@ def store_submits_in_db(session):
                 input_is_valid=submit.input_is_valid,
             )
             submit_models.append(submit_model)
+            if i == num_submits:
+                submit_model.is_last = True
     BrowserBotSubmit.objects.bulk_create(submit_models)

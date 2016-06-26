@@ -4,17 +4,18 @@
 from __future__ import print_function
 import sys
 import time
+import logging
 import six
 import requests
 from django.core.management.base import BaseCommand
 from otree.session import create_session
 from six.moves import urllib
-import redis
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from subprocess import Popen
 from otree.room import ROOM_DICT
 from otree.session import SESSION_CONFIGS_DICT, get_lcm
+from huey.contrib.djhuey import HUEY
 
 FIREFOX_PATH_MSWIN = "C:/Program Files (x86)/Mozilla Firefox/firefox.exe"
 CHROME_PATH_MSWIN = (
@@ -25,6 +26,12 @@ DEFAULT_ROOM_NAME = 'browser_bots'
 ROOM_FLAG = '--room'
 NUM_PARTICIPANTS_FLAG = '--num_participants'
 BASE_URL_FLAG = '--base_url'
+
+MAX_CONNECTIONS_INSTRUCTIONS = (
+    "Note: Remember to increase max-persistent-connections-per-server\n "
+    "in Firefox's about:config. Otherwise, this will be very slow.\n"
+    "It should be set to at least the number of participants.\n"
+)
 
 
 class Command(BaseCommand):
@@ -59,6 +66,8 @@ class Command(BaseCommand):
         num_participants = options['num_participants']
         room_name = options['room']
 
+        print(MAX_CONNECTIONS_INSTRUCTIONS)
+
         browser_path = getattr(
             settings, 'BROWSER_PATH', FIREFOX_PATH_MSWIN
         )
@@ -87,6 +96,7 @@ class Command(BaseCommand):
             reverse('assign_visitor_to_room', args=[room_name])
         )
 
+        logging.getLogger("requests").setLevel(logging.WARNING)
         try:
             resp = requests.get(start_url)
             assert resp.ok
@@ -118,8 +128,6 @@ class Command(BaseCommand):
                     type(exception)(msg.format(exception)),
                     sys.exc_info()[2])
 
-            bots_finished = redis.StrictRedis(db=15)
-
             print(
                 '{}, {} participants...'.format(
                     session_config_name,
@@ -139,7 +147,7 @@ class Command(BaseCommand):
 
                 participants_finished = 0
                 while True:
-                    if bots_finished.lpop(session.code):
+                    if HUEY.storage.conn.lpop(session.code):
                         participants_finished += 1
                         if participants_finished == num_participants:
                             break

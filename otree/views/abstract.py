@@ -21,7 +21,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache, cache_control
 from django.http import HttpResponseRedirect, Http404
 from django.utils.translation import ugettext as _
-
+from huey.contrib.djhuey import HUEY
 from six.moves import range
 
 import channels
@@ -750,6 +750,49 @@ class InGameWaitPageMixin(object):
         return ''
 
 
+class BrowserBot(object):
+
+    def __init__(self, view):
+        self.view = view
+        self.participant = view.participant
+        self.session = view.session
+        self.send_finished_message = False
+        self.input_is_valid = True
+
+    def get_submission(self):
+        # request.POST contains CSRF token and maybe other important stuff
+        post_data = dict(self.view.request.POST)
+        submit_model = BrowserBotSubmit.objects.order_by('id').filter(
+            participant=self.participant,
+        ).first()
+        if submit_model:
+            this_page_dotted = '{}.{}'.format(
+                self.view.__module__,
+                self.view.__class__.__name__
+            )
+            if not submit_model.page_dotted_name == this_page_dotted:
+                raise ValueError(
+                    "Bot is trying to submit page {}, "
+                    "but current page is {}. "
+                    "Check your bot in tests.py, "
+                    "then create a new session.".format(
+                        submit_model.page_dotted_name,
+                        this_page_dotted
+                    )
+                )
+            post_data.update(submit_model.param_dict)
+            self.input_is_valid = submit_model.input_is_valid
+            self.send_finished_message = submit_model.is_last
+            submit_model.delete()
+
+        return post_data
+
+    def check_if_finished(self):
+        if self.send_finished_message:
+            HUEY.storage.conn.rpush(
+                self.session.code, True)
+
+
 class FormPageMixin(object):
     """mixin rather than subclass because we want these methods only to be
     first in MRO
@@ -825,8 +868,10 @@ class FormPageMixin(object):
             self._set_auto_submit_values()
         else:
             self.timeout_happened = False
-            if self.session._use_browser_bots:
-                post_data, submit_invalid = self._get_browser_bot_submission()
+            use_browser_bots = self.session._use_browser_bots
+            if use_browser_bots:
+                bot = BrowserBot(view=self)
+                post_data = bot.get_submission()
             else:
                 post_data = request.POST
             form = self.get_form(
@@ -834,8 +879,10 @@ class FormPageMixin(object):
             if form.is_valid():
                 self.form = form
                 self.object = form.save()
+                if use_browser_bots:
+                    bot.check_if_finished()
             else:
-                if self.session._use_browser_bots and not submit_invalid:
+                if use_browser_bots and not bot.input_is_valid:
                     errors = [
                         "{}: {}".format(k, repr(v))
                         for k, v in form.errors.items()]
@@ -850,38 +897,6 @@ class FormPageMixin(object):
         self.before_next_page()
         self._increment_index_in_pages()
         return self._redirect_to_page_the_user_should_be_on()
-
-    def _get_browser_bot_submission(self):
-        # request.POST contains CSRF token and maybe other important stuff
-        post_data = dict(self.request.POST)
-        submit_model = BrowserBotSubmit.objects.order_by('id').filter(
-            participant=self.participant,
-        ).first()
-        if submit_model:
-            this_page_dotted = '{}.{}'.format(
-                self.__module__,
-                self.__class__.__name__
-            )
-            if not submit_model.page_dotted_name == this_page_dotted:
-                raise ValueError(
-                    "Bot is trying to submit page {}, "
-                    "but current page is {}. "
-                    "Check your bot in tests.py, "
-                    "then create a new session.".format(
-                        submit_model.page_dotted_name,
-                        this_page_dotted
-                    )
-                )
-            post_data.update(submit_model.param_dict)
-            submit_invalid = submit_model.submit_invalid
-            submit_model.delete()
-        else:
-            submit_invalid = False
-            import redis
-            bot_completion = redis.StrictRedis(db=15)
-            bot_completion.rpush(
-                self.session.code, True)
-        return post_data, submit_invalid
 
     def socket_url(self):
         '''called from template. can't start with underscore because used

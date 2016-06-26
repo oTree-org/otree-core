@@ -146,3 +146,4 @@ class BrowserBotSubmit(models.Model):
     page_dotted_name = models.CharField(max_length=200)
     param_dict = JSONField()
     input_is_valid = models.BooleanField()
+    is_last = models.BooleanField(default=False)
