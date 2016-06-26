@@ -139,6 +139,7 @@ class ExecuteFromCommandLine(TestCase):
         stdout.write.assert_called_with("foo\n")
     '''
 
+
 class OTreeCli(TestCase):
 
     @mock.patch("sys.stdout")

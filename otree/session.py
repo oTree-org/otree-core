@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import re
 import random
 import six
 from functools import reduce
@@ -93,7 +92,8 @@ def validate_session_config(session_config):
         raise ValueError(msg.format(session_config['name']))
 
     if len(app_sequence) == 0:
-        raise ValueError('settings.SESSION_CONFIGS: Need at least one subsession.')
+        raise ValueError(
+            'settings.SESSION_CONFIGS: Need at least one subsession.')
 
 
 def augment_session_config(session_config):
@@ -131,6 +131,7 @@ def augment_session_config(session_config):
     validate_session_config(new_session_config)
     return new_session_config
 
+
 def get_session_configs_dict():
     SESSION_CONFIGS_DICT = OrderedDict()
     for config in settings.SESSION_CONFIGS:
@@ -138,6 +139,7 @@ def get_session_configs_dict():
     return SESSION_CONFIGS_DICT
 
 SESSION_CONFIGS_DICT = get_session_configs_dict()
+
 
 def app_labels_from_sessions(config_names):
     apps = set()
@@ -227,7 +229,8 @@ def create_session(session_config_name, label='', num_participants=None,
 
             subs = bulk_create(
                 models_module.Subsession,
-                [{'round_number': round_number} for round_number in round_numbers])
+                [{'round_number': round_number}
+                 for round_number in round_numbers])
 
             # Create players
             models_module.Player.objects.bulk_create([
@@ -242,13 +245,15 @@ def create_session(session_config_name, label='', num_participants=None,
         session._create_groups_and_initialize()
     # handle case where DB has missing column or table
     # missing table: OperationalError: no such table: pg_subsession
-    # missing column: OperationalError: table pg_player has no column named contribution2
+    # missing column: OperationalError: table pg_player has no column
+    # named contribution2
     except OperationalError as exception:
         exception_str = str(exception)
         if 'table' in exception_str:
             six.reraise(
                 type(exception),
-                type(exception)('{} - Try resetting the database.'.format(exception_str)),
+                type(exception)('{} - Try resetting the database.'.format(
+                    exception_str)),
                 sys.exc_info()[2])
         raise
 

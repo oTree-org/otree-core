@@ -3,20 +3,16 @@
 import uuid
 
 from django.conf import settings
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
-from django.shortcuts import get_object_or_404
 
 import vanilla
 
 import channels
 
-import otree.session
 import otree.constants_internal as constants
-from otree.models.session import Session
 from otree.session import SESSION_CONFIGS_DICT
 from otree.common_internal import channels_create_session_group_name
-from otree.views.abstract import AdminSessionPageMixin
 
 # if it's debug mode, we should always generate a new session
 # because a bug might have been fixed
@@ -93,5 +89,3 @@ class CreateDemoSession(vanilla.GenericView):
             'wait_for_session', args=(pre_create_id,)
         )
         return HttpResponseRedirect(wait_for_session_url)
-
-

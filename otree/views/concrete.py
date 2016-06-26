@@ -38,6 +38,7 @@ from otree.views.abstract import (
 from otree.room import ROOM_DICT
 from otree.models_concrete import ParticipantRoomVisit
 
+
 class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
     name_in_url = 'shared'
 
@@ -264,7 +265,9 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
                     return super(AssignVisitorToRoom, self).get(args, kwargs)
 
             if participant_label not in room.get_participant_labels():
-                return HttpResponseNotFound('The given participant name was not expected.')
+                return HttpResponseNotFound(
+                    'The given participant name was not expected.'
+                )
 
             if room.use_secure_urls:
                 hash = self.request.GET.get('hash')
@@ -288,7 +291,13 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
                 # random chars in case the participant has multiple tabs open
                 self.tab_unique_id,
             ])
-            return render_to_response("otree/WaitPageRoom.html", {'view': self, 'title_text': 'Please wait', 'body_text': 'Waiting for your session to begin'})
+            return render_to_response(
+                "otree/WaitPageRoom.html",
+                {
+                    'view': self, 'title_text': 'Please wait',
+                    'body_text': 'Waiting for your session to begin'
+                }
+            )
 
         assign_new = not room.has_participant_labels()
         if not assign_new:
@@ -394,7 +403,7 @@ class ParticipantRoomPing(vanilla.View):
         visit = get_object_or_404(
             ParticipantRoomVisit, tab_unique_id=kwargs['tab_unique_id']
         )
-        visit.save() # save just to update auto_now timestamp
+        visit.save()  # save just to update auto_now timestamp
         return HttpResponse('')
 
 
@@ -438,7 +447,8 @@ class ToggleArchivedSessions(vanilla.View):
 
     def post(self, request, *args, **kwargs):
         code_list = request.POST.getlist('item-action')
-        sessions = otree.models.session.Session.objects.filter(code__in=code_list)
+        sessions = otree.models.session.Session.objects.filter(
+            code__in=code_list)
         code_dict = {True: [], False: []}
         for code, archived in sessions.values_list('code', 'archived'):
             code_dict[archived].append(code)
@@ -474,4 +484,3 @@ class DeleteSessions(vanilla.View):
             )
             session.delete()
         return HttpResponseRedirect(reverse('sessions'))
-

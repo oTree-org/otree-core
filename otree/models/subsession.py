@@ -5,13 +5,12 @@ from __future__ import division
 
 from django.db.models import Prefetch
 import six
-from six.moves import zip
-
 from otree_save_the_change.mixins import SaveTheChange
 from otree.db import models
 from otree.common_internal import get_models_module
 from otree import matching
 import copy
+
 
 class BaseSubsession(SaveTheChange, models.Model):
     """Base class for all Subsessions.
@@ -123,8 +122,8 @@ class BaseSubsession(SaveTheChange, models.Model):
                 else:
                     raise ValueError(
                         'If you pass a matrix of integers to this function, '
-                        'It must contain all integers from 1 to the number of players '
-                        'in the subsession.'
+                        'It must contain all integers from 1 to '
+                        'the number of players in the subsession.'
                     )
             else:
                 raise TypeError(
@@ -133,7 +132,10 @@ class BaseSubsession(SaveTheChange, models.Model):
                 )
 
         else:
-            existing_pks = list(self.player_set.values_list('pk', flat=True).order_by('pk'))
+            existing_pks = list(
+                self.player_set.values_list(
+                    'pk', flat=True
+                ).order_by('pk'))
             if matrix_pks != existing_pks:
                 raise ValueError(
                     'The group matrix must contain each player '
@@ -164,7 +166,6 @@ class BaseSubsession(SaveTheChange, models.Model):
         if not set(players) == set(players_from_groups):
             raise Exception('Group integrity check failed')
 
-
     @property
     def _Constants(self):
         return get_models_module(self._meta.app_config.name).Constants
@@ -174,7 +175,6 @@ class BaseSubsession(SaveTheChange, models.Model):
 
     def _PlayerClass(self):
         return models.get_model(self._meta.app_config.label, 'Player')
-
 
     def _first_round_group_matrix(self):
         players = list(self.get_players())
@@ -200,10 +200,16 @@ class BaseSubsession(SaveTheChange, models.Model):
         previous_round = self.in_round(round_number)
         group_matrix = [
             group._ordered_players
-            for group in previous_round.group_set.order_by('id_in_subsession').prefetch_related(
-                Prefetch('player_set',
-                         queryset=self._PlayerClass().objects.order_by('id_in_group'),
-                         to_attr='_ordered_players'))
+            for group in previous_round.group_set.order_by(
+                'id_in_subsession'
+            ).prefetch_related(
+                Prefetch(
+                    'player_set',
+                    queryset=self._PlayerClass().objects.order_by(
+                        'id_in_group'),
+                    to_attr='_ordered_players'
+                )
+            )
         ]
         for i, group_list in enumerate(group_matrix):
             for j, player in enumerate(group_list):
@@ -226,7 +232,6 @@ class BaseSubsession(SaveTheChange, models.Model):
             self._Constants.players_per_group
         )
         self.set_group_matrix(group_matrix)
-
 
     def before_session_starts(self):
         '''This gets called at the beginning of every subsession, before the

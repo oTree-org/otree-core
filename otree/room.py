@@ -20,7 +20,8 @@ class Room(object):
         self.participant_label_file = config_dict.get('participant_label_file')
 
         self.name = validate_identifier(
-            config_dict['name'], identifier_description='settings.ROOMS room name')
+            config_dict['name'],
+            identifier_description='settings.ROOMS room name')
         self.display_name = config_dict['display_name']
         # secure URLs are complicated, don't use them by default
         self.use_secure_urls = config_dict['use_secure_urls']
@@ -193,4 +194,3 @@ def get_room_dict():
     return ROOM_DICT
 
 ROOM_DICT = get_room_dict()
-

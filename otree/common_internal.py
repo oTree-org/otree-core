@@ -5,7 +5,6 @@ import os
 import sys
 import datetime
 import collections
-import contextlib
 import inspect
 import re
 import random
@@ -24,7 +23,6 @@ from importlib import import_module
 import six
 from six.moves import urllib
 
-from django.db import transaction
 from django.db import connection
 from django.apps import apps
 from django.conf import settings
@@ -417,12 +415,14 @@ def check_pypi_for_updates():
         'update_message': update_message,
     }
 
+
 def pypi_updates_cli():
     result = check_pypi_for_updates()
     if result['pypi_connection_error']:
         return
     if result['update_needed']:
         print(result['update_message'])
+
 
 def channels_create_session_group_name(pre_create_id):
     return 'wait_for_session_{}'.format(pre_create_id)

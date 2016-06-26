@@ -15,7 +15,7 @@
         </div>
 </div>
 
-{% next_button %}
+<input class="btn btn-primary btn-large btn-primary next-button" value="Create" type="submit">
 
 {% for summary in session_config_summaries %}
 {% include "otree/includes/SessionInfo.html" with name=summary.name display_name=summary.display_name doc=summary.doc app_sequence=summary.app_sequence summary_display="none" %}

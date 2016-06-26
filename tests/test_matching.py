@@ -6,11 +6,8 @@ import itertools
 from mock import patch
 
 import six
-
 from django.core.management import call_command
-
 from otree.models import Session
-from otree import matching
 
 from .base import TestCase
 from .multi_player_game import models as mpg_models
@@ -22,6 +19,7 @@ RANDOM_5_BY_3 = [
     [2, 6, 8],
     [11, 14, 4],
 ]
+
 
 class TestMatchPlayers(TestCase):
 
@@ -125,7 +123,6 @@ class TestMatchPlayers(TestCase):
 
         self.assertTrue(row_move_found)
         self.assertTrue(col_move_found)
-
 
     def test_group_randomly_fixed(self):
         subsession_1 = self.subsession_1

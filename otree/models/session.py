@@ -53,7 +53,8 @@ class Session(ModelWithVars):
     code = models.CharField(
         default=random_chars_8,
         max_length=16,
-        null=False, # set non-nullable, until we make our CharField non-nullable
+        # set non-nullable, until we make our CharField non-nullable
+        null=False,
         unique=True,
         doc="Randomly generated unique identifier for the session.")
 

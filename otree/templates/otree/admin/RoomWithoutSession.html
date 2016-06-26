@@ -12,7 +12,7 @@
     {% include "otree/includes/CreateSessionForm.html" %}
 
     <hr/>
-    <h3>Participants Ready: <span id="present_count"></span></h3>
+    <h3><span id="present_count"></span> participants present</h3>
 
     {% if room.has_participant_labels %}
     <button class="btn" type="button" data-toggle="collapse" data-target="#participants_waiting_list">
@@ -31,7 +31,7 @@
 
     {% if room.has_participant_labels %}
     {# if there's no participant labels, there's no concept of participants absent #}
-    <h3>Participants Not Present: <span id="absent_count"></span></h3>
+    <h3><span id="absent_count"></span> participants not present</h3>
     <button class="btn" type="button" data-toggle="collapse" data-target="#participants_not_waiting_list">
         Show/Hide
     </button>
