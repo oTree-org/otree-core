@@ -16,13 +16,18 @@ from otree.test import runner, client
 from otree.management.cli import otree_and_django_version
 from otree.session import SESSION_CONFIGS_DICT
 import otree.common_internal
+
+
 # =============================================================================
 # CONSTANTS
 # =============================================================================
 
 COVERAGE_CONSOLE = "console"
+
 COVERAGE_HTML = "HTML"
+
 COVERAGE_ALL = "all"
+
 COVERAGE_CHOICES = (COVERAGE_ALL, COVERAGE_CONSOLE, COVERAGE_HTML)
 
 
