@@ -27,7 +27,6 @@ from collections import OrderedDict
 import easymoney
 
 import otree.constants_internal
-from otree.management.commands.stress_test import get_cache_key
 import otree.models.session
 from otree.common_internal import (
     get_models_module, app_name_format,
