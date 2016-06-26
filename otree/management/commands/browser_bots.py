@@ -15,6 +15,7 @@ from django.conf import settings
 from subprocess import Popen
 from otree.room import ROOM_DICT
 from otree.session import SESSION_CONFIGS_DICT, get_lcm
+from huey.contrib.djhuey import HUEY
 
 FIREFOX_PATH_MSWIN = "C:/Program Files (x86)/Mozilla Firefox/firefox.exe"
 CHROME_PATH_MSWIN = (
@@ -118,14 +119,6 @@ class Command(BaseCommand):
                     type(exception)(msg.format(exception)),
                     sys.exc_info()[2])
 
-            bot_completion = redis.StrictRedis(
-                host=settings.REDIS_HOSTNAME,
-                port=settings.REDIS_PORT,
-                # arbitrarily chosen DB name
-                db=15
-            )
-
-
             print(
                 '{}, {} participants...'.format(
                     session_config_name,
@@ -145,7 +138,7 @@ class Command(BaseCommand):
 
                 participants_finished = 0
                 while True:
-                    if bot_completion.lpop(session.code):
+                    if HUEY.storage.conn.lpop(session.code):
                         participants_finished += 1
                         if participants_finished == num_participants:
                             break

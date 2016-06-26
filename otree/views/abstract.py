@@ -21,7 +21,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache, cache_control
 from django.http import HttpResponseRedirect, Http404
 from django.utils.translation import ugettext as _
-
+from huey.contrib.djhuey import HUEY
 from six.moves import range
 
 import channels
@@ -877,14 +877,7 @@ class FormPageMixin(object):
             submit_model.delete()
         else:
             input_intentionally_invalid = False
-            import redis
-            bot_completion = redis.StrictRedis(
-                host=settings.REDIS_HOSTNAME,
-                port=settings.REDIS_PORT,
-                # arbitrarily chosen DB name
-                db=15
-            )
-            bot_completion.rpush(
+            HUEY.storage.conn.rpush(
                 self.session.code, True)
         return post_data, input_intentionally_invalid
 
