@@ -212,9 +212,7 @@ def augment_settings(settings):
         'django.contrib.contenttypes',
         'django.contrib.sessions',
         'django.contrib.messages',
-        #'whitenoise.runserver_nostatic',
         'django.contrib.staticfiles',
-        # 'otree.models_concrete',
         'otree.timeout',
         'channels',
         'huey.contrib.djhuey',
@@ -312,8 +310,6 @@ def augment_settings(settings):
         'LOGIN_REDIRECT_URL': 'sessions',
 
     }
-
-
 
     # CORS CONFS
     augmented_settings.update({

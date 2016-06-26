@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 from __future__ import print_function
 import sys
 import time
@@ -14,14 +15,17 @@ from django.conf import settings
 from subprocess import Popen
 from otree.room import ROOM_DICT
 from otree.session import SESSION_CONFIGS_DICT, get_lcm
-from selenium import webdriver
+
 FIREFOX_PATH_MSWIN = "C:/Program Files (x86)/Mozilla Firefox/firefox.exe"
-CHROME_PATH_MSWIN = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe'
+CHROME_PATH_MSWIN = (
+    'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe'
+)
 DEFAULT_ROOM_NAME = 'browser_bots'
 
 ROOM_FLAG = '--room'
 NUM_PARTICIPANTS_FLAG = '--num_participants'
 BASE_URL_FLAG = '--base_url'
+
 
 class Command(BaseCommand):
     help = "oTree: Run browser bots."
@@ -95,7 +99,6 @@ class Command(BaseCommand):
                     BASE_URL_FLAG
                 )
             )
-
 
         for num_participants in session_sizes:
             args = [browser_path]

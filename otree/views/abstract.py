@@ -25,8 +25,6 @@ from django.utils.translation import ugettext as _
 from six.moves import range
 
 import channels
-from huey.contrib.djhuey import HUEY
-
 import vanilla
 
 import otree.forms

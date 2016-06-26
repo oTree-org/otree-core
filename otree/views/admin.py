@@ -3,7 +3,6 @@
 
 import collections
 import sys
-from time import time
 import uuid
 import itertools
 import os
@@ -18,7 +17,6 @@ from django.contrib import messages
 from django.utils.encoding import force_text
 
 import channels
-from huey.contrib.djhuey import HUEY
 import vanilla
 
 from ordered_set import OrderedSet as oset
