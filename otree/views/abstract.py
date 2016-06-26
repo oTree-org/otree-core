@@ -878,7 +878,12 @@ class FormPageMixin(object):
         else:
             input_intentionally_invalid = False
             import redis
-            bot_completion = redis.StrictRedis(db=15)
+            bot_completion = redis.StrictRedis(
+                host=settings.REDIS_HOSTNAME,
+                port=settings.REDIS_PORT,
+                # arbitrarily chosen DB name
+                db=15
+            )
             bot_completion.rpush(
                 self.session.code, True)
         return post_data, input_intentionally_invalid

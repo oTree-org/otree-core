@@ -118,7 +118,13 @@ class Command(BaseCommand):
                     type(exception)(msg.format(exception)),
                     sys.exc_info()[2])
 
-            bots_finished = redis.StrictRedis(db=15)
+            bot_completion = redis.StrictRedis(
+                host=settings.REDIS_HOSTNAME,
+                port=settings.REDIS_PORT,
+                # arbitrarily chosen DB name
+                db=15
+            )
+
 
             print(
                 '{}, {} participants...'.format(
@@ -139,7 +145,7 @@ class Command(BaseCommand):
 
                 participants_finished = 0
                 while True:
-                    if bots_finished.lpop(session.code):
+                    if bot_completion.lpop(session.code):
                         participants_finished += 1
                         if participants_finished == num_participants:
                             break

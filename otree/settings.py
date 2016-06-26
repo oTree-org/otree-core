@@ -331,6 +331,9 @@ def augment_settings(settings):
 
     redis_url = urlparse.urlparse(settings.get('REDIS_URL'))
 
+    settings['REDIS_HOSTNAME'] = redis_url.hostname
+    settings['REDIS_PORT'] = redis_url.port
+
     settings['HUEY'] = {
         'name': 'test-django',
         'connection': {
