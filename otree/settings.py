@@ -213,6 +213,7 @@ def augment_settings(settings):
         'django.contrib.contenttypes',
         'django.contrib.sessions',
         'django.contrib.messages',
+        #'whitenoise.runserver_nostatic',
         'django.contrib.staticfiles',
         # 'otree.models_concrete',
         'otree.timeout',
