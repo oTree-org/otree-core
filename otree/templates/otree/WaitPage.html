@@ -93,31 +93,9 @@ $(document).ready(function () {
         };
     }
 
-    {% comment %}
-    {% if USE_BROWSER_BOTS and participant %}
-        $.ajax('{% url 'browser_bots_data' %}',
-               {async: false,
-                data: {participant: '{{ participant.code }}',
-                       index_in_pages: '{{ view.index_in_pages }}',
-                       event: 'load', timestamp: new Date() / 1000}});
-
-        window.onbeforeunload = function () {
-            $.ajax('{% url 'browser_bots_data' %}',
-                   {async: false,
-                    data: {participant: '{{ participant.code }}',
-                           index_in_pages: '{{ view.index_in_pages }}',
-                           event: 'unload'}});
-        };
-
-        window.close();
-    {% endif %}
-    {% endcomment %}
-
  });
  </script>
  {% endblock %}
-
-
 
 {# never show footer here #}
 {% block page_footer  %}{% endblock %}

@@ -192,7 +192,9 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             'subsession': self.subsession,
             'session': self.session,
             'participant': self.participant,
-            'Constants': self._models_module.Constants})
+            'Constants': self._models_module.Constants,
+            'use_browser_bots': self.session._use_browser_bots,
+        })
         vars_for_template = self.resolve_vars_for_template()
         context.update(vars_for_template)
         self._vars_for_template = vars_for_template
@@ -824,8 +826,8 @@ class FormPageMixin(object):
             self._set_auto_submit_values()
         else:
             self.timeout_happened = False
-            if settings.USE_BROWSER_BOTS:
-                post_data = self._get_browser_bot_submission()
+            if self.session._use_browser_bots:
+                post_data, submit_invalid = self._get_browser_bot_submission()
             else:
                 post_data = request.POST
             form = self.get_form(
@@ -834,7 +836,7 @@ class FormPageMixin(object):
                 self.form = form
                 self.object = form.save()
             else:
-                if settings.USE_BROWSER_BOTS:
+                if self.session._use_browser_bots and not submit_invalid:
                     errors = [
                         "{}: {}".format(k, repr(v)) for k, v in form.errors.items()]
                     raise ValueError(
@@ -852,7 +854,7 @@ class FormPageMixin(object):
     def _get_browser_bot_submission(self):
         # request.POST contains CSRF token and maybe other important stuff
         post_data = dict(self.request.POST)
-        submit_model = BrowserBotSubmit.objects.filter(
+        submit_model = BrowserBotSubmit.objects.order_by('id').filter(
             participant=self.participant,
         ).first()
         if submit_model:
@@ -871,14 +873,15 @@ class FormPageMixin(object):
                     )
                 )
             post_data.update(submit_model.param_dict)
+            submit_invalid = submit_model.submit_invalid
             submit_model.delete()
         else:
-            self.participant.browser_bot_finished = True
+            submit_invalid = False
             import redis
             bot_completion = redis.StrictRedis(db=15)
             bot_completion.rpush(
                 self.session.code, True)
-        return post_data
+        return post_data, submit_invalid
 
     def socket_url(self):
         '''called from template. can't start with underscore because used

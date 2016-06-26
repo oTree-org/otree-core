@@ -104,6 +104,8 @@ class Session(ModelWithVars):
 
     _pre_create_id = models.CharField(max_length=300, db_index=True, null=True)
 
+    _use_browser_bots = models.BooleanField(default=False)
+
     def __unicode__(self):
         return self.code
 

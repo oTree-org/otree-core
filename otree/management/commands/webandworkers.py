@@ -36,7 +36,7 @@ class Command(RunserverCommand):
 
         ahelp = (
             'The port that the http server should run on. It defaults to '
-            '5000. This value can be set by the environment variable $PORT.')
+            '8000. This value can be set by the environment variable $PORT.')
         parser.add_argument(
             '--port', action='store', type=int, dest='port', default=None,
             help=ahelp)

@@ -14,8 +14,6 @@ $(document).ready(function () {
 
     initWebSocket();
 
-
-
     function initWebSocket() {
         var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
         var ws_path = ws_scheme + '://' + window.location.host + "{{ view.socket_url|safe }}";
@@ -33,21 +31,20 @@ $(document).ready(function () {
             if (data.new_index_in_pages > index_in_pages) {
                 window.location.href = '{{ view.redirect_url|safe }}';
             }
-        }
+        };
         socket.onopen = function() {
             console.log('WebSocket connected');
-        }
+        };
         socket.onclose = function() {
             console.log('WebSocket disconnected');
         }
     }
 
 
-
-    {% if USE_BROWSER_BOTS %}
+    {% if use_browser_bots %}
+        {# submit the form instantly #}
         $('#form').submit();
     {% endif %}
-
 
 });
 

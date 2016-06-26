@@ -109,8 +109,6 @@ class Participant(ModelWithVars):
 
     _is_auto_playing = models.BooleanField(default=False)
 
-    browser_bot_finished = models.BooleanField(default=False)
-
     def _start_auto_play(self):
         self._is_auto_playing = True
         self.save()
@@ -138,9 +136,6 @@ class Participant(ModelWithVars):
     def _current_page(self):
         return '{}/{} pages'.format(self._index_in_pages, self._max_page_index)
 
-    def is_finished(self):
-        return self._index_in_pages > self._max_page_index
-
     def get_players(self):
         """Used to calculate payoffs"""
         lst = []
@@ -164,7 +159,7 @@ class Participant(ModelWithVars):
         return 'Playing'
 
     def _url_i_should_be_on(self):
-        if not self.is_finished():
+        if self._index_in_pages <= self._max_page_index:
             return self.player_lookup().url
         if self.session.mturk_HITId:
             assignment_id = self.mturk_assignment_id
@@ -219,6 +214,3 @@ class Participant(ModelWithVars):
 
     def name(self):
         return id_label_name(self.pk, self.label)
-
-    def is_on_last_page(self):
-        return self._index_in_pages == self._max_page_index

@@ -17,7 +17,8 @@ def store_submits_in_db(session):
                     submit.ViewClass.__module__,
                     submit.ViewClass.__name__
                 ),
-                param_dict=submit.data
+                param_dict=submit.data,
+                input_is_valid=submit.input_is_valid,
             )
             submit_models.append(submit_model)
     BrowserBotSubmit.objects.bulk_create(submit_models)

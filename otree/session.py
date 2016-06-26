@@ -150,7 +150,7 @@ def app_labels_from_sessions(config_names):
 @transaction.atomic
 def create_session(session_config_name, label='', num_participants=None,
                    special_category=None, _pre_create_id=None,
-                   room_name=None, for_mturk=False):
+                   room_name=None, for_mturk=False, use_browser_bots=None):
 
     # 2014-5-2: i could implement this by overriding the __init__ on the
     # Session model, but I don't really know how that works, and it seems to
@@ -164,11 +164,17 @@ def create_session(session_config_name, label='', num_participants=None,
     except KeyError:
         msg = 'Session config "{}" not found in settings.SESSION_CONFIGS.'
         raise ValueError(msg.format(session_config_name))
+
+    if use_browser_bots is None:
+        use_browser_bots = settings.USE_BROWSER_BOTS
+
     session = Session.objects.create(
         config=session_config,
         label=label,
         special_category=special_category,
-        _pre_create_id=_pre_create_id,)
+        _pre_create_id=_pre_create_id,
+        _use_browser_bots=use_browser_bots
+    )
 
     def bulk_create(model, descriptions):
         model.objects.bulk_create([
@@ -256,7 +262,7 @@ def create_session(session_config_name, label='', num_participants=None,
     otree.db.idmap.save_objects()
     otree.db.idmap.deactivate_cache()
 
-    if settings.USE_BROWSER_BOTS:
+    if session._use_browser_bots:
         from otree.test.browser_bots import store_submits_in_db
         store_submits_in_db(session)
 

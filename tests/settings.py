@@ -131,6 +131,4 @@ ROOMS = [
     }
 ]
 
-USE_BROWSER_BOTS = True
-
 otree.settings.augment_settings(globals())
