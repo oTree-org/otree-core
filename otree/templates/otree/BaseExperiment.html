@@ -25,7 +25,7 @@
         </div>
 
 
-        <form action="" method="post" role="form" class="form" id="form" onsubmit="return markFormSubmitted()">{% csrf_token %}
+        <form action="" method="post" role="form" class="form" id="form">{% csrf_token %}
             <input type="hidden" value="{{ request.path }}" name="origin_url" />
             {% pageform form using %}
                 {% formconfig row using "floppyforms/rows/bootstrap.html" %}

@@ -59,7 +59,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         # Positional arguments
         parser.add_argument(
-            'session_name', nargs='*',
+            'session_config_name', nargs='*',
             help='If omitted, all sessions in SESSION_CONFIGS are run'
         )
 
@@ -107,7 +107,7 @@ class Command(BaseCommand):
         # so we know not to use Huey
         otree.common_internal.USE_REDIS = False
 
-        session_config_names = options["session_name"]
+        session_config_names = options["session_config_name"]
         if not session_config_names:
             # default to all session configs
             session_config_names = SESSION_CONFIGS_DICT.keys()
@@ -174,10 +174,10 @@ class Command(BaseCommand):
                 "failures": failures, "error": bool(failures)})
 
             sizes = {}
-            for session_name, session_data in data.items():
+            for session_config_name, session_data in data.items():
                 session_data = session_data or ""
-                sizes[session_name] = len(session_data.splitlines())
-                fname = "{}.csv".format(session_name)
+                sizes[session_config_name] = len(session_data.splitlines())
+                fname = "{}.csv".format(session_config_name)
                 fpath = os.path.join(export_path, fname)
                 with codecs.open(fpath, "w", encoding="utf8") as fp:
                     fp.write(session_data)

@@ -11,16 +11,3 @@
 <![endif]-->
 
 <script src="{% static 'otree/js/init_widgets.js' %}"></script>
-
-<script type="text/javascript">
-    // Prevent duplicate form submission, which results in problematic race conditions
-    formAlreadySubmitted=false;
-
-    function markFormSubmitted() {
-        if (formAlreadySubmitted) {
-            return false;
-        }
-        formAlreadySubmitted = true;
-        return true;
-    }
-</script>
