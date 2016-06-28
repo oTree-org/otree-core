@@ -3,29 +3,29 @@
 
 {% block title %}
 {% if title %}
-{{ title }}
+    {{ title }}
 {% else %}
-Understanding Question {{ num_q|default:1 }} of {{ total_q|default:1 }}
+    Understanding Question {{ num_q|default:1 }} of {{ total_q|default:1 }}
 {% endif %}
 {% endblock %}
 
 {% block content %}
 {# question can be passed in context, overriden, or read from other template #}
-{% block question %}
-{% if question %}
-{{ question|linebreaks }}
-{% elif question_template %}
-{% include question_template %}
-{% endif %}
-{% endblock question %}
-{% if note %}
-<p><i>{{note}}</i></p>
-{% endif %}
-{# render <form> #}
-{% for field in form %}
-<p>{% formfield field %}</p>
-{% endfor %}
+    {% block question %}
+        {% if question %}
+        {{ question|linebreaks }}
+        {% elif question_template %}
+        {% include question_template %}
+        {% endif %}
+    {% endblock question %}
+    {% if note %}
+        <p><i>{{note}}</i></p>
+    {% endif %}
+    {# render <form> #}
+    {% for field in form %}
+        <p>{% formfield field %}</p>
+    {% endfor %}
 
-<p>{% next_button %}</p>
-{% include instructions %}
+    <p>{% next_button %}</p>
+    {% include instructions %}
 {% endblock %}
