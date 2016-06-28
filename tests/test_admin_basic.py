@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import django.test.client
+
 from .base import TestCase
 
 

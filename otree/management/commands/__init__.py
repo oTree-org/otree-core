@@ -1,1 +1,1 @@
-__author__ = 'Christopher'
+__author__ = 'Christopher'  # pragma: no cover
