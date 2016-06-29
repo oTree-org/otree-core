@@ -110,6 +110,8 @@ class Participant(ModelWithVars):
 
     _is_auto_playing = models.BooleanField(default=False)
 
+    _browser_bot_finished = models.BooleanField(default=False)
+
     def _start_auto_play(self):
         self._is_auto_playing = True
         self.save()

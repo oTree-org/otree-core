@@ -9,12 +9,14 @@ import os
 from six.moves import range
 from six.moves import zip
 
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.core.urlresolvers import reverse
 from django.forms.forms import pretty_name
 from django.conf import settings
 from django.contrib import messages
 from django.utils.encoding import force_text
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 
 import channels
 import vanilla
@@ -31,7 +33,7 @@ from otree.common_internal import (
     channels_create_session_group_name,
     db_status_ok,
     check_pypi_for_updates)
-from otree.session import SESSION_CONFIGS_DICT, get_lcm
+from otree.session import SESSION_CONFIGS_DICT, get_lcm, create_session
 from otree import forms
 from otree.forms import widgets
 from otree.common import RealWorldCurrency
@@ -1001,3 +1003,37 @@ class OtreeCoreUpdateCheck(vanilla.View):
         if OtreeCoreUpdateCheck.results is None:
             OtreeCoreUpdateCheck.results = check_pypi_for_updates()
         return JsonResponse(OtreeCoreUpdateCheck.results, safe=True)
+
+
+class CreateBrowserBotsSession(vanilla.View):
+
+    @classmethod
+    def url_pattern(cls):
+        return r"^create_browser_bots_session/$"
+
+    @classmethod
+    def url_name(cls):
+        return 'create_browser_bots_session'
+
+    def dispatch(self, *args, **kwargs):
+        return super(CreateBrowserBotsSession, self).dispatch(*args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        # return browser bots check
+        sqlite = settings.DATABASES['default']['ENGINE'].endswith('sqlite3')
+
+        return JsonResponse({
+            'sqlite': sqlite,
+            'runserver': 'runserver' in sys.argv
+        })
+
+    def post(self, request, *args, **kwargs):
+        num_participants = int(request.POST['num_participants'])
+        session_config_name = request.POST['session_config_name']
+        session = create_session(
+            session_config_name=session_config_name,
+            num_participants=num_participants,
+            room_name='browser_bots',
+            use_browser_bots=True
+        )
+        return HttpResponse(session.code)

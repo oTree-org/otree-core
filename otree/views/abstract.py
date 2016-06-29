@@ -184,6 +184,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
     def get_context_data(self, **kwargs):
         context = super(FormPageOrInGameWaitPageMixin,
                         self).get_context_data(**kwargs)
+
         context.update({
             'form': kwargs.get('form'),
             'player': self.player,
@@ -192,7 +193,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             'session': self.session,
             'participant': self.participant,
             'Constants': self._models_module.Constants,
-            'use_browser_bots': self.session._use_browser_bots,
         })
         vars_for_template = self.resolve_vars_for_template()
         context.update(vars_for_template)
@@ -319,13 +319,15 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             self.participant.last_request_succeeded = True
             self.participant._last_request_timestamp = time.time()
 
-            # need to render the response before saving objects,
-            # because the template might call a method that modifies
-            # player/group/etc.
-            if hasattr(response, 'render'):
-                response.render()
-            self.save_objects()
-            return response
+            # if not using browser bots, this context manager does nothing
+            with self.check_if_browser_bot_should_auto_submit():
+                # need to render the response before saving objects,
+                # because the template might call a method that modifies
+                # player/group/etc.
+                if hasattr(response, 'render'):
+                    response.render()
+                self.save_objects()
+                return response
 
     # TODO: maybe this isn't necessary, because I can figure out what page
     # they should be on, from looking up index_in_pages
@@ -444,6 +446,45 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             session=self.session,
             auto_submitted=timeout_happened)
         self.participant.save()
+
+    @contextlib.contextmanager
+    def check_if_browser_bot_should_auto_submit(self):
+
+        # if not using browser bots, this context manager does nothing
+        if not self.session._use_browser_bots:
+            yield
+            return
+
+        browser_bot_finished = self.participant._browser_bot_finished
+
+        # this attribute is set so the template can read it and decide
+        # whether to insta-submit with JS
+        self.browser_bot_should_auto_submit = not browser_bot_finished
+
+        yield
+
+        if browser_bot_finished:
+            on_last_page = (
+                self._index_in_pages >= self.participant._max_page_index
+            )
+
+            if self.request.method == 'GET':
+                # if it's GET, then we will not auto-submit,
+                # so there will be no next request.
+                send_message = True
+            elif self.request.method == 'POST' and on_last_page:
+                # send message if it's last page, because
+                # the next page will be the OutOfRangeNotification,
+                # which will not auto-submit (so this is the last request)
+                send_message = True
+            else:
+                # there will be a next GET request, which we should allow
+                # to happen
+                send_message = False
+            if send_message:
+                channels.Group(
+                    'browser-bots-client-{}'.format(self.session.code)
+                ).send({'text': self.participant.code})
 
 
 class GenericWaitPageMixin(object):
@@ -606,6 +647,11 @@ class InGameWaitPageMixin(object):
 
             player = self.player
             del self.player
+
+            # same idea as deleting self.player, if we're waiting for all
+            # groups, not just one.
+            if self.wait_for_all_groups:
+                del self.group
 
             # make sure we get the most up-to-date player objects
             # e.g. if they were queried in is_displayed(),
@@ -782,15 +828,11 @@ class BrowserBot(object):
                 )
             post_data.update(submit_model.param_dict)
             self.input_is_valid = submit_model.input_is_valid
-            self.send_finished_message = submit_model.is_last
+            if submit_model.is_last:
+                self.participant._browser_bot_finished = True
             submit_model.delete()
 
         return post_data
-
-    def check_if_finished(self):
-        if self.send_finished_message:
-            HUEY.storage.conn.rpush(
-                self.session.code, True)
 
 
 class FormPageMixin(object):
@@ -879,8 +921,6 @@ class FormPageMixin(object):
             if form.is_valid():
                 self.form = form
                 self.object = form.save()
-                if use_browser_bots:
-                    bot.check_if_finished()
             else:
                 if use_browser_bots and not bot.input_is_valid:
                     errors = [

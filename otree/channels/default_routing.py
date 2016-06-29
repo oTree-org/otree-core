@@ -35,5 +35,12 @@ channel_routing = [
           path=r'^/room_without_session/(?P<room>\w+)/$'),
     route('websocket.disconnect',
           consumers.disconnect_room_admin,
-          path=r'^/room_without_session/(?P<room>\w+)/$')
+          path=r'^/room_without_session/(?P<room>\w+)/$'),
+    route('websocket.connect',
+          consumers.connect_browser_bots_client,
+          path=r'^/browser_bots_client/(?P<session_code>\w+)/$'),
+    route('websocket.disconnect',
+          consumers.disconnect_browser_bots_client,
+          path=r'^/browser_bots_client/(?P<session_code>\w+)/$'),
+
 ]

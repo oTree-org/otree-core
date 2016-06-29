@@ -1,4 +1,4 @@
-{% extends "otree/BaseExperiment.html" %}
+{% extends "otree/BaseParticipant.html" %}
 {% load staticfiles %}
 
 {% block internal_scripts %}
@@ -41,7 +41,7 @@ $(document).ready(function () {
     }
 
 
-    {% if use_browser_bots %}
+    {% if view.browser_bot_should_auto_submit %}
         {# submit the form instantly #}
         $('#form').submit();
     {% endif %}

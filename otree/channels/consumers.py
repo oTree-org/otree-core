@@ -250,3 +250,13 @@ def disconnect_room_participant(message, params):
         Group('room-admin-{}'.format(room_name)).send({'text': json.dumps({
             'status': 'remove_participant',
         })})
+
+
+def connect_browser_bots_client(message, session_code):
+    Group('browser-bots-client-{}'.format(session_code)).add(
+        message.reply_channel)
+
+
+def disconnect_browser_bots_client(message, session_code):
+    Group('browser-bots-client-{}'.format(session_code)).discard(
+        message.reply_channel)
