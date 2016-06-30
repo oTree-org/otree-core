@@ -309,11 +309,7 @@ class Command(BaseCommand):
             session_size=num_participants,
         )
         ws_client.connect()
-        try:
-            ws_client.run_forever()
-        except AllParticipantsFinished:
-            ws_client.close()
-            # then continue
+        ws_client.run_forever()
 
         time_spent = round(time.time() - bot_start_time, 1)
         print('...finished in {} seconds'.format(time_spent))
