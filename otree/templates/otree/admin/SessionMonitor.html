@@ -1,4 +1,14 @@
 {% extends "otree/admin/Session.html" %}
+
+{% block internal_styles %}
+    {{ block.super }}
+    <style>
+        #results-table td, #results-table th {
+          text-align: center;
+        }
+    </style>
+{% endblock %}
+
 {% block internal_scripts %}
 {{ block.super }}
 <script>
@@ -57,10 +67,8 @@ function ajax_json_participants() {
             var old_json = $( "table" ).data("raw");
             // build table for the first time
             if ( old_json === undefined ) {
-                var htmlTable = ConvertJsonToTable(new_json,
-                    "monitor_table",
-                    "table table-bordered table-hover table-condensed");
-                $("#div-table").append(htmlTable);
+                var htmlTable = createTableBodyFromJson(new_json);
+                $("#monitor-table").append(htmlTable);
             }
             // compute delta and update
             // corresponding values in table 
@@ -94,8 +102,15 @@ function ajax_json_participants() {
 {% endblock %}
 {% block content %}
 {{ block.super }}
-<div id="div-table">
-</div>
+<table id="monitor-table" class="table table-bordered table-hover table-condensed">
+    <thead>
+        <tr>
+            {% for header in column_names %}
+                <th>{{ header }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+</table>
 <br/>
 <a id="advance_users" class="btn btn-primary" role="button" data-toggle="popover" data-trigger="hover"
 data-content="Advance the slowest user(s) by one page, by forcing a timeout on their current page.">
