@@ -55,7 +55,7 @@ you should run a multiprocess server (e.g. "otree webandworkers").
 '''
 
 SQLITE_WARNING = '''
-WARNING: Your server is running are using SQLite.
+WARNING: Your server is running using SQLite.
 Browser bots may not run properly.
 We recommend using to Postgres or MySQL etc.
 '''
@@ -99,7 +99,7 @@ class Command(BaseCommand):
             default='http://127.0.0.1:8000',
             help="Server's root URL")
         ahelp = (
-            'Numbers of participants. Examples: "12" or "4,12,18".'
+            'Numbers of participants. Examples: "12" or "4-12-18".'
             'Defaults to minimum for the session config.'
         )
         parser.add_argument(
@@ -131,7 +131,7 @@ class Command(BaseCommand):
 
         num_participants = options['num_participants']
         if num_participants is not None:
-            self.session_sizes = [int(n) for n in num_participants.split(',')]
+            self.session_sizes = [int(n) for n in num_participants.split('-')]
         else:
             self.session_sizes = None
         self.wait_room_url = urljoin(
@@ -165,9 +165,10 @@ class Command(BaseCommand):
         )
 
         if 'chrome' in self.browser_cmd.lower():
-            chrome_seen = False
             # FIXME: this is slow on Mac (maybe Linux too)
             # maybe use ps|grep instead
+            '''
+            chrome_seen = False
             for proc in psutil.process_iter():
                 if 'chrome' in proc.name().lower():
                     chrome_seen = True
@@ -176,10 +177,14 @@ class Command(BaseCommand):
                     'WARNING: it looks like Chrome is already running. '
                     'You should quit Chrome before running this command.'
                 )
+            '''
             print(
+                'Make sure to close all Chrome windows before launching '
+                'This command.'
                 'For best results, use Chrome with no addons or ad-blocker. '
                 'e.g. create a new Chrome profile.'
             )
+
 
         if room_name not in ROOM_DICT:
             raise ValueError(
