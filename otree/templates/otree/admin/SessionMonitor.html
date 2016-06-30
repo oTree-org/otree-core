@@ -4,7 +4,7 @@
     {{ block.super }}
     <style>
         #monitor-table td, #monitor-table th {
-          text-align: center;
+            text-align: center;
         }
     </style>
 {% endblock %}
@@ -68,7 +68,9 @@ function ajax_json_participants() {
             // build table for the first time
             if ( old_json === undefined ) {
                 var htmlTable = createTableBodyFromJson(new_json);
-                $("#monitor-table").append(htmlTable);
+                var $table = $("#monitor-table");
+                $table.find('tbody').remove();
+                $table.append(htmlTable);
             }
             // compute delta and update
             // corresponding values in table 
