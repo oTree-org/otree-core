@@ -21,7 +21,7 @@ function createTableBodyFromJson(json)
 function updateTable($table) {
     $table.toggleClass(
         'draggable',
-        ($table.width() > $table.parent().width())
+        ($table.get(0).scrollWidth > $table.parent().width())
         || ($table.find('tbody').height() >= 450));
 }
 
