@@ -1,24 +1,16 @@
 {% extends "otree/admin/Session.html" %}
 
-{% block internal_styles %}
-    {{ block.super }}
-    <style>
-        #results-table td, #results-table th {
-          text-align: center;
-        }
-    </style>
-{% endblock %}
-
 {% block internal_scripts %}
 {{ block.super }}
 <script>
-$(document).ready(
-    function() {
-        ajax_json_results();
-        setInterval(ajax_json_results , 2000);
-    }
-);
+$(document).ready(function() {
+    ajax_json_results();
+    setInterval(ajax_json_results , 2000);
+
+    makeTableDraggable($('#results-table'));
+});
 function ajax_json_results() {
+    var $table = $('#results-table');
     $.ajax({
         url: '{% url "session_results" session.code %}',
         type: 'GET',
@@ -28,11 +20,11 @@ function ajax_json_results() {
         },
         success: function (new_json) {
             $( "div#server_error" ).hide();
-            var old_json = $( "table" ).data("raw");
+            var old_json = $table.data("raw");
             // build table for the first time
             if ( old_json === undefined ) {
                 var tableBody = createTableBodyFromJson(new_json);
-                $( "thead" ).after(tableBody);
+                $table.append(tableBody);
             }
             // compute delta and update
             // corresponding values in table 
@@ -45,8 +37,8 @@ function ajax_json_results() {
                 var delta = diffpatcher.diff(old_json, new_json);
                 for (i in delta) {
                     for (header_name in delta[i]) {
-                        var cell_to_update = $( "tbody tr:eq(" + i + ") \
-                                                 td[data-field='" + header_name + "']" );
+                        var cell_to_update = $table.find(
+                            "tbody tr:eq(" + i + ") td[data-field='" + header_name + "']" );
                         cell_to_update.text(delta[i][header_name][1]);
                         cell_to_update.css('background-color', 'green');
                         cell_to_update.animate({
@@ -57,7 +49,8 @@ function ajax_json_results() {
                     }
                 }
             }
-            $( "table" ).data("raw", new_json);
+            $table.data("raw", new_json);
+            updateTable($table)
         }
     });
 }
@@ -66,7 +59,6 @@ function ajax_json_results() {
 
 {% block content %}
 {{ block.super }}
-<div style="overflow: auto">
 <table id="results-table" class="table table-bordered table-hover table-condensed">
     <thead>
         <tr>
@@ -87,7 +79,6 @@ function ajax_json_results() {
         </tr>
     </thead>
 </table>
-</div>
 <div id="server_error" class="alert alert-danger" style="display: none;"> 
     <a href="#" class="close" data-dismiss="alert">&times;</a>
     "Failed to connect to server"
