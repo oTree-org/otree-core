@@ -2,20 +2,20 @@
 {% load otree_tags %}
 
 {% block title %}
-{% if title %}
-    {{ title }}
-{% else %}
-    Understanding Question {{ num_q|default:1 }} of {{ total_q|default:1 }}
-{% endif %}
+    {% if title %}
+        {{ title }}
+    {% else %}
+        Understanding Question {{ num_q|default:1 }} of {{ total_q|default:1 }}
+    {% endif %}
 {% endblock %}
 
 {% block content %}
-{# question can be passed in context, overriden, or read from other template #}
+    {# question can be passed in context, overriden, or read from other template #}
     {% block question %}
         {% if question %}
-        {{ question|linebreaks }}
+            {{ question|linebreaks }}
         {% elif question_template %}
-        {% include question_template %}
+            {% include question_template %}
         {% endif %}
     {% endblock question %}
     {% if note %}
