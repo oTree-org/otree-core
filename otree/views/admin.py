@@ -98,7 +98,18 @@ def get_all_fields(Model, for_export=False):
             ]
         else:
             # not used; see ParticipantSerializer
-            return []
+            return [
+                '_id_in_session',
+                'code',
+                'label',
+                '_current_page',
+                '_current_app_name',
+                '_round_number',
+                '_current_page_name',
+                'status',
+                'last_request_succeeded',
+                '_last_page_timestamp',
+            ]
 
     first_fields = {
         'Player':
