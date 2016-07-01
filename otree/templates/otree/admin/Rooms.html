@@ -10,7 +10,7 @@
 
 {% for room in rooms %}
         <h4>
-            <a href="{% url "room_without_session" room.name %}">{{ room.display_name }}</a>
+            <a href="{% url "RoomWithoutSession" room.name %}">{{ room.display_name }}</a>
         </h4>
 {% endfor %}
 

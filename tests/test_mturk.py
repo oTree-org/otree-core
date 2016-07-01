@@ -22,7 +22,7 @@ class TestMTurk(TestCase):
         self.browser = django.test.client.Client()
 
     def test_get_create_hit(self):
-        url = reverse('session_create_hit', args=(self.session.code,))
+        url = reverse('CreateMTurkHIT', args=(self.session.code,))
         response = self.browser.get(url, follow=True)
         if response.status_code != 200:
             raise Exception('{} returned 400'.format(url))
@@ -35,7 +35,7 @@ class TestMTurk(TestCase):
         magic = MagicMock()
         magic.create_hit.return_value = [hit]
         mocked_enter.return_value = magic
-        url = reverse('session_create_hit', args=(self.session.code,))
+        url = reverse('CreateMTurkHIT', args=(self.session.code,))
         response = self.browser.post(
             url,
             data={
@@ -60,7 +60,7 @@ class TestMTurk(TestCase):
         self.session.mturk_qualification_type_id = 'ABCD'
         self.session.save()
 
-        url = reverse('mturk_start', args=(self.session.code,))
+        url = reverse('MTurkStart', args=(self.session.code,))
         worker_id = 'WORKER_ID01'
         assignment_id = 'ASSIGNMENT_ID01'
         response = self.browser.get(
@@ -92,7 +92,7 @@ class TestMTurk(TestCase):
         self.assertTrue(p_non_visitor.mturk_assignment_id is None)
 
     def test_mturk_landing_page(self):
-        url = reverse('mturk_landing_page', args=(self.session.code,))
+        url = reverse('MTurkLandingPage', args=(self.session.code,))
         assignment_id = 'ASSIGNMENT_ID01'
         worker_id = 'WORKER_ID01'
         response = self.browser.get(
@@ -138,7 +138,7 @@ class PayMTurk(TestCase):
         mocked_enter.return_value = mocked_connection
         mocked_connection.get_assignments.return_value = assignments
 
-        url = reverse('session_mturk_payments', args=[self.session.code])
+        url = reverse('SessionMTurkPayments', args=[self.session.code])
         response = self.browser.get(
             url,
             follow=True
@@ -148,7 +148,7 @@ class PayMTurk(TestCase):
         reject_participants = [p for p in self.participants if p.id % 2]
         accept_participants = [p for p in self.participants if not p.id % 2]
 
-        url = reverse('pay_mturk', args=[self.session.code])
+        url = reverse('PayMTurk', args=[self.session.code])
         response = self.browser.post(
             url,
             data={
@@ -159,7 +159,7 @@ class PayMTurk(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-        url = reverse('reject_mturk', args=[self.session.code])
+        url = reverse('RejectMTurk', args=[self.session.code])
         response = self.browser.post(
             url,
             data={

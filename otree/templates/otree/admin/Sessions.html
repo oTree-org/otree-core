@@ -107,7 +107,7 @@ $(document).ready(function() {
 oTree 
 Sessions
 <div class="btn-group" style="float: right;">
-    <a class="btn btn-primary" href="{% url 'session_create' %}">
+    <a class="btn btn-primary" href="{% url 'CreateSession' %}">
         <span class="glyphicon glyphicon-plus"></span> Create new session
     </a>
     <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
@@ -115,7 +115,7 @@ Sessions
         <span class="sr-only">Toggle Dropdown</span>
     </button>
     <ul class="dropdown-menu" role="menu">
-        <li><a href="{% url 'session_create' %}?mturk=1">For MTurk</a></li>
+        <li><a href="{% url 'CreateSession' %}?mturk=1">For MTurk</a></li>
     </ul>
 </div>
 {% endblock %}
@@ -138,7 +138,7 @@ Sessions
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                <button type="submit" id="action-delete-confirm" class="btn btn-primary" formaction="{% url 'delete_sessions' %}">
+                <button type="submit" id="action-delete-confirm" class="btn btn-primary" formaction="{% url 'DeleteSessions' %}">
                     Delete
                 </button>
             </div>
@@ -148,10 +148,10 @@ Sessions
 {% if object_list %}
 
 <div class="btn-group" role="group">
-    <button type="submit" id="action-archive" class="action btn btn-default" data-toggle="tooltip" title="Archive" data-placement="bottom" formaction="{% url 'toggle_archived_sessions' %}" disabled>
+    <button type="submit" id="action-archive" class="action btn btn-default" data-toggle="tooltip" title="Archive" data-placement="bottom" formaction="{% url 'ToggleArchivedSessions' %}" disabled>
         <span class="glyphicon glyphicon-folder-close"></span>
     </button>
-    <button type="submit" id="action-delete" class="action btn btn-default" data-toggle="tooltip" title="Delete" data-placement="bottom"  formaction="{% url 'delete_sessions' %}" disabled>
+    <button type="submit" id="action-delete" class="action btn btn-default" data-toggle="tooltip" title="Delete" data-placement="bottom"  formaction="{% url 'DeleteSessions' %}" disabled>
         <span class="glyphicon glyphicon-trash"></span>
     </button>
 </div>
@@ -171,28 +171,28 @@ Sessions
         <td>
             <input name="item-action" type="checkbox" value="{{ s.code }}">
         </td>
-        <td><a href="{% url 'session_description' s.code %}">{{ s.code }}</a></td>
+        <td><a href="{% url 'SessionDescription' s.code %}">{{ s.code }}</a></td>
         <td>{{ s.label }}</td>
         <td>{{ s.config.name }}</td>
         <td>
-            <a href="{% url 'session_start_links' s.code %}" class="btn btn-primary btn-sm" role="button">
+            <a href="{% url 'SessionStartLinks' s.code %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-link"></span> Links
             </a>
-            <a href="{% url 'session_edit' s.code %}" class="btn btn-primary btn-sm" role="button">
+            <a href="{% url 'EditSessionProperties' s.code %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-pencil"></span> Edit
             </a>
-            <a href="{% url 'session_monitor' s.code %}" class="btn btn-primary btn-sm" role="button">
+            <a href="{% url 'SessionMonitor' s.code %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-eye-open"></span> Monitor
             </a>
-            <a href="{% url 'session_results' s.code %}" class="btn btn-primary btn-sm" role="button">
+            <a href="{% url 'SessionResults' s.code %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-list-alt"></span> Results
             </a>
-            <a href="{% if s.is_for_mturk %}{% url 'session_mturk_payments' s.code %}{% else %}{% url 'session_payments' s.code %}{% endif %}" class="btn btn-primary btn-sm" role="button">
+            <a href="{% if s.is_for_mturk %}{% url 'SessionMTurkPayments' s.code %}{% else %}{% url 'SessionPayments' s.code %}{% endif %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-usd"></span> Payments
             </a>
             {% if s.is_for_mturk %}
                 {% if not s.mturk_HITId %}
-                <a href="{% url 'session_create_hit' s.code %}" class="btn btn-primary btn-sm" role="button">
+                <a href="{% url 'CreateMTurkHIT' s.code %}" class="btn btn-primary btn-sm" role="button">
                     <span class="glyphicon glyphicon-cloud"></span> MTurk&nbsp;&nbsp;&nbsp;
                 </a>
                 {% else %}

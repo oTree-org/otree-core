@@ -126,12 +126,12 @@ class Room(object):
         ).count()
 
     def get_room_wide_url(self, request):
-        url = reverse('assign_visitor_to_room', args=(self.name,))
+        url = reverse('AssignVisitorToRoom', args=(self.name,))
         return request.build_absolute_uri(url)
 
     def get_participant_urls(self, request):
         participant_urls = []
-        room_base_url = reverse('assign_visitor_to_room', args=(self.name,))
+        room_base_url = reverse('AssignVisitorToRoom', args=(self.name,))
         room_base_url = request.build_absolute_uri(room_base_url)
 
         if self.has_participant_labels():

@@ -51,7 +51,7 @@
         </style>
     </head>
     <body>
-        <iframe class="monitor-frame" src="{% url 'session_monitor' session.code %}"></iframe>
+        <iframe class="monitor-frame" src="{% url 'SessionMonitor' session.code %}"></iframe>
         <div class="resize-handle">···</div>
         <div class="participant-frames">
             {% for participant_url in participant_urls %}

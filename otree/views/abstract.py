@@ -1043,10 +1043,6 @@ class AdminSessionPageMixin(GetFloppyFormClassMixin):
     def url_pattern(cls):
         return r"^{}/(?P<code>[a-z0-9]+)/$".format(cls.__name__)
 
-    @classmethod
-    def url(cls, session_code):
-        return '/{}/{}/'.format(cls.__name__, session_code)
-
     def get_context_data(self, **kwargs):
         context = super(AdminSessionPageMixin, self).get_context_data(**kwargs)
         context.update({

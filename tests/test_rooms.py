@@ -65,16 +65,16 @@ class TestRoomWithoutSession(RoomTestCase):
 
     def test_open_admin_links(self):
         urls = [
-            reverse('rooms'),
-            reverse('room_without_session', args=['default']),
-            reverse('room_without_session', args=['anon']),
+            reverse('Rooms'),
+            reverse('RoomWithoutSession', args=['default']),
+            reverse('RoomWithoutSession', args=['anon']),
         ]
 
         for url in urls:
             self.get(url)
 
     def test_open_participant_links(self):
-        room_with_labels = reverse('assign_visitor_to_room', args=['default'])
+        room_with_labels = reverse('AssignVisitorToRoom', args=['default'])
 
         resp = self.get(room_with_labels)
         self.assertIn('Please enter your participant label', get_html(resp))
@@ -90,7 +90,7 @@ class TestRoomWithoutSession(RoomTestCase):
         )
         self.assertEqual(resp.status_code, 404)
 
-        anon_base_url = reverse('assign_visitor_to_room', args=['anon'])
+        anon_base_url = reverse('AssignVisitorToRoom', args=['anon'])
 
         resp = self.get(anon_base_url)
         self.assertIn('Waiting for your session to begin', get_html(resp))
@@ -118,11 +118,11 @@ class TestRoomWithSession(RoomTestCase):
         )
 
     def test_open_admin_links(self):
-        self.get(reverse('room_with_session', args=['default']))
+        self.get(reverse('RoomWithoutSession', args=['default']))
         self.assertTrue('room_with_session' in self.path)
 
     def test_open_participant_links(self):
-        room_with_labels = reverse('assign_visitor_to_room', args=['default'])
+        room_with_labels = reverse('AssignVisitorToRoom', args=['default'])
 
         resp = self.get(room_with_labels)
         self.assertIn('Please enter your participant label', get_html(resp))
@@ -137,7 +137,7 @@ class TestRoomWithSession(RoomTestCase):
         )
         self.assertEqual(resp.status_code, 404)
 
-        anon_base_url = reverse('assign_visitor_to_room', args=['anon'])
+        anon_base_url = reverse('AssignVisitorToRoom', args=['anon'])
 
         resp = self.get(anon_base_url)
         self.assertTrue(participant_initialized(resp))
@@ -147,10 +147,10 @@ class TestRoomWithSession(RoomTestCase):
 
     def test_close_room(self):
 
-        url = reverse('close_room', args=['default'])
+        url = reverse('CloseRoom', args=['default'])
         self.get(url)
 
-        self.get(reverse('room_with_session', args=['default']))
+        self.get(reverse('RoomWithoutSession', args=['default']))
         self.assertTrue('room_without_session' in self.path)
 
     def test_delete_session_in_room(self):
@@ -160,8 +160,8 @@ class TestRoomWithSession(RoomTestCase):
         pass
 
     def tearDown(self):
-        url = reverse('close_room', args=['default'])
+        url = reverse('CloseRoom', args=['default'])
         self.get(url)
 
-        url = reverse('close_room', args=['anon'])
+        url = reverse('CloseRoom', args=['anon'])
         self.get(url)

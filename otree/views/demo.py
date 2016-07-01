@@ -24,13 +24,7 @@ class DemoIndex(vanilla.TemplateView):
 
     template_name = 'otree/demo/index.html'
 
-    @classmethod
-    def url_pattern(cls):
-        return r'^demo/$'
-
-    @classmethod
-    def url_name(cls):
-        return 'demo_index'
+    url_pattern = r'^demo/$'
 
     def get_context_data(self, **kwargs):
         intro_text = settings.DEMO_PAGE_INTRO_TEXT
@@ -43,7 +37,7 @@ class DemoIndex(vanilla.TemplateView):
                     'name': session_config['name'],
                     'display_name': session_config['display_name'],
                     'url': reverse(
-                        'create_demo_session', args=(session_config['name'],)
+                        'CreateDemoSession', args=(session_config['name'],)
                     ),
                     'num_demo_participants': session_config[
                         'num_demo_participants'
@@ -61,13 +55,7 @@ class DemoIndex(vanilla.TemplateView):
 
 class CreateDemoSession(vanilla.GenericView):
 
-    @classmethod
-    def url_pattern(cls):
-        return r"^demo/(?P<session_config>.+)/$"
-
-    @classmethod
-    def url_name(cls):
-        return 'create_demo_session'
+    url_pattern = r"^demo/(?P<session_config>.+)/$"
 
     def dispatch(self, request, *args, **kwargs):
         session_config_name = kwargs['session_config']
@@ -86,6 +74,6 @@ class CreateDemoSession(vanilla.GenericView):
         })
 
         wait_for_session_url = reverse(
-            'wait_for_session', args=(pre_create_id,)
+            'WaitUntilSessionCreated', args=(pre_create_id,)
         )
         return HttpResponseRedirect(wait_for_session_url)

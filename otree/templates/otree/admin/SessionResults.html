@@ -12,7 +12,7 @@ $(document).ready(function() {
 function ajax_json_results() {
     var $table = $('#results-table');
     $.ajax({
-        url: '{% url "session_results" session.code %}',
+        url: '{% url "SessionResults" session.code %}',
         type: 'GET',
         contentType: "application/json",
         error: function(jqXHR, textStatus) {

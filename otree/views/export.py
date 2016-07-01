@@ -27,13 +27,7 @@ class ExportIndex(vanilla.TemplateView):
 
     template_name = 'otree/export/index.html'
 
-    @classmethod
-    def url_pattern(cls):
-        return r"^export/$"
-
-    @classmethod
-    def url_name(cls):
-        return 'export'
+    url_pattern = r"^export/$"
 
     def get_context_data(self, **kwargs):
         context = super(ExportIndex, self).get_context_data(**kwargs)
@@ -53,13 +47,7 @@ class ExportIndex(vanilla.TemplateView):
 
 class ExportAppDocs(vanilla.View):
 
-    @classmethod
-    def url_pattern(cls):
-        return r"^ExportAppDocs/(?P<app_label>[\w.]+)/$"
-
-    @classmethod
-    def url_name(cls):
-        return 'export_app_docs'
+    url_pattern = r"^ExportAppDocs/(?P<app_label>[\w.]+)/$"
 
     def _doc_file_name(self, app_label):
         return '{} - documentation ({}).txt'.format(
@@ -79,13 +67,7 @@ class ExportAppDocs(vanilla.View):
 
 class ExportCsv(vanilla.View):
 
-    @classmethod
-    def url_pattern(cls):
-        return r"^ExportCsv/(?P<app_label>[\w.]+)/$"
-
-    @classmethod
-    def url_name(cls):
-        return 'export_csv'
+    url_pattern = r"^ExportCsv/(?P<app_label>[\w.]+)/$"
 
     def _data_file_name(self, app_label):
         return '{} (accessed {}).csv'.format(
@@ -105,13 +87,7 @@ class ExportCsv(vanilla.View):
 
 class ExportTimeSpent(vanilla.View):
 
-    @classmethod
-    def url_pattern(cls):
-        return r"^ExportTimeSpent/$"
-
-    @classmethod
-    def url_name(cls):
-        return 'export_time_spent'
+    url_pattern = r"^ExportTimeSpent/$"
 
     def get(self, request, *args, **kwargs):
         response = HttpResponse(content_type='text/csv')

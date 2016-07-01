@@ -58,15 +58,9 @@ class InitializeParticipant(vanilla.UpdateView):
 
     """
 
-    @classmethod
-    def url_pattern(cls):
-        return r'^InitializeParticipant/(?P<{}>[a-z0-9]+)/$'.format(
+    url_pattern = r'^InitializeParticipant/(?P<{}>[a-z0-9]+)/$'.format(
             constants.participant_code
         )
-
-    @classmethod
-    def url_name(cls):
-        return 'initialize_participant'
 
     def get(self, *args, **kwargs):
 
@@ -100,13 +94,7 @@ class MTurkLandingPage(vanilla.TemplateView):
         hit_settings = self.session.config['mturk_hit_settings']
         return [hit_settings['preview_template']]
 
-    @classmethod
-    def url_pattern(cls):
-        return r"^MTurkLandingPage/(?P<session_code>[a-z0-9]+)/$"
-
-    @classmethod
-    def url_name(cls):
-        return 'mturk_landing_page'
+    url_pattern = r"^MTurkLandingPage/(?P<session_code>[a-z0-9]+)/$"
 
     def dispatch(self, request, *args, **kwargs):
         session_code = kwargs['session_code']
@@ -124,7 +112,7 @@ class MTurkLandingPage(vanilla.TemplateView):
             ''
         )
         if assignment_id and assignment_id != 'ASSIGNMENT_ID_NOT_AVAILABLE':
-            url_start = reverse('mturk_start', args=(self.session.code,))
+            url_start = reverse('MTurkStart', args=(self.session.code,))
             url_start = add_params_to_url(url_start, {
                 'assignmentId': self.request.GET['assignmentId'],
                 'workerId': self.request.GET['workerId']})
@@ -136,13 +124,7 @@ class MTurkLandingPage(vanilla.TemplateView):
 
 class MTurkStart(vanilla.View):
 
-    @classmethod
-    def url_pattern(cls):
-        return r"^MTurkStart/(?P<session_code>[a-z0-9]+)/$"
-
-    @classmethod
-    def url_name(cls):
-        return 'mturk_start'
+    url_pattern = r"^MTurkStart/(?P<session_code>[a-z0-9]+)/$"
 
     def dispatch(self, request, *args, **kwargs):
         session_code = kwargs['session_code']
@@ -200,13 +182,7 @@ class MTurkStart(vanilla.View):
 
 class JoinSessionAnonymously(vanilla.View):
 
-    @classmethod
-    def url_pattern(cls):
-        return r'^join/(?P<anonymous_code>[a-z0-9]+)/$'
-
-    @classmethod
-    def url_name(cls):
-        return 'join_session_anonymously'
+    url_pattern = r'^join/(?P<anonymous_code>[a-z0-9]+)/$'
 
     def get(self, *args, **kwargs):
 
@@ -238,13 +214,7 @@ class JoinSessionAnonymously(vanilla.View):
 class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
     template_name = "otree/InputParticipantLabel.html"
 
-    @classmethod
-    def url_name(cls):
-        return 'assign_visitor_to_room'
-
-    @classmethod
-    def url_pattern(cls):
-        return r'^room/(?P<room>\w+)/$'
+    url_pattern = r'^room/(?P<room>\w+)/$'
 
     def dispatch(self, request, *args, **kwargs):
         self.room_name = kwargs['room']
@@ -345,13 +315,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
 
 class StaleRoomVisits(vanilla.View):
 
-    @classmethod
-    def url_pattern(cls):
-        return r'^StaleRoomVisits/(?P<room>\w+)/$'
-
-    @classmethod
-    def url_name(cls):
-        return 'stale_room_visits'
+    url_pattern = r'^StaleRoomVisits/(?P<room>\w+)/$'
 
     def get(self, request, *args, **kwargs):
 
@@ -371,13 +335,7 @@ class StaleRoomVisits(vanilla.View):
 
 class ActiveRoomParticipantsCount(vanilla.View):
 
-    @classmethod
-    def url_pattern(cls):
-        return r'^ActiveRoomParticipantsCount/(?P<room>\w+)/$'
-
-    @classmethod
-    def url_name(cls):
-        return 'active_room_participants_count'
+    url_pattern = r'^ActiveRoomParticipantsCount/(?P<room>\w+)/$'
 
     def get(self, request, *args, **kwargs):
         time_threshold = django.utils.timezone.now() - timedelta(seconds=20)
@@ -391,13 +349,7 @@ class ActiveRoomParticipantsCount(vanilla.View):
 
 class ParticipantRoomPing(vanilla.View):
 
-    @classmethod
-    def url_pattern(cls):
-        return r'^ParticipantRoomPing/(?P<tab_unique_id>\w+)/$'
-
-    @classmethod
-    def url_name(cls):
-        return 'participant_room_ping'
+    url_pattern = r'^ParticipantRoomPing/(?P<tab_unique_id>\w+)/$'
 
     def get(self, request, *args, **kwargs):
         visit = get_object_or_404(
@@ -409,13 +361,7 @@ class ParticipantRoomPing(vanilla.View):
 
 class AdvanceSession(vanilla.View):
 
-    @classmethod
-    def url_pattern(cls):
-        return r'^AdvanceSession/(?P<session_code>[a-z0-9]+)/$'
-
-    @classmethod
-    def url_name(cls):
-        return 'session_advance'
+    url_pattern = r'^AdvanceSession/(?P<session_code>[a-z0-9]+)/$'
 
     @classmethod
     def url(cls, session):
@@ -431,19 +377,13 @@ class AdvanceSession(vanilla.View):
 
     def get(self, request, *args, **kwargs):
         self.session.advance_last_place_participants()
-        redirect_url = reverse('session_monitor', args=(self.session.code,))
+        redirect_url = reverse('SessionMonitor', args=(self.session.code,))
         return HttpResponseRedirect(redirect_url)
 
 
 class ToggleArchivedSessions(vanilla.View):
 
-    @classmethod
-    def url_pattern(cls):
-        return r'^ToggleArchivedSessions/'
-
-    @classmethod
-    def url_name(cls):
-        return 'toggle_archived_sessions'
+    url_pattern = r'^ToggleArchivedSessions/'
 
     def post(self, request, *args, **kwargs):
         code_list = request.POST.getlist('item-action')
@@ -469,13 +409,7 @@ class ToggleArchivedSessions(vanilla.View):
 
 class DeleteSessions(vanilla.View):
 
-    @classmethod
-    def url_pattern(cls):
-        return r'^DeleteSessions/'
-
-    @classmethod
-    def url_name(cls):
-        return 'delete_sessions'
+    url_pattern = r'^DeleteSessions/'
 
     def dispatch(self, *args, **kwargs):
         return super(DeleteSessions, self).dispatch(*args, **kwargs)
@@ -486,4 +420,4 @@ class DeleteSessions(vanilla.View):
                 otree.models.session.Session, code=code
             )
             session.delete()
-        return HttpResponseRedirect(reverse('sessions'))
+        return HttpResponseRedirect(reverse('Sessions'))

@@ -186,7 +186,7 @@ class Participant(ModelWithVars):
 
     @permalink
     def _start_url(self):
-        return 'initialize_participant', (self.code,)
+        return 'InitializeParticipant', (self.code,)
 
     @property
     def payoff(self):

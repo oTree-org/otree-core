@@ -130,16 +130,12 @@ class SessionCreateHitForm(forms.Form):
         self.fields['assignments'].widget.attrs['readonly'] = True
 
 
-class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
+class CreateMTurkHIT(AdminSessionPageMixin, vanilla.FormView):
     '''This view creates mturk HIT for session provided in request
     AWS externalQuestion API is used to generate HIT.
 
     '''
     form_class = SessionCreateHitForm
-
-    @classmethod
-    def url_name(cls):
-        return 'session_create_hit'
 
     def in_public_domain(self, request, *args, **kwargs):
         """This method validates if oTree are published on a public domain
@@ -181,7 +177,7 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
         )
         context['runserver'] = 'runserver' in sys.argv
         url = self.request.build_absolute_uri(
-            reverse('session_create_hit', args=(self.session.code,))
+            reverse('CreateMTurkHIT', args=(self.session.code,))
         )
         secured_url = urlunparse(urlparse(url)._replace(scheme='https'))
         context['secured_url'] = secured_url
@@ -225,12 +221,12 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
                         messages.error(request, msg)
                         return HttpResponseRedirect(
                             reverse(
-                                'session_create_hit', args=(session.code,)))
+                                'CreateMTurkHIT', args=(session.code,)))
                 else:
                     session.mturk_qualification_type_id = qualification_id
 
             url_landing_page = self.request.build_absolute_uri(
-                reverse('mturk_landing_page', args=(session.code,)))
+                reverse('MTurkLandingPage', args=(session.code,)))
 
             # updating schema from http to https
             # this is compulsory for MTurk exteranlQuestion
@@ -297,18 +293,12 @@ class SessionCreateHit(AdminSessionPageMixin, vanilla.FormView):
             session.save()
 
         return HttpResponseRedirect(
-            reverse('session_create_hit', args=(session.code,)))
+            reverse('CreateMTurkHIT', args=(session.code,)))
 
 
 class PayMTurk(vanilla.View):
 
-    @classmethod
-    def url_pattern(cls):
-        return r'^PayMTurk/(?P<session_code>[a-z0-9]+)/$'
-
-    @classmethod
-    def url_name(cls):
-        return 'pay_mturk'
+    url_pattern = r'^PayMTurk/(?P<session_code>[a-z0-9]+)/$'
 
     def post(self, request, *args, **kwargs):
         session = get_object_or_404(otree.models.session.Session,
@@ -352,18 +342,12 @@ class PayMTurk(vanilla.View):
         else:
             messages.success(request, msg)
         return HttpResponseRedirect(
-            reverse('session_mturk_payments', args=(session.code,)))
+            reverse('SessionMTurkPayments', args=(session.code,)))
 
 
 class RejectMTurk(vanilla.View):
 
-    @classmethod
-    def url_pattern(cls):
-        return r'^RejectMTurk/(?P<session_code>[a-z0-9]+)/$'
-
-    @classmethod
-    def url_name(cls):
-        return 'reject_mturk'
+    url_pattern = r'^RejectMTurk/(?P<session_code>[a-z0-9]+)/$'
 
     def post(self, request, *args, **kwargs):
         session = get_object_or_404(otree.models.session.Session,
@@ -378,4 +362,4 @@ class RejectMTurk(vanilla.View):
         messages.success(request, "You successfully rejected "
                                   "selected assignments")
         return HttpResponseRedirect(
-            reverse('session_mturk_payments', args=(session.code,)))
+            reverse('SessionMTurkPayments', args=(session.code,)))

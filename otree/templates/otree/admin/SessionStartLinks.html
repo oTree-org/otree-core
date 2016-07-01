@@ -31,7 +31,7 @@
 {% if room %}
     <p>
         This session is taking place in the room
-        <a href="{% url "room_without_session" room.name %}">{{ room.display_name }}</a>.
+        <a href="{% url "RoomWithoutSession" room.name %}">{{ room.display_name }}</a>.
     </p>
 
     {% include "otree/includes/RoomParticipantLinks.html" %}
@@ -39,7 +39,7 @@
     <p>
         Below are temporary links for testing and demonstration.
         To launch a real study, either create persistent links by setting up a <a href="{% url 'rooms' %}">room</a>,
-        or create a session through the <a href="{% url 'sessions' %}">sessions page</a>.
+        or create a session through the <a href="{% url 'Sessions' %}">sessions page</a>.
     </p>
 
     <p>
@@ -51,7 +51,7 @@
     {% if fullscreen_mode_on %}
         <h4>Full screen mode</h4>
         <p>
-        To play in full screen mode, <a target="_blank" href="{% url 'session_fullscreen' session.code %}">click here</a>.
+        To play in full screen mode, <a target="_blank" href="{% url 'SessionFullscreen' session.code %}">click here</a>.
         </p>
     {% endif %}
 
@@ -101,7 +101,7 @@
 
     <p>
         If you want to give your participants permanent links that don't change,
-        you should create your session in a <a href="{% url 'rooms' %}">room</a>.
+        you should create your session in a <a href="{% url 'Rooms' %}">room</a>.
     </p>
 
     <h4>Single-use links</h4>

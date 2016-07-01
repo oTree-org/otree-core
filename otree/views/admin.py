@@ -344,13 +344,7 @@ class CreateSession(vanilla.FormView):
     form_class = CreateSessionForm
     template_name = 'otree/admin/CreateSession.html'
 
-    @classmethod
-    def url_pattern(cls):
-        return r"^create_session/$"
-
-    @classmethod
-    def url_name(cls):
-        return 'session_create'
+    url_pattern = r"^create_session/$"
 
     def dispatch(self, request, *args, **kwargs):
         self.for_mturk = (int(self.request.GET.get('mturk', 0)) == 1)
@@ -396,7 +390,7 @@ class CreateSession(vanilla.FormView):
         })
 
         wait_for_session_url = reverse(
-            'wait_for_session', args=(pre_create_id,)
+            'WaitUntilSessionCreated', args=(pre_create_id,)
         )
         return HttpResponseRedirect(wait_for_session_url)
 
@@ -404,13 +398,7 @@ class CreateSession(vanilla.FormView):
 class Rooms(vanilla.TemplateView):
     template_name = 'otree/admin/Rooms.html'
 
-    @classmethod
-    def url_pattern(cls):
-        return r"^rooms/$"
-
-    @classmethod
-    def url_name(cls):
-        return 'rooms'
+    url_pattern = r"^rooms/$"
 
     def get_context_data(self, **kwargs):
         return {'rooms': ROOM_DICT.values()}
@@ -420,19 +408,13 @@ class RoomWithoutSession(CreateSession):
     template_name = 'otree/admin/RoomWithoutSession.html'
     room = None
 
-    @classmethod
-    def url_pattern(cls):
-        return r"^room_without_session/(?P<room_name>.+)/$"
-
-    @classmethod
-    def url_name(cls):
-        return 'room_without_session'
+    url_pattern = r"^room_without_session/(?P<room_name>.+)/$"
 
     def dispatch(self, request, *args, **kwargs):
         self.room = ROOM_DICT[kwargs['room_name']]
         if self.room.has_session():
             return HttpResponseRedirect(
-                reverse('room_with_session', args=[kwargs['room_name']]))
+                reverse('RoomWithSession', args=[kwargs['room_name']]))
         return super(RoomWithoutSession, self).dispatch(
             request, *args, **kwargs)
 
@@ -455,19 +437,13 @@ class RoomWithSession(vanilla.TemplateView):
     template_name = 'otree/admin/RoomWithSession.html'
     room = None
 
-    @classmethod
-    def url_pattern(cls):
-        return r"^room_with_session/(?P<room_name>.+)/$"
-
-    @classmethod
-    def url_name(cls):
-        return 'room_with_session'
+    url_pattern = r"^room_with_session/(?P<room_name>.+)/$"
 
     def dispatch(self, request, *args, **kwargs):
         self.room = ROOM_DICT[kwargs['room_name']]
         if not self.room.has_session():
             return HttpResponseRedirect(
-                reverse('room_without_session', args=[kwargs['room_name']]))
+                reverse('RoomWithoutSession', args=[kwargs['room_name']]))
         return super(RoomWithSession, self).dispatch(
             request, *args, **kwargs)
 
@@ -476,7 +452,7 @@ class RoomWithSession(vanilla.TemplateView):
             'participant_urls': self.room.get_participant_urls(self.request),
             'room_wide_url': self.room.get_room_wide_url(self.request),
             'session_url': reverse(
-                'session_monitor',
+                'SessionMonitor',
                 args=(self.room.session.code,)),
             'room': self.room,
             'collapse_links': True,
@@ -487,13 +463,7 @@ class RoomWithSession(vanilla.TemplateView):
 
 
 class CloseRoom(vanilla.View):
-    @classmethod
-    def url_pattern(cls):
-        return r"^CloseRoom/(?P<room_name>.+)/$"
-
-    @classmethod
-    def url_name(cls):
-        return 'close_room'
+    url_pattern = r"^CloseRoom/(?P<room_name>.+)/$"
 
     def dispatch(self, request, *args, **kwargs):
         # TODO: should make this POST not GET,
@@ -506,18 +476,12 @@ class CloseRoom(vanilla.View):
             room_name=room_name,
         ).delete()
         return HttpResponseRedirect(
-            reverse('room_without_session', args=[room_name]))
+            reverse('RoomWithoutSession', args=[room_name]))
 
 
 class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
 
-    @classmethod
-    def url_pattern(cls):
-        return r"^WaitUntilSessionCreated/(?P<pre_create_id>.+)/$"
-
-    @classmethod
-    def url_name(cls):
-        return 'wait_for_session'
+    url_pattern = r"^WaitUntilSessionCreated/(?P<pre_create_id>.+)/$"
 
     body_text = 'Waiting until session created'
 
@@ -534,15 +498,15 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
         session = self.session
         if session.is_for_mturk():
             session_home_url = reverse(
-                'session_create_hit', args=(session.code,)
+                'CreateMTurkHIT', args=(session.code,)
             )
         # demo mode
         elif self.request.GET.get('fullscreen'):
             session_home_url = reverse(
-                'session_fullscreen', args=(session.code,))
+                'SessionFullscreen', args=(session.code,))
         else:  # typical case
             session_home_url = reverse(
-                'session_start_links', args=(session.code,))
+                'SessionStartLinks', args=(session.code,))
 
         return HttpResponseRedirect(session_home_url)
 
@@ -561,10 +525,6 @@ class SessionFullscreen(AdminSessionPageMixin, vanilla.TemplateView):
     only used in demo mode
     '''
 
-    @classmethod
-    def url_name(cls):
-        return 'session_fullscreen'
-
     def get_context_data(self, **kwargs):
         context = super(SessionFullscreen, self).get_context_data(**kwargs)
         participant_urls = [
@@ -579,9 +539,6 @@ class SessionFullscreen(AdminSessionPageMixin, vanilla.TemplateView):
 
 
 class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
-    @classmethod
-    def url_name(cls):
-        return 'session_monitor'
 
     def get_context_data(self, **kwargs):
 
@@ -650,12 +607,8 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
             form.fields['participation_fee'].widget.attrs['readonly'] = 'True'
         return form
 
-    @classmethod
-    def url_name(cls):
-        return 'session_edit'
-
     def get_success_url(self):
-        return reverse('session_edit', args=(self.session.code,))
+        return reverse('EditSessionProperties', args=(self.session.code,))
 
     def form_valid(self, form):
         super(EditSessionProperties, self).form_valid(form)
@@ -680,9 +633,6 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
 
 
 class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
-    @classmethod
-    def url_name(cls):
-        return 'session_payments'
 
     def get(self, *args, **kwargs):
         response = super(SessionPayments, self).get(*args, **kwargs)
@@ -711,9 +661,6 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
 
 
 class SessionMTurkPayments(AdminSessionPageMixin, vanilla.TemplateView):
-    @classmethod
-    def url_name(cls):
-        return 'session_mturk_payments'
 
     def get(self, *args, **kwargs):
         response = super(SessionMTurkPayments, self).get(*args, **kwargs)
@@ -749,9 +696,6 @@ class SessionMTurkPayments(AdminSessionPageMixin, vanilla.TemplateView):
 
 
 class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
-    @classmethod
-    def url_name(cls):
-        return 'session_start_links'
 
     def get_context_data(self, **kwargs):
         session = self.session
@@ -783,7 +727,7 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
 
             anonymous_url = self.request.build_absolute_uri(
                 reverse(
-                    'join_session_anonymously',
+                    'JoinSessionAnonymously',
                     args=(session._anonymous_code,)
                 )
             )
@@ -799,9 +743,6 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
 
 
 class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
-    @classmethod
-    def url_name(cls):
-        return 'session_results'
 
     def get_context_data(self, **kwargs):
         session = self.session
@@ -885,9 +826,6 @@ class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
 
 
 class SessionDescription(AdminSessionPageMixin, vanilla.TemplateView):
-    @classmethod
-    def url_name(cls):
-        return 'session_description'
 
     def get_context_data(self, **kwargs):
         context = super(SessionDescription, self).get_context_data(**kwargs)
@@ -933,13 +871,7 @@ def session_description_dict(session):
 class Sessions(vanilla.ListView):
     template_name = 'otree/admin/Sessions.html'
 
-    @classmethod
-    def url_pattern(cls):
-        return r"^sessions/(?P<archive>archive)?$"
-
-    @classmethod
-    def url_name(cls):
-        return 'sessions'
+    url_pattern = r"^sessions/(?P<archive>archive)?$"
 
     def get_context_data(self, **kwargs):
         context = super(Sessions, self).get_context_data(**kwargs)
@@ -957,13 +889,7 @@ class Sessions(vanilla.ListView):
 class ServerCheck(vanilla.TemplateView):
     template_name = 'otree/admin/ServerCheck.html'
 
-    @classmethod
-    def url_pattern(cls):
-        return r"^server_check/$"
-
-    @classmethod
-    def url_name(cls):
-        return 'server_check'
+    url_pattern = r"^server_check/$"
 
     def app_is_on_heroku(self):
         return 'heroku' in self.request.get_host()
@@ -994,13 +920,7 @@ class ServerCheck(vanilla.TemplateView):
 
 class OtreeCoreUpdateCheck(vanilla.View):
 
-    @classmethod
-    def url_pattern(cls):
-        return r"^version_cached/$"
-
-    @classmethod
-    def url_name(cls):
-        return 'pypi_updates'
+    url_pattern = r"^version_cached/$"
 
     # cached per process
     results = None
@@ -1013,13 +933,7 @@ class OtreeCoreUpdateCheck(vanilla.View):
 
 class CreateBrowserBotsSession(vanilla.View):
 
-    @classmethod
-    def url_pattern(cls):
-        return r"^create_browser_bots_session/$"
-
-    @classmethod
-    def url_name(cls):
-        return 'create_browser_bots_session'
+    url_pattern = r"^create_browser_bots_session/$"
 
     def dispatch(self, *args, **kwargs):
         return super(CreateBrowserBotsSession, self).dispatch(*args, **kwargs)

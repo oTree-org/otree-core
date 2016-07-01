@@ -134,11 +134,11 @@ class Command(BaseCommand):
             self.session_sizes = None
         self.wait_room_url = urljoin(
             server_url,
-            reverse('assign_visitor_to_room', args=[room_name])
+            reverse('AssignVisitorToRoom', args=[room_name])
         )
         self.create_session_url = urljoin(
             server_url,
-            reverse('create_browser_bots_session')
+            reverse('CreateBrowserBotsSession')
         )
 
         # TODO: use reverse? reverse('django.contrib.auth.views.login')

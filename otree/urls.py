@@ -76,13 +76,15 @@ def url_patterns_from_module(module_name):
         else:
             as_view = login_required(ViewCls.as_view())
 
-        if hasattr(ViewCls, 'url_name'):
-            view_urls.append(
-                urls.url(ViewCls.url_pattern(), as_view,
-                         name=ViewCls.url_name())
-            )
-        else:
-            view_urls.append(urls.url(ViewCls.url_pattern(), as_view))
+        url_name = getattr(ViewCls, 'url_name', ViewCls.__name__)
+
+        url_pattern = ViewCls.url_pattern
+        if callable(url_pattern):
+            url_pattern = url_pattern()
+
+        view_urls.append(
+            urls.url(url_pattern, as_view, name=url_name)
+        )
 
     return urls.patterns('', *view_urls)
 
@@ -101,7 +103,7 @@ def augment_urlpatterns(urlpatterns):
         urls.url(
             r'^accounts/logout/$',
             'django.contrib.auth.views.logout',
-            {'next_page': 'demo_index'},
+            {'next_page': 'DemoIndex'},
             name='logout',
         ),
     )

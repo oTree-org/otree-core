@@ -80,7 +80,7 @@ $(document).ready(function () {
     function getStaleParticipantVisits() {
         var args = {
             type: "GET",
-            url: '{% url "stale_room_visits" room.name %}',
+            url: '{% url "StaleRoomVisits" room.name %}',
             success: function(data) {
                 participant_labels = data.participant_labels;
                 if (participant_labels.length > 0) {
@@ -97,7 +97,7 @@ $(document).ready(function () {
     function getActiveParticipantCount() {
         var args = {
             type: "GET",
-            url: '{% url "active_room_participants_count" room.name %}',
+            url: '{% url "ActiveRoomParticipantsCount" room.name %}',
             success: function(data) {
                 no_labels_present_count = data.count;
                 $('#present_count').text(no_labels_present_count);
