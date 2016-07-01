@@ -233,8 +233,6 @@ class Command(BaseCommand):
             },
         )
 
-        with open('foo.txt', 'w') as f:
-            f.write(resp.text)
         if login_url in resp.url:
             raise Exception(AUTH_FAILURE_MESSAGE)
 

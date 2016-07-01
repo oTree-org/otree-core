@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from django.core.urlresolvers import reverse
-from six.moves import urllib
 import django.test.client
 import unittest
 from otree.session import create_session
-
+from .utils import get_path
 
 def has_header(response, header_name):
     return header_name in response
@@ -14,15 +13,6 @@ def has_header(response, header_name):
 
 def is_wait_page(response):
     return has_header(response, 'oTree-Wait-Page')
-
-
-def get_path(response, if_no_redirect):
-    try:
-        url = response.redirect_chain[-1][0]
-    except IndexError:
-        return if_no_redirect
-    else:
-        return urllib.parse.urlsplit(url).path
 
 
 def get_html(response):

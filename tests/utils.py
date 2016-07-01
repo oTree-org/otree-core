@@ -7,6 +7,7 @@ from django.conf import settings
 from django.core.management import call_command
 from django.test.utils import override_settings
 from six import StringIO
+from six.moves import urllib
 
 
 @contextlib.contextmanager
@@ -84,3 +85,12 @@ def dummyapp(app):
         shutil.rmtree(tmpdir)
         if os.path.exists(tmpdir):
             shutil.rmtree(tmpdir)
+
+
+def get_path(test_client_response, if_no_redirect):
+    try:
+        url = test_client_response.redirect_chain[-1][0]
+    except IndexError:
+        return if_no_redirect
+    else:
+        return urllib.parse.urlsplit(url).path

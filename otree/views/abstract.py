@@ -641,14 +641,14 @@ class InGameWaitPageMixin(object):
             # block users from accessing self.player inside
             # after_all_players_arrive, because conceptually
             # there is no single player in this context
-            # (method is executed once for the whole group)
+            # (method is executed once for the whole group).
+            # same idea with self.group, if we're waiting for all
+            # groups, not just one.
 
             player = self.player
             del self.player
-
-            # same idea as deleting self.player, if we're waiting for all
-            # groups, not just one.
             if self.wait_for_all_groups:
+                group = self.group
                 del self.group
 
             # make sure we get the most up-to-date player objects
@@ -681,7 +681,10 @@ class InGameWaitPageMixin(object):
             completion.delete()
             raise
 
+        # restore what we deleted earlier
         self.player = player
+        if self.wait_for_all_groups:
+            self.group = group
 
         if otree.common_internal.USE_REDIS:
             # 2015-07-27:
