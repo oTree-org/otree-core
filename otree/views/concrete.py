@@ -18,8 +18,6 @@ from django.http import (
     HttpResponse, HttpResponseRedirect, HttpResponseNotFound, Http404,
     JsonResponse
 )
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 
 import vanilla
 

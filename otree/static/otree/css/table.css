@@ -21,10 +21,15 @@ table.draggable.grabbing {
     cursor: move;
 }
 
+
+/* the 104px comes from 940/9...it's hardcoded to fit the current container
+ size...maybe there is a better way */
+
 table.draggable td, table.draggable th {
-    min-width: 93px;
-    max-width: 93px
+    min-width: 104px;
+    max-width: 104px
 }
+
 
 table.draggable thead {
     display: block;

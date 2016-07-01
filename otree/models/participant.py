@@ -154,7 +154,7 @@ class Participant(ModelWithVars):
     def status(self):
         # TODO: status could be a field that gets set imperatively
         if not self.visited:
-            return 'Not visited yet'
+            return 'Not started'
         if self.is_on_wait_page:
             if self._waiting_for_ids:
                 return 'Waiting for {}'.format(self._waiting_for_ids)

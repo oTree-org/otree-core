@@ -13,10 +13,8 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 import subprocess
 from otree.room import ROOM_DICT
-from otree.session import SESSION_CONFIGS_DICT, get_lcm
+from otree.session import SESSION_CONFIGS_DICT
 from ws4py.client.threadedclient import WebSocketClient
-
-import psutil
 
 # how do i import this properly?
 urljoin = urllib.parse.urljoin
@@ -184,7 +182,6 @@ class Command(BaseCommand):
                 'For best results, use Chrome with no addons or ad-blocker. '
                 'e.g. create a new Chrome profile.'
             )
-
 
         if room_name not in ROOM_DICT:
             raise ValueError(

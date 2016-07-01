@@ -15,8 +15,6 @@ from django.forms.forms import pretty_name
 from django.conf import settings
 from django.contrib import messages
 from django.utils.encoding import force_text
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 
 import channels
 import vanilla
@@ -87,7 +85,6 @@ def get_all_fields(Model, for_export=False):
                 '_round_number',
                 '_current_page_name',
                 'status',
-                'last_request_succeeded',
                 'ip_address',
                 'time_started',
                 'exclude_from_data_analysis',
@@ -97,7 +94,6 @@ def get_all_fields(Model, for_export=False):
                 'mturk_assignment_id',
             ]
         else:
-            # not used; see ParticipantSerializer
             return [
                 '_id_in_session',
                 'code',
@@ -107,7 +103,6 @@ def get_all_fields(Model, for_export=False):
                 '_round_number',
                 '_current_page_name',
                 'status',
-                'last_request_succeeded',
                 '_last_page_timestamp',
             ]
 

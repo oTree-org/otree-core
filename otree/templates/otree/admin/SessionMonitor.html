@@ -16,8 +16,8 @@ function wrap_timestamp() {
         if ( $(this).text() != "") {
             var date = new Date($(this).text() * 1000);
             $(this).text("");
-            $(this).append('<abbr class="timeago" title="' + date.toISOString() + '">Last submit was done that long ago</abbr>');
-            $("abbr.timeago").timeago();
+            $(this).append('<time class="timeago" datetime="' + date.toISOString() + '"></time>');
+            $("time.timeago").timeago();
         }
     });
     // remove timestamp for disconnected users

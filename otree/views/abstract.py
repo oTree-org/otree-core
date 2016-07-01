@@ -21,7 +21,6 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache, cache_control
 from django.http import HttpResponseRedirect, Http404
 from django.utils.translation import ugettext as _
-from huey.contrib.djhuey import HUEY
 from six.moves import range
 
 import channels
@@ -316,7 +315,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             self.participant._current_page_name = self.__class__.__name__
             response = super(FormPageOrInGameWaitPageMixin, self).dispatch(
                 request, *args, **kwargs)
-            self.participant.last_request_succeeded = True
             self.participant._last_request_timestamp = time.time()
 
             # if not using browser bots, this context manager does nothing
