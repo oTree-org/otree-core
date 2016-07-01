@@ -6,6 +6,7 @@ from .base import TestCase
 from django.conf import settings
 from .utils import get_path
 
+
 class TestAdminBasic(TestCase):
 
     def setUp(self):
@@ -35,4 +36,3 @@ class TestAdminBasic(TestCase):
 
         self.assertEqual(resp.status_code, 200)
         self.assertNotIn(login_url, get_path(resp, if_no_redirect=login_url))
-

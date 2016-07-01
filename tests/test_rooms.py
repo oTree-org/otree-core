@@ -7,6 +7,7 @@ import unittest
 from otree.session import create_session
 from .utils import get_path
 
+
 def has_header(response, header_name):
     return header_name in response
 

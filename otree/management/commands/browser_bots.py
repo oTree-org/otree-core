@@ -144,7 +144,6 @@ class Command(BaseCommand):
             reverse('CreateBrowserBotsSession')
         )
 
-
         # seems that urljoin doesn't work with ws:// urls
         # so do the ws replace after URLjoin
         websocket_url = urljoin(
