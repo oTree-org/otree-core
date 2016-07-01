@@ -19,16 +19,19 @@ from ws4py.client.threadedclient import WebSocketClient
 # how do i import this properly?
 urljoin = urllib.parse.urljoin
 
-FIREFOX_CMDS = {
-    'windows': "C:/Program Files (x86)/Mozilla Firefox/firefox.exe",
-    'mac': None,
-    'linux': 'firefox'
-}
-
-CHROME_CMDS = {
-    'windows': 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
-    'mac': '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-    'linux': 'google-chrome',
+BROWSER_CMDS = {
+    'windows': {
+        'chrome': 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',  # noqa
+        'firefox': "C:/Program Files (x86)/Mozilla Firefox/firefox.exe",
+    },
+    'mac': {
+        'chrome': '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',  # noqa
+        'firefox': None
+    },
+    'linux': {
+        'firefox': 'firefox',
+        'chrome': 'google-chrome',
+    }
 }
 
 if sys.platform.startswith("win"):
@@ -38,7 +41,7 @@ elif sys.platform.startswith("darwin"):
 else:
     platform = 'linux'
 
-CHROME_CMD = CHROME_CMDS[platform]
+CHROME_CMD = BROWSER_CMDS[platform]['chrome']
 
 DEFAULT_ROOM_NAME = 'browser_bots'
 
@@ -141,8 +144,6 @@ class Command(BaseCommand):
             reverse('CreateBrowserBotsSession')
         )
 
-        # TODO: use reverse? reverse('django.contrib.auth.views.login')
-        login_url = urljoin(server_url, '/accounts/login/')
 
         # seems that urljoin doesn't work with ws:// urls
         # so do the ws replace after URLjoin
@@ -198,6 +199,9 @@ class Command(BaseCommand):
 
         self.client = requests.session()
 
+        # TODO: use reverse? reverse('django.contrib.auth.views.login')
+        login_url = urljoin(server_url, '/accounts/login/')
+
         logging.getLogger("requests").setLevel(logging.WARNING)
         try:
             # populate CSRF cookie
@@ -228,7 +232,10 @@ class Command(BaseCommand):
                 'password': settings.ADMIN_PASSWORD,
             },
         )
-        if '/accounts/login' in resp.url:
+
+        with open('foo.txt', 'w') as f:
+            f.write(resp.text)
+        if login_url in resp.url:
             raise Exception(AUTH_FAILURE_MESSAGE)
 
         # .get just returns server readiness info
