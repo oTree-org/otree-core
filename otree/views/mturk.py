@@ -96,7 +96,7 @@ def get_all_assignments(conn, hit_id, status=None):
     return assignments
 
 
-class SessionCreateHitForm(forms.Form):
+class CreateMTurkHitForm(forms.Form):
 
     in_sandbox = forms.BooleanField(
         required=False,
@@ -126,7 +126,7 @@ class SessionCreateHitForm(forms.Form):
         ))
 
     def __init__(self, *args, **kwargs):
-        super(SessionCreateHitForm, self).__init__(*args, **kwargs)
+        super(CreateMTurkHitForm, self).__init__(*args, **kwargs)
         self.fields['assignments'].widget.attrs['readonly'] = True
 
 
@@ -135,7 +135,7 @@ class CreateMTurkHIT(AdminSessionPageMixin, vanilla.FormView):
     AWS externalQuestion API is used to generate HIT.
 
     '''
-    form_class = SessionCreateHitForm
+    form_class = CreateMTurkHitForm
 
     def in_public_domain(self, request, *args, **kwargs):
         """This method validates if oTree are published on a public domain

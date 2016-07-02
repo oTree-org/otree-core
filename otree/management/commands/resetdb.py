@@ -65,17 +65,13 @@ class Command(BaseCommand):
             '--noinput', action='store_false', dest='interactive',
             default=True, help=ahelp)
 
-    def _cancel_reset(self):
-        answer = None
+    def _confirm(self):
         self.stdout.write(
-            "Resetting the DB will destroy all current data. ")
-        while not answer or answer not in "yn":
-            answer = six.moves.input("Do you wish to proceed? [yN] ")
-            if not answer:
-                answer = "n"
-            else:
-                answer = answer[0].lower()
-        return answer == "n"
+            "This will delete and recreate your database. ")
+        answer = six.moves.input("Proceed? (y or n): ")
+        if answer:
+            return answer[0].lower() == 'y'
+        return False
 
     def _drop_table_stmt(self, dbconf):
         engine = dbconf["ENGINE"]
@@ -102,7 +98,8 @@ class Command(BaseCommand):
                 cursor.execute(stmt)
 
     def handle(self, **options):
-        if options.pop("interactive") and self._cancel_reset():
+        if options.pop("interactive") and not self._confirm():
+            self.stdout.write('Canceled.')
             return
 
         for db, dbconf in six.iteritems(settings.DATABASES):
