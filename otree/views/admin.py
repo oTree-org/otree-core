@@ -543,23 +543,22 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
     def get_context_data(self, **kwargs):
 
         field_names = get_all_fields(Participant)
-        rows = []
-        for p in self.session.get_participants():
-            row = []
-            for fn in field_names:
-                attr = getattr(p, fn)
-                if isinstance(attr, collections.Callable):
-                    attr = attr()
-                row.append(attr)
-            rows.append(row)
+        display_names = {
+            '_id_in_session': 'ID in session',
+            'code': 'Code',
+            'label': 'Label',
+            '_current_page': 'Page',
+            '_current_app_name': 'App',
+            '_round_number': 'Round',
+            '_current_page_name': 'Page name',
+            'status': 'Status',
+            '_last_page_timestamp': 'Time on page',
+        }
+
+        column_names = [display_names[col] for col in field_names]
 
         context = super(SessionMonitor, self).get_context_data(**kwargs)
-        context.update({
-            'column_names': [
-                pretty_name(field.strip('_')) for field in field_names
-                ],
-            'rows': rows,
-        })
+        context.update({'column_names': column_names})
         return context
 
 
