@@ -18,11 +18,47 @@ function createTableBodyFromJson(json)
 }
 
 
-function updateTable($table) {
+function updateDraggable($table) {
     $table.toggleClass(
         'draggable',
         ($table.get(0).scrollWidth > $table.parent().width())
         || ($table.find('tbody').height() >= 450));
+}
+
+function updateTable($table, new_json) {
+    var old_json = $table.data("raw");
+    // build table for the first time
+    if ( old_json === undefined ) {
+        var tableBody = createTableBodyFromJson(new_json);
+        $table.append(tableBody);
+    }
+    // compute delta and update
+    // corresponding values in table
+    else {
+        var diffpatcher = jsondiffpatch.create({
+            objectHash: function(obj) {
+                return obj.participant_label;
+            }
+        });
+        var delta = diffpatcher.diff(old_json, new_json);
+        for (i in delta) {
+            for (header_name in delta[i]) {
+                var cell_to_update = $table.find(
+                    "tbody tr:eq(" + i + ") td[data-field='" + header_name + "']" );
+                var new_value = delta[i][header_name][1];
+                cell_to_update.text(new_value);
+                cell_to_update.prop('title', new_value);
+                cell_to_update.css('background-color', 'green');
+                cell_to_update.animate({
+                        backgroundColor: "white"
+                    },
+                    5000
+                );
+            }
+        }
+    }
+    $table.data("raw", new_json);
+    updateDraggable($table);
 }
 
 
