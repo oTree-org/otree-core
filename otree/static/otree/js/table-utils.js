@@ -9,7 +9,7 @@ function createTableBodyFromJson(json)
             if (value === null) {
                 value = '';
             }
-            html += '<td data-field="' + key + '">' + value + '</td>';
+            html += '<td data-field="' + key + '" title="' + value + '">' + value + '</td>';
         }
         html += '</tr>';
     }
@@ -55,3 +55,4 @@ function makeTableDraggable($table) {
             $table.removeClass('grabbing');
     });
 }
+
