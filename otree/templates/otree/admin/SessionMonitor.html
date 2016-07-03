@@ -8,7 +8,8 @@ $(document).ready(function() {
     setInterval(ajax_json_participants , 4000);
     ajax_advance();
 
-    makeTableDraggable($('#monitor-table'));
+    var $table = $('#monitor-table');
+    makeTableDraggable($table);
 });
 // wrap timestamp into timeago tag
 function wrap_timestamp() {

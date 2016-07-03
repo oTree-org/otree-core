@@ -47,6 +47,8 @@ function updateTable($table, new_json) {
                     "tbody tr:eq(" + i + ") td[data-field='" + header_name + "']" );
                 var new_value = delta[i][header_name][1];
                 cell_to_update.text(new_value);
+
+                // so that we get tooltips if it truncates
                 cell_to_update.prop('title', new_value);
                 cell_to_update.css('background-color', 'green');
                 cell_to_update.animate({
@@ -92,3 +94,21 @@ function makeTableDraggable($table) {
     });
 }
 
+function adjustCellWidths($table) {
+    // Change the selector if needed
+    $table = $($table);
+
+    // Adjust the width of thead cells when window resizes
+    $(window).resize(function() {
+        // Get the tbody columns width array
+        var $bodyCells = $table.find('tbody tr:first').children();
+        var colWidths = $bodyCells.map(function() {
+            return $(this).width();
+        }).get();
+
+        // Set the width of thead columns
+        $table.find('thead tr:last').children().each(function(i, v) {
+            $(v).width(colWidths[i]);
+        });
+    }).resize(); // Trigger resize handler    
+}
