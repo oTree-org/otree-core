@@ -12,7 +12,7 @@ import channels
 
 import otree.constants_internal as constants
 from otree.session import SESSION_CONFIGS_DICT
-from otree.common_internal import channels_create_session_group_name
+from otree.common_internal import create_session_and_redirect
 
 # if it's debug mode, we should always generate a new session
 # because a bug might have been fixed
@@ -59,21 +59,9 @@ class CreateDemoSession(vanilla.GenericView):
 
     def dispatch(self, request, *args, **kwargs):
         session_config_name = kwargs['session_config']
-        pre_create_id = uuid.uuid4().hex
-        kwargs = {
+        session_kwargs = {
             'special_category': constants.session_special_category_demo,
             'session_config_name': session_config_name,
-            '_pre_create_id': pre_create_id,
         }
 
-        channels_group_name = channels_create_session_group_name(
-            pre_create_id)
-        channels.Channel('otree.create_session').send({
-            'kwargs': kwargs,
-            'channels_group_name': channels_group_name
-        })
-
-        wait_for_session_url = reverse(
-            'WaitUntilSessionCreated', args=(pre_create_id,)
-        )
-        return HttpResponseRedirect(wait_for_session_url)
+        return create_session_and_redirect(session_kwargs)

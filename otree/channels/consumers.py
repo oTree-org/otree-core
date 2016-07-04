@@ -55,12 +55,12 @@ def connect_wait_page(message, params):
 
 
 def disconnect_wait_page(message, params):
-    app_label, page_index, model_name, model_pk = params.split(',')
+    session_pk, page_index, model_name, model_pk = params.split(',')
     page_index = int(page_index)
     model_pk = int(model_pk)
 
     group_name = channels_wait_page_group_name(
-        app_label, page_index, model_name, model_pk
+        session_pk, page_index, model_name, model_pk
     )
     group = Group(group_name)
     group.discard(message.reply_channel)
@@ -104,7 +104,8 @@ def create_session(message):
         otree.session.create_session(**kwargs)
     except Exception as e:
         error_message = (
-            'Failed to create session: "{}" - Check the server logs'.format(
+            'Failed to create session: "{}" - '
+            'For details, check the server logs'.format(
                     str(e)))
         group.send(
             {'text': json.dumps(

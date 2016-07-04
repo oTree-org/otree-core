@@ -3,7 +3,7 @@
 
 import collections
 import sys
-import uuid
+
 import itertools
 import os
 from six.moves import range
@@ -16,7 +16,6 @@ from django.conf import settings
 from django.contrib import messages
 from django.utils.encoding import force_text
 
-import channels
 import vanilla
 
 from ordered_set import OrderedSet as oset
@@ -28,7 +27,7 @@ import otree.constants_internal
 import otree.models.session
 from otree.common_internal import (
     get_models_module, app_name_format,
-    channels_create_session_group_name,
+    create_session_and_redirect,
     db_status_ok,
     check_pypi_for_updates)
 from otree.session import SESSION_CONFIGS_DICT, get_lcm, create_session
@@ -362,37 +361,26 @@ class CreateSession(vanilla.FormView):
         return super(CreateSession, self).get_form(data, files, **kwargs)
 
     def form_valid(self, form):
-        pre_create_id = uuid.uuid4().hex
-        kwargs = {
+
+        session_kwargs = {
             'session_config_name': form.cleaned_data['session_config'],
-            '_pre_create_id': pre_create_id,
             'for_mturk': self.for_mturk
         }
         if self.for_mturk:
-            kwargs['num_participants'] = (
+            session_kwargs['num_participants'] = (
                 form.cleaned_data['num_participants'] *
                 settings.MTURK_NUM_PARTICIPANTS_MULT
             )
 
         else:
-            kwargs['num_participants'] = form.cleaned_data['num_participants']
+            session_kwargs['num_participants'] = form.cleaned_data['num_participants']
 
         # TODO:
         # Refactor when we upgrade to push
         if hasattr(self, "room"):
-            kwargs['room_name'] = self.room.name
+            session_kwargs['room_name'] = self.room.name
 
-        channels_group_name = channels_create_session_group_name(
-            pre_create_id)
-        channels.Channel('otree.create_session').send({
-            'kwargs': kwargs,
-            'channels_group_name': channels_group_name
-        })
-
-        wait_for_session_url = reverse(
-            'WaitUntilSessionCreated', args=(pre_create_id,)
-        )
-        return HttpResponseRedirect(wait_for_session_url)
+        return create_session_and_redirect(session_kwargs)
 
 
 class Rooms(vanilla.TemplateView):

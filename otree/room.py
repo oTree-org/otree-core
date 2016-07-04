@@ -68,7 +68,7 @@ class Room(object):
                         for line in f:
                             label = line.strip()
                             if not label:
-                                pass
+                                continue
                             label = validate_identifier(
                                 line.strip(),
                                 identifier_description='participant label'

@@ -100,11 +100,11 @@ class Command(BaseCommand):
             default='http://127.0.0.1:8000',
             help="Server's root URL")
         ahelp = (
-            'Numbers of participants. Examples: "12" or "4-12-18".'
+            'Numbers of participants. '
             'Defaults to minimum for the session config.'
         )
         parser.add_argument(
-            '-n', NUM_PARTICIPANTS_FLAG, type=str,
+            '-n', NUM_PARTICIPANTS_FLAG, type=int, nargs='*',
             help=ahelp)
         ahelp = (
             'Room to create the session in (see settings.ROOMS).'
@@ -130,11 +130,8 @@ class Command(BaseCommand):
             server_url = 'http://' + server_url
         room_name = options['room']
 
-        num_participants = options['num_participants']
-        if num_participants is not None:
-            self.session_sizes = [int(n) for n in num_participants.split('-')]
-        else:
-            self.session_sizes = None
+        self.session_sizes = options['num_participants']
+        print(self.session_sizes)
         self.wait_room_url = urljoin(
             server_url,
             reverse('AssignVisitorToRoom', args=[room_name])

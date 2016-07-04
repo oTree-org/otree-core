@@ -14,12 +14,14 @@ import logging
 import hashlib
 import requests
 import json
+import uuid
 
 
 from os.path import dirname, join
 from collections import OrderedDict
 from importlib import import_module
 
+import channels
 import six
 from six.moves import urllib
 
@@ -27,6 +29,8 @@ from django.db import connection
 from django.apps import apps
 from django.conf import settings
 from django.template.defaultfilters import title
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 
 from otree import constants_internal
 import otree
@@ -67,14 +71,17 @@ def git_commit_timestamp():
         return ''
 
 
-def random_chars_8():
+def random_chars(num_chars):
     chars = string.ascii_lowercase + string.digits
-    return ''.join(random.choice(chars) for _ in range(8))
+    return ''.join(random.choice(chars) for _ in range(num_chars))
+
+
+def random_chars_8():
+    return random_chars(8)
 
 
 def random_chars_10():
-    chars = string.ascii_lowercase + string.digits
-    return ''.join(random.choice(chars) for _ in range(8))
+    return random_chars(10)
 
 
 def app_name_format(app_name):
@@ -476,3 +483,19 @@ def validate_identifier(identifier, identifier_description):
             identifier
         )
     )
+
+
+def create_session_and_redirect(session_kwargs):
+    pre_create_id = uuid.uuid4().hex
+    session_kwargs['_pre_create_id'] = pre_create_id
+    channels_group_name = channels_create_session_group_name(
+        pre_create_id)
+    channels.Channel('otree.create_session').send({
+        'kwargs': session_kwargs,
+        'channels_group_name': channels_group_name
+    })
+
+    wait_for_session_url = reverse(
+        'WaitUntilSessionCreated', args=(pre_create_id,)
+    )
+    return HttpResponseRedirect(wait_for_session_url)

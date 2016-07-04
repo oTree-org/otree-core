@@ -97,7 +97,7 @@ class Session(ModelWithVars):
     comment = models.TextField(blank=True)
 
     _anonymous_code = models.CharField(
-        default=random_chars_10, max_length=8, null=False, db_index=True)
+        default=random_chars_10, max_length=10, null=False, db_index=True)
 
     special_category = models.CharField(
         db_index=True, max_length=20, null=True,
