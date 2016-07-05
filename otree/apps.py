@@ -11,27 +11,10 @@ from django.db.models import signals
 from otree.models_concrete import StubModel
 from otree.models.session import GlobalSingleton
 import otree
-
+from otree.common_internal import ensure_superuser_exists
 
 logger = logging.getLogger('otree')
 import_module('otree.checks')   # this made that style check work
-
-
-def create_default_superuser(sender, **kwargs):
-    """
-    Creates our default superuser.
-    """
-    User = apps.get_model('auth.User')
-    username = settings.ADMIN_USERNAME
-    password = settings.ADMIN_PASSWORD
-    if not User.objects.filter(username=username).exists():
-        logger.info(
-            'Creating default superuser. '
-            'Username: {}'.format(username))
-        assert User.objects.create_superuser(username, email='',
-                                             password=password)
-    else:
-        logger.debug('Default superuser already exists.')
 
 
 def create_singleton_objects(sender, **kwargs):
@@ -48,7 +31,7 @@ class OtreeConfig(AppConfig):
     def setup_create_default_superuser(self):
         authconfig = apps.get_app_config('auth')
         signals.post_migrate.connect(
-            create_default_superuser,
+            ensure_superuser_exists,
             sender=authconfig,
             dispatch_uid='common.models.create_testuser'
         )

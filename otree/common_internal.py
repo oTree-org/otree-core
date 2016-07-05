@@ -499,3 +499,24 @@ def create_session_and_redirect(session_kwargs):
         'WaitUntilSessionCreated', args=(pre_create_id,)
     )
     return HttpResponseRedirect(wait_for_session_url)
+
+def ensure_superuser_exists(*args, **kwargs):
+    """
+    Creates our default superuser, returns True for success
+    and False for failure
+    """
+    from django.contrib.auth.models import User
+    username = settings.ADMIN_USERNAME
+    password = settings.ADMIN_PASSWORD
+    logger = logging.getLogger('otree')
+    if User.objects.filter(username=username).exists():
+        # msg = 'Default superuser exists.'
+        # logger.info(msg)
+        return True
+    if not password:
+        return False
+    assert User.objects.create_superuser(username, email='',
+                                         password=password)
+    msg = 'Created superuser "{}"'.format(username)
+    logger.info(msg)
+    return True

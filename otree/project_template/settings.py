@@ -17,7 +17,9 @@ else:
     DEBUG = True
 
 ADMIN_USERNAME = 'admin'
-ADMIN_PASSWORD = 'otree'
+
+# for security, best to set admin password in an environment variable
+ADMIN_PASSWORD = environ.get('OTREE_ADMIN_PASSWORD')
 
 # don't share this with anybody.
 SECRET_KEY = '{{ secret_key }}'

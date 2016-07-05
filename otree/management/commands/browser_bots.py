@@ -131,7 +131,6 @@ class Command(BaseCommand):
         room_name = options['room']
 
         self.session_sizes = options['num_participants']
-        print(self.session_sizes)
         self.wait_room_url = urljoin(
             server_url,
             reverse('AssignVisitorToRoom', args=[room_name])
@@ -199,9 +198,12 @@ class Command(BaseCommand):
         login_url = urljoin(server_url, '/accounts/login/')
 
         logging.getLogger("requests").setLevel(logging.WARNING)
+
         try:
-            # populate CSRF cookie
+            # open this just to populate CSRF cookie
+            # (because login page contains a form)
             resp = self.client.get(login_url)
+
         except:
             raise Exception(
                 'Could not connect to server at {}.'
@@ -220,20 +222,30 @@ class Command(BaseCommand):
                 )
             )
 
-        # login
-        resp = self.post(
-            login_url,
-            data={
-                'username': settings.ADMIN_USERNAME,
-                'password': settings.ADMIN_PASSWORD,
-            },
-        )
-
-        if login_url in resp.url:
-            raise Exception(AUTH_FAILURE_MESSAGE)
-
         # .get just returns server readiness info
+        # try to get this page without logging in
+        # we don't want to login if it isn't necessary, because maybe
+        # settings.ADMIN_PASSWORD is empty, and therefore no user account
+        # exists.
         resp = self.client.get(self.create_session_url)
+
+        # if AUTH_LEVEL is set on remote server, then this will redirect
+        # to a login page
+        if login_url in resp.url:
+            # login
+            resp = self.post(
+                login_url,
+                data={
+                    'username': settings.ADMIN_USERNAME,
+                    'password': settings.ADMIN_PASSWORD,
+                },
+            )
+
+            if login_url in resp.url:
+                raise Exception(AUTH_FAILURE_MESSAGE)
+
+            # get it again, we are logged in now
+            resp = self.client.get(self.create_session_url)
         server_check = resp.json()
 
         if server_check['runserver']:

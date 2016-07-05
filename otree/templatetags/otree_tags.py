@@ -25,6 +25,7 @@ from .otree_forms import FormFieldNode
 from .otree_forms import MarkFieldAsRenderedNode
 from .otree_forms import defaultlabel
 from otree.common import Currency
+import otree.common_internal
 
 import six
 
@@ -87,6 +88,24 @@ def add_class(var, css_class, *extra_css_classes):
         return css_class_template % ' '.join(css_classes)
     except Resolver404:
         return ""
+
+NO_USER_MSG = '''
+Before logging in, you must create a user by setting ADMIN_USERNAME and
+ADMIN_PASSWORD in settings.py
+'''
+
+@register.simple_tag
+def ensure_superuser_exists():
+    '''
+    Creates a superuser on the fly, so that the user doesn't have to migrate
+    or resetdb to get a superuser.
+    If eventually we use migrations instead of resetdb, then maybe won't
+    need this anymore.
+    '''
+    success = otree.common_internal.ensure_superuser_exists()
+    if success:
+        return ''
+    return NO_USER_MSG
 
 
 register.tag('pageform', FormNode.parse)

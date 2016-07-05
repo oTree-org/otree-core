@@ -27,7 +27,9 @@
     <input type="hidden" name="next" value="{{ next }}" />
   </div>
   <div class="form-row">
-    The password is defined in your <code>settings.py</code> file.
+      The password is defined in your <code>settings.py</code> file.
+      {% ensure_superuser_exists %}
+
   </div>
   {% url 'admin_password_reset' as password_reset_url %}
   {% if password_reset_url %}
@@ -36,7 +38,7 @@
   </div>
   {% endif %}
   <div class="submit-row">
-      <button type="submit" class="btn btn-default"/>{% trans 'Log in' %}</button>
+      <button type="submit" class="btn btn-default">{% trans 'Log in' %}</button>
   </div>
 </form>
 
