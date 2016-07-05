@@ -20,9 +20,7 @@ ADMIN_USERNAME = 'admin'
 ADMIN_PASSWORD = 'otree'
 
 # don't share this with anybody.
-# Change this to something unique (e.g. mash your keyboard),
-# and then delete this comment.
-SECRET_KEY = 'zzzzzzzzzzzzzzzzzzzzzzzzzzz'
+SECRET_KEY = '{{ secret_key }}'
 
 PAGE_FOOTER = ''
 
