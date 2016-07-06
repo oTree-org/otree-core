@@ -94,6 +94,7 @@ Before logging in, you must create a user by setting ADMIN_USERNAME and
 ADMIN_PASSWORD in settings.py
 '''
 
+
 @register.simple_tag
 def ensure_superuser_exists():
     '''

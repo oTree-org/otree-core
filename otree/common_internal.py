@@ -500,6 +500,7 @@ def create_session_and_redirect(session_kwargs):
     )
     return HttpResponseRedirect(wait_for_session_url)
 
+
 def ensure_superuser_exists(*args, **kwargs):
     """
     Creates our default superuser, returns True for success

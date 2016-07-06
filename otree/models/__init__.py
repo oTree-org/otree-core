@@ -8,7 +8,6 @@ from otree.db import models
 from otree.models.session import Session
 from otree.models.participant import Participant
 
-
 # NOTE: this imports the following submodules and then subclasses several
 # classes importing is done via import_module rather than an ordinary import.
 # The only reason for this is to hide the base classes from IDEs like PyCharm,
@@ -168,6 +167,9 @@ class BasePlayer(player_module.BasePlayer):
     session = models.ForeignKey(
         Session, related_name='%(app_label)s_%(class)s'
     )
+
+    group = None
+    subsession = None
 
     round_number = models.PositiveIntegerField(db_index=True)
 

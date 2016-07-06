@@ -1,14 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import uuid
-
 from django.conf import settings
-from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 
 import vanilla
-
-import channels
 
 import otree.constants_internal as constants
 from otree.session import SESSION_CONFIGS_DICT

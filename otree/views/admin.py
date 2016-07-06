@@ -373,7 +373,8 @@ class CreateSession(vanilla.FormView):
             )
 
         else:
-            session_kwargs['num_participants'] = form.cleaned_data['num_participants']
+            session_kwargs['num_participants'] = (
+                form.cleaned_data['num_participants'])
 
         # TODO:
         # Refactor when we upgrade to push
