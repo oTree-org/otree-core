@@ -43,6 +43,7 @@ function updateTable($table, new_json) {
         var delta = diffpatcher.diff(old_json, new_json);
         for (i in delta) {
             for (header_name in delta[i]) {
+
                 var cell_to_update = $table.find(
                     "tbody tr:eq(" + i + ") td[data-field='" + header_name + "']" );
                 var new_value = delta[i][header_name][1];
