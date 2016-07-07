@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 
-import sys
 import six
 from django.db.models import Prefetch
 from otree_save_the_change.mixins import SaveTheChange

@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-import six
-
 from otree_save_the_change.mixins import SaveTheChange
 
 from otree.db import models

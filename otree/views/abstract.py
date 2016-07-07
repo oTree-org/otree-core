@@ -38,8 +38,8 @@ from otree.common_internal import get_app_label_from_import_path
 
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
-    CompletedGroupWaitPage, PageTimeout, UndefinedFormModel, ParticipantLockModel,
-    BrowserBotSubmit
+    CompletedGroupWaitPage, PageTimeout, UndefinedFormModel,
+    ParticipantLockModel, BrowserBotSubmit
 )
 from otree.models.session import GlobalSingleton
 
