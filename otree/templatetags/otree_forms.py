@@ -103,8 +103,9 @@ class FormFieldNode(Node):
                 self.field_variable_name.split('.', -1)
             instance_in_template = Variable(
                 instance_name_in_template).resolve(context)
-            instance_from_view = form.instance
+            # it could be form.my_field
             if isinstance(instance_in_template, models.Model):
+                instance_from_view = form.instance
                 if type(instance_from_view) == UndefinedFormModel:
                     raise ValueError(
                         'Template contains a formfield, but '

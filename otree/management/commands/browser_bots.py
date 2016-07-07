@@ -217,7 +217,7 @@ class Command(BaseCommand):
             raise Exception(
                 'Could not open page at {}.'
                 '(HTTP status code: {})'.format(
-                    server_url,
+                    login_url,
                     resp.status_code,
                 )
             )

@@ -19,6 +19,7 @@ class TestAdminBasic(TestCase):
             'rooms',
             'create_session',
             'server_check',
+            'accounts/login'
         ]:
             response = self.browser.get('/{}/'.format(tab), follow=True)
             self.assertEqual(response.status_code, 200)
