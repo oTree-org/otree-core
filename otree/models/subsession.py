@@ -1,25 +1,39 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 from __future__ import division
 
-from django.db.models import Prefetch
+import sys
 import six
+from django.db.models import Prefetch
 from otree_save_the_change.mixins import SaveTheChange
 from otree.db import models
 from otree.common_internal import get_models_module
 from otree import matching
 import copy
 
+ATTRIBUTE_ERROR_MESSAGE = '''
+Subsession object has no attribute '{}'. If it is a model field or method,
+it must be declared on the Subsession class in models.py.
+'''.replace('\n', '')
+
 
 class BaseSubsession(SaveTheChange, models.Model):
     """Base class for all Subsessions.
-
     """
 
     class Meta:
         abstract = True
         index_together = ['session', 'round_number']
+
+    def __getattribute__(self, name):
+        try:
+            return super(BaseSubsession, self).__getattribute__(name)
+        except AttributeError:
+            # this will result in "during handling of the above exception...'
+            # once we drop Python <3.3, we can raise from None
+            # for now, it's not that bad, just the almost same error printed
+            # twice
+            raise AttributeError(ATTRIBUTE_ERROR_MESSAGE.format(name))
 
     def in_rounds(self, first, last):
         qs = type(self).objects.filter(

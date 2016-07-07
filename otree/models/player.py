@@ -1,11 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
+import six
 from otree.common_internal import get_models_module
 from otree_save_the_change.mixins import SaveTheChange
-
 from otree.db import models
 from otree.models.fieldchecks import ensure_field
+
+ATTRIBUTE_ERROR_MESSAGE = '''
+Player object has no attribute '{}'. If it is a model field or method,
+it must be declared on the Player class in models.py.
+'''.replace('\n', '')
 
 
 class BasePlayer(SaveTheChange, models.Model):
@@ -17,6 +23,16 @@ class BasePlayer(SaveTheChange, models.Model):
         abstract = True
         index_together = ['participant', 'round_number']
         ordering = ['pk']
+
+    def __getattribute__(self, name):
+        try:
+            return super(BasePlayer, self).__getattribute__(name)
+        except AttributeError:
+            # this will result in "during handling of the above exception...'
+            # once we drop Python <3.3, we can raise from None
+            # for now, it's not that bad, just the almost same error printed
+            # twice
+            raise AttributeError(ATTRIBUTE_ERROR_MESSAGE.format(name))
 
     _index_in_game_pages = models.PositiveIntegerField(
         default=0,

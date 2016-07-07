@@ -85,7 +85,7 @@ class ParticipantLockModel(models.Model):
     locked = models.BooleanField(default=False)
 
 
-class StubModel(models.Model):
+class UndefinedFormModel(models.Model):
     """To be used as the model for an empty form, so that form_class can be
     omitted. Consider using SingletonModel for this. Right now, I'm not
     sure we need it.

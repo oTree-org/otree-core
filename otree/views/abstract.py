@@ -38,7 +38,7 @@ from otree.common_internal import get_app_label_from_import_path
 
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
-    CompletedGroupWaitPage, PageTimeout, StubModel, ParticipantLockModel,
+    CompletedGroupWaitPage, PageTimeout, UndefinedFormModel, ParticipantLockModel,
     BrowserBotSubmit
 )
 from otree.models.session import GlobalSingleton
@@ -843,7 +843,7 @@ class FormPageMixin(object):
     """
 
     # if a model is not specified, use empty "StubModel"
-    model = StubModel
+    model = UndefinedFormModel
     fields = []
 
     def get_template_names(self):
@@ -858,7 +858,7 @@ class FormPageMixin(object):
 
     def get_form_class(self):
         fields = self.get_form_fields()
-        if self.form_model is StubModel and fields:
+        if self.form_model is UndefinedFormModel and fields:
             raise Exception(
                 'Page "{}" defined form_fields but not form_model'.format(
                     self.__class__.__name__
@@ -999,8 +999,8 @@ class PlayerUpdateView(FormPageMixin, FormPageOrInGameWaitPageMixin,
             return self.group
         if Cls == self.PlayerClass:
             return self.player
-        if Cls == StubModel:
-            return StubModel.objects.all()[0]
+        if Cls == UndefinedFormModel:
+            return UndefinedFormModel.objects.all()[0]
 
 
 class InGameWaitPage(FormPageOrInGameWaitPageMixin, InGameWaitPageMixin,

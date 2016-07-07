@@ -11,7 +11,7 @@ from django.template.loader import get_template
 from django.utils import six
 
 import floppyforms.templatetags.floppyforms as floppyforms_templatetags
-
+from otree.models_concrete import UndefinedFormModel
 
 FORM_UNRENDERED_FIELDS = 'form_unrendered_fields'
 
@@ -99,19 +99,38 @@ class FormFieldNode(Node):
         # player is a model instance.
         if '.' in self.field_variable_name:
             form = self.get_form_instance(context)
-            model_instance_name, field_name = \
+            instance_name_in_template, field_name = \
                 self.field_variable_name.split('.', -1)
-            model_instance = Variable(model_instance_name).resolve(context)
-            if isinstance(model_instance, models.Model):
-                if form.instance != model_instance:
+            instance_in_template = Variable(
+                instance_name_in_template).resolve(context)
+            instance_from_view = form.instance
+            if isinstance(instance_in_template, models.Model):
+                if type(instance_from_view) == UndefinedFormModel:
                     raise ValueError(
-                        "Variable '{model_instance_name}' "
-                        "({model_instance!r}) is different to the "
-                        "model instance set in the form "
-                        "({form_model_instance!r}).".format(
-                            model_instance_name=model_instance_name,
-                            model_instance=model_instance,
-                            form_model_instance=form.instance))
+                        'Template contains a formfield, but '
+                        'you did not set form_model on the Page '
+                        'in views.py.'
+                    )
+                elif type(instance_in_template) != type(instance_from_view):
+                    raise ValueError(
+                        'In views.py you set form_model to {!r}, '
+                        'but in the template you have a formfield for '
+                        '"{}", which is a different model.'.format(
+                            type(instance_from_view),
+                            instance_name_in_template,
+                        )
+                    )
+                # we should ensure that Player and Group have readable
+                # __repr__
+                elif instance_in_template != instance_from_view:
+                    raise ValueError(
+                        "You have a formfield for '{}' "
+                        "({!r}), which is different from "
+                        "the expected model instance "
+                        "({!r}).".format(
+                            instance_name_in_template,
+                            instance_in_template,
+                            form.instance))
                 try:
                     return form[field_name]
                 except KeyError:

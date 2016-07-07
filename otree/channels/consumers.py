@@ -103,9 +103,10 @@ def create_session(message):
     try:
         otree.session.create_session(**kwargs)
     except Exception as e:
+        # full error message is printed to console (though sometimes not?)
         error_message = (
             'Failed to create session: "{}" - '
-            'For details, check the server logs'.format(
+            'For the full error message, check the server logs.'.format(
                     str(e)))
         group.send(
             {'text': json.dumps(

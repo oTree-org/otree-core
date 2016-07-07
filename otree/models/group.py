@@ -1,12 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
+import six
+
 from otree_save_the_change.mixins import SaveTheChange
 
 from otree.db import models
 from otree.common_internal import get_models_module
 from otree.models.fieldchecks import ensure_field
 import django.core.exceptions
+
+ATTRIBUTE_ERROR_MESSAGE = '''
+Group object has no attribute '{}'. If it is a model field or method,
+it must be declared on the Group class in models.py.
+'''.replace('\n', '')
 
 
 class BaseGroup(SaveTheChange, models.Model):
@@ -17,6 +25,16 @@ class BaseGroup(SaveTheChange, models.Model):
         abstract = True
         index_together = ['session', 'id_in_subsession']
         ordering = ['pk']
+
+    def __getattribute__(self, name):
+        try:
+            return super(BaseGroup, self).__getattribute__(name)
+        except AttributeError:
+            # this will result in "during handling of the above exception...'
+            # once we drop Python <3.3, we can raise from None
+            # for now, it's not that bad, just the almost same error printed
+            # twice
+            raise AttributeError(ATTRIBUTE_ERROR_MESSAGE.format(name))
 
     _is_missing_players = models.BooleanField(default=False, db_index=True)
 
