@@ -714,8 +714,6 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
                     'collapse_links': True,
                 })
         else:
-
-
             anonymous_url = self.request.build_absolute_uri(
                 reverse(
                     'JoinSessionAnonymously',

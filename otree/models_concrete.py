@@ -7,7 +7,6 @@ from .common_internal import get_models_module
 from .db.models import JSONField
 
 
-
 class PageCompletion(models.Model):
     class Meta:
         app_label = "otree"

@@ -535,7 +535,8 @@ def release_locks():
         except:
             # if server is started before DB is synced,
             # this will raise
-            # django.db.utils.OperationalError: no such table: otree_globallockmodel
+            # django.db.utils.OperationalError: no such table:
+            # otree_globallockmodel
             # we can ignore that because we just want to make sure there are no
             # active locks
             pass
