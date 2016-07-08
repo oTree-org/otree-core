@@ -16,8 +16,8 @@ class Command(runserver.Command):
         settings.CHANNEL_LAYERS['default'] = (
             settings.CHANNEL_LAYERS['inmemory'])
 
-        from otree.common_internal import release_locks
-        release_locks()
+        from otree.common_internal import release_any_stale_locks
+        release_any_stale_locks()
 
         # don't use cached template loader, so that users can refresh files
         # and see the update.

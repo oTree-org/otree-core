@@ -523,7 +523,7 @@ def ensure_superuser_exists(*args, **kwargs):
     return True
 
 
-def release_locks():
+def release_any_stale_locks():
     '''
     Need to release locks in case the server was stopped abruptly,
     and the 'finally' block in each lock did not execute
@@ -531,7 +531,7 @@ def release_locks():
     from otree.models_concrete import GlobalLockModel, ParticipantLockModel
     for LockModel in [GlobalLockModel, ParticipantLockModel]:
         try:
-            LockModel.objects.update(locked=False)
+            LockModel.objects.filter(locked=True).update(locked=False)
         except:
             # if server is started before DB is synced,
             # this will raise

@@ -11,7 +11,7 @@
             body {
                 margin: 0;
                 display: flex;
-                flex-flow: column wrap;
+                flex-flow: column nowrap;
                 height: 100vh;
             }
             body.grabbing iframe {
@@ -41,12 +41,20 @@
                 flex: 1;
                 display: flex;
                 flex-flow: row wrap;
+                /* setting:
+                height: 100%;
+                ...has no effect on IE problem */
 
+            }
+            .monitor-frame {
+                width: 100%;
             }
             .participant-frames iframe {
                 flex: 1;
                 border-left: 2px solid black;
-
+                /* if i set:
+                height: 100%;
+                ...then it works on Edge but not Chrome */
             }
             .participant-frames iframe:first-child {
                 border-left-width: 0;
