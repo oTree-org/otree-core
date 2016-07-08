@@ -521,3 +521,21 @@ def ensure_superuser_exists(*args, **kwargs):
     msg = 'Created superuser "{}"'.format(username)
     logger.info(msg)
     return True
+
+
+def release_locks():
+    '''
+    Need to release locks in case the server was stopped abruptly,
+    and the 'finally' block in each lock did not execute
+    '''
+    from otree.models_concrete import GlobalLockModel, ParticipantLockModel
+    for LockModel in [GlobalLockModel, ParticipantLockModel]:
+        try:
+            LockModel.objects.update(locked=False)
+        except:
+            # if server is started before DB is synced,
+            # this will raise
+            # django.db.utils.OperationalError: no such table: otree_globallockmodel
+            # we can ignore that because we just want to make sure there are no
+            # active locks
+            pass

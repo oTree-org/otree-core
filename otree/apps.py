@@ -8,8 +8,7 @@ from django.apps import AppConfig, apps
 from django.conf import settings
 from django.db.models import signals
 
-from otree.models_concrete import UndefinedFormModel
-from otree.models.session import GlobalSingleton
+from otree.models_concrete import UndefinedFormModel, GlobalLockModel
 import otree
 from otree.common_internal import ensure_superuser_exists
 
@@ -18,7 +17,7 @@ import_module('otree.checks')   # this made that style check work
 
 
 def create_singleton_objects(sender, **kwargs):
-    for ModelClass in (UndefinedFormModel, GlobalSingleton):
+    for ModelClass in (UndefinedFormModel, GlobalLockModel):
         # if it doesn't already exist, create one.
         ModelClass.objects.get_or_create()
 

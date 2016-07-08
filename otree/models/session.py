@@ -17,17 +17,6 @@ logger = logging.getLogger('otree')
 client = django.test.Client()
 
 
-class GlobalSingleton(models.Model):
-    """object that can hold site-wide settings. There should only be one
-    GlobalSingleton object. Also used for wait page actions.
-    """
-
-    class Meta:
-        app_label = "otree"
-
-    locked = models.BooleanField(default=False)
-
-
 # for now removing SaveTheChange
 class Session(ModelWithVars):
 

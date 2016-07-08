@@ -260,8 +260,20 @@ class Command(BaseCommand):
         self.total_time_spent = 0
         self.session_codes = []
 
+        # make sure room is closed
+        resp = self.client.get(
+            urljoin(server_url, reverse('CloseRoom', args=[room_name])))
+        assert resp.ok
+
+        sessions_to_create = []
+
         for session_config_name in session_config_names:
-            session_config = SESSION_CONFIGS_DICT[session_config_name]
+            try:
+                session_config = SESSION_CONFIGS_DICT[session_config_name]
+            except KeyError:
+                raise ValueError(
+                    'No session config named "{}"'.format(session_config_name)
+                )
 
             if self.session_sizes is None:
                 session_sizes = [session_config['num_demo_participants']]
@@ -269,10 +281,16 @@ class Command(BaseCommand):
                 session_sizes = self.session_sizes
 
             for num_participants in session_sizes:
-                self.run_session(
-                    session_config_name,
-                    num_participants
-                )
+                sessions_to_create.append({
+                    'session_config_name': session_config_name,
+                    'num_participants': num_participants,
+                })
+
+        # run in a separate loop, because we want to validate upfront
+        # that the session configs are valid, etc,
+        # rather than the command failing halfway through
+        for session_to_create in sessions_to_create:
+            self.run_session(**session_to_create)
 
         # don't delete sessions -- it's too susceptible to race conditions
         # between sending the completion message and loading the last page

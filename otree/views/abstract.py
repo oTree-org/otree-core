@@ -39,9 +39,8 @@ from otree.common_internal import get_app_label_from_import_path
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
     CompletedGroupWaitPage, PageTimeout, UndefinedFormModel,
-    ParticipantLockModel, BrowserBotSubmit
+    ParticipantLockModel, BrowserBotSubmit, GlobalLockModel
 )
-from otree.models.session import GlobalSingleton
 
 
 # Get an instance of a logger
@@ -60,7 +59,7 @@ def lock_on_this_code_path(recheck_interval=0.1):
     TIMEOUT = 10
     start_time = time.time()
     while time.time() - start_time < TIMEOUT:
-        updated_locks = GlobalSingleton.objects.filter(
+        updated_locks = GlobalLockModel.objects.filter(
             locked=False
         ).update(locked=True)
         if not updated_locks:
@@ -69,7 +68,7 @@ def lock_on_this_code_path(recheck_interval=0.1):
             try:
                 yield
             finally:
-                GlobalSingleton.objects.update(locked=False)
+                GlobalLockModel.objects.update(locked=False)
             return
     raise Exception('Request for global lock is stuck')
 

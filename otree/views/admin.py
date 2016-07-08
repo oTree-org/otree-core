@@ -698,20 +698,23 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
             'runserver': 'runserver' in sys.argv
         })
 
+        session_start_urls = [
+            self.request.build_absolute_uri(participant._start_url())
+            for participant in session.get_participants()
+            ]
+
         if room:
             context.update(
                 {
                     'participant_urls':
                         room.get_participant_urls(self.request),
                     'room_wide_url': room.get_room_wide_url(self.request),
+                    'session_start_urls': session_start_urls,
                     'room': room,
                     'collapse_links': True,
                 })
         else:
-            participant_urls = [
-                self.request.build_absolute_uri(participant._start_url())
-                for participant in session.get_participants()
-                ]
+
 
             anonymous_url = self.request.build_absolute_uri(
                 reverse(
@@ -721,10 +724,10 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
             )
 
             context.update({
-                'participant_urls': participant_urls,
+                'participant_urls': session_start_urls,
                 'anonymous_url': anonymous_url,
-                'num_participants': len(participant_urls),
-                'fullscreen_mode_on': len(participant_urls) <= 3
+                'num_participants': len(session_start_urls),
+                'fullscreen_mode_on': len(session_start_urls) <= 3
             })
 
         return context

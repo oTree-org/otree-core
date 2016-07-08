@@ -35,6 +35,37 @@
     </p>
 
     {% include "otree/includes/RoomParticipantLinks.html" %}
+
+    {% comment %}
+    need this because otherwise, if a participant closes their browser,
+    there is no way for them to resume playing.
+    {% endcomment %}
+    {% if not room.has_participant_labels %}
+        <h4>Single-use links</h4>
+
+        <p>
+            Below are single-use links for this session only.
+            You can use these in the event that you need to open (or re-open) a specific
+            participant's link.
+        </p>
+
+        <button class="btn" type="button" data-toggle="collapse" data-target="#session_start_urls_room">
+            Show/Hide
+        </button>
+
+        <div id="session_start_urls_room" class="collapse">
+        <table class="table">
+        {% for participant_url in session_start_urls %}
+            <tr>
+                <td><strong>P{{ forloop.counter }}</strong></td>
+                <td><a href="{{ participant_url }}" class="participant-link" target="_blank">{{ participant_url }}</a></td>
+            </tr>
+        {% endfor %}
+        </table>
+        </div>
+
+    {% endif %}
+
 {% elif session.is_demo %}
     <p>
         Below are temporary links for testing and demonstration.
@@ -57,8 +88,7 @@
 
     <h4>Session-wide link</h4>
     <p>
-        Open the below link in <strong>{{ num_participants }}</strong> browser tabs,
-        to simulate playing as {{ num_participants }} participants.
+        Open the below link in <strong>{{ num_participants }}</strong> browser tabs.
     </p>
 
     <p><a target="_blank" href="{{ anonymous_url }}">{{ anonymous_url }}</a></p>

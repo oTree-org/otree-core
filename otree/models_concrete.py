@@ -7,6 +7,7 @@ from .common_internal import get_models_module
 from .db.models import JSONField
 
 
+
 class PageCompletion(models.Model):
     class Meta:
         app_label = "otree"
@@ -72,6 +73,13 @@ class ParticipantToPlayerLookup(models.Model):
 
     def get_player(self):
         return self.get_player_model().objects.get(pk=self.player_pk)
+
+
+class GlobalLockModel(models.Model):
+    class Meta:
+        app_label = "otree"
+
+    locked = models.BooleanField(default=False)
 
 
 class ParticipantLockModel(models.Model):

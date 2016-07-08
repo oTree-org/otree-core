@@ -9,7 +9,7 @@ from otree.models.fieldchecks import ensure_field
 ATTRIBUTE_ERROR_MESSAGE = '''
 Player object has no attribute '{}'. If it is a model field or method,
 it must be declared on the Player class in models.py.
-'''.replace('\n', '')
+'''.replace('\n', ' ')
 
 
 class BasePlayer(SaveTheChange, models.Model):
