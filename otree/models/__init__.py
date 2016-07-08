@@ -115,6 +115,8 @@ class BaseGroup(group_module.BaseGroup):
         Session, related_name='%(app_label)s_%(class)s'
     )
 
+    subsession = None
+
     round_number = models.PositiveIntegerField(db_index=True)
 
     def set_players(self, players_list):
