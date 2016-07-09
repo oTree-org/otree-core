@@ -78,9 +78,9 @@ def get_default_settings(initial_settings=None):
                 'level': 'INFO',
             },
             'django.request': {
-                'handlers':['console'],
+                'handlers': ['console'],
                 'propagate': True,
-                'level':'DEBUG',
+                'level': 'DEBUG',
             }
         }
     }
