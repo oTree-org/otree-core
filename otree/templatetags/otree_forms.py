@@ -85,9 +85,10 @@ class FormFieldNode(Node):
             msg = (
                 "The 'formfield' templatetag expects a 'form' variable "
                 "in the context.")
+            ExceptionClass = type(exception)
             six.reraise(
-                type(exception),
-                type(exception)(msg + ' ' + str(exception)),
+                ExceptionClass,
+                ExceptionClass(msg + ' ' + str(exception)),
                 sys.exc_info()[2])
 
     def resolve_bound_field(self, context):

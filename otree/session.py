@@ -250,9 +250,10 @@ def create_session(session_config_name, label='', num_participants=None,
     except OperationalError as exception:
         exception_str = str(exception)
         if 'table' in exception_str:
+            ExceptionClass = type(exception)
             six.reraise(
-                type(exception),
-                type(exception)('{} - Try resetting the database.'.format(
+                ExceptionClass,
+                ExceptionClass('{} - Try resetting the database.'.format(
                     exception_str)),
                 sys.exc_info()[2])
         raise

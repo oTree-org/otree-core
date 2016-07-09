@@ -49,7 +49,7 @@ def get_default_settings(initial_settings=None):
         'disable_existing_loggers': False,
         'root': {
             'level': 'DEBUG',
-            'handlers': ['console']
+            'handlers': ['console'],
         },
         'formatters': {
             'verbose': {
@@ -77,6 +77,11 @@ def get_default_settings(initial_settings=None):
                 'propagate': False,
                 'level': 'INFO',
             },
+            'django.request': {
+                'handlers':['console'],
+                'propagate': True,
+                'level':'DEBUG',
+            }
         }
     }
 
@@ -128,7 +133,6 @@ def get_default_settings(initial_settings=None):
         'SECURE_PROXY_SSL_HEADER': ('HTTP_X_FORWARDED_PROTO', 'https'),
         'MTURK_HOST': 'mechanicalturk.amazonaws.com',
         'MTURK_SANDBOX_HOST': 'mechanicalturk.sandbox.amazonaws.com',
-        'CREATE_DEFAULT_SUPERUSER': True,
 
         # The project can override the routing.py used as entry point by
         # setting CHANNEL_DEFAULT_ROUTING.

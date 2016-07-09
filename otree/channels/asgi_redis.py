@@ -21,16 +21,18 @@ class RedisChannelLayer(asgi_redis.RedisChannelLayer):
         try:
             return super(RedisChannelLayer, self).receive_many(channels, block)
         except redis.exceptions.ConnectionError as exception:
+            ExceptionClass = type(exception)
             six.reraise(
-                type(exception),
-                type(exception)(REDIS_MSG + ' ' + str(exception)),
+                ExceptionClass,
+                ExceptionClass(REDIS_MSG + ' ' + str(exception)),
                 sys.exc_info()[2])
 
     def new_channel(self, pattern):
         try:
             return super(RedisChannelLayer, self).new_channel(pattern)
         except redis.exceptions.ConnectionError as exception:
+            ExceptionClass = type(exception)
             six.reraise(
-                type(exception),
-                type(exception)(REDIS_MSG + ' ' + str(exception)),
+                ExceptionClass,
+                ExceptionClass(REDIS_MSG + ' ' + str(exception)),
                 sys.exc_info()[2])

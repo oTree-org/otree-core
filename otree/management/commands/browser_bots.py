@@ -295,10 +295,10 @@ class Command(BaseCommand):
                 'Could not launch browser. '
                 'Check your settings.BROWSER_COMMAND. {}'
             )
-
+            ExceptionClass = type(exception)
             six.reraise(
-                type(exception),
-                type(exception)(msg.format(exception)),
+                ExceptionClass,
+                ExceptionClass(msg.format(exception)),
                 sys.exc_info()[2])
 
     def handle(self, *args, **options):
