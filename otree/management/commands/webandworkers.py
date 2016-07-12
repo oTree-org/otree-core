@@ -33,16 +33,16 @@ class Command(RunserverCommand):
         parser.add_argument(
             '--reload', action='store_true', dest='use_reloader',
             default=False, help=ahelp)
-
         ahelp = (
-            'The port that the http server should run on. It defaults to '
-            '8000. This value can be set by the environment variable $PORT.')
+            'Port number to listen on. Defaults to the environment variable '
+            '$PORT (if defined), or 8000.'
+        )
         parser.add_argument(
             '--port', action='store', type=int, dest='port', default=None,
             help=ahelp)
         parser.add_argument(
             '--addr', action='store', type=str, dest='addr', default='0.0.0.0',
-            help=ahelp)
+            help='The host/address to bind to (default: 0.0.0.0)')
 
     def get_env(self, options):
         return os.environ.copy()

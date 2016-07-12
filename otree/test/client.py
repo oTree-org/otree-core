@@ -167,7 +167,7 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
         self.set_path()
         self.check_200()
         for player_bot in self.player_bots:
-            player_bot.play_round()
+            player_bot.get_submits()
 
     def stop(self):
         """Execute the validate_play after all runs are ended"""
@@ -271,3 +271,26 @@ class PlayerBot(object):
 
     def submit_invalid(self, ViewClass, param_dict=None):
         self.participant_bot.submit_invalid(ViewClass, param_dict)
+
+    def get_submits(self):
+        # eventually, play_round() should be a generator that yields its
+        # submits, so we can do cooperative multitasking between bots,
+        # and refresh objects from the DB between submits.
+        # the syntax will be "yield self.submit(views.MyView, {'foo': 'bar'})"
+        # this method treats play_round as a generator by iterating over it
+        # however, it also properly handles the current situation where
+        # play_round doesn't yield anything.
+        try:
+            for submit in self.play_round():
+                # iterate over it to ensure the entire body of the method is
+                # executed (in case there are yields).
+                # bu we don't yet do anything with the values returned by the
+                # generator. that can only happen after everyone is using the
+                # yield-based API. for now, rely on the submits list being
+                # populated inside the participant object.
+                pass
+        except TypeError as exc:
+            if 'is not iterable' in str(exc):
+                return
+            else:
+                raise

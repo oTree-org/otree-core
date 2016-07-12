@@ -9,7 +9,7 @@ def store_submits_in_db(session):
         for player_bot in participant_bot.player_bots:
             # this appends the Submit objects
             # to participant_bot.submits
-            player_bot.play_round()
+            player_bot.get_submits()
         submits = participant_bot.submits
         num_submits = len(submits)
         for i, submit in enumerate(submits, start=1):
