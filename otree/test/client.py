@@ -280,8 +280,9 @@ class PlayerBot(object):
         # this method treats play_round as a generator by iterating over it
         # however, it also properly handles the current situation where
         # play_round doesn't yield anything.
+        generator = self.play_round()
         try:
-            for submit in self.play_round():
+            for submit in generator:
                 # iterate over it to ensure the entire body of the method is
                 # executed (in case there are yields).
                 # bu we don't yet do anything with the values returned by the

@@ -34,14 +34,7 @@ BROWSER_CMDS = {
     }
 }
 
-if sys.platform.startswith("win"):
-    platform = 'windows'
-elif sys.platform.startswith("darwin"):
-    platform = 'mac'
-else:
-    platform = 'linux'
 
-CHROME_CMD = BROWSER_CMDS[platform]['chrome']
 
 DEFAULT_ROOM_NAME = 'browser_bots'
 
@@ -68,6 +61,16 @@ browser bots on a remote server, make sure the username
 and password on your local oTree installation match that
 on the server.
 """
+
+
+def windows_mac_or_linux():
+    if sys.platform.startswith("win"):
+        platform = 'windows'
+    elif sys.platform.startswith("darwin"):
+        platform = 'mac'
+    else:
+        platform = 'linux'
+    return platform
 
 
 class OtreeWebSocketClient(WebSocketClient):
@@ -236,30 +239,38 @@ class Command(BaseCommand):
         session_code = resp.content.decode('utf-8')
         return session_code
 
-    def set_browser_cmd(self):
-        self.browser_cmd = getattr(
-            settings, 'BROWSER_COMMAND', CHROME_CMD
+    def check_browser(self):
+        platform = windows_mac_or_linux()
+        # right now hardcoded to Chrome unless settings.BROWSER_COMMAND set
+        chrome_cmd = BROWSER_CMDS[platform]['chrome']
+
+        self.browser_cmd = getattr(settings, 'BROWSER_COMMAND', chrome_cmd)
+
+        print(
+            'For faster speed, disable browser addons and ad-blocker. '
+            '(or use a new browser profile).'
         )
 
-        if 'chrome' in self.browser_cmd.lower():
-            # FIXME: this is slow on Mac (maybe Linux too)
-            # maybe use ps|grep instead
-            '''
-            chrome_seen = False
-            for proc in psutil.process_iter():
-                if 'chrome' in proc.name().lower():
-                    chrome_seen = True
-            if chrome_seen:
-                print(
-                    'WARNING: it looks like Chrome is already running. '
-                    'You should quit Chrome before running this command.'
-                )
-            '''
+        # check if browser is running
+        if 'chrome' in self.browser_cmd:
+            browser_type = 'Chrome'
+        elif 'firefox' in self.browser_cmd:
+            browser_type = 'Firefox'
+        else:
+            return
+
+        if windows_mac_or_linux() == 'windows':
+            process_list_args = ['tasklist']
+        else:
+            process_list_args = ['ps', 'axw']
+        ps_output = subprocess.check_output(process_list_args).decode('utf-8')
+        is_running = browser_type.lower() in ps_output.lower()
+
+        if is_running:
             print(
-                'Make sure to close all Chrome windows before launching '
-                'This command.'
-                'For best results, use Chrome with no addons or ad-blocker. '
-                'e.g. create a new Chrome profile.'
+                'WARNING: it looks like {browser} is already running. '
+                'You should quit {browser} before running '
+                'this command.'.format(browser=browser_type)
             )
 
     def set_room_name(self):
@@ -305,7 +316,7 @@ class Command(BaseCommand):
         self.options = options
 
         self.set_room_name()
-        self.set_browser_cmd()
+        self.check_browser()
         self.set_urls()
         self.client = requests.session()
         self.ping_server()

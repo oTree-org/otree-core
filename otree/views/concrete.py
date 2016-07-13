@@ -32,7 +32,7 @@ from otree.views.mturk import MTurkConnection
 import otree.common_internal
 from otree.views.abstract import (
     NonSequenceUrlMixin, OTreeMixin, GenericWaitPageMixin,
-    lock_on_this_code_path,
+    global_lock,
     NO_PARTICIPANTS_LEFT_MSG
 )
 from otree.room import ROOM_DICT
@@ -160,7 +160,7 @@ class MTurkStart(vanilla.View):
                 mturk_worker_id=worker_id,
                 mturk_assignment_id=assignment_id)
         except Participant.DoesNotExist:
-            with lock_on_this_code_path():
+            with global_lock():
                 try:
                     participant = (
                         Participant.objects.filter(
@@ -190,7 +190,7 @@ class JoinSessionAnonymously(vanilla.View):
         session = get_object_or_404(
             otree.models.Session, _anonymous_code=anonymous_code
         )
-        with lock_on_this_code_path():
+        with global_lock():
             try:
                 participant = (
                     Participant.objects.filter(
@@ -280,7 +280,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
                 assign_new = True
 
         if assign_new:
-            with lock_on_this_code_path():
+            with global_lock():
                 try:
                     participant = (
                         Participant.objects.filter(

@@ -55,7 +55,7 @@ DebugTable = collections.namedtuple('DebugTable', ['title', 'rows'])
 
 
 @contextlib.contextmanager
-def lock_on_this_code_path(recheck_interval=0.1):
+def global_lock(recheck_interval=0.1):
     TIMEOUT = 10
     start_time = time.time()
     while time.time() - start_time < TIMEOUT:
@@ -70,7 +70,10 @@ def lock_on_this_code_path(recheck_interval=0.1):
             finally:
                 GlobalLockModel.objects.update(locked=False)
             return
-    raise Exception('Request for global lock is stuck')
+
+    # could happen if the request that has the lock is paused somehow,
+    # e.g. in a debugger
+    raise Exception('Another HTTP request has the global lock.')
 
 
 @contextlib.contextmanager
@@ -105,8 +108,12 @@ def participant_lock(participant_code):
             "This user ({}) does not exist in the database. "
             "Maybe the database was recreated."
         ).format(participant_code))
+
+    # could happen if the request that has the lock is paused somehow,
+    # e.g. in a debugger
     raise Exception(
-        'Request for participant {} is stuck'.format(participant_code))
+        'Another HTTP request has the lock for participant {}.'.format(
+            participant_code))
 
 
 class SaveObjectsMixin(object):
@@ -386,7 +393,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                         page._group_or_subsession = self.subsession
                     else:
                         page._group_or_subsession = self.group
-                    with lock_on_this_code_path():
+                    with global_lock():
                         unvisited_participants = page._tally_unvisited()
                     # don't count myself; i only need to visit this page
                     # if everybody else already passed it
@@ -583,7 +590,7 @@ class InGameWaitPageMixin(object):
         if self._is_ready():
             return self._response_when_ready()
         # take a lock because we set "waiting for" list here
-        with lock_on_this_code_path():
+        with global_lock():
             unvisited_participants = self._tally_unvisited()
         if unvisited_participants:
             # only skip the wait page if there are still
