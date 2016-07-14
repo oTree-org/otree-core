@@ -34,8 +34,6 @@ BROWSER_CMDS = {
     }
 }
 
-
-
 DEFAULT_ROOM_NAME = 'browser_bots'
 
 ROOM_FLAG = '--room'

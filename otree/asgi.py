@@ -17,7 +17,7 @@ release_any_stale_locks()
 # so that we don't pile up messages that never get consumed, but I don't know
 # how and when to check if Huey is running, in a performant way.
 # this code is also in timeoutworker.
-from huey.contrib.djhuey import HUEY
+from huey.contrib.djhuey import HUEY  # noqa
 HUEY.storage.conn.flushdb()
 
 channel_layer = channels.asgi.get_channel_layer()
