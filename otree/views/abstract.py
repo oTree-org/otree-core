@@ -288,6 +288,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
     @method_decorator(cache_control(must_revalidate=True, max_age=0,
                                     no_cache=True, no_store=True))
     def dispatch(self, request, *args, **kwargs):
+
         participant_code = kwargs.pop(constants.participant_code)
 
         with participant_lock(participant_code), otree.db.idmap.use_cache():

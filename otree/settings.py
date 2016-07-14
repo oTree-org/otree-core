@@ -65,6 +65,10 @@ def get_default_settings(initial_settings=None):
                 'class': 'logging.StreamHandler',
                 'formatter': 'verbose'
             },
+            'sentry': {
+                'level': 'WARNING',
+                'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+            },
         },
         'loggers': {
             'otree.test.core': {
@@ -81,6 +85,25 @@ def get_default_settings(initial_settings=None):
                 'handlers': ['console'],
                 'propagate': True,
                 'level': 'DEBUG',
+            },
+            # logger so that we can explicitly send certain warnings to sentry,
+            # without raising an exception.
+            'otree.sentry': {
+                'handlers': ['sentry'],
+                'propagate': True,
+                'level': 'DEBUG',
+            },
+            # This is required for exceptions inside Huey tasks to get logged
+            # to Sentry
+            'huey.consumer': {
+                'handlers': ['sentry', 'console'],
+                'level': 'INFO'
+            },
+            # suppress the INFO message: 'raven is not configured (logging
+            # disabled).....', in case someone doesn't have a DSN
+            'raven.contrib.django.client.DjangoClient': {
+                'handlers': ['console'],
+                'level': 'WARNING'
             }
         }
     }

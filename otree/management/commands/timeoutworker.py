@@ -9,4 +9,12 @@ from huey.contrib.djhuey.management.commands.run_huey import (
 
 
 class Command(HueyCommand):
-    pass
+    def handle(self, *args, **options):
+        # clear any tasks in Huey DB, so they don't pile up over time,
+        # especially if you run the server without the timeoutworker to consume
+        # the tasks.
+        # this code is also in asgi.py. it should be in both places,
+        # to ensure the database is flushed in all circumstances.
+        from huey.contrib.djhuey import HUEY
+        HUEY.storage.conn.flushdb()
+        super(Command, self).handle(*args, **options)

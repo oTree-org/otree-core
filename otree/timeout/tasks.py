@@ -24,7 +24,6 @@ def ensure_pages_visited(participant_pk_set, wait_page_index):
     We can't guarantee the user's browser will properly continue to poll
     the wait page and get redirected, so after a grace period we load the page
     automatically, to kick off the expiration timer of the timeout page.
-
     """
 
     from otree.models.participant import Participant

@@ -247,7 +247,7 @@ class Command(BaseCommand):
         self.browser_cmd = getattr(settings, 'BROWSER_COMMAND', chrome_cmd)
 
         print(
-            'For faster speed, disable browser addons and ad-blocker. '
+            'For fastest speed, disable browser addons and ad-blocker. '
             '(or use a new browser profile).'
         )
 
