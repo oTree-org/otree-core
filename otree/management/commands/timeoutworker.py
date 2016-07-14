@@ -16,5 +16,5 @@ class Command(HueyCommand):
         # this code is also in asgi.py. it should be in both places,
         # to ensure the database is flushed in all circumstances.
         from huey.contrib.djhuey import HUEY
-        HUEY.storage.conn.flushdb()
+        HUEY.flush()
         super(Command, self).handle(*args, **options)
