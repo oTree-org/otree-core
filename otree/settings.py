@@ -375,14 +375,3 @@ def augment_settings(settings):
             'loglevel': 'warning',
         },
     }
-
-    # this guarantee that the test always run on memory
-    if 'test' in sys.argv:
-        settings["DATABASES"] = {
-            "default": {
-                "ENGINE": 'django.db.backends.sqlite3',
-                "NAME": ':memory:'
-            }
-        }
-        settings["DEBUG"] = False
-        settings["TEMPLATE_DEBUG"] = False
