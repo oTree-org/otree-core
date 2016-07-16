@@ -282,6 +282,10 @@ def export_docs(fp, app_name):
     fp.write(doc)
 
 
+def get_dotted_name(Cls):
+    return '{}.{}'.format(Cls.__module__, Cls.__name__)
+
+
 def get_app_label_from_import_path(import_path):
     app_label = import_path.rsplit(".", 1)[0]
     while "." in app_label:
@@ -540,3 +544,8 @@ def release_any_stale_locks():
             # we can ignore that because we just want to make sure there are no
             # active locks
             pass
+
+
+def get_redis_conn():
+    from huey.contrib.djhuey import HUEY
+    return HUEY.storage.conn

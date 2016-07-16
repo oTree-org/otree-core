@@ -55,7 +55,7 @@ class CreateDemoSession(vanilla.GenericView):
     def dispatch(self, request, *args, **kwargs):
         session_config_name = kwargs['session_config']
         session_kwargs = {
-            'special_category': constants.session_special_category_demo,
+            'is_demo': True,
             'session_config_name': session_config_name,
         }
 

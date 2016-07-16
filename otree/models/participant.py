@@ -108,22 +108,9 @@ class Participant(ModelWithVars):
 
     _max_page_index = models.PositiveIntegerField()
 
-    _is_auto_playing = models.BooleanField(default=False)
-
     _browser_bot_finished = models.BooleanField(default=False)
 
-    def _start_auto_play(self):
-        self._is_auto_playing = True
-        self.save()
-
-        client = django.test.Client()
-
-        if not self.visited:
-            client.get(self._start_url(), follow=True)
-
-    def _stop_auto_play(self):
-        self._is_auto_playing = False
-        self.save()
+    _is_bot = models.BooleanField(default=False)
 
     def player_lookup(self):
         # this is the most reliable way to get the app name,

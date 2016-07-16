@@ -15,6 +15,7 @@ from django.forms.forms import pretty_name
 from django.conf import settings
 from django.contrib import messages
 from django.utils.encoding import force_text
+from django.shortcuts import get_object_or_404
 
 import vanilla
 
@@ -29,6 +30,7 @@ from otree.common_internal import (
     get_models_module, app_name_format,
     create_session_and_redirect,
     db_status_ok,
+    get_redis_conn,
     check_pypi_for_updates)
 from otree.session import SESSION_CONFIGS_DICT, get_lcm, create_session
 from otree import forms
@@ -41,6 +43,7 @@ from otree.models.session import Session
 from otree.models.participant import Participant
 from otree.models_concrete import PageCompletion, ParticipantRoomVisit
 from otree.room import ROOM_DICT
+from otree.bots.runner import play_bots
 
 
 def get_all_fields(Model, for_export=False):
@@ -70,7 +73,8 @@ def get_all_fields(Model, for_export=False):
             'mturk_HITGroupId',
             'participation_fee',
             'comment',
-            'special_category',
+            'is_demo',
+            'is_bots',
         ]
 
     if Model is Participant:
@@ -515,6 +519,7 @@ class SessionFullscreen(AdminSessionPageMixin, vanilla.TemplateView):
     '''
 
     def get_context_data(self, **kwargs):
+        '''Get the URLs for the IFrames'''
         context = super(SessionFullscreen, self).get_context_data(**kwargs)
         participant_urls = [
             self.request.build_absolute_uri(participant._start_url())
@@ -524,6 +529,56 @@ class SessionFullscreen(AdminSessionPageMixin, vanilla.TemplateView):
             'session': self.session,
             'participant_urls': participant_urls
         })
+        return context
+
+
+class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
+
+    def get_context_data(self, **kwargs):
+        session = self.session
+        room = session.get_room()
+
+        context = super(SessionStartLinks, self).get_context_data(**kwargs)
+
+        sqlite = settings.DATABASES['default']['ENGINE'].endswith('sqlite3')
+        context.update({
+            'use_browser_bots': session._use_browser_bots,
+            'sqlite': sqlite,
+            'runserver': 'runserver' in sys.argv
+        })
+
+        session_start_urls = [
+            self.request.build_absolute_uri(participant._start_url())
+            for participant in session.get_participants()
+        ]
+
+        # TODO: Bot URLs, and a button to start the bots
+
+        if room:
+            context.update(
+                {
+                    'participant_urls':
+                        room.get_participant_urls(self.request),
+                    'room_wide_url': room.get_room_wide_url(self.request),
+                    'session_start_urls': session_start_urls,
+                    'room': room,
+                    'collapse_links': True,
+                })
+        else:
+            anonymous_url = self.request.build_absolute_uri(
+                reverse(
+                    'JoinSessionAnonymously',
+                    args=(session._anonymous_code,)
+                )
+            )
+
+            context.update({
+                'participant_urls': session_start_urls,
+                'anonymous_url': anonymous_url,
+                'num_participants': len(session_start_urls),
+                'fullscreen_mode_on': len(session_start_urls) <= 3
+            })
+
         return context
 
 
@@ -628,6 +683,7 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
 
     def get_context_data(self, **kwargs):
         session = self.session
+        # TODO: mark which ones are bots
         participants = session.get_participants()
         total_payments = 0.0
         mean_payment = 0.0
@@ -679,54 +735,6 @@ class SessionMTurkPayments(AdminSessionPageMixin, vanilla.TemplateView):
             'participants_not_reviewed': participants_not_reviewed,
             'participation_fee': session.config['participation_fee'],
         })
-
-        return context
-
-
-class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
-
-    def get_context_data(self, **kwargs):
-        session = self.session
-        room = session.get_room()
-
-        context = super(SessionStartLinks, self).get_context_data(**kwargs)
-
-        sqlite = settings.DATABASES['default']['ENGINE'].endswith('sqlite3')
-        context.update({
-            'use_browser_bots': session._use_browser_bots,
-            'sqlite': sqlite,
-            'runserver': 'runserver' in sys.argv
-        })
-
-        session_start_urls = [
-            self.request.build_absolute_uri(participant._start_url())
-            for participant in session.get_participants()
-            ]
-
-        if room:
-            context.update(
-                {
-                    'participant_urls':
-                        room.get_participant_urls(self.request),
-                    'room_wide_url': room.get_room_wide_url(self.request),
-                    'session_start_urls': session_start_urls,
-                    'room': room,
-                    'collapse_links': True,
-                })
-        else:
-            anonymous_url = self.request.build_absolute_uri(
-                reverse(
-                    'JoinSessionAnonymously',
-                    args=(session._anonymous_code,)
-                )
-            )
-
-            context.update({
-                'participant_urls': session_start_urls,
-                'anonymous_url': anonymous_url,
-                'num_participants': len(session_start_urls),
-                'fullscreen_mode_on': len(session_start_urls) <= 3
-            })
 
         return context
 
@@ -870,9 +878,8 @@ class Sessions(vanilla.ListView):
         return context
 
     def get_queryset(self):
-        category = otree.constants_internal.session_special_category_demo
-        return Session.objects.exclude(
-            special_category=category).order_by('archived', '-pk')
+        return Session.objects.filter(
+            is_demo=False).order_by('archived', '-pk')
 
 
 class ServerCheck(vanilla.TemplateView):
@@ -924,9 +931,6 @@ class CreateBrowserBotsSession(vanilla.View):
 
     url_pattern = r"^create_browser_bots_session/$"
 
-    def dispatch(self, *args, **kwargs):
-        return super(CreateBrowserBotsSession, self).dispatch(*args, **kwargs)
-
     def get(self, request, *args, **kwargs):
         # return browser bots check
         sqlite = settings.DATABASES['default']['ENGINE'].endswith('sqlite3')
@@ -943,6 +947,32 @@ class CreateBrowserBotsSession(vanilla.View):
             session_config_name=session_config_name,
             num_participants=num_participants,
             room_name='browser_bots',
-            use_browser_bots=True
+            is_bots=True,
+            _use_browser_bots=True,
         )
+        get_redis_conn().set('otree-browser-bots-session', session.code)
+
         return HttpResponse(session.code)
+
+
+class CloseBrowserBotsSession(vanilla.View):
+
+    url_pattern = r"^close_browser_bots_session/$"
+
+    def post(self, request, *args, **kwargs):
+
+        get_redis_conn().delete('otree-browser-bots-session')
+        return HttpResponse('ok')
+
+
+class StartBots(vanilla.View):
+
+    url_pattern = r"^start_bots/(?P<code>[a-z0-9]+)/$"
+
+    # FIXME: this should be POST, not GET
+    def get(self, request, *args, **kwargs):
+        session_code = kwargs['code']
+        session = get_object_or_404(Session, code=session_code)
+        play_bots(session.code)
+
+        return HttpResponse('ok')

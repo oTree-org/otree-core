@@ -34,9 +34,6 @@ BROWSER_CMDS = {
     }
 }
 
-DEFAULT_ROOM_NAME = 'browser_bots'
-
-ROOM_FLAG = '--room'
 NUM_PARTICIPANTS_FLAG = '--num-participants'
 SERVER_URL_FLAG = '--server-url'
 
@@ -107,14 +104,6 @@ class Command(BaseCommand):
         parser.add_argument(
             '-n', NUM_PARTICIPANTS_FLAG, type=int, nargs='*',
             help=ahelp)
-        ahelp = (
-            'Room to create the session in (see settings.ROOMS).'
-            'Room must NOT have a participant_label_file.'
-        )
-        parser.add_argument(
-            ROOM_FLAG, action='store', type=str,
-            default=DEFAULT_ROOM_NAME,
-            help=ahelp)
 
     def websocket_listen(self, session_code, num_participants):
         # seems that urljoin doesn't work with ws:// urls
@@ -156,13 +145,6 @@ class Command(BaseCommand):
         data = data or {}
         data.update({'csrfmiddlewaretoken': self.client.cookies['csrftoken']})
         return self.client.post(url, data)
-
-    def close_room(self):
-        # make sure room is closed
-        resp = self.client.get(
-            urljoin(self.server_url,
-                    reverse('CloseRoom', args=[self.room_name])))
-        assert resp.ok
 
     def server_configuration_check(self):
         # .get just returns server readiness info
@@ -271,26 +253,16 @@ class Command(BaseCommand):
                 'this command.'.format(browser=browser_type)
             )
 
-    def set_room_name(self):
-        room_name = self.options['room']
-        if room_name not in ROOM_DICT:
-            raise ValueError(
-                'No room named {} found in settings.ROOMS. '
-                'You must either create a room named {}, '
-                'or pass a {} argument with the name of your room. '
-                'Note: room must NOT have a participant_label_file.'.format(
-                    room_name,
-                    room_name,
-                    ROOM_FLAG,
-                )
-            )
-
-        self.room_name = room_name
+    def close_existing_session(self):
+        # make sure room is closed
+        resp = self.post(
+            urljoin(self.server_url, reverse('CloseBrowserBotsSession')))
+        assert resp.ok
 
     def launch_browser(self, num_participants):
         wait_room_url = urljoin(
             self.server_url,
-            reverse('AssignVisitorToRoom', args=[self.room_name])
+            reverse('BrowserBotStartLink')
         )
 
         args = [self.browser_cmd]
@@ -313,7 +285,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.options = options
 
-        self.set_room_name()
         self.check_browser()
         self.set_urls()
         self.client = requests.session()
@@ -370,7 +341,7 @@ class Command(BaseCommand):
         # and make it easy to delete manually
 
     def run_session(self, session_config_name, num_participants):
-        self.close_room()
+        self.close_existing_session()
 
         browser_process = self.launch_browser(num_participants)
 

@@ -141,16 +141,3 @@ class ExpectedRoomParticipant(models.Model):
 
     room_name = models.CharField(max_length=50)
     participant_label = models.CharField(max_length=200)
-
-
-class BrowserBotSubmit(models.Model):
-    class Meta:
-        app_label = "otree"
-        ordering = ['id']
-
-    session = models.ForeignKey('otree.Session')
-    participant = models.ForeignKey('otree.Participant', db_index=True)
-    page_dotted_name = models.CharField(max_length=200)
-    param_dict = JSONField()
-    input_is_valid = models.BooleanField()
-    is_last = models.BooleanField(default=False)

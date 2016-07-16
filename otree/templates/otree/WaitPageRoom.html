@@ -9,7 +9,7 @@
         function pingServer() {
         var args = {
             type: "GET",
-            url: '{% url "ParticipantRoomPing" view.tab_unique_id %}',
+            url: '{% url "ParticipantRoomHeartbeat" view.tab_unique_id %}',
         };
         $.ajax(args);
     }

@@ -151,8 +151,10 @@ def app_labels_from_sessions(config_names):
 
 @transaction.atomic
 def create_session(session_config_name, label='', num_participants=None,
-                   special_category=None, _pre_create_id=None,
-                   room_name=None, for_mturk=False, use_browser_bots=None):
+                   _pre_create_id=None,
+                   room_name=None, for_mturk=False, is_bots=False,
+                   is_demo=False, _use_browser_bots=False,
+                   ):
 
     # 2014-5-2: i could implement this by overriding the __init__ on the
     # Session model, but I don't really know how that works, and it seems to
@@ -167,15 +169,11 @@ def create_session(session_config_name, label='', num_participants=None,
         msg = 'Session config "{}" not found in settings.SESSION_CONFIGS.'
         raise ValueError(msg.format(session_config_name))
 
-    if use_browser_bots is None:
-        use_browser_bots = settings.USE_BROWSER_BOTS
-
     session = Session.objects.create(
         config=session_config,
         label=label,
-        special_category=special_category,
         _pre_create_id=_pre_create_id,
-        _use_browser_bots=use_browser_bots
+        _use_browser_bots=_use_browser_bots
     )
 
     def bulk_create(model, descriptions):
@@ -185,11 +183,9 @@ def create_session(session_config_name, label='', num_participants=None,
         return model.objects.filter(session=session).order_by('pk')
 
     if num_participants is None:
-        c_special_catdemo = constants_internal.session_special_category_demo
-        c_special_catbots = constants_internal.session_special_category_bots
-        if special_category == c_special_catdemo:
+        if is_demo:
             num_participants = session_config['num_demo_participants']
-        elif special_category == c_special_catbots:
+        elif is_bots:
             num_participants = session_config['num_bots']
 
     # check that it divides evenly
@@ -210,10 +206,25 @@ def create_session(session_config_name, label='', num_participants=None,
     if session_config.get('random_start_order'):
         random.shuffle(start_order)
 
+    id_in_session_list = range(1, num_participants+1)
+    bot_id_function = session_config.get('bot_id_function')
+    if is_bots:
+        bot_id_list = id_in_session_list
+    elif bot_id_function:
+        bot_id_list = bot_id_function(id_in_session_list)
+    else:
+        bot_id_list = []
+    bot_id_set = set(bot_id_list)
+
     participants = bulk_create(
         Participant,
-        [{'id_in_session': i + 1, 'start_order': j}
-         for i, j in enumerate(start_order)])
+        [{
+            'id_in_session': id_in_session,
+            'start_order': j,
+            # check if id_in_session is in the bots ID list
+            '_is_bot': id_in_session in bot_id_set
+         }
+         for id_in_session, j in enumerate(start_order, start=1)])
 
     ParticipantLockModel.objects.bulk_create([
         ParticipantLockModel(participant_code=participant.code)
@@ -267,10 +278,6 @@ def create_session(session_config_name, label='', num_participants=None,
     # Player, Group, Subsession, Participant, Session
     otree.db.idmap.save_objects()
     otree.db.idmap.deactivate_cache()
-
-    if session._use_browser_bots:
-        from otree.test.browser_bots import store_submits_in_db
-        store_submits_in_db(session)
 
     return session
 

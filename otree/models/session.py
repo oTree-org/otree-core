@@ -88,13 +88,18 @@ class Session(ModelWithVars):
     _anonymous_code = models.CharField(
         default=random_chars_10, max_length=10, null=False, db_index=True)
 
-    special_category = models.CharField(
-        db_index=True, max_length=20, null=True,
-        doc="whether it's a test session, demo session, etc.")
-
     _pre_create_id = models.CharField(max_length=300, db_index=True, null=True)
 
     _use_browser_bots = models.BooleanField(default=False)
+
+    # if the user clicks 'start bots' twice, this will prevent the bots
+    # from being run twice.
+    _cannot_restart_bots = models.BooleanField(default=False)
+    _bots_finished = models.BooleanField(default=False)
+    _bots_errored = models.BooleanField(default=False)
+
+    is_demo = models.BooleanField(default=False)
+    is_bots = models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.code
@@ -112,13 +117,7 @@ class Session(ModelWithVars):
         return self.config['real_world_currency_per_point']
 
     def is_for_mturk(self):
-        return (not self.is_demo()) and (self.mturk_num_participants > 0)
-
-    def is_demo(self):
-        return (
-            self.special_category ==
-            constants_internal.session_special_category_demo
-        )
+        return (not self._is_demo) and (self.mturk_num_participants > 0)
 
     def get_subsessions(self):
         lst = []
@@ -138,6 +137,9 @@ class Session(ModelWithVars):
 
     def get_participants(self):
         return self.participant_set.all()
+
+    def get_human_participants(self):
+        return self.participant_set.filter(_is_bot=False)
 
     def _create_groups_and_initialize(self):
         # group_by_arrival_time code used to be here
@@ -166,7 +168,10 @@ class Session(ModelWithVars):
 
     def advance_last_place_participants(self):
 
-        participants = self.get_participants()
+        # can't auto-advance bots, because that could break their
+        # pre-determined logic
+        # consider pros/cons of doing this
+        participants = self.get_human_participants()
 
         # in case some participants haven't started
         unvisited_participants = []

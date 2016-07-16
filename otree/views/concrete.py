@@ -25,8 +25,8 @@ from boto.mturk.connection import MTurkRequestError
 
 import otree.constants_internal as constants
 import otree.models.session
-from otree.models.participant import Participant
-from otree.common_internal import make_hash, add_params_to_url
+from otree.models import Participant, Session
+from otree.common_internal import make_hash, add_params_to_url, get_redis_conn
 import otree.views.admin
 from otree.views.mturk import MTurkConnection
 import otree.common_internal
@@ -162,11 +162,8 @@ class MTurkStart(vanilla.View):
         except Participant.DoesNotExist:
             with global_lock():
                 try:
-                    participant = (
-                        Participant.objects.filter(
-                            session=self.session,
-                            visited=False
-                        )
+                    participant = self.session.get_human_participants().filter(
+                        visited=False
                     ).order_by('start_order')[0]
                 except IndexError:
                     return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
@@ -192,11 +189,7 @@ class JoinSessionAnonymously(vanilla.View):
         )
         with global_lock():
             try:
-                participant = (
-                    Participant.objects.filter(
-                        session=session,
-                        visited=False
-                    )
+                participant = session.get_human_participants().filter(
                 ).order_by('start_order')[0]
             except IndexError:
                 return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
@@ -272,8 +265,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
         assign_new = not room.has_participant_labels()
         if not assign_new:
             try:
-                participant = Participant.objects.get(
-                    session=session,
+                participant = session.get_human_participants().filter(
                     label=participant_label
                 )
             except Participant.DoesNotExist:
@@ -282,11 +274,8 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
         if assign_new:
             with global_lock():
                 try:
-                    participant = (
-                        Participant.objects.filter(
-                            session=session,
-                            visited=False)
-                    ).order_by('start_order')[0]
+                    participant = session.get_human_participants().filter(
+                        visited=False).order_by('start_order')[0]
                 except IndexError:
                     return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
 
@@ -347,9 +336,9 @@ class ActiveRoomParticipantsCount(vanilla.View):
         return JsonResponse({'count': count})
 
 
-class ParticipantRoomPing(vanilla.View):
+class ParticipantRoomHeartbeat(vanilla.View):
 
-    url_pattern = r'^ParticipantRoomPing/(?P<tab_unique_id>\w+)/$'
+    url_pattern = r'^ParticipantRoomHeartbeat/(?P<tab_unique_id>\w+)/$'
 
     def get(self, request, *args, **kwargs):
         visit = get_object_or_404(
@@ -363,6 +352,7 @@ class AdvanceSession(vanilla.View):
 
     url_pattern = r'^AdvanceSession/(?P<session_code>[a-z0-9]+)/$'
 
+    # TODO: get rid of this
     @classmethod
     def url(cls, session):
         return '/AdvanceSession/{}/'.format(session.code)
@@ -375,6 +365,7 @@ class AdvanceSession(vanilla.View):
             request, *args, **kwargs
         )
 
+    # FIXME: this should be POST, not GET
     def get(self, request, *args, **kwargs):
         self.session.advance_last_place_participants()
         redirect_url = reverse('SessionMonitor', args=(self.session.code,))
@@ -421,3 +412,41 @@ class DeleteSessions(vanilla.View):
             )
             session.delete()
         return HttpResponseRedirect(reverse('Sessions'))
+
+
+class BrowserBotStartLink(GenericWaitPageMixin, vanilla.View):
+
+    url_pattern = r'^browser_bot_start/$'
+
+    def dispatch(self, request, *args, **kwargs):
+
+        redis_conn = get_redis_conn()
+        session_code = redis_conn.get('otree-browser-bots-session')
+        if session_code:
+            session = Session.objects.get(code=session_code)
+            with global_lock():
+                participant = session.get_participants().filter(
+                    visited=False).order_by('start_order').first()
+                if not participant:
+                    return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
+
+                # 2014-10-17: needs to be here even if it's also set in
+                # the next view to prevent race conditions
+                participant.visited = True
+                participant.save()
+
+            return HttpResponseRedirect(participant._start_url())
+        else:
+            return render_to_response(
+                "otree/WaitPageRoom.html",
+                {
+                    'view': self, 'title_text': 'Please wait',
+                    'body_text': 'Waiting for browser bots session to begin'
+                }
+            )
+
+    def socket_url(self):
+        return '/browser-bot-wait/'
+
+    def redirect_url(self):
+        return self.request.get_full_path()

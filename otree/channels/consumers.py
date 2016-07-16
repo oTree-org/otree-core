@@ -13,6 +13,7 @@ from otree.models_concrete import (
     CompletedGroupWaitPage, CompletedSubsessionWaitPage)
 from otree.common_internal import (
     channels_wait_page_group_name, channels_create_session_group_name)
+from otree.bots.runner import play_bots, browser_bots
 
 import otree.session
 from otree.models import Session
@@ -22,6 +23,8 @@ from otree.models_concrete import (
     FAILURE_MESSAGE_MAX_LENGTH,
 )
 from otree.room import ROOM_DICT
+from huey.contrib.djhuey import HUEY
+redis_conn = HUEY.storage.conn
 
 
 def connect_wait_page(message, params):
@@ -261,4 +264,36 @@ def connect_browser_bots_client(message, session_code):
 
 def disconnect_browser_bots_client(message, session_code):
     Group('browser-bots-client-{}'.format(session_code)).discard(
+        message.reply_channel)
+
+
+def connect_browser_bot(message):
+
+    Group('browser-bot-wait').add(message.reply_channel)
+    session_code = redis_conn.get('otree-browser-bots-session')
+    if session_code:
+        message.reply_channel.send(
+            {'text': json.dumps({'status': 'session_ready'})}
+        )
+
+
+def disconnect_browser_bot(message):
+    Group('browser-bot-wait').discard(message.reply_channel)
+
+
+def connect_session_admin(message, session_code):
+    group = Group('session-admin-{}'.format(session_code)).add(
+        message.reply_channel)
+    session = Session.objects.get(code=session_code)
+    if session._bots_errored:
+        error_msg = (
+            'Bots encountered an error. For the full traceback, '
+            'see the server logs.')
+        group.send({'text': json.dumps({'error': error_msg})})
+    elif session._bots_finished:
+        group.send({'text': json.dumps({'message': 'Bots finished'})})
+
+
+def disconnect_session_admin(message, session_code):
+    Group('session-admin-{}'.format(session_code)).discard(
         message.reply_channel)

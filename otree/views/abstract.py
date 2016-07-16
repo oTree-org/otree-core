@@ -34,12 +34,14 @@ import otree.models
 import otree.db.idmap
 import otree.constants_internal as constants
 from otree.models.participant import Participant
-from otree.common_internal import get_app_label_from_import_path
-
+from otree.common_internal import (
+    get_app_label_from_import_path, get_dotted_name
+)
+import otree.bots.browser
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
     CompletedGroupWaitPage, PageTimeout, UndefinedFormModel,
-    ParticipantLockModel, BrowserBotSubmit, GlobalLockModel
+    ParticipantLockModel, GlobalLockModel
 )
 
 
@@ -163,6 +165,7 @@ class OTreeMixin(SaveObjectsMixin, object):
 
 
 class NonSequenceUrlMixin(object):
+    # TODO: get rid of this, can use reverse instead
     @classmethod
     def url(cls, participant):
         return otree.common_internal.url(cls, participant)
@@ -809,38 +812,31 @@ class BrowserBot(object):
     def __init__(self, view):
         self.view = view
         self.participant = view.participant
-        self.session = view.session
-        self.send_finished_message = False
-        self.input_is_valid = True
 
     def get_submission(self):
-        # request.POST contains CSRF token and maybe other important stuff
-        post_data = dict(self.view.request.POST)
-        submit_model = BrowserBotSubmit.objects.order_by('id').filter(
-            participant=self.participant,
-        ).first()
-        if submit_model:
-            this_page_dotted = '{}.{}'.format(
-                self.view.__module__,
-                self.view.__class__.__name__
-            )
-            if not submit_model.page_dotted_name == this_page_dotted:
+        result = otree.bots.browser.get_next_submit(self.participant.code)
+        # evaluate the Huey TaskWrapper
+        submission = result()
+        if submission:
+            submission = json.loads(submission)
+
+            page_dotted_name = submission['page_dotted_name']
+            this_page_dotted = get_dotted_name(self.view.__class__)
+
+            if not submission['page_dotted_name'] == this_page_dotted:
                 raise ValueError(
                     "Bot is trying to submit page {}, "
                     "but current page is {}. "
                     "Check your bot in tests.py, "
                     "then create a new session.".format(
-                        submit_model.page_dotted_name,
+                        page_dotted_name,
                         this_page_dotted
                     )
                 )
-            post_data.update(submit_model.param_dict)
-            self.input_is_valid = submit_model.input_is_valid
-            if submit_model.is_last:
-                self.participant._browser_bot_finished = True
-            submit_model.delete()
 
-        return post_data
+            return submission['post_data']
+        else:
+            self.participant._browser_bot_finished = True
 
 
 class FormPageMixin(object):
@@ -884,6 +880,13 @@ class FormPageMixin(object):
         arguments, and returns a form.
 
         """
+
+        if self.session._use_browser_bots:
+            bot = BrowserBot(self)
+            submission = bot.get_submission() or {}
+            data = data or {}
+            data.update(submission)
+
         cls = self.get_form_class()
         return cls(data=data, files=files, view=self, **kwargs)
 
@@ -900,10 +903,7 @@ class FormPageMixin(object):
 
         self.participant._current_form_page_url = self.request.path
         if otree.common_internal.USE_REDIS:
-            if self.participant._is_auto_playing:
-                otree.timeout.tasks.submit_expired_url.schedule(
-                    (self.request.path,), delay=2)  # 2 seconds
-            elif self.has_timeout():
+            if self.has_timeout():
                 otree.timeout.tasks.submit_expired_url.schedule(
                     (self.request.path,), delay=self.timeout_seconds)
 
@@ -918,29 +918,29 @@ class FormPageMixin(object):
             self._set_auto_submit_values()
         else:
             self.timeout_happened = False
-            use_browser_bots = self.session._use_browser_bots
-            if use_browser_bots:
-                bot = BrowserBot(view=self)
-                post_data = bot.get_submission()
-            else:
-                post_data = request.POST
+
+            post_data = request.POST
             form = self.get_form(
                 data=post_data, files=request.FILES, instance=self.object)
+            is_bot = self.participant.is_bot
+            intentionally_invalid = request.POST.get('intentionally_invalid')
             if form.is_valid():
+                if is_bot and intentionally_invalid:
+                    raise ValueError(
+                        'Bot tried to submit intentionally invalid data, '
+                        'but it passed validation anyway: {}.'.format(
+                            request.POST))
                 self.form = form
                 self.object = form.save()
             else:
-                if use_browser_bots and not bot.input_is_valid:
+                if is_bot and not intentionally_invalid:
                     errors = [
                         "{}: {}".format(k, repr(v))
                         for k, v in form.errors.items()]
                     raise ValueError(
-                        'Some fields failed validation: {} '
+                        'Bot submission failed form validation: {} '
                         'Check your bot in tests.py, '
-                        'then create a new session.'.format(
-                            errors
-                        )
-                    )
+                        'then create a new session.'.format(errors))
                 return self.form_invalid(form)
         self.before_next_page()
         self._increment_index_in_pages()
@@ -1069,3 +1069,10 @@ class AdminSessionPageMixin(GetFloppyFormClassMixin):
             otree.models.Session, code=session_code)
         return super(AdminSessionPageMixin, self).dispatch(
             request, *args, **kwargs)
+
+    def socket_url(self):
+        '''called from template. can't start with underscore because used
+        in template
+
+        '''
+        return '/session_admin/{}/'.format(self.session.code)

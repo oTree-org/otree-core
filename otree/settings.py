@@ -202,7 +202,6 @@ def get_default_settings(initial_settings=None):
         'LOCALE_PATHS': [
             os.path.join(initial_settings.get('BASE_DIR', ''), 'locale')
         ],
-        'USE_BROWSER_BOTS': False,
     }
 
 
@@ -370,8 +369,15 @@ def augment_settings(settings):
         'always_eager': False,
         'result_store': False,
         'consumer': {
+            # bots must run in 1 process because generators are loaded
+            # in memory. but should use 2 threads, because running "play_bots"
+            # can take a long time (e.g. 10+ minutes)...so need another thread
+            # for all the other stuff, like browser bots and timeouts.
             'workers': 2,
-            'scheduler_interval': 5,
+            'worker_type': 'thread',
+            # is this sufficient for tasks that need to run immediately,
+            # like getting a browser-bot submit?
+            'scheduler_interval': 1,
             'loglevel': 'warning',
         },
     }

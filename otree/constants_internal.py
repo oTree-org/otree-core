@@ -51,8 +51,6 @@ user_type = 'user_type'
 user_type_participant = 'p'
 success = True
 failure = False
-session_special_category_bots = 'bots'
-session_special_category_demo = 'demo'
 
 exceptions_conversors = {
     utils.OperationalError: lambda exception: utils.OperationalError(

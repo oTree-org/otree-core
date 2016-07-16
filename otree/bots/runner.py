@@ -16,20 +16,22 @@
 import logging
 import contextlib
 import collections
-import random
+from collections import deque
 import mock
+from huey.contrib.djhuey import task, db_task
+import json
 
+import channels
 from six import StringIO
-from six.moves import zip_longest
-
 from django.db.migrations.loader import MigrationLoader
 from django import test
 from django.test import runner
 from unittest import TestSuite
 
-from otree import constants_internal, session, common_internal
-from otree.test.client import ParticipantBot
-
+from otree import common_internal
+import otree.session
+from otree.models import Session
+from .bot import ParticipantBot
 
 import coverage
 
@@ -49,127 +51,105 @@ MAX_ATTEMPTS = 100
 logger = logging.getLogger(__name__)
 
 
-# =============================================================================
-# PENDING LIST
-# =============================================================================
+def play_bots(session_code):
+    '''pass in session code rather than session object because it needs
+    to be serialized to redis'''
 
-class PendingBuffer(object):
+    session = Session.objects.get(code=session_code)
 
-    def __init__(self):
-        self.storage = collections.OrderedDict()
+    if session._cannot_restart_bots:
+        return
+    session._cannot_restart_bots = True
+    session.save()
 
-    def __str__(self):
-        return repr(self)
+    bots = []
 
-    def __len__(self):
-        return len(self.storage)
+    has_human_participants = session.get_participants().filter(
+        _is_bot=False).exists()
+    if has_human_participants:
+        max_wait_seconds = None
+    else:
+        max_wait_seconds = 10
 
-    def __bool__(self):
-        return bool(self.storage)
+    for participant in session.get_participants().filter(_is_bot=True):
+        bot = ParticipantBot(participant, max_wait_seconds=max_wait_seconds)
+        bots.append(bot)
+        bot.open_start_url()
 
-    # For Python 2 compatibiliy.
-    __nonzero__ = __bool__
+    # TODO: handle max attempts or timeouts
+    '''
+    for submit, attempts in pending:
+        if attempts > MAX_ATTEMPTS:
+            msg = "Max attepts reached in  submit '{}'"
+            raise AssertionError(msg.format(submit))
+    '''
 
-    def __iter__(self):
-        for k, v in list(self.storage.items()):
-            yield k, v
-            if k in self.storage:
-                self.storage[k] += 1
-
-    def add(self, submit):
-        if submit in self.storage:
-            raise ValueError("Submit already in pending list")
-        self.storage[submit] = 1
-
-    def remove(self, submit):
-        del self.storage[submit]
-
-    def is_blocked(self, submit):
-        return submit.bot in [s.bot for s in self.storage.keys()]
+    # something like this...
+    loop = async.get_loop()
+    tasks = [bot.play_session() for bot in bots]
+    loop.run_all(tasks)
 
 
-# =============================================================================
-# TEST CASE
-# =============================================================================
+@db_task()
+def play_bots_task(session_code):
+    channels_group = channels.Group('session-admin-{}'.format(session_code))
+    session = Session.objects.get(code=session_code)
+    try:
+        play_bots(session)
+    except Exception as exc:
+        session._bots_errored = True
+        session.save()
+        error_msg = (
+            'Bots encountered an error: "{}". For the full traceback, '
+            'see the server logs.'.format(exc))
+        channels_group.send({'text': json.dumps({'error': error_msg})})
+        raise
+    channels_group.send(
+            {'text': json.dumps(
+                {'message': 'Bots finished'})})
+    session._bots_finished = True
+    session.save()
+
 
 class OTreeExperimentFunctionTest(test.TransactionTestCase):
 
     def __init__(self, session_name, preserve_data):
         super(OTreeExperimentFunctionTest, self).__init__()
-        self.session_name = session_name
+        self.config_name = session_name
         self.preserve_data = preserve_data
-        self._data = None
+        self._data_for_export = None
 
     def __repr__(self):
         hid = hex(id(self))
-        return "<{} '{}'>".format(type(self).__name__, self.session_name, hid)
+        return "<{} '{}'>".format(type(self).__name__, self.config_name, hid)
 
     def __str__(self):
-        return "ExperimentTest for session '{}'".format(self.session_name)
-
-    def zip_submits(self, bots):
-        bots = list(bots)
-        random.shuffle(bots)
-        submits = [b.submits for b in bots]
-        return list(zip_longest(*submits))
+        return "ExperimentTest for session '{}'".format(self.config_name)
 
     def tearDown(self):
         if self.preserve_data:
             logger.info(
-                "Recolecting data for session '{}'".format(self.session_name))
+                "Recolecting data for session '{}'".format(self.config_name))
             buff = StringIO()
-            common_internal.export_data(buff, self.session_name)
-            self._data = buff.getvalue()
+            common_internal.export_data(buff, self.config_name)
+            self._data_for_export = buff.getvalue()
 
-    def get_data(self):
-        return self._data
+    def get_export_data(self):
+        return self._data_for_export
+
+    def create_session(self):
+        logger.info("Creating '{}' session".format(self.config_name))
+
+        return otree.session.create_session(
+            session_config_name=self.config_name,
+            is_bots=True, label='{} [bots]'.format(self.config_name)
+        )
 
     def runTest(self):
-        logger.info("Creating '{}' session".format(self.session_name))
 
-        sssn = session.create_session(
-            session_config_name=self.session_name,
-            special_category=constants_internal.session_special_category_bots)
-        sssn.label = '{} [bots]'.format(self.session_name)
-        sssn.save()
+        session = self.create_session()
+        play_bots(session)
 
-        # since players are assigned to groups in a background thread,
-        # we need to wait for that to complete.
-        logger.info("Adding bots on session '{}'".format(self.session_name))
-
-        msg = "'GET' over first page of all '{}' participants"
-        logger.info(msg.format(self.session_name))
-
-        participant_bots = []
-        for participant in sssn.get_participants():
-            participant_bot = ParticipantBot(participant)
-            participant_bots.append(participant_bot)
-            participant_bot.start()
-
-        submit_groups = self.zip_submits(participant_bots)
-        pending = PendingBuffer()
-        while pending or submit_groups:
-
-            seen_pending_bots = set()
-            for submit, attempts in pending:
-                if attempts > MAX_ATTEMPTS:
-                    msg = "Max attepts reached in  submit '{}'"
-                    raise AssertionError(msg.format(submit))
-                if submit.bot not in seen_pending_bots and submit.execute():
-                    pending.remove(submit)
-                else:
-                    seen_pending_bots.add(submit.bot)
-
-            group = submit_groups.pop(0) if submit_groups else ()
-            for submit in group:
-                if submit is None:
-                    continue
-                if pending.is_blocked(submit) or not submit.execute():
-                    pending.add(submit)
-
-        logger.info("Stopping bots")
-        for bot in participant_bots:
-            bot.stop()
 
 
 # =============================================================================
@@ -201,7 +181,7 @@ class OTreeExperimentTestRunner(runner.DiscoverRunner):
     def suite_result(self, suite, result, *args, **kwargs):
         failures = super(OTreeExperimentTestRunner, self).suite_result(
             suite, result, *args, **kwargs)
-        data = {case.session_name: case.get_data() for case in suite}
+        data = {case.session_name: case.get_export_data() for case in suite}
         return failures, data
 
     def run_tests(self, test_labels, extra_tests=None,

@@ -76,6 +76,8 @@ def url_patterns_from_module(module_name):
         else:
             as_view = login_required(ViewCls.as_view())
 
+        # automatically assign URL name for reverse(), it defaults to the
+        # class's name
         url_name = getattr(ViewCls, 'url_name', ViewCls.__name__)
 
         url_pattern = ViewCls.url_pattern

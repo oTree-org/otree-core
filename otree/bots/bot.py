@@ -1,0 +1,253 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import re
+import decimal
+import logging
+import abc
+import six
+from importlib import import_module
+from six.moves import urllib
+import asyncio
+from django import test
+import json
+from easymoney import Money as Currency
+
+from otree import constants_internal
+from otree.views import Page
+from otree.common_internal import get_dotted_name
+
+logger = logging.getLogger(__name__)
+
+
+class Pause(object):
+
+    def __init__(self, seconds):
+        self.seconds = seconds
+
+
+def submission_as_dict(submission):
+
+    post_data = None
+
+    # TODO: validate that user isn't trying to submit a WaitPage,
+    # or other possible mistakes
+    if issubclass(submission, Page):
+        PageClass = submission
+    else:
+        PageClass = submission[0]
+        if len(submission) >= 2:
+            post_data = submission[1]
+        if len(submission) >= 3:
+            intentionally_invalid = submission[1].lower() == 'invalid'
+            if intentionally_invalid:
+                # sneak it in post_data
+                post_data['intentionally_invalid'] = True
+
+    page_dotted_name = get_dotted_name(PageClass)
+
+    return {
+        'page_dotted_name': page_dotted_name,
+        'post_data': post_data
+    }
+
+
+def is_wait_page(response):
+    return (
+        response.get(constants_internal.wait_page_http_header) ==
+        constants_internal.get_param_truth_value)
+
+
+def refresh_from_db(obj):
+    return type(obj).objects.get(pk=obj.pk)
+
+
+class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
+
+    def __init__(self, participant, max_wait_seconds=None, **kwargs):
+        self.participant = participant
+        self.response = None
+        self.url = None
+        self.path = None
+        self.num_bots = self.participant.session.config['num_bots']
+        self.submits = None
+        self.max_wait_seconds = max_wait_seconds
+        super(ParticipantBot, self).__init__()
+
+        self.player_bots = []
+        for player in self.participant.get_players():
+            try:
+                # TODO: or .tests
+                test_module_name = '{}.bots'.format(
+                    player.subsession.app_name
+                )
+                test_module = import_module(test_module_name)
+                logger.debug("Found test '{}'".format(test_module_name))
+            except ImportError as err:
+                self.fail(six.text_type(err))
+
+            player_bot = test_module.PlayerBot(
+                player=player,
+                participant_bot=self
+            )
+            self.player_bots.append(player_bot)
+        self.submits_generator = self.get_submits()
+
+    def open_start_url(self):
+        self.response = self.get(
+            self.participant._start_url(),
+            follow=True
+        )
+        self.set_path()
+        self.check_200()
+
+    def get_submits(self):
+        for player_bot in self.player_bots:
+            generator = player_bot.play_round()
+
+            if player_bot._legacy_submit_list:
+                for submission in player_bot._legacy_submit_list:
+                    yield submission_as_dict(submission)
+            else:
+                try:
+                    for submission in generator:
+                        yield submission_as_dict(submission)
+                # handle the case where it's empty
+                except TypeError as exc:
+                    if 'is not iterable' in str(exc):
+                        raise StopIteration
+
+    async def play_session(self):
+        for value in self.submits_generator:
+            # how can this receive messages from channels??
+            # use asyncio-redis??
+            await self.finished_wait_page(self.max_wait_seconds)
+            if isinstance(value, Pause):
+                # submit is actually a pause
+                pause = value
+                await asyncio.sleep(pause.seconds)
+            else:
+                submit = value
+                self.submit(submit)
+                # I think return None is OK
+
+    async def finished_wait_page(self, timeout):
+        #???
+        pass
+
+    def check_200(self):
+        # 2014-10-22: used to raise an exception here but i don't think that's
+        # necessary because the server-side exception should be shown anyway.
+        # Also, this exception doesn't have a useful traceback.
+        if self.response.status_code != 200:
+            msg = "Response status code: {} (expected 200)".format(
+                self.response.status_code)
+            logger.warning(msg)
+
+    def get(self, path, data={}, follow=False, **extra):
+        return super(ParticipantBot, self).get(path, data, follow, **extra)
+
+    def is_on(self, ViewClass):
+        return re.match(ViewClass.url_pattern(), self.path.lstrip('/'))
+
+    def assert_is_on(self, ViewClass):
+        if not self.is_on(ViewClass):
+            msg = "Expected page: {}, Actual page: {}".format(
+                ViewClass.__name__, self.path)
+            raise AssertionError(msg)
+
+    def on_wait_page(self):
+        # if the existing response was a form page, it will still be...
+        # no need to check again
+        if not is_wait_page(self.response):
+            return False
+
+        # however, wait pages can turn into regular pages, so let's try again
+        self.response = self.get(self.url, follow=True)
+        self.check_200()
+        self.set_path()
+        return is_wait_page(self.response)
+
+    def set_path(self):
+        try:
+            self.url = self.response.redirect_chain[-1][0]
+            self.path = urllib.parse.urlsplit(self.url).path
+        except IndexError:
+            pass
+
+    def submit(self, submission):
+
+        page_dotted_name = submission['page_dotted_name']
+        post_data = submission['post_data']
+
+        # TODO: get assert_is_on working
+        #self.assert_is_on(PageClass)
+        if post_data:
+            logger.info('{}, {}'.format(self.path, post_data))
+        else:
+            logger.info(self.path)
+
+        for key in post_data:
+            if isinstance(post_data[key], Currency):
+                post_data[key] = decimal.Decimal(post_data[key])
+
+        self.response = self.post(self.url, post_data, follow=True)
+
+        self.check_200()
+        self.set_path()
+
+
+class PlayerBot(object):
+
+    def __init__(self, player, participant_bot, **kwargs):
+
+        self.participant_bot = participant_bot
+        self._cached_player = player
+        self._cached_group = player.group
+        self._cached_subsession = player.subsession
+        self._cached_participant = player.participant
+        self._cached_session = player.subsession
+
+        self._legacy_submit_list = []
+
+    @abc.abstractmethod
+    def play_round(self):
+        raise NotImplementedError()
+
+    @property
+    def player(self):
+        return refresh_from_db(self._cached_player)
+
+    @property
+    def group(self):
+        return refresh_from_db(self._cached_group)
+
+    @property
+    def subsession(self):
+        return refresh_from_db(self._cached_subsession)
+
+    @property
+    def session(self):
+        return refresh_from_db(self._cached_session)
+
+    @property
+    def participant(self):
+        return refresh_from_db(self._cached_participant)
+
+    def submit(self, ViewClass, param_dict=None):
+        self._legacy_submit_list.append((ViewClass, param_dict))
+
+    def submit_invalid(self, ViewClass, param_dict=None):
+        '''this method lets you intentionally submit with invalid
+        input to ensure it's correctly rejected'''
+        self._legacy_submit_list.append((ViewClass, param_dict, 'invalid'))
+
+    def pause(self, seconds):
+        '''
+        should i call it sleep or pause? sleep is better known,
+        but people might mistakenly confuse it with time.sleep(),
+        which blocks the thread. if this eventually becomes a function
+        rather than a method, it will be invoked as sleep(), which could
+        lead to people importing from the time module.
+        '''
+        return Pause(seconds)
