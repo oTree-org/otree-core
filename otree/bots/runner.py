@@ -15,12 +15,11 @@
 
 import logging
 import contextlib
-import collections
-from collections import deque
+from collections import OrderedDict
 import mock
 from huey.contrib.djhuey import task, db_task
 import json
-
+import random
 import channels
 from six import StringIO
 from django.db.migrations.loader import MigrationLoader
@@ -31,31 +30,100 @@ from unittest import TestSuite
 from otree import common_internal
 import otree.session
 from otree.models import Session
-from .bot import ParticipantBot
+from .bot import ParticipantBot, Pause
 
-import coverage
-
-# =============================================================================
-# CONSTANTS
-# =============================================================================
-
-COVERAGE_MODELS = ['models', 'tests', 'views']
 
 MAX_ATTEMPTS = 100
 
 
-# =============================================================================
-# LOGGER
-# =============================================================================
-
 logger = logging.getLogger(__name__)
 
 
-def play_bots(session_code):
-    '''pass in session code rather than session object because it needs
-    to be serialized to redis'''
+class SessionBotRunner(object):
+    def __init__(self, bots, session_code):
+        self.session_code = session_code
+        self.stuck = OrderedDict()
+        self.playable = OrderedDict()
+        self.all_bot_codes = {bot.participant.code for bot in bots}
 
-    session = Session.objects.get(code=session_code)
+        for bot in bots:
+            self.playable[bot.participant.code] = bot
+
+    def play_until_end(self):
+        while True:
+            # keep un-sticking everyone who's stuck
+            stuck_pks = list(self.stuck.keys())
+            print('playable:', self.playable)
+            print('trying again by un-sticking', stuck_pks)
+            done, num_submits_made = self.play_until_stuck(stuck_pks)
+            print('played until stuck')
+            if done:
+                print('Bots done!')
+                break
+            #elif num_submits_made == 0:
+            #    print('Bots got stuck :(')
+            #    break
+
+    def play_until_stuck(self, unstuck_ids=None):
+        unstuck_ids = unstuck_ids or []
+        for pk in unstuck_ids:
+            # the unstuck ID might be a human player, not a bot.
+            if pk in self.all_bot_codes:
+                self.playable[pk] = self.stuck.pop(pk)
+        num_submits_made = 0
+        while True:
+            # round-robin algorithm
+            if len(self.playable) == 0:
+                if len(self.stuck) == 0:
+                    # finished! send a message somewhere?
+                    return (True, num_submits_made)
+                # stuck
+                return (False, num_submits_made)
+            # store in a separate list so we don't mutate the iterable
+            playable_ids = list(self.playable.keys())
+            for pk in playable_ids:
+                r = random.random()
+                bot = self.playable[pk]
+                print('{}: checking if on wait page'.format(pk))
+                if bot.on_wait_page():
+                    print('...{} is on wait page: {}'.format(pk, bot.path))
+                    print(r)
+                    self.stuck[pk] = self.playable.pop(pk)
+                else:
+                    print('...{} is not on wait page'.format(pk))
+                    print(r)
+                    try:
+                        value = next(bot.submits_generator)
+                    except StopIteration:
+                        # this bot is finished
+                        self.playable.pop(pk)
+                        print(r)
+                        print('{} is done!'.format(pk))
+                    else:
+                        if isinstance(value, Pause):
+                            # can only schedule it if we're using redis.
+                            # otherwise, ignore
+                            if common_internal.USE_REDIS:
+                                # submit is actually a pause
+                                pause = value
+                                self.stuck[pk] = self.playable.pop(pk)
+                                continue_bots_until_stuck_task.schedule(
+                                    [self.session_code, [pk]],
+                                    delay=pause.seconds
+                                )
+                        else:
+                            submit = value
+                            print('{}: about to submit {}'.format(pk, submit))
+                            bot.submit(submit)
+                            print('{}: submitted {}'.format(pk, submit))
+                            num_submits_made += 1
+
+
+# global variable, store bot runners in memory
+session_bot_runners = {}
+
+
+def start_bots(session):
 
     if session._cannot_restart_bots:
         return
@@ -76,46 +144,47 @@ def play_bots(session_code):
         bots.append(bot)
         bot.open_start_url()
 
-    # TODO: handle max attempts or timeouts
-    '''
-    for submit, attempts in pending:
-        if attempts > MAX_ATTEMPTS:
-            msg = "Max attepts reached in  submit '{}'"
-            raise AssertionError(msg.format(submit))
-    '''
-
-    # something like this...
-    loop = async.get_loop()
-    tasks = [bot.play_session() for bot in bots]
-    loop.run_all(tasks)
+    bot_runner = SessionBotRunner(bots, session.code)
+    session_bot_runners[session.code] = bot_runner
 
 
 @db_task()
 def play_bots_task(session_code):
-    channels_group = channels.Group('session-admin-{}'.format(session_code))
+    '''when doing this through Huey'''
     session = Session.objects.get(code=session_code)
+    start_bots(session)
+    bot_runner = session_bot_runners[session.code]
+    bot_runner.play_until_stuck()
+
+
+@db_task()
+def continue_bots_until_stuck_task(session_code, unstuck_ids=None):
+    channels_group = channels.Group('session-admin-{}'.format(session_code))
+    bot_runner = session_bot_runners[session_code]
     try:
-        play_bots(session)
+        bot_runner.play_until_stuck(unstuck_ids)
     except Exception as exc:
+        session = Session.objects.get(code=session_code)
         session._bots_errored = True
         session.save()
         error_msg = (
             'Bots encountered an error: "{}". For the full traceback, '
             'see the server logs.'.format(exc))
-        channels_group.send({'text': json.dumps({'error': error_msg})})
+        channels_group.send({'text': json.dumps({'message': error_msg})})
         raise
     channels_group.send(
             {'text': json.dumps(
                 {'message': 'Bots finished'})})
+    session = Session.objects.get(code=session_code)
     session._bots_finished = True
     session.save()
 
 
-class OTreeExperimentFunctionTest(test.TransactionTestCase):
+class BotsTestCase(test.TransactionTestCase):
 
-    def __init__(self, session_name, preserve_data):
-        super(OTreeExperimentFunctionTest, self).__init__()
-        self.config_name = session_name
+    def __init__(self, config_name, preserve_data):
+        super(BotsTestCase, self).__init__()
+        self.config_name = config_name
         self.preserve_data = preserve_data
         self._data_for_export = None
 
@@ -124,12 +193,12 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
         return "<{} '{}'>".format(type(self).__name__, self.config_name, hid)
 
     def __str__(self):
-        return "ExperimentTest for session '{}'".format(self.config_name)
+        return "Bots for session '{}'".format(self.config_name)
 
     def tearDown(self):
         if self.preserve_data:
             logger.info(
-                "Recolecting data for session '{}'".format(self.config_name))
+                "Collecting data for session '{}'".format(self.config_name))
             buff = StringIO()
             common_internal.export_data(buff, self.config_name)
             self._data_for_export = buff.getvalue()
@@ -148,15 +217,16 @@ class OTreeExperimentFunctionTest(test.TransactionTestCase):
     def runTest(self):
 
         session = self.create_session()
-        play_bots(session)
-
+        start_bots(session)
+        bot_runner = session_bot_runners[session.code]
+        bot_runner.play_until_end()
 
 
 # =============================================================================
 # RUNNER
 # =============================================================================
 
-class OTreeExperimentTestSuite(TestSuite):
+class BotsTestSuite(TestSuite):
     def _removeTestAtIndex(self, index):
         # In Python 3.4 and above, is the TestSuite clearing all references to
         # the test cases after the suite has finished. That way, the
@@ -168,20 +238,20 @@ class OTreeExperimentTestSuite(TestSuite):
         pass
 
 
-class OTreeExperimentTestRunner(runner.DiscoverRunner):
-    test_suite = OTreeExperimentTestSuite
+class BotsDiscoverRunner(runner.DiscoverRunner):
+    test_suite = BotsTestSuite
 
-    def build_suite(self, session_names, extra_tests, preserve_data, **kwargs):
+    def build_suite(self, config_names, extra_tests, preserve_data, **kwargs):
         suite = self.test_suite()
-        for session_name in session_names:
-            case = OTreeExperimentFunctionTest(session_name, preserve_data)
+        for config_name in config_names:
+            case = BotsTestCase(config_name, preserve_data)
             suite.addTest(case)
         return suite
 
     def suite_result(self, suite, result, *args, **kwargs):
-        failures = super(OTreeExperimentTestRunner, self).suite_result(
+        failures = super(BotsDiscoverRunner, self).suite_result(
             suite, result, *args, **kwargs)
-        data = {case.session_name: case.get_export_data() for case in suite}
+        data = {case.config_name: case.get_export_data() for case in suite}
         return failures, data
 
     def run_tests(self, test_labels, extra_tests=None,
@@ -202,23 +272,3 @@ class OTreeExperimentTestRunner(runner.DiscoverRunner):
         self.teardown_databases(old_config)
         self.teardown_test_environment()
         return failures, data
-
-
-# =============================================================================
-# COVERAGE CONTEXT
-# =============================================================================
-
-@contextlib.contextmanager
-def covering(session_names=None):
-    package_names = set()
-    for app_label in session.app_labels_from_sessions(session_names):
-        for module_name in COVERAGE_MODELS:
-            module = '{}.{}'.format(app_label, module_name)
-            package_names.add(module)
-
-    cov = coverage.coverage(source=package_names)
-    cov.start()
-    try:
-        yield cov
-    finally:
-        cov.stop()

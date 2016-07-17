@@ -1,14 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# =============================================================================
-# DOC
-# =============================================================================
-
-"""OTree test framework
-
-"""
-
 # NOTE: this imports the following submodules and then subclasses several
 # classes importing is done via import_module rather than an ordinary import.
 #
@@ -21,25 +13,9 @@
 #
 # This module is also a form of documentation of the public API.
 
-# =============================================================================
-# IMPORTS
-# =============================================================================
+# 2016-07-18: not using the import_module trick for now, because currently,
+# the PlayerBot class doesn't have any methods we need to hide
+# from importlib import import_module
+# otree_bot = import_module('otree.bots.bot')
 
-from importlib import import_module
-
-client = import_module('otree.test.client')
-
-
-# =============================================================================
-# CLIENTS
-# =============================================================================
-
-class Bot(client.PlayerBot):
-
-    def submit(self, ViewClass, param_dict=None):
-        return super(Bot, self).submit(ViewClass, param_dict)
-
-    def submit_invalid(self, ViewClass, param_dict=None):
-        return super(Bot, self).submit_invalid(
-            ViewClass, param_dict
-        )
+from otree.bots.bot import PlayerBot as Bot

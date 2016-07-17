@@ -169,11 +169,16 @@ def create_session(session_config_name, label='', num_participants=None,
         msg = 'Session config "{}" not found in settings.SESSION_CONFIGS.'
         raise ValueError(msg.format(session_config_name))
 
+
+    # can't serialize function, so pop it
+    bot_id_function = session_config.pop('bot_id_function', None)
+
     session = Session.objects.create(
         config=session_config,
         label=label,
         _pre_create_id=_pre_create_id,
-        _use_browser_bots=_use_browser_bots
+        _use_browser_bots=_use_browser_bots,
+        is_bots=is_bots
     )
 
     def bulk_create(model, descriptions):
@@ -207,7 +212,7 @@ def create_session(session_config_name, label='', num_participants=None,
         random.shuffle(start_order)
 
     id_in_session_list = range(1, num_participants+1)
-    bot_id_function = session_config.get('bot_id_function')
+
     if is_bots:
         bot_id_list = id_in_session_list
     elif bot_id_function:
@@ -225,6 +230,12 @@ def create_session(session_config_name, label='', num_participants=None,
             '_is_bot': id_in_session in bot_id_set
          }
          for id_in_session, j in enumerate(start_order, start=1)])
+
+    print('bot_id_set', bot_id_set)
+    if bot_id_set:
+        session.has_bots = True
+    else:
+        session.has_bots = is_bots
 
     ParticipantLockModel.objects.bulk_create([
         ParticipantLockModel(participant_code=participant.code)

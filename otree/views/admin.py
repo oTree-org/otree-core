@@ -43,7 +43,7 @@ from otree.models.session import Session
 from otree.models.participant import Participant
 from otree.models_concrete import PageCompletion, ParticipantRoomVisit
 from otree.room import ROOM_DICT
-from otree.bots.runner import play_bots
+from otree.bots.runner import play_bots_task
 
 
 def get_all_fields(Model, for_export=False):
@@ -973,6 +973,6 @@ class StartBots(vanilla.View):
     def get(self, request, *args, **kwargs):
         session_code = kwargs['code']
         session = get_object_or_404(Session, code=session_code)
-        play_bots(session.code)
+        play_bots_task(session.code)
 
         return HttpResponse('ok')

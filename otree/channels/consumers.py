@@ -13,7 +13,7 @@ from otree.models_concrete import (
     CompletedGroupWaitPage, CompletedSubsessionWaitPage)
 from otree.common_internal import (
     channels_wait_page_group_name, channels_create_session_group_name)
-from otree.bots.runner import play_bots, browser_bots
+
 
 import otree.session
 from otree.models import Session
@@ -285,14 +285,7 @@ def connect_session_admin(message, session_code):
     group = Group('session-admin-{}'.format(session_code)).add(
         message.reply_channel)
     session = Session.objects.get(code=session_code)
-    if session._bots_errored:
-        error_msg = (
-            'Bots encountered an error. For the full traceback, '
-            'see the server logs.')
-        group.send({'text': json.dumps({'error': error_msg})})
-    elif session._bots_finished:
-        group.send({'text': json.dumps({'message': 'Bots finished'})})
-
+    # don't do the redundant check because it could be bothersome
 
 def disconnect_session_admin(message, session_code):
     Group('session-admin-{}'.format(session_code)).discard(

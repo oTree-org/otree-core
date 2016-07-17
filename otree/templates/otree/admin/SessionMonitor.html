@@ -6,7 +6,9 @@
 $(document).ready(function() {
     ajax_json_participants();
     setInterval(ajax_json_participants , 4000);
-    ajax_advance();
+    setup_ajax_advance();
+    setup_start_bots();
+
 
     makeTableDraggable($('#monitor-table'));
 });
@@ -25,8 +27,9 @@ function wrap_timestamp() {
         $(this).children("td[data-field='_last_page_timestamp']").text("");
     });
 }
+
 // ajax request for advance session button
-function ajax_advance() {
+function setup_ajax_advance() {
     $('#advance_users').on('click', function () {
         $('#advance_users').attr("disabled", true);
         $.ajax({
@@ -45,6 +48,21 @@ function ajax_advance() {
         });
     });
 }
+
+
+function setup_start_bots() {
+    $('#start_bots').on('click', function () {
+        $('#start_bots').attr("disabled", true);
+        $.ajax({
+            url: '{% url 'StartBots' session.code %}',
+            type: 'GET',
+            success: function() {
+                $('#start_bots').text("bots started");
+            }
+        });
+    });
+}
+
 // ajax requests to the server for participants data
 function ajax_json_participants() {
     $.ajax({
@@ -107,11 +125,11 @@ function ajax_json_participants() {
 data-content="Advance the slowest user(s) by one page, by forcing a timeout on their current page.">
 Advance slowest user(s)
 </a>
-<a id="advance_users" class="btn btn-primary" role="button" data-toggle="popover" data-trigger="hover"
-data-content="Advance the slowest user(s) by one page, by forcing a timeout on their current page.">
-Advance slowest user(s)
-</a>
-
+    {% if session.has_bots %}
+        <button type="button" id="start_bots" class="btn btn-primary">
+            Start bots
+        </button>
+    {% endif %}
 
     <div id="refresh_server_error" class="alert alert-danger" style="display: none;">
     Failed to refresh data from the server.

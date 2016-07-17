@@ -99,7 +99,12 @@ class Session(ModelWithVars):
     _bots_errored = models.BooleanField(default=False)
 
     is_demo = models.BooleanField(default=False)
+
+    # whether ALL players are bots
     is_bots = models.BooleanField(default=False)
+
+    # whether SOME players are bots
+    has_bots = models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.code
@@ -117,7 +122,7 @@ class Session(ModelWithVars):
         return self.config['real_world_currency_per_point']
 
     def is_for_mturk(self):
-        return (not self._is_demo) and (self.mturk_num_participants > 0)
+        return (not self.is_demo) and (self.mturk_num_participants > 0)
 
     def get_subsessions(self):
         lst = []

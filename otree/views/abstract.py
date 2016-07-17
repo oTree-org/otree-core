@@ -37,7 +37,8 @@ from otree.models.participant import Participant
 from otree.common_internal import (
     get_app_label_from_import_path, get_dotted_name
 )
-import otree.bots.browser
+from otree.bots.browser import get_next_submit
+from otree.bots.runner import continue_bots_until_stuck_task
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
     CompletedGroupWaitPage, PageTimeout, UndefinedFormModel,
@@ -696,6 +697,9 @@ class InGameWaitPageMixin(object):
         if self.wait_for_all_groups:
             self.group = group
 
+        completion.after_all_players_arrive_run = True
+        completion.save()
+
         if otree.common_internal.USE_REDIS:
             # 2015-07-27:
             #   why not check if the next page has_timeout?
@@ -703,9 +707,14 @@ class InGameWaitPageMixin(object):
                 kwargs={
                     'participant_pk_set': participant_pk_set,
                     'wait_page_index': self._index_in_pages}, delay=10)
-
-        completion.after_all_players_arrive_run = True
-        completion.save()
+            if self.session.has_bots:
+                # use code instead of PKs while debugging,
+                # its easier to monitor
+                participant_code_set = set(
+                self._group_or_subsession.player_set
+                .values_list('participant__code', flat=True))
+                continue_bots_until_stuck_task(
+                    self.session.code, participant_code_set)
 
         # send a message to the channel to move forward
         # this should happen at the very end,
@@ -807,6 +816,7 @@ class InGameWaitPageMixin(object):
         return ''
 
 
+
 class BrowserBot(object):
 
     def __init__(self, view):
@@ -814,7 +824,9 @@ class BrowserBot(object):
         self.participant = view.participant
 
     def get_submission(self):
-        result = otree.bots.browser.get_next_submit(self.participant.code)
+
+
+        result = get_next_submit(self.participant.code)
         # evaluate the Huey TaskWrapper
         submission = result()
         if submission:
@@ -922,7 +934,7 @@ class FormPageMixin(object):
             post_data = request.POST
             form = self.get_form(
                 data=post_data, files=request.FILES, instance=self.object)
-            is_bot = self.participant.is_bot
+            is_bot = self.participant._is_bot
             intentionally_invalid = request.POST.get('intentionally_invalid')
             if form.is_valid():
                 if is_bot and intentionally_invalid:

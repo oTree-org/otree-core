@@ -12,32 +12,18 @@ import codecs
 from django.conf import settings, global_settings
 from django.core.management.base import BaseCommand
 
-from otree.test import runner, client
+import otree.bots.runner
+from otree.bots.runner import BotsDiscoverRunner
+
 from otree.management.cli import otree_and_django_version
 from otree.session import SESSION_CONFIGS_DICT
 import otree.common_internal
-
-
-# =============================================================================
-# CONSTANTS
-# =============================================================================
-
-COVERAGE_CONSOLE = "console"
-
-COVERAGE_HTML = "HTML"
-
-COVERAGE_ALL = "all"
-
-COVERAGE_CHOICES = (COVERAGE_ALL, COVERAGE_CONSOLE, COVERAGE_HTML)
-
 
 # =============================================================================
 # LOGGER & Other Conf
 # =============================================================================
 
 logger = logging.getLogger('otree')
-
-settings.SSLIFY_DISABLE = True
 
 settings.STATICFILES_STORAGE = global_settings.STATICFILES_STORAGE
 
@@ -63,12 +49,6 @@ class Command(BaseCommand):
             help='If omitted, all sessions in SESSION_CONFIGS are run'
         )
 
-        coverage_choices = "|".join(COVERAGE_CHOICES)
-        ahelp = ('Execute code-coverage over the code of '
-                 'tested experiments [{}]').format(coverage_choices)
-        parser.add_argument(
-            '-c', '--coverage', action='store', dest='coverage',
-            choices=COVERAGE_CHOICES, help=ahelp)
         parser.add_argument(
             '--export', nargs='?', const='auto_name',
             help=(
@@ -126,34 +106,14 @@ class Command(BaseCommand):
 
         logging.basicConfig(level=level)
         logging.getLogger("otree").setLevel(level)
-        runner.logger.setLevel(level)
-        client.logger.setLevel(level)
 
         export_path = options["export"] or options["save"]
         preserve_data = bool(export_path)
 
-        test_runner = runner.OTreeExperimentTestRunner(**options)
+        test_runner = BotsDiscoverRunner(**options)
 
-        coverage = options["coverage"]
-
-        if coverage:
-            with runner.covering(session_config_names) as coverage_report:
-                failures, data = test_runner.run_tests(
-                    session_config_names, preserve_data=preserve_data)
-        else:
-            failures, data = test_runner.run_tests(
-                session_config_names, preserve_data=preserve_data)
-        if coverage:
-            logger.info("Coverage Report")
-            if coverage in [COVERAGE_CONSOLE, COVERAGE_ALL]:
-                coverage_report.report()
-            if coverage in [COVERAGE_HTML, COVERAGE_ALL]:
-                html_coverage_results_dir = '_coverage_results'
-                coverage_report.html_report(
-                    directory=html_coverage_results_dir)
-                msg = ("See '{}/index.html' for detailed results.").format(
-                    html_coverage_results_dir)
-                logger.info(msg)
+        failures, data = test_runner.run_tests(
+            session_config_names, preserve_data=preserve_data)
 
         if preserve_data:
             now = datetime.datetime.now()

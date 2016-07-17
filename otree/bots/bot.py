@@ -14,7 +14,7 @@ import json
 from easymoney import Money as Currency
 
 from otree import constants_internal
-from otree.views import Page
+
 from otree.common_internal import get_dotted_name
 
 logger = logging.getLogger(__name__)
@@ -28,13 +28,14 @@ class Pause(object):
 
 def submission_as_dict(submission):
 
-    post_data = None
+    post_data = {}
 
     # TODO: validate that user isn't trying to submit a WaitPage,
     # or other possible mistakes
-    if issubclass(submission, Page):
-        PageClass = submission
-    else:
+    # had a circular import problem when this was a module-level import
+    # moving it here for now...
+    from otree.views import Page
+    if isinstance(submission, (list, tuple)):
         PageClass = submission[0]
         if len(submission) >= 2:
             post_data = submission[1]
@@ -43,6 +44,8 @@ def submission_as_dict(submission):
             if intentionally_invalid:
                 # sneak it in post_data
                 post_data['intentionally_invalid'] = True
+    else:
+        PageClass = submission
 
     page_dotted_name = get_dotted_name(PageClass)
 
@@ -77,15 +80,15 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
         self.player_bots = []
         for player in self.participant.get_players():
             try:
-                # TODO: or .tests
                 test_module_name = '{}.bots'.format(
-                    player.subsession.app_name
+                    player._meta.app_config.name
                 )
                 test_module = import_module(test_module_name)
-                logger.debug("Found test '{}'".format(test_module_name))
             except ImportError as err:
-                self.fail(six.text_type(err))
-
+                test_module_name = '{}.tests'.format(
+                    player._meta.app_config.name
+                )
+                test_module = import_module(test_module_name)
             player_bot = test_module.PlayerBot(
                 player=player,
                 participant_bot=self
@@ -100,6 +103,11 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
         )
         self.set_path()
         self.check_200()
+
+    def get_submits_foo(self):
+        for player_bot in self.player_bots:
+            for submission in player_bot.play_round():
+                yield submission_as_dict(submission)
 
     def get_submits(self):
         for player_bot in self.player_bots:
@@ -116,6 +124,7 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
                 except TypeError as exc:
                     if 'is not iterable' in str(exc):
                         raise StopIteration
+                    raise
 
     async def play_session(self):
         for value in self.submits_generator:
