@@ -360,24 +360,24 @@ def augment_settings(settings):
     redis_url = urlparse.urlparse(settings.get('REDIS_URL'))
 
     settings['HUEY'] = {
-        'name': 'test-django',
+        'name': 'otree-huey',
         'connection': {
             'host': redis_url.hostname,
             'port': redis_url.port,
             'password': redis_url.password
         },
         'always_eager': False,
-        'result_store': False,
+        # in order to evaluate the result immediately
+        # (as with browser bot submits), i need a result store
+        'result_store': True,
         'consumer': {
             # bots must run in 1 process because generators are loaded
-            # in memory. but should use 2 threads, because running "play_bots"
-            # can take a long time (e.g. 10+ minutes)...so need another thread
-            # for all the other stuff, like browser bots and timeouts.
-            'workers': 2,
-            'worker_type': 'thread',
-            # is this sufficient for tasks that need to run immediately,
-            # like getting a browser-bot submit?
-            'scheduler_interval': 1,
+            # in memory. maybe use 2 threads, because running "play_bots"
+            # could take several seconds (but won't take minutes), and we
+            # also need to use it for timeouts
+            'workers': 1,
+            #'worker_type': 'thread',
+            'scheduler_interval': 5,
             'loglevel': 'warning',
         },
     }

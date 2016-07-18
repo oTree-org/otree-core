@@ -6,7 +6,7 @@
     <!-- this is an HTML file rather than JavaScript static file because context variables need to be passed to it -->
 
     <script type="text/javascript">
-        function pingServer() {
+        function heartbeat() {
         var args = {
             type: "GET",
             url: '{% url "ParticipantRoomHeartbeat" view.tab_unique_id %}',
@@ -15,7 +15,7 @@
     }
 
     var SECOND = 1000;
-    window.setInterval(pingServer, 10 * SECOND);
+    window.setInterval(heartbeat, 10 * SECOND);
     </script>
 
  {% endblock %}

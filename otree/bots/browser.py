@@ -1,14 +1,22 @@
 from .bot import ParticipantBot, Pause
 from huey.contrib.djhuey import task, db_task
 import json
+from otree.models import Session
 
 # a dict holding all the browser bots
 browser_bots = {}
 
 
-def initialize_browser_bots(session):
+@db_task()
+def initialize_browser_bots(session_code):
+    session = Session.objects.get(code=session_code)
     for participant in session.get_participants().filter(_is_bot=True):
         browser_bots[participant.code] = ParticipantBot(participant)
+
+
+@task()
+def clear_browser_bots():
+    browser_bots.clear()
 
 
 @db_task()
@@ -23,6 +31,8 @@ def get_next_submit(participant_code):
                 # real studies should use regular bots
                 continue
             else:
-                return json.dumps(submit)
+                submission = json.dumps(submit)
+                print(submission)
+                return submission
     except StopIteration:
         return

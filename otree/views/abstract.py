@@ -825,10 +825,10 @@ class BrowserBot(object):
 
     def get_submission(self):
 
-
         result = get_next_submit(self.participant.code)
-        # evaluate the Huey TaskWrapper
-        submission = result()
+        # evaluate the Huey TaskWrapper (or AsyncData object)
+        submission = result.get(blocking=True)
+        print(submission)
         if submission:
             submission = json.loads(submission)
 

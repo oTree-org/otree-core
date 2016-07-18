@@ -438,7 +438,7 @@ class BrowserBotStartLink(GenericWaitPageMixin, vanilla.View):
             return HttpResponseRedirect(participant._start_url())
         else:
             return render_to_response(
-                "otree/WaitPageRoom.html",
+                "otree/WaitPage.html",
                 {
                     'view': self, 'title_text': 'Please wait',
                     'body_text': 'Waiting for browser bots session to begin'

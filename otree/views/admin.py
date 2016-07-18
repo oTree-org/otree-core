@@ -44,7 +44,7 @@ from otree.models.participant import Participant
 from otree.models_concrete import PageCompletion, ParticipantRoomVisit
 from otree.room import ROOM_DICT
 from otree.bots.runner import play_bots_task
-
+from otree.bots.browser import initialize_browser_bots, clear_browser_bots
 
 def get_all_fields(Model, for_export=False):
     if Model is PageCompletion:
@@ -950,6 +950,9 @@ class CreateBrowserBotsSession(vanilla.View):
             is_bots=True,
             _use_browser_bots=True,
         )
+        result = initialize_browser_bots(session.code)
+        # execute it right away, so that bots are initialized in memory
+        result()
         get_redis_conn().set('otree-browser-bots-session', session.code)
 
         return HttpResponse(session.code)
@@ -960,7 +963,7 @@ class CloseBrowserBotsSession(vanilla.View):
     url_pattern = r"^close_browser_bots_session/$"
 
     def post(self, request, *args, **kwargs):
-
+        clear_browser_bots()
         get_redis_conn().delete('otree-browser-bots-session')
         return HttpResponse('ok')
 
