@@ -37,7 +37,7 @@ import coverage
 # CONSTANTS
 # =============================================================================
 
-COVERAGE_MODELS = ['models', 'tests', 'views']
+COVERAGE_MODELS = ['models', 'views']
 
 MAX_ATTEMPTS = 100
 

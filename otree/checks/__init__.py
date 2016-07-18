@@ -243,7 +243,6 @@ def register_rules(tags=(), id=None):
 def files(rules, **kwargs):
     rules.file_exists('models.py')
     rules.file_exists('views.py')
-    rules.file_exists('tests.py')
 
     cond = (
         rules.dir_exists('templates') and

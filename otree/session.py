@@ -170,6 +170,8 @@ def create_session(session_config_name, label='', num_participants=None,
     if use_browser_bots is None:
         use_browser_bots = settings.USE_BROWSER_BOTS
 
+    session_config.pop('bot_id_function', None)
+
     session = Session.objects.create(
         config=session_config,
         label=label,

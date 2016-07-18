@@ -150,8 +150,12 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
                 )
                 test_module = import_module(test_module_name)
                 logger.debug("Found test '{}'".format(test_module_name))
-            except ImportError as err:
-                self.fail(six.text_type(err))
+            except ImportError:
+                test_module_name = '{}.bots'.format(
+                    player.subsession.app_name
+                )
+                test_module = import_module(test_module_name)
+                logger.debug("Found test '{}'".format(test_module_name))
 
             player_bot = test_module.PlayerBot(
                 player=player,
@@ -253,7 +257,7 @@ class PlayerBot(object):
         raise NotImplementedError()
 
     def validate_play(self):
-        raise NotImplementedError()
+        pass
 
     def _validate_play(self):
         self._refresh_models()
