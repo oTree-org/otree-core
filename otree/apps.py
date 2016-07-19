@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
 import logging
 from importlib import import_module
 
@@ -8,11 +9,12 @@ from django.apps import AppConfig, apps
 from django.conf import settings
 from django.db.models import signals
 
-from otree.models_concrete import UndefinedFormModel, GlobalLockModel
-import otree
-from otree.common_internal import ensure_superuser_exists
 import six
-import sys
+
+import otree
+from otree.models_concrete import UndefinedFormModel, GlobalLockModel
+from otree.common_internal import ensure_superuser_exists
+
 logger = logging.getLogger('otree')
 import_module('otree.checks')   # this made that style check work
 

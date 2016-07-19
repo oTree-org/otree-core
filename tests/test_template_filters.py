@@ -5,10 +5,13 @@ import random
 import decimal
 import string
 
-from django.template import Context, Template
 from django.utils import html
+from django.template import Context, Template
+from django.contrib.staticfiles.storage import staticfiles_storage
 
 import six
+
+import mock
 
 from otree.common import Currency as c
 
@@ -27,6 +30,15 @@ class TestFilters(TestCase):
         if not isinstance(context, Context):
             context = Context(context)
         return self.parse(fragment).render(context)
+
+    def test_monkey_patch_staticfiles_tag(self):
+        with mock.patch.object(staticfiles_storage, "url") as url:
+            self.render("{% load staticfiles %}{% static 'foo.jpg' %}")
+            url.assert_called_once_with("foo.jpg")
+        with mock.patch.object(staticfiles_storage, "url") as url:
+            url.side_effect = ValueError("boom")
+            with self.assertRaises(ValueError):
+                self.render("{% load staticfiles %}{% static 'foo.jpg' %}")
 
     def test_abs_value(self):
         for value in [0, 1, random.random(), c(1)]:
