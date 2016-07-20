@@ -846,13 +846,34 @@ def info_about_session_config(session_config):
             'name': formatted_app_name,
         }
         app_sequence.append(subsssn)
-    return {
+
+    info = {
         'doc': session_config['doc'],
         'app_sequence': app_sequence,
         'name': session_config['name'],
         'display_name': session_config['display_name'],
-        'lcm': get_lcm(session_config)
+        'lcm': get_lcm(session_config),
+
     }
+
+    if 'is_bot_list' in session_config:
+        is_bot_list = session_config['is_bot_list']
+        num_bots = sum(is_bot_list)
+        num_total = len(is_bot_list)
+        num_humans = num_total - num_bots
+
+        msg = (
+            'This session config has bots playing with human participants. '
+            'For every {num_total} participants, {num_bots} will be bots. '
+            'For example, if you want {num_humans} human participants to play,'
+            'you should create a session with {num_total} participants.'
+        ).format(num_total=num_total, num_bots=num_bots, num_humans=num_humans)
+
+        if num_bots > 0 and num_humans > 0:
+            info['bots_msg'] = msg
+        elif num_humans == 0:
+            info['bots_msg'] = (
+                'All participants in this session will be bots')
 
 
 def session_description_dict(session):

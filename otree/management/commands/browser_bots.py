@@ -34,7 +34,6 @@ BROWSER_CMDS = {
     }
 }
 
-NUM_PARTICIPANTS_FLAG = '--num-participants'
 SERVER_URL_FLAG = '--server-url'
 
 
@@ -90,7 +89,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            'session_config_name', nargs='*',
+            'session_config_name',
             help='If omitted, all sessions in SESSION_CONFIGS are run'
         )
         parser.add_argument(
@@ -102,8 +101,92 @@ class Command(BaseCommand):
             'Defaults to minimum for the session config.'
         )
         parser.add_argument(
-            '-n', NUM_PARTICIPANTS_FLAG, type=int, nargs='*',
+            'num_participants', type=int,
             help=ahelp)
+
+    def handle(self, *args, **options):
+        self.options = options
+
+        self.check_browser()
+        self.set_urls()
+        self.client = requests.session()
+        self.ping_server()
+        self.server_configuration_check()
+
+        sessions_to_create = []
+
+        session_config_names = [options["session_config_name"]]
+        if session_config_names:
+            for session_config_name in session_config_names:
+                if session_config_name not in SESSION_CONFIGS_DICT:
+                    raise ValueError(
+                        'No session config named "{}"'.format(
+                            session_config_name)
+                    )
+        else:
+            # default to all session configs
+            session_config_names = SESSION_CONFIGS_DICT.keys()
+
+        self.max_name_length = max(
+            len(config_name) for config_name in session_config_names
+        )
+
+        for session_config_name in session_config_names:
+            session_config = SESSION_CONFIGS_DICT[session_config_name]
+            if options['num_participants']:
+                session_sizes_for_this_config = options['num_participants']
+            else:
+                session_sizes_for_this_config = [
+                    session_config['num_demo_participants']]
+
+            for num_participants in session_sizes_for_this_config:
+                sessions_to_create.append({
+                    'session_config_name': session_config_name,
+                    'num_participants': num_participants,
+                })
+
+        total_time_spent = 0
+        # run in a separate loop, because we want to validate upfront
+        # that the session configs are valid, etc,
+        # rather than the command failing halfway through
+        for session_to_create in sessions_to_create:
+            total_time_spent += self.run_session(**session_to_create)
+
+        print('Total: {} seconds'.format(
+            round(total_time_spent, 1)
+        ))
+
+        # don't delete sessions -- it's too susceptible to race conditions
+        # between sending the completion message and loading the last page
+        # plus people want to preserve the data
+        # just label these sessions clearly in the admin UI
+        # and make it easy to delete manually
+
+    def run_session(self, session_config_name, num_participants):
+        self.close_existing_session()
+
+        browser_process = self.launch_browser(num_participants)
+
+        row_fmt = "{:<%d} {:>2} participants..." % (self.max_name_length + 1)
+        print(row_fmt.format(session_config_name, num_participants), end='')
+
+        session_code = self.create_session(
+            session_config_name, num_participants)
+
+        bot_start_time = time.time()
+
+        self.websocket_listen(session_code, num_participants)
+
+        time_spent = round(time.time() - bot_start_time, 1)
+        print('...finished in {} seconds'.format(time_spent))
+
+        # TODO:
+        # - if Chrome/FF is already running when the browser is launched,
+        # this does nothing.
+        # also, they report a crash (in Firefox it blocks the app from
+        # starting again), in Chrome it's just a side notice
+        browser_process.terminate()
+        return time_spent
 
     def websocket_listen(self, session_code, num_participants):
         # seems that urljoin doesn't work with ws:// urls
@@ -281,87 +364,3 @@ class Command(BaseCommand):
                 ExceptionClass,
                 ExceptionClass(msg.format(exception)),
                 sys.exc_info()[2])
-
-    def handle(self, *args, **options):
-        self.options = options
-
-        self.check_browser()
-        self.set_urls()
-        self.client = requests.session()
-        self.ping_server()
-        self.server_configuration_check()
-
-        sessions_to_create = []
-
-        session_config_names = options["session_config_name"]
-        if session_config_names:
-            for session_config_name in session_config_names:
-                if session_config_name not in SESSION_CONFIGS_DICT:
-                    raise ValueError(
-                        'No session config named "{}"'.format(
-                            session_config_name)
-                    )
-        else:
-            # default to all session configs
-            session_config_names = SESSION_CONFIGS_DICT.keys()
-
-        self.max_name_length = max(
-            len(config_name) for config_name in session_config_names
-        )
-
-        for session_config_name in session_config_names:
-            session_config = SESSION_CONFIGS_DICT[session_config_name]
-            if options['num_participants']:
-                session_sizes_for_this_config = options['num_participants']
-            else:
-                session_sizes_for_this_config = [
-                    session_config['num_demo_participants']]
-
-            for num_participants in session_sizes_for_this_config:
-                sessions_to_create.append({
-                    'session_config_name': session_config_name,
-                    'num_participants': num_participants,
-                })
-
-        total_time_spent = 0
-        # run in a separate loop, because we want to validate upfront
-        # that the session configs are valid, etc,
-        # rather than the command failing halfway through
-        for session_to_create in sessions_to_create:
-            total_time_spent += self.run_session(**session_to_create)
-
-        print('Total: {} seconds'.format(
-            round(total_time_spent, 1)
-        ))
-
-        # don't delete sessions -- it's too susceptible to race conditions
-        # between sending the completion message and loading the last page
-        # plus people want to preserve the data
-        # just label these sessions clearly in the admin UI
-        # and make it easy to delete manually
-
-    def run_session(self, session_config_name, num_participants):
-        self.close_existing_session()
-
-        browser_process = self.launch_browser(num_participants)
-
-        row_fmt = "{:<%d} {:>2} participants..." % (self.max_name_length + 1)
-        print(row_fmt.format(session_config_name, num_participants), end='')
-
-        session_code = self.create_session(
-            session_config_name, num_participants)
-
-        bot_start_time = time.time()
-
-        self.websocket_listen(session_code, num_participants)
-
-        time_spent = round(time.time() - bot_start_time, 1)
-        print('...finished in {} seconds'.format(time_spent))
-
-        # TODO:
-        # - if Chrome/FF is already running when the browser is launched,
-        # this does nothing.
-        # also, they report a crash (in Firefox it blocks the app from
-        # starting again), in Chrome it's just a side notice
-        browser_process.terminate()
-        return time_spent

@@ -38,7 +38,7 @@ def submission_as_dict(submission):
     if isinstance(submission, (list, tuple)):
         PageClass = submission[0]
         if len(submission) >= 2:
-            post_data = submission[1]
+            post_data = submission[1] or {}
         if len(submission) >= 3:
             intentionally_invalid = submission[1].lower() == 'invalid'
             if intentionally_invalid:
@@ -48,6 +48,11 @@ def submission_as_dict(submission):
         PageClass = submission
 
     page_dotted_name = get_dotted_name(PageClass)
+
+    for key in post_data:
+        if isinstance(post_data[key], Currency):
+            # because must be json serializable for Huey
+            post_data[key] = str(decimal.Decimal(post_data[key]))
 
     return {
         'page_dotted_name': page_dotted_name,
@@ -104,22 +109,17 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
         self.set_path()
         self.check_200()
 
-    def get_submits_foo(self):
-        for player_bot in self.player_bots:
-            for submission in player_bot.play_round():
-                yield submission_as_dict(submission)
-
     def get_submits(self):
         for player_bot in self.player_bots:
+            # play_round populates legacy submit list
             generator = player_bot.play_round()
-
             if player_bot._legacy_submit_list:
                 for submission in player_bot._legacy_submit_list:
-                    yield submission_as_dict(submission)
+                    yield submission
             else:
                 try:
                     for submission in generator:
-                        yield submission_as_dict(submission)
+                        yield submission
                 # handle the case where it's empty
                 except TypeError as exc:
                     if 'is not iterable' in str(exc):
@@ -186,6 +186,7 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
 
     def submit(self, submission):
 
+        submission = submission_as_dict(submission)
         page_dotted_name = submission['page_dotted_name']
         post_data = submission['post_data']
 
@@ -195,10 +196,6 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
             logger.info('{}, {}'.format(self.path, post_data))
         else:
             logger.info(self.path)
-
-        for key in post_data:
-            if isinstance(post_data[key], Currency):
-                post_data[key] = decimal.Decimal(post_data[key])
 
         self.response = self.post(self.url, post_data, follow=True)
 
@@ -219,9 +216,8 @@ class PlayerBot(object):
 
         self._legacy_submit_list = []
 
-    @abc.abstractmethod
     def play_round(self):
-        raise NotImplementedError()
+        pass
 
     @property
     def player(self):
@@ -249,7 +245,11 @@ class PlayerBot(object):
     def submit_invalid(self, ViewClass, param_dict=None):
         '''this method lets you intentionally submit with invalid
         input to ensure it's correctly rejected'''
-        self._legacy_submit_list.append((ViewClass, param_dict, 'invalid'))
+
+        # simpler to make this a no-op, it makes porting to yield easier
+        # then we can just do a search-and-replace
+        # self._legacy_submit_list.append((ViewClass, param_dict, 'invalid'))
+        pass
 
     def pause(self, seconds):
         '''

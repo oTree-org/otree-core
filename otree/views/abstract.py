@@ -19,7 +19,7 @@ from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache, cache_control
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.utils.translation import ugettext as _
 from six.moves import range
 
@@ -328,15 +328,13 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                 request, *args, **kwargs)
             self.participant._last_request_timestamp = time.time()
 
-            # if not using browser bots, this context manager does nothing
-            with self.check_if_browser_bot_should_auto_submit():
-                # need to render the response before saving objects,
-                # because the template might call a method that modifies
-                # player/group/etc.
-                if hasattr(response, 'render'):
-                    response.render()
-                self.save_objects()
-                return response
+            # need to render the response before saving objects,
+            # because the template might call a method that modifies
+            # player/group/etc.
+            if hasattr(response, 'render'):
+                response.render()
+            self.save_objects()
+            return response
 
     # TODO: maybe this isn't necessary, because I can figure out what page
     # they should be on, from looking up index_in_pages
@@ -455,45 +453,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             session=self.session,
             auto_submitted=timeout_happened)
         self.participant.save()
-
-    @contextlib.contextmanager
-    def check_if_browser_bot_should_auto_submit(self):
-
-        # if not using browser bots, this context manager does nothing
-        if not self.session._use_browser_bots:
-            yield
-            return
-
-        browser_bot_finished = self.participant._browser_bot_finished
-
-        # this attribute is set so the template can read it and decide
-        # whether to insta-submit with JS
-        self.browser_bot_should_auto_submit = not browser_bot_finished
-
-        yield
-
-        if browser_bot_finished:
-            on_last_page = (
-                self._index_in_pages >= self.participant._max_page_index
-            )
-
-            if self.request.method == 'GET':
-                # if it's GET, then we will not auto-submit,
-                # so there will be no next request.
-                send_message = True
-            elif self.request.method == 'POST' and on_last_page:
-                # send message if it's last page, because
-                # the next page will be the OutOfRangeNotification,
-                # which will not auto-submit (so this is the last request)
-                send_message = True
-            else:
-                # there will be a next GET request, which we should allow
-                # to happen
-                send_message = False
-            if send_message:
-                channels.Group(
-                    'browser-bots-client-{}'.format(self.session.code)
-                ).send({'text': self.participant.code})
 
 
 class GenericWaitPageMixin(object):
@@ -822,13 +781,13 @@ class BrowserBot(object):
     def __init__(self, view):
         self.view = view
         self.participant = view.participant
+        self.session = self.view.session
 
     def get_submission(self):
 
         result = get_next_submit(self.participant.code)
         # evaluate the Huey TaskWrapper (or AsyncData object)
         submission = result.get(blocking=True)
-        print(submission)
         if submission:
             submission = json.loads(submission)
 
@@ -848,8 +807,12 @@ class BrowserBot(object):
 
             return submission['post_data']
         else:
-            self.participant._browser_bot_finished = True
+            raise StopIteration
 
+    def send_completion_message(self):
+        channels.Group(
+            'browser-bots-client-{}'.format(self.session.code)
+        ).send({'text': self.participant.code})
 
 class FormPageMixin(object):
     """mixin rather than subclass because we want these methods only to be
@@ -890,14 +853,7 @@ class FormPageMixin(object):
     def get_form(self, data=None, files=None, **kwargs):
         """Given `data` and `files` QueryDicts, and optionally other named
         arguments, and returns a form.
-
         """
-
-        if self.session._use_browser_bots:
-            bot = BrowserBot(self)
-            submission = bot.get_submission() or {}
-            data = data or {}
-            data.update(submission)
 
         cls = self.get_form_class()
         return cls(data=data, files=files, view=self, **kwargs)
@@ -918,7 +874,7 @@ class FormPageMixin(object):
             if self.has_timeout():
                 otree.timeout.tasks.submit_expired_url.schedule(
                     (self.request.path,), delay=self.timeout_seconds)
-
+        self.use_browser_bots = self.session._use_browser_bots
         return super(FormPageMixin, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -931,10 +887,31 @@ class FormPageMixin(object):
         else:
             self.timeout_happened = False
 
-            post_data = request.POST
+            if self.session._use_browser_bots:
+                bot = BrowserBot(self)
+                if self._index_in_pages == self.participant._max_page_index:
+                    # consider the bot finished, even though technically
+                    # this page could fail validation, if it contains a
+                    # form field...but good enough for testing purposes
+                    bot.send_completion_message()
+                    return HttpResponse('bot completed')
+                try:
+                    print('waiting for submission')
+                    submission = bot.get_submission()
+                    print('got submission')
+                except StopIteration:
+                    bot.send_completion_message()
+                    return HttpResponse('bot completed')
+                else:
+                    post_data = dict(request.POST)
+                    post_data.update(submission)
+            else:
+                post_data = request.POST
+
             form = self.get_form(
                 data=post_data, files=request.FILES, instance=self.object)
             is_bot = self.participant._is_bot
+
             intentionally_invalid = request.POST.get('intentionally_invalid')
             if form.is_valid():
                 if is_bot and intentionally_invalid:

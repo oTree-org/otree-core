@@ -39,6 +39,10 @@ MAX_ATTEMPTS = 100
 logger = logging.getLogger(__name__)
 
 
+# global variable, store bot runners in memory
+session_bot_runners = {}
+
+
 class SessionBotRunner(object):
     def __init__(self, bots, session_code):
         self.session_code = session_code
@@ -53,13 +57,10 @@ class SessionBotRunner(object):
         while True:
             # keep un-sticking everyone who's stuck
             stuck_pks = list(self.stuck.keys())
-            print('playable:', self.playable)
-            print('trying again by un-sticking', stuck_pks)
             done, num_submits_made = self.play_until_stuck(stuck_pks)
-            print('played until stuck')
             if done:
                 print('Bots done!')
-                break
+                return
             #elif num_submits_made == 0:
             #    print('Bots got stuck :(')
             #    break
@@ -76,6 +77,8 @@ class SessionBotRunner(object):
             if len(self.playable) == 0:
                 if len(self.stuck) == 0:
                     # finished! send a message somewhere?
+                    # clear from the global var
+                    session_bot_runners.pop(self.session_code, None)
                     return (True, num_submits_made)
                 # stuck
                 return (False, num_submits_made)
@@ -119,10 +122,6 @@ class SessionBotRunner(object):
                             num_submits_made += 1
 
 
-# global variable, store bot runners in memory
-session_bot_runners = {}
-
-
 def start_bots(session):
 
     if session._cannot_restart_bots:
@@ -160,7 +159,11 @@ def play_bots_task(session_code):
 @db_task()
 def continue_bots_until_stuck_task(session_code, unstuck_ids=None):
     channels_group = channels.Group('session-admin-{}'.format(session_code))
-    bot_runner = session_bot_runners[session_code]
+    try:
+        bot_runner = session_bot_runners[session_code]
+    except KeyError:
+        logger.warning('Bot finished, nothing to continue')
+        return
     try:
         bot_runner.play_until_stuck(unstuck_ids)
     except Exception as exc:

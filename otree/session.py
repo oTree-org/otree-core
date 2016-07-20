@@ -6,7 +6,7 @@ import six
 from functools import reduce
 from collections import OrderedDict
 import sys
-
+import itertools
 
 from django.conf import settings
 from django.db import transaction
@@ -57,7 +57,7 @@ def get_lcm(session_config):
     return lcmm(*min_multiple_list)
 
 
-def validate_session_config(session_config):
+def validate_session_config(config):
 
     config_schema = schema.Schema({
         'name': str,
@@ -72,16 +72,30 @@ def validate_session_config(session_config):
     })
 
     try:
-        session_config = config_schema.validate(session_config)
+        config = config_schema.validate(config)
     except schema.SchemaError as e:
         raise ValueError('settings.SESSION_CONFIGS: {}'.format(e))
 
     validate_identifier(
-        session_config['name'],
+        config['name'],
         identifier_description='settings.SESSION_CONFIG name'
     )
 
-    app_sequence = session_config['app_sequence']
+    if 'is_bot_list' in config:
+        is_bot_list = config['is_bot_list']
+        try:
+            for e in is_bot_list:
+                assert e is True or e is False
+        except:
+            raise ValueError(
+                'settings.SESSION_CONFIGS, config "{}": '
+                'is_bot_list should be a list '
+                'whose values are True or False.'.format(config['name'])
+            )
+        if len(is_bot_list) == 0:
+            config['is_bot_list'] = [False]
+
+    app_sequence = config['app_sequence']
     if len(app_sequence) != len(set(app_sequence)):
         msg = (
             'settings.SESSION_CONFIGS: '
@@ -89,7 +103,7 @@ def validate_session_config(session_config):
             'must not contain duplicate elements. '
             'If you want multiple rounds, '
             'you should set Constants.num_rounds.')
-        raise ValueError(msg.format(session_config['name']))
+        raise ValueError(msg.format(config['name']))
 
     if len(app_sequence) == 0:
         raise ValueError(
@@ -169,10 +183,6 @@ def create_session(session_config_name, label='', num_participants=None,
         msg = 'Session config "{}" not found in settings.SESSION_CONFIGS.'
         raise ValueError(msg.format(session_config_name))
 
-
-    # can't serialize function, so pop it
-    bot_id_function = session_config.pop('bot_id_function', None)
-
     session = Session.objects.create(
         config=session_config,
         label=label,
@@ -211,15 +221,16 @@ def create_session(session_config_name, label='', num_participants=None,
     if session_config.get('random_start_order'):
         random.shuffle(start_order)
 
-    id_in_session_list = range(1, num_participants+1)
-
     if is_bots:
-        bot_id_list = id_in_session_list
-    elif bot_id_function:
-        bot_id_list = bot_id_function(id_in_session_list)
+        is_bot_list = [True] * num_participants
+    elif 'is_bot_list' in session_config:
+        pattern = session_config['is_bot_list']
+        cycle = itertools.cycle(pattern)
+        is_bot_list = []
+        for i in range(num_participants):
+            is_bot_list.append(next(cycle))
     else:
-        bot_id_list = []
-    bot_id_set = set(bot_id_list)
+        is_bot_list = [False] * num_participants
 
     participants = bulk_create(
         Participant,
@@ -227,15 +238,11 @@ def create_session(session_config_name, label='', num_participants=None,
             'id_in_session': id_in_session,
             'start_order': j,
             # check if id_in_session is in the bots ID list
-            '_is_bot': id_in_session in bot_id_set
+            '_is_bot': is_bot_list[id_in_session - 1]
          }
          for id_in_session, j in enumerate(start_order, start=1)])
 
-    print('bot_id_set', bot_id_set)
-    if bot_id_set:
-        session.has_bots = True
-    else:
-        session.has_bots = is_bots
+    session.has_bots = any(is_bot_list)
 
     ParticipantLockModel.objects.bulk_create([
         ParticipantLockModel(participant_code=participant.code)

@@ -10,7 +10,12 @@
             {% block errors %}{% include "floppyforms/errors.html" with errors=form.num_participants.errors %}{% endblock %}
             {% endif %}
             {% for summary in session_config_summaries %}
-            <div id="lcm-{{ summary.name }}" class="lcm" style="display:none"><p>Must be a multiple of {{ summary.lcm }}</p></div>
+            <div id="lcm-{{ summary.name }}" class="lcm" style="display:none">
+                <p>Must be a multiple of {{ summary.lcm }}</p>
+                {% if summary.bots_msg %}
+                    <p>{{ summary.bots_msg }}</p>
+                {% endif %}
+            </div>
             {% endfor %}
         </div>
 </div>

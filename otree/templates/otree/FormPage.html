@@ -41,7 +41,7 @@ $(document).ready(function () {
     }
 
 
-    {% if view.browser_bot_should_auto_submit %}
+    {% if view.use_browser_bots %}
         {# submit the form instantly #}
         $('#form').submit();
     {% endif %}
