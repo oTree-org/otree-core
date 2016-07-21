@@ -554,15 +554,18 @@ class InGameWaitPageMixin(object):
     def send_completion_message(self, participant_pk_set):
 
         if otree.common_internal.USE_REDIS:
-            # in case there is a timeout on the next page, we
-            # should ensure the next pages are visited promptly
-            # TODO: can we make this run only if next page is a
-            # timeout page?
-
-            otree.timeout.tasks.ensure_pages_visited.schedule(
-                kwargs={
-                    'participant_pk_set': participant_pk_set,
-                    'wait_page_index': self._index_in_pages}, delay=10)
+            # only necessary to submit if next page has a timeout
+            # or if it is a wait page
+            player_lookup = self.participant.player_lookup(pages_ahead=1)
+            if player_lookup:
+                PageClass = get_view_from_url(player_lookup.url)
+                if (issubclass(PageClass, InGameWaitPageMixin) or
+                        PageClass.has_timeout()):
+                    otree.timeout.tasks.ensure_pages_visited.schedule(
+                        kwargs={
+                            'participant_pk_set': participant_pk_set,
+                            'wait_page_index': self._index_in_pages},
+                        delay=10)
             if self.session.has_bots:
                 continue_bots_until_stuck_task(
                     self.session.code, participant_pk_set)
@@ -759,10 +762,8 @@ class FormPageMixin(object):
             form = self.get_form(
                 data=post_data, files=request.FILES, instance=self.object)
             is_bot = self.participant._is_bot
-
-            intentionally_invalid = request.POST.get('intentionally_invalid')
             if form.is_valid():
-                if is_bot and intentionally_invalid:
+                if is_bot and post_data.get('intentionally_invalid'):
                     raise ValueError(
                         'Bot tried to submit intentionally invalid data, '
                         'but it passed validation anyway: {}.'.format(
@@ -770,7 +771,7 @@ class FormPageMixin(object):
                 self.form = form
                 self.object = form.save()
             else:
-                if is_bot and not intentionally_invalid:
+                if is_bot and not post_data.get('intentionally_invalid'):
                     errors = [
                         "{}: {}".format(k, repr(v))
                         for k, v in form.errors.items()]
@@ -816,8 +817,9 @@ class FormPageMixin(object):
         for field_name in auto_submit_dict:
             setattr(self.object, field_name, auto_submit_dict[field_name])
 
-    def has_timeout(self):
-        return self.timeout_seconds is not None and self.timeout_seconds > 0
+    @classmethod
+    def has_timeout(cls):
+        return cls.timeout_seconds is not None and cls.timeout_seconds > 0
 
     def remaining_timeout_seconds(self):
         if not self.has_timeout():
@@ -939,16 +941,16 @@ class BrowserBot(object):
         if submission:
             submission = json.loads(submission)
 
-            page_dotted_name = submission['page_dotted_name']
+            page_class_dotted = submission['page_class_dotted']
             this_page_dotted = get_dotted_name(self.view.__class__)
 
-            if not submission['page_dotted_name'] == this_page_dotted:
+            if not submission['page_class_dotted'] == this_page_dotted:
                 raise ValueError(
                     "Bot is trying to submit page {}, "
                     "but current page is {}. "
                     "Check your bot in tests.py, "
                     "then create a new session.".format(
-                        page_dotted_name,
+                        page_class_dotted,
                         this_page_dotted
                     )
                 )

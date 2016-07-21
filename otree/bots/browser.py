@@ -37,6 +37,8 @@ def get_next_submit(participant_code):
                 # real studies should use regular bots
                 continue
             else:
+                # not serializable
+                submit.pop('page_class', None)
                 submission = json.dumps(submission_as_dict(submit))
                 return submission
     except StopIteration:

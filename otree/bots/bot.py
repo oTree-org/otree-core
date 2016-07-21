@@ -47,15 +47,14 @@ def submission_as_dict(submission):
     else:
         PageClass = submission
 
-    page_dotted_name = get_dotted_name(PageClass)
-
     for key in post_data:
         if isinstance(post_data[key], Currency):
             # because must be json serializable for Huey
             post_data[key] = str(decimal.Decimal(post_data[key]))
 
     return {
-        'page_dotted_name': page_dotted_name,
+        'page_class': PageClass,
+        'page_class_dotted': get_dotted_name(PageClass),
         'post_data': post_data
     }
 
@@ -126,24 +125,6 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
                         raise StopIteration
                     raise
 
-    async def play_session(self):
-        for value in self.submits_generator:
-            # how can this receive messages from channels??
-            # use asyncio-redis??
-            await self.finished_wait_page(self.max_wait_seconds)
-            if isinstance(value, Pause):
-                # submit is actually a pause
-                pause = value
-                await asyncio.sleep(pause.seconds)
-            else:
-                submit = value
-                self.submit(submit)
-                # I think return None is OK
-
-    async def finished_wait_page(self, timeout):
-        #???
-        pass
-
     def check_200(self):
         # 2014-10-22: used to raise an exception here but i don't think that's
         # necessary because the server-side exception should be shown anyway.
@@ -187,11 +168,11 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
     def submit(self, submission):
 
         submission = submission_as_dict(submission)
-        page_dotted_name = submission['page_dotted_name']
+        PageClass = submission['page_class']
         post_data = submission['post_data']
 
         # TODO: get assert_is_on working
-        #self.assert_is_on(PageClass)
+        self.assert_is_on(PageClass)
         if post_data:
             logger.info('{}, {}'.format(self.path, post_data))
         else:

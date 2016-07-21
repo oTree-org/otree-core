@@ -107,8 +107,8 @@ class SessionBotRunner(object):
                                     delay=pause.seconds
                                 )
                         else:
-                            submit = value
-                            bot.submit(submit)
+                            submission = value
+                            bot.submit(submission)
                             num_submits_made += 1
 
 

@@ -69,7 +69,7 @@ mturk_hit_settings = {
 SESSION_CONFIG_DEFAULTS = {
     'real_world_currency_per_point': 0.01,
     'participation_fee': 10.00,
-    'num_bots': 12,
+    'num_bots': 6,
     'doc': "",
     'mturk_hit_settings': mturk_hit_settings,
 }
@@ -105,6 +105,13 @@ SESSION_CONFIGS = [
         "num_demo_participants": 1,
         "app_sequence": ['tests.simple_game', 'tests.single_player_game'],
     },
+    {
+        'name': 'skipmany',
+        'display_name': "skip many",
+        'num_demo_participants': 2,
+        'app_sequence': ['skipmany'],
+    },
+
 ]
 
 

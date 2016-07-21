@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             name='BrowserBotSubmit',
             fields=[
                 ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
-                ('page_dotted_name', models.CharField(max_length=200)),
+                ('page_class_dotted', models.CharField(max_length=200)),
                 ('param_dict', otree.db.models.JSONField(null=True)),
                 ('input_is_valid', models.BooleanField()),
             ],

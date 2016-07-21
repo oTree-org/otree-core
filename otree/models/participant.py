@@ -115,13 +115,16 @@ class Participant(ModelWithVars):
 
     _is_bot = models.BooleanField(default=False)
 
-    def player_lookup(self):
+    def player_lookup(self, pages_ahead=0):
         # this is the most reliable way to get the app name,
         # because of WaitUntilAssigned...
         # 2016-04-07: WaitUntilAssigned removed
-        return ParticipantToPlayerLookup.objects.get(
-            participant=self.pk,
-            page_index=self._index_in_pages)
+        try:
+            ParticipantToPlayerLookup.objects.get(
+                participant=self.pk,
+                page_index=self._index_in_pages + pages_ahead)
+        except ParticipantToPlayerLookup.DoesNotExist:
+            return
 
     def get_current_player(self):
         return self.player_lookup().get_player()

@@ -84,6 +84,14 @@ class Command(RunserverCommand):
                 'worker{}'.format(i),
                 'otree runworker',
                 env=self.get_env(options))
+
+        manager.add_process(
+            'timeoutworker',
+            'otree timeoutworker',
+            quiet=False,
+            env=self.get_env(options)
+        )
+
         return manager
 
     def inner_run(self, *args, **options):
