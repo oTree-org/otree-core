@@ -446,7 +446,7 @@ class BrowserBotStartLink(GenericWaitPageMixin, vanilla.View):
             )
 
     def socket_url(self):
-        return '/browser-bot-wait/'
+        return '/browser_bot_wait/'
 
     def redirect_url(self):
         return self.request.get_full_path()

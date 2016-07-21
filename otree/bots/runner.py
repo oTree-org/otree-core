@@ -48,10 +48,10 @@ class SessionBotRunner(object):
         self.session_code = session_code
         self.stuck = OrderedDict()
         self.playable = OrderedDict()
-        self.all_bot_codes = {bot.participant.code for bot in bots}
+        self.all_bot_ids = {bot.participant.id for bot in bots}
 
         for bot in bots:
-            self.playable[bot.participant.code] = bot
+            self.playable[bot.participant.id] = bot
 
     def play_until_end(self):
         while True:
@@ -69,7 +69,7 @@ class SessionBotRunner(object):
         unstuck_ids = unstuck_ids or []
         for pk in unstuck_ids:
             # the unstuck ID might be a human player, not a bot.
-            if pk in self.all_bot_codes:
+            if pk in self.all_bot_ids:
                 self.playable[pk] = self.stuck.pop(pk)
         num_submits_made = 0
         while True:
@@ -85,23 +85,15 @@ class SessionBotRunner(object):
             # store in a separate list so we don't mutate the iterable
             playable_ids = list(self.playable.keys())
             for pk in playable_ids:
-                r = random.random()
                 bot = self.playable[pk]
-                print('{}: checking if on wait page'.format(pk))
                 if bot.on_wait_page():
-                    print('...{} is on wait page: {}'.format(pk, bot.path))
-                    print(r)
                     self.stuck[pk] = self.playable.pop(pk)
                 else:
-                    print('...{} is not on wait page'.format(pk))
-                    print(r)
                     try:
                         value = next(bot.submits_generator)
                     except StopIteration:
                         # this bot is finished
                         self.playable.pop(pk)
-                        print(r)
-                        print('{} is done!'.format(pk))
                     else:
                         if isinstance(value, Pause):
                             # can only schedule it if we're using redis.
@@ -116,9 +108,7 @@ class SessionBotRunner(object):
                                 )
                         else:
                             submit = value
-                            print('{}: about to submit {}'.format(pk, submit))
                             bot.submit(submit)
-                            print('{}: submitted {}'.format(pk, submit))
                             num_submits_made += 1
 
 

@@ -269,7 +269,7 @@ def disconnect_browser_bots_client(message, session_code):
 
 def connect_browser_bot(message):
 
-    Group('browser-bot-wait').add(message.reply_channel)
+    Group('browser_bot_wait').add(message.reply_channel)
     session_code = redis_conn.get('otree-browser-bots-session')
     if session_code:
         message.reply_channel.send(
@@ -278,7 +278,7 @@ def connect_browser_bot(message):
 
 
 def disconnect_browser_bot(message):
-    Group('browser-bot-wait').discard(message.reply_channel)
+    Group('browser_bot_wait').discard(message.reply_channel)
 
 
 def connect_session_admin(message, session_code):

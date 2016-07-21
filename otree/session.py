@@ -164,10 +164,11 @@ def app_labels_from_sessions(config_names):
 
 
 @transaction.atomic
-def create_session(session_config_name, label='', num_participants=None,
-                   _pre_create_id=None,
-                   room_name=None, for_mturk=False, is_bots=False,
-                   is_demo=False, _use_browser_bots=False,
+def create_session(
+        session_config_name, label='', num_participants=None,
+        _pre_create_id=None,
+        room_name=None, for_mturk=False, is_bots=False,
+        is_demo=False, _use_browser_bots=False,
                    ):
 
     # 2014-5-2: i could implement this by overriding the __init__ on the
@@ -188,7 +189,8 @@ def create_session(session_config_name, label='', num_participants=None,
         label=label,
         _pre_create_id=_pre_create_id,
         _use_browser_bots=_use_browser_bots,
-        is_bots=is_bots
+        is_bots=is_bots,
+        is_demo=is_demo
     )
 
     def bulk_create(model, descriptions):

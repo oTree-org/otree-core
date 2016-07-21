@@ -89,7 +89,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            'session_config_name',
+            'session_config_name', nargs='?',
             help='If omitted, all sessions in SESSION_CONFIGS are run'
         )
         parser.add_argument(
@@ -101,7 +101,7 @@ class Command(BaseCommand):
             'Defaults to minimum for the session config.'
         )
         parser.add_argument(
-            'num_participants', type=int,
+            'num_participants', type=int, nargs='?',
             help=ahelp)
 
     def handle(self, *args, **options):
@@ -115,14 +115,15 @@ class Command(BaseCommand):
 
         sessions_to_create = []
 
-        session_config_names = [options["session_config_name"]]
-        if session_config_names:
-            for session_config_name in session_config_names:
-                if session_config_name not in SESSION_CONFIGS_DICT:
-                    raise ValueError(
-                        'No session config named "{}"'.format(
-                            session_config_name)
-                    )
+        if options["session_config_name"]:
+            session_config_name = options["session_config_name"]
+            if session_config_name not in SESSION_CONFIGS_DICT:
+                raise ValueError(
+                    'No session config named "{}"'.format(
+                        session_config_name)
+                )
+            session_config_names = [session_config_name]
+
         else:
             # default to all session configs
             session_config_names = SESSION_CONFIGS_DICT.keys()
@@ -298,7 +299,7 @@ class Command(BaseCommand):
                 'num_participants': num_participants,
             }
         )
-        assert resp.ok, 'Failed to create session'
+        assert resp.ok, 'Failed to create session. Check the server logs.'
         session_code = resp.content.decode('utf-8')
         return session_code
 

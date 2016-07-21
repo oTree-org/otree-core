@@ -22,6 +22,8 @@ from django.views.decorators.cache import never_cache, cache_control
 from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.utils.translation import ugettext as _
 from six.moves import range
+import importlib
+from django.core.urlresolvers import reverse, resolve
 
 import channels
 import vanilla
@@ -56,6 +58,11 @@ NO_PARTICIPANTS_LEFT_MSG = (
 
 DebugTable = collections.namedtuple('DebugTable', ['title', 'rows'])
 
+def get_view_from_url(url):
+    view_func = resolve(url).func
+    module = importlib.import_module(view_func.__module__)
+    Page = getattr(module, view_func.__name__)
+    return Page
 
 @contextlib.contextmanager
 def global_lock(recheck_interval=0.1):
@@ -190,6 +197,48 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
     def url_pattern(cls):
         return otree.common_internal.url_pattern(cls, True)
 
+    @method_decorator(never_cache)
+    @method_decorator(cache_control(must_revalidate=True, max_age=0,
+                                    no_cache=True, no_store=True))
+    def dispatch(self, request, *args, **kwargs):
+
+        participant_code = kwargs.pop(constants.participant_code)
+
+        with participant_lock(participant_code), otree.db.idmap.use_cache():
+
+            try:
+                participant = Participant.objects.get(
+                    code=participant_code)
+            except Participant.DoesNotExist:
+                msg = (
+                    "This user ({}) does not exist in the database. "
+                    "Maybe the database was recreated."
+                ).format(participant_code)
+                raise Http404(msg)
+
+            # if the player tried to skip past a part of the subsession
+            # (e.g. by typing in a future URL)
+            # or if they hit the back button to a previous subsession
+            # in the sequence.
+            url_should_be_on = participant._url_i_should_be_on()
+            if not self.request.path == url_should_be_on:
+                return HttpResponseRedirect(url_should_be_on)
+
+            self.set_attributes(participant)
+
+            self.participant._current_page_name = self.__class__.__name__
+            response = super(FormPageOrInGameWaitPageMixin, self).dispatch(
+                request, *args, **kwargs)
+            self.participant._last_request_timestamp = time.time()
+
+            # need to render the response before saving objects,
+            # because the template might call a method that modifies
+            # player/group/etc.
+            if hasattr(response, 'render'):
+                response.render()
+            self.save_objects()
+            return response
+
     def get_context_data(self, **kwargs):
         context = super(FormPageOrInGameWaitPageMixin,
                         self).get_context_data(**kwargs)
@@ -251,16 +300,24 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
 
         return new_tables
 
-    def load_objects(self):
+    def set_attributes(self, participant):
         """
-        Even though we only use PlayerClass in load_objects,
+        Even though we only use PlayerClass in set_attributes,
         we use {Group/Subsession}Class elsewhere.
 
         2015-05-07: shouldn't this go in oTreeMixin?
         because used by all views, not just sequence
         """
 
-        player_lookup = self.participant.player_lookup()
+        self.participant = participant
+
+        # it's already validated that participant is on right page
+        self._index_in_pages = participant._index_in_pages
+
+        # temp, for page template
+        self.index_in_pages = self._index_in_pages
+
+        player_lookup = participant.player_lookup()
 
         app_name = player_lookup.app_name
         player_pk = player_lookup.player_pk
@@ -288,63 +345,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         # for public API
         self.round_number = self.subsession.round_number
 
-    @method_decorator(never_cache)
-    @method_decorator(cache_control(must_revalidate=True, max_age=0,
-                                    no_cache=True, no_store=True))
-    def dispatch(self, request, *args, **kwargs):
-
-        participant_code = kwargs.pop(constants.participant_code)
-
-        with participant_lock(participant_code), otree.db.idmap.use_cache():
-
-            self._index_in_pages = int(
-                kwargs.pop(constants.index_in_pages))
-            # temp, for page template
-            self.index_in_pages = self._index_in_pages
-
-            try:
-                self.participant = Participant.objects.get(
-                    code=participant_code)
-            except Participant.DoesNotExist:
-                msg = (
-                    "This user ({}) does not exist in the database. "
-                    "Maybe the database was recreated."
-                ).format(participant_code)
-                raise Http404(msg)
-
-            # if the player tried to skip past a part of the subsession
-            # (e.g. by typing in a future URL)
-            # or if they hit the back button to a previous subsession
-            # in the sequence.
-            #
-            if not self._user_is_on_right_page():
-                # then bring them back to where they should be
-                return self._redirect_to_page_the_user_should_be_on()
-
-            self.load_objects()
-
-            self.participant._current_page_name = self.__class__.__name__
-            response = super(FormPageOrInGameWaitPageMixin, self).dispatch(
-                request, *args, **kwargs)
-            self.participant._last_request_timestamp = time.time()
-
-            # need to render the response before saving objects,
-            # because the template might call a method that modifies
-            # player/group/etc.
-            if hasattr(response, 'render'):
-                response.render()
-            self.save_objects()
-            return response
-
-    # TODO: maybe this isn't necessary, because I can figure out what page
-    # they should be on, from looking up index_in_pages
-    def _user_is_on_right_page(self):
-        """Will detect if a player tried to access a page they didn't reach
-        yet, for example if they know the URL to the redemption code page,
-        and try typing it in so they don't have to play the whole game.
-        We should block that."""
-
-        return self.request.path == self.participant._url_i_should_be_on()
+        self.set_extra_attributes()
 
     def _increment_index_in_pages(self):
         # when is this not the case?
@@ -365,53 +366,33 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         #    participant=self.participant.pk,
         #    page_index=self.participant._index_in_pages).delete()
 
-        # performance optimization:
         # we skip any page that is a sequence page where is_displayed
         # evaluates to False to eliminate unnecessary redirection
-        views_module = otree.common_internal.get_views_module(
-            self.subsession._meta.app_config.name)
-        pages = views_module.page_sequence
 
-        assert self.__class__ in pages
-        pages_to_jump_by = 1
-        indexes = list(range(self.player._index_in_game_pages + 1,
-                             len(pages)))
-        for target_index in indexes:
-            Page = pages[target_index]
+        for page_index in range(
+                self._index_in_pages+1, self.participant._max_page_index+1):
+            self.participant._index_in_pages = page_index
+            url = self.participant._url_i_should_be_on()
 
-            # FIXME: are there other attributes? should i do As_view,
-            # or simulate the
-            # request?
-            page = Page(player=self.player, group=self.group,
-                        subsession=self.subsession, session=self.session)
+            Page = get_view_from_url(url)
+            page = Page()
 
-            # don't skip wait pages
-            # because the user has to pass through them
-            # so we record that they visited
-            if hasattr(Page, 'is_displayed') and not page.is_displayed():
-                if hasattr(Page, '_tally_unvisited'):
-                    page._index_in_pages = (
-                        self._index_in_pages + pages_to_jump_by)
-                    if page.wait_for_all_groups:
-                        page._group_or_subsession = self.subsession
-                    else:
-                        page._group_or_subsession = self.group
-                    with global_lock():
-                        unvisited_participants = page._tally_unvisited()
-                    # don't count myself; i only need to visit this page
-                    # if everybody else already passed it
-                    unvisited_participants.discard(self.participant.id)
-                    if not unvisited_participants:
-                        # if it's the last person
-                        # because they need to complete the wait page
-                        # don't skip past the wait page
-                        break
-                pages_to_jump_by += 1
-            else:
+            if not hasattr(page, 'is_displayed'):
                 break
 
-        self.player._index_in_game_pages += pages_to_jump_by
-        self.participant._index_in_pages += pages_to_jump_by
+            page.set_attributes(self.participant)
+            if page.is_displayed():
+                break
+
+            # if it's a wait page, record that they visited
+            # but don't run after_all_players_arrive
+            if hasattr(page, '_register_wait_page_visit'):
+                completion = page._register_wait_page_visit()
+                if completion:
+                    participant_pk_set = set(
+                        page._group_or_subsession.player_set
+                        .values_list('participant__pk', flat=True))
+                    page.send_completion_message(participant_pk_set)
 
         channels.Group(
             'auto-advance-{}'.format(self.participant.code)
@@ -453,6 +434,407 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             session=self.session,
             auto_submitted=timeout_happened)
         self.participant.save()
+
+
+class InGameWaitPageMixin(object):
+    """
+    Wait pages during game play (i.e. checkpoints),
+    where users wait for others to complete
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+
+        if self._is_ready():
+            return self._response_when_ready()
+        # take a lock because we set "waiting for" list here
+        completion = self._register_wait_page_visit()
+        if not completion:
+            if self.is_displayed():
+                self.participant.is_on_wait_page = True
+                return self._get_wait_page()
+            else:
+                return self._response_when_ready()
+
+        # the group membership might be modified
+        # in after_all_players_arrive, so calculate this first
+        participant_pk_set = set(
+            self._group_or_subsession.player_set
+            .values_list('participant__pk', flat=True))
+
+        # if any player can skip the wait page,
+        # then we shouldn't run after_all_players_arrive
+        # because if some players are able to proceed to the next page
+        # before after_all_players_arrive is run,
+        # then after_all_players_arrive is probably not essential.
+        # often, there are some wait pages that all players skip,
+        # because they should only be shown in certain rounds.
+        # maybe the fields that after_all_players_arrive depends on
+        # are null
+        # something to think about: ideally, should we check if
+        # all players skipped, or any player skipped?
+        # as a shortcut, we just check if is_displayed is true
+        # for the last player.
+        if self.is_displayed():
+            self._run_after_all_players_arrive(completion)
+
+        self.send_completion_message(participant_pk_set)
+        # we can assume it's ready because
+        # even if it wasn't created, that means someone else
+        # created it, and therefore that whole code block
+        # finished executing (including the after_all_players_arrive)
+        # inside the transaction
+        return self._response_when_ready()
+
+    def _run_after_all_players_arrive(self, completion):
+        try:
+            # block users from accessing self.player inside
+            # after_all_players_arrive, because conceptually
+            # there is no single player in this context
+            # (method is executed once for the whole group).
+            # same idea with self.group, if we're waiting for all
+            # groups, not just one.
+
+            player = self.player
+            del self.player
+            if self.wait_for_all_groups:
+                group = self.group
+                del self.group
+
+            # make sure we get the most up-to-date player objects
+            # e.g. if they were queried in is_displayed(),
+            # then they could be out of date
+            # but don't delete the current player from cache
+            # because we need it to be saved at the end
+            import idmap.tls
+            cache = getattr(idmap.tls._tls, 'idmap_cache', {})
+            for p in list(cache.get(self.PlayerClass, {}).values()):
+                if p != player:
+                    self.PlayerClass.flush_cached_instance(p)
+            self.after_all_players_arrive()
+        except:
+            completion.delete()
+            raise
+
+        # restore what we deleted earlier
+        self.player = player
+        if self.wait_for_all_groups:
+            self.group = group
+
+        completion.after_all_players_arrive_run = True
+        completion.save()
+
+    def set_extra_attributes(self):
+        self._group_or_subsession = (
+            self.subsession if self.wait_for_all_groups else self.group)
+
+    def _register_wait_page_visit(self):
+        with global_lock():
+            unvisited_participants = self._tally_unvisited()
+        if unvisited_participants:
+            return
+        try:
+            if self.wait_for_all_groups:
+                completion = CompletedSubsessionWaitPage(
+                    page_index=self._index_in_pages,
+                    session=self.session
+                )
+            else:
+                completion = CompletedGroupWaitPage(
+                    page_index=self._index_in_pages,
+                    group_pk=self.group.pk,
+                    session=self.session
+                )
+            completion.save()
+            return completion
+        # if the record already exists
+        # (enforced through unique_together)
+        except django.db.IntegrityError:
+            return
+
+    def send_completion_message(self, participant_pk_set):
+
+        if otree.common_internal.USE_REDIS:
+            # in case there is a timeout on the next page, we
+            # should ensure the next pages are visited promptly
+            # TODO: can we make this run only if next page is a
+            # timeout page?
+
+            otree.timeout.tasks.ensure_pages_visited.schedule(
+                kwargs={
+                    'participant_pk_set': participant_pk_set,
+                    'wait_page_index': self._index_in_pages}, delay=10)
+            if self.session.has_bots:
+                continue_bots_until_stuck_task(
+                    self.session.code, participant_pk_set)
+
+        # _group_or_subsession might be deleted
+        # in after_all_players_arrive, but it won't delete the cached model
+        channels_group_name = self.get_channels_group_name()
+
+        channels.Group(channels_group_name).send(
+            {'text': json.dumps(
+                {'status': 'ready'})}
+        )
+
+    def get_channels_group_name(self):
+        model_name = 'subsession' if self.wait_for_all_groups else 'group'
+
+        return otree.common_internal.channels_wait_page_group_name(
+            session_pk=self.session.pk,
+            page_index=self._index_in_pages,
+            model_name=model_name,
+            model_pk=self._group_or_subsession.pk)
+
+    def socket_url(self):
+        model_name = 'subsession' if self.wait_for_all_groups else 'group'
+
+        params = ','.join([
+            str(self.session.pk),
+            str(self._index_in_pages),
+            model_name,
+            str(self._group_or_subsession.pk)
+        ])
+
+        return '/wait_page/{}/'.format(params)
+
+    def _is_ready(self):
+        """all participants visited, AND action has been run"""
+        if self.wait_for_all_groups:
+            return CompletedSubsessionWaitPage.objects.filter(
+                page_index=self._index_in_pages,
+                session=self.session,
+                after_all_players_arrive_run=True).exists()
+        return CompletedGroupWaitPage.objects.filter(
+            page_index=self._index_in_pages,
+            group_pk=self.group.pk,
+            session=self.session,
+            after_all_players_arrive_run=True).exists()
+
+    def _tally_unvisited(self):
+        """side effect: set _waiting_for_ids"""
+
+        participant_ids = set(
+            self._group_or_subsession.player_set.values_list(
+                'participant_id', flat=True))
+
+        participant_data = Participant.objects.filter(
+            id__in=participant_ids
+        ).values('id', 'id_in_session', '_index_in_pages')
+
+        visited = []
+        unvisited = []
+        for p in participant_data:
+            if p['_index_in_pages'] < self._index_in_pages:
+                unvisited.append(p)
+            else:
+                visited.append(p)
+
+        if 1 <= len(unvisited) <= 3:
+
+            unvisited_description = ', '.join(
+                'P{}'.format(p['id_in_session']) for p in unvisited)
+
+            visited_ids = [p['id'] for p in visited]
+            Participant.objects.filter(
+                id__in=visited_ids
+            ).update(_waiting_for_ids=unvisited_description)
+
+        return {p['id'] for p in unvisited}
+
+    def is_displayed(self):
+        return True
+
+    def _response_when_ready(self):
+        self.participant.is_on_wait_page = False
+        self.participant._waiting_for_ids = None
+        self._increment_index_in_pages()
+        return self._redirect_to_page_the_user_should_be_on()
+
+    def after_all_players_arrive(self):
+        pass
+
+    def _get_default_body_text(self):
+        num_other_players = len(self._group_or_subsession.get_players()) - 1
+        if num_other_players > 1:
+            return _('Waiting for the other participants.')
+        if num_other_players == 1:
+            return _('Waiting for the other participant.')
+        return ''
+
+
+class FormPageMixin(object):
+    """mixin rather than subclass because we want these methods only to be
+    first in MRO
+
+    """
+
+    # if a model is not specified, use empty "StubModel"
+    model = UndefinedFormModel
+    fields = []
+
+    def get_template_names(self):
+        if self.template_name is not None:
+            return [self.template_name]
+        return ['{}/{}.html'.format(
+            get_app_label_from_import_path(self.__module__),
+            self.__class__.__name__)]
+
+    def get_form_fields(self):
+        return self.form_fields
+
+    def get_form_class(self):
+        fields = self.get_form_fields()
+        if self.form_model is UndefinedFormModel and fields:
+            raise Exception(
+                'Page "{}" defined form_fields but not form_model'.format(
+                    self.__class__.__name__
+                )
+            )
+        return otree.forms.modelform_factory(
+            self.form_model, fields=fields,
+            form=otree.forms.ModelForm,
+            formfield_callback=otree.forms.formfield_callback)
+
+    def before_next_page(self):
+        pass
+
+    def get_form(self, data=None, files=None, **kwargs):
+        """Given `data` and `files` QueryDicts, and optionally other named
+        arguments, and returns a form.
+        """
+
+        cls = self.get_form_class()
+        return cls(data=data, files=files, view=self, **kwargs)
+
+    def form_invalid(self, form):
+        response = super(FormPageMixin, self).form_invalid(form)
+        response[constants.redisplay_with_errors_http_header] = (
+            constants.get_param_truth_value)
+        return response
+
+    def get(self, request, *args, **kwargs):
+        if not self.is_displayed():
+            self._increment_index_in_pages()
+            return self._redirect_to_page_the_user_should_be_on()
+
+        self.participant._current_form_page_url = self.request.path
+        if otree.common_internal.USE_REDIS:
+            if self.has_timeout():
+                otree.timeout.tasks.submit_expired_url.schedule(
+                    (self.request.path,), delay=self.timeout_seconds)
+        self.use_browser_bots = self.session._use_browser_bots
+        return super(FormPageMixin, self).get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+
+        self.object = self.get_object()
+
+        if request.POST.get(constants.auto_submit):
+            self.timeout_happened = True  # for public API
+            self._set_auto_submit_values()
+        else:
+            self.timeout_happened = False
+
+            if self.session._use_browser_bots:
+                bot = BrowserBot(self)
+                if self._index_in_pages == self.participant._max_page_index:
+                    # consider the bot finished, even though technically
+                    # this page could fail validation, if it contains a
+                    # form field...but good enough for testing purposes
+                    bot.send_completion_message()
+                    return HttpResponse('bot completed')
+                try:
+                    print('waiting for submission from Huey')
+                    submission = bot.get_submission()
+                    print('got submission')
+                except StopIteration:
+                    bot.send_completion_message()
+                    return HttpResponse('bot completed')
+                else:
+                    post_data = dict(request.POST)
+                    post_data.update(submission)
+            else:
+                post_data = request.POST
+
+            form = self.get_form(
+                data=post_data, files=request.FILES, instance=self.object)
+            is_bot = self.participant._is_bot
+
+            intentionally_invalid = request.POST.get('intentionally_invalid')
+            if form.is_valid():
+                if is_bot and intentionally_invalid:
+                    raise ValueError(
+                        'Bot tried to submit intentionally invalid data, '
+                        'but it passed validation anyway: {}.'.format(
+                            request.POST))
+                self.form = form
+                self.object = form.save()
+            else:
+                if is_bot and not intentionally_invalid:
+                    errors = [
+                        "{}: {}".format(k, repr(v))
+                        for k, v in form.errors.items()]
+                    raise ValueError(
+                        'Bot submission failed form validation: {} '
+                        'Check your bot in tests.py, '
+                        'then create a new session.'.format(errors))
+                return self.form_invalid(form)
+        self.before_next_page()
+        self._increment_index_in_pages()
+        return self._redirect_to_page_the_user_should_be_on()
+
+    def socket_url(self):
+        '''called from template. can't start with underscore because used
+        in template
+
+        '''
+        params = ','.join([self.participant.code, str(self._index_in_pages)])
+        return '/auto_advance/{}/'.format(params)
+
+    def redirect_url(self):
+        '''called from template'''
+        # need full path because we use query string
+        return self.request.get_full_path()
+
+    def _get_auto_submit_values(self):
+        # TODO: auto_submit_values deprecated on 2015-05-28
+        auto_submit_values = getattr(self, 'auto_submit_values', {})
+        timeout_submission = self.timeout_submission or auto_submit_values
+        for field_name in self.form_fields:
+            if field_name not in timeout_submission:
+                # get default value for datatype if the user didn't specify
+                ModelField = self.form_model._meta.get_field_by_name(
+                    field_name
+                )[0]
+                # TODO: should we warn if the attribute doesn't exist?
+                value = getattr(ModelField, 'auto_submit_default', None)
+                timeout_submission[field_name] = value
+        return timeout_submission
+
+    def _set_auto_submit_values(self):
+        auto_submit_dict = self._get_auto_submit_values()
+        for field_name in auto_submit_dict:
+            setattr(self.object, field_name, auto_submit_dict[field_name])
+
+    def has_timeout(self):
+        return self.timeout_seconds is not None and self.timeout_seconds > 0
+
+    def remaining_timeout_seconds(self):
+        if not self.has_timeout():
+            return
+        current_time = int(time.time())
+        expiration_time = current_time + self.timeout_seconds
+        timeout, created = PageTimeout.objects.get_or_create(
+            participant=self.participant,
+            page_index=self.participant._index_in_pages,
+            defaults={'expiration_time': expiration_time})
+
+        return timeout.expiration_time - current_time
+
+    timeout_seconds = None
+
+    def set_extra_attributes(self):
+        pass
 
 
 class GenericWaitPageMixin(object):
@@ -542,240 +924,6 @@ class GenericWaitPageMixin(object):
         return context
 
 
-class InGameWaitPageMixin(object):
-    """Wait pages during game play (i.e. checkpoints),
-    where users wait for others to complete
-
-    """
-
-    def dispatch(self, request, *args, **kwargs):
-        self._group_or_subsession = (
-            self.subsession if self.wait_for_all_groups else self.group)
-        if self._is_ready():
-            return self._response_when_ready()
-        # take a lock because we set "waiting for" list here
-        with global_lock():
-            unvisited_participants = self._tally_unvisited()
-        if unvisited_participants:
-            # only skip the wait page if there are still
-            # unvisited participants. otherwise, you need to
-            # mark the page as completed.
-            # see _increment_index_in_pages, which needs to
-            # handle this case also
-            if not self.is_displayed():
-                return self._response_when_ready()
-            self.participant.is_on_wait_page = True
-            return self._get_wait_page()
-
-        try:
-            if self.wait_for_all_groups:
-                completion = CompletedSubsessionWaitPage(
-                    page_index=self._index_in_pages,
-                    session=self.session
-                )
-            else:
-                completion = CompletedGroupWaitPage(
-                    page_index=self._index_in_pages,
-                    group_pk=self.group.pk,
-                    session=self.session
-                )
-            completion.save()
-        # if the record already exists
-        # (enforced through unique_together)
-        except django.db.IntegrityError:
-            self.participant.is_on_wait_page = True
-            return self._get_wait_page()
-        try:
-            # need to check this before deleting
-            # reference to self.player
-            is_displayed = self.is_displayed()
-
-            # in case there is a timeout on the next page, we
-            # should ensure the next pages are visited promptly
-            # TODO: can we make this run only if next page is a
-            # timeout page?
-            # or if a player is auto playing.
-            # we could instead make this request the current page
-            # URL, but it's different for each player
-
-            # _group_or_subsession might be deleted
-            # in after_all_players_arrive, so calculate this first
-            participant_pk_set = set(
-                self._group_or_subsession.player_set
-                .values_list('participant__pk', flat=True))
-
-            # _group_or_subsession might be deleted
-            # in after_all_players_arrive, so calculate this first
-            channels_group_name = self.channels_group_name()
-
-            # block users from accessing self.player inside
-            # after_all_players_arrive, because conceptually
-            # there is no single player in this context
-            # (method is executed once for the whole group).
-            # same idea with self.group, if we're waiting for all
-            # groups, not just one.
-
-            player = self.player
-            del self.player
-            if self.wait_for_all_groups:
-                group = self.group
-                del self.group
-
-            # make sure we get the most up-to-date player objects
-            # e.g. if they were queried in is_displayed(),
-            # then they could be out of date
-            # but don't delete the current player from cache
-            # because we need it to be saved at the end
-            import idmap.tls
-            cache = getattr(idmap.tls._tls, 'idmap_cache', {})
-            for p in list(cache.get(self.PlayerClass, {}).values()):
-                if p != player:
-                    self.PlayerClass.flush_cached_instance(p)
-
-            # if any player can skip the wait page,
-            # then we shouldn't run after_all_players_arrive
-            # because if some players are able to proceed to the next page
-            # before after_all_players_arrive is run,
-            # then after_all_players_arrive is probably not essential.
-            # often, there are some wait pages that all players skip,
-            # because they should only be shown in certain rounds.
-            # maybe the fields that after_all_players_arrive depends on
-            # are null
-            # something to think about: ideally, should we check if
-            # all players skipped, or any player skipped?
-            # as a shortcut, we just check if is_displayed is true
-            # for the last player.
-            if is_displayed:
-                self.after_all_players_arrive()
-        except:
-            completion.delete()
-            raise
-
-        # restore what we deleted earlier
-        self.player = player
-        if self.wait_for_all_groups:
-            self.group = group
-
-        completion.after_all_players_arrive_run = True
-        completion.save()
-
-        if otree.common_internal.USE_REDIS:
-            # 2015-07-27:
-            #   why not check if the next page has_timeout?
-            otree.timeout.tasks.ensure_pages_visited.schedule(
-                kwargs={
-                    'participant_pk_set': participant_pk_set,
-                    'wait_page_index': self._index_in_pages}, delay=10)
-            if self.session.has_bots:
-                # use code instead of PKs while debugging,
-                # its easier to monitor
-                participant_code_set = set(
-                self._group_or_subsession.player_set
-                .values_list('participant__code', flat=True))
-                continue_bots_until_stuck_task(
-                    self.session.code, participant_code_set)
-
-        # send a message to the channel to move forward
-        # this should happen at the very end,
-        channels.Group(channels_group_name).send(
-            {'text': json.dumps(
-                {'status': 'ready'})}
-        )
-
-        # we can assume it's ready because
-        # even if it wasn't created, that means someone else
-        # created it, and therefore that whole code block
-        # finished executing (including the after_all_players_arrive)
-        # inside the transaction
-        return self._response_when_ready()
-
-    def channels_group_name(self):
-        model_name = 'subsession' if self.wait_for_all_groups else 'group'
-
-        return otree.common_internal.channels_wait_page_group_name(
-            session_pk=self.session.pk,
-            page_index=self._index_in_pages,
-            model_name=model_name,
-            model_pk=self._group_or_subsession.pk)
-
-    def socket_url(self):
-        model_name = 'subsession' if self.wait_for_all_groups else 'group'
-
-        params = ','.join([
-            str(self.session.pk),
-            str(self._index_in_pages),
-            model_name,
-            str(self._group_or_subsession.pk)
-        ])
-
-        return '/wait_page/{}/'.format(params)
-
-    def _is_ready(self):
-        """all participants visited, AND action has been run"""
-        if self.wait_for_all_groups:
-            return CompletedSubsessionWaitPage.objects.filter(
-                page_index=self._index_in_pages,
-                session=self.session,
-                after_all_players_arrive_run=True).exists()
-        return CompletedGroupWaitPage.objects.filter(
-            page_index=self._index_in_pages,
-            group_pk=self.group.pk,
-            session=self.session,
-            after_all_players_arrive_run=True).exists()
-
-    def _tally_unvisited(self):
-        """side effect: set _waiting_for_ids"""
-
-        participant_ids = set(
-            self._group_or_subsession.player_set.values_list(
-                'participant_id', flat=True))
-
-        participant_data = Participant.objects.filter(
-            id__in=participant_ids
-        ).values('id', 'id_in_session', '_index_in_pages')
-
-        visited = []
-        unvisited = []
-        for p in participant_data:
-            if p['_index_in_pages'] < self._index_in_pages:
-                unvisited.append(p)
-            else:
-                visited.append(p)
-
-        if 1 <= len(unvisited) <= 3:
-
-            unvisited_description = ', '.join(
-                'P{}'.format(p['id_in_session']) for p in unvisited)
-
-            visited_ids = [p['id'] for p in visited]
-            Participant.objects.filter(
-                id__in=visited_ids
-            ).update(_waiting_for_ids=unvisited_description)
-
-        return {p['id'] for p in unvisited}
-
-    def is_displayed(self):
-        return True
-
-    def _response_when_ready(self):
-        self.participant.is_on_wait_page = False
-        self.participant._waiting_for_ids = None
-        self._increment_index_in_pages()
-        return self._redirect_to_page_the_user_should_be_on()
-
-    def after_all_players_arrive(self):
-        pass
-
-    def _get_default_body_text(self):
-        num_other_players = len(self._group_or_subsession.get_players()) - 1
-        if num_other_players > 1:
-            return _('Waiting for the other participants.')
-        if num_other_players == 1:
-            return _('Waiting for the other participant.')
-        return ''
-
-
-
 class BrowserBot(object):
 
     def __init__(self, view):
@@ -813,177 +961,6 @@ class BrowserBot(object):
         channels.Group(
             'browser-bots-client-{}'.format(self.session.code)
         ).send({'text': self.participant.code})
-
-class FormPageMixin(object):
-    """mixin rather than subclass because we want these methods only to be
-    first in MRO
-
-    """
-
-    # if a model is not specified, use empty "StubModel"
-    model = UndefinedFormModel
-    fields = []
-
-    def get_template_names(self):
-        if self.template_name is not None:
-            return [self.template_name]
-        return ['{}/{}.html'.format(
-            get_app_label_from_import_path(self.__module__),
-            self.__class__.__name__)]
-
-    def get_form_fields(self):
-        return self.form_fields
-
-    def get_form_class(self):
-        fields = self.get_form_fields()
-        if self.form_model is UndefinedFormModel and fields:
-            raise Exception(
-                'Page "{}" defined form_fields but not form_model'.format(
-                    self.__class__.__name__
-                )
-            )
-        return otree.forms.modelform_factory(
-            self.form_model, fields=fields,
-            form=otree.forms.ModelForm,
-            formfield_callback=otree.forms.formfield_callback)
-
-    def before_next_page(self):
-        pass
-
-    def get_form(self, data=None, files=None, **kwargs):
-        """Given `data` and `files` QueryDicts, and optionally other named
-        arguments, and returns a form.
-        """
-
-        cls = self.get_form_class()
-        return cls(data=data, files=files, view=self, **kwargs)
-
-    def form_invalid(self, form):
-        response = super(FormPageMixin, self).form_invalid(form)
-        response[constants.redisplay_with_errors_http_header] = (
-            constants.get_param_truth_value)
-        return response
-
-    def get(self, request, *args, **kwargs):
-        if not self.is_displayed():
-            self._increment_index_in_pages()
-            return self._redirect_to_page_the_user_should_be_on()
-
-        self.participant._current_form_page_url = self.request.path
-        if otree.common_internal.USE_REDIS:
-            if self.has_timeout():
-                otree.timeout.tasks.submit_expired_url.schedule(
-                    (self.request.path,), delay=self.timeout_seconds)
-        self.use_browser_bots = self.session._use_browser_bots
-        return super(FormPageMixin, self).get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-
-        self.object = self.get_object()
-
-        if request.POST.get(constants.auto_submit):
-            self.timeout_happened = True  # for public API
-            self._set_auto_submit_values()
-        else:
-            self.timeout_happened = False
-
-            if self.session._use_browser_bots:
-                bot = BrowserBot(self)
-                if self._index_in_pages == self.participant._max_page_index:
-                    # consider the bot finished, even though technically
-                    # this page could fail validation, if it contains a
-                    # form field...but good enough for testing purposes
-                    bot.send_completion_message()
-                    return HttpResponse('bot completed')
-                try:
-                    print('waiting for submission')
-                    submission = bot.get_submission()
-                    print('got submission')
-                except StopIteration:
-                    bot.send_completion_message()
-                    return HttpResponse('bot completed')
-                else:
-                    post_data = dict(request.POST)
-                    post_data.update(submission)
-            else:
-                post_data = request.POST
-
-            form = self.get_form(
-                data=post_data, files=request.FILES, instance=self.object)
-            is_bot = self.participant._is_bot
-
-            intentionally_invalid = request.POST.get('intentionally_invalid')
-            if form.is_valid():
-                if is_bot and intentionally_invalid:
-                    raise ValueError(
-                        'Bot tried to submit intentionally invalid data, '
-                        'but it passed validation anyway: {}.'.format(
-                            request.POST))
-                self.form = form
-                self.object = form.save()
-            else:
-                if is_bot and not intentionally_invalid:
-                    errors = [
-                        "{}: {}".format(k, repr(v))
-                        for k, v in form.errors.items()]
-                    raise ValueError(
-                        'Bot submission failed form validation: {} '
-                        'Check your bot in tests.py, '
-                        'then create a new session.'.format(errors))
-                return self.form_invalid(form)
-        self.before_next_page()
-        self._increment_index_in_pages()
-        return self._redirect_to_page_the_user_should_be_on()
-
-    def socket_url(self):
-        '''called from template. can't start with underscore because used
-        in template
-
-        '''
-        params = ','.join([self.participant.code, str(self._index_in_pages)])
-        return '/auto_advance/{}/'.format(params)
-
-    def redirect_url(self):
-        '''called from template'''
-        # need full path because we use query string
-        return self.request.get_full_path()
-
-    def _get_auto_submit_values(self):
-        # TODO: auto_submit_values deprecated on 2015-05-28
-        auto_submit_values = getattr(self, 'auto_submit_values', {})
-        timeout_submission = self.timeout_submission or auto_submit_values
-        for field_name in self.form_fields:
-            if field_name not in timeout_submission:
-                # get default value for datatype if the user didn't specify
-                ModelField = self.form_model._meta.get_field_by_name(
-                    field_name
-                )[0]
-                # TODO: should we warn if the attribute doesn't exist?
-                value = getattr(ModelField, 'auto_submit_default', None)
-                timeout_submission[field_name] = value
-        return timeout_submission
-
-    def _set_auto_submit_values(self):
-        auto_submit_dict = self._get_auto_submit_values()
-        for field_name in auto_submit_dict:
-            setattr(self.object, field_name, auto_submit_dict[field_name])
-
-    def has_timeout(self):
-        return self.timeout_seconds is not None and self.timeout_seconds > 0
-
-    def remaining_timeout_seconds(self):
-        if not self.has_timeout():
-            return
-        current_time = int(time.time())
-        expiration_time = current_time + self.timeout_seconds
-        timeout, created = PageTimeout.objects.get_or_create(
-            participant=self.participant,
-            page_index=self.participant._index_in_pages,
-            defaults={'expiration_time': expiration_time})
-
-        return timeout.expiration_time - current_time
-
-    timeout_seconds = None
 
 
 class PlayerUpdateView(FormPageMixin, FormPageOrInGameWaitPageMixin,

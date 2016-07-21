@@ -32,11 +32,6 @@ class BasePlayer(SaveTheChange, models.Model):
             # twice
             raise AttributeError(ATTRIBUTE_ERROR_MESSAGE.format(name))
 
-    _index_in_game_pages = models.PositiveIntegerField(
-        default=0,
-        doc='Index in the list of pages  views_module.page_sequence'
-    )
-
     # it's _name instead of name because people might define
     # their own name field
     def _name(self):
