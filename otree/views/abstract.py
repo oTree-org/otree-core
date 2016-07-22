@@ -172,17 +172,6 @@ class OTreeMixin(SaveObjectsMixin, object):
         return HttpResponseRedirect(self.participant._url_i_should_be_on())
 
 
-class NonSequenceUrlMixin(object):
-    # TODO: get rid of this, can use reverse instead
-    @classmethod
-    def url(cls, participant):
-        return otree.common_internal.url(cls, participant)
-
-    @classmethod
-    def url_pattern(cls):
-        return otree.common_internal.url_pattern(cls, False)
-
-
 class FormPageOrInGameWaitPageMixin(OTreeMixin):
     """
     View that manages its position in the group sequence.
@@ -725,6 +714,7 @@ class FormPageMixin(object):
             if self.has_timeout():
                 otree.timeout.tasks.submit_expired_url.schedule(
                     (self.request.path,), delay=self.timeout_seconds)
+        # for template
         self.use_browser_bots = self.session._use_browser_bots
         return super(FormPageMixin, self).get(request, *args, **kwargs)
 

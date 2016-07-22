@@ -31,7 +31,7 @@ import otree.views.admin
 from otree.views.mturk import MTurkConnection
 import otree.common_internal
 from otree.views.abstract import (
-    NonSequenceUrlMixin, OTreeMixin, GenericWaitPageMixin,
+    OTreeMixin, GenericWaitPageMixin,
     global_lock,
     NO_PARTICIPANTS_LEFT_MSG
 )
@@ -39,13 +39,15 @@ from otree.room import ROOM_DICT
 from otree.models_concrete import ParticipantRoomVisit
 
 
-class OutOfRangeNotification(NonSequenceUrlMixin, OTreeMixin, vanilla.View):
+class OutOfRangeNotification(OTreeMixin, vanilla.View):
     name_in_url = 'shared'
 
     def dispatch(self, request, *args, **kwargs):
         return TemplateResponse(
             request, 'otree/OutOfRangeNotification.html'
         )
+
+    url_pattern = '^OutOfRangeNotification/$'
 
 
 class InitializeParticipant(vanilla.UpdateView):

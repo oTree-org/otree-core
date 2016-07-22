@@ -81,19 +81,6 @@ def validate_session_config(config):
         identifier_description='settings.SESSION_CONFIG name'
     )
 
-    if 'is_bot_list' in config:
-        is_bot_list = config['is_bot_list']
-        try:
-            for e in is_bot_list:
-                assert e is True or e is False
-        except:
-            raise ValueError(
-                'settings.SESSION_CONFIGS, config "{}": '
-                'is_bot_list should be a list '
-                'whose values are True or False.'.format(config['name'])
-            )
-        if len(is_bot_list) == 0:
-            config['is_bot_list'] = [False]
 
     app_sequence = config['app_sequence']
     if len(app_sequence) != len(set(app_sequence)):
@@ -223,16 +210,6 @@ def create_session(
     if session_config.get('random_start_order'):
         random.shuffle(start_order)
 
-    if is_bots:
-        is_bot_list = [True] * num_participants
-    elif 'is_bot_list' in session_config:
-        pattern = session_config['is_bot_list']
-        cycle = itertools.cycle(pattern)
-        is_bot_list = []
-        for i in range(num_participants):
-            is_bot_list.append(next(cycle))
-    else:
-        is_bot_list = [False] * num_participants
 
     participants = bulk_create(
         Participant,
@@ -240,11 +217,9 @@ def create_session(
             'id_in_session': id_in_session,
             'start_order': j,
             # check if id_in_session is in the bots ID list
-            '_is_bot': is_bot_list[id_in_session - 1]
+            '_is_bot': is_bots,
          }
          for id_in_session, j in enumerate(start_order, start=1)])
-
-    session.has_bots = any(is_bot_list)
 
     ParticipantLockModel.objects.bulk_create([
         ParticipantLockModel(participant_code=participant.code)
@@ -274,6 +249,9 @@ def create_session(
                 for participant in participants])
 
         session._create_groups_and_initialize()
+
+    # session.has_bots = any(p.is_bot ...)
+
     # handle case where DB has missing column or table
     # missing table: OperationalError: no such table: pg_subsession
     # missing column: OperationalError: table pg_player has no column
