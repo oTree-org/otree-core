@@ -7,7 +7,9 @@ import channels.asgi
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 
-from otree.common_internal import release_any_stale_locks  # noqa
+from otree.common_internal import (
+    release_any_stale_locks, get_redis_conn  # noqa
+)
 release_any_stale_locks()
 
 # clear any tasks in Huey DB, so they don't pile up over time,
@@ -19,5 +21,8 @@ release_any_stale_locks()
 # this code is also in timeoutworker.
 from huey.contrib.djhuey import HUEY  # noqa
 HUEY.flush()
+
+from otree.bots.browser import redis_flush_bots
+redis_flush_bots(get_redis_conn())
 
 channel_layer = channels.asgi.get_channel_layer()

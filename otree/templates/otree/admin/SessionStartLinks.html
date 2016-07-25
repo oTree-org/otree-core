@@ -4,6 +4,27 @@
 {% block content %}
 {{ block.super }}
 
+    {% if use_browser_bots %}
+        <div class="alert alert-info" role="alert">
+            <p>
+            Links will play automatically with browser bots.
+            To disable, go to settings.py and set <code>'use_browser_bots': False</code>
+            in the session config.
+            </p>
+        </div>
+        {% if sqlite %}
+            <div class="alert alert-danger" role="alert">
+            You are using SQLite. In order to use browser bots, you should switch to Postgres or MySQL etc.
+            </div>
+        {% endif %}
+        {% if runserver %}
+            <div class="alert alert-danger" role="alert">
+            You are using <code>runserver</code>. In order to use browser bots,
+                you should run a multiprocess server (e.g. <code>webandworkers</code>).
+            </div>
+        {% endif %}
+    {% endif %}
+
 {% if room %}
     <p>
         This session is taking place in the room

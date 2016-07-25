@@ -164,7 +164,7 @@ class MTurkStart(vanilla.View):
         except Participant.DoesNotExist:
             with global_lock():
                 try:
-                    participant = self.session.get_human_participants().filter(
+                    participant = self.session.get_participants().filter(
                         visited=False
                     ).order_by('start_order')[0]
                 except IndexError:
@@ -191,8 +191,8 @@ class JoinSessionAnonymously(vanilla.View):
         )
         with global_lock():
             try:
-                participant = session.get_human_participants().filter(
-                ).order_by('start_order')[0]
+                participant = session.get_participants().filter(
+                    visited=False).order_by('start_order')[0]
             except IndexError:
                 return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
 
@@ -267,7 +267,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
         assign_new = not room.has_participant_labels()
         if not assign_new:
             try:
-                participant = session.get_human_participants().filter(
+                participant = session.get_participants().get(
                     label=participant_label
                 )
             except Participant.DoesNotExist:
@@ -276,7 +276,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
         if assign_new:
             with global_lock():
                 try:
-                    participant = session.get_human_participants().filter(
+                    participant = session.get_participants().filter(
                         visited=False).order_by('start_order')[0]
                 except IndexError:
                     return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)

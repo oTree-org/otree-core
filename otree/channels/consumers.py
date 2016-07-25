@@ -103,6 +103,9 @@ def create_session(message):
     group = Group(message['channels_group_name'])
 
     kwargs = message['kwargs']
+
+    # because it's launched through web UI
+    kwargs['honor_browser_bots_config'] = True
     try:
         otree.session.create_session(**kwargs)
     except Exception as e:
@@ -138,7 +141,7 @@ def connect_wait_for_session(message, pre_create_id):
     group.add(message.reply_channel)
 
     # in case message was sent before this web socket connects
-    if Session.objects.filter(_pre_create_id=pre_create_id):
+    if Session.objects.filter(_pre_create_id=pre_create_id, ready=True):
         group.send(
             {'text': json.dumps(
                 {'status': 'ready'})}

@@ -9,8 +9,8 @@ class PlayerBot(Bot):
     def play_round(self):
 
         if self.player.id_in_group == 1:
-            self.submit(views.FieldOnOtherPlayer)
-        self.submit(views.Results)
+            yield (views.FieldOnOtherPlayer)
+        yield (views.Results)
 
     def validate_play(self):
         pass

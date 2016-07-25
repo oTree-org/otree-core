@@ -43,6 +43,10 @@ class Command(RunserverCommand):
         parser.add_argument(
             '--addr', action='store', type=str, dest='addr', default='0.0.0.0',
             help='The host/address to bind to (default: 0.0.0.0)')
+        parser.add_argument(
+            '--botworker', action='store_true', dest='botworker', default=False,
+            help='Run botworker (for browser bots)')
+
 
     def get_env(self, options):
         return os.environ.copy()
@@ -84,13 +88,13 @@ class Command(RunserverCommand):
                 'worker{}'.format(i),
                 'otree runworker',
                 env=self.get_env(options))
-
-        manager.add_process(
-            'timeoutworker',
-            'otree timeoutworker',
-            quiet=False,
-            env=self.get_env(options)
-        )
+        if options['botworker']:
+            manager.add_process(
+                'botworker',
+                'otree botworker',
+                quiet=False,
+                env=self.get_env(options)
+            )
 
         return manager
 

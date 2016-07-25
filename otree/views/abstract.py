@@ -37,10 +37,10 @@ import otree.db.idmap
 import otree.constants_internal as constants
 from otree.models.participant import Participant
 from otree.common_internal import (
-    get_app_label_from_import_path, get_dotted_name
+    get_app_label_from_import_path, get_dotted_name,
+    get_redis_conn
 )
 from otree.bots.browser import get_next_submit
-from otree.bots.runner import continue_bots_until_stuck_task
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
     CompletedGroupWaitPage, PageTimeout, UndefinedFormModel,
@@ -555,9 +555,6 @@ class InGameWaitPageMixin(object):
                             'participant_pk_set': participant_pk_set,
                             'wait_page_index': self._index_in_pages},
                         delay=10)
-            if self.session.has_bots:
-                continue_bots_until_stuck_task(
-                    self.session.code, participant_pk_set)
 
         # _group_or_subsession might be deleted
         # in after_all_players_arrive, but it won't delete the cached model
@@ -737,7 +734,7 @@ class FormPageMixin(object):
                     bot.send_completion_message()
                     return HttpResponse('bot completed')
                 try:
-                    print('waiting for submission from Huey')
+                    print('waiting for submission from bot worker')
                     submission = bot.get_submission()
                     print('got submission')
                 except StopIteration:
@@ -925,12 +922,10 @@ class BrowserBot(object):
 
     def get_submission(self):
 
-        result = get_next_submit(self.participant.code)
+        redis_conn = get_redis_conn()
+        submission = get_next_submit(redis_conn, self.participant.code)
         # evaluate the Huey TaskWrapper (or AsyncData object)
-        submission = result.get(blocking=True)
         if submission:
-            submission = json.loads(submission)
-
             page_class_dotted = submission['page_class_dotted']
             this_page_dotted = get_dotted_name(self.view.__class__)
 

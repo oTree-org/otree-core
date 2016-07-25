@@ -120,7 +120,7 @@ class Participant(ModelWithVars):
         # because of WaitUntilAssigned...
         # 2016-04-07: WaitUntilAssigned removed
         try:
-            ParticipantToPlayerLookup.objects.get(
+            return ParticipantToPlayerLookup.objects.get(
                 participant=self.pk,
                 page_index=self._index_in_pages + pages_ahead)
         except ParticipantToPlayerLookup.DoesNotExist:

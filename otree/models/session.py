@@ -39,6 +39,8 @@ class Session(ModelWithVars):
         max_length=300, null=True, blank=True,
         help_text='For internal record-keeping')
 
+    ready = models.BooleanField(default=False)
+
     code = models.CharField(
         default=random_chars_8,
         max_length=16,
@@ -99,9 +101,6 @@ class Session(ModelWithVars):
     _bots_errored = models.BooleanField(default=False)
 
     is_demo = models.BooleanField(default=False)
-
-    # whether ALL players are bots
-    is_bots = models.BooleanField(default=False)
 
     # whether SOME players are bots
     has_bots = models.BooleanField(default=False)

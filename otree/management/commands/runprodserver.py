@@ -27,12 +27,14 @@ class Command(webandworkers.Command):
 
     def get_honcho_manager(self, options):
         manager = super(Command, self).get_honcho_manager(options)
+
         manager.add_process(
             'timeoutworker',
             'otree timeoutworker',
             quiet=False,
             env=self.get_env(options)
         )
+
         return manager
 
     def handle(self, *args, **options):

@@ -204,7 +204,7 @@ class BotsTestCase(test.TransactionTestCase):
 
         return otree.session.create_session(
             session_config_name=self.config_name,
-            is_bots=True, label='{} [bots]'.format(self.config_name)
+            use_cli_bots=True, label='{} [bots]'.format(self.config_name)
         )
 
     def runTest(self):

@@ -44,7 +44,7 @@ from otree.models.participant import Participant
 from otree.models_concrete import PageCompletion, ParticipantRoomVisit
 from otree.room import ROOM_DICT
 from otree.bots.runner import play_bots_task
-from otree.bots.browser import initialize_browser_bots, clear_browser_bots
+
 
 def get_all_fields(Model, for_export=False):
     if Model is PageCompletion:
@@ -74,7 +74,7 @@ def get_all_fields(Model, for_export=False):
             'participation_fee',
             'comment',
             'is_demo',
-            'is_bots',
+            'use_cli_bots',
         ]
 
     if Model is Participant:
@@ -847,33 +847,13 @@ def info_about_session_config(session_config):
         }
         app_sequence.append(subsssn)
 
-    info = {
+    return {
         'doc': session_config['doc'],
         'app_sequence': app_sequence,
         'name': session_config['name'],
         'display_name': session_config['display_name'],
         'lcm': get_lcm(session_config),
-
     }
-
-    if 'is_bot_list' in session_config:
-        is_bot_list = session_config['is_bot_list']
-        num_bots = sum(is_bot_list)
-        num_total = len(is_bot_list)
-        num_humans = num_total - num_bots
-
-        msg = (
-            'This session config has bots playing with human participants. '
-            'For every {num_total} participants, {num_bots} will be bots. '
-            'For example, if you want {num_humans} human participants to play,'
-            'you should create a session with {num_total} participants.'
-        ).format(num_total=num_total, num_bots=num_bots, num_humans=num_humans)
-
-        if num_bots > 0 and num_humans > 0:
-            info['bots_msg'] = msg
-        elif num_humans == 0:
-            info['bots_msg'] = (
-                'All participants in this session will be bots')
 
 
 def session_description_dict(session):
@@ -968,12 +948,8 @@ class CreateBrowserBotsSession(vanilla.View):
             session_config_name=session_config_name,
             num_participants=num_participants,
             room_name='browser_bots',
-            is_bots=True,
-            _use_browser_bots=True,
+            force_browser_bots=True,
         )
-        result = initialize_browser_bots(session.code)
-        # execute it right away, so that bots are initialized in memory
-        result()
         get_redis_conn().set('otree-browser-bots-session', session.code)
 
         return HttpResponse(session.code)
@@ -984,7 +960,7 @@ class CloseBrowserBotsSession(vanilla.View):
     url_pattern = r"^close_browser_bots_session/$"
 
     def post(self, request, *args, **kwargs):
-        clear_browser_bots()
+        #clear_all()
         get_redis_conn().delete('otree-browser-bots-session')
         return HttpResponse('ok')
 

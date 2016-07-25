@@ -134,17 +134,12 @@ class Command(BaseCommand):
 
         for session_config_name in session_config_names:
             session_config = SESSION_CONFIGS_DICT[session_config_name]
-            if options['num_participants']:
-                session_sizes_for_this_config = options['num_participants']
-            else:
-                session_sizes_for_this_config = [
-                    session_config['num_demo_participants']]
-
-            for num_participants in session_sizes_for_this_config:
-                sessions_to_create.append({
-                    'session_config_name': session_config_name,
-                    'num_participants': num_participants,
-                })
+            num_participants = (options.get('num_participants') or
+                                session_config['num_demo_participants'])
+            sessions_to_create.append({
+                'session_config_name': session_config_name,
+                'num_participants': num_participants,
+            })
 
         total_time_spent = 0
         # run in a separate loop, because we want to validate upfront

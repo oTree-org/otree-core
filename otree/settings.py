@@ -108,6 +108,8 @@ def get_default_settings(initial_settings=None):
                 'handlers': ['console'],
                 'level': 'WARNING'
             }
+            # 2016-07-25: botworker seems to be sending messages to Sentry
+            # without any special configuration, not sure why.
         }
     }
 
@@ -367,9 +369,10 @@ def augment_settings(settings):
             'password': redis_url.password
         },
         'always_eager': False,
-        # in order to evaluate the result immediately
-        # (as with browser bot submits), i need a result store
-        'result_store': True,
+        # I need a result store to retrieve the results of browser-bots
+        # tasks and pinging, even if the result is evaluated immediately
+        # (otherwise, calling the task returns None.
+        'result_store': False,
         'consumer': {
             # bots must run in 1 process because generators are loaded
             # in memory. maybe use 2 threads, because running "play_bots"

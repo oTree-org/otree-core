@@ -22,12 +22,15 @@ from otree.models.session import Session
 from otree.models.participant import Participant
 from otree.common_internal import (
     get_models_module, get_app_constants, validate_identifier,
-    min_players_multiple)
+    min_players_multiple,
+    get_redis_conn
+)
+import otree.common_internal
 from otree.common import RealWorldCurrency
 from decimal import Decimal
 from otree import deprecate
 from otree.models_concrete import ParticipantLockModel
-
+import otree.bots.browser
 
 def gcd(a, b):
     """Return greatest common divisor using Euclid's Algorithm."""
@@ -150,133 +153,159 @@ def app_labels_from_sessions(config_names):
     return apps
 
 
-@transaction.atomic
+
 def create_session(
         session_config_name, label='', num_participants=None,
         _pre_create_id=None,
-        room_name=None, for_mturk=False, is_bots=False,
-        is_demo=False, _use_browser_bots=False,
+        room_name=None, for_mturk=False, use_cli_bots=False,
+        is_demo=False, force_browser_bots=False,
+        honor_browser_bots_config=False,
                    ):
 
-    # 2014-5-2: i could implement this by overriding the __init__ on the
-    # Session model, but I don't really know how that works, and it seems to
-    # be a bit discouraged: http://goo.gl/dEXZpv
-    # 2014-9-22: preassign to groups for demo mode.
+    session = None
+    use_browser_bots = False
 
-    otree.db.idmap.activate_cache()
+    with transaction.atomic():
+        # 2014-5-2: i could implement this by overriding the __init__ on the
+        # Session model, but I don't really know how that works, and it seems to
+        # be a bit discouraged: http://goo.gl/dEXZpv
+        # 2014-9-22: preassign to groups for demo mode.
 
-    try:
-        session_config = SESSION_CONFIGS_DICT[session_config_name]
-    except KeyError:
-        msg = 'Session config "{}" not found in settings.SESSION_CONFIGS.'
-        raise ValueError(msg.format(session_config_name))
+        otree.db.idmap.activate_cache()
 
-    session = Session.objects.create(
-        config=session_config,
-        label=label,
-        _pre_create_id=_pre_create_id,
-        _use_browser_bots=_use_browser_bots,
-        is_bots=is_bots,
-        is_demo=is_demo
-    )
+        try:
+            session_config = SESSION_CONFIGS_DICT[session_config_name]
+        except KeyError:
+            msg = 'Session config "{}" not found in settings.SESSION_CONFIGS.'
+            raise ValueError(msg.format(session_config_name))
 
-    def bulk_create(model, descriptions):
-        model.objects.bulk_create([
-            model(session=session, **description)
-            for description in descriptions])
-        return model.objects.filter(session=session).order_by('pk')
-
-    if num_participants is None:
-        if is_demo:
-            num_participants = session_config['num_demo_participants']
-        elif is_bots:
-            num_participants = session_config['num_bots']
-
-    # check that it divides evenly
-    session_lcm = get_lcm(session_config)
-    if num_participants % session_lcm:
-        msg = (
-            'Session Config {}: Number of participants ({}) does not divide '
-            'evenly into group size ({})')
-        raise ValueError(
-            msg.format(session_config['name'], num_participants, session_lcm))
-
-    if for_mturk:
-        session.mturk_num_participants = (
-                num_participants /
-                settings.MTURK_NUM_PARTICIPANTS_MULT)
-
-    start_order = list(range(num_participants))
-    if session_config.get('random_start_order'):
-        random.shuffle(start_order)
+        if force_browser_bots:
+            use_browser_bots = True
+        elif (session_config.get('use_browser_bots') and
+                  honor_browser_bots_config):
+            use_browser_bots = True
+        else:
+            use_browser_bots = False
 
 
-    participants = bulk_create(
-        Participant,
-        [{
-            'id_in_session': id_in_session,
-            'start_order': j,
-            # check if id_in_session is in the bots ID list
-            '_is_bot': is_bots,
-         }
-         for id_in_session, j in enumerate(start_order, start=1)])
+        session = Session.objects.create(
+            config=session_config,
+            label=label,
+            _pre_create_id=_pre_create_id,
+            _use_browser_bots=use_browser_bots,
+            is_demo=is_demo
+        )
 
-    ParticipantLockModel.objects.bulk_create([
-        ParticipantLockModel(participant_code=participant.code)
-        for participant in participants])
+        def bulk_create(model, descriptions):
+            model.objects.bulk_create([
+                model(session=session, **description)
+                for description in descriptions])
+            return model.objects.filter(session=session).order_by('pk')
 
-    try:
-        for app_name in session_config['app_sequence']:
+        if num_participants is None:
+            if is_demo:
+                num_participants = session_config['num_demo_participants']
+            elif use_cli_bots:
+                num_participants = session_config['num_bots']
 
-            models_module = get_models_module(app_name)
-            app_constants = get_app_constants(app_name)
+        # check that it divides evenly
+        session_lcm = get_lcm(session_config)
+        if num_participants % session_lcm:
+            msg = (
+                'Session Config {}: Number of participants ({}) does not divide '
+                'evenly into group size ({})')
+            raise ValueError(
+                msg.format(session_config['name'], num_participants, session_lcm))
 
-            round_numbers = list(range(1, app_constants.num_rounds + 1))
+        if for_mturk:
+            session.mturk_num_participants = (
+                    num_participants /
+                    settings.MTURK_NUM_PARTICIPANTS_MULT)
 
-            subs = bulk_create(
-                models_module.Subsession,
-                [{'round_number': round_number}
-                 for round_number in round_numbers])
+        start_order = list(range(num_participants))
+        if session_config.get('random_start_order'):
+            random.shuffle(start_order)
 
-            # Create players
-            models_module.Player.objects.bulk_create([
-                models_module.Player(
-                    session=session,
-                    subsession=subsession,
-                    round_number=round_number,
-                    participant=participant)
-                for round_number, subsession in zip(round_numbers, subs)
-                for participant in participants])
 
-        session._create_groups_and_initialize()
+        participants = bulk_create(
+            Participant,
+            [{
+                'id_in_session': id_in_session,
+                'start_order': j,
+                # check if id_in_session is in the bots ID list
+                '_is_bot': use_cli_bots or use_browser_bots,
+             }
+             for id_in_session, j in enumerate(start_order, start=1)])
 
-    # session.has_bots = any(p.is_bot ...)
+        ParticipantLockModel.objects.bulk_create([
+            ParticipantLockModel(participant_code=participant.code)
+            for participant in participants])
 
-    # handle case where DB has missing column or table
-    # missing table: OperationalError: no such table: pg_subsession
-    # missing column: OperationalError: table pg_player has no column
-    # named contribution2
-    except OperationalError as exception:
-        exception_str = str(exception)
-        if 'table' in exception_str:
-            ExceptionClass = type(exception)
-            six.reraise(
-                ExceptionClass,
-                ExceptionClass('{} - Try resetting the database.'.format(
-                    exception_str)),
-                sys.exc_info()[2])
-        raise
+        try:
+            for app_name in session_config['app_sequence']:
 
-    session.build_participant_to_player_lookups()
-    if room_name is not None:
-        from otree.room import ROOM_DICT
-        room = ROOM_DICT[room_name]
-        room.session = session
-    # automatically save all objects since the cache was activated:
-    # Player, Group, Subsession, Participant, Session
-    otree.db.idmap.save_objects()
-    otree.db.idmap.deactivate_cache()
+                models_module = get_models_module(app_name)
+                app_constants = get_app_constants(app_name)
 
+                round_numbers = list(range(1, app_constants.num_rounds + 1))
+
+                subs = bulk_create(
+                    models_module.Subsession,
+                    [{'round_number': round_number}
+                     for round_number in round_numbers])
+
+                # Create players
+                models_module.Player.objects.bulk_create([
+                    models_module.Player(
+                        session=session,
+                        subsession=subsession,
+                        round_number=round_number,
+                        participant=participant)
+                    for round_number, subsession in zip(round_numbers, subs)
+                    for participant in participants])
+
+            session._create_groups_and_initialize()
+
+        # session.has_bots = any(p.is_bot ...)
+
+        # handle case where DB has missing column or table
+        # missing table: OperationalError: no such table: pg_subsession
+        # missing column: OperationalError: table pg_player has no column
+        # named contribution2
+        except OperationalError as exception:
+            exception_str = str(exception)
+            if 'table' in exception_str:
+                ExceptionClass = type(exception)
+                six.reraise(
+                    ExceptionClass,
+                    ExceptionClass('{} - Try resetting the database.'.format(
+                        exception_str)),
+                    sys.exc_info()[2])
+            raise
+
+        session.build_participant_to_player_lookups()
+        if room_name is not None:
+            from otree.room import ROOM_DICT
+            room = ROOM_DICT[room_name]
+            room.session = session
+        # automatically save all objects since the cache was activated:
+        # Player, Group, Subsession, Participant, Session
+        otree.db.idmap.save_objects()
+        otree.db.idmap.deactivate_cache()
+
+    if use_browser_bots:
+        redis_conn = get_redis_conn()
+        # what about clear_browser_bots? if session is created through
+        # UI, when do we run that? it should be run when the session
+        # is deleted
+        try:
+            otree.bots.browser.initialize_bots(redis_conn, session.code)
+        except:
+            session.delete()
+            raise
+
+    session.ready = True
+    session.save()
     return session
 
 
