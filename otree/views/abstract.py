@@ -37,10 +37,9 @@ import otree.db.idmap
 import otree.constants_internal as constants
 from otree.models.participant import Participant
 from otree.common_internal import (
-    get_app_label_from_import_path, get_dotted_name,
-    get_redis_conn
+    get_app_label_from_import_path,
 )
-from otree.bots.browser import get_next_submit
+from otree.bots.browser import BrowserBot
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
     CompletedGroupWaitPage, PageTimeout, UndefinedFormModel,
@@ -731,12 +730,12 @@ class FormPageMixin(object):
                     # consider the bot finished, even though technically
                     # this page could fail validation, if it contains a
                     # form field...but good enough for testing purposes
+                    # or the bot could have extra submits beyond the last page
+                    # that never get executed...hmmm...
                     bot.send_completion_message()
                     return HttpResponse('bot completed')
                 try:
-                    print('waiting for submission from bot worker')
                     submission = bot.get_submission()
-                    print('got submission')
                 except StopIteration:
                     bot.send_completion_message()
                     return HttpResponse('bot completed')
@@ -913,41 +912,6 @@ class GenericWaitPageMixin(object):
         return context
 
 
-class BrowserBot(object):
-
-    def __init__(self, view):
-        self.view = view
-        self.participant = view.participant
-        self.session = self.view.session
-
-    def get_submission(self):
-
-        redis_conn = get_redis_conn()
-        submission = get_next_submit(redis_conn, self.participant.code)
-        # evaluate the Huey TaskWrapper (or AsyncData object)
-        if submission:
-            page_class_dotted = submission['page_class_dotted']
-            this_page_dotted = get_dotted_name(self.view.__class__)
-
-            if not submission['page_class_dotted'] == this_page_dotted:
-                raise ValueError(
-                    "Bot is trying to submit page {}, "
-                    "but current page is {}. "
-                    "Check your bot in tests.py, "
-                    "then create a new session.".format(
-                        page_class_dotted,
-                        this_page_dotted
-                    )
-                )
-
-            return submission['post_data']
-        else:
-            raise StopIteration
-
-    def send_completion_message(self):
-        channels.Group(
-            'browser-bots-client-{}'.format(self.session.code)
-        ).send({'text': self.participant.code})
 
 
 class PlayerUpdateView(FormPageMixin, FormPageOrInGameWaitPageMixin,

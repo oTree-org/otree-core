@@ -1,6 +1,6 @@
 import logging
 from django.core.management.base import BaseCommand
-from otree.bots.browser import Consumer, redis_flush_bots
+from otree.bots.browser import Worker, redis_flush_bots
 from otree.common_internal import get_redis_conn
 
 
@@ -21,5 +21,5 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         redis_conn = get_redis_conn()
         redis_flush_bots(redis_conn)
-        consumer = Consumer(redis_conn)
+        consumer = Worker(redis_conn)
         consumer.loop()

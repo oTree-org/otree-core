@@ -20,7 +20,8 @@
         {% if runserver %}
             <div class="alert alert-danger" role="alert">
             You are using <code>runserver</code>. In order to use browser bots,
-                you should run a multiprocess server (e.g. <code>webandworkers</code>).
+                you should run a multiprocess server
+                (e.g. <code>otree runprodserver --no-collectstatic --botworker</code>).
             </div>
         {% endif %}
     {% endif %}

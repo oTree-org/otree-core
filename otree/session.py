@@ -284,10 +284,6 @@ def create_session(
             raise
 
         session.build_participant_to_player_lookups()
-        if room_name is not None:
-            from otree.room import ROOM_DICT
-            room = ROOM_DICT[room_name]
-            room.session = session
         # automatically save all objects since the cache was activated:
         # Player, Group, Subsession, Participant, Session
         otree.db.idmap.save_objects()
@@ -298,6 +294,7 @@ def create_session(
         # what about clear_browser_bots? if session is created through
         # UI, when do we run that? it should be run when the session
         # is deleted
+        print('{} participants, {}'.format(num_participants, session_config_name))
         try:
             otree.bots.browser.initialize_bots(redis_conn, session.code)
         except:
@@ -306,6 +303,14 @@ def create_session(
 
     session.ready = True
     session.save()
+
+    # this should happen after session.ready = True
+    if room_name is not None:
+        from otree.room import ROOM_DICT
+        room = ROOM_DICT[room_name]
+        room.session = session
+
+
     return session
 
 
