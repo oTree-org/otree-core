@@ -105,7 +105,17 @@ class Command(BaseCommand):
             help=ahelp)
 
     def handle(self, *args, **options):
+        launcher = Launcher(options)
+        launcher.run()
+
+
+class Launcher(object):
+
+    def __init__(self, options):
         self.options = options
+
+    def run(self):
+        options = self.options
 
         self.check_browser()
         self.set_urls()

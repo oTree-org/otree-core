@@ -5,22 +5,27 @@ from otree.models import Session
 from otree.common_internal import get_redis_conn, get_dotted_name
 import channels
 import time
+from collections import OrderedDict
 
 REDIS_KEY = 'otree-bots'
 
-ERROR_NO_BOT_FOR_PARTICIPANT = 'ERROR_NO_BOT_FOR_PARTICIPANT'
+SESSIONS_PRUNE_LIMIT = 50
 
 
 class Worker(object):
     def __init__(self, redis_conn):
         self.redis_conn = redis_conn
         self.browser_bots = {}
+        self.session_participants = OrderedDict()
 
     def initialize_session(self, session_code):
         session = Session.objects.get(code=session_code)
+        self.prune()
+        self.session_participants[session_code] = []
         for participant in session.get_participants().filter(_is_bot=True):
+            self.session_participants[session_code].append(
+                participant.code)
             self.browser_bots[participant.code] = ParticipantBot(participant)
-        print('{} items in browser bot dict'.format(len(self.browser_bots)))
         return {'ok': True}
 
     def get_method(self, command_name):
@@ -33,6 +38,12 @@ class Worker(object):
 
         return commands[command_name]
 
+    def prune(self):
+        '''to avoid memory leaks'''
+        if len(self.session_participants) > SESSIONS_PRUNE_LIMIT:
+            _, p_codes = self.session_participants.popitem(last=False)
+            for participant_code in p_codes:
+                self.browser_bots.pop(participant_code, None)
 
     def clear_all(self):
         self.browser_bots.clear()
@@ -41,11 +52,15 @@ class Worker(object):
         try:
             bot = self.browser_bots[participant_code]
         except KeyError:
-            raise KeyError(
-                "Participant {} not loaded in botworker. "
-                "Maybe botworker was restarted "
-                "after the session was created.".format(participant_code)
-            )
+            return {
+                'request_error': (
+                    "Participant {} not loaded in botworker. "
+                    "The botworker only stores the most recent {} sessions, "
+                    "and discards older sessions. Or, maybe the botworker "
+                    "was restarted after the session was created.".format(
+                        participant_code, SESSIONS_PRUNE_LIMIT)
+                )
+            }
         try:
             while True:
                 submit = next(bot.submits_generator)
@@ -93,7 +108,11 @@ class Worker(object):
                 method = self.get_method(cmd)
                 retval = method(*args, **kwargs)
             except Exception as exc:
-                retval = {'error': str(exc)}
+                # response_error means the botworker failed for an unknown
+                # reason
+                # request_error means the request received through Redis
+                # was invalid
+                retval = {'response_error': str(exc)}
                 # execute finally below, then raise
                 raise
             finally:
@@ -107,9 +126,7 @@ def ping(redis_conn, unique_response_code):
         'response_key': response_key,
     }
     redis_conn.rpush(REDIS_KEY, json.dumps(msg))
-    start = time.time()
-    result = redis_conn.blpop(response_key, timeout=3)
-    print('{}s to ping botworker'.format(time.time() - start))
+    result = redis_conn.blpop(response_key, timeout=1)
 
     if result is None:
         raise Exception(
@@ -118,8 +135,7 @@ def ping(redis_conn, unique_response_code):
         )
 
 
-
-def initialize_bots(redis_conn, session_code):
+def initialize_bots(redis_conn, session_code, num_players_total):
     response_key = '{}-initialize-{}'.format(REDIS_KEY, session_code)
     msg = {
         'command': 'initialize_session',
@@ -129,16 +145,19 @@ def initialize_bots(redis_conn, session_code):
     # ping will raise if it times out
     ping(redis_conn, session_code)
     redis_conn.rpush(REDIS_KEY, json.dumps(msg))
-    start = time.time()
-    result = redis_conn.blpop(response_key, timeout=60)
-    print('{}s to initialize bots in botworker'.format(time.time() - start))
+
+    # timeout must be int
+    # this is about 10x as much time as it should take
+    timeout = int(max(1, num_players_total * 0.1))
+    result = redis_conn.blpop(response_key, timeout=timeout)
     if result is None:
         raise Exception(
-            'botworker is running but could not initialize the session.'
+            'botworker is running but could not initialize the session. '
+            'within {} seconds.'.format(timeout)
         )
     key, submit_bytes = result
     value = json.loads(submit_bytes.decode('utf-8'))
-    if 'error' in value:
+    if 'response_error' in value:
         raise Exception(
             'An error occurred. See the botworker output for the traceback.')
     return {'ok': True}
@@ -149,7 +168,7 @@ def redis_flush_bots(redis_conn):
         redis_conn.delete(key)
 
 
-class BrowserBot(object):
+class SingleSubmissionRetriever(object):
 
     def __init__(self, view, redis_conn=None):
         self.view = view
@@ -168,9 +187,8 @@ class BrowserBot(object):
             'response_key': response_key,
         }
         redis_conn.rpush(REDIS_KEY, json.dumps(msg))
-        start = time.time()
-        result = redis_conn.blpop(response_key, timeout=3)
-        print('{}s to receive submit from botworker'.format(time.time() - start))
+        # in practice is very fast...around 1ms
+        result = redis_conn.blpop(response_key, timeout=1)
         if result is None:
             # ping will raise if it times out
             ping(redis_conn, participant_code)
@@ -179,10 +197,12 @@ class BrowserBot(object):
             )
         key, submit_bytes = result
         submission = json.loads(submit_bytes.decode('utf-8'))
-        if 'error' in submission:
+        if 'response_error' in submission:
             raise Exception(
                 'An error occurred. See the botworker output '
                 'for the traceback.')
+        if 'request_error' in submission:
+            raise Exception(submission['request_error'])
         page_class_dotted = submission['page_class_dotted']
         if submission:
             this_page_dotted = get_dotted_name(self.view.__class__)

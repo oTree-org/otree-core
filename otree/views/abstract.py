@@ -39,7 +39,7 @@ from otree.models.participant import Participant
 from otree.common_internal import (
     get_app_label_from_import_path,
 )
-from otree.bots.browser import BrowserBot
+from otree.bots.browser import SingleSubmissionRetriever
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
     CompletedGroupWaitPage, PageTimeout, UndefinedFormModel,
@@ -725,7 +725,7 @@ class FormPageMixin(object):
             self.timeout_happened = False
 
             if self.session._use_browser_bots:
-                bot = BrowserBot(self)
+                bot = SingleSubmissionRetriever(self)
                 if self._index_in_pages == self.participant._max_page_index:
                     # consider the bot finished, even though technically
                     # this page could fail validation, if it contains a
@@ -735,7 +735,7 @@ class FormPageMixin(object):
                     bot.send_completion_message()
                     return HttpResponse('bot completed')
                 try:
-                    submission = bot.get_submission()
+                    submission = bot.get_next_submit()
                 except StopIteration:
                     bot.send_completion_message()
                     return HttpResponse('bot completed')

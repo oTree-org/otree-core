@@ -960,7 +960,6 @@ class CloseBrowserBotsSession(vanilla.View):
     url_pattern = r"^close_browser_bots_session/$"
 
     def post(self, request, *args, **kwargs):
-        #clear_all()
         get_redis_conn().delete('otree-browser-bots-session')
         return HttpResponse('ok')
 
