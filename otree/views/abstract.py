@@ -39,7 +39,7 @@ from otree.models.participant import Participant
 from otree.common_internal import (
     get_app_label_from_import_path,
 )
-from otree.bots.browser import SingleSubmissionRetriever
+from otree.bots.browser import EphemeralBrowserBot
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
     CompletedGroupWaitPage, PageTimeout, UndefinedFormModel,
@@ -725,15 +725,28 @@ class FormPageMixin(object):
             self.timeout_happened = False
 
             if self.session._use_browser_bots:
-                bot = SingleSubmissionRetriever(self)
+                bot = EphemeralBrowserBot(self)
                 if self._index_in_pages == self.participant._max_page_index:
                     # consider the bot finished, even though technically
                     # this page could fail validation, if it contains a
                     # form field...but good enough for testing purposes
-                    # or the bot could have extra submits beyond the last page
-                    # that never get executed...hmmm...
-                    bot.send_completion_message()
-                    return HttpResponse('bot completed')
+                    try:
+                        # maybe the bot submits the final page (for MTurk),
+                        # maybe not...so this could raise
+                        bot.get_next_submit()
+
+                        # this must raise. Can't submit past the last page.
+                        # but what about submit_invalid??
+                        bot.get_next_submit()
+                    except StopIteration:
+                        bot.send_completion_message()
+                        return HttpResponse('bot completed')
+                    else:
+                        raise Exception(
+                            'Reached the last page, '
+                            'but the bot is still trying '
+                            'to submit more pages.'
+                        )
                 try:
                     submission = bot.get_next_submit()
                 except StopIteration:

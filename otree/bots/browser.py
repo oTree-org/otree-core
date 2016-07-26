@@ -168,7 +168,7 @@ def redis_flush_bots(redis_conn):
         redis_conn.delete(key)
 
 
-class SingleSubmissionRetriever(object):
+class EphemeralBrowserBot(object):
 
     def __init__(self, view, redis_conn=None):
         self.view = view
