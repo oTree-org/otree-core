@@ -358,8 +358,13 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         # evaluates to False to eliminate unnecessary redirection
 
         for page_index in range(
-                self._index_in_pages+1, self.participant._max_page_index+1):
+                # go to max_page_index+2 because range() skips the last index
+                # and it's possible to go to max_page_index + 1 (OutOfRange)
+                self._index_in_pages+1, self.participant._max_page_index+2):
             self.participant._index_in_pages = page_index
+            if page_index == self.participant._max_page_index+1:
+                # break and go to OutOfRangeNotification
+                break
             url = self.participant._url_i_should_be_on()
 
             Page = get_view_from_url(url)
@@ -723,32 +728,10 @@ class FormPageMixin(object):
             self._set_auto_submit_values()
         else:
             self.timeout_happened = False
-
             if self.session._use_browser_bots:
                 bot = EphemeralBrowserBot(self)
-                if self._index_in_pages == self.participant._max_page_index:
-                    # consider the bot finished, even though technically
-                    # this page could fail validation, if it contains a
-                    # form field...but good enough for testing purposes
-                    try:
-                        # maybe the bot submits the final page (for MTurk),
-                        # maybe not...so this could raise
-                        bot.get_next_submit()
-
-                        # this must raise. Can't submit past the last page.
-                        # but what about submit_invalid??
-                        bot.get_next_submit()
-                    except StopIteration:
-                        bot.send_completion_message()
-                        return HttpResponse('bot completed')
-                    else:
-                        raise Exception(
-                            'Reached the last page, '
-                            'but the bot is still trying '
-                            'to submit more pages.'
-                        )
                 try:
-                    submission = bot.get_next_submit()
+                    submission = bot.get_next_post_data()
                 except StopIteration:
                     bot.send_completion_message()
                     return HttpResponse('bot completed')
@@ -780,6 +763,20 @@ class FormPageMixin(object):
                         'then create a new session.'.format(errors))
                 return self.form_invalid(form)
         self.before_next_page()
+        if self.session._use_browser_bots:
+            if self._index_in_pages == self.participant._max_page_index:
+                bot = EphemeralBrowserBot(self)
+                try:
+                    bot.get_next_post_data()
+                except StopIteration:
+                    bot.send_completion_message()
+                    return HttpResponse('bot completed')
+                else:
+                    raise Exception(
+                        'Finished the last page, '
+                        'but the bot is still trying '
+                        'to submit more pages.'
+                    )
         self._increment_index_in_pages()
         return self._redirect_to_page_the_user_should_be_on()
 

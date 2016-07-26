@@ -12,7 +12,7 @@ from otree.db import models
 from otree.models_concrete import ParticipantToPlayerLookup
 from otree.models.session import Session
 from otree.models.varsmixin import ModelWithVars
-
+from django.core.urlresolvers import reverse
 
 class Participant(ModelWithVars):
 
@@ -171,8 +171,7 @@ class Participant(ModelWithVars):
                 }
             )
             return url
-        from otree.views.concrete import OutOfRangeNotification
-        return OutOfRangeNotification.url(self)
+        return reverse('OutOfRangeNotification')
 
     def __unicode__(self):
         return self.name()

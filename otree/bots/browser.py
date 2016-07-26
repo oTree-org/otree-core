@@ -176,7 +176,7 @@ class EphemeralBrowserBot(object):
         self.session = self.view.session
         self.redis_conn = redis_conn or get_redis_conn()
 
-    def get_next_submit(self):
+    def get_next_post_data(self):
         participant_code = self.participant.code
         redis_conn = self.redis_conn
         response_key = '{}-get_next_submit-{}'.format(
@@ -203,11 +203,11 @@ class EphemeralBrowserBot(object):
                 'for the traceback.')
         if 'request_error' in submission:
             raise Exception(submission['request_error'])
-        page_class_dotted = submission['page_class_dotted']
         if submission:
+            page_class_dotted = submission['page_class_dotted']
             this_page_dotted = get_dotted_name(self.view.__class__)
 
-            if not submission['page_class_dotted'] == this_page_dotted:
+            if not page_class_dotted == this_page_dotted:
                 raise ValueError(
                     "Bot is trying to submit page {}, "
                     "but current page is {}. "

@@ -116,64 +116,8 @@ def otree_and_django_version(*args, **kwargs):
     return "oTree: {} - Django: {}".format(otree_ver, django_ver)
 
 
-def execute_from_command_line(arguments, script_file):
+def execute_from_command_line(arguments, script_file=None):
 
-    try:
-        subcommand = arguments[1]
-    except IndexError:
-        subcommand = 'help'  # default
-
-    # Workaround for windows. Celery (more precicely the billard library) will
-    # complain if the script you are using to initialize celery does not end
-    # on '.py'. That's why we require a manage.py file to be around.
-    # See https://github.com/celery/billiard/issues/129 for more details.
-    cond = (
-        platform.system() == 'Windows' and
-        not script_file.lower().endswith('.py') and
-        subcommand not in NO_SETTINGS_COMMANDS
-    )
-
-    if cond:
-
-        scriptdir = os.path.dirname(os.path.abspath(script_file))
-        managepy = os.path.join(scriptdir, 'manage.py')
-        if not os.path.exists(managepy):
-            error_lines = []
-
-            error_lines.append(
-                "It seems that you do not have a file called 'manage.py' in "
-                "your current directory. This is a requirement when using "
-                "otree on windows."
-            )
-            error_lines.append("")
-            error_lines.append("")
-            error_lines.append(
-                "Please download the file {url} and save it as 'manage.py' in "
-                "the directory {directory}".format(
-                    url=MANAGE_URL, directory=scriptdir))
-            raise CommandError("\n".join(error_lines))
-        args = [sys.executable] + [managepy] + arguments[1:]
-        process = subprocess.Popen(args,
-                                   stdin=sys.stdin,
-                                   stdout=sys.stdout,
-                                   stderr=sys.stderr)
-        return_code = process.wait()
-        sys.exit(return_code)
-
-    # in issue #300 we agreed that sslserver should
-    # run only if user has specified credentials for AWS
-    # 2016-05-27: not working because we switched to Daphne
-    '''
-    runsslserver = (
-        len(arguments) >= 2 and arguments[1] == 'runserver' and
-        settings.AWS_ACCESS_KEY_ID
-    )
-    if runsslserver:
-        arguments[1] = 'runsslserver'
-        sys.stdout.write(
-            'Note: your server URL will start with https, not http '
-            '(because the env var AWS_ACCESS_KEY_ID was found)\n')
-    '''
     # only monkey patch when is necesary
     if "version" in arguments or "--version" in arguments:
         sys.stdout.write(otree_and_django_version() + '\n')
@@ -226,4 +170,4 @@ def otree_cli():
             print(msg)
             sys.exit(1)
 
-    execute_from_command_line(argv, 'otree')
+    execute_from_command_line(argv)
