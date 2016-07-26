@@ -74,56 +74,22 @@ class OTreeManagementUtility(TestCase):
 
 class ExecuteFromCommandLine(TestCase):
 
-    @mock.patch("platform.system", return_value="Windows")
-    @mock.patch("sys.exit")
-    @mock.patch("subprocess.Popen")
-    @mock.patch("subprocess.Popen.wait")
-    @mock.patch("os.path.exists", return_value=False)
-    def test_execute_from_command_line_windows_fails(self, *args):
-        exists, wait, Popen, sexit, system = args
-        with self.assertRaises(CommandError):
-            cli.execute_from_command_line(["foo", "runserver"], "script")
-        self.assertTrue(exists.called)
-        self.assertFalse(wait.called)
-        self.assertFalse(Popen.called)
-        self.assertFalse(sexit.called)
-        self.assertTrue(system.called)
-
-    @mock.patch("platform.system", return_value="Windows")
-    @mock.patch("sys.exit")
-    @mock.patch("subprocess.Popen")
-    @mock.patch("os.path.exists", return_value=True)
-    @mock.patch("sys.stdin")
-    @mock.patch("sys.stderr")
-    @mock.patch("sys.stdout")
-    @mock.patch("otree.management.cli.OTreeManagementUtility")
-    def test_execute_from_command_line_windows(self, *args):
-        management, stdout, stderr, stdin, exists, Popen, sexit, system = args
-        cli.execute_from_command_line(["foo", "runserver"], "script")
-        self.assertEquals(
-            Popen.call_args[1:][0],
-            {"stdin": stdin, "stdout": stdout, "stderr": stderr})
-        self.assertTrue(sexit.called)
-        self.assertTrue(system.called)
-        self.assertTrue(exists.called)
-        self.assertTrue(exists.called)
-        self.assertTrue(management.called)
-
     @mock.patch("platform.system", return_value="No-Windows")
     @mock.patch("otree.management.cli.OTreeManagementUtility")
     def test_execute_from_command_line_runserver(self, *args):
         management, system = args
-        cli.execute_from_command_line(["foo", "runserver"], "script.py")
-        management.assert_called_with(["foo", "runserver"])
+        cli.execute_from_command_line(["otree", "runserver"], "script.py")
+        management.assert_called_with(["otree", "runserver"])
 
+    # not working at the moment because of SSL server
     '''
     @mock.patch("platform.system", return_value="No-Windows")
     @mock.patch("otree.management.cli.OTreeManagementUtility")
     @mock.patch("django.conf.LazySettings.AWS_ACCESS_KEY_ID", create=True)
     def test_execute_from_command_line_runserver_ssh(self, *args):
         key, management, system = args
-        cli.execute_from_command_line(["foo", "runserver"], "script.py")
-        management.assert_called_with(["foo", "runsslserver"])
+        cli.execute_from_command_line(["otree", "runserver"], "script.py")
+        management.assert_called_with(["otree", "runsslserver"])
     '''
 
     # not working at the moment because of pypi cli check
@@ -159,7 +125,7 @@ class OTreeCli(TestCase):
     @mock.patch("otree.management.cli.execute_from_command_line")
     def test_clean_run(self, execute_from_command_line):
         cli.otree_cli()
-        execute_from_command_line.assert_called_with(["--help"], "otree")
+        execute_from_command_line.assert_called_with(["--help"])
 
     @mock.patch("sys.argv", new=["--version"])
     @mock.patch("otree.management.cli.execute_from_command_line")
@@ -170,4 +136,4 @@ class OTreeCli(TestCase):
             cli.otree_cli()
             self.assertEquals(path, ["foo"])
         self.assertTrue(gcwd.called)
-        execute_from_command_line.assert_called_with(["--version"], "otree")
+        execute_from_command_line.assert_called_with(["--version"])
