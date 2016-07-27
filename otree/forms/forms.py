@@ -175,6 +175,7 @@ class BaseModelForm(
         super(BaseModelForm, self).__init__(*args, **kwargs)
 
         for field_name in self.fields:
+            field = self.fields[field_name]
             if hasattr(self.view, '%s_choices' % field_name):
                 choices = getattr(self.view, '%s_choices' % field_name)()
                 choices = otree.common_internal.expand_choice_tuples(choices)
@@ -186,12 +187,9 @@ class BaseModelForm(
 
                 self.fields[field_name] = formfield_callback(model_field_copy)
             if hasattr(self.view, '%s_label' % field_name):
-                self.fields[field_name].label = getattr(
+                field.label = getattr(
                     self.view, '%s_label' % field_name
                 )()
-
-        for field_name in self.fields:
-            field = self.fields[field_name]
             if isinstance(field.widget, forms.RadioSelect):
                 # Fields with a RadioSelect should be rendered without the
                 # '---------' option, and with nothing selected by default, to
@@ -200,8 +198,14 @@ class BaseModelForm(
                 # selected item was the None choice, by removing it, nothing
                 # is selected.
 
-                if field.choices[0][0] in {u'', None}:
-                    field.choices = field.choices[1:]
+                # maybe they set the widget to Radio, but forgot to specify
+                # choices. that's a mistake, but if oTree validates it, it
+                # should do so somewhere else (because this is just for radio)
+                # need to also check dropdown menus
+                if hasattr(field, 'choices'):
+                    choices = field.choices
+                    if len(choices) >= 1 and choices[0][0] in {u'', None}:
+                        field.choices = choices[1:]
 
         self._setup_field_boundaries()
 

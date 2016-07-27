@@ -297,16 +297,24 @@ def pages_function(rules, **kwargs):
         try:
             page_list = views_module.page_sequence
         except:
-            rules.push_error('views.py: need a list page_sequence '
-                             'that contains a list of pages')
+            rules.push_error('views.py is missing the variable page_sequence.')
             return
         else:
             for ViewCls in page_list:
-                cond = not issubclass(
+                # there is no good reason to include Page in page_sequence.
+                # however, WaitPage could belong there. it works fine currently
+                # and can save the effort of subclassing
+                if ViewCls.__name__ == 'Page':
+                    msg = (
+                        "views.py: page_sequence cannot contain "
+                        "a class called 'Page'. You should subclass Page "
+                        "and give your page a different name."
+                    )
+                    rules.push_error(msg)
+                if not issubclass(
                     ViewCls,
                     otree.views.abstract.FormPageOrInGameWaitPageMixin
-                )
-                if cond:
+                ):
                     msg = 'views.py: "{}" is not a valid page'.format(ViewCls)
                     rules.push_error(msg)
 

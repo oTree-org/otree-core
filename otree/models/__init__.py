@@ -4,6 +4,7 @@
 from django.db.models.signals import class_prepared
 from importlib import import_module
 
+from otree.db.models import *
 from otree.db import models
 from otree.models.session import Session
 from otree.models.participant import Participant

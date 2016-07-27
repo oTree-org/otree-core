@@ -131,7 +131,10 @@ def ping(redis_conn, unique_response_code):
     if result is None:
         raise Exception(
             'Ping to botworker failed. '
-            'To use browser bots, you need to be running the botworker.'
+            'If you want to use browser bots, '
+            'you need to be running the botworker.'
+            'Otherwise, set ("use_browser_bots": False) in the session config '
+            'in settings.py.'
         )
 
 

@@ -11,7 +11,7 @@ from six.moves import urllib
 from django import test
 import json
 from easymoney import Money as Currency
-
+from django.core.urlresolvers import resolve
 from otree import constants_internal
 
 from otree.common_internal import get_dotted_name
@@ -137,7 +137,7 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
         return super(ParticipantBot, self).get(path, data, follow, **extra)
 
     def is_on(self, ViewClass):
-        return re.match(ViewClass.url_pattern(), self.path.lstrip('/'))
+        return ViewClass.url_name() == resolve(self.path).url_name
 
     def assert_is_on(self, ViewClass):
         if not self.is_on(ViewClass):

@@ -7,7 +7,6 @@ from .. import models
 
 
 class Page(otree.views.Page):
-    z_models = models
 
     def z_autocomplete(self):
         self.subsession = models.Subsession()
@@ -17,7 +16,6 @@ class Page(otree.views.Page):
 
 class WaitPage(otree.views.WaitPage):
 
-    z_models = models
 
     def z_autocomplete(self):
         self.subsession = models.Subsession()

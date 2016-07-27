@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 from . import models
-from ._builtin import Page, WaitPage
-from otree.common import Currency, currency_range
+from otree.api import Page, WaitPage
 from .models import Constants
 
 class MyPage(Page):

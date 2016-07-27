@@ -4,7 +4,7 @@
 import logging
 
 import django.test
-
+from django.core.urlresolvers import reverse
 from otree import constants_internal
 import otree.common_internal
 from otree.common_internal import random_chars_8, random_chars_10
@@ -228,12 +228,15 @@ class Session(ModelWithVars):
             for player in participant.get_players():
                 for View in views_module_for_player(player).page_sequence:
                     page_index += 1
-                    records_to_create.append(ParticipantToPlayerLookup(
-                        participant=participant,
-                        page_index=page_index,
-                        app_name=player._meta.app_config.name,
-                        player_pk=player.pk,
-                        url=View.url(participant, page_index)
+                    records_to_create.append(
+                        ParticipantToPlayerLookup(
+                            participant=participant,
+                            page_index=page_index,
+                            app_name=player._meta.app_config.name,
+                            player_pk=player.pk,
+                            url=reverse(
+                                View.url_name(),
+                                args=[participant.code, page_index])
                     ))
 
             # technically could be stored at the session level

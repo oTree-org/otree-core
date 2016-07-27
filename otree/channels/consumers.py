@@ -112,7 +112,7 @@ def create_session(message):
         # full error message is printed to console (though sometimes not?)
         error_message = (
             'Failed to create session: "{}" - '
-            'For the full error message, check the server logs.'.format(
+            'For the full traceback, check the server logs.'.format(
                     str(e)))
         group.send(
             {'text': json.dumps(

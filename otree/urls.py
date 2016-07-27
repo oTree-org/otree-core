@@ -14,6 +14,58 @@ from otree.views.rest import SessionParticipantsList, Ping
 
 from otree.common_internal import get_models_module
 
+STUDY_UNRESTRICTED_VIEWS = {
+    'otree.views.concrete.AssignVisitorToRoom',
+    'otree.views.concrete.InitializeParticipant',
+    'otree.views.concrete.MTurkLandingPage',
+    'otree.views.concrete.MTurkStart',
+    'otree.views.concrete.JoinSessionAnonymously',
+    'otree.views.concrete.OutOfRangeNotification',
+}
+
+DEMO_UNRESTRICTED_VIEWS = STUDY_UNRESTRICTED_VIEWS.union({
+    'otree.views.concrete.AdvanceSession',
+    'otree.views.demo.CreateDemoSession',
+    'otree.views.demo.DemoIndex',
+    'otree.views.demo.SessionFullscreen',
+    'otree.views.admin.SessionDescription',
+    'otree.views.admin.SessionMonitor',
+    'otree.views.admin.SessionPayments',
+    'otree.views.admin.SessionResults',
+    'otree.views.admin.SessionStartLinks',
+    'otree.views.admin.SessionStartLinks',
+    'otree.views.admin.WaitUntilSessionCreated',
+})
+
+
+def view_classes_from_module(module_name):
+    views_module = import_module(module_name)
+
+    # what about custom views?
+    return [
+        ViewCls for _, ViewCls in inspect.getmembers(views_module)
+        if hasattr(ViewCls, 'url_pattern') and
+        inspect.getmodule(ViewCls) == views_module
+    ]
+
+
+def url_patterns_from_game_module(module_name, name_in_url):
+    views_module = import_module(module_name)
+
+    all_views = [ViewCls for _, ViewCls in inspect.getmembers(views_module)
+        if hasattr(ViewCls, 'url_pattern')]
+
+    view_urls = []
+    for ViewCls in all_views:
+
+        url_pattern = ViewCls.url_pattern(name_in_url)
+        url_name = ViewCls.url_name()
+        view_urls.append(
+            urls.url(url_pattern, ViewCls.as_view(), name=url_name)
+        )
+
+    return urls.patterns('', *view_urls)
+
 
 def url_patterns_from_module(module_name):
     """automatically generates URLs for all Views in the module,
@@ -26,44 +78,14 @@ def url_patterns_from_module(module_name):
 
     """
 
-    views_module = import_module(module_name)
+    all_views = view_classes_from_module(module_name)
 
-    all_views = [
-        ViewCls for _, ViewCls in inspect.getmembers(views_module)
-        if hasattr(ViewCls, 'url_pattern') and
-        inspect.getmodule(ViewCls) == views_module
-    ]
-
-    # see issue #273 for discussion of AUTH_LEVEL setting
-    # see issue #303 for discussion of granting access with "white-list"
     # 2015-11-13: EXPERIMENT deprecated, renamed to STUDY
     # remove EXPERIMENT eventually
-    if (
-            settings.AUTH_LEVEL in {'DEMO', 'EXPERIMENT', 'STUDY'} and
-            module_name.startswith('otree.views')):
-        unrestricted_views = {
-            'otree.views.concrete.AssignVisitorToRoom',
-            'otree.views.concrete.InitializeParticipant',
-            'otree.views.concrete.MTurkLandingPage',
-            'otree.views.concrete.MTurkStart',
-            'otree.views.concrete.JoinSessionAnonymously',
-            'otree.views.concrete.OutOfRangeNotification',
-        }
-
-        if settings.AUTH_LEVEL == 'DEMO':
-            unrestricted_views.update({
-                'otree.views.concrete.AdvanceSession',
-                'otree.views.demo.CreateDemoSession',
-                'otree.views.demo.DemoIndex',
-                'otree.views.demo.SessionFullscreen',
-                'otree.views.admin.SessionDescription',
-                'otree.views.admin.SessionMonitor',
-                'otree.views.admin.SessionPayments',
-                'otree.views.admin.SessionResults',
-                'otree.views.admin.SessionStartLinks',
-                'otree.views.admin.SessionStartLinks',
-                'otree.views.admin.WaitUntilSessionCreated',
-            })
+    if settings.AUTH_LEVEL in {'EXPERIMENT', 'STUDY'}:
+        unrestricted_views = STUDY_UNRESTRICTED_VIEWS
+    elif settings.AUTH_LEVEL == 'DEMO':
+        unrestricted_views = DEMO_UNRESTRICTED_VIEWS
     else:
         unrestricted_views = [
             '%s.%s' % (module_name, view.__name__) for view in all_views
@@ -134,9 +156,8 @@ def augment_urlpatterns(urlpatterns):
 
         used_names_in_url.add(name_in_url)
         views_module_name = '{}.views'.format(app_name)
-        utilities_module_name = '{}._builtin'.format(app_name)
-        urlpatterns += url_patterns_from_module(views_module_name)
-        urlpatterns += url_patterns_from_module(utilities_module_name)
+        urlpatterns += url_patterns_from_game_module(
+            views_module_name, name_in_url)
 
     urlpatterns += url_patterns_from_module('otree.views.concrete')
     urlpatterns += url_patterns_from_module('otree.views.demo')

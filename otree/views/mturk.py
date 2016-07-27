@@ -118,7 +118,7 @@ class CreateMTurkHitForm(forms.Form):
             "Number of minutes, that a Worker has to "
             "complete the HIT after accepting it."
         ))
-    expiration_hours = forms.IntegerField(
+    expiration_hours = forms.FloatField(
         label="Hours until HIT expiration",
         help_text=(
             "Number of hours after which the HIT "
@@ -283,7 +283,7 @@ class CreateMTurkHIT(AdminSessionPageMixin, vanilla.FormView):
                         form.cleaned_data['minutes_allotted_per_assignment']
                     )),
                 'lifetime': datetime.timedelta(
-                    hours=form.cleaned_data['expiration_hours'])
+                    minutes=int(60*form.cleaned_data['expiration_hours']))
             }
 
             hit = mturk_connection.create_hit(**mturk_hit_parameters)

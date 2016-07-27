@@ -37,7 +37,7 @@ import otree.db.idmap
 import otree.constants_internal as constants
 from otree.models.participant import Participant
 from otree.common_internal import (
-    get_app_label_from_import_path,
+    get_app_label_from_import_path, get_dotted_name
 )
 from otree.bots.browser import EphemeralBrowserBot
 from otree.models_concrete import (
@@ -146,17 +146,6 @@ class OTreeMixin(SaveObjectsMixin, object):
     """
 
     is_debug = settings.DEBUG
-    is_otree_dot_org = 'IS_OTREE_DOT_ORG' in os.environ
-
-    @classmethod
-    def get_name_in_url(cls):
-        # look for name_in_url attribute Constants
-        # if it's not part of a game, but rather a shared module etc,
-        # SubsessionClass won't exist.
-        # in that case, name_in_url needs to be defined on the class.
-        if hasattr(cls, 'z_models'):
-            return cls.z_models.Constants.name_in_url
-        return cls.name_in_url
 
     def _redirect_to_page_the_user_should_be_on(self):
         """Redirect to where the player should be,
@@ -178,12 +167,17 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
     """
 
     @classmethod
-    def url(cls, participant, index):
-        return otree.common_internal.url(cls, participant, index)
+    def url_pattern(cls, name_in_url):
+        p = r'^p/(?P<participant_code>\w+)/{}/{}/(?P<page_index>\d+)/$'.format(
+            name_in_url,
+            cls.__name__,
+        )
+        return p
 
     @classmethod
-    def url_pattern(cls):
-        return otree.common_internal.url_pattern(cls, True)
+    def url_name(cls):
+        '''using dots seems not to work'''
+        return get_dotted_name(cls).replace('.', '-')
 
     @method_decorator(never_cache)
     @method_decorator(cache_control(must_revalidate=True, max_age=0,

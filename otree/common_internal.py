@@ -89,32 +89,6 @@ def app_name_format(app_name):
     return title(app_label.replace("_", " "))
 
 
-def url(cls, participant, index=None):
-    u = '/{}/{}/{}/{}/'.format(
-        participant.user_type_in_url,
-        participant.code,
-        cls.get_name_in_url(),
-        cls.__name__,
-    )
-
-    if index is not None:
-        u += '{}/'.format(index)
-    return u
-
-
-def url_pattern(cls, is_sequence_url=False):
-    p = r'(?P<{}>\w)/(?P<{}>[a-z0-9]+)/{}/{}/'.format(
-        constants_internal.user_type,
-        constants_internal.participant_code,
-        cls.get_name_in_url(),
-        cls.__name__,
-    )
-    if is_sequence_url:
-        p += r'(?P<{}>\d+)/'.format(constants_internal.index_in_pages,)
-    p = r'^{}$'.format(p)
-    return p
-
-
 def directory_name(path):
     return os.path.basename(os.path.normpath(path))
 

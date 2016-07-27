@@ -1,26 +1,24 @@
 # -*- coding: utf-8 -*-
 # <standard imports>
 from __future__ import division
-from otree.db import models
-import otree.models
-from otree import widgets
-from otree.common import Currency, currency_range
-import random
+from otree.api import (
+    BaseSubsession, BaseGroup, BasePlayer, BaseConstants, models
+)
 # </standard imports>
 
 doc = "foo"
 
-class Constants:
+class Constants(BaseConstants):
     name_in_url = 'simple_game_copy'
     players_per_group = None
     num_rounds = 1
 
 
-class Subsession(otree.models.BaseSubsession):
+class Subsession(BaseSubsession):
     pass
 
 
-class Group(otree.models.BaseGroup):
+class Group(BaseGroup):
     players_per_group = None
 
     def set_payoffs(self):
@@ -28,5 +26,5 @@ class Group(otree.models.BaseGroup):
             p.payoff = 0
 
 
-class Player(otree.models.BasePlayer):
+class Player(BasePlayer):
     my_field = models.CurrencyField()

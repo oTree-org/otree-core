@@ -32,9 +32,6 @@
         {% block content_main %}{% endblock %}
 
         {% block internal_content_at_bottom_of_body %}
-            {% if view.is_otree_dot_org %}
-                {% include "otree/includes/OtreeDotOrgFeedbackWidget.html" %}
-            {% endif %}
         {% endblock %}
         {% block content_at_bottom_of_body %}{% endblock %}
         {% block page_footer  %}
