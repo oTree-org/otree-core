@@ -8,7 +8,6 @@ import abc
 import six
 from importlib import import_module
 from six.moves import urllib
-import asyncio
 from django import test
 import json
 from easymoney import Money as Currency
