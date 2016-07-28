@@ -116,7 +116,51 @@ def otree_and_django_version(*args, **kwargs):
     return "oTree: {} - Django: {}".format(otree_ver, django_ver)
 
 
-def execute_from_command_line(arguments, script_file=None):
+def execute_from_command_line(arguments, script_file):
+
+    try:
+        subcommand = arguments[1]
+    except IndexError:
+        subcommand = 'help'  # default
+
+    # Workaround for Python 2 & windows. For some reason, runserver
+    # complains if the script you are using to initialize celery does not end
+    # on '.py'. That's why we require a manage.py file to be around.
+    # originally this was written for a problem with billiard/celery,
+    # but now for runserver.
+    # See https://github.com/celery/billiard/issues/129 for more details.
+    cond = (
+        platform.system() == 'Windows' and
+        not script_file.lower().endswith('.py') and
+        subcommand not in NO_SETTINGS_COMMANDS
+    )
+
+    if cond:
+
+        scriptdir = os.path.dirname(os.path.abspath(script_file))
+        managepy = os.path.join(scriptdir, 'manage.py')
+        if not os.path.exists(managepy):
+            error_lines = []
+
+            error_lines.append(
+                "It seems that you do not have a file called 'manage.py' in "
+                "your current directory. This is a requirement when using "
+                "otree on windows."
+            )
+            error_lines.append("")
+            error_lines.append("")
+            error_lines.append(
+                "Please download the file {url} and save it as 'manage.py' in "
+                "the directory {directory}".format(
+                    url=MANAGE_URL, directory=scriptdir))
+            raise CommandError("\n".join(error_lines))
+        args = [sys.executable] + [managepy] + arguments[1:]
+        process = subprocess.Popen(args,
+                                   stdin=sys.stdin,
+                                   stdout=sys.stdout,
+                                   stderr=sys.stderr)
+        return_code = process.wait()
+        sys.exit(return_code)
 
     # only monkey patch when is necesary
     if "version" in arguments or "--version" in arguments:
@@ -170,4 +214,4 @@ def otree_cli():
             print(msg)
             sys.exit(1)
 
-    execute_from_command_line(argv)
+    execute_from_command_line(argv, 'otree')
