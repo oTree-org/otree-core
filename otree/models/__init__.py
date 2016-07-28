@@ -1,13 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import logging
+
+from django.core.urlresolvers import reverse
 
 from django.db.models.signals import class_prepared
 from importlib import import_module
 
+import otree.common_internal
+from otree import constants_internal
+from otree.common_internal import random_chars_8, id_label_name, \
+    random_chars_10
+
 from otree.db.models import *
 from otree.db import models
-from otree.models.session import Session
-from otree.models.participant import Participant
+#from otree.models.session import Session
+#from otree.models.participant import Participant
 
 # NOTE: this imports the following submodules and then subclasses several
 # classes importing is done via import_module rather than an ordinary import.
@@ -18,12 +26,16 @@ from otree.models.participant import Participant
 # project I wouldn't do it this way, but because oTree is aimed at newcomers
 # who may need more assistance from their IDE, I want to try this approach out.
 # this module is also a form of documentation of the public API.
+from otree.models import ModelWithVars, client
+from otree.models.session import client
+from otree.models.varsmixin import ModelWithVars
+from otree.models_concrete import ParticipantToPlayerLookup, RoomToSession
 
 subsession_module = import_module('otree.models.subsession')
 group_module = import_module('otree.models.group')
 player_module = import_module('otree.models.player')
 session_module = import_module('otree.models.session')
-
+participant_module = import_module('otree.models.participant')
 
 def ensure_required_fields(sender, **kwargs):
     """
@@ -37,6 +49,14 @@ def ensure_required_fields(sender, **kwargs):
         sender._ensure_required_fields()
 
 class_prepared.connect(ensure_required_fields)
+
+
+class Session(session_module.BaseSession):
+    pass
+
+
+class Participant(participant_module.BaseParticipant):
+    pass
 
 
 class BaseSubsession(subsession_module.BaseSubsession):
@@ -196,3 +216,6 @@ class BasePlayer(player_module.BasePlayer):
 
     def in_rounds(self, first, last):
         return super(BasePlayer, self).in_rounds(first, last)
+
+
+

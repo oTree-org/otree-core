@@ -8,7 +8,7 @@ from datetime import timedelta
 
 from channels import Group
 
-from otree.models import Participant
+from otree.models import Participant, Session
 from otree.models_concrete import (
     CompletedGroupWaitPage, CompletedSubsessionWaitPage)
 from otree.common_internal import (

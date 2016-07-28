@@ -150,8 +150,8 @@ def export_docs(fp, app_name):
     """Write the dcos of the given app name as csv into the file-like object
 
     """
-    from otree.models.session import Session
-    from otree.models.participant import Participant
+    from otree.models import Session
+    from otree.models import Participant
     from otree.views.admin import get_all_fields
 
     # generate doct_dict

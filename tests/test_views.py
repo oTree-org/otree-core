@@ -2,7 +2,7 @@ from django.core.management import call_command
 from django.test.client import RequestFactory
 
 from otree import constants_internal
-from otree.models.participant import Participant
+from otree.models import Participant
 
 from .simple_game.views import MyPage
 from .simple_game.models import Player

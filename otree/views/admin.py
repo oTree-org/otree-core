@@ -40,7 +40,7 @@ from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
 from otree.views.mturk import MTurkConnection, get_workers_by_status
 from otree.common import Currency as c
 from otree.models.session import Session
-from otree.models.participant import Participant
+from otree.models import Participant, Session
 from otree.models_concrete import PageCompletion, ParticipantRoomVisit
 from otree.room import ROOM_DICT
 from otree.bots.runner import play_bots_task

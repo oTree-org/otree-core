@@ -35,7 +35,7 @@ import otree.timeout.tasks
 import otree.models
 import otree.db.idmap
 import otree.constants_internal as constants
-from otree.models.participant import Participant
+from otree.models import Participant
 from otree.common_internal import (
     get_app_label_from_import_path, get_dotted_name
 )

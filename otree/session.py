@@ -19,7 +19,7 @@ import schema
 import otree.db.idmap
 from otree import constants_internal
 from otree.models.session import Session
-from otree.models.participant import Participant
+from otree.models import Participant, Session
 from otree.common_internal import (
     get_models_module, get_app_constants, validate_identifier,
     min_players_multiple,

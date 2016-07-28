@@ -7,7 +7,7 @@ from django.http import Http404
 
 from rest_framework import generics, permissions
 
-from otree.models.session import Session
+from otree.models import Session
 from otree.serializers import ParticipantSerializer
 
 

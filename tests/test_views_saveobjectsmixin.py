@@ -5,7 +5,7 @@ import idmap.tls
 
 from .base import TestCase
 
-from otree.models import Participant
+from otree.models import Participant, Session
 from otree.models import Session
 from otree.views.abstract import SaveObjectsMixin
 

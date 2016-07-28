@@ -24,6 +24,7 @@ import vanilla
 from boto.mturk.connection import MTurkRequestError
 
 import otree.constants_internal as constants
+import otree.models
 import otree.models.session
 from otree.models import Participant, Session
 from otree.common_internal import make_hash, add_params_to_url, get_redis_conn
@@ -361,7 +362,7 @@ class AdvanceSession(vanilla.View):
 
     def dispatch(self, request, *args, **kwargs):
         self.session = get_object_or_404(
-            otree.models.session.Session, code=kwargs['session_code']
+            otree.models.Session, code=kwargs['session_code']
         )
         return super(AdvanceSession, self).dispatch(
             request, *args, **kwargs
@@ -380,7 +381,7 @@ class ToggleArchivedSessions(vanilla.View):
 
     def post(self, request, *args, **kwargs):
         code_list = request.POST.getlist('item-action')
-        sessions = otree.models.session.Session.objects.filter(
+        sessions = otree.models.Session.objects.filter(
             code__in=code_list)
         code_dict = {True: [], False: []}
         for code, archived in sessions.values_list('code', 'archived'):
@@ -392,9 +393,9 @@ class ToggleArchivedSessions(vanilla.View):
 
         # TODO: When `F` implements a toggle, use this instead:
         #       sessions.update(archived=~F('archived'))
-        otree.models.session.Session.objects.filter(
+        otree.models.Session.objects.filter(
             code__in=code_dict[True]).update(archived=False)
-        otree.models.session.Session.objects.filter(
+        otree.models.Session.objects.filter(
             code__in=code_dict[False]).update(archived=True)
 
         return HttpResponseRedirect(request.POST['origin_url'])
@@ -410,7 +411,7 @@ class DeleteSessions(vanilla.View):
     def post(self, request, *args, **kwargs):
         for code in request.POST.getlist('item-action'):
             session = get_object_or_404(
-                otree.models.session.Session, code=code
+                otree.models.Session, code=code
             )
             session.delete()
         return HttpResponseRedirect(reverse('Sessions'))

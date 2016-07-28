@@ -3,7 +3,7 @@
 
 from otree.views.admin import get_all_fields
 from rest_framework import serializers
-from otree.models.participant import Participant
+from otree.models import Participant
 
 
 class ParticipantSerializer(serializers.ModelSerializer):

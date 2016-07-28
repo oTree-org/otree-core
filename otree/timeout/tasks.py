@@ -26,7 +26,7 @@ def ensure_pages_visited(participant_pk_set, wait_page_index):
     automatically, to kick off the expiration timer of the timeout page.
     """
 
-    from otree.models.participant import Participant
+    from otree.models import Participant
 
     unvisited_participants = Participant.objects.filter(
         pk__in=participant_pk_set,

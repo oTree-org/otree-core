@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 from django.db.models import permalink
 
 import django.test
@@ -10,11 +12,11 @@ from otree.common_internal import id_label_name, random_chars_8
 from otree.common import Currency as c
 from otree.db import models
 from otree.models_concrete import ParticipantToPlayerLookup
-from otree.models.session import Session
 from otree.models.varsmixin import ModelWithVars
 from django.core.urlresolvers import reverse
 
-class Participant(ModelWithVars):
+
+class BaseParticipant(ModelWithVars):
 
     class Meta:
         ordering = ['pk']
@@ -29,7 +31,7 @@ class Participant(ModelWithVars):
         )
     )
 
-    session = models.ForeignKey(Session)
+    session = models.ForeignKey('otree.Session')
     time_started = models.DateTimeField(null=True)
     user_type_in_url = constants_internal.user_type_participant
     mturk_assignment_id = models.CharField(
@@ -209,3 +211,4 @@ class Participant(ModelWithVars):
 
     def name(self):
         return id_label_name(self.pk, self.label)
+

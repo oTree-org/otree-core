@@ -1,24 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import logging
 
 import django.test
-from django.core.urlresolvers import reverse
+
 from otree import constants_internal
 import otree.common_internal
 from otree.common_internal import random_chars_8, random_chars_10
 from otree.db import models
 from .varsmixin import ModelWithVars
 from otree.models_concrete import ParticipantToPlayerLookup, RoomToSession
-
+from django.core.urlresolvers import reverse
 logger = logging.getLogger('otree')
 
 client = django.test.Client()
 
 
+import logging
+
 # for now removing SaveTheChange
-class Session(ModelWithVars):
+
+class BaseSession(ModelWithVars):
 
     class Meta:
         # if i don't set this, it could be in an unpredictable order
@@ -137,7 +139,7 @@ class Session(ModelWithVars):
     def delete(self, using=None):
         for subsession in self.get_subsessions():
             subsession.delete()
-        super(Session, self).delete(using)
+        super(BaseSession, self).delete(using)
 
     def get_participants(self):
         return self.participant_set.all()
