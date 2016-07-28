@@ -1,21 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import logging
-
-from django.core.urlresolvers import reverse
-
 from django.db.models.signals import class_prepared
 from importlib import import_module
-
-import otree.common_internal
-from otree import constants_internal
-from otree.common_internal import random_chars_8, id_label_name, \
-    random_chars_10
-
 from otree.db.models import *
 from otree.db import models
-#from otree.models.session import Session
-#from otree.models.participant import Participant
 
 # NOTE: this imports the following submodules and then subclasses several
 # classes importing is done via import_module rather than an ordinary import.
@@ -26,9 +14,6 @@ from otree.db import models
 # project I wouldn't do it this way, but because oTree is aimed at newcomers
 # who may need more assistance from their IDE, I want to try this approach out.
 # this module is also a form of documentation of the public API.
-from otree.models import ModelWithVars, client
-from otree.models.session import client
-from otree.models.varsmixin import ModelWithVars
 from otree.models_concrete import ParticipantToPlayerLookup, RoomToSession
 
 subsession_module = import_module('otree.models.subsession')
@@ -52,11 +37,48 @@ class_prepared.connect(ensure_required_fields)
 
 
 class Session(session_module.BaseSession):
-    pass
+
+    class Meta:
+        app_label = "otree"
+
+    config = models.JSONField(default=dict, null=True) # type: dict
+
+    vars = models.JSONField(default=dict) # type: dict
+
+    def get_participants(self):
+        return super(Session, self).get_participants()
+
+    def get_subsessions(self):
+        return super(Session, self).get_subsessions()
 
 
 class Participant(participant_module.BaseParticipant):
-    pass
+    class Meta:
+        app_label = "otree"
+
+    session = models.ForeignKey(Session)
+
+    vars = models.JSONField(default=dict)
+
+    label = models.CharField(
+        max_length=50, null=True, doc=(
+            "Label assigned by the experimenter. Can be assigned by passing a "
+            "GET param called 'participant_label' to the participant's start "
+            "URL"
+        )
+    )
+
+    id_in_session = models.PositiveIntegerField(null=True)
+
+    def get_players(self):
+        return super(Participant, self).get_players()
+
+    @property
+    def payoff(self):
+        return super(Participant, self).payoff
+
+    def money_to_pay(self):
+        return super(Participant, self).money_to_pay()
 
 
 class BaseSubsession(subsession_module.BaseSubsession):
@@ -136,7 +158,7 @@ class BaseGroup(group_module.BaseGroup):
         Session, related_name='%(app_label)s_%(class)s'
     )
 
-    subsession = None
+    subsession = None # type: BaseSubsession
 
     round_number = models.PositiveIntegerField(db_index=True)
 
@@ -191,8 +213,8 @@ class BasePlayer(player_module.BasePlayer):
         Session, related_name='%(app_label)s_%(class)s'
     )
 
-    group = None
-    subsession = None
+    group = None # type: BaseGroup
+    subsession = None # type: BaseSubsession
 
     round_number = models.PositiveIntegerField(db_index=True)
 

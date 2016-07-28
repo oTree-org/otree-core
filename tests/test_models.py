@@ -5,6 +5,7 @@ from otree.models.varsmixin import ModelWithVars
 
 
 class JSONFieldModel(ModelWithVars):
+    vars = models.JSONField(default=dict)
     integer = models.IntegerField(default=0)
     json_field = models.JSONField()
 

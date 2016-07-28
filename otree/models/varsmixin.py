@@ -100,7 +100,8 @@ class _SaveTheChangeWithCustomFieldSupport(SaveTheChange):
 
 
 class ModelWithVars(_SaveTheChangeWithCustomFieldSupport, models.Model):
-    vars = models.JSONField(default=dict)
+    # don't put vars= field explicitly here, instead in subclasses,
+    # for autocomplete
 
     class Meta:
         abstract = True

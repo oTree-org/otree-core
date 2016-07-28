@@ -29,9 +29,9 @@ class WaitPage(abstract.InGameWaitPage):
     title_text = None
     body_text = None
     template_name = None
-    round_number = None
-    participant = None
-    session = None
+    round_number = None # type: int
+    participant = None # type: otree.models.Participant
+    session = None # type: otree.models.Session
 
     def is_displayed(self):
         return super(WaitPage, self).is_displayed()
@@ -41,12 +41,12 @@ class WaitPage(abstract.InGameWaitPage):
 
 
 class Page(abstract.PlayerUpdateView):
-    round_number = None
+    round_number = None # type: int
     template_name = None
     timeout_seconds = None
     timeout_submission = None
-    participant = None
-    session = None
+    participant = None # type: otree.models.Participant
+    session = None # type: otree.models.Session
 
     # prefix with "form_" so that it's clear these refer to the form
     # otherwise someone might confuse 'fields' with vars_for_template

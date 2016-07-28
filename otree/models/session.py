@@ -23,14 +23,9 @@ import logging
 class BaseSession(ModelWithVars):
 
     class Meta:
+        abstract = True
         # if i don't set this, it could be in an unpredictable order
         ordering = ['pk']
-        app_label = "otree"
-
-    config = models.JSONField(
-        default=dict, null=True,
-        doc=("the session config dict, as defined in the "
-             "programmer's settings.py."))
 
     # label of this session instance
     label = models.CharField(

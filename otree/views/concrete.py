@@ -25,7 +25,6 @@ from boto.mturk.connection import MTurkRequestError
 
 import otree.constants_internal as constants
 import otree.models
-import otree.models.session
 from otree.models import Participant, Session
 from otree.common_internal import make_hash, add_params_to_url, get_redis_conn
 import otree.views.admin

@@ -29,6 +29,7 @@ from otree.checks.mturk import validate_session_for_mturk
 from otree import deprecate
 from otree.forms import widgets
 from otree.common import RealWorldCurrency
+from otree.models import Session
 
 logger = logging.getLogger('otree')
 
@@ -301,7 +302,7 @@ class PayMTurk(vanilla.View):
     url_pattern = r'^PayMTurk/(?P<session_code>[a-z0-9]+)/$'
 
     def post(self, request, *args, **kwargs):
-        session = get_object_or_404(otree.models.session.Session,
+        session = get_object_or_404(otree.models.Session,
                                     code=kwargs['session_code'])
         successful_payments = 0
         failed_payments = 0
@@ -350,7 +351,7 @@ class RejectMTurk(vanilla.View):
     url_pattern = r'^RejectMTurk/(?P<session_code>[a-z0-9]+)/$'
 
     def post(self, request, *args, **kwargs):
-        session = get_object_or_404(otree.models.session.Session,
+        session = get_object_or_404(Session,
                                     code=kwargs['session_code'])
         with MTurkConnection(self.request,
                              session.mturk_sandbox) as mturk_connection:

@@ -15,7 +15,6 @@ import vanilla
 
 import otree.common_internal
 import otree.models
-import otree.models.session
 from otree.common_internal import app_name_format
 
 

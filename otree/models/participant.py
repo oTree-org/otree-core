@@ -19,8 +19,8 @@ from django.core.urlresolvers import reverse
 class BaseParticipant(ModelWithVars):
 
     class Meta:
+        abstract = True
         ordering = ['pk']
-        app_label = "otree"
         index_together = ['session', 'mturk_worker_id', 'mturk_assignment_id']
 
     exclude_from_data_analysis = models.BooleanField(
@@ -31,7 +31,7 @@ class BaseParticipant(ModelWithVars):
         )
     )
 
-    session = models.ForeignKey('otree.Session')
+
     time_started = models.DateTimeField(null=True)
     user_type_in_url = constants_internal.user_type_participant
     mturk_assignment_id = models.CharField(
@@ -40,21 +40,10 @@ class BaseParticipant(ModelWithVars):
 
     start_order = models.PositiveIntegerField(db_index=True)
 
-    # unique=True can't be set, because the same external ID could be reused
-    # in multiple sequences. however, it should be unique within the sequence.
-    label = models.CharField(
-        max_length=50, null=True, doc=(
-            "Label assigned by the experimenter. Can be assigned by passing a "
-            "GET param called 'participant_label' to the participant's start "
-            "URL"
-        )
-    )
 
     _index_in_subsessions = models.PositiveIntegerField(default=0, null=True)
 
     _index_in_pages = models.PositiveIntegerField(default=0, db_index=True)
-
-    id_in_session = models.PositiveIntegerField(null=True)
 
     def _id_in_session(self):
         """the human-readable version."""

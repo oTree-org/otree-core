@@ -21,7 +21,7 @@ from django.db.models.options import FieldDoesNotExist
 import easymoney
 
 import otree.common_internal
-import otree.models.session
+import otree.models
 import otree.constants_internal
 from otree.forms import fields
 from otree.db import models

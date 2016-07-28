@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+from __future__ import absolute_import
 import collections
 import sys
 
@@ -8,6 +8,7 @@ import itertools
 import os
 from six.moves import range
 from six.moves import zip
+import json
 
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.core.urlresolvers import reverse
@@ -21,11 +22,10 @@ import vanilla
 
 from ordered_set import OrderedSet as oset
 from collections import OrderedDict
-
+import channels
 import easymoney
 
 import otree.constants_internal
-import otree.models.session
 from otree.common_internal import (
     get_models_module, app_name_format,
     create_session_and_redirect,
@@ -39,7 +39,7 @@ from otree.common import RealWorldCurrency
 from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
 from otree.views.mturk import MTurkConnection, get_workers_by_status
 from otree.common import Currency as c
-from otree.models.session import Session
+from otree.models import Session
 from otree.models import Participant, Session
 from otree.models_concrete import PageCompletion, ParticipantRoomVisit
 from otree.room import ROOM_DICT
@@ -951,6 +951,9 @@ class CreateBrowserBotsSession(vanilla.View):
             force_browser_bots=True,
         )
         get_redis_conn().set('otree-browser-bots-session', session.code)
+        channels.Group('browser_bot_wait').send(
+            {'text': json.dumps({'status': 'session_ready'})}
+        )
 
         return HttpResponse(session.code)
 

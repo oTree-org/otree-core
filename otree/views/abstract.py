@@ -30,7 +30,6 @@ import vanilla
 
 import otree.forms
 import otree.common_internal
-import otree.models.session
 import otree.timeout.tasks
 import otree.models
 import otree.db.idmap
@@ -444,6 +443,8 @@ class InGameWaitPageMixin(object):
             # is_displayed() could also depend on a field on participant
             # that was set on the wait page, so need to refresh participant,
             # because it is passed as an arg to set_attributes().
+            # Note: i was never able to reproduce this myself -- just heard
+            # from Anthony N.
             otree.db.idmap.save_objects()
             otree.db.idmap.flush_cache()
             self.participant.refresh_from_db()
