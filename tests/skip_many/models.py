@@ -10,8 +10,8 @@ doc = "foo"
 
 class Constants(BaseConstants):
     name_in_url = 'skip_many'
-    players_per_group = 5
-    num_rounds = 1
+    players_per_group = 2
+    num_rounds = 5
 
 
 class Subsession(BaseSubsession):

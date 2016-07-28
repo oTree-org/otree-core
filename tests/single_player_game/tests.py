@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 from . import views
-from ._builtin import Bot
+from otree.api import Bot
 import random
 
 

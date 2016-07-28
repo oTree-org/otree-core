@@ -109,7 +109,7 @@ SESSION_CONFIGS = [
         'name': 'skipmany',
         'display_name': "skip many",
         'num_demo_participants': 2,
-        'app_sequence': ['tests.skipmany'],
+        'app_sequence': ['tests.skip_many'],
     },
 
 ]

@@ -11,7 +11,7 @@ from six.moves import urllib
 from otree.api import Page
 
 class BlankTemplatePage(Page):
-    template_name = 'BlankTemplatePage.html'
+    template_name = 'global/BlankTemplatePage.html'
 
 @contextlib.contextmanager
 def add_path(path):
