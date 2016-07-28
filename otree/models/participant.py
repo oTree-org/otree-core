@@ -59,6 +59,7 @@ class BaseParticipant(ModelWithVars):
         max_length=16,
         # set non-nullable, until we make our CharField non-nullable
         null=False,
+        # unique implies DB index
         unique=True,
         doc=(
             "Randomly generated unique identifier for the participant. If you "
