@@ -13,7 +13,7 @@ daphne==0.12.0
 dj-database-url==0.4.1
 Django==1.8.8
 django-countries==3.4.1
-django-easymoney==0.7
+django-easymoney==0.7.1
 django-extensions==1.6.7
 django-floppyforms==1.6.2
 django-idmap==0.4.1
