@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
-from ._builtin import Page, WaitPage
+from otree.api import WaitPage
+from tests.utils import BlankTemplatePage as Page
 from .models import Constants
 import random
 from six.moves import range
-
-
-class Page(Page):
-    template_name = 'multi_player_game/EveryPage.html'
 
 
 class FieldOnOtherPlayer(Page):

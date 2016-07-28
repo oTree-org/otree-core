@@ -8,7 +8,10 @@ from django.core.management import call_command
 from django.test.utils import override_settings
 from six import StringIO
 from six.moves import urllib
+from otree.api import Page
 
+class BlankTemplatePage(Page):
+    template_name = 'BlankTemplatePage.html'
 
 @contextlib.contextmanager
 def add_path(path):
@@ -94,3 +97,4 @@ def get_path(test_client_response, if_no_redirect):
         return if_no_redirect
     else:
         return urllib.parse.urlsplit(url).path
+

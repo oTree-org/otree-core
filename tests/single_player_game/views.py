@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 from . import models
-from ._builtin import Page, WaitPage
-
-
-class Page(Page):
-    template_name = 'single_player_game/EveryPage.html'
+from otree.api import WaitPage
+from tests.utils import BlankTemplatePage as Page
 
 
 class ErrorMessage(Page):

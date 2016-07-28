@@ -1,14 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
-
-import random
-
-from otree.common import Currency as c, currency_range
-
 from . import views
-from ._builtin import Bot
+from otree.api import Bot
 from .models import Constants
-
 
 class PlayerBot(Bot):
 
@@ -16,3 +10,6 @@ class PlayerBot(Bot):
         if self.subsession.round_number == Constants.num_rounds:
             yield (views.MyPage)
             yield (views.Results)
+
+    def validate_play(self):
+        pass

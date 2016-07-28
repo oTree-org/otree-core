@@ -47,6 +47,10 @@ class Rules(object):
         self.id = id
 
     def rule(meth):
+        '''
+        wrapper to return True if the method doesn't return anything.
+        and False if it does return something.
+        '''
         @wraps(meth)
         def wrapper(self, *args, **kwargs):
             res = meth(self, *args, **kwargs)
@@ -244,20 +248,20 @@ def files(rules, **kwargs):
     rules.file_exists('models.py')
     rules.file_exists('views.py')
 
-    cond = (
-        rules.dir_exists('templates') and
-        rules.dir_exists('templates/' + rules.config.label)
-    )
-    if cond:
+    if os.path.isdir(rules.get_path('templates')):
         # check for files in templates, but not in templates/<label>
         misplaced_templates = set(glob.glob(
             os.path.join(rules.get_path('templates'), '*.html')
         ))
         misplaced_templates.discard(rules.config.label)
         if misplaced_templates:
-            hint = 'Move template files to "templates/%s"' % rules.config.label
+            hint = (
+                'Move template files from "{app}/templates/" '
+                'to "{app}/templates/{app}" subfolder'.format(
+                    app=rules.config.label)
+            )
             rules.push_error(
-                "Templates files in root template directory",
+                "Templates files in app's root template directory",
                 hint=hint, id='otree.E001'
             )
 

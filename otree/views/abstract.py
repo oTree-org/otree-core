@@ -432,6 +432,22 @@ class InGameWaitPageMixin(object):
     def dispatch(self, request, *args, **kwargs):
 
         if self._is_ready():
+            # need to deactivate cache, in case after_all_players_arrive
+            # finished running after the moment set_attributes
+            # was called in this request.
+            # because in response_when_ready we will call
+            # increment_index_in_pages, which does a look-ahead and calls
+            # is_displayed() on the following pages. is_displayed() might
+            # depend on a field that is set in after_all_players_arrive
+            # so, need to clear the cache to ensure
+            # that we get fresh data.
+            # is_displayed() could also depend on a field on participant
+            # that was set on the wait page, so need to refresh participant,
+            # because it is passed as an arg to set_attributes().
+            otree.db.idmap.save_objects()
+            otree.db.idmap.flush_cache()
+            self.participant.refresh_from_db()
+
             return self._response_when_ready()
         # take a lock because we set "waiting for" list here
         completion = self._register_wait_page_visit()
@@ -465,11 +481,6 @@ class InGameWaitPageMixin(object):
             self._run_after_all_players_arrive(completion)
 
         self.send_completion_message(participant_pk_set)
-        # we can assume it's ready because
-        # even if it wasn't created, that means someone else
-        # created it, and therefore that whole code block
-        # finished executing (including the after_all_players_arrive)
-        # inside the transaction
         return self._response_when_ready()
 
     def _run_after_all_players_arrive(self, completion):

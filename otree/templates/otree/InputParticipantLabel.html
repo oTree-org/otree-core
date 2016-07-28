@@ -8,13 +8,11 @@
 <form method="get">
     <label for="participant_label">Please enter your participant label:</label>
     <br/>
-    <input type="text" id="participant_label" name="participant_label" />
-    <br/>
+    <input type="text" id="participant_label" name="participant_label" class="form-control" />
     {% if uses_pin %}
     <label for="pin">Please enter the session PIN code:</label>
     <br/>
     <input type="text" id="pin" name="pin" />
-    <br/>
     {% endif %}
     <br/>
     {% next_button %}
