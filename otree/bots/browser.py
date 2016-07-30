@@ -3,17 +3,22 @@ from .bot import ParticipantBot, Pause, submission_as_dict
 import json
 from otree.models import Session
 from otree.common_internal import get_redis_conn, get_dotted_name
+import otree.common_internal
 import channels
 import time
 from collections import OrderedDict
+
 
 REDIS_KEY = 'otree-bots'
 
 SESSIONS_PRUNE_LIMIT = 50
 
+# global variable that holds the browser bot worker instance in memory
+browser_bot_worker = None # type: Worker
+
 
 class Worker(object):
-    def __init__(self, redis_conn):
+    def __init__(self, redis_conn=None):
         self.redis_conn = redis_conn
         self.browser_bots = {}
         self.session_participants = OrderedDict()
@@ -84,7 +89,7 @@ class Worker(object):
     def ping(self, *args, **kwargs):
         return {'ok': True}
 
-    def loop(self):
+    def redis_listen(self):
         print('botworker is listening for messages through Redis')
         while True:
             retval = None
@@ -137,8 +142,7 @@ def ping(redis_conn, unique_response_code):
             'in settings.py.'
         )
 
-
-def initialize_bots(redis_conn, session_code, num_players_total):
+def initialize_bots_redis(redis_conn, session_code, num_players_total):
     response_key = '{}-initialize-{}'.format(REDIS_KEY, session_code)
     msg = {
         'command': 'initialize_session',
@@ -166,6 +170,19 @@ def initialize_bots(redis_conn, session_code, num_players_total):
     return {'ok': True}
 
 
+def initialize_bots_in_process(session_code):
+    browser_bot_worker.initialize_session(session_code)
+
+def initialize_bots(session_code, num_players_total):
+    if otree.common_internal.USE_REDIS:
+        initialize_bots_redis(
+            redis_conn=get_redis_conn(),
+            session_code=session_code,
+            num_players_total=num_players_total
+        )
+    else:
+        initialize_bots_in_process(session_code)
+
 def redis_flush_bots(redis_conn):
     for key in redis_conn.scan_iter(match='{}*'.format(REDIS_KEY)):
         redis_conn.delete(key)
@@ -179,7 +196,7 @@ class EphemeralBrowserBot(object):
         self.session = self.view.session
         self.redis_conn = redis_conn or get_redis_conn()
 
-    def get_next_post_data(self):
+    def get_submit_redis(self):
         participant_code = self.participant.code
         redis_conn = self.redis_conn
         response_key = '{}-get_next_submit-{}'.format(
@@ -204,6 +221,16 @@ class EphemeralBrowserBot(object):
             raise Exception(
                 'An error occurred. See the botworker output '
                 'for the traceback.')
+        return submission
+
+    def get_submit_in_process(self):
+        return browser_bot_worker.get_next_submit(self.participant.code)
+
+    def get_next_post_data(self):
+        if otree.common_internal.USE_REDIS:
+            submission = self.get_submit_redis()
+        else:
+            submission = self.get_submit_in_process()
         if 'request_error' in submission:
             raise Exception(submission['request_error'])
         if submission:

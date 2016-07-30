@@ -141,3 +141,13 @@ class ExpectedRoomParticipant(models.Model):
 
     room_name = models.CharField(max_length=50)
     participant_label = models.CharField(max_length=200)
+
+
+class BrowserBotsLauncherSessionCode(models.Model):
+    class Meta:
+        app_label = "otree"
+
+    code = models.CharField(max_length=10)
+
+    # hack to enforce singleton
+    is_only_record = models.BooleanField(unique=True, default=True)

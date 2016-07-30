@@ -37,16 +37,6 @@ BROWSER_CMDS = {
 SERVER_URL_FLAG = '--server-url'
 
 
-RUNSERVER_WARNING = '''
-You are using "otree runserver". In order to use browser bots,
-you should run a multiprocess server (e.g. "otree webandworkers").
-'''
-
-SQLITE_WARNING = '''
-WARNING: Your server is running using SQLite.
-Browser bots may not run properly.
-We recommend using to Postgres or MySQL etc.
-'''
 
 AUTH_FAILURE_MESSAGE = """
 Could not login to the server using your ADMIN_USERNAME
@@ -263,10 +253,11 @@ class Launcher(object):
             resp = self.client.get(self.create_session_url)
         server_check = resp.json()
 
-        if server_check['runserver']:
-            print(RUNSERVER_WARNING)
-        if server_check['sqlite']:
-            print(SQLITE_WARNING)
+        # no need to warn about these for now
+        #if server_check['runserver']:
+        #    print(RUNSERVER_WARNING)
+        #if server_check['sqlite']:
+        #    print(SQLITE_WARNING)
 
     def ping_server(self):
 
@@ -315,15 +306,10 @@ class Launcher(object):
 
         self.browser_cmd = getattr(settings, 'BROWSER_COMMAND', chrome_cmd)
 
-        print(
-            'For fastest speed, disable browser addons and ad-blocker. '
-            '(or use a new browser profile).'
-        )
-
         # check if browser is running
-        if 'chrome' in self.browser_cmd:
+        if 'chrome' in self.browser_cmd.lower():
             browser_type = 'Chrome'
-        elif 'firefox' in self.browser_cmd:
+        elif 'firefox' in self.browser_cmd.lower():
             browser_type = 'Firefox'
         else:
             return

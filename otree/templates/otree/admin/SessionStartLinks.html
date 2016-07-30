@@ -12,18 +12,6 @@
             in the session config.
             </p>
         </div>
-        {% if sqlite %}
-            <div class="alert alert-danger" role="alert">
-            You are using SQLite. In order to use browser bots, you should switch to Postgres or MySQL etc.
-            </div>
-        {% endif %}
-        {% if runserver %}
-            <div class="alert alert-danger" role="alert">
-            You are using <code>runserver</code>. In order to use browser bots,
-                you should run a multiprocess server
-                (e.g. <code>otree runprodserver --no-collectstatic --botworker</code>).
-            </div>
-        {% endif %}
     {% endif %}
 
 {% if room %}

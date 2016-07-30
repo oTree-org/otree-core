@@ -21,5 +21,5 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         redis_conn = get_redis_conn()
         otree.bots.browser.redis_flush_bots(redis_conn)
-        consumer = otree.bots.browser.Worker(redis_conn)
-        consumer.loop()
+        worker = otree.bots.browser.Worker(redis_conn)
+        worker.redis_listen()

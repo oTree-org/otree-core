@@ -4,6 +4,7 @@ from django.db.models.signals import class_prepared
 from importlib import import_module
 from otree.db.models import *
 from otree.db import models
+import os
 
 # NOTE: this imports the following submodules and then subclasses several
 # classes importing is done via import_module rather than an ordinary import.
@@ -19,8 +20,15 @@ from otree.models_concrete import ParticipantToPlayerLookup, RoomToSession
 subsession_module = import_module('otree.models.subsession')
 group_module = import_module('otree.models.group')
 player_module = import_module('otree.models.player')
-session_module = import_module('otree.models.session')
-participant_module = import_module('otree.models.participant')
+
+if os.environ.get('OTREE_CORE_DEV'):
+    # so that I get IDE autocomplete while developing oTree
+    from . import session as session_module
+    from . import participant as participant_module
+else:
+    # so that oTree users don't see internal details
+    session_module = import_module('otree.models.session')
+    participant_module = import_module('otree.models.participant')
 
 def ensure_required_fields(sender, **kwargs):
     """

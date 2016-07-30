@@ -21,10 +21,10 @@ from otree.models_concrete import (
     FailedSessionCreation,
     ParticipantRoomVisit,
     FAILURE_MESSAGE_MAX_LENGTH,
+    BrowserBotsLauncherSessionCode
 )
 from otree.room import ROOM_DICT
-from huey.contrib.djhuey import HUEY
-redis_conn = HUEY.storage.conn
+
 
 
 def connect_wait_page(message, params):
@@ -273,8 +273,8 @@ def disconnect_browser_bots_client(message, session_code):
 def connect_browser_bot(message):
 
     Group('browser_bot_wait').add(message.reply_channel)
-    session_code = redis_conn.get('otree-browser-bots-session')
-    if session_code:
+    launcher_session_info = BrowserBotsLauncherSessionCode.objects.first()
+    if launcher_session_info:
         message.reply_channel.send(
             {'text': json.dumps({'status': 'session_ready'})}
         )

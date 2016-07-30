@@ -42,7 +42,9 @@ from otree.views.mturk import MTurkConnection, get_workers_by_status
 from otree.common import Currency as c
 from otree.models import Session
 from otree.models import Participant, Session
-from otree.models_concrete import PageCompletion, ParticipantRoomVisit
+from otree.models_concrete import (
+    PageCompletion, ParticipantRoomVisit, BrowserBotsLauncherSessionCode
+)
 from otree.room import ROOM_DICT
 from otree.bots.runner import play_bots_task
 
@@ -951,7 +953,12 @@ class CreateBrowserBotsSession(vanilla.View):
             room_name='browser_bots',
             force_browser_bots=True,
         )
-        get_redis_conn().set('otree-browser-bots-session', session.code)
+        BrowserBotsLauncherSessionCode.objects.update_or_create(
+            # i don't know why the update_or_create arg is called 'defaults'
+            # because it will update even if the instance already exists
+            # maybe for consistency with get_or_create
+            defaults={'code': session.code}
+        )
         channels.Group('browser_bot_wait').send(
             {'text': json.dumps({'status': 'session_ready'})}
         )
@@ -964,7 +971,7 @@ class CloseBrowserBotsSession(vanilla.View):
     url_pattern = r"^close_browser_bots_session/$"
 
     def post(self, request, *args, **kwargs):
-        get_redis_conn().delete('otree-browser-bots-session')
+        BrowserBotsLauncherSessionCode.objects.all().delete()
         return HttpResponse('ok')
 
 

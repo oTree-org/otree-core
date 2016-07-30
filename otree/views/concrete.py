@@ -37,7 +37,9 @@ from otree.views.abstract import (
     NO_PARTICIPANTS_LEFT_MSG
 )
 from otree.room import ROOM_DICT
-from otree.models_concrete import ParticipantRoomVisit
+from otree.models_concrete import (
+    ParticipantRoomVisit, BrowserBotsLauncherSessionCode
+)
 
 
 class OutOfRangeNotification(OTreeMixin, vanilla.View):
@@ -424,9 +426,9 @@ class BrowserBotStartLink(GenericWaitPageMixin, vanilla.View):
     def dispatch(self, request, *args, **kwargs):
 
         redis_conn = get_redis_conn()
-        session_code = redis_conn.get('otree-browser-bots-session')
-        if session_code:
-            session = Session.objects.get(code=session_code)
+        session_info = BrowserBotsLauncherSessionCode.objects.first()
+        if session_info:
+            session = Session.objects.get(code=session_info.code)
             with global_lock():
                 participant = session.get_participants().filter(
                     visited=False).order_by('start_order').first()

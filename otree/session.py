@@ -187,7 +187,6 @@ def create_session(
         else:
             use_browser_bots = False
 
-
         session = Session.objects.create(
             config=session_config,
             label=label,
@@ -291,7 +290,6 @@ def create_session(
         otree.db.idmap.deactivate_cache()
 
     if use_browser_bots:
-        redis_conn = get_redis_conn()
         # what about clear_browser_bots? if session is created through
         # UI, when do we run that? it should be run when the session
         # is deleted
@@ -299,7 +297,7 @@ def create_session(
 
             num_players_total = num_participants * num_subsessions
             otree.bots.browser.initialize_bots(
-                redis_conn, session.code, num_players_total)
+                session.code, num_players_total)
         except:
             session.delete()
             raise
@@ -312,7 +310,6 @@ def create_session(
         from otree.room import ROOM_DICT
         room = ROOM_DICT[room_name]
         room.session = session
-
 
     return session
 

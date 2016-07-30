@@ -125,7 +125,7 @@ class OTreeCli(TestCase):
     @mock.patch("otree.management.cli.execute_from_command_line")
     def test_clean_run(self, execute_from_command_line):
         cli.otree_cli()
-        execute_from_command_line.assert_called_with(["--help"])
+        execute_from_command_line.assert_called_with(["--help"], 'otree')
 
     @mock.patch("sys.argv", new=["--version"])
     @mock.patch("otree.management.cli.execute_from_command_line")
@@ -136,4 +136,4 @@ class OTreeCli(TestCase):
             cli.otree_cli()
             self.assertEquals(path, ["foo"])
         self.assertTrue(gcwd.called)
-        execute_from_command_line.assert_called_with(["--version"])
+        execute_from_command_line.assert_called_with(["--version"], 'otree')

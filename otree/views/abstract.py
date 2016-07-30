@@ -740,7 +740,7 @@ class FormPageMixin(object):
                     submission = bot.get_next_post_data()
                 except StopIteration:
                     bot.send_completion_message()
-                    return HttpResponse('bot completed')
+                    return HttpResponse('Bot completed')
                 else:
                     post_data = dict(request.POST)
                     post_data.update(submission)
@@ -776,7 +776,7 @@ class FormPageMixin(object):
                     bot.get_next_post_data()
                 except StopIteration:
                     bot.send_completion_message()
-                    return HttpResponse('bot completed')
+                    return HttpResponse('Bot completed')
                 else:
                     raise Exception(
                         'Finished the last page, '

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from channels.management.commands import runserver
-
+import otree.bots.browser
 from django.conf import settings
 import otree.common_internal
 
@@ -30,4 +30,8 @@ class Command(runserver.Command):
 
         # so we know not to use Huey
         otree.common_internal.USE_REDIS = False
+
+        # initialize browser bot worker in process memory
+        otree.bots.browser.browser_bot_worker = otree.bots.browser.Worker()
+
         super(Command, self).handle(*args, **options)
