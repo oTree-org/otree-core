@@ -230,7 +230,7 @@ class BaseModelForm(
         If the method is not found, it will return ``(None, None)``.
         """
 
-        # EditSessionProperties is a ModelForm with extra field which is not
+        # SessionEditProperties is a ModelForm with extra field which is not
         # part of the model. In case your ModelForm has an extra field.
         try:
             model_field = self.instance._meta.get_field_by_name(field_name)[0]

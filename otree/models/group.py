@@ -66,7 +66,7 @@ class BaseGroup(SaveTheChange, models.Model):
         '''You should not use this method if
         you are rearranging groups between rounds.'''
 
-        return type(self).objects.filter(
+        return type(self).objects.get(
             session=self.session,
             id_in_subsession=self.id_in_subsession,
             round_number=round_number,

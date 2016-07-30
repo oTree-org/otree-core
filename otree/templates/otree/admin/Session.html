@@ -20,8 +20,8 @@
                 <a href="{% url 'SessionStartLinks' session.code %}"><span class="glyphicon glyphicon-link"></span> Links</a>
             </li>
             {% if not session.is_demo %}
-            <li role="presentation" class="{% active_page request 'EditSessionProperties' session.code %}">
-                <a href="{% url 'EditSessionProperties' session.code %}"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
+            <li role="presentation" class="{% active_page request 'SessionEditProperties' session.code %}">
+                <a href="{% url 'SessionEditProperties' session.code %}"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
             </li>
             {% endif %}
             <li role="presentation" class="{% active_page request 'SessionMonitor' session.code %}">
@@ -31,8 +31,8 @@
                 <a href="{% url 'SessionResults' session.code %}"><span class="glyphicon glyphicon-list-alt"></span> Results</a>
             </li>
             {% if session.is_for_mturk %}
-            <li role="presentation" class="{% active_page request 'SessionMTurkPayments' session.code %}">
-                <a href="{% url 'SessionMTurkPayments' session.code %}">
+            <li role="presentation" class="{% active_page request 'MTurkSessionPayments' session.code %}">
+                <a href="{% url 'MTurkSessionPayments' session.code %}">
             {% else %}
             <li role="presentation" class="{% active_page request 'SessionPayments' session.code %}">
                 <a href="{% url 'SessionPayments' session.code %}">
@@ -48,8 +48,8 @@
             </li>
             {% endif %}
             {% if session.is_for_mturk %}
-            <li role="presentation" class="{% active_page request 'CreateMTurkHIT' session.code %}">
-                <a href="{% url 'CreateMTurkHIT' session.code %}"><span class="glyphicon glyphicon-cloud"></span> MTurk</a>
+            <li role="presentation" class="{% active_page request 'MTurkCreateHIT' session.code %}">
+                <a href="{% url 'MTurkCreateHIT' session.code %}"><span class="glyphicon glyphicon-cloud"></span> MTurk</a>
             </li>
             {% endif %}
         </ul>

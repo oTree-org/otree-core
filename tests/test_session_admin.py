@@ -38,7 +38,7 @@ class TestSessionAdmin(TestCase):
                 raise Exception('{} returned 400'.format(url))
 
     def test_edit_session_properties(self):
-        path = '/EditSessionProperties/{}/'.format(self.session.code)
+        path = '/SessionEditProperties/{}/'.format(self.session.code)
 
         data = {
             'label': 'label_foo',

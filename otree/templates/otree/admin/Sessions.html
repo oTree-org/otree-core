@@ -178,7 +178,7 @@ Sessions
             <a href="{% url 'SessionStartLinks' s.code %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-link"></span> Links
             </a>
-            <a href="{% url 'EditSessionProperties' s.code %}" class="btn btn-primary btn-sm" role="button">
+            <a href="{% url 'SessionEditProperties' s.code %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-pencil"></span> Edit
             </a>
             <a href="{% url 'SessionMonitor' s.code %}" class="btn btn-primary btn-sm" role="button">
@@ -187,12 +187,12 @@ Sessions
             <a href="{% url 'SessionResults' s.code %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-list-alt"></span> Results
             </a>
-            <a href="{% if s.is_for_mturk %}{% url 'SessionMTurkPayments' s.code %}{% else %}{% url 'SessionPayments' s.code %}{% endif %}" class="btn btn-primary btn-sm" role="button">
+            <a href="{% if s.is_for_mturk %}{% url 'MTurkSessionPayments' s.code %}{% else %}{% url 'SessionPayments' s.code %}{% endif %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-usd"></span> Payments
             </a>
             {% if s.is_for_mturk %}
                 {% if not s.mturk_HITId %}
-                <a href="{% url 'CreateMTurkHIT' s.code %}" class="btn btn-primary btn-sm" role="button">
+                <a href="{% url 'MTurkCreateHIT' s.code %}" class="btn btn-primary btn-sm" role="button">
                     <span class="glyphicon glyphicon-cloud"></span> MTurk&nbsp;&nbsp;&nbsp;
                 </a>
                 {% else %}

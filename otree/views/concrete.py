@@ -18,6 +18,7 @@ from django.http import (
     HttpResponse, HttpResponseRedirect, HttpResponseNotFound, Http404,
     JsonResponse
 )
+from django.utils.translation import ugettext as _
 
 import vanilla
 
@@ -207,7 +208,7 @@ class JoinSessionAnonymously(vanilla.View):
 
 
 class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
-    template_name = "otree/InputParticipantLabel.html"
+    template_name = "otree/RoomInputLabel.html"
 
     url_pattern = r'^room/(?P<room>\w+)/$'
 
@@ -231,7 +232,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
 
             if participant_label not in room.get_participant_labels():
                 return HttpResponseNotFound(
-                    'The given participant name was not expected.'
+                    _('Invalid participant label.')
                 )
 
             if room.use_secure_urls:
@@ -259,8 +260,8 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
             return render_to_response(
                 "otree/WaitPageRoom.html",
                 {
-                    'view': self, 'title_text': 'Please wait',
-                    'body_text': 'Waiting for your session to begin'
+                    'view': self, 'title_text': _('Please wait'),
+                    'body_text': _('Waiting for your session to begin')
                 }
             )
 

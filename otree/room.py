@@ -12,7 +12,7 @@ from otree.common_internal import (
     add_params_to_url, make_hash, validate_identifier
 )
 from django.db import transaction
-
+from otree.views.abstract import global_lock
 
 class Room(object):
 
@@ -90,8 +90,11 @@ class Room(object):
                             msg.format(self.name, self.participant_label_file))
                     raise err
                 else:
-                    with transaction.atomic():
-                        # use select_for_update to prevent race conditions
+                    with global_lock():
+                        # before I used select_for_update to prevent race
+                        # conditions. But the queryset was not evaluated
+                        # so it did not hit the DB. maybe simpler to use an
+                        # explicit lock
                         ExpectedRoomParticipant.objects.select_for_update()
                         ExpectedRoomParticipant.objects.filter(
                             room_name=self.name).delete()

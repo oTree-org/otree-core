@@ -16,7 +16,7 @@ from otree import constants_internal
 
 from otree.common_internal import get_dotted_name
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('otree.bots')
 
 
 class Pause(object):

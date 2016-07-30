@@ -17,6 +17,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.utils.encoding import force_text
 from django.shortcuts import get_object_or_404
+from django.utils.translation import ugettext as _
 
 import vanilla
 
@@ -491,7 +492,7 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
         session = self.session
         if session.is_for_mturk():
             session_home_url = reverse(
-                'CreateMTurkHIT', args=(session.code,)
+                'MTurkCreateHIT', args=(session.code,)
             )
         # demo mode
         elif self.request.GET.get('fullscreen'):
@@ -606,7 +607,7 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
         return context
 
 
-class EditSessionPropertiesForm(forms.ModelForm):
+class SessionEditPropertiesForm(forms.ModelForm):
     participation_fee = forms.RealWorldCurrencyField(
         required=False,
         # it seems that if this is omitted, the step defaults to an integer,
@@ -627,17 +628,17 @@ class EditSessionPropertiesForm(forms.ModelForm):
         ]
 
 
-class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
+class SessionEditProperties(AdminSessionPageMixin, vanilla.UpdateView):
 
     # required for vanilla.UpdateView
     lookup_field = 'code'
     model = Session
-    form_class = EditSessionPropertiesForm
-    template_name = 'otree/admin/EditSessionProperties.html'
+    form_class = SessionEditPropertiesForm
+    template_name = 'otree/admin/SessionEditProperties.html'
 
     def get_form(self, data=None, files=None, **kwargs):
         form = super(
-            EditSessionProperties, self
+            SessionEditProperties, self
         ).get_form(data, files, **kwargs)
         config = self.session.config
         form.fields[
@@ -651,10 +652,10 @@ class EditSessionProperties(AdminSessionPageMixin, vanilla.UpdateView):
         return form
 
     def get_success_url(self):
-        return reverse('EditSessionProperties', args=(self.session.code,))
+        return reverse('SessionEditProperties', args=(self.session.code,))
 
     def form_valid(self, form):
-        super(EditSessionProperties, self).form_valid(form)
+        super(SessionEditProperties, self).form_valid(form)
         participation_fee = form.cleaned_data[
             'participation_fee'
         ]
@@ -704,10 +705,10 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
         return context
 
 
-class SessionMTurkPayments(AdminSessionPageMixin, vanilla.TemplateView):
+class MTurkSessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
 
     def get(self, *args, **kwargs):
-        response = super(SessionMTurkPayments, self).get(*args, **kwargs)
+        response = super(MTurkSessionPayments, self).get(*args, **kwargs)
         return response
 
     def get_context_data(self, **kwargs):
@@ -728,7 +729,7 @@ class SessionMTurkPayments(AdminSessionPageMixin, vanilla.TemplateView):
             participants_rejected = session.participant_set.filter(
                 mturk_worker_id__in=workers_by_status['Rejected']
             )
-        context = super(SessionMTurkPayments, self).get_context_data(**kwargs)
+        context = super(MTurkSessionPayments, self).get_context_data(**kwargs)
         context.update({
             'participants_approved': participants_approved,
             'participants_rejected': participants_rejected,

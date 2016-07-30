@@ -97,7 +97,7 @@ def get_all_assignments(conn, hit_id, status=None):
     return assignments
 
 
-class CreateMTurkHitForm(forms.Form):
+class MTurkCreateHITForm(forms.Form):
 
     in_sandbox = forms.BooleanField(
         required=False,
@@ -127,16 +127,16 @@ class CreateMTurkHitForm(forms.Form):
         ))
 
     def __init__(self, *args, **kwargs):
-        super(CreateMTurkHitForm, self).__init__(*args, **kwargs)
+        super(MTurkCreateHITForm, self).__init__(*args, **kwargs)
         self.fields['assignments'].widget.attrs['readonly'] = True
 
 
-class CreateMTurkHIT(AdminSessionPageMixin, vanilla.FormView):
+class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
     '''This view creates mturk HIT for session provided in request
     AWS externalQuestion API is used to generate HIT.
 
     '''
-    form_class = CreateMTurkHitForm
+    form_class = MTurkCreateHITForm
 
     def in_public_domain(self, request, *args, **kwargs):
         """This method validates if oTree are published on a public domain
@@ -178,7 +178,7 @@ class CreateMTurkHIT(AdminSessionPageMixin, vanilla.FormView):
         )
         context['runserver'] = 'runserver' in sys.argv
         url = self.request.build_absolute_uri(
-            reverse('CreateMTurkHIT', args=(self.session.code,))
+            reverse('MTurkCreateHIT', args=(self.session.code,))
         )
         secured_url = urlunparse(urlparse(url)._replace(scheme='https'))
         context['secured_url'] = secured_url
@@ -222,7 +222,7 @@ class CreateMTurkHIT(AdminSessionPageMixin, vanilla.FormView):
                         messages.error(request, msg)
                         return HttpResponseRedirect(
                             reverse(
-                                'CreateMTurkHIT', args=(session.code,)))
+                                'MTurkCreateHIT', args=(session.code,)))
                 else:
                     session.mturk_qualification_type_id = qualification_id
 
@@ -294,7 +294,7 @@ class CreateMTurkHIT(AdminSessionPageMixin, vanilla.FormView):
             session.save()
 
         return HttpResponseRedirect(
-            reverse('CreateMTurkHIT', args=(session.code,)))
+            reverse('MTurkCreateHIT', args=(session.code,)))
 
 
 class PayMTurk(vanilla.View):
@@ -343,7 +343,7 @@ class PayMTurk(vanilla.View):
         else:
             messages.success(request, msg)
         return HttpResponseRedirect(
-            reverse('SessionMTurkPayments', args=(session.code,)))
+            reverse('MTurkSessionPayments', args=(session.code,)))
 
 
 class RejectMTurk(vanilla.View):
@@ -363,4 +363,4 @@ class RejectMTurk(vanilla.View):
         messages.success(request, "You successfully rejected "
                                   "selected assignments")
         return HttpResponseRedirect(
-            reverse('SessionMTurkPayments', args=(session.code,)))
+            reverse('MTurkSessionPayments', args=(session.code,)))
