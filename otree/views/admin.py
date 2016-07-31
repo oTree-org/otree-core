@@ -954,7 +954,6 @@ class CreateBrowserBotsSession(vanilla.View):
         session = create_session(
             session_config_name=session_config_name,
             num_participants=num_participants,
-            room_name='browser_bots',
             force_browser_bots=True,
         )
         BrowserBotsLauncherSessionCode.objects.update_or_create(

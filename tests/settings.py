@@ -132,10 +132,6 @@ ROOMS = [
         'name': 'anon',
         'display_name': 'Anonymous',
     },
-    {
-        'name': 'browser_bots',
-        'display_name': 'For Browser Bots & Stress Test',
-    }
 ]
 
 otree.settings.augment_settings(globals())
