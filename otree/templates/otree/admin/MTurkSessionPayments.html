@@ -84,6 +84,12 @@ $(function() {
 {% endblock %}
 {% block content %}
 {{ block.super }}
+    {% if not_published_yet %}
+        <p>
+            The MTurk payments page will appear after you publish this session
+            to MTurk.
+        </p>
+    {% else %}
 <div class="container" style='max-width:970px'>
     <h3>Session</h3>
     <table class="table table-condensed">
@@ -229,6 +235,7 @@ $(function() {
         <p>You have no participants who finished the experiment.</p>
     {% endif %}
 </div>
+    {% endif %}
 <!--Modal window to confirm payment for assignments-->
 <div class="modal fade" id="mturk-payment" tabindex="-1" role="dialog" aria-labelledby="MTurkPaymentModalLabel" aria-hidden="true">
   <div class="modal-dialog">

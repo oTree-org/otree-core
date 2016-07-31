@@ -714,7 +714,11 @@ class MTurkSessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
         return response
 
     def get_context_data(self, **kwargs):
+        context = super(MTurkSessionPayments, self).get_context_data(**kwargs)
         session = self.session
+        if not session.mturk_HITId:
+            context.update({'not_published_yet': True})
+            return context
         with MTurkConnection(
                 self.request, session.mturk_sandbox
         ) as mturk_connection:
@@ -731,7 +735,7 @@ class MTurkSessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
             participants_rejected = session.participant_set.filter(
                 mturk_worker_id__in=workers_by_status['Rejected']
             )
-        context = super(MTurkSessionPayments, self).get_context_data(**kwargs)
+
         context.update({
             'participants_approved': participants_approved,
             'participants_rejected': participants_rejected,
