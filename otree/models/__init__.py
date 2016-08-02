@@ -21,14 +21,10 @@ subsession_module = import_module('otree.models.subsession')
 group_module = import_module('otree.models.group')
 player_module = import_module('otree.models.player')
 
-if os.environ.get('OTREE_CORE_DEV'):
-    # so that I get IDE autocomplete while developing oTree
-    from . import session as session_module
-    from . import participant as participant_module
-else:
-    # so that oTree users don't see internal details
-    session_module = import_module('otree.models.session')
-    participant_module = import_module('otree.models.participant')
+# so that oTree users don't see internal details
+session_module = import_module('otree.models.session')
+participant_module = import_module('otree.models.participant')
+
 
 def ensure_required_fields(sender, **kwargs):
     """
