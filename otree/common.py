@@ -73,10 +73,6 @@ class RealWorldCurrency(easymoney.Money):
     def __repr__(self):
         return 'Currency({})'.format(self)
 
-    # fix for https://github.com/oTree-org/otree-core/issues/362
-    def __format__(self, format_spect):
-        return Decimal(self).__format__(format_spect)
-
     def to_real_world_currency(self, session):
         return self
 

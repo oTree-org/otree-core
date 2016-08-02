@@ -25,6 +25,15 @@ class CurrencyTests(TestCase):
         rendered = template.render(ctx)
         self.assertEquals(rendered, six.text_type(money))
 
+    def test_string_format(self):
+
+        class TestC(c):
+            CODE = 'USD'
+
+        money = TestC(23)
+        self.assertEqual('{}'.format(money), '$23.00')
+
+
     def test_currency_unary_operator(self):
         # https://github.com/oTree-org/otree-core/issues/391
         msg = "Currency operator '{}' fail"
