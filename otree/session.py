@@ -75,7 +75,6 @@ class SessionConfig(dict):
             'app_sequence': list,
             'participation_fee': object,
             'num_bots': int,
-            'display_name': str,
             'real_world_currency_per_point': object,
             'num_demo_participants': int,
             'doc': str,
@@ -106,6 +105,7 @@ class SessionConfig(dict):
             raise ValueError(
                 'settings.SESSION_CONFIGS: Need at least one subsession.')
 
+        self.setdefault('display_name', self['name'])
         self.setdefault('doc', '')
 
         # TODO: fixed_pay is deprecated as of 2015-05-07,
