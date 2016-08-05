@@ -14,7 +14,7 @@ from easymoney import Money as Currency
 from django.core.urlresolvers import resolve
 from otree import constants_internal
 
-from otree.common_internal import get_dotted_name
+from otree.common_internal import get_dotted_name, get_bots_module
 
 logger = logging.getLogger('otree.bots')
 
@@ -23,6 +23,14 @@ class Pause(object):
 
     def __init__(self, seconds):
         self.seconds = seconds
+
+def MustFail(PageClass, submission_dict=None):
+    '''lets you intentionally submit with invalid
+    input to ensure it's correctly rejected'''
+
+    submission_dict = submission_dict or {}
+    submission_dict.update({'must_fail': True})
+    return (PageClass, submission_dict)
 
 
 def submission_as_dict(submission):
@@ -36,13 +44,8 @@ def submission_as_dict(submission):
     from otree.views import Page
     if isinstance(submission, (list, tuple)):
         PageClass = submission[0]
-        if len(submission) >= 2:
+        if len(submission) == 2:
             post_data = submission[1] or {}
-        if len(submission) >= 3:
-            intentionally_invalid = submission[1].lower() == 'invalid'
-            if intentionally_invalid:
-                # sneak it in post_data
-                post_data['intentionally_invalid'] = True
     else:
         PageClass = submission
 
@@ -70,7 +73,9 @@ def refresh_from_db(obj):
 
 class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
 
-    def __init__(self, participant, max_wait_seconds=None, **kwargs):
+    def __init__(
+            self, participant, max_wait_seconds=None,
+            **kwargs):
         self.participant = participant
         self.response = None
         self.url = None
@@ -82,19 +87,10 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
 
         self.player_bots = []
         for player in self.participant.get_players():
-            try:
-                test_module_name = '{}.bots'.format(
-                    player._meta.app_config.name
-                )
-                test_module = import_module(test_module_name)
-            except ImportError as err:
-                test_module_name = '{}.tests'.format(
-                    player._meta.app_config.name
-                )
-                test_module = import_module(test_module_name)
-            player_bot = test_module.PlayerBot(
+            bots_module = get_bots_module(player._meta.app_config.name)
+            player_bot = bots_module.PlayerBot(
                 player=player,
-                participant_bot=self
+                participant_bot=self,
             )
             self.player_bots.append(player_bot)
         self.submits_generator = self.get_submits()
@@ -192,9 +188,19 @@ class PlayerBot(object):
         self._cached_group = player.group
         self._cached_subsession = player.subsession
         self._cached_participant = player.participant
-        self._cached_session = player.subsession
+        self._cached_session = player.session
 
         self._legacy_submit_list = []
+
+        bots_module = import_module(self.__module__)
+
+
+        mode_number = self._cached_session._bot_case_number
+        CASES = getattr(bots_module, 'CASES', [])
+        if len(CASES) >= 1:
+            self.case = CASES[mode_number % len(CASES)]
+        else:
+            self.case = None
 
     def play_round(self):
         pass
@@ -223,9 +229,6 @@ class PlayerBot(object):
         self._legacy_submit_list.append((ViewClass, param_dict))
 
     def submit_invalid(self, ViewClass, param_dict=None):
-        '''this method lets you intentionally submit with invalid
-        input to ensure it's correctly rejected'''
-
         # simpler to make this a no-op, it makes porting to yield easier
         # then we can just do a search-and-replace
         # self._legacy_submit_list.append((ViewClass, param_dict, 'invalid'))

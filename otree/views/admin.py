@@ -33,7 +33,7 @@ from otree.common_internal import (
     db_status_ok,
     get_redis_conn,
     check_pypi_for_updates)
-from otree.session import SESSION_CONFIGS_DICT, get_lcm, create_session
+from otree.session import SESSION_CONFIGS_DICT, create_session, SessionConfig
 from otree import forms
 from otree.forms import widgets
 from otree.common import RealWorldCurrency
@@ -337,7 +337,7 @@ class CreateSessionForm(forms.Form):
 
         # We must check for an empty string in case validation is not run
         if session_config_name != '':
-            lcm = get_lcm(SESSION_CONFIGS_DICT[session_config_name])
+            lcm = SESSION_CONFIGS_DICT[session_config_name].get_lcm()
             num_participants = self.cleaned_data['num_participants']
             if num_participants % lcm:
                 raise forms.ValidationError(
@@ -358,7 +358,7 @@ class CreateSession(vanilla.FormView):
 
     def get_context_data(self, **kwargs):
         session_config_summaries = [
-            info_about_session_config(session_config)
+            session_config.get_info()
             for session_config in SESSION_CONFIGS_DICT.values()]
         kwargs.update({'session_config_summaries': session_config_summaries})
         return super(CreateSession, self).get_context_data(**kwargs)
@@ -545,7 +545,7 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
 
         sqlite = settings.DATABASES['default']['ENGINE'].endswith('sqlite3')
         context.update({
-            'use_browser_bots': session._use_browser_bots,
+            'use_browser_bots': session.use_browser_bots,
             'sqlite': sqlite,
             'runserver': 'runserver' in sys.argv
         })
@@ -833,44 +833,9 @@ class SessionDescription(AdminSessionPageMixin, vanilla.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(SessionDescription, self).get_context_data(**kwargs)
-        context.update(session_description_dict(self.session))
+        config_obj = SessionConfig(self.session.config)
+        context.update(config_obj.get_info())
         return context
-
-
-def info_about_session_config(session_config):
-    app_sequence = []
-    for app_name in session_config['app_sequence']:
-        models_module = get_models_module(app_name)
-        num_rounds = models_module.Constants.num_rounds
-        formatted_app_name = app_name_format(app_name)
-        if num_rounds > 1:
-            formatted_app_name = '{} ({} rounds)'.format(
-                formatted_app_name, num_rounds
-            )
-        subsssn = {
-            'doc': getattr(models_module, 'doc', ''),
-            'bibliography': getattr(models_module, 'bibliography', []),
-            'name': formatted_app_name,
-        }
-        app_sequence.append(subsssn)
-
-    return {
-        'doc': session_config['doc'],
-        'app_sequence': app_sequence,
-        'name': session_config['name'],
-        'display_name': session_config['display_name'],
-        'lcm': get_lcm(session_config),
-    }
-
-
-def session_description_dict(session):
-    context_data = {
-        'display_name': session.config['display_name'],
-    }
-
-    context_data.update(info_about_session_config(session.config))
-
-    return context_data
 
 
 class Sessions(vanilla.ListView):
@@ -951,10 +916,12 @@ class CreateBrowserBotsSession(vanilla.View):
     def post(self, request, *args, **kwargs):
         num_participants = int(request.POST['num_participants'])
         session_config_name = request.POST['session_config_name']
+        bot_case_number = int(request.POST['bot_case_number'])
         session = create_session(
             session_config_name=session_config_name,
             num_participants=num_participants,
-            force_browser_bots=True,
+            bot_case_number=bot_case_number,
+            force_browser_bots=True
         )
         BrowserBotsLauncherSessionCode.objects.update_or_create(
             # i don't know why the update_or_create arg is called 'defaults'

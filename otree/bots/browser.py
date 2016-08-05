@@ -7,7 +7,8 @@ import otree.common_internal
 import channels
 import time
 from collections import OrderedDict
-
+from otree.session import SessionConfig
+import random
 
 REDIS_KEY = 'otree-bots'
 
@@ -27,10 +28,12 @@ class Worker(object):
         session = Session.objects.get(code=session_code)
         self.prune()
         self.session_participants[session_code] = []
+
         for participant in session.get_participants().filter(_is_bot=True):
             self.session_participants[session_code].append(
                 participant.code)
-            self.browser_bots[participant.code] = ParticipantBot(participant)
+            self.browser_bots[participant.code] = ParticipantBot(
+                participant)
         return {'ok': True}
 
     def get_method(self, command_name):

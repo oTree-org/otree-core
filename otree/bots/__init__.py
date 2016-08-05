@@ -18,4 +18,4 @@
 # from importlib import import_module
 # otree_bot = import_module('otree.bots.bot')
 
-from otree.bots.bot import PlayerBot as Bot
+from otree.bots.bot import PlayerBot as Bot, MustFail

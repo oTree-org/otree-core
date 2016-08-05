@@ -721,8 +721,6 @@ class FormPageMixin(object):
             if self.has_timeout():
                 otree.timeout.tasks.submit_expired_url.schedule(
                     (self.request.path,), delay=self.timeout_seconds)
-        # for template
-        self.use_browser_bots = self.session._use_browser_bots
         return super(FormPageMixin, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -734,7 +732,7 @@ class FormPageMixin(object):
             self._set_auto_submit_values()
         else:
             self.timeout_happened = False
-            if self.session._use_browser_bots:
+            if self.session.use_browser_bots:
                 bot = EphemeralBrowserBot(self)
                 try:
                     submission = bot.get_next_post_data()
@@ -751,15 +749,19 @@ class FormPageMixin(object):
                 data=post_data, files=request.FILES, instance=self.object)
             is_bot = self.participant._is_bot
             if form.is_valid():
-                if is_bot and post_data.get('intentionally_invalid'):
+                if is_bot and post_data.get('must_fail'):
+                    # clean up noise in post data
+                    post_data.pop('csrfmiddlewaretoken', None)
+                    post_data.pop('origin_url', None)
+                    post_data.pop('must_fail', None)
                     raise ValueError(
-                        'Bot tried to submit intentionally invalid data, '
-                        'but it passed validation anyway: {}.'.format(
-                            request.POST))
+                        'Bot tried to submit intentionally invalid data with '
+                        'MustFail, but it passed validation anyway:'
+                        ' {}.'.format(post_data))
                 self.form = form
                 self.object = form.save()
             else:
-                if is_bot and not post_data.get('intentionally_invalid'):
+                if is_bot and not post_data.get('must_fail'):
                     errors = [
                         "{}: {}".format(k, repr(v))
                         for k, v in form.errors.items()]
@@ -769,7 +771,7 @@ class FormPageMixin(object):
                         'then create a new session.'.format(errors))
                 return self.form_invalid(form)
         self.before_next_page()
-        if self.session._use_browser_bots:
+        if self.session.use_browser_bots:
             if self._index_in_pages == self.participant._max_page_index:
                 bot = EphemeralBrowserBot(self)
                 try:

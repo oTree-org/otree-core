@@ -89,13 +89,14 @@ class BaseSession(ModelWithVars):
 
     _pre_create_id = models.CharField(max_length=300, db_index=True, null=True)
 
-    _use_browser_bots = models.BooleanField(default=False)
+    use_browser_bots = models.BooleanField(default=False)
 
     # if the user clicks 'start bots' twice, this will prevent the bots
     # from being run twice.
     _cannot_restart_bots = models.BooleanField(default=False)
     _bots_finished = models.BooleanField(default=False)
     _bots_errored = models.BooleanField(default=False)
+    _bot_case_number = models.PositiveIntegerField()
 
     is_demo = models.BooleanField(default=False)
 

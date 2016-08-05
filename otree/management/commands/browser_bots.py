@@ -134,12 +134,15 @@ class Launcher(object):
 
         for session_config_name in session_config_names:
             session_config = SESSION_CONFIGS_DICT[session_config_name]
-            num_participants = (options.get('num_participants') or
-                                session_config['num_demo_participants'])
-            sessions_to_create.append({
-                'session_config_name': session_config_name,
-                'num_participants': num_participants,
-            })
+            num_bot_cases = session_config.get_num_bot_cases()
+            for bot_case_number in range(num_bot_cases):
+                num_participants = (options.get('num_participants') or
+                                    session_config['num_demo_participants'])
+                sessions_to_create.append({
+                    'session_config_name': session_config_name,
+                    'num_participants': num_participants,
+                    'bot_case_number': bot_case_number,
+                })
 
         total_time_spent = 0
         # run in a separate loop, because we want to validate upfront
@@ -158,7 +161,8 @@ class Launcher(object):
         # just label these sessions clearly in the admin UI
         # and make it easy to delete manually
 
-    def run_session(self, session_config_name, num_participants):
+    def run_session(
+            self, session_config_name, num_participants, bot_case_number):
         self.close_existing_session()
 
         browser_process = self.launch_browser(num_participants)
@@ -167,7 +171,7 @@ class Launcher(object):
         print(row_fmt.format(session_config_name, num_participants), end='')
 
         session_code = self.create_session(
-            session_config_name, num_participants)
+            session_config_name, num_participants, bot_case_number)
 
         bot_start_time = time.time()
 
@@ -286,13 +290,16 @@ class Launcher(object):
                 )
             )
 
-    def create_session(self, session_config_name, num_participants):
+    def create_session(
+            self, session_config_name, num_participants, bot_case_number
+            ):
 
         resp = self.post(
             self.create_session_url,
             data={
                 'session_config_name': session_config_name,
                 'num_participants': num_participants,
+                'bot_case_number': bot_case_number
             }
         )
         assert resp.ok, 'Failed to create session. Check the server logs.'

@@ -129,7 +129,10 @@ def start_bots(session):
         max_wait_seconds = 10
 
     for participant in session.get_participants().filter(_is_bot=True):
-        bot = ParticipantBot(participant, max_wait_seconds=max_wait_seconds)
+        bot = ParticipantBot(
+            participant,
+            max_wait_seconds=max_wait_seconds
+        )
         bots.append(bot)
         bot.open_start_url()
 
@@ -178,6 +181,7 @@ class BotsTestCase(test.TransactionTestCase):
     def __init__(self, config_name, preserve_data):
         super(BotsTestCase, self).__init__()
         self.config_name = config_name
+        self.session_config = otree.session.SESSION_CONFIGS_DICT[config_name]
         self.preserve_data = preserve_data
         self._data_for_export = None
 
@@ -199,20 +203,23 @@ class BotsTestCase(test.TransactionTestCase):
     def get_export_data(self):
         return self._data_for_export
 
-    def create_session(self):
-        logger.info("Creating '{}' session".format(self.config_name))
-
-        return otree.session.create_session(
-            session_config_name=self.config_name,
-            use_cli_bots=True, label='{} [bots]'.format(self.config_name)
-        )
-
     def runTest(self):
+        num_bot_cases = self.session_config.get_num_bot_cases()
+        for mode_number in range(num_bot_cases):
+            if num_bot_cases > 1:
+                logger.info("Creating '{}' session (test case {})".format(
+                    self.config_name, mode_number))
+            else:
+                logger.info("Creating '{}' session".format(self.config_name))
 
-        session = self.create_session()
-        start_bots(session)
-        bot_runner = session_bot_runners[session.code]
-        bot_runner.play_until_end()
+            session = otree.session.create_session(
+                session_config_name=self.config_name,
+                use_cli_bots=True, label='{} [bots]'.format(self.config_name),
+                bot_case_number=mode_number
+            )
+            start_bots(session)
+            bot_runner = session_bot_runners[session.code]
+            bot_runner.play_until_end()
 
 
 # =============================================================================

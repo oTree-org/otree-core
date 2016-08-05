@@ -98,6 +98,16 @@ def get_models_module(app_name):
     return import_module(module_name)
 
 
+def get_bots_module(app_name):
+    try:
+        bots_module_name = '{}.bots'.format(app_name)
+        bots_module = import_module(bots_module_name)
+    except ImportError:
+        bots_module_name = '{}.tests'.format(app_name)
+        bots_module = import_module(bots_module_name)
+    return bots_module
+
+
 def get_views_module(app_name):
     module_name = '{}.views'.format(app_name)
     return import_module(module_name)

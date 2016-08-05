@@ -22,7 +22,7 @@ from otree.models import Participant, Session
 from otree.common_internal import (
     get_models_module, get_app_constants, validate_identifier,
     min_players_multiple,
-    get_redis_conn
+    get_redis_conn, get_bots_module
 )
 import otree.common_internal
 from otree.common import RealWorldCurrency
@@ -48,97 +48,122 @@ def lcmm(*args):
     return reduce(lcm, args)
 
 
-def get_lcm(session_config):
-    min_multiple_list = []
-    for app_name in session_config['app_sequence']:
-        app_constants = get_app_constants(app_name)
-        # if players_per_group is None, 0, etc.
-        min_multiple = min_players_multiple(
-            app_constants.players_per_group)
-        min_multiple_list.append(min_multiple)
-    return lcmm(*min_multiple_list)
+class SessionConfig(dict):
 
+    def get_lcm(self):
+        min_multiple_list = []
+        for app_name in self['app_sequence']:
+            app_constants = get_app_constants(app_name)
+            # if players_per_group is None, 0, etc.
+            min_multiple = min_players_multiple(
+                app_constants.players_per_group)
+            min_multiple_list.append(min_multiple)
+        return lcmm(*min_multiple_list)
 
-def validate_session_config(config):
+    def get_num_bot_cases(self):
+        num_modes = 1
+        for app_name in self['app_sequence']:
+            bots_module = get_bots_module(app_name)
+            CASES = getattr(bots_module, 'CASES', [])
+            num_modes = max(num_modes, len(CASES))
+        return num_modes
 
-    config_schema = schema.Schema({
-        'name': str,
-        'app_sequence': list,
-        'participation_fee': object,
-        'num_bots': int,
-        'display_name': str,
-        'real_world_currency_per_point': object,
-        'num_demo_participants': int,
-        'doc': str,
-        object: object,
-    })
+    def validate(self):
 
-    try:
-        config = config_schema.validate(config)
-    except schema.SchemaError as e:
-        raise ValueError('settings.SESSION_CONFIGS: {}'.format(e))
+        config_schema = schema.Schema({
+            'name': str,
+            'app_sequence': list,
+            'participation_fee': object,
+            'num_bots': int,
+            'display_name': str,
+            'real_world_currency_per_point': object,
+            'num_demo_participants': int,
+            'doc': str,
+            object: object,
+        })
 
-    validate_identifier(
-        config['name'],
-        identifier_description='settings.SESSION_CONFIG name'
-    )
+        try:
+            config_schema.validate(self)
+        except schema.SchemaError as e:
+            raise ValueError('settings.SESSION_CONFIGS: {}'.format(e))
 
-
-    app_sequence = config['app_sequence']
-    if len(app_sequence) != len(set(app_sequence)):
-        msg = (
-            'settings.SESSION_CONFIGS: '
-            'app_sequence of "{}" '
-            'must not contain duplicate elements. '
-            'If you want multiple rounds, '
-            'you should set Constants.num_rounds.')
-        raise ValueError(msg.format(config['name']))
-
-    if len(app_sequence) == 0:
-        raise ValueError(
-            'settings.SESSION_CONFIGS: Need at least one subsession.')
-
-
-def augment_session_config(session_config):
-    new_session_config = {'doc': ''}
-    new_session_config.update(settings.SESSION_CONFIG_DEFAULTS)
-    new_session_config.update(session_config)
-
-    # look up new_session_config
-    # 2015-05-14: why do we strip? the doc can have line breaks in the middle
-    # anyways
-    new_session_config['doc'] = new_session_config['doc'].strip()
-
-    # TODO: fixed_pay is deprecated as of 2015-05-07,
-    # in favor of participation_fee. make this required at some point.
-    if (('participation_fee' not in new_session_config) and
-            ('fixed_pay' in new_session_config)):
-        deprecate.dwarning(
-            '"fixed_pay" is deprecated; '
-            'you should rename it to "participation_fee".'
+        validate_identifier(
+            self['name'],
+            identifier_description='settings.SESSION_CONFIG name'
         )
-        new_session_config['participation_fee'] = (
-            new_session_config['fixed_pay'])
 
-    new_session_config['participation_fee'] = RealWorldCurrency(
-        new_session_config['participation_fee'])
+        app_sequence = self['app_sequence']
+        if len(app_sequence) != len(set(app_sequence)):
+            msg = (
+                'settings.SESSION_CONFIGS: '
+                'app_sequence of "{}" '
+                'must not contain duplicate elements. '
+                'If you want multiple rounds, '
+                'you should set Constants.num_rounds.')
+            raise ValueError(msg.format(self['name']))
 
-    # normalize to decimal so we can do multiplications, etc
-    # quantize because the original value may be a float,
-    # which when converted to Decimal may have some 'decimal junk'
-    # like 0.010000000000000000208166817...
-    new_session_config['real_world_currency_per_point'] = Decimal(
-        new_session_config['real_world_currency_per_point']
-    ).quantize(Decimal('0.00001'))
+        if len(app_sequence) == 0:
+            raise ValueError(
+                'settings.SESSION_CONFIGS: Need at least one subsession.')
 
-    validate_session_config(new_session_config)
-    return new_session_config
+        self.setdefault('doc', '')
+
+        # TODO: fixed_pay is deprecated as of 2015-05-07,
+        # in favor of participation_fee. make this required at some point.
+        if (('participation_fee' not in self) and
+                ('fixed_pay' in self)):
+            deprecate.dwarning(
+                '"fixed_pay" is deprecated; '
+                'you should rename it to "participation_fee".'
+            )
+            self['participation_fee'] = (
+                self['fixed_pay'])
+
+        self['participation_fee'] = RealWorldCurrency(
+            self['participation_fee'])
+
+        # normalize to decimal so we can do multiplications, etc
+        # quantize because the original value may be a float,
+        # which when converted to Decimal may have some 'decimal junk'
+        # like 0.010000000000000000208166817...
+        self['real_world_currency_per_point'] = Decimal(
+            self['real_world_currency_per_point']
+        ).quantize(Decimal('0.00001'))
+
+    def get_info(self):
+        app_sequence = []
+        for app_name in self['app_sequence']:
+            models_module = get_models_module(app_name)
+            num_rounds = models_module.Constants.num_rounds
+            formatted_app_name = otree.common_internal.app_name_format(
+                app_name)
+            if num_rounds > 1:
+                formatted_app_name = '{} ({} rounds)'.format(
+                    formatted_app_name, num_rounds
+                )
+            subsssn = {
+                'doc': getattr(models_module, 'doc', ''),
+                'bibliography': getattr(models_module, 'bibliography', []),
+                'name': formatted_app_name,
+            }
+            app_sequence.append(subsssn)
+
+        return {
+            'doc': self['doc'],
+            'app_sequence': app_sequence,
+            'name': self['name'],
+            'display_name': self['display_name'],
+            'lcm': self.get_lcm(),
+        }
 
 
 def get_session_configs_dict():
     SESSION_CONFIGS_DICT = OrderedDict()
-    for config in settings.SESSION_CONFIGS:
-        SESSION_CONFIGS_DICT[config['name']] = augment_session_config(config)
+    for config_dict in settings.SESSION_CONFIGS:
+        config_obj = SessionConfig(settings.SESSION_CONFIG_DEFAULTS)
+        config_obj.update(config_dict)
+        config_obj.validate()
+        SESSION_CONFIGS_DICT[config_dict['name']] = config_obj
     return SESSION_CONFIGS_DICT
 
 SESSION_CONFIGS_DICT = get_session_configs_dict()
@@ -152,13 +177,12 @@ def app_labels_from_sessions(config_names):
     return apps
 
 
-
 def create_session(
         session_config_name, label='', num_participants=None,
         _pre_create_id=None,
         room_name=None, for_mturk=False, use_cli_bots=False,
         is_demo=False, force_browser_bots=False,
-        honor_browser_bots_config=False,
+        honor_browser_bots_config=False, bot_case_number=None,
                    ):
 
     session = None
@@ -186,13 +210,21 @@ def create_session(
             use_browser_bots = True
         else:
             use_browser_bots = False
+        if use_browser_bots and bot_case_number == None:
+            # choose one randomly
+            num_bot_cases = session_config.get_num_bot_cases()
+            # choose bot case number randomly...maybe reconsider this?
+            # we can only run one.
+            bot_case_number = random.choice(range(num_bot_cases))
+
 
         session = Session.objects.create(
             config=session_config,
             label=label,
             _pre_create_id=_pre_create_id,
-            _use_browser_bots=use_browser_bots,
-            is_demo=is_demo
+            use_browser_bots=use_browser_bots,
+            is_demo=is_demo,
+            _bot_case_number=bot_case_number
         )
 
         def bulk_create(model, descriptions):
@@ -208,7 +240,7 @@ def create_session(
                 num_participants = session_config['num_bots']
 
         # check that it divides evenly
-        session_lcm = get_lcm(session_config)
+        session_lcm = session_config.get_lcm()
         if num_participants % session_lcm:
             msg = (
                 'Session Config {}: Number of participants ({}) does not divide '
@@ -294,7 +326,6 @@ def create_session(
         # UI, when do we run that? it should be run when the session
         # is deleted
         try:
-
             num_players_total = num_participants * num_subsessions
             otree.bots.browser.initialize_bots(
                 session.code, num_players_total)
