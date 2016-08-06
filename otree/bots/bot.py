@@ -74,13 +74,11 @@ def refresh_from_db(obj):
 class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
 
     def __init__(
-            self, participant, max_wait_seconds=None,
-            **kwargs):
+            self, participant, unittest_case, max_wait_seconds=None, **kwargs):
         self.participant = participant
         self.response = None
         self.url = None
         self.path = None
-        self.num_bots = self.participant.session.config['num_bots']
         self.submits = None
         self.max_wait_seconds = max_wait_seconds
         super(ParticipantBot, self).__init__()
@@ -91,6 +89,7 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
             player_bot = bots_module.PlayerBot(
                 player=player,
                 participant_bot=self,
+                unittest_case=unittest_case,
             )
             self.player_bots.append(player_bot)
         self.submits_generator = self.get_submits()
@@ -181,7 +180,7 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
 
 class PlayerBot(object):
 
-    def __init__(self, player, participant_bot, **kwargs):
+    def __init__(self, player, participant_bot, unittest_case, **kwargs):
 
         self.participant_bot = participant_bot
         self._cached_player = player
@@ -189,18 +188,20 @@ class PlayerBot(object):
         self._cached_subsession = player.subsession
         self._cached_participant = player.participant
         self._cached_session = player.session
-
         self._legacy_submit_list = []
 
         bots_module = import_module(self.__module__)
 
 
-        mode_number = self._cached_session._bot_case_number
+        case_number = self._cached_session._bot_case_number
         CASES = getattr(bots_module, 'CASES', [])
         if len(CASES) >= 1:
-            self.case = CASES[mode_number % len(CASES)]
+            self.case = CASES[case_number % len(CASES)]
         else:
             self.case = None
+
+        self._unittest_case = unittest_case
+
 
     def play_round(self):
         pass
@@ -243,3 +244,55 @@ class PlayerBot(object):
         lead to people importing from the time module.
         '''
         return Pause(seconds)
+
+
+    def assertEqual(self, first, second):
+        self._unittest_case.assertEqual(first, second)
+
+    def assertIn(self, member, container):
+        self._unittest_case.assertIn(member, container)
+
+    def assertLess(self, a, b):
+        self._unittest_case.assertLess(a, b)
+
+    def assertLessEqual(self, a, b):
+        self._unittest_case.assertLessEqual(a, b)
+
+    def assertGreater(self, a, b):
+        self._unittest_case.assertGreater(a, b)
+
+    def assertGreaterEqual(self, a, b):
+        self._unittest_case.assertGreaterEqual(a, b)
+
+    def assertTrue(self, expr):
+        self._unittest_case.assertTrue(expr)
+
+    def assertInPage(self, html, count=None):
+        return self._assertInPageBase(html, count)
+
+    def assertNotInPage(self, html):
+        self._assertInPageBase(html, count=0)
+
+    def _assertInPageBase(self, html, count=None):
+        response = self.participant_bot.response
+        haystack = response.content.decode('utf-8')
+        print('needle in haystack: ', html in haystack)
+        self._unittest_case.assertInHTML(
+            needle=html, haystack=haystack, count=count)
+
+    '''
+    self._unittest_case.assertContains(
+            response, text=html, count=count, html=True)
+
+    def assertInHTML(self, needle, haystack, count=None, msg_prefix=''):
+        self._unittest_case.
+
+
+    def assertContains(self, response, text, count=None, status_code=200,
+                       msg_prefix='', html=False):
+        self._unittest_case.
+
+    def assertRaises(self, expected_exception, *args, **kwargs):
+        self._unittest_case.
+
+    '''

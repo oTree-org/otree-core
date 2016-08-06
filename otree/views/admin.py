@@ -46,7 +46,6 @@ from otree.models_concrete import (
     PageCompletion, ParticipantRoomVisit, BrowserBotsLauncherSessionCode
 )
 from otree.room import ROOM_DICT
-from otree.bots.runner import play_bots_task
 
 
 def get_all_fields(Model, for_export=False):
@@ -942,17 +941,4 @@ class CloseBrowserBotsSession(vanilla.View):
 
     def post(self, request, *args, **kwargs):
         BrowserBotsLauncherSessionCode.objects.all().delete()
-        return HttpResponse('ok')
-
-
-class StartBots(vanilla.View):
-
-    url_pattern = r"^start_bots/(?P<code>[a-z0-9]+)/$"
-
-    # FIXME: this should be POST, not GET
-    def get(self, request, *args, **kwargs):
-        session_code = kwargs['code']
-        session = get_object_or_404(Session, code=session_code)
-        play_bots_task(session.code)
-
         return HttpResponse('ok')

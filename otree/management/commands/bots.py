@@ -45,9 +45,17 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         # Positional arguments
         parser.add_argument(
-            'session_config_name', nargs='*',
+            'session_config_name',
             help='If omitted, all sessions in SESSION_CONFIGS are run'
         )
+
+        ahelp = (
+            'Number of participants. '
+            'Defaults to minimum for the session config.'
+        )
+        parser.add_argument(
+            'num_participants', type=int, nargs='?',
+            help=ahelp)
 
         parser.add_argument(
             '--export', nargs='?', const='auto_name',
@@ -80,15 +88,17 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         # use in-memory.
-        # this is the simplest way to patch runserver to use in-memory,
+        # this is the simplest way to patch tests to use in-memory,
         # while still using Redis in production
         settings.CHANNEL_LAYERS['default'] = (
             settings.CHANNEL_LAYERS['inmemory'])
         # so we know not to use Huey
         otree.common_internal.USE_REDIS = False
 
-        session_config_names = options["session_config_name"]
-        if not session_config_names:
+        session_config_name = options["session_config_name"]
+        if session_config_name:
+            session_config_names = [session_config_name]
+        else:
             # default to all session configs
             session_config_names = SESSION_CONFIGS_DICT.keys()
 
@@ -113,7 +123,10 @@ class Command(BaseCommand):
         test_runner = BotsDiscoverRunner(**options)
 
         failures, data = test_runner.run_tests(
-            session_config_names, preserve_data=preserve_data)
+            session_config_names,
+            num_participants=options['num_participants'],
+            preserve_data=preserve_data,
+        )
 
         if preserve_data:
             now = datetime.datetime.now()

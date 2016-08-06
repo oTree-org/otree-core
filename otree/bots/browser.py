@@ -9,6 +9,7 @@ import time
 from collections import OrderedDict
 from otree.session import SessionConfig
 import random
+from django.test import SimpleTestCase
 
 REDIS_KEY = 'otree-bots'
 
@@ -29,11 +30,15 @@ class Worker(object):
         self.prune()
         self.session_participants[session_code] = []
 
+        # in order to do .assertEqual etc, need to pass a reference to a
+        # SimpleTestCase down to the Player bot
+        test_case = SimpleTestCase()
+
         for participant in session.get_participants().filter(_is_bot=True):
             self.session_participants[session_code].append(
                 participant.code)
             self.browser_bots[participant.code] = ParticipantBot(
-                participant)
+                participant, unittest_case=test_case)
         return {'ok': True}
 
     def get_method(self, command_name):

@@ -74,7 +74,6 @@ class SessionConfig(dict):
             'name': str,
             'app_sequence': list,
             'participation_fee': object,
-            'num_bots': int,
             'real_world_currency_per_point': object,
             'num_demo_participants': int,
             'doc': str,
@@ -182,8 +181,7 @@ def create_session(
         _pre_create_id=None,
         room_name=None, for_mturk=False, use_cli_bots=False,
         is_demo=False, force_browser_bots=False,
-        honor_browser_bots_config=False, bot_case_number=None,
-                   ):
+        honor_browser_bots_config=False, bot_case_number=None):
 
     session = None
     use_browser_bots = False
@@ -232,12 +230,6 @@ def create_session(
                 model(session=session, **description)
                 for description in descriptions])
             return model.objects.filter(session=session).order_by('pk')
-
-        if num_participants is None:
-            if is_demo:
-                num_participants = session_config['num_demo_participants']
-            elif use_cli_bots:
-                num_participants = session_config['num_bots']
 
         # check that it divides evenly
         session_lcm = session_config.get_lcm()

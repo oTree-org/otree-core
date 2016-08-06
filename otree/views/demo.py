@@ -54,9 +54,15 @@ class CreateDemoSession(vanilla.GenericView):
 
     def dispatch(self, request, *args, **kwargs):
         session_config_name = kwargs['session_config']
+        try:
+            session_config = SESSION_CONFIGS_DICT[session_config_name]
+        except KeyError:
+            msg = 'Session config "{}" not found in settings.SESSION_CONFIGS.'
+            raise ValueError(msg.format(session_config_name))
         session_kwargs = {
             'is_demo': True,
             'session_config_name': session_config_name,
+            'num_participants': session_config['num_demo_participants']
         }
 
         return create_session_and_redirect(session_kwargs)

@@ -39,10 +39,6 @@ MAX_ATTEMPTS = 100
 logger = logging.getLogger(__name__)
 
 
-# global variable, store bot runners in memory
-session_bot_runners = {}
-
-
 class SessionBotRunner(object):
     def __init__(self, bots, session_code):
         self.session_code = session_code
@@ -78,7 +74,6 @@ class SessionBotRunner(object):
                 if len(self.stuck) == 0:
                     # finished! send a message somewhere?
                     # clear from the global var
-                    session_bot_runners.pop(self.session_code, None)
                     return (True, num_submits_made)
                 # stuck
                 return (False, num_submits_made)
@@ -95,95 +90,27 @@ class SessionBotRunner(object):
                         # this bot is finished
                         self.playable.pop(pk)
                     else:
-                        if isinstance(value, Pause):
-                            # can only schedule it if we're using redis.
-                            # otherwise, ignore
-                            if common_internal.USE_REDIS:
-                                # submit is actually a pause
-                                pause = value
-                                self.stuck[pk] = self.playable.pop(pk)
-                                continue_bots_until_stuck_task.schedule(
-                                    [self.session_code, [pk]],
-                                    delay=pause.seconds
-                                )
-                        else:
-                            submission = value
-                            bot.submit(submission)
-                            num_submits_made += 1
-
-
-def start_bots(session):
-
-    if session._cannot_restart_bots:
-        return
-    session._cannot_restart_bots = True
-    session.save()
-
-    bots = []
-
-    has_human_participants = session.get_participants().filter(
-        _is_bot=False).exists()
-    if has_human_participants:
-        max_wait_seconds = None
-    else:
-        max_wait_seconds = 10
-
-    for participant in session.get_participants().filter(_is_bot=True):
-        bot = ParticipantBot(
-            participant,
-            max_wait_seconds=max_wait_seconds
-        )
-        bots.append(bot)
-        bot.open_start_url()
-
-    bot_runner = SessionBotRunner(bots, session.code)
-    session_bot_runners[session.code] = bot_runner
-
-
-@db_task()
-def play_bots_task(session_code):
-    '''when doing this through Huey'''
-    session = Session.objects.get(code=session_code)
-    start_bots(session)
-    bot_runner = session_bot_runners[session.code]
-    bot_runner.play_until_stuck()
-
-
-@db_task()
-def continue_bots_until_stuck_task(session_code, unstuck_ids=None):
-    channels_group = channels.Group('session-admin-{}'.format(session_code))
-    try:
-        bot_runner = session_bot_runners[session_code]
-    except KeyError:
-        logger.warning('Bot finished, nothing to continue')
-        return
-    try:
-        bot_runner.play_until_stuck(unstuck_ids)
-    except Exception as exc:
-        session = Session.objects.get(code=session_code)
-        session._bots_errored = True
-        session.save()
-        error_msg = (
-            'Bots encountered an error: "{}". For the full traceback, '
-            'see the server logs.'.format(exc))
-        channels_group.send({'text': json.dumps({'message': error_msg})})
-        raise
-    channels_group.send(
-            {'text': json.dumps(
-                {'message': 'Bots finished'})})
-    session = Session.objects.get(code=session_code)
-    session._bots_finished = True
-    session.save()
+                        submission = value
+                        bot.submit(submission)
+                        num_submits_made += 1
 
 
 class BotsTestCase(test.TransactionTestCase):
 
-    def __init__(self, config_name, preserve_data):
+    def __init__(self, config_name, preserve_data, num_participants):
         super(BotsTestCase, self).__init__()
         self.config_name = config_name
         self.session_config = otree.session.SESSION_CONFIGS_DICT[config_name]
         self.preserve_data = preserve_data
         self._data_for_export = None
+
+        if num_participants is None:
+            num_participants = (
+                self.session_config.get('num_bots') or
+                self.session_config['num_demo_participants']
+            )
+
+        self.num_participants = num_participants
 
     def __repr__(self):
         hid = hex(id(self))
@@ -205,20 +132,30 @@ class BotsTestCase(test.TransactionTestCase):
 
     def runTest(self):
         num_bot_cases = self.session_config.get_num_bot_cases()
-        for mode_number in range(num_bot_cases):
+        for case_number in range(num_bot_cases):
             if num_bot_cases > 1:
                 logger.info("Creating '{}' session (test case {})".format(
-                    self.config_name, mode_number))
+                    self.config_name, case_number))
             else:
                 logger.info("Creating '{}' session".format(self.config_name))
 
             session = otree.session.create_session(
                 session_config_name=self.config_name,
+                num_participants=self.num_participants,
                 use_cli_bots=True, label='{} [bots]'.format(self.config_name),
-                bot_case_number=mode_number
+                bot_case_number=case_number
             )
-            start_bots(session)
-            bot_runner = session_bot_runners[session.code]
+            bots = []
+
+            for participant in session.get_participants():
+                bot = ParticipantBot(
+                    participant,
+                    unittest_case=self,
+                )
+                bots.append(bot)
+                bot.open_start_url()
+
+            bot_runner = SessionBotRunner(bots, session.code)
             bot_runner.play_until_end()
 
 
@@ -241,10 +178,11 @@ class BotsTestSuite(TestSuite):
 class BotsDiscoverRunner(runner.DiscoverRunner):
     test_suite = BotsTestSuite
 
-    def build_suite(self, config_names, extra_tests, preserve_data, **kwargs):
+    def build_suite(
+            self, session_config_names, num_participants, preserve_data):
         suite = self.test_suite()
-        for config_name in config_names:
-            case = BotsTestCase(config_name, preserve_data)
+        for config_name in session_config_names:
+            case = BotsTestCase(config_name, preserve_data, num_participants)
             suite.addTest(case)
         return suite
 
@@ -254,10 +192,10 @@ class BotsDiscoverRunner(runner.DiscoverRunner):
         data = {case.config_name: case.get_export_data() for case in suite}
         return failures, data
 
-    def run_tests(self, test_labels, extra_tests=None,
-                  preserve_data=False, **kwargs):
+    def run_tests(self, session_config_names, num_participants, preserve_data):
         self.setup_test_environment()
-        suite = self.build_suite(test_labels, extra_tests, preserve_data)
+        suite = self.build_suite(
+            session_config_names, num_participants, preserve_data)
         # same hack as in resetdb code
         # because this method uses the serializer
         # it breaks if the app has migrations but they aren't up to date
