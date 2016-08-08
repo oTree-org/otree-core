@@ -35,7 +35,6 @@ from django.http import HttpResponseRedirect
 from otree import constants_internal
 import otree
 
-
 # set to False if using runserver
 USE_REDIS = True
 

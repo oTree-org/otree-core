@@ -218,11 +218,26 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             if hasattr(response, 'render'):
                 response.render()
             self.save_objects()
+            if (
+                    self.session.use_browser_bots and
+                    hasattr(self, '_form_page_flag') and
+                    'csrfmiddlewaretoken' in response.content.decode('utf-8')):
+                    #getattr(self, '_rendering_page_with_form', None) and
+                    #response.status_code == 200):
+                bot = EphemeralBrowserBot(self)
+                # need to decode to utf-8 to json serialize it
+                print('***************participant', participant_code)
+                print('***************path', self.request.path)
+                print('***************method', self.request.method)
+                bot.enqueue_next_submit(response.content.decode('utf-8'))
             return response
 
     def get_context_data(self, **kwargs):
         context = super(FormPageOrInGameWaitPageMixin,
                         self).get_context_data(**kwargs)
+
+        if kwargs.get('form'):
+            self._rendering_page_with_form = True
 
         context.update({
             'form': kwargs.get('form'),
@@ -350,6 +365,9 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         # we skip any page that is a sequence page where is_displayed
         # evaluates to False to eliminate unnecessary redirection
 
+        #self.participant._index_in_pages += 1
+        #return
+
         for page_index in range(
                 # go to max_page_index+2 because range() skips the last index
                 # and it's possible to go to max_page_index + 1 (OutOfRange)
@@ -360,8 +378,10 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                 break
             url = self.participant._url_i_should_be_on()
 
+            # Assertion errors happen still back here
             Page = get_view_from_url(url)
             page = Page()
+
 
             if not hasattr(page, 'is_displayed'):
                 break
@@ -380,6 +400,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                         .values_list('participant__pk', flat=True))
                     page.send_completion_message(participant_pk_set)
 
+        #return
         channels.Group(
             'auto-advance-{}'.format(self.participant.code)
         ).send(
@@ -671,6 +692,8 @@ class FormPageMixin(object):
     model = UndefinedFormModel
     fields = []
 
+    _form_page_flag = True
+
     def get_template_names(self):
         if self.template_name is not None:
             return [self.template_name]
@@ -754,10 +777,10 @@ class FormPageMixin(object):
                     post_data.pop('csrfmiddlewaretoken', None)
                     post_data.pop('origin_url', None)
                     post_data.pop('must_fail', None)
-                    raise ValueError(
+                    raise AssertionError(
                         'Bot tried to submit intentionally invalid data with '
-                        'MustFail, but it passed validation anyway:'
-                        ' {}.'.format(post_data))
+                        'SubmitMustFail, but it passed validation anyway:'
+                        ' {}.'.format(dict(post_data)))
                 self.form = form
                 self.object = form.save()
             else:
@@ -765,7 +788,7 @@ class FormPageMixin(object):
                     errors = [
                         "{}: {}".format(k, repr(v))
                         for k, v in form.errors.items()]
-                    raise ValueError(
+                    raise AssertionError(
                         'Bot submission failed form validation: {} '
                         'Check your bot in tests.py, '
                         'then create a new session.'.format(errors))
@@ -775,12 +798,13 @@ class FormPageMixin(object):
             if self._index_in_pages == self.participant._max_page_index:
                 bot = EphemeralBrowserBot(self)
                 try:
-                    bot.get_next_post_data()
+                    print('******submitting last page')
+                    bot.enqueue_next_submit(html='')
                 except StopIteration:
                     bot.send_completion_message()
                     return HttpResponse('Bot completed')
                 else:
-                    raise Exception(
+                    raise AssertionError(
                         'Finished the last page, '
                         'but the bot is still trying '
                         'to submit more pages.'

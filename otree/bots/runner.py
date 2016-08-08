@@ -30,7 +30,7 @@ from unittest import TestSuite
 from otree import common_internal
 import otree.session
 from otree.models import Session
-from .bot import ParticipantBot, Pause
+from .bot import ParticipantBot
 
 
 MAX_ATTEMPTS = 100
@@ -157,6 +157,7 @@ class BotsTestCase(test.TransactionTestCase):
 
             bot_runner = SessionBotRunner(bots, session.code)
             bot_runner.play_until_end()
+
 
 
 # =============================================================================
