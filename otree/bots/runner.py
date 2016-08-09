@@ -104,11 +104,10 @@ class BotsTestCase(test.TransactionTestCase):
         self.preserve_data = preserve_data
         self._data_for_export = None
 
+        # num_bots is deprecated, because the old default of 12 or 6 was too
+        # much, and it doesn't make sense to 
         if num_participants is None:
-            num_participants = (
-                self.session_config.get('num_bots') or
-                self.session_config['num_demo_participants']
-            )
+            num_participants = self.session_config['num_demo_participants']
 
         self.num_participants = num_participants
 

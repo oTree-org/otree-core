@@ -32,8 +32,6 @@ class Command(runserver.Command):
         otree.common_internal.USE_REDIS = False
 
         # initialize browser bot worker in process memory
-        otree.bots.browser.browser_bot_worker = otree.bots.browser.Worker(
-            otree.common_internal.get_redis_conn()
-        )
+        otree.bots.browser.browser_bot_worker = otree.bots.browser.Worker()
 
         super(Command, self).handle(*args, **options)

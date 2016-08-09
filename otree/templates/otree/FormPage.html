@@ -43,6 +43,8 @@ $(document).ready(function () {
 
     {% if session.use_browser_bots %}
         {# submit the form instantly #}
+        {# below comment is used as a flag #}
+        // browser-bot-auto-submit
         $('#form').submit();
     {% endif %}
 

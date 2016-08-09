@@ -5,12 +5,8 @@ from otree.models import Session
 from otree.common_internal import get_redis_conn, get_dotted_name
 import otree.common_internal
 import channels
-import time
 from collections import OrderedDict
-from otree.session import SessionConfig
-import random
 from django.test import SimpleTestCase
-from bs4 import BeautifulSoup, SoupStrainer
 import threading
 
 REDIS_KEY_PREFIX = 'otree-bots'
@@ -20,13 +16,14 @@ SESSIONS_PRUNE_LIMIT = 50
 # global variable that holds the browser bot worker instance in memory
 browser_bot_worker = None # type: Worker
 
+prepare_submit_lock = threading.Lock()
 
 class Worker(object):
     def __init__(self, redis_conn=None):
         self.redis_conn = redis_conn
         self.browser_bots = {}
         self.session_participants = OrderedDict()
-        self.enqueued_submits = {}
+        self.prepared_submits = {}
 
     def initialize_session(self, session_code):
         session = Session.objects.get(code=session_code)
@@ -42,17 +39,13 @@ class Worker(object):
                 participant.code)
             bot = ParticipantBot(
                 participant, unittest_case=test_case)
-            # extra attribute to keep track of already-seen GET path requests
-            # because there can be many GETs for each post.
-            # maybe find a better way later
-            bot.seen_paths = set()
             self.browser_bots[participant.code] = bot
         return {'ok': True}
 
     def get_method(self, command_name):
         commands = {
-            'enqueue_next_submit': self.enqueue_next_submit,
-            'dequeue_next_submit': self.dequeue_next_submit,
+            'prepare_next_submit': self.prepare_next_submit,
+            'consume_next_submit': self.consume_next_submit,
             'initialize_session': self.initialize_session,
             'clear_all': self.clear_all,
             'ping': self.ping,
@@ -70,10 +63,12 @@ class Worker(object):
     def clear_all(self):
         self.browser_bots.clear()
 
-    def dequeue_next_submit(self, participant_code):
-        return self.enqueued_submits.pop(participant_code)
+    def consume_next_submit(self, participant_code):
+        submission = self.prepared_submits.pop(participant_code)
+        submission.pop('page_class')
+        return submission
 
-    def enqueue_next_submit(self, participant_code, path, html):
+    def prepare_next_submit(self, participant_code, path, html):
 
         try:
             bot = self.browser_bots[participant_code]
@@ -92,8 +87,8 @@ class Worker(object):
         bot.path = path
         bot.html = html
 
-        with threading.Lock():
-            if participant_code in self.enqueued_submits:
+        with prepare_submit_lock:
+            if participant_code in self.prepared_submits:
                 return {}
 
             try:
@@ -105,12 +100,9 @@ class Worker(object):
 
                 # need to return something, to distinguish from Redis timeout
                 submission = {}
-            else:
-                # not json serializable
-                submission.pop('page_class')
 
             # when run in process, puts it in the fake redis
-            self.enqueued_submits[participant_code] = submission
+            self.prepared_submits[participant_code] = submission
 
         return submission
 
@@ -229,13 +221,13 @@ class EphemeralBrowserBot(object):
         self.redis_conn = redis_conn or get_redis_conn()
         self.path = self.view.request.path
 
-    def enqueue_next_submit_redis(self, html):
+    def prepare_next_submit_redis(self, html):
         participant_code = self.participant.code
         redis_conn = self.redis_conn
-        response_key = '{}-enqueue_next_submit-{}'.format(
+        response_key = '{}-prepare_next_submit-{}'.format(
             REDIS_KEY_PREFIX, participant_code)
         msg = {
-            'command': 'enqueue_next_submit',
+            'command': 'prepare_next_submit',
             'kwargs': {
                 'participant_code': participant_code,
                 'path': self.path,
@@ -255,15 +247,15 @@ class EphemeralBrowserBot(object):
         key, submit_bytes = result
         return json.loads(submit_bytes.decode('utf-8'))
 
-    def enqueue_next_submit_in_process(self, html):
-        return browser_bot_worker.enqueue_next_submit(
+    def prepare_next_submit_in_process(self, html):
+        return browser_bot_worker.prepare_next_submit(
             self.participant.code, self.path, html)
 
-    def enqueue_next_submit(self, html):
+    def prepare_next_submit(self, html):
         if otree.common_internal.USE_REDIS:
-            result = self.enqueue_next_submit_redis(html)
+            result = self.prepare_next_submit_redis(html)
         else:
-            result = self.enqueue_next_submit_in_process(html)
+            result = self.prepare_next_submit_in_process(html)
         if 'response_error' in result:
             raise Exception(
                 'An error occurred. See the botworker output '
@@ -274,10 +266,10 @@ class EphemeralBrowserBot(object):
     def get_next_post_data_redis(self):
         participant_code = self.participant.code
         redis_conn = self.redis_conn
-        response_key = '{}-dequeue_next_submit-{}'.format(
+        response_key = '{}-consume_next_submit-{}'.format(
             REDIS_KEY_PREFIX, participant_code)
         msg = {
-            'command': 'dequeue_next_submit',
+            'command': 'consume_next_submit',
             'kwargs': {
                 'participant_code': participant_code,
             },
@@ -300,7 +292,7 @@ class EphemeralBrowserBot(object):
         if otree.common_internal.USE_REDIS:
             submission = self.get_next_post_data_redis()
         else:
-            submission = browser_bot_worker.enqueued_submits.pop(
+            submission = browser_bot_worker.prepared_submits.pop(
                 self.participant.code)
         if submission:
             return submission['post_data']

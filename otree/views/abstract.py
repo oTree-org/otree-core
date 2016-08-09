@@ -220,16 +220,10 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             self.save_objects()
             if (
                     self.session.use_browser_bots and
-                    hasattr(self, '_form_page_flag') and
-                    'csrfmiddlewaretoken' in response.content.decode('utf-8')):
-                    #getattr(self, '_rendering_page_with_form', None) and
-                    #response.status_code == 200):
+                    'browser-bot-auto-submit' in response.content.decode(
+                            'utf-8')):
                 bot = EphemeralBrowserBot(self)
-                # need to decode to utf-8 to json serialize it
-                print('***************participant', participant_code)
-                print('***************path', self.request.path)
-                print('***************method', self.request.method)
-                bot.enqueue_next_submit(response.content.decode('utf-8'))
+                bot.prepare_next_submit(response.content.decode('utf-8'))
             return response
 
     def get_context_data(self, **kwargs):
@@ -798,8 +792,7 @@ class FormPageMixin(object):
             if self._index_in_pages == self.participant._max_page_index:
                 bot = EphemeralBrowserBot(self)
                 try:
-                    print('******submitting last page')
-                    bot.enqueue_next_submit(html='')
+                    bot.prepare_next_submit(html='')
                 except StopIteration:
                     bot.send_completion_message()
                     return HttpResponse('Bot completed')
