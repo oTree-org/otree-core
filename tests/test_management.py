@@ -5,9 +5,8 @@ import mock
 
 from six import StringIO
 
-from django.core.management.base import CommandError
-
 from otree.management import cli
+
 from .base import TestCase
 
 

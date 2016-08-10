@@ -14,6 +14,7 @@ from otree.views.rest import SessionParticipantsList, Ping
 
 from otree.common_internal import get_models_module
 
+
 STUDY_UNRESTRICTED_VIEWS = {
     'otree.views.concrete.AssignVisitorToRoom',
     'otree.views.concrete.InitializeParticipant',
@@ -22,6 +23,7 @@ STUDY_UNRESTRICTED_VIEWS = {
     'otree.views.concrete.JoinSessionAnonymously',
     'otree.views.concrete.OutOfRangeNotification',
 }
+
 
 DEMO_UNRESTRICTED_VIEWS = STUDY_UNRESTRICTED_VIEWS.union({
     'otree.views.concrete.AdvanceSession',
@@ -52,7 +54,9 @@ def view_classes_from_module(module_name):
 def url_patterns_from_game_module(module_name, name_in_url):
     views_module = import_module(module_name)
 
-    all_views = [ViewCls for _, ViewCls in inspect.getmembers(views_module)
+    all_views = [
+        ViewCls
+        for _, ViewCls in inspect.getmembers(views_module)
         if hasattr(ViewCls, 'url_pattern')]
 
     view_urls = []

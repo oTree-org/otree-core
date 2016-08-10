@@ -15,8 +15,8 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template.response import TemplateResponse
 from django.http import (
-    HttpResponse, HttpResponseRedirect, HttpResponseNotFound, Http404,
-    JsonResponse
+    HttpResponse, HttpResponseRedirect,
+    HttpResponseNotFound, Http404, JsonResponse
 )
 from django.utils.translation import ugettext as _
 
@@ -33,13 +33,10 @@ from otree.views.mturk import MTurkConnection
 import otree.common_internal
 from otree.views.abstract import (
     OTreeMixin, GenericWaitPageMixin,
-    global_lock,
-    NO_PARTICIPANTS_LEFT_MSG
-)
+    global_lock, NO_PARTICIPANTS_LEFT_MSG)
 from otree.room import ROOM_DICT
 from otree.models_concrete import (
-    ParticipantRoomVisit, BrowserBotsLauncherSessionCode
-)
+    ParticipantRoomVisit, BrowserBotsLauncherSessionCode)
 
 
 class OutOfRangeNotification(OTreeMixin, vanilla.View):
@@ -424,8 +421,7 @@ class BrowserBotStartLink(GenericWaitPageMixin, vanilla.View):
     url_pattern = r'^browser_bot_start/$'
 
     def dispatch(self, request, *args, **kwargs):
-
-        redis_conn = get_redis_conn()
+        get_redis_conn()
         session_info = BrowserBotsLauncherSessionCode.objects.first()
         if session_info:
             session = Session.objects.get(code=session_info.code)
@@ -442,13 +438,9 @@ class BrowserBotStartLink(GenericWaitPageMixin, vanilla.View):
 
             return HttpResponseRedirect(participant._start_url())
         else:
-            return render_to_response(
-                "otree/WaitPage.html",
-                {
-                    'view': self, 'title_text': 'Please wait',
-                    'body_text': 'Waiting for browser bots session to begin'
-                }
-            )
+            ctx = {'view': self, 'title_text': 'Please wait',
+                   'body_text': 'Waiting for browser bots session to begin'}
+            return render_to_response("otree/WaitPage.html", ctx)
 
     def socket_url(self):
         return '/browser_bot_wait/'

@@ -1,19 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+
 from django.db.models import permalink
+from django.core.urlresolvers import reverse
 
-import django.test
-
-from otree import constants_internal
 import otree.common_internal
+from otree import constants_internal
 from otree.common_internal import id_label_name, random_chars_8
 from otree.common import Currency as c
 from otree.db import models
 from otree.models_concrete import ParticipantToPlayerLookup
 from otree.models.varsmixin import ModelWithVars
-from django.core.urlresolvers import reverse
 
 
 class BaseParticipant(ModelWithVars):
@@ -27,10 +24,8 @@ class BaseParticipant(ModelWithVars):
         default=False, doc=(
             "if set to 1, the experimenter indicated that this participant's "
             "data points should be excluded from the data analysis (e.g. a "
-            "problem took place during the experiment)"
-        )
+            "problem took place during the experiment)")
     )
-
 
     time_started = models.DateTimeField(null=True)
     user_type_in_url = constants_internal.user_type_participant
@@ -39,7 +34,6 @@ class BaseParticipant(ModelWithVars):
     mturk_worker_id = models.CharField(max_length=50, null=True)
 
     start_order = models.PositiveIntegerField(db_index=True)
-
 
     _index_in_subsessions = models.PositiveIntegerField(default=0, null=True)
 
@@ -201,4 +195,3 @@ class BaseParticipant(ModelWithVars):
 
     def name(self):
         return id_label_name(self.pk, self.label)
-

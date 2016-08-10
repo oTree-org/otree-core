@@ -3,20 +3,20 @@
 import logging
 
 import django.test
+from django.core.urlresolvers import reverse
 
 from otree import constants_internal
 import otree.common_internal
 from otree.common_internal import random_chars_8, random_chars_10
 from otree.db import models
-from .varsmixin import ModelWithVars
 from otree.models_concrete import ParticipantToPlayerLookup, RoomToSession
-from django.core.urlresolvers import reverse
+from .varsmixin import ModelWithVars
+
+
 logger = logging.getLogger('otree')
 
 client = django.test.Client()
 
-
-import logging
 
 # for now removing SaveTheChange
 
@@ -232,10 +232,9 @@ class BaseSession(ModelWithVars):
                             page_index=page_index,
                             app_name=player._meta.app_config.name,
                             player_pk=player.pk,
-                            url=reverse(
-                                View.url_name(),
-                                args=[participant.code, page_index])
-                    ))
+                            url=reverse(View.url_name(),
+                                        args=[participant.code, page_index]))
+                    )
 
             # technically could be stored at the session level
             participant._max_page_index = page_index

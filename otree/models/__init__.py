@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from django.db.models.signals import class_prepared
+
 from importlib import import_module
-from otree.db.models import *
+
+from django.db.models.signals import class_prepared
+
+from otree.db.models import *  # noqa
 from otree.db import models
-import os
+
 
 # NOTE: this imports the following submodules and then subclasses several
 # classes importing is done via import_module rather than an ordinary import.
@@ -15,8 +18,6 @@ import os
 # project I wouldn't do it this way, but because oTree is aimed at newcomers
 # who may need more assistance from their IDE, I want to try this approach out.
 # this module is also a form of documentation of the public API.
-from otree.models_concrete import ParticipantToPlayerLookup, RoomToSession
-
 subsession_module = import_module('otree.models.subsession')
 group_module = import_module('otree.models.group')
 player_module = import_module('otree.models.player')
@@ -45,9 +46,9 @@ class Session(session_module.BaseSession):
     class Meta:
         app_label = "otree"
 
-    config = models.JSONField(default=dict, null=True) # type: dict
+    config = models.JSONField(default=dict, null=True)  # type: dict
 
-    vars = models.JSONField(default=dict) # type: dict
+    vars = models.JSONField(default=dict)  # type: dict
 
     def get_participants(self):
         return super(Session, self).get_participants()
@@ -162,7 +163,7 @@ class BaseGroup(group_module.BaseGroup):
         Session, related_name='%(app_label)s_%(class)s'
     )
 
-    subsession = None # type: BaseSubsession
+    subsession = None  # type: BaseSubsession
 
     round_number = models.PositiveIntegerField(db_index=True)
 
@@ -217,8 +218,8 @@ class BasePlayer(player_module.BasePlayer):
         Session, related_name='%(app_label)s_%(class)s'
     )
 
-    group = None # type: BaseGroup
-    subsession = None # type: BaseSubsession
+    group = None  # type: BaseGroup
+    subsession = None  # type: BaseSubsession
 
     round_number = models.PositiveIntegerField(db_index=True)
 
@@ -242,6 +243,3 @@ class BasePlayer(player_module.BasePlayer):
 
     def in_rounds(self, first, last):
         return super(BasePlayer, self).in_rounds(first, last)
-
-
-

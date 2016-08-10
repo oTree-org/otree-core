@@ -22,7 +22,7 @@ release_any_stale_locks()
 from huey.contrib.djhuey import HUEY  # noqa
 HUEY.flush()
 
-from otree.bots.browser import redis_flush_bots
+from otree.bots.browser import redis_flush_bots  # noqa
 redis_flush_bots(get_redis_conn())
 
 channel_layer = channels.asgi.get_channel_layer()

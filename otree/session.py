@@ -2,34 +2,32 @@
 # -*- coding: utf-8 -*-
 
 import random
-import six
+import sys
 from functools import reduce
 from collections import OrderedDict
-import sys
-import itertools
+from decimal import Decimal
+
+import six
+from six.moves import range
+from six.moves import zip
 
 from django.conf import settings
 from django.db import transaction
 from django.db.utils import OperationalError
 
-from six.moves import range
-from six.moves import zip
 import schema
 
 import otree.db.idmap
-from otree import constants_internal
 from otree.models import Participant, Session
 from otree.common_internal import (
     get_models_module, get_app_constants, validate_identifier,
-    min_players_multiple,
-    get_redis_conn, get_bots_module
-)
+    min_players_multiple, get_bots_module)
 import otree.common_internal
 from otree.common import RealWorldCurrency
-from decimal import Decimal
 from otree import deprecate
 from otree.models_concrete import ParticipantLockModel
 import otree.bots.browser
+
 
 def gcd(a, b):
     """Return greatest common divisor using Euclid's Algorithm."""
@@ -189,8 +187,8 @@ def create_session(
 
     with transaction.atomic():
         # 2014-5-2: i could implement this by overriding the __init__ on the
-        # Session model, but I don't really know how that works, and it seems to
-        # be a bit discouraged: http://goo.gl/dEXZpv
+        # Session model, but I don't really know how that works, and it seems
+        # to be a bit discouraged: http://goo.gl/dEXZpv
         # 2014-9-22: preassign to groups for demo mode.
 
         otree.db.idmap.activate_cache()
@@ -204,17 +202,16 @@ def create_session(
         if force_browser_bots:
             use_browser_bots = True
         elif (session_config.get('use_browser_bots') and
-                  honor_browser_bots_config):
+              honor_browser_bots_config):
             use_browser_bots = True
         else:
             use_browser_bots = False
-        if use_browser_bots and bot_case_number == None:
+        if use_browser_bots and bot_case_number is None:
             # choose one randomly
             num_bot_cases = session_config.get_num_bot_cases()
             # choose bot case number randomly...maybe reconsider this?
             # we can only run one.
             bot_case_number = random.choice(range(num_bot_cases))
-
 
         session = Session.objects.create(
             config=session_config,
@@ -222,8 +219,7 @@ def create_session(
             _pre_create_id=_pre_create_id,
             use_browser_bots=use_browser_bots,
             is_demo=is_demo,
-            _bot_case_number=bot_case_number
-        )
+            _bot_case_number=bot_case_number)
 
         def bulk_create(model, descriptions):
             model.objects.bulk_create([
@@ -235,10 +231,10 @@ def create_session(
         session_lcm = session_config.get_lcm()
         if num_participants % session_lcm:
             msg = (
-                'Session Config {}: Number of participants ({}) does not divide '
-                'evenly into group size ({})')
-            raise ValueError(
-                msg.format(session_config['name'], num_participants, session_lcm))
+                'Session Config {}: Number of participants ({}) does not '
+                'divide evenly into group size ({})'
+            ).format(session_config['name'], num_participants, session_lcm)
+            raise ValueError(msg)
 
         if for_mturk:
             session.mturk_num_participants = (
@@ -248,7 +244,6 @@ def create_session(
         start_order = list(range(num_participants))
         if session_config.get('random_start_order'):
             random.shuffle(start_order)
-
 
         participants = bulk_create(
             Participant,

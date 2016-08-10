@@ -378,7 +378,7 @@ def augment_settings(settings):
         'result_store': False,
         'consumer': {
             'workers': 1,
-            #'worker_type': 'thread',
+            # 'worker_type': 'thread',
             'scheduler_interval': 5,
             'loglevel': 'warning',
         },
