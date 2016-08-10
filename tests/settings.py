@@ -69,7 +69,6 @@ mturk_hit_settings = {
 SESSION_CONFIG_DEFAULTS = {
     'real_world_currency_per_point': 0.01,
     'participation_fee': 10.00,
-    'num_bots': 6,
     'doc': "",
     'mturk_hit_settings': mturk_hit_settings,
 }
@@ -86,7 +85,6 @@ SESSION_CONFIGS = [
         'name': 'single_player_game',
         'display_name': "Single Player Game",
         'num_demo_participants': 1,
-        'num_bots': 1,
         'participation_fee': 9.99,
         'real_world_currency_per_point': 0.02,
         'app_sequence': ['tests.single_player_game'],
@@ -96,7 +94,6 @@ SESSION_CONFIGS = [
         'name': 'multi_player_game',
         'display_name': "Multi Player Game",
         'num_demo_participants': 3,
-        'num_bots': 6,
         'app_sequence': ['tests.multi_player_game'],
     },
     {

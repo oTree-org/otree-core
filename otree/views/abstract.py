@@ -230,9 +230,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         context = super(FormPageOrInGameWaitPageMixin,
                         self).get_context_data(**kwargs)
 
-        if kwargs.get('form'):
-            self._rendering_page_with_form = True
-
         context.update({
             'form': kwargs.get('form'),
             'player': self.player,
@@ -359,9 +356,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         # we skip any page that is a sequence page where is_displayed
         # evaluates to False to eliminate unnecessary redirection
 
-        #self.participant._index_in_pages += 1
-        #return
-
         for page_index in range(
                 # go to max_page_index+2 because range() skips the last index
                 # and it's possible to go to max_page_index + 1 (OutOfRange)
@@ -372,7 +366,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                 break
             url = self.participant._url_i_should_be_on()
 
-            # Assertion errors happen still back here
             Page = get_view_from_url(url)
             page = Page()
 
@@ -394,7 +387,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                         .values_list('participant__pk', flat=True))
                     page.send_completion_message(participant_pk_set)
 
-        #return
         channels.Group(
             'auto-advance-{}'.format(self.participant.code)
         ).send(
@@ -686,8 +678,6 @@ class FormPageMixin(object):
     model = UndefinedFormModel
     fields = []
 
-    _form_page_flag = True
-
     def get_template_names(self):
         if self.template_name is not None:
             return [self.template_name]
@@ -793,6 +783,7 @@ class FormPageMixin(object):
                 bot = EphemeralBrowserBot(self)
                 try:
                     bot.prepare_next_submit(html='')
+                    submission = bot.get_next_post_data()
                 except StopIteration:
                     bot.send_completion_message()
                     return HttpResponse('Bot completed')
@@ -800,7 +791,7 @@ class FormPageMixin(object):
                     raise AssertionError(
                         'Finished the last page, '
                         'but the bot is still trying '
-                        'to submit more pages.'
+                        'to submit more data ({}).'.format(submission)
                     )
         self._increment_index_in_pages()
         return self._redirect_to_page_the_user_should_be_on()

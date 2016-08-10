@@ -8,6 +8,7 @@ import channels
 from collections import OrderedDict
 from django.test import SimpleTestCase
 import threading
+import logging
 
 REDIS_KEY_PREFIX = 'otree-bots'
 
@@ -17,6 +18,8 @@ SESSIONS_PRUNE_LIMIT = 50
 browser_bot_worker = None # type: Worker
 
 prepare_submit_lock = threading.Lock()
+
+logger = logging.getLogger('otree.test.browser_bots')
 
 class Worker(object):
     def __init__(self, redis_conn=None):
@@ -65,7 +68,8 @@ class Worker(object):
 
     def consume_next_submit(self, participant_code):
         submission = self.prepared_submits.pop(participant_code)
-        submission.pop('page_class')
+        # maybe was popped in prepare_next_submit
+        submission.pop('page_class', None)
         return submission
 
     def prepare_next_submit(self, participant_code, path, html):
@@ -100,6 +104,10 @@ class Worker(object):
 
                 # need to return something, to distinguish from Redis timeout
                 submission = {}
+            else:
+                # because we are returning it through Redis, need to pop it
+                # here
+                submission.pop('page_class')
 
             # when run in process, puts it in the fake redis
             self.prepared_submits[participant_code] = submission
@@ -138,8 +146,8 @@ class Worker(object):
                 # request_error means the request received through Redis
                 # was invalid
                 retval = {'response_error': str(exc)}
-                # execute finally below, then raise
-                raise
+                # don't raise, because then this would crash.
+                logger.exception('{!r}'.format(exc))
             finally:
                 retval_json = json.dumps(retval or {})
                 self.redis_conn.rpush(response_key, retval_json)
@@ -297,7 +305,7 @@ class EphemeralBrowserBot(object):
         if submission:
             return submission['post_data']
         else:
-            raise StopIteration
+            raise StopIteration('No more submits')
 
     def send_completion_message(self):
         channels.Group(

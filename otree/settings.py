@@ -78,8 +78,12 @@ def get_default_settings(initial_settings=None):
                 'propagate': False,
                 'level': 'INFO',
             },
+            # 2016-07-25: botworker seems to be sending messages to Sentry
+            # without any special configuration, not sure why.
+            # but, i should use a logger, because i need to catch exceptions
+            # in botworker so it keeps running
             'otree.test.browser_bots': {
-                'handlers': ['console'],
+                'handlers': ['sentry', 'console'],
                 'propagate': False,
                 'level': 'INFO',
             },
@@ -107,8 +111,8 @@ def get_default_settings(initial_settings=None):
                 'handlers': ['console'],
                 'level': 'WARNING'
             }
-            # 2016-07-25: botworker seems to be sending messages to Sentry
-            # without any special configuration, not sure why.
+
+
         }
     }
 
@@ -373,10 +377,6 @@ def augment_settings(settings):
         # (otherwise, calling the task returns None.
         'result_store': False,
         'consumer': {
-            # bots must run in 1 process because generators are loaded
-            # in memory. maybe use 2 threads, because running "play_bots"
-            # could take several seconds (but won't take minutes), and we
-            # also need to use it for timeouts
             'workers': 1,
             #'worker_type': 'thread',
             'scheduler_interval': 5,

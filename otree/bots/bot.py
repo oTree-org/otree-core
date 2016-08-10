@@ -64,7 +64,6 @@ def Submit(PageClass, post_data=None, check_fields=True):
 
 
 def SubmitMustFail(PageClass, post_data=None, check_fields=True):
-    print('PageClass', PageClass, 'post_data', post_data)
     '''lets you intentionally submit with invalid
     input to ensure it's correctly rejected'''
 
@@ -113,6 +112,7 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
         self.participant = participant
         self.url = None
         self._response = None
+        self._html = None
         self.path = None
         self.submits = None
         self.max_wait_seconds = max_wait_seconds
@@ -148,7 +148,7 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
                         if not isinstance(submission, dict):
                             submission = SubmitInternal(submission)
                         self.assert_correct_page(submission)
-                        self.assert_missing_fields(submission)
+                        self.assert_correct_fields(submission)
                         yield submission
                 # handle the case where it's empty
                 except TypeError as exc:
@@ -156,7 +156,7 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
                         raise StopIteration
                     raise
 
-    def assert_missing_fields(self, submission):
+    def assert_correct_fields(self, submission):
         if submission['check_fields']:
             field_names = [
                 f for f in submission['post_data'].keys() if f != 'must_fail']
@@ -197,6 +197,16 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
             pass
         self._response = response
         self.html = response.content.decode('utf-8')
+
+    @property
+    def html(self):
+        return self._html
+
+    @html.setter
+    def html(self, html):
+        html = html.replace('\n', ' ').replace('\r', ' ')
+        html = re.sub(r'\s+', ' ', html)
+        self._html = html
 
     def on_wait_page(self):
         # if the existing response was a form page, it will still be...
