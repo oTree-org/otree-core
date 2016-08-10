@@ -5,11 +5,11 @@ import re
 import decimal
 import logging
 import abc
-import six
-from html.parser import HTMLParser
 from importlib import import_module
 
+import six
 from six.moves import urllib
+from six.moves.html_parser import HTMLParser
 
 from django import test
 from django.core.urlresolvers import resolve
