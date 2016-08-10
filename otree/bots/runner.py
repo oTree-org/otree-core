@@ -14,22 +14,20 @@
 # =============================================================================
 
 import logging
-import contextlib
 from collections import OrderedDict
-import mock
-from huey.contrib.djhuey import task, db_task
-import json
-import random
-import channels
+
 from six import StringIO
+
+import mock
+
 from django.db.migrations.loader import MigrationLoader
 from django import test
 from django.test import runner
 from unittest import TestSuite
 
-from otree import common_internal
 import otree.session
-from otree.models import Session
+from otree import common_internal
+
 from .bot import ParticipantBot
 
 
@@ -57,9 +55,9 @@ class SessionBotRunner(object):
             if done:
                 print('Bots done!')
                 return
-            #elif num_submits_made == 0:
-            #    print('Bots got stuck :(')
-            #    break
+            # elif num_submits_made == 0:
+            #     print('Bots got stuck :(')
+            #     break
 
     def play_until_stuck(self, unstuck_ids=None):
         unstuck_ids = unstuck_ids or []
@@ -105,7 +103,7 @@ class BotsTestCase(test.TransactionTestCase):
         self._data_for_export = None
 
         # num_bots is deprecated, because the old default of 12 or 6 was too
-        # much, and it doesn't make sense to 
+        # much, and it doesn't make sense to
         if num_participants is None:
             num_participants = self.session_config['num_demo_participants']
 

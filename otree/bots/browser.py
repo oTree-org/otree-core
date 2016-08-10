@@ -1,25 +1,35 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
-from .bot import ParticipantBot, Submit
+
 import json
-from otree.models import Session
-from otree.common_internal import get_redis_conn, get_dotted_name
-import otree.common_internal
-import channels
-from collections import OrderedDict
-from django.test import SimpleTestCase
 import threading
 import logging
+from collections import OrderedDict
+
+from django.test import SimpleTestCase
+
+import channels
+
+import otree.common_internal
+from otree.models import Session
+from otree.common_internal import get_redis_conn
+
+from .bot import ParticipantBot
+
 
 REDIS_KEY_PREFIX = 'otree-bots'
 
 SESSIONS_PRUNE_LIMIT = 50
 
 # global variable that holds the browser bot worker instance in memory
-browser_bot_worker = None # type: Worker
+browser_bot_worker = None  # type: Worker
 
 prepare_submit_lock = threading.Lock()
 
 logger = logging.getLogger('otree.test.browser_bots')
+
 
 class Worker(object):
     def __init__(self, redis_conn=None):
@@ -127,7 +137,7 @@ class Worker(object):
 
             # put it in a loop so that we can still receive KeyboardInterrupts
             # otherwise it will block
-            while result == None:
+            while result is None:
                 result = self.redis_conn.blpop(REDIS_KEY_PREFIX, timeout=3)
 
             key, message_bytes = result
@@ -294,7 +304,6 @@ class EphemeralBrowserBot(object):
             )
         key, submit_bytes = result
         return json.loads(submit_bytes.decode('utf-8'))
-
 
     def get_next_post_data(self):
         if otree.common_internal.USE_REDIS:

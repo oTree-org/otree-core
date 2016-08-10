@@ -6,16 +6,20 @@ import decimal
 import logging
 import abc
 import six
-from importlib import import_module
-from six.moves import urllib
-from django import test
-import json
-from easymoney import Money as Currency
-from django.core.urlresolvers import resolve
-from otree import constants_internal
 from html.parser import HTMLParser
+from importlib import import_module
+
+from six.moves import urllib
+
+from django import test
+from django.core.urlresolvers import resolve
+
+from easymoney import Money as Currency
+
+from otree import constants_internal
 
 from otree.common_internal import get_dotted_name, get_bots_module
+
 
 logger = logging.getLogger('otree.bots')
 
@@ -176,12 +180,8 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
                 "Bot expects to be on page {}, "
                 "but current page is {}. "
                 "Check your bot in tests.py, "
-                "then create a new session.".format(
-                    expected_url,
-                    actual_url
-                )
+                "then create a new session.".format(expected_url, actual_url)
             )
-
 
     @property
     def response(self):
@@ -242,7 +242,6 @@ class PlayerBot(object):
 
         bots_module = import_module(self.__module__)
 
-
         case_number = self._cached_session._bot_case_number
         CASES = getattr(bots_module, 'CASES', [])
         if len(CASES) >= 1:
@@ -251,7 +250,6 @@ class PlayerBot(object):
             self.case = None
 
         self._unittest_case = unittest_case
-
 
     def play_round(self):
         pass
@@ -277,7 +275,8 @@ class PlayerBot(object):
         return refresh_from_db(self._cached_participant)
 
     def submit(self, ViewClass, param_dict=None):
-        self._legacy_submit_list.append(SubmitInternal((ViewClass, param_dict)))
+        self._legacy_submit_list.append(
+            SubmitInternal((ViewClass, param_dict)))
 
     def submit_invalid(self, ViewClass, param_dict=None):
         # simpler to make this a no-op, it makes porting to yield easier

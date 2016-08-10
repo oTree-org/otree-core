@@ -18,7 +18,6 @@ from django.forms.forms import pretty_name
 from django.conf import settings
 from django.contrib import messages
 from django.utils.encoding import force_text
-from django.shortcuts import get_object_or_404
 
 import vanilla
 

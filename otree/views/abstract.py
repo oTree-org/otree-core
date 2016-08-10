@@ -369,7 +369,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             Page = get_view_from_url(url)
             page = Page()
 
-
             if not hasattr(page, 'is_displayed'):
                 break
 
