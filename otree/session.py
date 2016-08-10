@@ -6,6 +6,7 @@ import sys
 from functools import reduce
 from collections import OrderedDict
 from decimal import Decimal
+import warnings
 
 import six
 from six.moves import range
@@ -24,7 +25,6 @@ from otree.common_internal import (
     min_players_multiple, get_bots_module)
 import otree.common_internal
 from otree.common import RealWorldCurrency
-from otree import deprecate
 from otree.models_concrete import ParticipantLockModel
 import otree.bots.browser
 
@@ -109,12 +109,12 @@ class SessionConfig(dict):
         # in favor of participation_fee. make this required at some point.
         if (('participation_fee' not in self) and
                 ('fixed_pay' in self)):
-            deprecate.dwarning(
-                '"fixed_pay" is deprecated; '
-                'you should rename it to "participation_fee".'
-            )
-            self['participation_fee'] = (
-                self['fixed_pay'])
+            warn_msg = (
+                "'fixed_pay' is deprecated; "
+                "you should rename it to 'participation_fee'.")
+            warnings.warn(warn_msg, DeprecationWarning)
+
+            self['participation_fee'] = self['fixed_pay']
 
         self['participation_fee'] = RealWorldCurrency(
             self['participation_fee'])
@@ -136,13 +136,11 @@ class SessionConfig(dict):
                 app_name)
             if num_rounds > 1:
                 formatted_app_name = '{} ({} rounds)'.format(
-                    formatted_app_name, num_rounds
-                )
+                    formatted_app_name, num_rounds)
             subsssn = {
                 'doc': getattr(models_module, 'doc', ''),
                 'bibliography': getattr(models_module, 'bibliography', []),
-                'name': formatted_app_name,
-            }
+                'name': formatted_app_name}
             app_sequence.append(subsssn)
 
         return {
@@ -150,8 +148,7 @@ class SessionConfig(dict):
             'app_sequence': app_sequence,
             'name': self['name'],
             'display_name': self['display_name'],
-            'lcm': self.get_lcm(),
-        }
+            'lcm': self.get_lcm()}
 
 
 def get_session_configs_dict():
