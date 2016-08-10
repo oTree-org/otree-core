@@ -6,18 +6,20 @@ import sys
 import time
 import logging
 import six
+import subprocess
+
 import requests
+
+from six.moves.urllib.parse import urljoin
+
 from django.core.management.base import BaseCommand
-from six.moves import urllib
 from django.core.urlresolvers import reverse
 from django.conf import settings
-import subprocess
-from otree.room import ROOM_DICT
-from otree.session import SESSION_CONFIGS_DICT
+
 from ws4py.client.threadedclient import WebSocketClient
 
-# how do i import this properly?
-urljoin = urllib.parse.urljoin
+from otree.session import SESSION_CONFIGS_DICT
+
 
 BROWSER_CMDS = {
     'windows': {
@@ -35,7 +37,6 @@ BROWSER_CMDS = {
 }
 
 SERVER_URL_FLAG = '--server-url'
-
 
 
 AUTH_FAILURE_MESSAGE = """
@@ -255,13 +256,13 @@ class Launcher(object):
 
             # get it again, we are logged in now
             resp = self.client.get(self.create_session_url)
-        server_check = resp.json()
+        server_check = resp.json()  # noqa
 
         # no need to warn about these for now
-        #if server_check['runserver']:
-        #    print(RUNSERVER_WARNING)
-        #if server_check['sqlite']:
-        #    print(SQLITE_WARNING)
+        # if server_check['runserver']:
+        #     print(RUNSERVER_WARNING)
+        # if server_check['sqlite']:
+        #     print(SQLITE_WARNING)
 
     def ping_server(self):
 

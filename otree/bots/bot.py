@@ -1,20 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import re
 import decimal
 import logging
 import abc
 import six
 from importlib import import_module
-from six.moves import urllib
-from django import test
-import json
-from easymoney import Money as Currency
-from django.core.urlresolvers import resolve
-from otree import constants_internal
 
+from six.moves import urllib
+
+from django import test
+from django.core.urlresolvers import resolve
+
+from easymoney import Money as Currency
+
+from otree import constants_internal
 from otree.common_internal import get_dotted_name, get_bots_module
+
 
 logger = logging.getLogger('otree.bots')
 
@@ -23,6 +25,7 @@ class Pause(object):
 
     def __init__(self, seconds):
         self.seconds = seconds
+
 
 def MustFail(PageClass, submission_dict=None):
     '''lets you intentionally submit with invalid
@@ -39,9 +42,6 @@ def submission_as_dict(submission):
 
     # TODO: validate that user isn't trying to submit a WaitPage,
     # or other possible mistakes
-    # had a circular import problem when this was a module-level import
-    # moving it here for now...
-    from otree.views import Page
     if isinstance(submission, (list, tuple)):
         PageClass = submission[0]
         if len(submission) == 2:
@@ -193,7 +193,6 @@ class PlayerBot(object):
         self._legacy_submit_list = []
 
         bots_module = import_module(self.__module__)
-
 
         mode_number = self._cached_session._bot_case_number
         CASES = getattr(bots_module, 'CASES', [])

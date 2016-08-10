@@ -5,7 +5,6 @@ from django.core.urlresolvers import reverse
 
 import vanilla
 
-import otree.constants_internal as constants
 from otree.session import SESSION_CONFIGS_DICT
 from otree.common_internal import create_session_and_redirect
 

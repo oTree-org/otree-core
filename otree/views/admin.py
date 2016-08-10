@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+
 import collections
 import sys
-
 import itertools
 import os
+import json
+from collections import OrderedDict
+
 from six.moves import range
 from six.moves import zip
-import json
 
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.core.urlresolvers import reverse
@@ -17,22 +19,18 @@ from django.conf import settings
 from django.contrib import messages
 from django.utils.encoding import force_text
 from django.shortcuts import get_object_or_404
-from django.utils.translation import ugettext as _
 
 import vanilla
 
 from ordered_set import OrderedSet as oset
-from collections import OrderedDict
+
 import channels
+
 import easymoney
 
 import otree.constants_internal
 from otree.common_internal import (
-    get_models_module, app_name_format,
-    create_session_and_redirect,
-    db_status_ok,
-    get_redis_conn,
-    check_pypi_for_updates)
+    create_session_and_redirect, db_status_ok, check_pypi_for_updates)
 from otree.session import SESSION_CONFIGS_DICT, create_session, SessionConfig
 from otree import forms
 from otree.forms import widgets
@@ -40,11 +38,9 @@ from otree.common import RealWorldCurrency
 from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
 from otree.views.mturk import MTurkConnection, get_workers_by_status
 from otree.common import Currency as c
-from otree.models import Session
 from otree.models import Participant, Session
 from otree.models_concrete import (
-    PageCompletion, ParticipantRoomVisit, BrowserBotsLauncherSessionCode
-)
+    PageCompletion, ParticipantRoomVisit, BrowserBotsLauncherSessionCode)
 from otree.room import ROOM_DICT
 from otree.bots.runner import play_bots_task
 

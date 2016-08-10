@@ -33,9 +33,8 @@ class CurrencyTests(TestCase):
         money = TestC(23)
         self.assertEqual('{}'.format(money), '$23.00')
 
-
     def test_currency_unary_operator(self):
-        # https://github.com/oTree-org/otree-core/issues/391
+        #  https://github.com/oTree-org/otree-core/issues/391
         msg = "Currency operator '{}' fail"
         for money in [c(-random.random()), c(random.random()), c(0)]:
             self.assertIsInstance(abs(money), c, msg.format("abs()"))

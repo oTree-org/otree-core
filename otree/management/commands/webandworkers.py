@@ -6,12 +6,16 @@ import re
 import sys
 
 from honcho.manager import Manager
+
 from channels.log import setup_logger
+
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 import django.core.management.commands.runserver
 
+
 RunserverCommand = django.core.management.commands.runserver.Command
+
 
 naiveip_re = re.compile(r"""^
 (?P<addr>
@@ -44,9 +48,9 @@ class Command(RunserverCommand):
             '--addr', action='store', type=str, dest='addr', default='0.0.0.0',
             help='The host/address to bind to (default: 0.0.0.0)')
         parser.add_argument(
-            '--botworker', action='store_true', dest='botworker', default=False,
+            '--botworker', action='store_true',
+            dest='botworker', default=False,
             help='Run botworker (for browser bots)')
-
 
     def get_env(self, options):
         return os.environ.copy()

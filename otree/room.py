@@ -4,15 +4,18 @@
 import codecs
 import errno
 from collections import OrderedDict
+
 import schema
-from django.conf import settings
-from django.core.urlresolvers import reverse
+
 from otree.models_concrete import RoomToSession, ExpectedRoomParticipant
 from otree.common_internal import (
-    add_params_to_url, make_hash, validate_identifier
-)
-from django.db import transaction
+    add_params_to_url, make_hash, validate_identifier)
 from otree.views.abstract import global_lock
+
+
+from django.conf import settings
+from django.core.urlresolvers import reverse
+
 
 class Room(object):
 

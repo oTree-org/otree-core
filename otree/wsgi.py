@@ -3,6 +3,7 @@
 import os
 import otree
 
+from otree import deprecate
 
 procfile_path = os.path.join(
     os.path.dirname(otree.__file__), 'project_template', 'Procfile')
@@ -24,7 +25,7 @@ then run "heroku restart".
 More information here: http://otree.readthedocs.io/en/latest/v0.5.html
 '''.format(procfile_contents)
 
-print(DEPRECATION_STRING)
+deprecate.dwarning(DEPRECATION_STRING)
 
 
 def application(environ, start_response):

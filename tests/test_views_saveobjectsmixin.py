@@ -1,13 +1,18 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from datetime import datetime
-from django.core.management import call_command
+
 from mock import Mock
+
 import idmap.tls
 
-from .base import TestCase
+from django.core.management import call_command
 
 from otree.models import Participant, Session
-from otree.models import Session
 from otree.views.abstract import SaveObjectsMixin
+
+from .base import TestCase
 
 
 class SaveObjectsMixinTest(TestCase):

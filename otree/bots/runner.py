@@ -13,22 +13,25 @@
 # IMPORTS
 # =============================================================================
 
-import logging
-import contextlib
-from collections import OrderedDict
-import mock
-from huey.contrib.djhuey import task, db_task
 import json
-import random
-import channels
+import logging
+from collections import OrderedDict
+from unittest import TestSuite
+
+import mock
+
+from huey.contrib.djhuey import db_task
+
 from six import StringIO
+
+import channels
+
 from django.db.migrations.loader import MigrationLoader
 from django import test
 from django.test import runner
-from unittest import TestSuite
 
-from otree import common_internal
 import otree.session
+from otree import common_internal
 from otree.models import Session
 from .bot import ParticipantBot, Pause
 
@@ -61,9 +64,9 @@ class SessionBotRunner(object):
             if done:
                 print('Bots done!')
                 return
-            #elif num_submits_made == 0:
-            #    print('Bots got stuck :(')
-            #    break
+            # elif num_submits_made == 0:
+            #     print('Bots got stuck :(')
+            #     break
 
     def play_until_stuck(self, unstuck_ids=None):
         unstuck_ids = unstuck_ids or []
@@ -104,8 +107,7 @@ class SessionBotRunner(object):
                                 self.stuck[pk] = self.playable.pop(pk)
                                 continue_bots_until_stuck_task.schedule(
                                     [self.session_code, [pk]],
-                                    delay=pause.seconds
-                                )
+                                    delay=pause.seconds)
                         else:
                             submission = value
                             bot.submit(submission)

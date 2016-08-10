@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
-from . import views
+
 from otree.api import Bot
+
+from . import views
 from .models import Constants
+
 
 class PlayerBot(Bot):
 

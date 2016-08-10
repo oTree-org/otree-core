@@ -32,7 +32,6 @@ from django.template.defaultfilters import title
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 
-from otree import constants_internal
 import otree
 
 

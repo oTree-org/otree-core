@@ -1,21 +1,26 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from __future__ import absolute_import
-from .bot import ParticipantBot, Pause, submission_as_dict
+
 import json
+from collections import OrderedDict
+
+from .bot import ParticipantBot, Pause, submission_as_dict
+
+import channels
+
+import otree.common_internal
 from otree.models import Session
 from otree.common_internal import get_redis_conn, get_dotted_name
-import otree.common_internal
-import channels
-import time
-from collections import OrderedDict
-from otree.session import SessionConfig
-import random
+
 
 REDIS_KEY = 'otree-bots'
 
 SESSIONS_PRUNE_LIMIT = 50
 
 # global variable that holds the browser bot worker instance in memory
-browser_bot_worker = None # type: Worker
+browser_bot_worker = None  # type: Worker
 
 
 class Worker(object):
@@ -75,8 +80,8 @@ class Worker(object):
 
                 if isinstance(submit, Pause):
                     # pauses are ignored when running browser bots,
-                    # because browser bots are for testing, not for real studies.
-                    # real studies should use regular bots
+                    # because browser bots are for testing, not for real
+                    # studies. real studies should use regular bots
                     continue
                 else:
                     # not serializable
@@ -102,7 +107,7 @@ class Worker(object):
 
             # put it in a loop so that we can still receive KeyboardInterrupts
             # otherwise it will block
-            while result == None:
+            while result is None:
                 result = self.redis_conn.blpop(REDIS_KEY, timeout=3)
 
             key, message_bytes = result
@@ -127,12 +132,12 @@ class Worker(object):
                 retval_json = json.dumps(retval or {})
                 self.redis_conn.rpush(response_key, retval_json)
 
+
 def ping(redis_conn, unique_response_code):
     response_key = '{}-ping-{}'.format(REDIS_KEY, unique_response_code)
     msg = {
         'command': 'ping',
-        'response_key': response_key,
-    }
+        'response_key': response_key}
     redis_conn.rpush(REDIS_KEY, json.dumps(msg))
     result = redis_conn.blpop(response_key, timeout=1)
 
@@ -142,16 +147,15 @@ def ping(redis_conn, unique_response_code):
             'If you want to use browser bots, '
             'you need to be running the botworker.'
             'Otherwise, set ("use_browser_bots": False) in the session config '
-            'in settings.py.'
-        )
+            'in settings.py.')
+
 
 def initialize_bots_redis(redis_conn, session_code, num_players_total):
     response_key = '{}-initialize-{}'.format(REDIS_KEY, session_code)
     msg = {
         'command': 'initialize_session',
         'kwargs': {'session_code': session_code},
-        'response_key': response_key,
-    }
+        'response_key': response_key}
     # ping will raise if it times out
     ping(redis_conn, session_code)
     redis_conn.rpush(REDIS_KEY, json.dumps(msg))
@@ -176,6 +180,7 @@ def initialize_bots_redis(redis_conn, session_code, num_players_total):
 def initialize_bots_in_process(session_code):
     browser_bot_worker.initialize_session(session_code)
 
+
 def initialize_bots(session_code, num_players_total):
     if otree.common_internal.USE_REDIS:
         initialize_bots_redis(
@@ -185,6 +190,7 @@ def initialize_bots(session_code, num_players_total):
         )
     else:
         initialize_bots_in_process(session_code)
+
 
 def redis_flush_bots(redis_conn):
     for key in redis_conn.scan_iter(match='{}*'.format(REDIS_KEY)):

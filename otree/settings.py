@@ -378,7 +378,7 @@ def augment_settings(settings):
             # could take several seconds (but won't take minutes), and we
             # also need to use it for timeouts
             'workers': 1,
-            #'worker_type': 'thread',
+            # 'worker_type': 'thread',
             'scheduler_interval': 5,
             'loglevel': 'warning',
         },

@@ -36,8 +36,7 @@ def randomly(group_matrix, fixed_id_in_group=False):
     sizes = [len(group) for group in group_matrix]
     if sizes and any(size != sizes[0] for size in sizes):
         raise ValueError(
-            'This algorithm does not work with unevenly sized groups'
-        )
+            'This algorithm does not work with unevenly sized groups')
     players_per_group = sizes[0]
 
     if fixed_id_in_group:

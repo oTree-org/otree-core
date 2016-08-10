@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 # <standard imports>
 from __future__ import division
-from otree.api import (
-    BaseSubsession, BaseGroup, BasePlayer, BaseConstants, models
-)
+
+from otree.api import BaseSubsession, BaseGroup, BasePlayer, BaseConstants
 # </standard imports>
 
+
 doc = "foo"
+
 
 class Constants(BaseConstants):
     name_in_url = 'skip_many'

@@ -4,13 +4,15 @@
 # IMPORTS
 # =============================================================================
 
-import os
 import logging
 import time
 import warnings
 import collections
 import json
 import contextlib
+import importlib
+
+from six.moves import range
 
 import django.db
 from django.core.exceptions import ImproperlyConfigured
@@ -21,11 +23,10 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache, cache_control
 from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.utils.translation import ugettext as _
-from six.moves import range
-import importlib
-from django.core.urlresolvers import reverse, resolve
+from django.core.urlresolvers import resolve
 
 import channels
+
 import vanilla
 
 import otree.forms
@@ -36,31 +37,30 @@ import otree.db.idmap
 import otree.constants_internal as constants
 from otree.models import Participant
 from otree.common_internal import (
-    get_app_label_from_import_path, get_dotted_name
-)
+    get_app_label_from_import_path, get_dotted_name)
 from otree.bots.browser import EphemeralBrowserBot
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
     CompletedGroupWaitPage, PageTimeout, UndefinedFormModel,
-    ParticipantLockModel, GlobalLockModel
-)
+    ParticipantLockModel, GlobalLockModel)
 
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 NO_PARTICIPANTS_LEFT_MSG = (
-    "The maximum number of participants for this session has been exceeded."
-)
+    "The maximum number of participants for this session has been exceeded.")
 
 
 DebugTable = collections.namedtuple('DebugTable', ['title', 'rows'])
+
 
 def get_view_from_url(url):
     view_func = resolve(url).func
     module = importlib.import_module(view_func.__module__)
     Page = getattr(module, view_func.__name__)
     return Page
+
 
 @contextlib.contextmanager
 def global_lock(recheck_interval=0.1):
@@ -930,8 +930,6 @@ class GenericWaitPageMixin(object):
         return context
 
 
-
-
 class PlayerUpdateView(FormPageMixin, FormPageOrInGameWaitPageMixin,
                        vanilla.UpdateView):
 
@@ -955,8 +953,7 @@ class InGameWaitPage(FormPageOrInGameWaitPageMixin, InGameWaitPageMixin,
 
 class GetFloppyFormClassMixin(object):
     def get_form_class(self):
-        """
-        A drop-in replacement for
+        """A drop-in replacement for
         ``vanilla.model_views.GenericModelView.get_form_class``. The only
         difference is that we use oTree's modelform_factory in order to always
         get a floppyfied form back which supports richer widgets.

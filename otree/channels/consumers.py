@@ -8,23 +8,16 @@ from datetime import timedelta
 
 from channels import Group
 
+import otree.session
 from otree.models import Participant, Session
 from otree.models_concrete import (
     CompletedGroupWaitPage, CompletedSubsessionWaitPage)
 from otree.common_internal import (
     channels_wait_page_group_name, channels_create_session_group_name)
-
-
-import otree.session
-from otree.models import Session
 from otree.models_concrete import (
-    FailedSessionCreation,
-    ParticipantRoomVisit,
-    FAILURE_MESSAGE_MAX_LENGTH,
-    BrowserBotsLauncherSessionCode
-)
+    FailedSessionCreation, ParticipantRoomVisit,
+    FAILURE_MESSAGE_MAX_LENGTH, BrowserBotsLauncherSessionCode)
 from otree.room import ROOM_DICT
-
 
 
 def connect_wait_page(message, params):
@@ -285,10 +278,11 @@ def disconnect_browser_bot(message):
 
 
 def connect_session_admin(message, session_code):
-    group = Group('session-admin-{}'.format(session_code)).add(
+    Group('session-admin-{}'.format(session_code)).add(
         message.reply_channel)
-    session = Session.objects.get(code=session_code)
+    Session.objects.get(code=session_code)
     # don't do the redundant check because it could be bothersome
+
 
 def disconnect_session_admin(message, session_code):
     Group('session-admin-{}'.format(session_code)).discard(
