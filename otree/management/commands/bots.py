@@ -11,9 +11,8 @@ from django.core.management.base import BaseCommand
 import otree.bots.runner
 from otree.bots.runner import run_pytests
 
-from otree.management.cli import otree_and_django_version
-from otree.session import SESSION_CONFIGS_DICT
 import otree.common_internal
+
 
 # =============================================================================
 # LOGGER & Other Conf

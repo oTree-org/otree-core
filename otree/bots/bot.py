@@ -167,10 +167,11 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
             checker = MissingFieldChecker(field_names)
             missing_fields = checker.get_missing_fields(self.html)
             if missing_fields:
-                raise AssertionError(
-                    HTML_MISSING_FIELD_WARNING.format(
-                        ', '.join(missing_fields)),
-                        ', '.join(checker.tags))
+                msg = HTML_MISSING_FIELD_WARNING.format(
+                    ', '.join(missing_fields))
+                params = ', '.join(checker.tags)
+
+                raise AssertionError(msg, params)
 
     def assert_correct_page(self, submission):
         PageClass = submission['page_class']
@@ -182,8 +183,7 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
                 "Bot expects to be on page {}, "
                 "but current page is {}. "
                 "Check your bot in tests.py, "
-                "then create a new session.".format(expected_url, actual_url)
-            )
+                "then create a new session.".format(expected_url, actual_url))
 
     @property
     def response(self):

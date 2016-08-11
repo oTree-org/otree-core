@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 # for py.test.
 # this doesnt work if the module is under otree.bots, so i put it here
 from otree.session import SESSION_CONFIGS_DICT
@@ -23,8 +26,8 @@ def pytest_generate_tests(metafunc):
             num_participants = int(num_participants)
         preserve_data = option.preserve_data
 
+        params = [
+            [name, num_participants, preserve_data]
+            for name in session_config_names]
         metafunc.parametrize(
-            "session_config_name,num_participants,preserve_data",
-            [[session_config_name,num_participants,preserve_data]
-             for session_config_name in session_config_names]
-        )
+            "session_config_name,num_participants,preserve_data", params)
