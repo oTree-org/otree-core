@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
+import warnings
+
 import otree
+
 
 procfile_path = os.path.join(
     os.path.dirname(otree.__file__), 'project_template', 'Procfile')
@@ -23,7 +26,8 @@ then run "heroku restart".
 More information here: http://otree.readthedocs.io/en/latest/v0.5.html
 '''.format(procfile_contents)
 
-print(DEPRECATION_STRING)
+
+warnings.warn(DEPRECATION_STRING, DeprecationWarning)
 
 
 def application(environ, start_response):
