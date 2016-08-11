@@ -77,18 +77,16 @@ def get_all_fields(Model, for_export=False):
     if Model is Participant:
         if for_export:
             return [
-                '_id_in_session',
+                'id_in_session',
                 'code',
                 'label',
                 '_current_page',
                 '_current_app_name',
                 '_round_number',
                 '_current_page_name',
-                'status',
                 'ip_address',
                 'time_started',
                 'exclude_from_data_analysis',
-                'name',
                 'visited',
                 'mturk_worker_id',
                 'mturk_assignment_id',

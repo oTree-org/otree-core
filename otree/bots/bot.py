@@ -25,16 +25,19 @@ logger = logging.getLogger('otree.bots')
 
 
 HTML_MISSING_FIELD_WARNING = '''
-Bot is trying to submit fields: "{}", but they were not found in the form.
-Check your page template. This check may not find all form fields (e.g. those
-added with JavaScript, so you can disable this check by yielding a Submit
-with check_fields=False, e.g.:
+Bot is trying to submit fields: "{}",
+but these form fields were not found in the HTML of the page
+(searched for tags "{}" with name= attribute matching the field name)
+Checking the HTML may not find all form fields
+(e.g. those added with JavaScript),
+so you can disable this check by yielding a Submission
+with check_html=False, e.g.:
 
-yield Submit(views.PageName, {{...}}, check_fields=False)
+yield Submission(views.PageName, {{...}}, check_html=False)
 '''.replace('\n', ' ').strip()
 
 
-def SubmitInternal(submission_tuple, check_fields=True):
+def SubmitInternal(submission_tuple, check_html=True):
 
     post_data = {}
 
@@ -59,15 +62,15 @@ def SubmitInternal(submission_tuple, check_fields=True):
         'page_class': PageClass,
         'page_class_dotted': get_dotted_name(PageClass),
         'post_data': post_data,
-        'check_fields': check_fields
+        'check_html': check_html
     }
 
 
-def Submit(PageClass, post_data=None, check_fields=True):
-    return SubmitInternal((PageClass, post_data), check_fields)
+def Submission(PageClass, post_data=None, check_html=True):
+    return SubmitInternal((PageClass, post_data), check_html)
 
 
-def SubmitMustFail(PageClass, post_data=None, check_fields=True):
+def SubmissionMustFail(PageClass, post_data=None, check_html=True):
     '''lets you intentionally submit with invalid
     input to ensure it's correctly rejected'''
 
@@ -78,7 +81,7 @@ def SubmitMustFail(PageClass, post_data=None, check_fields=True):
     # CLI bots can only talk to server through post data
     post_data.update({'must_fail': True})
 
-    return Submit(PageClass, post_data, check_fields)
+    return Submission(PageClass, post_data, check_html)
 
 
 class MissingFieldChecker(HTMLParser):
@@ -86,7 +89,7 @@ class MissingFieldChecker(HTMLParser):
     def __init__(self, fields_to_check):
         super(MissingFieldChecker, self).__init__()
         self.missing_fields = set(fields_to_check)
-        self.tags = {'input', 'button', 'select'}
+        self.tags = {'input', 'button', 'select', 'textarea'}
 
     def get_missing_fields(self, html):
         self.feed(html)
@@ -112,14 +115,13 @@ def refresh_from_db(obj):
 class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
 
     def __init__(
-            self, participant, unittest_case, max_wait_seconds=None, **kwargs):
+            self, participant, **kwargs):
         self.participant = participant
         self.url = None
         self._response = None
         self._html = None
         self.path = None
         self.submits = None
-        self.max_wait_seconds = max_wait_seconds
         super(ParticipantBot, self).__init__()
 
         self.player_bots = []
@@ -127,9 +129,7 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
             bots_module = get_bots_module(player._meta.app_config.name)
             player_bot = bots_module.PlayerBot(
                 player=player,
-                participant_bot=self,
-                unittest_case=unittest_case,
-            )
+                participant_bot=self)
             self.player_bots.append(player_bot)
         self.submits_generator = self.get_submits()
 
@@ -161,14 +161,16 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
                     raise
 
     def assert_correct_fields(self, submission):
-        if submission['check_fields']:
+        if submission['check_html']:
             field_names = [
                 f for f in submission['post_data'].keys() if f != 'must_fail']
-            parser = MissingFieldChecker(field_names)
-            missing_fields = parser.get_missing_fields(self.html)
+            checker = MissingFieldChecker(field_names)
+            missing_fields = checker.get_missing_fields(self.html)
             if missing_fields:
-                raise AssertionError(HTML_MISSING_FIELD_WARNING.format(
-                    ', '.join(missing_fields)))
+                raise AssertionError(
+                    HTML_MISSING_FIELD_WARNING.format(
+                        ', '.join(missing_fields)),
+                        ', '.join(checker.tags))
 
     def assert_correct_page(self, submission):
         PageClass = submission['page_class']
@@ -230,7 +232,7 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
 
 class PlayerBot(object):
 
-    def __init__(self, player, participant_bot, unittest_case, **kwargs):
+    def __init__(self, player, participant_bot, **kwargs):
 
         self.participant_bot = participant_bot
         self._cached_player = player
@@ -248,8 +250,6 @@ class PlayerBot(object):
             self.case = CASES[case_number % len(CASES)]
         else:
             self.case = None
-
-        self._unittest_case = unittest_case
 
     def play_round(self):
         pass
@@ -287,39 +287,3 @@ class PlayerBot(object):
     @property
     def html(self):
         return self.participant_bot.html
-
-    def assertEqual(self, first, second):
-        self._unittest_case.assertEqual(first, second)
-
-    def assertNotEqual(self, first, second):
-        self._unittest_case.assertNotEqual(first, second)
-
-    def assertIn(self, member, container):
-        self._unittest_case.assertIn(member, container)
-
-    def assertNotIn(self, member, container):
-        self._unittest_case.assertNotIn(member, container)
-
-    def assertLess(self, a, b):
-        self._unittest_case.assertLess(a, b)
-
-    def assertLessEqual(self, a, b):
-        self._unittest_case.assertLessEqual(a, b)
-
-    def assertGreater(self, a, b):
-        self._unittest_case.assertGreater(a, b)
-
-    def assertGreaterEqual(self, a, b):
-        self._unittest_case.assertGreaterEqual(a, b)
-
-    def assertTrue(self, expr):
-        self._unittest_case.assertTrue(expr)
-
-    def assertFalse(self, expr):
-        self._unittest_case.assertFalse(expr)
-
-    def assertInPage(self, html_substring):
-        return self.assertIn(html_substring, self.html)
-
-    def assertNotInPage(self, html_substring):
-        self.assertNotIn(html_substring, self.html)

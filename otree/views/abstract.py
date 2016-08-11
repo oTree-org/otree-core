@@ -762,7 +762,7 @@ class FormPageMixin(object):
                     post_data.pop('must_fail', None)
                     raise AssertionError(
                         'Bot tried to submit intentionally invalid data with '
-                        'SubmitMustFail, but it passed validation anyway:'
+                        'SubmissionMustFail, but it passed validation anyway:'
                         ' {}.'.format(dict(post_data)))
                 self.form = form
                 self.object = form.save()

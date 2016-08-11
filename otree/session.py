@@ -24,7 +24,6 @@ from otree.common_internal import (
     min_players_multiple, get_bots_module)
 import otree.common_internal
 from otree.common import RealWorldCurrency
-from otree import deprecate
 from otree.models_concrete import ParticipantLockModel
 import otree.bots.browser
 

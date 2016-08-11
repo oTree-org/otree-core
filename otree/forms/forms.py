@@ -185,7 +185,9 @@ class BaseModelForm(
 
                 model_field_copy._choices = choices
 
-                self.fields[field_name] = formfield_callback(model_field_copy)
+                field = formfield_callback(model_field_copy)
+                self.fields[field_name] = field
+
             if hasattr(self.view, '%s_label' % field_name):
                 field.label = getattr(
                     self.view, '%s_label' % field_name

@@ -26,7 +26,6 @@ import otree
 from otree import forms
 from otree.views.abstract import AdminSessionPageMixin
 from otree.checks.mturk import validate_session_for_mturk
-from otree import deprecate
 from otree.forms import widgets
 from otree.common import RealWorldCurrency
 from otree.models import Session
@@ -214,11 +213,24 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
                 except MTurkRequestError as e:
                     code = 'AWS.MechanicalTurk.QualificationTypeDoesNotExist'
                     if e.error_code == code:
+                        if in_sandbox:
+                            sandbox_note = (
+                                'You are currently using the sandbox, so you '
+                                'can only grant qualifications that were '
+                                'also created in the sandbox.')
+                        else:
+                            sandbox_note = (
+                                'You are using the MTurk live site, so you '
+                                'can only grant qualifications that were '
+                                'also created on the live site, and not the '
+                                'MTurk sandbox.')
                         msg = (
-                            "In settings.py you specified qualification id "
-                            " '%s' which doesn't exist on mturk server. "
-                            "Please verify its validity.")
-                        msg = msg.format('grant_qualification_id')
+                            "In settings.py you specified qualification ID "
+                            " '{}' which doesn't exist in your MTurk account. "
+                            "Please check its validity. Note: {}".format(
+                                qualification_id, sandbox_note))
+                        if in_sandbox:
+                            msg += ' You are currently'
                         messages.error(request, msg)
                         return HttpResponseRedirect(
                             reverse(
@@ -259,7 +271,7 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
             if (
                     not qualifications and
                     hasattr(settings, 'MTURK_WORKER_REQUIREMENTS')):
-                deprecate.dwarning(
+                raise AssertionError(
                     'The MTURK_WORKER_REQUIREMENTS setting has been '
                     'deprecated. You should instead use '
                     '"qualification_requirements" as shown here: '

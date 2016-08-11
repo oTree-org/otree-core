@@ -207,6 +207,8 @@ def get_default_settings(initial_settings=None):
         'LOCALE_PATHS': [
             os.path.join(initial_settings.get('BASE_DIR', ''), 'locale')
         ],
+
+        'TEST_RUNNER': 'otree.runner.PyTestRunner'
     }
 
 
