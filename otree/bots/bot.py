@@ -185,8 +185,7 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
                 "Bot expects to be on page {}, "
                 "but current page is {}. "
                 "Check your bot in tests.py, "
-                "then create a new session.".format(expected_url, actual_url)
-            )
+                "then create a new session.".format(expected_url, actual_url))
 
     @property
     def response(self):

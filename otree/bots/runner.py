@@ -11,7 +11,6 @@ import pytest
 import sys
 
 import otree.session
-from otree import common_internal
 
 from .bot import ParticipantBot
 
@@ -115,7 +114,6 @@ def run_pytests(**kwargs):
         argv.extend(['--num_participants', num_participants])
     if preserve_data:
         argv.append('--preserve_data')
-
 
     # same hack as in resetdb code
     # because this method uses the serializer
