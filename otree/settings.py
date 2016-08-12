@@ -208,7 +208,10 @@ def get_default_settings(initial_settings=None):
             os.path.join(initial_settings.get('BASE_DIR', ''), 'locale')
         ],
 
-        'TEST_RUNNER': 'otree.runner.PyTestRunner'
+        # ideally this would be a per-app setting, but I don't want to
+        # pollute Constants. It doesn't make as much sense per session config,
+        # so I'm just going the simple route and making it a global setting.
+        'BOTS_CHECK_HTML': True,
     }
 
 

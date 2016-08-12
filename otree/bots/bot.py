@@ -13,7 +13,7 @@ from six.moves.html_parser import HTMLParser
 
 from django import test
 from django.core.urlresolvers import resolve
-
+from django.conf import settings
 from easymoney import Money as Currency
 
 from otree import constants_internal
@@ -27,7 +27,7 @@ logger = logging.getLogger('otree.bots')
 HTML_MISSING_FIELD_WARNING = '''
 Bot is trying to submit fields: "{}",
 but these form fields were not found in the HTML of the page
-(searched for tags "{}" with name= attribute matching the field name)
+(searched for tags "{}" with "name" attribute matching the field name).
 Checking the HTML may not find all form fields
 (e.g. those added with JavaScript),
 so you can disable this check by yielding a Submission
@@ -37,7 +37,7 @@ yield Submission(views.PageName, {{...}}, check_html=False)
 '''.replace('\n', ' ').strip()
 
 
-def SubmitInternal(submission_tuple, check_html=True):
+def SubmitInternal(submission_tuple, check_html):
 
     post_data = {}
 
@@ -66,11 +66,13 @@ def SubmitInternal(submission_tuple, check_html=True):
     }
 
 
-def Submission(PageClass, post_data=None, check_html=True):
+def Submission(
+        PageClass, post_data=None, check_html=settings.BOTS_CHECK_HTML):
     return SubmitInternal((PageClass, post_data), check_html)
 
 
-def SubmissionMustFail(PageClass, post_data=None, check_html=True):
+def SubmissionMustFail(
+        PageClass, post_data=None, check_html=settings.BOTS_CHECK_HTML):
     '''lets you intentionally submit with invalid
     input to ensure it's correctly rejected'''
 
@@ -150,7 +152,8 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
                 try:
                     for submission in generator:
                         if not isinstance(submission, dict):
-                            submission = SubmitInternal(submission)
+                            submission = SubmitInternal(
+                                submission, check_html=False)
                         self.assert_correct_page(submission)
                         self.assert_correct_fields(submission)
                         yield submission
@@ -169,8 +172,8 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
             if missing_fields:
                 raise AssertionError(
                     HTML_MISSING_FIELD_WARNING.format(
-                        ', '.join(missing_fields)),
-                        ', '.join(checker.tags))
+                        ', '.join(missing_fields),
+                        ', '.join(checker.tags)))
 
     def assert_correct_page(self, submission):
         PageClass = submission['page_class']
@@ -276,7 +279,7 @@ class PlayerBot(object):
 
     def submit(self, ViewClass, param_dict=None):
         self._legacy_submit_list.append(
-            SubmitInternal((ViewClass, param_dict)))
+            SubmitInternal((ViewClass, param_dict), check_html=False))
 
     def submit_invalid(self, ViewClass, param_dict=None):
         # simpler to make this a no-op, it makes porting to yield easier

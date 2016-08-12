@@ -131,4 +131,6 @@ ROOMS = [
     },
 ]
 
+BOTS_CHECK_HTML = False
+
 otree.settings.augment_settings(globals())
