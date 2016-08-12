@@ -10,6 +10,8 @@
         var args = {
             type: "GET",
             url: '{% url "ParticipantRoomHeartbeat" view.tab_unique_id %}',
+            // necessary for IE
+            cache: false
         };
         $.ajax(args);
     }

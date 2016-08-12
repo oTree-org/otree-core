@@ -81,6 +81,7 @@ $(document).ready(function () {
         var args = {
             type: "GET",
             url: '{% url "StaleRoomVisits" room.name %}',
+            cache: false, // for IE...not sure if required here though
             success: function(data) {
                 participant_labels = data.participant_labels;
                 if (participant_labels.length > 0) {
@@ -98,6 +99,7 @@ $(document).ready(function () {
         var args = {
             type: "GET",
             url: '{% url "ActiveRoomParticipantsCount" room.name %}',
+            cache: false, // for IE...not sure if required here though
             success: function(data) {
                 no_labels_present_count = data.count;
                 $('#present_count').text(no_labels_present_count);
