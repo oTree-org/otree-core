@@ -61,7 +61,8 @@ def setup_create_default_superuser():
 
 
 def setup_create_singleton_objects():
-    signals.post_migrate.connect(create_singleton_objects)
+    signals.post_migrate.connect(create_singleton_objects,
+                                 dispatch_uid='create_singletons')
 
 
 def patch_raven_config():

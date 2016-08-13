@@ -20,16 +20,15 @@ logger = logging.getLogger(__name__)
 
 class SessionBotRunner(object):
     def __init__(self, bots, session_code):
-        self.session_code = session_code
         self.bots = OrderedDict()
 
         for bot in bots:
             self.bots[bot.participant.id] = bot
 
     def play_until_end(self):
+        '''round-robin'''
         loops_without_progress = 0
         while True:
-            # round-robin algorithm
             if len(self.bots) == 0:
                 print('Bots done!')
                 return
@@ -44,13 +43,12 @@ class SessionBotRunner(object):
                     pass
                 else:
                     try:
-                        value = next(bot.submits_generator)
+                        submission = next(bot.submits_generator)
                     except StopIteration:
                         # this bot is finished
                         self.bots.pop(pk)
                         progress_made = True
                     else:
-                        submission = value
                         bot.submit(submission)
                         progress_made = True
             if not progress_made:
