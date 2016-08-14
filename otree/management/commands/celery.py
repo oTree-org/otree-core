@@ -2,10 +2,15 @@
 # -*- coding: utf-8 -*-
 
 # deprecation shim
+import warnings
+
 from django.core.management.base import BaseCommand
 
 
+DEPRECATION_STRING = ('celery command no longer exists in oTree 0.5+. '
+                      'You should update your Procfile.')
+
+
 class Command(BaseCommand):
-    def run_from_argv(self, argv):
-        print('celery command no longer exists in oTree 0.5+. '
-              'You should update your Procfile.')
+    def handle(self, *args, **kwargs):
+        warnings.warn(DEPRECATION_STRING, DeprecationWarning)

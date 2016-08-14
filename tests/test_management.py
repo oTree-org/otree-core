@@ -5,9 +5,17 @@ import mock
 
 from six import StringIO
 
+from django.core.management import call_command
+
 from otree.management import cli
 
 from .base import TestCase
+
+
+class CeleryCommand(TestCase):
+
+    def test_handle(self):
+        self.assertWarns(DeprecationWarning, lambda: call_command("celery"))
 
 
 class OTreeAndDjangoVersion(TestCase):

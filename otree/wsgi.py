@@ -27,6 +27,7 @@ More information here: http://otree.readthedocs.io/en/latest/v0.5.html
 '''.format(procfile_contents)
 
 
+warnings.filterwarnings("default", category=DeprecationWarning)
 warnings.warn(DEPRECATION_STRING, DeprecationWarning)
 
 
