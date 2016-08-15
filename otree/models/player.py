@@ -22,6 +22,28 @@ class BasePlayer(SaveTheChange, models.Model):
         index_together = ['participant', 'round_number']
         ordering = ['pk']
 
+    id_in_group = models.PositiveIntegerField(
+        null=True,
+        db_index=True,
+        doc=("Index starting from 1. In multiplayer games, "
+             "indicates whether this is player 1, player 2, etc.")
+    )
+
+    payoff = models.CurrencyField(
+        null=True,
+        doc="""The payoff the player made in this subsession""",
+    )
+
+    participant = models.ForeignKey(
+        'otree.Participant', related_name='%(app_label)s_%(class)s'
+    )
+
+    session = models.ForeignKey(
+        'otree.Session', related_name='%(app_label)s_%(class)s'
+    )
+
+    round_number = models.PositiveIntegerField(db_index=True)
+
     def __getattribute__(self, name):
         try:
             return super(BasePlayer, self).__getattribute__(name)
@@ -71,6 +93,12 @@ class BasePlayer(SaveTheChange, models.Model):
 
     def in_all_rounds(self):
         return self.in_previous_rounds() + [self]
+
+    def get_others_in_group(self):
+        return [p for p in self.group.get_players() if p != self]
+
+    def get_others_in_subsession(self):
+        return [p for p in self.subsession.get_players() if p != self]
 
     def __unicode__(self):
         return self._name()

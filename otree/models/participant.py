@@ -13,12 +13,26 @@ from otree.models_concrete import ParticipantToPlayerLookup
 from otree.models.varsmixin import ModelWithVars
 
 
-class BaseParticipant(ModelWithVars):
+class Participant(ModelWithVars):
 
     class Meta:
-        abstract = True
         ordering = ['pk']
+        app_label = "otree"
         index_together = ['session', 'mturk_worker_id', 'mturk_assignment_id']
+
+    session = models.ForeignKey('otree.Session')
+
+    vars = models.JSONField(default=dict)
+
+    label = models.CharField(
+        max_length=50, null=True, doc=(
+            "Label assigned by the experimenter. Can be assigned by passing a "
+            "GET param called 'participant_label' to the participant's start "
+            "URL"
+        )
+    )
+
+    id_in_session = models.PositiveIntegerField(null=True)
 
     exclude_from_data_analysis = models.BooleanField(
         default=False, doc=(

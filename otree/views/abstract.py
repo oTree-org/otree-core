@@ -940,6 +940,9 @@ class GenericWaitPageMixin(object):
 class PlayerUpdateView(FormPageMixin, FormPageOrInGameWaitPageMixin,
                        vanilla.UpdateView):
 
+    form_model = vanilla.UpdateView.model
+    form_fields = vanilla.UpdateView.fields
+
     def get_object(self):
         Cls = self.form_model
         if Cls == self.GroupClass:

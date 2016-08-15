@@ -37,6 +37,12 @@ class BaseGroup(SaveTheChange, models.Model):
 
     id_in_subsession = models.PositiveIntegerField(db_index=True)
 
+    session = models.ForeignKey(
+        'otree.Session', related_name='%(app_label)s_%(class)s'
+    )
+
+    round_number = models.PositiveIntegerField(db_index=True)
+
     def __unicode__(self):
         return str(self.pk)
 

@@ -20,12 +20,15 @@ client = django.test.Client()
 
 # for now removing SaveTheChange
 
-class BaseSession(ModelWithVars):
+class Session(ModelWithVars):
 
     class Meta:
-        abstract = True
+        app_label = "otree"
         # if i don't set this, it could be in an unpredictable order
         ordering = ['pk']
+
+    config = models.JSONField(default=dict, null=True)  # type: dict
+    vars = models.JSONField(default=dict)  # type: dict
 
     # label of this session instance
     label = models.CharField(

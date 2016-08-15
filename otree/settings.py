@@ -348,7 +348,7 @@ def augment_settings(settings):
 
     settings.setdefault('LANGUAGE_CODE', global_settings.LANGUAGE_CODE)
 
-    CURRENCY_LOCALE = settings.get('CURRENCY_LOCALE', None)
+    CURRENCY_LOCALE = settings.get('REAL_WORLD_CURRENCY_LOCALE', None)
     if not CURRENCY_LOCALE:
 
         # favor en_GB currency formatting since it represents negative amounts
@@ -358,7 +358,8 @@ def augment_settings(settings):
         else:
             CURRENCY_LOCALE = settings['LANGUAGE_CODE']
 
-    settings.setdefault('CURRENCY_LOCALE', CURRENCY_LOCALE.replace('-', '_'))
+        settings.setdefault('REAL_WORLD_CURRENCY_LOCALE',
+                            CURRENCY_LOCALE.replace('-', '_'))
 
     overridable_settings = get_default_settings(settings)
 

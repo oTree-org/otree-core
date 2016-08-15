@@ -23,44 +23,7 @@ from importlib import import_module
 
 abstract = import_module('otree.views.abstract')
 
+WaitPage = abstract.InGameWaitPage
 
-class WaitPage(abstract.InGameWaitPage):
-    wait_for_all_groups = False
-    title_text = None
-    body_text = None
-    template_name = None
-    round_number = None  # type: int
-    participant = None  # type: otree.models.Participant
-    session = None  # type: otree.models.Session
+Page = abstract.PlayerUpdateView
 
-    def is_displayed(self):
-        return super(WaitPage, self).is_displayed()
-
-    def after_all_players_arrive(self):
-        return super(WaitPage, self).after_all_players_arrive()
-
-
-class Page(abstract.PlayerUpdateView):
-    round_number = None  # type: int
-    template_name = None
-    timeout_seconds = None
-    timeout_submission = None
-    participant = None  # type: otree.models.Participant
-    session = None  # type: otree.models.Session
-
-    # prefix with "form_" so that it's clear these refer to the form
-    # otherwise someone might confuse 'fields' with vars_for_template
-    form_model = abstract.PlayerUpdateView.model
-    form_fields = abstract.PlayerUpdateView.fields
-
-    def get_form_fields(self):
-        return super(Page, self).get_form_fields()
-
-    def vars_for_template(self):
-        return super(Page, self).vars_for_template()
-
-    def before_next_page(self):
-        return super(Page, self).before_next_page()
-
-    def is_displayed(self):
-        return super(Page, self).is_displayed()
