@@ -28,7 +28,7 @@ from otree.common_internal import pypi_updates_cli
 # CONF
 # =============================================================================
 
-warnings.simplefilter('default', DeprecationWarning)
+warnings.simplefilter('ignore', DeprecationWarning)
 
 
 # =============================================================================
