@@ -20,6 +20,6 @@ class Command(startapp.Command):
         super(Command, self).handle(*args, **options)
         try:
             pypi_updates_cli()
-        except:
-            pass
+        except:  # noqa
+            pass  # noqa
         print('Created app folder.')
