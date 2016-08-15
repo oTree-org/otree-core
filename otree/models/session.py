@@ -138,7 +138,7 @@ class Session(ModelWithVars):
     def delete(self, using=None):
         for subsession in self.get_subsessions():
             subsession.delete()
-        super(BaseSession, self).delete(using)
+        super(Session, self).delete(using)
 
     def get_participants(self):
         return self.participant_set.all()

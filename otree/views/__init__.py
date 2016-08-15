@@ -26,4 +26,3 @@ abstract = import_module('otree.views.abstract')
 WaitPage = abstract.InGameWaitPage
 
 Page = abstract.PlayerUpdateView
-

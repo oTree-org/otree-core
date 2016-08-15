@@ -6,7 +6,6 @@ from importlib import import_module
 from django.db.models.signals import class_prepared
 
 from otree.db.models import *  # noqa
-from otree.db import models
 
 
 # NOTE: this imports the following submodules and then subclasses several
