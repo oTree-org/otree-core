@@ -236,7 +236,7 @@ def create_session(
         if for_mturk:
             session.mturk_num_participants = (
                     num_participants /
-                    settings.MTURK_NUM_PARTICIPANTS_MULT)
+                    settings.MTURK_NUM_PARTICIPANTS_MULTIPLE)
 
         start_order = list(range(num_participants))
         if session_config.get('random_start_order'):

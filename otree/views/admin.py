@@ -319,7 +319,7 @@ class CreateSessionForm(forms.Form):
                 'have %s times more participants than MTurk HIT. '
                 'The number you enter in this field is number of '
                 'workers required for your HIT.'
-                % settings.MTURK_NUM_PARTICIPANTS_MULT
+                % settings.MTURK_NUM_PARTICIPANTS_MULTIPLE
             )
         else:
             self.fields['num_participants'].label = "Number of participants"
@@ -368,7 +368,7 @@ class CreateSession(vanilla.FormView):
         if self.for_mturk:
             session_kwargs['num_participants'] = (
                 form.cleaned_data['num_participants'] *
-                settings.MTURK_NUM_PARTICIPANTS_MULT
+                settings.MTURK_NUM_PARTICIPANTS_MULTIPLE
             )
 
         else:

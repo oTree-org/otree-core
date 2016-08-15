@@ -36,7 +36,7 @@ class Subsession(otree.models.BaseSubsession):
         p1_list.append(p1_in_first_group)
         for i, p_list in enumerate(matrix):
             matrix[i][0] = p1_list[i]
-        self.set_groups(matrix)
+        self.set_group_matrix(matrix)
 
 
 class Group(otree.models.BaseGroup):

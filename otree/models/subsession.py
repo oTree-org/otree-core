@@ -230,7 +230,7 @@ class BaseSubsession(SaveTheChange, models.Model):
     def _create_groups(self):
         if self.round_number == 1:
             group_matrix = self._first_round_group_matrix()
-            self.set_groups(group_matrix)
+            self.set_group_matrix(group_matrix)
         else:
             self.group_like_round(1)
 
@@ -255,9 +255,9 @@ class BaseSubsession(SaveTheChange, models.Model):
                 # to the same person in the next round
                 group_matrix[i][j] = player.in_round(self.round_number)
 
-        self.set_groups(group_matrix)
+        self.set_group_matrix(group_matrix)
 
-    def group_randomly(self, fixed_id_in_group):
+    def group_randomly(self, fixed_id_in_group=False):
         group_matrix = self.get_group_matrix()
         group_matrix = matching.randomly(
             group_matrix,

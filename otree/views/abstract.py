@@ -433,6 +433,7 @@ class InGameWaitPageMixin(object):
     Wait pages during game play (i.e. checkpoints),
     where users wait for others to complete
     """
+    wait_for_all_groups = False
 
     def dispatch(self, request, *args, **kwargs):
 
@@ -674,8 +675,8 @@ class FormPageMixin(object):
     """
 
     # if a model is not specified, use empty "StubModel"
-    model = UndefinedFormModel
-    fields = []
+    form_model = UndefinedFormModel
+    form_fields = []
 
     def get_template_names(self):
         if self.template_name is not None:
@@ -845,6 +846,7 @@ class FormPageMixin(object):
         return timeout.expiration_time - current_time
 
     timeout_seconds = None
+    timeout_submission = None
 
     def set_extra_attributes(self):
         pass
@@ -939,9 +941,6 @@ class GenericWaitPageMixin(object):
 
 class PlayerUpdateView(FormPageMixin, FormPageOrInGameWaitPageMixin,
                        vanilla.UpdateView):
-
-    form_model = vanilla.UpdateView.model
-    form_fields = vanilla.UpdateView.fields
 
     def get_object(self):
         Cls = self.form_model

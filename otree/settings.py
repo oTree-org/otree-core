@@ -203,7 +203,7 @@ def get_default_settings(initial_settings=None):
         # server.
         # The following setting is ratio:
         # num_participants_server / num_participants_mturk
-        'MTURK_NUM_PARTICIPANTS_MULT': 2,
+        'MTURK_NUM_PARTICIPANTS_MULTIPLE': 2,
         'LOCALE_PATHS': [
             os.path.join(initial_settings.get('BASE_DIR', ''), 'locale')
         ],
@@ -353,10 +353,10 @@ def augment_settings(settings):
 
         # favor en_GB currency formatting since it represents negative amounts
         # with minus signs rather than parentheses
-        if settings['LANGUAGE_CODE'][:2] == 'en':
-            CURRENCY_LOCALE = 'en_GB'
-        else:
-            CURRENCY_LOCALE = settings['LANGUAGE_CODE']
+        # if settings['LANGUAGE_CODE'][:2] == 'en':
+        #     CURRENCY_LOCALE = 'en_GB'
+        # else:
+        CURRENCY_LOCALE = settings['LANGUAGE_CODE']
 
         settings.setdefault('REAL_WORLD_CURRENCY_LOCALE',
                             CURRENCY_LOCALE.replace('-', '_'))
