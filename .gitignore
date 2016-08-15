@@ -15,4 +15,3 @@ otree_core.egg-info/
 .tox/
 .coverage
 htmlcov/
-*.mo
