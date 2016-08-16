@@ -26,6 +26,7 @@ import IPy
 
 import otree
 from otree import forms
+from otree.deprecate import OtreeDeprecationWarning
 from otree.views.abstract import AdminSessionPageMixin
 from otree.checks.mturk import validate_session_for_mturk
 from otree.forms import widgets
@@ -279,7 +280,7 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
                         '"qualification_requirements" as shown here: '
                         'https://github.com/oTree-org/oTree/blob/master/'
                         'settings.py')
-                    warnings.warn(warn_msg, DeprecationWarning)
+                    warnings.warn(warn_msg, OtreeDeprecationWarning)
                     qualifications = settings.MTURK_WORKER_REQUIREMENTS
 
             mturk_hit_parameters = {

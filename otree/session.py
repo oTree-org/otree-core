@@ -20,6 +20,7 @@ import schema
 
 import otree.db.idmap
 from otree.models import Participant, Session
+from otree.deprecate import OtreeDeprecationWarning
 from otree.common_internal import (
     get_models_module, get_app_constants, validate_identifier,
     min_players_multiple, get_bots_module)
@@ -112,7 +113,7 @@ class SessionConfig(dict):
             warn_msg = (
                 "'fixed_pay' is deprecated; "
                 "you should rename it to 'participation_fee'.")
-            warnings.warn(warn_msg, DeprecationWarning)
+            warnings.warn(warn_msg, OtreeDeprecationWarning)
 
             self['participation_fee'] = self['fixed_pay']
 

@@ -7,7 +7,6 @@ import os
 import platform
 import subprocess
 import sys
-import warnings
 from collections import defaultdict
 from importlib import import_module
 
@@ -22,13 +21,6 @@ import six
 import otree
 from otree.settings import get_default_settings
 from otree.common_internal import pypi_updates_cli
-
-
-# =============================================================================
-# CONF
-# =============================================================================
-
-warnings.simplefilter('ignore', DeprecationWarning)
 
 
 # =============================================================================

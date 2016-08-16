@@ -10,10 +10,9 @@
 # =============================================================================
 
 import itertools
-import collections
 import random
 
-from six.moves import map
+from six.moves import range
 
 # =============================================================================
 # MATCH

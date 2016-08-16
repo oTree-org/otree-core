@@ -4,6 +4,7 @@ import os
 import warnings
 
 import otree
+from otree.deprecate import OtreeDeprecationWarning
 
 
 procfile_path = os.path.join(
@@ -27,8 +28,7 @@ More information here: http://otree.readthedocs.io/en/latest/v0.5.html
 '''.format(procfile_contents)
 
 
-warnings.filterwarnings("default", category=DeprecationWarning)
-warnings.warn(DEPRECATION_STRING, DeprecationWarning)
+warnings.warn(DEPRECATION_STRING, OtreeDeprecationWarning)
 
 
 def application(environ, start_response):
