@@ -21,6 +21,7 @@ class Page:
     template_name = None # type: str
     timeout_seconds = None # type: int
     timeout_submission = None # type: dict
+    timeout_happened = None # type: bool
     participant = None  # type: otree.models.Participant
     session = None  # type: otree.models.Session
     form_model = None #
