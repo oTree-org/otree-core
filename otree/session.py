@@ -60,12 +60,12 @@ class SessionConfig(dict):
         return lcmm(*min_multiple_list)
 
     def get_num_bot_cases(self):
-        num_modes = 1
+        num_cases = 1
         for app_name in self['app_sequence']:
             bots_module = get_bots_module(app_name)
-            CASES = getattr(bots_module, 'CASES', [])
-            num_modes = max(num_modes, len(CASES))
-        return num_modes
+            cases = bots_module.PlayerBot.cases
+            num_cases = max(num_cases, len(cases))
+        return num_cases
 
     def validate(self):
 

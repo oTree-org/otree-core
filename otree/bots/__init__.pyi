@@ -1,9 +1,10 @@
 from otree.models import Participant
-from typing import Any
+from typing import Any, List
 
 class Bot:
-    html = None # type: str
+    html = '' # type: str
     case = None # type: Any
+    cases = [] # type: List
     participant = None  # type: Participant
     session = None # type: Participant
 

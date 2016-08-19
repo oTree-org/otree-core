@@ -234,6 +234,8 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
 
 class PlayerBot(object):
 
+    cases = []
+
     def __init__(self, player, participant_bot, **kwargs):
 
         self.participant_bot = participant_bot
@@ -244,12 +246,10 @@ class PlayerBot(object):
         self._cached_session = player.session
         self._legacy_submit_list = []
 
-        bots_module = import_module(self.__module__)
-
         case_number = self._cached_session._bot_case_number
-        CASES = getattr(bots_module, 'CASES', [])
-        if len(CASES) >= 1:
-            self.case = CASES[case_number % len(CASES)]
+        cases = self.cases
+        if len(cases) >= 1:
+            self.case = cases[case_number % len(cases)]
         else:
             self.case = None
 
