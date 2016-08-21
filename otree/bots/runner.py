@@ -7,12 +7,17 @@ from collections import OrderedDict
 import mock
 
 from django.db.migrations.loader import MigrationLoader
+from django.conf import settings
 import pytest
 import sys
 
 import otree.session
+import otree.common_internal
 
 from .bot import ParticipantBot
+import datetime
+import os
+import codecs
 
 
 logger = logging.getLogger(__name__)
@@ -56,7 +61,7 @@ class SessionBotRunner(object):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_bots(session_config_name, num_participants, preserve_data):
+def test_bots(session_config_name, num_participants, run_export):
     config_name = session_config_name
     session_config = otree.session.SESSION_CONFIGS_DICT[config_name]
 
@@ -88,13 +93,39 @@ def test_bots(session_config_name, num_participants, preserve_data):
 
         bot_runner = SessionBotRunner(bots, session.code)
         bot_runner.play_until_end()
+    if run_export:
+        # bug: if the user tests multiple session configs,
+        # the data will only be exported for the last session config.
+        # this is because the DB is cleared after each test case.
+        # fix later if this becomes high priority
+        export_path = pytest.config.option.export_path
+
+        now = datetime.datetime.now()
+
+        if export_path == 'auto_name':
+            export_path = now.strftime('_bots_%b%d_%Hh%Mm%S.%f')[:-5] + 's'
+
+        if os.path.isdir(export_path):
+            msg = "Directory '{}' already exists".format(export_path)
+            raise IOError(msg)
+
+        os.makedirs(export_path)
+
+        for app in settings.INSTALLED_OTREE_APPS:
+            model_module = otree.common_internal.get_models_module(app)
+            if model_module.Player.objects.exists():
+                fname = "{}.csv".format(app)
+                fpath = os.path.join(export_path, fname)
+                with codecs.open(fpath, "w", encoding="utf8") as fp:
+                    otree.common_internal.export_data(app, fp)
+
+        logger.info('Exported CSV to folder "{}"'.format(export_path))
 
 
 def run_pytests(**kwargs):
 
     session_config_name = kwargs['session_config_name']
     num_participants = kwargs['num_participants']
-    preserve_data = kwargs['preserve_data']
     verbosity = kwargs['verbosity']
 
     this_module = sys.modules[__name__]
@@ -110,8 +141,10 @@ def run_pytests(**kwargs):
         argv.extend(['--session_config_name', session_config_name])
     if num_participants:
         argv.extend(['--num_participants', num_participants])
-    if preserve_data:
+    if kwargs['preserve_data']:
         argv.append('--preserve_data')
+    if kwargs['export_path']:
+        argv.extend(['--export_path', kwargs['export_path']])
 
     # same hack as in resetdb code
     # because this method uses the serializer

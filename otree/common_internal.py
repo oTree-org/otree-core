@@ -124,7 +124,7 @@ def get_app_constants(app_name):
     return get_models_module(app_name).Constants
 
 
-def export_data(fp, app_name):
+def export_data(app_name, fp):
     """Write the data of the given app name as csv into the file-like object
 
     """

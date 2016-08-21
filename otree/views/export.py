@@ -80,7 +80,7 @@ class ExportCsv(vanilla.View):
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(
             self._data_file_name(app_label)
         )
-        otree.common_internal.export_data(response, app_label)
+        otree.common_internal.export_data(app_label, response)
         return response
 
 

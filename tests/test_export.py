@@ -42,7 +42,7 @@ class TestDataExport(TestCase):
                     'attachment; filename="{} ('.format(app_format)))
 
             buff = StringIO()
-            common_internal.export_data(buff, app)
+            common_internal.export_data(app, buff)
             self.assertEqual(response.content, buff.getvalue().encode('utf-8'))
 
     def test_simple_game_export_data(self):
