@@ -42,7 +42,8 @@ from otree.bots.browser import EphemeralBrowserBot
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
     CompletedGroupWaitPage, PageTimeout, UndefinedFormModel,
-    ParticipantLockModel, GlobalLockModel)
+    ParticipantLockModel, GlobalLockModel, ParticipantToPlayerLookup
+)
 
 
 # Get an instance of a logger
@@ -562,7 +563,8 @@ class InGameWaitPageMixin(object):
         if otree.common_internal.USE_REDIS:
             # only necessary to submit if next page has a timeout
             # or if it is a wait page
-            player_lookup = self.participant.player_lookup(pages_ahead=1)
+            player_lookup = self.participant.future_player_lookup(
+                pages_ahead=1)
             if player_lookup:
                 PageClass = get_view_from_url(player_lookup.url)
                 if (issubclass(PageClass, InGameWaitPageMixin) or

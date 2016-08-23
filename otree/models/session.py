@@ -173,10 +173,7 @@ class Session(ModelWithVars):
 
     def advance_last_place_participants(self):
 
-        # can't auto-advance bots, because that could break their
-        # pre-determined logic
-        # consider pros/cons of doing this
-        participants = self.get_human_participants()
+        participants = self.get_participants()
 
         # in case some participants haven't started
         unvisited_participants = []
@@ -196,15 +193,20 @@ class Session(ModelWithVars):
         ]
 
         for p in last_place_participants:
-            # what if first page is wait page?
-            # that shouldn't happen, because then they must be
-            # waiting for some other players who are even further back
-            assert p._current_form_page_url
             try:
-                resp = client.post(
-                    p._current_form_page_url,
-                    data={constants_internal.auto_submit: True}, follow=True
-                )
+                if p._current_form_page_url:
+                    resp = client.post(
+                        p._current_form_page_url,
+                        data={constants_internal.auto_submit: True},
+                        follow=True
+                    )
+                else:
+                    # it's possible that the slowest user is on a wait page,
+                    # especially if their browser is closed.
+                    # because they were waiting for another user who then
+                    # advanced past the wait page, but they were never
+                    # advanced themselves.
+                    resp = client.get(p._start_url(), follow=True)
             except:
                 logging.exception("Failed to advance participants.")
                 raise

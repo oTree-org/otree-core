@@ -188,6 +188,8 @@ class BaseModelForm(
                 field = formfield_callback(model_field_copy)
                 self.fields[field_name] = field
 
+            # TODO: 2016-08-22: remove this? is it needed? since you can just
+            # pass the label in vars_for_template
             if hasattr(self.view, '%s_label' % field_name):
                 field.label = getattr(
                     self.view, '%s_label' % field_name

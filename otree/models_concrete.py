@@ -66,12 +66,6 @@ class ParticipantToPlayerLookup(models.Model):
     player_pk = models.PositiveIntegerField()
     url = models.CharField(max_length=300)
 
-    def get_player_model(self):
-        return getattr(get_models_module(self.app_name), 'Player')
-
-    def get_player(self):
-        return self.get_player_model().objects.get(pk=self.player_pk)
-
 
 class GlobalLockModel(models.Model):
     class Meta:

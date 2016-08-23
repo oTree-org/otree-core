@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
+
 from django.db.models import permalink
 from django.core.urlresolvers import reverse
+
+import six
 
 import otree.common_internal
 from otree import constants_internal
@@ -115,19 +119,21 @@ class Participant(ModelWithVars):
 
     _is_bot = models.BooleanField(default=False)
 
-    def player_lookup(self, pages_ahead=0):
+    def player_lookup(self):
         # this is the most reliable way to get the app name,
         # because of WaitUntilAssigned...
         # 2016-04-07: WaitUntilAssigned removed
+        return ParticipantToPlayerLookup.objects.get(
+            participant=self.pk,
+            page_index=self._index_in_pages)
+
+    def future_player_lookup(self, pages_ahead):
         try:
             return ParticipantToPlayerLookup.objects.get(
                 participant=self.pk,
                 page_index=self._index_in_pages + pages_ahead)
         except ParticipantToPlayerLookup.DoesNotExist:
             return
-
-    def get_current_player(self):
-        return self.player_lookup().get_player()
 
     def _current_page(self):
         return '{}/{} pages'.format(self._index_in_pages, self._max_page_index)

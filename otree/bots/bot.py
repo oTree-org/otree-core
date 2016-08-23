@@ -23,21 +23,29 @@ from otree.common_internal import get_dotted_name, get_bots_module
 
 logger = logging.getLogger('otree.bots')
 
-
-HTML_MISSING_FIELD_WARNING = '''
-Bot is trying to submit fields: "{}",
-but these form fields were not found in the HTML of the page
-(searched for tags "{}" with "name" attribute matching the field name).
-Checking the HTML may not find all form fields
+DISABLE_CHECK_HTML_INSTRUCTIONS = '''
+Checking the HTML may not find all form fields and buttons
 (e.g. those added with JavaScript),
 so you can disable this check by yielding a Submission
 with check_html=False, e.g.:
 
 yield Submission(views.PageName, {{...}}, check_html=False)
-'''.replace('\n', ' ').strip()
+'''
+
+HTML_MISSING_BUTTON_WARNING = ('''
+Bot is trying to submit a page,
+but no button was not found in the HTML of the page.
+(searched for <input> with type='submit' or <button> with type != 'button').
+''' + DISABLE_CHECK_HTML_INSTRUCTIONS).replace('\n', ' ').strip()
+
+HTML_MISSING_FIELD_WARNING = ('''
+Bot is trying to submit fields: "{}",
+but these form fields were not found in the HTML of the page
+(searched for tags "{}" with "name" attribute matching the field name).
+''' + DISABLE_CHECK_HTML_INSTRUCTIONS).replace('\n', ' ').strip()
 
 
-def SubmitInternal(submission_tuple, check_html):
+def SubmitInternal(submission_tuple, check_html=settings.BOTS_CHECK_HTML):
 
     post_data = {}
 
@@ -86,22 +94,39 @@ def SubmissionMustFail(
     return Submission(PageClass, post_data, check_html)
 
 
-class MissingFieldChecker(HTMLParser):
+class PageHtmlChecker(HTMLParser):
 
     def __init__(self, fields_to_check):
-        super(MissingFieldChecker, self).__init__()
+        super(PageHtmlChecker, self).__init__()
         self.missing_fields = set(fields_to_check)
-        self.tags = {'input', 'button', 'select', 'textarea'}
+        self.field_tags = {'input', 'button', 'select', 'textarea'}
+        self.submit_button_found = False
 
     def get_missing_fields(self, html):
         self.feed(html)
         return self.missing_fields
 
-    def handle_starttag(self, tag, attrs):
-        if tag in self.tags:
+    def check_if_field(self, tag, attrs):
+        if tag in self.field_tags:
             for (attr_name, attr_value) in attrs:
                 if attr_name == 'name':
                     self.missing_fields.discard(attr_value)
+
+    def check_if_button(self, tag, attrs):
+        if not self.submit_button_found:
+            if tag == 'button':
+                for (attr_name, attr_value) in attrs:
+                    if attr_name == 'type' and attr_value == 'button':
+                        return
+                self.submit_button_found = True
+            if tag == 'input':
+                for (attr_name, attr_value) in attrs:
+                    if attr_name == 'type' and attr_value == 'submit':
+                        self.submit_button_found = True
+
+    def handle_starttag(self, tag, attrs):
+        self.check_if_field(tag, attrs)
+        self.check_if_button(tag, attrs)
 
 
 def is_wait_page(response):
@@ -152,10 +177,9 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
                 try:
                     for submission in generator:
                         if not isinstance(submission, dict):
-                            submission = SubmitInternal(
-                                submission, check_html=False)
+                            submission = SubmitInternal(submission)
                         self.assert_correct_page(submission)
-                        self.assert_correct_fields(submission)
+                        self.assert_html_ok(submission)
                         yield submission
                 # handle the case where it's empty
                 except TypeError as exc:
@@ -163,17 +187,19 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
                         raise StopIteration
                     raise
 
-    def assert_correct_fields(self, submission):
+    def assert_html_ok(self, submission):
         if submission['check_html']:
             field_names = [
                 f for f in submission['post_data'].keys() if f != 'must_fail']
-            checker = MissingFieldChecker(field_names)
+            checker = PageHtmlChecker(field_names)
             missing_fields = checker.get_missing_fields(self.html)
             if missing_fields:
                 raise AssertionError(
                     HTML_MISSING_FIELD_WARNING.format(
                         ', '.join(missing_fields),
-                        ', '.join(checker.tags)))
+                        ', '.join(checker.field_tags)))
+            if not checker.submit_button_found:
+                raise AssertionError(HTML_MISSING_BUTTON_WARNING)
 
     def assert_correct_page(self, submission):
         PageClass = submission['page_class']
