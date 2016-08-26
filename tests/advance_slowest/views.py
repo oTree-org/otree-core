@@ -6,10 +6,15 @@ from tests.utils import BlankTemplatePage as Page
 from .models import Constants
 
 
-class MyPage(Page):
+class Page1(Page):
+    pass
+
+class Page2(Page):
     pass
 
 
 page_sequence = [
-    MyPage,
+    Page1,
+    WaitPage,
+    Page2,
 ]

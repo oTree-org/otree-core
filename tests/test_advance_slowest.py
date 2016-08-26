@@ -2,49 +2,49 @@
 # -*- coding: utf-8 -*-
 
 from django.core.management import call_command
-from otree.models import Session
-
+from otree.models.session import Session
+from otree.bots.bot import ParticipantBot
 from .base import TestCase
 
 
-class TestRounds(TestCase):
+# use a wrapper so that unittest doesn't find this base class at the
+# module level, otherwise it will run it.
+class WrapperToHideClass:
+    class BaseTestCase(TestCase):
 
+        def advance_to_end(self):
+
+            session = self.session
+            participants = session.get_participants()
+            max_page_index = participants[0]._max_page_index
+
+            # once to open the start links, then num_pages to get to last page
+            for x in range(max_page_index + 1):
+                session.advance_last_place_participants()
+
+            participants = session.get_participants()
+            for p in participants:
+                self.assertGreaterEqual(p._index_in_pages, max_page_index)
+
+        def test_advance_to_end(self):
+            self.advance_to_end()
+
+        def test_some_already_started(self):
+            participants = self.session.get_participants()
+            p1 = participants[0]
+
+            bot = ParticipantBot(p1)
+            bot.open_start_url()
+            self.advance_to_end()
+
+
+class TestAdvanceSlowest(WrapperToHideClass.BaseTestCase):
     def setUp(self):
-
-        call_command('create_session', 'misc_3p', "3")
+        call_command('create_session', 'advance_slowest', "2")
         self.session = Session.objects.get()
 
 
-    def test_in_rounds(self):
-        self.session.ad
-        subsession = self.subsession_3
-        group = subsession.get_groups()[0]
-        player = group.get_player_by_id(1)
-
-        for obj in [subsession, group, player]:
-            prev_objs = obj.in_all_rounds()
-            self.assertEqual([o.round_number for o in prev_objs], [1,2,3])
-
-            prev_objs = obj.in_previous_rounds()
-            self.assertEqual([o.round_number for o in prev_objs], [1,2])
-
-            prev_objs = obj.in_rounds(2, 3)
-            self.assertEqual([o.round_number for o in prev_objs], [2, 3])
-
-            prev = obj.in_round(1)
-            self.assertEqual(prev.round_number, 1)
-
-        prev_groups = group.in_all_rounds()
-        group_participants = [p.participant for p in group.get_players()]
-        for prev_group in prev_groups:
-            self.assertEqual(
-                group_participants,
-                [p.participant for p in prev_group.get_players()]
-            )
-
-        prev_players = player.in_all_rounds()
-        for prev_player in prev_players:
-            self.assertEqual(
-                player.participant,
-                prev_player.participant)
-
+class TestAdvanceSlowestWaitPageFirst(WrapperToHideClass.BaseTestCase):
+    def setUp(self):
+        call_command('create_session', 'advance_slowest_wait', "2")
+        self.session = Session.objects.get()

@@ -112,6 +112,16 @@ SESSION_CONFIGS = [
         'num_demo_participants': 4,
         'app_sequence': ['tests.rounds'],
     },
+    {
+        'name': 'advance_slowest',
+        'num_demo_participants': 2,
+        'app_sequence': ['tests.advance_slowest'],
+    },
+    {
+        'name': 'advance_slowest_wait',
+        'num_demo_participants': 2,
+        'app_sequence': ['tests.advance_slowest_wait'],
+    },
 
 ]
 
