@@ -95,7 +95,7 @@ def _save_objects_shall_save(instance):
     if isinstance(instance, SaveTheChange):
         if instance._changed_fields:
             return True
-        # We need special support for the vars JSONField as SaveTheChange
+        # We need special support for the vars _JSONField as SaveTheChange
         # does not detect the change.
         if hasattr(instance, '_save_the_change_update_changed_fields'):
             instance._save_the_change_update_changed_fields()

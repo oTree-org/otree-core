@@ -26,7 +26,7 @@ class Participant(ModelWithVars):
 
     session = models.ForeignKey('otree.Session')
 
-    vars = models.JSONField(default=dict)
+    vars = models._JSONField(default=dict)
 
     label = models.CharField(
         max_length=50, null=True, doc=(

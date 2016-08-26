@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
                 ('page_class_dotted', models.CharField(max_length=200)),
-                ('param_dict', otree.db.models.JSONField(null=True)),
+                ('param_dict', otree.db.models._JSONField(null=True)),
                 ('input_is_valid', models.BooleanField()),
             ],
             options={
@@ -90,7 +90,7 @@ class Migration(migrations.Migration):
             name='Participant',
             fields=[
                 ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
-                ('vars', otree.db.models.JSONField(default=dict, null=True)),
+                ('vars', otree.db.models._JSONField(default=dict, null=True)),
                 ('exclude_from_data_analysis', otree.db.models.BooleanField(choices=[(True, 'Yes'), (False, 'No')], default=False)),
                 ('time_started', otree.db.models.DateTimeField(null=True)),
                 ('mturk_assignment_id', otree.db.models.CharField(max_length=50, null=True)),
@@ -160,8 +160,8 @@ class Migration(migrations.Migration):
             name='Session',
             fields=[
                 ('id', models.AutoField(serialize=False, auto_created=True, primary_key=True, verbose_name='ID')),
-                ('vars', otree.db.models.JSONField(default=dict, null=True)),
-                ('config', otree.db.models.JSONField(default=dict, null=True)),
+                ('vars', otree.db.models._JSONField(default=dict, null=True)),
+                ('config', otree.db.models._JSONField(default=dict, null=True)),
                 ('label', otree.db.models.CharField(help_text='For internal record-keeping', blank=True, max_length=300, null=True)),
                 ('experimenter_name', otree.db.models.CharField(help_text='For internal record-keeping', blank=True, max_length=300, null=True)),
                 ('code', otree.db.models.CharField(default=otree.common_internal.random_chars_8, max_length=16, null=True, unique=True)),

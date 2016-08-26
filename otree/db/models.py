@@ -10,8 +10,7 @@ from django.core import exceptions
 from django.utils.translation import ugettext_lazy
 from django.apps import apps
 
-from .serializedfields import JSONField as _JSONField
-from .serializedfields import PickleField as _PickleField
+from .serializedfields import JSONField as _JSONFieldInternal
 
 import easymoney
 
@@ -168,11 +167,7 @@ class CurrencyField(_OtreeNullableModelFieldMixin,
     auto_submit_default = otree.common.Currency(0)
 
 
-class PickleField(_OtreeNullableModelFieldMixin, _PickleField):
-    pass
-
-
-class JSONField(_OtreeNullableModelFieldMixin, _JSONField):
+class _JSONField(_OtreeNullableModelFieldMixin, _JSONFieldInternal):
     pass
 
 

@@ -106,7 +106,7 @@ class CurrencyFieldTests(TestCase):
         self.assertTrue('value="0.00"' in rendered)
 
 
-class JSONPickleFieldTests(TestCase):
+class JSONFieldTests(TestCase):
 
     def setUp(self):
         self.test_values = [
@@ -120,7 +120,7 @@ class JSONPickleFieldTests(TestCase):
 
     def test_json_field(self):
         for value in self.test_values:
-            field = models.JSONField(value)
+            field = models._JSONField(value)
             serialized = field.get_prep_value(value)
             if value is None:
                 self.assertIsNone(serialized)
@@ -128,16 +128,3 @@ class JSONPickleFieldTests(TestCase):
                 self.assertJSONEqual(json.dumps(value), serialized)
             restored = field.to_python(serialized)
             self.assertEquals(value, restored)
-
-    def test_pickle_field(self):
-        for value in self.test_values:
-            field = models.PickleField(value)
-            serialized = field.get_prep_value(value)
-            if value is None:
-                self.assertIsNone(serialized)
-            else:
-                self.assertEqual(
-                    b2a_base64(pickle.dumps(value)).decode('utf-8'),
-                    serialized)
-            restored = field.to_python(serialized)
-            self.assertEqual(value, restored)

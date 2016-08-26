@@ -43,7 +43,7 @@ class JSONFieldSupport(SaveTheChangeFieldSupport):
 
         Where as::
 
-            >>> jsonfield = JSONField()
+            >>> jsonfield = _JSONField()
             >>> a = object()
             >>> jsonfield.get_prep_value(a) == jsonfield.get_prep_value(a)
             True
@@ -56,7 +56,7 @@ class JSONFieldSupport(SaveTheChangeFieldSupport):
 
 # To support new fields for save the change, add them here.
 SAVE_THE_CHANGE_FIELD_SUPPORT = {
-    models.JSONField: JSONFieldSupport(),
+    models._JSONField: JSONFieldSupport(),
 }
 
 

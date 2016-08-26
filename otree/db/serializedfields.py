@@ -78,7 +78,7 @@ def json_decode_object(d):
 
 
 class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
-    """JSONField is a generic textfield that neatly serializes/unserializes
+    """_JSONField is a generic textfield that neatly serializes/unserializes
     JSON objects seamlessly"""
 
     def to_python(self, value):
@@ -123,31 +123,3 @@ class JSONTextarea(forms.Textarea):
     def render(self, name, value, attrs=None):
         return super(JSONTextarea, self).render(
             name, json.dumps(value), attrs=attrs)
-
-
-class PickleField(six.with_metaclass(models.SubfieldBase, models.TextField)):
-    """
-    PickleField is a generic textfield that neatly serializes/unserializes
-    any python objects seamlessly"""
-
-    def to_python(self, value):
-        """Convert our string value to JSON after we load it from the DB"""
-        if value == "":
-            return None
-
-        try:
-            if isinstance(value, six.string_types):
-                return deserialize_from_string(value)
-        except ValueError:
-            pass
-
-        return value
-
-    def get_prep_value(self, value):
-        """Convert our JSON object to a string before we save"""
-        if value == "" or value is None:
-            return None
-
-        value = serialize_to_string(value)
-        value = force_text(value)
-        return super(PickleField, self).get_prep_value(value)

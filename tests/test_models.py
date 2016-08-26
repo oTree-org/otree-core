@@ -5,9 +5,9 @@ from otree.models.varsmixin import ModelWithVars
 
 
 class JSONFieldModel(ModelWithVars):
-    vars = models.JSONField(default=dict)
+    vars = models._JSONField(default=dict)
     integer = models.IntegerField(default=0)
-    json_field = models.JSONField()
+    json_field = models._JSONField()
 
 
 class SaveTheChangeTests(TestCase):
