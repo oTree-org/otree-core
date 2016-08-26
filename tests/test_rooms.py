@@ -97,13 +97,13 @@ class TestRoomWithSession(RoomTestCase):
     def setUp(self):
         self.browser = django.test.client.Client()
         create_session(
-            'single_player_game',
+            'misc_1p',
             num_participants=6,
             room_name='default',
         )
 
         create_session(
-            'single_player_game',
+            'misc_1p',
             num_participants=6,
             room_name='anon',
         )

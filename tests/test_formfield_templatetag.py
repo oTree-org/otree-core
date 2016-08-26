@@ -9,7 +9,7 @@ import otree.forms
 
 from .base import TestCase
 from .models import SimplePlayer
-from .simple_game.models import Player
+from .simple.models import Player
 from .utils import capture_stdout
 
 
@@ -28,7 +28,7 @@ class SimplePlayerForm(otree.forms.ModelForm):
 class FormFieldTestMixin(TestCase):
     def setUp(self):
         with capture_stdout():
-            call_command('create_session', 'simple_game', "1")
+            call_command('create_session', 'simple', "1")
         self.player = Player.objects.first()
         self.simple_player = SimplePlayer.objects.create()
 

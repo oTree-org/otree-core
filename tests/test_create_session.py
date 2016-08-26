@@ -5,8 +5,8 @@ from django.core.management import call_command
 from otree.models import Session
 
 from .base import TestCase
-from .simple_game import models as sg_models
-from .single_player_game import models as sgc_models
+from .simple import models as sg_models
+from .misc_1p import models as sgc_models
 import six
 from six.moves import range
 
@@ -16,15 +16,15 @@ class TestCreateSessionsCommand(TestCase):
     def test_create_two_sessions_output(self):
         num_sessions = 2
         for i in range(num_sessions):
-            call_command('create_session', 'simple_game', "1")
+            call_command('create_session', 'simple', "1")
         created_sessions = Session.objects.count()
         self.assertEqual(created_sessions, num_sessions)
 
     def test_create_one_session(self):
-        call_command('create_session', 'simple_game', "1")
+        call_command('create_session', 'simple', "1")
         self.assertEqual(Session.objects.count(), 1)
         session = Session.objects.get()
-        self.assertEqual(session.config['name'], 'simple_game')
+        self.assertEqual(session.config['name'], 'simple')
 
         self.assertEqual(sg_models.Subsession.objects.count(), 1)
         subsession = sg_models.Subsession.objects.get()

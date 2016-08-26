@@ -13,6 +13,3 @@ class PlayerBot(Bot):
         if self.subsession.round_number == Constants.num_rounds:
             yield (views.MyPage)
             yield (views.Results)
-
-    def validate_play(self):
-        pass

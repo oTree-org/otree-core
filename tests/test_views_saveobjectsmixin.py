@@ -30,7 +30,7 @@ class SaveObjectsMixinTest(TestCase):
         with self.assertNumQueries(0):
             self.mixin.save_objects()
 
-        call_command('create_session', 'simple_game', '1')
+        call_command('create_session', 'simple', '1')
         # Reset cache.
         idmap.tls.init_idmap()
 
@@ -45,7 +45,7 @@ class SaveObjectsMixinTest(TestCase):
             self.mixin.save_objects()
 
     def test_save_if_changed(self):
-        call_command('create_session', 'simple_game', '1')
+        call_command('create_session', 'simple', '1')
         # Reset cache.
         idmap.tls.init_idmap()
 
@@ -62,7 +62,7 @@ class SaveObjectsMixinTest(TestCase):
         self.assertTrue(participant.save.called)
 
     def test_nested_changes(self):
-        call_command('create_session', 'simple_game', '1')
+        call_command('create_session', 'simple', '1')
         # Reset cache.
         idmap.tls.init_idmap()
 
@@ -76,11 +76,11 @@ class SaveObjectsMixinTest(TestCase):
             self.mixin.save_objects()
 
     def test_with_app_models(self):
-        call_command('create_session', 'simple_game', '2')
+        call_command('create_session', 'simple', '2')
 
-        from .simple_game.models import Group
-        from .simple_game.models import Player
-        from .simple_game.models import Subsession
+        from .simple.models import Group
+        from .simple.models import Player
+        from .simple.models import Subsession
 
         mixin = SaveObjectsMixin()
         mixin.GroupClass = Group

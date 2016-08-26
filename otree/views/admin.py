@@ -861,7 +861,8 @@ class ServerCheck(vanilla.TemplateView):
         regular_sentry = hasattr(settings, 'RAVEN_CONFIG')
         heroku_sentry = os.environ.get('SENTRY_DSN')
         sentry = regular_sentry or heroku_sentry
-        auth_level = settings.AUTH_LEVEL in {'DEMO', 'STUDY'}
+        auth_level = settings.AUTH_LEVEL
+        auth_level_ok = settings.AUTH_LEVEL in {'DEMO', 'STUDY'}
         heroku = self.app_is_on_heroku()
         runserver = 'runserver' in sys.argv
         db_synced = db_status_ok()
@@ -872,6 +873,7 @@ class ServerCheck(vanilla.TemplateView):
             'debug': debug,
             'sentry': sentry,
             'auth_level': auth_level,
+            'auth_level_ok': auth_level_ok,
             'heroku': heroku,
             'runserver': runserver,
             'db_synced': db_synced,

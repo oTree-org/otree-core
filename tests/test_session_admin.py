@@ -11,7 +11,7 @@ from .base import TestCase
 class TestSessionAdmin(TestCase):
 
     def setUp(self):
-        call_command('create_session', 'multi_player_game', "9")
+        call_command('create_session', 'misc_3p', "9")
         self.session = Session.objects.get()
         self.browser = django.test.client.Client()
 

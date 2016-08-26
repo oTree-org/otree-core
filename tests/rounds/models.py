@@ -9,9 +9,9 @@ from otree.api import (
 doc = "foo"
 
 class Constants(BaseConstants):
-    name_in_url = 'simple_game_copy'
-    players_per_group = None
-    num_rounds = 1
+    name_in_url = 'rounds'
+    players_per_group = 2
+    num_rounds = 3
 
 
 class Subsession(BaseSubsession):
@@ -19,12 +19,8 @@ class Subsession(BaseSubsession):
 
 
 class Group(BaseGroup):
-    players_per_group = None
-
-    def set_payoffs(self):
-        for p in self.get_players():
-            p.payoff = 0
+    pass
 
 
 class Player(BasePlayer):
-    my_field = models.CurrencyField()
+    pass

@@ -10,7 +10,7 @@ from django.core.management import call_command
 from otree.models import Session
 
 from .base import TestCase
-from .multi_player_game import models as mpg_models
+from .misc_3p import models as mpg_models
 
 RANDOM_5_BY_3 = [
     [7, 12, 5],
@@ -28,7 +28,7 @@ class TestMatchPlayers(TestCase):
         patcher.start()
         self.addCleanup(patcher.stop)
 
-        call_command('create_session', 'multi_player_game', "15")
+        call_command('create_session', 'misc_3p', "15")
         self.session = Session.objects.get()
         self.subsession_1 = self.session.get_subsessions()[0]
 

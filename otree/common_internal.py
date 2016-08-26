@@ -117,8 +117,8 @@ def get_app_constants(app_name):
     Example::
 
         >>> from otree.common_internal import get_app_constants
-        >>> get_app_constants('demo_game')
-        <class demo_game.models.Constants at 0x7fed46bdb188>
+        >>> get_app_constants('demo')
+        <class demo.models.Constants at 0x7fed46bdb188>
 
     '''
     return get_models_module(app_name).Constants
@@ -277,8 +277,8 @@ def get_app_label_from_import_path(import_path):
 
 def get_app_name_from_label(app_label):
     '''
-    >>> get_app_name_from_label('simple_game')
-    'tests.simple_game'
+    >>> get_app_name_from_label('simple')
+    'tests.simple'
 
     '''
     return apps.get_app_config(app_label).name

@@ -4,8 +4,8 @@ from django.test.client import RequestFactory
 from otree import constants_internal
 from otree.models import Participant
 
-from .simple_game.views import MyPage
-from .simple_game.models import Player
+from .simple.views import MyPage
+from .simple.models import Player
 from .utils import capture_stdout
 from .base import TestCase
 
@@ -27,14 +27,14 @@ class OTreeRequestFactory(RequestFactory):
 
 
 class BaseViewTestCase(TestCase):
-    view_name = 'tests.simple_game.views.Abstract'
+    view_name = 'tests.simple.views.Abstract'
 
     def setUp(self):
         self.factory = OTreeRequestFactory(view_name=self.view_name)
         self.request = self.factory.get('/my-page/')
 
         with capture_stdout():
-            call_command('create_session', 'simple_game', "1")
+            call_command('create_session', 'simple', "1")
 
         self.participant = Participant.objects.first()
         self.player = Player.objects.first()

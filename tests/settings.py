@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     'otree',
     'raven.contrib.django.raven_compat',
     'tests',
-    'tests.demo',
 ]
 mturk_hit_settings = {
     'keywords': ['easy', 'bonus', 'choice', 'study'],
@@ -76,37 +75,42 @@ SESSION_CONFIG_DEFAULTS = {
 
 SESSION_CONFIGS = [
     {
-        'name': 'simple_game',
+        'name': 'simple',
         'display_name': "Simple Game",
         'num_demo_participants': 1,
-        'app_sequence': ['tests.simple_game'],
+        'app_sequence': ['tests.simple'],
     },
     {
-        'name': 'single_player_game',
+        'name': 'misc_1p',
         'display_name': "Single Player Game",
         'num_demo_participants': 1,
         'participation_fee': 9.99,
         'real_world_currency_per_point': 0.02,
-        'app_sequence': ['tests.single_player_game'],
+        'app_sequence': ['tests.misc_1p'],
         'treatment': 'blue'
     },
     {
-        'name': 'multi_player_game',
+        'name': 'misc_3p',
         'display_name': "Multi Player Game",
         'num_demo_participants': 3,
-        'app_sequence': ['tests.multi_player_game'],
+        'app_sequence': ['tests.misc_3p'],
     },
     {
         "name": 'two_simple_games',
         "display_name": "2 Simple Games",
         "num_demo_participants": 1,
-        "app_sequence": ['tests.simple_game', 'tests.single_player_game'],
+        "app_sequence": ['tests.simple', 'tests.misc_1p'],
     },
     {
         'name': 'skipmany',
         'display_name': "skip many",
         'num_demo_participants': 2,
         'app_sequence': ['tests.skip_many'],
+    },
+    {
+        'name': 'rounds',
+        'num_demo_participants': 4,
+        'app_sequence': ['tests.rounds'],
     },
 
 ]

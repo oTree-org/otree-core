@@ -46,13 +46,13 @@ class TestDataExport(TestCase):
             self.assertEqual(response.content, buff.getvalue().encode('utf-8'))
 
     def test_simple_game_export_data(self):
-        self.session_test("simple_game")
+        self.session_test("simple")
 
-    def test_single_player_game_export_data(self):
-        self.session_test("single_player_game")
+    def test_misc_1p_game_export_data(self):
+        self.session_test("misc_1p")
 
-    def test_multi_player_game_export_data(self):
-        self.session_test("multi_player_game")
+    def test_misc_3p_game_export_data(self):
+        self.session_test("misc_3p")
 
     def test_two_simple_games_export_data(self):
         self.session_test("two_simple_games")
@@ -92,13 +92,13 @@ class TestDocExport(TestCase):
             self.assertEqual(response.content, buff.getvalue().encode('utf-8'))
 
     def test_simple_game_export_data(self):
-        self.session_test("simple_game")
+        self.session_test("simple")
 
-    def test_single_player_game_export_docs(self):
-        self.session_test("single_player_game")
+    def test_misc_1p_game_export_docs(self):
+        self.session_test("misc_1p")
 
-    def test_multi_player_game_export_docs(self):
-        self.session_test("multi_player_game")
+    def test_misc_3p_game_export_docs(self):
+        self.session_test("misc_3p")
 
     def test_two_simple_games_export_docs(self):
         self.session_test("two_simple_games")

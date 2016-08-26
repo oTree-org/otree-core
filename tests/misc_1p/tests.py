@@ -21,6 +21,11 @@ class PlayerBot(Bot):
             views.DynamicChoices,
             {'dynamic_choices': random.choice(['a', 'b'])}
         )
+        # if using a radio widget, there should not be a ------ choice;
+        # that's only for dropdowns
+        # FIXME: there's no HTML in this game!
+        assert '-----' not in self.html
+        yield (views.RadioWidgets, {'radio': 1, 'dynamic_radio': 'a'})
         yield SubmissionMustFail(views.MinMax, {'min_max': 2})
         yield (views.MinMax, {'min_max': 5})
         yield SubmissionMustFail(views.DynamicMinMax, {'dynamic_min_max': 4})

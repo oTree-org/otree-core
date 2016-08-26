@@ -17,7 +17,7 @@ from .base import TestCase
 class TestMTurk(TestCase):
 
     def setUp(self):
-        call_command('create_session', 'multi_player_game', "9")
+        call_command('create_session', 'misc_3p', "9")
         self.session = Session.objects.get()
         self.browser = django.test.client.Client()
 
@@ -119,7 +119,7 @@ class MockResultSet(list):
 class PayMTurk(TestCase):
 
     def setUp(self):
-        call_command('create_session', 'multi_player_game', "9")
+        call_command('create_session', 'misc_3p', "9")
         self.session = Session.objects.get()
         self.browser = django.test.client.Client()
         self.participants = self.session.get_participants()

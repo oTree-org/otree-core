@@ -63,6 +63,18 @@ class DynamicChoices(Page):
         ]
 
 
+class RadioWidgets(Page):
+
+    form_model = models.Player
+    form_fields = ['radio', 'dynamic_radio']
+
+    def dynamic_radio_choices(self):
+        return [
+            ['a', 'first choice'],
+            ['b', 'second choice'],
+        ]
+
+
 class MinMax(Page):
 
     form_model = models.Group
@@ -110,6 +122,7 @@ page_sequence = [
     ErrorMessage,
     FieldErrorMessage,
     DynamicChoices,
+    RadioWidgets,
     MinMax,
     DynamicMinMax,
     Blank,

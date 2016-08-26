@@ -1,20 +1,25 @@
 # -*- coding: utf-8 -*-
 # <standard imports>
 from __future__ import division
-from otree.db import models
-import otree.models
-import otree.constants
-from otree.common import Currency as c
+from otree.api import (
+    models, BaseConstants, BaseSubsession, BaseGroup, BasePlayer,
+    Currency as c, widgets
+)
 # </standard imports>
 
 
-class Constants(otree.constants.BaseConstants):
-    name_in_url = 'simple_game'
+doc = """
+Test misc functionality of a 1-player game
+"""
+
+
+class Constants(BaseConstants):
+    name_in_url = 'misc_1p'
     players_per_group = None
     num_rounds = 1
 
 
-class Subsession(otree.models.BaseSubsession):
+class Subsession(BaseSubsession):
 
     def before_session_starts(self):
         self.session.vars['a'] = 1
@@ -30,7 +35,7 @@ class Subsession(otree.models.BaseSubsession):
             g2.in_before_session_starts = 1
 
 
-class Group(otree.models.BaseGroup):
+class Group(BaseGroup):
     def set_payoffs(self):
         for p in self.get_players():
             p.payoff = c(50)
@@ -49,7 +54,7 @@ class Group(otree.models.BaseGroup):
     in_before_session_starts = models.CurrencyField()
 
 
-class Player(otree.models.BasePlayer):
+class Player(BasePlayer):
 
     def other_player(self):
         """Returns other player in group. Only valid for 2-player groups."""
@@ -65,6 +70,13 @@ class Player(otree.models.BasePlayer):
     after_next_button_field = models.BooleanField()
 
     dynamic_choices = models.CharField()
+
+    radio = models.CurrencyField(
+        widget=widgets.RadioSelect(),
+        choices=[c(1), c(2)]
+    )
+
+    dynamic_radio = models.CharField(widget=widgets.RadioSelectHorizontal())
 
     dynamic_min_max = models.CurrencyField()
 
