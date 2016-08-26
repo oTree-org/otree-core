@@ -33,7 +33,7 @@ class WrapperToHideClass:
             participants = self.session.get_participants()
             p1 = participants[0]
 
-            bot = ParticipantBot(p1)
+            bot = ParticipantBot(p1, load_player_bots=False)
             bot.open_start_url()
             self.advance_to_end()
 

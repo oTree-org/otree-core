@@ -142,7 +142,7 @@ def refresh_from_db(obj):
 class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
 
     def __init__(
-            self, participant, **kwargs):
+            self, participant, load_player_bots=True, **kwargs):
         self.participant = participant
         self.url = None
         self._response = None
@@ -152,13 +152,17 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
         super(ParticipantBot, self).__init__()
 
         self.player_bots = []
-        for player in self.participant.get_players():
-            bots_module = get_bots_module(player._meta.app_config.name)
-            player_bot = bots_module.PlayerBot(
-                player=player,
-                participant_bot=self)
-            self.player_bots.append(player_bot)
-        self.submits_generator = self.get_submits()
+
+        # load_player_bots can be set to False when it's convenient for
+        # internal testing
+        if load_player_bots:
+            for player in self.participant.get_players():
+                bots_module = get_bots_module(player._meta.app_config.name)
+                player_bot = bots_module.PlayerBot(
+                    player=player,
+                    participant_bot=self)
+                self.player_bots.append(player_bot)
+            self.submits_generator = self.get_submits()
 
     def open_start_url(self):
         self.response = self.get(

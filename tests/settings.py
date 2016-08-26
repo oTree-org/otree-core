@@ -122,6 +122,11 @@ SESSION_CONFIGS = [
         'num_demo_participants': 2,
         'app_sequence': ['tests.advance_slowest_wait'],
     },
+    {
+        'name': 'wait_page',
+        'num_demo_participants': 2,
+        'app_sequence': ['tests.wait_page'],
+    },
 
 ]
 
