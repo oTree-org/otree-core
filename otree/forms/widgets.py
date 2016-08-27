@@ -12,10 +12,11 @@ import floppyforms.widgets
 
 
 __all__ = (
-    'BaseMoneyInput', 'CheckboxInput',
+    '_BaseMoneyInput',
+    'CheckboxInput',
     'ClearableFileInput', 'ColorInput',
-    'CurrencyInput', 'DateInput', 'DateTimeInput', 'EmailInput', 'FileInput',
-    'HiddenInput', 'IPAddressInput', 'Input', 'RealWorldCurrencyInput',
+    '_CurrencyInput', 'DateInput', 'DateTimeInput', 'EmailInput', 'FileInput',
+    'HiddenInput', 'IPAddressInput', 'Input', '_RealWorldCurrencyInput',
     'NullBooleanSelect', 'NumberInput', 'PasswordInput',
     'PhoneNumberInput', 'RadioSelect', 'RadioSelectHorizontal', 'RangeInput',
     'SearchInput', 'Select', 'SelectDateWidget',
@@ -62,12 +63,12 @@ SelectDateWidget = floppyforms.widgets.SelectDateWidget
 #    template_name = 'floppyforms/checkbox_select_horizontal.html'
 
 
-class BaseMoneyInput(forms.NumberInput):
+class _BaseMoneyInput(forms.NumberInput):
     # step = 0.01
     template_name = 'floppyforms/moneyinput.html'
 
     def get_context(self, *args, **kwargs):
-        context = super(BaseMoneyInput, self).get_context(*args, **kwargs)
+        context = super(_BaseMoneyInput, self).get_context(*args, **kwargs)
         context['currency_symbol'] = self.CURRENCY_SYMBOL
         context['currency_symbol_is_prefix'] = self.currency_symbol_is_prefix
         return context
@@ -85,14 +86,14 @@ class BaseMoneyInput(forms.NumberInput):
         return force_text(value)
 
 
-class RealWorldCurrencyInput(BaseMoneyInput):
+class _RealWorldCurrencyInput(_BaseMoneyInput):
     CURRENCY_SYMBOL = babel.numbers.get_currency_symbol(
         settings.REAL_WORLD_CURRENCY_CODE,
         settings.REAL_WORLD_CURRENCY_LOCALE
     )
 
 
-class CurrencyInput(RealWorldCurrencyInput):
+class _CurrencyInput(_RealWorldCurrencyInput):
     if settings.USE_POINTS:
         if hasattr(settings, 'POINTS_CUSTOM_NAME'):
             CURRENCY_SYMBOL = settings.POINTS_CUSTOM_NAME

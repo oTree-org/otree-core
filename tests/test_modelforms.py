@@ -106,7 +106,7 @@ class UseFloppyformWidgetsTests(TestCase):
         )
         self.assertIsInstance(
             TestModelForm.base_fields['currency'].widget,
-            otree.widgets.CurrencyInput
+            otree.widgets._CurrencyInput
         )
         self.assertIsInstance(
             TestModelForm.base_fields['currency_choice'],

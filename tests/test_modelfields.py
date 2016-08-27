@@ -120,7 +120,7 @@ class JSONFieldTests(TestCase):
 
     def test_json_field(self):
         for value in self.test_values:
-            field = models._JSONField(value)
+            field = models._JSONField(default=value)
             serialized = field.get_prep_value(value)
             if value is None:
                 self.assertIsNone(serialized)

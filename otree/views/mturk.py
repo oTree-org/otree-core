@@ -111,7 +111,7 @@ class MTurkCreateHITForm(forms.Form):
     money_reward = forms.RealWorldCurrencyField(
         # it seems that if this is omitted, the step defaults to an integer,
         # meaninng fractional inputs are not accepted
-        widget=widgets.RealWorldCurrencyInput(attrs={'step': 0.01})
+        widget=widgets._RealWorldCurrencyInput(attrs={'step': 0.01})
     )
     assignments = forms.IntegerField(
         label="Number of assignments",

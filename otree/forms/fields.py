@@ -14,11 +14,11 @@ class BaseCurrencyField(forms.DecimalField):
 
 
 class CurrencyField(BaseCurrencyField):
-    widget = widgets.CurrencyInput
+    widget = widgets._CurrencyInput
 
 
 class RealWorldCurrencyField(BaseCurrencyField):
-    widget = widgets.RealWorldCurrencyInput
+    widget = widgets._RealWorldCurrencyInput
 
 
 class CurrencyChoiceField(forms.TypedChoiceField):
