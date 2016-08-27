@@ -442,17 +442,25 @@ class InGameWaitPageMixin(object):
             # need to deactivate cache, in case after_all_players_arrive
             # finished running after the moment set_attributes
             # was called in this request.
+
             # because in response_when_ready we will call
             # increment_index_in_pages, which does a look-ahead and calls
             # is_displayed() on the following pages. is_displayed() might
             # depend on a field that is set in after_all_players_arrive
             # so, need to clear the cache to ensure
             # that we get fresh data.
+
+            # Note: i was never able to reproduce this myself -- just heard
+            # from Anthony N.
+            # and it shouldn't happen, because only the last player to visit
+            # can set is_ready(). if there is a request coming after that,
+            # then it must be someone refreshing the page manually.
+            # i guess we should protect against that.
+
             # is_displayed() could also depend on a field on participant
             # that was set on the wait page, so need to refresh participant,
             # because it is passed as an arg to set_attributes().
-            # Note: i was never able to reproduce this myself -- just heard
-            # from Anthony N.
+
             otree.db.idmap.save_objects()
             otree.db.idmap.flush_cache()
             self.participant.refresh_from_db()
