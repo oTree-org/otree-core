@@ -13,10 +13,6 @@ from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 import django.core.management.commands.runserver
 
-
-RunserverCommand = django.core.management.commands.runserver.Command
-
-
 naiveip_re = re.compile(r"""^
 (?P<addr>
     (?P<ipv4>\d{1,3}(?:\.\d{1,3}){3}) |         # IPv4 address
@@ -25,7 +21,7 @@ naiveip_re = re.compile(r"""^
 )$""", re.X)
 
 
-class Command(RunserverCommand):
+class Command(BaseCommand):
     help = 'Run otree web services for the production environment.'
 
     default_port = 8000
@@ -71,7 +67,9 @@ class Command(RunserverCommand):
     def handle(self, *args, **options):
         self.verbosity = options.get('verbosity', 1)
         self.logger = setup_logger('django.channels', self.verbosity)
-        return super(Command, self).handle(*args, **options)
+        manager = self.get_honcho_manager(options)
+        manager.loop()
+        sys.exit(manager.returncode)
 
     def get_honcho_manager(self, options):
         self.addr = self.get_addr(options['addr'])
@@ -101,10 +99,3 @@ class Command(RunserverCommand):
             )
 
         return manager
-
-    def inner_run(self, *args, **options):
-
-        manager = self.get_honcho_manager(options)
-        manager.loop()
-
-        sys.exit(manager.returncode)
