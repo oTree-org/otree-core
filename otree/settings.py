@@ -309,7 +309,8 @@ def augment_settings(settings):
     new_staticfiles_dirs = collapse_to_unique_list(
         settings.get('STATICFILES_DIRS'),
         # 2015-5-2: 'static' is deprecated in favor of '_static'
-        # remove it at some point
+        # remove it at some point. or keep it, because that's the Django
+        # convention
         additional_static_dirs,
     )
 

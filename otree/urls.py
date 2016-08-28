@@ -29,7 +29,7 @@ DEMO_UNRESTRICTED_VIEWS = STUDY_UNRESTRICTED_VIEWS.union({
     'otree.views.concrete.AdvanceSession',
     'otree.views.demo.CreateDemoSession',
     'otree.views.demo.DemoIndex',
-    'otree.views.demo.SessionFullscreen',
+    'otree.views.admin.SessionFullscreen',
     'otree.views.admin.SessionDescription',
     'otree.views.admin.SessionMonitor',
     'otree.views.admin.SessionPayments',
