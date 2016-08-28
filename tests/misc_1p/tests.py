@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 from . import views
-from otree.api import Bot, SubmissionMustFail
+from otree.api import Bot, SubmissionMustFail, Currency as c
 import random
+
 
 
 class PlayerBot(Bot):
@@ -25,7 +26,7 @@ class PlayerBot(Bot):
         # that's only for dropdowns
         # FIXME: there's no HTML in this game!
         assert '-----' not in self.html
-        yield (views.RadioWidgets, {'radio': 1, 'dynamic_radio': 'a'})
+        yield (views.RadioWidgets, {'radio': c(1), 'dynamic_radio': 'a'})
         yield SubmissionMustFail(views.MinMax, {'min_max': 2})
         yield (views.MinMax, {'min_max': 5})
         yield SubmissionMustFail(views.DynamicMinMax, {'dynamic_min_max': 4})
