@@ -24,8 +24,6 @@ ADMIN_PASSWORD = environ.get('OTREE_ADMIN_PASSWORD')
 # don't share this with anybody.
 SECRET_KEY = '{{ secret_key }}'
 
-PAGE_FOOTER = ''
-
 # To use a database other than sqlite,
 # set the DATABASE_URL environment variable.
 # Examples:
@@ -64,7 +62,8 @@ USE_POINTS = True
 LANGUAGE_CODE = 'en'
 
 # if an app is included in SESSION_CONFIGS, you don't need to list it here
-INSTALLED_APPS = []
+# if an app is included in SESSION_CONFIGS, you don't need to list it here
+INSTALLED_APPS = ['otree']
 
 # SENTRY_DSN = ''
 
@@ -88,9 +87,9 @@ mturk_hit_settings = {
     'expiration_hours': 7*24,  # 7 days
     # 'grant_qualification_id': 'YOUR_QUALIFICATION_ID_HERE',# to prevent retakes
     'qualification_requirements': [
-        qualification.LocaleRequirement("EqualTo", "US"),
-        qualification.PercentAssignmentsApprovedRequirement("GreaterThanOrEqualTo", 50),
-        qualification.NumberHitsApprovedRequirement("GreaterThanOrEqualTo", 5),
+        # qualification.LocaleRequirement("EqualTo", "US"),
+        # qualification.PercentAssignmentsApprovedRequirement("GreaterThanOrEqualTo", 50),
+        # qualification.NumberHitsApprovedRequirement("GreaterThanOrEqualTo", 5),
         # qualification.Requirement('YOUR_QUALIFICATION_ID_HERE', 'DoesNotExist')
     ]
 }

@@ -116,10 +116,6 @@ def get_default_settings(initial_settings=None):
         }
     }
 
-    page_footer = (
-        'Powered By <a href="http://otree.org" target="_blank">oTree</a>'
-    )
-
     REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379')
 
     return {
@@ -138,15 +134,6 @@ def get_default_settings(initial_settings=None):
         'TIME_ZONE': 'UTC',
         'USE_TZ': True,
         'ALLOWED_HOSTS': ['*'],
-
-        # SEO AND FOOTER
-        'PAGE_FOOTER': page_footer,
-
-        # list of extra string to positioning you experiments on search engines
-        # Also if you want to add a particular set of SEO words to a particular
-        # page add to template context "page_seo" variable.
-        # See: http://en.wikipedia.org/wiki/Search_engine_optimization
-        'SEO': (),
 
         'LOGGING': logging,
 
@@ -334,7 +321,6 @@ def augment_settings(settings):
                 'context_processors': collapse_to_unique_list(
                     global_settings.TEMPLATE_CONTEXT_PROCESSORS, (
                         'django.core.context_processors.request',
-                        'otree.context_processors.otree_context',
                     )
                 ),
             },
