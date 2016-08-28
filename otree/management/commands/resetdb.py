@@ -104,7 +104,14 @@ class Command(BaseCommand):
             return
 
         for db, dbconf in six.iteritems(settings.DATABASES):
-            logger.info("Engine: {}".format(dbconf['ENGINE']))
+            db_engine = dbconf['ENGINE']
+            if 'postgresql' in db_engine.lower():
+                db_engine = 'PostgreSQL'
+            elif 'sqlite' in db_engine.lower():
+                db_engine = 'SQLite'
+            elif 'mysql' in db_engine.lower():
+                db_engine = 'MySQL'
+            logger.info("Database engine: {}".format(db_engine))
             dt_stmt = self._drop_table_stmt(dbconf)
 
             logger.info("Retrieving Existing Tables...")
