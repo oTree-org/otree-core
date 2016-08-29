@@ -126,6 +126,7 @@ def execute_from_command_line(arguments, script_file):
     # Workaround for Python 2 & windows. For some reason, runserver
     # complains if the script you are using to initialize celery does not end
     # on '.py'. That's why we require a manage.py file to be around.
+
     # originally this was written for a problem with billiard/celery,
     # but now for runserver.
     # See https://github.com/celery/billiard/issues/129 for more details.
