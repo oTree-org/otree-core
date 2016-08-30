@@ -217,28 +217,13 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
         # where Meta.ordering on the Player was being ingnored
         # when you use a filter. So we add one explicitly.
         players = Player.objects.filter(
-            subsession_id=subsession_pk).order_by('pk')
+            subsession_id=subsession_pk).select_related(
+            'group', 'subsession').order_by('pk')
     else:
-        players = Player.objects.all()
+        players = Player.objects.all().select_related(
+            'participant', 'group', 'subsession', 'session')
     session_ids = set([player.session_id for player in players])
 
-    # initialize
-    parent_objects = {}
-
-    parent_models = [
-        Model for Model in model_order if Model not in {Player, Session}
-        ]
-
-    for Model in parent_models:
-        parent_objects[Model] = {
-            obj.pk: obj
-            for obj in Model.objects.filter(session_id__in=session_ids)
-            }
-
-    if Session in model_order:
-        parent_objects[Session] = {
-            obj.pk: obj for obj in Session.objects.filter(pk__in=session_ids)
-            }
 
     all_rows = []
     for player in players:
@@ -248,13 +233,7 @@ def get_display_table_rows(app_name, for_export, subsession_pk=None):
             if Model == Player:
                 model_instance = player
             else:
-                fk_name = Model.__name__.lower()
-                parent_object_id = getattr(player, "{}_id".format(fk_name))
-                if parent_object_id is None:
-                    model_instance = None
-                else:
-                    model_instance = parent_objects[Model][parent_object_id]
-
+                model_instance = getattr(player, Model.__name__.lower())
             attr = getattr(model_instance, field_name, '')
             if isinstance(attr, collections.Callable):
                 if Model == Player and field_name == 'role' \
