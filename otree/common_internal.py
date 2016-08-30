@@ -531,3 +531,4 @@ def release_any_stale_locks():
 def get_redis_conn():
     from huey.contrib.djhuey import HUEY
     return HUEY.storage.conn
+

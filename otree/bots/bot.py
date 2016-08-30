@@ -94,7 +94,15 @@ def SubmissionMustFail(
     return Submission(PageClass, post_data, check_html)
 
 
-class PageHtmlChecker(HTMLParser):
+def normalize_html_whitespace(html):
+    html = html.replace('\n', ' ').replace('\r', ' ')
+    html = re.sub(r'\s+', ' ', html)
+    return html
+
+
+# inherit from object for Python2.7 support.
+# otherwise, get
+class PageHtmlChecker(HTMLParser, object):
 
     def __init__(self, fields_to_check):
         super(PageHtmlChecker, self).__init__()
@@ -238,9 +246,7 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
 
     @html.setter
     def html(self, html):
-        html = html.replace('\n', ' ').replace('\r', ' ')
-        html = re.sub(r'\s+', ' ', html)
-        self._html = html
+        self._html = normalize_html_whitespace(html)
 
     def on_wait_page(self):
         # if the existing response was a form page, it will still be...
