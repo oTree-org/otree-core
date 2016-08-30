@@ -127,6 +127,11 @@ SESSION_CONFIGS = [
         'num_demo_participants': 2,
         'app_sequence': ['tests.wait_page'],
     },
+    {
+        'name': 'export',
+        'num_demo_participants': 1,
+        'app_sequence': ['tests.export'],
+    },
 
 ]
 

@@ -13,58 +13,62 @@ from .base import TestCase
 
 
 class TestDataExport(TestCase):
-
     def setUp(self):
         self.client.login()
 
-    def session_test(self, session_name):
+    def test_export(self):
 
-        session_conf = SESSION_CONFIGS_DICT[session_name]
-        app_sequence = session_conf["app_sequence"]
-        npar = session_conf["num_demo_participants"]
+        session_config_name = 'export'
+        app_name = 'tests.export'
+        num_participants = 2
 
-        call_command('create_session', session_name, str(npar))
+        call_command('create_session', session_config_name,
+                     str(num_participants))
 
-        for app in app_sequence:
-            app_format = common_internal.app_name_format(app)
+        formatted_app_name = common_internal.app_name_format(app_name)
 
-            url = "/ExportCsv/{}/".format(app)
-            response = self.client.get(url)
+        url = "/ExportCsv/{}/".format(app_name)
+        response = self.client.get(url)
 
-            # HEADERS CHECK
-            content_disposition = response["Content-Disposition"]
-            content_type = response["content-type"]
+        # HEADERS CHECK
+        content_disposition = response["Content-Disposition"]
+        content_type = response["content-type"]
 
-            self.assertEqual(content_type, "text/csv")
+        self.assertEqual(content_type, "text/csv")
 
-            self.assertTrue(
-                content_disposition.startswith(
-                    'attachment; filename="{} ('.format(app_format)))
+        self.assertTrue(
+            content_disposition.startswith(
+                'attachment; filename="{} ('.format(formatted_app_name)))
 
-            buff = StringIO()
-            common_internal.export_data(app, buff)
-            self.assertEqual(response.content, buff.getvalue().encode('utf-8'))
+        csv_text = response.content.decode('utf-8')
 
-    def test_simple_game_export_data(self):
-        self.session_test("simple")
+        rows = csv_text.split('\n')
 
-    def test_misc_1p_game_export_data(self):
-        self.session_test("misc_1p")
+        # 1 row for each player + header row + blank row at end
+        self.assertEqual(len(rows), num_participants + 2)
 
-    def test_misc_3p_game_export_data(self):
-        self.session_test("misc_3p")
+        header_row = rows[0]
 
-    def test_two_simple_games_export_data(self):
-        self.session_test("two_simple_games")
+        for expected_text in [
+            'Participant.id_in_session',
+            'Player.id_in_group',
+            'Player.payoff',
+            'Subsession.subsession_field',
+            'Subsession.round_number',
+            'Session.code',
+        ]:
+            self.assertIn(expected_text, header_row)
+
+        # 3.14 should be in the CSV without any currency formatting
+        for expected_text in ['should be in export CSV', ',3.14,']:
+            self.assertIn(expected_text, csv_text)
 
 
 class TestDocExport(TestCase):
-
     def setUp(self):
         self.client.login()
 
     def session_test(self, session_name):
-
         session_conf = SESSION_CONFIGS_DICT[session_name]
         app_sequence = session_conf["app_sequence"]
         npar = session_conf["num_demo_participants"]
@@ -105,7 +109,6 @@ class TestDocExport(TestCase):
 
 
 class TestTimeSpentExport(TestCase):
-
     def setUp(self):
         for session_conf in settings.SESSION_CONFIGS:
             session_name = session_conf["name"]
