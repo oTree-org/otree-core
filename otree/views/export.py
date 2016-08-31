@@ -16,6 +16,7 @@ import vanilla
 import otree.common_internal
 import otree.models
 from otree.common_internal import app_name_format
+import otree.export
 
 
 # =============================================================================
@@ -60,7 +61,7 @@ class ExportAppDocs(vanilla.View):
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(
             self._doc_file_name(app_label)
         )
-        otree.common_internal.export_docs(response, app_label)
+        otree.export.export_docs(response, app_label)
         return response
 
 
@@ -80,7 +81,7 @@ class ExportCsv(vanilla.View):
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(
             self._data_file_name(app_label)
         )
-        otree.common_internal.export_data(app_label, response)
+        otree.export.export_csv(app_label, response)
         return response
 
 
@@ -95,5 +96,5 @@ class ExportTimeSpent(vanilla.View):
                 datetime.date.today().isoformat()
             )
         )
-        otree.common_internal.export_time_spent(response)
+        otree.export.export_time_spent(response)
         return response

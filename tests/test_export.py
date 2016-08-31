@@ -7,6 +7,7 @@ from django.conf import settings
 from django.core.management import call_command
 
 from otree import common_internal
+import otree.export
 from otree.session import SESSION_CONFIGS_DICT
 
 from .base import TestCase
@@ -96,7 +97,7 @@ class TestDocExport(TestCase):
             self.assertTrue(content_disposition.startswith(expected_cd))
 
             buff = StringIO()
-            common_internal.export_docs(buff, app)
+            otree.export.export_docs(buff, app)
             self.assertEqual(response.content, buff.getvalue().encode('utf-8'))
 
     def test_simple_game_export_data(self):
@@ -107,9 +108,6 @@ class TestDocExport(TestCase):
 
     def test_misc_3p_game_export_docs(self):
         self.session_test("misc_3p")
-
-    def test_two_simple_games_export_docs(self):
-        self.session_test("two_simple_games")
 
 
 class TestTimeSpentExport(TestCase):
@@ -128,5 +126,5 @@ class TestTimeSpentExport(TestCase):
         self.assertEqual(content_type, "text/csv")
 
         buff = StringIO()
-        common_internal.export_time_spent(buff)
+        otree.export.export_time_spent(buff)
         self.assertEqual(response.content, buff.getvalue().encode('utf-8'))

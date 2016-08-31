@@ -17,17 +17,12 @@ from django.core.urlresolvers import reverse
 from django.forms.forms import pretty_name
 from django.conf import settings
 from django.contrib import messages
-from django.utils.encoding import force_text
 
 import vanilla
 
-from ordered_set import OrderedSet as oset
-
 import channels
 
-import easymoney
-
-import otree.constants_internal
+import otree.export
 from otree.common_internal import (
     create_session_and_redirect, db_status_ok, check_pypi_for_updates)
 from otree.session import SESSION_CONFIGS_DICT, create_session, SessionConfig
@@ -39,241 +34,8 @@ from otree.views.mturk import MTurkConnection, get_workers_by_status
 from otree.common import Currency as c
 from otree.models import Participant, Session
 from otree.models_concrete import (
-    PageCompletion, ParticipantRoomVisit, BrowserBotsLauncherSessionCode)
+    ParticipantRoomVisit, BrowserBotsLauncherSessionCode)
 from otree.room import ROOM_DICT
-
-
-def get_all_fields(Model, for_export=False):
-    if Model is PageCompletion:
-        return [
-            'session_id',
-            'participant__id_in_session',
-            'participant__code',
-            'page_index',
-            'app_name',
-            'page_name',
-            'time_stamp',
-            'seconds_on_page',
-            'subsession_pk',
-            'auto_submitted',
-        ]
-
-    if Model is Session:
-        return [
-            'code',
-            'label',
-            'experimenter_name',
-            'real_world_currency_per_point',
-            'time_scheduled',
-            'time_started',
-            'mturk_HITId',
-            'mturk_HITGroupId',
-            'participation_fee',
-            'comment',
-            'is_demo',
-            'use_cli_bots',
-        ]
-
-    if Model is Participant:
-        if for_export:
-            return [
-                'id_in_session',
-                'code',
-                'label',
-                '_current_page',
-                '_current_app_name',
-                '_round_number',
-                '_current_page_name',
-                'ip_address',
-                'time_started',
-                'exclude_from_data_analysis',
-                'visited',
-                'mturk_worker_id',
-                'mturk_assignment_id',
-            ]
-        else:
-            return [
-                '_id_in_session',
-                'code',
-                'label',
-                '_current_page',
-                '_current_app_name',
-                '_round_number',
-                '_current_page_name',
-                'status',
-                '_last_page_timestamp',
-            ]
-
-    first_fields = {
-        'Player':
-            [
-                'id_in_group',
-                'role',
-            ],
-        'Group':
-            [
-                'id',
-            ],
-        'Subsession':
-            [],
-    }[Model.__name__]
-    first_fields = oset(first_fields)
-
-    last_fields = {
-        'Player': [],
-        'Group': [],
-        'Subsession': [],
-    }[Model.__name__]
-    last_fields = oset(last_fields)
-
-    fields_for_export_but_not_view = {
-        'Player': {'id', 'label', 'subsession', 'session'},
-        'Group': {'id'},
-        'Subsession': {'id', 'round_number'},
-    }[Model.__name__]
-
-    fields_for_view_but_not_export = {
-        'Player': set(),
-        'Group': {'subsession', 'session'},
-        'Subsession': {'session'},
-    }[Model.__name__]
-
-    fields_to_exclude_from_export_and_view = {
-        'Player': {
-            '_index_in_game_pages',
-            'participant',
-            'group',
-            'subsession',
-            'session',
-            'round_number',
-        },
-        'Group': {
-            'subsession',
-            'id_in_subsession',
-            'session',
-            '_is_missing_players',
-            'round_number',
-        },
-        'Subsession': {
-            'code',
-            'label',
-            'session',
-            'session_access_code',
-        },
-    }[Model.__name__]
-
-    if for_export:
-        fields_to_exclude = fields_to_exclude_from_export_and_view.union(
-            fields_for_view_but_not_export
-        )
-    else:
-        fields_to_exclude = fields_to_exclude_from_export_and_view.union(
-            fields_for_export_but_not_view
-        )
-
-    all_fields_in_model = oset([field.name for field in Model._meta.fields])
-
-    middle_fields = (
-        all_fields_in_model - first_fields - last_fields - fields_to_exclude
-    )
-
-    return list(first_fields | middle_fields | last_fields)
-
-
-def get_display_table_rows(app_name, for_export, subsession_pk=None):
-    if not for_export and not subsession_pk:
-        raise ValueError("if this is for the admin results table, "
-                         "you need to specify a subsession pk")
-    models_module = otree.common_internal.get_models_module(app_name)
-    Player = models_module.Player
-    Group = models_module.Group
-    Subsession = models_module.Subsession
-    if for_export:
-        model_order = [
-            Participant,
-            Player,
-            Group,
-            Subsession,
-            Session
-        ]
-    else:
-        model_order = [
-            Player,
-            Group,
-            Subsession,
-        ]
-
-    # get title row
-    all_columns = []
-    for Model in model_order:
-        field_names = get_all_fields(Model, for_export)
-        columns_for_this_model = [
-            (Model, field_name) for field_name in field_names
-            ]
-        all_columns.extend(columns_for_this_model)
-
-    if subsession_pk:
-        # we had a strange result on one person's heroku instance
-        # where Meta.ordering on the Player was being ingnored
-        # when you use a filter. So we add one explicitly.
-        players = Player.objects.filter(
-            subsession_id=subsession_pk).select_related(
-            'group', 'subsession').order_by('pk')
-    else:
-        players = Player.objects.all().select_related(
-            'participant', 'group', 'subsession', 'session')
-    session_ids = set([player.session_id for player in players])
-
-
-    all_rows = []
-    for player in players:
-        row = []
-        for column in all_columns:
-            Model, field_name = column
-            if Model == Player:
-                model_instance = player
-            else:
-                model_instance = getattr(player, Model.__name__.lower())
-            attr = getattr(model_instance, field_name, '')
-            if isinstance(attr, collections.Callable):
-                if Model == Player and field_name == 'role' \
-                        and model_instance.group is None:
-                    attr = ''
-                else:
-                    try:
-                        attr = attr()
-                    except:
-                        attr = "(error)"
-            row.append(attr)
-        all_rows.append(row)
-
-    values_to_replace = {None: '', True: 1, False: 0}
-
-    for row in all_rows:
-        for i in range(len(row)):
-            value = row[i]
-            try:
-                replace = value in values_to_replace
-            except TypeError:
-                # if it's an unhashable data type
-                # like Json or Pickle field
-                replace = False
-            if replace:
-                value = values_to_replace[value]
-            elif for_export and isinstance(value, easymoney.Money):
-                # remove currency formatting for easier analysis
-                value = easymoney.to_dec(value)
-            value = force_text(value)
-            value = value.replace('\n', ' ').replace('\r', ' ')
-            row[i] = value
-
-    column_display_names = []
-    for Model, field_name in all_columns:
-        column_display_names.append(
-            (Model.__name__, field_name)
-        )
-
-    return column_display_names, all_rows
 
 
 class CreateSessionForm(forms.Form):
@@ -556,30 +318,6 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
         return context
 
 
-class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
-
-    def get_context_data(self, **kwargs):
-
-        field_names = get_all_fields(Participant)
-        display_names = {
-            '_id_in_session': 'ID in session',
-            'code': 'Code',
-            'label': 'Label',
-            '_current_page': 'Page',
-            '_current_app_name': 'App',
-            '_round_number': 'Round',
-            '_current_page_name': 'Page name',
-            'status': 'Status',
-            '_last_page_timestamp': 'Time on page',
-        }
-
-        column_names = [display_names[col] for col in field_names]
-
-        context = super(SessionMonitor, self).get_context_data(**kwargs)
-        context.update({'column_names': column_names})
-        return context
-
-
 class SessionEditPropertiesForm(forms.ModelForm):
     participation_fee = forms.RealWorldCurrencyField(
         required=False,
@@ -717,22 +455,56 @@ class MTurkSessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
         return context
 
 
+class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
+
+    def get_context_data(self, **kwargs):
+
+        field_names = otree.export.get_results_table_column_names(Participant)
+        display_names = {
+            '_id_in_session': 'ID in session',
+            'code': 'Code',
+            'label': 'Label',
+            '_current_page': 'Page',
+            '_current_app_name': 'App',
+            '_round_number': 'Round',
+            '_current_page_name': 'Page name',
+            'status': 'Status',
+            '_last_page_timestamp': 'Time on page',
+        }
+
+        column_names = [display_names[col] for col in field_names]
+
+        context = super(SessionMonitor, self).get_context_data(**kwargs)
+        context.update({'column_names': column_names})
+        return context
+
+
+def pretty_round_name(app_label, round_number):
+    app_label = pretty_name(app_label)
+    if round_number > 1:
+        return '{} [Round {}]'.format(app_label, round_number)
+    else:
+        return app_label
+
+
 class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
 
     def get_context_data(self, **kwargs):
         session = self.session
 
-        participants = session.get_participants()
-        participant_labels = [p._id_in_session() for p in participants]
-        column_name_tuples = []
         rows = []
+
+        round_headers = []
+        model_headers = []
+        all_field_names = []
+
+        all_field_names_json = []
 
         for subsession in session.get_subsessions():
             app_label = subsession._meta.app_config.name
 
-            column_names, subsession_rows = get_display_table_rows(
+            columns_for_models, subsession_rows = otree.export.get_rows_for_results_table(
                 subsession._meta.app_config.name,
-                for_export=False,
                 subsession_pk=subsession.pk
             )
 
@@ -742,53 +514,51 @@ class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
                 for i in range(len(rows)):
                     rows[i].extend(subsession_rows[i])
 
+            player_colspan = len(columns_for_models['player'])
+            group_colspan = len(columns_for_models['group'])
+            subsession_colspan = len(columns_for_models['subsession'])
+            round_colspan = player_colspan + group_colspan + subsession_colspan
+
             round_number = subsession.round_number
-            if round_number > 1:
-                subsession_column_name = '{} [Round {}]'.format(
-                    app_label, round_number
-                )
-            else:
-                subsession_column_name = app_label
+            round_name = pretty_round_name(app_label, round_number)
 
-            for model_column_name, field_column_name in column_names:
-                column_name_tuples.append(
-                    (subsession_column_name,
-                     model_column_name,
-                     field_column_name)
-                )
+            round_headers.append((round_name, round_colspan))
+            model_headers.append(('Player', player_colspan))
+            model_headers.append(('Group', group_colspan))
+            model_headers.append(('Subsession', subsession_colspan))
 
-        subsession_headers = [
-            (pretty_name(key), len(list(group)))
-            for key, group in
-            itertools.groupby(column_name_tuples, key=lambda x: x[0])
-            ]
+            fields_flat = []
+            fields_json = []
+            for model_name in ['Player', 'Group', 'Subsession']:
+                column_names = columns_for_models[model_name.lower()]
+                model_fields_flat = [pretty_name(n) for n in column_names]
+                model_fields_json = [
+                    '{}.{}.{}'.format(round_name, model_name, colname)
+                    for colname in column_names
+                ]
+                fields_flat.extend(model_fields_flat)
+                fields_json.extend(model_fields_json)
 
-        model_headers = [
-            (pretty_name(key[1]), len(list(group)))
-            for key, group in
-            itertools.groupby(column_name_tuples, key=lambda x: (x[0], x[1]))
-            ]
-
-        field_headers = [
-            pretty_name(key[2]) for key, group in
-            itertools.groupby(column_name_tuples, key=lambda x: x)
-            ]
+            all_field_names.extend(fields_flat)
+            all_field_names_json.extend(fields_json)
 
         # dictionary for json response
         # will be used only if json request  is done
+
         self.context_json = []
-        for i, row in enumerate(rows):
+        for i, row in enumerate(rows, start=1):
             d_row = OrderedDict()
-            d_row['participant_label'] = participant_labels[i]
-            for t, v in zip(column_name_tuples, row):
-                d_row['.'.join(t)] = v
+            # table always starts with participant 1
+            d_row['participant_label'] = 'P{}'.format(i)
+            for t, v in zip(all_field_names_json, row):
+                d_row[t] = v
             self.context_json.append(d_row)
 
         context = super(SessionResults, self).get_context_data(**kwargs)
         context.update({
-            'subsession_headers': subsession_headers,
+            'subsession_headers': round_headers,
             'model_headers': model_headers,
-            'field_headers': field_headers,
+            'field_headers': all_field_names,
             'rows': rows})
         return context
 

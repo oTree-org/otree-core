@@ -33,8 +33,6 @@ class BaseGroup(SaveTheChange, models.Model):
             # twice
             raise AttributeError(ATTRIBUTE_ERROR_MESSAGE.format(name))
 
-    _is_missing_players = models.BooleanField(default=False, db_index=True)
-
     id_in_subsession = models.PositiveIntegerField(db_index=True)
 
     session = models.ForeignKey(
