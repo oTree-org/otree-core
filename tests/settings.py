@@ -147,6 +147,12 @@ SESSION_CONFIGS = [
         'num_demo_participants': 1,
         'app_sequence': ['tests.bots_bad_post'],
     },
+    {
+        'name': 'templates_app',
+        'num_demo_participants': 1,
+        'app_sequence': ['tests.templates_app'],
+    },
+
 ]
 
 

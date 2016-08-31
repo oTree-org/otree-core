@@ -7,7 +7,8 @@ import otree.session
 from otree.bots.runner import SessionBotRunner
 import logging
 
-class TestWaitForAllGroups(TestCase):
+
+class TestBots(TestCase):
     def test_bot_runs(self):
 
         session = otree.session.create_session(
@@ -79,7 +80,6 @@ class TestWaitForAllGroups(TestCase):
             bot.open_start_url()
 
         bot_runner = SessionBotRunner(bots, session.code)
-
 
         with self.assertRaises(AssertionError):
             # need to disable log output, because this triggers an exception

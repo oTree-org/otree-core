@@ -21,7 +21,6 @@ def get_html(response):
 
 
 def participant_initialized(response):
-    print('redirect chain', response.redirect_chain)
     redirect_chain = [ele[0] for ele in response.redirect_chain]
     return any('InitializeParticipant' in url for url in redirect_chain)
 
@@ -65,7 +64,9 @@ class TestRoomWithoutSession(RoomTestCase):
             self.get(url)
 
     def test_open_participant_links(self):
-        room_with_labels = reverse('AssignVisitorToRoom', args=['default'])
+
+        room_name = 'default'
+        room_with_labels = reverse('AssignVisitorToRoom', args=[room_name])
 
         resp = self.get(room_with_labels)
         self.assertIn('Please enter your participant label', get_html(resp))
@@ -74,7 +75,7 @@ class TestRoomWithoutSession(RoomTestCase):
             room_with_labels + '?participant_label=JohnSmith',
         )
 
-        self.assertIn('room/default', self.path)
+        self.assertIn('room/{}'.format(room_name), self.path)
 
         resp = self.browser.get(
             room_with_labels + '?participant_label=NotInLabelsFile',
@@ -96,15 +97,17 @@ class TestRoomWithoutSession(RoomTestCase):
 class TestRoomWithSession(RoomTestCase):
     def setUp(self):
         self.browser = django.test.client.Client()
-        create_session(
-            'misc_1p',
+        self.default_session = create_session(
+            'simple',
+            # make it 6 so that we can test if the participant is reassigned
+            # if they open their start link again (1/6 chance)
             num_participants=6,
             room_name='default',
         )
 
-        create_session(
-            'misc_1p',
-            num_participants=6,
+        self.anon_session = create_session(
+            'simple',
+            num_participants=2,
             room_name='anon',
         )
 
@@ -135,6 +138,36 @@ class TestRoomWithSession(RoomTestCase):
 
         resp = self.get(anon_base_url + '?participant_label=JohnSmith')
         self.assertTrue(participant_initialized(resp))
+
+    def test_participant_label(self):
+        room_with_labels = reverse('AssignVisitorToRoom', args=['default'])
+
+        participant_label = 'JohnSmith'
+        session_participant_codes = [
+            p.code for p in self.default_session.get_participants()]
+        assigned_participants = []
+
+        # make sure reopening the same link assigns you to same participant
+        for i in range(2):
+            resp = self.get(
+                room_with_labels + '?participant_label={}'.format(
+                    participant_label))
+
+            # last URL in redirect chain, then [0] (i forget why)
+            page_url = resp.redirect_chain[-1][0]
+
+            for code in session_participant_codes:
+                if code in page_url:
+                    assigned_participants.append(code)
+                    break
+        self.assertEqual(assigned_participants[0], assigned_participants[1])
+        participant = self.default_session.participant_set.get(
+            code=assigned_participants[0])
+
+        # make sure participant_label is recorded
+        self.assertEqual(participant.label, participant_label)
+
+
 
     def test_close_room(self):
 
