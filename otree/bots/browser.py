@@ -47,7 +47,7 @@ class Worker(object):
         # SimpleTestCase down to the Player bot
         test_case = SimpleTestCase()
 
-        for participant in session.get_participants().filter(_is_bot=True):
+        for participant in session.get_participants():
             self.session_participants[session_code].append(
                 participant.code)
             bot = ParticipantBot(

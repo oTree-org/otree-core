@@ -59,10 +59,7 @@ class Participant(ModelWithVars):
 
     def _id_in_session(self):
         """the human-readable version."""
-        if self._is_bot:
-            return 'P{} (bot)'.format(self.id_in_session)
-        else:
-            return 'P{}'.format(self.id_in_session)
+        return 'P{}'.format(self.id_in_session)
 
     _waiting_for_ids = models.CharField(null=True, max_length=300)
 

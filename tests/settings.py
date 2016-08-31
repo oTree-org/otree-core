@@ -132,7 +132,21 @@ SESSION_CONFIGS = [
         'num_demo_participants': 1,
         'app_sequence': ['tests.export'],
     },
-
+    {
+        'name': 'bots',
+        'num_demo_participants': 2,
+        'app_sequence': ['tests.bots'],
+    },
+    {
+        'name': 'bots_check_html',
+        'num_demo_participants': 1,
+        'app_sequence': ['tests.bots_check_html'],
+    },
+    {
+        'name': 'bots_bad_post',
+        'num_demo_participants': 1,
+        'app_sequence': ['tests.bots_bad_post'],
+    },
 ]
 
 

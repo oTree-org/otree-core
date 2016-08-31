@@ -53,6 +53,7 @@ class TestDataExport(TestCase):
             'Participant.id_in_session',
             'Player.id_in_group',
             'Player.payoff',
+            'Group.group_field',
             'Subsession.subsession_field',
             'Subsession.round_number',
             'Session.code',
@@ -62,6 +63,9 @@ class TestDataExport(TestCase):
         # 3.14 should be in the CSV without any currency formatting
         for expected_text in ['should be in export CSV', ',3.14,']:
             self.assertIn(expected_text, csv_text)
+
+        # True/False should be converted to 1/0
+        self.assertNotIn('False', csv_text)
 
 
 class TestDocExport(TestCase):

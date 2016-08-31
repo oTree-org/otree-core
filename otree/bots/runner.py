@@ -81,7 +81,7 @@ def test_bots(session_config_name, num_participants, run_export):
         session = otree.session.create_session(
             session_config_name=config_name,
             num_participants=num_participants,
-            use_cli_bots=True, label='{} [bots]'.format(config_name),
+            use_cli_bots=True,
             bot_case_number=case_number
         )
         bots = []

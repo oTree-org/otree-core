@@ -44,8 +44,13 @@ but these form fields were not found in the HTML of the page
 (searched for tags "{}" with "name" attribute matching the field name).
 ''' + DISABLE_CHECK_HTML_INSTRUCTIONS).replace('\n', ' ').strip()
 
+class BOTS_CHECK_HTML:
+    pass
 
-def SubmitInternal(submission_tuple, check_html=settings.BOTS_CHECK_HTML):
+def SubmitInternal(submission_tuple, check_html=BOTS_CHECK_HTML):
+
+    if check_html == BOTS_CHECK_HTML:
+        check_html = settings.BOTS_CHECK_HTML
 
     post_data = {}
 
@@ -75,12 +80,12 @@ def SubmitInternal(submission_tuple, check_html=settings.BOTS_CHECK_HTML):
 
 
 def Submission(
-        PageClass, post_data=None, check_html=settings.BOTS_CHECK_HTML):
+        PageClass, post_data=None, check_html=BOTS_CHECK_HTML):
     return SubmitInternal((PageClass, post_data), check_html)
 
 
 def SubmissionMustFail(
-        PageClass, post_data=None, check_html=settings.BOTS_CHECK_HTML):
+        PageClass, post_data=None, check_html=BOTS_CHECK_HTML):
     '''lets you intentionally submit with invalid
     input to ensure it's correctly rejected'''
 

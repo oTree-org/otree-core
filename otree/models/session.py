@@ -143,9 +143,6 @@ class Session(ModelWithVars):
     def get_participants(self):
         return self.participant_set.all()
 
-    def get_human_participants(self):
-        return self.participant_set.filter(_is_bot=False)
-
     def _create_groups_and_initialize(self):
         # group_by_arrival_time code used to be here
         for subsession in self.get_subsessions():
