@@ -16,27 +16,27 @@ from otree.common_internal import get_models_module
 
 
 STUDY_UNRESTRICTED_VIEWS = {
-    'otree.views.concrete.AssignVisitorToRoom',
-    'otree.views.concrete.InitializeParticipant',
-    'otree.views.concrete.MTurkLandingPage',
-    'otree.views.concrete.MTurkStart',
-    'otree.views.concrete.JoinSessionAnonymously',
-    'otree.views.concrete.OutOfRangeNotification',
+    'AssignVisitorToRoom',
+    'InitializeParticipant',
+    'MTurkLandingPage',
+    'MTurkStart',
+    'JoinSessionAnonymously',
+    'OutOfRangeNotification',
 }
 
 
 DEMO_UNRESTRICTED_VIEWS = STUDY_UNRESTRICTED_VIEWS.union({
-    'otree.views.concrete.AdvanceSession',
-    'otree.views.demo.CreateDemoSession',
-    'otree.views.demo.DemoIndex',
-    'otree.views.admin.SessionFullscreen',
-    'otree.views.admin.SessionDescription',
-    'otree.views.admin.SessionMonitor',
-    'otree.views.admin.SessionPayments',
-    'otree.views.admin.SessionResults',
-    'otree.views.admin.SessionStartLinks',
-    'otree.views.admin.SessionStartLinks',
-    'otree.views.admin.WaitUntilSessionCreated',
+    'AdvanceSession',
+    'CreateDemoSession',
+    'DemoIndex',
+    'SessionFullscreen',
+    'SessionDescription',
+    'SessionMonitor',
+    'SessionPayments',
+    'SessionResults',
+    'SessionStartLinks',
+    'SessionStartLinks',
+    'WaitUntilSessionCreated',
 })
 
 
@@ -84,27 +84,23 @@ def url_patterns_from_module(module_name):
 
     all_views = view_classes_from_module(module_name)
 
-    # 2015-11-13: EXPERIMENT deprecated, renamed to STUDY
-    # remove EXPERIMENT eventually
-    if settings.AUTH_LEVEL in {'EXPERIMENT', 'STUDY'}:
-        unrestricted_views = STUDY_UNRESTRICTED_VIEWS
-    elif settings.AUTH_LEVEL == 'DEMO':
-        unrestricted_views = DEMO_UNRESTRICTED_VIEWS
-    else:
-        unrestricted_views = [
-            '%s.%s' % (module_name, view.__name__) for view in all_views
-        ]
-
     view_urls = []
     for ViewCls in all_views:
-        if '%s.%s' % (module_name, ViewCls.__name__) in unrestricted_views:
-            as_view = ViewCls.as_view()
-        else:
-            as_view = login_required(ViewCls.as_view())
-
         # automatically assign URL name for reverse(), it defaults to the
         # class's name
         url_name = getattr(ViewCls, 'url_name', ViewCls.__name__)
+
+        if settings.AUTH_LEVEL == 'STUDY':
+            unrestricted = url_name in STUDY_UNRESTRICTED_VIEWS
+        elif settings.AUTH_LEVEL == 'DEMO':
+            unrestricted = url_name in DEMO_UNRESTRICTED_VIEWS
+        else:
+            unrestricted = True
+
+        if unrestricted:
+            as_view = ViewCls.as_view()
+        else:
+            as_view = login_required(ViewCls.as_view())
 
         url_pattern = ViewCls.url_pattern
         if callable(url_pattern):
