@@ -28,15 +28,15 @@ else:
     import csv
 
 
-def get_field_names(Model):
+def inspect_field_names(Model):
     return [f.name for f in Model._meta.fields]
 
 
-def get_results_table_column_names(Model):
+def get_field_names_for_live_update(Model):
     return _get_table_fields(Model, for_export=False)
 
 
-def get_csv_column_names(Model):
+def get_field_names_for_csv(Model):
     return _get_table_fields(Model, for_export=True)
 
 
@@ -94,8 +94,8 @@ def _get_table_fields(Model, for_export=False):
 
     if issubclass(Model, BasePlayer):
         subclass_fields = [
-            f for f in get_field_names(Model)
-            if f not in get_field_names(BasePlayer)
+            f for f in inspect_field_names(Model)
+            if f not in inspect_field_names(BasePlayer)
             and f not in ['id', 'group', 'subsession']
             ]
 
@@ -106,8 +106,8 @@ def _get_table_fields(Model, for_export=False):
 
     if issubclass(Model, BaseGroup):
         subclass_fields = [
-            f for f in get_field_names(Model)
-            if f not in get_field_names(BaseGroup)
+            f for f in inspect_field_names(Model)
+            if f not in inspect_field_names(BaseGroup)
             and f not in ['id', 'subsession']
             ]
 
@@ -115,8 +115,8 @@ def _get_table_fields(Model, for_export=False):
 
     if issubclass(Model, BaseSubsession):
         subclass_fields = [
-            f for f in get_field_names(Model)
-            if f not in get_field_names(BaseGroup)
+            f for f in inspect_field_names(Model)
+            if f not in inspect_field_names(BaseGroup)
             and f != 'id'
             ]
 
@@ -141,7 +141,7 @@ def get_rows_for_csv(app_name):
     Subsession = models_module.Subsession
 
     columns_for_models = {
-        Model.__name__.lower(): get_csv_column_names(Model)
+        Model.__name__.lower(): get_field_names_for_csv(Model)
         for Model in [Player, Group, Subsession, Participant, Session]
     }
 
@@ -151,30 +151,25 @@ def get_rows_for_csv(app_name):
     players = Player.objects.order_by('id').values()
 
     value_dicts = {
-        'group': Group.objects.values(),
-        'subsession': Subsession.objects.values(),
-        'participant': Participant.objects.filter(id__in=participant_ids).values(),
-        'session': Session.objects.filter(id__in=session_ids).values()
-    }
-
-    value_dict_lookups = {
-        model_name: {row['id']: row for row in value_dicts[model_name]}
-        for model_name in value_dicts
+        'group': {row['id']: row for row in Group.objects.values()},
+        'subsession': {row['id']: row for row in Subsession.objects.values()},
+        'participant': {row['id']: row for row in
+                        Participant.objects.filter(
+                            id__in=participant_ids).values()},
+        'session': {row['id']: row for row in
+                    Session.objects.filter(id__in=session_ids).values()}
     }
 
     rows = []
 
     model_order = ['participant', 'player', 'group', 'subsession', 'session']
 
-
     for player in players:
         row = []
         all_objects = {'player': player}
         for model_name in value_dicts:
             obj_id = player['{}_id'.format(model_name)]
-            all_objects.update({
-                model_name: value_dict_lookups[model_name][obj_id]
-            })
+            all_objects[model_name] = value_dicts[model_name][obj_id]
 
         for model_name in model_order:
             for colname in columns_for_models[model_name]:
@@ -191,7 +186,7 @@ def get_rows_for_csv(app_name):
     return header_row, rows
 
 
-def get_rows_for_results_table(app_name, subsession_pk):
+def get_rows_for_live_update(app_name, subsession_pk):
     models_module = otree.common_internal.get_models_module(app_name)
     Player = models_module.Player
     Group = models_module.Group
@@ -199,7 +194,7 @@ def get_rows_for_results_table(app_name, subsession_pk):
 
 
     columns_for_models = {
-        Model.__name__.lower(): get_results_table_column_names(Model)
+        Model.__name__.lower(): get_field_names_for_live_update(Model)
         for Model in [Player, Group, Subsession]
     }
 
@@ -316,7 +311,7 @@ def export_docs(fp, app_name):
 
             field_names = set(field.name for field in Model._meta.fields)
 
-            members = get_csv_column_names(Model)
+            members = get_field_names_for_csv(Model)
             doc_dict[model_name] = OrderedDict()
 
             for member_name in members:

@@ -459,7 +459,7 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
 
     def get_context_data(self, **kwargs):
 
-        field_names = otree.export.get_results_table_column_names(Participant)
+        field_names = otree.export.get_field_names_for_live_update(Participant)
         display_names = {
             '_id_in_session': 'ID in session',
             'code': 'Code',
@@ -496,14 +496,15 @@ class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
 
         round_headers = []
         model_headers = []
-        all_field_names = []
+        field_names = []
 
-        all_field_names_json = []
+        # field names for JSON response
+        field_names_json = []
 
         for subsession in session.get_subsessions():
             app_label = subsession._meta.app_config.name
 
-            columns_for_models, subsession_rows = otree.export.get_rows_for_results_table(
+            columns_for_models, subsession_rows = otree.export.get_rows_for_live_update(
                 subsession._meta.app_config.name,
                 subsession_pk=subsession.pk
             )
@@ -514,33 +515,30 @@ class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
                 for i in range(len(rows)):
                     rows[i].extend(subsession_rows[i])
 
-            player_colspan = len(columns_for_models['player'])
-            group_colspan = len(columns_for_models['group'])
-            subsession_colspan = len(columns_for_models['subsession'])
-            round_colspan = player_colspan + group_colspan + subsession_colspan
+            round_colspan = 0
+            for model_name in ['player', 'group', 'subsession']:
+                colspan = len(columns_for_models[model_name])
+                model_headers.append((model_name.title(), colspan))
+                round_colspan += colspan
 
-            round_number = subsession.round_number
-            round_name = pretty_round_name(app_label, round_number)
+            round_name = pretty_round_name(app_label, subsession.round_number)
 
             round_headers.append((round_name, round_colspan))
-            model_headers.append(('Player', player_colspan))
-            model_headers.append(('Group', group_colspan))
-            model_headers.append(('Subsession', subsession_colspan))
 
-            fields_flat = []
-            fields_json = []
+            this_round_fields = []
+            this_round_fields_json = []
             for model_name in ['Player', 'Group', 'Subsession']:
                 column_names = columns_for_models[model_name.lower()]
-                model_fields_flat = [pretty_name(n) for n in column_names]
-                model_fields_json = [
+                this_model_fields = [pretty_name(n) for n in column_names]
+                this_model_fields_json = [
                     '{}.{}.{}'.format(round_name, model_name, colname)
                     for colname in column_names
                 ]
-                fields_flat.extend(model_fields_flat)
-                fields_json.extend(model_fields_json)
+                this_round_fields.extend(this_model_fields)
+                this_round_fields_json.extend(this_model_fields_json)
 
-            all_field_names.extend(fields_flat)
-            all_field_names_json.extend(fields_json)
+            field_names.extend(this_round_fields)
+            field_names_json.extend(this_round_fields_json)
 
         # dictionary for json response
         # will be used only if json request  is done
@@ -550,7 +548,7 @@ class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
             d_row = OrderedDict()
             # table always starts with participant 1
             d_row['participant_label'] = 'P{}'.format(i)
-            for t, v in zip(all_field_names_json, row):
+            for t, v in zip(field_names_json, row):
                 d_row[t] = v
             self.context_json.append(d_row)
 
@@ -558,7 +556,7 @@ class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
         context.update({
             'subsession_headers': round_headers,
             'model_headers': model_headers,
-            'field_headers': all_field_names,
+            'field_headers': field_names,
             'rows': rows})
         return context
 
