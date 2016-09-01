@@ -23,20 +23,11 @@
     {# 'styles' block is for page-specific styles (for 3rd party programmers only) #}
     {% block styles %}
     {% endblock %}
-    <!--head_content deprecated-->
-    {% block head_content %}
-    {% endblock %}
-    <!--custom_styles deprecated-->
-    {% block custom_styles %}
-    {% endblock %}
 </head>
 <body>
 {% block content_at_top_of_body %}{% endblock %}
 {% block content_main %}{% endblock %}
 
-{% block internal_content_at_bottom_of_body %}
-{% endblock %}
-{% block content_at_bottom_of_body %}{% endblock %}
 {% block internal_scripts %}
     {% include 'otree/includes/InternalScripts.html' %}
 {% endblock %}
@@ -46,9 +37,6 @@
 {% endblock %}
 {# 'scripts' block is for page-specific scripts (for 3rd party programmers only) #}
 {% block scripts %}
-{% endblock %}
-<!--custom_scripts deprecated-->
-{% block custom_scripts %}
 {% endblock %}
 </body>
 </html>

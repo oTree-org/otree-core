@@ -56,38 +56,3 @@
     </div><!-- /.container-fluid -->
 </nav>
 {% endblock %}
-
-{% block internal_scripts %}
-    {{ block.super }}
-    <!-- this is an HTML file rather than JavaScript static file because context variables need to be passed to it -->
-<script type="text/javascript">
-$(document).ready(function () {
-
-
-    var socket;
-
-    initWebSocket();
-
-    function initWebSocket() {
-        var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-        var ws_path = ws_scheme + '://' + window.location.host + "{{ view.socket_url|safe }}";
-
-        socket = new ReconnectingWebSocket(ws_path);
-        socket.onmessage = function(e) {
-
-            // for displaying info about bot errors, etc.
-            var data = JSON.parse(e.data);
-            alert(data.message);
-        };
-        socket.onopen = function() {
-            console.log('WebSocket connected');
-        };
-        socket.onclose = function() {
-            console.log('WebSocket disconnected');
-        }
-    }
-
-});
-
-</script>
-{% endblock %}

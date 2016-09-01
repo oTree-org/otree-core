@@ -1020,10 +1020,3 @@ class AdminSessionPageMixin(GetFloppyFormClassMixin):
             otree.models.Session, code=session_code)
         return super(AdminSessionPageMixin, self).dispatch(
             request, *args, **kwargs)
-
-    def socket_url(self):
-        '''called from template. can't start with underscore because used
-        in template
-
-        '''
-        return '/session_admin/{}/'.format(self.session.code)

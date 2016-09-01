@@ -275,15 +275,3 @@ def connect_browser_bot(message):
 
 def disconnect_browser_bot(message):
     Group('browser_bot_wait').discard(message.reply_channel)
-
-
-def connect_session_admin(message, session_code):
-    Group('session-admin-{}'.format(session_code)).add(
-        message.reply_channel)
-    Session.objects.get(code=session_code)
-    # don't do the redundant check because it could be bothersome
-
-
-def disconnect_session_admin(message, session_code):
-    Group('session-admin-{}'.format(session_code)).discard(
-        message.reply_channel)
