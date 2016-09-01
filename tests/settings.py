@@ -39,7 +39,7 @@ USE_POINTS = False
 
 # e.g. en-gb, de-de, it-it, fr-fr.
 # see: https://docs.djangoproject.com/en/1.7/topics/i18n/
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en'
 
 INSTALLED_APPS = [
     'otree',
@@ -152,11 +152,15 @@ SESSION_CONFIGS = [
         'num_demo_participants': 1,
         'app_sequence': ['tests.templates_app'],
     },
+    {
+        'name': 'two_rounds_1p',
+        'num_demo_participants': 1,
+        'app_sequence': ['tests.two_rounds_1p'],
+        'real_world_currency_per_point': 0.5,
+        'participation_fee': 1.25,
+    },
 
 ]
-
-
-DEMO_PAGE_INTRO_TEXT = """"""
 
 
 ROOM_DEFAULTS = {}

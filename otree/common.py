@@ -88,8 +88,9 @@ class Currency(RealWorldCurrency):
     if settings.USE_POINTS:
         DECIMAL_PLACES = settings.POINTS_DECIMAL_PLACES
 
-        @classmethod
-        def _format_currency(cls, number):
+    @classmethod
+    def _format_currency(cls, number):
+        if settings.USE_POINTS:
 
             formatted_number = formats.number_format(number)
 
@@ -107,11 +108,16 @@ class Currency(RealWorldCurrency):
             # don't forget to include it in your translation
             return ungettext('{} point', '{} points', number).format(
                 formatted_number)
+        else:
+            return super(Currency, cls)._format_currency(number)
 
-        def to_real_world_currency(self, session):
+    def to_real_world_currency(self, session):
+        if settings.USE_POINTS:
             return RealWorldCurrency(
                 self.to_number() *
                 session.config['real_world_currency_per_point'])
+        else:
+            return super(Currency, self).to_real_world_currency(session)
 
 
 class _CurrencyEncoder(json.JSONEncoder):

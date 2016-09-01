@@ -21,7 +21,7 @@ class DemoIndex(vanilla.TemplateView):
     url_pattern = r'^demo/$'
 
     def get_context_data(self, **kwargs):
-        intro_text = settings.DEMO_PAGE_INTRO_TEXT
+        intro_text = getattr(settings, 'DEMO_PAGE_INTRO_TEXT', '')
         context = super(DemoIndex, self).get_context_data(**kwargs)
 
         session_info = []

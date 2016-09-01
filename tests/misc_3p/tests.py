@@ -11,6 +11,3 @@ class PlayerBot(Bot):
         if self.player.id_in_group == 1:
             yield (views.FieldOnOtherPlayer)
         yield (views.Results)
-
-    def validate_play(self):
-        pass
