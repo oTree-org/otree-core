@@ -53,6 +53,11 @@ NO_PARTICIPANTS_LEFT_MSG = (
     "The maximum number of participants for this session has been exceeded.")
 
 
+ATTRIBUTE_ERROR_MESSAGE = (
+    "'self.{name}' failed because the page has no attribute '{name}'. "
+    "Did you mean something like 'self.player.{name}' or 'self.group.{name}'?"
+)
+
 DebugTable = collections.namedtuple('DebugTable', ['title', 'rows'])
 
 
@@ -427,6 +432,17 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             session=self.session,
             auto_submitted=timeout_happened)
         self.participant.save()
+
+    def __getattribute__(self, name):
+        try:
+            return super(
+                FormPageOrInGameWaitPageMixin, self).__getattribute__(name)
+        except AttributeError:
+            # this will result in "during handling of the above exception...'
+            # once we drop Python <3.3, we can raise from None
+            # for now, it's not that bad, just the almost same error printed
+            # twice
+            raise AttributeError(ATTRIBUTE_ERROR_MESSAGE.format(name=name))
 
 
 class InGameWaitPageMixin(object):

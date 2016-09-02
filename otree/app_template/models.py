@@ -2,14 +2,10 @@
 # <standard imports>
 from __future__ import division
 
-import random
-
-import otree.models
-from otree.db import models
-from otree import widgets
-from otree.common import Currency as c, currency_range, safe_json
-from otree.constants import BaseConstants
-from otree.models import BaseSubsession, BaseGroup, BasePlayer
+from otree.api import (
+    models, widgets, BaseConstants, BaseSubsession, BaseGroup, BasePlayer,
+    Currency as c, currency_range, safe_json
+)
 # </standard imports>
 
 author = 'Your name here'
