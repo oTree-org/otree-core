@@ -8,7 +8,6 @@ import otree
 import collections
 import six
 from django.utils.encoding import force_text
-from ordered_set import OrderedSet as oset
 
 import otree.constants_internal
 from otree.models.participant import Participant
