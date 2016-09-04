@@ -17,6 +17,7 @@ from django.core.urlresolvers import reverse
 from django.forms.forms import pretty_name
 from django.conf import settings
 from django.contrib import messages
+from django.core.serializers.json import DjangoJSONEncoder
 
 import vanilla
 
@@ -486,6 +487,12 @@ def pretty_round_name(app_label, round_number):
     else:
         return app_label
 
+class LiveUpdateJSONEncoder(DjangoJSONEncoder):
+    def default(self, o):
+        if isinstance(o, bytes):
+            return '(bytes)'
+        return super(LiveUpdateJSONEncoder, self).default(o)
+
 
 class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
 
@@ -563,7 +570,8 @@ class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
     def get(self, request, *args, **kwargs):
         context = self.get_context_data()
         if self.request.META.get('CONTENT_TYPE') == 'application/json':
-            return JsonResponse(self.context_json, safe=False)
+            return JsonResponse(
+                self.context_json, encoder=LiveUpdateJSONEncoder, safe=False)
         else:
             return self.render_to_response(context)
 

@@ -7,7 +7,7 @@ from collections import OrderedDict
 import otree
 import collections
 import six
-from django.utils.encoding import force_text
+from django.utils.encoding import force_text, DjangoUnicodeDecodeError
 
 import otree.constants_internal
 from otree.models.participant import Participant
@@ -129,7 +129,11 @@ def sanitize_for_csv(value):
         return 1
     if value is False:
         return 0
-    value = force_text(value)
+    try:
+        value = force_text(value)
+    # this could happen if using BinaryField, e.g. to store encrypted data
+    except DjangoUnicodeDecodeError:
+        value = '(not utf-8)'
     return value.replace('\n', ' ').replace('\r', ' ')
 
 
