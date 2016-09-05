@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+from django.db.models import BinaryField
 import sys
 import datetime
 import inspect
@@ -28,7 +29,13 @@ else:
 
 
 def inspect_field_names(Model):
-    return [f.name for f in Model._meta.fields]
+    # filter out BinaryField, because it's not useful for CSV export or
+    # live results. could be very big, and causes problems with utf-8 export
+
+    # I tried .get_fields() instead of .fields, but that method returns
+    # fields that cause problems, like saying group has an attribute 'player'
+    return [f.name for f in Model._meta.fields
+            if not isinstance(f, BinaryField)]
 
 
 def get_field_names_for_live_update(Model):
@@ -129,13 +136,17 @@ def sanitize_for_csv(value):
         return 1
     if value is False:
         return 0
-    try:
-        value = force_text(value)
-    # this could happen if using BinaryField, e.g. to store encrypted data
-    except DjangoUnicodeDecodeError:
-        value = '(not utf-8)'
+    value = force_text(value)
     return value.replace('\n', ' ').replace('\r', ' ')
 
+def sanitize_for_live_update(value):
+    if value is None:
+        return ''
+    if value is True:
+        return 1
+    if value is False:
+        return 0
+    return value
 
 def get_rows_for_csv(app_name):
     models_module = otree.common_internal.get_models_module(app_name)
@@ -231,7 +242,7 @@ def get_rows_for_live_update(app_name, subsession_pk):
                             attr = attr()
                         except:
                             attr = "(error)"
-                row.append(attr)
+                row.append(sanitize_for_live_update(attr))
         rows.append(row)
 
     return columns_for_models, rows

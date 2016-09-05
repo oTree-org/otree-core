@@ -96,10 +96,13 @@ def SubmissionMustFail(
 
     post_data = post_data or {}
 
+    # make a copy because we will mutate the input
+    post_data = post_data.copy()
+
     # must_fail needs to go in post_data rather than being a separate
     # dict key, because CLI bots and browser bots need to work the same way.
     # CLI bots can only talk to server through post data
-    post_data.update({'must_fail': True})
+    post_data['must_fail'] = True
 
     return Submission(PageClass, post_data, check_html)
 
