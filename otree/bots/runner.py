@@ -18,7 +18,7 @@ from .bot import ParticipantBot
 import datetime
 import os
 import codecs
-
+import otree.export
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +117,7 @@ def test_bots(session_config_name, num_participants, run_export):
                 fname = "{}.csv".format(app)
                 fpath = os.path.join(export_path, fname)
                 with codecs.open(fpath, "w", encoding="utf8") as fp:
-                    otree.common_internal.export_data(app, fp)
+                    otree.export.export_csv(app, fp)
 
         logger.info('Exported CSV to folder "{}"'.format(export_path))
 
@@ -131,7 +131,14 @@ def run_pytests(**kwargs):
     this_module = sys.modules[__name__]
 
     # '-s' is to see print output
-    argv = [this_module.__file__, '-s']
+    # --tb=native is to show native Python tracebacks. I think this is
+    # more expected and less verbose. With the native tracebacks,
+    # Often the code that gets printed is in otree-core, which is not relevant
+    argv = [
+        this_module.__file__,
+        '-s',
+        '--tb', 'native'
+    ]
     if verbosity == 0:
         argv.append('--quiet')
     if verbosity == 2:
