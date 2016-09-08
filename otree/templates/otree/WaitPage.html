@@ -40,6 +40,7 @@
             <div id="error-notice" class="alert alert-danger" style="display:none">
                 {% blocktrans %}An error occurred. Please check the logs or ask the administrator for help.{% endblocktrans %}
             </div>
+            <div id="error-traceback" class="alert alert-danger" style="display:none"></div>
             {% block content %}
             <p>{{ body_text }}</p>
             {% endblock %}
@@ -78,8 +79,13 @@ $(document).ready(function () {
                 // maybe the div's default text doesn't get shown
                 $("#error-notice").text(data.error);
                 $("#error-notice").show();
+                if (data.traceback) {
+                    $("#error-traceback").html('<pre>' + data.traceback + '</pre>');
+                    $("#error-traceback").show();
+                }
                 return;
             }
+
 
             console.log('Received redirect message', e.data);
             window.location.href = '{{ view.redirect_url|safe }}';

@@ -4,6 +4,7 @@
 import json
 import django.db
 import django.utils.timezone
+import traceback
 from datetime import timedelta
 
 from channels import Group
@@ -102,18 +103,21 @@ def create_session(message):
     try:
         otree.session.create_session(**kwargs)
     except Exception as e:
+
         # full error message is printed to console (though sometimes not?)
-        error_message = (
-            'Failed to create session: "{}" - '
-            'For the full traceback, check the server logs.'.format(
-                    str(e)))
+        error_message = 'Failed to create session: "{}"'.format(e)
+        traceback_str = traceback.format_exc()
         group.send(
             {'text': json.dumps(
-                {'error': error_message})}
+                {
+                    'error': error_message,
+                    'traceback': traceback_str,
+                })}
         )
         FailedSessionCreation.objects.create(
             pre_create_id=kwargs['_pre_create_id'],
-            message=error_message[:FAILURE_MESSAGE_MAX_LENGTH]
+            message=error_message[:FAILURE_MESSAGE_MAX_LENGTH],
+            traceback=traceback_str
         )
         raise
 
@@ -140,14 +144,14 @@ def connect_wait_for_session(message, pre_create_id):
                 {'status': 'ready'})}
         )
     else:
-        failures = FailedSessionCreation.objects.filter(
+        failure = FailedSessionCreation.objects.filter(
             pre_create_id=pre_create_id
-        )
-        if failures:
-            failure = failures[0]
+        ).first()
+        if failure:
             group.send(
                 {'text': json.dumps(
-                    {'error': failure.message})}
+                    {'error': failure.message,
+                     'traceback': failure.traceback})}
             )
 
 

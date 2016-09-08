@@ -155,8 +155,6 @@ class OTreeMixin(SaveObjectsMixin, object):
         We can put them back where they belong.
         """
 
-        # shouldn't return HttpResponseRedirect to an AJAX request
-        assert not self.request.is_ajax()
         return HttpResponseRedirect(self.participant._url_i_should_be_on())
 
 
