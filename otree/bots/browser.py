@@ -11,6 +11,7 @@ from collections import OrderedDict
 from django.test import SimpleTestCase
 
 import channels
+import traceback
 
 import otree.common_internal
 from otree.models import Session
@@ -151,13 +152,17 @@ class Worker(object):
                 method = self.get_method(cmd)
                 retval = method(*args, **kwargs)
             except Exception as exc:
-                # response_error means the botworker failed for an unknown
-                # reason
                 # request_error means the request received through Redis
-                # was invalid
-                retval = {'response_error': str(exc)}
+                # was invalid.
+                # response_error means the botworker raised while processing
+                # the request.
+                retval = {
+                    'response_error': repr(exc),
+                    'traceback': traceback.format_exc()
+                }
                 # don't raise, because then this would crash.
-                logger.exception('{!r}'.format(exc))
+                # logger.exception() will record the full traceback
+                logger.exception(repr(exc))
             finally:
                 retval_json = json.dumps(retval or {})
                 self.redis_conn.rpush(response_key, retval_json)
@@ -255,7 +260,8 @@ class EphemeralBrowserBot(object):
         }
         redis_conn.rpush(REDIS_KEY_PREFIX, json.dumps(msg))
         # in practice is very fast...around 1ms
-        result = redis_conn.blpop(response_key, timeout=1)
+        # however, if an exception occurs, could take quite long.
+        result = redis_conn.blpop(response_key, timeout=3)
         if result is None:
             # ping will raise if it times out
             ping(redis_conn, participant_code)
@@ -272,12 +278,15 @@ class EphemeralBrowserBot(object):
     def prepare_next_submit(self, html):
         if otree.common_internal.USE_REDIS:
             result = self.prepare_next_submit_redis(html)
+            # response_error only exists if using Redis.
+            # if using runserver, there is no need for this because the
+            # exception is raised in the same thread.
+            if 'response_error' in result:
+                # cram the other traceback in this traceback message.
+                # note:
+                raise Exception(result['traceback'])
         else:
             result = self.prepare_next_submit_in_process(html)
-        if 'response_error' in result:
-            raise Exception(
-                'An error occurred. See the botworker output '
-                'for the traceback.')
         if 'request_error' in result:
             raise AssertionError(result['request_error'])
 
