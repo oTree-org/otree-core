@@ -22,6 +22,7 @@ STUDY_UNRESTRICTED_VIEWS = {
     'MTurkStart',
     'JoinSessionAnonymously',
     'OutOfRangeNotification',
+    'ParticipantRoomHeartbeat',
 }
 
 
