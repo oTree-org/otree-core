@@ -9,9 +9,10 @@ from django.core.management import call_command
 from otree import common_internal
 import otree.export
 from otree.session import SESSION_CONFIGS_DICT
-
+import re
 from .base import TestCase
-
+import otree.session
+from tests.export.models import Constants
 
 class TestDataExport(TestCase):
     def setUp(self):
@@ -21,14 +22,19 @@ class TestDataExport(TestCase):
 
         session_config_name = 'export'
         app_name = 'tests.export'
-        num_participants = 2
+        num_participants = 3
+        num_sessions = 2
 
-        call_command('create_session', session_config_name,
-                     str(num_participants))
+        # 3 sessions, 3 participants each is good to test alignment
+        for i in range(num_sessions):
+            otree.session.create_session(
+                session_config_name=session_config_name,
+                num_participants=num_participants,
+            )
 
         formatted_app_name = common_internal.app_name_format(app_name)
 
-        url = "/ExportCsv/{}/".format(app_name)
+        url = "/ExportCSV/{}/".format(app_name)
         response = self.client.get(url)
 
         # HEADERS CHECK
@@ -43,10 +49,12 @@ class TestDataExport(TestCase):
 
         csv_text = response.content.decode('utf-8')
 
-        rows = csv_text.split('\n')
+        rows = [row for row in csv_text.split('\n') if row.strip()]
 
-        # 1 row for each player + header row + blank row at end
-        self.assertEqual(len(rows), num_participants + 2)
+        # 1 row for each player + header row
+        self.assertEqual(
+            len(rows),
+            num_sessions * num_participants * Constants.num_rounds + 1)
 
         header_row = rows[0]
 
@@ -67,6 +75,83 @@ class TestDataExport(TestCase):
 
         # True/False should be converted to 1/0
         self.assertNotIn('False', csv_text)
+
+        # test alignment
+        for row in rows[1:]:
+            participant_code = re.search(',ALIGN_TO_PARTICIPANT_(\w+),', row).group(1)
+            self.assertIn(r',{},'.format(participant_code), row)
+
+            session_code = re.search(',ALIGN_TO_SESSION_(\w+),', row).group(1)
+            self.assertIn(',{},'.format(session_code), row)
+
+            group_id = re.search(',GROUP_(\d+),', row).group(1)
+            self.assertIn(',ALIGN_TO_GROUP_{},'.format(group_id), row)
+
+            subsession_id = re.search(',SUBSESSION_(\d+),', row).group(1)
+            self.assertIn(',ALIGN_TO_SUBSESSION_{},'.format(subsession_id), row)
+
+
+class TestWideCSV(TestCase):
+
+    def test_export(self):
+
+        session_config_name = 'export'
+        app_name = 'tests.export'
+        num_participants = 3
+        num_sessions = 3
+
+        # 3 sessions, 3 participants each is good to test alignment
+        for i in range(num_sessions):
+            otree.session.create_session(
+                session_config_name=session_config_name,
+                num_participants=num_participants,
+            )
+
+        with StringIO() as f:
+            otree.export.export_wide_csv(f)
+            csv_text = f.getvalue()
+
+        rows = [row for row in csv_text.split('\n') if row.strip()]
+
+        # 1 row for each player + header row
+        self.assertEqual(len(rows), num_participants * num_sessions + 1)
+
+        header_row = rows[0]
+
+        for expected_text in [
+            'participant.id_in_session',
+            'tests.export.1.player.id_in_group',
+            'tests.export.1.group.group_field',
+            'tests.export.1.subsession.subsession_field',
+            'tests.export.2.subsession.subsession_field',
+        ]:
+            self.assertIn('{}'.format(expected_text), header_row)
+
+        # 3.14 should be in the CSV without any currency formatting
+        for expected_text in ['should be in export CSV', ',3.14,']:
+            self.assertIn(expected_text, csv_text)
+
+        # True/False should be converted to 1/0
+        self.assertNotIn('False', csv_text)
+
+        # test alignment
+        for row in rows[1:]:
+            participant_code = re.search(',ALIGN_TO_PARTICIPANT_(\w+),', row).group(1)
+            self.assertIn(r',{},'.format(participant_code), row)
+
+            # both rounds should have it
+            self.assertEqual(
+                row.count(',ALIGN_TO_PARTICIPANT_{}'.format(participant_code)),
+                Constants.num_rounds)
+
+            session_code = re.search(',ALIGN_TO_SESSION_(\w+),', row).group(1)
+            self.assertIn(',{},'.format(session_code), row)
+
+            group_id = re.search(',GROUP_(\d+),', row).group(1)
+            self.assertIn(',ALIGN_TO_GROUP_{},'.format(group_id), row)
+
+            subsession_id = re.search(',SUBSESSION_(\d+),', row).group(1)
+            self.assertIn(',ALIGN_TO_SUBSESSION_{},'.format(subsession_id), row)
 
 
 class TestDocExport(TestCase):

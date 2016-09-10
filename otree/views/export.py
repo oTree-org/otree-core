@@ -65,9 +65,9 @@ class ExportAppDocs(vanilla.View):
         return response
 
 
-class ExportCsv(vanilla.View):
+class ExportCSV(vanilla.View):
 
-    url_pattern = r"^ExportCsv/(?P<app_label>[\w.]+)/$"
+    url_pattern = r"^ExportCSV/(?P<app_label>[\w.]+)/$"
 
     def _data_file_name(self, app_label):
         return '{} (accessed {}).csv'.format(
@@ -82,6 +82,20 @@ class ExportCsv(vanilla.View):
             self._data_file_name(app_label)
         )
         otree.export.export_csv(app_label, response)
+        return response
+
+
+class ExportWideCSV(vanilla.View):
+
+    url_pattern = r"^ExportWideCSV/$"
+
+    def get(self, request, *args, **kwargs):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(
+            'oTree - all participants (accessed {}).csv'.format(
+                datetime.date.today().isoformat())
+        )
+        otree.export.export_wide_csv(response)
         return response
 
 

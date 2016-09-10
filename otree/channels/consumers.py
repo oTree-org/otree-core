@@ -197,8 +197,14 @@ def disconnect_room_admin(message, room):
 
 def connect_room_participant(message, params):
     room_name, participant_label, tab_unique_id = params.split(',')
-    room = ROOM_DICT[room_name]
-
+    if room_name in ROOM_DICT:
+        room = ROOM_DICT[room_name]
+    else:
+        message.reply_channel.send(
+            {'text': json.dumps(
+                # doesn't get shown because not yet localized
+                {'error': 'Invalid room name "{}".'.format(room_name)})})
+        return
     Group('room-participants-{}'.format(room_name)).add(message.reply_channel)
 
     if room.has_session():
@@ -227,7 +233,14 @@ def connect_room_participant(message, params):
 
 def disconnect_room_participant(message, params):
     room_name, participant_label, tab_unique_id = params.split(',')
-    room = ROOM_DICT[room_name]
+    if room_name in ROOM_DICT:
+        room = ROOM_DICT[room_name]
+    else:
+        message.reply_channel.send(
+            {'text': json.dumps(
+                # doesn't get shown because not yet localized
+                {'error': 'Invalid room name "{}".'.format(room_name)})})
+        return
 
     Group('room-participants-{}'.format(room_name)).discard(
         message.reply_channel)

@@ -133,9 +133,9 @@ def sanitize_for_csv(value):
     if value is None:
         return ''
     if value is True:
-        return 1
+        return '1'
     if value is False:
-        return 0
+        return '0'
     value = force_text(value)
     return value.replace('\n', ' ').replace('\r', ' ')
 
@@ -147,6 +147,117 @@ def sanitize_for_live_update(value):
     if value is False:
         return 0
     return value
+
+
+def get_rows_for_wide_csv():
+
+    from collections import OrderedDict
+    from django.conf import settings
+    from django.db.models import Max, Count
+
+
+    sessions = Session.objects.order_by('id').annotate(
+        num_participants=Count('participant')).values()
+    session_cache = {row['id']: row for row in sessions}
+    participants = Participant.objects.order_by('id').values()
+
+    session_fields = get_field_names_for_csv(Session)
+    participant_fields = get_field_names_for_csv(Participant)
+    header_row = ['participant.{}'.format(fname) for fname in participant_fields]
+    header_row += ['session.{}'.format(fname) for fname in session_fields]
+    rows = [header_row]
+    for participant in participants:
+        row = [sanitize_for_csv(participant[fname]) for fname in participant_fields]
+        session = session_cache[participant['session_id']]
+        row += [sanitize_for_csv(session[fname]) for fname in session_fields]
+        rows.append(row)
+
+    # heuristic to get the most relevant order of apps
+    import json
+    app_sequences = collections.Counter()
+    for session in sessions:
+        config = json.loads(session['config'])
+        app_sequence = config['app_sequence']
+        app_sequences[tuple(app_sequence)] += session['num_participants']
+    most_common_app_sequence = app_sequences.most_common(1)[0][0]
+
+    apps_not_in_popular_sequence = [
+        app for app in settings.INSTALLED_OTREE_APPS
+        if app not in most_common_app_sequence]
+
+    order_of_apps = list(most_common_app_sequence) + apps_not_in_popular_sequence
+
+    rounds_per_app = OrderedDict()
+    for app_name in order_of_apps:
+        models_module = get_models_module(app_name)
+        agg_dict = models_module.Subsession.objects.all().aggregate(Max('round_number'))
+        highest_round_number = agg_dict['round_number__max']
+
+        if highest_round_number is not None:
+            rounds_per_app[app_name] = highest_round_number
+    for app_name in rounds_per_app:
+        for round_number in range(1, rounds_per_app[app_name] + 1):
+            new_rows = get_rows_for_wide_csv_round(app_name, round_number, sessions)
+            for i in range(len(rows)):
+                rows[i].extend(new_rows[i])
+    return rows
+
+
+
+def get_rows_for_wide_csv_round(app_name, round_number, sessions):
+
+    models_module = otree.common_internal.get_models_module(app_name)
+    Player = models_module.Player
+    Group = models_module.Group
+    Subsession = models_module.Subsession
+
+    rows = []
+
+    group_cache = {row['id']: row for row in Group.objects.values()}
+
+    columns_for_models = {
+        Model.__name__.lower(): get_field_names_for_csv(Model)
+        for Model in [Player, Group, Subsession]
+    }
+
+    model_order = ['player', 'group', 'subsession']
+
+    header_row = []
+    for model_name in model_order:
+        for colname in columns_for_models[model_name]:
+            header_row.append('{}.{}.{}.{}'.format(
+                app_name, round_number, model_name, colname))
+
+    rows.append(header_row)
+    empty_row = ['' for _ in range(len(header_row))]
+
+    for session in sessions:
+        subsession = Subsession.objects.filter(
+            session_id=session['id'], round_number=round_number).values()
+        if not subsession:
+            subsession_rows = [empty_row for _ in range(session['num_participants'])]
+        else:
+            subsession = subsession[0]
+            subsession_id = subsession['id']
+            players = Player.objects.filter(subsession_id=subsession_id).order_by('id').values()
+
+            subsession_rows = []
+
+            for player in players:
+                row = []
+                all_objects = {
+                    'player': player,
+                    'group': group_cache[player['group_id']],
+                    'subsession': subsession}
+
+                for model_name in model_order:
+                    for colname in columns_for_models[model_name]:
+                        value = all_objects[model_name][colname]
+                        row.append(sanitize_for_csv(value))
+                subsession_rows.append(row)
+        rows.extend(subsession_rows)
+    return rows
+
 
 def get_rows_for_csv(app_name):
     models_module = otree.common_internal.get_models_module(app_name)
@@ -246,6 +357,11 @@ def get_rows_for_live_update(app_name, subsession_pk):
         rows.append(row)
 
     return columns_for_models, rows
+
+def export_wide_csv(fp):
+    rows = get_rows_for_wide_csv()
+    writer = csv.writer(fp)
+    writer.writerows(rows)
 
 
 def export_csv(app_name, fp):
