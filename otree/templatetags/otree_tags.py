@@ -113,10 +113,6 @@ register.tag('pageform', FormNode.parse)
 register.tag('mark_field_as_rendered', MarkFieldAsRenderedNode.parse)
 register.tag('formfield', FormFieldNode.parse)
 
-# maybe in the future we rename formfield tag to form_field
-# to be more consistent with views.py form_fields=
-# adding it now for possible forwards compatibility
-register.tag('form_field', FormFieldNode.parse)
 
 # =============================================================================
 # FILTERS
@@ -133,25 +129,14 @@ def abs_value(var):
     return abs(var)
 
 
-@register.filter(name="repr")
-def as_repr(var):
-    return repr(var)
-
-
 @register.filter(name='strip')
 def strip(var):
     return var.strip()
 
 
-@register.filter(name='is_instance')
 def is_instance(var, typenames):
     typenames = [tn.strip() for tn in typenames.split(",")]
     return type(var).__name__ in typenames
-
-
-@register.filter(name='is_numeric')
-def is_numeric(var):
-    return isinstance(var, NUMERIC_TYPES)
 
 
 @register.filter(name='is_text')

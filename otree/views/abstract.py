@@ -55,6 +55,17 @@ NO_PARTICIPANTS_LEFT_MSG = (
 
 DebugTable = collections.namedtuple('DebugTable', ['title', 'rows'])
 
+def debug_table_rows_to_html(rows):
+    template = '''
+        <tr>
+            <td class="debug-var-name">{key}</td>
+            <td class="debug-var-value">{value}</td>
+        </tr>
+    '''
+    rows_html = []
+    for (k, v) in rows:
+        
+
 
 def get_view_from_url(url):
     view_func = resolve(url).func
@@ -285,6 +296,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             new_tables.append(DebugTable(title=title, rows=rows))
 
         return new_tables
+
 
     def set_attributes(self, participant):
         """
