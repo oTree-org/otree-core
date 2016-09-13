@@ -675,6 +675,12 @@ class InGameWaitPageMixin(object):
             return _('Waiting for the other participant.')
         return ''
 
+def bot_prettify_post_data(post_data):
+    for extra_key in ['csrfmiddlewaretoken', 'origin_url', 'must_fail']:
+        post_data.pop(extra_key, None)
+    # don't wrap values in 1-element lists
+    return post_data.dict()
+
 
 class FormPageMixin(object):
     """mixin rather than subclass because we want these methods only to be
@@ -765,14 +771,13 @@ class FormPageMixin(object):
             is_bot = self.participant._is_bot
             if form.is_valid():
                 if is_bot and post_data.get('must_fail'):
-                    # clean up noise in post data
-                    post_data.pop('csrfmiddlewaretoken', None)
-                    post_data.pop('origin_url', None)
-                    post_data.pop('must_fail', None)
                     raise AssertionError(
-                        'Bot tried to submit intentionally invalid data with '
+                        'Page "{}": Bot tried to submit intentionally invalid '
+                        'data with '
                         'SubmissionMustFail, but it passed validation anyway:'
-                        ' {}.'.format(dict(post_data)))
+                        ' {}.'.format(
+                            self.__class__.__name__,
+                            bot_prettify_post_data(post_data)))
                 self.form = form
                 self.object = form.save()
             else:
@@ -781,9 +786,14 @@ class FormPageMixin(object):
                         "{}: {}".format(k, repr(v))
                         for k, v in form.errors.items()]
                     raise AssertionError(
-                        'Bot submission failed form validation: {} '
+                        'Page "{}": Bot submission for failed form validation: {} '
                         'Check your bot in tests.py, '
-                        'then create a new session.'.format(errors))
+                        'then create a new session. '
+                        'Data submitted was: {}'.format(
+                            self.__class__.__name__,
+                            errors,
+                            bot_prettify_post_data(post_data),
+                        ))
                 return self.form_invalid(form)
         self.before_next_page()
         if self.session.use_browser_bots:
