@@ -6,3 +6,4 @@ recursive-include otree/templates *
 recursive-include otree/project_template *
 recursive-include otree/app_template/templates *
 recursive-include otree/locale *
+recursive-include otree *.pyi
