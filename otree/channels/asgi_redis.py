@@ -17,6 +17,7 @@ REDIS_MSG = (
 
 
 class RedisChannelLayer(asgi_redis.RedisChannelLayer):
+
     def receive_many(self, channels, block=False):
         try:
             return super(RedisChannelLayer, self).receive_many(channels, block)
