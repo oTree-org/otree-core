@@ -120,7 +120,6 @@ class Worker(object):
                 # here
                 submission.pop('page_class')
 
-            # when run in process, puts it in the fake redis
             self.prepared_submits[participant_code] = submission
 
         return submission

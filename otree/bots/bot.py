@@ -209,8 +209,15 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
                 # handle the case where it's empty
                 except TypeError as exc:
                     if 'is not iterable' in str(exc):
-                        raise StopIteration
-                    raise
+                        # we used to raise StopIteration here. But shouldn't
+                        # do that, because then the whole participant bot
+                        # stops running (e.g. doesn't play any of the
+                        # PlayerBots in the following apps).
+                        # this was causing a bug where we got "bot completed"
+                        # but the bot had only played half the game
+                        pass
+                    else:
+                        raise
 
     def assert_html_ok(self, submission):
         if submission['check_html']:

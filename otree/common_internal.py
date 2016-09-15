@@ -64,9 +64,10 @@ def git_commit_timestamp():
         return ''
 
 
+SESSION_CODE_CHARSET = string.ascii_lowercase + string.digits
+
 def random_chars(num_chars):
-    chars = string.ascii_lowercase + string.digits
-    return ''.join(random.choice(chars) for _ in range(num_chars))
+    return ''.join(random.choice(SESSION_CODE_CHARSET) for _ in range(num_chars))
 
 
 def random_chars_8():
