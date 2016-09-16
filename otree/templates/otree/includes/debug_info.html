@@ -1,42 +1,7 @@
 {% load staticfiles otree_tags %}
 <div class="well">
 <h4>Debug info</h4>
-    {% if view.fields_with_errors %}
-        <div class="panel-body unrendered-fields-warning hidden">
-            <div class="alert alert-warning">
-                <p>
-                    The field(s) "{{ view.fields_with_errors }}" have errors,
-                    but their error messages are not being displayed in the HTML.
-                    There are 2 ways to fix this:
-                    <ol>
-                        <li>Use the <code>formfield</code> tag
-
-                        <code>{% formfield  %}{% endverbatim %}</code>,</li>
-                    </ol>
-                    You should either
-                    or if you are writing the field's raw HTML,
-                    <code>{% verbatim %}{% formfield %}{% endverbatim %}</code>
-                    {% formfield %},
-                    or if you are writing the raw HTML of the field, make sure to include
-
-                    <code>\{form.{{ }}.errors</code>
-                </p>
-                <ul>
-                    {% for missing_field in form_unrendered_fields %}
-                        <li data-field-name="{{ missing_field.html_name }}">
-                            <code>{{ missing_field.name }}</code></li>
-                    {% endfor %}
-                </ul>
-                <p>
-                    You can include them by using the
-                    <code>{% templatetag openblock %} formfield
-                        ... {% templatetag closeblock %}</code> template tag.
-                </p>
-            </div>
-        </div>
-
-    {% endif %}
-
+{% include 'otree/includes/hidden_form_errors.html' %}
 {% for table in view.debug_tables %}
     <div class="panel panel-warning">
         <div class="panel-heading">{{ table.title|safe }}</div>

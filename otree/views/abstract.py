@@ -732,8 +732,11 @@ class FormPageMixin(object):
         response[constants.redisplay_with_errors_http_header] = (
             constants.get_param_truth_value)
 
-        self.fields_with_errors = [fname for fname in form.errors
+        fields_with_errors = [fname for fname in form.errors
                                    if fname != '__all__']
+        if fields_with_errors:
+            self.first_field_with_errors = fields_with_errors[0]
+            self.other_fields_with_errors = fields_with_errors[1:]
 
         return response
 

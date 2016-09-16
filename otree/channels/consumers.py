@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import logging
 import django.db
 import django.utils.timezone
 import traceback
@@ -20,6 +21,7 @@ from otree.models_concrete import (
     FAILURE_MESSAGE_MAX_LENGTH, BrowserBotsLauncherSessionCode)
 from otree.room import ROOM_DICT
 
+logger = logging.getLogger(__name__)
 
 def connect_wait_page(message, params):
     session_pk, page_index, model_name, model_pk = params.split(',')
@@ -218,12 +220,16 @@ def connect_room_participant(message, params):
                 room_name=room_name,
                 tab_unique_id=tab_unique_id
             )
-        except django.db.IntegrityError:
+        except django.db.IntegrityError as exc:
             # possible that the tab connected twice
             # without disconnecting in between
             # because of WebSocket failure
             # tab_unique_id is unique=True,
             # so this will throw an integrity error.
+            logger.info(
+                'ParticipantRoomVisit: not creating a new record because a '
+                'database integrity error was thrown. '
+                'The exception was: {}: {}'.format(type(exc), exc))
             pass
         Group('room-admin-{}'.format(room_name)).send({'text': json.dumps({
             'status': 'add_participant',
