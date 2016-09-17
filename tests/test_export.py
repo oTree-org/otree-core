@@ -32,8 +32,6 @@ class TestDataExport(TestCase):
                 num_participants=num_participants,
             )
 
-        formatted_app_name = common_internal.app_name_format(app_name)
-
         url = "/ExportCSV/{}/".format(app_name)
         response = self.client.get(url)
 
@@ -45,7 +43,7 @@ class TestDataExport(TestCase):
 
         self.assertTrue(
             content_disposition.startswith(
-                'attachment; filename="{} ('.format(formatted_app_name)))
+                'attachment; filename='))
 
         csv_text = response.content.decode('utf-8')
 
