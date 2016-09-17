@@ -23,7 +23,13 @@ from .bot import ParticipantBot
 
 REDIS_KEY_PREFIX = 'otree-bots'
 
-SESSIONS_PRUNE_LIMIT = 20
+# if you are testing all configs from the CLI browser bot launcher,
+# and each app has multiple cases, it's possible to end up with many
+# bots in the history.
+# usually this wouldn't matter,
+# but timeoutworker may try to load the pages after they have been completed
+# (it will POST then get redirected to GET)
+SESSIONS_PRUNE_LIMIT = 80
 
 # global variable that holds the browser bot worker instance in memory
 browser_bot_worker = None  # type: Worker
