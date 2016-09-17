@@ -81,12 +81,16 @@
             {% endfor %}
             </tbody>
         </table>
-        Time spent on each page can be downloaded
-        <a href="{% url 'ExportTimeSpent' %}">here</a>.
+
     {% else %}
         <p>No sessions has yet taken place</p>
     {% endif %}
 
+        <h3>Time spent on each page</h3>
+        <p><a href="{% url 'ExportTimeSpent' %}"><span
+            class="glyphicon glyphicon-download-alt"></span>
+        <b>Download</b></a></p>
+    
     <br/>
     <br/>
 
