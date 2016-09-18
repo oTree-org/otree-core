@@ -13,62 +13,6 @@ from django.utils import six
 import floppyforms.templatetags.floppyforms as floppyforms_templatetags
 from otree.models_concrete import UndefinedFormModel
 
-FORM_UNRENDERED_FIELDS = 'form_unrendered_fields'
-
-
-UnrenderedField = namedtuple('UnrenderedField', ('name', 'html_name', 'field'))
-
-
-def mark_field_as_rendered(context, bound_field):
-    if not hasattr(context, '_rendered_fields'):
-        context._rendered_fields = set()
-    context._rendered_fields.add(bound_field.field)
-
-
-class FormNode(floppyforms_templatetags.FormNode):
-    def get_form_instance(self, context):
-        extra_context = self.get_extra_context(context)
-        return extra_context[self.single_template_var]
-
-    def get_rendered_fields(self, context):
-        return getattr(context, '_rendered_fields', [])
-
-    def render(self, context):
-        result = super(FormNode, self).render(context)
-        form = self.get_form_instance(context)
-        if form is not None:
-            missing_fields = context.get(FORM_UNRENDERED_FIELDS, [])
-            for field_name, field in form.fields.items():
-                if field not in self.get_rendered_fields(context):
-                    missing_fields.append(UnrenderedField(
-                        field_name, form.add_prefix(field_name), field))
-            context[FORM_UNRENDERED_FIELDS] = missing_fields
-        return result
-
-
-class MarkFieldAsRenderedNode(Node):
-    def __init__(self, tagname, field_variable):
-        self.tagname = tagname
-        self.field_variable = field_variable
-
-    def mark_field_as_rendered(self, context, bound_field):
-        mark_field_as_rendered(context, bound_field)
-
-    def render(self, context):
-        bound_field = self.field_variable.resolve(context)
-        self.mark_field_as_rendered(context, bound_field)
-        return ''
-
-    @classmethod
-    def parse(cls, parser, token):
-        bits = token.split_contents()
-        tagname = bits.pop(0)
-        if len(bits) != 1:
-            raise TemplateSyntaxError(
-                '{tagname!r} takes exactly one argument.'.format(
-                    tagname=tagname))
-        field_variable = Variable(bits.pop(0))
-        return cls(tagname, field_variable)
 
 
 class FormFieldNode(Node):
@@ -185,7 +129,6 @@ class FormFieldNode(Node):
             rendered = self.default_template.render(context)
         finally:
             context.pop()
-        mark_field_as_rendered(context, extra_context['bound_field'])
         return rendered
 
     @classmethod
