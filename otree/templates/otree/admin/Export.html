@@ -31,10 +31,11 @@
         </div>
     </div>
 
-    <h3>All apps (Wide CSV)</h3>
-    <p><a href="{% url 'ExportWideCSV' %}"><span
-            class="glyphicon glyphicon-download-alt"></span>
-        <b>Download</b></a></p>
+    <h3>All apps</h3>
+    <p>
+        <a href="{% url 'ExportWide' %}?xlsx=1">Excel</a> |
+        <a href="{% url 'ExportWide' %}">CSV</a>
+    </p>
     <p>
         Data for all apps in one file.
         There is one row per participant;
@@ -44,9 +45,9 @@
     </p>
 
     {% if apps %}
-        <h3>Per-app CSV</h3>
+        <h3>Per-app</h3>
         <p>
-            These CSV files contain a row for each player in the given app.
+            These files contain a row for each player in the given app.
             If there are multiple rounds, there will be multiple rows for the
             same participant.
             This format is useful if you are mainly interested in one app,
@@ -68,12 +69,11 @@
                         {{ app.name }}
                     </td>
                     <td>
-                        <a href="{% url 'ExportCSV' app.label %}"><span
-                                class="glyphicon glyphicon-download-alt"></span></a>
+                        <a href="{% url 'ExportApp' app.label %}?xlsx=1">Excel</a> |
+                        <a href="{% url 'ExportApp' app.label %}">CSV</a>
                     </td>
                     <td>
-                        <a href="{% url 'ExportAppDocs' app.label %}"><span
-                                class="glyphicon glyphicon-download-alt"></span></a>
+                        <a href="{% url 'ExportAppDocs' app.label %}">CSV</a>
                     </td>
                     <td>
                     </td>
@@ -90,7 +90,7 @@
         <p><a href="{% url 'ExportTimeSpent' %}"><span
             class="glyphicon glyphicon-download-alt"></span>
         <b>Download</b></a></p>
-    
+
     <br/>
     <br/>
 

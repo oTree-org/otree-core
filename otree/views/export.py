@@ -25,7 +25,7 @@ import otree.export
 
 class ExportIndex(vanilla.TemplateView):
 
-    template_name = 'otree/export/index.html'
+    template_name = 'otree/admin/Export.html'
 
     url_pattern = r"^export/$"
 
@@ -65,32 +65,44 @@ class ExportAppDocs(vanilla.View):
         return response
 
 
-class ExportCSV(vanilla.View):
+def get_export_response(request, file_prefix):
+    if bool(request.GET.get('xlsx')):
+        content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        file_extension = 'xlsx'
+    else:
+        content_type = 'text/csv'
+        file_extension = 'csv'
+    response = HttpResponse(
+        content_type=content_type)
+    response['Content-Disposition'] = 'attachment; filename="{}"'.format(
+        '{} (accessed {}).{}'.format(
+            file_prefix,
+            datetime.date.today().isoformat(),
+            file_extension
+        ))
+    return response, file_extension
 
-    url_pattern = r"^ExportCSV/(?P<app_label>[\w.]+)/$"
+
+class ExportApp(vanilla.View):
+
+    url_pattern = r"^ExportApp/(?P<app_label>[\w.]+)/$"
 
     def get(self, request, *args, **kwargs):
+
         app_label = kwargs['app_label']
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="{}"'.format(
-            '{} (accessed {}).csv'.format(
-                app_label,
-                datetime.date.today().isoformat()))
-        otree.export.export_csv(app_label, response)
+        response, file_extension = get_export_response(request, app_label)
+        otree.export.export_app(app_label, response, file_extension=file_extension)
         return response
 
 
-class ExportWideCSV(vanilla.View):
+class ExportWide(vanilla.View):
 
-    url_pattern = r"^ExportWideCSV/$"
+    url_pattern = r"^ExportWide/$"
 
     def get(self, request, *args, **kwargs):
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="{}"'.format(
-            'All apps - wide (accessed {}).csv'.format(
-                datetime.date.today().isoformat())
-        )
-        otree.export.export_wide_csv(response)
+        response, file_extension = get_export_response(
+            request, 'All apps - wide')
+        otree.export.export_wide(response, file_extension)
         return response
 
 
