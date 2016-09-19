@@ -117,7 +117,7 @@ def test_bots(session_config_name, num_participants, run_export):
                 fname = "{}.csv".format(app)
                 fpath = os.path.join(export_path, fname)
                 with codecs.open(fpath, "w", encoding="utf8") as fp:
-                    otree.export.export_app_csv(app, fp)
+                    otree.export.export_app(app, fp, file_extension='csv')
 
         logger.info('Exported CSV to folder "{}"'.format(export_path))
 
