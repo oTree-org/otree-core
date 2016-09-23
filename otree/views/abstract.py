@@ -738,10 +738,18 @@ class FormPageMixin(object):
         cls = self.get_form_class()
         return cls(data=data, files=files, view=self, **kwargs)
 
+
     def form_invalid(self, form):
         response = super(FormPageMixin, self).form_invalid(form)
         response[constants.redisplay_with_errors_http_header] = (
             constants.get_param_truth_value)
+
+        fields_with_errors = [fname for fname in form.errors
+                                   if fname != '__all__']
+        if fields_with_errors:
+            self.first_field_with_errors = fields_with_errors[0]
+            self.other_fields_with_errors = fields_with_errors[1:]
+
         return response
 
     def get(self, request, *args, **kwargs):

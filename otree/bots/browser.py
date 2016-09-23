@@ -15,6 +15,7 @@ import traceback
 
 import otree.common_internal
 from otree.models import Session
+from otree.models.participant import Participant
 from otree.common_internal import get_redis_conn
 
 from .bot import ParticipantBot
@@ -22,12 +23,19 @@ from .bot import ParticipantBot
 
 REDIS_KEY_PREFIX = 'otree-bots'
 
-SESSIONS_PRUNE_LIMIT = 50
+# if you are testing all configs from the CLI browser bot launcher,
+# and each app has multiple cases, it's possible to end up with many
+# bots in the history.
+# usually this wouldn't matter,
+# but timeoutworker may try to load the pages after they have been completed
+# (it will POST then get redirected to GET)
+SESSIONS_PRUNE_LIMIT = 80
 
 # global variable that holds the browser bot worker instance in memory
 browser_bot_worker = None  # type: Worker
 
 prepare_submit_lock = threading.Lock()
+add_or_remove_bot_lock = threading.Lock()
 
 logger = logging.getLogger('otree.test.browser_bots')
 
@@ -35,32 +43,36 @@ logger = logging.getLogger('otree.test.browser_bots')
 class Worker(object):
     def __init__(self, redis_conn=None):
         self.redis_conn = redis_conn
-        self.browser_bots = {}
         self.session_participants = OrderedDict()
+        self.browser_bots = {}
         self.prepared_submits = {}
 
-    def initialize_session(self, session_code):
-        session = Session.objects.get(code=session_code)
+    def initialize_participant(self, participant_code):
         self.prune()
-        self.session_participants[session_code] = []
+
+        participant = Participant.objects.select_related('session').get(
+            code=participant_code)
+        session_code = participant.session.code
 
         # in order to do .assertEqual etc, need to pass a reference to a
         # SimpleTestCase down to the Player bot
         test_case = SimpleTestCase()
 
-        for participant in session.get_participants():
-            self.session_participants[session_code].append(
-                participant.code)
-            bot = ParticipantBot(
-                participant, unittest_case=test_case)
-            self.browser_bots[participant.code] = bot
+        self.browser_bots[participant.code] = ParticipantBot(
+            participant, unittest_case=test_case)
+
+        with add_or_remove_bot_lock:
+            if session_code not in self.session_participants:
+                self.session_participants[session_code] = []
+            self.session_participants[session_code].append(participant_code)
+
         return {'ok': True}
 
     def get_method(self, command_name):
         commands = {
             'prepare_next_submit': self.prepare_next_submit,
             'consume_next_submit': self.consume_next_submit,
-            'initialize_session': self.initialize_session,
+            'initialize_participant': self.initialize_participant,
             'clear_all': self.clear_all,
             'ping': self.ping,
         }
@@ -69,10 +81,11 @@ class Worker(object):
 
     def prune(self):
         '''to avoid memory leaks'''
-        if len(self.session_participants) > SESSIONS_PRUNE_LIMIT:
-            _, p_codes = self.session_participants.popitem(last=False)
-            for participant_code in p_codes:
-                self.browser_bots.pop(participant_code, None)
+        with add_or_remove_bot_lock:
+            if len(self.session_participants) > SESSIONS_PRUNE_LIMIT:
+                _, p_codes = self.session_participants.popitem(last=False)
+                for participant_code in p_codes:
+                    self.browser_bots.pop(participant_code, None)
 
     def clear_all(self):
         self.browser_bots.clear()
@@ -120,7 +133,6 @@ class Worker(object):
                 # here
                 submission.pop('page_class')
 
-            # when run in process, puts it in the fake redis
             self.prepared_submits[participant_code] = submission
 
         return submission
@@ -187,20 +199,20 @@ def ping(redis_conn, unique_response_code):
         )
 
 
-def initialize_bots_redis(redis_conn, session_code, num_players_total):
-    response_key = '{}-initialize-{}'.format(REDIS_KEY_PREFIX, session_code)
+def initialize_bot_redis(redis_conn, participant_code):
+    response_key = '{}-initialize-{}'.format(REDIS_KEY_PREFIX, participant_code)
     msg = {
-        'command': 'initialize_session',
-        'kwargs': {'session_code': session_code},
+        'command': 'initialize_participant',
+        'kwargs': {'participant_code': participant_code},
         'response_key': response_key,
     }
     # ping will raise if it times out
-    ping(redis_conn, session_code)
+    ping(redis_conn, participant_code)
     redis_conn.rpush(REDIS_KEY_PREFIX, json.dumps(msg))
 
     # timeout must be int
     # this is about 10x as much time as it should take
-    timeout = int(max(1, num_players_total * 0.1))
+    timeout = 1
     result = redis_conn.blpop(response_key, timeout=timeout)
     if result is None:
         raise Exception(
@@ -215,19 +227,18 @@ def initialize_bots_redis(redis_conn, session_code, num_players_total):
     return {'ok': True}
 
 
-def initialize_bots_in_process(session_code):
-    browser_bot_worker.initialize_session(session_code)
+def initialize_bot_in_process(participant_code):
+    browser_bot_worker.initialize_participant(participant_code)
 
 
-def initialize_bots(session_code, num_players_total):
+def initialize_bot(participant_code):
     if otree.common_internal.USE_REDIS:
-        initialize_bots_redis(
+        initialize_bot_redis(
             redis_conn=get_redis_conn(),
-            session_code=session_code,
-            num_players_total=num_players_total
+            participant_code=participant_code,
         )
     else:
-        initialize_bots_in_process(session_code)
+        initialize_bot_in_process(participant_code)
 
 
 def redis_flush_bots(redis_conn):

@@ -181,7 +181,7 @@ def create_session(
 
     session = None
     use_browser_bots = False
-    num_subsessions = 0
+    participants = []
 
     with transaction.atomic():
         # 2014-5-2: i could implement this by overriding the __init__ on the
@@ -263,7 +263,6 @@ def create_session(
                 models_module = get_models_module(app_name)
                 app_constants = get_app_constants(app_name)
 
-                num_subsessions += app_constants.num_rounds
                 round_numbers = list(range(1, app_constants.num_rounds + 1))
 
                 subs = bulk_create(
@@ -311,9 +310,9 @@ def create_session(
         # UI, when do we run that? it should be run when the session
         # is deleted
         try:
-            num_players_total = num_participants * num_subsessions
-            otree.bots.browser.initialize_bots(
-                session.code, num_players_total)
+            for participant in participants:
+                otree.bots.browser.initialize_bot(
+                    participant.code)
         except:
             session.delete()
             raise

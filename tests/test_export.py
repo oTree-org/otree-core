@@ -32,9 +32,7 @@ class TestDataExport(TestCase):
                 num_participants=num_participants,
             )
 
-        formatted_app_name = common_internal.app_name_format(app_name)
-
-        url = "/ExportCSV/{}/".format(app_name)
+        url = "/ExportApp/{}/".format(app_name)
         response = self.client.get(url)
 
         # HEADERS CHECK
@@ -45,7 +43,7 @@ class TestDataExport(TestCase):
 
         self.assertTrue(
             content_disposition.startswith(
-                'attachment; filename="{} ('.format(formatted_app_name)))
+                'attachment; filename='))
 
         csv_text = response.content.decode('utf-8')
 
@@ -59,13 +57,13 @@ class TestDataExport(TestCase):
         header_row = rows[0]
 
         for expected_text in [
-            'Participant.id_in_session',
-            'Player.id_in_group',
-            'Player.payoff',
-            'Group.group_field',
-            'Subsession.subsession_field',
-            'Subsession.round_number',
-            'Session.code',
+            'participant.id_in_session',
+            'player.id_in_group',
+            'player.payoff',
+            'group.group_field',
+            'subsession.subsession_field',
+            'subsession.round_number',
+            'session.code',
         ]:
             self.assertIn(expected_text, header_row)
 
@@ -108,7 +106,7 @@ class TestWideCSV(TestCase):
             )
 
         with StringIO() as f:
-            otree.export.export_wide_csv(f)
+            otree.export.export_wide(f, file_extension='csv')
             csv_text = f.getvalue()
 
         rows = [row for row in csv_text.split('\n') if row.strip()]

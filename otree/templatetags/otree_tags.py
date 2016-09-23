@@ -20,9 +20,7 @@ from django.template.loader import render_to_string
 from django.core.urlresolvers import Resolver404, reverse
 from django.utils.safestring import mark_safe
 
-from .otree_forms import FormNode
 from .otree_forms import FormFieldNode
-from .otree_forms import MarkFieldAsRenderedNode
 from .otree_forms import defaultlabel
 from otree.common import Currency
 import otree.common_internal
@@ -109,8 +107,6 @@ def ensure_superuser_exists():
     return NO_USER_MSG
 
 
-register.tag('pageform', FormNode.parse)
-register.tag('mark_field_as_rendered', MarkFieldAsRenderedNode.parse)
 register.tag('formfield', FormFieldNode.parse)
 
 

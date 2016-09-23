@@ -40,4 +40,5 @@ unicodecsv==0.14.1
 wheel==0.29.0
 whitenoise==3.2.1
 ws4py==0.3.5
+XlsxWriter==0.9.3
 zope.interface==4.2.0

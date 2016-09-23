@@ -1,10 +1,7 @@
 {% load staticfiles otree_tags %}
 <div class="well">
 <h4>Debug info</h4>
-{% if form.errors %}
-    {% include 'otree/includes/_formfield_is_missing_error.html' %}
-{% endif %}
-
+{% include 'otree/includes/hidden_form_errors.html' %}
 {% for table in view.debug_tables %}
     <div class="panel panel-warning">
         <div class="panel-heading">{{ table.title|safe }}</div>

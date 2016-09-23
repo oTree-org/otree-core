@@ -21,7 +21,6 @@ from otree.models_concrete import (
     PageCompletion)
 from otree.common_internal import get_models_module, app_name_format
 
-
 if sys.version_info[0] == 2:
     import unicodecsv as csv
 else:
@@ -285,9 +284,12 @@ def get_rows_for_csv(app_name):
                     Session.objects.filter(id__in=session_ids).values()}
     }
 
-    rows = []
-
     model_order = ['participant', 'player', 'group', 'subsession', 'session']
+
+    # header row
+    rows = [['{}.{}'.format(model_name, colname)
+        for model_name in model_order
+        for colname in columns_for_models[model_name]]]
 
     for player in players:
         row = []
@@ -302,13 +304,7 @@ def get_rows_for_csv(app_name):
                 row.append(sanitize_for_csv(value))
         rows.append(row)
 
-    # headers
-    header_row = [
-        (model_name.title(), colname)
-        for model_name in model_order
-        for colname in columns_for_models[model_name]]
-
-    return header_row, rows
+    return rows
 
 
 def get_rows_for_live_update(app_name, subsession_pk):
@@ -358,20 +354,40 @@ def get_rows_for_live_update(app_name, subsession_pk):
 
     return columns_for_models, rows
 
-def export_wide_csv(fp):
+
+def export_wide(fp, file_extension='csv'):
     rows = get_rows_for_wide_csv()
+    if file_extension == 'xlsx':
+        _export_xlsx(fp, rows)
+    else:
+        _export_csv(fp, rows)
+
+
+def export_app(app_name, fp, file_extension='csv'):
+    rows = get_rows_for_csv(app_name)
+    if file_extension == 'xlsx':
+        _export_xlsx(fp, rows)
+    else:
+        _export_csv(fp, rows)
+
+
+def _export_csv(fp, rows):
     writer = csv.writer(fp)
     writer.writerows(rows)
 
 
-def export_csv(app_name, fp):
-    """Write the data of the given app name as csv into the file-like object
-    """
-    colnames, rows = get_rows_for_csv(app_name)
-    colnames = ['{}.{}'.format(k, v) for k, v in colnames]
-    writer = csv.writer(fp)
-    writer.writerows([colnames])
-    writer.writerows(rows)
+def _export_xlsx(fp, rows):
+    '''
+    CSV often does not open properly in Excel, e.g. unicode
+    '''
+    import xlsxwriter
+    workbook = xlsxwriter.Workbook(fp, {'in_memory': True})
+    worksheet = workbook.add_worksheet()
+
+    for row_num, row in enumerate(rows):
+        for col_num, cell_value in enumerate(row):
+            worksheet.write(row_num, col_num, cell_value)
+    workbook.close()
 
 
 def export_time_spent(fp):
