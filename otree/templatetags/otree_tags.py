@@ -8,7 +8,6 @@
 
 """
 
-
 # =============================================================================
 # IMPORTS
 # =============================================================================
@@ -27,14 +26,9 @@ import otree.common_internal
 
 import six
 
-
 # =============================================================================
 # CONSTANTS
 # =============================================================================
-
-NUMERIC_TYPES = (int, float, complex, decimal.Decimal)
-
-STRING_TYPES = six.string_types
 
 register = template.Library()
 
@@ -87,6 +81,7 @@ def add_class(var, css_class, *extra_css_classes):
     except Resolver404:
         return ""
 
+
 NO_USER_MSG = '''
 Before logging in, you must create a user by setting ADMIN_USERNAME and
 ADMIN_PASSWORD in settings.py
@@ -123,27 +118,6 @@ def c(val):
 @register.filter(name="abs")
 def abs_value(var):
     return abs(var)
-
-
-@register.filter(name='strip')
-def strip(var):
-    return var.strip()
-
-
-def is_instance(var, typenames):
-    typenames = [tn.strip() for tn in typenames.split(",")]
-    return type(var).__name__ in typenames
-
-
-@register.filter(name='is_text')
-def is_text(var):
-    return isinstance(var, STRING_TYPES)
-
-
-@register.filter(name='br', is_safe=True)
-def br(var):
-    result = var.replace("\n", "<br>")
-    return mark_safe(result)
 
 
 register.filter('defaultlabel', defaultlabel)

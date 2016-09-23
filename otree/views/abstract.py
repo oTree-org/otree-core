@@ -44,7 +44,8 @@ from otree.models_concrete import (
     CompletedGroupWaitPage, PageTimeout, UndefinedFormModel,
     ParticipantLockModel, GlobalLockModel, ParticipantToPlayerLookup
 )
-
+import six
+from django.utils.safestring import mark_safe
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -53,18 +54,15 @@ NO_PARTICIPANTS_LEFT_MSG = (
     "The maximum number of participants for this session has been exceeded.")
 
 
-DebugTable = collections.namedtuple('DebugTable', ['title', 'rows'])
-
-def debug_table_rows_to_html(rows):
-    template = '''
-        <tr>
-            <td class="debug-var-name">{key}</td>
-            <td class="debug-var-value">{value}</td>
-        </tr>
-    '''
-    rows_html = []
-    for (k, v) in rows:
-        
+class DebugTable(object):
+    def __init__(self, title, rows):
+        self.title = title
+        self.rows = []
+        for k, v in rows:
+            if isinstance(v, six.string_types):
+                v = v.strip().replace("\n", "<br>")
+                v = mark_safe(v)
+            self.rows.append((k, v))
 
 
 def get_view_from_url(url):
@@ -292,8 +290,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         new_tables = [basic_info_table]
         if self._vars_for_template:
             rows = sorted(self._vars_for_template.items())
-            title = '<code>vars_for_template()</code>'
-            new_tables.append(DebugTable(title=title, rows=rows))
+            new_tables.append(DebugTable(title='Vars for template', rows=rows))
 
         return new_tables
 
