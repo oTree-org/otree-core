@@ -131,13 +131,17 @@ def run_pytests(**kwargs):
     this_module = sys.modules[__name__]
 
     # '-s' is to see print output
-    # --tb=native is to show native Python tracebacks. I think this is
-    # more expected and less verbose. With the native tracebacks,
-    # Often the code that gets printed is in otree-core, which is not relevant
+    # --tb=short is to show short tracebacks. I think this is
+    # more expected and less verbose.
+    # With the default pytest long tracebacks,
+    # often the code that gets printed is in otree-core, which is not relevant.
+    # also, this is better than using --tb=native, which loses line breaks
+    # when a unicode char is contained in the output, and also doesn't get
+    # color coded with colorama, the way short tracebacks do.
     argv = [
         this_module.__file__,
         '-s',
-        '--tb', 'native'
+        '--tb', 'short'
     ]
     if verbosity == 0:
         argv.append('--quiet')
