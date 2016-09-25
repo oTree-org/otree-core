@@ -112,6 +112,24 @@ def normalize_html_whitespace(html):
     html = re.sub(r'\s+', ' ', html)
     return html
 
+class HtmlString(str):
+
+    def truncated(self):
+        '''
+        Make output more readable by truncating everything before the
+         {% content %} block. I also considered indenting the HTML,
+         but minidom had a parse error, and BS4 modifies a lot of tags,
+         didn't seem optimal.
+        '''
+        div_str = '<div id="otree-content">'
+        i = self.index(div_str) + len(div_str)
+        return '...' + self[i:]
+
+    def __str__(self):
+        return self.truncated()
+
+    def __repr__(self):
+        return self.truncated()
 
 # inherit from object for Python2.7 support.
 # otherwise, get
@@ -266,7 +284,7 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
 
     @html.setter
     def html(self, html):
-        self._html = normalize_html_whitespace(html)
+        self._html = HtmlString(normalize_html_whitespace(html))
 
     def on_wait_page(self):
         # if the existing response was a form page, it will still be...

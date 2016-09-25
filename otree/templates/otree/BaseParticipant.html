@@ -29,7 +29,9 @@
             <input type="hidden" value="{{ request.path }}" name="origin_url" />
             {% form form using %}
                 {% formconfig row using "floppyforms/rows/bootstrap.html" %}
-                {% block content %}{% endblock %}
+                <div id="otree-content">
+                    {% block content %}{% endblock %}
+                </div>
             {% endform %}
         </form>
     </div>
