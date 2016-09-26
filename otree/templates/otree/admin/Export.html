@@ -33,8 +33,8 @@
 
     <h3>All apps</h3>
     <p>
-        <a href="{% url 'ExportWide' %}?xlsx=1">Excel</a> |
-        <a href="{% url 'ExportWide' %}">CSV</a>
+        <a href="{% url 'ExportWide' %}?xlsx=1"><b>Excel</b></a> |
+        <a href="{% url 'ExportWide' %}"><b>CSV</b></a>
     </p>
     <p>
         Data for all apps in one file.
@@ -69,8 +69,8 @@
                         {{ app.name }}
                     </td>
                     <td>
-                        <a href="{% url 'ExportApp' app.label %}?xlsx=1">Excel</a> |
-                        <a href="{% url 'ExportApp' app.label %}">CSV</a>
+                        <a href="{% url 'ExportApp' app.label %}?xlsx=1"><b>Excel</b></a> |
+                        <a href="{% url 'ExportApp' app.label %}"><b>CSV</b></a>
                     </td>
                     <td>
                         <a href="{% url 'ExportAppDocs' app.label %}">CSV</a>

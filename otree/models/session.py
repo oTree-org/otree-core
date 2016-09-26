@@ -251,9 +251,9 @@ class Session(ModelWithVars):
         except RoomToSession.DoesNotExist:
             return None
 
-    def _get_money_to_pay(self, payoff):
+    def _get_payoff_plus_participation_fee(self, payoff):
         '''For a participant who has the given payoff,
-        return their money_to_pay
+        return their payoff_plus_participation_fee
         Useful to define it here, for data export
         '''
 

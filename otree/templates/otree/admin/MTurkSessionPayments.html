@@ -151,11 +151,11 @@ $(function() {
                 <td>
                     {{ p.payoff_in_real_world_currency }}
                 </td>
-                <td>{{ p.money_to_pay }}</td>
+                <td>{{ p.payoff_plus_participation_fee }}</td>
                 <td>
                     <div class="checkbox-inline">
                         <label>
-                            <input name="payment" data-value="{{ p.money_to_pay.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}">
+                            <input name="payment" data-value="{{ p.payoff_plus_participation_fee.to_number }}" type="checkbox" value="{{ p.mturk_assignment_id }}">
                         </label>
                     </div> 
                 </td>
@@ -194,7 +194,7 @@ $(function() {
                 <td>
                     {{ p.payoff_in_real_world_currency }}
                 </td>
-                <td>{{ p.money_to_pay }}</td>
+                <td>{{ p.payoff_plus_participation_fee }}</td>
             </tr>
             {% endfor %}
         </table>
@@ -226,7 +226,7 @@ $(function() {
                 <td>
                     {{ p.payoff_in_real_world_currency }}
                 </td>
-                <td>{{ p.money_to_pay }}</td>
+                <td>{{ p.payoff_plus_participation_fee }}</td>
             </tr>
             {% endfor %}
         </table>

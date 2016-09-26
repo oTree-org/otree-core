@@ -19,7 +19,7 @@ class Participant:
     payoff = None  # type: Currency
 
     def get_players(self) -> List['Player']: pass
-    def money_to_pay(self) -> RealWorldCurrency: pass
+    def payoff_plus_participation_fee(self) -> RealWorldCurrency: pass
 
 
 class BaseSubsession:

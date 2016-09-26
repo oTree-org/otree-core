@@ -114,7 +114,7 @@ class Results(Page):
         assert self.player.participant.vars['a'] == 2
         participant = self.player.participant
         assert participant.payoff == 50
-        assert participant.money_to_pay() == 50 + 9.99
+        assert participant.payoff_plus_participation_fee() == 50 + 9.99
         return {}
 
 

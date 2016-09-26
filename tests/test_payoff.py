@@ -51,10 +51,10 @@ class TestPayoff(TestCase):
 
         payoff_in_real_world_currency = payoff * real_world_currency_per_point
 
-        money_to_pay = participant.money_to_pay()
+        payoff_plus_participation_fee = participant.payoff_plus_participation_fee()
 
         self.assertEqual(
-            money_to_pay,
+            payoff_plus_participation_fee,
             payoff_in_real_world_currency + participation_fee)
 
         payments_url = reverse('SessionPayments', args=[session.code])

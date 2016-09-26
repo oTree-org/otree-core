@@ -199,10 +199,13 @@ class Participant(ModelWithVars):
         return self.payoff
 
     def money_to_pay(self):
-        return self.session._get_money_to_pay(self.payoff)
+        return self.payoff_plus_participation_fee()
+
+    def payoff_plus_participation_fee(self):
+        return self.session._get_payoff_plus_participation_fee(self.payoff)
 
     def total_pay(self):
-        return self.money_to_pay()
+        return self.payoff_plus_participation_fee()
 
     def payoff_is_complete(self):
         return all(p.payoff is not None for p in self.get_players())

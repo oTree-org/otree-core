@@ -51,7 +51,7 @@
             <td>{{ p.label|default_if_none:"" }}</td>
             <td>{{ participation_fee }}</td>
             <td>{{ p.payoff_in_real_world_currency }}</td>
-            <td>{{ p.money_to_pay }}</td>
+            <td>{{ p.payoff_plus_participation_fee }}</td>
             <td></td>
         </tr>
         {% endfor %}

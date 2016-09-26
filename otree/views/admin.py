@@ -401,7 +401,7 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
         mean_payment = 0.0
         if participants:
             total_payments = sum(
-                part.money_to_pay() or c(0) for part in participants
+                part.payoff_plus_participation_fee() or c(0) for part in participants
             )
             mean_payment = total_payments / len(participants)
 

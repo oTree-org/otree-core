@@ -160,17 +160,17 @@ def get_rows_for_wide_csv():
     participants = Participant.objects.order_by('id').values()
 
     payoff_cache = get_payoff_cache()
-    money_to_pay_cache = get_money_to_pay_cache(payoff_cache)
+    payoff_plus_participation_fee_cache = get_payoff_plus_participation_fee_cache(payoff_cache)
 
     session_fields = get_field_names_for_csv(Session)
     participant_fields = get_field_names_for_csv(Participant)
-    participant_fields += ['payoff', 'money_to_pay']
+    participant_fields += ['payoff', 'payoff_plus_participation_fee']
     header_row = ['participant.{}'.format(fname) for fname in participant_fields]
     header_row += ['session.{}'.format(fname) for fname in session_fields]
     rows = [header_row]
     for participant in participants:
         participant['payoff'] = payoff_cache[participant['id']]
-        participant['money_to_pay'] = money_to_pay_cache[participant['id']]
+        participant['payoff_plus_participation_fee'] = payoff_plus_participation_fee_cache[participant['id']]
         row = [sanitize_for_csv(participant[fname]) for fname in participant_fields]
         session = session_cache[participant['session_id']]
         row += [sanitize_for_csv(session[fname]) for fname in session_fields]
@@ -541,7 +541,7 @@ def get_payoff_cache():
     return payoff_cache
 
 
-def get_money_to_pay_cache(payoff_cache):
+def get_payoff_plus_participation_fee_cache(payoff_cache):
     # don't want to modify the input
     payoff_cache = payoff_cache.copy()
 
@@ -556,13 +556,13 @@ def get_money_to_pay_cache(payoff_cache):
 
     sessions_cache = {s.id: s for s in Session.objects.all()}
 
-    money_to_pay_cache = collections.defaultdict(Decimal)
+    payoff_plus_participation_fee_cache = collections.defaultdict(Decimal)
     for p_id in payoff_cache:
         session_id = participant_ids_to_session_ids[p_id]
         session = sessions_cache[session_id]
         payoff = payoff_cache[p_id]
-        money_to_pay = session._get_money_to_pay(payoff)
-        money_to_pay_cache[p_id] = money_to_pay.to_number()
+        payoff_plus_participation_fee = session._get_payoff_plus_participation_fee(payoff)
+        payoff_plus_participation_fee_cache[p_id] = payoff_plus_participation_fee.to_number()
 
-    return money_to_pay_cache
+    return payoff_plus_participation_fee_cache
 
