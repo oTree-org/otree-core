@@ -1,15 +1,18 @@
 from __future__ import absolute_import
 
+from otree.common import Currency
 from django.db.models import BinaryField
 import sys
 import datetime
 import inspect
-from collections import OrderedDict
 import otree
 import collections
 import six
-from django.utils.encoding import force_text, DjangoUnicodeDecodeError
-
+from django.utils.encoding import force_text
+from collections import OrderedDict
+from django.conf import settings
+from django.db.models import Max, Count, Sum
+from decimal import Decimal
 import otree.constants_internal
 from otree.models.participant import Participant
 from otree.models.session import Session
@@ -150,22 +153,24 @@ def sanitize_for_live_update(value):
 
 def get_rows_for_wide_csv():
 
-    from collections import OrderedDict
-    from django.conf import settings
-    from django.db.models import Max, Count
-
-
     sessions = Session.objects.order_by('id').annotate(
         num_participants=Count('participant')).values()
     session_cache = {row['id']: row for row in sessions}
+
     participants = Participant.objects.order_by('id').values()
+
+    payoff_cache = get_payoff_cache()
+    money_to_pay_cache = get_money_to_pay_cache(payoff_cache)
 
     session_fields = get_field_names_for_csv(Session)
     participant_fields = get_field_names_for_csv(Participant)
+    participant_fields += ['payoff', 'money_to_pay']
     header_row = ['participant.{}'.format(fname) for fname in participant_fields]
     header_row += ['session.{}'.format(fname) for fname in session_fields]
     rows = [header_row]
     for participant in participants:
+        participant['payoff'] = payoff_cache[participant['id']]
+        participant['money_to_pay'] = money_to_pay_cache[participant['id']]
         row = [sanitize_for_csv(participant[fname]) for fname in participant_fields]
         session = session_cache[participant['session_id']]
         row += [sanitize_for_csv(session[fname]) for fname in session_fields]
@@ -521,3 +526,43 @@ def export_docs(fp, app_name):
     doc_dict = generate_doc_dict()
     doc = docs_as_string(doc_dict)
     fp.write(doc)
+
+
+def get_payoff_cache():
+    payoff_cache = collections.defaultdict(Decimal)
+
+    for app_name in settings.INSTALLED_OTREE_APPS:
+        models_module = get_models_module(app_name)
+        Player = models_module.Player
+        for d in Player.objects.values(
+                'participant_id', 'session_id').annotate(Sum('payoff')):
+            payoff_cache[d['participant_id']] += (d['payoff__sum'] or 0)
+
+    return payoff_cache
+
+
+def get_money_to_pay_cache(payoff_cache):
+    # don't want to modify the input
+    payoff_cache = payoff_cache.copy()
+
+    for p_id in payoff_cache:
+        # convert to Currency so we can call to_real_world_currency
+        payoff_cache[p_id] = Currency(payoff_cache[p_id])
+
+    participant_ids_to_session_ids = {
+        p['id']: p['session_id'] for p in Participant.objects.values(
+        'id', 'session_id')
+    }
+
+    sessions_cache = {s.id: s for s in Session.objects.all()}
+
+    money_to_pay_cache = collections.defaultdict(Decimal)
+    for p_id in payoff_cache:
+        session_id = participant_ids_to_session_ids[p_id]
+        session = sessions_cache[session_id]
+        payoff = payoff_cache[p_id]
+        money_to_pay = session._get_money_to_pay(payoff)
+        money_to_pay_cache[p_id] = money_to_pay.to_number()
+
+    return money_to_pay_cache
+

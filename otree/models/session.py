@@ -250,3 +250,14 @@ class Session(ModelWithVars):
             return ROOM_DICT[room_name]
         except RoomToSession.DoesNotExist:
             return None
+
+    def _get_money_to_pay(self, payoff):
+        '''For a participant who has the given payoff,
+        return their money_to_pay
+        Useful to define it here, for data export
+        '''
+
+        return (
+            self.config['participation_fee'] +
+            payoff.to_real_world_currency(self)
+        )

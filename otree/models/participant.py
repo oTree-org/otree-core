@@ -199,10 +199,7 @@ class Participant(ModelWithVars):
         return self.payoff
 
     def money_to_pay(self):
-        return (
-            self.session.config['participation_fee'] +
-            self.payoff.to_real_world_currency(self.session)
-        )
+        return self.session._get_money_to_pay(self.payoff)
 
     def total_pay(self):
         return self.money_to_pay()
