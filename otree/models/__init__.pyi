@@ -1,6 +1,9 @@
 from typing import List, Union, Any
 from otree.common import Currency, RealWorldCurrency
 
+## This code is duplicated in several places
+# bots/__init__.pyi, views/__init__.pyi, models/__init__.pyi
+# importing doesn't seem to work with PyCharm autocomplete
 
 
 class Session:
@@ -25,7 +28,7 @@ class Participant:
 class BaseSubsession:
 
     session = None # type: Session
-    round_number = None  # type: int
+    round_number = None # type: int
 
     def get_groups(self) -> List['Group']: pass
     def get_group_matrix(self) -> List[List['Player']]: pass
@@ -76,5 +79,5 @@ class BasePlayer:
     def in_rounds(self, first, last) -> List['Player']: pass
 
 Subsession = Union[BaseSubsession, Any]
-Group = Union[BaseGroup]
+Group = Union[BaseGroup, Any]
 Player = Union[BasePlayer, Any]
