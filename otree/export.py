@@ -141,14 +141,11 @@ def sanitize_for_csv(value):
     value = force_text(value)
     return value.replace('\n', ' ').replace('\r', ' ')
 
+
 def sanitize_for_live_update(value):
-    if value is None:
-        return ''
-    if value is True:
-        return 1
-    if value is False:
-        return 0
-    return value
+    # force_text is necessary e.g. for CountryField, which is otherwise
+    # not Json serializable
+    return sanitize_for_csv(value)
 
 
 def get_rows_for_wide_csv():

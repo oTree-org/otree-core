@@ -45,6 +45,13 @@ def deserialize_from_string(data):
 
 
 def json_encode_object(obj):
+    if isinstance(obj, models.Model):
+        raise ValueError(
+            "Cannot store '{}' object in vars. "
+            "participant.vars and session.vars "
+            "cannot contain model instances, "
+            "like Players, Groups, etc.".format(repr(obj))
+        )
     if hasattr(obj, '__json__'):
         data = obj.__json__()
         if isinstance(data, tuple):
