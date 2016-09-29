@@ -16,7 +16,7 @@ $(document).ready(function () {
     One user reported that with a 588 bot session,
     web socket for auto-advance adds 4s to each page load.
     {% endcomment %}
-    {% if session.pages_should_refresh_when_advanced %}
+    {% if session.pages_auto_reload_when_advanced %}
     function initWebSocket() {
         var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
         var ws_path = ws_scheme + '://' + window.location.host + "{{ view.socket_url|safe }}";

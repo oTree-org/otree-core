@@ -481,7 +481,7 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
             "Advance the slowest user(s) by one page, "
             "by forcing a timeout on their current page. "
         )
-        if not self.session.pages_should_refresh_when_advanced():
+        if not self.session.pages_auto_reload_when_advanced():
             advance_users_button_text += (
                 'NOTE: oTree is currently running in production mode, '
                 'so participants will not see their page auto-advance until '

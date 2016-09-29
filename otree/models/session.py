@@ -262,5 +262,5 @@ class Session(ModelWithVars):
             payoff.to_real_world_currency(self)
         )
 
-    def pages_should_refresh_when_advanced(self):
+    def pages_auto_reload_when_advanced(self):
         return settings.DEBUG or self.is_demo
