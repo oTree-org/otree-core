@@ -24,7 +24,7 @@ from django.views.decorators.cache import never_cache, cache_control
 from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import resolve
-
+import redis_lock
 import channels
 
 import vanilla
@@ -84,6 +84,8 @@ def global_lock(recheck_interval=0.1):
             time.sleep(recheck_interval)
         else:
             try:
+                time_to_acquire = time.time() - start_time
+                logger.info('{}s to acquire lock')
                 yield
             finally:
                 GlobalLockModel.objects.update(locked=False)
@@ -550,8 +552,14 @@ class InGameWaitPageMixin(object):
             self.subsession if self.wait_for_all_groups else self.group)
 
     def _register_wait_page_visit(self):
-        with global_lock():
-            unvisited_participants = self._tally_unvisited()
+        if otree.common_internal.USE_REDIS:
+            with redis_lock.Lock(
+                    otree.common_internal.get_redis_conn(),
+                    self.get_channels_group_name()):
+                unvisited_participants = self._tally_unvisited()
+        else:
+            with global_lock():
+                unvisited_participants = self._tally_unvisited()
         if unvisited_participants:
             return
         try:
