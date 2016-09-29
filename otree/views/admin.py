@@ -475,7 +475,20 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
         column_names = [display_names[col] for col in field_names]
 
         context = super(SessionMonitor, self).get_context_data(**kwargs)
-        context.update({'column_names': column_names})
+        context['column_names'] = column_names
+
+        advance_users_button_text = (
+            "Advance the slowest user(s) by one page, "
+            "by forcing a timeout on their current page. "
+        )
+        if not self.session.pages_should_refresh_when_advanced():
+            advance_users_button_text += (
+                'NOTE: oTree is currently running in production mode, '
+                'so participants will not see their page auto-advance until '
+                'they refresh the page. This is a server performance '
+                'optimization.'
+            )
+        context['advance_users_button_text'] = advance_users_button_text
         return context
 
 

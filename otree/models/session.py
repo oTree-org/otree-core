@@ -11,7 +11,7 @@ from otree.common_internal import random_chars_8, random_chars_10
 from otree.db import models
 from otree.models_concrete import ParticipantToPlayerLookup, RoomToSession
 from .varsmixin import ModelWithVars
-
+from django.conf import settings
 
 logger = logging.getLogger('otree')
 
@@ -261,3 +261,6 @@ class Session(ModelWithVars):
             self.config['participation_fee'] +
             payoff.to_real_world_currency(self)
         )
+
+    def pages_should_refresh_when_advanced(self):
+        return settings.DEBUG or self.is_demo

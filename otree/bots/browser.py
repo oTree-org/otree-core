@@ -34,6 +34,8 @@ SESSIONS_PRUNE_LIMIT = 80
 # global variable that holds the browser bot worker instance in memory
 browser_bot_worker = None  # type: Worker
 
+# these locks are only necessary when using runserver
+# because then the botworker stuff is done by one of the 4 worker threads.
 prepare_submit_lock = threading.Lock()
 add_or_remove_bot_lock = threading.Lock()
 
@@ -43,7 +45,7 @@ logger = logging.getLogger('otree.test.browser_bots')
 class Worker(object):
     def __init__(self, redis_conn=None):
         self.redis_conn = redis_conn
-        self.session_participants = OrderedDict()
+        self.participants_by_session = OrderedDict()
         self.browser_bots = {}
         self.prepared_submits = {}
 
@@ -62,9 +64,9 @@ class Worker(object):
             participant, unittest_case=test_case)
 
         with add_or_remove_bot_lock:
-            if session_code not in self.session_participants:
-                self.session_participants[session_code] = []
-            self.session_participants[session_code].append(participant_code)
+            if session_code not in self.participants_by_session:
+                self.participants_by_session[session_code] = []
+            self.participants_by_session[session_code].append(participant_code)
 
         return {'ok': True}
 
@@ -82,8 +84,8 @@ class Worker(object):
     def prune(self):
         '''to avoid memory leaks'''
         with add_or_remove_bot_lock:
-            if len(self.session_participants) > SESSIONS_PRUNE_LIMIT:
-                _, p_codes = self.session_participants.popitem(last=False)
+            if len(self.participants_by_session) > SESSIONS_PRUNE_LIMIT:
+                _, p_codes = self.participants_by_session.popitem(last=False)
                 for participant_code in p_codes:
                     self.browser_bots.pop(participant_code, None)
 
@@ -199,6 +201,18 @@ def ping(redis_conn, unique_response_code):
         )
 
 
+def load_redis_response_dict(response_bytes):
+    response = json.loads(response_bytes.decode('utf-8'))
+    # response_error only exists if using Redis.
+    # if using runserver, there is no need for this because the
+    # exception is raised in the same thread.
+    if 'traceback' in response:
+        # cram the other traceback in this traceback message.
+        # note:
+        raise Exception(response['traceback'])
+    return response
+
+
 def initialize_bot_redis(redis_conn, participant_code):
     response_key = '{}-initialize-{}'.format(REDIS_KEY_PREFIX, participant_code)
     msg = {
@@ -219,11 +233,8 @@ def initialize_bot_redis(redis_conn, participant_code):
             'botworker is running but could not initialize the session. '
             'within {} seconds.'.format(timeout)
         )
-    key, submit_bytes = result
-    value = json.loads(submit_bytes.decode('utf-8'))
-    if 'response_error' in value:
-        raise Exception(
-            'An error occurred. See the botworker output for the traceback.')
+    key, response_bytes = result
+    load_redis_response_dict(response_bytes)
     return {'ok': True}
 
 
@@ -280,7 +291,8 @@ class EphemeralBrowserBot(object):
                 'botworker is running but did not return a submission.'
             )
         key, submit_bytes = result
-        return json.loads(submit_bytes.decode('utf-8'))
+        response = load_redis_response_dict(submit_bytes)
+        return response
 
     def prepare_next_submit_in_process(self, html):
         return browser_bot_worker.prepare_next_submit(
@@ -289,13 +301,6 @@ class EphemeralBrowserBot(object):
     def prepare_next_submit(self, html):
         if otree.common_internal.USE_REDIS:
             result = self.prepare_next_submit_redis(html)
-            # response_error only exists if using Redis.
-            # if using runserver, there is no need for this because the
-            # exception is raised in the same thread.
-            if 'response_error' in result:
-                # cram the other traceback in this traceback message.
-                # note:
-                raise Exception(result['traceback'])
         else:
             result = self.prepare_next_submit_in_process(html)
         if 'request_error' in result:
@@ -323,7 +328,7 @@ class EphemeralBrowserBot(object):
                 'botworker is running but did not return a submission.'
             )
         key, submit_bytes = result
-        return json.loads(submit_bytes.decode('utf-8'))
+        return load_redis_response_dict(submit_bytes)
 
     def get_next_post_data(self):
         if otree.common_internal.USE_REDIS:

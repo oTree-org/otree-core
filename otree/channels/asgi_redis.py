@@ -21,7 +21,7 @@ class RedisChannelLayer(asgi_redis.RedisChannelLayer):
     # In SAL experiment, we got 503 "queue full" errors when using ~50
     # browser bots. This occurred even after i enabled multiple botworkers.
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault('capacity', 1000)
+        kwargs.setdefault('capacity', 10000)
         super(RedisChannelLayer, self).__init__(*args, **kwargs)
 
     def receive_many(self, channels, block=False):
