@@ -41,7 +41,7 @@ but no button was not found in the HTML of the page.
 HTML_MISSING_FIELD_WARNING = ('''
 Bot is trying to submit page {page_name} with fields: "{fields}",
 but these form fields were not found in the HTML of the page
-(searched for tags "{tags}" with "name" attribute matching the field name).
+(searched for tags {tags} with name= attribute matching the field name).
 ''' + DISABLE_CHECK_HTML_INSTRUCTIONS).replace('\n', ' ').strip()
 
 class BOTS_CHECK_HTML:
@@ -249,7 +249,8 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
                     HTML_MISSING_FIELD_WARNING.format(
                         page_name=page_name,
                         fields=', '.join(missing_fields),
-                        tags=', '.join(checker.field_tags)))
+                        tags=', '.join('<{}>'.format(tag)
+                                       for tag in checker.field_tags)))
             if not checker.submit_button_found:
                 page_name = submission['page_class'].url_name()
                 raise AssertionError(HTML_MISSING_BUTTON_WARNING.format(
