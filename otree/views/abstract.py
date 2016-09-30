@@ -687,8 +687,15 @@ class InGameWaitPageMixin(object):
 def bot_prettify_post_data(post_data):
     for extra_key in ['csrfmiddlewaretoken', 'origin_url', 'must_fail']:
         post_data.pop(extra_key, None)
-    # don't wrap values in 1-element lists
-    return post_data.dict()
+
+    if hasattr(post_data, 'dict'):
+        # if using CLI bots, this will be a
+        # MultiValueKeyDict, because that's what request.POST
+        # contains. we need to turn it into a regular dict
+        # (i.e. values should not be single-element lists)
+        return post_data.dict()
+    # if browser bots, it will be a regular dict
+    return post_data
 
 
 class FormPageMixin(object):
@@ -778,7 +785,12 @@ class FormPageMixin(object):
                     bot.send_completion_message()
                     return HttpResponse('Bot completed')
                 else:
-                    post_data = dict(request.POST)
+                    # convert MultiValueKeyDict to regular dict
+                    # so that we can add entries to it in a simple way
+                    # before, we used dict(request.POST), but that caused
+                    # errors with BooleanFields with blank=True that were
+                    # submitted empty...it said [''] is not a valid value
+                    post_data = request.POST.dict()
                     post_data.update(submission)
             else:
                 post_data = request.POST
@@ -803,12 +815,13 @@ class FormPageMixin(object):
                         "{}: {}".format(k, repr(v))
                         for k, v in form.errors.items()]
                     raise AssertionError(
-                        'Page "{}": Bot submission for failed form validation: {} '
+                        'Page "{}": Bot submission failed form validation: {} '
                         'Check your bot in tests.py, '
                         'then create a new session. '
                         'Data submitted was: {}'.format(
                             self.__class__.__name__,
                             errors,
+
                             bot_prettify_post_data(post_data),
                         ))
                 return self.form_invalid(form)

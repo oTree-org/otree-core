@@ -33,15 +33,15 @@ yield Submission(views.PageName, {{...}}, check_html=False)
 '''
 
 HTML_MISSING_BUTTON_WARNING = ('''
-Bot is trying to submit a page,
+Bot is trying to submit page {page_name},
 but no button was not found in the HTML of the page.
 (searched for <input> with type='submit' or <button> with type != 'button').
 ''' + DISABLE_CHECK_HTML_INSTRUCTIONS).replace('\n', ' ').strip()
 
 HTML_MISSING_FIELD_WARNING = ('''
-Bot is trying to submit fields: "{}",
+Bot is trying to submit page {page_name} with fields: "{fields}",
 but these form fields were not found in the HTML of the page
-(searched for tags "{}" with "name" attribute matching the field name).
+(searched for tags "{tags}" with "name" attribute matching the field name).
 ''' + DISABLE_CHECK_HTML_INSTRUCTIONS).replace('\n', ' ').strip()
 
 class BOTS_CHECK_HTML:
@@ -244,12 +244,16 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
             checker = PageHtmlChecker(field_names)
             missing_fields = checker.get_missing_fields(self.html)
             if missing_fields:
+                page_name = submission['page_class'].url_name()
                 raise AssertionError(
                     HTML_MISSING_FIELD_WARNING.format(
-                        ', '.join(missing_fields),
-                        ', '.join(checker.field_tags)))
+                        page_name=page_name,
+                        fields=', '.join(missing_fields),
+                        tags=', '.join(checker.field_tags)))
             if not checker.submit_button_found:
-                raise AssertionError(HTML_MISSING_BUTTON_WARNING)
+                page_name = submission['page_class'].url_name()
+                raise AssertionError(HTML_MISSING_BUTTON_WARNING.format(
+                    page_name=page_name))
 
     def assert_correct_page(self, submission):
         PageClass = submission['page_class']
