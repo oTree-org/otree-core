@@ -1,14 +1,13 @@
-{% extends "otree/BaseParticipant.html" %}
+{% extends "otree/Base.html" %}
 {% load i18n %}
 
-{% block title %}
-    Finished
-{% endblock %}
-
-{% block content %}
+{% block body_main %}
+    <div style="padding-left: 50px">
+    <h2>{% block title %}Finished{% endblock %}</h2>
 
     <p>
         {% blocktrans %}No more pages left to show.{% endblocktrans %}
     </p>
+    </div>
 
 {% endblock %}
