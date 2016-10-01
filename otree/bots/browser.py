@@ -230,7 +230,7 @@ def initialize_bot_redis(redis_conn, participant_code):
     result = redis_conn.blpop(response_key, timeout=timeout)
     if result is None:
         raise Exception(
-            'botworker is running but could not initialize the session. '
+            'botworker is running but could not initialize the bot '
             'within {} seconds.'.format(timeout)
         )
     key, response_bytes = result

@@ -756,7 +756,13 @@ class FormPageMixin(object):
 
         self.participant._current_form_page_url = self.request.path
         if otree.common_internal.USE_REDIS:
-            if self.has_timeout():
+            # if using browser bots, don't schedule the timeout,
+            # because if it's a short timeout, it could happen before
+            # the browser bot submits the page. Because the timeout
+            # doesn't query the botworker (it is distinguished from bot
+            # submits by the auto_submit flag), it will "skip ahead"
+            # and therefore confuse the bot system.
+            if self.has_timeout() and not self.session.use_browser_bots:
                 otree.timeout.tasks.submit_expired_url.schedule(
                     (self.request.path,), delay=self.timeout_seconds)
         return super(FormPageMixin, self).get(request, *args, **kwargs)
