@@ -7,7 +7,6 @@
 import logging
 import time
 import warnings
-import collections
 import json
 import contextlib
 import importlib
@@ -394,12 +393,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                         .values_list('participant__pk', flat=True))
                     page.send_completion_message(participant_pk_set)
 
-        channels.Group(
-            'auto-advance-{}'.format(self.participant.code)
-        ).send(
-            {'text': json.dumps(
-                {'new_index_in_pages': self.participant._index_in_pages})}
-        )
 
     def is_displayed(self):
         return True

@@ -7,23 +7,19 @@
 <script type="text/javascript">
 $(document).ready(function () {
 
-
-    var socket;
-    // TODO: add to view
-    var index_in_pages = {{ view.index_in_pages }};
-
     {% comment %}
     One user reported that with a 588 bot session,
     web socket for auto-advance adds 4s to each page load.
     {% endcomment %}
     {% if session.pages_auto_reload_when_advanced %}
+    var socket;
+
     function initWebSocket() {
         var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
         var ws_path = ws_scheme + '://' + window.location.host + "{{ view.socket_url|safe }}";
 
         socket = new ReconnectingWebSocket(ws_path);
         socket.onmessage = function(e) {
-            console.log('Received redirect message', e.data);
             var data = JSON.parse(e.data);
 
             if (data.error) {
@@ -31,16 +27,11 @@ $(document).ready(function () {
                 return;
             }
 
-            if (data.new_index_in_pages > index_in_pages) {
+            if (data.auto_advanced) {
+                console.log('Received redirect message', e.data);
                 window.location.href = '{{ view.redirect_url|safe }}';
             }
         };
-        socket.onopen = function() {
-            console.log('WebSocket connected');
-        };
-        socket.onclose = function() {
-            console.log('WebSocket disconnected');
-        }
     }
 
     initWebSocket();
