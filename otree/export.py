@@ -23,6 +23,7 @@ from otree.models.player import BasePlayer
 from otree.models_concrete import (
     PageCompletion)
 from otree.common_internal import get_models_module, app_name_format
+import numbers
 
 if sys.version_info[0] == 2:
     import unicodecsv as csv
@@ -135,9 +136,11 @@ def sanitize_for_csv(value):
     if value is None:
         return ''
     if value is True:
-        return '1'
+        return 1
     if value is False:
-        return '0'
+        return 0
+    if isinstance(value, numbers.Number):
+        return value
     value = force_text(value)
     return value.replace('\n', ' ').replace('\r', ' ')
 

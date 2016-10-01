@@ -7,7 +7,6 @@
 import logging
 import time
 import warnings
-import collections
 import json
 import contextlib
 import importlib
@@ -396,12 +395,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                         .values_list('participant__pk', flat=True))
                     page.send_completion_message(participant_pk_set)
 
-        channels.Group(
-            'auto-advance-{}'.format(self.participant.code)
-        ).send(
-            {'text': json.dumps(
-                {'new_index_in_pages': self.participant._index_in_pages})}
-        )
 
     def is_displayed(self):
         return True
@@ -695,8 +688,15 @@ class InGameWaitPageMixin(object):
 def bot_prettify_post_data(post_data):
     for extra_key in ['csrfmiddlewaretoken', 'origin_url', 'must_fail']:
         post_data.pop(extra_key, None)
-    # don't wrap values in 1-element lists
-    return post_data.dict()
+
+    if hasattr(post_data, 'dict'):
+        # if using CLI bots, this will be a
+        # MultiValueKeyDict, because that's what request.POST
+        # contains. we need to turn it into a regular dict
+        # (i.e. values should not be single-element lists)
+        return post_data.dict()
+    # if browser bots, it will be a regular dict
+    return post_data
 
 
 class FormPageMixin(object):
@@ -764,7 +764,13 @@ class FormPageMixin(object):
 
         self.participant._current_form_page_url = self.request.path
         if otree.common_internal.USE_REDIS:
-            if self.has_timeout():
+            # if using browser bots, don't schedule the timeout,
+            # because if it's a short timeout, it could happen before
+            # the browser bot submits the page. Because the timeout
+            # doesn't query the botworker (it is distinguished from bot
+            # submits by the auto_submit flag), it will "skip ahead"
+            # and therefore confuse the bot system.
+            if self.has_timeout() and not self.session.use_browser_bots:
                 otree.timeout.tasks.submit_expired_url.schedule(
                     (self.request.path,), delay=self.timeout_seconds)
         return super(FormPageMixin, self).get(request, *args, **kwargs)
@@ -786,7 +792,12 @@ class FormPageMixin(object):
                     bot.send_completion_message()
                     return HttpResponse('Bot completed')
                 else:
-                    post_data = dict(request.POST)
+                    # convert MultiValueKeyDict to regular dict
+                    # so that we can add entries to it in a simple way
+                    # before, we used dict(request.POST), but that caused
+                    # errors with BooleanFields with blank=True that were
+                    # submitted empty...it said [''] is not a valid value
+                    post_data = request.POST.dict()
                     post_data.update(submission)
             else:
                 post_data = request.POST
@@ -811,12 +822,13 @@ class FormPageMixin(object):
                         "{}: {}".format(k, repr(v))
                         for k, v in form.errors.items()]
                     raise AssertionError(
-                        'Page "{}": Bot submission for failed form validation: {} '
+                        'Page "{}": Bot submission failed form validation: {} '
                         'Check your bot in tests.py, '
                         'then create a new session. '
                         'Data submitted was: {}'.format(
                             self.__class__.__name__,
                             errors,
+
                             bot_prettify_post_data(post_data),
                         ))
                 return self.form_invalid(form)

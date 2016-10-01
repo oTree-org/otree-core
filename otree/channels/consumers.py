@@ -85,7 +85,7 @@ def connect_auto_advance(message, params):
     if participant._index_in_pages > page_index:
         message.reply_channel.send(
             {'text': json.dumps(
-                {'new_index_in_pages': participant._index_in_pages})})
+                {'auto_advanced': True})})
 
 
 def disconnect_auto_advance(message, params):

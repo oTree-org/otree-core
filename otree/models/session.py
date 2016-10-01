@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import logging
-
+import channels
+import json
 import django.test
 from django.core.urlresolvers import reverse
 
@@ -210,6 +211,19 @@ class Session(ModelWithVars):
 
             assert resp.status_code < 400
 
+            # do the auto-advancing here,
+            # rather than in increment_index_in_pages,
+            # because it's only needed here.
+            channels.Group(
+                'auto-advance-{}'.format(p.code)
+            ).send(
+                {'text': json.dumps(
+                    {'auto_advanced': True})}
+            )
+
+    def pages_auto_reload_when_advanced(self):
+        return settings.DEBUG or self.is_demo
+
     def build_participant_to_player_lookups(self):
         subsession_app_names = self.config['app_sequence']
 
@@ -262,5 +276,3 @@ class Session(ModelWithVars):
             payoff.to_real_world_currency(self)
         )
 
-    def pages_auto_reload_when_advanced(self):
-        return settings.DEBUG or self.is_demo

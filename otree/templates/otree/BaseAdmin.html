@@ -45,12 +45,9 @@ $(function () {
 <script src="{% static 'otree/js/table-utils.js' %}"></script>
 
 {% endblock %}
-{% block content_at_top_of_body %}
-{{ block.super }}
-{% include 'otree/includes/TopMenu.html' %}
-{% endblock %}
-{% block content_main %}
-<div class="container" style='max-width:970px'>
+{% block body_main %}
+    {% include 'otree/includes/TopMenu.html' %}
+    <div class="container" style='max-width:970px'>
     <div class="page-header" style="padding-top: 40px">
         <h2>{% block title %}{% endblock %}</h2>
     </div>
@@ -73,4 +70,4 @@ $(function () {
     <br/>
 </div>
 {% endblock %}
-<!--end content_main-->
+<!--end body_main-->
