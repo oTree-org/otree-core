@@ -11,7 +11,7 @@ from six.moves.urllib import parse as urlparse
 
 
 DEFAULT_MIDDLEWARE_CLASSES = (
-     'silk.middleware.SilkyMiddleware',
+    'silk.middleware.SilkyMiddleware',
     'otree.middleware.CheckDBMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     # this middlewware is for generate human redeable errors

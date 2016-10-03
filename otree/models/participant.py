@@ -129,9 +129,10 @@ class Participant(ModelWithVars):
             num_extra_lookups = len(self._player_lookups) + 1
             qs = ParticipantToPlayerLookup.objects.filter(
                 participant=self.pk,
-                page_index__range=(index, index+num_extra_lookups))
+                page_index__range=(index, index+num_extra_lookups)
+            ).values()
             for player_lookup in qs:
-                self._player_lookups[player_lookup.page_index] = player_lookup
+                self._player_lookups[player_lookup['page_index']] = player_lookup
         return self._player_lookups[index]
 
     def future_player_lookup(self, pages_ahead):
@@ -169,7 +170,7 @@ class Participant(ModelWithVars):
 
     def _url_i_should_be_on(self):
         if self._index_in_pages <= self._max_page_index:
-            return self.player_lookup().url
+            return self.player_lookup()['url']
         if self.session.mturk_HITId:
             assignment_id = self.mturk_assignment_id
             if self.session.mturk_sandbox:

@@ -317,7 +317,8 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
     @property
     def player(self):
         if not self._player:
-            self._player = self.PlayerClass.objects.get(pk=self._player_pk)
+            player_pk = self.participant.player_lookup()['player_pk']
+            self._player = self.PlayerClass.objects.get(pk=player_pk)
         return self._player
 
     @property
@@ -329,7 +330,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
     @property
     def subsession(self):
         if not self._subsession:
-            self._subsession = self.player._subsession
+            self._subsession = self.player.subsession
         return self._subsession
 
     @property
@@ -364,7 +365,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
     def round_number(self, value):
         self._round_number = value
 
-    def set_attributes(self, participant):
+    def set_attributes(self, participant, lazy=False):
         """
         Even though we only use PlayerClass in set_attributes,
         we use {Group/Subsession}Class elsewhere.
@@ -383,8 +384,8 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
 
         player_lookup = participant.player_lookup()
 
-        app_name = player_lookup.app_name
-        player_pk = player_lookup.player_pk
+        app_name = player_lookup['app_name']
+        player_pk = player_lookup['player_pk']
 
         # for the participant changelist
         self.participant._current_app_name = app_name
@@ -395,19 +396,20 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         self.GroupClass = getattr(models_module, 'Group')
         self.PlayerClass = getattr(models_module, 'Player')
 
-        self.player = self.PlayerClass.objects\
-            .select_related(
-                'group', 'subsession', 'session'
-            ).get(pk=player_pk)
-        self.session = self.player.session
-        self.participant._round_number = self.player.round_number
-        self.group = self.player.group
-        self.subsession = self.player.subsession
+        if not lazy:
+            self.player = self.PlayerClass.objects\
+                .select_related(
+                    'group', 'subsession', 'session'
+                ).get(pk=player_pk)
+            self.session = self.player.session
+            self.participant._round_number = self.player.round_number
+            self.group = self.player.group
+            self.subsession = self.player.subsession
 
-        # for public API
-        self.round_number = self.subsession.round_number
+            # for public API
+            self.round_number = self.subsession.round_number
 
-        self.set_extra_attributes()
+            self.set_extra_attributes()
 
     def _increment_index_in_pages(self):
         # when is this not the case?
@@ -447,7 +449,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             if not hasattr(page, 'is_displayed'):
                 break
 
-            page.set_attributes(self.participant)
+            page.set_attributes(self.participant, lazy=True)
             if page.is_displayed():
                 break
 
@@ -578,10 +580,10 @@ class InGameWaitPageMixin(object):
             # groups, not just one.
 
             player = self.player
-            del self.player
+            self.player = None
             if self.wait_for_all_groups:
                 group = self.group
-                del self.group
+                self.group = None
 
             # make sure we get the most up-to-date player objects
             # e.g. if they were queried in is_displayed(),
