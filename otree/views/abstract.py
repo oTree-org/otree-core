@@ -298,6 +298,63 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
 
         return new_tables
 
+    # make these properties so they can be calculated lazily,
+    # in _increment_index
+    _player = None
+    _group = None
+    _subsession = None
+    _session = None
+    _round_number = None
+
+    @property
+    def player(self):
+        if not self._player:
+            self._player = self.PlayerClass.objects.get(pk=self._player_pk)
+        return self._player
+
+    @property
+    def group(self):
+        if not self._group:
+            self._group = self.player.group
+        return self._group
+
+    @property
+    def subsession(self):
+        if not self._subsession:
+            self._subsession = self.player._subsession
+        return self._subsession
+
+    @property
+    def session(self):
+        if not self._session:
+            self._session = self.participant.session
+        return self._session
+
+    @property
+    def round_number(self):
+        if self._round_number is None:
+            self._round_number = self.player.round_number
+        return self._round_number
+
+    @player.setter
+    def player(self, value):
+        self._player = value
+
+    @group.setter
+    def group(self, value):
+        self._group = value
+
+    @subsession.setter
+    def subsession(self, value):
+        self._subsession = value
+
+    @session.setter
+    def session(self, value):
+        self._session = value
+
+    @round_number.setter
+    def round_number(self, value):
+        self._round_number = value
 
     def set_attributes(self, participant):
         """
@@ -334,12 +391,10 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             .select_related(
                 'group', 'subsession', 'session'
             ).get(pk=player_pk)
-
-        self.group = self.player.group
-
-        self.subsession = self.player.subsession
         self.session = self.player.session
-        self.participant._round_number = self.subsession.round_number
+        self.participant._round_number = self.player.round_number
+        self.group = self.player.group
+        self.subsession = self.player.subsession
 
         # for public API
         self.round_number = self.subsession.round_number

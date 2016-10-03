@@ -116,13 +116,23 @@ class Participant(ModelWithVars):
 
     _is_bot = models.BooleanField(default=False)
 
+    _player_lookups = None
     def player_lookup(self):
         # this is the most reliable way to get the app name,
         # because of WaitUntilAssigned...
         # 2016-04-07: WaitUntilAssigned removed
-        return ParticipantToPlayerLookup.objects.get(
-            participant=self.pk,
-            page_index=self._index_in_pages)
+        index = self._index_in_pages
+        if not self._player_lookups or index not in self._player_lookups:
+            self._player_lookups = self._player_lookups or {}
+            # kind of a binary search type logic. limit the number of queries
+            # to log2(n). similar to the way arraylists grow.
+            num_extra_lookups = len(self._player_lookups) + 1
+            qs = ParticipantToPlayerLookup.objects.filter(
+                participant=self.pk,
+                page_index__range=(index, index+num_extra_lookups))
+            for player_lookup in qs:
+                self._player_lookups[player_lookup.page_index] = player_lookup
+        return self._player_lookups[index]
 
     def future_player_lookup(self, pages_ahead):
         try:
