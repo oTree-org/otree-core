@@ -3,7 +3,7 @@
 
 import sys
 
-from django.db.models import permalink
+from django.db.models import permalink, Sum
 from django.core.urlresolvers import reverse
 
 import six

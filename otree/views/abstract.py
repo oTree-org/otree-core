@@ -166,6 +166,8 @@ class OTreeMixin(SaveObjectsMixin, object):
         return HttpResponseRedirect(self.participant._url_i_should_be_on())
 
 
+from silk.profiling.profiler import silk_profile
+
 class FormPageOrInGameWaitPageMixin(OTreeMixin):
     """
     View that manages its position in the group sequence.
@@ -185,9 +187,12 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         '''using dots seems not to work'''
         return get_dotted_name(cls).replace('.', '-')
 
+
+
     @method_decorator(never_cache)
     @method_decorator(cache_control(must_revalidate=True, max_age=0,
                                     no_cache=True, no_store=True))
+    @silk_profile(name='dispatch')
     def dispatch(self, request, *args, **kwargs):
 
         participant_code = kwargs.pop(constants.participant_code)

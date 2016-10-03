@@ -166,4 +166,7 @@ def augment_urlpatterns(urlpatterns):
     urlpatterns += url_patterns_from_module('otree.views.mturk')
     urlpatterns += url_patterns_from_module('otree.views.export')
 
+    from django.conf.urls import url, include
+    urlpatterns += [url(r'^silk/', include('silk.urls', namespace='silk'))]
+
     return urlpatterns

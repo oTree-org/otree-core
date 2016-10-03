@@ -11,6 +11,7 @@ from six.moves.urllib import parse as urlparse
 
 
 DEFAULT_MIDDLEWARE_CLASSES = (
+     'silk.middleware.SilkyMiddleware',
     'otree.middleware.CheckDBMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     # this middlewware is for generate human redeable errors
@@ -199,6 +200,8 @@ def get_default_settings(initial_settings=None):
         # pollute Constants. It doesn't make as much sense per session config,
         # so I'm just going the simple route and making it a global setting.
         'BOTS_CHECK_HTML': True,
+
+        'SILKY_PYTHON_PROFILER': True,
     }
 
 
@@ -227,6 +230,7 @@ def augment_settings(settings):
     all_otree_apps = list(all_otree_apps_set)
 
     no_experiment_apps = [
+        'silk',
         'django.contrib.auth',
         'otree',
         'floppyforms',
