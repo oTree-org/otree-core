@@ -23,7 +23,7 @@ from django.views.decorators.cache import never_cache, cache_control
 from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import resolve
-
+import redis_lock
 import channels
 
 import vanilla
@@ -83,6 +83,8 @@ def global_lock(recheck_interval=0.1):
             time.sleep(recheck_interval)
         else:
             try:
+                time_to_acquire = time.time() - start_time
+                logger.info('{}s to acquire lock')
                 yield
             finally:
                 GlobalLockModel.objects.update(locked=False)
@@ -197,8 +199,14 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
 
         participant_code = kwargs.pop(constants.participant_code)
 
-        with participant_lock(participant_code), otree.db.idmap.use_cache():
+        if otree.common_internal.USE_REDIS:
+            lock = redis_lock.Lock(
+                otree.common_internal.get_redis_conn(),
+                participant_code)
+        else:
+            lock = participant_lock(participant_code)
 
+        with lock, otree.db.idmap.use_cache():
             try:
                 participant = Participant.objects.get(
                     code=participant_code)
@@ -603,7 +611,13 @@ class InGameWaitPageMixin(object):
             self.subsession if self.wait_for_all_groups else self.group)
 
     def _register_wait_page_visit(self):
-        with global_lock():
+        if otree.common_internal.USE_REDIS:
+            lock = redis_lock.Lock(
+                otree.common_internal.get_redis_conn(),
+                self.get_channels_group_name())
+        else:
+            lock = global_lock()
+        with lock:
             unvisited_participants = self._tally_unvisited()
         if unvisited_participants:
             return
