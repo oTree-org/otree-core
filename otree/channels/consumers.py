@@ -74,15 +74,18 @@ def connect_auto_advance(message, params):
 
     # in case message was sent before this web socket connects
 
+    result = Participant.objects.filter(
+            code=participant_code).values_list(
+        '_index_in_pages', flat=True)
     try:
-        participant = Participant.objects.get(code=participant_code)
-    except Participant.DoesNotExist:
+        page_should_be_on = result[0]
+    except IndexError:
         message.reply_channel.send(
             {'text': json.dumps(
                 # doesn't get shown because not yet localized
                 {'error': 'Participant not found in database.'})})
         return
-    if participant._index_in_pages > page_index:
+    if page_should_be_on > page_index:
         message.reply_channel.send(
             {'text': json.dumps(
                 {'auto_advanced': True})})
@@ -140,7 +143,8 @@ def connect_wait_for_session(message, pre_create_id):
     group.add(message.reply_channel)
 
     # in case message was sent before this web socket connects
-    if Session.objects.filter(_pre_create_id=pre_create_id, ready=True):
+    if Session.objects.filter(
+            _pre_create_id=pre_create_id, ready=True).exists():
         group.send(
             {'text': json.dumps(
                 {'status': 'ready'})}
