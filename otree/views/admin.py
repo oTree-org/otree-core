@@ -24,7 +24,8 @@ import channels
 
 import otree.export
 from otree.common_internal import (
-    create_session_and_redirect, db_status_ok, check_pypi_for_updates)
+    create_session_and_redirect, db_status_ok)
+from otree.management.cli import check_pypi_for_updates
 from otree.session import SESSION_CONFIGS_DICT, create_session, SessionConfig
 from otree import forms
 from otree.forms import widgets

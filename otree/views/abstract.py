@@ -202,7 +202,10 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         if otree.common_internal.USE_REDIS:
             lock = redis_lock.Lock(
                 otree.common_internal.get_redis_conn(),
-                participant_code)
+                participant_code,
+                expire=60,
+                auto_renewal=True
+            )
         else:
             lock = participant_lock(participant_code)
 
@@ -616,7 +619,10 @@ class InGameWaitPageMixin(object):
         if otree.common_internal.USE_REDIS:
             lock = redis_lock.Lock(
                 otree.common_internal.get_redis_conn(),
-                self.get_channels_group_name())
+                self.get_channels_group_name(),
+                expire=60,
+                auto_renewal=True
+            )
         else:
             lock = global_lock()
         with lock:
