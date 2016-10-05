@@ -11,11 +11,13 @@
 
 {% if form.non_field_errors %}
 {% for error in form.non_field_errors%}
-<p class="errornote">
+<p class="text-danger">
     {{ error }}
 </p>
 {% endfor %}
 {% endif %}
+
+    <p class="text-danger">{% ensure_superuser_exists %}</p>
 
 <div id="content-main">
 <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
@@ -28,9 +30,9 @@
   </div>
   <div class="form-row">
       The password is defined in your <code>settings.py</code> file.
-      {% ensure_superuser_exists %}
 
   </div>
+
   {% url 'admin_password_reset' as password_reset_url %}
   {% if password_reset_url %}
   <div class="password-reset-link">
