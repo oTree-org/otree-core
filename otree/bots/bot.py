@@ -276,15 +276,12 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
     def response(self, response):
         try:
             self.url = response.redirect_chain[-1][0]
-            self.path = urllib.parse.urlsplit(self.url).path
         except IndexError as exc:
-            # 2016-08-07...what are the consequences if self.path is not set?
-            logger.warning(
-                'Participant {}: trying to set self.path '
-                '(which is currently {}, '
-                'but an error occurred: {}'.format(
-                    self.participant.code, self.path, repr(exc))
-            )
+            # this happens e.g. if you use SubmissionMustFail
+            # and it returns the same URL
+            pass
+        else:
+            self.path = urllib.parse.urlsplit(self.url).path
         self._response = response
         self.html = response.content.decode('utf-8')
 
