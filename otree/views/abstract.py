@@ -83,8 +83,6 @@ def global_lock(recheck_interval=0.1):
             time.sleep(recheck_interval)
         else:
             try:
-                time_to_acquire = time.time() - start_time
-                logger.info('{}s to acquire lock')
                 yield
             finally:
                 GlobalLockModel.objects.update(locked=False)
@@ -168,8 +166,6 @@ class OTreeMixin(SaveObjectsMixin, object):
         return HttpResponseRedirect(self.participant._url_i_should_be_on())
 
 
-from silk.profiling.profiler import silk_profile
-
 class FormPageOrInGameWaitPageMixin(OTreeMixin):
     """
     View that manages its position in the group sequence.
@@ -194,7 +190,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
     @method_decorator(never_cache)
     @method_decorator(cache_control(must_revalidate=True, max_age=0,
                                     no_cache=True, no_store=True))
-    @silk_profile(name='dispatch')
     def dispatch(self, request, *args, **kwargs):
 
         participant_code = kwargs.pop(constants.participant_code)
@@ -412,7 +407,9 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             # for public API
             self.round_number = self.subsession.round_number
 
-            self.set_extra_attributes()
+            # currently not needed, because _group_or_subsession was
+            # turned into a property
+            #self.set_extra_attributes()
 
     def _increment_index_in_pages(self):
         # when is this not the case?
@@ -611,9 +608,9 @@ class InGameWaitPageMixin(object):
         completion.after_all_players_arrive_run = True
         completion.save()
 
-    def set_extra_attributes(self):
-        self._group_or_subsession = (
-            self.subsession if self.wait_for_all_groups else self.group)
+    @property
+    def _group_or_subsession(self):
+        return self.subsession if self.wait_for_all_groups else self.group
 
     def _register_wait_page_visit(self):
         if otree.common_internal.USE_REDIS:
