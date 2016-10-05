@@ -158,6 +158,9 @@ def get_rows_for_wide_csv():
     session_cache = {row['id']: row for row in sessions}
 
     participants = Participant.objects.order_by('id').values()
+    if not participants:
+        # 1 empty row
+        return [[]]
 
     payoff_cache = get_payoff_cache()
     payoff_plus_participation_fee_cache = get_payoff_plus_participation_fee_cache(payoff_cache)
