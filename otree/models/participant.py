@@ -195,8 +195,22 @@ class Participant(ModelWithVars):
         return 'InitializeParticipant', (self.code,)
 
     @property
-    def payoff(self):
+    def old_payoff(self):
         return sum(player.payoff or c(0) for player in self.get_players())
+
+    @property
+    def payoff(self):
+        app_sequence = self.session.config['app_sequence']
+        total_payoff = 0
+        for app in app_sequence:
+            models_module = otree.common_internal.get_models_module(app)
+            app_payoff = models_module.Player.objects.filter(
+                participant=self).aggregate(Sum('payoff'))['payoff__sum']
+            total_payoff += (app_payoff or 0)
+        result = c(total_payoff)
+        assert result == self.old_payoff
+        return result
+
 
     def payoff_in_real_world_currency(self):
         return self.payoff.to_real_world_currency(

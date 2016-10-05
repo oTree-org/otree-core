@@ -843,7 +843,10 @@ class FormPageMixin(object):
             # and therefore confuse the bot system.
             if self.has_timeout() and not self.session.use_browser_bots:
                 otree.timeout.tasks.submit_expired_url.schedule(
-                    (self.request.path,), delay=self.timeout_seconds)
+                    (self.participant.code,
+                    self.participant._index_in_pages,
+                    self.request.path,),
+                    delay=self.timeout_seconds)
         return super(FormPageMixin, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
