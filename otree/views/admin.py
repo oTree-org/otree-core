@@ -628,6 +628,8 @@ class ServerCheck(vanilla.TemplateView):
         runserver = 'runserver' in sys.argv
         db_synced = db_status_ok()
         pypi_results = check_pypi_for_updates()
+        python2 = sys.version_info[0] == 2
+
 
         return {
             'sqlite': sqlite,
@@ -638,7 +640,8 @@ class ServerCheck(vanilla.TemplateView):
             'heroku': heroku,
             'runserver': runserver,
             'db_synced': db_synced,
-            'pypi_results': pypi_results
+            'pypi_results': pypi_results,
+            'python2': python2
         }
 
 
