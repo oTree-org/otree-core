@@ -83,8 +83,9 @@ def add_class(var, css_class, *extra_css_classes):
 
 
 NO_USER_MSG = '''
-Before logging in, you must create a user by setting ADMIN_USERNAME and
+You must set ADMIN_USERNAME and
 ADMIN_PASSWORD in settings.py
+(or disable authentication by unsetting AUTH_LEVEL).
 '''
 
 

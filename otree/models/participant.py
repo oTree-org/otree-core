@@ -195,10 +195,6 @@ class Participant(ModelWithVars):
         return 'InitializeParticipant', (self.code,)
 
     @property
-    def old_payoff(self):
-        return sum(player.payoff or c(0) for player in self.get_players())
-
-    @property
     def payoff(self):
         app_sequence = self.session.config['app_sequence']
         total_payoff = 0
@@ -207,33 +203,18 @@ class Participant(ModelWithVars):
             app_payoff = models_module.Player.objects.filter(
                 participant=self).aggregate(Sum('payoff'))['payoff__sum']
             total_payoff += (app_payoff or 0)
-        result = c(total_payoff)
-        assert result == self.old_payoff
-        return result
-
+        return c(total_payoff)
 
     def payoff_in_real_world_currency(self):
         return self.payoff.to_real_world_currency(
             self.session
         )
 
-    def payoff_from_subsessions(self):
-        """Deprecated on 2015-05-07.
-        Remove at some point.
-        """
-        return self.payoff
-
     def money_to_pay(self):
         return self.payoff_plus_participation_fee()
 
     def payoff_plus_participation_fee(self):
         return self.session._get_payoff_plus_participation_fee(self.payoff)
-
-    def total_pay(self):
-        return self.payoff_plus_participation_fee()
-
-    def payoff_is_complete(self):
-        return all(p.payoff is not None for p in self.get_players())
 
     def name(self):
         return id_label_name(self.pk, self.label)
