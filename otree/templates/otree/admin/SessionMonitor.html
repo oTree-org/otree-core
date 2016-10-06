@@ -109,7 +109,7 @@ function ajax_json_participants() {
 <br/>
     <a id="advance_users" class="btn btn-primary" role="button"
        data-toggle="popover" data-trigger="hover"
-       data-content="{{ advance_users_button_text }}">
+       data-content="{{ advance_users_button_text }}" {% if session.use_browser_bots %}disabled{% endif %}>
         Advance slowest user(s)
     </a>
 

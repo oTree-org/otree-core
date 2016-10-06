@@ -17,7 +17,7 @@ import otree.common_internal
 import otree.models
 from otree.common_internal import app_name_format
 import otree.export
-
+from otree.models.participant import Participant
 
 # =============================================================================
 # VIEWS
@@ -31,6 +31,9 @@ class ExportIndex(vanilla.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(ExportIndex, self).get_context_data(**kwargs)
+
+        context['db_is_empty'] = not Participant.objects.exists()
+
         app_labels = settings.INSTALLED_OTREE_APPS
         app_labels_with_data = []
         for app_label in app_labels:
@@ -41,7 +44,7 @@ class ExportIndex(vanilla.TemplateView):
             {"name": app_name_format(app_label), "label": app_label}
             for app_label in app_labels_with_data
         ]
-        context.update({'apps': apps})
+        context['apps'] = apps
         return context
 
 
