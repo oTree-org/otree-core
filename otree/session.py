@@ -128,7 +128,7 @@ class SessionConfig(dict):
             self['real_world_currency_per_point']
         ).quantize(Decimal('0.00001'))
 
-    def get_info(self):
+    def app_sequence_display(self):
         app_sequence = []
         for app_name in self['app_sequence']:
             models_module = get_models_module(app_name)
@@ -140,16 +140,50 @@ class SessionConfig(dict):
                     formatted_app_name, num_rounds)
             subsssn = {
                 'doc': getattr(models_module, 'doc', ''),
-                'bibliography': getattr(models_module, 'bibliography', []),
                 'name': formatted_app_name}
             app_sequence.append(subsssn)
+        return app_sequence
 
-        return {
-            'doc': self['doc'],
-            'app_sequence': app_sequence,
-            'name': self['name'],
-            'display_name': self['display_name'],
-            'lcm': self.get_lcm()}
+    non_editable_fields = {
+        'app_sequence',
+        'name',
+        'display_name',
+        'app_sequence',
+        'num_demo_participants',
+        'doc',
+    }
+
+    def editable_fields(self):
+        return [k for k,v in self
+                if k not in self.non_editable_fields
+                and isinstance(v, (bool, int, float, str))]
+
+    def html_field_name(self, field_name):
+        return '{}.{}'.format(self['name'], field_name)
+
+    def editable_fields_html(self):
+        fields = []
+        for k in self.editable_fields():
+            v = self[k]
+            html_field_name = self.html_field_name(k)
+            if isinstance(v, bool):
+                checked = 'checked' if v else ''
+                html = "<input name='{}' type='checkbox' {}>".format(
+                    html_field_name, checked)
+            elif isinstance(v, int):
+                html = "<input name='{}' type='number' value='{}' step='1'>".format(
+                    html_field_name, v)
+            elif isinstance(v, float):
+                html = "<input name='{}' type='number' value='{}'>".format(
+                    html_field_name, v)
+            elif isinstance(v, str):
+                html = "<input name='{}' type='text' value='{}'>".format(
+                    html_field_name, v)
+            html = "<label class='control-label' for='{}'>{} {}</label>".format(
+                html_field_name, html, k)
+            fields.append(html)
+        return [1,10]
+        #return fields
 
 
 def get_session_configs_dict():
@@ -177,11 +211,14 @@ def create_session(
         _pre_create_id=None,
         room_name=None, for_mturk=False, use_cli_bots=False,
         is_demo=False, force_browser_bots=False,
-        honor_browser_bots_config=False, bot_case_number=None):
+        honor_browser_bots_config=False, bot_case_number=None,
+        edited_session_config_fields=None
+    ):
 
     session = None
     use_browser_bots = False
     participants = []
+    edited_session_config_fields = edited_session_config_fields or {}
 
     with transaction.atomic():
         # 2014-5-2: i could implement this by overriding the __init__ on the
@@ -193,6 +230,10 @@ def create_session(
 
         try:
             session_config = SESSION_CONFIGS_DICT[session_config_name]
+            # seems i need to copy and convert back to a session config
+            # otherwise .copy() converts it to a simple dict
+            session_config = SessionConfig(session_config.copy())
+            session_config.update(edited_session_config_fields)
         except KeyError:
             msg = 'Session config "{}" not found in settings.SESSION_CONFIGS.'
             raise ValueError(msg.format(session_config_name))

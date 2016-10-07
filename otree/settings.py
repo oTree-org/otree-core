@@ -311,7 +311,7 @@ def augment_settings(settings):
             'BACKEND': 'django.template.backends.django.DjangoTemplates',
             'DIRS': new_template_dirs,
             'OPTIONS': {
-                'debug': False,
+                'debug': True,
                 'loaders': [
                     ('django.template.loaders.cached.Loader', [
                         'django.template.loaders.filesystem.Loader',

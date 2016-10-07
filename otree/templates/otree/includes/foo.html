@@ -1,0 +1,11 @@
+blah
+
+{% for config in configs %}
+    <div class="editable-config-fields" id="editable-config-fields-{{ config.name }}" style="display: none">
+        {{ config.non_editable_fields }}
+        {% for field in config.editable_fields_html %}
+            {{ field }}
+        {% endfor %}
+    </div>
+
+{% endfor %}
