@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import django.test
-
 from huey.contrib.djhuey import task, db_task
 
 from otree import constants_internal
@@ -14,7 +13,11 @@ test_client = django.test.Client()
 @task()
 def submit_expired_url(url):
     test_client.post(
-        url, data={constants_internal.auto_submit: True}, follow=True)
+        url,
+        data={
+            constants_internal.auto_submit: True,
+        },
+        follow=True)
 
 
 @db_task()

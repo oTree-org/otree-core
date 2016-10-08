@@ -35,7 +35,7 @@ debug_values_built_in = 'debug_values_built_in'
 debug_values = 'debug_values'
 get_param_truth_value = '1'
 
-
+admin_secret_code = 'admin_secret_code'
 timeout_seconds = 'timeout_seconds'
 auto_submit = 'auto_submit'
 check_auto_submit = 'check_auto_submit'

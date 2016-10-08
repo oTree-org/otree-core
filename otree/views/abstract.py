@@ -36,7 +36,8 @@ import otree.db.idmap
 import otree.constants_internal as constants
 from otree.models import Participant
 from otree.common_internal import (
-    get_app_label_from_import_path, get_dotted_name)
+    get_app_label_from_import_path, get_dotted_name, get_admin_secret_code
+)
 from otree.bots.browser import EphemeralBrowserBot
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
@@ -52,6 +53,7 @@ logger = logging.getLogger(__name__)
 NO_PARTICIPANTS_LEFT_MSG = (
     "The maximum number of participants for this session has been exceeded.")
 
+ADMIN_SECRET_CODE = get_admin_secret_code()
 
 class DebugTable(object):
     def __init__(self, title, rows):
@@ -771,7 +773,15 @@ class FormPageMixin(object):
 
         self.object = self.get_object()
 
-        if request.POST.get(constants.auto_submit):
+        auto_submitted = request.POST.get(constants.auto_submit)
+
+        # if the page doesn't have a timeout_seconds, only the timeoutworker
+        # should be able to auto-submit it.
+        # otherwise users could append auto_submit to the URL to skip pages
+        has_secret_code = (
+            request.POST.get(constants.admin_secret_code) == ADMIN_SECRET_CODE)
+
+        if auto_submitted and (self.has_timeout() or has_secret_code):
             self.timeout_happened = True  # for public API
             self._set_auto_submit_values()
         else:

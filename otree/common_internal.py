@@ -195,6 +195,9 @@ def make_hash(s):
     s += settings.SECRET_KEY
     return hashlib.sha224(s.encode()).hexdigest()[:8]
 
+def get_admin_secret_code():
+    s = settings.SECRET_KEY
+    return hashlib.sha224(s.encode()).hexdigest()[:8]
 
 def check_pypi_for_updates():
     logging.getLogger("requests").setLevel(logging.WARNING)
