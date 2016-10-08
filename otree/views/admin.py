@@ -124,7 +124,7 @@ class CreateSession(vanilla.FormView):
 
         edited_session_config_fields = {}
 
-        for field in config.all_editable_fields():
+        for field in config.editable_fields():
             old_value = config[field]
             html_field_name = config.html_field_name(field)
             new_value_str = post_data[html_field_name]

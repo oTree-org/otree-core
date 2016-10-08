@@ -179,7 +179,7 @@ class SessionConfig(dict):
         # this is the best we can do
         return sorted(fields)
 
-    def all_editable_fields(self):
+    def editable_fields(self):
         return self.builtin_editable_fields + self.custom_editable_fields()
 
     def html_field_name(self, field_name):

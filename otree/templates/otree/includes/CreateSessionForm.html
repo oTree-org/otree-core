@@ -1,5 +1,6 @@
 {% load otree_tags floppyforms %}
 
+
 {% formrow form.session_config %}
 
 <div class="form-group{% if form.num_participants.errors %} has-error{% endif %} required">
@@ -26,37 +27,39 @@
 
     <div class="editable-config-fields"
          id="editable-config-fields-{{ config.name }}" style="display: none">
-
-
-        <button class="btn" type="button" data-toggle="collapse"
-                data-target="#editable-config-fields-table-{{ config.name }}">
-            Show/hide session config properties
-        </button>
-
-            <div id="editable-config-fields-table-{{ config.name }}" class="collapse">
-                {% if config.custom_editable_fields %}
-                    <h5>Custom</h5>
-                    <table class="table">
-                        {% for field in config.custom_editable_fields_html %}
-                            {{ field|safe }}
-                        {% endfor %}
-                    </table>
-                {% endif %}
-
-                {# we only need to clarify that these are built-in if there are also custom ones #}
-                {% if config.custom_editable_fields %}<h5>Built-in</h5>{% endif %}
+            <h4>
+                <a data-toggle="collapse"
+                   href="#editable-config-fields-table-{{ config.name }}"
+                   class="btn-block">
+                    Edit session config
+                </a>
+            </h4>
+        <div class="collapse"
+             id="editable-config-fields-table-{{ config.name }}">
+            {% if config.custom_editable_fields %}
+                <h5>Custom</h5>
                 <table class="table">
-                    {% for field in config.builtin_editable_fields_html %}
+                    {% for field in config.custom_editable_fields_html %}
                         {{ field|safe }}
                     {% endfor %}
                 </table>
-            </div>
+            {% endif %}
+
+            {# we only need to clarify that these are built-in if there are also custom ones #}
+            {% if config.custom_editable_fields %}<h5>Built-in</h5>{% endif %}
+            <table class="table">
+                {% for field in config.builtin_editable_fields_html %}
+                    {{ field|safe }}
+                {% endfor %}
+            </table>
+        </div>
     </div>
+
 
     {% include "otree/includes/SessionInfo.html" with config=config config_display="none" %}
 {% endfor %}
 
-<script type="text/javascript">
+<script>
     function showSessionConfigInfo(sessionconfigname) {
         $('.summary').hide();
         $('.editable-config-fields').hide();
