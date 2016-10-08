@@ -91,10 +91,7 @@ class CreateSession(vanilla.FormView):
         return super(CreateSession, self).dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        session_config_summaries = [
-            session_config.get_info()
-            for session_config in SESSION_CONFIGS_DICT.values()]
-        kwargs.update({'session_config_summaries': session_config_summaries})
+        kwargs['configs'] = SESSION_CONFIGS_DICT.values()
         return super(CreateSession, self).get_context_data(**kwargs)
 
     def get_form(self, data=None, files=None, **kwargs):
@@ -103,8 +100,9 @@ class CreateSession(vanilla.FormView):
 
     def form_valid(self, form):
 
+        session_config_name = form.cleaned_data['session_config']
         session_kwargs = {
-            'session_config_name': form.cleaned_data['session_config'],
+            'session_config_name': session_config_name,
             'for_mturk': self.for_mturk
         }
         if self.for_mturk:
@@ -122,7 +120,22 @@ class CreateSession(vanilla.FormView):
         if hasattr(self, "room"):
             session_kwargs['room_name'] = self.room.name
 
-        return create_session_and_redirect(session_kwargs)
+        post_data = self.request.POST
+        config = SESSION_CONFIGS_DICT[session_config_name]
+
+        edited_session_config_fields = {}
+
+        for field in config.editable_fields():
+            old_value = config[field]
+            html_field_name = config.html_field_name(field)
+            new_value_str = post_data[html_field_name]
+            new_value = type(old_value)(new_value_str)
+            if old_value != new_value:
+                edited_session_config_fields[field] = new_value
+
+        session_kwargs['edited_session_config_fields'] = edited_session_config_fields
+        return create_session_and_redirect(
+            session_kwargs)
 
 
 class Rooms(vanilla.TemplateView):

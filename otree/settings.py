@@ -311,7 +311,14 @@ def augment_settings(settings):
             'BACKEND': 'django.template.backends.django.DjangoTemplates',
             'DIRS': new_template_dirs,
             'OPTIONS': {
-                'debug': False,
+                # 2016-10-08: setting template debug back to True,
+                # because if an included template has an error, we need
+                # to surface the error, rather than not showing the template.
+                # that's how I set it in d1cd00ebfd43c7eff408dea6363fd14bb90e7c06,
+                # but then in 2c10188b33f2ac36c046f4f0f8764e15d6a6fa81,
+                # i set this to False, but I'm not sure why and there is no
+                # note in the commit explaining why.
+                'debug': True,
                 'loaders': [
                     ('django.template.loaders.cached.Loader', [
                         'django.template.loaders.filesystem.Loader',
