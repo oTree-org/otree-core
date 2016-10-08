@@ -160,7 +160,6 @@ class SessionConfig(dict):
         'app_sequence',
         'num_demo_participants',
         'doc',
-        'use_browser_bots',
     }
 
     def custom_editable_fields(self):

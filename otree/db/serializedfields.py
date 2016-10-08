@@ -83,6 +83,8 @@ def json_decode_object(d):
     else:
         return d
 
+def json_loads(value):
+    return json.loads(value, object_hook=json_decode_object)
 
 class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
     """_JSONField is a generic textfield that neatly serializes/unserializes
@@ -95,7 +97,7 @@ class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
 
         try:
             if isinstance(value, six.string_types):
-                return json.loads(value, object_hook=json_decode_object)
+                return json_loads(value)
         except ValueError:
             pass
 

@@ -19,6 +19,8 @@ from otree.models.session import Session
 from otree.models.subsession import BaseSubsession
 from otree.models.group import BaseGroup
 from otree.models.player import BasePlayer
+from otree.db.serializedfields import json_loads
+from otree.session import SessionConfig
 
 from otree.models_concrete import (
     PageCompletion)
@@ -157,6 +159,16 @@ def get_rows_for_wide_csv():
         num_participants=Count('participant')).values()
     session_cache = {row['id']: row for row in sessions}
 
+    session_config_fields = set()
+    for row in sessions:
+        config = json_loads(row['config'])
+        config = SessionConfig(config)
+        for field_name in config.editable_fields():
+            session_config_fields.add(field_name)
+        # store it for later, when we need app_sequence
+        row['config'] = config
+    session_config_fields = list(session_config_fields)
+
     participants = Participant.objects.order_by('id').values()
     if not participants:
         # 1 empty row
@@ -169,7 +181,10 @@ def get_rows_for_wide_csv():
     participant_fields = get_field_names_for_csv(Participant)
     participant_fields += ['payoff', 'payoff_plus_participation_fee']
     header_row = ['participant.{}'.format(fname) for fname in participant_fields]
-    header_row += ['session.{}'.format(fname) for fname in session_fields]
+    header_row += ['session.{}'.format(fname)
+                   for fname in session_fields]
+    header_row += ['session.config.{}'.format(fname)
+                   for fname in session_config_fields]
     rows = [header_row]
     for participant in participants:
         participant['payoff'] = payoff_cache[participant['id']]
@@ -177,14 +192,16 @@ def get_rows_for_wide_csv():
         row = [sanitize_for_csv(participant[fname]) for fname in participant_fields]
         session = session_cache[participant['session_id']]
         row += [sanitize_for_csv(session[fname]) for fname in session_fields]
+        config = session['config']
+        row += [sanitize_for_csv(config.get(fname)) for fname in session_config_fields]
         rows.append(row)
 
     # heuristic to get the most relevant order of apps
     import json
     app_sequences = collections.Counter()
     for session in sessions:
-        config = json.loads(session['config'])
-        app_sequence = config['app_sequence']
+        # we loaded the config earlier
+        app_sequence = session['config']['app_sequence']
         app_sequences[tuple(app_sequence)] += session['num_participants']
     most_common_app_sequence = app_sequences.most_common(1)[0][0]
 
