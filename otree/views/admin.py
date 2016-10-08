@@ -124,14 +124,17 @@ class CreateSession(vanilla.FormView):
 
         edited_session_config_fields = {}
 
-        for field in config.editable_fields():
-            data_type = type(config[field])
+        for field in config.all_editable_fields():
+            old_value = config[field]
             html_field_name = config.html_field_name(field)
-            if html_field_name in post_data:
-                edited_session_config_fields[field] = data_type(post_data[html_field_name])
+            new_value_str = post_data[html_field_name]
+            new_value = type(old_value)(new_value_str)
+            if old_value != new_value:
+                edited_session_config_fields[field] = new_value
 
+        session_kwargs['edited_session_config_fields'] = edited_session_config_fields
         return create_session_and_redirect(
-            session_kwargs, edited_session_config_fields)
+            session_kwargs)
 
 
 class Rooms(vanilla.TemplateView):

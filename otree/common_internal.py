@@ -328,14 +328,13 @@ def validate_identifier(identifier, identifier_description):
     )
 
 
-def create_session_and_redirect(session_kwargs, edited_session_config_fields=None):
+def create_session_and_redirect(session_kwargs):
     pre_create_id = uuid.uuid4().hex
     session_kwargs['_pre_create_id'] = pre_create_id
     channels_group_name = channels_create_session_group_name(
         pre_create_id)
     channels.Channel('otree.create_session').send({
         'kwargs': session_kwargs,
-        'edited_session_config_fields': edited_session_config_fields,
         'channels_group_name': channels_group_name
     })
 

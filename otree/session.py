@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import re
 import random
 import sys
 from functools import reduce
@@ -144,6 +145,14 @@ class SessionConfig(dict):
             app_sequence.append(subsssn)
         return app_sequence
 
+    builtin_editable_fields = [
+        'participation_fee',
+        'real_world_currency_per_point',
+        # disable this for now...people are likely to click it without
+        # knowing what brower bots are
+        #'use_browser_bots',
+    ]
+
     non_editable_fields = {
         'app_sequence',
         'name',
@@ -151,39 +160,72 @@ class SessionConfig(dict):
         'app_sequence',
         'num_demo_participants',
         'doc',
+        'use_browser_bots',
     }
 
-    def editable_fields(self):
-        return [k for k,v in self
+    def custom_editable_fields(self):
+        # should there also be some restriction on
+        # what chars are allowed? because maybe not all chars work
+        # in an HTML form field (e.g. periods, quotes, etc)
+        # so far, it seems any char works OK, even without escaping
+        # before making an HTML attribute. even '>漢 ."&'
+        # so i'll just put a general recommendation in the docs
+        fields = [k for k,v in self.items()
                 if k not in self.non_editable_fields
-                and isinstance(v, (bool, int, float, str))]
+                and k not in self.builtin_editable_fields
+                and isinstance(v, (bool, int, float, str, Decimal))]
+
+        # they're in a dict so we can't preserve the original ordering
+        # this is the best we can do
+        return sorted(fields)
+
+    def all_editable_fields(self):
+        return self.builtin_editable_fields + self.custom_editable_fields()
 
     def html_field_name(self, field_name):
         return '{}.{}'.format(self['name'], field_name)
 
-    def editable_fields_html(self):
-        fields = []
-        for k in self.editable_fields():
-            v = self[k]
-            html_field_name = self.html_field_name(k)
-            if isinstance(v, bool):
-                checked = 'checked' if v else ''
-                html = "<input name='{}' type='checkbox' {}>".format(
-                    html_field_name, checked)
-            elif isinstance(v, int):
-                html = "<input name='{}' type='number' value='{}' step='1'>".format(
-                    html_field_name, v)
-            elif isinstance(v, float):
-                html = "<input name='{}' type='number' value='{}'>".format(
-                    html_field_name, v)
-            elif isinstance(v, str):
-                html = "<input name='{}' type='text' value='{}'>".format(
-                    html_field_name, v)
-            html = "<label class='control-label' for='{}'>{} {}</label>".format(
-                html_field_name, html, k)
-            fields.append(html)
-        return [1,10]
-        #return fields
+    def editable_field_html(self, k):
+        v = self[k]
+        html_field_name = self.html_field_name(k)
+        html = "<input name='{}' ".format(html_field_name)
+        if isinstance(v, bool):
+            checked = 'checked' if v else ''
+            html += "type='checkbox' {}".format(checked)
+        elif isinstance(v, int):
+            html += '''
+            type='number'
+            step='1'
+            value='{}'
+            class='form-control'
+            '''.format(v)
+        elif isinstance(v, (float, Decimal)):
+            # convert to float, e.g. participation_fee
+            html += '''
+            class='form-control'
+            type='number'
+            step='any'
+            value='{}'
+            '''.format(float(v))
+        elif isinstance(v, str):
+            html += '''
+            type='text'
+            value='{}'
+            class='form-control'
+            '''.format(v)
+        html += '>'
+        html = '''
+        <tr><td><b>{}</b><td>{}</td>
+        '''.format(k, html)
+        return html
+
+    def builtin_editable_fields_html(self):
+        return [self.editable_field_html(k)
+                for k in self.builtin_editable_fields]
+
+    def custom_editable_fields_html(self):
+        return [self.editable_field_html(k)
+                for k in self.custom_editable_fields()]
 
 
 def get_session_configs_dict():

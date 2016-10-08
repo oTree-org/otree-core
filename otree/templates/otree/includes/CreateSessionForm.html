@@ -3,50 +3,80 @@
 {% formrow form.session_config %}
 
 <div class="form-group{% if form.num_participants.errors %} has-error{% endif %} required">
-    <label class="control-label" for="id_num_participants">Number of participants:</label>
-        <div class="controls  field-num_participants">
-            {% block widget %}{% formfield form.num_participants %}{% endblock %}
-            {% if form.num_participants.errors %}
-            {% block errors %}{% include "floppyforms/errors.html" with errors=form.num_participants.errors %}{% endblock %}
-            {% endif %}
-            {% for config in configs %}
-            <div id="lcm-{{ config.name }}" class="lcm" style="display:none"><p>Must be a multiple of {{ config.get_lcm }}</p></div>
-            {% endfor %}
-        </div>
-</div>
-
-<input class="btn btn-primary btn-large btn-primary next-button" value="Create" type="submit">
-
-
-{% for config in configs %}
-    <div class="editable-config-fields" id="editable-config-fields-{{ config.name }}" style="display: none">
-        {% for field in config.editable_fields_html %}
-            {{ field }}
+    <label class="control-label" for="id_num_participants">Number of
+        participants:</label>
+    <div class="controls  field-num_participants">
+        {% block widget %}{% formfield form.num_participants %}{% endblock %}
+        {% if form.num_participants.errors %}
+            {% block errors %}
+                {% include "floppyforms/errors.html" with errors=form.num_participants.errors %}{% endblock %}
+        {% endif %}
+        {% for config in configs %}
+            <div id="lcm-{{ config.name }}" class="lcm" style="display:none">
+                <p>Must be a multiple of {{ config.get_lcm }}</p></div>
         {% endfor %}
     </div>
+</div>
+
+<input class="btn btn-primary btn-large btn-primary next-button" value="Create"
+       type="submit">
+
+<br><br>
+{% for config in configs %}
+
+    <div class="editable-config-fields"
+         id="editable-config-fields-{{ config.name }}" style="display: none">
+
+
+        <button class="btn" type="button" data-toggle="collapse"
+                data-target="#editable-config-fields-table-{{ config.name }}">
+            Show/hide session config properties
+        </button>
+
+            <div id="editable-config-fields-table-{{ config.name }}" class="collapse">
+                {% if config.custom_editable_fields %}
+                    <h5>Custom</h5>
+                    <table class="table">
+                        {% for field in config.custom_editable_fields_html %}
+                            {{ field|safe }}
+                        {% endfor %}
+                    </table>
+                {% endif %}
+
+                {# we only need to clarify that these are built-in if there are also custom ones #}
+                {% if config.custom_editable_fields %}<h5>Built-in</h5>{% endif %}
+                <table class="table">
+                    {% for field in config.builtin_editable_fields_html %}
+                        {{ field|safe }}
+                    {% endfor %}
+                </table>
+            </div>
+    </div>
+
     {% include "otree/includes/SessionInfo.html" with config=config config_display="none" %}
 {% endfor %}
 
 <script type="text/javascript">
-function showSessionConfigInfo(sessionconfigname) {
-  $('.summary').hide();
-  $('#session-config-' + sessionconfigname).show();
-  $('#editable-config-fields-' + sessionconfigname).show();
-  $('.lcm').hide();
-  $('#lcm-' + sessionconfigname).show();
-}
+    function showSessionConfigInfo(sessionconfigname) {
+        $('.summary').hide();
+        $('.editable-config-fields').hide();
+        $('#session-config-' + sessionconfigname).show();
+        $('#editable-config-fields-' + sessionconfigname).show();
+        $('.lcm').hide();
+        $('#lcm-' + sessionconfigname).show();
+    }
 
-$(document).ready(function () {
-  $('.summary').hide();
-  $('.editable-config-fields').hide();
-  $('.lcm').hide();
-  var current_session_config = $('#id_session_config').val();
-  if (current_session_config) {
-    showSessionConfigInfo(current_session_config);
-  }
+    $(document).ready(function () {
+        $('.summary').hide();
+        $('.editable-config-fields').hide();
+        $('.lcm').hide();
+        var current_session_config = $('#id_session_config').val();
+        if (current_session_config) {
+            showSessionConfigInfo(current_session_config);
+        }
 
-  $('#id_session_config').change(function () {
-    showSessionConfigInfo($(this).val());
-  })
-});
+        $('#id_session_config').change(function () {
+            showSessionConfigInfo($(this).val());
+        })
+    });
 </script>
