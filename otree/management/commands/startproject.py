@@ -17,8 +17,8 @@ import six
 
 import otree
 from otree.common_internal import (
-    pypi_updates_cli, add_empty_migrations_to_all_apps)
-
+    add_empty_migrations_to_all_apps)
+from otree.management.cli import pypi_updates_cli
 
 # =============================================================================
 # CONSTANTS

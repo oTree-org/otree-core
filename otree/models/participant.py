@@ -3,7 +3,7 @@
 
 import sys
 
-from django.db.models import permalink
+from django.db.models import permalink, Sum
 from django.core.urlresolvers import reverse
 
 import six
@@ -116,13 +116,24 @@ class Participant(ModelWithVars):
 
     _is_bot = models.BooleanField(default=False)
 
+    _player_lookups = None
     def player_lookup(self):
         # this is the most reliable way to get the app name,
         # because of WaitUntilAssigned...
         # 2016-04-07: WaitUntilAssigned removed
-        return ParticipantToPlayerLookup.objects.get(
-            participant=self.pk,
-            page_index=self._index_in_pages)
+        index = self._index_in_pages
+        if not self._player_lookups or index not in self._player_lookups:
+            self._player_lookups = self._player_lookups or {}
+            # kind of a binary search type logic. limit the number of queries
+            # to log2(n). similar to the way arraylists grow.
+            num_extra_lookups = len(self._player_lookups) + 1
+            qs = ParticipantToPlayerLookup.objects.filter(
+                participant=self.pk,
+                page_index__range=(index, index+num_extra_lookups)
+            ).values()
+            for player_lookup in qs:
+                self._player_lookups[player_lookup['page_index']] = player_lookup
+        return self._player_lookups[index]
 
     def future_player_lookup(self, pages_ahead):
         try:
@@ -159,7 +170,7 @@ class Participant(ModelWithVars):
 
     def _url_i_should_be_on(self):
         if self._index_in_pages <= self._max_page_index:
-            return self.player_lookup().url
+            return self.player_lookup()['url']
         if self.session.mturk_HITId:
             assignment_id = self.mturk_assignment_id
             if self.session.mturk_sandbox:
@@ -185,30 +196,25 @@ class Participant(ModelWithVars):
 
     @property
     def payoff(self):
-        return sum(player.payoff or c(0) for player in self.get_players())
+        app_sequence = self.session.config['app_sequence']
+        total_payoff = 0
+        for app in app_sequence:
+            models_module = otree.common_internal.get_models_module(app)
+            app_payoff = models_module.Player.objects.filter(
+                participant=self).aggregate(Sum('payoff'))['payoff__sum']
+            total_payoff += (app_payoff or 0)
+        return c(total_payoff)
 
     def payoff_in_real_world_currency(self):
         return self.payoff.to_real_world_currency(
             self.session
         )
 
-    def payoff_from_subsessions(self):
-        """Deprecated on 2015-05-07.
-        Remove at some point.
-        """
-        return self.payoff
-
     def money_to_pay(self):
         return self.payoff_plus_participation_fee()
 
     def payoff_plus_participation_fee(self):
         return self.session._get_payoff_plus_participation_fee(self.payoff)
-
-    def total_pay(self):
-        return self.payoff_plus_participation_fee()
-
-    def payoff_is_complete(self):
-        return all(p.payoff is not None for p in self.get_players())
 
     def name(self):
         return id_label_name(self.pk, self.label)

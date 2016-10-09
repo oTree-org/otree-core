@@ -1,38 +1,29 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-import os
-import sys
-import datetime
-import collections
-import inspect
-import re
-import random
-import string
+
 import errno
-import logging
 import hashlib
-import requests
-import json
+import logging
+import os
+import random
+import re
+import string
 import uuid
-
-
-from os.path import dirname, join
 from collections import OrderedDict
 from importlib import import_module
+from os.path import dirname, join
 
 import channels
 import six
-from six.moves import urllib
-
-from django.db import connection
 from django.apps import apps
 from django.conf import settings
-from django.template.defaultfilters import title
 from django.core.urlresolvers import reverse
+from django.db import connection
 from django.http import HttpResponseRedirect
-
-import otree
+from django.template.defaultfilters import title
+from six.moves import urllib
+from huey.contrib.djhuey import HUEY
 
 # set to False if using runserver
 USE_REDIS = True
@@ -196,84 +187,6 @@ def make_hash(s):
     return hashlib.sha224(s.encode()).hexdigest()[:8]
 
 
-def check_pypi_for_updates():
-    logging.getLogger("requests").setLevel(logging.WARNING)
-
-    try:
-        response = requests.get(
-            'http://pypi.python.org/pypi/otree-core/json',
-            timeout=5,
-        )
-    except:
-        # could be requests.exceptions.Timeout
-        # or another error (404? 500? firewall issue etc)
-        return {'pypi_connection_error': True}
-
-    data = json.loads(response.content.decode())
-
-    semver_re = re.compile(r'^(\d+)\.(\d+)\.(\d+)$')
-
-    installed_dotted = otree.__version__
-    installed_match = semver_re.match(installed_dotted)
-
-    if installed_match:
-        # compare to the latest stable release
-
-        installed_tuple = [int(n) for n in installed_match.groups()]
-
-        releases = data['releases']
-        newest_tuple = [0, 0, 0]
-        newest_dotted = ''
-        for release in releases:
-            release_match = semver_re.match(release)
-            if release_match:
-                release_tuple = [int(n) for n in release_match.groups()]
-                if release_tuple > newest_tuple:
-                    newest_tuple = release_tuple
-                    newest_dotted = release
-        newest = newest_tuple
-        installed = installed_tuple
-
-        update_needed = (newest > installed and (
-                newest[0] > installed[0] or newest[1] > installed[1] or
-                newest[2] - installed[2] > 5))
-
-    else:
-        # compare to the latest release, whether stable or not
-        newest_dotted = data['info']['version'].strip()
-        update_needed = newest_dotted != installed_dotted
-
-    if update_needed:
-        if sys.version_info[0] == 3:
-            pip_command = 'pip3'
-        else:
-            pip_command = 'pip'
-        update_message = (
-            'Your otree-core package is out-of-date '
-            '(version {}; latest is {}). '
-            'You should upgrade with:\n '
-            '"{} install --upgrade otree-core"\n '
-            'and update your requirements_base.txt.'.format(
-                installed_dotted, newest_dotted, pip_command))
-    else:
-        update_message = ''
-    return {
-        'pypi_connection_error': False,
-        'update_needed': update_needed,
-        'installed_version': installed_dotted,
-        'newest_version': newest_dotted,
-        'update_message': update_message,
-    }
-
-
-def pypi_updates_cli():
-    result = check_pypi_for_updates()
-    if result['pypi_connection_error']:
-        return
-    if result['update_needed']:
-        print(result['update_message'])
-
-
 def channels_create_session_group_name(pre_create_id):
     return 'wait_for_session_{}'.format(pre_create_id)
 
@@ -386,6 +299,6 @@ def release_any_stale_locks():
 
 
 def get_redis_conn():
-    from huey.contrib.djhuey import HUEY
+    '''reuse Huey Redis connection'''
     return HUEY.storage.conn
 
