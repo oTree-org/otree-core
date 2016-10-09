@@ -127,11 +127,22 @@ class CreateSession(vanilla.FormView):
         for field in config.editable_fields():
             old_value = config[field]
             html_field_name = config.html_field_name(field)
-            new_value_str = post_data[html_field_name]
-            new_value = type(old_value)(new_value_str)
+
+            # int/float/decimal are set to required in HTML
+            # bool:
+            # - if unchecked, its key will be missing.
+            # - if checked, its value will be 'on'.
+            # str:
+            # - if blank, its value will be ''
+            new_value_str = post_data.get(html_field_name)
+            # don't use isinstance because that will catch bool also
+            if type(old_value) is int:
+                # in case someone enters 1.0 instead of 1
+                new_value = int(float(new_value_str))
+            else:
+                new_value = type(old_value)(new_value_str)
             if old_value != new_value:
                 edited_session_config_fields[field] = new_value
-
         session_kwargs['edited_session_config_fields'] = edited_session_config_fields
         return create_session_and_redirect(
             session_kwargs)
