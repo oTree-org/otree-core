@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import django.test
-
 from huey.contrib.djhuey import task, db_task
 
 from otree import constants_internal

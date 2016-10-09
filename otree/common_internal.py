@@ -186,6 +186,9 @@ def make_hash(s):
     s += settings.SECRET_KEY
     return hashlib.sha224(s.encode()).hexdigest()[:8]
 
+def get_admin_secret_code():
+    s = settings.SECRET_KEY
+    return hashlib.sha224(s.encode()).hexdigest()[:8]
 
 def channels_create_session_group_name(pre_create_id):
     return 'wait_for_session_{}'.format(pre_create_id)

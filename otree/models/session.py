@@ -8,7 +8,8 @@ from django.core.urlresolvers import reverse
 
 from otree import constants_internal
 import otree.common_internal
-from otree.common_internal import random_chars_8, random_chars_10
+from otree.common_internal import (
+    random_chars_8, random_chars_10, get_admin_secret_code)
 from otree.db import models
 from otree.models_concrete import ParticipantToPlayerLookup, RoomToSession
 from .varsmixin import ModelWithVars
@@ -17,6 +18,8 @@ from django.conf import settings
 logger = logging.getLogger('otree')
 
 client = django.test.Client()
+
+ADMIN_SECRET_CODE = get_admin_secret_code()
 
 
 # for now removing SaveTheChange
@@ -87,6 +90,7 @@ class Session(ModelWithVars):
              "main ViewList for sessions"))
 
     comment = models.TextField(blank=True)
+
 
     _anonymous_code = models.CharField(
         default=random_chars_10, max_length=10, null=False, db_index=True)
@@ -195,7 +199,10 @@ class Session(ModelWithVars):
                 if p._current_form_page_url:
                     resp = client.post(
                         p._current_form_page_url,
-                        data={constants_internal.auto_submit: True},
+                        data={
+                            constants_internal.auto_submit: True,
+                            constants_internal.admin_secret_code: ADMIN_SECRET_CODE
+                        },
                         follow=True
                     )
                 else:
