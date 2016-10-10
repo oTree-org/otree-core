@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import re
 import random
 import sys
 from functools import reduce
@@ -128,7 +129,7 @@ class SessionConfig(dict):
             self['real_world_currency_per_point']
         ).quantize(Decimal('0.00001'))
 
-    def get_info(self):
+    def app_sequence_display(self):
         app_sequence = []
         for app_name in self['app_sequence']:
             models_module = get_models_module(app_name)
@@ -140,16 +141,90 @@ class SessionConfig(dict):
                     formatted_app_name, num_rounds)
             subsssn = {
                 'doc': getattr(models_module, 'doc', ''),
-                'bibliography': getattr(models_module, 'bibliography', []),
                 'name': formatted_app_name}
             app_sequence.append(subsssn)
+        return app_sequence
 
-        return {
-            'doc': self['doc'],
-            'app_sequence': app_sequence,
-            'name': self['name'],
-            'display_name': self['display_name'],
-            'lcm': self.get_lcm()}
+    builtin_editable_fields = [
+        'participation_fee',
+        'real_world_currency_per_point',
+        # disable this for now...people are likely to click it without
+        # knowing what brower bots are
+        #'use_browser_bots',
+    ]
+
+    non_editable_fields = {
+        'app_sequence',
+        'name',
+        'display_name',
+        'app_sequence',
+        'num_demo_participants',
+        'doc',
+    }
+
+    def custom_editable_fields(self):
+        # should there also be some restriction on
+        # what chars are allowed? because maybe not all chars work
+        # in an HTML form field (e.g. periods, quotes, etc)
+        # so far, it seems any char works OK, even without escaping
+        # before making an HTML attribute. even '>漢 ."&'
+        # so i'll just put a general recommendation in the docs
+        fields = [k for k,v in self.items()
+                if k not in self.non_editable_fields
+                and k not in self.builtin_editable_fields
+                and isinstance(v, (bool, int, float, str, Decimal))]
+
+        # they're in a dict so we can't preserve the original ordering
+        # this is the best we can do
+        return sorted(fields)
+
+    def editable_fields(self):
+        return self.builtin_editable_fields + self.custom_editable_fields()
+
+    def html_field_name(self, field_name):
+        return '{}.{}'.format(self['name'], field_name)
+
+    def editable_field_html(self, k):
+        v = self[k]
+        html_field_name = self.html_field_name(k)
+        html = "<input name='{}' ".format(html_field_name)
+        if isinstance(v, bool):
+            checked = 'checked' if v else ''
+            html += "type='checkbox' {}".format(checked)
+        elif isinstance(v, int):
+            html += '''
+            type='number'
+            step='1'
+            value='{}'
+            class='form-control'
+            '''.format(v)
+        elif isinstance(v, (float, Decimal)):
+            # convert to float, e.g. participation_fee
+            html += '''
+            class='form-control'
+            type='number'
+            step='any'
+            value='{}'
+            '''.format(float(v))
+        elif isinstance(v, str):
+            html += '''
+            type='text'
+            value='{}'
+            class='form-control'
+            '''.format(v)
+        html += '>'
+        html = '''
+        <tr><td><b>{}</b><td>{}</td>
+        '''.format(k, html)
+        return html
+
+    def builtin_editable_fields_html(self):
+        return [self.editable_field_html(k)
+                for k in self.builtin_editable_fields]
+
+    def custom_editable_fields_html(self):
+        return [self.editable_field_html(k)
+                for k in self.custom_editable_fields()]
 
 
 def get_session_configs_dict():
@@ -177,11 +252,14 @@ def create_session(
         _pre_create_id=None,
         room_name=None, for_mturk=False, use_cli_bots=False,
         is_demo=False, force_browser_bots=False,
-        honor_browser_bots_config=False, bot_case_number=None):
+        honor_browser_bots_config=False, bot_case_number=None,
+        edited_session_config_fields=None
+    ):
 
     session = None
     use_browser_bots = False
     participants = []
+    edited_session_config_fields = edited_session_config_fields or {}
 
     with transaction.atomic():
         # 2014-5-2: i could implement this by overriding the __init__ on the
@@ -193,6 +271,10 @@ def create_session(
 
         try:
             session_config = SESSION_CONFIGS_DICT[session_config_name]
+            # seems i need to copy and convert back to a session config
+            # otherwise .copy() converts it to a simple dict
+            session_config = SessionConfig(session_config.copy())
+            session_config.update(edited_session_config_fields)
         except KeyError:
             msg = 'Session config "{}" not found in settings.SESSION_CONFIGS.'
             raise ValueError(msg.format(session_config_name))

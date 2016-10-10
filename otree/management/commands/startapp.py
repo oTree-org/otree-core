@@ -6,7 +6,7 @@ import os
 from django.core.management.commands import startapp
 
 import otree
-from otree.common_internal import pypi_updates_cli
+from otree.management.cli import pypi_updates_cli
 
 
 class Command(startapp.Command):

@@ -23,7 +23,7 @@ from django.views.decorators.cache import never_cache, cache_control
 from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import resolve
-
+import redis_lock
 import channels
 
 import vanilla
@@ -187,6 +187,8 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         '''using dots seems not to work'''
         return get_dotted_name(cls).replace('.', '-')
 
+
+
     @method_decorator(never_cache)
     @method_decorator(cache_control(must_revalidate=True, max_age=0,
                                     no_cache=True, no_store=True))
@@ -194,8 +196,17 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
 
         participant_code = kwargs.pop(constants.participant_code)
 
-        with participant_lock(participant_code), otree.db.idmap.use_cache():
+        if otree.common_internal.USE_REDIS:
+            lock = redis_lock.Lock(
+                otree.common_internal.get_redis_conn(),
+                participant_code,
+                expire=60,
+                auto_renewal=True
+            )
+        else:
+            lock = participant_lock(participant_code)
 
+        with lock, otree.db.idmap.use_cache():
             try:
                 participant = Participant.objects.get(
                     code=participant_code)
@@ -295,8 +306,66 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
 
         return new_tables
 
+    # make these properties so they can be calculated lazily,
+    # in _increment_index
+    _player = None
+    _group = None
+    _subsession = None
+    _session = None
+    _round_number = None
 
-    def set_attributes(self, participant):
+    @property
+    def player(self):
+        if not self._player:
+            player_pk = self.participant.player_lookup()['player_pk']
+            self._player = self.PlayerClass.objects.get(pk=player_pk)
+        return self._player
+
+    @property
+    def group(self):
+        if not self._group:
+            self._group = self.player.group
+        return self._group
+
+    @property
+    def subsession(self):
+        if not self._subsession:
+            self._subsession = self.player.subsession
+        return self._subsession
+
+    @property
+    def session(self):
+        if not self._session:
+            self._session = self.participant.session
+        return self._session
+
+    @property
+    def round_number(self):
+        if self._round_number is None:
+            self._round_number = self.player.round_number
+        return self._round_number
+
+    @player.setter
+    def player(self, value):
+        self._player = value
+
+    @group.setter
+    def group(self, value):
+        self._group = value
+
+    @subsession.setter
+    def subsession(self, value):
+        self._subsession = value
+
+    @session.setter
+    def session(self, value):
+        self._session = value
+
+    @round_number.setter
+    def round_number(self, value):
+        self._round_number = value
+
+    def set_attributes(self, participant, lazy=False):
         """
         Even though we only use PlayerClass in set_attributes,
         we use {Group/Subsession}Class elsewhere.
@@ -315,8 +384,8 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
 
         player_lookup = participant.player_lookup()
 
-        app_name = player_lookup.app_name
-        player_pk = player_lookup.player_pk
+        app_name = player_lookup['app_name']
+        player_pk = player_lookup['player_pk']
 
         # for the participant changelist
         self.participant._current_app_name = app_name
@@ -327,21 +396,22 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         self.GroupClass = getattr(models_module, 'Group')
         self.PlayerClass = getattr(models_module, 'Player')
 
-        self.player = self.PlayerClass.objects\
-            .select_related(
-                'group', 'subsession', 'session'
-            ).get(pk=player_pk)
+        if not lazy:
+            self.player = self.PlayerClass.objects\
+                .select_related(
+                    'group', 'subsession', 'session'
+                ).get(pk=player_pk)
+            self.session = self.player.session
+            self.participant._round_number = self.player.round_number
+            self.group = self.player.group
+            self.subsession = self.player.subsession
 
-        self.group = self.player.group
+            # for public API
+            self.round_number = self.subsession.round_number
 
-        self.subsession = self.player.subsession
-        self.session = self.player.session
-        self.participant._round_number = self.subsession.round_number
-
-        # for public API
-        self.round_number = self.subsession.round_number
-
-        self.set_extra_attributes()
+            # currently not needed, because _group_or_subsession was
+            # turned into a property
+            #self.set_extra_attributes()
 
     def _increment_index_in_pages(self):
         # when is this not the case?
@@ -381,7 +451,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             if not hasattr(page, 'is_displayed'):
                 break
 
-            page.set_attributes(self.participant)
+            page.set_attributes(self.participant, lazy=True)
             if page.is_displayed():
                 break
 
@@ -512,10 +582,10 @@ class InGameWaitPageMixin(object):
             # groups, not just one.
 
             player = self.player
-            del self.player
+            self.player = None
             if self.wait_for_all_groups:
                 group = self.group
-                del self.group
+                self.group = None
 
             # make sure we get the most up-to-date player objects
             # e.g. if they were queried in is_displayed(),
@@ -540,12 +610,21 @@ class InGameWaitPageMixin(object):
         completion.after_all_players_arrive_run = True
         completion.save()
 
-    def set_extra_attributes(self):
-        self._group_or_subsession = (
-            self.subsession if self.wait_for_all_groups else self.group)
+    @property
+    def _group_or_subsession(self):
+        return self.subsession if self.wait_for_all_groups else self.group
 
     def _register_wait_page_visit(self):
-        with global_lock():
+        if otree.common_internal.USE_REDIS:
+            lock = redis_lock.Lock(
+                otree.common_internal.get_redis_conn(),
+                self.get_channels_group_name(),
+                expire=60,
+                auto_renewal=True
+            )
+        else:
+            lock = global_lock()
+        with lock:
             unvisited_participants = self._tally_unvisited()
         if unvisited_participants:
             return
@@ -766,7 +845,10 @@ class FormPageMixin(object):
             # and therefore confuse the bot system.
             if self.has_timeout() and not self.session.use_browser_bots:
                 otree.timeout.tasks.submit_expired_url.schedule(
-                    (self.request.path,), delay=self.timeout_seconds)
+                    (self.participant.code,
+                    self.participant._index_in_pages,
+                    self.request.path,),
+                    delay=self.timeout_seconds)
         return super(FormPageMixin, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
