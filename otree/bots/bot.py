@@ -85,12 +85,12 @@ def SubmitInternal(submission_tuple, check_html=BOTS_CHECK_HTML):
 
 
 def Submission(
-        PageClass, post_data=None, check_html=BOTS_CHECK_HTML):
+        PageClass, post_data=None, *, check_html=BOTS_CHECK_HTML):
     return SubmitInternal((PageClass, post_data), check_html)
 
 
 def SubmissionMustFail(
-        PageClass, post_data=None, check_html=BOTS_CHECK_HTML):
+        PageClass, post_data=None, *, check_html=BOTS_CHECK_HTML):
     '''lets you intentionally submit with invalid
     input to ensure it's correctly rejected'''
 

@@ -107,6 +107,7 @@ class _OtreeModelFieldMixin(object):
             # Hide the ones that oTree users will rarely need, like
             # db_index, primary_key, etc...
             self,
+            *,
             choices=None,
             widget=None,
             initial=None,
@@ -180,6 +181,7 @@ class BooleanField(_OtreeModelFieldMixin, models.NullBooleanField):
     # instead of customizing the widget since then it works for any widget
 
     def __init__(self,
+                 *,
                  choices=None,
                  widget=None,
                  initial=None,
@@ -253,6 +255,7 @@ class BinaryField(_OtreeModelFieldMixin, models.BinaryField):
 class CharField(_OtreeModelFieldMixin, models.CharField):
     def __init__(
             self,
+            *,
             choices=None,
             widget=None,
             initial=None,

@@ -14,6 +14,7 @@ class models:
     class _Field(object):
         def __init__(
             self,
+            *,
             choices=None,
             widget=None,
             initial=None,
@@ -28,20 +29,23 @@ class models:
                 pass
 
     class BooleanField(object):
-        def __init__(self,
-                 choices=None,
-                 widget=None,
-                 initial=None,
-                 verbose_name=None,
-                 doc='',
-                 null=True,
-                 help_text='',
-                 **kwargs):
+        def __init__(
+                self,
+                *,
+                choices=None,
+                widget=None,
+                initial=None,
+                verbose_name=None,
+                doc='',
+                null=True,
+                help_text='',
+                **kwargs):
             pass
 
     class CharField(object):
         def __init__(
                 self,
+                *,
                 choices=None,
                 widget=None,
                 initial=None,
