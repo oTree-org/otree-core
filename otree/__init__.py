@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # REMEMBER TO ALSO UPDATE THE PROJECT TEMPLATE
-__version__ = '1.0.0b3'
+__version__ = '1.0.0b4'
 
 default_app_config = 'otree.apps.OtreeConfig'
 

@@ -104,7 +104,7 @@ def SubmissionMustFail(
     # CLI bots can only talk to server through post data
     post_data['must_fail'] = True
 
-    return Submission(PageClass, post_data, check_html)
+    return Submission(PageClass, post_data, check_html=check_html)
 
 
 def normalize_html_whitespace(html):
