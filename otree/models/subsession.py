@@ -257,7 +257,7 @@ class BaseSubsession(SaveTheChange, models.Model):
 
         self.set_group_matrix(group_matrix)
 
-    def group_randomly(self, fixed_id_in_group=False):
+    def group_randomly(self, *, fixed_id_in_group=False):
         group_matrix = self.get_group_matrix()
         group_matrix = matching.randomly(
             group_matrix,
