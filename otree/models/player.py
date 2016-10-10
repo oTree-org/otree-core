@@ -32,6 +32,7 @@ class BasePlayer(SaveTheChange, models.Model):
     payoff = models.CurrencyField(
         null=True,
         doc="""The payoff the player made in this subsession""",
+        default=0
     )
 
     participant = models.ForeignKey(
