@@ -144,6 +144,13 @@ class CreateSession(vanilla.FormView):
                 new_value = type(old_value)(new_value_str)
             if old_value != new_value:
                 edited_session_config_fields[field] = new_value
+
+        # need to convert to float or string in order to serialize
+        # through channels
+        for k in ['participation_fee', 'real_world_currency_per_point']:
+            if k in edited_session_config_fields:
+                edited_session_config_fields[k] = float(
+                    edited_session_config_fields[k])
         session_kwargs['edited_session_config_fields'] = edited_session_config_fields
         return create_session_and_redirect(
             session_kwargs)

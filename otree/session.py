@@ -67,7 +67,7 @@ class SessionConfig(dict):
             num_cases = max(num_cases, len(cases))
         return num_cases
 
-    def validate(self):
+    def clean(self):
 
         config_schema = schema.Schema({
             'name': str,
@@ -169,10 +169,11 @@ class SessionConfig(dict):
         # so far, it seems any char works OK, even without escaping
         # before making an HTML attribute. even '>漢 ."&'
         # so i'll just put a general recommendation in the docs
+
         fields = [k for k,v in self.items()
                 if k not in self.non_editable_fields
                 and k not in self.builtin_editable_fields
-                and isinstance(v, (bool, int, float, str, Decimal))]
+                and type(v) in [bool, int, float, str]]
 
         # they're in a dict so we can't preserve the original ordering
         # this is the best we can do
@@ -238,7 +239,7 @@ def get_session_configs_dict():
     for config_dict in settings.SESSION_CONFIGS:
         config_obj = SessionConfig(settings.SESSION_CONFIG_DEFAULTS)
         config_obj.update(config_dict)
-        config_obj.validate()
+        config_obj.clean()
         SESSION_CONFIGS_DICT[config_dict['name']] = config_obj
     return SESSION_CONFIGS_DICT
 
@@ -279,8 +280,12 @@ def create_session(
             session_config = SESSION_CONFIGS_DICT[session_config_name]
             # seems i need to copy and convert back to a session config
             # otherwise .copy() converts it to a simple dict
-            session_config = SessionConfig(session_config.copy())
             session_config.update(edited_session_config_fields)
+            session_config = SessionConfig(session_config.copy())
+            # check validity and converts serialized decimal & currency values
+            # back to their original data type (because they were serialized
+            # when passed through channels
+            session_config.clean()
         except KeyError:
             msg = 'Session config "{}" not found in settings.SESSION_CONFIGS.'
             raise ValueError(msg.format(session_config_name))
