@@ -29,6 +29,8 @@ if sys.argv[-1] == 'publish':
 
     sys.exit()
 
+if sys.version_info < (3, 3):
+    sys.exit('Error: This version of otree-core requires Python 3.3 or higher')
 
 setup(
     name='otree-core',
