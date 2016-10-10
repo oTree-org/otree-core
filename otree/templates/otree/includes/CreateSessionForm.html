@@ -25,17 +25,17 @@
 <br><br>
 {% for config in configs %}
 
-    <div class="editable-config-fields"
-         id="editable-config-fields-{{ config.name }}" style="display: none">
+    <div class="edit-config"
+         id="edit-config-{{ config.name }}" style="display: none">
             <h4>
                 <a data-toggle="collapse"
-                   href="#editable-config-fields-table-{{ config.name }}"
+                   href="#edit-config-table-{{ config.name }}"
                    class="btn-block">
-                    Edit session config
+                    Configure session
                 </a>
             </h4>
         <div class="collapse"
-             id="editable-config-fields-table-{{ config.name }}">
+             id="edit-config-table-{{ config.name }}">
             {% if config.custom_editable_fields %}
                 <h5>Custom</h5>
                 <table class="table">
@@ -46,7 +46,7 @@
             {% endif %}
 
             {# we only need to clarify that these are built-in if there are also custom ones #}
-            {% if config.custom_editable_fields %}<h5>Built-in</h5>{% endif %}
+            {% if config.custom_editable_fields %}<h5>General</h5>{% endif %}
             <table class="table">
                 {% for field in config.builtin_editable_fields_html %}
                     {{ field|safe }}
@@ -62,16 +62,16 @@
 <script>
     function showSessionConfigInfo(sessionconfigname) {
         $('.summary').hide();
-        $('.editable-config-fields').hide();
+        $('.edit-config').hide();
         $('#session-config-' + sessionconfigname).show();
-        $('#editable-config-fields-' + sessionconfigname).show();
+        $('#edit-config-' + sessionconfigname).show();
         $('.lcm').hide();
         $('#lcm-' + sessionconfigname).show();
     }
 
     $(document).ready(function () {
         $('.summary').hide();
-        $('.editable-config-fields').hide();
+        $('.edit-config').hide();
         $('.lcm').hide();
         var current_session_config = $('#id_session_config').val();
         if (current_session_config) {

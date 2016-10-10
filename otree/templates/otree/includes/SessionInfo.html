@@ -5,7 +5,7 @@
 {% if config.doc %}
     <h4>Session description</h4>
     <p>
-    {{ config.doc }}
+    {{ config.doc|safe }}
     </p>
 {% endif %}
 

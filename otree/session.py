@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import re
 import random
 import sys
 from functools import reduce
@@ -160,6 +159,7 @@ class SessionConfig(dict):
         'app_sequence',
         'num_demo_participants',
         'doc',
+        'num_bots',
     }
 
     def custom_editable_fields(self):
@@ -184,38 +184,44 @@ class SessionConfig(dict):
     def html_field_name(self, field_name):
         return '{}.{}'.format(self['name'], field_name)
 
-    def editable_field_html(self, k):
-        v = self[k]
-        html_field_name = self.html_field_name(k)
-        html = "<input name='{}' ".format(html_field_name)
-        if isinstance(v, bool):
-            checked = 'checked' if v else ''
-            html += "type='checkbox' {}".format(checked)
-        elif isinstance(v, int):
-            html += '''
-            type='number'
-            step='1'
-            value='{}'
-            class='form-control'
-            '''.format(v)
-        elif isinstance(v, (float, Decimal)):
+    def editable_field_html(self, field_name):
+        existing_value = self[field_name]
+        html_field_name = self.html_field_name(field_name)
+        base_attrs = ["name='{}'".format(html_field_name)]
+
+        if isinstance(existing_value, bool):
+            attrs = [
+                "type='checkbox'",
+                'checked' if existing_value else '',
+                # don't use class=form-control because it looks too big,
+                # like it's intended for mobile devices
+            ]
+        elif isinstance(existing_value, int):
+            attrs = [
+                "type='number'",
+                "required",
+                "step='1'",
+                "value='{}'".format(existing_value),
+                "class='form-control'",
+            ]
+        elif isinstance(existing_value, (float, Decimal)):
             # convert to float, e.g. participation_fee
-            html += '''
-            class='form-control'
-            type='number'
-            step='any'
-            value='{}'
-            '''.format(float(v))
-        elif isinstance(v, str):
-            html += '''
-            type='text'
-            value='{}'
-            class='form-control'
-            '''.format(v)
-        html += '>'
+            attrs = [
+                "class='form-control'",
+                "type='number'",
+                "step='any'",
+                "required",
+                "value='{}'".format(float(existing_value)),
+            ]
+        elif isinstance(existing_value, str):
+            attrs = [
+                "type='text'",
+                "value='{}'".format(existing_value),
+                "class='form-control'"
+            ]
         html = '''
-        <tr><td><b>{}</b><td>{}</td>
-        '''.format(k, html)
+        <tr><td><b>{}</b><td><input {}></td>
+        '''.format(field_name, ' '.join(base_attrs + attrs))
         return html
 
     def builtin_editable_fields_html(self):
