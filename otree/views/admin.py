@@ -617,8 +617,7 @@ class SessionDescription(AdminSessionPageMixin, vanilla.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(SessionDescription, self).get_context_data(**kwargs)
-        config_obj = SessionConfig(self.session.config)
-        context.update(config_obj.get_info())
+        context['config'] = SessionConfig(self.session.config)
         return context
 
 
