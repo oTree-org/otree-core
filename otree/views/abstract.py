@@ -569,6 +569,12 @@ class InGameWaitPageMixin(object):
         if self.is_displayed():
             self._run_after_all_players_arrive(completion)
 
+        # even if this player skips the page and after_all_players_arrive
+        # is not run, we need to indicate that the waiting players can advance
+
+        completion.fully_completed = True
+        completion.save()
+
         self.send_completion_message(participant_pk_set)
         return self._response_when_ready()
 
@@ -606,9 +612,6 @@ class InGameWaitPageMixin(object):
         self.player = player
         if self.wait_for_all_groups:
             self.group = group
-
-        completion.after_all_players_arrive_run = True
-        completion.save()
 
     @property
     def _group_or_subsession(self):
@@ -700,12 +703,12 @@ class InGameWaitPageMixin(object):
             return CompletedSubsessionWaitPage.objects.filter(
                 page_index=self._index_in_pages,
                 session=self.session,
-                after_all_players_arrive_run=True).exists()
+                fully_completed=True).exists()
         return CompletedGroupWaitPage.objects.filter(
             page_index=self._index_in_pages,
             group_pk=self.group.pk,
             session=self.session,
-            after_all_players_arrive_run=True).exists()
+            fully_completed=True).exists()
 
     def _tally_unvisited(self):
         """side effect: set _waiting_for_ids"""

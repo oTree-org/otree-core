@@ -37,3 +37,27 @@ class TestWaitForAllGroups(TestCase):
                 new_callable=mock.PropertyMock,
                 return_value=True):
             self.start_some_players(should_be_stuck=True)
+
+
+class TestSkipWaitPage(TestCase):
+    def setUp(self):
+        call_command('create_session', 'skip_wait_page', "2")
+        session = Session.objects.get()
+        bots = []
+        for participant in session.get_participants():
+            bot = ParticipantBot(participant, load_player_bots=False)
+            bots.append(bot)
+        self.bots = bots
+
+    def visit(self, ordered_bots):
+        for bot in ordered_bots:
+            bot.open_start_url()
+        for bot in ordered_bots:
+            bot.open_start_url()
+            #self.assertFalse(bot.on_wait_page())
+
+    def test_skipper_visits_last(self):
+        self.visit(self.bots)
+
+    def test_waiter_visits_last(self):
+        self.visit(reversed(self.bots))

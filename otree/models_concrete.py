@@ -40,7 +40,7 @@ class CompletedGroupWaitPage(models.Model):
     page_index = models.PositiveIntegerField()
     session = models.ForeignKey('otree.Session')
     group_pk = models.PositiveIntegerField()
-    after_all_players_arrive_run = models.BooleanField(default=False)
+    fully_completed = models.BooleanField(default=False)
 
 
 class CompletedSubsessionWaitPage(models.Model):
@@ -51,7 +51,7 @@ class CompletedSubsessionWaitPage(models.Model):
 
     page_index = models.PositiveIntegerField()
     session = models.ForeignKey('otree.Session')
-    after_all_players_arrive_run = models.BooleanField(default=False)
+    fully_completed = models.BooleanField(default=False)
 
 
 class ParticipantToPlayerLookup(models.Model):
