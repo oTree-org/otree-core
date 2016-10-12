@@ -9,7 +9,7 @@ import schema
 
 from otree.models_concrete import RoomToSession, ExpectedRoomParticipant
 from otree.common_internal import (
-    add_params_to_url, make_hash, validate_identifier)
+    add_params_to_url, make_hash, validate_ascii_identifier)
 from otree.views.abstract import global_lock
 
 
@@ -22,7 +22,7 @@ class Room(object):
     def __init__(self, config_dict):
         self.participant_label_file = config_dict.get('participant_label_file')
 
-        self.name = validate_identifier(
+        self.name = validate_ascii_identifier(
             config_dict['name'],
             identifier_description='settings.ROOMS room name')
         self.display_name = config_dict['display_name']
@@ -72,7 +72,7 @@ class Room(object):
                             label = line.strip()
                             if not label:
                                 continue
-                            label = validate_identifier(
+                            label = validate_ascii_identifier(
                                 line.strip(),
                                 identifier_description='participant label'
                             )

@@ -232,7 +232,7 @@ def add_empty_migrations_to_all_apps(project_root):
                     f.write('')
 
 
-def validate_identifier(identifier, identifier_description):
+def validate_alphanumeric(identifier, identifier_description):
     if re.match(r'^[a-zA-Z0-9_]+$', identifier):
         return identifier
     raise ValueError(

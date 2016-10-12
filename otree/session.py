@@ -22,7 +22,7 @@ import otree.db.idmap
 from otree.models import Participant, Session
 from otree.deprecate import OtreeDeprecationWarning
 from otree.common_internal import (
-    get_models_module, get_app_constants, validate_identifier,
+    get_models_module, get_app_constants, validate_alphanumeric,
     min_players_multiple, get_bots_module)
 import otree.common_internal
 from otree.common import RealWorldCurrency
@@ -76,7 +76,7 @@ class SessionConfig(dict):
             'real_world_currency_per_point': object,
             'num_demo_participants': int,
             'doc': str,
-            object: object,
+            str: object,
         })
 
         try:
@@ -84,9 +84,23 @@ class SessionConfig(dict):
         except schema.SchemaError as e:
             raise ValueError('settings.SESSION_CONFIGS: {}'.format(e))
 
-        validate_identifier(
+        # Allow non-ASCII chars in session config keys, because they are
+        # configurable in the admin, so need to be readable by non-English
+        # speakers. However, don't allow punctuation, spaces, etc.
+        # They make it harder to reason about and could cause problems
+        # later on. also could uglify the user's code.
+        for key in self:
+            if not key.isidentifier():
+                raise ValueError(
+                    'Key "{}" in settings.SESSION_CONFIGS contains an invalid '
+                    'character. Session config keys must be '
+                    'valid Python variable names '
+                    'according to string.isidentifier().'.format(key)
+                )
+
+        validate_alphanumeric(
             self['name'],
-            identifier_description='settings.SESSION_CONFIG name'
+            identifier_description='settings.SESSION_CONFIGS name'
         )
 
         app_sequence = self['app_sequence']
