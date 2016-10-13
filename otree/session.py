@@ -89,14 +89,19 @@ class SessionConfig(dict):
         # speakers. However, don't allow punctuation, spaces, etc.
         # They make it harder to reason about and could cause problems
         # later on. also could uglify the user's code.
+
+        INVALID_IDENTIFIER_MSG = (
+            'Key "{}" in settings.SESSION_CONFIGS '
+            'must not contain spaces, punctuation, '
+            'or other special characters. '
+            'It can contain non-English characters, '
+            'but it must be a valid Python variable name '
+            'according to string.isidentifier().'
+        )
+
         for key in self:
             if not key.isidentifier():
-                raise ValueError(
-                    'Key "{}" in settings.SESSION_CONFIGS contains an invalid '
-                    'character. Session config keys must be '
-                    'valid Python variable names '
-                    'according to string.isidentifier().'.format(key)
-                )
+                raise ValueError(INVALID_IDENTIFIER_MSG.format(key))
 
         validate_alphanumeric(
             self['name'],

@@ -13,7 +13,6 @@ services:
 env:
   - TOXENV=style
   - TOXENV=coverage
-  - TOXENV=python3-warnings
   - TOXENV=py35-unittest
   - TOXENV=py35-integration
   - TOXENV=py35-experiments
