@@ -42,7 +42,7 @@ def monkey_patch_static_tag():
         try:
             return staticfiles_storage.url(path)
         except ValueError as exc:
-            msg = '{} - did you remember to run collectstatic?'
+            msg = '{} - did you remember to run "otree collectstatic"?'
             six.reraise(
                 ValueError,
                 ValueError(msg.format(exc)),

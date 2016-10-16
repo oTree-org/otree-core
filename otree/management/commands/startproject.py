@@ -16,8 +16,6 @@ from django.core.management.commands import startproject
 import six
 
 import otree
-from otree.common_internal import (
-    add_empty_migrations_to_all_apps)
 from otree.management.cli import pypi_updates_cli
 
 # =============================================================================
@@ -65,9 +63,6 @@ class Command(startproject.Command):
         procfile_path = os.path.join(
             self.core_project_template_path, 'Procfile')
         shutil.copy(procfile_path, project_root_dir)
-
-        # migrations
-        add_empty_migrations_to_all_apps(project_root_dir)
 
     def handle(self, *args, **options):
         if options["interactive"]:

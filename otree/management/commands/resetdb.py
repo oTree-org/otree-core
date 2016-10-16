@@ -16,7 +16,6 @@ from django.db.migrations.loader import MigrationLoader
 from django.db.migrations.autodetector import MigrationAutodetector
 
 import six
-from otree.common_internal import add_empty_migrations_to_all_apps
 import mock
 
 
@@ -141,9 +140,13 @@ class Command(BaseCommand):
                     'migrate', database=db, fake=True,
                     interactive=False, **options)
 
-        project_root = getattr(settings, 'BASE_DIR', None)
-        if project_root:
-            add_empty_migrations_to_all_apps(project_root)
+        # mention the word 'columns' here, so people make the connection
+        # between columns and resetdb, so that when they get a 'no such column'
+        # error, they know how to fix it.
+        # (An alternative is to generically catch "no such column" errors,
+        # but I recall that this was difficult - because there were many
+        # code paths or exception classes. Could re-investigate.)
+        logger.info('Created new tables and columns.')
 
     @mock.patch.object(
         MigrationLoader, 'migrations_module',
