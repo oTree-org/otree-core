@@ -42,7 +42,7 @@ from otree.bots.browser import EphemeralBrowserBot
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
     CompletedGroupWaitPage, PageTimeout, UndefinedFormModel,
-    ParticipantLockModel, GlobalLockModel, ParticipantToPlayerLookup
+    ParticipantLockModel, GlobalLockModel
 )
 import six
 from django.utils.safestring import mark_safe
@@ -54,6 +54,7 @@ NO_PARTICIPANTS_LEFT_MSG = (
     "The maximum number of participants for this session has been exceeded.")
 
 ADMIN_SECRET_CODE = get_admin_secret_code()
+
 
 class DebugTable(object):
     def __init__(self, title, rows):
@@ -186,8 +187,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
     def url_name(cls):
         '''using dots seems not to work'''
         return get_dotted_name(cls).replace('.', '-')
-
-
 
     @method_decorator(never_cache)
     @method_decorator(cache_control(must_revalidate=True, max_age=0,
@@ -409,10 +408,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             # for public API
             self.round_number = self.subsession.round_number
 
-            # currently not needed, because _group_or_subsession was
-            # turned into a property
-            #self.set_extra_attributes()
-
     def _increment_index_in_pages(self):
         # when is this not the case?
         assert self._index_in_pages == self.participant._index_in_pages
@@ -464,7 +459,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                         page._group_or_subsession.player_set
                         .values_list('participant__pk', flat=True))
                     page.send_completion_message(participant_pk_set)
-
 
     def is_displayed(self):
         return True
@@ -761,6 +755,7 @@ class InGameWaitPageMixin(object):
             return _('Waiting for the other participant.')
         return ''
 
+
 def bot_prettify_post_data(post_data):
     for extra_key in ['csrfmiddlewaretoken', 'origin_url', 'must_fail']:
         post_data.pop(extra_key, None)
@@ -819,14 +814,15 @@ class FormPageMixin(object):
         cls = self.get_form_class()
         return cls(data=data, files=files, view=self, **kwargs)
 
-
     def form_invalid(self, form):
         response = super(FormPageMixin, self).form_invalid(form)
         response[constants.redisplay_with_errors_http_header] = (
             constants.get_param_truth_value)
 
-        fields_with_errors = [fname for fname in form.errors
-                                   if fname != '__all__']
+        fields_with_errors = [
+            fname for fname in form.errors
+            if fname != '__all__']
+
         if fields_with_errors:
             self.first_field_with_errors = fields_with_errors[0]
             self.other_fields_with_errors = fields_with_errors[1:]
@@ -848,9 +844,11 @@ class FormPageMixin(object):
             # and therefore confuse the bot system.
             if self.has_timeout() and not self.session.use_browser_bots:
                 otree.timeout.tasks.submit_expired_url.schedule(
-                    (self.participant.code,
-                    self.participant._index_in_pages,
-                    self.request.path,),
+                    (
+                        self.participant.code,
+                        self.participant._index_in_pages,
+                        self.request.path,
+                    ),
                     delay=self.timeout_seconds)
         return super(FormPageMixin, self).get(request, *args, **kwargs)
 

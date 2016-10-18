@@ -3,8 +3,6 @@
 
 from django.db import models
 
-from .common_internal import get_models_module
-
 
 class PageCompletion(models.Model):
     class Meta:

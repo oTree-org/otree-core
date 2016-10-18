@@ -5,8 +5,6 @@ import re
 import decimal
 import logging
 import abc
-from importlib import import_module
-
 import six
 from six.moves import urllib
 from six.moves.html_parser import HTMLParser
@@ -44,8 +42,10 @@ but these form fields were not found in the HTML of the page
 (searched for tags {tags} with name= attribute matching the field name).
 ''' + DISABLE_CHECK_HTML_INSTRUCTIONS).replace('\n', ' ').strip()
 
+
 class BOTS_CHECK_HTML:
     pass
+
 
 def SubmitInternal(submission_tuple, check_html=BOTS_CHECK_HTML):
 
@@ -112,6 +112,7 @@ def normalize_html_whitespace(html):
     html = re.sub(r'\s+', ' ', html)
     return html
 
+
 class HtmlString(str):
 
     def truncated(self):
@@ -130,6 +131,7 @@ class HtmlString(str):
 
     def __repr__(self):
         return self.truncated()
+
 
 # inherit from object for Python2.7 support.
 # otherwise, get

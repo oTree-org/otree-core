@@ -4,8 +4,7 @@
 # for py.test.
 # this doesnt work if the module is under otree.bots, so i put it here
 from otree.session import SESSION_CONFIGS_DICT
-import pytest
-from pytest_django.fixtures import _disable_native_migrations
+
 
 def pytest_addoption(parser):
     parser.addoption("--session_config_name")

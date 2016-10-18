@@ -242,7 +242,7 @@ class AutoField(_OtreeModelFieldMixin, models.AutoField):
 
 
 class BigIntegerField(
-    _OtreeNumericFieldMixin, models.BigIntegerField):
+        _OtreeNumericFieldMixin, models.BigIntegerField):
     auto_submit_default = 0
 
 
@@ -295,8 +295,8 @@ class DateTimeField(_OtreeModelFieldMixin, models.DateTimeField):
 
 
 class DecimalField(
-    _OtreeNumericFieldMixin,
-    models.DecimalField):
+        _OtreeNumericFieldMixin,
+        models.DecimalField):
     pass
 
 
@@ -313,13 +313,13 @@ class FilePathField(_OtreeModelFieldMixin, models.FilePathField):
 
 
 class FloatField(
-    _OtreeNumericFieldMixin,
-    models.FloatField):
+        _OtreeNumericFieldMixin,
+        models.FloatField):
     pass
 
 
 class IntegerField(
-    _OtreeNumericFieldMixin, models.IntegerField):
+        _OtreeNumericFieldMixin, models.IntegerField):
     pass
 
 
@@ -329,14 +329,14 @@ class GenericIPAddressField(_OtreeModelFieldMixin,
 
 
 class PositiveIntegerField(
-    _OtreeNumericFieldMixin,
-    models.PositiveIntegerField):
+        _OtreeNumericFieldMixin,
+        models.PositiveIntegerField):
     pass
 
 
 class PositiveSmallIntegerField(
-    _OtreeNumericFieldMixin,
-    models.PositiveSmallIntegerField):
+        _OtreeNumericFieldMixin,
+        models.PositiveSmallIntegerField):
     pass
 
 
@@ -345,7 +345,7 @@ class SlugField(_OtreeModelFieldMixin, models.SlugField):
 
 
 class SmallIntegerField(
-    _OtreeNumericFieldMixin, models.SmallIntegerField):
+        _OtreeNumericFieldMixin, models.SmallIntegerField):
     pass
 
 

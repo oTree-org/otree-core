@@ -59,14 +59,10 @@ def _get_table_fields(Model, for_export=False):
             'code',
             'label',
             'experimenter_name',
-            # not a field
-            #'real_world_currency_per_point',
             'time_scheduled',
             'time_started',
             'mturk_HITId',
             'mturk_HITGroupId',
-            # not a field
-            #'participation_fee',
             'comment',
             'is_demo',
         ]
@@ -197,7 +193,6 @@ def get_rows_for_wide_csv():
         rows.append(row)
 
     # heuristic to get the most relevant order of apps
-    import json
     app_sequences = collections.Counter()
     for session in sessions:
         # we loaded the config earlier
@@ -225,7 +220,6 @@ def get_rows_for_wide_csv():
             for i in range(len(rows)):
                 rows[i].extend(new_rows[i])
     return rows
-
 
 
 def get_rows_for_wide_csv_round(app_name, round_number, sessions):
@@ -313,8 +307,8 @@ def get_rows_for_csv(app_name):
 
     # header row
     rows = [['{}.{}'.format(model_name, colname)
-        for model_name in model_order
-        for colname in columns_for_models[model_name]]]
+             for model_name in model_order
+             for colname in columns_for_models[model_name]]]
 
     for player in players:
         row = []
@@ -337,7 +331,6 @@ def get_rows_for_live_update(app_name, subsession_pk):
     Player = models_module.Player
     Group = models_module.Group
     Subsession = models_module.Subsession
-
 
     columns_for_models = {
         Model.__name__.lower(): get_field_names_for_live_update(Model)
@@ -571,7 +564,7 @@ def get_payoff_plus_participation_fee_cache(payoff_cache):
 
     participant_ids_to_session_ids = {
         p['id']: p['session_id'] for p in Participant.objects.values(
-        'id', 'session_id')
+            'id', 'session_id')
     }
 
     sessions_cache = {s.id: s for s in Session.objects.all()}
@@ -585,4 +578,3 @@ def get_payoff_plus_participation_fee_cache(payoff_cache):
         payoff_plus_participation_fee_cache[p_id] = payoff_plus_participation_fee.to_number()
 
     return payoff_plus_participation_fee_cache
-

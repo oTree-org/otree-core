@@ -8,4 +8,3 @@ from otree.bots import Bot, Submission, SubmissionMustFail  # noqa
 
 models = _import_module('otree.models')
 widgets = _import_module('otree.widgets')
-

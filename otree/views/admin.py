@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-import collections
 import sys
-import itertools
 import os
 import json
 from collections import OrderedDict
@@ -659,7 +657,6 @@ class ServerCheck(vanilla.TemplateView):
         db_synced = db_status_ok()
         pypi_results = check_pypi_for_updates()
         python2 = sys.version_info[0] == 2
-
 
         return {
             'sqlite': sqlite,

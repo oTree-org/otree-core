@@ -14,7 +14,6 @@ import channels
 import traceback
 
 import otree.common_internal
-from otree.models import Session
 from otree.models.participant import Participant
 from otree.common_internal import get_redis_conn
 

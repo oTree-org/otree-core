@@ -19,6 +19,7 @@ from otree.common_internal import app_name_format
 import otree.export
 from otree.models.participant import Participant
 
+
 # =============================================================================
 # VIEWS
 # =============================================================================

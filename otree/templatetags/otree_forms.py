@@ -1,4 +1,3 @@
-from collections import namedtuple
 import sys
 
 from django.db import models
@@ -10,9 +9,7 @@ from django.template.base import token_kwargs
 from django.template.loader import get_template
 from django.utils import six
 
-import floppyforms.templatetags.floppyforms as floppyforms_templatetags
 from otree.models_concrete import UndefinedFormModel
-
 
 
 class FormFieldNode(Node):

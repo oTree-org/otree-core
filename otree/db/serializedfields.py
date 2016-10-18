@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import models
 from django import forms
-from django.utils.encoding import force_text
 from importlib import import_module
 from six.moves import cPickle as pickle
 import binascii
@@ -83,8 +82,10 @@ def json_decode_object(d):
     else:
         return d
 
+
 def json_loads(value):
     return json.loads(value, object_hook=json_decode_object)
+
 
 class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
     """_JSONField is a generic textfield that neatly serializes/unserializes

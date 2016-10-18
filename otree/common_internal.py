@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-import errno
 import hashlib
 import logging
 import os
@@ -57,6 +56,7 @@ def git_commit_timestamp():
 
 SESSION_CODE_CHARSET = string.ascii_lowercase + string.digits
 
+
 def random_chars(num_chars):
     return ''.join(random.choice(SESSION_CODE_CHARSET) for _ in range(num_chars))
 
@@ -109,7 +109,6 @@ def get_app_constants(app_name):
 
     '''
     return get_models_module(app_name).Constants
-
 
 
 def get_dotted_name(Cls):
@@ -186,9 +185,11 @@ def make_hash(s):
     s += settings.SECRET_KEY
     return hashlib.sha224(s.encode()).hexdigest()[:8]
 
+
 def get_admin_secret_code():
     s = settings.SECRET_KEY
     return hashlib.sha224(s.encode()).hexdigest()[:8]
+
 
 def channels_create_session_group_name(pre_create_id):
     return 'wait_for_session_{}'.format(pre_create_id)
@@ -273,4 +274,3 @@ def release_any_stale_locks():
 def get_redis_conn():
     '''reuse Huey Redis connection'''
     return HUEY.storage.conn
-

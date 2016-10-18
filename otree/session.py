@@ -168,7 +168,7 @@ class SessionConfig(dict):
         'real_world_currency_per_point',
         # disable this for now...people are likely to click it without
         # knowing what brower bots are
-        #'use_browser_bots',
+        # 'use_browser_bots',
     ]
 
     non_editable_fields = {
@@ -189,10 +189,11 @@ class SessionConfig(dict):
         # before making an HTML attribute. even '>漢 ."&'
         # so i'll just put a general recommendation in the docs
 
-        fields = [k for k,v in self.items()
-                if k not in self.non_editable_fields
-                and k not in self.builtin_editable_fields
-                and type(v) in [bool, int, float, str]]
+        fields = [
+            k for k, v in self.items()
+            if k not in self.non_editable_fields
+            and k not in self.builtin_editable_fields
+            and type(v) in [bool, int, float, str]]
 
         # they're in a dict so we can't preserve the original ordering
         # this is the best we can do
@@ -279,8 +280,7 @@ def create_session(
         room_name=None, for_mturk=False, use_cli_bots=False,
         is_demo=False, force_browser_bots=False,
         honor_browser_bots_config=False, bot_case_number=None,
-        edited_session_config_fields=None
-    ):
+        edited_session_config_fields=None):
 
     session = None
     use_browser_bots = False

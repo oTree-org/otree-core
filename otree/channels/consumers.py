@@ -23,6 +23,7 @@ from otree.room import ROOM_DICT
 
 logger = logging.getLogger(__name__)
 
+
 def connect_wait_page(message, params):
     session_pk, page_index, model_name, model_pk = params.split(',')
     session_pk = int(session_pk)

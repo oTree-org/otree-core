@@ -1,12 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-
 from django.db.models import permalink, Sum
 from django.core.urlresolvers import reverse
-
-import six
 
 import otree.common_internal
 from otree import constants_internal
@@ -117,6 +113,7 @@ class Participant(ModelWithVars):
     _is_bot = models.BooleanField(default=False)
 
     _player_lookups = None
+
     def player_lookup(self):
         # this is the most reliable way to get the app name,
         # because of WaitUntilAssigned...

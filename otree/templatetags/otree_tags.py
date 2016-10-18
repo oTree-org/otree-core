@@ -12,19 +12,13 @@
 # IMPORTS
 # =============================================================================
 
-import decimal
-
 from django import template
 from django.template.loader import render_to_string
 from django.core.urlresolvers import Resolver404, reverse
-from django.utils.safestring import mark_safe
-
 from .otree_forms import FormFieldNode
 from .otree_forms import defaultlabel
 from otree.common import Currency
 import otree.common_internal
-
-import six
 
 # =============================================================================
 # CONSTANTS

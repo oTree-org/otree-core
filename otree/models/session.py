@@ -13,7 +13,6 @@ from otree.common_internal import (
 from otree.db import models
 from otree.models_concrete import ParticipantToPlayerLookup, RoomToSession
 from .varsmixin import ModelWithVars
-from django.conf import settings
 
 logger = logging.getLogger('otree')
 
@@ -90,7 +89,6 @@ class Session(ModelWithVars):
              "main ViewList for sessions"))
 
     comment = models.TextField(blank=True)
-
 
     _anonymous_code = models.CharField(
         default=random_chars_10, max_length=10, null=False, db_index=True)
@@ -233,7 +231,7 @@ class Session(ModelWithVars):
         # (a) the usefulness of the feature
         # (b) the impact on performance
         return True
-        #return settings.DEBUG or self.is_demo
+        # return settings.DEBUG or self.is_demo
 
     def build_participant_to_player_lookups(self):
         subsession_app_names = self.config['app_sequence']
@@ -286,4 +284,3 @@ class Session(ModelWithVars):
             self.config['participation_fee'] +
             payoff.to_real_world_currency(self)
         )
-
