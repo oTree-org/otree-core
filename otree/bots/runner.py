@@ -100,7 +100,7 @@ def test_bots(session_config_name, num_participants, run_export):
 
         bot_runner = session_bot_runner_factory(session)
         bot_runner.play()
-        print('Bots done!')
+        print('Bots completed session')
     if run_export:
         # bug: if the user tests multiple session configs,
         # the data will only be exported for the last session config.
