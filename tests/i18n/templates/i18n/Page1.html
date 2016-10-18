@@ -1,0 +1,18 @@
+{% extends "global/Base.html" %}
+{% load staticfiles otree_tags i18n %}
+
+{% block title %}
+    my_title
+{% endblock %}
+
+{% block content %}
+    {% for field in form %}
+        {# test that a user-defined string is correctly translated #}
+        {% blocktrans %}soccer{% endblocktrans %}
+
+        {% formfield field %}
+    {% endfor %}
+
+    {% next_button %}
+
+{% endblock %}

@@ -158,6 +158,11 @@ SESSION_CONFIGS = [
         'app_sequence': ['tests.templates_app'],
     },
     {
+        'name': 'i18n',
+        'num_demo_participants': 1,
+        'app_sequence': ['tests.i18n'],
+    },
+    {
         'name': 'two_rounds_1p',
         'num_demo_participants': 1,
         'app_sequence': ['tests.two_rounds_1p'],

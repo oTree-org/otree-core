@@ -4,7 +4,7 @@
 from otree.bots.bot import ParticipantBot
 from .base import TestCase
 import otree.session
-from otree.bots.runner import SessionBotRunner
+from otree.bots.runner import session_bot_runner_factory
 import logging
 
 
@@ -18,16 +18,10 @@ class TestBots(TestCase):
             bot_case_number=0,
         )
 
-        bots = []
-        for participant in session.get_participants():
-            bot = ParticipantBot(participant)
-            bots.append(bot)
-            bot.open_start_url()
-
-        bot_runner = SessionBotRunner(bots, session.code)
+        bot_runner = session_bot_runner_factory(session)
 
         with self.assertRaises(ZeroDivisionError):
-            bot_runner.play_until_end()
+            bot_runner.play()
 
     def test_bots_check_html(self):
 
@@ -38,20 +32,14 @@ class TestBots(TestCase):
             bot_case_number=0,
         )
 
-        bots = []
-
         with self.settings(BOTS_CHECK_HTML=True):
             from django.conf import settings
             self.assertEqual(settings.BOTS_CHECK_HTML, True)
-            for participant in session.get_participants():
-                bot = ParticipantBot(participant)
-                bots.append(bot)
-                bot.open_start_url()
 
-            bot_runner = SessionBotRunner(bots, session.code)
+            bot_runner = session_bot_runner_factory(session)
 
             try:
-                bot_runner.play_until_end()
+                bot_runner.play()
             except AssertionError as exc:
                 # AssertionError should say something about check_html
                 raises_correct_message = 'check_html' in str(exc)
@@ -73,17 +61,11 @@ class TestBots(TestCase):
             bot_case_number=0,
         )
 
-        bots = []
-        for participant in session.get_participants():
-            bot = ParticipantBot(participant)
-            bots.append(bot)
-            bot.open_start_url()
-
-        bot_runner = SessionBotRunner(bots, session.code)
+        bot_runner = session_bot_runner_factory(session)
 
         with self.assertRaises(AssertionError):
             # need to disable log output, because this triggers an exception
             # that is logged to stdout
             logging.disable(logging.CRITICAL)
-            bot_runner.play_until_end()
+            bot_runner.play()
             logging.disable(logging.NOTSET)

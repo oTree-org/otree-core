@@ -55,7 +55,7 @@ $(function () {
     <div>
         {% if form.errors %}
             <div class="alert alert-danger">
-            {% blocktrans %}Please fix the errors in the form.{% endblocktrans %}
+            {% blocktrans trimmed %}Please fix the errors in the form.{% endblocktrans %}
             </div>
         {% endif %}
 

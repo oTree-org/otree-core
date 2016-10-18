@@ -24,18 +24,18 @@ logger = logging.getLogger(__name__)
 
 
 class SessionBotRunner(object):
-    def __init__(self, bots, session_code):
+    def __init__(self, bots):
         self.bots = OrderedDict()
 
         for bot in bots:
             self.bots[bot.participant.id] = bot
 
-    def play_until_end(self):
+    def play(self):
         '''round-robin'''
+        self.open_start_urls()
         loops_without_progress = 0
         while True:
             if len(self.bots) == 0:
-                print('Bots done!')
                 return
             if loops_without_progress > 2:
                 raise AssertionError('Bots got stuck')
@@ -58,6 +58,19 @@ class SessionBotRunner(object):
                         progress_made = True
             if not progress_made:
                 loops_without_progress += 1
+
+    def open_start_urls(self):
+        for bot in self.bots.values():
+            bot.open_start_url()
+
+
+def session_bot_runner_factory(session) -> SessionBotRunner:
+    bots = []
+    for participant in session.get_participants():
+        bot = ParticipantBot(participant)
+        bots.append(bot)
+
+    return SessionBotRunner(bots)
 
 
 @pytest.mark.django_db(transaction=True)
@@ -84,15 +97,10 @@ def test_bots(session_config_name, num_participants, run_export):
             use_cli_bots=True,
             bot_case_number=case_number
         )
-        bots = []
 
-        for participant in session.get_participants():
-            bot = ParticipantBot(participant)
-            bots.append(bot)
-            bot.open_start_url()
-
-        bot_runner = SessionBotRunner(bots, session.code)
-        bot_runner.play_until_end()
+        bot_runner = session_bot_runner_factory(session)
+        bot_runner.play()
+        print('Bots done!')
     if run_export:
         # bug: if the user tests multiple session configs,
         # the data will only be exported for the last session config.

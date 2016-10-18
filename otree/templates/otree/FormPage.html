@@ -13,15 +13,15 @@
 
             {% if form.errors %}
                 <div class="alert alert-danger">
-                    {% blocktrans %}Please fix the errors in the
-                        form.{% endblocktrans %}
+                    {% blocktrans trimmed %}Please fix the errors in the form.{% endblocktrans %}
                     {{ form.non_field_errors }}
                 </div>
             {% endif %}
 
             <div id="error-notice" class="alert alert-danger"
                  style="display:none">
-                {% blocktrans %}An error occurred. Please check the logs or ask
+                {% blocktrans trimmed %}
+                    An error occurred. Please check the logs or ask
                     the administrator for help.{% endblocktrans %}
             </div>
 
