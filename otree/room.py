@@ -90,7 +90,8 @@ class Room(object):
                             ' nonexistent participant_label_file "{}".'
                         )
                         raise IOError(
-                            msg.format(self.name, self.participant_label_file))
+                            msg.format(self.name, self.participant_label_file)
+                        ) from None
                     raise err
                 else:
                     with global_lock():
@@ -188,13 +189,13 @@ def get_room_dict():
     try:
         ROOM_DEFAULTS = room_defaults_schema.validate(ROOM_DEFAULTS)
     except schema.SchemaError as e:
-        raise (ValueError('settings.ROOM_DEFAULTS: {}'.format(e)))
+        raise (ValueError('settings.ROOM_DEFAULTS: {}'.format(e))) from None
     for room in getattr(settings, 'ROOMS', []):
         room = augment_room(room, ROOM_DEFAULTS)
         try:
             room = room_schema.validate(room)
         except schema.SchemaError as e:
-            raise(ValueError('settings.ROOMS: {}'.format(e)))
+            raise(ValueError('settings.ROOMS: {}'.format(e))) from None
         room_object = Room(room)
         ROOM_DICT[room_object.name] = room_object
     return ROOM_DICT

@@ -49,11 +49,7 @@ class BaseSubsession(SaveTheChange, models.Model):
         try:
             return super(BaseSubsession, self).__getattribute__(name)
         except AttributeError:
-            # this will result in "during handling of the above exception...'
-            # once we drop Python <3.3, we can raise from None
-            # for now, it's not that bad, just the almost same error printed
-            # twice
-            raise AttributeError(ATTRIBUTE_ERROR_MESSAGE.format(name))
+            raise AttributeError(ATTRIBUTE_ERROR_MESSAGE.format(name)) from None
 
     def in_rounds(self, first, last):
         qs = type(self).objects.filter(
@@ -143,7 +139,7 @@ class BaseSubsession(SaveTheChange, models.Model):
         except TypeError:
             raise TypeError(
                 'Group matrix must be a list of lists.'
-            )
+            ) from None
         try:
             matrix_pks = sorted(p.pk for p in players_flat)
         except AttributeError:
@@ -162,12 +158,12 @@ class BaseSubsession(SaveTheChange, models.Model):
                         'If you pass a matrix of integers to this function, '
                         'It must contain all integers from 1 to '
                         'the number of players in the subsession.'
-                    )
+                    ) from None
             else:
                 raise TypeError(
                     'The elements of the group matrix '
                     'must either be Player objects, or integers.'
-                )
+                ) from None
 
         else:
             existing_pks = list(

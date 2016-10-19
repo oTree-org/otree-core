@@ -57,7 +57,7 @@ class CreateDemoSession(vanilla.GenericView):
             session_config = SESSION_CONFIGS_DICT[session_config_name]
         except KeyError:
             msg = 'Session config "{}" not found in settings.SESSION_CONFIGS.'
-            raise ValueError(msg.format(session_config_name))
+            raise ValueError(msg.format(session_config_name)) from None
         session_kwargs = {
             'is_demo': True,
             'session_config_name': session_config_name,

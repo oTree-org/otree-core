@@ -82,7 +82,7 @@ class SessionConfig(dict):
         try:
             config_schema.validate(self)
         except schema.SchemaError as e:
-            raise ValueError('settings.SESSION_CONFIGS: {}'.format(e))
+            raise ValueError('settings.SESSION_CONFIGS: {}'.format(e)) from None
 
         # Allow non-ASCII chars in session config keys, because they are
         # configurable in the admin, so need to be readable by non-English
@@ -180,6 +180,13 @@ class SessionConfig(dict):
         return fields
 
     def custom_editable_fields(self):
+        # should there also be some restriction on
+        # what chars are allowed? because maybe not all chars work
+        # in an HTML form field (e.g. periods, quotes, etc)
+        # so far, it seems any char works OK, even without escaping
+        # before making an HTML attribute. even '>漢 ."&'
+        # so i'll just put a general recommendation in the docs
+
         fields = [
             k for k, v in self.items()
             if k not in self.non_editable_fields
@@ -288,6 +295,10 @@ def create_session(
 
         try:
             session_config = SESSION_CONFIGS_DICT[session_config_name]
+        except KeyError:
+            msg = 'Session config "{}" not found in settings.SESSION_CONFIGS.'
+            raise KeyError(msg.format(session_config_name)) from None
+        else:
             # seems i need to copy and convert back to a session config
             # otherwise .copy() converts it to a simple dict
             session_config.update(edited_session_config_fields)
@@ -296,9 +307,6 @@ def create_session(
             # back to their original data type (because they were serialized
             # when passed through channels
             session_config.clean()
-        except KeyError:
-            msg = 'Session config "{}" not found in settings.SESSION_CONFIGS.'
-            raise ValueError(msg.format(session_config_name))
 
         if force_browser_bots:
             use_browser_bots = True
@@ -395,11 +403,9 @@ def create_session(
             exception_str = str(exception)
             if 'table' in exception_str:
                 ExceptionClass = type(exception)
-                six.reraise(
-                    ExceptionClass,
-                    ExceptionClass('{} - Try resetting the database.'.format(
-                        exception_str)),
-                    sys.exc_info()[2])
+                tb = sys.exc_info()[2]
+                raise ExceptionClass('{} - Try resetting the database.'.format(
+                        exception_str)).with_traceback(tb) from None
             raise
 
         session.build_participant_to_player_lookups()

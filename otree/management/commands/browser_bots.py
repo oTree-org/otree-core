@@ -354,13 +354,11 @@ class Launcher(object):
 
         try:
             return subprocess.Popen(args)
-        except Exception as exception:
+        except Exception as exc:
             msg = (
                 'Could not launch browser. '
                 'Check your settings.BROWSER_COMMAND. {}'
             )
-            ExceptionClass = type(exception)
-            six.reraise(
-                ExceptionClass,
-                ExceptionClass(msg.format(exception)),
-                sys.exc_info()[2])
+            ExceptionClass = type(exc)
+            tb = sys.exc_info()[2]
+            raise ExceptionClass(msg.format(exc)).with_traceback(tb) from None

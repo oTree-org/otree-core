@@ -27,11 +27,7 @@ class BaseGroup(SaveTheChange, models.Model):
         try:
             return super(BaseGroup, self).__getattribute__(name)
         except AttributeError:
-            # this will result in "during handling of the above exception...'
-            # once we drop Python <3.3, we can raise from None
-            # for now, it's not that bad, just the almost same error printed
-            # twice
-            raise AttributeError(ATTRIBUTE_ERROR_MESSAGE.format(name))
+            raise AttributeError(ATTRIBUTE_ERROR_MESSAGE.format(name)) from None
 
     id_in_subsession = models.PositiveIntegerField(db_index=True)
 
@@ -52,7 +48,7 @@ class BaseGroup(SaveTheChange, models.Model):
             return self.player_set.get(id_in_group=id_in_group)
         except django.core.exceptions.ObjectDoesNotExist:
             raise ValueError(
-                'No player with id_in_group {}'.format(id_in_group))
+                'No player with id_in_group {}'.format(id_in_group)) from None
 
     def get_player_by_role(self, role):
         for p in self.get_players():

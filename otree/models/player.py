@@ -49,11 +49,7 @@ class BasePlayer(SaveTheChange, models.Model):
         try:
             return super(BasePlayer, self).__getattribute__(name)
         except AttributeError:
-            # this will result in "during handling of the above exception...'
-            # once we drop Python <3.3, we can raise from None
-            # for now, it's not that bad, just the almost same error printed
-            # twice
-            raise AttributeError(ATTRIBUTE_ERROR_MESSAGE.format(name))
+            raise AttributeError(ATTRIBUTE_ERROR_MESSAGE.format(name)) from None
 
     # it's _name instead of name because people might define
     # their own name field

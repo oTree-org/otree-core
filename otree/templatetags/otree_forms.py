@@ -1,3 +1,4 @@
+from collections import namedtuple
 import sys
 
 from django.db import models
@@ -9,7 +10,9 @@ from django.template.base import token_kwargs
 from django.template.loader import get_template
 from django.utils import six
 
+import floppyforms.templatetags.floppyforms as floppyforms_templatetags
 from otree.models_concrete import UndefinedFormModel
+
 
 
 class FormFieldNode(Node):
@@ -77,11 +80,12 @@ class FormFieldNode(Node):
                 try:
                     return form[field_name]
                 except KeyError:
+                    tb = sys.exc_info()[2]
                     raise ValueError(
                         "Field '{field_name}' was referenced in the template, "
                         "but was not included in the Page's 'form_fields' "
                         "in views.py ".format(
-                            field_name=field_name))
+                            field_name=field_name)) from None
 
         # Second we try to resolve it to a bound field.
         # No field found, so we return None.
