@@ -315,10 +315,19 @@ def pages_function(rules, **kwargs):
                         "and give your page a different name."
                     )
                     rules.push_error(msg)
-                if not issubclass(
-                    ViewCls,
-                    otree.views.abstract.FormPageOrInGameWaitPageMixin
-                ):
+                if issubclass(ViewCls,
+                              otree.views.abstract.InGameWaitPageMixin):
+                    if hasattr(ViewCls, 'before_next_page'):
+                        rules.push_error(
+                            'views.py: "{}" defines before_next_page, '
+                            'which is not valid on wait pages.'.format(
+                                ViewCls.__name__)
+                        )
+                elif issubclass(ViewCls,
+                                otree.views.abstract.FormPageMixin):
+                    # ok
+                    pass
+                else:
                     msg = 'views.py: "{}" is not a valid page'.format(ViewCls)
                     rules.push_error(msg)
 

@@ -456,8 +456,8 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
                 completion = page._register_wait_page_visit()
                 if completion:
                     participant_pk_set = set(
-                        page._group_or_subsession.player_set
-                        .values_list('participant__pk', flat=True))
+                        page._group_or_subsession.player_set.values_list(
+                            'participant__pk', flat=True))
                     page.send_completion_message(participant_pk_set)
 
     def is_displayed(self):
@@ -493,6 +493,25 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             session=self.session,
             auto_submitted=timeout_happened)
         self.participant.save()
+
+
+class UndefinedPlayer:
+    def __getattribute__(self, item):
+        raise AttributeError(
+            'self.player cannot be referenced inside after_all_players_arrive, '
+            'which is executed only once '
+            'for the entire group.'
+        )
+
+
+class UndefinedGroup:
+    def __getattribute__(self, item):
+        raise AttributeError(
+            'self.group cannot be referenced inside after_all_players_arrive '
+            'if wait_for_all_groups=True, '
+            'because after_all_players_arrive() is executed only once '
+            'for the entire subsession.'
+        )
 
 
 class InGameWaitPageMixin(object):
@@ -582,10 +601,12 @@ class InGameWaitPageMixin(object):
             # groups, not just one.
 
             player = self.player
-            self.player = None
+            # set to UNDEFINED rather than None,
+            # because then it won't be loaded lazily
+            self.player = UndefinedPlayer()
             if self.wait_for_all_groups:
                 group = self.group
-                self.group = None
+                self.group = UndefinedGroup()
 
             # make sure we get the most up-to-date player objects
             # e.g. if they were queried in is_displayed(),
