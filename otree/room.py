@@ -181,6 +181,7 @@ def get_room_dict():
             schema.Optional('use_secure_urls'): bool,
             schema.Optional('participant_label_file'): str,
             schema.Optional('doc'): str,
+            schema.Optional('pin_code'): str,
         }
     )
 
