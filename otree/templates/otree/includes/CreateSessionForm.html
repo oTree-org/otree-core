@@ -43,6 +43,11 @@
                         {{ field|safe }}
                     {% endfor %}
                 </table>
+            {% else %}
+                <p><i>
+                    You can make more properties configurable
+                    by adding them to your session config in settings.py.
+                </i></p>
             {% endif %}
 
             {# we only need to clarify that these are built-in if there are also custom ones #}
