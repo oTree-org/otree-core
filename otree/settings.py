@@ -94,10 +94,17 @@ def get_default_settings(initial_settings=None):
             },
             # logger so that we can explicitly send certain warnings to sentry,
             # without raising an exception.
+            # 2016-10-23: has not been used yet
             'otree.sentry': {
                 'handlers': ['sentry'],
                 'propagate': True,
                 'level': 'DEBUG',
+            },
+            # log any error that occurs inside channels code
+            'django.channels': {
+                'handlers': ['sentry'],
+                'propagate': True,
+                'level': 'ERROR',
             },
             # This is required for exceptions inside Huey tasks to get logged
             # to Sentry
