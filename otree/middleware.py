@@ -14,7 +14,6 @@ class CheckDBMiddleware(object):
 
     synced = None
 
-
     def process_request(self, request):
         if not CheckDBMiddleware.synced:
             CheckDBMiddleware.synced = db_status_ok()

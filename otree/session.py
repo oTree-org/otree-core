@@ -368,42 +368,29 @@ def create_session(
             ParticipantLockModel(participant_code=participant.code)
             for participant in participants])
 
-        try:
-            for app_name in session_config['app_sequence']:
+        for app_name in session_config['app_sequence']:
 
-                models_module = get_models_module(app_name)
-                app_constants = get_app_constants(app_name)
+            models_module = get_models_module(app_name)
+            app_constants = get_app_constants(app_name)
 
-                round_numbers = list(range(1, app_constants.num_rounds + 1))
+            round_numbers = list(range(1, app_constants.num_rounds + 1))
 
-                subs = bulk_create(
-                    models_module.Subsession,
-                    [{'round_number': round_number}
-                     for round_number in round_numbers])
+            subs = bulk_create(
+                models_module.Subsession,
+                [{'round_number': round_number}
+                 for round_number in round_numbers])
 
-                # Create players
-                models_module.Player.objects.bulk_create([
-                    models_module.Player(
-                        session=session,
-                        subsession=subsession,
-                        round_number=round_number,
-                        participant=participant)
-                    for round_number, subsession in zip(round_numbers, subs)
-                    for participant in participants])
+            # Create players
+            models_module.Player.objects.bulk_create([
+                models_module.Player(
+                    session=session,
+                    subsession=subsession,
+                    round_number=round_number,
+                    participant=participant)
+                for round_number, subsession in zip(round_numbers, subs)
+                for participant in participants])
 
-            session._create_groups_and_initialize()
-
-        # session.has_bots = any(p.is_bot ...)
-
-        except OperationalError as exception:
-            exception_str = str(exception)
-            # 2016-10-23: why are we not also checking for 'column'?
-            if 'table' in exception_str:
-                ExceptionClass = type(exception)
-                tb = sys.exc_info()[2]
-                raise ExceptionClass('{} - Try resetting the database.'.format(
-                        exception_str)).with_traceback(tb) from None
-            raise
+        session._create_groups_and_initialize()
 
         session.build_participant_to_player_lookups()
         # automatically save all objects since the cache was activated:

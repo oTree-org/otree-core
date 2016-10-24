@@ -50,8 +50,14 @@ def monkey_patch_static_tag():
 
 
 def monkey_patch_db_cursor():
-    from django.db.backends import utils
-    from django.db import ProgrammingError, OperationalError
+    '''Monkey-patch the DB cursor, to catch ProgrammingError and
+    OperationalError. The alternative is to use middleware, but (1)
+    that doesn't catch errors raised outside of views, like channels consumers
+    and the task queue, and (2) it's not as specific, because there are
+    OperationalErrors that come from different parts of the app that are
+    unrelated to resetdb. This is the most targeted location.
+    '''
+
 
     # This is actually a method
     # it seems safe to monkey patch, because
@@ -65,20 +71,23 @@ def monkey_patch_db_cursor():
             else:
                 try:
                     return self.cursor.execute(sql, params)
-                except (ProgrammingError, OperationalError) as exc:
-                    # these error messages are localized, so we can't
-                    # just check for substring 'column' or 'table'
-                    # all the ProgrammingError and OperationalError
-                    # instances I've seen so far are related to resetdb
-                    return
-                    1/0
-                    '''
+                except Exception as exc:
                     ExceptionClass = type(exc)
-                    tb = sys.exc_info()[2]
-                    raise ExceptionClass('{} - try running "otree resetdb".'.format(
-                            exc)).with_traceback(tb) from None
-                    '''
+                    # it seems there are different exceptions all named
+                    # OperationalError (django.db.OperationalError,
+                    # sqlite.OperationalError, mysql....)
+                    # so, simplest to use the string name
+                    if ExceptionClass.__name__ in (
+                            'OperationalError', 'ProgrammingError'):
+                        # these error messages are localized, so we can't
+                        # just check for substring 'column' or 'table'
+                        # all the ProgrammingError and OperationalError
+                        # instances I've seen so far are related to resetdb
+                        tb = sys.exc_info()[2]
+                        raise ExceptionClass('{} - try running "otree resetdb".'.format(
+                                exc)).with_traceback(tb) from None
 
+    from django.db.backends import utils
     utils.CursorWrapper.execute = execute
 
 
