@@ -49,6 +49,39 @@ def monkey_patch_static_tag():
     staticfiles.static = patched_static
 
 
+def monkey_patch_db_cursor():
+    from django.db.backends import utils
+    from django.db import ProgrammingError, OperationalError
+
+    # This is actually a method
+    # it seems safe to monkey patch, because
+    # it hasn't changed for several releases.
+    # just a ~5-line function.
+    def execute(self, sql, params=None):
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                return self.cursor.execute(sql)
+            else:
+                try:
+                    return self.cursor.execute(sql, params)
+                except (ProgrammingError, OperationalError) as exc:
+                    # these error messages are localized, so we can't
+                    # just check for substring 'column' or 'table'
+                    # all the ProgrammingError and OperationalError
+                    # instances I've seen so far are related to resetdb
+                    return
+                    1/0
+                    '''
+                    ExceptionClass = type(exc)
+                    tb = sys.exc_info()[2]
+                    raise ExceptionClass('{} - try running "otree resetdb".'.format(
+                            exc)).with_traceback(tb) from None
+                    '''
+
+    utils.CursorWrapper.execute = execute
+
+
 def setup_create_default_superuser():
     authconfig = apps.get_app_config('auth')
     signals.post_migrate.connect(
@@ -86,3 +119,4 @@ class OtreeConfig(AppConfig):
         setup_create_default_superuser()
         patch_raven_config()
         monkey_patch_static_tag()
+        monkey_patch_db_cursor()

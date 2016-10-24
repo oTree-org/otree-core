@@ -395,11 +395,6 @@ def create_session(
 
         # session.has_bots = any(p.is_bot ...)
 
-        # handle case where DB has missing column or table
-        #
-        # missing table: "OperationalError: no such table: pg_subsession"
-        # missing column: OperationalError: "table pg_player has no column
-        # named contribution2"
         except OperationalError as exception:
             exception_str = str(exception)
             # 2016-10-23: why are we not also checking for 'column'?

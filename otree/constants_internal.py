@@ -6,7 +6,6 @@
 # IMPORTS
 # =============================================================================
 
-from django.db import utils
 from django.utils.translation import ugettext_lazy
 
 # =============================================================================
@@ -52,11 +51,6 @@ user_type_participant = 'p'
 success = True
 failure = False
 
-exceptions_conversors = {
-    utils.OperationalError: lambda exception: utils.OperationalError(
-        "{} - Try resetting the database.".format(exception)
-    )
-}
 
 # Translators: for required form fields
 field_required_msg = ugettext_lazy('This field is required.')
