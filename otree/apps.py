@@ -86,6 +86,8 @@ def monkey_patch_db_cursor():
                         tb = sys.exc_info()[2]
                         raise ExceptionClass('{} - try running "otree resetdb".'.format(
                                 exc)).with_traceback(tb) from None
+                    else:
+                        raise
 
     from django.db.backends import utils
     utils.CursorWrapper.execute = execute
