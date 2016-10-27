@@ -870,7 +870,15 @@ class FormPageMixin(object):
                         self.participant._index_in_pages,
                         self.request.path,
                     ),
-                    delay=self.timeout_seconds)
+                    # add some seconds to account for latency of request + response
+                    # this will (almost) ensure
+                    # (1) that the page will be submitted by JS before the
+                    # timeoutworker, which ensures that self.request.POST
+                    # actually contains a value.
+                    # (2) that the timeoutworker doesn't accumulate a lead
+                    # ahead of the real page, which could result in being >1
+                    # page ahead. that means that entire pages could be skipped
+                    delay=self.timeout_seconds+8)
         return super(FormPageMixin, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):

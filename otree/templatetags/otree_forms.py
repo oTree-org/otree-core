@@ -80,7 +80,6 @@ class FormFieldNode(Node):
                 try:
                     return form[field_name]
                 except KeyError:
-                    tb = sys.exc_info()[2]
                     raise ValueError(
                         "Field '{field_name}' was referenced in the template, "
                         "but was not included in the Page's 'form_fields' "
