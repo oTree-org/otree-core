@@ -11,23 +11,6 @@ class models:
     def __getattr__(self, item):
         pass
 
-    class _Field(object):
-        def __init__(
-            self,
-            *,
-            choices=None,
-            widget=None,
-            initial=None,
-            verbose_name=None,
-            doc='',
-            min=None,
-            max=None,
-            blank=False,
-            null=True,
-            help_text='',
-            **kwargs):
-                pass
-
     class BooleanField(object):
         def __init__(
                 self,
@@ -58,11 +41,81 @@ class models:
                 **kwargs):
             pass
 
-    class PositiveIntegerField(_Field): pass
-    class IntegerField(_Field): pass
-    class FloatField(_Field): pass
-    class CurrencyField(_Field): pass
-    class TextField(_Field): pass
+    # need to copy-paste the __init__ between
+    # PositiveInteger, Integer, Float, and Currency
+    # because if I use inheritance, PyCharm doesn't auto-complete
+    # while typing args
+
+    class PositiveIntegerField:
+        def __init__(
+            self,
+            *,
+            choices=None,
+            widget=None,
+            initial=None,
+            verbose_name=None,
+            doc='',
+            min=None,
+            max=None,
+            blank=False,
+            null=True,
+            help_text='',
+            **kwargs):
+                pass
+
+    class IntegerField:
+        def __init__(
+            self,
+            *,
+            choices=None,
+            widget=None,
+            initial=None,
+            verbose_name=None,
+            doc='',
+            min=None,
+            max=None,
+            blank=False,
+            null=True,
+            help_text='',
+            **kwargs):
+                pass
+
+    class FloatField:
+        def __init__(
+            self,
+            *,
+            choices=None,
+            widget=None,
+            initial=None,
+            verbose_name=None,
+            doc='',
+            min=None,
+            max=None,
+            blank=False,
+            null=True,
+            help_text='',
+            **kwargs):
+                pass
+
+    class CurrencyField:
+        def __init__(
+            self,
+            *,
+            choices=None,
+            widget=None,
+            initial=None,
+            verbose_name=None,
+            doc='',
+            min=None,
+            max=None,
+            blank=False,
+            null=True,
+            help_text='',
+            **kwargs):
+                pass
+
+    class TextField:
+        pass
 
 
 class widgets:

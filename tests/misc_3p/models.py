@@ -14,7 +14,7 @@ Test misc functionality of a 3-player game
 class Constants:
     name_in_url = 'misc_3p'
     players_per_group = 3
-    num_rounds = 2
+    num_rounds = 20
 
 
 class Subsession(otree.models.BaseSubsession):

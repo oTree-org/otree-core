@@ -85,6 +85,15 @@ class RealWorldCurrency(easymoney.Money):
 class Currency(RealWorldCurrency):
     '''game currency'''
 
+    # if I uncomment the below,
+    # it should solve the problem in PyCharm where currency amounts are
+    # highlighted in yellow if you try to divide
+    # by a number. but there are other currency problems, like adding
+    # to a number. Or even adding IntegerField to a number.
+    # so i want to understand better first how to solve the problem generally
+    # def __new__(cls, amount):
+    #     return super().__new__(cls, amount)
+
     if settings.USE_POINTS:
         DECIMAL_PLACES = settings.POINTS_DECIMAL_PLACES
 

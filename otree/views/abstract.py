@@ -453,8 +453,19 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             # if it's a wait page, record that they visited
             # but don't run after_all_players_arrive
             if hasattr(page, '_register_wait_page_visit'):
+                # save the participant, because tally_unvisited
+                # queries index_in_pages directly from the DB
+                # this fixes a bug reported on 2016-11-04 on the mailing list
+                self.participant.save()
+                # you could just return page.dispatch(),
+                # but that could cause deep recursion
+
                 completion = page._register_wait_page_visit()
                 if completion:
+                    # mark it fully completed right away,
+                    # since we don't run after_all_players_arrive()
+                    completion.fully_completed = True
+                    completion.save()
                     participant_pk_set = set(
                         page._group_or_subsession.player_set.values_list(
                             'participant__pk', flat=True))
@@ -521,7 +532,7 @@ class InGameWaitPageMixin(object):
     """
     wait_for_all_groups = False
 
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch(self, *args, **kwargs):
 
         if self._is_ready():
             # need to deactivate cache, in case after_all_players_arrive
@@ -619,6 +630,11 @@ class InGameWaitPageMixin(object):
                 if p != player:
                     self.PlayerClass.flush_cached_instance(p)
             self.after_all_players_arrive()
+
+            # need to save to the results of after_all_players_arrive
+            # to the DB, before sending the completion message to other players
+            # this was causing a race condition on 2016-11-04
+            otree.db.idmap.save_objects()
         except:
             completion.delete()
             raise

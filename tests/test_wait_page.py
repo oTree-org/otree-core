@@ -54,7 +54,7 @@ class TestSkipWaitPage(TestCase):
             bot.open_start_url()
         for bot in ordered_bots:
             bot.open_start_url()
-            #self.assertFalse(bot.on_wait_page())
+            self.assertFalse(bot.on_wait_page())
 
     def test_skipper_visits_last(self):
         self.visit(self.bots)

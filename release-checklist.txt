@@ -1,0 +1,5 @@
+python runtests.py
+
+# in 2 separate shells:
+python manage.py runprodserver --botworker
+python manage.py browser_bots_core

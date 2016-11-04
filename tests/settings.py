@@ -70,6 +70,7 @@ SESSION_CONFIG_DEFAULTS = {
     'participation_fee': 10.00,
     'doc': "",
     'mturk_hit_settings': mturk_hit_settings,
+    'use_browser_bots': False,
 }
 
 
@@ -87,7 +88,7 @@ SESSION_CONFIGS = [
         'participation_fee': 9.99,
         'real_world_currency_per_point': 0.02,
         'app_sequence': ['tests.misc_1p'],
-        'treatment': 'blue'
+        'treatment': 'blue',
     },
     {
         'name': 'misc_3p',
@@ -102,7 +103,7 @@ SESSION_CONFIGS = [
         "app_sequence": ['tests.simple', 'tests.misc_1p'],
     },
     {
-        'name': 'skipmany',
+        'name': 'skip_many',
         'display_name': "skip many",
         'num_demo_participants': 2,
         'app_sequence': ['tests.skip_many'],
@@ -131,6 +132,17 @@ SESSION_CONFIGS = [
         'name': 'skip_wait_page',
         'num_demo_participants': 2,
         'app_sequence': ['tests.skip_wait_page'],
+    },
+    {
+        'name': 'waitpage_set_field',
+        'num_demo_participants': 4,
+        'app_sequence': ['tests.waitpage_set_field'],
+    },
+    {
+        'name': 'skip_waitpage_lookahead',
+        'num_demo_participants': 2,
+        'app_sequence': ['tests.skip_waitpage_lookahead'],
+        'use_browser_bots': True,
     },
     {
         'name': 'export',
