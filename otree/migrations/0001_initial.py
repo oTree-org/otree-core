@@ -176,7 +176,7 @@ class Migration(migrations.Migration):
                 ('comment', otree.db.models.TextField(blank=True, null=True)),
                 ('_anonymous_code', otree.db.models.CharField(db_index=True, max_length=8, null=True, default=otree.common_internal.random_chars_10)),
                 ('special_category', otree.db.models.CharField(db_index=True, max_length=20, null=True)),
-                ('_pre_create_id', otree.db.models.CharField(db_index=True, max_length=300, null=True)),
+                ('_pre_create_id', otree.db.models.CharField(db_index=True, max_length=255, null=True)),
                 ('_use_browser_bots', otree.db.models.BooleanField(choices=[(True, 'Yes'), (False, 'No')], default=False)),
             ],
             options={
