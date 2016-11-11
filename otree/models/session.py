@@ -93,7 +93,7 @@ class Session(ModelWithVars):
     _anonymous_code = models.CharField(
         default=random_chars_10, max_length=10, null=False, db_index=True)
 
-    _pre_create_id = models.CharField(max_length=300, db_index=True, null=True)
+    _pre_create_id = models.CharField(max_length=255, db_index=True, null=True)
 
     use_browser_bots = models.BooleanField(default=False)
 
