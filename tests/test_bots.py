@@ -4,7 +4,7 @@
 from otree.bots.bot import ParticipantBot
 from .base import TestCase
 import otree.session
-from otree.bots.runner import session_bot_runner_factory
+from otree.bots.runner import session_bot_runner_factory, test_bots
 import logging
 
 
@@ -69,3 +69,19 @@ class TestBots(TestCase):
             logging.disable(logging.CRITICAL)
             bot_runner.play()
             logging.disable(logging.NOTSET)
+
+    import unittest.mock
+    from tests.bots_cases.tests import PlayerBot
+
+
+    @unittest.mock.patch.object(PlayerBot, 'case1')
+    @unittest.mock.patch.object(PlayerBot, 'case2')
+    def test_cases(self, patched_case2, patched_case1):
+        '''
+        Test that all cases are run
+        '''
+
+        from django.core.management import call_command
+        test_bots('bots_cases', 1, False)
+        self.assertTrue(patched_case1.called)
+        self.assertTrue(patched_case2.called)
