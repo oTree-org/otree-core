@@ -871,7 +871,7 @@ class FormPageMixin(object):
             self._increment_index_in_pages()
             return self._redirect_to_page_the_user_should_be_on()
 
-        self.participant._current_form_page_url = self.request.path
+
         if otree.common_internal.USE_REDIS:
             # if using browser bots, don't schedule the timeout,
             # because if it's a short timeout, it could happen before
@@ -883,7 +883,6 @@ class FormPageMixin(object):
                 otree.timeout.tasks.submit_expired_url.schedule(
                     (
                         self.participant.code,
-                        self.participant._index_in_pages,
                         self.request.path,
                     ),
                     # add some seconds to account for latency of request + response
@@ -895,6 +894,11 @@ class FormPageMixin(object):
                     # ahead of the real page, which could result in being >1
                     # page ahead. that means that entire pages could be skipped
                     delay=self.timeout_seconds+8)
+
+        # this needs to be set AFTER scheduling submit_expired_url,
+        # to prevent race conditions.
+        # see that function for an explanation.
+        self.participant._current_form_page_url = self.request.path
         return super(FormPageMixin, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
