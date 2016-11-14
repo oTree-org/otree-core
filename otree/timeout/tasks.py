@@ -12,18 +12,15 @@ test_client = django.test.Client()
 
 @db_task()
 def submit_expired_url(participant_code, original_index_in_pages, url):
-    from otree.models import Participant
+    from otree.models.participant import Participant
 
-    result = Participant.objects.filter(
-            code=participant_code).values_list(
-        '_index_in_pages', flat=True)
-    if result:
-        latest_index_in_pages = result[0]
-        if latest_index_in_pages <= original_index_in_pages:
-            test_client.post(
-                url, data={constants_internal.auto_submit: True}, follow=True)
-        # otherwise, the participant already proceeded past the page.
-    # maybe was deleted from the DB
+    # if the participant exists in the DB,
+    # and they did not advance past the page yet
+    if Participant.objects.filter(
+            code=participant_code,
+            _index_in_pages__lte=original_index_in_pages).exists():
+        test_client.post(
+            url, data={constants_internal.auto_submit: True}, follow=True)
 
 
 @db_task()
@@ -34,7 +31,7 @@ def ensure_pages_visited(participant_pk_set, wait_page_index):
     automatically, to kick off the expiration timer of the timeout page.
     """
 
-    from otree.models import Participant
+    from otree.models.participant import Participant
 
     unvisited_participants = Participant.objects.filter(
         pk__in=participant_pk_set,
