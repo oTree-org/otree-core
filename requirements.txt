@@ -3,7 +3,7 @@ asgiref==0.14.0
 autobahn==0.16.0
 Babel==2.3.4
 boto==2.42.0
-channels==0.17.2
+channels==0.17.3
 colorama==0.3.7
 contextlib2==0.5.4
 coverage==4.2
