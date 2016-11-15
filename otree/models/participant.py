@@ -11,7 +11,7 @@ from otree.common import Currency as c
 from otree.db import models
 from otree.models_concrete import ParticipantToPlayerLookup
 from otree.models.varsmixin import ModelWithVars
-
+import typing
 
 class Participant(ModelWithVars):
 
@@ -114,10 +114,10 @@ class Participant(ModelWithVars):
 
     _player_lookups = None
 
-    def player_lookup(self):
-        # this is the most reliable way to get the app name,
-        # because of WaitUntilAssigned...
-        # 2016-04-07: WaitUntilAssigned removed
+    def player_lookup(self) -> typing.Dict:
+        '''
+        Code is more complicated because of a performance optimization
+        '''
         index = self._index_in_pages
         if not self._player_lookups or index not in self._player_lookups:
             self._player_lookups = self._player_lookups or {}
@@ -166,6 +166,8 @@ class Participant(ModelWithVars):
         return 'Playing'
 
     def _url_i_should_be_on(self):
+        if not self.visited:
+            return self._start_url()
         if self._index_in_pages <= self._max_page_index:
             return self.player_lookup()['url']
         if self.session.mturk_HITId:

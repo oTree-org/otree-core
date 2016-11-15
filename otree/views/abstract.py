@@ -684,19 +684,14 @@ class InGameWaitPageMixin(object):
     def send_completion_message(self, participant_pk_set):
 
         if otree.common_internal.USE_REDIS:
-            # only necessary to submit if next page has a timeout
-            # or if it is a wait page
-            player_lookup = self.participant.future_player_lookup(
-                pages_ahead=1)
-            if player_lookup:
-                PageClass = get_view_from_url(player_lookup.url)
-                if (issubclass(PageClass, InGameWaitPageMixin) or
-                        PageClass.has_timeout()):
-                    otree.timeout.tasks.ensure_pages_visited.schedule(
-                        kwargs={
-                            'participant_pk_set': participant_pk_set,
-                            'wait_page_index': self._index_in_pages},
-                        delay=10)
+            # 2016-11-15: we used to only ensure the next page is visited
+            # if the next page has a timeout, or if it's a wait page
+            # but this is not reliable because next page might be skipped anyway,
+            # and we don't know what page will actually be shown next to the user.
+            otree.timeout.tasks.ensure_pages_visited.schedule(
+                kwargs={
+                    'participant_pk_set': participant_pk_set},
+                delay=10)
 
         # _group_or_subsession might be deleted
         # in after_all_players_arrive, but it won't delete the cached model
