@@ -30,12 +30,13 @@ def submit_expired_url(participant_code, url):
     if Participant.objects.filter(
             code=participant_code,
             _current_form_page_url=url).exists():
+        print('****', url)
         test_client.post(
             url, data={constants_internal.auto_submit: True}, follow=True)
 
 
 @db_task()
-def ensure_pages_visited(participant_pk_set, wait_page_index):
+def ensure_pages_visited(participant_pk_set):
     """This is necessary when a wait page is followed by a timeout page.
     We can't guarantee the user's browser will properly continue to poll
     the wait page and get redirected, so after a grace period we load the page
@@ -44,9 +45,10 @@ def ensure_pages_visited(participant_pk_set, wait_page_index):
 
     from otree.models.participant import Participant
 
+    # we used to filter by _index_in_pages, but that is not reliable,
+    # because of the race condition described above.
     unvisited_participants = Participant.objects.filter(
         pk__in=participant_pk_set,
-        _index_in_pages__lte=wait_page_index,
     )
     for participant in unvisited_participants:
 
@@ -56,5 +58,5 @@ def ensure_pages_visited(participant_pk_set, wait_page_index):
         # because that will redirect to the current wait page.
         # (alternatively we could define _current_page_url or
         # current_wait_page_url)
-        url = participant._current_form_page_url or participant._start_url()
+        url = participant._url_i_should_be_on()
         test_client.get(url, follow=True)
