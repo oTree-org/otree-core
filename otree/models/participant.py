@@ -11,7 +11,6 @@ from otree.common import Currency as c
 from otree.db import models
 from otree.models_concrete import ParticipantToPlayerLookup
 from otree.models.varsmixin import ModelWithVars
-import typing
 
 class Participant(ModelWithVars):
 
@@ -114,7 +113,7 @@ class Participant(ModelWithVars):
 
     _player_lookups = None
 
-    def player_lookup(self) -> typing.Dict:
+    def player_lookup(self):
         '''
         Code is more complicated because of a performance optimization
         '''
