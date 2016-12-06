@@ -30,7 +30,6 @@ def submit_expired_url(participant_code, url):
     if Participant.objects.filter(
             code=participant_code,
             _current_form_page_url=url).exists():
-        print('****', url)
         test_client.post(
             url, data={constants_internal.auto_submit: True}, follow=True)
 
