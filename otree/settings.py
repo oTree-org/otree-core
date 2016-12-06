@@ -136,7 +136,7 @@ def get_default_settings(initial_settings=None):
         'STATICFILES_STORAGE': (
             'whitenoise.django.GzipManifestStaticFilesStorage'
         ),
-        'ROOT_URLCONF': 'otree.default_urls',
+        'ROOT_URLCONF': 'otree.urls',
 
         'TIME_ZONE': 'UTC',
         'USE_TZ': True,
@@ -160,16 +160,7 @@ def get_default_settings(initial_settings=None):
         'MTURK_SANDBOX_HOST': 'mechanicalturk.sandbox.amazonaws.com',
 
         # The project can override the routing.py used as entry point by
-        # setting CHANNEL_DEFAULT_ROUTING.
-
-        # 'CHANNEL_LAYERS': {
-        #     'default': {
-        #         'BACKEND': 'channels.database_layer.DatabaseChannelLayer',
-        #         'ROUTING': initial_settings.get(
-        #             'CHANNEL_DEFAULT_ROUTING',
-        #             'otree.channels.default_routing.channel_routing'),
-        #     },
-        # },
+        # setting CHANNEL_ROUTING.
 
         'CHANNEL_LAYERS': {
             'default': {
@@ -178,14 +169,14 @@ def get_default_settings(initial_settings=None):
                     "hosts": [REDIS_URL],
                 },
                 'ROUTING': initial_settings.get(
-                    'CHANNEL_DEFAULT_ROUTING',
-                    'otree.channels.default_routing.channel_routing'),
+                    'CHANNEL_ROUTING',
+                    'otree.channels.routing.channel_routing'),
             },
             'inmemory': {
                 "BACKEND": "asgiref.inmemory.ChannelLayer",
                 'ROUTING': initial_settings.get(
-                    'CHANNEL_DEFAULT_ROUTING',
-                    'otree.channels.default_routing.channel_routing'),
+                    'CHANNEL_ROUTING',
+                    'otree.channels.routing.channel_routing'),
             },
         },
 

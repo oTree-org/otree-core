@@ -10,7 +10,7 @@ doc = ""
 
 class Constants(BaseConstants):
     name_in_url = 'skip_wait_page'
-    players_per_group = 2
+    players_per_group = None
     num_rounds = 1
 
 

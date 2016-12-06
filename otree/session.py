@@ -328,7 +328,7 @@ def create_session(
             _pre_create_id=_pre_create_id,
             use_browser_bots=use_browser_bots,
             is_demo=is_demo,
-            _bot_case_number=bot_case_number)
+            _bot_case_number=bot_case_number) # type: Session
 
         def bulk_create(model, descriptions):
             model.objects.bulk_create([
@@ -410,6 +410,7 @@ def create_session(
             session.delete()
             raise
 
+    session._set_admin_report_app_names()
     session.ready = True
     session.save()
 

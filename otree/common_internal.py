@@ -23,7 +23,8 @@ from django.http import HttpResponseRedirect
 from django.template.defaultfilters import title
 from six.moves import urllib
 from huey.contrib.djhuey import HUEY
-
+import contextlib
+from django.db import transaction
 # set to False if using runserver
 USE_REDIS = True
 
@@ -116,10 +117,13 @@ def get_dotted_name(Cls):
 
 
 def get_app_label_from_import_path(import_path):
-    app_label = import_path.rsplit(".", 1)[0]
-    while "." in app_label:
-        app_label = app_label.rsplit(".", 1)[-1]
-    return app_label
+    '''App authors must not override AppConfig.label'''
+    return import_path.split('.')[-2]
+
+
+def get_app_label_from_name(app_name):
+    '''App authors must not override AppConfig.label'''
+    return app_name.split('.')[-1]
 
 
 def get_app_name_from_label(app_label):
@@ -196,10 +200,15 @@ def channels_create_session_group_name(pre_create_id):
 
 
 def channels_wait_page_group_name(session_pk, page_index,
-                                  model_name, model_pk):
+                                  group_id_in_subsession=''):
 
-    return 'wait-page-{}-page{}-{}{}'.format(
-        session_pk, page_index, model_name, model_pk)
+    return 'wait-page-{}-page{}-{}'.format(
+        session_pk, page_index, group_id_in_subsession)
+
+
+def channels_group_by_arrival_time_group_name(session_pk, page_index):
+    return 'group_by_arrival_time_session{}_page{}'.format(
+        session_pk, page_index)
 
 
 def validate_alphanumeric(identifier, identifier_description):
@@ -274,3 +283,23 @@ def release_any_stale_locks():
 def get_redis_conn():
     '''reuse Huey Redis connection'''
     return HUEY.storage.conn
+
+def has_group_by_arrival_time(app_name):
+    page_sequence = get_views_module(app_name).page_sequence
+    if len(page_sequence) == 0:
+        return False
+    return getattr(page_sequence[0], 'group_by_arrival_time', False)
+
+
+@contextlib.contextmanager
+def transaction_except_for_sqlite():
+    '''
+    On SQLite, transactions tend to result in "database locked" errors.
+    So, skip the transaction on SQLite, to allow local dev.
+    Should only be used if omitting the transaction rarely causes problems.
+    '''
+    if settings.DATABASES['default']['ENGINE'].endswith('sqlite3'):
+        yield
+    else:
+        with transaction.atomic():
+            yield

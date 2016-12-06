@@ -1,6 +1,3 @@
-from django.conf.urls import patterns
-import otree.urls
-
-urlpatterns = patterns('',)
-
-otree.urls.augment_urlpatterns(urlpatterns)
+# 2016-11-20: deprecated but keeping around for compat
+# new apps should import otree.urls
+from otree.urls import urlpatterns

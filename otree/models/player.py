@@ -45,6 +45,9 @@ class BasePlayer(SaveTheChange, models.Model):
 
     round_number = models.PositiveIntegerField(db_index=True)
 
+    _group_by_arrival_time_arrived = models.BooleanField(default=False)
+    _group_by_arrival_time_grouped = models.BooleanField(default=False)
+
     def __getattribute__(self, name):
         try:
             return super(BasePlayer, self).__getattribute__(name)
@@ -122,3 +125,4 @@ class BasePlayer(SaveTheChange, models.Model):
             app_label=cls._meta.app_label)
         group_field = models.ForeignKey(group_model, null=True)
         ensure_field(cls, 'group', group_field)
+

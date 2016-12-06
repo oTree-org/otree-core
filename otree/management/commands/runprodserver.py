@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 from django.core.management import call_command
 from . import webandworkers
@@ -29,8 +28,14 @@ class Command(webandworkers.Command):
         manager = super(Command, self).get_honcho_manager(options)
 
         manager.add_process(
-            'timeoutworker',
-            'otree timeoutworker',
+            'botworker',
+            'otree botworker',
+            quiet=False,
+            env=self.get_env(options)
+        )
+        manager.add_process(
+            'timeoutworkeronly',
+            'otree timeoutworkeronly',
             quiet=False,
             env=self.get_env(options)
         )

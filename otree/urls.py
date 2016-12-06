@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
+from django.conf.urls import patterns
 import inspect
 from importlib import import_module
 
@@ -27,6 +25,7 @@ STUDY_UNRESTRICTED_VIEWS = {
 
 
 DEMO_UNRESTRICTED_VIEWS = STUDY_UNRESTRICTED_VIEWS.union({
+    'AdminReport',
     'AdvanceSession',
     'CreateDemoSession',
     'DemoIndex',
@@ -34,8 +33,7 @@ DEMO_UNRESTRICTED_VIEWS = STUDY_UNRESTRICTED_VIEWS.union({
     'SessionDescription',
     'SessionMonitor',
     'SessionPayments',
-    'SessionResults',
-    'SessionStartLinks',
+    'SessionData',
     'SessionStartLinks',
     'WaitUntilSessionCreated',
 })
@@ -167,3 +165,7 @@ def augment_urlpatterns(urlpatterns):
     urlpatterns += url_patterns_from_module('otree.views.export')
 
     return urlpatterns
+
+
+urlpatterns = patterns('',)
+augment_urlpatterns(urlpatterns)

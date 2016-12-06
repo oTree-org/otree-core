@@ -11,7 +11,7 @@ doc = "foo"
 
 class Constants(BaseConstants):
     name_in_url = 'skip_many'
-    players_per_group = 2
+    players_per_group = None
     num_rounds = 5
 
 

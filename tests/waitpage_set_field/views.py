@@ -17,11 +17,12 @@ class ShouldBeSkipped(Page):
         return self.player.set_to_false
 
     def vars_for_template(self):
-        1/0 # this should not be executed
+        raise AssertionError('This page should not be shown')
 
 
 class Page2(Page):
     pass
+
 
 page_sequence = [
     MyWait,

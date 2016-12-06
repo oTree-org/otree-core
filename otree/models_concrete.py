@@ -32,12 +32,12 @@ class PageTimeout(models.Model):
 class CompletedGroupWaitPage(models.Model):
     class Meta:
         app_label = "otree"
-        unique_together = ['page_index', 'session', 'group_pk']
-        index_together = ['page_index', 'session', 'group_pk']
+        unique_together = ['page_index', 'session', 'id_in_subsession']
+        index_together = ['page_index', 'session', 'id_in_subsession']
 
     page_index = models.PositiveIntegerField()
     session = models.ForeignKey('otree.Session')
-    group_pk = models.PositiveIntegerField()
+    id_in_subsession = models.PositiveIntegerField(default=0)
     fully_completed = models.BooleanField(default=False)
 
 

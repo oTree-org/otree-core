@@ -9,10 +9,14 @@ from django.core.urlresolvers import reverse
 from otree import constants_internal
 import otree.common_internal
 from otree.common_internal import (
-    random_chars_8, random_chars_10, get_admin_secret_code)
+    random_chars_8, random_chars_10, get_admin_secret_code,
+    get_app_label_from_name
+)
 from otree.db import models
 from otree.models_concrete import ParticipantToPlayerLookup, RoomToSession
 from .varsmixin import ModelWithVars
+from django.template.loader import get_template
+from django.template import TemplateDoesNotExist
 
 logger = logging.getLogger('otree')
 
@@ -109,6 +113,9 @@ class Session(ModelWithVars):
     # whether SOME players are bots
     has_bots = models.BooleanField(default=False)
 
+    _admin_report_app_names = models.TextField(default='')
+    _admin_report_num_rounds = models.CharField(default='', max_length=255)
+
     def __unicode__(self):
         return self.code
 
@@ -147,7 +154,7 @@ class Session(ModelWithVars):
         return self.participant_set.all()
 
     def _create_groups_and_initialize(self):
-        # group_by_arrival_time code used to be here
+        # group_by_arrival_time_time code used to be here
         for subsession in self.get_subsessions():
             subsession._create_groups()
             subsession.before_session_starts()
@@ -284,3 +291,28 @@ class Session(ModelWithVars):
             self.config['participation_fee'] +
             payoff.to_real_world_currency(self)
         )
+
+    def _set_admin_report_app_names(self):
+
+        admin_report_app_names = []
+        num_rounds_list = []
+        for app_name in self.config['app_sequence']:
+            models_module = otree.common_internal.get_models_module(app_name)
+            app_label = get_app_label_from_name(app_name)
+            try:
+                get_template('{}/AdminReport.html'.format(app_label))
+                admin_report_app_names.append(app_name)
+                num_rounds_list.append(models_module.Constants.num_rounds)
+            except TemplateDoesNotExist:
+                pass
+        self._admin_report_app_names = ';'.join(admin_report_app_names)
+        self._admin_report_num_rounds = ';'.join(str(n) for n in num_rounds_list)
+
+    def _admin_report_apps(self):
+        return self._admin_report_app_names.split(';')
+
+    def _admin_report_num_rounds_list(self):
+        return [int(num) for num in self._admin_report_num_rounds.split(';')]
+
+    def has_admin_report(self):
+        return bool(self._admin_report_app_names)

@@ -15,7 +15,9 @@ from otree.models import Participant, Session
 from otree.models_concrete import (
     CompletedGroupWaitPage, CompletedSubsessionWaitPage)
 from otree.common_internal import (
-    channels_wait_page_group_name, channels_create_session_group_name)
+    channels_wait_page_group_name, channels_create_session_group_name,
+    channels_group_by_arrival_time_group_name, get_models_module
+)
 from otree.models_concrete import (
     FailedSessionCreation, ParticipantRoomVisit,
     FAILURE_MESSAGE_MAX_LENGTH, BrowserBotsLauncherSessionCode)
@@ -24,23 +26,57 @@ from otree.room import ROOM_DICT
 logger = logging.getLogger(__name__)
 
 
-def connect_wait_page(message, params):
-    session_pk, page_index, model_name, model_pk = params.split(',')
+def connect_group_by_arrival_time(message, params):
+    session_pk, page_index, app_name, player_id = params.split(',')
     session_pk = int(session_pk)
     page_index = int(page_index)
-    model_pk = int(model_pk)
+    player_id = int(player_id)
+
+    group_name = channels_group_by_arrival_time_group_name(session_pk, page_index)
+    group = Group(group_name)
+    group.add(message.reply_channel)
+
+    models_module = get_models_module(app_name)
+    player = models_module.Player.objects.get(id=player_id)
+    group_id_in_subsession = player.group.id_in_subsession
+
+    ready = CompletedGroupWaitPage.objects.filter(
+        page_index=page_index,
+        id_in_subsession=int(group_id_in_subsession),
+        session_id=session_pk,
+        fully_completed=True).exists()
+    if ready:
+        message.reply_channel.send(
+            {'text': json.dumps(
+                {'status': 'ready'})})
+
+
+def disconnect_group_by_arrival_time(message, params):
+    session_pk, page_index, app_name, player_id = params.split(',')
+    session_pk = int(session_pk)
+    page_index = int(page_index)
+
+    group_name = channels_group_by_arrival_time_group_name(session_pk, page_index)
+    group = Group(group_name)
+    group.discard(message.reply_channel)
+
+
+def connect_wait_page(message, params):
+    session_pk, page_index, group_id_in_subsession = params.split(',')
+    session_pk = int(session_pk)
+    page_index = int(page_index)
 
     group_name = channels_wait_page_group_name(
-        session_pk, page_index, model_name, model_pk
+        session_pk, page_index, group_id_in_subsession
     )
     group = Group(group_name)
     group.add(message.reply_channel)
 
     # in case message was sent before this web socket connects
-    if model_name == 'group':
+    if group_id_in_subsession:
         ready = CompletedGroupWaitPage.objects.filter(
             page_index=page_index,
-            group_pk=model_pk,
+            id_in_subsession=int(group_id_in_subsession),
             session_id=session_pk,
             fully_completed=True).exists()
     else:  # subsession
@@ -54,14 +90,16 @@ def connect_wait_page(message, params):
                 {'status': 'ready'})})
 
 
+
 def disconnect_wait_page(message, params):
-    session_pk, page_index, model_name, model_pk = params.split(',')
+    session_pk, page_index, group_id_in_subsession = params.split(',')
+    session_pk = int(session_pk)
     page_index = int(page_index)
-    model_pk = int(model_pk)
 
     group_name = channels_wait_page_group_name(
-        session_pk, page_index, model_name, model_pk
+        session_pk, page_index, group_id_in_subsession
     )
+
     group = Group(group_name)
     group.discard(message.reply_channel)
 

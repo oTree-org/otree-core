@@ -105,9 +105,12 @@ class Worker(object):
             return {
                 'request_error': (
                     "Participant {} not loaded in botworker. "
-                    "The botworker only stores the most recent {} sessions, "
-                    "and discards older sessions. Or, maybe the botworker "
-                    "was restarted after the session was created.".format(
+                    "This can happen for several reasons: "
+                    "(1) You are running multiple botworkers "
+                    "(2) You restarted the botworker after creating the session "
+                    "(3) The bots expired "
+                    "(the botworker stores bots for "
+                    "only the most recent {} sessions).".format(
                         participant_code, SESSIONS_PRUNE_LIMIT)
                 )
             }
@@ -194,7 +197,9 @@ def ping(redis_conn, unique_response_code):
         raise Exception(
             'Ping to botworker failed. '
             'If you want to use browser bots, '
-            'you need to be running the botworker.'
+            'you need to be running the botworker '
+            '(which is started automatically if you run "otree runprodserver" '
+            'or "otree timeoutworker"). '
             'Otherwise, set ("use_browser_bots": False) in the session config '
             'in settings.py.'
         )

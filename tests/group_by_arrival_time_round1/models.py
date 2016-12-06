@@ -9,9 +9,9 @@ from otree.api import (
 doc = ""
 
 class Constants(BaseConstants):
-    name_in_url = 'wait_page'
+    name_in_url = 'group_by_arrival_time_round1'
     players_per_group = 2
-    num_rounds = 1
+    num_rounds = 2
 
 
 class Subsession(BaseSubsession):
@@ -23,4 +23,4 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
-    display_next_page = models.BooleanField(initial=True)
+    pass

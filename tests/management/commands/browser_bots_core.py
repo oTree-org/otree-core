@@ -8,6 +8,7 @@ class Command(BaseCommand):
         config_names = [
             'skip_waitpage_lookahead',
             'skip_many',
+            'group_by_arrival_time',
             # these ones take a long time, so put them last
             'misc_3p',
             'waitpage_set_field',

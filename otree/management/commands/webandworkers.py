@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import os
 import re
 import sys
@@ -45,7 +43,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--botworker', action='store_true',
             dest='botworker', default=False,
-            help='Run botworker (for browser bots)')
+            help='--botworker flag is deprecated and has no effect')
 
     def get_env(self, options):
         return os.environ.copy()
@@ -89,12 +87,5 @@ class Command(BaseCommand):
                 'worker{}'.format(i),
                 'otree runworker',
                 env=self.get_env(options))
-        if options['botworker']:
-            manager.add_process(
-                'botworker',
-                'otree botworker',
-                quiet=False,
-                env=self.get_env(options)
-            )
 
         return manager

@@ -59,13 +59,8 @@ $(function () {
             </div>
         {% endif %}
 
-        <form action="" method="post" role="form" class="form" id="form">{% csrf_token %}
-            <input type="hidden" value="{{ request.path }}" name="origin_url" />
-            {% form form using %}
-                {% formconfig row using "floppyforms/rows/bootstrap.html" %}
-                {% block content %}{% endblock %}
-            {% endform %}
-        </form>
+        {% block content %}{% endblock %}
+    
     </div>
     <br/>
 </div>

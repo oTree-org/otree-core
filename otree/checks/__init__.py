@@ -11,10 +11,11 @@ from functools import wraps
 
 from django.apps import apps
 from django.conf import settings
-from django.core.checks import register, Error
+from django.core.checks import register, Error, Warning
 from django.template import Template
 from django.template import TemplateSyntaxError
 
+from otree.api import BasePlayer, BaseGroup, BaseSubsession, Currency
 import otree.views.abstract
 
 
@@ -68,6 +69,14 @@ class Rules(object):
 
     def push_error(self, title, **kwargs):
         return self.errors.append(self.error(title, **kwargs))
+
+    def warning(self, title, **kwargs):
+        kwargs.setdefault('obj', self.config.label)
+        kwargs.setdefault('id', self.id)
+        return Warning(title, **kwargs)
+
+    def push_warning(self, title, **kwargs):
+        return self.errors.append(self.warning(title, **kwargs))
 
     # Helper meythods
 
@@ -242,7 +251,6 @@ def register_rules(tags=(), id=None):
 
 
 # Checks
-
 @register_rules(id='otree.E001')
 def files(rules, **kwargs):
     rules.file_exists('models.py')
@@ -266,11 +274,52 @@ def files(rules, **kwargs):
             )
 
 
+base_model_attrs = {
+    'Player': set(dir(BasePlayer)),
+    'Group': set(dir(BaseGroup)),
+    'Subsession': set(dir(BaseSubsession)),
+}
+
+model_field_substitutes = {
+    int: 'IntegerField',
+    float: 'FloatField',
+    bool: 'BooleanField',
+    str: 'CharField',
+    Currency: 'CurrencyField'
+}
+
+
 @register_rules(id='otree.E002')
 def model_classes(rules, **kwargs):
     rules.model_exists('Subsession')
     rules.model_exists('Group')
     rules.model_exists('Player')
+
+    config = rules.config
+    Player = config.get_model('Player')
+    Group = config.get_model('Group')
+    Subsession = config.get_model('Subsession')
+
+    for Model in [Player, Group, Subsession]:
+        for attr in dir(Model):
+            if attr not in base_model_attrs[Model.__name__]:
+                try:
+                    _type = type(getattr(Model, attr))
+                except AttributeError:
+                    # I got "The 'q_country' attribute can only be accessed
+                    # from Player instances."
+                    # can just filter/ignore these.
+                    pass
+                else:
+                    if _type in model_field_substitutes.keys():
+                        rules.push_warning(
+                            '{} has attribute "{}", which is not a model field, '
+                            'and will therefore not be saved '
+                            'to the database.'.format(
+                                Model.__name__, attr
+                            ),
+                            hint='Consider changing to "{} = models.{}(...)"'.format(attr, model_field_substitutes[_type])
+                        )
 
 
 @register_rules(id='otree.E003')
@@ -304,7 +353,7 @@ def pages_function(rules, **kwargs):
             rules.push_error('views.py is missing the variable page_sequence.')
             return
         else:
-            for ViewCls in page_list:
+            for i, ViewCls in enumerate(page_list):
                 # there is no good reason to include Page in page_sequence.
                 # however, WaitPage could belong there. it works fine currently
                 # and can save the effort of subclassing
@@ -323,6 +372,24 @@ def pages_function(rules, **kwargs):
                             'which is not valid on wait pages.'.format(
                                 ViewCls.__name__)
                         )
+                    if ViewCls.group_by_arrival_time:
+                        Constants = rules.get_module('models').Constants
+                        if Constants.players_per_group is None:
+                            rules.push_error(
+                                'views.py: "{}" has group_by_arrival_time=True, so '
+                                'players_per_group must not be None.'.format(
+                                    ViewCls.__name__))
+                        if i > 0:
+                            rules.push_error(
+                                'views.py: "{}" has group_by_arrival_time=True, so '
+                                'it must be placed first in page_sequence.'.format(
+                                    ViewCls.__name__))
+                        if ViewCls.wait_for_all_groups:
+                            rules.push_error(
+                                'views.py: "{}" has group_by_arrival_time=True, so '
+                                'it cannot have wait_for_all_groups=True also.'.format(
+                                    ViewCls.__name__))
+
                 elif issubclass(ViewCls,
                                 otree.views.abstract.FormPageMixin):
                     # ok

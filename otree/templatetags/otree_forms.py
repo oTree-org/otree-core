@@ -81,7 +81,7 @@ class FormFieldNode(Node):
                     return form[field_name]
                 except KeyError:
                     raise ValueError(
-                        "Field '{field_name}' was referenced in the template, "
+                        "'{field_name}' was used as a formfield in the template, "
                         "but was not included in the Page's 'form_fields' "
                         "in views.py ".format(
                             field_name=field_name)) from None

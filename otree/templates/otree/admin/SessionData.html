@@ -12,7 +12,7 @@ $(document).ready(function() {
 function ajax_json_results() {
     var $table = $('#results-table');
     $.ajax({
-        url: '{% url "SessionResults" session.code %}',
+        url: '{% url "SessionData" session.code %}',
         type: 'GET',
         contentType: "application/json",
         error: function(jqXHR, textStatus) {
@@ -53,4 +53,5 @@ function ajax_json_results() {
     <a href="#" class="close" data-dismiss="alert">&times;</a>
     "Failed to connect to server"
 </div>
+<small>You can download data in Excel or CSV format <a href="{% url 'ExportIndex' %}">here</a>.</small>
 {% endblock %}

@@ -14,6 +14,12 @@ channel_routing = [
         'websocket.disconnect', consumers.disconnect_wait_page,
         path=r'^/wait_page/(?P<params>[\w,]+)/$'),
     route(
+        'websocket.connect', consumers.connect_group_by_arrival_time,
+        path=r'^/group_by_arrival_time/(?P<params>[\w,\.]+)/$'),
+    route(
+        'websocket.disconnect', consumers.disconnect_group_by_arrival_time,
+        path=r'^/group_by_arrival_time/(?P<params>[\w,\.]+)/$'),
+    route(
         'websocket.connect', consumers.connect_auto_advance,
         path=r'^/auto_advance/(?P<params>[\w,]+)/$'),
     route('websocket.disconnect', consumers.disconnect_auto_advance,

@@ -189,8 +189,8 @@ Sessions
             <a href="{% url 'SessionMonitor' s.code %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-eye-open"></span> Monitor
             </a>
-            <a href="{% url 'SessionResults' s.code %}" class="btn btn-primary btn-sm" role="button">
-                <span class="glyphicon glyphicon-list-alt"></span> Results
+            <a href="{% url 'SessionData' s.code %}" class="btn btn-primary btn-sm" role="button">
+                <span class="glyphicon glyphicon-list-alt"></span> Data
             </a>
             <a href="{% if s.is_for_mturk %}{% url 'MTurkSessionPayments' s.code %}{% else %}{% url 'SessionPayments' s.code %}{% endif %}" class="btn btn-primary btn-sm" role="button">
                 <span class="glyphicon glyphicon-usd"></span> Payments

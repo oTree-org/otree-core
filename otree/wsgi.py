@@ -23,8 +23,6 @@ and change its contents to the following:
 
 If using Heroku, you should also install the Heroku Redis add-on,
 then run "heroku restart".
-
-More information here: http://otree.readthedocs.io/en/latest/v0.5.html
 '''.format(procfile_contents)
 
 

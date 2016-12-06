@@ -1,20 +1,44 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+import os
+import sys
 
-# run the worker to enforce page timeouts
-# even if the user closes their browser
-from huey.contrib.djhuey.management.commands.run_huey import (
-    Command as HueyCommand
-)
+from honcho.manager import Manager
+from channels.log import setup_logger
+from django.core.management.base import BaseCommand
 
 
-class Command(HueyCommand):
+class Command(BaseCommand):
+    help = 'Run timeoutworker (plus botworker).'
+
+    def add_arguments(self, parser):
+        BaseCommand.add_arguments(self, parser)
+
+    def get_env(self, options):
+        return os.environ.copy()
+
     def handle(self, *args, **options):
-        # clear any tasks in Huey DB, so they don't pile up over time,
-        # especially if you run the server without the timeoutworker to consume
-        # the tasks.
-        # this code is also in asgi.py. it should be in both places,
-        # to ensure the database is flushed in all circumstances.
-        from huey.contrib.djhuey import HUEY
-        HUEY.flush()
-        super(Command, self).handle(*args, **options)
+        self.verbosity = options.get('verbosity', 1)
+        self.logger = setup_logger('django.channels', self.verbosity)
+        manager = self.get_honcho_manager(options)
+        manager.loop()
+        sys.exit(manager.returncode)
+
+    def get_honcho_manager(self, options):
+
+        manager = Manager()
+
+
+        manager.add_process(
+            'botworker',
+            'otree botworker',
+            quiet=False,
+            env=self.get_env(options)
+        )
+        manager.add_process(
+            'timeoutworkeronly',
+            'otree timeoutworkeronly',
+            quiet=False,
+            env=self.get_env(options)
+        )
+
+        return manager

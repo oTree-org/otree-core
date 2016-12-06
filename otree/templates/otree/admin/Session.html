@@ -27,8 +27,8 @@
             <li role="presentation" class="{% active_page request 'SessionMonitor' session.code %}">
                 <a href="{% url 'SessionMonitor' session.code %}"><span class="glyphicon glyphicon-eye-open"></span> Monitor</a>
             </li>
-            <li role="presentation" class="{% active_page request 'SessionResults' session.code %}">
-                <a href="{% url 'SessionResults' session.code %}"><span class="glyphicon glyphicon-list-alt"></span> Results</a>
+            <li role="presentation" class="{% active_page request 'SessionData' session.code %}">
+                <a href="{% url 'SessionData' session.code %}"><span class="glyphicon glyphicon-list-alt"></span> Data</a>
             </li>
             {% if session.is_for_mturk %}
             <li role="presentation" class="{% active_page request 'MTurkSessionPayments' session.code %}">
@@ -40,6 +40,15 @@
                     <span class="glyphicon glyphicon-usd"></span> Payments
                 </a>
             </li>
+            {% if session.has_admin_report %}
+            <li role="presentation" class="{% active_page request 'AdminReport' session.code %}">
+                <a href="{% url 'AdminReport' session.code %}"><span class="glyphicon glyphicon-stats"></span> Report</a>
+            {% endif %}
+            {% if session.is_for_mturk %}
+            <li role="presentation" class="{% active_page request 'MTurkCreateHIT' session.code %}">
+                <a href="{% url 'MTurkCreateHIT' session.code %}"><span class="glyphicon glyphicon-cloud"></span> MTurk</a>
+            </li>
+            {% endif %}
             {% if session.is_demo %}
             <li role="presentation">
                 <a href="{% url 'CreateDemoSession' session.config.name %}" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Recreate session from scratch. You can also copy this link and share with others.">
@@ -47,11 +56,7 @@
                 </a>
             </li>
             {% endif %}
-            {% if session.is_for_mturk %}
-            <li role="presentation" class="{% active_page request 'MTurkCreateHIT' session.code %}">
-                <a href="{% url 'MTurkCreateHIT' session.code %}"><span class="glyphicon glyphicon-cloud"></span> MTurk</a>
-            </li>
-            {% endif %}
+
         </ul>
     </div><!-- /.container-fluid -->
 </nav>

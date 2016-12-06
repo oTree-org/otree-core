@@ -20,7 +20,7 @@ class TestSessionAdmin(TestCase):
             'SessionDescription',
             'SessionMonitor',
             'SessionPayments',
-            'SessionResults',
+            'SessionData',
             'SessionStartLinks',
             'AdvanceSession',
             'SessionFullscreen',

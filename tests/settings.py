@@ -7,7 +7,7 @@ from django.conf.global_settings import STATICFILES_STORAGE  # noqa
 from boto.mturk.qualification import LocaleRequirement
 from boto.mturk.qualification import PercentAssignmentsApprovedRequirement
 from boto.mturk.qualification import NumberHitsApprovedRequirement
-
+import dj_database_url
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -20,12 +20,21 @@ SECRET_KEY = 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz'
 
 AUTH_LEVEL = ''
 
+'''
+DATABASES = {
+    'default': dj_database_url.config(
+        default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3')
+    )
+}
+'''
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
 
 CREATE_DEFAULT_SUPERUSER = True
 ADMIN_USERNAME = 'admin'
@@ -89,6 +98,7 @@ SESSION_CONFIGS = [
         'real_world_currency_per_point': 0.02,
         'app_sequence': ['tests.misc_1p'],
         'treatment': 'blue',
+
     },
     {
         'name': 'misc_3p',
@@ -155,6 +165,18 @@ SESSION_CONFIGS = [
         'app_sequence': ['tests.bots'],
     },
     {
+        'name': 'group_by_arrival_time',
+        'num_demo_participants': 6,
+        'app_sequence': ['tests.group_by_arrival_time'],
+        'use_browser_bots': True,
+    },
+    {
+        'name': 'group_by_arrival_time_round1',
+        'num_demo_participants': 6,
+        'app_sequence': ['tests.group_by_arrival_time_round1'],
+        'use_browser_bots': True,
+    },
+    {
         'name': 'bots_check_html',
         'num_demo_participants': 1,
         'app_sequence': ['tests.bots_check_html'],
@@ -165,6 +187,11 @@ SESSION_CONFIGS = [
         'app_sequence': ['tests.bots_bad_post'],
     },
     {
+        'name': 'bots_cases',
+        'num_demo_participants': 1,
+        'app_sequence': ['tests.bots_cases'],
+    },
+    {
         'name': 'templates_app',
         'num_demo_participants': 1,
         'app_sequence': ['tests.templates_app'],
@@ -173,6 +200,11 @@ SESSION_CONFIGS = [
         'name': 'i18n',
         'num_demo_participants': 1,
         'app_sequence': ['tests.i18n'],
+    },
+    {
+        'name': 'admin_report',
+        'num_demo_participants': 1,
+        'app_sequence': ['tests.admin_report'],
     },
     {
         'name': 'two_rounds_1p',

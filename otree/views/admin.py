@@ -35,6 +35,9 @@ from otree.models import Participant, Session
 from otree.models_concrete import (
     ParticipantRoomVisit, BrowserBotsLauncherSessionCode)
 from otree.room import ROOM_DICT
+from otree.common_internal import get_models_module
+from otree.common_internal import get_app_label_from_name
+
 
 
 class CreateSessionForm(forms.Form):
@@ -448,10 +451,6 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
 
 class MTurkSessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
 
-    def get(self, *args, **kwargs):
-        response = super(MTurkSessionPayments, self).get(*args, **kwargs)
-        return response
-
     def get_context_data(self, **kwargs):
         context = super(MTurkSessionPayments, self).get_context_data(**kwargs)
         session = self.session
@@ -530,7 +529,7 @@ def pretty_round_name(app_label, round_number):
         return app_label
 
 
-class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
+class SessionData(AdminSessionPageMixin, vanilla.TemplateView):
 
     def get_context_data(self, **kwargs):
         session = self.session
@@ -595,7 +594,7 @@ class SessionResults(AdminSessionPageMixin, vanilla.TemplateView):
                 d_row[t] = v
             self.context_json.append(d_row)
 
-        context = super(SessionResults, self).get_context_data(**kwargs)
+        context = super(SessionData, self).get_context_data(**kwargs)
         context.update({
             'subsession_headers': round_headers,
             'model_headers': model_headers,
@@ -616,6 +615,85 @@ class SessionDescription(AdminSessionPageMixin, vanilla.TemplateView):
     def get_context_data(self, **kwargs):
         context = super(SessionDescription, self).get_context_data(**kwargs)
         context['config'] = SessionConfig(self.session.config)
+        return context
+
+
+class AdminReportForm(forms.Form):
+    app_name = forms.ChoiceField(choices=[], required=False)
+    round_number = forms.IntegerField(required=False, min_value=1, initial=1)
+
+    def __init__(self, *args, **kwargs):
+        self.session = kwargs.pop('session')
+        super().__init__(*args, **kwargs)
+
+
+        admin_report_apps = self.session._admin_report_apps()
+        num_rounds_list = self.session._admin_report_num_rounds_list()
+        self.rounds_per_app = dict(zip(admin_report_apps, num_rounds_list))
+        app_name_choices = []
+        for app_name in admin_report_apps:
+            label = '{} ({} rounds)'.format(
+                get_app_label_from_name(app_name), self.rounds_per_app[app_name]
+            )
+            app_name_choices.append((app_name, label))
+        self.fields['app_name'].choices = app_name_choices
+
+    def clean_round_number(self):
+        app_name = self.cleaned_data['app_name']
+        round_number = self.cleaned_data['round_number']
+
+        if round_number and app_name:
+            num_rounds = self.rounds_per_app[app_name]
+            if round_number > num_rounds:
+                self.cleaned_data['round_number'] = None
+                raise forms.ValidationError(
+                    'Invalid round number (max is {})'.format(num_rounds)
+                )
+        return round_number
+
+class AdminReport(AdminSessionPageMixin, vanilla.FormView):
+
+    form_class = AdminReportForm
+
+    def get(self, request, *args, **kwargs):
+        get_data = self.request.GET.dict()
+        # otherwise, the round_number text box will be blank initially
+        # and the user won't know what round it is
+        get_data.setdefault('round_number', 1)
+        form = self.get_form(data=get_data, session=self.session)
+        # validate to get error messages
+        form.is_valid()
+
+        context = self.get_context_data(form=form)
+        return self.render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+        form = kwargs['form']
+        context = super().get_context_data(**kwargs)
+
+        apps_with_admin_report = self.session._admin_report_apps()
+
+        app_name = form.cleaned_data.get('app_name')
+        if not app_name or form['app_name'].errors:
+            app_name = apps_with_admin_report[0]
+
+        round_number = form.cleaned_data.get('round_number')
+        if not round_number or form['round_number'].errors:
+            round_number = 1
+
+        models_module = get_models_module(app_name)
+        subsession = models_module.Subsession.objects.get(
+            session=self.session,
+            round_number=round_number,
+        )
+        context['subsession'] = subsession
+        context['session'] = self.session
+        context['Constants'] = models_module.Constants
+        context.update(subsession.vars_for_admin_report() or {})
+
+        context['user_template'] = '{}/AdminReport.html'.format(
+            subsession._meta.app_config.label)
+
         return context
 
 

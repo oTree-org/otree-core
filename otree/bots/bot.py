@@ -323,7 +323,6 @@ class PlayerBot(object):
 
         self.participant_bot = participant_bot
         self._cached_player = player
-        self._cached_group = player.group
         self._cached_subsession = player.subsession
         self._cached_participant = player.participant
         self._cached_session = player.session
@@ -345,7 +344,8 @@ class PlayerBot(object):
 
     @property
     def group(self):
-        return refresh_from_db(self._cached_group)
+        # the group can change, so can't use cached version
+        return self.player.group
 
     @property
     def subsession(self):

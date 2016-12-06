@@ -148,11 +148,11 @@ class BaseSubsession(SaveTheChange, models.Model):
                 # deep copy so that we don't modify the input arg
                 matrix = copy.deepcopy(matrix)
                 players_flat = sorted(players_flat)
-                if players_flat == list(range(1, len(players_flat) + 1)):
-                    players = self.get_players()
+                players_from_db = self.get_players()
+                if players_flat == list(range(1, len(players_from_db) + 1)):
                     for i, row in enumerate(matrix):
                         for j, val in enumerate(row):
-                            matrix[i][j] = players[val - 1]
+                            matrix[i][j] = players_from_db[val - 1]
                 else:
                     raise ValueError(
                         'If you pass a matrix of integers to this function, '
@@ -177,6 +177,9 @@ class BaseSubsession(SaveTheChange, models.Model):
                 )
 
         # Before deleting groups, Need to set the foreignkeys to None
+        # 2016-11-8: does this need to be in a transaction?
+        # because what if a player refreshes their page while this is going
+        # on?
         self.player_set.update(group=None)
         self.group_set.all().delete()
 
@@ -210,18 +213,21 @@ class BaseSubsession(SaveTheChange, models.Model):
     def _PlayerClass(self):
         return models.get_model(self._meta.app_config.label, 'Player')
 
+    def _has_group_by_arrival_time(self):
+        from otree.common_internal import has_group_by_arrival_time
+        return has_group_by_arrival_time(self._meta.app_config.name)
+
     def _first_round_group_matrix(self):
         players = list(self.get_players())
 
-        groups = []
-        first_player_index = 0
+        ppg = self._Constants.players_per_group
+        if ppg is None or self._has_group_by_arrival_time():
+            ppg = len(players)
 
-        for group_size in self._get_players_per_group_list():
-            groups.append(
-                players[first_player_index:first_player_index + group_size]
-            )
-            first_player_index += group_size
-        return groups
+        group_matrix = []
+        for i in range(0, len(players), ppg):
+            group_matrix.append(players[i:i + ppg])
+        return group_matrix
 
     def _create_groups(self):
         if self.round_number == 1:
@@ -276,3 +282,6 @@ class BaseSubsession(SaveTheChange, models.Model):
 
         '''
         pass
+
+    def vars_for_admin_report(self):
+        return {}

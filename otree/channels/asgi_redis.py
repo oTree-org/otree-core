@@ -12,7 +12,6 @@ import six
 REDIS_MSG = (
     "oTree requires Redis to be installed and running, "
     "unless you are using the development server (runserver). "
-    "See http://otree.readthedocs.io/en/latest/v0.5.html ."
 )
 
 
