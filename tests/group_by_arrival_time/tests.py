@@ -24,8 +24,6 @@ class PlayerBot(Bot):
             for subsession in self.subsession.in_all_rounds():
                 groups = subsession.get_groups()
                 players = subsession.get_players()
-
-                print(subsession.get_group_matrix())
                 for group in groups:
                     assert len(group.get_players()) == Constants.players_per_group, self.subsession.round_number
                 assert len(groups) == len(players) / Constants.players_per_group
