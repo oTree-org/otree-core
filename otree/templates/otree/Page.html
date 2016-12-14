@@ -1,0 +1,105 @@
+{% extends "otree/Base.html" %}
+{% load i18n %}
+{% load floppyforms otree_tags %}
+{% block body_main %}
+    <div class="container" style='max-width:970px'>
+        <div class="page-header" style="padding-top: 40px">
+            <h2>{% block title %}{% endblock %}</h2>
+        </div>
+        <div>
+            {% if view.has_timeout %}
+                {% include 'otree/includes/TimeLimit.html' with form_element_id="form" %}
+            {% endif %}
+
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    {% blocktrans trimmed %}Please fix the errors in the form.{% endblocktrans %}
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div id="error-notice" class="alert alert-danger"
+                 style="display:none">
+                {% blocktrans trimmed %}
+                    An error occurred. Please check the logs or ask
+                    the administrator for help.{% endblocktrans %}
+            </div>
+
+
+            <form action="" method="post" role="form" class="form"
+                  id="form">{% csrf_token %}
+                <input type="hidden" value="{{ request.path }}"
+                       name="origin_url"/>
+                {% form form using %}
+                    {% formconfig row using "floppyforms/rows/bootstrap.html" %}
+                    <div id="otree-content">
+                        {% block content %}{% endblock %}
+                    </div>
+                {% endform %}
+            </form>
+        </div>
+        <br/>
+        {% if view.is_debug %}
+            {% include 'otree/includes/debug_info.html' %}
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block internal_scripts %}
+    {{ block.super }}
+    <!-- this is an HTML file rather than JavaScript static file because context variables need to be passed to it -->
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            {% comment %}
+            One user reported that with a 588 bot session,
+            web socket for auto-advance adds 4s to each page load.
+            {% endcomment %}
+            {% if session.pages_auto_reload_when_advanced %}
+                var socket;
+
+                function initWebSocket() {
+                    var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+                    var ws_path = ws_scheme + '://' + window.location.host + "{{ view.socket_url|safe }}";
+
+                    socket = new ReconnectingWebSocket(ws_path);
+                    socket.onmessage = function (e) {
+                        var data = JSON.parse(e.data);
+
+                        if (data.error) {
+                            $("#error-notice").show();
+                            return;
+                        }
+
+                        if (data.auto_advanced) {
+                            console.log('Received redirect message', e.data);
+                            window.location.href = '{{ view.redirect_url|safe }}';
+                        }
+                    };
+                }
+
+                initWebSocket();
+            {% endif %}
+
+            {% if session.use_browser_bots %}
+                {# submit the form instantly #}
+                {# below comment is used as a flag #}
+                // browser-bot-auto-submit
+                var form = $('#form');
+                form.submit();
+
+                {# prevent duplicate submissions, e.g. timeout_seconds #}
+                form.on('submit', function (e) {
+                    e.preventDefault();
+                });
+            {% endif %}
+
+        });
+
+    </script>
+
+    {% if view.has_timeout %}
+        {% include 'otree/includes/TimeLimit.js.html' %}
+    {% endif %}
+
+{% endblock %}
