@@ -320,6 +320,23 @@ def model_classes(rules, **kwargs):
                             ),
                             hint='Consider changing to "{} = models.{}(...)"'.format(attr, model_field_substitutes[_type])
                         )
+                    # if people just need an iterable of choices for a model field,
+                    # they should use a tuple, not list or dict
+                    if _type in {list, dict, set}:
+                        warning = (
+                            '{ModelName}.{attr} is a {type_name}. '
+                            'Modifying it during a session (e.g. appending or setting values) '
+                            'will have unpredictable results; '
+                            'you should use '
+                            'session.vars or participant.vars instead. '
+                            'Or, if this {type_name} is read-only, '
+                            "then it's recommended to move it outside of this class "
+                            '(e.g. put it in Constants).'
+                        ).format(ModelName=Model.__name__,
+                                 attr=attr,
+                                 type_name=_type.__name__)
+
+                        rules.push_warning(warning)
 
 
 @register_rules(id='otree.E003')
