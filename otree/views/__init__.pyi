@@ -54,4 +54,4 @@ class Page:
     def vars_for_template(self) -> dict: pass
     def before_next_page(self): pass
     def is_displayed(self) -> bool: pass
-
+    def error_message(self, values): pass
