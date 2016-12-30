@@ -26,31 +26,21 @@ import mock
 logger = logging.getLogger('otree')
 
 
-# =============================================================================
-# CONSTANTS
-# =============================================================================
+def drop_tables_command(db_engine):
+    if 'sqlite3' in db_engine:
+        return 'DROP TABLE {table};'
+    if 'oracle' in db_engine:
+        return 'DROP TABLE "{table}" CASCADE CONSTRAINTS;'
+    if 'postgres' in db_engine:
+        return 'DROP TABLE "{table}" CASCADE;'
+    if 'mysql' in db_engine:
+        return (
+            'SET FOREIGN_KEY_CHECKS = 0;'
+            'DROP TABLE {table} CASCADE;'
+            'SET FOREIGN_KEY_CHECKS = 1;')
+    raise ValueError(
+        'resetdb command does not recognize DB engine "{}"'.format(db_engine))
 
-RESETDB_DROP_TABLES = {
-    "django.db.backends.sqlite3": 'DROP TABLE {table};',
-    "django.db.backends.oracle": 'DROP TABLE "{table}" CASCADE CONSTRAINTS;',
-    "django.db.backends.postgresql": 'DROP TABLE "{table}" CASCADE;',
-    "django.db.backends.mysql": (
-        'SET FOREIGN_KEY_CHECKS = 0;'
-        'DROP TABLE {table} CASCADE;'
-        'SET FOREIGN_KEY_CHECKS = 1;'),
-
-    # DJANGO < 1.9
-    "django.db.backends.postgresql_psycopg2": 'DROP TABLE "{table}" CASCADE;',
-}
-
-
-CUSTOM_RESETDB_DROP_TABLES = getattr(
-    settings, "RESETDB_DROP_TABLES", None) or {}
-
-
-# =============================================================================
-# COMMND
-# =============================================================================
 
 class Command(BaseCommand):
     help = (
@@ -75,9 +65,7 @@ class Command(BaseCommand):
 
     def _drop_table_stmt(self, dbconf):
         engine = dbconf["ENGINE"]
-        if engine in CUSTOM_RESETDB_DROP_TABLES:
-            return CUSTOM_RESETDB_DROP_TABLES[engine]
-        return RESETDB_DROP_TABLES[engine]
+        return drop_tables_command(engine)
 
     def _get_tables(self, db):
         tables = []
