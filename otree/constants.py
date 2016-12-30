@@ -7,8 +7,7 @@ import six
 class BaseConstantsMeta(type):
 
     def __setattr__(cls, attr, value):
-        msg = "can't set attribute '{}'".format(attr)
-        raise AttributeError(msg)
+        raise AttributeError("Constants are read-only.")
 
 
 class BaseConstants(six.with_metaclass(BaseConstantsMeta, object)):

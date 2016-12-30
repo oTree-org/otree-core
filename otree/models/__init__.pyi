@@ -43,6 +43,7 @@ class BaseSubsession:
     def in_rounds(self, first, last) -> List['Subsession']: pass
     def group_like_round(self, round_number: int): pass
     def group_randomly(self, fixed_id_in_group: bool=False): pass
+    def vars_for_admin_report(self): pass
 
 class BaseGroup:
 

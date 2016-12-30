@@ -528,7 +528,7 @@ class UndefinedGroup:
             'self.group cannot be referenced inside after_all_players_arrive '
             'if wait_for_all_groups=True, '
             'because after_all_players_arrive() is executed only once '
-            'for the entire subsession.'
+            'for all groups in the subsession.'
         )
 
 
