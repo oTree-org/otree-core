@@ -229,8 +229,9 @@ def initialize_bot_redis(redis_conn, participant_code):
     redis_conn.rpush(REDIS_KEY_PREFIX, json.dumps(msg))
 
     # timeout must be int
-    # this is about 10x as much time as it should take
-    timeout = 1
+    # this is about 20x as much time as it should take
+    # some users were still getting timeout errors with timeout=1
+    timeout = 2
     result = redis_conn.blpop(response_key, timeout=timeout)
     if result is None:
         raise Exception(
