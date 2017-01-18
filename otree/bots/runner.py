@@ -37,7 +37,8 @@ class SessionBotRunner(object):
         while True:
             if len(self.bots) == 0:
                 return
-            if loops_without_progress > 2:
+            # bots got stuck if there's 2 wait pages in a row
+            if loops_without_progress > 10:
                 raise AssertionError('Bots got stuck')
             # store in a separate list so we don't mutate the iterable
             playable_ids = list(self.bots.keys())
