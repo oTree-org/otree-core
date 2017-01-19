@@ -3,21 +3,21 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: Arabic Otree\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-15 01:01+0900\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"POT-Creation-Date: 2015-10-27 15:20+0900\n"
+"PO-Revision-Date: 2017-01-10 01:05+0100\n"
+"Last-Translator: Rousselle Jean-Marc <roussell@supagro.inra.fr>\n"
+"Language: ar_SA\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
-"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
+"X-Generator: Poedit 1.8.11\n"
+"Language-Team: Bassim Allaheeb <basemll@gmail.com>\n"
 
 #. Translators: display a number of points,
 #. like "1 point", "2 points", ...
@@ -26,102 +26,105 @@ msgstr ""
 #. Explanation at http://bit.ly/1IurMu7
 #. In most languages, msgstr[0] is singular,
 #. and msgstr[1] is plural
-#. the {} represents the number;
-#. don't forget to include it in your translation
-#: .\common.py:118
+#: .\common.py:96
 msgid "{} point"
 msgid_plural "{} points"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "{} نقطة"
+msgstr[1] "{} نقاط"
+msgstr[2] "{} نقاط"
+msgstr[3] "{} نقاط"
+msgstr[4] "{} نقاط"
+msgstr[5] "{} نقاط"
 
 #. Translators: for required form fields
-#: .\constants_internal.py:56
+#: .\constants_internal.py:73
 msgid "This field is required."
-msgstr ""
+msgstr "هذا الحقل إلزامي"
 
-#: .\db\models.py:197
+#: .\db\models.py:247
 msgid "Yes"
-msgstr ""
+msgstr "نعم"
 
-#: .\db\models.py:198
+#: .\db\models.py:248
 msgid "No"
-msgstr ""
+msgstr "لا"
 
-#: .\forms\forms.py:319
+#: .\forms\forms.py:311
 msgid "Value must be greater than or equal to {}."
-msgstr ""
+msgstr "يجب أن تكون القيمة مساوية لـ أو أعلى من {}."
 
-#: .\forms\forms.py:325
+#: .\forms\forms.py:315
 msgid "Value must be less than or equal to {}."
-msgstr ""
+msgstr "يجب أن تكون القيمة مساوية لـ أو أقل من {}."
 
 #. Translators: for multiple-choice fields,
 #. show the valid choices.
 #. e.g. "Value must be one of: A, B, C"
-#: .\forms\forms.py:337
+#: .\forms\forms.py:327
 msgid "Value must be one of: {}"
-msgstr ""
+msgstr "يجب أن تكون القيمة واحدة من‫:‬ {}"
 
 #. Translators: the label next to a "points" input field
-#: .\forms\widgets.py:102
+#: .\forms\widgets.py:103
 msgid "points"
-msgstr ""
+msgstr "نقاط"
 
-#: .\templates\otree\BaseAdmin.html:58 .\templates\otree\FormPage.html:16
+#: .\templates\otree\BaseExperiment.html:18 .\templates\otree\BaseAdmin.html:34
 msgid "Please fix the errors in the form."
-msgstr ""
+msgstr "الرجاء تصحيح الأخطاء في النموذج"
 
-#: .\templates\otree\FormPage.html:23 .\templates\otree\WaitPage.html:41
+#: .\templates\otree\OutOfRangeNotification.html:11
+msgid "No more pages left to show."
+msgstr "لا يوجد صفحات متبقية لعرضها‫."
+
+#: .\templates\otree\WaitPage.html:41
 msgid ""
 "An error occurred. Please check the logs or ask the administrator for help."
-msgstr ""
-
-#: .\templates\otree\OutOfRangeNotification.html:9
-msgid "No more pages left to show."
-msgstr ""
-
-#: .\templates\otree\RoomInputLabel.html:7
-msgid "Welcome"
-msgstr ""
-
-#: .\templates\otree\RoomInputLabel.html:11
-msgid "Please enter your participant label."
-msgstr ""
+msgstr "حدث خطأ ما‫.‬ الرجاء التأكد من المدخلات أو قم بسؤال المشرف للمساعدة‫."
 
 #: .\templates\otree\includes\TimeLimit.html:6
 msgid "Time left to complete this page:"
-msgstr ""
+msgstr "الوقت المتبقي لإكمال هذه الصفحة‫:"
+
+#: .\templates\otree\login.html:35
+msgid "Forgotten your password or username?"
+msgstr "هل نسيت كلمة المرور أو اسم المستخدم؟"
 
 #: .\templates\otree\login.html:39
-msgid "Forgotten your password or username?"
-msgstr ""
-
-#: .\templates\otree\login.html:43
 msgid "Log in"
-msgstr ""
+msgstr "تسجيل الدخول"
 
 #. Translators: The text on the button the user clicks to get to the next page
 #: .\templates\otree\tags\NextButton.html:4
 msgid "Next"
-msgstr ""
-
-#: .\views\abstract.py:790
-msgid "Waiting for the other participants."
-msgstr ""
-
-#: .\views\abstract.py:792
-msgid "Waiting for the other participant."
-msgstr ""
+msgstr "التالي"
 
 #. Translators: the default title of a wait page
-#: .\views\abstract.py:1096 .\views\concrete.py:262
+#: .\views\abstract.py:406
 msgid "Please wait"
-msgstr ""
+msgstr "الرجاء الانتظار"
 
-#: .\views\concrete.py:234
-msgid "Invalid participant label."
-msgstr ""
+#: .\views\abstract.py:613
+msgid "Waiting for the other participants."
+msgstr "الرجاء الانتظار ريثما ينتهي الأخرون"
 
-#: .\views\concrete.py:263
-msgid "Waiting for your session to begin"
+#: .\views\abstract.py:615
+msgid "Waiting for the other participant."
+msgstr "الرجاء الانتظار ريثما ينتهي المشارك الآخر"
+
+#. Translators: the default body text on the waiting page
+#. to inform the user we are waiting.
+#: .\views\abstract.py:619
+msgid "Waiting"
+msgstr "الرجاء الانتظار"
+
+#: .\views\concrete.py:123
+msgid "Waiting until other participants or the study supervisor are ready."
 msgstr ""
+"الرجاء الانتظار ريثما ينتهي الآخرون أو حتى يشعرك مشرف الدراسة بالجاهزية"
+
+#~ msgid "Time ran out."
+#~ msgstr "Le temps imparti est écoulé."
+
+#~ msgid "An error occurred."
+#~ msgstr "Une erreur s'est produite"
