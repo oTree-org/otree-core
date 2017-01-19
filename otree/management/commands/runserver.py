@@ -23,10 +23,10 @@ class Command(runserver.Command):
         # and see the update.
         # kind of a hack to patch it here and to refer it as [0],
         # but can't think of a better way.
-        settings.TEMPLATES[0]['OPTIONS']['loaders'] = {
+        settings.TEMPLATES[0]['OPTIONS']['loaders'] = [
             'django.template.loaders.filesystem.Loader',
             'django.template.loaders.app_directories.Loader',
-        }
+        ]
 
         # so we know not to use Huey
         otree.common_internal.USE_REDIS = False

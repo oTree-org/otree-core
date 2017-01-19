@@ -1,10 +1,12 @@
 {% extends "otree/FormPage.html" %}
 
-{% load staticfiles floppyforms otree_tags %}
-{% load i18n %}
+{% load staticfiles otree_tags %}
 
+{# these are here for the templates test case, to ensure global_styles gets included #}
+{% block global_styles %}
+    <!-- my_global_styles -->
+{% endblock %}
 
-{% block head_content  %}
-    {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}global/custom.css" />
+{% block global_scripts %}
+    <!-- my_global_scripts -->
 {% endblock %}
