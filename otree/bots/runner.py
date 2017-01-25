@@ -19,6 +19,7 @@ import datetime
 import os
 import codecs
 import otree.export
+from otree.constants_internal import AUTO_NAME_BOTS_EXPORT_FOLDER
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +112,7 @@ def test_bots(session_config_name, num_participants, run_export):
 
         now = datetime.datetime.now()
 
-        if export_path == 'auto_name':
+        if export_path == AUTO_NAME_BOTS_EXPORT_FOLDER:
             export_path = now.strftime('_bots_%b%d_%Hh%Mm%S.%f')[:-5] + 's'
 
         if os.path.isdir(export_path):

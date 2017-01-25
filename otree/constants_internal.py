@@ -54,3 +54,5 @@ failure = False
 
 # Translators: for required form fields
 field_required_msg = ugettext_lazy('This field is required.')
+
+AUTO_NAME_BOTS_EXPORT_FOLDER = 'auto_name'
