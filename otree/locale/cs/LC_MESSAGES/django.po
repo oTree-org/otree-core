@@ -1,0 +1,128 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Vít Baisa <vit.baisa@gmail.com>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-01-23 01:10+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+
+#. Translators: display a number of points,
+#. like "1 point", "2 points", ...
+#. See "Plural-Forms" above for pluralization rules
+#. in this language.
+#. Explanation at http://bit.ly/1IurMu7
+#. In most languages, msgstr[0] is singular,
+#. and msgstr[1] is plural
+#. the {} represents the number;
+#. don't forget to include it in your translation
+#: .\common.py:118
+msgid "{} point"
+msgid_plural "{} points"
+msgstr[0] "{} bod"
+msgstr[1] "{} body"
+msgstr[2] "{} bodů"
+
+#. Translators: for required form fields
+#: .\constants_internal.py:56
+msgid "This field is required."
+msgstr "Toto pole je povinné."
+
+#: .\db\models.py:197
+msgid "Yes"
+msgstr "Ano"
+
+#: .\db\models.py:198
+msgid "No"
+msgstr "Ne"
+
+#: .\forms\forms.py:319
+msgid "Value must be greater than or equal to {}."
+msgstr "Hodnota musí být větší nebo rovna {}."
+
+#: .\forms\forms.py:325
+msgid "Value must be less than or equal to {}."
+msgstr "Hodnota musí být menší nebo rovna {}."
+
+#. Translators: for multiple-choice fields,
+#. show the valid choices.
+#. e.g. "Value must be one of: A, B, C"
+#: .\forms\forms.py:337
+msgid "Value must be one of: {}"
+msgstr "Hodnota musí být jedna z: {}"
+
+#. Translators: the label next to a "points" input field
+#: .\forms\widgets.py:102
+msgid "points"
+msgstr "bodů"
+
+#: .\templates\otree\BaseAdmin.html:58 .\templates\otree\Page.html:16
+msgid "Please fix the errors in the form."
+msgstr "Opravte prosím chyby ve formuláři."
+
+#: .\templates\otree\OutOfRangeNotification.html:9
+msgid "No more pages left to show."
+msgstr "Žádné další stránky k zobrazení."
+
+#: .\templates\otree\Page.html:23 .\templates\otree\WaitPage.html:41
+msgid ""
+"An error occurred. Please check the logs or ask the administrator for help."
+msgstr ""
+"Vyskytla se chyba. Prosím, zkontrolujte logy nebo požádejte administrátora o pomoc."
+
+#: .\templates\otree\RoomInputLabel.html:7
+msgid "Welcome"
+msgstr "Vítejte"
+
+#: .\templates\otree\RoomInputLabel.html:11
+msgid "Please enter your participant label."
+msgstr "Vložte prosím účastnický štítek."
+
+#: .\templates\otree\includes\TimeLimit.html:6
+msgid "Time left to complete this page:"
+msgstr "Čas zbývající k dokončení stránky:"
+
+#: .\templates\otree\login.html:44
+msgid "Forgotten your password or username?"
+msgstr "Zapomněli jste heslo nebo uživatelské jméno?"
+
+#: .\templates\otree\login.html:49
+msgid "Log in"
+msgstr "Přihlaste se"
+
+#. Translators: The text on the button the user clicks to get to the next page
+#: .\templates\otree\tags\NextButton.html:4
+msgid "Next"
+msgstr "Další"
+
+#: .\views\abstract.py:891
+msgid "Waiting for the other participants."
+msgstr "Čeká se na další účastníky."
+
+#: .\views\abstract.py:893
+msgid "Waiting for the other participant."
+msgstr "Čeká se na druhého účastníka. "
+
+#. Translators: the default title of a wait page
+#: .\views\abstract.py:1199 .\views\concrete.py:262
+msgid "Please wait"
+msgstr "Prosím čekejte"
+
+#: .\views\concrete.py:234
+msgid "Invalid participant label."
+msgstr "Neplatný účastnický štítek."
+
+#: .\views\concrete.py:263
+msgid "Waiting for your session to begin"
+msgstr "Čeká se na začátek vaší session."
