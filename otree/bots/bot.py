@@ -68,7 +68,7 @@ def SubmitInternal(submission_tuple, check_html=BOTS_CHECK_HTML):
         raise AssertionError(
             "Your bot yielded '{}', which is a wait page. "
             "You should delete this line, because bots handle wait pages "
-            "automatically."
+            "automatically.".format(PageClass)
         )
 
     for key in post_data:

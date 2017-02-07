@@ -56,14 +56,6 @@ class Session(ModelWithVars):
         unique=True,
         doc="Randomly generated unique identifier for the session.")
 
-    time_scheduled = models.DateTimeField(
-        null=True, doc="The time at which the session is scheduled",
-        help_text='For internal record-keeping', blank=True)
-
-    time_started = models.DateTimeField(
-        null=True,
-        doc="The time at which the experimenter started the session")
-
     mturk_HITId = models.CharField(
         max_length=300, null=True, blank=True,
         help_text='Hit id for this session on MTurk')

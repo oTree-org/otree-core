@@ -59,8 +59,6 @@ def _get_table_fields(Model, for_export=False):
             'code',
             'label',
             'experimenter_name',
-            'time_scheduled',
-            'time_started',
             'mturk_HITId',
             'mturk_HITGroupId',
             'comment',
