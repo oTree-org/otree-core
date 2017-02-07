@@ -358,8 +358,7 @@ class SessionEditPropertiesForm(forms.ModelForm):
         # meaninng fractional inputs are not accepted
         widget=widgets._RealWorldCurrencyInput(attrs={'step': 0.01})
     )
-    real_world_currency_per_point = forms.DecimalField(
-        decimal_places=5, max_digits=12,
+    real_world_currency_per_point = forms.FloatField(
         required=False
     )
 

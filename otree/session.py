@@ -139,14 +139,6 @@ class SessionConfig(dict):
         self['participation_fee'] = RealWorldCurrency(
             self['participation_fee'])
 
-        # normalize to decimal so we can do multiplications, etc
-        # quantize because the original value may be a float,
-        # which when converted to Decimal may have some 'decimal junk'
-        # like 0.010000000000000000208166817...
-        self['real_world_currency_per_point'] = Decimal(
-            self['real_world_currency_per_point']
-        ).quantize(Decimal('0.00001'))
-
     def app_sequence_display(self):
         app_sequence = []
         for app_name in self['app_sequence']:

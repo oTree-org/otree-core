@@ -123,7 +123,7 @@ class Currency(RealWorldCurrency):
     def to_real_world_currency(self, session):
         if settings.USE_POINTS:
             return RealWorldCurrency(
-                self.to_number() *
+                float(self) *
                 session.config['real_world_currency_per_point'])
         else:
             return super(Currency, self).to_real_world_currency(session)
