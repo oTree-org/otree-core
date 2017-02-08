@@ -42,9 +42,16 @@ def monkey_patch_static_tag():
         try:
             return staticfiles_storage.url(path)
         except ValueError as exc:
-            msg = '{} - did you remember to run "otree collectstatic"?'
+            # Heroku and "otree runprodserver" both execute collectstatic
+            # automatically, so there is ordinarily no need to suggest
+            # running collectstatic if a file is not found. It's more likely
+            # that the file doesn't exist or wasn't added in git.
+            if 'runserver' in sys.argv:
+                msg = '{} - did you remember to run "otree collectstatic"?'
+                raise ValueError(msg.format(exc)) from None
+            else:
+                raise exc from None
 
-            raise ValueError(msg.format(exc)) from None
 
     staticfiles.static = patched_static
 
