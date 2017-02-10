@@ -23,7 +23,7 @@ class Rules(object):
     """A helper class incapsulating common checks.
 
     Usage:
-        rules = Rules(app_configs, errors_list)
+        rules = Rules(app_config, errors_list)
 
         # various rule checks, see below for list of rules
         rules.file_exists('some_file.py')
@@ -230,17 +230,23 @@ def _get_all_configs():
         if app.name in settings.INSTALLED_OTREE_APPS]
 
 
-def register_rules(tags=(), id=None):
+def register_rules(tags=(), id=None, once_per_project=False):
     """Transform a function based on rules, to a something
-    django.core.checks.register takes. Automatically loops over all games.
+    django.core.checks.register takes.
     Passes Rules instance as first argument.
-
     """
     def decorator(func):
         @register(*tags)
         @wraps(func)
         def wrapper(app_configs, **kwargs):
-            app_configs = app_configs or _get_all_configs()
+            if once_per_project:
+                # some checks should only be run once, not for each app
+                app_configs = [apps.get_app_config('otree')]
+            else:
+                # if app_configs list is given (e.g. otree check app1 app2), run on those
+                # if it's None, run on all apps
+                # (system check API requires this)
+                app_configs = app_configs or _get_all_configs()
             errors = []
             for config in app_configs:
                 rules = Rules(config, errors, id=id)
@@ -422,18 +428,28 @@ def templates_have_no_dead_code(rules, **kwargs):
         rules.template_has_no_dead_code(template_name)
 
 
-@register_rules(id='otree.E006')
+@register_rules(id='otree.E006', once_per_project=True)
 def unique_sessions_names(rules, **kwargs):
-    if "unique_session_names_already_run" not in rules.common_buffer:
-        rules.common_buffer["unique_session_names_already_run"] = True
-        buff = set()
-        for st in settings.SESSION_CONFIGS:
-            st_name = st["name"]
-            if st_name in buff:
-                msg = "Duplicate SESSION_CONFIG name '{}'".format(st_name)
-                rules.push_error(msg)
-            else:
-                buff.add(st_name)
+    already_seen = set()
+    for st in settings.SESSION_CONFIGS:
+        st_name = st["name"]
+        if st_name in already_seen:
+            msg = "Duplicate SESSION_CONFIG name '{}'".format(st_name)
+            rules.push_error(msg)
+        else:
+            already_seen.add(st_name)
+
+
+@register_rules(id='otree.E009', once_per_project=True)
+def unique_room_names(rules, **kwargs):
+    already_seen = set()
+    for room in getattr(settings, 'ROOMS', []):
+        room_name = room["name"]
+        if room_name in already_seen:
+            msg = "Duplicate ROOM name '{}'".format(room_name)
+            rules.push_error(msg)
+        else:
+            already_seen.add(room_name)
 
 
 @register_rules(id='otree.E007')

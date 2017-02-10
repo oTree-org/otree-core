@@ -191,7 +191,8 @@ def ping(redis_conn, unique_response_code):
         'response_key': response_key,
     }
     redis_conn.rpush(REDIS_KEY_PREFIX, json.dumps(msg))
-    result = redis_conn.blpop(response_key, timeout=1)
+    # people were getting
+    result = redis_conn.blpop(response_key, timeout=3)
 
     if result is None:
         raise Exception(
