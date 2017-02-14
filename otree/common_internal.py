@@ -175,14 +175,13 @@ def db_table_exists(table_name):
     return table_name in connection.introspection.table_names()
 
 
-def db_status_ok():
+def missing_db_table():
     """Try to execute a simple select * for every model registered
     """
     for Model in apps.get_models():
         table_name = Model._meta.db_table
         if not db_table_exists(table_name):
-            return False
-    return True
+            return '{}.{}'.format(Model._meta.app_label, Model.__name__)
 
 
 def make_hash(s):

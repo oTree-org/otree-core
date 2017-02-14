@@ -22,7 +22,7 @@ import channels
 
 import otree.export
 from otree.common_internal import (
-    create_session_and_redirect, db_status_ok)
+    create_session_and_redirect, missing_db_table)
 from otree.management.cli import check_pypi_for_updates
 from otree.session import SESSION_CONFIGS_DICT, create_session, SessionConfig
 from otree import forms
@@ -731,7 +731,7 @@ class ServerCheck(vanilla.TemplateView):
         auth_level_ok = settings.AUTH_LEVEL in {'DEMO', 'STUDY'}
         heroku = self.app_is_on_heroku()
         runserver = 'runserver' in sys.argv
-        db_synced = db_status_ok()
+        db_synced = not missing_db_table()
         pypi_results = check_pypi_for_updates()
         python2 = sys.version_info[0] == 2
 
