@@ -1008,6 +1008,28 @@ class FormPageMixin(object):
 
         self.object = self.get_object()
 
+        if self.session.use_browser_bots:
+            bot = EphemeralBrowserBot(self)
+            try:
+                submission = bot.get_next_post_data()
+            except StopIteration:
+                bot.send_completion_message()
+                return HttpResponse('Bot completed')
+            else:
+                # convert MultiValueKeyDict to regular dict
+                # so that we can add entries to it in a simple way
+                # before, we used dict(request.POST), but that caused
+                # errors with BooleanFields with blank=True that were
+                # submitted empty...it said [''] is not a valid value
+                post_data = request.POST.dict()
+                post_data.update(submission)
+        else:
+            post_data = request.POST
+
+        form = self.get_form(
+                data=post_data, files=request.FILES, instance=self.object)
+        self.form = form
+
         auto_submitted = request.POST.get(constants.auto_submit)
 
         # if the page doesn't have a timeout_seconds, only the timeoutworker
@@ -1018,29 +1040,9 @@ class FormPageMixin(object):
 
         if auto_submitted and (self.has_timeout() or has_secret_code):
             self.timeout_happened = True  # for public API
-            self._set_auto_submit_values()
+            self._process_auto_submitted_form(form)
         else:
             self.timeout_happened = False
-            if self.session.use_browser_bots:
-                bot = EphemeralBrowserBot(self)
-                try:
-                    submission = bot.get_next_post_data()
-                except StopIteration:
-                    bot.send_completion_message()
-                    return HttpResponse('Bot completed')
-                else:
-                    # convert MultiValueKeyDict to regular dict
-                    # so that we can add entries to it in a simple way
-                    # before, we used dict(request.POST), but that caused
-                    # errors with BooleanFields with blank=True that were
-                    # submitted empty...it said [''] is not a valid value
-                    post_data = request.POST.dict()
-                    post_data.update(submission)
-            else:
-                post_data = request.POST
-
-            form = self.get_form(
-                data=post_data, files=request.FILES, instance=self.object)
             is_bot = self.participant._is_bot
             if form.is_valid():
                 if is_bot and post_data.get('must_fail'):
@@ -1051,7 +1053,7 @@ class FormPageMixin(object):
                         ' {}.'.format(
                             self.__class__.__name__,
                             bot_prettify_post_data(post_data)))
-                self.form = form
+                # assigning to self.object is not really necessary
                 self.object = form.save()
             else:
                 if is_bot and not post_data.get('must_fail'):
@@ -1116,10 +1118,44 @@ class FormPageMixin(object):
                 timeout_submission[field_name] = value
         return timeout_submission
 
-    def _set_auto_submit_values(self):
-        auto_submit_dict = self._get_auto_submit_values()
-        for field_name in auto_submit_dict:
-            setattr(self.object, field_name, auto_submit_dict[field_name])
+    def _process_auto_submitted_form(self, form):
+        '''
+        # an empty submitted form looks like this:
+        # {'f_currency': None, 'f_bool': None, 'f_int': None, 'f_char': ''}
+        '''
+        auto_submit_values = self._get_auto_submit_values()
+
+        # force the form to be cleaned
+        form.is_valid()
+
+        has_non_field_error = form.errors.pop('__all__', False)
+
+        # In a non-timeout form, error_message is only run if there are no
+        # field errors (because the error_message function assumes all fields exist)
+        # however, if there is a timeout, we accept the form even if there are some field errors,
+        # so we have to make sure we don't skip calling error_message()
+        if form.errors and not has_non_field_error:
+            if hasattr(self, 'error_message'):
+                try:
+                    has_non_field_error = bool(self.error_message(form.cleaned_data))
+                except:
+                    has_non_field_error = True
+
+        if has_non_field_error:
+            # non-field errors exist.
+            # ignore form, use timeout_submission entirely
+            auto_submit_values_to_use = auto_submit_values
+        elif form.errors:
+            auto_submit_values_to_use = {}
+            for field_name in form.errors:
+                auto_submit_values_to_use[field_name] = auto_submit_values[field_name]
+            form.errors.clear()
+            form.save()
+        else:
+            auto_submit_values_to_use = {}
+            form.save()
+        for field_name in auto_submit_values_to_use:
+            setattr(self.object, field_name, auto_submit_values_to_use[field_name])
 
     @classmethod
     def has_timeout(cls):

@@ -57,7 +57,8 @@ def SubmitInternal(submission_tuple, check_html=BOTS_CHECK_HTML):
     if isinstance(submission_tuple, (list, tuple)):
         PageClass = submission_tuple[0]
         if len(submission_tuple) == 2:
-            post_data = submission_tuple[1]
+            # shouldn't mutate the input
+            post_data = submission_tuple[1].copy()
     else:
         PageClass = submission_tuple
 

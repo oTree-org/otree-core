@@ -213,7 +213,11 @@ SESSION_CONFIGS = [
         'real_world_currency_per_point': 0.5,
         'participation_fee': 1.25,
     },
-
+    {
+        'name': 'timeout_submission',
+        'num_demo_participants': 1,
+        'app_sequence': ['tests.timeout_submission'],
+    },
 ]
 
 
