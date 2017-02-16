@@ -2,8 +2,6 @@ from django.core.management import call_command
 from otree.models.participant import Participant
 from otree.bots.bot import ParticipantBot
 from .base import TestCase
-import mock
-import tests.wait_page.views
 from tests.timeout_submission.models import Player, Constants
 from tests.timeout_submission import views
 from otree import constants_internal
