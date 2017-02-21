@@ -1,11 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-
-# =============================================================================
-# IMPORTS
-# =============================================================================
-
 import datetime
 
 from django.http import HttpResponse
@@ -18,11 +10,8 @@ import otree.models
 from otree.common_internal import app_name_format
 import otree.export
 from otree.models.participant import Participant
+from otree.extensions import get_extensions_data_export_views
 
-
-# =============================================================================
-# VIEWS
-# =============================================================================
 
 class ExportIndex(vanilla.TemplateView):
 
@@ -46,6 +35,9 @@ class ExportIndex(vanilla.TemplateView):
             for app_label in app_labels_with_data
         ]
         context['apps'] = apps
+
+        context['extensions_views'] = get_extensions_data_export_views()
+
         return context
 
 

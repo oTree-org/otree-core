@@ -1,3 +1,4 @@
+from otree.extensions import get_extensions_modules, get_extensions_data_export_views
 from django.conf.urls import patterns
 import inspect
 from importlib import import_module
@@ -112,6 +113,30 @@ def url_patterns_from_module(module_name):
     return urls.patterns('', *view_urls)
 
 
+def extensions_urlpatterns():
+
+    urlpatterns = []
+
+    for url_module in get_extensions_modules('urls'):
+        urlpatterns += getattr(url_module, 'urlpatterns', [])
+
+    return urlpatterns
+
+
+def extensions_export_urlpatterns():
+    view_classes = get_extensions_data_export_views()
+    view_urls = []
+
+    for ViewCls in view_classes:
+        if settings.AUTH_LEVEL in {'DEMO', 'STUDY'}:
+            as_view = login_required(ViewCls.as_view())
+        else:
+            as_view = ViewCls.as_view()
+        view_urls.append(urls.url(ViewCls.url_pattern, as_view, name=ViewCls.url_name))
+
+    return urls.patterns('', *view_urls)
+
+
 def augment_urlpatterns(urlpatterns):
 
     urlpatterns += urls.patterns(
@@ -163,6 +188,9 @@ def augment_urlpatterns(urlpatterns):
     urlpatterns += url_patterns_from_module('otree.views.admin')
     urlpatterns += url_patterns_from_module('otree.views.mturk')
     urlpatterns += url_patterns_from_module('otree.views.export')
+
+    urlpatterns += extensions_urlpatterns()
+    urlpatterns += extensions_export_urlpatterns()
 
     return urlpatterns
 

@@ -95,6 +95,18 @@
     {% endif %}
 
     <br/>
+
+    {% if extensions_views %}
+        <h3>Third-party data exports</h3>
+
+        {% for ViewCls in extensions_views %}
+            <p><a href="{% url ViewCls.url_name %}"><span
+                class="glyphicon glyphicon-download-alt"></span>
+            <b>{{ ViewCls.display_name }}</b></a></p>
+        {% endfor %}
+
+    {% endif %}
+
     <br/>
 
 {% endblock %}

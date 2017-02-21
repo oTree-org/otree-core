@@ -4,6 +4,7 @@
 from channels.routing import route
 
 from otree.channels import consumers
+from otree.extensions import get_extensions_modules
 
 
 channel_routing = [
@@ -56,3 +57,7 @@ channel_routing = [
           path=r'^/browser_bot_wait/$'),
 
 ]
+
+
+for extensions_module in get_extensions_modules('routing'):
+    channel_routing += getattr(extensions_module, 'channel_routing', [])
