@@ -54,7 +54,6 @@ not just data export.)
 """
 
 def get_extensions_modules(submodule_name):
-
     modules = []
     for app_config in apps.get_app_configs():
         try:

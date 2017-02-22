@@ -58,6 +58,5 @@ channel_routing = [
 
 ]
 
-
 for extensions_module in get_extensions_modules('routing'):
     channel_routing += getattr(extensions_module, 'channel_routing', [])
