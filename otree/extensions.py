@@ -61,7 +61,8 @@ def get_extensions_modules(submodule_name):
                 app_config.name, submodule_name)
             module = import_module(dotted_path)
             modules.append(module)
-        except ModuleNotFoundError:
+        # ModuleNotFoundError is new in Python 3.6
+        except ImportError:
             continue
     return modules
 
