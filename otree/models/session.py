@@ -137,11 +137,6 @@ class Session(ModelWithVars):
             lst.extend(list(subsessions))
         return lst
 
-    def delete(self, using=None):
-        for subsession in self.get_subsessions():
-            subsession.delete()
-        super(Session, self).delete(using)
-
     def get_participants(self):
         return self.participant_set.all()
 

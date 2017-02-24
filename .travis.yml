@@ -1,8 +1,5 @@
 language: python
 sudo: false
-# Specify Python 3.5 explicitley. We can still run Python 2.x tests in that
-# environment, but Python 3.5 won't be available the other way around.
-# See for details: https://github.com/travis-ci/travis-ci/issues/4794
 python: 3.5
 install:
   - pip install tox
