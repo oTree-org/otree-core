@@ -3,7 +3,7 @@ from django.template.loader import render_to_string
 from django.core.urlresolvers import Resolver404, reverse
 from .otree_forms import FormFieldNode
 from .otree_forms import defaultlabel
-from otree.common import Currency
+from otree.common import Currency, safe_json
 import otree.common_internal
 
 
@@ -94,4 +94,5 @@ def abs_value(var):
     return abs(var)
 
 
+register.filter('json', safe_json)
 register.filter('defaultlabel', defaultlabel)
