@@ -620,7 +620,7 @@ class SessionDescription(AdminSessionPageMixin, vanilla.TemplateView):
 
 class AdminReportForm(forms.Form):
     app_name = forms.ChoiceField(choices=[], required=False)
-    round_number = forms.IntegerField(required=False, min_value=1, initial=1)
+    round_number = forms.IntegerField(required=False, min_value=1)
 
     def __init__(self, *args, **kwargs):
         self.session = kwargs.pop('session')
@@ -635,55 +635,49 @@ class AdminReportForm(forms.Form):
                 get_app_label_from_name(app_name), self.rounds_per_app[app_name]
             )
             app_name_choices.append((app_name, label))
+
         self.fields['app_name'].choices = app_name_choices
 
-    def clean_round_number(self):
-        app_name = self.cleaned_data['app_name']
-        round_number = self.cleaned_data['round_number']
-
-        if round_number and app_name:
-            num_rounds = self.rounds_per_app[app_name]
-            if round_number > num_rounds:
-                self.cleaned_data['round_number'] = None
-                raise forms.ValidationError(
-                    'Invalid round number (max is {})'.format(num_rounds)
-                )
-        return round_number
-
-class AdminReport(AdminSessionPageMixin, vanilla.FormView):
-
-    form_class = AdminReportForm
-
-    def get(self, request, *args, **kwargs):
-        get_data = self.request.GET.dict()
-        # otherwise, the round_number text box will be blank initially
-        # and the user won't know what round it is
-        get_data.setdefault('round_number', 1)
-        form = self.get_form(data=get_data, session=self.session)
-        # validate to get error messages
-        form.is_valid()
-
-        context = self.get_context_data(form=form)
-
-        return self.render_to_response(context)
-
-    def get_context_data(self, **kwargs):
-        form = kwargs['form']
+    def clean(self):
+        cleaned_data = super().clean()
 
         apps_with_admin_report = self.session._admin_report_apps()
 
-        app_name = form.cleaned_data.get('app_name')
-        if not app_name or form['app_name'].errors:
-            app_name = apps_with_admin_report[0]
+        # can't use setdefault because the key will always exist even if the
+        # fields were empty.
+        # str default value is '',
+        # and int default value is None
+        if not cleaned_data['app_name']:
+            cleaned_data['app_name'] = apps_with_admin_report[0]
 
-        round_number = form.cleaned_data.get('round_number')
-        if not round_number or form['round_number'].errors:
-            round_number = 1
+        rounds_in_this_app = self.rounds_per_app[cleaned_data['app_name']]
 
-        models_module = get_models_module(app_name)
+        round_number = cleaned_data['round_number']
+
+        if not round_number or round_number > rounds_in_this_app:
+            cleaned_data['round_number'] = rounds_in_this_app
+
+        self.data = cleaned_data
+
+        return cleaned_data
+
+class AdminReport(AdminSessionPageMixin, vanilla.TemplateView):
+
+    def get(self, request, *args, **kwargs):
+        form = AdminReportForm(data=request.GET, session=self.session)
+        # validate to get error messages
+        form.is_valid()
+        context = self.get_context_data(form=form)
+        return self.render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+
+        cleaned_data = kwargs['form'].cleaned_data
+
+        models_module = get_models_module(cleaned_data['app_name'])
         subsession = models_module.Subsession.objects.get(
             session=self.session,
-            round_number=round_number,
+            round_number=cleaned_data['round_number'],
         )
 
         context = {

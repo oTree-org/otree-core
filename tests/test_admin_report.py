@@ -20,12 +20,12 @@ class TestAdminReport(TestCase):
         browser = self.browser
         browser.visit(url)
 
-        for substring in ['42', '43', 'round 1']:
+        for substring in ['42', '43', 'round 2']:
             self.assertTrue(browser.is_text_present(substring))
 
         browser.fill('app_name', 'tests.admin_report')
-        browser.fill('round_number', '2')
+        browser.fill('round_number', '1')
         button = browser.find_by_id('submit')
         # Interact with elements
         button.click()
-        self.assertIn('round 2', browser.html)
+        self.assertIn('round 1', browser.html)
