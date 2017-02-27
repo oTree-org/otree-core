@@ -21,6 +21,7 @@ from django.core.urlresolvers import reverse
 from django.db import connection
 from django.http import HttpResponseRedirect
 from django.template.defaultfilters import title
+from django.utils.safestring import mark_safe
 from six.moves import urllib
 from huey.contrib.djhuey import HUEY
 import contextlib
@@ -302,3 +303,14 @@ def transaction_except_for_sqlite():
     else:
         with transaction.atomic():
             yield
+
+
+class DebugTable(object):
+    def __init__(self, title, rows):
+        self.title = title
+        self.rows = []
+        for k, v in rows:
+            if isinstance(v, six.string_types):
+                v = v.strip().replace("\n", "<br>")
+                v = mark_safe(v)
+            self.rows.append((k, v))

@@ -4,50 +4,44 @@
 # IMPORTS
 # =============================================================================
 
+import contextlib
+import importlib
+import json
 import logging
 import time
 import warnings
-import json
-import contextlib
-import importlib
 
-from six.moves import range
-
+import channels
 import django.db
-from django.db import transaction
-from django.db.models import Max
-from django.core.exceptions import ImproperlyConfigured
+import otree.common_internal
+import otree.constants_internal as constants
+import otree.db.idmap
+import otree.forms
+import otree.models
+import otree.timeout.tasks
+import redis_lock
+import vanilla
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
+from django.core.urlresolvers import resolve
+from django.db.models import Max
+from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
-from django.views.decorators.cache import never_cache, cache_control
-from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.utils.translation import ugettext as _
-from django.core.urlresolvers import resolve
-import redis_lock
-import channels
-
-import vanilla
-
-import otree.forms
-import otree.common_internal
-import otree.timeout.tasks
-import otree.models
-import otree.db.idmap
-import otree.constants_internal as constants
-from otree.models import Participant
-from otree.common_internal import (
-    get_app_label_from_import_path, get_dotted_name, get_admin_secret_code
-)
+from django.views.decorators.cache import never_cache, cache_control
 from otree.bots.browser import EphemeralBrowserBot
+from otree.common_internal import (
+    get_app_label_from_import_path, get_dotted_name, get_admin_secret_code,
+    DebugTable)
+from otree.models import Participant
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
     CompletedGroupWaitPage, PageTimeout, UndefinedFormModel,
     ParticipantLockModel, GlobalLockModel
 )
-import six
-from django.utils.safestring import mark_safe
+from six.moves import range
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -56,17 +50,6 @@ NO_PARTICIPANTS_LEFT_MSG = (
     "The maximum number of participants for this session has been exceeded.")
 
 ADMIN_SECRET_CODE = get_admin_secret_code()
-
-
-class DebugTable(object):
-    def __init__(self, title, rows):
-        self.title = title
-        self.rows = []
-        for k, v in rows:
-            if isinstance(v, six.string_types):
-                v = v.strip().replace("\n", "<br>")
-                v = mark_safe(v)
-            self.rows.append((k, v))
 
 
 def get_view_from_url(url):

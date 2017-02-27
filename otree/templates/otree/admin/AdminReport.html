@@ -22,4 +22,10 @@
     </form>
 
     {% include user_template %}
+
+    {% if view.is_debug %}
+        <br><br>
+        {% include 'otree/includes/debug_info.html' %}
+    {% endif %}
+
 {% endblock %}

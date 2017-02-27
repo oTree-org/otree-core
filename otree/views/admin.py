@@ -35,8 +35,9 @@ from otree.models import Participant, Session
 from otree.models_concrete import (
     ParticipantRoomVisit, BrowserBotsLauncherSessionCode)
 from otree.room import ROOM_DICT
-from otree.common_internal import get_models_module
-from otree.common_internal import get_app_label_from_name
+from otree.common_internal import (
+    get_models_module, get_app_label_from_name, DebugTable)
+
 
 
 
@@ -625,7 +626,6 @@ class AdminReportForm(forms.Form):
         self.session = kwargs.pop('session')
         super().__init__(*args, **kwargs)
 
-
         admin_report_apps = self.session._admin_report_apps()
         num_rounds_list = self.session._admin_report_num_rounds_list()
         self.rounds_per_app = dict(zip(admin_report_apps, num_rounds_list))
@@ -664,11 +664,11 @@ class AdminReport(AdminSessionPageMixin, vanilla.FormView):
         form.is_valid()
 
         context = self.get_context_data(form=form)
+
         return self.render_to_response(context)
 
     def get_context_data(self, **kwargs):
         form = kwargs['form']
-        context = super().get_context_data(**kwargs)
 
         apps_with_admin_report = self.session._admin_report_apps()
 
@@ -685,13 +685,31 @@ class AdminReport(AdminSessionPageMixin, vanilla.FormView):
             session=self.session,
             round_number=round_number,
         )
-        context['subsession'] = subsession
-        context['session'] = self.session
-        context['Constants'] = models_module.Constants
-        context.update(subsession.vars_for_admin_report() or {})
 
-        context['user_template'] = '{}/AdminReport.html'.format(
+        context = {
+            'subsession': subsession,
+            'Constants': models_module.Constants,
+            'session': self.session,
+            'user_template': '{}/AdminReport.html'.format(
             subsession._meta.app_config.label)
+        }
+
+        vars_for_admin_report = subsession.vars_for_admin_report() or {}
+        self.debug_tables = [
+            DebugTable(
+                title='vars_for_admin_report',
+                rows=vars_for_admin_report.items()
+            )
+        ]
+        # determine whether to display debug tables
+        self.is_debug = settings.DEBUG
+        context.update(vars_for_admin_report)
+
+        # this should take priority, in the event of a clash between
+        # a user-defined var and a built-in one
+        context.update(super().get_context_data(**kwargs))
+
+
 
         return context
 
