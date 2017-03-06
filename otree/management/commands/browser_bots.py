@@ -340,7 +340,11 @@ class Launcher(object):
         # make sure room is closed
         resp = self.post(
             urljoin(self.server_url, reverse('CloseBrowserBotsSession')))
-        assert resp.ok
+        if not resp.ok:
+            raise AssertionError(
+                'Request to close existing browser bots session failed. '
+                'Response: {} {}'.format(repr(resp), resp.text)
+            )
 
     def launch_browser(self, num_participants):
         wait_room_url = urljoin(
