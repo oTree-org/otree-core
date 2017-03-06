@@ -2,9 +2,9 @@
 {% load i18n %}
 {% load floppyforms otree_tags %}
 {% block body_main %}
-    <div class="container" style='max-width:970px'>
+    <div id="otree-body" class="container" style='max-width:970px'>
         <div class="page-header" style="padding-top: 40px">
-            <h2>{% block title %}{% endblock %}</h2>
+            <h2 id="otree-title">{% block title %}{% endblock %}</h2>
         </div>
         <div>
             {% if view.has_timeout %}
@@ -18,7 +18,7 @@
                 </div>
             {% endif %}
 
-            <div id="error-notice" class="alert alert-danger"
+            <div id="otree-server-error" class="alert alert-danger"
                  style="display:none">
                 {% blocktrans trimmed %}
                     An error occurred. Please check the logs or ask
@@ -46,6 +46,7 @@
     </div>
 {% endblock %}
 
+
 {% block internal_scripts %}
     {{ block.super }}
     <!-- this is an HTML file rather than JavaScript static file because context variables need to be passed to it -->
@@ -68,7 +69,7 @@
                         var data = JSON.parse(e.data);
 
                         if (data.error) {
-                            $("#error-notice").show();
+                            $("#otree-server-error").show();
                             return;
                         }
 
