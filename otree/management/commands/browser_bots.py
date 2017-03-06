@@ -228,7 +228,8 @@ class Launcher(object):
     def post(self, url, data=None):
         data = data or {}
         data.update({'csrfmiddlewaretoken': self.client.cookies['csrftoken']})
-        return self.client.post(url, data)
+        # need to set the referer for CSRF protection to work when using HTTPS
+        return self.client.post(url, data, headers={'referer': url})
 
     def server_configuration_check(self):
         # .get just returns server readiness info
