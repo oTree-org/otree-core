@@ -2,8 +2,8 @@
 {% load i18n %}
 {% load floppyforms otree_tags %}
 {% block body_main %}
-    <div id="otree-body" class="container" style='max-width:970px'>
-        <div class="page-header" style="padding-top: 40px">
+    <div id="otree-body" class="container">
+        <div class="page-header">
             <h2 id="otree-title">{% block title %}{% endblock %}</h2>
         </div>
         <div>
@@ -46,6 +46,19 @@
     </div>
 {% endblock %}
 
+{% block internal_styles %}
+{{ block.super }}
+<style>
+    #otree-body {
+        max-width:970px
+    }
+
+    .page-header {
+        padding-top: 40px
+    }
+
+</style>
+{% endblock %}
 
 {% block internal_scripts %}
     {{ block.super }}
