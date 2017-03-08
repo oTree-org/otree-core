@@ -83,6 +83,8 @@ def _get_table_fields(Model, for_export=False):
                 'visited',
                 'mturk_worker_id',
                 'mturk_assignment_id',
+                # last so that it will be next to payoff_plus_participation_fee
+                'payoff',
             ]
         else:
             return [
@@ -147,20 +149,21 @@ def sanitize_for_live_update(value):
     return sanitize_for_csv(value)
 
 
+def get_payoff_plus_participation_fee(session, participant_values_dict):
+    payoff = Currency(participant_values_dict['payoff'])
+    return session._get_payoff_plus_participation_fee(payoff)
+
+
 def get_rows_for_wide_csv():
 
     sessions = Session.objects.order_by('id').annotate(
-        num_participants=Count('participant')).values()
-    session_cache = {row['id']: row for row in sessions}
+        num_participants=Count('participant'))
+    session_cache = {row.id: row for row in sessions}
 
     session_config_fields = set()
-    for row in sessions:
-        config = json_loads(row['config'])
-        config = SessionConfig(config)
-        for field_name in config.editable_fields():
+    for session in sessions:
+        for field_name in SessionConfig(session.config).editable_fields():
             session_config_fields.add(field_name)
-        # store it for later, when we need app_sequence
-        row['config'] = config
     session_config_fields = list(session_config_fields)
 
     participants = Participant.objects.order_by('id').values()
@@ -168,12 +171,9 @@ def get_rows_for_wide_csv():
         # 1 empty row
         return [[]]
 
-    payoff_cache = get_payoff_cache()
-    payoff_plus_participation_fee_cache = get_payoff_plus_participation_fee_cache(payoff_cache)
-
     session_fields = get_field_names_for_csv(Session)
     participant_fields = get_field_names_for_csv(Participant)
-    participant_fields += ['payoff', 'payoff_plus_participation_fee']
+    participant_fields.append('payoff_plus_participation_fee')
     header_row = ['participant.{}'.format(fname) for fname in participant_fields]
     header_row += ['session.{}'.format(fname)
                    for fname in session_fields]
@@ -181,21 +181,20 @@ def get_rows_for_wide_csv():
                    for fname in session_config_fields]
     rows = [header_row]
     for participant in participants:
-        participant['payoff'] = payoff_cache[participant['id']]
-        participant['payoff_plus_participation_fee'] = payoff_plus_participation_fee_cache[participant['id']]
-        row = [sanitize_for_csv(participant[fname]) for fname in participant_fields]
         session = session_cache[participant['session_id']]
-        row += [sanitize_for_csv(session[fname]) for fname in session_fields]
-        config = session['config']
-        row += [sanitize_for_csv(config.get(fname)) for fname in session_config_fields]
+        participant['payoff_plus_participation_fee'] = get_payoff_plus_participation_fee(session, participant)
+        row = [sanitize_for_csv(participant[fname]) for fname in participant_fields]
+
+        row += [sanitize_for_csv(getattr(session, fname)) for fname in session_fields]
+        row += [sanitize_for_csv(session.config.get(fname)) for fname in session_config_fields]
         rows.append(row)
 
     # heuristic to get the most relevant order of apps
     app_sequences = collections.Counter()
     for session in sessions:
         # we loaded the config earlier
-        app_sequence = session['config']['app_sequence']
-        app_sequences[tuple(app_sequence)] += session['num_participants']
+        app_sequence = session.config['app_sequence']
+        app_sequences[tuple(app_sequence)] += session.num_participants
     most_common_app_sequence = app_sequences.most_common(1)[0][0]
 
     apps_not_in_popular_sequence = [
@@ -249,9 +248,9 @@ def get_rows_for_wide_csv_round(app_name, round_number, sessions):
 
     for session in sessions:
         subsession = Subsession.objects.filter(
-            session_id=session['id'], round_number=round_number).values()
+            session_id=session.id, round_number=round_number).values()
         if not subsession:
-            subsession_rows = [empty_row for _ in range(session['num_participants'])]
+            subsession_rows = [empty_row for _ in range(session.num_participants)]
         else:
             subsession = subsession[0]
             subsession_id = subsession['id']
@@ -260,6 +259,8 @@ def get_rows_for_wide_csv_round(app_name, round_number, sessions):
             subsession_rows = []
 
             for player in players:
+                # because player.payoff is a property
+                player['payoff'] = player['_payoff']
                 row = []
                 all_objects = {
                     'player': player,
@@ -309,6 +310,8 @@ def get_rows_for_csv(app_name):
              for colname in columns_for_models[model_name]]]
 
     for player in players:
+        # because player.payoff is a property
+        player['payoff'] = player['_payoff']
         row = []
         all_objects = {'player': player}
         for model_name in value_dicts:
@@ -539,40 +542,3 @@ def export_docs(fp, app_name):
     fp.write(doc)
 
 
-def get_payoff_cache():
-    payoff_cache = collections.defaultdict(Decimal)
-
-    for app_name in settings.INSTALLED_OTREE_APPS:
-        models_module = get_models_module(app_name)
-        Player = models_module.Player
-        for d in Player.objects.values(
-                'participant_id', 'session_id').annotate(Sum('payoff')):
-            payoff_cache[d['participant_id']] += (d['payoff__sum'] or 0)
-
-    return payoff_cache
-
-
-def get_payoff_plus_participation_fee_cache(payoff_cache):
-    # don't want to modify the input
-    payoff_cache = payoff_cache.copy()
-
-    for p_id in payoff_cache:
-        # convert to Currency so we can call to_real_world_currency
-        payoff_cache[p_id] = Currency(payoff_cache[p_id])
-
-    participant_ids_to_session_ids = {
-        p['id']: p['session_id'] for p in Participant.objects.values(
-            'id', 'session_id')
-    }
-
-    sessions_cache = {s.id: s for s in Session.objects.all()}
-
-    payoff_plus_participation_fee_cache = collections.defaultdict(Decimal)
-    for p_id in payoff_cache:
-        session_id = participant_ids_to_session_ids[p_id]
-        session = sessions_cache[session_id]
-        payoff = payoff_cache[p_id]
-        payoff_plus_participation_fee = session._get_payoff_plus_participation_fee(payoff)
-        payoff_plus_participation_fee_cache[p_id] = payoff_plus_participation_fee.to_number()
-
-    return payoff_plus_participation_fee_cache

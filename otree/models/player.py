@@ -29,7 +29,8 @@ class BasePlayer(SaveTheChange, models.Model):
              "indicates whether this is player 1, player 2, etc.")
     )
 
-    payoff = models.CurrencyField(
+    # don't modify this directly! Set player.payoff instead
+    _payoff = models.CurrencyField(
         null=True,
         doc="""The payoff the player made in this subsession""",
         default=0
@@ -58,6 +59,20 @@ class BasePlayer(SaveTheChange, models.Model):
     # their own name field
     def _name(self):
         return self.participant.__unicode__()
+
+    @property
+    def payoff(self):
+        return self._payoff
+
+    @payoff.setter
+    def payoff(self, value):
+        if value is None:
+            value = 0
+        delta = value - self._payoff
+        self._payoff += delta
+        self.participant.payoff += delta
+        self.participant.save()
+        print('self.participant.payoff:', self.participant.payoff)
 
     @property
     def id_in_subsession(self):
