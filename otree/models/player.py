@@ -71,8 +71,9 @@ class BasePlayer(SaveTheChange, models.Model):
         delta = value - self._payoff
         self._payoff += delta
         self.participant.payoff += delta
+        # should save it because it may not be obvious that modifying
+        # player.payoff also changes a field on a different model
         self.participant.save()
-        print('self.participant.payoff:', self.participant.payoff)
 
     @property
     def id_in_subsession(self):

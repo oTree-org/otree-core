@@ -44,11 +44,8 @@ class TestPayoff(TestCase):
         round_payoff = Currency(13)
 
         round_players[0].payoff = round_payoff
-        round_players[0].save()
         round_players[1].payoff = round_payoff
-        round_players[1].save()
 
-        otree.db.idmap.save_objects()
         otree.db.idmap.deactivate_cache()
 
         payoff = participant.payoff
