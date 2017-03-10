@@ -1,26 +1,23 @@
-{% load staticfiles %}
+{% load staticfiles otree_tags %}
 <script type="text/javascript" src="{% static 'otree/js/jquery.countdown.js' %}"></script>
 
 <script type="text/javascript">
     $(function() {
         {% if view.timeout_seconds %}
-            $('div#time-limit').show();
+            $('div#otree-timeout').show();
             var currentDate = new Date();
-            var milliseconds = {{ view.remaining_timeout_seconds }}*1000;
-            $('div#clock').countdown(currentDate.valueOf() + milliseconds, function(event) {
+            var milliseconds = {{ view.remaining_timeout_seconds|json }}*1000;
+            $('#otree-timeout').countdown(currentDate.valueOf() + milliseconds, function(event) {
 
                 switch(event.type) {
                     case "seconds":
-                        //if ((event.lasting.hours == 0) && (event.lasting.minutes == 0)) {
-                        $(this).find('span#'+event.type).html(event.value);
-                        //}
+                        $(this).find('span#seconds').html(event.value);
                         break;
                     case "minutes":
                         $(this).find('span#minutes').html(event.lasting.hours * 60 + parseInt(event.value));
                         break;
                     case "finished":
-                        $('#clock').hide(duration=0);
-                        $('#time-out-message').show(duration=0);
+                        $('#otree-timeout').hide(duration=0);
                         $('<input>').attr({
                             type: 'hidden',
                             name: 'auto_submit',

@@ -1,13 +1,11 @@
 {% load staticfiles %}
 {% load i18n %}
 
-<div id="time-limit" class="alert alert-warning" style="display:none;">
-    <div id="clock">
-        <p>{% blocktrans trimmed %}Time left to complete this page:{% endblocktrans %}
-            <span style="font-weight: bold">
-                    <span class="glyphicon glyphicon-time"></span>
-                    <span id="minutes"></span>:<span id="seconds"></span>
-            </span>
-        </p>
-    </div>
+<div id="otree-timeout" class="alert alert-warning" style="display:none;">
+    <p>{% blocktrans trimmed %}Time left to complete this page:{% endblocktrans %}
+        <span style="font-weight: bold">
+            <span class="glyphicon glyphicon-time"></span>
+            <span id="minutes"></span>:<span id="seconds"></span>
+        </span>
+    </p>
 </div>
