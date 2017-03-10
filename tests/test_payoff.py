@@ -6,6 +6,7 @@ import otree.session
 from django.core.urlresolvers import reverse
 import django.test
 from otree.api import Currency
+import otree.db.idmap
 
 class TestPayoff(TestCase):
 
@@ -25,20 +26,27 @@ class TestPayoff(TestCase):
                 Currency.DECIMAL_PLACES = DECIMAL_PLACES_ORIGINAL_VALUE
 
     def helper(self):
+
+
         session = otree.session.create_session(
             session_config_name='two_rounds_1p',
             num_participants=1,
         )
 
-        participant = session.participant_set.first()
+        # need to activate cache after creating a session
+        # because inside create_session, cache is deactivated
+        otree.db.idmap.activate_cache()
+
+        participant = session.participant_set.get(id=1)
+
         round_players = participant.get_players()
 
         round_payoff = Currency(13)
 
         round_players[0].payoff = round_payoff
-        round_players[0].save()
         round_players[1].payoff = round_payoff
-        round_players[1].save()
+
+        otree.db.idmap.deactivate_cache()
 
         payoff = participant.payoff
         self.assertEqual(payoff, 2*round_payoff)

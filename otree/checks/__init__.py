@@ -358,11 +358,12 @@ def constants(rules, **kwargs):
             if not hasattr(Constants, attr_name):
                 msg = "models.py: 'Constants' class needs to define '{}'"
                 rules.push_error(msg.format(attr_name))
-        if getattr(Constants, 'players_per_group', None) == 1:
+        ppg = Constants.players_per_group
+        if ppg == 0 or ppg == 1:
             rules.push_error(
-                "models.py: 'Constants.players_per_group' cannot be 1. You "
+                "models.py: 'Constants.players_per_group' cannot be {}. You "
                 "should set it to None, which makes the group "
-                "all players in the subsession."
+                "all players in the subsession.".format(ppg)
             )
 
 

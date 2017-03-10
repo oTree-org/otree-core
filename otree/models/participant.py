@@ -7,7 +7,6 @@ from django.core.urlresolvers import reverse
 import otree.common_internal
 from otree import constants_internal
 from otree.common_internal import id_label_name, random_chars_8
-from otree.common import Currency as c
 from otree.db import models
 from otree.models_concrete import ParticipantToPlayerLookup
 from otree.models.varsmixin import ModelWithVars
@@ -39,6 +38,8 @@ class Participant(ModelWithVars):
             "data points should be excluded from the data analysis (e.g. a "
             "problem took place during the experiment)")
     )
+
+    payoff = models.CurrencyField(default=0)
 
     time_started = models.DateTimeField(null=True)
     user_type_in_url = constants_internal.user_type_participant
@@ -192,23 +193,13 @@ class Participant(ModelWithVars):
     def _start_url(self):
         return 'InitializeParticipant', (self.code,)
 
-    @property
-    def payoff(self):
-        app_sequence = self.session.config['app_sequence']
-        total_payoff = 0
-        for app in app_sequence:
-            models_module = otree.common_internal.get_models_module(app)
-            app_payoff = models_module.Player.objects.filter(
-                participant=self).aggregate(Sum('payoff'))['payoff__sum']
-            total_payoff += (app_payoff or 0)
-        return c(total_payoff)
-
     def payoff_in_real_world_currency(self):
         return self.payoff.to_real_world_currency(
             self.session
         )
 
     def money_to_pay(self):
+        '''deprecated'''
         return self.payoff_plus_participation_fee()
 
     def payoff_plus_participation_fee(self):
