@@ -47,22 +47,22 @@ class BOTS_CHECK_HTML:
     pass
 
 
-def SubmitInternal(submission_tuple, check_html=BOTS_CHECK_HTML):
+def _Submission(
+        PageClass, post_data=None, *, check_html=BOTS_CHECK_HTML, must_fail=False):
+
+    post_data = post_data or {}
+
+    # don't mutate the input
+    post_data = post_data.copy()
 
     if check_html == BOTS_CHECK_HTML:
         check_html = settings.BOTS_CHECK_HTML
 
-    post_data = {}
-
-    if isinstance(submission_tuple, (list, tuple)):
-        PageClass = submission_tuple[0]
-        if len(submission_tuple) == 2:
-            # shouldn't mutate the input
-            post_data = submission_tuple[1].copy()
-    else:
-        PageClass = submission_tuple
-
-    post_data = post_data or {}
+    if must_fail:
+        # must_fail needs to go in post_data rather than being a separate
+        # dict key, because CLI bots and browser bots need to work the same way.
+        # CLI bots can only talk to server through post data
+        post_data['must_fail'] = True
 
     # easy way to check if it's a wait page, without any messy imports
     if hasattr(PageClass, 'wait_for_all_groups'):
@@ -87,7 +87,7 @@ def SubmitInternal(submission_tuple, check_html=BOTS_CHECK_HTML):
 
 def Submission(
         PageClass, post_data=None, *, check_html=BOTS_CHECK_HTML):
-    return SubmitInternal((PageClass, post_data), check_html)
+    return _Submission(PageClass, post_data, check_html=check_html)
 
 
 def SubmissionMustFail(
@@ -95,17 +95,24 @@ def SubmissionMustFail(
     '''lets you intentionally submit with invalid
     input to ensure it's correctly rejected'''
 
-    post_data = post_data or {}
+    return _Submission(
+        PageClass,
+        post_data=post_data, check_html=check_html, must_fail=True)
 
-    # make a copy because we will mutate the input
-    post_data = post_data.copy()
 
-    # must_fail needs to go in post_data rather than being a separate
-    # dict key, because CLI bots and browser bots need to work the same way.
-    # CLI bots can only talk to server through post data
-    post_data['must_fail'] = True
+def BareYieldToSubmission(yielded_value):
 
-    return Submission(PageClass, post_data, check_html=check_html)
+    post_data = {}
+
+    if isinstance(yielded_value, (list, tuple)):
+        PageClass = yielded_value[0]
+        if len(yielded_value) == 2:
+            # shouldn't mutate the input
+            post_data = yielded_value[1]
+    else:
+        PageClass = yielded_value
+
+    return Submission(PageClass, post_data)
 
 
 def normalize_html_whitespace(html):
@@ -222,8 +229,10 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
             else:
                 try:
                     for submission in generator:
+                        # Submission or SubmissionMustFail returns a dict
+                        # so, we normalize to a dict
                         if not isinstance(submission, dict):
-                            submission = SubmitInternal(submission)
+                            submission = BareYieldToSubmission(submission)
                         self.assert_correct_page(submission)
                         self.assert_html_ok(submission)
                         yield submission
@@ -362,7 +371,7 @@ class PlayerBot(object):
 
     def submit(self, ViewClass, param_dict=None):
         self._legacy_submit_list.append(
-            SubmitInternal((ViewClass, param_dict), check_html=False))
+            _Submission(ViewClass, param_dict, check_html=False))
 
     def submit_invalid(self, ViewClass, param_dict=None):
         # simpler to make this a no-op, it makes porting to yield easier

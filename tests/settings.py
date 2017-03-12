@@ -160,9 +160,9 @@ SESSION_CONFIGS = [
         'app_sequence': ['tests.export'],
     },
     {
-        'name': 'bots',
+        'name': 'bots_raise',
         'num_demo_participants': 2,
-        'app_sequence': ['tests.bots'],
+        'app_sequence': ['tests.bots_raise'],
     },
     {
         'name': 'group_by_arrival_time',
@@ -190,6 +190,11 @@ SESSION_CONFIGS = [
         'name': 'bots_cases',
         'num_demo_participants': 1,
         'app_sequence': ['tests.bots_cases'],
+    },
+    {
+        'name': 'bots_submission_varieties',
+        'num_demo_participants': 1,
+        'app_sequence': ['tests.bots_submission_varieties'],
     },
     {
         'name': 'templates_app',

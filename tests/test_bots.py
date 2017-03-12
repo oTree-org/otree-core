@@ -6,13 +6,15 @@ from .base import TestCase
 import otree.session
 from otree.bots.runner import session_bot_runner_factory, test_bots
 import logging
+import unittest.mock
+from tests.bots_cases.tests import PlayerBot
 
 
 class TestBots(TestCase):
     def test_bot_runs(self):
 
         session = otree.session.create_session(
-            session_config_name='bots',
+            session_config_name='bots_raise',
             num_participants=2,
             use_cli_bots=True,
             bot_case_number=0,
@@ -70,9 +72,16 @@ class TestBots(TestCase):
             bot_runner.play()
             logging.disable(logging.NOTSET)
 
-    import unittest.mock
-    from tests.bots_cases.tests import PlayerBot
+    def test_bots_submission_varieties(self):
+        session = otree.session.create_session(
+            session_config_name='bots_submission_varieties',
+            num_participants=1,
+            use_cli_bots=True,
+            bot_case_number=0,
+        )
 
+        bot_runner = session_bot_runner_factory(session)
+        bot_runner.play()
 
     @unittest.mock.patch.object(PlayerBot, 'case1')
     @unittest.mock.patch.object(PlayerBot, 'case2')
@@ -81,7 +90,6 @@ class TestBots(TestCase):
         Test that all cases are run
         '''
 
-        from django.core.management import call_command
         test_bots('bots_cases', 1, False)
         self.assertTrue(patched_case1.called)
         self.assertTrue(patched_case2.called)
