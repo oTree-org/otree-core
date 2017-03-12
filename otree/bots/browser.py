@@ -210,6 +210,15 @@ def ping(redis_conn, unique_response_code):
         )
 
 
+def ping_bool(redis_conn, unique_response_code):
+    '''version of ping that returns True/False rather than raising'''
+    try:
+        ping(redis_conn, unique_response_code)
+        return True
+    except BotWorkerPingError:
+        return False
+
+
 def load_redis_response_dict(response_bytes):
     response = json.loads(response_bytes.decode('utf-8'))
     # response_error only exists if using Redis.
