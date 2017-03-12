@@ -121,27 +121,32 @@
         </div>
     {% endif %}
 
-    <!--
-    {% if not huey %}
+    {% if not runserver %}
+        {% if timeoutworker %}
+            <div class="alert alert-success">
+            The timeoutworker is running
+            </div>
+        {% else %}
         <div class="alert alert-warning">
-            <strong>No timeout worker found</strong>
+            <strong>No timeoutworker found</strong>
             <p>
             If your study has timeouts on pages (with <code>timeout_seconds</code>,
             we recommend turning on the timeoutworker dyno.
             This will ensure that the page timeouts will be enforced even if a user closes their browser.
+            Also, the timeoutworker is necessary if you want to use browser bots.
             </p>
+
             {% if heroku %}
                 <p>In your app dashboard, make sure your timeoutworker dyno is turned on.</p>
             {% else %}
-                <p>Make sure you are running the timeoutworker process.</p>
+                <p>
+                    Make sure you are running the timeoutworker process.
+                    It is launched automatically as part of <code>otree runprodserver</code>.
+                </p>
             {% endif %}
-
         </div>
-    {% else %}
-        <div class="alert alert-success">
-            Celery is on.
-        </div>
+        {% endif %}
     {% endif %}
-    -->
+
 {% endblock %}
 

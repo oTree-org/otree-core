@@ -21,8 +21,11 @@ import vanilla
 import channels
 
 import otree.export
+import otree.common_internal
 from otree.common_internal import (
-    create_session_and_redirect, missing_db_table)
+    create_session_and_redirect, missing_db_table,
+    get_models_module, get_app_label_from_name, DebugTable
+)
 from otree.management.cli import check_pypi_for_updates
 from otree.session import SESSION_CONFIGS_DICT, create_session, SessionConfig
 from otree import forms
@@ -30,14 +33,12 @@ from otree.forms import widgets
 from otree.common import RealWorldCurrency
 from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
 from otree.views.mturk import MTurkConnection, get_workers_by_status
-from otree.common import Currency as c
+import otree.bots.browser
 from otree.models import Participant, Session
 from otree.models_concrete import (
     ParticipantRoomVisit, BrowserBotsLauncherSessionCode)
 from otree.room import ROOM_DICT
-from otree.common_internal import (
-    get_models_module, get_app_label_from_name, DebugTable)
-
+import random
 
 
 
@@ -733,6 +734,21 @@ class ServerCheck(vanilla.TemplateView):
     def app_is_on_heroku(self):
         return 'heroku' in self.request.get_host()
 
+    def timeoutworker_is_running(self):
+        if otree.common_internal.USE_REDIS:
+            redis_conn = otree.common_internal.get_redis_conn()
+            key = 'server-check-{}'.format(random.randint(0,10000))
+            try:
+                otree.bots.browser.ping(redis_conn, key)
+                return True
+            except otree.bots.browser.BotWorkerPingError:
+                return False
+        else:
+            # the timeoutworker relies on Redis (Huey),
+            # so if Redis is not being used, the timeoutworker is not functional
+            return False
+
+
     def get_context_data(self, **kwargs):
         sqlite = settings.DATABASES['default']['ENGINE'].endswith('sqlite3')
         debug = settings.DEBUG
@@ -746,6 +762,7 @@ class ServerCheck(vanilla.TemplateView):
         db_synced = not missing_db_table()
         pypi_results = check_pypi_for_updates()
         python2 = sys.version_info[0] == 2
+        timeoutworker = self.timeoutworker_is_running()
 
         return {
             'sqlite': sqlite,
@@ -757,7 +774,8 @@ class ServerCheck(vanilla.TemplateView):
             'runserver': runserver,
             'db_synced': db_synced,
             'pypi_results': pypi_results,
-            'python2': python2
+            'python2': python2,
+            'timeoutworker': timeoutworker,
         }
 
 

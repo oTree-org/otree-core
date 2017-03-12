@@ -184,6 +184,10 @@ class Worker(object):
                 self.redis_conn.rpush(response_key, retval_json)
 
 
+class BotWorkerPingError(Exception):
+    pass
+
+
 def ping(redis_conn, unique_response_code):
     response_key = '{}-ping-{}'.format(REDIS_KEY_PREFIX, unique_response_code)
     msg = {
@@ -195,7 +199,7 @@ def ping(redis_conn, unique_response_code):
     result = redis_conn.blpop(response_key, timeout=3)
 
     if result is None:
-        raise Exception(
+        raise BotWorkerPingError(
             'Ping to botworker failed. '
             'If you want to use browser bots, '
             'you need to be running the botworker '
