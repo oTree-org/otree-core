@@ -192,11 +192,6 @@ SESSION_CONFIGS = [
         'app_sequence': ['tests.bots_cases'],
     },
     {
-        'name': 'bots_submission_varieties',
-        'num_demo_participants': 1,
-        'app_sequence': ['tests.bots_submission_varieties'],
-    },
-    {
         'name': 'templates_app',
         'num_demo_participants': 1,
         'app_sequence': ['tests.templates_app'],

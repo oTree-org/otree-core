@@ -1,14 +1,11 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-from otree.bots.bot import ParticipantBot
+from otree.api import Submission, SubmissionMustFail
 from .base import TestCase
 import otree.session
 from otree.bots.runner import session_bot_runner_factory, test_bots
 import logging
 import unittest.mock
 from tests.bots_cases.tests import PlayerBot
-
+import tests.bots_cases.views
 
 class TestBots(TestCase):
     def test_bot_runs(self):
@@ -73,15 +70,16 @@ class TestBots(TestCase):
             logging.disable(logging.NOTSET)
 
     def test_bots_submission_varieties(self):
-        session = otree.session.create_session(
-            session_config_name='bots_submission_varieties',
-            num_participants=1,
-            use_cli_bots=True,
-            bot_case_number=0,
-        )
-
-        bot_runner = session_bot_runner_factory(session)
-        bot_runner.play()
+        '''Testing different syntaxes for a submission'''
+        Page1 = tests.bots_cases.views.Page1
+        for submission in [
+            Submission(Page1),
+            SubmissionMustFail(Page1, check_html=False),
+            Submission(Page1, {'f2': True}, check_html=False),
+            SubmissionMustFail(Page1, {}),
+            Submission(Page1, {'f3': True}),
+        ]:
+            self.assertIsInstance(submission, dict)
 
     @unittest.mock.patch.object(PlayerBot, 'case1')
     @unittest.mock.patch.object(PlayerBot, 'case2')
