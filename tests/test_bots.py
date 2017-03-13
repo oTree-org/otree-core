@@ -74,6 +74,7 @@ class TestBots(TestCase):
         Page1 = tests.bots_cases.views.Page1
         for submission in [
             Submission(Page1),
+            Submission(Page1, {}),
             SubmissionMustFail(Page1, check_html=False),
             Submission(Page1, {'f2': True}, check_html=False),
             SubmissionMustFail(Page1, {}),
