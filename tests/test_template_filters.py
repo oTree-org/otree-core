@@ -54,3 +54,13 @@ class TestFilters(TestCase):
             self.render("{{value|abs}}", context={'value': "foo"})
         with self.assertRaises(TypeError):
             self.render("{{value|abs}}", context={'value': None})
+
+    def test_json(self):
+        for python_input, expected_output in [
+            (None, 'null'),
+            (c(1), '1.0'),
+            ("hi", '"hi"'),
+            ({"a": 1}, '{"a": 1}')
+        ]:
+            output = self.render("{{value|json}}", context={'value': python_input})
+            self.assertEquals(output, expected_output)
