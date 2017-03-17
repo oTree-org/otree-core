@@ -168,7 +168,6 @@ class TestRoomWithSession(RoomTestCase):
         self.assertEqual(participant.label, participant_label)
 
 
-
     def test_close_room(self):
 
         url = reverse('CloseRoom', args=['default'])

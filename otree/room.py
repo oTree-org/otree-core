@@ -7,12 +7,9 @@ from collections import OrderedDict
 
 import schema
 
-from otree.models_concrete import RoomToSession, ExpectedRoomParticipant
+from otree.models_concrete import RoomToSession
 from otree.common_internal import (
     add_params_to_url, make_hash, validate_alphanumeric)
-from otree.views.abstract import global_lock
-
-
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
@@ -29,7 +26,6 @@ class Room(object):
         # secure URLs are complicated, don't use them by default
         self.use_secure_urls = config_dict['use_secure_urls']
         self.pin_code = config_dict.get('pin_code')
-        self._participant_labels_loaded = False
         if self.use_secure_urls and not self.participant_label_file:
             raise ValueError(
                 'Room "{}": you must either set "participant_label_file", '
@@ -59,78 +55,55 @@ class Room(object):
     def has_participant_labels(self):
         return bool(self.participant_label_file)
 
-    def load_participant_labels_to_db(self):
-        if self.has_participant_labels():
-            encodings = ['ascii', 'utf-8', 'utf-16']
-            for e in encodings:
-                try:
-                    plabel_path = self.participant_label_file
-                    with codecs.open(plabel_path, "r", encoding=e) as f:
-                        seen = set()
-                        labels = []
-                        for line in f:
-                            label = line.strip()
-                            if not label:
-                                continue
-                            label = validate_alphanumeric(
-                                line.strip(),
-                                identifier_description='participant label'
-                            )
-                            if label not in seen:
-                                labels.append(label)
-                                seen.add(label)
-                except UnicodeDecodeError:
-                    continue
-                except OSError as err:
-                    # this code is equivalent to "except FileNotFoundError:"
-                    # but works in py2 and py3
-                    if err.errno == errno.ENOENT:
-                        msg = (
-                            'settings.ROOMS: The room "{}" references '
-                            ' nonexistent participant_label_file "{}".'
-                        )
-                        raise IOError(
-                            msg.format(self.name, self.participant_label_file)
-                        ) from None
-                    raise err
-                else:
-                    with global_lock():
-                        # before I used select_for_update to prevent race
-                        # conditions. But the queryset was not evaluated
-                        # so it did not hit the DB. maybe simpler to use an
-                        # explicit lock
-                        ExpectedRoomParticipant.objects.select_for_update()
-                        ExpectedRoomParticipant.objects.filter(
-                            room_name=self.name).delete()
-                        ExpectedRoomParticipant.objects.bulk_create(
-                            ExpectedRoomParticipant(
-                                room_name=self.name,
-                                participant_label=participant_label
-                            ) for participant_label in labels
-                        )
-                    self._participant_labels_loaded = True
-                    return
-            raise Exception(
-                'settings.ROOMS: participant_label_file "{}" '
-                'not encoded correctly.'.format(self.participant_label_file)
-            )
-        raise Exception('no guestlist')
-
     def get_participant_labels(self):
-        if self.has_participant_labels():
-            if not self._participant_labels_loaded:
-                self.load_participant_labels_to_db()
-            return ExpectedRoomParticipant.objects.filter(
-                    room_name=self.name
-                ).order_by('id').values_list('participant_label', flat=True)
-        raise Exception('no guestlist')
+        '''
+        Decided to just re-read the file on every request,
+        rather than loading in the DB. Reasons:
 
-    def num_participant_labels(self):
-        if not self._participant_labels_loaded:
-            self.load_participant_labels_to_db()
-        return ExpectedRoomParticipant.objects.filter(
-            room_name=self.name
-        ).count()
+        (1) Simplifies the code; we don't need an ExpectedRoomParticipant model,
+            and don't need to load data into there (which involves considerations
+            of race conditions)
+        (2) Don't need any complicated rule deciding when to reload the file,
+            whether it's upon starting the process or resetting the database,
+            or both. Should the status be stored in the DB or in the process?
+        (3) Checking if a given participant label is in the file is actually faster
+            than looking it up in the DB table, even with .filter() and and index!
+            (tested on Postgres with 10000 iterations: 17s vs 18s)
+        '''
+        encodings = ['ascii', 'utf-8', 'utf-16']
+        for e in encodings:
+            try:
+                plabel_path = self.participant_label_file
+                with codecs.open(plabel_path, "r", encoding=e) as f:
+                    seen = set()
+                    labels = []
+                    for line in f:
+                        label = line.strip()
+                        if not label:
+                            continue
+                        label = validate_alphanumeric(
+                            line.strip(),
+                            identifier_description='participant label'
+                        )
+                        if label not in seen:
+                            labels.append(label)
+                            seen.add(label)
+            except UnicodeDecodeError:
+                continue
+            except FileNotFoundError:
+                msg = (
+                    'settings.ROOMS: The room "{}" references '
+                    ' nonexistent participant_label_file "{}".'
+                )
+                raise FileNotFoundError(
+                    msg.format(self.name, self.participant_label_file)
+                ) from None
+            else:
+                return labels
+        raise Exception(
+            'settings.ROOMS: participant_label_file "{}" '
+            'not encoded correctly.'.format(self.participant_label_file)
+        )
 
     def get_room_wide_url(self, request):
         url = reverse('AssignVisitorToRoom', args=(self.name,))

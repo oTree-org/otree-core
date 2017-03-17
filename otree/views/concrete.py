@@ -229,7 +229,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
                 if not room.use_secure_urls:
                     return super(AssignVisitorToRoom, self).get(args, kwargs)
 
-            if participant_label not in room.get_participant_labels():
+            if not participant_label in room.get_participant_labels():
                 return HttpResponseNotFound(
                     _('Invalid participant label.')
                 )
