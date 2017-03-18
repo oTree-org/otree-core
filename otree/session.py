@@ -291,10 +291,11 @@ def create_session(
             msg = 'Session config "{}" not found in settings.SESSION_CONFIGS.'
             raise KeyError(msg.format(session_config_name)) from None
         else:
-            # seems i need to copy and convert back to a session config
-            # otherwise .copy() converts it to a simple dict
-            session_config.update(edited_session_config_fields)
+            # copy so that we don't mutate the original
+            # .copy() returns a dict, so need to convert back to SessionConfig
             session_config = SessionConfig(session_config.copy())
+            session_config.update(edited_session_config_fields)
+
             # check validity and converts serialized decimal & currency values
             # back to their original data type (because they were serialized
             # when passed through channels

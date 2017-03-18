@@ -9,7 +9,7 @@ from .simple import models as sg_models
 from .misc_1p import models as sgc_models
 import six
 from six.moves import range
-
+from otree.session import create_session, SESSION_CONFIGS_DICT
 
 class TestCreateSessionsCommand(TestCase):
 
@@ -70,6 +70,24 @@ class TestCreateSessionsCommand(TestCase):
 
         # test the random key value in second subsession
         self.assertEqual(player1.participant.vars.get(key), value)
+
+    def test_edit_session_config(self):
+        session_config_name = 'simple'
+        config_key = 'use_browser_bots'
+        session_config = SESSION_CONFIGS_DICT[session_config_name]
+        original_config_value = session_config[config_key]
+        new_config_value = not original_config_value
+
+        session = create_session(
+            'simple', num_participants=1,
+            edited_session_config_fields={config_key: new_config_value})
+        self.assertEqual(session.config[config_key], new_config_value)
+
+        # make sure it didn't affect the value for future sessions
+        # (this bug occurred because we mutated the dictionary)
+        session2 = create_session(
+            'simple', num_participants=1)
+        self.assertEqual(session2.config[config_key], original_config_value)
 
 
 class TestCreateSessionView(TestCase):
