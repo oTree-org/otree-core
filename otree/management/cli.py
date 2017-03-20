@@ -261,7 +261,7 @@ def check_pypi_for_updates():
 
         update_needed = (newest > installed and (
                 newest[0] > installed[0] or newest[1] > installed[1] or
-                newest[2] - installed[2] > 5))
+                newest[2] - installed[2] > 8))
 
     else:
         # compare to the latest release, whether stable or not
