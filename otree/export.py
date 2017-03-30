@@ -256,6 +256,18 @@ def get_rows_for_wide_csv_round(app_name, round_number, sessions):
             subsession_id = subsession['id']
             players = Player.objects.filter(subsession_id=subsession_id).order_by('id').values()
 
+            if len(players) != session.num_participants:
+                msg = (
+                    "Session {} has {} participants, but round {} of app '{}' "
+                    "has {} players. The number of players in the subsession "
+                    "should always match the number of players in the session. "
+                    "Reset the database and examine your code."
+                ).format(session.code, session.num_participants,
+                         round_number,
+                         app_name,
+                         len(players))
+                raise AssertionError(msg)
+
             subsession_rows = []
 
             for player in players:
