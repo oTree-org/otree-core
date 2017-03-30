@@ -261,7 +261,14 @@ class CharField(_OtreeModelFieldMixin, models.CharField):
             initial=None,
             verbose_name=None,
             doc='',
-            max_length=500,
+            # varchar max length doesn't affect performance or even storage
+            # size; it's just for validation. so, to be easy to use,
+            # there is no reason for oTree to set a short default length
+            # for CharFields. The main consideration is that MySQL cannot index
+            # varchar longer than 255 chars, but that is not relevant here
+            # because oTree only uses indexes for fields defined in otree-core,
+            # which have explicit max_lengths anyway.
+            max_length=10000,
             blank=False,
             null=True,
             help_text='',

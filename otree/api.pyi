@@ -34,7 +34,7 @@ class models:
                 initial=None,
                 verbose_name=None,
                 doc='',
-                max_length=500,
+                max_length=10000,
                 blank=False,
                 null=True,
                 help_text='',
