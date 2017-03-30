@@ -21,7 +21,10 @@ class DemoIndex(vanilla.TemplateView):
     url_pattern = r'^demo/$'
 
     def get_context_data(self, **kwargs):
-        intro_text = getattr(settings, 'DEMO_PAGE_INTRO_TEXT', '')
+        title = getattr(settings, 'DEMO_PAGE_TITLE', 'Demo')
+        intro_html = (
+            getattr(settings, 'DEMO_PAGE_INTRO_HTML', '') or
+            getattr(settings, 'DEMO_PAGE_INTRO_TEXT', ''))
         context = super(DemoIndex, self).get_context_data(**kwargs)
 
         session_info = []
@@ -41,7 +44,8 @@ class DemoIndex(vanilla.TemplateView):
 
         context.update({
             'session_info': session_info,
-            'intro_text': intro_text,
+            'title': title,
+            'intro_html': intro_html,
             'is_debug': settings.DEBUG,
         })
         return context

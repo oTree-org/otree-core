@@ -1,14 +1,14 @@
 {% extends "otree/BaseAdmin.html" %}
 
 {% block title %}
-    Demo
+    {{ title }}
 {% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-md-3 well">
         <div>
-            {{ intro_text|safe }}
+            {{ intro_html|safe }}
         </div>
         {% if is_debug %}
         <div>
