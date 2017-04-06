@@ -1090,7 +1090,7 @@ class FormPageMixin(object):
         # TODO: auto_submit_values deprecated on 2015-05-28
         auto_submit_values = getattr(self, 'auto_submit_values', {})
         timeout_submission = self.timeout_submission or auto_submit_values
-        for field_name in self.form_fields:
+        for field_name in self.get_form_fields():
             if field_name not in timeout_submission:
                 # get default value for datatype if the user didn't specify
                 ModelField = self.form_model._meta.get_field_by_name(
