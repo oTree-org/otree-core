@@ -229,12 +229,12 @@ def check_pypi_for_updates():
             'http://pypi.python.org/pypi/otree-core/json',
             timeout=5,
         )
+        assert response.ok
+        data = json.loads(response.content.decode())
     except:
         # could be requests.exceptions.Timeout
-        # or another error (404? 500? firewall issue etc)
+        # or another error (404/500/firewall issue etc)
         return {'pypi_connection_error': True}
-
-    data = json.loads(response.content.decode())
 
     semver_re = re.compile(r'^(\d+)\.(\d+)\.(\d+)$')
 
