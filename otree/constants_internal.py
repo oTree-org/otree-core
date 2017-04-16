@@ -36,7 +36,7 @@ get_param_truth_value = '1'
 
 admin_secret_code = 'admin_secret_code'
 timeout_seconds = 'timeout_seconds'
-auto_submit = 'auto_submit'
+timeout_happened = 'timeout_happened'
 check_auto_submit = 'check_auto_submit'
 page_expiration_times = 'page_timeouts'
 participant_label = 'participant_label'

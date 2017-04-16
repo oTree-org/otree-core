@@ -16,6 +16,10 @@ class Page1(Page):
         if values['f_char'] == Constants.invalid_f_char:
             return 'error!'
 
+    def before_next_page(self):
+        if self.timeout_happened:
+            self.player.timeout_happened = True
+
 
 page_sequence = [
     Page1,

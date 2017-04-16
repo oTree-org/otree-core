@@ -25,12 +25,38 @@ class TestTimeoutSubmission(TestCase):
     def setUp(self):
         call_command('create_session', 'timeout_submission', "1")
 
+    def timeout_submit_form(self, values):
+        self.submit_form(values, timeout_happened=True)
+
+    def submit_form(self, values, timeout_happened):
+        participant = Participant.objects.get()
+        bot = ParticipantBot(participant, load_player_bots=False)
+        bot.open_start_url()
+        bot.submit(Submission(views.Page1, values, timeout_happened=timeout_happened))
+
+    def assert_player_fields(self, values):
+        player = Player.objects.get()
+        for field_name, value in values.items():
+            self.assertEqual(getattr(player, field_name), value, msg=field_name)
+
+    def test_no_timeout(self):
+        '''baseline test'''
+        values = dict(default_submission)
+        self.submit_form(values, timeout_happened=False)
+
+        player = Player.objects.get()
+        self.assertEqual(player.timeout_happened, False)
+
     def test_valid(self):
         '''valid form'''
         values = dict(default_submission)
 
-        self.submit_form(values)
+        self.timeout_submit_form(values)
         self.assert_player_fields(dict(default_submission))
+
+        # test that timeout_happened was set
+        player = Player.objects.get()
+        self.assertEqual(player.timeout_happened, True)
 
     def test_invalid_fields(self):
         '''invalid individual fields but passes error_message'''
@@ -38,7 +64,7 @@ class TestTimeoutSubmission(TestCase):
         values.pop('f_float')
         values['f_posint'] = -1
 
-        self.submit_form(values)
+        self.timeout_submit_form(values)
 
         values = dict(default_submission)
         values['f_float'] = 0
@@ -51,7 +77,7 @@ class TestTimeoutSubmission(TestCase):
         values = dict(default_submission)
         values['f_char'] = Constants.invalid_f_char
 
-        self.submit_form(values)
+        self.timeout_submit_form(values)
 
         auto_submit_defaults = {
             'f_bool': False,
@@ -69,7 +95,7 @@ class TestTimeoutSubmission(TestCase):
         values['f_char'] = Constants.invalid_f_char
         values['f_posint'] = -1
 
-        self.submit_form(values)
+        self.timeout_submit_form(values)
 
         auto_submit_defaults = {
             'f_bool': False,
@@ -81,15 +107,3 @@ class TestTimeoutSubmission(TestCase):
 
         self.assert_player_fields(auto_submit_defaults)
 
-    def submit_form(self, values):
-        values = values.copy()
-        participant = Participant.objects.get()
-        bot = ParticipantBot(participant, load_player_bots=False)
-        bot.open_start_url()
-        values[constants_internal.auto_submit] = True
-        bot.submit(Submission(views.Page1, values))
-
-    def assert_player_fields(self, values):
-        player = Player.objects.get()
-        for field_name, value in values.items():
-            self.assertEqual(getattr(player, field_name), value, msg=field_name)

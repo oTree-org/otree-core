@@ -29,3 +29,5 @@ class Player(BasePlayer):
     f_float = models.FloatField()
     f_currency = models.CurrencyField()
     f_char = models.CharField()
+
+    timeout_happened = models.BooleanField(initial=False)

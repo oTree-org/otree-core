@@ -192,7 +192,7 @@ class Session(ModelWithVars):
                     resp = client.post(
                         p._current_form_page_url,
                         data={
-                            constants_internal.auto_submit: True,
+                            constants_internal.timeout_happened: True,
                             constants_internal.admin_secret_code: ADMIN_SECRET_CODE
                         },
                         follow=True

@@ -48,7 +48,8 @@ class BOTS_CHECK_HTML:
 
 
 def _Submission(
-        PageClass, post_data=None, *, check_html=BOTS_CHECK_HTML, must_fail=False):
+        PageClass, post_data=None, *, check_html=BOTS_CHECK_HTML,
+        must_fail=False, timeout_happened=False):
 
     post_data = post_data or {}
 
@@ -63,6 +64,9 @@ def _Submission(
         # dict key, because CLI bots and browser bots need to work the same way.
         # CLI bots can only talk to server through post data
         post_data['must_fail'] = True
+
+    if timeout_happened:
+        post_data['timeout_happened'] = True
 
     # easy way to check if it's a wait page, without any messy imports
     if hasattr(PageClass, 'wait_for_all_groups'):
@@ -86,8 +90,11 @@ def _Submission(
 
 
 def Submission(
-        PageClass, post_data=None, *, check_html=BOTS_CHECK_HTML):
-    return _Submission(PageClass, post_data, check_html=check_html)
+        PageClass, post_data=None, *, check_html=BOTS_CHECK_HTML,
+        timeout_happened=False):
+    return _Submission(
+        PageClass, post_data, check_html=check_html,
+        timeout_happened=timeout_happened)
 
 
 def SubmissionMustFail(

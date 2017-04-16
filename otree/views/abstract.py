@@ -963,7 +963,7 @@ class FormPageMixin(object):
             # because if it's a short timeout, it could happen before
             # the browser bot submits the page. Because the timeout
             # doesn't query the botworker (it is distinguished from bot
-            # submits by the auto_submit flag), it will "skip ahead"
+            # submits by the timeout_happened flag), it will "skip ahead"
             # and therefore confuse the bot system.
             if self.has_timeout() and not self.session.use_browser_bots:
                 otree.timeout.tasks.submit_expired_url.schedule(
@@ -1013,11 +1013,11 @@ class FormPageMixin(object):
                 data=post_data, files=request.FILES, instance=self.object)
         self.form = form
 
-        auto_submitted = request.POST.get(constants.auto_submit)
+        auto_submitted = request.POST.get(constants.timeout_happened)
 
         # if the page doesn't have a timeout_seconds, only the timeoutworker
         # should be able to auto-submit it.
-        # otherwise users could append auto_submit to the URL to skip pages
+        # otherwise users could append timeout_happened to the URL to skip pages
         has_secret_code = (
             request.POST.get(constants.admin_secret_code) == ADMIN_SECRET_CODE)
 
