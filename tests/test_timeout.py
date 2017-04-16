@@ -25,14 +25,14 @@ class TestTimeoutSubmission(TestCase):
     def setUp(self):
         call_command('create_session', 'timeout_submission', "1")
 
-    def timeout_submit_form(self, values):
-        self.submit_form(values, timeout_happened=True)
-
     def submit_form(self, values, timeout_happened):
         participant = Participant.objects.get()
         bot = ParticipantBot(participant, load_player_bots=False)
         bot.open_start_url()
         bot.submit(Submission(views.Page1, values, timeout_happened=timeout_happened))
+
+    def timeout_submit_form(self, values):
+        self.submit_form(values, timeout_happened=True)
 
     def assert_player_fields(self, values):
         player = Player.objects.get()
@@ -41,8 +41,7 @@ class TestTimeoutSubmission(TestCase):
 
     def test_no_timeout(self):
         '''baseline test'''
-        values = dict(default_submission)
-        self.submit_form(values, timeout_happened=False)
+        self.submit_form({}, timeout_happened=False)
 
         player = Player.objects.get()
         self.assertEqual(player.timeout_happened, False)
