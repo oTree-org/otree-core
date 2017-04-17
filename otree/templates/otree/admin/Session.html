@@ -13,23 +13,34 @@
 <nav id="otree-admin-session-nav" class="navbar">
     <div class="container-fluid">
         <ul class="nav nav-pills nav-justified">
+            {% block menu_description %}
             <li role="presentation" class="session-tab-description {% active_page request 'SessionDescription' session.code %}">
                 <a href="{% url 'SessionDescription' session.code %}"><span class="glyphicon glyphicon-pushpin"></span> Description</a>
             </li>
+            {% endblock %}
+            {% block menu_links %}
             <li role="presentation" class="session-tab-links {% active_page request 'SessionStartLinks' session.code %}">
                 <a href="{% url 'SessionStartLinks' session.code %}"><span class="glyphicon glyphicon-link"></span> Links</a>
             </li>
+            {% endblock %}
             {% if not session.is_demo %}
+            {% block menu_edit %}
             <li role="presentation" class="session-tab-edit {% active_page request 'SessionEditProperties' session.code %}">
                 <a href="{% url 'SessionEditProperties' session.code %}"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
             </li>
+            {% endblock %}
             {% endif %}
+            {% block menu_monitor %}
             <li role="presentation" class="session-tab-monitor {% active_page request 'SessionMonitor' session.code %}">
                 <a href="{% url 'SessionMonitor' session.code %}"><span class="glyphicon glyphicon-eye-open"></span> Monitor</a>
             </li>
+            {% endblock %}
+            {% block menu_data %}
             <li role="presentation" class="session-tab-data {% active_page request 'SessionData' session.code %}">
                 <a href="{% url 'SessionData' session.code %}"><span class="glyphicon glyphicon-list-alt"></span> Data</a>
             </li>
+            {% endblock %}
+            {% block menu_payments %}
             {% if session.is_for_mturk %}
             <li role="presentation" class="session-tab-mturk-payments {% active_page request 'MTurkSessionPayments' session.code %}">
                 <a href="{% url 'MTurkSessionPayments' session.code %}">
@@ -40,21 +51,31 @@
                     <span class="glyphicon glyphicon-usd"></span> Payments
                 </a>
             </li>
+            {% endblock %}
             {% if session.has_admin_report %}
+            {% block menu_report %}
             <li role="presentation" class="session-tab-report {% active_page request 'AdminReport' session.code %}">
                 <a href="{% url 'AdminReport' session.code %}"><span class="glyphicon glyphicon-stats"></span> Report</a>
+            {% endblock %}
             {% endif %}
             {% if session.is_for_mturk %}
+            {% block menu_mturk %}
             <li role="presentation" class="session-tab-mturk {% active_page request 'MTurkCreateHIT' session.code %}">
                 <a href="{% url 'MTurkCreateHIT' session.code %}"><span class="glyphicon glyphicon-cloud"></span> MTurk</a>
             </li>
+            {% endblock %}
             {% endif %}
             {% if session.is_demo %}
+            {% block menu_new_demo %}
             <li role="presentation" class="session-tab-new-demo">
                 <a href="{% url 'CreateDemoSession' session.config.name %}" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Recreate session from scratch. You can also copy this link and share with others.">
                     <span class="glyphicon glyphicon-refresh"></span> New
                 </a>
             </li>
+            {% endblock %}
+            {% block menu_extras %}
+            <!-- redifine this block to add your custom tabs here {% endcomment -->
+            {% endblock %}
             {% endif %}
 
         </ul>
