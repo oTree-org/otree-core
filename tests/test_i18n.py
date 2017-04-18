@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from .base import TestCase
-from django.core.management import call_command
+from otree.session import create_session
 from otree.bots.bot import ParticipantBot
 from .base import TestCase
 import mock
@@ -12,8 +12,7 @@ from django.test import override_settings
 
 class TestI18N(TestCase):
     def setUp(self):
-        call_command('create_session', 'i18n', "1")
-        session = Session.objects.get()
+        session = create_session('i18n', num_participants=1, use_cli_bots=True)
         self.bot_runner = session_bot_runner_factory(session)
 
     @override_settings(LANGUAGE_CODE='de')

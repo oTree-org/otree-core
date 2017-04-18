@@ -30,4 +30,5 @@ class Player(BasePlayer):
     f_currency = models.CurrencyField()
     f_char = models.CharField()
 
+    foo = models.PositiveIntegerField()
     timeout_happened = models.BooleanField(initial=False)

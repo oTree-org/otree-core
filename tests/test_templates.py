@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from django.core.management import call_command
 import otree.session
 from otree.bots.bot import ParticipantBot
 from .base import TestCase

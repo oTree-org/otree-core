@@ -13,12 +13,6 @@ import warnings
 
 import channels
 import django.db
-import otree.common_internal
-import otree.constants_internal as constants
-import otree.db.idmap
-import otree.forms
-import otree.models
-import otree.timeout.tasks
 import redis_lock
 import vanilla
 from django.conf import settings
@@ -31,6 +25,15 @@ from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext as _
 from django.views.decorators.cache import never_cache, cache_control
+from six.moves import range
+
+import otree.common_internal
+import otree.constants_internal as constants
+import otree.db.idmap
+import otree.forms
+import otree.models
+import otree.timeout.tasks
+from otree.bots.bot import bot_prettify_post_data
 from otree.bots.browser import EphemeralBrowserBot
 from otree.common_internal import (
     get_app_label_from_import_path, get_dotted_name, get_admin_secret_code,
@@ -41,7 +44,6 @@ from otree.models_concrete import (
     CompletedGroupWaitPage, PageTimeout, UndefinedFormModel,
     ParticipantLockModel, GlobalLockModel
 )
-from six.moves import range
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -877,22 +879,6 @@ class InGameWaitPageMixin(object):
         return ''
 
 
-
-
-def bot_prettify_post_data(post_data):
-    for extra_key in ['csrfmiddlewaretoken', 'origin_url', 'must_fail']:
-        post_data.pop(extra_key, None)
-
-    if hasattr(post_data, 'dict'):
-        # if using CLI bots, this will be a
-        # MultiValueKeyDict, because that's what request.POST
-        # contains. we need to turn it into a regular dict
-        # (i.e. values should not be single-element lists)
-        return post_data.dict()
-    # if browser bots, it will be a regular dict
-    return post_data
-
-
 class FormPageMixin(object):
     """mixin rather than subclass because we want these methods only to be
     first in MRO
@@ -1040,6 +1026,7 @@ class FormPageMixin(object):
                 self.object = form.save()
             else:
                 if is_bot and not post_data.get('must_fail'):
+
                     errors = [
                         "{}: {}".format(k, repr(v))
                         for k, v in form.errors.items()]

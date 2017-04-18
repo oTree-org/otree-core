@@ -21,6 +21,12 @@ class Page1(Page):
             self.player.timeout_happened = True
 
 
+class PageWithoutTimeout(Page):
+    form_model = models.Player
+    form_fields = ['foo']
+
+
 page_sequence = [
     Page1,
+    PageWithoutTimeout
 ]

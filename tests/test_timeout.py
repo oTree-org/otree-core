@@ -1,10 +1,9 @@
-from django.core.management import call_command
+from otree.session import create_session
 from otree.models.participant import Participant
 from otree.bots.bot import ParticipantBot
 from .base import TestCase
 from tests.timeout_submission.models import Player, Constants
 from tests.timeout_submission import views
-from otree import constants_internal
 import django.test
 from otree.api import Submission, Currency
 
@@ -23,7 +22,11 @@ default_submission = (
 class TestTimeoutSubmission(TestCase):
 
     def setUp(self):
-        call_command('create_session', 'timeout_submission', "1")
+        create_session(
+            session_config_name='timeout_submission',
+            num_participants=1,
+            use_cli_bots=True,
+        )
 
     def submit_form(self, values, timeout_happened):
         participant = Participant.objects.get()
@@ -41,10 +44,20 @@ class TestTimeoutSubmission(TestCase):
 
     def test_no_timeout(self):
         '''baseline test'''
-        self.submit_form({}, timeout_happened=False)
+        values = dict(default_submission)
+        self.submit_form(values, timeout_happened=False)
 
         player = Player.objects.get()
         self.assertEqual(player.timeout_happened, False)
+
+    def test_timeout_on_regular_page(self):
+        participant = Participant.objects.get()
+        bot = ParticipantBot(participant, load_player_bots=False)
+        bot.open_start_url()
+        bot.submit(Submission(views.Page1, {}, timeout_happened=True))
+        # it should be OK to use timeout_happened=True, even if the page
+        # has no timeout_seconds, because you can be simulating "advance slowest"
+        bot.submit(Submission(views.PageWithoutTimeout, {}, timeout_happened=True))
 
     def test_valid(self):
         '''valid form'''

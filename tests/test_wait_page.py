@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from django.core.management import call_command
+from otree.session import create_session
 from otree.models.session import Session
 from otree.bots.bot import ParticipantBot
 from .base import TestCase
@@ -11,8 +11,8 @@ import tests.wait_page.views
 
 class TestWaitForAllGroups(TestCase):
     def setUp(self):
-        call_command('create_session', 'wait_page', "4")
-        session = Session.objects.get()
+        session = create_session(
+            'wait_page', num_participants=4, use_cli_bots=True)
         subsession = session.get_subsessions()[0]
         self.group1 = subsession.get_groups()[0]
 
@@ -41,8 +41,8 @@ class TestWaitForAllGroups(TestCase):
 
 class TestSkipWaitPage(TestCase):
     def setUp(self):
-        call_command('create_session', 'skip_wait_page', "2")
-        session = Session.objects.get()
+        session = create_session(
+            'skip_wait_page', num_participants=2, use_cli_bots=True)
         bots = []
         for participant in session.get_participants():
             bot = ParticipantBot(participant, load_player_bots=False)

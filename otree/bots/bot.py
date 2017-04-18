@@ -16,8 +16,10 @@ from easymoney import Money as Currency
 
 from otree import constants_internal
 
-from otree.common_internal import get_dotted_name, get_bots_module
+from otree.common_internal import (
+    get_dotted_name, get_bots_module, get_admin_secret_code)
 
+ADMIN_SECRET_CODE = get_admin_secret_code()
 
 logger = logging.getLogger('otree.bots')
 
@@ -66,7 +68,8 @@ def _Submission(
         post_data['must_fail'] = True
 
     if timeout_happened:
-        post_data['timeout_happened'] = True
+        post_data[constants_internal.timeout_happened] = True
+        post_data[constants_internal.admin_secret_code] = ADMIN_SECRET_CODE
 
     # easy way to check if it's a wait page, without any messy imports
     if hasattr(PageClass, 'wait_for_all_groups'):
@@ -324,11 +327,15 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
 
     def submit(self, submission):
         post_data = submission['post_data']
-        if post_data:
-            logger.info('{}, {}'.format(self.path, post_data))
-        else:
-            logger.info(self.path)
-
+        pretty_post_data = bot_prettify_post_data(post_data)
+        log_string = self.path
+        if pretty_post_data:
+            log_string += ', {}'.format(pretty_post_data)
+        if post_data.get('must_fail'):
+            log_string += ', SubmissionMustFail'
+        if post_data.get('timeout_happened'):
+            log_string += ', timeout_happened'
+        logger.info(log_string)
         self.response = self.post(self.url, post_data, follow=True)
 
 
@@ -389,3 +396,22 @@ class PlayerBot(object):
     @property
     def html(self):
         return self.participant_bot.html
+
+
+def bot_prettify_post_data(post_data):
+    if hasattr(post_data, 'dict'):
+        # if using CLI bots, this will be a
+        # MultiValueKeyDict, because that's what request.POST
+        # contains. we need to turn it into a regular dict
+        # (i.e. values should not be single-element lists)
+        post_data = post_data.dict()
+
+    post_data = post_data.copy()
+    for extra_key in [
+        'csrfmiddlewaretoken', 'origin_url', 'must_fail', 'timeout_happened',
+        'admin_secret_code'
+    ]:
+        post_data.pop(extra_key, None)
+
+    # if browser bots, it will be a regular dict
+    return post_data
