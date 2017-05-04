@@ -28,6 +28,7 @@ class Participant:
 
 class WaitPage:
     wait_for_all_groups = False
+    group_by_arrival_time = False
     title_text = None
     body_text = None
     template_name = None
