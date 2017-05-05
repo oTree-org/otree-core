@@ -177,6 +177,12 @@ SESSION_CONFIGS = [
         'use_browser_bots': True,
     },
     {
+        'name': 'group_by_arrival_time_custom',
+        'num_demo_participants': 6,
+        'app_sequence': ['tests.group_by_arrival_time_custom'],
+        'use_browser_bots': True,
+    },
+    {
         'name': 'bots_check_html',
         'num_demo_participants': 1,
         'app_sequence': ['tests.bots_check_html'],

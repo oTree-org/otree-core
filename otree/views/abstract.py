@@ -704,58 +704,75 @@ class InGameWaitPageMixin(object):
         if self.player._group_by_arrival_time_grouped:
             return False
 
-        PlayerClass = type(self.player)
         GroupClass = type(self.group)
 
         self.player._group_by_arrival_time_arrived = True
         self.player.save()
         # count how many are re-grouped
-        participant_ids = PlayerClass.objects.filter(
-            subsession=self.subsession,
+        waiting_players = list(self.subsession.player_set.filter(
             _group_by_arrival_time_arrived=True,
             _group_by_arrival_time_grouped=False,
-        ).values_list('participant_id', flat=True)
+        ))
 
-        # evaluate the queryset; this was causing problems when
-        # i set _group_by_arrival_time_arrived=False inside the loop
-        participant_ids = list(participant_ids)
-
-        number_ready = len(participant_ids)
-        Constants = self._models_module.Constants
-        ppg = Constants.players_per_group
-        if number_ready < ppg:
+        players_for_group = self.get_players_for_group(waiting_players)
+        if not players_for_group:
             return False
-        # we're locking, so it should never be greater
-        assert number_ready == ppg
+        participant_ids = [p.participant.id for p in players_for_group]
 
         group_id_in_subsession = self._next_group_id_in_subsession()
+
+        Constants = self._models_module.Constants
 
         with otree.common_internal.transaction_except_for_sqlite():
             for round_number in range(self.round_number, Constants.num_rounds+1):
                 subsession = self.subsession.in_round(round_number)
 
-                arrived_players = PlayerClass.objects.filter(
-                    subsession=subsession,
-                    participant_id__in=participant_ids).order_by('id')
+                unordered_players = subsession.player_set.filter(
+                    participant_id__in=participant_ids)
+
+                participant_ids_to_players = {
+                    player.participant.id: player for player in unordered_players}
+
+                ordered_players_for_group = [
+                    participant_ids_to_players[participant_id]
+                    for participant_id in participant_ids]
+
                 if round_number == self.round_number:
-                    for player in arrived_players:
+                    for player in ordered_players_for_group:
                         player._group_by_arrival_time_grouped = True
                         player.save()
 
                 group = GroupClass.objects.create(
                     subsession=subsession, id_in_subsession=group_id_in_subsession,
                     session=self.session, round_number=round_number)
+                group.set_players(ordered_players_for_group)
 
-                group.set_players(arrived_players)
                 # prune groups without players
-                groups_with_players = PlayerClass.objects.filter(
-                    subsession=subsession
-                ).values_list('group_id', flat=True)
+                # apparently player__isnull=True works, didn't know you could
+                # use this in a reverse direction.
+                subsession.group_set.filter(player__isnull=True).delete()
 
-                subsession.group_set.exclude(id__in=groups_with_players).delete()
-
-        self._group_by_arrival_time_regrouped = True
         return True
+
+    def get_players_for_group(self, waiting_players):
+        Constants = self._models_module.Constants
+
+        if Constants.players_per_group is None:
+            raise AssertionError(
+                'Page "{}": if using group_by_arrival_time, you must either set '
+                'Constants.players_per_group to a value other than None, '
+                'or define get_players_for_group() on the page.'.format(
+                    self.__class__.__name__
+                )
+            )
+
+        # we're locking, so it shouldn't be more
+        assert len(waiting_players) <= Constants.players_per_group
+
+        if len(waiting_players) == Constants.players_per_group:
+            return waiting_players
+
+
 
     def send_completion_message(self, participant_pk_set):
 
@@ -778,7 +795,10 @@ class InGameWaitPageMixin(object):
         )
 
     def _next_group_id_in_subsession(self):
-
+        # 2017-05-05: seems like this can result in id_in_subsession that
+        # doesn't start from 1.
+        # especially if you do group_by_arrival_time in every round
+        # is that a problem?
         res = type(self.group).objects.filter(
             session=self.session).aggregate(Max('id_in_subsession'))
         return res['id_in_subsession__max'] + 1

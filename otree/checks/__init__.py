@@ -397,12 +397,6 @@ def pages_function(rules, **kwargs):
                                 ViewCls.__name__)
                         )
                     if ViewCls.group_by_arrival_time:
-                        Constants = rules.get_module('models').Constants
-                        if Constants.players_per_group is None:
-                            rules.push_error(
-                                'views.py: "{}" has group_by_arrival_time=True, so '
-                                'players_per_group must not be None.'.format(
-                                    ViewCls.__name__))
                         if i > 0:
                             rules.push_error(
                                 'views.py: "{}" has group_by_arrival_time=True, so '
