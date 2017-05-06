@@ -5,8 +5,7 @@ from .base import TestCase
 from tests.timeout_submission.models import Player, Constants
 from tests.timeout_submission import views
 import django.test
-from otree.api import Submission, Currency
-
+from otree.api import Submission, Currency, Page
 
 test_client = django.test.Client()
 
@@ -118,4 +117,3 @@ class TestTimeoutSubmission(TestCase):
         }
 
         self.assert_player_fields(auto_submit_defaults)
-

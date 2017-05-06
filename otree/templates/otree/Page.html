@@ -7,7 +7,7 @@
             <h2 id="otree-title">{% block title %}{% endblock %}</h2>
         </div>
         <div>
-            {% if view.has_timeout %}
+            {% if view.remaining_timeout_seconds != None %}
                 {% include 'otree/includes/TimeLimit.html' with form_element_id="form" %}
             {% endif %}
 
@@ -113,7 +113,7 @@
 
     </script>
 
-    {% if view.has_timeout %}
+    {% if view.remaining_timeout_seconds != None %}
         {% include 'otree/includes/TimeLimit.js.html' %}
     {% endif %}
 

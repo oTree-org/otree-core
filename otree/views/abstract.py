@@ -23,7 +23,7 @@ from django.http import HttpResponseRedirect, Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext_lazy
 from django.views.decorators.cache import never_cache, cache_control
 from six.moves import range
 
@@ -244,28 +244,28 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             'session': self.session,
             'participant': self.participant,
             'Constants': self._models_module.Constants,
+
+            # doesn't exist on wait pages, so need getattr
+            'timer_text': getattr(self, 'timer_text', None)
         })
-        vars_for_template = self.resolve_vars_for_template()
-        context.update(vars_for_template)
+
+        vars_for_template = {}
+        views_module = otree.common_internal.get_views_module(
+            self.subsession._meta.app_config.name)
+        if hasattr(views_module, 'vars_for_all_templates'):
+            vars_for_template.update(views_module.vars_for_all_templates(self) or {})
+
+        vars_for_template.update(self.vars_for_template() or {})
         self._vars_for_template = vars_for_template
+
+        context.update(vars_for_template)
+
         if settings.DEBUG:
             self.debug_tables = self._get_debug_tables()
         return context
 
     def vars_for_template(self):
         return {}
-
-    def resolve_vars_for_template(self):
-        """Resolve all vars for template including "vars_for_all_templates"
-
-        """
-        context = {}
-        views_module = otree.common_internal.get_views_module(
-            self.subsession._meta.app_config.name)
-        if hasattr(views_module, 'vars_for_all_templates'):
-            context.update(views_module.vars_for_all_templates(self) or {})
-        context.update(self.vars_for_template() or {})
-        return context
 
     def _get_debug_tables(self):
         try:
@@ -403,12 +403,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         # we should allow a user to move beyond the last page if it's mturk
         # also in general maybe we should show the 'out of sequence' page
 
-        # the timeout record is irrelevant at this point, delete it
-        # wait pages don't have a has_timeout attribute
-        if hasattr(self, 'has_timeout') and self.has_timeout():
-            PageTimeout.objects.filter(
-                participant=self.participant,
-                page_index=self.participant._index_in_pages).delete()
         # this is causing crashes because of the weird DB issue
         # ParticipantToPlayerLookup.objects.filter(
         #    participant=self.participant.pk,
@@ -429,9 +423,6 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
 
             Page = get_view_from_url(url)
             page = Page()
-
-            if not hasattr(page, 'is_displayed'):
-                break
 
             page.set_attributes(self.participant, lazy=True)
             if page.is_displayed():
@@ -963,30 +954,6 @@ class FormPageMixin(object):
             self._increment_index_in_pages()
             return self._redirect_to_page_the_user_should_be_on()
 
-
-        if otree.common_internal.USE_REDIS:
-            # if using browser bots, don't schedule the timeout,
-            # because if it's a short timeout, it could happen before
-            # the browser bot submits the page. Because the timeout
-            # doesn't query the botworker (it is distinguished from bot
-            # submits by the timeout_happened flag), it will "skip ahead"
-            # and therefore confuse the bot system.
-            if self.has_timeout() and not self.session.use_browser_bots:
-                otree.timeout.tasks.submit_expired_url.schedule(
-                    (
-                        self.participant.code,
-                        self.request.path,
-                    ),
-                    # add some seconds to account for latency of request + response
-                    # this will (almost) ensure
-                    # (1) that the page will be submitted by JS before the
-                    # timeoutworker, which ensures that self.request.POST
-                    # actually contains a value.
-                    # (2) that the timeoutworker doesn't accumulate a lead
-                    # ahead of the real page, which could result in being >1
-                    # page ahead. that means that entire pages could be skipped
-                    delay=self.timeout_seconds+8)
-
         # this needs to be set AFTER scheduling submit_expired_url,
         # to prevent race conditions.
         # see that function for an explanation.
@@ -1027,7 +994,7 @@ class FormPageMixin(object):
         has_secret_code = (
             request.POST.get(constants.admin_secret_code) == ADMIN_SECRET_CODE)
 
-        if auto_submitted and (self.has_timeout() or has_secret_code):
+        if auto_submitted and (has_secret_code or self.has_timeout()):
             self.timeout_happened = True  # for public API
             self._process_auto_submitted_form(form)
         else:
@@ -1147,24 +1114,77 @@ class FormPageMixin(object):
         for field_name in auto_submit_values_to_use:
             setattr(self.object, field_name, auto_submit_values_to_use[field_name])
 
-    @classmethod
-    def has_timeout(cls):
-        return cls.timeout_seconds is not None and cls.timeout_seconds > 0
-
-    def remaining_timeout_seconds(self):
-        if not self.has_timeout():
-            return
-        current_time = int(time.time())
-        expiration_time = current_time + self.timeout_seconds
-        timeout, created = PageTimeout.objects.get_or_create(
+    def has_timeout(self):
+        return PageTimeout.objects.filter(
             participant=self.participant,
-            page_index=self.participant._index_in_pages,
-            defaults={'expiration_time': expiration_time})
+            page_index=self.participant._index_in_pages).exists()
 
-        return timeout.expiration_time - current_time
+
+    _remaining_timeout_seconds = 'unset'
+    def remaining_timeout_seconds(self):
+
+        if self._remaining_timeout_seconds is not 'unset':
+            return self._remaining_timeout_seconds
+
+        timeout_seconds = self.get_timeout_seconds()
+        if timeout_seconds is None:
+            # don't hit the DB at all
+            # we will skip this page
+            # skipping if timeout_seconds < 0 is also a performance optimization
+            # so that we can skip many pages without hitting DB
+            # we don't need to check the DB record; it's less than 0 so we are
+            # skipping anyways. it doesn't matter if it's -1 or -10
+            # but is it possible that the DB record is > 0 but get_timeout_seconds()
+            # is negative?
+            pass
+        else:
+            current_time = time.time()
+            timeout_object = PageTimeout.objects.filter(
+                participant=self.participant,
+                page_index=self.participant._index_in_pages).first()
+            if timeout_object:
+                timeout_seconds = timeout_object.expiration_time - current_time
+            else:
+                expiration_time = current_time + timeout_seconds
+                PageTimeout.objects.create(
+                    participant=self.participant,
+                    page_index=self.participant._index_in_pages,
+                    expiration_time=expiration_time)
+
+                if otree.common_internal.USE_REDIS:
+                    # if using browser bots, don't schedule the timeout,
+                    # because if it's a short timeout, it could happen before
+                    # the browser bot submits the page. Because the timeout
+                    # doesn't query the botworker (it is distinguished from bot
+                    # submits by the timeout_happened flag), it will "skip ahead"
+                    # and therefore confuse the bot system.
+                    if not self.session.use_browser_bots:
+                        otree.timeout.tasks.submit_expired_url.schedule(
+                            (
+                                self.participant.code,
+                                self.request.path,
+                            ),
+                            # add some seconds to account for latency of request + response
+                            # this will (almost) ensure
+                            # (1) that the page will be submitted by JS before the
+                            # timeoutworker, which ensures that self.request.POST
+                            # actually contains a value.
+                            # (2) that the timeoutworker doesn't accumulate a lead
+                            # ahead of the real page, which could result in being >1
+                            # page ahead. that means that entire pages could be skipped
+
+                            # task queue can't schedule tasks in the past
+                            # at least 1 second from now
+                            delay=max(1, timeout_seconds+8))
+        self._remaining_timeout_seconds = timeout_seconds
+        return timeout_seconds
+
+    def get_timeout_seconds(self):
+        return self.timeout_seconds
 
     timeout_seconds = None
     timeout_submission = None
+    timer_text = ugettext_lazy("Time left to complete this page:")
 
     def set_extra_attributes(self):
         pass
@@ -1216,30 +1236,22 @@ class GenericWaitPageMixin(object):
         self._before_returning_wait_page()
         return self._get_wait_page()
 
-    title_text = None
-
+    # Translators: the default title of a wait page
+    title_text = ugettext_lazy('Please wait')
     body_text = None
 
-    def _get_default_title_text(self):
-        # Translators: the default title of a wait page
-        return _('Please wait')
-
     def _get_default_body_text(self):
+        '''
+        needs to be a method because it could say
+        "waiting for the other player", "waiting for the other players"...
+        '''
         return ''
 
     def get_context_data(self, **kwargs):
-        # 2015-11-13: title_text() and body_text() methods deprecated
-        # they should be class attributes instead
         title_text = self.title_text
-        if callable(title_text):
-            title_text = title_text()
         body_text = self.body_text
-        if callable(body_text):
-            body_text = body_text()
 
         # could evaluate to false like 0
-        if title_text is None:
-            title_text = self._get_default_title_text()
         if body_text is None:
             body_text = self._get_default_body_text()
 

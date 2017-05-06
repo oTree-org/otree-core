@@ -56,3 +56,4 @@ class Page:
     def before_next_page(self): pass
     def is_displayed(self) -> bool: pass
     def error_message(self, values): pass
+    def get_timeout_seconds(self): pass
