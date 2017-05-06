@@ -1129,53 +1129,41 @@ class FormPageMixin(object):
         timeout_seconds = self.get_timeout_seconds()
         if timeout_seconds is None:
             # don't hit the DB at all
-            # we will skip this page
-            # skipping if timeout_seconds < 0 is also a performance optimization
-            # so that we can skip many pages without hitting DB
-            # we don't need to check the DB record; it's less than 0 so we are
-            # skipping anyways. it doesn't matter if it's -1 or -10
-            # but is it possible that the DB record is > 0 but get_timeout_seconds()
-            # is negative?
             pass
         else:
             current_time = time.time()
-            timeout_object = PageTimeout.objects.filter(
+            expiration_time = current_time + timeout_seconds
+
+            timeout_object, created = PageTimeout.objects.get_or_create(
                 participant=self.participant,
-                page_index=self.participant._index_in_pages).first()
-            if timeout_object:
-                timeout_seconds = timeout_object.expiration_time - current_time
-            else:
-                expiration_time = current_time + timeout_seconds
-                PageTimeout.objects.create(
-                    participant=self.participant,
-                    page_index=self.participant._index_in_pages,
-                    expiration_time=expiration_time)
+                page_index=self.participant._index_in_pages,
+                defaults={'expiration_time': expiration_time})
+            timeout_seconds = timeout_object.expiration_time - current_time
+            if created and otree.common_internal.USE_REDIS:
+                # if using browser bots, don't schedule the timeout,
+                # because if it's a short timeout, it could happen before
+                # the browser bot submits the page. Because the timeout
+                # doesn't query the botworker (it is distinguished from bot
+                # submits by the timeout_happened flag), it will "skip ahead"
+                # and therefore confuse the bot system.
+                if not self.session.use_browser_bots:
+                    otree.timeout.tasks.submit_expired_url.schedule(
+                        (
+                            self.participant.code,
+                            self.request.path,
+                        ),
+                        # add some seconds to account for latency of request + response
+                        # this will (almost) ensure
+                        # (1) that the page will be submitted by JS before the
+                        # timeoutworker, which ensures that self.request.POST
+                        # actually contains a value.
+                        # (2) that the timeoutworker doesn't accumulate a lead
+                        # ahead of the real page, which could result in being >1
+                        # page ahead. that means that entire pages could be skipped
 
-                if otree.common_internal.USE_REDIS:
-                    # if using browser bots, don't schedule the timeout,
-                    # because if it's a short timeout, it could happen before
-                    # the browser bot submits the page. Because the timeout
-                    # doesn't query the botworker (it is distinguished from bot
-                    # submits by the timeout_happened flag), it will "skip ahead"
-                    # and therefore confuse the bot system.
-                    if not self.session.use_browser_bots:
-                        otree.timeout.tasks.submit_expired_url.schedule(
-                            (
-                                self.participant.code,
-                                self.request.path,
-                            ),
-                            # add some seconds to account for latency of request + response
-                            # this will (almost) ensure
-                            # (1) that the page will be submitted by JS before the
-                            # timeoutworker, which ensures that self.request.POST
-                            # actually contains a value.
-                            # (2) that the timeoutworker doesn't accumulate a lead
-                            # ahead of the real page, which could result in being >1
-                            # page ahead. that means that entire pages could be skipped
-
-                            # task queue can't schedule tasks in the past
-                            # at least 1 second from now
-                            delay=max(1, timeout_seconds+8))
+                        # task queue can't schedule tasks in the past
+                        # at least 1 second from now
+                        delay=max(1, timeout_seconds+8))
         self._remaining_timeout_seconds = timeout_seconds
         return timeout_seconds
 
