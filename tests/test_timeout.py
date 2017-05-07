@@ -74,7 +74,7 @@ class TestTimeout(TestCase):
         # if you call it a second time, it should be the same
         self.assertEqual(expiration_time_1, expiration_time_2)
 
-    def test_timeoutworker_no_timeout(self):
+    def test_timeout_scheduling(self):
         '''Loading a page with timeout should schedule a page submission'''
 
         with patch.object(otree.timeout.tasks.submit_expired_url, 'schedule') as schedule_method:

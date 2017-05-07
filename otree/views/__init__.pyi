@@ -46,6 +46,7 @@ class Page:
     timeout_seconds = None # type: int
     timeout_submission = None # type: dict
     timeout_happened = None # type: bool
+    timer_text = None # type: str
     participant = None  # type: Participant
     session = None  # type: Session
     form_model = None #
