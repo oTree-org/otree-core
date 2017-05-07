@@ -703,7 +703,14 @@ class InGameWaitPageMixin(object):
         waiting_players = list(self.subsession.player_set.filter(
             _group_by_arrival_time_arrived=True,
             _group_by_arrival_time_grouped=False,
-        ))
+        ).exclude(id=self.player.id))
+
+        # the current player should be last in the list,
+        # because that's the only thing that changed from the last time
+        # this method was called. In some situations this makes checking
+        # simpler because you just check the last player
+
+        waiting_players += self.player
 
         players_for_group = self.get_players_for_group(waiting_players)
         if not players_for_group:
