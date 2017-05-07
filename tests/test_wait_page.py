@@ -5,7 +5,7 @@ from otree.session import create_session
 from otree.models.session import Session
 from otree.bots.bot import ParticipantBot
 from .base import TestCase
-import mock
+from unittest import mock
 import tests.wait_page.views
 
 

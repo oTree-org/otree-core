@@ -9,8 +9,8 @@ from django.core.urlresolvers import reverse
 from otree.models import Session, Participant
 from otree.views.mturk import MTurkConnection
 import django.test.client
-import mock
-from mock import MagicMock
+from unittest import mock
+from unittest.mock import MagicMock
 from .base import TestCase
 
 

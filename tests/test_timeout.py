@@ -6,6 +6,10 @@ from tests.timeout_submission.models import Player, Constants
 from tests.timeout_submission import views
 import django.test
 from otree.api import Submission, Currency, Page
+import itertools
+import time
+import otree.timeout.tasks #.submit_expired_url.schedule(
+from unittest.mock import patch, MagicMock
 
 test_client = django.test.Client()
 
@@ -17,6 +21,80 @@ default_submission = (
     ('f_float', 0.1),
     ('f_posint', 3),
 )
+
+
+class PageWithTimeout(Page):
+
+    a = 0
+
+    def get_timeout_seconds(self):
+        PageWithTimeout.a += 1
+        return PageWithTimeout.a
+
+
+class PageWithNoTimeout(Page):
+    pass
+
+
+class TestTimeout(TestCase):
+
+    def get_page(self, PageClass, participant):
+        page = PageClass()
+        page.set_attributes(participant)
+        page.request = MagicMock()
+        page.request.path = 'foo'
+        return page
+
+    def setUp(self):
+        session = create_session(
+            session_config_name='timeout_submission',
+            num_participants=1,
+            use_cli_bots=True,
+        )
+        self.participant = session.get_participants()[0]
+
+        # simulate opening the start link in the most minimal way
+        # a more heavyweight approach would be to create the ParticipantBot
+        # and open the start URL
+        self.participant._index_in_pages = 1
+        self.participant.save()
+
+    def test_page_refresh(self):
+        '''
+        Test that when you refresh a page, oTree still remembers the original
+        timeout, rather creating a new one.
+        '''
+
+        page = self.get_page(PageWithTimeout, self.participant)
+        expiration_time_1 = time.time() + page.remaining_timeout_seconds()
+
+        page = self.get_page(PageWithTimeout, self.participant)
+        expiration_time_2 = time.time() + page.remaining_timeout_seconds()
+
+        # if you call it a second time, it should be the same
+        self.assertEqual(expiration_time_1, expiration_time_2)
+
+    def test_timeoutworker_no_timeout(self):
+        '''Loading a page with timeout should schedule a page submission'''
+
+        with patch.object(otree.timeout.tasks.submit_expired_url, 'schedule') as schedule_method:
+            page = self.get_page(PageWithNoTimeout, self.participant)
+            page.remaining_timeout_seconds()
+
+            self.assertFalse(schedule_method.called)
+
+            page = self.get_page(PageWithTimeout, self.participant)
+            page.remaining_timeout_seconds()
+
+            self.assertTrue(schedule_method.called)
+
+        # calling remaining_timeout_seconds() twice in the same request should
+        # not schedule a second time. Testing this because the template calls
+        # {{ view.remaining_timeout_seconds }} several times
+        with patch.object(otree.timeout.tasks.submit_expired_url, 'schedule') as schedule_method:
+            page.remaining_timeout_seconds()
+            self.assertFalse(schedule_method.called)
+
 
 class TestTimeoutSubmission(TestCase):
 

@@ -3,7 +3,7 @@
 
 import itertools
 
-from mock import patch
+from unittest.mock import patch
 
 import six
 from django.core.management import call_command

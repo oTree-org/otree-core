@@ -1138,6 +1138,7 @@ class FormPageMixin(object):
                 participant=self.participant,
                 page_index=self.participant._index_in_pages,
                 defaults={'expiration_time': expiration_time})
+
             timeout_seconds = timeout_object.expiration_time - current_time
             if created and otree.common_internal.USE_REDIS:
                 # if using browser bots, don't schedule the timeout,
