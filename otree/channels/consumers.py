@@ -31,45 +31,56 @@ class OTreeJsonWebsocketConsumer(JsonWebsocketConsumer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.set_attributes(**kwargs)
 
-    def set_attributes(self, **kwargs):
-        pass
+    def clean_kwargs(self, **kwargs):
+        return kwargs
 
-    def group_name(self):
+    def group_name(self, **kwargs):
         raise NotImplementedError()
 
     def connection_groups(self, **kwargs):
-        return [self.group_name()]
+        kwargs = self.clean_kwargs(**kwargs)
+        return [self.group_name(**kwargs)]
 
     def connect(self, message, **kwargs):
         self.message.reply_channel.send({"accept": True})
-        self.post_connect()
+        kwargs = self.clean_kwargs(**kwargs)
+        self.post_connect(**kwargs)
 
-    def post_connect(self):
+    def post_connect(self, **kwargs):
         pass
+
+    def disconnect(self, message, **kwargs):
+        kwargs = self.clean_kwargs(**kwargs)
+        self.pre_disconnect(**kwargs)
+
+    def pre_disconnect(self, **kwargs):
+        pass
+
 
 class GroupByArrivalTime(OTreeJsonWebsocketConsumer):
 
-    def set_attributes(self, params):
-        session_pk, page_index, self.app_name, player_id = params.split(',')
-        self.session_pk = int(session_pk)
-        self.page_index = int(page_index)
-        self.player_id = int(player_id)
+    def clean_kwargs(self, params):
+        session_pk, page_index, app_name, player_id = params.split(',')
+        return {
+            'session_pk': int(session_pk),
+            'page_index': int(page_index),
+            'player_id': int(player_id)
+        }
 
-    def group_name(self):
+    def group_name(self, session_pk, page_index):
         return channels_group_by_arrival_time_group_name(
-            self.session_pk, self.page_index)
+            session_pk, page_index)
 
-    def post_connect(self):
-        models_module = get_models_module(self.app_name)
-        player = models_module.Player.objects.get(id=self.player_id)
+    def post_connect(self, app_name, player_id, page_index, session_pk):
+        models_module = get_models_module(app_name)
+        player = models_module.Player.objects.get(id=player_id)
         group_id_in_subsession = player.group.id_in_subsession
 
         ready = CompletedGroupWaitPage.objects.filter(
-            page_index=self.page_index,
+            page_index=page_index,
             id_in_subsession=int(group_id_in_subsession),
-            session_id=self.session_pk,
+            session_id=session_pk,
             fully_completed=True).exists()
         if ready:
             self.send({'status': 'ready'})
@@ -77,48 +88,51 @@ class GroupByArrivalTime(OTreeJsonWebsocketConsumer):
 
 class WaitPage(OTreeJsonWebsocketConsumer):
 
-    def set_attributes(self, params):
+    def clean_kwargs(self, params):
+        session_pk, page_index, group_id_in_subsession = params.split(',')
         return {
-
+            'session_pk': int(session_pk),
+            'page_index': int(page_index),
+            # don't convert group_id_in_subsession to int yet, it might be null
+            'group_id_in_subsession': group_id_in_subsession,
         }
-        session_pk, page_index, self.group_id_in_subsession = params.split(',')
-        self.session_pk = int(session_pk)
-        self.page_index = int(page_index)
-        # don't convert group_id_in_subsession to int yet, it might be null
 
-    def group_name(self):
+    def group_name(self, session_pk, page_index, group_id_in_subsession):
         return channels_wait_page_group_name(
-                self.session_pk, self.page_index, self.group_id_in_subsession)
+                session_pk, page_index, group_id_in_subsession)
 
-    def post_connect(self):
+    def post_connect(self, session_pk, page_index, group_id_in_subsession):
         # in case message was sent before this web socket connects
-        if self.group_id_in_subsession:
+        if group_id_in_subsession:
             ready = CompletedGroupWaitPage.objects.filter(
-                page_index=self.page_index,
-                id_in_subsession=int(self.group_id_in_subsession),
-                session_id=self.session_pk,
+                page_index=page_index,
+                id_in_subsession=int(group_id_in_subsession),
+                session_id=session_pk,
                 fully_completed=True).exists()
         else:  # subsession
             ready = CompletedSubsessionWaitPage.objects.filter(
-                page_index=self.page_index,
-                session_id=self.session_pk,
+                page_index=page_index,
+                session_id=session_pk,
                 fully_completed=True).exists()
         if ready:
             self.send({'status': 'ready'})
 
 
 class AutoAdvance(OTreeJsonWebsocketConsumer):
-    def set_attributes(self, params):
-        self.participant_code, page_index = params.split(',')
-        self.page_index = int(page_index)
+    def clean_kwargs(self, params):
+        participant_code, page_index = params.split(',')
+        return {
+            'participant_code': participant_code,
+            'page_index': int(page_index),
+        }
 
-    def group_name(self):
-        return 'auto-advance-{}'.format(self.participant_code)
+    def group_name(self, participant_code):
+        return 'auto-advance-{}'.format(participant_code)
 
-    def post_connect(self):
+    def post_connect(self, page_index, participant_code):
         # in case message was sent before this web socket connects
         result = Participant.objects.filter(
-                code=self.participant_code).values_list(
+                code=participant_code).values_list(
             '_index_in_pages', flat=True)
         try:
             page_should_be_on = result[0]
@@ -126,7 +140,7 @@ class AutoAdvance(OTreeJsonWebsocketConsumer):
             # doesn't get shown because not yet localized
             self.send({'error': 'Participant not found in database.'})
             return
-        if page_should_be_on > self.page_index:
+        if page_should_be_on > page_index:
             self.send({'auto_advanced': True})
 
 
@@ -171,12 +185,11 @@ def create_session(message):
 
 
 class WaitForSession(OTreeJsonWebsocketConsumer):
-    def set_attributes(self, **kwargs):
-        return self.kwargs
+    def clean_kwargs(self, **kwargs):
+        return kwargs
 
-    def connection_groups(self, pre_create_id):
-        group_name = channels_create_session_group_name(pre_create_id)
-        return [group_name]
+    def group_name(self, pre_create_id):
+        return channels_create_session_group_name(pre_create_id)
 
     def post_connect(self, pre_create_id):
 
@@ -200,7 +213,7 @@ class WaitForSession(OTreeJsonWebsocketConsumer):
 
 
 class RoomAdmin(OTreeJsonWebsocketConsumer):
-    def set_attributes(self, room):
+    def clean_kwargs(self, room):
         self.room = room
 
     def group_name(self):
@@ -236,15 +249,15 @@ class RoomAdmin(OTreeJsonWebsocketConsumer):
 
 class RoomParticipant(OTreeJsonWebsocketConsumer):
 
-    def set_attributes(self, params):
-        self.room_name, self.participant_label, self.tab_unique_id = params.split(',')
+    def clean_kwargs(self, params):
+        room_name, participant_label, tab_unique_id = params.split(',')
+        return {
+            'room_name': room_name,
+            'participant_label': participant_label,
+            'tab_unique_id': tab_unique_id,
+        }
 
-    def post_connect(self):
-        room_name = self.room_name
-        participant_label = self.participant_label
-        tab_unique_id = self.tab_unique_id
-
-
+    def post_connect(self, room_name, participant_label, tab_unique_id):
         if room_name in ROOM_DICT:
             room = ROOM_DICT[room_name]
         else:
@@ -279,11 +292,7 @@ class RoomParticipant(OTreeJsonWebsocketConsumer):
                 }
             )
 
-
-    def disconnect(self, message, **kwargs):
-        room_name = self.room_name
-        participant_label = self.participant_label
-        tab_unique_id = self.tab_unique_id
+    def disconnect(self, message, room_name, participant_label, tab_unique_id):
 
         if room_name in ROOM_DICT:
             room = ROOM_DICT[room_name]
@@ -325,15 +334,14 @@ class RoomParticipant(OTreeJsonWebsocketConsumer):
 
 class BrowserBotsClient(OTreeJsonWebsocketConsumer):
 
-    def group_name
-    def connection_groups(self, **kwargs):
-        group_name = 'browser-bots-client-{}'.format(self.kwargs['session_code'])
-        return [group_name]
+    def group_name(self, session_code):
+        return 'browser-bots-client-{}'.format(self.kwargs['session_code'])
 
 
 class BrowserBot(OTreeJsonWebsocketConsumer):
-    def connection_groups(self, **kwargs):
-        return ['browser_bot_wait']
+
+    def group_name(self):
+        return 'browser_bot_wait'
 
     def post_connect(self):
         launcher_session_info = BrowserBotsLauncherSessionCode.objects.first()
