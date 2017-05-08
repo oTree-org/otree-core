@@ -698,19 +698,15 @@ class InGameWaitPageMixin(object):
         GroupClass = type(self.group)
 
         self.player._group_by_arrival_time_arrived = True
+        self.player._group_by_arrival_time_timestamp = (
+            self.player._group_by_arrival_time_timestamp or time.time())
+
         self.player.save()
         # count how many are re-grouped
         waiting_players = list(self.subsession.player_set.filter(
             _group_by_arrival_time_arrived=True,
             _group_by_arrival_time_grouped=False,
-        ).exclude(id=self.player.id))
-
-        # the current player should be last in the list,
-        # because that's the only thing that changed from the last time
-        # this method was called. In some situations this makes checking
-        # simpler because you just check the last player
-
-        waiting_players += self.player
+        ).order_by('_group_by_arrival_time_timestamp'))
 
         players_for_group = self.get_players_for_group(waiting_players)
         if not players_for_group:
