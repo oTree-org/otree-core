@@ -489,23 +489,50 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
         self.participant.save()
 
 
-class UndefinedPlayer:
+
+_MSG_Undefined_GetPlayersForGroup = (
+    'You cannot reference self.player, self.group, or self.participant '
+    'inside get_players_for_group.'
+)
+
+_MSG_Undefined_AfterAllPlayersArrive_Player = (
+    'self.player and self.participant cannot be referenced '
+    'inside after_all_players_arrive, '
+    'which is executed only once '
+    'for the entire group.'
+)
+
+_MSG_Undefined_AfterAllPlayersArrive_Group = (
+    'self.group cannot be referenced inside after_all_players_arrive '
+    'if wait_for_all_groups=True, '
+    'because after_all_players_arrive() is executed only once '
+    'for all groups in the subsession.'
+)
+
+class Undefined_AfterAllPlayersArrive_Player:
     def __getattribute__(self, item):
-        raise AttributeError(
-            'self.player cannot be referenced inside after_all_players_arrive, '
-            'which is executed only once '
-            'for the entire group.'
-        )
+        raise AttributeError(_MSG_Undefined_AfterAllPlayersArrive_Player)
+
+    def __setattr__(self, item, value):
+        raise AttributeError(_MSG_Undefined_AfterAllPlayersArrive_Player)
 
 
-class UndefinedGroup:
+class Undefined_AfterAllPlayersArrive_Group:
     def __getattribute__(self, item):
-        raise AttributeError(
-            'self.group cannot be referenced inside after_all_players_arrive '
-            'if wait_for_all_groups=True, '
-            'because after_all_players_arrive() is executed only once '
-            'for all groups in the subsession.'
-        )
+        raise AttributeError(_MSG_Undefined_AfterAllPlayersArrive_Group)
+
+    def __setattr__(self, item, value):
+        raise AttributeError(_MSG_Undefined_AfterAllPlayersArrive_Group)
+
+
+class Undefined_GetPlayersForGroup:
+
+    def __getattribute__(self, item):
+        raise AttributeError(_MSG_Undefined_GetPlayersForGroup)
+
+    def __setattr__(self, item, value):
+        raise AttributeError(_MSG_Undefined_GetPlayersForGroup)
+
 
 
 class InGameWaitPageMixin(object):
@@ -617,13 +644,14 @@ class InGameWaitPageMixin(object):
             # same idea with self.group, if we're waiting for all
             # groups, not just one.
 
-            player = self.player
+            current_player = self.player
+            current_participant = self.participant
             # set to UNDEFINED rather than None,
             # because then it won't be loaded lazily
-            self.player = UndefinedPlayer()
+            self.player = self.participant = Undefined_AfterAllPlayersArrive_Player()
             if self.wait_for_all_groups:
-                group = self.group
-                self.group = UndefinedGroup()
+                current_group = self.group
+                self.group = Undefined_AfterAllPlayersArrive_Group()
 
             # make sure we get the most up-to-date player objects
             # e.g. if they were queried in is_displayed(),
@@ -633,7 +661,7 @@ class InGameWaitPageMixin(object):
             import idmap.tls
             cache = getattr(idmap.tls._tls, 'idmap_cache', {})
             for p in list(cache.get(self.PlayerClass, {}).values()):
-                if p != player:
+                if p != current_player:
                     self.PlayerClass.flush_cached_instance(p)
             self.after_all_players_arrive()
 
@@ -650,9 +678,10 @@ class InGameWaitPageMixin(object):
         # self.player and self.group is referenced after this point.
         # anyway, the group could be deleted in after_all_players_arrive.
 
-        self.player = player
+        self.player = current_player
+        self.participant = current_participant
         if self.wait_for_all_groups:
-            self.group = group
+            self.group = current_group
 
     @property
     def _group_or_subsession(self):
@@ -708,7 +737,21 @@ class InGameWaitPageMixin(object):
             _group_by_arrival_time_grouped=False,
         ).order_by('_group_by_arrival_time_timestamp'))
 
+        # prevent the user
+        current_player = self.player
+        current_participant = self.participant
+        current_group = self.group
+
+        self.player = self.participant = self.group = Undefined_GetPlayersForGroup()
+
         players_for_group = self.get_players_for_group(waiting_players)
+
+        # restore hidden attributes
+        self.player = current_player
+        self.participant = current_participant
+        self.group = current_group
+
+
         if not players_for_group:
             return False
         participant_ids = [p.participant.id for p in players_for_group]
@@ -997,6 +1040,8 @@ class FormPageMixin(object):
         has_secret_code = (
             request.POST.get(constants.admin_secret_code) == ADMIN_SECRET_CODE)
 
+        # todo: make sure users can't change the result by removing 'timeout_happened'
+        # from URL
         if auto_submitted and (has_secret_code or self.has_timeout()):
             self.timeout_happened = True  # for public API
             self._process_auto_submitted_form(form)
@@ -1121,7 +1166,6 @@ class FormPageMixin(object):
         return PageTimeout.objects.filter(
             participant=self.participant,
             page_index=self.participant._index_in_pages).exists()
-
 
     _remaining_timeout_seconds = 'unset'
     def remaining_timeout_seconds(self):

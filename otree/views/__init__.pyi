@@ -38,6 +38,7 @@ class WaitPage:
 
     def is_displayed(self) -> bool: pass
     def after_all_players_arrive(self): pass
+    def get_players_for_group(self, waiting_players): pass
 
 
 class Page:

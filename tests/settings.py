@@ -149,6 +149,11 @@ SESSION_CONFIGS = [
         'app_sequence': ['tests.waitpage_set_field'],
     },
     {
+        'name': 'waitpage_misuse',
+        'num_demo_participants': 2,
+        'app_sequence': ['tests.waitpage_misuse'],
+    },
+    {
         'name': 'skip_waitpage_lookahead',
         'num_demo_participants': 2,
         'app_sequence': ['tests.skip_waitpage_lookahead'],
