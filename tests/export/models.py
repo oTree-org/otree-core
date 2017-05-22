@@ -22,7 +22,7 @@ class Subsession(BaseSubsession):
     align = models.CharField()
     align_session = models.CharField()
 
-    def before_session_starts(self):
+    def creating_session(self):
         self.group_randomly()
         self.align = 'SUBSESSION_{}'.format(self.id)
         self.align_session = 'ALIGN_TO_SESSION_{}'.format(self.session.code)

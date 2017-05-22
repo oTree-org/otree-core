@@ -38,7 +38,7 @@ class BaseSubsession:
     def get_players(self) -> List['Player']: pass
     def in_previous_rounds(self) -> List['Subsession']: pass
     def in_all_rounds(self) -> List['Subsession']: pass
-    def before_session_starts(self): pass
+    def creating_session(self): pass
     def in_round(self, round_number) -> 'Subsession': pass
     def in_rounds(self, first, last) -> List['Subsession']: pass
     def group_like_round(self, round_number: int): pass

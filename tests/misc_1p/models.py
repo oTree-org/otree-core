@@ -21,7 +21,7 @@ class Constants(BaseConstants):
 
 class Subsession(BaseSubsession):
 
-    def before_session_starts(self):
+    def creating_session(self):
         self.session.vars['a'] = 1
         if self.round_number == 1:
             for p in self.get_players():
@@ -30,9 +30,9 @@ class Subsession(BaseSubsession):
                 for p2 in g.get_players():
                     p2.participant.vars['b'] = 1
         for p3 in self.get_players():
-            p3.in_before_session_starts = 1
+            p3.in_creating_session = 1
         for g2 in self.get_groups():
-            g2.in_before_session_starts = 1
+            g2.in_creating_session = 1
 
 
 class Group(BaseGroup):
@@ -51,7 +51,7 @@ class Group(BaseGroup):
 
     dynamic_min_max = models.CurrencyField()
 
-    in_before_session_starts = models.CurrencyField()
+    in_creating_session = models.CurrencyField()
 
 
 class Player(BasePlayer):
@@ -80,7 +80,7 @@ class Player(BasePlayer):
 
     dynamic_min_max = models.CurrencyField()
 
-    in_before_session_starts = models.CurrencyField()
+    in_creating_session = models.CurrencyField()
 
     def role(self):
         # you can make this depend of self.id_in_group
