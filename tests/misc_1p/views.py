@@ -18,8 +18,8 @@ class ErrorMessage(Page):
         assert self.participant.vars['a'] == 1
         assert self.participant.vars['b'] == 1
         assert self.session.config['treatment'] == 'blue'
-        assert self.player.in_before_session_starts == 1
-        assert self.group.in_before_session_starts == 1
+        assert self.player.in_creating_session == 1
+        assert self.group.in_creating_session == 1
 
         return {
             'my_variable_here': 1,

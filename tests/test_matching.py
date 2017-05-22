@@ -24,7 +24,7 @@ RANDOM_5_BY_3 = [
 class TestMatchPlayers(TestCase):
 
     def setUp(self):
-        patcher = patch.object(mpg_models.Subsession, "before_session_starts")
+        patcher = patch.object(mpg_models.Subsession, "creating_session")
         patcher.start()
         self.addCleanup(patcher.stop)
 

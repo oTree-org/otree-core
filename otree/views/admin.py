@@ -247,7 +247,7 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
 
     url_pattern = r"^WaitUntilSessionCreated/(?P<pre_create_id>.+)/$"
 
-    body_text = 'Waiting until session created'
+    body_text = 'Creating session'
 
     def _is_ready(self):
         try:

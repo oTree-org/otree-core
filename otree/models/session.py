@@ -145,6 +145,7 @@ class Session(ModelWithVars):
         for subsession in self.get_subsessions():
             subsession._create_groups()
             subsession.before_session_starts()
+            subsession.creating_session()
             subsession.save()
 
     def mturk_requester_url(self):

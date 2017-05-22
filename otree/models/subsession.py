@@ -274,13 +274,10 @@ class BaseSubsession(SaveTheChange, models.Model):
         self.set_group_matrix(group_matrix)
 
     def before_session_starts(self):
-        '''This gets called at the beginning of every subsession, before the
-        first page is loaded.
+        '''Deprecated and renamed to creating_session'''
+        pass
 
-        3rd party programmer can put any code here, e.g. to loop through
-        players and assign treatment parameters.
-
-        '''
+    def creating_session(self):
         pass
 
     def vars_for_admin_report(self):
