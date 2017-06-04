@@ -141,11 +141,8 @@ class FormFieldNode(Node):
                     tagname=tagname))
         field = bits.pop(0)
         if bits:
-            with_ = bits.pop(0)
-            if with_ != 'with':
-                raise TemplateSyntaxError(
-                    "{tagname}'s second argument must be 'with'.".format(
-                        tagname=tagname))
+            if bits[0] == 'with':
+                bits.pop(0)
             with_arguments = token_kwargs(bits, parser, support_legacy=False)
 
             # Validate against spaces around the '='.
