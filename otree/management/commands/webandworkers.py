@@ -10,56 +10,47 @@ from channels.log import setup_logger
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 
-naiveip_re = re.compile(r"""^
+naiveip_re = re.compile(r"""^(?:
 (?P<addr>
     (?P<ipv4>\d{1,3}(?:\.\d{1,3}){3}) |         # IPv4 address
     (?P<ipv6>\[[a-fA-F0-9:]+\]) |               # IPv6 address
     (?P<fqdn>[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*) # FQDN
-)$""", re.X)
+):)?(?P<port>\d+)$""", re.X)
+
+DEFAULT_PORT = "8000"
+DEFAULT_ADDR = '0.0.0.0'
 
 
 class Command(BaseCommand):
     help = 'Run otree web services for the production environment.'
 
-    default_port = 8000
-
     def add_arguments(self, parser):
         BaseCommand.add_arguments(self, parser)
 
-        ahelp = ('TODO')
+        parser.add_argument('addrport', nargs='?',
+            help='Optional port number, or ipaddr:port')
+
+        # The below flags are for legacy compat.
+        # 2017-06-08 added addrport positional argument,
+        # because:
+        # - more consistent with runserver.
+        # - don't have to remember the name of the flags (is it --bind or --addr etc)
+        # - quicker to type
+        # - we don't need positional args for anything else
+
         parser.add_argument(
-            '--reload', action='store_true', dest='use_reloader',
-            default=False, help=ahelp)
+            '--addr', action='store', type=str, dest='addr', default=None,
+            help='The host/address to bind to (default: {})'.format(DEFAULT_ADDR))
         ahelp = (
             'Port number to listen on. Defaults to the environment variable '
-            '$PORT (if defined), or 8000.'
+            '$PORT (if defined), or {}.'.format(DEFAULT_PORT)
         )
         parser.add_argument(
             '--port', action='store', type=int, dest='port', default=None,
             help=ahelp)
-        parser.add_argument(
-            '--addr', action='store', type=str, dest='addr', default='0.0.0.0',
-            help='The host/address to bind to (default: 0.0.0.0)')
-        parser.add_argument(
-            '--botworker', action='store_true',
-            dest='botworker', default=False,
-            help='--botworker flag is deprecated and has no effect')
 
     def get_env(self, options):
         return os.environ.copy()
-
-    def get_port(self, suggested_port):
-        if suggested_port is None:
-            suggested_port = os.environ.get('PORT', None)
-        try:
-            return int(suggested_port)
-        except (ValueError, TypeError):
-            return self.default_port
-
-    def get_addr(self, suggested_addr):
-        if not naiveip_re.match(suggested_addr):
-            raise CommandError('--addr option must be a valid IP address.')
-        return suggested_addr
 
     def handle(self, *args, **options):
         self.verbosity = options.get('verbosity', 1)
@@ -69,17 +60,27 @@ class Command(BaseCommand):
         sys.exit(manager.returncode)
 
     def get_honcho_manager(self, options):
-        self.addr = self.get_addr(options['addr'])
-        self.port = self.get_port(options['port'])
+
+        if options.get('addrport'):
+            m = re.match(naiveip_re, options['addrport'])
+            if m is None:
+                raise CommandError('"%s" is not a valid port number '
+                                   'or address:port pair.' % options['addrport'])
+            addr, _, _, _, port = m.groups()
+        else:
+            addr = options['addr']
+            port = options['port']
+        addr = addr or DEFAULT_ADDR
+        port = port or os.environ.get('PORT') or DEFAULT_PORT
 
         manager = Manager()
 
         daphne_cmd = 'daphne otree.asgi:channel_layer -b {} -p {}'.format(
-            self.addr,
-            self.port
+            addr,
+            port
         )
 
-        print('Starting daphne server on {}:{}'.format(self.addr, self.port))
+        print('Starting daphne server on {}:{}'.format(addr, port))
 
         manager.add_process('daphne', daphne_cmd, env=self.get_env(options))
         for i in range(3):
