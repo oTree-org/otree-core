@@ -41,6 +41,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--addr', action='store', type=str, dest='addr', default=None,
             help='The host/address to bind to (default: {})'.format(DEFAULT_ADDR))
+
         ahelp = (
             'Port number to listen on. Defaults to the environment variable '
             '$PORT (if defined), or {}.'.format(DEFAULT_PORT)
@@ -48,9 +49,6 @@ class Command(BaseCommand):
         parser.add_argument(
             '--port', action='store', type=int, dest='port', default=None,
             help=ahelp)
-
-    def get_env(self, options):
-        return os.environ.copy()
 
     def handle(self, *args, **options):
         self.verbosity = options.get('verbosity', 1)
@@ -82,11 +80,11 @@ class Command(BaseCommand):
 
         print('Starting daphne server on {}:{}'.format(addr, port))
 
-        manager.add_process('daphne', daphne_cmd, env=self.get_env(options))
+        manager.add_process('daphne', daphne_cmd, env=os.environ.copy())
         for i in range(3):
             manager.add_process(
                 'worker{}'.format(i),
                 'otree runworker',
-                env=self.get_env(options))
+                env=os.environ.copy())
 
         return manager
