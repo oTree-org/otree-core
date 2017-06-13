@@ -7,7 +7,7 @@
 
 from django.http import HttpResponseServerError
 
-from otree.common_internal import missing_db_table
+from otree.common_internal import missing_db_tables
 
 
 class CheckDBMiddleware(object):
@@ -16,12 +16,15 @@ class CheckDBMiddleware(object):
 
     def process_request(self, request):
         if not CheckDBMiddleware.synced:
-            missing_table = missing_db_table()
-            if missing_table:
-                print(missing_table, type(missing_table))
-                msg = ("Your database is not ready "
-                       "(missing table for model {}). "
-                       "Try running 'otree resetdb'.").format(missing_table)
+            missing_tables = missing_db_tables()
+            if missing_tables:
+                listed_tables = missing_tables[:3]
+                unlisted_tables = missing_tables[3:]
+                msg = (
+                    "Your database is not ready. Try running 'otree resetdb'. "
+                    "(Missing tables for {}, and {} other models). "
+                ).format(
+                    ', '.join(listed_tables), len(unlisted_tables))
                 return HttpResponseServerError(msg)
             else:
                 CheckDBMiddleware.synced = True

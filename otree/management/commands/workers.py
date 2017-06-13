@@ -29,7 +29,7 @@ class Command(BaseCommand):
                 'worker{}'.format(i),
                 'otree runworker',
                 quiet=False,
-                env=self.get_env(options))
+                env=os.environ.copy())
 
         manager.loop()
         sys.exit(manager.returncode)

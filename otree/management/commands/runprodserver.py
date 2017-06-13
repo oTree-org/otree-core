@@ -2,7 +2,7 @@
 
 from django.core.management import call_command
 from . import webandworkers
-
+import os
 
 class Command(webandworkers.Command):
 
@@ -31,13 +31,13 @@ class Command(webandworkers.Command):
             'botworker',
             'otree botworker',
             quiet=False,
-            env=self.get_env(options)
+            env=os.environ.copy()
         )
         manager.add_process(
             'timeoutworkeronly',
             'otree timeoutworkeronly',
             quiet=False,
-            env=self.get_env(options)
+            env=os.environ.copy()
         )
 
         return manager

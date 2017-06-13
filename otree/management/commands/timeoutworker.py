@@ -32,13 +32,13 @@ class Command(BaseCommand):
             'botworker',
             'otree botworker',
             quiet=False,
-            env=self.get_env(options)
+            env=os.environ.copy()
         )
         manager.add_process(
             'timeoutworkeronly',
             'otree timeoutworkeronly',
             quiet=False,
-            env=self.get_env(options)
+            env=os.environ.copy()
         )
 
         return manager
