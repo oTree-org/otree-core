@@ -1,7 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from typing import List
-from otree.common import RealWorldCurrency
+from otree.common import RealWorldCurrency, Currency
 
 ## This code is duplicated in several places
 # bots/__init__.pyi, views/__init__.pyi, models/__init__.pyi
@@ -11,8 +9,12 @@ class Session:
 
     config = None  # type: dict
     vars = None  # type: dict
-    def get_participants(self) -> List['Participant']: pass
-    def get_subsessions(self) -> List['Subsession']: pass
+    def get_participants(self) -> List[Participant]: pass
+
+    # we could make it List[Subsession] but then we have to define Subsession
+    # somewhere, because importing doesn't seem to work for pyi autocomplete
+    # in pycharm. too much effort for a rarely used method
+    def get_subsessions(self) -> List: pass
 
 class Participant:
 
@@ -22,9 +24,9 @@ class Participant:
     id_in_session = None  # type: int
     payoff = None  # type: Currency
 
-    def get_players(self) -> List['Player']: pass
+    # see comment above about importing
+    def get_players(self) -> List: pass
     def payoff_plus_participation_fee(self) -> RealWorldCurrency: pass
-
 
 class WaitPage:
     wait_for_all_groups = False
