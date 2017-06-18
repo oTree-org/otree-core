@@ -1,9 +1,8 @@
-#!/usr/bin/env python
 import os
 import re
 import sys
 
-from honcho.manager import Manager
+import honcho.manager
 
 from channels.log import setup_logger
 
@@ -19,6 +18,14 @@ naiveip_re = re.compile(r"""^(?:
 
 DEFAULT_PORT = "8000"
 DEFAULT_ADDR = '0.0.0.0'
+NUM_WORKERS = 3
+
+# made this simple class to reduce code duplication,
+# and to make testing easier (I didn't know how to check that it was called
+# with os.environ.copy(), especially if we patch os.environ)
+class OTreeHonchoManager(honcho.manager.Manager):
+    def add_otree_process(self, name, cmd):
+        self.add_process(name, cmd, env=os.environ.copy(), quiet=False)
 
 
 class Command(BaseCommand):
@@ -53,11 +60,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.verbosity = options.get('verbosity', 1)
         self.logger = setup_logger('django.channels', self.verbosity)
-        manager = self.get_honcho_manager(options)
-        manager.loop()
-        sys.exit(manager.returncode)
+        self.honcho = OTreeHonchoManager()
+        self.setup_honcho(options)
+        self.honcho.loop()
+        sys.exit(self.honcho.returncode)
 
-    def get_honcho_manager(self, options):
+    def setup_honcho(self, options):
 
         if options.get('addrport'):
             m = re.match(naiveip_re, options['addrport'])
@@ -71,8 +79,6 @@ class Command(BaseCommand):
         addr = addr or DEFAULT_ADDR
         port = port or os.environ.get('PORT') or DEFAULT_PORT
 
-        manager = Manager()
-
         daphne_cmd = 'daphne otree.asgi:channel_layer -b {} -p {}'.format(
             addr,
             port
@@ -80,11 +86,9 @@ class Command(BaseCommand):
 
         print('Starting daphne server on {}:{}'.format(addr, port))
 
-        manager.add_process('daphne', daphne_cmd, env=os.environ.copy())
-        for i in range(3):
-            manager.add_process(
+        honcho = self.honcho
+        honcho.add_otree_process('daphne', daphne_cmd)
+        for i in range(NUM_WORKERS):
+            honcho.add_otree_process(
                 'worker{}'.format(i),
-                'otree runworker',
-                env=os.environ.copy())
-
-        return manager
+                'otree runworker')
