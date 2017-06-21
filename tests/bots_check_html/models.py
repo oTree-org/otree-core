@@ -27,4 +27,4 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
-    my_field = models.FloatField()
+    field_not_in_template = models.FloatField()

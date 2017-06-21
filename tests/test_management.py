@@ -2,22 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from unittest import mock
-from unittest.mock import call, MagicMock
 from six import StringIO
 from otree.management.commands.webandworkers import OTreeHonchoManager
 from django.core.management import call_command
-
 from otree.management import cli
-from otree.deprecate import OtreeDeprecationWarning
-
 from .base import TestCase
-
-
-class CeleryCommand(TestCase):
-
-    def test_handle(self):
-        self.assertWarns(OtreeDeprecationWarning,
-                         lambda: call_command("celery"))
 
 
 class OTreeAndDjangoVersion(TestCase):

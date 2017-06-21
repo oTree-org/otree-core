@@ -7,6 +7,7 @@ import unittest.mock
 from tests.bots_cases.tests import PlayerBot
 import tests.bots_cases.views
 
+
 class TestBots(TestCase):
     def test_bot_runs(self):
 
@@ -32,20 +33,18 @@ class TestBots(TestCase):
         )
 
         with self.settings(BOTS_CHECK_HTML=True):
-            from django.conf import settings
-            self.assertEqual(settings.BOTS_CHECK_HTML, True)
-
             bot_runner = session_bot_runner_factory(session)
-
             try:
                 bot_runner.play()
             except AssertionError as exc:
                 # AssertionError should say something about check_html
-                raises_correct_message = 'check_html' in str(exc)
+                raises_correct_message = 'check_html' in str(exc) and 'Page2' in str(exc)
             else:
                 raises_correct_message = False
             if not raises_correct_message:
                 raise AssertionError('bots check_html not working properly')
+
+
 
     def test_bot_bad_post(self):
         """

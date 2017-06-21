@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+import logging
 
 import honcho.manager
 
@@ -8,6 +9,8 @@ from channels.log import setup_logger
 
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
+
+logger = logging.getLogger(__name__)
 
 naiveip_re = re.compile(r"""^(?:
 (?P<addr>
@@ -84,7 +87,7 @@ class Command(BaseCommand):
             port
         )
 
-        print('Starting daphne server on {}:{}'.format(addr, port))
+        logger.info('Starting daphne server on {}:{}'.format(addr, port))
 
         honcho = self.honcho
         honcho.add_otree_process('daphne', daphne_cmd)

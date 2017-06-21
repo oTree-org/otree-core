@@ -23,6 +23,11 @@ ADMIN_SECRET_CODE = get_admin_secret_code()
 
 logger = logging.getLogger('otree.bots')
 
+INTERNAL_FORM_FIELDS = {
+        'csrfmiddlewaretoken', 'origin_url', 'must_fail', 'timeout_happened',
+        'admin_secret_code'
+}
+
 DISABLE_CHECK_HTML_INSTRUCTIONS = '''
 Checking the HTML may not find all form fields and buttons
 (e.g. those added with JavaScript),
@@ -88,7 +93,7 @@ def _Submission(
         'page_class': PageClass,
         'page_class_dotted': get_dotted_name(PageClass),
         'post_data': post_data,
-        'check_html': check_html
+        'check_html': check_html,
     }
 
 
@@ -198,6 +203,8 @@ def refresh_from_db(obj):
     return type(obj).objects.get(pk=obj.pk)
 
 
+# 2017-06-21: why ABCMeta? Was this something from when I was trying to get
+# the self.assert* methods working?
 class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
 
     def __init__(
@@ -261,9 +268,10 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
 
     def assert_html_ok(self, submission):
         if submission['check_html']:
-            field_names = [
-                f for f in submission['post_data'].keys() if f != 'must_fail']
-            checker = PageHtmlChecker(field_names)
+            fields_to_check = [
+                f for f in submission['post_data']
+                if f not in INTERNAL_FORM_FIELDS]
+            checker = PageHtmlChecker(fields_to_check)
             missing_fields = checker.get_missing_fields(self.html)
             if missing_fields:
                 page_name = submission['page_class'].url_name()
@@ -406,12 +414,4 @@ def bot_prettify_post_data(post_data):
         # (i.e. values should not be single-element lists)
         post_data = post_data.dict()
 
-    post_data = post_data.copy()
-    for extra_key in [
-        'csrfmiddlewaretoken', 'origin_url', 'must_fail', 'timeout_happened',
-        'admin_secret_code'
-    ]:
-        post_data.pop(extra_key, None)
-
-    # if browser bots, it will be a regular dict
-    return post_data
+    return {k: v for k,v in post_data.items() if k not in INTERNAL_FORM_FIELDS}

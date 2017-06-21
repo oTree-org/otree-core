@@ -1,8 +1,9 @@
-#!/usr/bin/env python
-
+import logging
 from django.core.management import call_command
 from . import webandworkers
-import os
+
+logger = logging.getLogger(__name__)
+
 
 class Command(webandworkers.Command):
 
@@ -41,7 +42,7 @@ class Command(webandworkers.Command):
         collectstatic = options['collectstatic']
 
         if collectstatic:
-            self.stdout.write('Running collectstatic ...', ending='')
+            logger.info('Running collectstatic ...')
             call_command('collectstatic', interactive=False, verbosity=1)
 
         return super(Command, self).handle(*args, **options)
