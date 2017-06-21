@@ -82,7 +82,10 @@ class BaseSubsession(SaveTheChange, models.Model):
         )
 
     def _get_players_per_group_list(self):
-        """get a list whose elements are the number of players in each group
+        """
+        DEPRECATED
+
+        get a list whose elements are the number of players in each group
 
         Example: a group of 30 players
 
