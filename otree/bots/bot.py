@@ -39,7 +39,7 @@ yield Submission(views.PageName, {{...}}, check_html=False)
 
 HTML_MISSING_BUTTON_WARNING = ('''
 Bot is trying to submit page {page_name},
-but no button was not found in the HTML of the page.
+but no button was found in the HTML of the page.
 (searched for <input> with type='submit' or <button> with type != 'button').
 ''' + DISABLE_CHECK_HTML_INSTRUCTIONS).replace('\n', ' ').strip()
 
@@ -48,6 +48,14 @@ Bot is trying to submit page {page_name} with fields: "{fields}",
 but these form fields were not found in the HTML of the page
 (searched for tags {tags} with name= attribute matching the field name).
 ''' + DISABLE_CHECK_HTML_INSTRUCTIONS).replace('\n', ' ').strip()
+
+
+class MissingHtmlButtonError(AssertionError):
+    pass
+
+
+class MissingHtmlFormFieldError(AssertionError):
+    pass
 
 
 class BOTS_CHECK_HTML:
@@ -266,6 +274,12 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
                     else:
                         raise
 
+    def _play_individually(self):
+        '''convenience method for testing'''
+        self.open_start_url()
+        for submission in self.submits_generator:
+            self.submit(submission)
+
     def assert_html_ok(self, submission):
         if submission['check_html']:
             fields_to_check = [
@@ -275,7 +289,7 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
             missing_fields = checker.get_missing_fields(self.html)
             if missing_fields:
                 page_name = submission['page_class'].url_name()
-                raise AssertionError(
+                raise MissingHtmlFormFieldError(
                     HTML_MISSING_FIELD_WARNING.format(
                         page_name=page_name,
                         fields=', '.join(missing_fields),
@@ -283,7 +297,7 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
                                        for tag in checker.field_tags)))
             if not checker.submit_button_found:
                 page_name = submission['page_class'].url_name()
-                raise AssertionError(HTML_MISSING_BUTTON_WARNING.format(
+                raise MissingHtmlButtonError(HTML_MISSING_BUTTON_WARNING.format(
                     page_name=page_name))
 
     def assert_correct_page(self, submission):

@@ -6,6 +6,8 @@ import logging
 import unittest.mock
 from tests.bots_cases.tests import PlayerBot
 import tests.bots_cases.views
+from otree.bots.bot import (
+    MissingHtmlButtonError, MissingHtmlFormFieldError, ParticipantBot)
 
 
 class TestBots(TestCase):
@@ -27,23 +29,48 @@ class TestBots(TestCase):
 
         session = otree.session.create_session(
             session_config_name='bots_check_html',
-            num_participants=1,
+            num_participants=3,
             use_cli_bots=True,
             bot_case_number=0,
+        )
+
+        p1, p2, p3 = session.get_participants()
+
+        with self.settings(BOTS_CHECK_HTML=True):
+            try:
+                ParticipantBot(p1)._play_individually()
+            except MissingHtmlFormFieldError:
+                pass
+            else:
+                raise AssertionError('bots check_html: missing fields in HTML not detected')
+
+            try:
+                ParticipantBot(p2)._play_individually()
+            except MissingHtmlButtonError:
+                pass
+            else:
+                raise AssertionError('bots check_html: missing button not detected')
+
+            # should run without problems
+            ParticipantBot(p3)._play_individually()
+
+    def test_bots_extra_flag(self):
+
+        session = otree.session.create_session(
+            session_config_name='bots_check_html',
+            num_participants=1,
+            use_cli_bots=True,
+            bot_case_number=1,
         )
 
         with self.settings(BOTS_CHECK_HTML=True):
             bot_runner = session_bot_runner_factory(session)
             try:
                 bot_runner.play()
-            except AssertionError as exc:
-                # AssertionError should say something about check_html
-                raises_correct_message = 'check_html' in str(exc) and 'Page2' in str(exc)
+            except MissingHtmlButtonError:
+                pass
             else:
-                raises_correct_message = False
-            if not raises_correct_message:
                 raise AssertionError('bots check_html not working properly')
-
 
 
     def test_bot_bad_post(self):
