@@ -262,6 +262,8 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
                         self.assert_html_ok(submission)
                         yield submission
                 # handle the case where it's empty
+                # it's fragile to rely on a substring in the exception,
+                # but i have a test case covering this
                 except TypeError as exc:
                     if 'is not iterable' in str(exc):
                         # we used to raise StopIteration here. But shouldn't

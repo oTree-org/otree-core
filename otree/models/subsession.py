@@ -65,11 +65,8 @@ class BaseSubsession(SaveTheChange, models.Model):
     def in_all_rounds(self):
         return self.in_previous_rounds() + [self]
 
-    def name(self):
-        return str(self.pk)
-
     def __unicode__(self):
-        return self.name()
+        return str(self.pk)
 
     @property
     def app_name(self):

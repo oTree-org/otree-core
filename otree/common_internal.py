@@ -357,3 +357,7 @@ def in_rounds(ModelClass, first, last, **kwargs):
             'Database only contains {} records for rounds {}-{}, expected {}'.format(
                 num_results, first, last, expected_num_results))
     return ret
+
+
+class BotError(AssertionError):
+    pass

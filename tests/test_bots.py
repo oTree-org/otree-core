@@ -8,7 +8,7 @@ from tests.bots_cases.tests import PlayerBot
 import tests.bots_cases.views
 from otree.bots.bot import (
     MissingHtmlButtonError, MissingHtmlFormFieldError, ParticipantBot)
-
+from otree.common_internal import BotError
 
 class TestBots(TestCase):
     def test_bot_runs(self):
@@ -61,7 +61,7 @@ class TestBots(TestCase):
 
         bot_runner = session_bot_runner_factory(session)
 
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(BotError):
             # need to disable log output, because this triggers an exception
             # that is logged to stdout
             logging.disable(logging.CRITICAL)

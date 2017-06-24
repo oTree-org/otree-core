@@ -37,7 +37,7 @@ from otree.bots.bot import bot_prettify_post_data
 from otree.bots.browser import EphemeralBrowserBot
 from otree.common_internal import (
     get_app_label_from_import_path, get_dotted_name, get_admin_secret_code,
-    DebugTable)
+    DebugTable, BotError)
 from otree.models import Participant
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
@@ -1050,7 +1050,7 @@ class FormPageMixin(object):
             is_bot = self.participant._is_bot
             if form.is_valid():
                 if is_bot and post_data.get('must_fail'):
-                    raise AssertionError(
+                    raise BotError(
                         'Page "{}": Bot tried to submit intentionally invalid '
                         'data with '
                         'SubmissionMustFail, but it passed validation anyway:'
@@ -1065,14 +1065,13 @@ class FormPageMixin(object):
                     errors = [
                         "{}: {}".format(k, repr(v))
                         for k, v in form.errors.items()]
-                    raise AssertionError(
+                    raise BotError(
                         'Page "{}": Bot submission failed form validation: {} '
                         'Check your bot in tests.py, '
                         'then create a new session. '
                         'Data submitted was: {}'.format(
                             self.__class__.__name__,
                             errors,
-
                             bot_prettify_post_data(post_data),
                         ))
                 return self.form_invalid(form)
@@ -1087,7 +1086,7 @@ class FormPageMixin(object):
                     bot.send_completion_message()
                     return HttpResponse('Bot completed')
                 else:
-                    raise AssertionError(
+                    raise BotError(
                         'Finished the last page, '
                         'but the bot is still trying '
                         'to submit more data ({}).'.format(submission)

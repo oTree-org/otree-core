@@ -168,7 +168,7 @@ SESSION_CONFIGS = [
     {
         'name': 'bots_raise',
         'num_demo_participants': 2,
-        'app_sequence': ['tests.bots_raise'],
+        'app_sequence': ['tests.bots_empty', 'tests.bots_raise'],
     },
     {
         'name': 'group_by_arrival_time',
