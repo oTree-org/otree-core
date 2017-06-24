@@ -37,19 +37,11 @@ class TestBots(TestCase):
         p1, p2, p3 = session.get_participants()
 
         with self.settings(BOTS_CHECK_HTML=True):
-            try:
+            with self.assertRaises(MissingHtmlFormFieldError):
                 ParticipantBot(p1)._play_individually()
-            except MissingHtmlFormFieldError:
-                pass
-            else:
-                raise AssertionError('bots check_html: missing fields in HTML not detected')
 
-            try:
+            with self.assertRaises(MissingHtmlButtonError):
                 ParticipantBot(p2)._play_individually()
-            except MissingHtmlButtonError:
-                pass
-            else:
-                raise AssertionError('bots check_html: missing button not detected')
 
             # should run without problems
             ParticipantBot(p3)._play_individually()

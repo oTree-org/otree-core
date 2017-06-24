@@ -6,7 +6,7 @@ import six
 from django.db.models import Prefetch
 from otree_save_the_change.mixins import SaveTheChange
 from otree.db import models
-from otree.common_internal import get_models_module
+from otree.common_internal import get_models_module, in_round, in_rounds
 from otree import matching
 import copy
 
@@ -51,13 +51,13 @@ class BaseSubsession(SaveTheChange, models.Model):
         except AttributeError:
             raise AttributeError(ATTRIBUTE_ERROR_MESSAGE.format(name)) from None
 
-    def in_rounds(self, first, last):
-        qs = type(self).objects.filter(
+    def in_round(self, round_number):
+        return in_round(type(self), round_number,
             session=self.session,
-            round_number__range=(first, last),
-        ).order_by('round_number')
+        )
 
-        return list(qs)
+    def in_rounds(self, first, last):
+        return in_rounds(type(self), first, last, session=self.session)
 
     def in_previous_rounds(self):
         return self.in_rounds(1, self.round_number-1)
@@ -74,12 +74,6 @@ class BaseSubsession(SaveTheChange, models.Model):
     @property
     def app_name(self):
         return self._meta.app_config.name
-
-    def in_round(self, round_number):
-        return type(self).objects.get(
-            session=self.session,
-            round_number=round_number
-        )
 
     def _get_players_per_group_list(self):
         """

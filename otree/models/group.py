@@ -4,7 +4,8 @@
 from otree_save_the_change.mixins import SaveTheChange
 
 from otree.db import models
-from otree.common_internal import get_models_module
+from otree.common_internal import (
+    get_models_module, in_round, in_rounds, InvalidRoundError)
 from otree.models.fieldchecks import ensure_field
 import django.core.exceptions
 
@@ -63,28 +64,26 @@ class BaseGroup(SaveTheChange, models.Model):
             player.save()
 
     def in_round(self, round_number):
-        '''You should not use this method if
-        you are rearranging groups between rounds.'''
-
-        return type(self).objects.get(
-            session=self.session,
-            id_in_subsession=self.id_in_subsession,
-            round_number=round_number,
-        )
+        try:
+            return in_round(type(self), round_number, session=self.session,
+                id_in_subsession=self.id_in_subsession)
+        except InvalidRoundError:
+            raise InvalidRoundError(
+                'Some rounds were not found for this group. '
+                'Hint: you should not use this '
+                'method if you are rearranging groups between rounds.'
+            ) from None
 
     def in_rounds(self, first, last):
-        '''You should not use this method if
-        you are rearranging groups between rounds.'''
-
-        qs = type(self).objects.filter(
-            session=self.session,
-            id_in_subsession=self.id_in_subsession,
-            round_number__range=(first, last),
-        ).order_by('round_number')
-
-        ret = list(qs)
-        assert len(ret) == last-first+1
-        return ret
+        try:
+            return in_rounds(type(self), first, last, session=self.session,
+                id_in_subsession=self.id_in_subsession)
+        except InvalidRoundError:
+            raise InvalidRoundError(
+                'Some rounds were not found for this group. '
+                'Hint: you should not use this '
+                'method if you are rearranging groups between rounds.'
+            ) from None
 
     def in_previous_rounds(self):
         return self.in_rounds(1, self.round_number-1)

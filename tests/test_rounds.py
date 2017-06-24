@@ -1,14 +1,6 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-import itertools
-
-from unittest.mock import patch
-
-import six
 from django.core.management import call_command
 from otree.models import Session
-
+from otree.common_internal import InvalidRoundError
 from .base import TestCase
 
 
@@ -52,3 +44,16 @@ class TestRounds(TestCase):
                 player.participant,
                 prev_player.participant)
 
+    def test_in_rounds_misuse(self):
+        subsession = self.subsession_3
+        group = subsession.get_groups()[0]
+        player = group.get_player_by_id(1)
+
+        with self.assertRaises(InvalidRoundError):
+            subsession.in_round(0)
+
+        with self.assertRaises(InvalidRoundError):
+            group.in_rounds(1, 10)
+
+        with self.assertRaises(InvalidRoundError):
+            player.in_rounds(0, 1)

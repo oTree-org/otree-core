@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from otree.common_internal import get_models_module
+from otree.common_internal import get_models_module, in_round, in_rounds
 from otree_save_the_change.mixins import SaveTheChange
 from otree.db import models
 from otree.models.fieldchecks import ensure_field
@@ -94,21 +94,16 @@ class BasePlayer(SaveTheChange, models.Model):
         return ''
 
     def in_round(self, round_number):
-        return type(self).objects.get(
-            participant=self.participant, round_number=round_number
-        )
+        return in_round(type(self), round_number, participant=self.participant)
 
     def in_rounds(self, first, last):
-        qs = type(self).objects.filter(
-            participant=self.participant, round_number__range=(first, last),
-        ).order_by('round_number')
-
-        return list(qs)
+        return in_rounds(type(self), first, last, participant=self.participant)
 
     def in_previous_rounds(self):
         return self.in_rounds(1, self.round_number - 1)
 
     def in_all_rounds(self):
+        '''i do it this way because it doesn't rely on idmap'''
         return self.in_previous_rounds() + [self]
 
     def get_others_in_group(self):

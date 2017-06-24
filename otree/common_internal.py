@@ -324,3 +324,36 @@ class DebugTable(object):
                 v = v.strip().replace("\n", "<br>")
                 v = mark_safe(v)
             self.rows.append((k, v))
+
+
+class InvalidRoundError(ValueError):
+    pass
+
+
+def in_round(ModelClass, round_number, **kwargs):
+    if round_number < 1:
+        raise InvalidRoundError('Round number cannot be less than 1')
+    try:
+        return ModelClass.objects.get(round_number=round_number, **kwargs)
+    except ModelClass.DoesNotExist:
+        raise InvalidRoundError(
+            'No corresponding {} found with round_number={}'.format(
+                ModelClass.__name__, round_number)) from None
+
+
+def in_rounds(ModelClass, first, last, **kwargs):
+    if first < 1:
+        raise InvalidRoundError('Round number cannot be less than 1')
+    qs = ModelClass.objects.filter(
+            round_number__range=(first, last),
+            **kwargs
+        ).order_by('round_number')
+
+    ret = list(qs)
+    num_results = len(ret)
+    expected_num_results = last-first+1
+    if num_results != expected_num_results:
+        raise InvalidRoundError(
+            'Database only contains {} records for rounds {}-{}, expected {}'.format(
+                num_results, first, last, expected_num_results))
+    return ret
