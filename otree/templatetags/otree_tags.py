@@ -7,9 +7,6 @@ from otree.common import Currency, safe_json
 import otree.common_internal
 
 
-register = template.Library()
-
-
 class NextButtonNode(template.Node):
     def render(self, context):
         context.update({})
@@ -23,10 +20,6 @@ class NextButtonNode(template.Node):
         return cls()
 
 
-register.tag('next_button', NextButtonNode.parse)
-
-
-@register.simple_tag
 def active_page(request, view_name, *args, **kwargs):
     if not request:
         return ""
@@ -37,7 +30,6 @@ def active_page(request, view_name, *args, **kwargs):
         return ""
 
 
-@register.simple_tag
 def add_class(var, css_class, *extra_css_classes):
     '''
     tag for specifying css classes
@@ -62,7 +54,6 @@ ADMIN_PASSWORD in settings.py
 '''
 
 
-@register.simple_tag
 def ensure_superuser_exists():
     '''
     Creates a superuser on the fly, so that the user doesn't have to migrate
@@ -76,23 +67,22 @@ def ensure_superuser_exists():
     return NO_USER_MSG
 
 
-register.tag('formfield', FormFieldNode.parse)
-
-
-# =============================================================================
-# FILTERS
-# =============================================================================
-
-
-@register.filter
 def c(val):
     return Currency(val)
 
 
-@register.filter(name="abs")
 def abs_value(var):
     return abs(var)
 
 
+register = template.Library()
+register.tag('formfield', FormFieldNode.parse)
+register.tag('next_button', NextButtonNode.parse)
+register.simple_tag(name='add_class', func=add_class)
+register.simple_tag(name='ensure_superuser_exists',
+                    func=ensure_superuser_exists)
+register.simple_tag(name='active_page', func=active_page)
+register.filter(name='c', filter_func=c)
+register.filter(name='abs', filter_func=abs_value)
 register.filter('json', safe_json)
 register.filter('defaultlabel', defaultlabel)
