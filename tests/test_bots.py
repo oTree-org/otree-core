@@ -54,25 +54,6 @@ class TestBots(TestCase):
             # should run without problems
             ParticipantBot(p3)._play_individually()
 
-    def test_bots_extra_flag(self):
-
-        session = otree.session.create_session(
-            session_config_name='bots_check_html',
-            num_participants=1,
-            use_cli_bots=True,
-            bot_case_number=1,
-        )
-
-        with self.settings(BOTS_CHECK_HTML=True):
-            bot_runner = session_bot_runner_factory(session)
-            try:
-                bot_runner.play()
-            except MissingHtmlButtonError:
-                pass
-            else:
-                raise AssertionError('bots check_html not working properly')
-
-
     def test_bot_bad_post(self):
         """
         Test that posting bad data without using SubmitInvalid
