@@ -1,16 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-
-# =============================================================================
-# IMPORTS
-# =============================================================================
-
-import sys
 import os
-import platform
-import shutil
-
 from django.core.management.commands import startproject
 
 import six
@@ -18,18 +6,6 @@ import six
 import otree
 from otree.management.cli import pypi_updates_cli
 
-# =============================================================================
-# CONSTANTS
-# =============================================================================
-
-IMPLEMENTATIONS_ALIAS = {
-    "CPython": "python"
-}
-
-
-# =============================================================================
-# COMMAND
-# =============================================================================
 
 class Command(startproject.Command):
     help = ("Creates a new oTree project.")
@@ -42,27 +18,6 @@ class Command(startproject.Command):
         parser.add_argument(
             '--noinput', action='store_false', dest='interactive',
             default=True, help=ahelp)
-
-    def modify_project_files(self, options):
-        project_name, target = options['name'], options['directory']
-        if target is None:
-            project_root_dir = os.path.join(os.getcwd(), project_name)
-        else:
-            project_root_dir = os.path.abspath(os.path.expanduser(target))
-
-        imp = platform.python_implementation()
-        implementation_name = IMPLEMENTATIONS_ALIAS.get(imp, imp).lower()
-        version = ".".join(map(str, sys.version_info[:3]))
-        runtime_string = "{}-{}\n".format(implementation_name, version)
-
-        runtime_path = os.path.join(project_root_dir, "runtime.txt")
-        with open(runtime_path, "w") as fp:
-            fp.write(runtime_string)
-
-        # overwrite Procfile with new channels/asgi one
-        procfile_path = os.path.join(
-            self.core_project_template_path, 'Procfile')
-        shutil.copy(procfile_path, project_root_dir)
 
     def handle(self, *args, **options):
         if options["interactive"]:
@@ -87,7 +42,6 @@ class Command(startproject.Command):
             options['template'] = project_template_path
         super(Command, self).handle(*args, **options)
 
-        self.modify_project_files(options)
         try:
             pypi_updates_cli()
         except:
