@@ -8,7 +8,7 @@ from unittest.mock import patch
 import six
 from django.core.management import call_command
 from otree.models import Session
-
+from otree.models.subsession import RoundMismatchError
 from .base import TestCase
 from .misc_3p import models as mpg_models
 
@@ -76,6 +76,11 @@ class TestMatchPlayers(TestCase):
                     player.id_in_subsession,
                     desired_structure[i][j]
                 )
+
+    def test_round_mismatch(self):
+        subsessions = self.session.get_subsessions()
+        with self.assertRaises(RoundMismatchError):
+            subsessions[1].set_group_matrix(subsessions[0].get_group_matrix())
 
     def test_group_like_round(self):
         subsession_1 = self.subsession_1

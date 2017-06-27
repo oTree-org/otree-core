@@ -16,6 +16,10 @@ it must be declared on the Subsession class in models.py.
 '''.replace('\n', '')
 
 
+class RoundMismatchError(ValueError):
+    pass
+
+
 class BaseSubsession(SaveTheChange, models.Model):
     """Base class for all Subsessions.
     """
@@ -158,13 +162,23 @@ class BaseSubsession(SaveTheChange, models.Model):
                     'The elements of the group matrix '
                     'must either be Player objects, or integers.'
                 ) from None
-
         else:
             existing_pks = list(
                 self.player_set.values_list(
                     'pk', flat=True
                 ).order_by('pk'))
             if matrix_pks != existing_pks:
+                wrong_round_numbers = [
+                    p.round_number for p in players_flat
+                    if p.round_number != self.round_number]
+                if wrong_round_numbers:
+                    raise RoundMismatchError(
+                        'You are setting the groups for round {}, '
+                        'but the matrix contains players from round {}.'.format(
+                            self.round_number,
+                            wrong_round_numbers[0]
+                        )
+                    )
                 raise ValueError(
                     'The group matrix must contain each player '
                     'in the subsession exactly once.'
