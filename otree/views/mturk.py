@@ -32,7 +32,7 @@ from otree.checks.mturk import validate_session_for_mturk
 from otree.forms import widgets
 from otree.common import RealWorldCurrency
 from otree.models import Session
-
+from decimal import Decimal
 
 logger = logging.getLogger('otree')
 

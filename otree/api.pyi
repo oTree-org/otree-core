@@ -1,6 +1,12 @@
 from typing import Union, List, Any
 from otree.common import RealWorldCurrency, Currency
 
+class Currency(Currency):
+    '''
+    PyCharm autocomplete seems to require that I explicitly define the class in this file
+    (if I import, it says the reference to Currency is not found)
+    '''
+
 def currency_range(first, last, increment) -> List[Currency]: pass
 def safe_json(obj): pass
 
