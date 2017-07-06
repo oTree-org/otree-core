@@ -343,7 +343,7 @@ class PayMTurk(vanilla.View):
                     # TODO: check if bonus was already paid before,
                     # perhaps through
                     # mturk requester webinterface
-                    payoff = p.payoff_in_real_world_currency().to_number()
+                    payoff = Decimal(p.payoff_in_real_world_currency())
                     if payoff > 0:
                         bonus = boto.mturk.price.Price(amount=payoff)
                         mturk_connection.grant_bonus(

@@ -67,6 +67,7 @@ class RealWorldCurrency(easymoney.Money):
         return cls(val)
 
     def to_number(self):
+        '''DEPRECATED. Don't use this.'''
         return Decimal(self)
 
     def to_real_world_currency(self, session):

@@ -1,4 +1,6 @@
 {% extends "otree/admin/Session.html" %}
+{% load otree_tags %}
+
 {% block internal_scripts %}
     {{ block.super }}
     <script type="text/javascript" charset="utf-8">
@@ -162,7 +164,7 @@
                                     <div class="checkbox-inline">
                                         <label>
                                             <input name="payment"
-                                                   data-value="{{ p.payoff_plus_participation_fee.to_number }}"
+                                                   data-value="{{ p.payoff_plus_participation_fee|json }}"
                                                    type="checkbox"
                                                    value="{{ p.mturk_assignment_id }}">
                                         </label>
