@@ -15,10 +15,35 @@ class models:
     The code in this class has nothing to do with implementation,
     but rather defines the interface for model fields,
     so that pyCharm autocompletes them properly.
+
     It defines their __init__ so that when instantiating the class,
     PyCharm suggests the right arguments.
     Apart from that, they can be used as the equivalent Python data type
     (e.g. BooleanField is a bool, CharField is str)
+
+    Without inheriting from bool, str, etc., PyCharm flags certain usages in yellow,
+    like:
+
+        c(1) + c(1)
+
+    Results in: "Currency does not define __add__, so the + operator cannot
+    be used on its instances"
+
+    If "a" is a CurrencyField, then
+        self.a + c(1)
+
+    PyCharm warns: 'Currency does not define __add__, so the + operator cannot
+    be used on its instances'
+
+        c(1) + 1
+
+    'Expected type "int", got "Currency" instead'
+
+        self.a + 1
+
+    'Expected type "int", got "CurrencyField" instead'
+
+
     '''
 
     def __getattr__(self, item):
