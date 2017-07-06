@@ -1,4 +1,4 @@
-{% extends "otree/admin/Session.html" %}
+{% extends "otree/admin/SessionPage.html" %}
 
 {% block internal_scripts %}
 {{ block.super }}
@@ -49,7 +49,7 @@ function ajax_json_results() {
         </tr>
     </thead>
 </table>
-<div id="server_error" class="alert alert-danger" style="display: none;"> 
+<div id="server_error" class="alert alert-danger" style="display: none;">
     <a href="#" class="close" data-dismiss="alert">&times;</a>
     "Failed to connect to server"
 </div>
