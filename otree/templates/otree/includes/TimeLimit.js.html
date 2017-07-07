@@ -1,12 +1,12 @@
 {% load staticfiles otree_tags %}
-<script type="text/javascript" src="{% static 'otree/js/jquery.countdown.js' %}"></script>
+<script src="{% static 'otree/js/jquery.countdown.js' %}"></script>
 
-<script type="text/javascript">
+<script>
     $(function() {
-        $('div#otree-timeout').show();
+        $('div.otree-timer').show();
         var currentDate = new Date();
         var milliseconds = Math.floor({{ view.remaining_timeout_seconds|json }}*1000);
-        $('#otree-timeout').countdown(currentDate.valueOf() + milliseconds, function(event) {
+        $('.otree-timer').countdown(currentDate.valueOf() + milliseconds, function(event) {
 
             switch(event.type) {
                 case "seconds":
@@ -16,7 +16,7 @@
                     $(this).find('span#minutes').html(event.lasting.hours * 60 + parseInt(event.value));
                     break;
                 case "finished":
-                    $('#otree-timeout').hide(duration=0);
+                    $('.otree-timer').hide(duration=0);
                     $('<input>').attr({
                         type: 'hidden',
                         name: 'timeout_happened',
