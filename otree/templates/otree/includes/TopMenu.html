@@ -19,7 +19,7 @@
             <li class="{% active_page request 'Rooms' %}"><a href="{% url 'Rooms' %}">Rooms</a></li>
             <li class="{% active_page request 'ExportIndex' %}"><a href="{% url 'ExportIndex' %}">Data</a></li>
             <li class="{% active_page request 'ServerCheck' %}"><a href="{% url 'ServerCheck' %}">Server Check</a></li>
-            <li class="otree-core-updates"></li>
+            <li class="_otree-core-updates"></li>
 
             {% if request.user.is_authenticated %}
                 <li><a href="{% url 'logout' %}">Logout</a></li>

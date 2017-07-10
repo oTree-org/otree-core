@@ -18,13 +18,12 @@
                 </div>
             {% endif %}
 
-            <div id="otree-server-error" class="alert alert-danger"
+            <div id="_otree-server-error" class="alert alert-danger"
                  style="display:none">
                 {% blocktrans trimmed %}
                     An error occurred. Please check the logs or ask
                     the administrator for help.{% endblocktrans %}
             </div>
-
 
             <form action="" method="post" role="form" class="form"
                   id="form">{% csrf_token %}
@@ -82,7 +81,7 @@
                         var data = JSON.parse(e.data);
 
                         if (data.error) {
-                            $("#otree-server-error").show();
+                            $("#_otree-server-error").show();
                             return;
                         }
 
