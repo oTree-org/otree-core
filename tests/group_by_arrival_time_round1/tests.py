@@ -21,7 +21,7 @@ class GBATMixin:
             assert num_groups_without_players == 0
 
     def assert_same_id_in_group_in_all_rounds(self):
-        if self.player.round_number == Constants.num_rounds:
+        if self.round_number == Constants.num_rounds:
             ids_in_group = [p.id_in_group for p in self.player.in_all_rounds()]
             assert all(id_in_group == ids_in_group[0] for id_in_group in ids_in_group)
 

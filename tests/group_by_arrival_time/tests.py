@@ -20,7 +20,7 @@ class PlayerBot(Bot):
         # for now, this is the simplest way to get it working with browser bots
         # because there is no validate_play method. (usually its not needed)
         num_players = self.subsession.player_set.count()
-        if self.player.id_in_subsession == num_players and self.subsession.round_number == Constants.num_rounds:
+        if self.player.id_in_subsession == num_players and self.round_number == Constants.num_rounds:
             for subsession in self.subsession.in_all_rounds():
                 groups = subsession.get_groups()
                 players = subsession.get_players()

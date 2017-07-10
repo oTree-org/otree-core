@@ -376,6 +376,8 @@ class PlayerBot(object):
         self._cached_session = player.session
         self._legacy_submit_list = []
 
+        self.round_number = player.round_number
+
         case_number = self._cached_session._bot_case_number
         cases = self.cases
         if len(cases) >= 1:
