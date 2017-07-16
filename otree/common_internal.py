@@ -361,3 +361,45 @@ def in_rounds(ModelClass, first, last, **kwargs):
 
 class BotError(AssertionError):
     pass
+
+
+class MustCopyError(Exception):
+    pass
+
+def _raise_must_copy(*args, **kwargs):
+    raise MustCopyError(
+        "Instead of modifying a list in Constants, you should make a copy of it with .copy()"
+        "and modify that copy."
+    )
+
+class ConstantsList(list):
+
+    __setitem__ = _raise_must_copy
+    __delitem__ = _raise_must_copy
+    clear = _raise_must_copy
+    __iadd__ = _raise_must_copy
+    __imul__ = _raise_must_copy
+    append = _raise_must_copy
+    extend = _raise_must_copy
+    insert = _raise_must_copy
+    pop = _raise_must_copy
+    remove = _raise_must_copy
+    reverse = _raise_must_copy
+    sort = _raise_must_copy
+
+
+def _get_all_configs():
+    return [
+        app
+        for app in apps.get_app_configs()
+        if app.name in settings.INSTALLED_OTREE_APPS]
+
+
+def protect_constants():
+    for config in _get_all_configs():
+        Constants = config.models_module.Constants
+
+        for attr_name in dir(Constants):
+            obj = getattr(Constants, attr_name)
+            if type(obj) is list:
+                setattr(Constants, attr_name, ConstantsList(obj))

@@ -53,3 +53,4 @@ class SaveTheChangeTests(TestCase):
         instance = JSONFieldModel.objects.get()
         self.assertEqual(instance.integer, 2)
         self.assertEqual(instance.json_field, {'a': 'd'})
+

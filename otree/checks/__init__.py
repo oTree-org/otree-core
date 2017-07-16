@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-import io
 import glob
-import types
 import inspect
-from importlib import import_module
+import io
+import os
+import types
 from functools import wraps
+from importlib import import_module
 
 from django.apps import apps
 from django.conf import settings
@@ -15,8 +15,9 @@ from django.core.checks import register, Error, Warning
 from django.template import Template
 from django.template import TemplateSyntaxError
 
-from otree.api import BasePlayer, BaseGroup, BaseSubsession, Currency
 import otree.views.abstract
+from otree.api import BasePlayer, BaseGroup, BaseSubsession, Currency
+from otree.common_internal import _get_all_configs
 
 
 class Rules(object):
@@ -221,13 +222,6 @@ class Rules(object):
                 'Please configure your text editor to always save files '
                 'as UTF-8. Then open the file and save it again.'
                 .format(template=self.get_rel_path(template_name)))
-
-
-def _get_all_configs():
-    return [
-        app
-        for app in apps.get_app_configs()
-        if app.name in settings.INSTALLED_OTREE_APPS]
 
 
 def register_rules(tags=(), id=None, once_per_project=False):

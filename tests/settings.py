@@ -234,6 +234,12 @@ SESSION_CONFIGS = [
         'num_demo_participants': 1,
         'app_sequence': ['tests.timeout_submission'],
     },
+    {
+        'name': 'constants',
+        'num_demo_participants': 1,
+        'app_sequence': ['tests.constants'],
+    },
+
 ]
 
 
