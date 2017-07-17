@@ -172,12 +172,17 @@ def get_default_settings(initial_settings=None):
                     'CHANNEL_ROUTING',
                     'otree.channels.routing.channel_routing'),
             },
-            'inmemory': {
-                "BACKEND": "asgiref.inmemory.ChannelLayer",
-                'ROUTING': initial_settings.get(
-                    'CHANNEL_ROUTING',
-                    'otree.channels.routing.channel_routing'),
-            },
+        },
+        # not a top-level setting, just used for patching with runserver and test
+        # I put it here so it's right next to the Redis channel layer
+        # before, I had it inside the CHANNEL_LAYERS dict,
+        # but as at 2017-07-17, ChannelsLiveServerTestCase doesn't work with multiple
+        # channel layers.
+        'INMEMORY_CHANNEL_LAYER': {
+            "BACKEND": "asgiref.inmemory.ChannelLayer",
+            'ROUTING': initial_settings.get(
+                'CHANNEL_ROUTING',
+                'otree.channels.routing.channel_routing'),
         },
 
         # for convenience within oTree

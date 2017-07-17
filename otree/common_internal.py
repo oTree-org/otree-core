@@ -363,3 +363,4 @@ def in_rounds(ModelClass, first, last, **kwargs):
 
 class BotError(AssertionError):
     pass
+

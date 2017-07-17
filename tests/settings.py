@@ -37,6 +37,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'TEST': {
+            'NAME': 'testdb.sqlite3'
+        }
     }
 }
 
@@ -256,3 +259,11 @@ ROOMS = [
 BOTS_CHECK_HTML = False
 
 otree.settings.augment_settings(globals())
+
+
+CHANNEL_LAYERS = globals()['CHANNEL_LAYERS']
+REDIS_URL = globals()['REDIS_URL']
+
+# i could put this in otree-core, but i don't want to mess anything up,
+# e.g. bots
+CHANNEL_LAYERS['default']["TEST_CONFIG"] = {"hosts": [REDIS_URL]}

@@ -1,12 +1,13 @@
 from .base import TestCase
 import django.test.client
-from django.test import LiveServerTestCase
+from channels.test import ChannelLiveServerTestCase
 from django.conf import settings
 from .utils import get_path
 from django.core.urlresolvers import reverse
 import sys
 import importlib
 import splinter
+import splinter.browser
 
 def reload_urlconf():
     if settings.ROOT_URLCONF in sys.modules:
@@ -15,6 +16,18 @@ def reload_urlconf():
         module = importlib.import_module(settings.ROOT_URLCONF)
     importlib.reload(module)
 
+class OTreePhantomBrowser(splinter.browser.PhantomJSWebDriver):
+
+    # splinter.Browser is actually a function, not a class
+    def __init__(self, live_server_url):
+        self.live_server_url = live_server_url
+        super().__init__()
+
+            #user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'
+        #)
+
+    def go(self, relative_url):
+        self.visit(self.live_server_url + relative_url)
 
 class TestAdminBasic(TestCase):
 
@@ -90,7 +103,7 @@ class TestAdminBasic(TestCase):
             # so other tests can run normally
             reload_urlconf()
 
-class TestAdminJS(LiveServerTestCase):
+class TestAdminJS(ChannelLiveServerTestCase):
 
     def setUp(self):
         self.browser = splinter.Browser('phantomjs')
@@ -99,8 +112,67 @@ class TestAdminJS(LiveServerTestCase):
         br = self.browser
         create_session_url = '{}{}'.format(self.live_server_url, reverse('CreateSession'))
         br.visit(create_session_url)
-        br.choose('session_config', 'simple')
-        br.fill('num_participants', '1')
+        br.fill_form({
+            'session_config': 'simple',
+            'num_participants': '1',
+        })
         button = br.find_by_value('Create')
         button.click()
-        br.is_text_present('Simple Game: session', wait_time=3)
+        self.assertTrue(br.is_text_present('Simple Game: session', wait_time=3))
+
+
+class TestRoomJS(ChannelLiveServerTestCase):
+
+    def test_presence(self):
+        # admin browser
+        abr = OTreePhantomBrowser(live_server_url=self.live_server_url)
+
+        # participant browser
+        pbr = OTreePhantomBrowser(live_server_url=self.live_server_url)
+
+        room_name = 'default'
+
+        # participant opens waiting page
+        room_url = reverse('AssignVisitorToRoom', args=[room_name])
+        pbr.go(room_url)
+
+        pbr.fill('participant_label', 'JohnSmith')
+        button = pbr.find_by_tag('button')
+        button.click()
+        waiting_url = pbr.url
+
+        # admin opens RoomWithoutSession
+        abr.go(reverse('RoomWithoutSession', args=[room_name]))
+
+        # within a few seconds, he should see that participant online,
+        # but not another participant.
+        self.assertTrue(
+            abr.is_element_present_by_css(
+                '#present-participant-label-JohnSmith.count-this', wait_time=5))
+        self.assertFalse(
+            abr.is_element_present_by_css(
+                '#present-participant-label-Bob.count-this'))
+
+        # if participant closes the browser, he should go offline
+        # go to some other URL
+        pbr.go('/')
+
+        self.assertFalse(
+            abr.is_element_present_by_css(
+                '#present-participant-label-JohnSmith.count-this', wait_time=1))
+
+        # comes back online
+        # need to use visit, not go, because it's an absolute URL
+        pbr.visit(waiting_url)
+
+        # admin creates a session in the room
+        abr.fill_form({
+            'session_config': 'simple',
+            'num_participants': '1',
+        })
+        button = abr.find_by_value('Create')
+        button.click()
+
+        # within a few seconds, the participant should be redirected
+        my_field_present = pbr.is_element_present_by_name('my_field', wait_time=2)
+        self.assertTrue(my_field_present)
