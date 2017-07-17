@@ -1,23 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import mock
-
+from unittest import mock
 from six import StringIO
-
+from otree.management.commands.webandworkers import OTreeHonchoManager
 from django.core.management import call_command
-
 from otree.management import cli
-from otree.deprecate import OtreeDeprecationWarning
-
 from .base import TestCase
-
-
-class CeleryCommand(TestCase):
-
-    def test_handle(self):
-        self.assertWarns(OtreeDeprecationWarning,
-                         lambda: call_command("celery"))
 
 
 class OTreeAndDjangoVersion(TestCase):
@@ -114,6 +103,10 @@ class ExecuteFromCommandLine(TestCase):
         stdout.write.assert_called_with("foo\n")
     '''
 
+from collections import namedtuple
+CommandAndResult = namedtuple(
+    'CommandAddrPort', field_names=['command', 'address', 'port'])
+
 
 class OTreeCli(TestCase):
 
@@ -146,3 +139,45 @@ class OTreeCli(TestCase):
             self.assertEquals(path, ["foo"])
         self.assertTrue(gcwd.called)
         execute_from_command_line.assert_called_with(["--version"], 'otree')
+
+    # 2017-06-17:
+    # what's the point of patching execute_from_command_line and calling otree_cli?
+    # why not just use call_command? That seems better because it covers calls
+    # using 'otree' script and 'python manage.py', and just tests the command itself,
+    # not that argv is passed correctly, which Django handles for us
+    # also it's more standard
+
+    @mock.patch("sys.exit")
+    @mock.patch.dict('os.environ', {'PORT': '5000'})
+    @mock.patch.object(OTreeHonchoManager, 'loop')
+    @mock.patch.object(OTreeHonchoManager, 'add_otree_process')
+    def test_webandworkers(self, add_otree_process, *args):
+        specs = [
+            # should respect the $PORT env var, for Heroku
+            ('webandworkers', '0.0.0.0', '5000'),
+            # new syntax, to be consistent with runserver
+            ('runprodserver 127.0.0.1:80', '127.0.0.1', '80'),
+            ('runprodserver 8002', '0.0.0.0', '8002'),
+            # legacy syntax
+            ('runprodserver --port=81', '0.0.0.0', '81')
+        ]
+
+        for command, expected_address, expected_port in specs:
+            add_otree_process.reset_mock()
+            call_command(*command.split(' '))
+            add_otree_process.assert_any_call(
+                'daphne',
+                'daphne otree.asgi:channel_layer -b {} -p {}'.format(
+                    expected_address, expected_port))
+
+    @mock.patch("sys.exit")
+    @mock.patch.object(OTreeHonchoManager, 'loop')
+    @mock.patch.object(OTreeHonchoManager, 'add_otree_process')
+    def test_runprodserver(self, add_otree_process, *args):
+        call_command('runprodserver')
+        add_otree_process.assert_any_call(
+            'botworker', 'otree botworker')
+        add_otree_process.assert_any_call(
+            'timeoutworkeronly',
+            'otree timeoutworkeronly',
+        )

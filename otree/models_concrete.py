@@ -26,7 +26,7 @@ class PageTimeout(models.Model):
 
     participant = models.ForeignKey('otree.Participant')
     page_index = models.PositiveIntegerField()
-    expiration_time = models.PositiveIntegerField()
+    expiration_time = models.FloatField()
 
 
 class CompletedGroupWaitPage(models.Model):

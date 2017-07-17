@@ -23,7 +23,7 @@ import channels
 import otree.export
 import otree.common_internal
 from otree.common_internal import (
-    create_session_and_redirect, missing_db_table,
+    create_session_and_redirect, missing_db_tables,
     get_models_module, get_app_label_from_name, DebugTable
 )
 from otree.management.cli import check_pypi_for_updates
@@ -247,7 +247,8 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
 
     url_pattern = r"^WaitUntilSessionCreated/(?P<pre_create_id>.+)/$"
 
-    body_text = 'Waiting until session created'
+    title_text = 'Creating session'
+    body_text = ''
 
     def _is_ready(self):
         try:
@@ -755,7 +756,7 @@ class ServerCheck(vanilla.TemplateView):
         auth_level_ok = settings.AUTH_LEVEL in {'DEMO', 'STUDY'}
         heroku = self.app_is_on_heroku()
         runserver = 'runserver' in sys.argv
-        db_synced = not missing_db_table()
+        db_synced = not missing_db_tables()
         pypi_results = check_pypi_for_updates()
         python2 = sys.version_info[0] == 2
         timeoutworker = self.timeoutworker_is_running()

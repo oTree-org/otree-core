@@ -3,7 +3,7 @@
 
 from datetime import datetime
 
-from mock import Mock
+from unittest.mock import Mock
 
 import idmap.tls
 

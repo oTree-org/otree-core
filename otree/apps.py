@@ -58,6 +58,13 @@ def monkey_patch_static_tag():
     staticfiles.static = patched_static
 
 
+SQLITE_LOCKING_ADVICE = (
+    'Locking is common with SQLite. '
+    'When you run your study, you should use a database like PostgreSQL '
+    'that is resistant to locking.'
+)
+
+
 def monkey_patch_db_cursor():
     '''Monkey-patch the DB cursor, to catch ProgrammingError and
     OperationalError. The alternative is to use middleware, but (1)
@@ -91,10 +98,17 @@ def monkey_patch_db_cursor():
                         # these error messages are localized, so we can't
                         # just check for substring 'column' or 'table'
                         # all the ProgrammingError and OperationalError
-                        # instances I've seen so far are related to resetdb
+                        # instances I've seen so far are related to resetdb,
+                        # except for "database is locked"
                         tb = sys.exc_info()[2]
-                        raise ExceptionClass('{} - try running "otree resetdb".'.format(
-                                exc)).with_traceback(tb) from None
+
+                        if 'locked' in str(exc):
+                            advice = SQLITE_LOCKING_ADVICE
+                        else:
+                            advice = 'try running "otree resetdb"'
+
+                        raise ExceptionClass('{} - {}.'.format(
+                            exc, advice)).with_traceback(tb) from None
                     else:
                         raise
 

@@ -44,42 +44,10 @@ class RealWorldCurrency(easymoney.Money):
     LOCALE = settings.REAL_WORLD_CURRENCY_LOCALE
     DECIMAL_PLACES = settings.REAL_WORLD_CURRENCY_DECIMAL_PLACES
 
-    __hash__ = Decimal.__hash__
-
-    def __neg__(self):
-        cls = type(self)
-        val = super(RealWorldCurrency, self).__neg__()
-        return cls(val)
-
-    def __pos__(self):
-        cls = type(self)
-        val = super(RealWorldCurrency, self).__pos__()
-        return cls(val)
-
-    def __abs__(self):
-        if self < 0:
-            return -self
-        return self
-
-    def __pow__(self, other):
-        cls = type(self)
-        val = super(RealWorldCurrency, self).__pow__(other)
-        return cls(val)
-
     def to_number(self):
+        '''DEPRECATED. Don't use this.'''
         return Decimal(self)
 
-    # temporary fix for https://github.com/oTree-org/otree-core/issues/444
-    def __repr__(self):
-        return 'Currency({})'.format(self)
-
-    def to_real_world_currency(self, session):
-        return self
-
-    def deconstruct(self):
-        return [
-            '{}.{}'.format(self.__module__, self.__class__.__name__),
-            [Decimal.__str__(self)], {}]
 
 
 class Currency(RealWorldCurrency):
@@ -126,7 +94,7 @@ class Currency(RealWorldCurrency):
                 float(self) *
                 session.config['real_world_currency_per_point'])
         else:
-            return super(Currency, self).to_real_world_currency(session)
+            return self
 
 
 class _CurrencyEncoder(json.JSONEncoder):

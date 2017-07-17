@@ -45,7 +45,7 @@
             <h3 id="otree-wait-page-title-text" class="panel-title">{% block title %}{{ title_text }}{% endblock %}</h3>
         </div>
         <div class="panel-body">
-            <div id="otree-server-error" class="alert alert-danger" style="display:none">
+            <div id="_otree-server-error" class="alert alert-danger" style="display:none">
                 {% blocktrans trimmed %}An error occurred. Please check the logs or ask the administrator for help.{% endblocktrans %}
             </div>
             <div id="error-traceback" class="alert alert-danger" style="display:none"></div>
@@ -85,8 +85,8 @@ $(document).ready(function () {
             // Handle errors
             if (data.error) {
                 // maybe the div's default text doesn't get shown
-                $("#otree-server-error").text(data.error);
-                $("#otree-server-error").show();
+                $("#_otree-server-error").text(data.error);
+                $("#_otree-server-error").show();
                 if (data.traceback) {
                     $("#error-traceback").html('<pre>' + data.traceback + '</pre>');
                     $("#error-traceback").show();

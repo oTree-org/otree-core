@@ -6,7 +6,7 @@ import six
 from django.db.models import Prefetch
 from otree_save_the_change.mixins import SaveTheChange
 from otree.db import models
-from otree.common_internal import get_models_module
+from otree.common_internal import get_models_module, in_round, in_rounds
 from otree import matching
 import copy
 
@@ -14,6 +14,10 @@ ATTRIBUTE_ERROR_MESSAGE = '''
 Subsession object has no attribute '{}'. If it is a model field or method,
 it must be declared on the Subsession class in models.py.
 '''.replace('\n', '')
+
+
+class RoundMismatchError(ValueError):
+    pass
 
 
 class BaseSubsession(SaveTheChange, models.Model):
@@ -51,13 +55,13 @@ class BaseSubsession(SaveTheChange, models.Model):
         except AttributeError:
             raise AttributeError(ATTRIBUTE_ERROR_MESSAGE.format(name)) from None
 
-    def in_rounds(self, first, last):
-        qs = type(self).objects.filter(
+    def in_round(self, round_number):
+        return in_round(type(self), round_number,
             session=self.session,
-            round_number__range=(first, last),
-        ).order_by('round_number')
+        )
 
-        return list(qs)
+    def in_rounds(self, first, last):
+        return in_rounds(type(self), first, last, session=self.session)
 
     def in_previous_rounds(self):
         return self.in_rounds(1, self.round_number-1)
@@ -65,24 +69,18 @@ class BaseSubsession(SaveTheChange, models.Model):
     def in_all_rounds(self):
         return self.in_previous_rounds() + [self]
 
-    def name(self):
-        return str(self.pk)
-
     def __unicode__(self):
-        return self.name()
+        return str(self.pk)
 
     @property
     def app_name(self):
         return self._meta.app_config.name
 
-    def in_round(self, round_number):
-        return type(self).objects.get(
-            session=self.session,
-            round_number=round_number
-        )
-
     def _get_players_per_group_list(self):
-        """get a list whose elements are the number of players in each group
+        """
+        DEPRECATED
+
+        get a list whose elements are the number of players in each group
 
         Example: a group of 30 players
 
@@ -164,13 +162,23 @@ class BaseSubsession(SaveTheChange, models.Model):
                     'The elements of the group matrix '
                     'must either be Player objects, or integers.'
                 ) from None
-
         else:
             existing_pks = list(
                 self.player_set.values_list(
                     'pk', flat=True
                 ).order_by('pk'))
             if matrix_pks != existing_pks:
+                wrong_round_numbers = [
+                    p.round_number for p in players_flat
+                    if p.round_number != self.round_number]
+                if wrong_round_numbers:
+                    raise RoundMismatchError(
+                        'You are setting the groups for round {}, '
+                        'but the matrix contains players from round {}.'.format(
+                            self.round_number,
+                            wrong_round_numbers[0]
+                        )
+                    )
                 raise ValueError(
                     'The group matrix must contain each player '
                     'in the subsession exactly once.'
@@ -274,13 +282,10 @@ class BaseSubsession(SaveTheChange, models.Model):
         self.set_group_matrix(group_matrix)
 
     def before_session_starts(self):
-        '''This gets called at the beginning of every subsession, before the
-        first page is loaded.
+        '''Deprecated and renamed to creating_session'''
+        pass
 
-        3rd party programmer can put any code here, e.g. to loop through
-        players and assign treatment parameters.
-
-        '''
+    def creating_session(self):
         pass
 
     def vars_for_admin_report(self):

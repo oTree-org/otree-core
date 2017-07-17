@@ -129,10 +129,9 @@
         {% else %}
         <div class="alert alert-warning">
             <strong>No timeoutworker found</strong>
-            <p>
-            If your study has timeouts on pages (with <code>timeout_seconds</code>,
-            we recommend turning on the timeoutworker dyno.
-            This will ensure that the page timeouts will be enforced even if a user closes their browser.
+            <p>If your study has timeouts on pages (with <code>timeout_seconds</code>),
+            then the timeoutworker will automatically advance a user when they exceed the timeout,
+            even if they close their browser.
             Also, the timeoutworker is necessary if you want to use browser bots.
             </p>
 
@@ -140,7 +139,6 @@
                 <p>In your app dashboard, make sure your timeoutworker dyno is turned on.</p>
             {% else %}
                 <p>
-                    Make sure you are running the timeoutworker process.
                     It is launched automatically as part of <code>otree runprodserver</code>.
                 </p>
             {% endif %}

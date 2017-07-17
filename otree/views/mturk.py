@@ -32,7 +32,7 @@ from otree.checks.mturk import validate_session_for_mturk
 from otree.forms import widgets
 from otree.common import RealWorldCurrency
 from otree.models import Session
-
+from decimal import Decimal
 
 logger = logging.getLogger('otree')
 
@@ -343,7 +343,7 @@ class PayMTurk(vanilla.View):
                     # TODO: check if bonus was already paid before,
                     # perhaps through
                     # mturk requester webinterface
-                    payoff = p.payoff_in_real_world_currency().to_number()
+                    payoff = Decimal(p.payoff_in_real_world_currency())
                     if payoff > 0:
                         bonus = boto.mturk.price.Price(amount=payoff)
                         mturk_connection.grant_bonus(

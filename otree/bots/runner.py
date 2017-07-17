@@ -4,7 +4,7 @@
 
 import logging
 from collections import OrderedDict
-import mock
+from unittest import mock
 
 from django.db.migrations.loader import MigrationLoader
 from django.conf import settings

@@ -10,7 +10,6 @@ from django.template.base import token_kwargs
 from django.template.loader import get_template
 from django.utils import six
 
-import floppyforms.templatetags.floppyforms as floppyforms_templatetags
 from otree.models_concrete import UndefinedFormModel
 
 
@@ -18,9 +17,9 @@ from otree.models_concrete import UndefinedFormModel
 class FormFieldNode(Node):
     default_template = get_template('otree/tags/_formfield.html')
 
-    def __init__(self, field_variable_name, with_arguments):
+    def __init__(self, field_variable_name, arg_dict):
         self.field_variable_name = field_variable_name
-        self.with_arguments = with_arguments
+        self.arg_dict = arg_dict
 
     def get_form_instance(self, context):
         try:
@@ -108,10 +107,10 @@ class FormFieldNode(Node):
         extra_context = {
             'bound_field': bound_field
         }
-        if self.with_arguments:
+        if self.arg_dict:
             with_context = dict(
                 (name, var.resolve(context))
-                for name, var in self.with_arguments.items())
+                for name, var in self.arg_dict.items())
             # If the with argument label="" was set explicitly, we set it to
             # None. That is required to differentiate between 'use the default
             # label since we didn't set any in the template' and 'do not print
@@ -141,45 +140,31 @@ class FormFieldNode(Node):
                     tagname=tagname))
         field = bits.pop(0)
         if bits:
-            with_ = bits.pop(0)
-            if with_ != 'with':
-                raise TemplateSyntaxError(
-                    "{tagname}'s second argument must be 'with'.".format(
-                        tagname=tagname))
-            with_arguments = token_kwargs(bits, parser, support_legacy=False)
+            if bits[0] == 'with':
+                bits.pop(0)
+            arg_dict = token_kwargs(bits, parser, support_legacy=False)
 
             # Validate against spaces around the '='.
             has_lonely_equal_sign = any(
-                bit == '=' or bit.startswith('=') or bit.endswith('=')
+                bit.startswith('=') or bit.endswith('=')
                 for bit in bits)
             if has_lonely_equal_sign:
                 # If '=' is leading/trailing or is the own char in the token,
                 # then the user has used spaces around it. We can use a
                 # distinct error message for this to aid the user.
                 raise TemplateSyntaxError(
-                    "The keyword arguments after 'with' in {tagname} tag "
-                    "must not contain spaces around the '='. "
-                    "A keyword argument must be in the form of "
-                    "{example}.".format(
-                        tagname=tagname,
-                        example='{% formfield ... with label="value" %}'))
-
-            if not with_arguments:
-                example = '{% formfield ... with label="value" %}'
-                raise TemplateSyntaxError(
-                    "'with' in {tagname} tag needs at least one keyword "
-                    "argument. A keyword argument must be in the form of "
-                    "{example}.".format(
-                        tagname=tagname,
-                        example=example))
+                    "In the {tagname} tag, "
+                    "you must not put spaces around the '='. "
+                    "For example, do label='value', not label = 'value'."
+                    ".".format(tagname=tagname))
         else:
-            with_arguments = {}
+            arg_dict = {}
         if bits:
             raise TemplateSyntaxError(
                 'Unknown argument for {tagname} tag: {bits!r}'.format(
                     tagname=tagname,
                     bits=bits))
-        return cls(field, with_arguments)
+        return cls(field, arg_dict)
 
 
 def defaultlabel(given_label, default):

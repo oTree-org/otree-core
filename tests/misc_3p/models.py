@@ -19,7 +19,7 @@ class Constants:
 
 class Subsession(otree.models.BaseSubsession):
 
-    def before_session_starts(self):
+    def creating_session(self):
         if self.round_number == 2:
             for group in self.get_groups():
                 players = group.get_players()
@@ -32,7 +32,10 @@ class Subsession(otree.models.BaseSubsession):
                 assert [p.pk for p in group.get_players()] == pks_reversed
 
     def shuffle_p1(self):
-        matrix = [g.get_players() for g in self.get_groups()]
+        matrix = self.get_group_matrix()
+        # cycle p1's across groups.
+        # move each p1 to the previous group.
+        # p1 of the first group goes to the last group.
         p1_list = [g_list[0] for g_list in matrix]
         p1_in_first_group = p1_list.pop(0)
         p1_list.append(p1_in_first_group)

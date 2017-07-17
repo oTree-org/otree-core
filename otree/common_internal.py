@@ -171,18 +171,28 @@ def min_players_multiple(players_per_group):
     return 1
 
 
-def db_table_exists(table_name):
-    """Return True if a table already exists"""
-    return table_name in connection.introspection.table_names()
-
-
-def missing_db_table():
+def missing_db_tables():
     """Try to execute a simple select * for every model registered
     """
-    for Model in apps.get_models():
-        table_name = Model._meta.db_table
-        if not db_table_exists(table_name):
-            return '{}.{}'.format(Model._meta.app_label, Model.__name__)
+
+    # need to normalize to lowercase because MySQL converts DB names to lower
+    expected_table_names_dict = {
+        Model._meta.db_table.lower(): '{}.{}'.format(Model._meta.app_label, Model.__name__)
+        for Model in apps.get_models()
+    }
+
+    expected_table_names = set(expected_table_names_dict.keys())
+
+    # again, normalize to lowercase
+    actual_table_names = set(
+        tn.lower() for tn in connection.introspection.table_names())
+
+    missing_table_names = expected_table_names - actual_table_names
+
+    # don't use the SQL table name because it could be uppercase or lowercase,
+    # depending on whether it's MySQL
+    return [expected_table_names_dict[missing_table]
+            for missing_table in missing_table_names]
 
 
 def make_hash(s):
@@ -314,3 +324,40 @@ class DebugTable(object):
                 v = v.strip().replace("\n", "<br>")
                 v = mark_safe(v)
             self.rows.append((k, v))
+
+
+class InvalidRoundError(ValueError):
+    pass
+
+
+def in_round(ModelClass, round_number, **kwargs):
+    if round_number < 1:
+        raise InvalidRoundError('Round number cannot be less than 1')
+    try:
+        return ModelClass.objects.get(round_number=round_number, **kwargs)
+    except ModelClass.DoesNotExist:
+        raise InvalidRoundError(
+            'No corresponding {} found with round_number={}'.format(
+                ModelClass.__name__, round_number)) from None
+
+
+def in_rounds(ModelClass, first, last, **kwargs):
+    if first < 1:
+        raise InvalidRoundError('Round number cannot be less than 1')
+    qs = ModelClass.objects.filter(
+            round_number__range=(first, last),
+            **kwargs
+        ).order_by('round_number')
+
+    ret = list(qs)
+    num_results = len(ret)
+    expected_num_results = last-first+1
+    if num_results != expected_num_results:
+        raise InvalidRoundError(
+            'Database only contains {} records for rounds {}-{}, expected {}'.format(
+                num_results, first, last, expected_num_results))
+    return ret
+
+
+class BotError(AssertionError):
+    pass

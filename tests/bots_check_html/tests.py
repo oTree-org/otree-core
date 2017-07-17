@@ -1,8 +1,4 @@
-# -*- coding: utf-8 -*-
-from __future__ import division
-
 from otree.api import Bot, Submission
-
 from . import views
 from .models import Constants
 
@@ -10,4 +6,11 @@ from .models import Constants
 class PlayerBot(Bot):
 
     def play_round(self):
-        yield (views.Page1, {'my_field': 0.1})
+        id_in_group = self.player.id_in_group
+
+        if id_in_group == 1:
+            yield views.HtmlMissingFields, {'field_not_in_template': 0.1}
+        elif id_in_group == 2:
+            yield views.HtmlMissingButton
+        else:
+            yield Submission(views.TimeoutPage, timeout_happened=True)

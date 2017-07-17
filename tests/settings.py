@@ -27,6 +27,11 @@ DATABASES = {
     )
 }
 '''
+# 2017-06-13: why did i have it hardcoded previously? maybe because SQLite is faster?
+# 2017-07-16: because postgres gives me an error, even after i reset the DB:
+#    django.db.utils.ProgrammingError: relation "otree_session" does not exist
+
+# 2017-06-13: why did i have it hardcoded previously? maybe because SQLite is faster?
 
 DATABASES = {
     'default': {
@@ -149,6 +154,11 @@ SESSION_CONFIGS = [
         'app_sequence': ['tests.waitpage_set_field'],
     },
     {
+        'name': 'waitpage_misuse',
+        'num_demo_participants': 2,
+        'app_sequence': ['tests.waitpage_misuse'],
+    },
+    {
         'name': 'skip_waitpage_lookahead',
         'num_demo_participants': 2,
         'app_sequence': ['tests.skip_waitpage_lookahead'],
@@ -162,7 +172,7 @@ SESSION_CONFIGS = [
     {
         'name': 'bots_raise',
         'num_demo_participants': 2,
-        'app_sequence': ['tests.bots_raise'],
+        'app_sequence': ['tests.bots_empty', 'tests.bots_raise'],
     },
     {
         'name': 'group_by_arrival_time',
@@ -174,6 +184,12 @@ SESSION_CONFIGS = [
         'name': 'group_by_arrival_time_round1',
         'num_demo_participants': 6,
         'app_sequence': ['tests.group_by_arrival_time_round1'],
+        'use_browser_bots': True,
+    },
+    {
+        'name': 'group_by_arrival_time_custom',
+        'num_demo_participants': 6,
+        'app_sequence': ['tests.group_by_arrival_time_custom'],
         'use_browser_bots': True,
     },
     {

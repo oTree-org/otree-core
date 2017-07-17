@@ -5,7 +5,7 @@ from .base import TestCase
 from otree.session import create_session
 from otree.bots.bot import ParticipantBot
 from .base import TestCase
-import mock
+from unittest import mock
 from otree.models.session import Session
 from otree.bots.runner import session_bot_runner_factory
 from django.test import override_settings

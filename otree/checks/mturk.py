@@ -40,26 +40,6 @@ class ValidateMTurk(object):
         return not any(issubclass(page_class, WaitPage)
                        for page_class in views_module.page_sequence)
 
-    def get_no_timeout_pages(self):
-        '''
-        if an app contains a WaitPage then each Page of that app
-        must have a timeout_seconds defined.
-        '''
-        pages = []
-        pages_needs_timeout = False
-        for app in self.session.config['app_sequence']:
-            views_module = otree.common_internal.get_views_module(app)
-            for page_class in views_module.page_sequence:
-                page = page_class()
-                if isinstance(page, WaitPage):
-                    pages_needs_timeout = True
-                else:
-                    pages.append(page)
-        if pages_needs_timeout:
-            for page in pages:
-                if not page.has_timeout():
-                    yield page
-
 
 def validate_session_for_mturk(request, session):
     v = ValidateMTurk(session)
@@ -71,9 +51,8 @@ def validate_session_for_mturk(request, session):
              'even the last page should have a next button.')
             % (template_name, page.__class__.__name__)
         )
-    for page in v.get_no_timeout_pages():
-        messages.warning(
-            request,
-            'Page %s in view %s has no timeout'
-            % (page.__class__.__name__, page.__module__)
-        )
+    # 2017-05-06: I removed the check for timeouts, because I added
+    # get_timeout_seconds.
+    # i could base the warning on whether timeout_seconds is defined,
+    # but it seems like the warning would generate false positives.
+    # It's a bit complicated, and doesn't seem worth the code complexity.

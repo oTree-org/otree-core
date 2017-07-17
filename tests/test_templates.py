@@ -4,7 +4,7 @@
 import otree.session
 from otree.bots.bot import ParticipantBot
 from .base import TestCase
-import mock
+from unittest import mock
 
 
 class TestTemplates(TestCase):

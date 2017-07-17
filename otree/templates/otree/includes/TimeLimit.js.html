@@ -1,33 +1,26 @@
 {% load staticfiles otree_tags %}
-<script type="text/javascript" src="{% static 'otree/js/jquery.countdown.js' %}"></script>
+<script src="{% static 'otree/js/jquery.countdown.min.js' %}"></script>
 
-<script type="text/javascript">
-    $(function() {
-        {% if view.timeout_seconds %}
-            $('div#otree-timeout').show();
-            var currentDate = new Date();
-            var milliseconds = {{ view.remaining_timeout_seconds|json }}*1000;
-            $('#otree-timeout').countdown(currentDate.valueOf() + milliseconds, function(event) {
-
-                switch(event.type) {
-                    case "seconds":
-                        $(this).find('span#seconds').html(event.value);
-                        break;
-                    case "minutes":
-                        $(this).find('span#minutes').html(event.lasting.hours * 60 + parseInt(event.value));
-                        break;
-                    case "finished":
-                        $('#otree-timeout').hide(duration=0);
-                        $('<input>').attr({
-                            type: 'hidden',
-                            name: 'timeout_happened',
-                            value: '1'
-                        }).appendTo('form');
-                        $('#form').submit();
-
-                        break;
-                }
+<script>
+    $(function () {
+        $('div.otree-timer').show();
+        var currentDate = new Date();
+        var remainingTimeoutSeconds = {{ view.remaining_timeout_seconds|json }};
+        var milliseconds = Math.floor(remainingTimeoutSeconds * 1000);
+        $('.otree-remaining-time').countdown(currentDate.valueOf() + milliseconds)
+            .on('update.countdown', function (event) {
+                // %-N is "Total count of minutes till the end, non-padded"
+                // %S is seconds left
+                var format = '%-N:%S';
+                $(this).html(event.strftime(format));
+            })
+            .on('finish.countdown', function (event) {
+                $('<input>').attr({
+                    type: 'hidden',
+                    name: 'timeout_happened',
+                    value: '1'
+                }).appendTo('form');
+                $('#form').submit();
             });
-        {% endif %}
     });
 </script>

@@ -23,6 +23,11 @@ ADMIN_SECRET_CODE = get_admin_secret_code()
 
 logger = logging.getLogger('otree.bots')
 
+INTERNAL_FORM_FIELDS = {
+        'csrfmiddlewaretoken', 'origin_url', 'must_fail', 'timeout_happened',
+        'admin_secret_code'
+}
+
 DISABLE_CHECK_HTML_INSTRUCTIONS = '''
 Checking the HTML may not find all form fields and buttons
 (e.g. those added with JavaScript),
@@ -34,7 +39,7 @@ yield Submission(views.PageName, {{...}}, check_html=False)
 
 HTML_MISSING_BUTTON_WARNING = ('''
 Bot is trying to submit page {page_name},
-but no button was not found in the HTML of the page.
+but no button was found in the HTML of the page.
 (searched for <input> with type='submit' or <button> with type != 'button').
 ''' + DISABLE_CHECK_HTML_INSTRUCTIONS).replace('\n', ' ').strip()
 
@@ -43,6 +48,14 @@ Bot is trying to submit page {page_name} with fields: "{fields}",
 but these form fields were not found in the HTML of the page
 (searched for tags {tags} with name= attribute matching the field name).
 ''' + DISABLE_CHECK_HTML_INSTRUCTIONS).replace('\n', ' ').strip()
+
+
+class MissingHtmlButtonError(AssertionError):
+    pass
+
+
+class MissingHtmlFormFieldError(AssertionError):
+    pass
 
 
 class BOTS_CHECK_HTML:
@@ -88,7 +101,7 @@ def _Submission(
         'page_class': PageClass,
         'page_class_dotted': get_dotted_name(PageClass),
         'post_data': post_data,
-        'check_html': check_html
+        'check_html': check_html,
     }
 
 
@@ -198,6 +211,8 @@ def refresh_from_db(obj):
     return type(obj).objects.get(pk=obj.pk)
 
 
+# 2017-06-21: why ABCMeta? Was this something from when I was trying to get
+# the self.assert* methods working?
 class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
 
     def __init__(
@@ -247,6 +262,8 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
                         self.assert_html_ok(submission)
                         yield submission
                 # handle the case where it's empty
+                # it's fragile to rely on a substring in the exception,
+                # but i have a test case covering this
                 except TypeError as exc:
                     if 'is not iterable' in str(exc):
                         # we used to raise StopIteration here. But shouldn't
@@ -259,15 +276,22 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
                     else:
                         raise
 
+    def _play_individually(self):
+        '''convenience method for testing'''
+        self.open_start_url()
+        for submission in self.submits_generator:
+            self.submit(submission)
+
     def assert_html_ok(self, submission):
         if submission['check_html']:
-            field_names = [
-                f for f in submission['post_data'].keys() if f != 'must_fail']
-            checker = PageHtmlChecker(field_names)
+            fields_to_check = [
+                f for f in submission['post_data']
+                if f not in INTERNAL_FORM_FIELDS]
+            checker = PageHtmlChecker(fields_to_check)
             missing_fields = checker.get_missing_fields(self.html)
             if missing_fields:
                 page_name = submission['page_class'].url_name()
-                raise AssertionError(
+                raise MissingHtmlFormFieldError(
                     HTML_MISSING_FIELD_WARNING.format(
                         page_name=page_name,
                         fields=', '.join(missing_fields),
@@ -275,7 +299,7 @@ class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
                                        for tag in checker.field_tags)))
             if not checker.submit_button_found:
                 page_name = submission['page_class'].url_name()
-                raise AssertionError(HTML_MISSING_BUTTON_WARNING.format(
+                raise MissingHtmlButtonError(HTML_MISSING_BUTTON_WARNING.format(
                     page_name=page_name))
 
     def assert_correct_page(self, submission):
@@ -352,6 +376,8 @@ class PlayerBot(object):
         self._cached_session = player.session
         self._legacy_submit_list = []
 
+        self.round_number = player.round_number
+
         case_number = self._cached_session._bot_case_number
         cases = self.cases
         if len(cases) >= 1:
@@ -406,12 +432,4 @@ def bot_prettify_post_data(post_data):
         # (i.e. values should not be single-element lists)
         post_data = post_data.dict()
 
-    post_data = post_data.copy()
-    for extra_key in [
-        'csrfmiddlewaretoken', 'origin_url', 'must_fail', 'timeout_happened',
-        'admin_secret_code'
-    ]:
-        post_data.pop(extra_key, None)
-
-    # if browser bots, it will be a regular dict
-    return post_data
+    return {k: v for k,v in post_data.items() if k not in INTERNAL_FORM_FIELDS}

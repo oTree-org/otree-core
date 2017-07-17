@@ -29,7 +29,7 @@ $(function () {
         success: function(data) {
             if (!data.pypi_connection_error) {
                 if (data.update_needed) {
-                    $('.otree-core-updates').html(
+                    $('._otree-core-updates').html(
                         '<a class="navbar-brand" href="{% url 'ServerCheck' %}"><span class="glyphicon glyphicon-refresh" title="Newer version of oTree available"></span></a>')
                 }
             }

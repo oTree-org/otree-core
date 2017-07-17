@@ -16,7 +16,7 @@ from django.db.migrations.loader import MigrationLoader
 from django.db.migrations.autodetector import MigrationAutodetector
 
 import six
-import mock
+from unittest import mock
 
 
 # =============================================================================

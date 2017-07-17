@@ -52,10 +52,6 @@ class FormFieldSyntaxTests(FormFieldTestMixin, TestCase):
         with self.assertRaises(TemplateSyntaxError):
             self.parse('{% formfield field field2 %}')
 
-    def test_fail_with_no_arguments_after_with(self):
-        with self.assertRaises(TemplateSyntaxError):
-            self.parse('{% formfield field with %}')
-
     def test_fail_with_bad_arguments_after_with(self):
         with self.assertRaises(TemplateSyntaxError):
             self.parse('{% formfield field with label %}')
@@ -71,6 +67,7 @@ class FormFieldSyntaxTests(FormFieldTestMixin, TestCase):
 
     def test_with_syntax(self):
         self.parse('{% formfield field with label="Hello" %}')
+        self.parse('{% formfield field label="Hello" %}')
         self.parse('{% formfield field with help_text=variable %}')
         self.parse('''
             {% formfield field with label=label_value help_text="Constant" %}

@@ -1,11 +1,12 @@
 {% load staticfiles %}
 {% load i18n %}
 
-<div id="otree-timeout" class="alert alert-warning" style="display:none;">
-    <p>{% blocktrans trimmed %}Time left to complete this page:{% endblocktrans %}
+<!-- you should use .otree-timer if you need to select this element, NOT #otree-timeout -->
+<div class="otree-timer alert alert-warning" style="display:none;" id="otree-timeout">
+    <p>{{ timer_text }}
         <span style="font-weight: bold">
             <span class="glyphicon glyphicon-time"></span>
-            <span id="minutes"></span>:<span id="seconds"></span>
+            <span class="otree-remaining-time"></span>
         </span>
     </p>
 </div>

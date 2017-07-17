@@ -6,6 +6,9 @@ import logging
 import unittest.mock
 from tests.bots_cases.tests import PlayerBot
 import tests.bots_cases.views
+from otree.bots.bot import (
+    MissingHtmlButtonError, MissingHtmlFormFieldError, ParticipantBot)
+from otree.common_internal import BotError
 
 class TestBots(TestCase):
     def test_bot_runs(self):
@@ -26,26 +29,22 @@ class TestBots(TestCase):
 
         session = otree.session.create_session(
             session_config_name='bots_check_html',
-            num_participants=1,
+            num_participants=3,
             use_cli_bots=True,
             bot_case_number=0,
         )
 
+        p1, p2, p3 = session.get_participants()
+
         with self.settings(BOTS_CHECK_HTML=True):
-            from django.conf import settings
-            self.assertEqual(settings.BOTS_CHECK_HTML, True)
+            with self.assertRaises(MissingHtmlFormFieldError):
+                ParticipantBot(p1)._play_individually()
 
-            bot_runner = session_bot_runner_factory(session)
+            with self.assertRaises(MissingHtmlButtonError):
+                ParticipantBot(p2)._play_individually()
 
-            try:
-                bot_runner.play()
-            except AssertionError as exc:
-                # AssertionError should say something about check_html
-                raises_correct_message = 'check_html' in str(exc)
-            else:
-                raises_correct_message = False
-            if not raises_correct_message:
-                raise AssertionError('bots check_html not working properly')
+            # should run without problems
+            ParticipantBot(p3)._play_individually()
 
     def test_bot_bad_post(self):
         """
@@ -62,7 +61,7 @@ class TestBots(TestCase):
 
         bot_runner = session_bot_runner_factory(session)
 
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(BotError):
             # need to disable log output, because this triggers an exception
             # that is logged to stdout
             logging.disable(logging.CRITICAL)

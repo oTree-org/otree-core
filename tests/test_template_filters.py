@@ -11,7 +11,7 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 
 import six
 
-import mock
+from unittest import mock
 
 from otree.common import Currency as c
 

@@ -1,7 +1,8 @@
-#!/usr/bin/env python
-
+import logging
 from django.core.management import call_command
 from . import webandworkers
+
+logger = logging.getLogger(__name__)
 
 
 class Command(webandworkers.Command):
@@ -24,29 +25,24 @@ class Command(webandworkers.Command):
             '--no-collectstatic', action='store_false', dest='collectstatic',
             default=True, help=ahelp)
 
-    def get_honcho_manager(self, options):
-        manager = super(Command, self).get_honcho_manager(options)
+    def setup_honcho(self, options):
+        super().setup_honcho(options)
+        honcho = self.honcho
 
-        manager.add_process(
+        honcho.add_otree_process(
             'botworker',
             'otree botworker',
-            quiet=False,
-            env=self.get_env(options)
         )
-        manager.add_process(
+        honcho.add_otree_process(
             'timeoutworkeronly',
             'otree timeoutworkeronly',
-            quiet=False,
-            env=self.get_env(options)
         )
-
-        return manager
 
     def handle(self, *args, **options):
         collectstatic = options['collectstatic']
 
         if collectstatic:
-            self.stdout.write('Running collectstatic ...', ending='')
+            logger.info('Running collectstatic ...')
             call_command('collectstatic', interactive=False, verbosity=1)
 
         return super(Command, self).handle(*args, **options)

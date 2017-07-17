@@ -15,10 +15,14 @@
     {% endif %}
 
 {% if room %}
+
+    <div class="alert alert-info">
     <p>
         This session is taking place in the room
-        <a href="{% url "RoomWithoutSession" room.name %}">{{ room.display_name }}</a>.
+        {# apply underline because alert-info makes blue link on blue background invisible #}
+        <a style="text-decoration: underline" href="{% url "RoomWithoutSession" room.name %}">{{ room.display_name }}</a>.
     </p>
+    </div>
 
     {% include "otree/includes/RoomParticipantLinks.html" %}
 

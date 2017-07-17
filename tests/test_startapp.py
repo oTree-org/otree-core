@@ -5,7 +5,7 @@ import tempfile
 from django.conf import settings
 from django.core.management import call_command, CommandError
 
-from mock import patch
+from unittest.mock import patch
 
 import otree.checks
 from .base import TestCase
