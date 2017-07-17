@@ -1,14 +1,12 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-import django.test.client
 from .base import TestCase
+import django.test.client
+from django.test import LiveServerTestCase
 from django.conf import settings
 from .utils import get_path
 from django.core.urlresolvers import reverse
 import sys
 import importlib
-
+import splinter
 
 def reload_urlconf():
     if settings.ROOT_URLCONF in sys.modules:
@@ -91,3 +89,18 @@ class TestAdminBasic(TestCase):
             # reload URLconf to restore back to its original state,
             # so other tests can run normally
             reload_urlconf()
+
+class TestAdminJS(LiveServerTestCase):
+
+    def setUp(self):
+        self.browser = splinter.Browser('phantomjs')
+
+    def test_create_session(self):
+        br = self.browser
+        create_session_url = '{}{}'.format(self.live_server_url, reverse('CreateSession'))
+        br.visit(create_session_url)
+        br.choose('session_config', 'simple')
+        br.fill('num_participants', '1')
+        button = br.find_by_value('Create')
+        button.click()
+        br.is_text_present('Simple Game: session', wait_time=3)
