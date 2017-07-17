@@ -220,6 +220,8 @@ def channels_group_by_arrival_time_group_name(session_pk, page_index):
     return 'group_by_arrival_time_session{}_page{}'.format(
         session_pk, page_index)
 
+def channels_room_participants_group_name(room_name):
+    return 'room-participants-{}'.format(room_name)
 
 def validate_alphanumeric(identifier, identifier_description):
     if re.match(r'^[a-zA-Z0-9_]+$', identifier):

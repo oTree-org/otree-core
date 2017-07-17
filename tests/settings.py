@@ -20,22 +20,26 @@ SECRET_KEY = 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz'
 
 AUTH_LEVEL = ''
 
-
+'''
 DATABASES = {
     'default': dj_database_url.config(
         default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3')
     )
 }
+'''
+# 2017-06-13: why did i have it hardcoded previously? maybe because SQLite is faster?
+# 2017-07-16: because postgres gives me an error, even after i reset the DB:
+#    django.db.utils.ProgrammingError: relation "otree_session" does not exist
 
 # 2017-06-13: why did i have it hardcoded previously? maybe because SQLite is faster?
-'''
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-'''
+
 
 CREATE_DEFAULT_SUPERUSER = True
 ADMIN_USERNAME = 'admin'
