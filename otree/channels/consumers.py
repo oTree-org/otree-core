@@ -17,7 +17,8 @@ from otree.models_concrete import (
     CompletedGroupWaitPage, CompletedSubsessionWaitPage)
 from otree.common_internal import (
     channels_wait_page_group_name, channels_create_session_group_name,
-    channels_group_by_arrival_time_group_name, get_models_module
+    channels_group_by_arrival_time_group_name, get_models_module,
+    channels_room_participants_group_name
 )
 from otree.models_concrete import (
     FailedSessionCreation, ParticipantRoomVisit,
@@ -29,10 +30,14 @@ logger = logging.getLogger(__name__)
 
 class OTreeJsonWebsocketConsumer(JsonWebsocketConsumer):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def clean_kwargs(self, **kwargs):
+        '''
+        subclasses should override if the route receives a comma-separated params arg.
+        otherwise, this just passes the route kwargs as is (usually there is just one).
+        The output of this method is passed to self.group_name(), self.post_connect,
+        and self.pre_disconnect, so within each class, all 3 of those methods must
+        accept the same args (or at least take a **kwargs wildcard, if the args aren't used)
+        '''
         return kwargs
 
     def group_name(self, **kwargs):
@@ -40,7 +45,8 @@ class OTreeJsonWebsocketConsumer(JsonWebsocketConsumer):
 
     def connection_groups(self, **kwargs):
         kwargs = self.clean_kwargs(**kwargs)
-        return [self.group_name(**kwargs)]
+        group_name = self.group_name(**kwargs)
+        return [group_name]
 
     def connect(self, message, **kwargs):
         self.message.reply_channel.send({"accept": True})
@@ -63,12 +69,13 @@ class GroupByArrivalTime(OTreeJsonWebsocketConsumer):
     def clean_kwargs(self, params):
         session_pk, page_index, app_name, player_id = params.split(',')
         return {
+            'app_name': app_name,
             'session_pk': int(session_pk),
             'page_index': int(page_index),
             'player_id': int(player_id)
         }
 
-    def group_name(self, session_pk, page_index):
+    def group_name(self, app_name, player_id, page_index, session_pk):
         return channels_group_by_arrival_time_group_name(
             session_pk, page_index)
 
@@ -126,7 +133,7 @@ class AutoAdvance(OTreeJsonWebsocketConsumer):
             'page_index': int(page_index),
         }
 
-    def group_name(self, participant_code):
+    def group_name(self, page_index, participant_code):
         return 'auto-advance-{}'.format(participant_code)
 
     def post_connect(self, page_index, participant_code):
@@ -178,7 +185,7 @@ def create_session(message):
     )
 
     if 'room_name' in kwargs:
-        Group('room-participants-{}'.format(kwargs['room_name'])).send(
+        Group(channels_room_participants_group_name(kwargs['room_name'])).send(
             {'text': json.dumps(
                 {'status': 'session_ready'})}
         )
@@ -193,10 +200,12 @@ class WaitForSession(OTreeJsonWebsocketConsumer):
 
     def post_connect(self, pre_create_id):
 
+        group_name = self.group_name(pre_create_id)
+
         # in case message was sent before this web socket connects
         if Session.objects.filter(
                 _pre_create_id=pre_create_id, ready=True).exists():
-            self.group.send(
+            self.group_send(group_name,
                 {'text': json.dumps(
                     {'status': 'ready'})}
             )
@@ -205,7 +214,7 @@ class WaitForSession(OTreeJsonWebsocketConsumer):
                 pre_create_id=pre_create_id
             ).first()
             if failure:
-                self.group.send(
+                self.group_send(group_name,
                     {'text': json.dumps(
                         {'error': failure.message,
                          'traceback': failure.traceback})}
@@ -213,15 +222,13 @@ class WaitForSession(OTreeJsonWebsocketConsumer):
 
 
 class RoomAdmin(OTreeJsonWebsocketConsumer):
-    def clean_kwargs(self, room):
-        self.room = room
 
-    def group_name(self):
-        return 'room-admin-{}'.format(self.room)
+    def group_name(self, room):
+        return 'room-admin-{}'.format(room)
 
-    def post_connect(self):
+    def post_connect(self, room):
 
-        room_object = ROOM_DICT[self.room]
+        room_object = ROOM_DICT[room]
 
         now = django.utils.timezone.now()
         stale_threshold = now - timedelta(seconds=15)
@@ -256,6 +263,9 @@ class RoomParticipant(OTreeJsonWebsocketConsumer):
             'participant_label': participant_label,
             'tab_unique_id': tab_unique_id,
         }
+
+    def group_name(self, room_name, participant_label, tab_unique_id):
+        return channels_room_participants_group_name(room_name)
 
     def post_connect(self, room_name, participant_label, tab_unique_id):
         if room_name in ROOM_DICT:
@@ -292,7 +302,7 @@ class RoomParticipant(OTreeJsonWebsocketConsumer):
                 }
             )
 
-    def disconnect(self, message, room_name, participant_label, tab_unique_id):
+    def pre_disconnect(self, room_name, participant_label, tab_unique_id):
 
         if room_name in ROOM_DICT:
             room = ROOM_DICT[room_name]
