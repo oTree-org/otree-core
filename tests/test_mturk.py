@@ -24,8 +24,7 @@ class TestMTurk(TestCase):
     def test_get_create_hit(self):
         url = reverse('MTurkCreateHIT', args=(self.session.code,))
         response = self.browser.get(url, follow=True)
-        if response.status_code != 200:
-            raise Exception('{} returned 400'.format(url))
+        self.assertEqual(response.status_code, 200)
 
     @mock.patch.object(MTurkConnection, '__enter__')
     def test_post_create_hit(self, mocked_enter):
@@ -50,8 +49,8 @@ class TestMTurk(TestCase):
             },
             follow=True
         )
-        if response.status_code != 200:
-            raise Exception('{} returned 400'.format(url))
+
+        self.assertEqual(response.status_code, 200)
 
     @mock.patch.object(MTurkConnection, '__enter__')
     def test_mturk_start(self, mocked_enter):
@@ -71,8 +70,7 @@ class TestMTurk(TestCase):
             },
             follow=True
         )
-        if response.status_code != 200:
-            raise Exception('{} returned 400'.format(url))
+        self.assertEqual(response.status_code, 200)
         mocked_connection.assign_qualification.assert_called_with(
             self.session.mturk_qualification_type_id,
             worker_id
@@ -103,8 +101,7 @@ class TestMTurk(TestCase):
             },
             follow=True
         )
-        if response.status_code != 200:
-            raise Exception('{} returned 400'.format(url))
+        self.assertEqual(response.status_code, 200)
 
 
 Assignment = namedtuple('Assignment', ['WorkerId', 'AssignmentStatus'])
@@ -119,11 +116,14 @@ class MockResultSet(list):
 class PayMTurk(TestCase):
 
     def setUp(self):
+        # create a session
         call_command('create_session', 'misc_3p', "9")
         self.session = Session.objects.get()
         self.browser = django.test.client.Client()
         self.participants = self.session.get_participants()
 
+        # simulate workers arriving from MTurk by assigning bogus worker IDs
+        # and assignment IDs
         for (i, p) in enumerate(self.participants):
             p.mturk_worker_id = str(i)
             p.mturk_assignment_id = str(i)
@@ -131,6 +131,9 @@ class PayMTurk(TestCase):
 
     @mock.patch.object(MTurkConnection, '__enter__')
     def test_pay_mturk(self, mocked_enter):
+
+        # mock the result set, so that when the view queries MTurk to see
+        # who is submitted, it returns a list of MTurk workers
         assignments = MockResultSet(
             [Assignment(p.mturk_worker_id, 'Submitted') for
              p in self.participants])
@@ -138,6 +141,7 @@ class PayMTurk(TestCase):
         mocked_enter.return_value = mocked_connection
         mocked_connection.get_assignments.return_value = assignments
 
+        # basically, all this tests is that it doesn't crash
         url = reverse('MTurkSessionPayments', args=[self.session.code])
         response = self.browser.get(
             url,
@@ -148,6 +152,7 @@ class PayMTurk(TestCase):
         reject_participants = [p for p in self.participants if p.id % 2]
         accept_participants = [p for p in self.participants if not p.id % 2]
 
+        # basically, all this tests is that it doesn't crash
         url = reverse('PayMTurk', args=[self.session.code])
         response = self.browser.post(
             url,
@@ -159,6 +164,7 @@ class PayMTurk(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+        # basically, all this tests is that it doesn't crash
         url = reverse('RejectMTurk', args=[self.session.code])
         response = self.browser.post(
             url,
