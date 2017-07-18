@@ -156,8 +156,6 @@ def get_default_settings(initial_settings=None):
         # that most people downloaded
         'USE_L10N': True,
         'SECURE_PROXY_SSL_HEADER': ('HTTP_X_FORWARDED_PROTO', 'https'),
-        'MTURK_HOST': 'mechanicalturk.amazonaws.com',
-        'MTURK_SANDBOX_HOST': 'mechanicalturk.sandbox.amazonaws.com',
 
         # The project can override the routing.py used as entry point by
         # setting CHANNEL_ROUTING.

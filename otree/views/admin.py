@@ -460,7 +460,7 @@ class MTurkSessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
             context.update({'not_published_yet': True})
             return context
         with MTurkConnection(
-                self.request, session.mturk_sandbox
+                self.request, session.mturk_use_sandbox
         ) as mturk_connection:
             workers_by_status = get_workers_by_status(
                 mturk_connection,

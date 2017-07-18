@@ -142,7 +142,7 @@ class MTurkStart(vanilla.View):
         worker_id = self.request.GET['workerId']
         if self.session.mturk_qualification_type_id:
             with MTurkConnection(
-                self.request, self.session.mturk_sandbox
+                self.request, self.session.mturk_use_sandbox
             ) as mturk_connection:
                 try:
                     mturk_connection.assign_qualification(
