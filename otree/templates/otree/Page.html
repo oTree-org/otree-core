@@ -32,7 +32,9 @@
                 {% form form using %}
                     {% formconfig row using "floppyforms/rows/bootstrap.html" %}
                     <div id="otree-content">
-                        {% block content %}{% endblock %}
+                      {% block content_header %}{% endblock %}
+                      {% block content %}{% endblock %}
+                      {% block content_footer %}{% endblock %}
                     </div>
                 {% endform %}
             </form>
