@@ -37,14 +37,7 @@ logger = logging.getLogger('otree')
 import contextlib
 
 
-def function_to_mock(*, use_sandbox=True):
-    raise AssertionError('**********should not execute')
-
 def get_mturk_client(*, use_sandbox=True):
-    import os
-    print('*********calling get_mturk_client (should not happen in tests), pid:', os.getpid())
-    raise AssertionError('**********should not execute')
-
 
     if use_sandbox:
         endpoint_url = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
@@ -299,7 +292,6 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
                         reverse(
                             'MTurkCreateHIT', args=(session.code,)))
 
-            print('***********type of mturk_client', mturk_client)
             hit = mturk_client.create_hit(**mturk_hit_parameters)['HIT']
 
             session.mturk_HITId = hit['HITId']

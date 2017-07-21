@@ -225,6 +225,7 @@ SESSION_CONFIGS = [
         'name': 'mturk',
         'num_demo_participants': 1,
         'app_sequence': ['tests.simple'],
+        'participation_fee': 0.4,
         'mturk_hit_settings': {
             'keywords': ['easy', 'bonus', 'choice', 'study'],
             'title': 'Title for your experiment',
@@ -234,7 +235,7 @@ SESSION_CONFIGS = [
             'minutes_allotted_per_assignment': 60,
             'expiration_hours': 7 * 24,  # 7 days
             # to prevent retakes
-            'grant_qualification_id': 'OTREE_TEST_QUAL',
+            'grant_qualification_id': 'ATESTQUAL',
             'qualification_requirements': []
         }
     },

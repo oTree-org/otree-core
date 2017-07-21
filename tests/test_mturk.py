@@ -8,18 +8,11 @@ import django.test.client
 from unittest import mock
 from unittest.mock import MagicMock
 from .base import TestCase
-from django.test import override_settings
-from channels.test import ChannelLiveServerTestCase
+from django.test import override_settings, LiveServerTestCase
 from tests.base import OTreePhantomBrowser
 
-from otree.views.mturk import get_mturk_client, function_to_mock
-'''
-from botocore.stub import Stubber
-import botocore.session
+from otree.views.mturk import get_mturk_client
 
-def MockMTurk():
-    return botocore.session.get_session().create_client('mturk')
-'''
 
 class TestMTurk(TestCase):
 
@@ -85,11 +78,12 @@ class TestMTurk(TestCase):
 
     @mock.patch('otree.views.mturk.get_mturk_client')
     def test_mturk_start(self, mock_get_mturk_client):
-        mocked_client = mock_get_mturk_client()
+        mocked_client = mock_get_mturk_client.return_value
 
         url = reverse('MTurkStart', args=(self.session.code,))
-        worker_id = 'WORKER_ID01'
-        assignment_id = 'ASSIGNMENT_ID01'
+        # needs to start with 'A'
+        worker_id = 'AWORKERID1'
+        assignment_id = 'ASSIGNMENTID1'
         response = self.browser.get(
             url,
             data={
@@ -99,7 +93,21 @@ class TestMTurk(TestCase):
             follow=True
         )
         self.assertEqual(response.status_code, 200)
-        mocked_client.assign_qualification.assert_called()
+
+        # worker returns the assignment, accepts another assignment
+        assignment_id2 = 'ASSIGNMENTID2'
+        response = self.browser.get(
+            url,
+            data={
+                'assignmentId': assignment_id2,
+                'workerId': worker_id
+            },
+            follow=True
+        )
+
+        mocked_client.associate_qualification_with_worker.assert_called()
+
+        # should be only 1
         p_visitor = Participant.objects.get(
             session=self.session,
             visited=True
@@ -109,12 +117,13 @@ class TestMTurk(TestCase):
             visited=False
         )[0]
 
-        self.assertTrue(p_visitor.mturk_worker_id == worker_id)
-        self.assertTrue(p_visitor.mturk_assignment_id == assignment_id)
-        self.assertTrue(p_non_visitor.mturk_worker_id is None)
-        self.assertTrue(p_non_visitor.mturk_assignment_id is None)
+        self.assertEqual(p_visitor.mturk_worker_id, worker_id)
+        self.assertEqual(p_visitor.mturk_assignment_id, assignment_id2)
+        self.assertEqual(p_non_visitor.mturk_worker_id, None)
+        self.assertEqual(p_non_visitor.mturk_assignment_id, None)
 
-    def test_mturk_landing_page(self):
+    @mock.patch('otree.views.mturk.get_mturk_client')
+    def test_mturk_preview(self, mock_get_mturk_client):
         url = reverse('MTurkLandingPage', args=(self.session.code,))
         assignment_id = 'ASSIGNMENT_ID01'
         worker_id = 'WORKER_ID01'
@@ -129,7 +138,14 @@ class TestMTurk(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
-class TestPayMTurk(ChannelLiveServerTestCase):
+
+class TestPayMTurk(LiveServerTestCase):
+
+    '''
+    Use LiveServerTestCase instead of ChannelLiveServerTestCase, because
+    I need to use mocks, which are not possible with ChannelLiveServerTestCase
+    because it uses a separate process
+    '''
 
     def setUp(self):
         num_participants = 6
@@ -138,60 +154,53 @@ class TestPayMTurk(ChannelLiveServerTestCase):
         self.session = Session.objects.get()
         self.session.mturk_HITId = 'FAKEHITID'
         self.session.save()
-        self.browser = OTreePhantomBrowser(self.live_server_url)
-        self.participants = self.session.get_participants()
+        self.browser = OTreePhantomBrowser(live_server_url=self.live_server_url)
+        self.participants = list(self.session.get_participants())
 
-    # easier to mock these methods than having to think about points conversion
-    @mock.patch.object(Participant, 'payoff_in_real_world_currency')
-    @mock.patch.object(Participant, 'payoff_plus_participation_fee')
+    # so we don't have to worry about points conversion.
+    @override_settings(USE_POINTS=False)
     @mock.patch('otree.views.mturk.get_mturk_client')
-    def test_pay_mturk(
-            self, mock_get_mturk_client,
-            mock_payoff_plus_participation_fee,
-            mock_payoff_in_real_world_currency
-    ):
-        mocked_client = mock_get_mturk_client()#.return_value
+    def test_pay(self, mock_get_mturk_client):
 
-        num_participants_to_pay = 4
+        mocked_client = mock_get_mturk_client()
+
         bonus_per_participant = 0.2
+        self.assertEqual(self.session.config['participation_fee'], 0.4)
         total_pay_per_participant = 0.6
-
-
-        mock_payoff_in_real_world_currency.return_value = RealWorldCurrency(bonus_per_participant)
-        mock_payoff_plus_participation_fee.return_value = RealWorldCurrency(total_pay_per_participant)
-
 
         # simulate workers arriving from MTurk by assigning bogus worker IDs
         # and assignment IDs
-        for (i, p) in enumerate(self.participants):
-            p.mturk_worker_id = str(i)
-            p.mturk_assignment_id = str(i)
+        for p in self.participants:
+            p.mturk_assignment_id = p.mturk_worker_id = str(p.id_in_session)
+            p.payoff = bonus_per_participant
             p.save()
 
         # mock the result set, so that when the view queries MTurk to see
         # who is submitted, it returns a list of MTurk workers
-        assignments = [
-            {'WorkerId': p.mturk_worker_id, 'AssignmentStatus': 'Submitted'}
-            for
-            p in self.participants[:num_participants_to_pay]
-        ]
 
-        mocked_client.list_assignments_for_hit.return_value = assignments
+        def list_assignments_for_hit(**kwargs):
+            # don't paginate
+            if 'NextToken' in kwargs:
+                return {'Assignments': []}
+            return {
+                'NextToken': 'foo',
+                'Assignments': [
+                    {'WorkerId': p.mturk_worker_id, 'AssignmentStatus': 'Submitted'}
+                    # simulate that not everyone submitted
+                    for p in self.participants[:-2]
+                ]
+            }
 
-        # basically, all this tests is that it doesn't crash
-        #session = Session.objects.get()
-        #self.assertEqual(session.code, self.session.code)
+        mocked_client.list_assignments_for_hit = list_assignments_for_hit
+
         url = reverse('MTurkSessionPayments', args=[self.session.code])
         br = self.browser
         br.go(url)
 
-        with open('MTurkSessionPayments.html', 'wb') as f:
-            f.write(br.html.encode('utf-8'))
-        br.screenshot('MTurkSessionPayments')
         br.find_by_css('[name="workers"][value="1"]').check()
         br.find_by_css('[name="workers"][value="2"]').check()
-        button = br.find_by_css('button.pay')
 
+        button = br.find_by_css('button#pay')
         self.assertEqual(button.text, 'Pay via MTurk ($1.20)')
         button.click()
 
@@ -200,14 +209,14 @@ class TestPayMTurk(ChannelLiveServerTestCase):
 
         calls = mocked_client.approve_assignment.call_args_list
         for asst_id in ['1', '2']:
-            mocked_client.approve_assignment.assert_called_with(
+            mocked_client.approve_assignment.assert_any_call(
                 AssignmentId=asst_id)
 
         calls = mocked_client.send_bonus.call_args_list
         self.assertEqual(len(calls), 2)
 
         for call in calls:
-            kwargs = calls[1]
+            kwargs = call[1]
             self.assertEqual(kwargs['BonusAmount'], '0.20')
             # because our bogus worker ID is the same as our bogus assignment ID
             self.assertEqual(kwargs['WorkerId'], kwargs['AssignmentId'])
@@ -215,53 +224,14 @@ class TestPayMTurk(ChannelLiveServerTestCase):
         # after submitting, oTree redirects to the payments page
         br.find_by_css('[name="workers"][value="3"]').check()
         br.find_by_css('[name="workers"][value="4"]').check()
-        button = br.find_by_css('button.reject')
-        button.click()
 
+        button = br.find_by_css('button#reject')
+        button.click()
         reject_confirm_button = br.find_by_id('reject-confirm-button')
         reject_confirm_button.click()
 
         calls = mocked_client.reject_assignment.call_args_list
         self.assertEqual(len(calls), 2)
         for asst_id in ['3', '4']:
-            mocked_client.reject_assignment.assert_called_with(
+            mocked_client.reject_assignment.assert_any_call(
                 AssignmentId=asst_id, RequesterFeedback='')
-
-
-class Foo:
-    def f(self):
-        print('***********should not execute')
-        return 'In Foo.f'
-
-def foo_test():
-    return Foo().f()
-
-def function_to_mock_local():
-    raise AssertionError('**********should not execute')
-
-
-
-'''
-    @mock.patch.object(Foo, 'f')
-    def test_foo(self, patched_f):
-        patched_f.return_value = 'in test case'
-        self.assertEqual(foo_test(), 'in test case')
-'''
-
-class TestFoo(TestCase):
-
-    @mock.patch('otree.views.mturk.function_to_mock')
-    def test_foo_3(self, patched):
-        function_to_mock()
-
-
-#class TestFoo(ChannelLiveServerTestCase):
-class TestFoo(TestCase):
-
-    @mock.patch('otree.views.mturk.function_to_mock')
-    def test_foo_3(self, patched):
-        function_to_mock()
-
-    @mock.patch('tests.test_mturk.function_to_mock_local')
-    def test_foo_2(self, patched):
-        function_to_mock_local()

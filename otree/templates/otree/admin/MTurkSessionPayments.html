@@ -5,12 +5,8 @@
     {{ block.super }}
     <script type="text/javascript" charset="utf-8">
         /*
-         ****************************
-         ****************************
          Modal window to confirm MTurk
          payment
-         ****************************
-         ****************************
          */
         $(document).ready(function () {
             $('#pay').click(function () {
@@ -29,26 +25,18 @@
             })
         });
         /*
-         ****************************
-         ****************************
          Code for "checkAll" checkbox
          in the header
-         ****************************
-         ****************************
          */
         $(function () {
-            checkFunction('payment', 'checkAll');
+            checkFunction('workers', 'checkAll');
         });
         function checkFunction(checkName, checkAllName) {
-// disable "checkAll" checkbox if we already paid everyone
-            if ($("input[name=" + checkName + "][disabled]").length == $("input[name=" + checkName + "]").length) {
-                $("input[name=" + checkAllName + "]").attr('disabled', true);
-            }
-// code for "checkAll" checkbox
+            // code for "checkAll" checkbox
             $('input[name=' + checkAllName + ']').click(function () {
                 $('input[name=' + checkName + ']').prop('checked', $(this).prop('checked')).trigger("change")
             });
-// if all checkboxes are selected check also "checkAll" checkbox
+            // if all checkboxes are selected check also "checkAll" checkbox
             $('input[name=' + checkName + ']').change(function () {
                 var check = ($("input[name=" + checkName + "]:checked").length == $("input[name=" + checkName + "]").length);
                 $("input[name=" + checkAllName + "]").prop('checked', check);
@@ -62,9 +50,9 @@
          ****************************
          */
         $(function () {
-            $('input[name=payment]').change(function () {
+            $('input[name=workers]').change(function () {
                 var sum = 0.00;
-                $('input[name=payment]:checked:enabled').each(function (index, element) {
+                $('input[name=workers]:checked:enabled').each(function (index, element) {
                     sum += parseFloat($(this).data('value'));
                 });
                 if (sum > 0.00) {
@@ -255,7 +243,8 @@
         {% endif %}
 
         <!--Modal window to confirm payment for assignments-->
-        <div class="modal fade" id="mturk-payment" tabindex="-1" role="dialog"
+        <!-- Removed fade because the delay seemed to be interfering with PhantomJS -->
+        <div class="modal" id="mturk-payment" tabindex="-1" role="dialog"
              aria-labelledby="MTurkPaymentModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content panel-warning">
@@ -269,9 +258,7 @@
                     </div>
                     <div class="modal-body">
                         <p>
-                            <i>I understand that I am making this payment at my
-                                own
-                                risk."</i>
+                            I understand that I am making this payment at my own risk.
                         </p>
                     </div>
                     <div class="modal-footer">
@@ -288,7 +275,8 @@
             </div>
         </div>
         <!--Modal window to confirm rejection of assignments-->
-        <div class="modal fade" id="mturk-reject" tabindex="-1" role="dialog"
+        <!-- Removed fade because the delay seemed to be interfering with PhantomJS -->
+        <div class="modal" id="mturk-reject" tabindex="-1" role="dialog"
              aria-labelledby="MTurkRejectModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content panel-warning">

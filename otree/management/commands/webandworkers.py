@@ -82,13 +82,10 @@ class Command(BaseCommand):
         addr = addr or DEFAULT_ADDR
         port = port or os.environ.get('PORT') or DEFAULT_PORT
 
-        if file.exists('aaa.pem'):
-            'daphne'
-        else:
-            daphne_cmd = 'daphne otree.asgi:channel_layer -b {} -p {}'.format(
-                addr,
-                port
-            )
+        daphne_cmd = 'daphne otree.asgi:channel_layer -b {} -p {}'.format(
+            addr,
+            port
+        )
 
         logger.info('Starting daphne server on {}:{}'.format(addr, port))
 

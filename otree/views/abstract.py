@@ -1371,8 +1371,6 @@ class AdminSessionPageMixin(GetFloppyFormClassMixin):
 
     def dispatch(self, request, *args, **kwargs):
         session_code = kwargs['code']
-        print('****************in server process')
-        print([s.code for s in models.Session.objects.all()])
         self.session = get_object_or_404(
             otree.models.Session, code=session_code)
         return super(AdminSessionPageMixin, self).dispatch(
