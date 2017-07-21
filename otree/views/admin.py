@@ -2,44 +2,39 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-import sys
-import os
 import json
+import os
+import random
+import sys
 from collections import OrderedDict
 
+import channels
+import vanilla
+from django.conf import settings
+from django.contrib import messages
+from django.core.urlresolvers import reverse
+from django.forms.forms import pretty_name
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from six.moves import range
 from six.moves import zip
 
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
-from django.core.urlresolvers import reverse
-from django.forms.forms import pretty_name
-from django.conf import settings
-from django.contrib import messages
-
-import vanilla
-
-import channels
-
-import otree.export
+import otree.bots.browser
 import otree.common_internal
+import otree.export
+from otree import forms
+from otree.common import RealWorldCurrency
 from otree.common_internal import (
     create_session_and_redirect, missing_db_tables,
     get_models_module, get_app_label_from_name, DebugTable
 )
-from otree.management.cli import check_pypi_for_updates
-from otree.session import SESSION_CONFIGS_DICT, create_session, SessionConfig
-from otree import forms
 from otree.forms import widgets
-from otree.common import RealWorldCurrency
-from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
-from otree.views.mturk import MTurkConnection, get_workers_by_status
-import otree.bots.browser
+from otree.management.cli import check_pypi_for_updates
 from otree.models import Participant, Session
 from otree.models_concrete import (
     ParticipantRoomVisit, BrowserBotsLauncherSessionCode)
 from otree.room import ROOM_DICT
-import random
-
+from otree.session import SESSION_CONFIGS_DICT, create_session, SessionConfig
+from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
 
 
 class CreateSessionForm(forms.Form):
@@ -412,6 +407,8 @@ class SessionEditProperties(AdminSessionPageMixin, vanilla.UpdateView):
         if form.cleaned_data['participation_fee'] is not None:
             config[
                 'participation_fee'
+            # need to convert back to RealWorldCurrency, because easymoney
+            # MoneyFormField returns a decimal, not Money (not sure why)
             ] = RealWorldCurrency(participation_fee)
         if form.cleaned_data['real_world_currency_per_point'] is not None:
             config[
@@ -445,41 +442,6 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
             'participants': participants,
             'total_payments': total_payments,
             'mean_payment': mean_payment,
-            'participation_fee': session.config['participation_fee'],
-        })
-
-        return context
-
-
-class MTurkSessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
-
-    def get_context_data(self, **kwargs):
-        context = super(MTurkSessionPayments, self).get_context_data(**kwargs)
-        session = self.session
-        if not session.mturk_HITId:
-            context.update({'not_published_yet': True})
-            return context
-        with MTurkConnection(
-                self.request, session.mturk_use_sandbox
-        ) as mturk_connection:
-            workers_by_status = get_workers_by_status(
-                mturk_connection,
-                session.mturk_HITId
-            )
-            participants_not_reviewed = session.participant_set.filter(
-                mturk_worker_id__in=workers_by_status['Submitted']
-            )
-            participants_approved = session.participant_set.filter(
-                mturk_worker_id__in=workers_by_status['Approved']
-            )
-            participants_rejected = session.participant_set.filter(
-                mturk_worker_id__in=workers_by_status['Rejected']
-            )
-
-        context.update({
-            'participants_approved': participants_approved,
-            'participants_rejected': participants_rejected,
-            'participants_not_reviewed': participants_not_reviewed,
             'participation_fee': session.config['participation_fee'],
         })
 

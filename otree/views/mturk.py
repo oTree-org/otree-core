@@ -34,27 +34,18 @@ from decimal import Decimal
 
 logger = logging.getLogger('otree')
 
+import contextlib
 
 
-
-class MTurkError(Exception):
-    # TODO: is this necessary? we used to wrap exceptions with this class:
-    '''
-        def __exit__(self, exc_type, value, traceback):
-            if exc_type is MTurkRequestError:
-                MTurkError(self.request, value.message)
-            return False
-    '''
-
-    def __init__(self, request, message):
-        self.message = message
-        messages.error(request, message, extra_tags='safe')
-
-    def __str__(self):
-        return self.message
-
+def function_to_mock(*, use_sandbox=True):
+    raise AssertionError('**********should not execute')
 
 def get_mturk_client(*, use_sandbox=True):
+    import os
+    print('*********calling get_mturk_client (should not happen in tests), pid:', os.getpid())
+    raise AssertionError('**********should not execute')
+
+
     if use_sandbox:
         endpoint_url = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
     else:
@@ -64,36 +55,58 @@ def get_mturk_client(*, use_sandbox=True):
         aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
         endpoint_url=endpoint_url,
+        # if I specify endpoint_url without region_name, it complains
         region_name='us-east-1',
     )
 
 
-def get_workers_by_status(conn, hit_id):
-    all_assignments = get_all_assignments(conn, hit_id)
-    workers_by_status = defaultdict(list)
-    for assignment in all_assignments:
-        workers_by_status[
-            assignment.AssignmentStatus
-        ].append(assignment.WorkerId)
-    return workers_by_status
+@contextlib.contextmanager
+def MTurkClient(*, use_sandbox=True, request):
+    '''Alternative to get_mturk_client, for when we need exception handling
+    in admin views, we should pass it, so that we can show the user the message
+    without crashing.
+    for participant-facing views and commandline tools, should use get_mturk_client.
+    '''
+    try:
+        yield get_mturk_client(use_sandbox=use_sandbox)
+    except Exception as exc:
+        logger.error('MTurk error', exc_info=True)
+        messages.error(request, str(exc), extra_tags='safe')
+        # temp: for easier debugging, raise
+        raise exc
 
 
-def get_all_assignments(conn, hit_id, status=None):
+def get_all_assignments(mturk_client, hit_id):
     # Accumulate all relevant assignments, one page of results at
     # a time.
     assignments = []
-    page = 1
+
+    args = dict(
+        HITId=hit_id,
+        # i think 100 is the max page size
+        MaxResults=100,
+        AssignmentStatuses=['Submitted', 'Approved', 'Rejected']
+    )
+
     while True:
-        rs = conn.get_assignments(
-            hit_id=hit_id,
-            page_size=100,
-            page_number=page,
-            status=status)
-        assignments.extend(rs)
-        if len(assignments) >= int(rs.TotalNumResults):
+        response = mturk_client.list_assignments_for_hit(**args)
+        if not response['Assignments']:
             break
-        page += 1
+        assignments.extend(response['Assignments'])
+        args['NextToken'] = response['NextToken']
+
     return assignments
+
+
+def get_workers_by_status(mturk_client, hit_id):
+    all_assignments = get_all_assignments(mturk_client, hit_id)
+    workers_by_status = defaultdict(list)
+    for assignment in all_assignments:
+        workers_by_status[
+            assignment['AssignmentStatus']
+        ].append(assignment['WorkerId'])
+    return workers_by_status
+
 
 
 class MTurkCreateHITForm(forms.Form):
@@ -126,7 +139,7 @@ class MTurkCreateHITForm(forms.Form):
         ))
 
     def __init__(self, *args, **kwargs):
-        super(MTurkCreateHITForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields['assignments'].widget.attrs['readonly'] = True
 
 
@@ -201,42 +214,11 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
                     'oTree must run on a public domain for Mechanical Turk'
                     '</h1>')
                 return HttpResponseServerError(msg)
-        mturk_client = get_mturk_client(use_sandbox=use_sandbox)
         mturk_settings = session.config['mturk_hit_settings']
         qualification_id = mturk_settings.get(
             'grant_qualification_id', None)
         # verify that specified qualification type
         # for preventing retakes exists on mturk server
-        if qualification_id:
-            try:
-                mturk_client.get_qualification_type(
-                    QualificationTypeId=qualification_id)
-            # it's RequestError, but
-            except Exception as exc:
-                if use_sandbox:
-                    sandbox_note = (
-                        'You are currently using the sandbox, so you '
-                        'can only grant qualifications that were '
-                        'also created in the sandbox.')
-                else:
-                    sandbox_note = (
-                        'You are using the MTurk live site, so you '
-                        'can only grant qualifications that were '
-                        'also created on the live site, and not the '
-                        'MTurk sandbox.')
-                msg = (
-                    "In settings.py you specified qualification ID '{qualification_id}' "
-                    "MTurk returned the following error: [{exc}] "
-                    "Note: {sandbox_note}".format(
-                        qualification_id=qualification_id,
-                        exc=exc,
-                        sandbox_note=sandbox_note))
-                messages.error(request, msg)
-                return HttpResponseRedirect(
-                    reverse(
-                        'MTurkCreateHIT', args=(session.code,)))
-            else:
-                session.mturk_qualification_type_id = qualification_id
 
         url_landing_page = self.request.build_absolute_uri(
             reverse('MTurkLandingPage', args=(session.code,)))
@@ -248,12 +230,15 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
         secured_url_landing_page = urlunparse(
             urlparse(url_landing_page)._replace(scheme='https'))
 
-        # TODO: validate that there is enought money for the hit
-        money_reward = form.data['money_reward']
+        # TODO: validate that there is enough money for the hit
+        money_reward = form.cleaned_data['money_reward']
 
         # assign back to participation_fee, in case it was changed
         # in the form
-        session.config['participation_fee'] = money_reward
+        # need to convert back to RealWorldCurrency, because easymoney
+        # MoneyFormField returns a decimal, not Money (not sure why)
+        # see views.admin.EditSessionProperties
+        session.config['participation_fee'] = RealWorldCurrency(money_reward)
 
         external_question = '''
         <ExternalQuestion xmlns="http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2006-07-14/ExternalQuestion.xsd">
@@ -264,10 +249,10 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
 
         qualifications = mturk_settings.get('qualification_requirements')
 
-        if qualifications and isinstance(qualifications[0], boto.mturk.qualification.Requirement):
+        if qualifications and not isinstance(qualifications[0], dict):
             raise ValueError(
                 'settings.py: You need to upgrade your MTurk qualification_requirements '
-                'to the boto3 format. See '
+                'to the boto3 format. See the documentation.'
             )
 
         mturk_hit_parameters = {
@@ -276,20 +261,87 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
             'Keywords': form.cleaned_data['keywords'],
             'Question': external_question,
             'MaxAssignments': form.cleaned_data['assignments'],
-            'Reward': float(money_reward),
+            'Reward': str(float(money_reward)),
             'QualificationRequirements': qualifications,
-            'AssignmentDurationInSeconds': 60*form.cleaned_data['minutes_allotted_per_assignment']
-            'LifetimeInSeconds': 60*60*form.cleaned_data['expiration_hours']
+            'AssignmentDurationInSeconds': 60*form.cleaned_data['minutes_allotted_per_assignment'],
+            'LifetimeInSeconds': int(60*60*form.cleaned_data['expiration_hours']),
+            # prevent duplicate HITs
+            'UniqueRequestToken':'otree_{}'.format(session.code),
         }
 
-        hit = mturk_client.create_hit(**mturk_hit_parameters)
-        session.mturk_HITId = hit['HITId']
-        session.mturk_HITGroupId = hit['HITGroupId']
-        session.mturk_use_sandbox = use_sandbox
-        session.save()
+        with MTurkClient(use_sandbox=use_sandbox, request=request) as mturk_client:
+            if qualification_id:
+                try:
+                    mturk_client.get_qualification_type(
+                        QualificationTypeId=qualification_id)
+                # it's RequestError, but
+                except Exception as exc:
+                    if use_sandbox:
+                        sandbox_note = (
+                            'You are currently using the sandbox, so you '
+                            'can only grant qualifications that were '
+                            'also created in the sandbox.')
+                    else:
+                        sandbox_note = (
+                            'You are using the MTurk live site, so you '
+                            'can only grant qualifications that were '
+                            'also created on the live site, and not the '
+                            'MTurk sandbox.')
+                    msg = (
+                        "In settings.py you specified qualification ID '{qualification_id}' "
+                        "MTurk returned the following error: [{exc}] "
+                        "Note: {sandbox_note}".format(
+                            qualification_id=qualification_id,
+                            exc=exc,
+                            sandbox_note=sandbox_note))
+                    messages.error(request, msg)
+                    return HttpResponseRedirect(
+                        reverse(
+                            'MTurkCreateHIT', args=(session.code,)))
+
+            print('***********type of mturk_client', mturk_client)
+            hit = mturk_client.create_hit(**mturk_hit_parameters)['HIT']
+
+            session.mturk_HITId = hit['HITId']
+            session.mturk_HITGroupId = hit['HITGroupId']
+            session.mturk_use_sandbox = use_sandbox
+            session.save()
 
         return HttpResponseRedirect(
             reverse('MTurkCreateHIT', args=(session.code,)))
+
+
+class MTurkSessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        session = self.session
+        if not session.mturk_HITId:
+            context.update({'not_published_yet': True})
+            return context
+        with MTurkClient(use_sandbox=session.mturk_use_sandbox, request=self.request) as mturk_client:
+            workers_by_status = get_workers_by_status(
+                mturk_client,
+                session.mturk_HITId
+            )
+            participants_not_reviewed = session.participant_set.filter(
+                mturk_worker_id__in=workers_by_status['Submitted']
+            )
+            participants_approved = session.participant_set.filter(
+                mturk_worker_id__in=workers_by_status['Approved']
+            )
+            participants_rejected = session.participant_set.filter(
+                mturk_worker_id__in=workers_by_status['Rejected']
+            )
+
+            context.update({
+                'participants_approved': participants_approved,
+                'participants_rejected': participants_rejected,
+                'participants_not_reviewed': participants_not_reviewed,
+                'participation_fee': session.config['participation_fee'],
+            })
+
+        return context
 
 
 class PayMTurk(vanilla.View):
@@ -302,13 +354,29 @@ class PayMTurk(vanilla.View):
         successful_payments = 0
         failed_payments = 0
         mturk_client = get_mturk_client(use_sandbox=session.mturk_use_sandbox)
-
+        # use worker ID instead of assignment ID. Because 2 workers can have
+        # the same assignment (if 1 starts it then returns it). we can't really
+        # block that.
+        # however, we can ensure that 1 worker does not get 2 assignments,
+        # by enforcing that the same worker is always assigned to the same participant.
         for p in session.participant_set.filter(
-            mturk_assignment_id__in=request.POST.getlist('payment')
+            mturk_worker_id__in=request.POST.getlist('workers')
         ):
+            # need the try/except so that we try to pay the rest of the participants
+            payoff = p.payoff_in_real_world_currency()
+
             try:
                 # approve assignment
                 mturk_client.approve_assignment(AssignmentId=p.mturk_assignment_id)
+                if payoff > 0:
+                    mturk_client.send_bonus(
+                        WorkerId=p.mturk_worker_id,
+                        AssignmentId=p.mturk_assignment_id,
+                        BonusAmount='{0:.2f}'.format(Decimal(payoff)),
+                        # prevent duplicate payments
+                        UniqueRequestToken='{}_{}'.format(p.mturk_worker_id, p.mturk_assignment_id)
+                    )
+                successful_payments += 1
             except Exception as e:
                 msg = (
                     'Could not pay {} because of an error communicating '
@@ -316,18 +384,6 @@ class PayMTurk(vanilla.View):
                 messages.error(request, msg)
                 logger.error(msg)
                 failed_payments += 1
-            else:
-                successful_payments += 1
-                payoff = p.payoff_in_real_world_currency()
-                if payoff > 0:
-                    mturk_client.send_bonus(
-                        WorkerId=p.mturk_worker_id,
-                        AssignmentId=p.mturk_assignment_id,
-                        BonusAmount='{0:.2f}'.format(Decimal(payoff)),
-                        # prevent duplicates
-                        UniqueRequestToken='{}_{}'.format(p.mturk_worker_id, p.mturk_assignment_id)
-                    )
-
         msg = 'Successfully made {} payments.'.format(successful_payments)
         if failed_payments > 0:
             msg += ' {} payments failed.'.format(failed_payments)
@@ -345,14 +401,23 @@ class RejectMTurk(vanilla.View):
     def post(self, request, *args, **kwargs):
         session = get_object_or_404(Session,
                                     code=kwargs['session_code'])
-        with MTurkConnection(self.request,
-                             session.mturk_use_sandbox) as mturk_connection:
-            for p in session.participant_set.filter(
-                mturk_assignment_id__in=request.POST.getlist('payment')
-            ):
-                mturk_connection.reject_assignment(p.mturk_assignment_id)
+        with MTurkClient(use_sandbox=session.mturk_use_sandbox,
+                         request=request) as mturk_client:
 
-        messages.success(request, "You successfully rejected "
-                                  "selected assignments")
+            for p in session.participant_set.filter(
+                mturk_worker_id__in=request.POST.getlist('workers')
+            ):
+                mturk_client.reject_assignment(
+                    AssignmentId=p.mturk_assignment_id,
+                    # The boto3 docs say this param is optional, but if I omit it, I get:
+                    # An error occurred (ValidationException) when calling the RejectAssignment operation:
+                    # 1 validation error detected: Value null at 'requesterFeedback'
+                    # failed to satisfy constraint: Member must not be null
+                    RequesterFeedback=''
+                )
+
+            messages.success(request, "You successfully rejected "
+                                      "selected assignments")
         return HttpResponseRedirect(
             reverse('MTurkSessionPayments', args=(session.code,)))
+

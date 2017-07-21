@@ -1,13 +1,17 @@
-from .base import TestCase
-import django.test.client
-from channels.test import ChannelLiveServerTestCase
-from django.conf import settings
-from .utils import get_path
-from django.core.urlresolvers import reverse
-import sys
 import importlib
+import sys
+
+import django.test.client
 import splinter
 import splinter.browser
+from channels.test import ChannelLiveServerTestCase
+from django.conf import settings
+from django.core.urlresolvers import reverse
+
+from tests.base import OTreePhantomBrowser
+from .base import TestCase
+from .utils import get_path
+
 
 def reload_urlconf():
     if settings.ROOT_URLCONF in sys.modules:
@@ -16,18 +20,6 @@ def reload_urlconf():
         module = importlib.import_module(settings.ROOT_URLCONF)
     importlib.reload(module)
 
-class OTreePhantomBrowser(splinter.browser.PhantomJSWebDriver):
-
-    # splinter.Browser is actually a function, not a class
-    def __init__(self, live_server_url):
-        self.live_server_url = live_server_url
-        super().__init__()
-
-            #user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'
-        #)
-
-    def go(self, relative_url):
-        self.visit(self.live_server_url + relative_url)
 
 class TestAdminBasic(TestCase):
 

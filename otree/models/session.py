@@ -62,10 +62,6 @@ class Session(ModelWithVars):
     mturk_HITGroupId = models.CharField(
         max_length=300, null=True, blank=True,
         help_text='Hit id for this session on MTurk')
-    mturk_qualification_type_id = models.CharField(
-        max_length=300, null=True, blank=True,
-        help_text='Qualification type that is '
-                  'assigned to each worker taking hit')
 
     # since workers can drop out number of participants on server should be
     # greater than number of participants on mturk

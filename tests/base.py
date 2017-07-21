@@ -3,6 +3,7 @@
 
 import warnings
 
+import splinter.browser
 from django.conf import settings
 import django.test
 
@@ -32,3 +33,17 @@ class TestCase(django.test.TestCase):
         condition = any(item.category == warning for item in warning_list)
         msg = "'{}' not warned".format(str(warning))
         self.assertTrue(condition, msg)
+
+
+class OTreePhantomBrowser(splinter.browser.PhantomJSWebDriver):
+
+    # splinter.Browser is actually a function, not a class
+    def __init__(self, live_server_url):
+        self.live_server_url = live_server_url
+        super().__init__()
+
+            #user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'
+        #)
+
+    def go(self, relative_url):
+        self.visit(self.live_server_url + relative_url)

@@ -29,7 +29,7 @@ import otree.models
 from otree.models import Participant, Session
 from otree.common_internal import make_hash, add_params_to_url, get_redis_conn
 import otree.views.admin
-from otree.views.mturk import MTurkConnection
+from otree.views.mturk import get_mturk_client
 import otree.common_internal
 from otree.views.abstract import (
     OTreeMixin, GenericWaitPageMixin,
@@ -140,27 +140,26 @@ class MTurkStart(vanilla.View):
     def get(self, *args, **kwargs):
         assignment_id = self.request.GET['assignmentId']
         worker_id = self.request.GET['workerId']
-        if self.session.mturk_qualification_type_id:
-            with MTurkConnection(
-                self.request, self.session.mturk_use_sandbox
-            ) as mturk_connection:
-                try:
-                    mturk_connection.assign_qualification(
-                        self.session.mturk_qualification_type_id,
-                        worker_id
-                    )
-                except MTurkRequestError as e:
-                    if (
-                        e.error_code ==
-                        'AWS.MechanicalTurk.QualificationAlreadyExists'
-                    ):
-                        pass
-                    else:
-                        raise
+        qualification_id = self.session.config['mturk_hit_settings'].get('grant_qualification_id')
+        if qualification_id:
+            # don't pass request arg, because we don't want to show a message.
+            mturk_client = get_mturk_client(use_sandbox=self.session.mturk_use_sandbox)
+            # seems OK to assign this multiple times
+            mturk_client.associate_qualification_with_worker(
+                QualificationTypeId=qualification_id,
+                WorkerId=worker_id,
+                # Mturk complains if I omit IntegerValue
+                IntegerValue=1
+            )
         try:
+            # just check if this worker already game, but
+            # don't filter for assignment, because maybe they already started
+            # and returned the previous assignment
+            # in this case, we should assign back to the same participant
+            # so that we don't get duplicates in the DB, and so people
+            # can't snoop and try the HIT first, then re-try to get a bigger bonus
             participant = self.session.participant_set.get(
-                mturk_worker_id=worker_id,
-                mturk_assignment_id=assignment_id)
+                mturk_worker_id=worker_id)
         except Participant.DoesNotExist:
             with global_lock():
                 try:
@@ -170,12 +169,16 @@ class MTurkStart(vanilla.View):
                 except IndexError:
                     return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
 
-            # 2014-10-17: needs to be here even if it's also set in
-            # the next view to prevent race conditions
-            participant.visited = True
-            participant.mturk_worker_id = worker_id
-            participant.mturk_assignment_id = assignment_id
-            participant.save()
+                # 2014-10-17: needs to be here even if it's also set in
+                # the next view to prevent race conditions
+                # this needs to be inside the lock
+                participant.visited = True
+                participant.mturk_worker_id = worker_id
+        # reassign assignment_id, even if they are returning, because maybe they accepted
+        # and then returned, then re-accepted with a different assignment ID
+        # if it's their second time
+        participant.mturk_assignment_id = assignment_id
+        participant.save()
         return HttpResponseRedirect(participant._start_url())
 
 
