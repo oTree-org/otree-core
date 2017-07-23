@@ -18,8 +18,11 @@ from six.moves.urllib.parse import urlunparse
 
 import vanilla
 
-import boto.mturk.qualification
-import boto3
+try:
+    import boto3
+except ImportError:
+    boto3 = None
+
 import IPy
 
 import otree
@@ -65,8 +68,6 @@ def MTurkClient(*, use_sandbox=True, request):
     except Exception as exc:
         logger.error('MTurk error', exc_info=True)
         messages.error(request, str(exc), extra_tags='safe')
-        # temp: for easier debugging, raise
-        raise exc
 
 
 def get_all_assignments(mturk_client, hit_id):
@@ -106,7 +107,12 @@ class MTurkCreateHITForm(forms.Form):
 
     use_sandbox = forms.BooleanField(
         required=False,
-        help_text="Do you want HIT published on MTurk sandbox?")
+        label='Use MTurk Sandbox (for development and testing)',
+        help_text=(
+            "If this box is checked, your HIT will not be published to "
+            "the MTurk live site, but rather to the MTurk Sandbox, "
+            "so you can test how it will look to MTurk workers."
+        ))
     title = forms.CharField()
     description = forms.CharField()
     keywords = forms.CharField()
@@ -163,6 +169,8 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
     def get(self, request, *args, **kwargs):
         validate_session_for_mturk(request, self.session)
         mturk_settings = self.session.config['mturk_hit_settings']
+
+
         initial = {
             'title': mturk_settings['title'],
             'description': mturk_settings['description'],
@@ -175,18 +183,30 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
             'expiration_hours': mturk_settings['expiration_hours'],
             'assignments': self.session.mturk_num_participants,
         }
+
         form = self.get_form(initial=initial)
         context = self.get_context_data(form=form)
-        context['mturk_enabled'] = (
-            bool(settings.AWS_ACCESS_KEY_ID) and
-            bool(settings.AWS_SECRET_ACCESS_KEY)
-        )
-        context['runserver'] = 'runserver' in sys.argv
+
         url = self.request.build_absolute_uri(
             reverse('MTurkCreateHIT', args=(self.session.code,))
         )
-        secured_url = urlunparse(urlparse(url)._replace(scheme='https'))
-        context['secured_url'] = secured_url
+        parsed_url = urlparse(url)
+        https = parsed_url.scheme == 'https'
+        secured_url = urlunparse(parsed_url._replace(scheme='https'))
+
+        aws_keys_exist = bool(settings.AWS_ACCESS_KEY_ID) and bool(settings.AWS_SECRET_ACCESS_KEY)
+        boto3_installed = bool(boto3)
+        mturk_ready = aws_keys_exist and boto3_installed and https
+
+        context.update({
+            # boto3 module must be imported, not None
+            'boto3_installed': boto3_installed,
+            'https': https,
+            'aws_keys_exist': aws_keys_exist,
+            'mturk_ready': mturk_ready,
+            'runserver': 'runserver' in sys.argv,
+            'secured_url': secured_url
+        })
 
         return self.render_to_response(context)
 

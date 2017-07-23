@@ -27,10 +27,7 @@ from otree.models_concrete import (
 from otree.common_internal import get_models_module, app_name_format
 import numbers
 
-if sys.version_info[0] == 2:
-    import unicodecsv as csv
-else:
-    import csv
+import csv
 
 
 def inspect_field_names(Model):

@@ -27,29 +27,40 @@
 
 {{ block.super }}
 
-{% if runserver %}
-    <div class="alert alert-danger">
-        <strong>You are using <code>runserver</code></strong>.
-        On this version of oTree, you may not be able to create HITs when
-        using runserver,
-        because runserver does not support HTTPS.
-        For now, in order to do MTurk
-        testing,
-        you need to run oTree on an HTTPS server (e.g. Heroku).
-    </div>
-{% endif %}
-
-{% if not mturk_enabled %}
+{% if not mturk_ready %}
     <p>MTurk is currently disabled.
         If you want to publish your HIT on MTurk please do the following
-        steps:</p>
-    <ol>
-        <li>set the settings <code>AWS_ACCESS_KEY_ID</code> and
-            <code>AWS_SECRET_ACCESS_KEY</code></li>
-        <li>restart the server</li>
-        <li>access this page via secured url <a
-                href="{{ secured_url }}">{{ secured_url }}</a></li>
-    </ol>
+        steps:
+    </p>
+
+    <table class="table">
+        <tr>
+            <th>Step</th>
+            <th>Done?</th>
+        </tr>
+        <tr>
+            <td>
+                Run <code>pip3 install otree-core[mturk]</code>
+                and in your <code>requirements_base.txt</code>,
+                replace <code>otree-core==N.N.N</code> with <code>otree-core[mturk]==N.N.N</code>.
+                This will install oTree along with extra MTurk-specific packages.
+            </td>
+            <td>{% if boto3_installed %}Yes{% else %}No{% endif %}</td>
+        </tr>
+
+        <tr>
+            <td>Set the settings <code>AWS_ACCESS_KEY_ID</code> and
+            <code>AWS_SECRET_ACCESS_KEY</code></td>
+            <td>{% if aws_keys_exist %}Yes{% else %}No{% endif %}</td>
+        </tr>
+        <tr>
+            <td>(If running locally, not required on Heroku) restart the server with <code>otree runprodserver --dev-https</code>,
+            and access this page via secured url <a href="{{ secured_url }}">{{ secured_url }}</a>
+            </td>
+            <td>{% if https %}Yes{% else %}No{% endif %}</td>
+        </tr>
+    </table>
+
     <p>
         You can read more about Amazon Mechanical Turk integration
         <a href="http://otree.readthedocs.org/en/latest/mturk.html"

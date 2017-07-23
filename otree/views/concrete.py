@@ -22,8 +22,6 @@ from django.utils.translation import ugettext as _
 
 import vanilla
 
-from boto.mturk.connection import MTurkRequestError
-
 import otree.constants_internal as constants
 import otree.models
 from otree.models import Participant, Session
