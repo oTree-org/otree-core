@@ -172,12 +172,13 @@ class BaseModelForm(
         # first extract the view instance
         self.view = kwargs.pop("view", None)
 
-        super(BaseModelForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         for field_name in self.fields:
             field = self.fields[field_name]
-            if hasattr(self.view, '%s_choices' % field_name):
-                choices = getattr(self.view, '%s_choices' % field_name)()
+            choices_method = getattr(self.view, '%s_choices' % field_name, None)
+            if choices_method:
+                choices = choices_method()
                 choices = otree.common_internal.expand_choice_tuples(choices)
 
                 model_field = self.instance._meta.get_field(field_name)
@@ -188,12 +189,8 @@ class BaseModelForm(
                 field = formfield_callback(model_field_copy)
                 self.fields[field_name] = field
 
-            # TODO: 2016-08-22: remove this? is it needed? since you can just
-            # pass the label in vars_for_template
-            if hasattr(self.view, '%s_label' % field_name):
-                field.label = getattr(
-                    self.view, '%s_label' % field_name
-                )()
+        for field_name in self.fields:
+            field = self.fields[field_name]
             if isinstance(field.widget, forms.RadioSelect):
                 # Fields with a RadioSelect should be rendered without the
                 # '---------' option, and with nothing selected by default, to
@@ -324,20 +321,6 @@ class BaseModelForm(
                 elif value > upper:
                     msg = _('Value must be less than or equal to {}.')
                     raise forms.ValidationError(msg.format(upper))
-
-                if hasattr(self.view, '%s_choices' % name):
-                    choices = getattr(self.view, '%s_choices' % name)()
-                    choices_values = (
-                        otree.common_internal.contract_choice_tuples(choices)
-                    )
-                    if value not in choices_values:
-                        # Translators: for multiple-choice fields,
-                        # show the valid choices.
-                        # e.g. "Value must be one of: A, B, C"
-                        msg = _('Value must be one of: {}'.format(
-                            ", ".join(map(str, choices))
-                        ))
-                        raise forms.ValidationError(msg)
 
                 if hasattr(self.view, '%s_error_message' % name):
                     error_string = getattr(
