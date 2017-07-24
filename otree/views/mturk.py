@@ -29,7 +29,7 @@ import otree
 from otree import forms
 from otree.deprecate import OtreeDeprecationWarning
 from otree.views.abstract import AdminSessionPageMixin
-from otree.checks.mturk import validate_session_for_mturk
+from otree.checks.mturk import MTurkValidator
 from otree.forms import widgets
 from otree.common import RealWorldCurrency
 from otree.models import Session
@@ -167,7 +167,7 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
             return True
 
     def get(self, request, *args, **kwargs):
-        validate_session_for_mturk(request, self.session)
+
         mturk_settings = self.session.config['mturk_hit_settings']
 
 
@@ -197,7 +197,8 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
         aws_keys_exist = bool(settings.AWS_ACCESS_KEY_ID) and bool(settings.AWS_SECRET_ACCESS_KEY)
         boto3_installed = bool(boto3)
         mturk_ready = aws_keys_exist and boto3_installed and https
-
+        missing_next_button_warning = MTurkValidator(self.session).validation_message()
+        
         context.update({
             # boto3 module must be imported, not None
             'boto3_installed': boto3_installed,
@@ -205,7 +206,8 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
             'aws_keys_exist': aws_keys_exist,
             'mturk_ready': mturk_ready,
             'runserver': 'runserver' in sys.argv,
-            'secured_url': secured_url
+            'secured_url': secured_url,
+            'missing_next_button_warning': missing_next_button_warning
         })
 
         return self.render_to_response(context)

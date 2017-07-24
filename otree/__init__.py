@@ -1,8 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 # REMEMBER TO ALSO UPDATE THE PROJECT TEMPLATE
-__version__ = '1.4.0b2'
+__version__ = '1.4.0b4'
 
 default_app_config = 'otree.apps.OtreeConfig'
 

@@ -103,7 +103,13 @@
     </div>
     {% if not session.mturk_HITId %}
         {% form form using "floppyforms/layouts/bootstrap.html" %}
+        {% if missing_next_button_warning %}
+        <div class="alert alert-warning">
+            {{ missing_next_button_warning }}
+        </div>
+        {% endif %}
         <button type="submit" class="btn btn-primary">Publish HIT</button>
+
     {% else %}
         <p>
             You have published HIT for this session on MTurk

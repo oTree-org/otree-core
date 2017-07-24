@@ -96,8 +96,13 @@ class Command(BaseCommand):
 
         daphne_cmd = 'daphne otree.asgi:channel_layer'
         if options['dev_https']:
-            # don't need to check for existence of key/cert files, because Twisted will complain
-            # if they are missing
+            try:
+                import OpenSSL
+            except ImportError:
+                raise ImportError(
+                    'To run oTree server in HTTPS mode for MTurk testing, you need pyopenssl. '
+                    'You can install it and related packages by installing otree-core[mturk].'
+                ) from None
             daphne_cmd += ' -e ssl:{}:privateKey={}:certKey={}:interface={}'.format(
                 port,
                 twisted_ssl_file_path('development.crt'),

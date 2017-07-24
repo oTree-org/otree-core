@@ -29,7 +29,8 @@ otree-boto2-shim==0.2
 otree-save-the-change==1.1.3
 pbr==1.10.0
 py==1.4.31
-pypiwin32==220
+# https://stackoverflow.com/a/35614580/38146
+pypiwin32==220;platform_system=="Windows"
 # can't upgrade to 3.0 because assert reinterp mode was removed
 # and now we have plain assertions. maybe can figure out
 pytest==2.9.2
