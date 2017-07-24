@@ -29,6 +29,12 @@ logger = logging.getLogger(__name__)
 
 
 class OTreeJsonWebsocketConsumer(JsonWebsocketConsumer):
+    '''
+    THIS IS NOT PUBLIC API.
+    Third party apps should not subclass this.
+    Either copy this class into your code,
+    or subclass directly from JsonWebsocketConsumer,
+    '''
 
     def clean_kwargs(self, **kwargs):
         '''
