@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 from unittest import mock
 from six import StringIO
 from otree.management.commands.webandworkers import OTreeHonchoManager

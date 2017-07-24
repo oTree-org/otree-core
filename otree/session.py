@@ -132,7 +132,7 @@ class SessionConfig(dict):
             warn_msg = (
                 "'fixed_pay' is deprecated; "
                 "you should rename it to 'participation_fee'.")
-            warnings.warn(warn_msg, OtreeDeprecationWarning)
+            raise ValueError(warn_msg)
 
             self['participation_fee'] = self['fixed_pay']
 

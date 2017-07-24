@@ -220,6 +220,8 @@ def channels_group_by_arrival_time_group_name(session_pk, page_index):
     return 'group_by_arrival_time_session{}_page{}'.format(
         session_pk, page_index)
 
+def channels_room_participants_group_name(room_name):
+    return 'room-participants-{}'.format(room_name)
 
 def validate_alphanumeric(identifier, identifier_description):
     if re.match(r'^[a-zA-Z0-9_]+$', identifier):
@@ -363,43 +365,9 @@ class BotError(AssertionError):
     pass
 
 
-class MustCopyError(Exception):
-    pass
-
-def _raise_must_copy(*args, **kwargs):
-    raise MustCopyError(
-        "Instead of modifying a list in Constants, you should make a copy of it with .copy()"
-        "and modify that copy."
-    )
-
-class ConstantsList(list):
-
-    __setitem__ = _raise_must_copy
-    __delitem__ = _raise_must_copy
-    clear = _raise_must_copy
-    __iadd__ = _raise_must_copy
-    __imul__ = _raise_must_copy
-    append = _raise_must_copy
-    extend = _raise_must_copy
-    insert = _raise_must_copy
-    pop = _raise_must_copy
-    remove = _raise_must_copy
-    reverse = _raise_must_copy
-    sort = _raise_must_copy
-
-
 def _get_all_configs():
     return [
         app
         for app in apps.get_app_configs()
         if app.name in settings.INSTALLED_OTREE_APPS]
 
-
-def protect_constants():
-    for config in _get_all_configs():
-        Constants = config.models_module.Constants
-
-        for attr_name in dir(Constants):
-            obj = getattr(Constants, attr_name)
-            if type(obj) is list:
-                setattr(Constants, attr_name, ConstantsList(obj))

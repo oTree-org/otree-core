@@ -14,7 +14,7 @@ import six
 import otree
 from otree.models_concrete import UndefinedFormModel, GlobalLockModel
 from otree.common_internal import (
-    ensure_superuser_exists, protect_constants
+    ensure_superuser_exists
 )
 
 logger = logging.getLogger('otree')
@@ -156,4 +156,3 @@ class OtreeConfig(AppConfig):
         patch_raven_config()
         monkey_patch_static_tag()
         monkey_patch_db_cursor()
-        #protect_constants()

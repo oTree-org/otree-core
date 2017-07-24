@@ -9,6 +9,7 @@ from channels.log import setup_logger
 
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
+import otree
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,10 @@ class OTreeHonchoManager(honcho.manager.Manager):
     def add_otree_process(self, name, cmd):
         self.add_process(name, cmd, env=os.environ.copy(), quiet=False)
 
+def twisted_ssl_file_path(filename):
+    otree_dir = os.path.dirname(otree.__file__)
+    pth = os.path.join(otree_dir, 'certs', filename)
+    return pth.replace('\\', '/').replace(':', '\\:')
 
 class Command(BaseCommand):
     help = 'Run otree web services for the production environment.'
@@ -59,6 +64,13 @@ class Command(BaseCommand):
         parser.add_argument(
             '--port', action='store', type=int, dest='port', default=None,
             help=ahelp)
+        ahelp = (
+            'Run an SSL server directly in Daphne. '
+            'You must put a server.key and server.crt in your project root.'
+        )
+        parser.add_argument(
+            '--dev-https', action='store_true', dest='dev_https', default=False,
+            help=ahelp)
 
     def handle(self, *args, **options):
         self.verbosity = options.get('verbosity', 1)
@@ -82,12 +94,19 @@ class Command(BaseCommand):
         addr = addr or DEFAULT_ADDR
         port = port or os.environ.get('PORT') or DEFAULT_PORT
 
-        daphne_cmd = 'daphne otree.asgi:channel_layer -b {} -p {}'.format(
-            addr,
-            port
-        )
-
-        logger.info('Starting daphne server on {}:{}'.format(addr, port))
+        daphne_cmd = 'daphne otree.asgi:channel_layer'
+        if options['dev_https']:
+            # don't need to check for existence of key/cert files, because Twisted will complain
+            # if they are missing
+            daphne_cmd += ' -e ssl:{}:privateKey={}:certKey={}:interface={}'.format(
+                port,
+                twisted_ssl_file_path('development.crt'),
+                twisted_ssl_file_path('development.key'),
+                addr)
+            logger.info('Starting daphne HTTPS server on {}:{} (development/testing only)'.format(addr, port))
+        else:
+            daphne_cmd += ' -b {} -p {}'.format(addr, port)
+            logger.info('Starting daphne server on {}:{}'.format(addr, port))
 
         honcho = self.honcho
         honcho.add_otree_process('daphne', daphne_cmd)

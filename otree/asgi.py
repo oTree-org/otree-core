@@ -1,7 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
-from __future__ import absolute_import  # for channels module
 import os
 import channels.asgi
 

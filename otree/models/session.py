@@ -62,10 +62,6 @@ class Session(ModelWithVars):
     mturk_HITGroupId = models.CharField(
         max_length=300, null=True, blank=True,
         help_text='Hit id for this session on MTurk')
-    mturk_qualification_type_id = models.CharField(
-        max_length=300, null=True, blank=True,
-        help_text='Qualification type that is '
-                  'assigned to each worker taking hit')
 
     # since workers can drop out number of participants on server should be
     # greater than number of participants on mturk
@@ -74,7 +70,7 @@ class Session(ModelWithVars):
         default=-1,
         help_text="Number of participants on MTurk")
 
-    mturk_sandbox = models.BooleanField(
+    mturk_use_sandbox = models.BooleanField(
         default=True,
         help_text="Should this session be created in mturk sandbox?")
 
@@ -149,7 +145,7 @@ class Session(ModelWithVars):
             subsession.save()
 
     def mturk_requester_url(self):
-        if self.mturk_sandbox:
+        if self.mturk_use_sandbox:
             requester_url = (
                 "https://requestersandbox.mturk.com/mturk/manageHITs"
             )
@@ -158,7 +154,7 @@ class Session(ModelWithVars):
         return requester_url
 
     def mturk_worker_url(self):
-        if self.mturk_sandbox:
+        if self.mturk_use_sandbox:
             return (
                 "https://workersandbox.mturk.com/mturk/preview?groupId={}"
             ).format(self.mturk_HITGroupId)

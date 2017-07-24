@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 from django.core.urlresolvers import reverse
 import django.test.client
 import unittest

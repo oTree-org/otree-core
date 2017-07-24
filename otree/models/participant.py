@@ -172,7 +172,7 @@ class Participant(ModelWithVars):
             return self.player_lookup()['url']
         if self.session.mturk_HITId:
             assignment_id = self.mturk_assignment_id
-            if self.session.mturk_sandbox:
+            if self.session.mturk_use_sandbox:
                 url = 'https://workersandbox.mturk.com/mturk/externalSubmit'
             else:
                 url = "https://www.mturk.com/mturk/externalSubmit"

@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 from .base import TestCase
 from otree.session import create_session
 from otree.bots.bot import ParticipantBot

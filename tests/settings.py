@@ -27,24 +27,30 @@ DATABASES = {
     )
 }
 '''
+
 # 2017-06-13: why did i have it hardcoded previously? maybe because SQLite is faster?
 # 2017-07-16: because postgres gives me an error, even after i reset the DB:
 #    django.db.utils.ProgrammingError: relation "otree_session" does not exist
 
 # 2017-06-13: why did i have it hardcoded previously? maybe because SQLite is faster?
 
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'TEST': {
+            'NAME': 'testdb.sqlite3'
+        }
     }
 }
 
 
 CREATE_DEFAULT_SUPERUSER = True
 ADMIN_USERNAME = 'admin'
-AWS_ACCESS_KEY_ID = None
-AWS_SECRET_ACCESS_KEY = None
+# setting for integration with AWS Mturk
+AWS_ACCESS_KEY_ID = environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = environ.get('AWS_SECRET_ACCESS_KEY')
 
 # e.g. EUR, CAD, GBP, CHF, CNY, JPY
 REAL_WORLD_CURRENCY_CODE = 'EUR'
@@ -60,30 +66,11 @@ INSTALLED_APPS = [
     'raven.contrib.django.raven_compat',
     'tests',
 ]
-mturk_hit_settings = {
-    'keywords': ['easy', 'bonus', 'choice', 'study'],
-    'title': 'Title for your experiment',
-    'description': 'Description for your experiment',
-    'frame_height': 500,
-    'preview_template': 'global/MTurkPreview.html',
-    'minutes_allotted_per_assignment': 60,
-    'expiration_hours': 7*24,  # 7 days
-    # to prevent retakes
-    'grant_qualification_id': 'YOUR_QUALIFICATION_ID_HERE',
-    'qualification_requirements': [
-        LocaleRequirement("EqualTo", "US"),
-        PercentAssignmentsApprovedRequirement("GreaterThanOrEqualTo", 50),
-        NumberHitsApprovedRequirement("GreaterThanOrEqualTo", 5),
-        # Requirement('YOUR_QUALIFICATION_ID_HERE', 'DoesNotExist'),
-    ]
-}
-
 
 SESSION_CONFIG_DEFAULTS = {
     'real_world_currency_per_point': 0.01,
     'participation_fee': 10.00,
     'doc': "",
-    'mturk_hit_settings': mturk_hit_settings,
     'use_browser_bots': False,
 }
 
@@ -239,7 +226,24 @@ SESSION_CONFIGS = [
         'num_demo_participants': 1,
         'app_sequence': ['tests.constants'],
     },
-
+    {
+        'name': 'mturk',
+        'num_demo_participants': 1,
+        'app_sequence': ['tests.simple'],
+        'participation_fee': 0.4,
+        'mturk_hit_settings': {
+            'keywords': ['easy', 'bonus', 'choice', 'study'],
+            'title': 'Title for your experiment',
+            'description': 'Description for your experiment',
+            'frame_height': 500,
+            'preview_template': 'global/MTurkPreview.html',
+            'minutes_allotted_per_assignment': 60,
+            'expiration_hours': 7 * 24,  # 7 days
+            # to prevent retakes
+            'grant_qualification_id': 'ATESTQUAL',
+            'qualification_requirements': []
+        }
+    },
 ]
 
 
@@ -262,3 +266,11 @@ ROOMS = [
 BOTS_CHECK_HTML = False
 
 otree.settings.augment_settings(globals())
+
+
+CHANNEL_LAYERS = globals()['CHANNEL_LAYERS']
+REDIS_URL = globals()['REDIS_URL']
+
+# i could put this in otree-core, but i don't want to mess anything up,
+# e.g. bots
+CHANNEL_LAYERS['default']["TEST_CONFIG"] = {"hosts": [REDIS_URL]}

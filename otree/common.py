@@ -100,6 +100,8 @@ class Currency(RealWorldCurrency):
 class _CurrencyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, easymoney.Money):
+            if obj.DECIMAL_PLACES == 0:
+                return int(obj)
             return float(obj)
         # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, obj)

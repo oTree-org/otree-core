@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 from .base import TestCase
 import otree.session
 from django.core.urlresolvers import reverse

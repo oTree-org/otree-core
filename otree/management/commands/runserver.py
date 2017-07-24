@@ -11,10 +11,9 @@ class Command(runserver.Command):
 
     def handle(self, *args, **options):
         # use in-memory.
-        # this is the simplest way to patch runserver to use in-memory,
+        # this is the simplest way to patch tests to use in-memory,
         # while still using Redis in production
-        settings.CHANNEL_LAYERS['default'] = (
-            settings.CHANNEL_LAYERS['inmemory'])
+        settings.CHANNEL_LAYERS['default'] = settings.INMEMORY_CHANNEL_LAYER
 
         from otree.common_internal import release_any_stale_locks
         release_any_stale_locks()

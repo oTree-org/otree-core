@@ -13,6 +13,10 @@ version = __import__('otree').get_version()
 with open('requirements.txt', 'r') as f:
     required = f.read().splitlines()
 
+with open('requirements_mturk.txt', 'r') as f:
+    required_mturk = f.read().splitlines()
+
+
 if sys.argv[-1] == 'publish':
 
     cmd = "python setup.py sdist upload"
@@ -71,6 +75,8 @@ setup(
             'otree=otree.management.cli:otree_cli',
         ],
     },
-
     zip_safe=False,
+    extras_require={
+        'mturk': required_mturk
+    }
 )

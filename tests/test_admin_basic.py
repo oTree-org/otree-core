@@ -1,13 +1,16 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+import importlib
+import sys
 
 import django.test.client
-from .base import TestCase
+import splinter
+import splinter.browser
+from channels.test import ChannelLiveServerTestCase
 from django.conf import settings
-from .utils import get_path
 from django.core.urlresolvers import reverse
-import sys
-import importlib
+
+from tests.base import OTreePhantomBrowser
+from .base import TestCase
+from .utils import get_path
 
 
 def reload_urlconf():
@@ -91,3 +94,77 @@ class TestAdminBasic(TestCase):
             # reload URLconf to restore back to its original state,
             # so other tests can run normally
             reload_urlconf()
+
+class TestAdminJS(ChannelLiveServerTestCase):
+
+    def setUp(self):
+        self.browser = splinter.Browser('phantomjs')
+
+    def test_create_session(self):
+        br = self.browser
+        create_session_url = '{}{}'.format(self.live_server_url, reverse('CreateSession'))
+        br.visit(create_session_url)
+        br.fill_form({
+            'session_config': 'simple',
+            'num_participants': '1',
+        })
+        button = br.find_by_value('Create')
+        button.click()
+        self.assertTrue(br.is_text_present('Simple Game: session', wait_time=3))
+
+
+class TestRoomJS(ChannelLiveServerTestCase):
+
+    def test_presence(self):
+        # admin browser
+        abr = OTreePhantomBrowser(live_server_url=self.live_server_url)
+
+        # participant browser
+        pbr = OTreePhantomBrowser(live_server_url=self.live_server_url)
+
+        room_name = 'default'
+
+        # participant opens waiting page
+        room_url = reverse('AssignVisitorToRoom', args=[room_name])
+        pbr.go(room_url)
+
+        pbr.fill('participant_label', 'JohnSmith')
+        button = pbr.find_by_tag('button')
+        button.click()
+        waiting_url = pbr.url
+
+        # admin opens RoomWithoutSession
+        abr.go(reverse('RoomWithoutSession', args=[room_name]))
+
+        # within a few seconds, he should see that participant online,
+        # but not another participant.
+        self.assertTrue(
+            abr.is_element_present_by_css(
+                '#present-participant-label-JohnSmith.count-this', wait_time=5))
+        self.assertFalse(
+            abr.is_element_present_by_css(
+                '#present-participant-label-Bob.count-this'))
+
+        # if participant closes the browser, he should go offline
+        # go to some other URL
+        pbr.go('/')
+
+        self.assertFalse(
+            abr.is_element_present_by_css(
+                '#present-participant-label-JohnSmith.count-this', wait_time=1))
+
+        # comes back online
+        # need to use visit, not go, because it's an absolute URL
+        pbr.visit(waiting_url)
+
+        # admin creates a session in the room
+        abr.fill_form({
+            'session_config': 'simple',
+            'num_participants': '1',
+        })
+        button = abr.find_by_value('Create')
+        button.click()
+
+        # within a few seconds, the participant should be redirected
+        my_field_present = pbr.is_element_present_by_name('my_field', wait_time=2)
+        self.assertTrue(my_field_present)
