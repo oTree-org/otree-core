@@ -198,7 +198,7 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
         boto3_installed = bool(boto3)
         mturk_ready = aws_keys_exist and boto3_installed and https
         missing_next_button_warning = MTurkValidator(self.session).validation_message()
-        
+
         context.update({
             # boto3 module must be imported, not None
             'boto3_installed': boto3_installed,

@@ -54,8 +54,17 @@
             <td>{% if aws_keys_exist %}Yes{% else %}No{% endif %}</td>
         </tr>
         <tr>
-            <td>(If running locally, not required on Heroku) restart the server with <code>otree runprodserver --dev-https</code>,
-            and access this page via secured url <a href="{{ secured_url }}">{{ secured_url }}</a>
+            <td>
+                <ol>
+                    <li>
+                        (If running locally):
+                        Restart the server with <code>otree runprodserver --dev-https</code>
+                    </li>
+                    <li>
+                        In your address bar, change the URL to start with 'https://'
+                        and reload this page
+                    </li>
+                </ol>
             </td>
             <td>{% if https %}Yes{% else %}No{% endif %}</td>
         </tr>

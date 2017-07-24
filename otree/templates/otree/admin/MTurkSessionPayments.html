@@ -118,6 +118,7 @@
                             <th>Participant code</th>
                             <th>Assignment Id</th>
                             <th>Worker Id</th>
+                            <th>Current page</th>
                             <th>
                                 Participation fee (Reward)
                             </th>
@@ -141,6 +142,7 @@
                                 <td class="codes">{{ p.code }}</td>
                                 <td class="codes">{{ p.mturk_assignment_id|default_if_none:"" }}</td>
                                 <td class="codes">{{ p.mturk_worker_id|default_if_none:"" }}</td>
+                                <td>{{ p.current_page_ }}</td>
                                 <td>
                                     {{ participation_fee }}
                                 </td>
