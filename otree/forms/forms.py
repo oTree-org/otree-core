@@ -149,8 +149,7 @@ class BaseModelFormMetaclass(FloppyformsModelFormMetaclass):
             mcs, name, bases, attrs)
 
 
-class BaseModelForm(
-        six.with_metaclass(BaseModelFormMetaclass, forms.ModelForm)):
+class BaseModelForm(forms.ModelForm, metaclass=BaseModelFormMetaclass):
 
     def __init__(self, *args, **kwargs):
         """Special handling for 'choices' argument, BooleanFields, and
@@ -189,8 +188,6 @@ class BaseModelForm(
                 field = formfield_callback(model_field_copy)
                 self.fields[field_name] = field
 
-        for field_name in self.fields:
-            field = self.fields[field_name]
             if isinstance(field.widget, forms.RadioSelect):
                 # Fields with a RadioSelect should be rendered without the
                 # '---------' option, and with nothing selected by default, to
@@ -208,9 +205,9 @@ class BaseModelForm(
                     if len(choices) >= 1 and choices[0][0] in {u'', None}:
                         field.choices = choices[1:]
 
-        self._setup_field_boundaries()
+        self._set_min_max_on_widgets()
 
-    def _get_field_boundaries(self, field_name):
+    def _get_field_min_max(self, field_name):
         """
         Get the field boundaries from a methods defined on the view.
 
@@ -238,28 +235,28 @@ class BaseModelForm(
         except FieldDoesNotExist:
             return [None, None]
 
-        min_method_name = '%s_min' % field_name
-        if hasattr(self.view, min_method_name):
-            min_value = getattr(self.view, min_method_name)()
+        min_method = getattr(self.view, '{}_min'.format(field_name), None)
+        if min_method:
+            min_value = min_method()
         else:
             min_value = getattr(model_field, 'min', None)
 
-        max_method_name = '%s_max' % field_name
-        if hasattr(self.view, max_method_name):
-            max_value = getattr(self.view, max_method_name)()
+        max_method = getattr(self.view, '{}_max'.format(field_name), None)
+        if max_method:
+            max_value = max_method()
         else:
             max_value = getattr(model_field, 'max', None)
 
         return [min_value, max_value]
 
-    def _setup_field_boundaries(self):
+    def _set_min_max_on_widgets(self):
         for field_name, field in self.fields.items():
             # We want to support both, django and floppyforms widgets.
             cond = isinstance(
                 field.widget, (django_forms.NumberInput, forms.NumberInput)
             )
             if cond:
-                min_bound, max_bound = self._get_field_boundaries(field_name)
+                min_bound, max_bound = self._get_field_min_max(field_name)
                 if isinstance(min_bound, easymoney.Money):
                     min_bound = Decimal(min_bound)
                 if isinstance(max_bound, easymoney.Money):
@@ -305,7 +302,7 @@ class BaseModelForm(
                         msg = otree.constants_internal.field_required_msg
                         raise forms.ValidationError(msg)
 
-                lower, upper = self._get_field_boundaries(name)
+                lower, upper = self._get_field_min_max(name)
 
                 # allow blank=True and min/max to be used together
                 # the field is optional, but
@@ -322,10 +319,10 @@ class BaseModelForm(
                     msg = _('Value must be less than or equal to {}.')
                     raise forms.ValidationError(msg.format(upper))
 
-                if hasattr(self.view, '%s_error_message' % name):
-                    error_string = getattr(
-                        self.view, '%s_error_message' % name
-                    )(value)
+                error_message_method = getattr(
+                    self.view, '{}_error_message'.format(name), None)
+                if error_message_method:
+                    error_string = error_message_method(value)
                     if error_string:
                         raise forms.ValidationError(error_string)
 

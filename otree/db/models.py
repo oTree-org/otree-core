@@ -64,7 +64,7 @@ def make_get_display(field):
     return get_FIELD_display
 
 
-class OTreeModel(six.with_metaclass(OTreeModelBase, SharedMemoryModel)):
+class OTreeModel(SharedMemoryModel, metaclass=OTreeModelBase):
     use_strong_refs = True
 
     class Meta:
@@ -98,9 +98,6 @@ class _OtreeModelFieldMixin(object):
         self.doc = kwargs.pop('doc', None)
         self.min = kwargs.pop('min', None)
         self.max = kwargs.pop('max', None)
-
-        # 2015-2-25: deprecated, remove this
-        self.bounds = kwargs.pop('bounds', None)
 
     def __init__(
             # list args explicitly so they show up in IDE autocomplete.

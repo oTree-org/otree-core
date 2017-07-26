@@ -87,7 +87,7 @@ def json_loads(value):
     return json.loads(value, object_hook=json_decode_object)
 
 
-class JSONField(six.with_metaclass(models.SubfieldBase, models.TextField)):
+class JSONField(models.TextField, metaclass=models.SubfieldBase):
     """_JSONField is a generic textfield that neatly serializes/unserializes
     JSON objects seamlessly"""
 

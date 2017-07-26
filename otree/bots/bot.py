@@ -213,7 +213,7 @@ def refresh_from_db(obj):
 
 # 2017-06-21: why ABCMeta? Was this something from when I was trying to get
 # the self.assert* methods working?
-class ParticipantBot(six.with_metaclass(abc.ABCMeta, test.Client)):
+class ParticipantBot(test.Client, metaclass=abc.ABCMeta):
 
     def __init__(
             self, participant, load_player_bots=True, **kwargs):
