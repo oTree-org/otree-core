@@ -4,7 +4,7 @@ from otree.db import models
 import otree.models
 import otree.forms
 from otree import widgets
-
+from otree.api import BasePlayer
 
 class Subsession(otree.models.BaseSubsession):
     pass
@@ -62,3 +62,4 @@ class FormFieldModel(otree.models.BaseGroup):
 class CurrencyFieldTestModel(otree.db.models.Model):
     currency_with_default_value_zero = models.CurrencyField(
         initial=easymoney.Money(0), min=0)
+

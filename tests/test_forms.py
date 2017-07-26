@@ -6,6 +6,9 @@ from otree.forms import ModelForm
 
 from .base import TestCase
 from .models import FormFieldModel
+from otree.api import BasePlayer, models, currency_range
+# same as otree.api.Page, but we get autocomplete
+from otree.views.abstract import PlayerUpdateView
 
 
 class TestModelForm(ModelForm):

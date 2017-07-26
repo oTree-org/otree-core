@@ -1,15 +1,13 @@
-# -*- coding: utf-8 -*-
-# <standard imports>
-from __future__ import division
 from otree.api import (
     models, BaseConstants, BaseSubsession, BaseGroup, BasePlayer,
     Currency as c, widgets
 )
-# </standard imports>
 
 
 doc = """
-Test misc functionality of a 1-player game
+Test general functionality:
+-   Framework methods like creating_session, before_next_page, etc are executed
+-   Modifications to objects are saved
 """
 
 
@@ -40,48 +38,10 @@ class Group(BaseGroup):
         for p in self.get_players():
             p.payoff = c(50)
 
-    # example field
-    min_max = models.CurrencyField(
-        doc="""
-        Description of this field, for documentation
-        """,
-        min=5,
-        max=10
-    )
-
-    dynamic_min_max = models.CurrencyField()
-
     in_creating_session = models.CurrencyField()
 
 
 class Player(BasePlayer):
 
-    def other_player(self):
-        """Returns other player in group. Only valid for 2-player groups."""
-        return self.get_others_in_group()[0]
-
-    blank = models.CharField(blank=True)
-
-    add100_1 = models.PositiveIntegerField()
-    add100_2 = models.PositiveIntegerField()
-
-    even_int = models.PositiveIntegerField()
-
     after_next_button_field = models.BooleanField()
-
-    dynamic_choices = models.CharField()
-
-    radio = models.CurrencyField(
-        widget=widgets.RadioSelect(),
-        choices=[c(1), c(2)]
-    )
-
-    dynamic_radio = models.CharField(widget=widgets.RadioSelectHorizontal())
-
-    dynamic_min_max = models.CurrencyField()
-
     in_creating_session = models.CurrencyField()
-
-    def role(self):
-        # you can make this depend of self.id_in_group
-        return ''

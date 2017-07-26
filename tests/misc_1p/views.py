@@ -5,13 +5,7 @@ from otree.api import WaitPage
 from tests.utils import BlankTemplatePage as Page
 
 
-class ErrorMessage(Page):
-
-    form_model = models.Player
-    form_fields = ['add100_1', 'add100_2']
-
-    def is_displayed(self):
-        return True
+class Start(Page):
 
     def vars_for_template(self):
         assert self.session.vars['a'] == 1
@@ -25,77 +19,18 @@ class ErrorMessage(Page):
             'my_variable_here': 1,
         }
 
-    def error_message(self, values):
-        if values['add100_1'] + values['add100_2'] != 100:
-            return 'The numbers must add up to 100'
-
     def before_next_page(self):
         self.player.after_next_button_field = True
         self.session.vars['a'] = 2
 
 
-class FieldErrorMessage(Page):
-
-    form_model = models.Player
-    form_fields = ['even_int']
-
-    def even_int_error_message(self, value):
-        if value % 2:
-            return 'Must be an even number'
+class IsDisplayed(Page):
 
     def is_displayed(self):
         # make sure it's available during pre-fetch
+        # this must be directly after a regular page
         assert self.session
         return True
-
-
-class DynamicChoices(Page):
-
-    form_model = models.Player
-
-    def get_form_fields(self):
-        return ['dynamic_choices']
-
-    def dynamic_choices_choices(self):
-        return [
-            ['a', 'first choice'],
-            ['b', 'second choice'],
-        ]
-
-
-class RadioWidgets(Page):
-
-    form_model = models.Player
-    form_fields = ['radio', 'dynamic_radio']
-
-    def dynamic_radio_choices(self):
-        return [
-            ['a', 'first choice'],
-            ['b', 'second choice'],
-        ]
-
-
-class MinMax(Page):
-
-    form_model = models.Group
-    form_fields = ['min_max']
-
-
-class DynamicMinMax(Page):
-
-    form_model = models.Player
-    form_fields = ['dynamic_min_max']
-
-    def dynamic_min_max_min(self):
-        return 3
-
-    def dynamic_min_max_max(self):
-        return 3
-
-
-class Blank(Page):
-    form_model = models.Player
-    form_fields = ['blank']
 
 
 class ResultsWaitPage(WaitPage):
@@ -107,7 +42,7 @@ class ResultsWaitPage(WaitPage):
             player.participant.vars['a'] = 2
 
 
-class Results(Page):
+class End(Page):
 
     def vars_for_template(self):
         assert self.player.after_next_button_field is True
@@ -119,13 +54,8 @@ class Results(Page):
 
 
 page_sequence = [
-    ErrorMessage,
-    FieldErrorMessage,
-    DynamicChoices,
-    RadioWidgets,
-    MinMax,
-    DynamicMinMax,
-    Blank,
+    Start,
+    IsDisplayed,
     ResultsWaitPage,
-    Results
+    End,
 ]

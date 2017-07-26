@@ -152,6 +152,11 @@ SESSION_CONFIGS = [
         'use_browser_bots': True,
     },
     {
+        'name': 'form_validation',
+        'num_demo_participants': 1,
+        'app_sequence': ['tests.form_validation'],
+    },
+    {
         'name': 'export',
         'num_demo_participants': 1,
         'app_sequence': ['tests.export'],
