@@ -10,7 +10,7 @@ import otree.db.models
 import otree.forms
 import otree.widgets
 from .base import TestCase
-
+from otree.api import BasePlayer, models, widgets
 
 class BasicWidgetTests(TestCase):
 
@@ -94,6 +94,28 @@ class CheckboxInputTests(TestCase):
         form = Form(data={})
         self.assertTrue(form.is_valid())
         self.assertTrue(form.cleaned_data['booleanfield'] is False)
+
+
+class RadioInputTests(TestCase):
+
+    def test_radio_no_blank(self):
+
+        # Fields with a RadioSelect should be rendered without the
+        # '---------' option, and with nothing selected by default, to
+        # see otree.forms.forms.BaseModelForm.__init__
+
+        class RadioModel(otree.db.models.Model):
+            f_radio = models.IntegerField(blank=True, choices=[1,2], widget=widgets.RadioSelect())
+
+        class Form(otree.forms.ModelForm):
+            class Meta:
+                model = RadioModel
+                fields = ('f_radio',)
+
+        form = Form()
+        radio_text = force_text(form['f_radio'])
+        self.assertNotIn('--------', radio_text)
+        self.assertNotIn('value=""', radio_text)
 
 
 class SliderInputTests(TestCase):
