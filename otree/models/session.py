@@ -185,27 +185,39 @@ class Session(ModelWithVars):
 
         for p in last_place_participants:
             try:
-                if p._current_form_page_url:
+                current_form_page_url = p._current_form_page_url
+                if current_form_page_url:
                     resp = client.post(
-                        p._current_form_page_url,
+                        current_form_page_url,
                         data={
                             constants_internal.timeout_happened: True,
                             constants_internal.admin_secret_code: ADMIN_SECRET_CODE
                         },
                         follow=True
                     )
+                    # not sure why, but many users are getting HttpResponseNotFound
+                    if resp.status_code >= 400:
+                        msg = ('Submitting page {} failed, '
+                            'returned HTTP status code {}.'.format(
+                                current_form_page_url, resp.status_code
+                            ))
+                        content = resp.content
+                        if len(content) < 600:
+                            msg += ' response content: {}'.format(content)
+                        raise AssertionError(msg)
+
                 else:
                     # it's possible that the slowest user is on a wait page,
                     # especially if their browser is closed.
                     # because they were waiting for another user who then
                     # advanced past the wait page, but they were never
                     # advanced themselves.
-                    resp = client.get(p._start_url(), follow=True)
+                    start_url = p._start_url()
+                    resp = client.get(start_url, follow=True)
             except:
                 logging.exception("Failed to advance participants.")
                 raise
 
-            assert resp.status_code < 400
 
             # do the auto-advancing here,
             # rather than in increment_index_in_pages,
