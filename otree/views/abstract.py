@@ -216,6 +216,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             self.participant._current_page_name = self.__class__.__name__
             response = super(FormPageOrInGameWaitPageMixin, self).dispatch(
                 request, *args, **kwargs)
+
             self.participant._last_request_timestamp = time.time()
 
             # need to render the response before saving objects,
@@ -727,15 +728,29 @@ class InGameWaitPageMixin(object):
         GroupClass = type(self.group)
 
         self.player._group_by_arrival_time_arrived = True
-        self.player._group_by_arrival_time_timestamp = (
-            self.player._group_by_arrival_time_timestamp or time.time())
 
-        self.player.save()
+        # if someone arrives within this many seconds of the last heartbeat of
+        # a player who drops out, they will be stuck.
+        # that sounds risky, but remember that
+        # if a player drops out at any point after that,
+        # the other players in the group will also be stuck.
+        # so the purpose of this is not to prevent dropouts that happen
+        # for random reasons, but specifically on a wait page,
+        # which is usually because someone gets stuck waiting for a long time.
+        # we don't want to make it too short, because that means the page
+        # would have to refresh very quickly, which could be disruptive.
+        STALE_THRESHOLD_SECONDS = 20
+
         # count how many are re-grouped
+        # we append the current player manually, because there might be unsaved
+        # changes on the current player and participant, that will make the query fail.
+        # not much point in saving
+        # participant and player just to query and get them back
         waiting_players = list(self.subsession.player_set.filter(
             _group_by_arrival_time_arrived=True,
             _group_by_arrival_time_grouped=False,
-        ).order_by('_group_by_arrival_time_timestamp'))
+            participant___last_request_timestamp__gte=time.time()-STALE_THRESHOLD_SECONDS
+        ).exclude(id=self.player.id)) + [self.player]
 
         # prevent the user
         current_player = self.player

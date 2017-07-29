@@ -353,6 +353,15 @@ class ParticipantRoomHeartbeat(vanilla.View):
         return HttpResponse('')
 
 
+class ParticipantHeartbeatGBAT(vanilla.View):
+    url_pattern = r'^ParticipantHeartbeatGBAT/(?P<participant_code>\w+)/$'
+
+    def get(self, request, *args, **kwargs):
+        Participant.objects.filter(code=kwargs['participant_code']).update(
+            _last_request_timestamp=time.time())
+        return HttpResponse('')
+
+
 class AdvanceSession(vanilla.View):
 
     url_pattern = r'^AdvanceSession/(?P<session_code>[a-z0-9]+)/$'

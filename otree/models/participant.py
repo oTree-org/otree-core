@@ -74,9 +74,6 @@ class Participant(ModelWithVars):
         )
     )
 
-    last_request_succeeded = models.BooleanField(
-        verbose_name='Health of last server request'
-    )
 
     visited = models.BooleanField(
         default=False, db_index=True,

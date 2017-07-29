@@ -185,6 +185,11 @@ SESSION_CONFIGS = [
         'use_browser_bots': True,
     },
     {
+        'name': 'group_by_arrival_time_heartbeat',
+        'num_demo_participants': 4,
+        'app_sequence': ['tests.group_by_arrival_time_heartbeat'],
+    },
+    {
         'name': 'bots_check_html',
         'num_demo_participants': 1,
         'app_sequence': ['tests.bots_check_html'],

@@ -107,6 +107,46 @@ $(document).ready(function () {
         };
     }
 
+    {% if view.group_by_arrival_time %}
+
+        {% comment %}
+        We should use an AJAX heartbeat rather than relying on just
+        refreshing the page, because on slow servers, this could take a long time,
+        and could be disruptive.
+        We can do this refresh frequently, without worrying about overloading the server
+        or disrupting the user.
+        And other wait pages in oTree don't refresh frequently, so we should be consistent.
+        The extra AJAX view doesn't really add much complexity.
+        Also it makes it easier for folks to test this functionality.
+        {% endcomment %}
+        function heartbeat() {
+            var args = {
+                type: "GET",
+                url: '{% url "ParticipantHeartbeatGBAT" participant.code %}',
+                // necessary for IE
+                cache: false
+            };
+            $.ajax(args);
+        }
+
+        var SECOND = 1000;
+        window.setInterval(heartbeat, 10 * SECOND);
+
+        {% comment %}
+        Refresh the whole page, because if we just used an AJAX heartbeat,
+        then someone could go offline then comes back online,
+        and then enough people would be online, but nothing happens because
+        try_to_regroup is not re-executed. that only happens with a full page load.
+        {% endcomment %}
+
+        window.setInterval(function() {
+                  window.location.reload();
+                }, 60*SECOND);
+
+
+    {% endif %}
+
+
  });
  </script>
  {% endblock %}
