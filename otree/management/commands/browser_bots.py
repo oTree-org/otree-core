@@ -359,11 +359,12 @@ class Launcher(object):
 
         try:
             return subprocess.Popen(args)
-        except Exception as exc:
+        except:
             msg = (
-                'Could not launch browser. '
-                'Check your settings.BROWSER_COMMAND. {}'
-            )
-            ExceptionClass = type(exc)
-            tb = sys.exc_info()[2]
-            raise ExceptionClass(msg.format(exc)).with_traceback(tb) from None
+                'Could not launch browser with command "{}". '
+                'Note: you can customize your browser by setting settings.BROWSER_COMMAND.'
+            ).format(self.browser_cmd)
+            # we should show the original exception, because it might have
+            # valuable info about why the browser didn't launch,
+            # not raise from None.
+            raise Exception(msg)
