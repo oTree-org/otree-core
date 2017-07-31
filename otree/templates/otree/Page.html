@@ -2,9 +2,11 @@
 {% load i18n %}
 {% load floppyforms otree_tags %}
 {% block body_main %}
-    <div id="otree-body" class="container">
+    <!-- use the selector .otree-body -->
+    <div class="otree-body container" id="otree-body">
         <div class="page-header">
-            <h2 id="otree-title">{% block title %}{% endblock %}</h2>
+            <!-- use the selector .otree-title -->
+            <h2 class="otree-title" id="otree-title">{% block title %}{% endblock %}</h2>
         </div>
         <div>
             {% if view.remaining_timeout_seconds != None %}
@@ -12,7 +14,8 @@
             {% endif %}
 
             {% if form.errors %}
-                <div id="otree-form-errors" class="alert alert-danger">
+                <!-- use the selector .otree-form-errors -->
+                <div class="otree-form-errors" id="otree-form-errors" class="alert alert-danger">
                     {% blocktrans trimmed %}Please fix the errors in the form.{% endblocktrans %}
                     {{ form.non_field_errors }}
                 </div>
@@ -25,13 +28,12 @@
                     the administrator for help.{% endblocktrans %}
             </div>
 
-            <form action="" method="post" role="form" class="form"
-                  id="form">{% csrf_token %}
+            <form action="" method="post" role="form" id="form">{% csrf_token %}
                 <input type="hidden" value="{{ request.path }}"
                        name="origin_url"/>
                 {% form form using %}
                     {% formconfig row using "floppyforms/rows/bootstrap.html" %}
-                    <div id="otree-content">
+                    <div class="_otree-content">
                         {% block content %}{% endblock %}
                     </div>
                 {% endform %}
@@ -48,7 +50,7 @@
 {% block internal_styles %}
 {{ block.super }}
 <style>
-    #otree-body {
+    .otree-body {
         max-width:970px
     }
 

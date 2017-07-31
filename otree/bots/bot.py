@@ -153,7 +153,7 @@ class HtmlString(str):
          but minidom had a parse error, and BS4 modifies a lot of tags,
          didn't seem optimal.
         '''
-        div_str = '<div id="otree-content">'
+        div_str = '<div class="_otree-content">'
         i = self.index(div_str) + len(div_str)
         return '...' + self[i:]
 
