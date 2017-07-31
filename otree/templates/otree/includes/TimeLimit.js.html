@@ -3,11 +3,10 @@
 
 <script>
     $(function () {
-        $('div.otree-timer').show();
         var currentDate = new Date();
         var remainingTimeoutSeconds = {{ view.remaining_timeout_seconds|json }};
         var milliseconds = Math.floor(remainingTimeoutSeconds * 1000);
-        $('.otree-timer__remaining_time').countdown(currentDate.valueOf() + milliseconds)
+        $('.otree-timer__time-left').countdown(currentDate.valueOf() + milliseconds)
             .on('update.countdown', function (event) {
                 // %-N is "Total count of minutes till the end, non-padded"
                 // %S is seconds left
@@ -24,3 +23,4 @@
             });
     });
 </script>
+
