@@ -213,11 +213,8 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
 
             self.set_attributes(participant)
 
-            self.participant._current_page_name = self.__class__.__name__
             response = super(FormPageOrInGameWaitPageMixin, self).dispatch(
                 request, *args, **kwargs)
-
-            self.participant._last_request_timestamp = time.time()
 
             # need to render the response before saving objects,
             # because the template might call a method that modifies
@@ -376,6 +373,8 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
 
         # for the participant changelist
         self.participant._current_app_name = app_name
+        self.participant._current_page_name = self.__class__.__name__
+        self.participant._last_request_timestamp = time.time()
 
         models_module = otree.common_internal.get_models_module(app_name)
         self._models_module = models_module
@@ -728,6 +727,15 @@ class InGameWaitPageMixin(object):
         GroupClass = type(self.group)
 
         self.player._group_by_arrival_time_arrived = True
+        # need to save so that other players making simultaneous requests
+        # immediately know this one is waiting, and made a request recently
+        self.player.save() # for waiting status
+
+        # _last_request_timestamp is already set in set_attributes,
+        # but set it here just so we can guarantee
+        self.participant._last_request_timestamp = time.time()
+        # save to DB so simultaneous requests can read it properly
+        self.participant.save() # for timestamp
 
         # if someone arrives within this many seconds of the last heartbeat of
         # a player who drops out, they will be stuck.
@@ -742,15 +750,11 @@ class InGameWaitPageMixin(object):
         STALE_THRESHOLD_SECONDS = 20
 
         # count how many are re-grouped
-        # we append the current player manually, because there might be unsaved
-        # changes on the current player and participant, that will make the query fail.
-        # not much point in saving
-        # participant and player just to query and get them back
         waiting_players = list(self.subsession.player_set.filter(
             _group_by_arrival_time_arrived=True,
             _group_by_arrival_time_grouped=False,
             participant___last_request_timestamp__gte=time.time()-STALE_THRESHOLD_SECONDS
-        ).exclude(id=self.player.id)) + [self.player]
+        ))
 
         # prevent the user
         current_player = self.player
@@ -803,7 +807,6 @@ class InGameWaitPageMixin(object):
                 # apparently player__isnull=True works, didn't know you could
                 # use this in a reverse direction.
                 subsession.group_set.filter(player__isnull=True).delete()
-
         return True
 
     def get_players_for_group(self, waiting_players):
@@ -819,7 +822,8 @@ class InGameWaitPageMixin(object):
             )
 
         # we're locking, so it shouldn't be more
-        assert len(waiting_players) <= Constants.players_per_group
+        if len(waiting_players) > Constants.players_per_group:
+            raise AssertionError('Too many waiting players', waiting_players)
 
         if len(waiting_players) == Constants.players_per_group:
             return waiting_players

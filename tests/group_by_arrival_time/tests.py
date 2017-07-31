@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-from __future__ import division, absolute_import
 from . import views
 from .models import Constants
 from otree.api import Bot
-
+import time
 
 class PlayerBot(Bot):
 
@@ -14,11 +12,28 @@ class PlayerBot(Bot):
 
         yield views.Page1
 
+        for attempt in [1, 2, 3]:
+            try:
+                self.run_assertions()
+                break
+            except AssertionError:
+                if attempt == 3:
+                    raise
+                else:
+                    # a little cushion to reduce race conditions
+                    time.sleep(3)
+
+    def run_assertions(self):
         # Race condition: this might be evaluated before all players finish
         # currently it works, but if i change the order that bots run,
         # it might not work in the future.
         # for now, this is the simplest way to get it working with browser bots
         # because there is no validate_play method. (usually its not needed)
+        # it's non-trivial to make a validate_play that works with browser bots
+        # because they run in a distributed way.
+        # i could change this to run just for each individual player like the
+        # run_assertions() methods in the other GBAT games, but I don't know
+        # any way to ensure there are no empty groups. is that important?
         num_players = self.subsession.player_set.count()
         if self.player.id_in_subsession == num_players and self.round_number == Constants.num_rounds:
             for subsession in self.subsession.in_all_rounds():
