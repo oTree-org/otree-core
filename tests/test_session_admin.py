@@ -20,7 +20,7 @@ class TestSessionAdmin(TestCase):
             'SessionData',
             'SessionStartLinks',
             'AdvanceSession',
-            'SessionFullscreen',
+            'SessionSplitScreen',
         ]
         urls = ['/{}/{}/'.format(PageName, self.session.code) for
                 PageName in tabs]

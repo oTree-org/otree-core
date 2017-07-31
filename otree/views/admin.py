@@ -261,9 +261,9 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
                 'MTurkCreateHIT', args=(session.code,)
             )
         # demo mode
-        elif self.request.GET.get('fullscreen'):
+        elif self.request.GET.get('splitscreen'):
             session_home_url = reverse(
-                'SessionFullscreen', args=(session.code,))
+                'SessionSplitScreen', args=(session.code,))
         else:  # typical case
             session_home_url = reverse(
                 'SessionStartLinks', args=(session.code,))
@@ -280,14 +280,14 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
         return '/wait_for_session/{}/'.format(self._pre_create_id)
 
 
-class SessionFullscreen(AdminSessionPageMixin, vanilla.TemplateView):
+class SessionSplitScreen(AdminSessionPageMixin, vanilla.TemplateView):
     '''Launch the session in fullscreen mode
     only used in demo mode
     '''
 
     def get_context_data(self, **kwargs):
         '''Get the URLs for the IFrames'''
-        context = super(SessionFullscreen, self).get_context_data(**kwargs)
+        context = super(SessionSplitScreen, self).get_context_data(**kwargs)
         participant_urls = [
             self.request.build_absolute_uri(participant._start_url())
             for participant in self.session.get_participants()
@@ -343,7 +343,7 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
                 'participant_urls': session_start_urls,
                 'anonymous_url': anonymous_url,
                 'num_participants': len(session_start_urls),
-                'fullscreen_mode_on': len(session_start_urls) <= 3
+                'splitscreen_mode_on': len(session_start_urls) <= 3
             })
 
         return context

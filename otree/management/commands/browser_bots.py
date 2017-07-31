@@ -1,13 +1,9 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-from __future__ import print_function
 import sys
 import time
 import logging
 import six
 import subprocess
-
+import os
 import requests
 
 from six.moves.urllib.parse import urljoin
@@ -23,16 +19,17 @@ from otree.session import SESSION_CONFIGS_DICT
 
 BROWSER_CMDS = {
     'windows': {
-        'chrome': 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',  # noqa
-        'firefox': "C:/Program Files (x86)/Mozilla Firefox/firefox.exe",
+        'chrome': [
+            'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
+            'C:/Program Files/Google/Chrome/Application/chrome.exe',
+            os.getenv('LOCALAPPDATA', '') + r"\Google\Chrome\Application\chrome.exe",
+            ],
     },
     'mac': {
-        'chrome': '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',  # noqa
-        'firefox': None
+        'chrome': ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'],
     },
     'linux': {
-        'firefox': 'firefox',
-        'chrome': 'google-chrome',
+        'chrome': ['google-chrome'],
     }
 }
 
@@ -310,15 +307,19 @@ class Launcher(object):
 
     def check_browser(self):
         platform = windows_mac_or_linux()
-        # right now hardcoded to Chrome unless settings.BROWSER_COMMAND set
-        chrome_cmd = BROWSER_CMDS[platform]['chrome']
 
-        self.browser_cmd = getattr(settings, 'BROWSER_COMMAND', chrome_cmd)
+        custom_browser_cmd = getattr(settings, 'BROWSER_COMMAND', None)
+        if custom_browser_cmd:
+            self.browser_cmds = [custom_browser_cmd]
+        else:
+            # right now hardcoded to Chrome unless settings.BROWSER_COMMAND set
+            self.browser_cmds = BROWSER_CMDS[platform]['chrome']
 
+        first_browser_type = self.browser_cmds[0].lower()
         # check if browser is running
-        if 'chrome' in self.browser_cmd.lower():
+        if 'chrome' in first_browser_type:
             browser_type = 'Chrome'
-        elif 'firefox' in self.browser_cmd.lower():
+        elif 'firefox' in first_browser_type:
             browser_type = 'Firefox'
         else:
             return
@@ -353,18 +354,22 @@ class Launcher(object):
             reverse('BrowserBotStartLink')
         )
 
-        args = [self.browser_cmd]
-        for i in range(num_participants):
-            args.append(wait_room_url)
-
-        try:
-            return subprocess.Popen(args)
-        except:
-            msg = (
-                'Could not launch browser with command "{}". '
-                'Note: you can customize your browser by setting settings.BROWSER_COMMAND.'
-            ).format(self.browser_cmd)
-            # we should show the original exception, because it might have
-            # valuable info about why the browser didn't launch,
-            # not raise from None.
-            raise Exception(msg)
+        for browser_cmd in self.browser_cmds:
+            args = [browser_cmd]
+            for i in range(num_participants):
+                args.append(wait_room_url)
+            try:
+                return subprocess.Popen(args)
+            except FileNotFoundError:
+                pass
+        msg = (
+            'Could not find a browser at the following path(s):\n\n'
+            '{}\n\n'
+            'Note: in settings.py, you can set BROWSER_COMMAND '
+            'to the path to your browser executable. '
+            'Otherwise, oTree will try to launch Chrome from its usual path.'
+        ).format('\n'.join(self.browser_cmds))
+        # we should show the original exception, because it might have
+        # valuable info about why the browser didn't launch,
+        # not raise from None.
+        raise FileNotFoundError(msg)

@@ -30,7 +30,7 @@ DEMO_UNRESTRICTED_VIEWS = STUDY_UNRESTRICTED_VIEWS.union({
     'AdvanceSession',
     'CreateDemoSession',
     'DemoIndex',
-    'SessionFullscreen',
+    'SessionSplitScreen',
     'SessionDescription',
     'SessionMonitor',
     'SessionPayments',

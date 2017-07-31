@@ -65,14 +65,14 @@
 
     <p>
         You can either open
-        {% if fullscreen_mode_on %} full-screen mode, {% endif %}
+        {% if splitscreen_mode_on %} split-screen mode, {% endif %}
         the session-wide link, or the single-use links.
     </p>
 
-    {% if fullscreen_mode_on %}
-        <h4>Full screen mode</h4>
+    {% if splitscreen_mode_on %}
+        <h4>Split screen mode</h4>
         <p>
-        <a target="_blank" href="{% url 'SessionFullscreen' session.code %}">Play in full screen mode</a>.
+        <a target="_blank" href="{% url 'SessionSplitScreen' session.code %}">Play in split screen mode</a>.
         </p>
     {% endif %}
 
