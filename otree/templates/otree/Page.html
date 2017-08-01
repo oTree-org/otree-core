@@ -15,7 +15,7 @@
 
             {% if form.errors %}
                 <!-- use the selector .otree-form-errors -->
-                <div class="otree-form-errors" id="otree-form-errors" class="alert alert-danger">
+                <div class="otree-form-errors alert alert-danger" id="otree-form-errors">
                     {% blocktrans trimmed %}Please fix the errors in the form.{% endblocktrans %}
                     {{ form.non_field_errors }}
                 </div>
