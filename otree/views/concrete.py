@@ -193,7 +193,7 @@ def get_existing_or_new_participant(session, label):
         visited=False).order_by('start_order').first()
 
 
-def participant_start_url_or_404(session, label):
+def participant_start_page_or_404(session, label):
     with global_lock():
         participant = get_existing_or_new_participant(session, label)
         if not participant:
@@ -220,7 +220,7 @@ class JoinSessionAnonymously(vanilla.View):
             otree.models.Session, _anonymous_code=anonymous_code
         )
         label = self.request.GET.get('participant_label')
-        return participant_start_url_or_404(session, label)
+        return participant_start_page_or_404(session, label)
 
 
 class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
@@ -285,7 +285,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
         # participant_label_file, 2 requests for the same start URL with same label
         # will return the same participant. Not sure if the previous behavior
         # (assigning to 2 different participants) was intentional or bug.
-        return participant_start_url_or_404(session, label)
+        return participant_start_page_or_404(session, label)
 
     def get_context_data(self, **kwargs):
         return {
