@@ -182,6 +182,33 @@ class MTurkStart(vanilla.View):
         return HttpResponseRedirect(participant._start_url())
 
 
+def get_existing_or_new_participant(session, label):
+    if label:
+        try:
+            return session.participant_set.get(label=label)
+        except Participant.DoesNotExist:
+            pass
+    # this could return None
+    return session.participant_set.filter(
+        visited=False).order_by('start_order').first()
+
+
+def participant_start_url_or_404(session, label):
+    with global_lock():
+        participant = get_existing_or_new_participant(session, label)
+        if not participant:
+            return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
+
+        # needs to be here even if it's also set in
+        # the next view to prevent race conditions
+        participant.visited = True
+        if label:
+            participant.label = label
+        participant.save()
+
+    return HttpResponseRedirect(participant._start_url())
+
+
 class JoinSessionAnonymously(vanilla.View):
 
     url_pattern = r'^join/(?P<anonymous_code>[a-z0-9]+)/$'
@@ -192,21 +219,8 @@ class JoinSessionAnonymously(vanilla.View):
         session = get_object_or_404(
             otree.models.Session, _anonymous_code=anonymous_code
         )
-        with global_lock():
-            try:
-                participant = session.get_participants().filter(
-                    visited=False).order_by('start_order')[0]
-            except IndexError:
-                return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
-
-            # 2014-10-17: needs to be here even if it's also set in
-            # the next view to prevent race conditions
-            participant.visited = True
-            participant.label = (
-                self.request.GET.get('participant_label') or participant.label
-            )
-            participant.save()
-        return HttpResponseRedirect(participant._start_url())
+        label = self.request.GET.get('participant_label')
+        return participant_start_url_or_404(session, label)
 
 
 class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
@@ -223,23 +237,23 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
 
         self.uses_pin = room.has_pin_code()
 
-        participant_label = self.request.GET.get(
+        label = self.request.GET.get(
             'participant_label', ''
         )
 
         if room.has_participant_labels():
-            if not participant_label:
+            if not label:
                 if not room.use_secure_urls:
                     return super(AssignVisitorToRoom, self).get(args, kwargs)
 
-            if not participant_label in room.get_participant_labels():
+            if not label in room.get_participant_labels():
                 return HttpResponseNotFound(
                     _('Invalid participant label.')
                 )
 
             if room.use_secure_urls:
                 hash = self.request.GET.get('hash')
-                if hash != make_hash(participant_label):
+                if hash != make_hash(label):
                     return HttpResponseNotFound('Invalid hash parameter.')
 
         if self.uses_pin:
@@ -255,7 +269,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
             self.tab_unique_id = otree.common_internal.random_chars_10()
             self._socket_url_params = ','.join([
                 self.room_name,
-                participant_label,
+                label,
                 # random chars in case the participant has multiple tabs open
                 self.tab_unique_id,
             ])
@@ -267,30 +281,11 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
                 }
             )
 
-        assign_new = not room.has_participant_labels()
-        if not assign_new:
-            try:
-                participant = session.get_participants().get(
-                    label=participant_label
-                )
-            except Participant.DoesNotExist:
-                assign_new = True
-
-        if assign_new:
-            with global_lock():
-                try:
-                    participant = session.get_participants().filter(
-                        visited=False).order_by('start_order')[0]
-                except IndexError:
-                    return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
-
-                participant.label = participant_label
-                # 2014-10-17: needs to be here even if it's also set in
-                # the next view to prevent race conditions
-                participant.visited = True
-                participant.save()
-
-        return HttpResponseRedirect(participant._start_url())
+        # 2017-08-02: changing the behavior so that even in a room without
+        # participant_label_file, 2 requests for the same start URL with same label
+        # will return the same participant. Not sure if the previous behavior
+        # (assigning to 2 different participants) was intentional or bug.
+        return participant_start_url_or_404(session, label)
 
     def get_context_data(self, **kwargs):
         return {
