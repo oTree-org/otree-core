@@ -4,7 +4,6 @@ import sys
 import django.test.client
 import splinter
 import splinter.browser
-from channels.test import ChannelLiveServerTestCase
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
@@ -95,6 +94,8 @@ class TestAdminBasic(TestCase):
             # so other tests can run normally
             reload_urlconf()
 
+'''
+# We can't enable these test cases until we upgrade to CHannels 1.0+
 class TestAdminJS(ChannelLiveServerTestCase):
 
     def setUp(self):
@@ -168,3 +169,4 @@ class TestRoomJS(ChannelLiveServerTestCase):
         # within a few seconds, the participant should be redirected
         my_field_present = pbr.is_element_present_by_name('my_field', wait_time=2)
         self.assertTrue(my_field_present)
+'''

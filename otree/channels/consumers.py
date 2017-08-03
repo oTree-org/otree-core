@@ -55,7 +55,8 @@ class OTreeJsonWebsocketConsumer(JsonWebsocketConsumer):
         return [group_name]
 
     def connect(self, message, **kwargs):
-        self.message.reply_channel.send({"accept": True})
+        # don't do this until we upgrade to channels 1.0+
+        # self.message.reply_channel.send({"accept": True})
         kwargs = self.clean_kwargs(**kwargs)
         self.post_connect(**kwargs)
 

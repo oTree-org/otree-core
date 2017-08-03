@@ -64,13 +64,6 @@ class Command(BaseCommand):
         parser.add_argument(
             '--port', action='store', type=int, dest='port', default=None,
             help=ahelp)
-        ahelp = (
-            'Run an SSL server directly in Daphne. '
-            'You must put a server.key and server.crt in your project root.'
-        )
-        parser.add_argument(
-            '--dev-https', action='store_true', dest='dev_https', default=False,
-            help=ahelp)
 
     def handle(self, *args, **options):
         self.verbosity = options.get('verbosity', 1)
@@ -94,24 +87,8 @@ class Command(BaseCommand):
         addr = addr or DEFAULT_ADDR
         port = port or os.environ.get('PORT') or DEFAULT_PORT
 
-        daphne_cmd = 'daphne otree.asgi:channel_layer'
-        if options['dev_https']:
-            try:
-                import OpenSSL
-            except ImportError:
-                raise ImportError(
-                    'To run oTree server in HTTPS mode for MTurk testing, you need pyopenssl. '
-                    'You can install it and related packages by installing otree-core[mturk].'
-                ) from None
-            daphne_cmd += ' -e ssl:{}:privateKey={}:certKey={}:interface={}'.format(
-                port,
-                twisted_ssl_file_path('development.crt'),
-                twisted_ssl_file_path('development.key'),
-                addr)
-            logger.info('Starting daphne HTTPS server on {}:{} (development/testing only)'.format(addr, port))
-        else:
-            daphne_cmd += ' -b {} -p {}'.format(addr, port)
-            logger.info('Starting daphne server on {}:{}'.format(addr, port))
+        daphne_cmd = 'daphne otree.asgi:channel_layer -b {} -p {}'.format(addr, port)
+        logger.info('Starting daphne server on {}:{}'.format(addr, port))
 
         honcho = self.honcho
         honcho.add_otree_process('daphne', daphne_cmd)
