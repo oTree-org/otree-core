@@ -62,14 +62,12 @@ SAVE_THE_CHANGE_FIELD_SUPPORT = {
 
 class _SaveTheChangeWithCustomFieldSupport(SaveTheChange):
     def __init__(self, *args, **kwargs):
-        super(_SaveTheChangeWithCustomFieldSupport, self).__init__(
-            *args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._save_the_change_store_initial_value()
 
     def save(self, *args, **kwargs):
         self._save_the_change_update_changed_fields()
-        return super(_SaveTheChangeWithCustomFieldSupport, self).save(
-            *args, **kwargs)
+        return super().save(*args, **kwargs)
 
     def _save_the_change_store_initial_value(self):
         self._save_the_change_initial_values = {}

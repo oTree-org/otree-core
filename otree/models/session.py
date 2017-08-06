@@ -34,8 +34,8 @@ class Session(ModelWithVars):
         # if i don't set this, it could be in an unpredictable order
         ordering = ['pk']
 
-    config = models._JSONField(default=dict, null=True)  # type: dict
-    vars = models._JSONField(default=dict)  # type: dict
+    config = models._PickleField(default=dict, null=True)  # type: dict
+    vars = models._PickleField(default=dict)  # type: dict
 
     # label of this session instance
     label = models.CharField(

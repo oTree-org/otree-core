@@ -20,7 +20,7 @@ class Participant(ModelWithVars):
 
     session = models.ForeignKey('otree.Session')
 
-    vars = models._JSONField(default=dict)
+    vars = models._PickleField(default=dict)
 
     label = models.CharField(
         max_length=50, null=True, doc=(
