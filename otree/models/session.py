@@ -14,7 +14,6 @@ from otree.common_internal import (
 )
 from otree.db import models
 from otree.models_concrete import ParticipantToPlayerLookup, RoomToSession
-from .varsmixin import ModelWithVars
 from django.template.loader import get_template
 from django.template import TemplateDoesNotExist
 
@@ -27,7 +26,9 @@ ADMIN_SECRET_CODE = get_admin_secret_code()
 
 # for now removing SaveTheChange
 
-class Session(ModelWithVars):
+#from save_the_change.decorators import SaveTheChange
+#@SaveTheChange
+class Session(models.Model):
 
     class Meta:
         app_label = "otree"

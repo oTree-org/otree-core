@@ -18,6 +18,7 @@ import six
 from django.apps import apps
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.db.models.base import ModelBase
 from django.db import connection
 from django.http import HttpResponseRedirect
 from django.template.defaultfilters import title

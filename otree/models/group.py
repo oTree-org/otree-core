@@ -1,11 +1,8 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-from otree_save_the_change.mixins import SaveTheChange
-
 from otree.db import models
 from otree.common_internal import (
-    get_models_module, in_round, in_rounds, InvalidRoundError)
+    get_models_module, in_round, in_rounds, InvalidRoundError,
+
+)
 from otree.models.fieldchecks import ensure_field
 import django.core.exceptions
 
@@ -14,8 +11,9 @@ Group object has no attribute '{}'. If it is a model field or method,
 it must be declared on the Group class in models.py.
 '''.replace('\n', '')
 
-
-class BaseGroup(SaveTheChange, models.Model):
+#from save_the_change.decorators import SaveTheChange
+#@SaveTheChange
+class BaseGroup(models.Model):
     """Base class for all Groups.
     """
 

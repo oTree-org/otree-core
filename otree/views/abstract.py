@@ -123,26 +123,7 @@ def participant_lock(participant_code):
             participant_code))
 
 
-class SaveObjectsMixin(object):
-    '''maybe doesn't need to be a mixin, but i am keeping it that way
-    for now so that the test_views_saveobjectsmixin.py still works'''
-    def _get_save_objects_model_instances(self):
-        return otree.db.idmap._get_save_objects_model_instances()
-
-    def save_objects(self):
-        return otree.db.idmap.save_objects()
-
-
-class OTreeMixin(SaveObjectsMixin, object):
-    """Base mixin class for oTree views.
-
-    Takes care of:
-
-        - retrieving model classes and objects automatically,
-          so you can access self.group, self.player, etc.
-
-    """
-
+class OTreeMixin:
     is_debug = settings.DEBUG
 
     def _redirect_to_page_the_user_should_be_on(self):
@@ -221,7 +202,7 @@ class FormPageOrInGameWaitPageMixin(OTreeMixin):
             # player/group/etc.
             if hasattr(response, 'render'):
                 response.render()
-            self.save_objects()
+            otree.db.idmap.save_objects()
             if (
                     self.session.use_browser_bots and
                     'browser-bot-auto-submit' in response.content.decode(

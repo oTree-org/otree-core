@@ -4,7 +4,7 @@ from idmap.metaclass import SharedMemoryModelBase  # noqa
 import idmap.models
 import idmap.tls
 import threading
-from otree_save_the_change.mixins import SaveTheChange
+#from otree_save_the_change.mixins import SaveTheChange
 
 _toggle = threading.local()
 
@@ -90,6 +90,8 @@ def _get_save_objects_model_instances():
     return instances
 
 
+'''
+# disabled temporarily to see if new STC works
 def _save_objects_shall_save(instance):
     # If ``SaveTheChange`` has recoreded any changes, then save.
     if isinstance(instance, SaveTheChange):
@@ -104,9 +106,9 @@ def _save_objects_shall_save(instance):
         return False
     # Save always if the model is not a SaveTheChange instance.
     return True
-
+'''
 
 def save_objects():
     for instance in _get_save_objects_model_instances():
-        if _save_objects_shall_save(instance):
-            instance.save()
+        #if _save_objects_shall_save(instance): # disabled temporarily
+        instance.save()

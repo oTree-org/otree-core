@@ -1,11 +1,6 @@
-import json
-
-from six.moves import cPickle as pickle
-from binascii import b2a_base64
-
+import otree.forms
 from otree import widgets
 from otree.db import models
-import otree.forms
 
 from .base import TestCase
 from .models import CurrencyFieldTestModel, SimpleModel, FormFieldModel
@@ -103,25 +98,4 @@ class CurrencyFieldTests(TestCase):
         self.assertTrue('value="0.00"' in rendered)
 
 
-class JSONFieldTests(TestCase):
 
-    def setUp(self):
-        self.test_values = [
-            1, 1.33,
-            None,
-            [1, 2, 3., {}, ["coso", None, {}]],
-            {"foo": [], "algo": None, "spam": [1, 2, 3.]},
-            [],
-            {},
-        ]
-
-    def test_json_field(self):
-        for value in self.test_values:
-            field = models._JSONField(default=value)
-            serialized = field.get_prep_value(value)
-            if value is None:
-                self.assertIsNone(serialized)
-            else:
-                self.assertJSONEqual(json.dumps(value), serialized)
-            restored = field.to_python(serialized)
-            self.assertEquals(value, restored)

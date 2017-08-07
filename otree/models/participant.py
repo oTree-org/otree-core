@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 from django.db.models import permalink, Sum
 from django.core.urlresolvers import reverse
@@ -9,9 +7,10 @@ from otree import constants_internal
 from otree.common_internal import id_label_name, random_chars_8
 from otree.db import models
 from otree.models_concrete import ParticipantToPlayerLookup
-from otree.models.varsmixin import ModelWithVars
 
-class Participant(ModelWithVars):
+#from save_the_change.decorators import SaveTheChange
+#@SaveTheChange
+class Participant(models.Model):
 
     class Meta:
         ordering = ['pk']

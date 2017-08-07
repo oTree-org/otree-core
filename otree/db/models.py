@@ -10,8 +10,6 @@ from django.core import exceptions
 from django.utils.translation import ugettext_lazy
 from django.apps import apps
 
-from .serializedfields import _PickleField
-
 import easymoney
 
 from .idmap import SharedMemoryModelBase
@@ -21,6 +19,9 @@ import otree.common
 from otree.common_internal import (
     expand_choice_tuples, get_app_label_from_import_path)
 from otree.constants_internal import field_required_msg
+from save_the_change.decorators import SaveTheChange
+
+from .serializedfields import _PickleField
 
 
 class OTreeModelBase(SharedMemoryModelBase):
@@ -38,11 +39,16 @@ class OTreeModelBase(SharedMemoryModelBase):
             meta.db_table = "{}_{}".format(app_label, name.lower())
             attrs["Meta"] = meta
 
+        new_class = super().__new__(cls, name, bases, attrs)
+
+        # apply SaveTheChange decorator because of this issue:
+        # https://github.com/karanlyons/django-save-the-change/issues/23
+        new_class = SaveTheChange(new_class)
+
         # 2015-12-22: this probably doesn't work anymore,
         # since we moved _choices to views.py
         # but we can tell users they can define FOO_choices in models.py,
         # and then call it in the equivalent method in views.py
-        new_class = super(OTreeModelBase, cls).__new__(cls, name, bases, attrs)
         for f in new_class._meta.fields:
             if hasattr(new_class, f.name + '_choices'):
                 attr_name = 'get_%s_display' % f.name

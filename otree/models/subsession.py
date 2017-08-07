@@ -4,9 +4,9 @@ from __future__ import division
 
 import six
 from django.db.models import Prefetch
-from otree_save_the_change.mixins import SaveTheChange
 from otree.db import models
-from otree.common_internal import get_models_module, in_round, in_rounds
+from otree.common_internal import (
+    get_models_module, in_round, in_rounds)
 from otree import matching
 import copy
 
@@ -20,7 +20,9 @@ class RoundMismatchError(ValueError):
     pass
 
 
-class BaseSubsession(SaveTheChange, models.Model):
+#from save_the_change.decorators import SaveTheChange
+#@SaveTheChange
+class BaseSubsession(models.Model):
     """Base class for all Subsessions.
     """
 

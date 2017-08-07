@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from otree.common_internal import get_models_module, in_round, in_rounds
-from otree_save_the_change.mixins import SaveTheChange
+from otree.common_internal import (
+    get_models_module, in_round, in_rounds)
+
 from otree.db import models
 from otree.models.fieldchecks import ensure_field
 
@@ -11,8 +12,9 @@ Player object has no attribute '{}'. If it is a model field or method,
 it must be declared on the Player class in models.py.
 '''.replace('\n', ' ')
 
-
-class BasePlayer(SaveTheChange, models.Model):
+#from save_the_change.decorators import SaveTheChange
+#@SaveTheChange
+class BasePlayer(models.Model):
     """
     Base class for all players.
     """
