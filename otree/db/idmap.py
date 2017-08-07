@@ -22,7 +22,16 @@ def is_active():
 
 
 def deactivate_cache():
+    '''
+    The Idmap cache is always being populated, even if it's not "active"
+    We just ignore its contents.
+    It doesn't look like idmap has a way to turn it off entirely.
+    '''
     _toggle.is_active = False
+    # 2017-08-07: flush both in activate and deactivate, just to be sure
+    # i was getting some unexpected behavior in tests, when a test without
+    # IDmap ran after a test with IDmap
+    flush_cache()
 
 
 def activate_cache():
@@ -77,6 +86,11 @@ def _get_save_objects_model_instances():
     Get all model instances that should be saved. This implementation uses
     the idmap cache to determine which instances have been loaded.
     """
+    # 2017-08-08: adding this because a test was failing unexpectedly for me
+    # it seems reasonable that if we haven't activated the cache, we should
+    # disregard it entirely.
+    if not is_active():
+        return []
     import idmap.tls
     cache = getattr(idmap.tls._tls, 'idmap_cache', {})
     instances = []
@@ -90,25 +104,8 @@ def _get_save_objects_model_instances():
     return instances
 
 
-'''
-# disabled temporarily to see if new STC works
-def _save_objects_shall_save(instance):
-    # If ``SaveTheChange`` has recoreded any changes, then save.
-    if isinstance(instance, SaveTheChange):
-        if instance._changed_fields:
-            return True
-        # We need special support for the vars _JSONField as SaveTheChange
-        # does not detect the change.
-        if hasattr(instance, '_save_the_change_update_changed_fields'):
-            instance._save_the_change_update_changed_fields()
-            if instance._changed_fields:
-                return True
-        return False
-    # Save always if the model is not a SaveTheChange instance.
-    return True
-'''
-
 def save_objects():
     for instance in _get_save_objects_model_instances():
-        #if _save_objects_shall_save(instance): # disabled temporarily
+        # if there are no changes on the instance, SaveTheChange will detect
+        # that very quickly and skip saving.
         instance.save()

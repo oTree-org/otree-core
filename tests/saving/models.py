@@ -15,6 +15,11 @@ class Constants(BaseConstants):
     name_in_url = 'saving'
     players_per_group = None
     num_rounds = 1
+    complex_data_structure = [
+        {c(1): c(2)},
+        {1.5: 2},
+        {1,2}
+    ]
 
 
 class Subsession(BaseSubsession):
@@ -24,6 +29,7 @@ class Subsession(BaseSubsession):
         if self.round_number == 1:
             for p in self.get_players():
                 p.participant.vars['a'] = 1
+                p.participant.vars['c'] = Constants.complex_data_structure
             for g in self.get_groups():
                 for p2 in g.get_players():
                     p2.participant.vars['b'] = 1

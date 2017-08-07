@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import division, absolute_import
 from . import models
-from otree.api import WaitPage
+from .models import Constants
+from otree.api import WaitPage, Currency as c
 from tests.utils import BlankTemplatePage as Page
 
 
@@ -11,7 +12,9 @@ class Start(Page):
         assert self.session.vars['a'] == 1
         assert self.participant.vars['a'] == 1
         assert self.participant.vars['b'] == 1
+        assert self.participant.vars['c'] == Constants.complex_data_structure
         assert self.session.config['treatment'] == 'blue'
+
         assert self.player.in_creating_session == 1
         assert self.group.in_creating_session == 1
 

@@ -10,6 +10,7 @@ from django.core import exceptions
 from django.utils.translation import ugettext_lazy
 from django.apps import apps
 
+
 import easymoney
 
 from .idmap import SharedMemoryModelBase
@@ -22,6 +23,10 @@ from otree.constants_internal import field_required_msg
 from save_the_change.decorators import SaveTheChange
 
 from .serializedfields import _PickleField
+
+class _JSONField(models.TextField):
+    '''just keeping around so that Migrations don't crash'''
+    pass
 
 
 class OTreeModelBase(SharedMemoryModelBase):
@@ -43,7 +48,8 @@ class OTreeModelBase(SharedMemoryModelBase):
 
         # apply SaveTheChange decorator because of this issue:
         # https://github.com/karanlyons/django-save-the-change/issues/23
-        new_class = SaveTheChange(new_class)
+        if is_concrete:
+            new_class = SaveTheChange(new_class)
 
         # 2015-12-22: this probably doesn't work anymore,
         # since we moved _choices to views.py

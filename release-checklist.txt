@@ -1,5 +1,4 @@
 python runtests.py
-python manage.py bots_core
 
 # in 2 separate shells:
 python manage.py runprodserver
