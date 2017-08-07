@@ -84,12 +84,12 @@ SESSION_CONFIGS = [
         'app_sequence': ['tests.simple'],
     },
     {
-        'name': 'misc_1p',
+        'name': 'saving',
         'display_name': "Single Player Game",
         'num_demo_participants': 1,
         'participation_fee': 9.99,
         'real_world_currency_per_point': 0.02,
-        'app_sequence': ['tests.misc_1p'],
+        'app_sequence': ['tests.saving'],
         'treatment': 'blue',
 
     },
@@ -103,7 +103,7 @@ SESSION_CONFIGS = [
         "name": 'two_simple_games',
         "display_name": "2 Simple Games",
         "num_demo_participants": 1,
-        "app_sequence": ['tests.simple', 'tests.misc_1p'],
+        "app_sequence": ['tests.simple', 'tests.saving'],
     },
     {
         'name': 'skip_many',

@@ -12,7 +12,7 @@ Test general functionality:
 
 
 class Constants(BaseConstants):
-    name_in_url = 'misc_1p'
+    name_in_url = 'saving'
     players_per_group = None
     num_rounds = 1
 

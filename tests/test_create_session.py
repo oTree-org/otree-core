@@ -6,7 +6,7 @@ from otree.models import Session
 
 from .base import TestCase
 from .simple import models as sg_models
-from .misc_1p import models as sgc_models
+from .saving import models as sgc_models
 import six
 from six.moves import range
 from otree.session import create_session, SESSION_CONFIGS_DICT

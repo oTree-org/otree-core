@@ -183,8 +183,8 @@ class TestDocExport(TestCase):
     def test_simple_game_export_data(self):
         self.session_test("simple")
 
-    def test_misc_1p_game_export_docs(self):
-        self.session_test("misc_1p")
+    def test_saving_game_export_docs(self):
+        self.session_test("saving")
 
     def test_misc_3p_game_export_docs(self):
         self.session_test("misc_3p")

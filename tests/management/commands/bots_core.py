@@ -6,7 +6,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         config_names = [
-            'misc_1p',
+            'saving',
         ]
 
         for config_name in config_names:

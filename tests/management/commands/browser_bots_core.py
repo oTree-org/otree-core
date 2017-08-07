@@ -6,7 +6,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         config_names = [
-            'misc_1p',
+            'saving',
             'skip_waitpage_lookahead',
             'skip_many',
             'group_by_arrival_time',
