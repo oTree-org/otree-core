@@ -388,7 +388,12 @@ class PayMTurk(vanilla.View):
                         AssignmentId=p.mturk_assignment_id,
                         BonusAmount='{0:.2f}'.format(Decimal(payoff)),
                         # prevent duplicate payments
-                        UniqueRequestToken='{}_{}'.format(p.mturk_worker_id, p.mturk_assignment_id)
+                        UniqueRequestToken='{}_{}'.format(p.mturk_worker_id, p.mturk_assignment_id),
+                        # although the Boto documentation doesn't say so,
+                        # this field is required. A user reported:
+                        # "Value null at 'reason' failed to satisfy constraint:
+                        # Member must not be null."
+                        Reason='Thank you'
                     )
                 successful_payments += 1
             except Exception as e:
