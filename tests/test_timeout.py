@@ -25,11 +25,7 @@ default_submission = (
 
 class PageWithTimeout(Page):
 
-    a = 0
-
-    def get_timeout_seconds(self):
-        PageWithTimeout.a += 1
-        return PageWithTimeout.a
+    timeout_seconds = 50
 
 
 class PageWithNoTimeout(Page):
@@ -59,20 +55,23 @@ class TestTimeout(TestCase):
         self.participant._index_in_pages = 1
         self.participant.save()
 
-    def test_page_refresh(self):
+    @patch('time.time')
+    def test_page_refresh(self, patched_time):
         '''
         Test that when you refresh a page, oTree still remembers the original
         timeout, rather creating a new one.
         '''
 
+        patched_time.return_value = 100
         page = self.get_page(PageWithTimeout, self.participant)
-        expiration_time_1 = time.time() + page.remaining_timeout_seconds()
+        remaining_seconds = page.remaining_timeout_seconds()
 
+        patched_time.return_value += 5
         page = self.get_page(PageWithTimeout, self.participant)
-        expiration_time_2 = time.time() + page.remaining_timeout_seconds()
+        remaining_seconds2 = page.remaining_timeout_seconds()
 
         # if you call it a second time, it should be the same
-        self.assertEqual(expiration_time_1, expiration_time_2)
+        self.assertEqual(remaining_seconds, remaining_seconds2 + 5)
 
     def test_timeout_scheduling(self):
         '''Loading a page with timeout should schedule a page submission'''
