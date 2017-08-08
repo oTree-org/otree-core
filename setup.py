@@ -2,19 +2,20 @@ import os
 import sys
 from setuptools import setup, find_packages
 
-README = open(os.path.join(os.path.dirname(__file__), 'README.rst')).read()
-
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-# please change the version on otree/__init__.py
 version = __import__('otree').get_version()
 
-with open('requirements.txt', 'r') as f:
+with open('README.rst', encoding='utf-8') as f:
+    README = f.read()
+
+with open('requirements.txt', encoding='utf-8') as f:
     required = f.read().splitlines()
 
-with open('requirements_mturk.txt', 'r') as f:
+with open('requirements_mturk.txt', encoding='utf-8') as f:
     required_mturk = f.read().splitlines()
+
 
 
 if sys.argv[-1] == 'publish':

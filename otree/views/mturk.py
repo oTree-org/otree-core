@@ -388,7 +388,8 @@ class PayMTurk(vanilla.View):
                         AssignmentId=p.mturk_assignment_id,
                         BonusAmount='{0:.2f}'.format(Decimal(payoff)),
                         # prevent duplicate payments
-                        UniqueRequestToken='{}_{}'.format(p.mturk_worker_id, p.mturk_assignment_id)
+                        UniqueRequestToken='{}_{}'.format(p.mturk_worker_id, p.mturk_assignment_id),
+                        Reason='Thank you'
                     )
                 successful_payments += 1
             except Exception as e:
