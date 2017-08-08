@@ -551,7 +551,10 @@ class InGameWaitPageMixin(object):
 
             otree.db.idmap.save_objects()
             otree.db.idmap.flush_cache()
-            self.participant.refresh_from_db()
+
+            # Don't use .refresh_from_db() because for some reason,
+            # it bypasses the IDmap cache
+            self.participant = Participant.objects.get(id=self.participant.id)
 
             return self._response_when_ready()
 
