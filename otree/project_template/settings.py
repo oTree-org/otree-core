@@ -2,7 +2,6 @@ import os
 from os import environ
 
 import dj_database_url
-#from boto.mturk import qualification
 
 import otree.settings
 
@@ -72,12 +71,6 @@ INSTALLED_APPS = ['otree']
 DEMO_PAGE_INTRO_TEXT = """
 oTree games
 """
-
-# from here on are qualifications requirements for workers
-# see description for requirements on Amazon Mechanical Turk website:
-# http://docs.aws.amazon.com/AWSMechTurk/latest/AWSMturkAPI/ApiReference_QualificationRequirementDataStructureArticle.html
-# and also in docs for boto:
-# https://boto.readthedocs.org/en/latest/ref/mturk.html?highlight=mturk#module-boto.mturk.qualification
 
 mturk_hit_settings = {
     'keywords': ['easy', 'bonus', 'choice', 'study'],
