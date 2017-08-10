@@ -17,6 +17,7 @@ with open('requirements_mturk.txt', encoding='utf-8') as f:
     required_mturk = f.read().splitlines()
 
 
+
 if sys.argv[-1] == 'publish':
 
     cmd = "python setup.py sdist upload"
