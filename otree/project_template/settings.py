@@ -2,7 +2,6 @@ import os
 from os import environ
 
 import dj_database_url
-#from boto.mturk import qualification
 
 import otree.settings
 
@@ -73,12 +72,6 @@ DEMO_PAGE_INTRO_TEXT = """
 oTree games
 """
 
-# from here on are qualifications requirements for workers
-# see description for requirements on Amazon Mechanical Turk website:
-# http://docs.aws.amazon.com/AWSMechTurk/latest/AWSMturkAPI/ApiReference_QualificationRequirementDataStructureArticle.html
-# and also in docs for boto:
-# https://boto.readthedocs.org/en/latest/ref/mturk.html?highlight=mturk#module-boto.mturk.qualification
-
 mturk_hit_settings = {
     'keywords': ['easy', 'bonus', 'choice', 'study'],
     'title': 'Title for your experiment',
@@ -90,12 +83,7 @@ mturk_hit_settings = {
     # 'grant_qualification_id': 'YOUR_QUALIFICATION_ID_HERE',# to prevent retakes
     # to use qualification requirements, you need to uncomment the 'qualification' import
     # at the top of this file.
-    'qualification_requirements': [
-        # qualification.LocaleRequirement("EqualTo", "US"),
-        # qualification.PercentAssignmentsApprovedRequirement("GreaterThanOrEqualTo", 50),
-        # qualification.NumberHitsApprovedRequirement("GreaterThanOrEqualTo", 5),
-        # qualification.Requirement('YOUR_QUALIFICATION_ID_HERE', 'DoesNotExist')
-    ]
+    'qualification_requirements': [],
 }
 
 # if you set a property in SESSION_CONFIG_DEFAULTS, it will be inherited by all configs
