@@ -209,14 +209,17 @@ def otree_cli():
     # see: https://github.com/oTree-org/otree-core/issues/388
     try:
         settings.INSTALLED_APPS
-    except ImportError:
+    except ImportError as exc:
         if subcommand in NO_SETTINGS_COMMANDS:
             settings.configure(**get_default_settings())
+        # need to differentiate between an ImportError because settings.py
+        # was not found, vs. ImportError because settings.py imports another
+        # module that is not found.
+        elif os.path.isfile('settings.py'):
+            raise
         else:
-            style = color_style()
-            msg = style.ERROR(SETTINGS_NOT_FOUND_MESSAGE)
-            print(msg)
-            sys.exit(1)
+            ExceptionClass = type(exc)
+            raise ExceptionClass(SETTINGS_NOT_FOUND_MESSAGE)
 
     execute_from_command_line(argv, 'otree')
 
