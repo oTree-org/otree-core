@@ -4,9 +4,6 @@ from os import environ
 import otree.settings
 from django.conf.global_settings import STATICFILES_STORAGE  # noqa
 
-from boto.mturk.qualification import LocaleRequirement
-from boto.mturk.qualification import PercentAssignmentsApprovedRequirement
-from boto.mturk.qualification import NumberHitsApprovedRequirement
 import dj_database_url
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

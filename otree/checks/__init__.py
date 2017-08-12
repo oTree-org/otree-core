@@ -383,7 +383,7 @@ def pages_function(rules, **kwargs):
                     )
                     rules.push_error(msg)
                 if issubclass(ViewCls,
-                              otree.views.abstract.InGameWaitPageMixin):
+                              otree.views.abstract.WaitPage):
                     if hasattr(ViewCls, 'before_next_page'):
                         rules.push_error(
                             'views.py: "{}" defines before_next_page, '
@@ -403,7 +403,7 @@ def pages_function(rules, **kwargs):
                                     ViewCls.__name__))
 
                 elif issubclass(ViewCls,
-                                otree.views.abstract.FormPageMixin):
+                                otree.views.abstract.Page):
                     # ok
                     pass
                 else:
