@@ -29,4 +29,4 @@ class SessionParticipantsList(generics.ListCreateAPIView):
             session = Session.objects.get(code=session_code)
         except Session.DoesNotExist:
             raise Http404('This session no longer exists.')
-        return session.get_participants()
+        return session.participant_set.filter(visited=True)
