@@ -272,9 +272,9 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
 
     def dispatch(self, request, *args, **kwargs):
         self._pre_create_id = kwargs['pre_create_id']
-        return super(WaitUntilSessionCreated, self).dispatch(
-            request, *args, **kwargs
-        )
+        if self._is_ready():
+            return self._response_when_ready()
+        return self._get_wait_page()
 
     def socket_url(self):
         return '/wait_for_session/{}/'.format(self._pre_create_id)

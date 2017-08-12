@@ -2,27 +2,40 @@ function createTableBodyFromJson(json)
 {
     var html = '<tbody>', i, row, key, value;
     for (i in json) {
-        row = json[i];
-        html += '<tr>';
-        for (key in row) {
-            value = row[key];
-            if (value === null) {
-                value = '';
-            }
-            html += '<td data-field="' + key + '" title="' + value + '">' + value + '</td>';
-        }
-        html += '</tr>';
+        html += createTableRowFromJson(json[i]);
     }
     html += '</tbody>';
     return html;
 }
 
+function createTableRowFromJson(json)
+{
+   html = '<tr>';
+    for (key in json) {
+        value = json[key];
+        if (value === null) {
+            value = '';
+        }
+        html += '<td data-field="' + key + '" title="' + value + '">' + value + '</td>';
+    }
+    html += '</tr>';
+    return html;
+}
 
 function updateDraggable($table) {
     $table.toggleClass(
         'draggable',
         ($table.get(0).scrollWidth > $table.parent().width())
         || ($table.find('tbody').height() >= 450));
+}
+
+function flashGreen($ele) {
+    $ele.css('background-color', 'green');
+    $ele.animate({
+            backgroundColor: "white"
+        },
+        5000
+    );
 }
 
 function updateTable($table, new_json) {
@@ -42,6 +55,8 @@ function updateTable($table, new_json) {
         });
         var delta = diffpatcher.diff(old_json, new_json);
         for (i in delta) {
+            // 2017-08-13: when i have time, i should update this
+            // to the refactor I did in SessionMonitor.html
             for (header_name in delta[i]) {
 
                 var cell_to_update = $table.find(
@@ -51,12 +66,7 @@ function updateTable($table, new_json) {
 
                 // so that we get tooltips if it truncates
                 cell_to_update.prop('title', new_value);
-                cell_to_update.css('background-color', 'green');
-                cell_to_update.animate({
-                        backgroundColor: "white"
-                    },
-                    5000
-                );
+                flashGreen(cell_to_update);
             }
         }
     }

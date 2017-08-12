@@ -30,14 +30,14 @@ import otree.views.admin
 import otree.views.mturk
 import otree.common_internal
 from otree.views.abstract import (
-    OTreeMixin, GenericWaitPageMixin,
+    GenericWaitPageMixin,
     global_lock, NO_PARTICIPANTS_LEFT_MSG)
 from otree.room import ROOM_DICT
 from otree.models_concrete import (
     ParticipantRoomVisit, BrowserBotsLauncherSessionCode)
 
 
-class OutOfRangeNotification(OTreeMixin, vanilla.View):
+class OutOfRangeNotification(vanilla.View):
     name_in_url = 'shared'
 
     def dispatch(self, request, *args, **kwargs):
@@ -223,8 +223,7 @@ class JoinSessionAnonymously(vanilla.View):
         return participant_start_page_or_404(session, label)
 
 
-class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
-    template_name = "otree/RoomInputLabel.html"
+class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.View):
 
     url_pattern = r'^room/(?P<room>\w+)/$'
 
@@ -244,7 +243,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.TemplateView):
         if room.has_participant_labels():
             if not label:
                 if not room.use_secure_urls:
-                    return super(AssignVisitorToRoom, self).get(args, kwargs)
+                    return render_to_response("otree/RoomInputLabel.html")
 
             if not label in room.get_participant_labels():
                 return HttpResponseNotFound(

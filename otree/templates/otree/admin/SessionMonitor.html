@@ -1,5 +1,6 @@
 {% extends "otree/admin/Session.html" %}
 
+
 {% block internal_scripts %}
 {{ block.super }}
 <script>
@@ -52,6 +53,7 @@ function setup_ajax_advance() {
 // ajax requests to the server for participants data
 function ajax_json_participants() {
     var $table = $('#monitor-table');
+    var $tbody = $table.find('tbody');
     $.ajax({
         url: '{% url "session_participants_list" session.code %}',
         type: 'GET',
@@ -74,18 +76,32 @@ function ajax_json_participants() {
                         return obj.code;
                     }
                 });
-                var delta = diffpatcher.diff(old_json, new_json);
-                for (i in delta) {
-                    for (header_name in delta[i]) {
-                        var cell_to_update = $table.find( "tbody tr:eq(" + i + ") \
-                                                 td[data-field='" + header_name + "']" );
-                        cell_to_update.text(delta[i][header_name][1]);
-                        cell_to_update.css('background-color', 'green');
-                        cell_to_update.animate({
-                                backgroundColor: "white"
-                            },
-                            5000
-                        );
+                var deltas = diffpatcher.diff(old_json, new_json);
+                for (var i in deltas) {
+                    if (i === '_t') {
+                        // this is a special value; skip it.
+                        continue;
+                    }
+                    var delta = deltas[i];
+                    var rowSelector = 'tr:eq(' + i + ')';
+                    var nthBodyRow = $tbody.find(rowSelector);
+                    // Array means an insertion
+                    if (delta.constructor === Array) {
+                        var newRowHTML = createTableRowFromJson(delta[0]);
+                        var numRows = $tbody.find('tr').length;
+                        if (parseInt(i) === numRows) {
+                            $tbody.append(newRowHTML)
+                        } else {
+                            var newRow = $(newRowHTML);
+                            newRow.insertBefore(nthBodyRow);
+                        }
+                        flashGreen($tbody.find(rowSelector))
+                    } else {
+                        for (header_name in delta) {
+                            var cell_to_update = nthBodyRow.find("td[data-field='" + header_name + "']" );
+                            cell_to_update.text(delta[header_name][1]);
+                            flashGreen(cell_to_update);
+                        }
                     }
                 }
             }
