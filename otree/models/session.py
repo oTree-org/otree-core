@@ -105,6 +105,8 @@ class Session(models.Model):
     _admin_report_app_names = models.TextField(default='')
     _admin_report_num_rounds = models.CharField(default='', max_length=255)
 
+    num_participants = models.PositiveIntegerField()
+
     def __unicode__(self):
         return self.code
 

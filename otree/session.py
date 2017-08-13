@@ -321,6 +321,7 @@ def create_session(
             _pre_create_id=_pre_create_id,
             use_browser_bots=use_browser_bots,
             is_demo=is_demo,
+            num_participants=num_participants,
             _bot_case_number=bot_case_number) # type: Session
 
         def bulk_create(model, descriptions):

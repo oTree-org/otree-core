@@ -49,7 +49,6 @@ function setup_ajax_advance() {
 }
 
 
-
 // ajax requests to the server for participants data
 function ajax_json_participants() {
     var $table = $('#monitor-table');
@@ -62,6 +61,7 @@ function ajax_json_participants() {
         },
         success: function(new_json) {
             $( "div#refresh_server_error" ).hide();
+            $('#num_participants_visited').html(new_json.length);
             var old_json = $table.data("raw");
             // build table for the first time
             if ( old_json === undefined ) {
@@ -113,31 +113,39 @@ function ajax_json_participants() {
 </script>
 {% endblock %}
 {% block content %}
-{{ block.super }}
-<table id="monitor-table" class="table table-bordered table-hover table-condensed">
-    <thead>
+    {{ block.super }}
+    <table id="monitor-table"
+           class="table table-bordered table-hover table-condensed">
+        <thead>
         <tr>
             {% for header in column_names %}
                 <th>{{ header }}</th>
             {% endfor %}
         </tr>
-    </thead>
-</table>
-<br/>
+        </thead>
+    </table>
+
+    <p><span id="num_participants_visited"></span>/{{ session.num_participants }} participants started.</p>
+    <br/>
     <a id="advance_users" class="btn btn-primary" role="button"
        data-toggle="popover" data-trigger="hover"
-       data-content="{{ advance_users_button_text }}" {% if session.use_browser_bots %}disabled{% endif %}>
+       data-content="{{ advance_users_button_text }}"
+       {% if session.use_browser_bots %}disabled{% endif %}>
         Advance slowest user(s)
     </a>
 
-    <div id="refresh_server_error" class="alert alert-danger" style="display: none;">
-    Failed to refresh data from the server.
-</div>
 
-<div id="auto_advance_server_error" class="alert alert-danger" style="display: none;">
-    An error occurred and participants could not be advanced.
-    See the server logs for details.
-</div>
+    <br>
+    <div id="refresh_server_error" class="alert alert-danger"
+         style="display: none;">
+        Failed to refresh data from the server.
+    </div>
+
+    <div id="auto_advance_server_error" class="alert alert-danger"
+         style="display: none;">
+        An error occurred and participants could not be advanced.
+        See the server logs for details.
+    </div>
 
 
 {% endblock %}
