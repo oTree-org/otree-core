@@ -1,3 +1,9 @@
+/*
+Lame trick...I increment the filename when I release a new version of this file,
+because on runserver, Chrome caches it, so all oTree users developing on Chrome
+would need to Ctrl+F5.
+ */
+
 function createTableBodyFromJson(json)
 {
     var html = '<tbody>', i, row, key, value;
@@ -50,6 +56,9 @@ function updateTable($table, new_json) {
     else {
         var diffpatcher = jsondiffpatch.create({
             objectHash: function(obj) {
+                // it's not actually participant.label, it's
+                // participant._id_in_session e.g. P1, P2... not sure why
+                // it was called that
                 return obj.participant_label;
             }
         });
