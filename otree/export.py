@@ -152,8 +152,7 @@ def get_payoff_plus_participation_fee(session, participant_values_dict):
 
 def get_rows_for_wide_csv():
 
-    sessions = Session.objects.order_by('id').annotate(
-        num_participants=Count('participant'))
+    sessions = Session.objects.order_by('id')
     session_cache = {row.id: row for row in sessions}
 
     session_config_fields = set()

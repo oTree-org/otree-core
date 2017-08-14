@@ -107,19 +107,6 @@ CommandAndResult = namedtuple(
 
 class OTreeCli(TestCase):
 
-    @mock.patch("sys.stdout")
-    @mock.patch("sys.stderr")
-    @mock.patch("sys.argv", new=["otree", "runserver"])
-    def test_import_settings_fail(self, *args):
-        settings_patch = mock.patch(
-            "otree.management.cli.settings",
-            create=True)
-        with settings_patch as settings:
-            type(settings).INSTALLED_APPS = mock.PropertyMock(
-                side_effect=ImportError)
-            with self.assertRaises(SystemExit):
-                cli.otree_cli()
-
     @mock.patch("sys.argv", new=["--help"])
     @mock.patch("otree.management.cli.execute_from_command_line")
     def test_clean_run(self, execute_from_command_line):

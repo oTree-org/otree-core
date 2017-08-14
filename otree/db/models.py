@@ -20,7 +20,7 @@ import otree.common
 from otree.common_internal import (
     expand_choice_tuples, get_app_label_from_import_path)
 from otree.constants_internal import field_required_msg
-from save_the_change.decorators import SaveTheChange
+from otree_save_the_change.decorators import SaveTheChange
 
 from .serializedfields import _PickleField
 
