@@ -212,20 +212,15 @@ class WaitForSession(OTreeJsonWebsocketConsumer):
         # in case message was sent before this web socket connects
         if Session.objects.filter(
                 _pre_create_id=pre_create_id, ready=True).exists():
-            self.group_send(group_name,
-                {'text': json.dumps(
-                    {'status': 'ready'})}
-            )
+            self.group_send(group_name, {'status': 'ready'})
         else:
             failure = FailedSessionCreation.objects.filter(
                 pre_create_id=pre_create_id
             ).first()
             if failure:
                 self.group_send(group_name,
-                    {'text': json.dumps(
                         {'error': failure.message,
-                         'traceback': failure.traceback})}
-                )
+                         'traceback': failure.traceback})
 
 
 class RoomAdmin(OTreeJsonWebsocketConsumer):

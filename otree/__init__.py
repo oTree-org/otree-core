@@ -1,5 +1,5 @@
 # REMEMBER TO ALSO UPDATE THE PROJECT TEMPLATE
-__version__ = '1.4.6'
+__version__ = '1.4.11'
 
 default_app_config = 'otree.apps.OtreeConfig'
 
