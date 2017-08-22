@@ -213,6 +213,7 @@ class FormPageOrInGameWaitPage(vanilla.View):
 
         context.update({
             'view': self,
+            # 2017-08-22: why do we need this?
             'object': getattr(self, 'object', None),
             'player': self.player,
             'group': self.group,
@@ -341,9 +342,6 @@ class FormPageOrInGameWaitPage(vanilla.View):
         """
         Even though we only use PlayerClass in set_attributes,
         we use {Group/Subsession}Class elsewhere.
-
-        2015-05-07: shouldn't this go in oTreeMixin?
-        because used by all views, not just sequence
         """
 
         self.participant = participant
@@ -418,10 +416,12 @@ class FormPageOrInGameWaitPage(vanilla.View):
 
             # if it's a wait page, record that they visited
             # but don't run after_all_players_arrive
+            # 2017-08-22: rename this to _wait_page_flag to be more explicit?
             if hasattr(page, '_check_if_complete'):
 
                 if page.group_by_arrival_time:
                     # keep looping
+                    # 2017-08-22: should explain why we keep looping
                     continue
 
                 # save the participant, because tally_unvisited
@@ -1228,6 +1228,8 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
             _group_by_arrival_time_grouped=False,
             participant___last_request_timestamp__gte=time.time()-STALE_THRESHOLD_SECONDS
         ))
+
+        assert self.player in waiting_players
 
         # prevent the user
         current_player = self.player
