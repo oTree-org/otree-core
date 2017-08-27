@@ -188,14 +188,33 @@ def get_existing_or_new_participant(session, label):
             return session.participant_set.get(label=label)
         except Participant.DoesNotExist:
             pass
-    # this could return None
     return session.participant_set.filter(
         visited=False).order_by('start_order').first()
 
 
-def participant_start_page_or_404(session, label):
+def get_participant_with_cookie_check(session, cookies):
+    cookie_name = 'session_{}_participant'.format(session.code)
+    participant_code = cookies.get(cookie_name)
+    # this could return None
+    if participant_code:
+        return Participant.objects.filter(code=participant_code).first()
+    participant = session.participant_set.filter(
+        visited=False).order_by('start_order').first()
+    if participant:
+        cookies[cookie_name] = participant.code
+        return participant
+
+
+def participant_start_page_or_404(session, label, cookies=None):
+    '''pass request.session as an arg if you want to get/set a cookie'''
     with global_lock():
-        participant = get_existing_or_new_participant(session, label)
+        if label:
+            participant = get_existing_or_new_participant(session, label)
+        elif cookies:
+            participant = get_participant_with_cookie_check(session, cookies)
+        else:
+            # this repeats the first 'if', but simpler to write it this way
+            participant = get_existing_or_new_participant(session, label)
         if not participant:
             return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
 
@@ -280,11 +299,17 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.View):
                 }
             )
 
+        if room.has_participant_labels() or label:
+            cookies = None
+        else:
+            cookies = request.session
+
+
         # 2017-08-02: changing the behavior so that even in a room without
         # participant_label_file, 2 requests for the same start URL with same label
         # will return the same participant. Not sure if the previous behavior
         # (assigning to 2 different participants) was intentional or bug.
-        return participant_start_page_or_404(session, label)
+        return participant_start_page_or_404(session, label, cookies)
 
     def get_context_data(self, **kwargs):
         return {

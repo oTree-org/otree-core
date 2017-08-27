@@ -48,6 +48,9 @@
         {% if room.has_participant_labels %}
             Users will be prompted to enter their participant label,
             which will be validated against your participant_label_file.
+        {% else %}
+            Don't use this link when testing in multiple tabs on the same browser,
+            because all tabs will be assigned to the same participant.
         {% endif %}
     </p>
 
