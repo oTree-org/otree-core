@@ -8,8 +8,6 @@
 
 import time
 
-from datetime import timedelta
-
 import django.utils.timezone
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404, render_to_response
@@ -331,10 +329,7 @@ class StaleRoomVisits(vanilla.View):
     url_pattern = r'^StaleRoomVisits/(?P<room>\w+)/$'
 
     def get(self, request, *args, **kwargs):
-
-        now = django.utils.timezone.now()
-
-        stale_threshold = now - timedelta(seconds=20)
+        stale_threshold = time.time() - 20
         stale_participant_labels = ParticipantRoomVisit.objects.filter(
             room_name=kwargs['room'],
             last_updated__lt=stale_threshold
@@ -351,10 +346,9 @@ class ActiveRoomParticipantsCount(vanilla.View):
     url_pattern = r'^ActiveRoomParticipantsCount/(?P<room>\w+)/$'
 
     def get(self, request, *args, **kwargs):
-        time_threshold = django.utils.timezone.now() - timedelta(seconds=20)
         count = ParticipantRoomVisit.objects.filter(
             room_name=kwargs['room'],
-            last_updated__gte=time_threshold
+            last_updated__gte=time.time() - 20
         ).count()
 
         return JsonResponse({'count': count})
@@ -365,10 +359,11 @@ class ParticipantRoomHeartbeat(vanilla.View):
     url_pattern = r'^ParticipantRoomHeartbeat/(?P<tab_unique_id>\w+)/$'
 
     def get(self, request, *args, **kwargs):
-        visit = get_object_or_404(
-            ParticipantRoomVisit, tab_unique_id=kwargs['tab_unique_id']
-        )
-        visit.save()  # save just to update auto_now timestamp
+        # better not to return 404, because in practice, on Firefox,
+        # this was still being requested after the session started.
+        ParticipantRoomVisit.objects.filter(
+            tab_unique_id=kwargs['tab_unique_id']
+        ).update(last_updated=time.time())
         return HttpResponse('')
 
 

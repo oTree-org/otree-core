@@ -6,7 +6,7 @@ import logging
 import django.db
 import django.utils.timezone
 import traceback
-from datetime import timedelta
+import time
 
 from channels import Group
 from channels.generic.websockets import JsonWebsocketConsumer
@@ -232,8 +232,8 @@ class RoomAdmin(OTreeJsonWebsocketConsumer):
 
         room_object = ROOM_DICT[room]
 
-        now = django.utils.timezone.now()
-        stale_threshold = now - timedelta(seconds=15)
+        now = time.time()
+        stale_threshold = now - 15
         present_list = ParticipantRoomVisit.objects.filter(
             room_name=room_object.name,
             last_updated__gte=stale_threshold,
@@ -249,7 +249,7 @@ class RoomAdmin(OTreeJsonWebsocketConsumer):
 
         # prune very old visits -- don't want a resource leak
         # because sometimes not getting deleted on WebSocket disconnect
-        very_stale_threshold = now - timedelta(minutes=10)
+        very_stale_threshold = now - 10*60
         ParticipantRoomVisit.objects.filter(
             room_name=room_object.name,
             last_updated__lt=very_stale_threshold,
@@ -283,7 +283,8 @@ class RoomParticipant(OTreeJsonWebsocketConsumer):
                 ParticipantRoomVisit.objects.create(
                     participant_label=participant_label,
                     room_name=room_name,
-                    tab_unique_id=tab_unique_id
+                    tab_unique_id=tab_unique_id,
+                    last_updated=time.time(),
                 )
             except django.db.IntegrityError as exc:
                 # possible that the tab connected twice
