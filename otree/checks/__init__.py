@@ -373,8 +373,18 @@ def pages_function(rules, **kwargs):
         else:
             for i, ViewCls in enumerate(page_list):
                 # there is no good reason to include Page in page_sequence.
-                # however, WaitPage could belong there. it works fine currently
-                # and can save the effort of subclassing
+                # As for WaitPage: even though it works fine currently
+                # and can save the effort of subclassing,
+                # we should restrict it, because:
+                # - one user had "class WaitPage(Page):".
+                # - if someone makes "class WaitPage(WaitPage):", they might
+                #   not realize why it's inheriting the extra behavior.
+                # overall, I think the small inconvenience of having to subclass
+                # once per app
+                # is outweighed by the unexpected behavior if someone subclasses
+                # it without understanding inheritance.
+                # BUT: built-in Trust game has a wait page called WaitPage.
+                # need to get rid of that first.
                 if ViewCls.__name__ == 'Page':
                     msg = (
                         "views.py: page_sequence cannot contain "
