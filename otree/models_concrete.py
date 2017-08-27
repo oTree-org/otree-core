@@ -123,7 +123,7 @@ class ParticipantRoomVisit(models.Model):
     room_name = models.CharField(max_length=50)
     participant_label = models.CharField(max_length=200)
     tab_unique_id = models.CharField(max_length=20, unique=True)
-    last_updated = models.DateTimeField(auto_now=True)
+    last_updated = models.FloatField()
 
 
 class BrowserBotsLauncherSessionCode(models.Model):
