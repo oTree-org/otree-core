@@ -206,13 +206,10 @@ def get_participant_with_cookie_check(session, cookies):
 def participant_start_page_or_404(session, label, cookies=None):
     '''pass request.session as an arg if you want to get/set a cookie'''
     with global_lock():
-        if label:
+        if cookies is None:
             participant = get_existing_or_new_participant(session, label)
-        elif cookies:
-            participant = get_participant_with_cookie_check(session, cookies)
         else:
-            # this repeats the first 'if', but simpler to write it this way
-            participant = get_existing_or_new_participant(session, label)
+            participant = get_participant_with_cookie_check(session, cookies)
         if not participant:
             return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
 
@@ -297,7 +294,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.View):
                 }
             )
 
-        if room.has_participant_labels() or label:
+        if label:
             cookies = None
         else:
             cookies = request.session

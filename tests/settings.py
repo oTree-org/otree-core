@@ -47,9 +47,10 @@ DATABASES = {
 
 CREATE_DEFAULT_SUPERUSER = True
 ADMIN_USERNAME = 'admin'
-# setting for integration with AWS Mturk
-#AWS_ACCESS_KEY_ID = environ.get('AWS_ACCESS_KEY_ID')
-#AWS_SECRET_ACCESS_KEY = environ.get('AWS_SECRET_ACCESS_KEY')
+
+# should keep these so i can run my MTurk tests
+AWS_ACCESS_KEY_ID = environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = environ.get('AWS_SECRET_ACCESS_KEY')
 
 # e.g. EUR, CAD, GBP, CHF, CNY, JPY
 REAL_WORLD_CURRENCY_CODE = 'EUR'
@@ -258,16 +259,18 @@ SESSION_CONFIGS = [
 
 ROOM_DEFAULTS = {}
 
+ROOM_WITH_LABELS_NAME = 'with_labels'
+ROOM_WITHOUT_LABELS_NAME = 'without_labels'
 
 ROOMS = [
     {
-        'name': 'default',
-        'display_name': 'Default',
+        'name': ROOM_WITH_LABELS_NAME,
+        'display_name': 'with_labels',
         'participant_label_file': 'tests/participant_labels.txt',
         'use_secure_urls': False
     },
     {
-        'name': 'anon',
+        'name': ROOM_WITHOUT_LABELS_NAME,
         'display_name': 'Anonymous',
     },
 ]

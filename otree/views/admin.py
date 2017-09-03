@@ -224,9 +224,7 @@ class RoomWithSession(vanilla.TemplateView):
 class CloseRoom(vanilla.View):
     url_pattern = r"^CloseRoom/(?P<room_name>.+)/$"
 
-    def dispatch(self, request, *args, **kwargs):
-        # TODO: should make this POST not GET,
-        # but then have to refactor the HTML button
+    def post(self, request, *args, **kwargs):
         room_name = kwargs['room_name']
         self.room = ROOM_DICT[room_name]
         self.room.session = None

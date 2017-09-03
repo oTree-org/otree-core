@@ -123,7 +123,7 @@ class TestRoomJS(ChannelLiveServerTestCase):
         # participant browser
         pbr = OTreePhantomBrowser(live_server_url=self.live_server_url)
 
-        room_name = 'default'
+        room_name = 'with_labels'
 
         # participant opens waiting page
         room_url = reverse('AssignVisitorToRoom', args=[room_name])

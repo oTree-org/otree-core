@@ -1,60 +1,39 @@
 from django.core.urlresolvers import reverse
-import django.test.client
-import unittest
 from otree.session import create_session
-from .utils import get_path
+from .base import TestCase
+import splinter
+from django.conf import settings
+from otree.models.participant import Participant
+
+URL_ADMIN_LABELS = reverse('RoomWithoutSession', args=[settings.ROOM_WITH_LABELS_NAME])
+URL_ADMIN_NO_LABELS = reverse('RoomWithoutSession', args=[settings.ROOM_WITHOUT_LABELS_NAME])
+URL_PARTICIPANT_LABELS = reverse('AssignVisitorToRoom', args=[settings.ROOM_WITH_LABELS_NAME])
+URL_PARTICIPANT_NO_LABELS = reverse('AssignVisitorToRoom', args=[settings.ROOM_WITHOUT_LABELS_NAME])
+
+LABEL_REAL = 'JohnSmith'
+LABEL_FAKE = 'NotInParticipantLabelsFile'
 
 
-def has_header(response, header_name):
-    return header_name in response
+def add_label(base_url, label):
+    return base_url + '?participant_label={}'.format(label)
 
 
-def is_wait_page(response):
-    return has_header(response, 'oTree-Wait-Page')
-
-
-def get_html(response):
-    return response.content.decode('utf-8')
-
-
-def participant_initialized(response):
-    redirect_chain = [ele[0] for ele in response.redirect_chain]
-    return any('InitializeParticipant' in url for url in redirect_chain)
-
-
-class RoomTestCase(unittest.TestCase):
-    '''Subclassed from unittest.TestCase,
-    because we don't want to flush the participant labels from the DB
-    after each test, because it circumvents room._participant_labels_loaded.
-    '''
+class RoomTestCase(TestCase):
 
     def setUp(self):
-        self.browser = django.test.client.Client()
+        self.browser = splinter.Browser('django') # type: splinter.Browser
 
     def get(self, url):
-        resp = self.browser.get(url, follow=True)
-        self.assertEqual(resp.status_code, 200)
-        self.path = get_path(resp, url)
-        return resp
-
-    def post(self, url, data=None):
-        data = data or {}
-        resp = self.browser.post(url, data, follow=True)
-        self.assertEqual(resp.status_code, 200)
-        self.path = get_path(resp, url)
-        return resp
+        self.browser.visit(url)
 
 
 class TestRoomWithoutSession(RoomTestCase):
 
-    def setUp(self):
-        self.browser = django.test.client.Client()
-
     def test_open_admin_links(self):
         urls = [
             reverse('Rooms'),
-            reverse('RoomWithoutSession', args=['default']),
-            reverse('RoomWithoutSession', args=['anon']),
+            URL_ADMIN_LABELS,
+            URL_ADMIN_NO_LABELS,
         ]
 
         for url in urls:
@@ -62,126 +41,106 @@ class TestRoomWithoutSession(RoomTestCase):
 
     def test_open_participant_links(self):
 
-        room_name = 'default'
-        room_with_labels = reverse('AssignVisitorToRoom', args=[room_name])
+        WAITING_STR = 'Waiting for your session to begin'
 
-        resp = self.get(room_with_labels)
-        self.assertIn('Please enter your participant label', get_html(resp))
+        br = self.browser
 
-        resp = self.get(
-            room_with_labels + '?participant_label=JohnSmith',
+        self.get(URL_PARTICIPANT_LABELS)
+        self.assertIn('Please enter your participant label', br.html)
+
+        self.get(
+            add_label(URL_PARTICIPANT_LABELS, LABEL_REAL)
         )
 
-        self.assertIn('room/{}'.format(room_name), self.path)
+        self.assertIn(WAITING_STR, br.html)
 
-        resp = self.browser.get(
-            room_with_labels + '?participant_label=NotInLabelsFile',
-        )
-        self.assertEqual(resp.status_code, 404)
+        self.get(add_label(URL_PARTICIPANT_LABELS, LABEL_FAKE))
+        self.assertEqual(br.status_code, 404)
 
-        anon_base_url = reverse('AssignVisitorToRoom', args=['anon'])
 
-        resp = self.get(anon_base_url)
-        self.assertIn('Waiting for your session to begin', get_html(resp))
+        self.get(URL_PARTICIPANT_NO_LABELS)
+        self.assertIn(WAITING_STR, br.html)
 
-        resp = self.get(anon_base_url + '?participant_label=JohnSmith')
-        self.assertIn('Waiting for your session to begin', get_html(resp))
+        self.get(add_label(URL_PARTICIPANT_NO_LABELS, LABEL_REAL))
+        self.assertIn(WAITING_STR, br.html)
 
     def test_ping(self):
         pass
 
 
 class TestRoomWithSession(RoomTestCase):
+    def _visited_count(self, session):
+        return session.participant_set.filter(visited=True).count()
+
+    def visited_count_labels(self):
+        return self._visited_count(self.session_with_labels)
+
+    def visited_count_no_labels(self):
+        return self._visited_count(self.session_without_labels)
+
     def setUp(self):
-        self.browser = django.test.client.Client()
-        self.default_session = create_session(
+        super().setUp()
+        self.session_with_labels = create_session(
             'simple',
             # make it 6 so that we can test if the participant is reassigned
             # if they open their start link again (1/6 chance)
             num_participants=6,
-            room_name='default',
+            room_name=settings.ROOM_WITH_LABELS_NAME,
         )
 
-        self.anon_session = create_session(
+        self.session_without_labels = create_session(
             'simple',
             num_participants=2,
-            room_name='anon',
+            room_name=settings.ROOM_WITHOUT_LABELS_NAME,
         )
+
+    def tearDown(self):
+        for url in [URL_ADMIN_LABELS, URL_ADMIN_NO_LABELS]:
+            self.get(url)
+            button = self.browser.find_by_id('close-room')
+            button.click()
+
+        self.get(URL_ADMIN_LABELS)
+        self.assertIn('room_without_session', self.browser.url)
 
     def test_open_admin_links(self):
-        self.get(reverse('RoomWithoutSession', args=['default']))
-        self.assertTrue('room_with_session' in self.path)
+        self.get(URL_ADMIN_LABELS)
+        self.assertIn('room_with_session', self.browser.url)
 
-    def test_open_participant_links(self):
-        room_with_labels = reverse('AssignVisitorToRoom', args=['default'])
+    def test_without_label(self):
 
-        resp = self.get(room_with_labels)
-        self.assertIn('Please enter your participant label', get_html(resp))
+        self.get(URL_PARTICIPANT_NO_LABELS)
+        self.get(URL_PARTICIPANT_NO_LABELS)
 
-        resp = self.get(
-            room_with_labels + '?participant_label=JohnSmith',
-        )
-        self.assertTrue(participant_initialized(resp))
+        # should use a cookie, so it remembers the participant
+        self.assertEqual(self.visited_count_no_labels(), 1)
 
-        resp = self.browser.get(
-            room_with_labels + '?participant_label=NotInLabelsFile',
-        )
-        self.assertEqual(resp.status_code, 404)
+        self.get(add_label(URL_PARTICIPANT_NO_LABELS, LABEL_REAL))
+        self.assertEqual(self.visited_count_no_labels(), 2)
 
-        anon_base_url = reverse('AssignVisitorToRoom', args=['anon'])
+    def test_with_label(self):
+        br = self.browser
 
-        resp = self.get(anon_base_url)
-        self.assertTrue(participant_initialized(resp))
+        self.get(URL_PARTICIPANT_LABELS)
+        self.assertIn('Please enter your participant label', br.html)
 
-        resp = self.get(anon_base_url + '?participant_label=JohnSmith')
-        self.assertTrue(participant_initialized(resp))
-
-    def test_participant_label(self):
-        room_with_labels = reverse('AssignVisitorToRoom', args=['default'])
-
-        participant_label = 'JohnSmith'
-        session_participant_codes = [
-            p.code for p in self.default_session.get_participants()]
-        assigned_participants = []
+        self.get(add_label(URL_PARTICIPANT_LABELS, LABEL_FAKE))
+        self.assertEqual(br.status_code, 404)
+        self.assertEqual(self.visited_count_labels(), 0)
 
         # make sure reopening the same link assigns you to same participant
         for i in range(2):
-            resp = self.get(
-                room_with_labels + '?participant_label={}'.format(
-                    participant_label))
+            self.get(add_label(URL_PARTICIPANT_LABELS, LABEL_REAL))
 
-            # last URL in redirect chain, then [0] (i forget why)
-            page_url = resp.redirect_chain[-1][0]
+        visited_participants = Participant.objects.filter(visited=True)
+        self.assertEqual(len(visited_participants), 1)
 
-            for code in session_participant_codes:
-                if code in page_url:
-                    assigned_participants.append(code)
-                    break
-        self.assertEqual(assigned_participants[0], assigned_participants[1])
-        participant = self.default_session.participant_set.get(
-            code=assigned_participants[0])
+        participant = visited_participants[0]
 
-        # make sure participant_label is recorded
-        self.assertEqual(participant.label, participant_label)
-
-
-    def test_close_room(self):
-
-        url = reverse('CloseRoom', args=['default'])
-        self.get(url)
-
-        self.get(reverse('RoomWithoutSession', args=['default']))
-        self.assertTrue('room_without_session' in self.path)
+        self.assertEqual(participant.label, LABEL_REAL)
 
     def test_delete_session_in_room(self):
         pass
 
     def test_session_start_links_room(self):
         pass
-
-    def tearDown(self):
-        url = reverse('CloseRoom', args=['default'])
-        self.get(url)
-
-        url = reverse('CloseRoom', args=['anon'])
-        self.get(url)
