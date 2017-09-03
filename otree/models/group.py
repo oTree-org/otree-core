@@ -65,23 +65,25 @@ class BaseGroup(models.Model):
         try:
             return in_round(type(self), round_number, session=self.session,
                 id_in_subsession=self.id_in_subsession)
-        except InvalidRoundError:
-            raise InvalidRoundError(
-                'Some rounds were not found for this group. '
+        except InvalidRoundError as exc:
+            msg = str(exc) + '; ' + (
                 'Hint: you should not use this '
                 'method if you are rearranging groups between rounds.'
-            ) from None
+            )
+            ExceptionClass = type(exc)
+            raise ExceptionClass(msg) from None
 
     def in_rounds(self, first, last):
         try:
             return in_rounds(type(self), first, last, session=self.session,
                 id_in_subsession=self.id_in_subsession)
-        except InvalidRoundError:
-            raise InvalidRoundError(
-                'Some rounds were not found for this group. '
+        except InvalidRoundError as exc:
+            msg = str(exc) + '; ' + (
                 'Hint: you should not use this '
                 'method if you are rearranging groups between rounds.'
-            ) from None
+            )
+            ExceptionClass = type(exc)
+            raise ExceptionClass(msg) from None
 
     def in_previous_rounds(self):
         return self.in_rounds(1, self.round_number-1)
