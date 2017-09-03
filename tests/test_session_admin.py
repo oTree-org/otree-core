@@ -19,7 +19,6 @@ class TestSessionAdmin(TestCase):
             'SessionPayments',
             'SessionData',
             'SessionStartLinks',
-            'AdvanceSession',
             'SessionSplitScreen',
         ]
         urls = ['/{}/{}/'.format(PageName, self.session.code) for

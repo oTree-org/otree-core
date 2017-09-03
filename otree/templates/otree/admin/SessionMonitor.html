@@ -1,5 +1,44 @@
 {% extends "otree/admin/Session.html" %}
 
+{% block content %}
+    {{ block.super }}
+    <table id="monitor-table"
+           class="table table-bordered table-hover table-condensed">
+        <thead>
+        <tr>
+            {% for header in column_names %}
+                <th>{{ header }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+    </table>
+
+    <p><span id="num_participants_visited"></span>/{{ session.num_participants }} participants started.</p>
+    <br/>
+    <a id="advance_users" class="btn btn-primary" role="button"
+       data-toggle="popover" data-trigger="hover"
+       data-content="{{ advance_users_button_text }}"
+       {% if session.use_browser_bots %}disabled{% endif %}>
+        Advance slowest user(s)
+    </a>
+
+
+    <br>
+    <div id="refresh_server_error" class="alert alert-danger"
+         style="display: none;">
+        Failed to refresh data from the server.
+    </div>
+
+    <div id="auto_advance_server_error" class="alert alert-danger"
+         style="display: none;">
+        An error occurred and participants could not be advanced.
+        See the server logs for details.
+    </div>
+
+    {% csrf_token %}
+
+{% endblock %}
+
 
 {% block internal_scripts %}
 {{ block.super }}
@@ -29,18 +68,33 @@ function wrap_timestamp() {
 
 // ajax request for advance session button
 function setup_ajax_advance() {
+    var csrftoken = $("[name=csrfmiddlewaretoken]").val();
+
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
     $('#advance_users').on('click', function () {
         $('#advance_users').attr("disabled", true);
         $.ajax({
             url: '{% url 'AdvanceSession' session.code %}',
-            type: 'GET',
+            type: 'POST',
             error: function(jqXHR, textStatus) {
-                $( "div#auto_advance_server_error" ).show();
+                $("div#auto_advance_server_error").show();
                 // enable the button so they can try again?
                 $('#advance_users').attr("disabled", false);
             },
             success: function() {
-                $( "div#auto_advance_server_error" ).hide();
+                $("div#auto_advance_server_error").hide();
                 ajax_json_participants();
                 $('#advance_users').attr("disabled", false);
             }
@@ -111,41 +165,4 @@ function ajax_json_participants() {
     });
 }
 </script>
-{% endblock %}
-{% block content %}
-    {{ block.super }}
-    <table id="monitor-table"
-           class="table table-bordered table-hover table-condensed">
-        <thead>
-        <tr>
-            {% for header in column_names %}
-                <th>{{ header }}</th>
-            {% endfor %}
-        </tr>
-        </thead>
-    </table>
-
-    <p><span id="num_participants_visited"></span>/{{ session.num_participants }} participants started.</p>
-    <br/>
-    <a id="advance_users" class="btn btn-primary" role="button"
-       data-toggle="popover" data-trigger="hover"
-       data-content="{{ advance_users_button_text }}"
-       {% if session.use_browser_bots %}disabled{% endif %}>
-        Advance slowest user(s)
-    </a>
-
-
-    <br>
-    <div id="refresh_server_error" class="alert alert-danger"
-         style="display: none;">
-        Failed to refresh data from the server.
-    </div>
-
-    <div id="auto_advance_server_error" class="alert alert-danger"
-         style="display: none;">
-        An error occurred and participants could not be advanced.
-        See the server logs for details.
-    </div>
-
-
 {% endblock %}

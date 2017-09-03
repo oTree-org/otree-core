@@ -377,24 +377,12 @@ class AdvanceSession(vanilla.View):
 
     url_pattern = r'^AdvanceSession/(?P<session_code>[a-z0-9]+)/$'
 
-    # TODO: get rid of this
-    @classmethod
-    def url(cls, session):
-        return '/AdvanceSession/{}/'.format(session.code)
-
-    def dispatch(self, request, *args, **kwargs):
-        self.session = get_object_or_404(
+    def post(self, *args, **kwargs):
+        session = get_object_or_404(
             otree.models.Session, code=kwargs['session_code']
         )
-        return super(AdvanceSession, self).dispatch(
-            request, *args, **kwargs
-        )
-
-    # FIXME: this should be POST, not GET
-    def get(self, request, *args, **kwargs):
-        self.session.advance_last_place_participants()
-        redirect_url = reverse('SessionMonitor', args=(self.session.code,))
-        return HttpResponseRedirect(redirect_url)
+        session.advance_last_place_participants()
+        return HttpResponse('ok')
 
 
 class ToggleArchivedSessions(vanilla.View):
