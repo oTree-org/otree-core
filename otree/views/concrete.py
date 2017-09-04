@@ -203,7 +203,7 @@ def get_participant_with_cookie_check(session, cookies):
         return participant
 
 
-def participant_start_page_or_404(session, label, cookies=None):
+def participant_start_page_or_404(session, *, label, cookies=None):
     '''pass request.session as an arg if you want to get/set a cookie'''
     with global_lock():
         if cookies is None:
