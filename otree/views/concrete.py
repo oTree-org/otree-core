@@ -234,7 +234,7 @@ class JoinSessionAnonymously(vanilla.View):
             otree.models.Session, _anonymous_code=anonymous_code
         )
         label = self.request.GET.get('participant_label')
-        return participant_start_page_or_404(session, label)
+        return participant_start_page_or_404(session, label=label)
 
 
 class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.View):
@@ -304,7 +304,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.View):
         # participant_label_file, 2 requests for the same start URL with same label
         # will return the same participant. Not sure if the previous behavior
         # (assigning to 2 different participants) was intentional or bug.
-        return participant_start_page_or_404(session, label, cookies)
+        return participant_start_page_or_404(session, label=label, cookies=cookies)
 
     def get_context_data(self, **kwargs):
         return {

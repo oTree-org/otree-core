@@ -15,7 +15,7 @@
     </p>
 
     {% if collapse_links %}
-    <button class="btn" type="button" data-toggle="collapse" data-target="#participant_links">
+    <button class="btn btn-info" type="button" data-toggle="collapse" data-target="#participant_links">
             Show/Hide
     </button>
 
@@ -23,7 +23,10 @@
 
 
     <div id="participant_links" {% if collapse_links %}class="collapse"{% endif %}>
-
+    {% comment %}
+        this is a table to be consistent with other start links listings,
+        which may include participant label column
+    {% endcomment %}
     <table class="table">
     {% for participant_url in participant_urls %}
         <tr>
@@ -34,7 +37,6 @@
     </table>
     </div>
 
-    <hr/>
 {% endif %}
 
 
