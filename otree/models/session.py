@@ -30,6 +30,7 @@ class Session(ModelWithVars):
         # if i don't set this, it could be in an unpredictable order
         ordering = ['pk']
 
+    _pickle_fields = ['vars', 'config']
     config = models._PickleField(default=dict, null=True)  # type: dict
 
     # label of this session instance

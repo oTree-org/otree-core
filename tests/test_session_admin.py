@@ -55,4 +55,4 @@ class TestSessionAdmin(TestCase):
 
         html = resp.content.decode('utf-8')
         for val in data.values():
-            self.failUnless(val in html)
+            self.assertIn(val, html)

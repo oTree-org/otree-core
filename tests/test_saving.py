@@ -43,13 +43,13 @@ class SavingTests(TestCase):
             participant = Participant.objects.get()
             with mock.patch.object(django.db.models.Model, 'save') as patched_save:
                 save_objects()
-                # no change, so should be no call
-                patched_save.assert_not_called()
+                # in save-the-change 2017 version, save is not called at all
+                patched_save.assert_called_once_with(update_fields=[])
 
                 participant.code = 'hello'
                 save_objects()
                 # but is this necessarily the only argument? no
-                patched_save.assert_called_once_with(update_fields=['code'])
+                patched_save.assert_called_with(update_fields=['code'])
 
 
     def test_nested_changes(self):

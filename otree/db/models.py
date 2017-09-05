@@ -20,8 +20,9 @@ import otree.common
 from otree.common_internal import (
     expand_choice_tuples, get_app_label_from_import_path)
 from otree.constants_internal import field_required_msg
-from otree_save_the_change.decorators import SaveTheChange
+from otree_save_the_change.mixins import SaveTheChange
 
+# this is imported from other modules
 from .serializedfields import _PickleField
 
 class _JSONField(models.TextField):
@@ -45,11 +46,6 @@ class OTreeModelBase(SharedMemoryModelBase):
             attrs["Meta"] = meta
 
         new_class = super().__new__(cls, name, bases, attrs)
-
-        # apply SaveTheChange decorator because of this issue:
-        # https://github.com/karanlyons/django-save-the-change/issues/23
-        if is_concrete:
-            new_class = SaveTheChange(new_class)
 
         # 2015-12-22: this probably doesn't work anymore,
         # since we moved _choices to views.py
@@ -76,7 +72,7 @@ def make_get_display(field):
     return get_FIELD_display
 
 
-class OTreeModel(SharedMemoryModel, metaclass=OTreeModelBase):
+class OTreeModel(SaveTheChange, SharedMemoryModel, metaclass=OTreeModelBase):
     use_strong_refs = True
 
     class Meta:
