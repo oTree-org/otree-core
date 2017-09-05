@@ -174,6 +174,8 @@ class VarsTests(TestCase):
 
         self.assertEqual(Constants.alist, [1,2])
         o = TestModelWithVars.objects.create()
+        # users should always be using .copy(), even when assigning to vars,
+        # because they might modify it before it's saved.
         o.vars['alist'] = Constants.alist.copy()
         o.save()
 

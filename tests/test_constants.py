@@ -1,6 +1,10 @@
 # 2017-08-07: i temporarily disabled this feature
-'''
-from .base import TestCase
+# If someone stores a ConstantsList into vars, it will remain a ConstantsList.
+# But they need to copy it first anyway. Because what if they use it before
+# it's saved and serialized?
+
+
+from . import TestCase
 from tests.constants.models import Constants
 from otree.constants import MustCopyError
 import random
@@ -43,4 +47,3 @@ class TestConstants(TestCase):
         c_sliced = Constants.c_list[:]
         self.assertEqual(type(c_sliced), list)
         random.shuffle(c_sliced)
-'''
