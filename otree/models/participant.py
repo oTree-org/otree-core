@@ -7,10 +7,9 @@ from otree import constants_internal
 from otree.common_internal import id_label_name, random_chars_8
 from otree.db import models
 from otree.models_concrete import ParticipantToPlayerLookup
+from .varsmixin import ModelWithVars
 
-#from save_the_change.decorators import SaveTheChange
-#@SaveTheChange
-class Participant(models.Model):
+class Participant(ModelWithVars):
 
     class Meta:
         ordering = ['pk']
@@ -18,8 +17,6 @@ class Participant(models.Model):
         index_together = ['session', 'mturk_worker_id', 'mturk_assignment_id']
 
     session = models.ForeignKey('otree.Session')
-
-    vars = models._PickleField(default=dict)
 
     label = models.CharField(
         max_length=50, null=True, doc=(

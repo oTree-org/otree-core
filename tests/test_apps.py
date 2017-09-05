@@ -4,7 +4,7 @@ from django.test.utils import override_settings
 import otree
 from otree import apps
 
-from .base import TestCase
+from tests import TestCase
 
 
 class TestApps(TestCase):

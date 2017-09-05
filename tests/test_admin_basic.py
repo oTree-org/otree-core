@@ -7,8 +7,8 @@ import splinter.browser
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
-from tests.base import OTreePhantomBrowser
-from .base import TestCase
+from tests.utils import OTreePhantomBrowser
+from tests import TestCase
 from .utils import get_path
 
 

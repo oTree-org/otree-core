@@ -8,7 +8,7 @@ import six
 
 from otree.common import Currency as c
 
-from .base import TestCase
+from tests import TestCase
 
 
 class CurrencyTests(TestCase):

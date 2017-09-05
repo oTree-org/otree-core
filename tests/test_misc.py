@@ -1,6 +1,6 @@
 import otree
 
-from .base import TestCase
+from tests import TestCase
 
 
 class TestOtreePackage(TestCase):

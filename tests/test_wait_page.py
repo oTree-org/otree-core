@@ -1,10 +1,11 @@
 from otree.session import create_session
 from otree.models.session import Session
 from otree.bots.bot import ParticipantBot
-from .base import TestCase
+from tests import TestCase
 from unittest import mock
 import tests.wait_page.views
 from otree.bots.runner import session_bot_runner_factory
+from .utils import run_bots
 
 class TestWaitForAllGroups(TestCase):
     def setUp(self):
@@ -64,7 +65,4 @@ class TestWaitPageMisuse(TestCase):
 
     def test_attribute_access(self):
         '''Test accessing self.player, self.group, self.participant in a wait page'''
-        session = create_session(
-            'waitpage_misuse', num_participants=2, use_cli_bots=True)
-        bot_runner = session_bot_runner_factory(session)
-        bot_runner.play()
+        run_bots('waitpage_misuse', num_participants=2)

@@ -1,6 +1,6 @@
 from django.core.urlresolvers import reverse
 from otree.session import create_session
-from .base import TestCase
+from tests import TestCase
 import splinter
 from django.conf import settings
 from otree.models.participant import Participant

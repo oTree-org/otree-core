@@ -1,4 +1,4 @@
-from .base import TestCase
+from tests import TestCase
 import otree.session
 from django.core.urlresolvers import reverse
 import django.test

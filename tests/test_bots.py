@@ -1,5 +1,5 @@
 from otree.api import Submission, SubmissionMustFail
-from .base import TestCase
+from tests import TestCase
 import otree.session
 from otree.bots.runner import session_bot_runner_factory, test_bots
 import logging

@@ -6,7 +6,7 @@ import six
 from django.core.management import call_command
 from otree.models import Session
 from otree.models.subsession import RoundMismatchError
-from .base import TestCase
+from tests import TestCase
 from .misc_3p import models as mpg_models
 
 RANDOM_5_BY_3 = [

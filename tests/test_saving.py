@@ -6,15 +6,16 @@ from django.core.management import call_command
 from otree.common import Currency
 from otree.db import models
 from otree.models import Participant, Session
+from otree.models.varsmixin import ModelWithVars
 from otree.db.idmap import (
     save_objects, _get_save_objects_model_instances, use_cache)
-from .base import TestCase
+from tests import TestCase
 from tests.simple.models import Player
 from otree.db.serializedfields import VarsError
 from otree.api import BaseConstants
-from otree.session import create_session
 import django.db.models
-from otree.bots.runner import session_bot_runner_factory
+from .utils import run_bots
+import numpy
 
 class SavingTests(TestCase):
     # We need to make sure to flush the idmap cache here after every save in
@@ -102,22 +103,10 @@ class SavingTests(TestCase):
 
             self.assertTrue(group.save.called)
 
-
 class SavingBots(TestCase):
     def test_bots(self):
-        session = create_session(
-            'waitpage_misuse', num_participants=2, use_cli_bots=True)
-        bot_runner = session_bot_runner_factory(session)
-        bot_runner.play()
+        run_bots('saving', 1)
 
-
-
-class PickleFieldModel(models.Model):
-    vars = models._PickleField(default=dict)
-    integer = models.IntegerField(default=0)
-
-class Constants(BaseConstants):
-    alist = [1,2]
 
 class PickleFieldTests(TestCase):
 
@@ -139,36 +128,30 @@ class PickleFieldTests(TestCase):
             restored = field.to_python(serialized)
             self.assertEquals(value, restored)
 
+
+class TestModelWithVars(ModelWithVars):
+    pass
+
+
+class Constants(BaseConstants):
+    alist = [1,2]
+
+
+class VarsTests(TestCase):
+
     def test_vars_are_saved(self):
-        instance = PickleFieldModel(integer=1)
-        instance.vars = {'a': 'b'}
-        instance.save()
+        o = TestModelWithVars.objects.create()
+        o.vars['a'] = 'b'
+        o.save()
 
-        instance = PickleFieldModel.objects.get()
-        self.assertEqual(instance.integer, 1)
-        self.assertEqual(instance.vars, {'a': 'b'})
+        o = TestModelWithVars.objects.get()
+        self.assertEqual(o.vars, {'a': 'b'})
 
-        instance.vars = {'c': 'd'}
-        instance.save()
+        o.vars['a'] = 'd'
+        o.save()
 
-        instance = PickleFieldModel.objects.get()
-        self.assertEqual(instance.vars, {'c': 'd'})
-
-    def test_other_vars_are_saved(self):
-        instance = PickleFieldModel()
-        instance.vars = {'a': 'b'}
-        instance.save()
-
-        instance = PickleFieldModel.objects.get()
-        self.assertEqual(instance.vars, {'a': 'b'})
-
-        instance.integer = 2
-        instance.vars['a'] = 'd'
-        instance.save()
-
-        instance = PickleFieldModel.objects.get()
-        self.assertEqual(instance.integer, 2)
-        self.assertEqual(instance.vars, {'a': 'd'})
+        o = TestModelWithVars.objects.get()
+        self.assertEqual(o.vars, {'a': 'd'})
 
     def test_forbid_storing_models(self):
         call_command('create_session', 'simple', '1')
@@ -190,15 +173,39 @@ class PickleFieldTests(TestCase):
     def test_storing_constants(self):
 
         self.assertEqual(Constants.alist, [1,2])
-        instance = PickleFieldModel()
-        instance.vars['alist'] = Constants.alist.copy()
-        instance.save()
+        o = TestModelWithVars.objects.create()
+        o.vars['alist'] = Constants.alist.copy()
+        o.save()
 
-        instance = PickleFieldModel.objects.get()
-        vars_alist = instance.vars['alist']
+        o = TestModelWithVars.objects.get()
+        vars_alist = o.vars['alist']
         self.assertEqual(vars_alist, Constants.alist)
         vars_alist.append(3)
 
         self.assertEqual(vars_alist, [1,2,3])
         # should not modify the original
         self.assertEqual(Constants.alist, [1,2])
+
+    def test_numpy(self):
+        '''
+        https://github.com/karanlyons/django-save-the-change/issues/27
+
+        The bug occurs when the dict keys are the same,
+        so it recurses to check equality of the values,
+        and one of the values is a numpy array
+
+        '''
+        o = TestModelWithVars.objects.create()
+        o.vars['array'] = numpy.array([0,0])
+        o.save()
+
+        o = TestModelWithVars.objects.get()
+        array = o.vars['array']
+
+        # test that it was round-tripped without data loss
+        self.assertIsInstance(array, numpy.ndarray)
+        # can't use equality on numpy arrays
+        self.assertEqual(list(array), [0,0])
+
+        o.vars['array'][0] = 1
+        o.save()

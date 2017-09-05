@@ -1,4 +1,4 @@
-from .base import TestCase
+from tests import TestCase
 from otree.session import create_session
 from otree.bots.bot import ParticipantBot
 from .base import TestCase

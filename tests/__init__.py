@@ -1,6 +1,5 @@
 # flake8: noqa
 
-from .base import TestCase
-
+from .utils import TestCase
 
 verbosity = None

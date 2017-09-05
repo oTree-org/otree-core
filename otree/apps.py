@@ -16,7 +16,6 @@ from otree.models_concrete import UndefinedFormModel, GlobalLockModel
 from otree.common_internal import (
     ensure_superuser_exists
 )
-
 logger = logging.getLogger('otree')
 
 # 2017-02-10: move this inside AppConfig.ready?

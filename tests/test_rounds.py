@@ -1,7 +1,7 @@
 from django.core.management import call_command
 from otree.models import Session
 from otree.common_internal import InvalidRoundError
-from .base import TestCase
+from tests import TestCase
 
 
 class TestRounds(TestCase):

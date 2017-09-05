@@ -6,7 +6,7 @@ from django.template import Template
 from otree.checks.templates import get_unreachable_content, check_next_button
 from otree.checks.templates import format_source_snippet
 from otree.checks.templates import has_valid_encoding
-from .base import TestCase
+from tests import TestCase
 from .utils import capture_stdout, dummyapp
 import six
 

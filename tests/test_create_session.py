@@ -4,7 +4,7 @@ from django.core.management import call_command
 
 from otree.models import Session
 
-from .base import TestCase
+from tests import TestCase
 from .simple import models as sg_models
 from .saving import models as sgc_models
 import six

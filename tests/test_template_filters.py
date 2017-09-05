@@ -12,7 +12,7 @@ from unittest import mock
 
 from otree.common import Currency as c
 
-from .base import TestCase
+from tests import TestCase
 from six.moves import range
 
 

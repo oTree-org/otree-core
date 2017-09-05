@@ -2,7 +2,7 @@ from django.core.management import call_command
 
 from otree.models import Session
 import django.test.client
-from .base import TestCase
+from tests import TestCase
 
 
 class TestSessionAdmin(TestCase):

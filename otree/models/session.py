@@ -16,19 +16,14 @@ from otree.db import models
 from otree.models_concrete import ParticipantToPlayerLookup, RoomToSession
 from django.template.loader import get_template
 from django.template import TemplateDoesNotExist
-
+from .varsmixin import ModelWithVars
 logger = logging.getLogger('otree')
 
 client = django.test.Client()
 
 ADMIN_SECRET_CODE = get_admin_secret_code()
 
-
-# for now removing SaveTheChange
-
-#from save_the_change.decorators import SaveTheChange
-#@SaveTheChange
-class Session(models.Model):
+class Session(ModelWithVars):
 
     class Meta:
         app_label = "otree"
@@ -36,7 +31,6 @@ class Session(models.Model):
         ordering = ['pk']
 
     config = models._PickleField(default=dict, null=True)  # type: dict
-    vars = models._PickleField(default=dict)  # type: dict
 
     # label of this session instance
     label = models.CharField(

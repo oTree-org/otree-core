@@ -4,7 +4,7 @@ import otree.forms
 import otree.widgets
 from otree.forms import ModelForm
 
-from .base import TestCase
+from tests import TestCase
 from .models import FormFieldModel
 from otree.api import BasePlayer, models, currency_range
 

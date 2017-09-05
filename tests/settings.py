@@ -84,7 +84,7 @@ SESSION_CONFIGS = [
     },
     {
         'name': 'saving',
-        'display_name': "Single Player Game",
+        'display_name': "Saving",
         'num_demo_participants': 1,
         'participation_fee': 9.99,
         'real_world_currency_per_point': 0.02,
