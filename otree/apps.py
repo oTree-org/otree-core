@@ -62,7 +62,7 @@ def monkey_patch_static_tag():
 SQLITE_LOCKING_ADVICE = (
     'Locking is common with SQLite. '
     'When you run your study, you should use a database like PostgreSQL '
-    'that is resistant to locking.'
+    'that is resistant to locking'
 )
 
 
