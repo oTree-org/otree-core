@@ -13,8 +13,8 @@ from django.apps import apps
 
 import easymoney
 
-from .idmap import SharedMemoryModelBase
-from .idmap import SharedMemoryModel
+from idmap.models import IdMapModelBase
+from .idmap import IdMapModel
 
 import otree.common
 from otree.common_internal import (
@@ -30,8 +30,8 @@ class _JSONField(models.TextField):
     pass
 
 
-class OTreeModelBase(SharedMemoryModelBase):
-    def __new__(cls, name, bases, attrs):
+class OTreeModelBase(IdMapModelBase):
+    def __new__(mcs, name, bases, attrs):
         meta = attrs.get("Meta")
         module = attrs.get("__module__")
         is_concrete = not getattr(meta, "abstract", False)
@@ -43,9 +43,10 @@ class OTreeModelBase(SharedMemoryModelBase):
             app_label = get_app_label_from_import_path(module)
             meta.app_label = app_label
             meta.db_table = "{}_{}".format(app_label, name.lower())
+            meta.use_strong_refs = True
             attrs["Meta"] = meta
 
-        new_class = super().__new__(cls, name, bases, attrs)
+        new_class = super().__new__(mcs, name, bases, attrs)
 
         # 2015-12-22: this probably doesn't work anymore,
         # since we moved _choices to views.py
@@ -72,8 +73,7 @@ def make_get_display(field):
     return get_FIELD_display
 
 
-class OTreeModel(SaveTheChange, SharedMemoryModel, metaclass=OTreeModelBase):
-    use_strong_refs = True
+class OTreeModel(SaveTheChange, IdMapModel, metaclass=OTreeModelBase):
 
     class Meta:
         abstract = True

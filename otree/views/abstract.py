@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-
-# =============================================================================
-# IMPORTS
-# =============================================================================
 
 import contextlib
 import importlib
@@ -26,6 +21,7 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext as _, ugettext_lazy
 from django.views.decorators.cache import never_cache, cache_control
 from six.moves import range
+import idmap
 
 import otree.common_internal
 import otree.constants_internal as constants
@@ -1001,7 +997,7 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
             # because it is passed as an arg to set_attributes().
 
             otree.db.idmap.save_objects()
-            otree.db.idmap.flush_cache()
+            idmap.flush()
 
             # Don't use .refresh_from_db() because for some reason,
             # it bypasses the IDmap cache
@@ -1088,8 +1084,10 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
             # but don't delete the current player from cache
             # because we need it to be saved at the end
             import idmap.tls
-            cache = getattr(idmap.tls._tls, 'idmap_cache', {})
-            for p in list(cache.get(self.PlayerClass, {}).values()):
+            cache = idmap.tls.get_cache(self.PlayerClass)
+            # copy to a list because we don't want to change the cache
+            # while iterating over it
+            for p in list(cache.values()):
                 if p != current_player:
                     self.PlayerClass.flush_cached_instance(p)
             self.after_all_players_arrive()

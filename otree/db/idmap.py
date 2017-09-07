@@ -1,20 +1,12 @@
 from __future__ import absolute_import
 from contextlib import contextmanager
-from idmap.metaclass import SharedMemoryModelBase  # noqa
 import idmap.models
 import idmap.tls
 import threading
-#from otree_save_the_change.mixins import SaveTheChange
+import idmap
 
 _toggle = threading.local()
 
-
-def flush_cache():
-    # The cache was not initialized yet, so we don't need to clear it yet.
-    if not hasattr(idmap.tls._tls, 'idmap_cache'):
-        return
-    for key in list(idmap.tls._tls.idmap_cache.keys()):
-        del idmap.tls._tls.idmap_cache[key]
 
 
 def is_active():
@@ -31,11 +23,11 @@ def deactivate_cache():
     # 2017-08-07: flush both in activate and deactivate, just to be sure
     # i was getting some unexpected behavior in tests, when a test without
     # IDmap ran after a test with IDmap
-    flush_cache()
+    idmap.flush()
 
 
 def activate_cache():
-    flush_cache()
+    idmap.flush()
     _toggle.is_active = True
 
 
@@ -48,7 +40,7 @@ def use_cache():
         deactivate_cache()
 
 
-class SharedMemoryModel(idmap.models.SharedMemoryModel):
+class IdMapModel(idmap.models.IdMapModel):
     class Meta:
         abstract = True
 
@@ -68,9 +60,9 @@ class SharedMemoryModel(idmap.models.SharedMemoryModel):
     # the cache before activating the use. See the activate_cache() for the
     # implementation.
     @classmethod
-    def get_cached_instance(cls, pk):
+    def get_cached_instance(cls, *args, **kwargs):
         if is_active():
-            return idmap.tls.get_cached_instance(cls, pk)
+            return super().get_cached_instance(*args, **kwargs)
 
 CLASSES_TO_SAVE = {
     'Session',
@@ -91,7 +83,6 @@ def _get_save_objects_model_instances():
     # disregard it entirely.
     if not is_active():
         return []
-    import idmap.tls
     cache = getattr(idmap.tls._tls, 'idmap_cache', {})
     instances = []
     for model_class, model_cache in cache.items():
