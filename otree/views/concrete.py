@@ -29,7 +29,7 @@ import otree.views.mturk
 import otree.common_internal
 from otree.views.abstract import (
     GenericWaitPageMixin,
-    global_lock, NO_PARTICIPANTS_LEFT_MSG)
+    global_scoped_db_lock, NO_PARTICIPANTS_LEFT_MSG)
 from otree.room import ROOM_DICT
 from otree.models_concrete import (
     ParticipantRoomVisit, BrowserBotsLauncherSessionCode)
@@ -99,7 +99,7 @@ class MTurkLandingPage(vanilla.TemplateView):
         self.session = get_object_or_404(
             otree.models.Session, code=session_code
         )
-        return super(MTurkLandingPage, self).dispatch(
+        return super().dispatch(
             request, *args, **kwargs
         )
 
@@ -116,7 +116,7 @@ class MTurkLandingPage(vanilla.TemplateView):
                 'workerId': self.request.GET['workerId']})
             return HttpResponseRedirect(url_start)
 
-        context = super(MTurkLandingPage, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         return self.render_to_response(context)
 
 
@@ -159,7 +159,7 @@ class MTurkStart(vanilla.View):
             participant = self.session.participant_set.get(
                 mturk_worker_id=worker_id)
         except Participant.DoesNotExist:
-            with global_lock():
+            with global_scoped_db_lock():
                 try:
                     participant = self.session.get_participants().filter(
                         visited=False
@@ -205,7 +205,7 @@ def get_participant_with_cookie_check(session, cookies):
 
 def participant_start_page_or_404(session, *, label, cookies=None):
     '''pass request.session as an arg if you want to get/set a cookie'''
-    with global_lock():
+    with global_scoped_db_lock():
         if cookies is None:
             participant = get_existing_or_new_participant(session, label)
         else:
@@ -436,7 +436,7 @@ class BrowserBotStartLink(GenericWaitPageMixin, vanilla.View):
         session_info = BrowserBotsLauncherSessionCode.objects.first()
         if session_info:
             session = Session.objects.get(code=session_info.code)
-            with global_lock():
+            with global_scoped_db_lock():
                 participant = session.get_participants().filter(
                     visited=False).order_by('start_order').first()
                 if not participant:

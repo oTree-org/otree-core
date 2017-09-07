@@ -62,7 +62,7 @@ def get_view_from_url(url):
 
 
 @contextlib.contextmanager
-def global_lock(recheck_interval=0.1):
+def global_scoped_db_lock(recheck_interval=0.1):
     TIMEOUT = 10
     start_time = time.time()
     while time.time() - start_time < TIMEOUT:
@@ -84,7 +84,7 @@ def global_lock(recheck_interval=0.1):
 
 
 @contextlib.contextmanager
-def participant_lock(participant_code):
+def participant_scoped_db_lock(participant_code):
     '''
     prevent the same participant from executing the page twice
     use this instead of a transaction because it's more lightweight.
@@ -121,6 +121,19 @@ def participant_lock(participant_code):
     raise Exception(
         'Another HTTP request has the lock for participant {}.'.format(
             participant_code))
+
+
+def get_redis_or_global_db_lock(*, lock_name='global'):
+    if otree.common_internal.USE_REDIS:
+        lock = redis_lock.Lock(
+            redis_client=otree.common_internal.get_redis_conn(),
+            name=lock_name,
+            expire=60,
+            auto_renewal=True
+        )
+    else:
+        lock = global_scoped_db_lock()
+    return lock
 
 
 class FormPageOrInGameWaitPage(vanilla.View):
@@ -170,7 +183,7 @@ class FormPageOrInGameWaitPage(vanilla.View):
                 auto_renewal=True
             )
         else:
-            lock = participant_lock(participant_code)
+            lock = participant_scoped_db_lock(participant_code)
 
         with lock, otree.db.idmap.use_cache():
             try:
@@ -824,6 +837,69 @@ class Undefined_GetPlayersForGroup:
         raise AttributeError(_MSG_Undefined_GetPlayersForGroup)
 
 
+class SingleCallEnforcer:
+    '''
+    enforces that the callback is only run once.
+    This is basically only needed in complex situations where
+    there is a risk of data being cached.
+
+    The code itself is not very interesting; it just reminds me & enforces
+    the correct structure.
+    '''
+
+    def __init__(
+            self, *, callback_that_changes_db_query_result,
+            lock_name='global'
+    ):
+        '''
+        pass callback as an arg instead of making it a method,
+        because the public API may require it (or one of the methods in its
+        call tree) to be a method on the view.
+
+        It's OK for the callback to return early and not complete the action.
+        But if the callback executes the action, it must
+        save its results to the DB inside the callback.
+        '''
+        self.callback = callback_that_changes_db_query_result
+        self.lock_name = lock_name
+
+    def run_if_should(self):
+        '''
+        if the callback is run, this returns its result.
+        '''
+        with get_redis_or_global_db_lock(lock_name=self.lock_name):
+            query_result = self.db_query()
+            should_run = self.should_run(query_result)
+            if should_run:
+                callback_result = self.callback()
+                return callback_result
+
+    def db_query(self):
+        '''
+        Make sure this actually gets all fresh data from the database,
+        not anything cached by idmap. Beware of any query that returns model instances,
+        because those typically go through the cache, except for refresh_from_db.
+        Better to do queries with .values() or .values_list().
+        '''
+        raise NotImplementedError()
+
+    def should_run(self, query_result):
+        raise NotImplementedError()
+
+
+class GBATSingleCallEnforcer(SingleCallEnforcer):
+
+    def db_query(self):
+        player = self.player
+        already_grouped = type(player).objects.filter(id=player.id).values_list(
+            '_group_by_arrival_time_grouped', flat=True
+        )[0]
+        return already_grouped
+
+    def should_run(self, already_grouped):
+        return not already_grouped
+
+
 class GenericWaitPageMixin:
     """used for in-game wait pages, as well as other wait-type pages oTree has
     (like waiting for session to be created, or waiting for players to be
@@ -935,20 +1011,14 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
 
         if self.group_by_arrival_time:
             if self.is_displayed():
-                if otree.common_internal.USE_REDIS:
-                    lock = redis_lock.Lock(
-                        otree.common_internal.get_redis_conn(),
-                        'group_by_arrival_time',
-                        #self.get_channels_group_name(),
-                        expire=60,
-                        auto_renewal=True
-                    )
-                else:
-                    lock = global_lock()
-                with lock:
-                    regrouped = self._gbat_try_to_regroup()
-                    if not regrouped:
-                        return self._get_wait_page()
+                enforcer = GBATSingleCallEnforcer(
+                    callback_that_changes_db_query_result=self._gbat_try_to_regroup,
+                    lock_name='gbat'
+                )
+                enforcer.player = self.player
+                regrouped = enforcer.run_if_should()
+                if not regrouped:
+                    return self._get_wait_page()
                 # because group may have changed
                 self.group = self.player.group
             else:
@@ -1047,6 +1117,10 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
         return self.subsession if self.wait_for_all_groups else self.group
 
     def _check_if_complete(self):
+        '''
+        2017-09-08: Consider refactoring this to use SingleRunEnforcer.
+        For now, it works, so don't touch it.
+        '''
         if otree.common_internal.USE_REDIS:
             lock = redis_lock.Lock(
                 otree.common_internal.get_redis_conn(),
@@ -1055,7 +1129,7 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
                 auto_renewal=True
             )
         else:
-            lock = global_lock()
+            lock = global_scoped_db_lock()
         with lock:
             unvisited_participants = self._tally_unvisited()
         if unvisited_participants:
@@ -1193,9 +1267,7 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
 
     ## THE REST OF THIS CLASS IS GROUP_BY_ARRIVAL_TIME STUFF
 
-    def _gbat_try_to_regroup(self): 
-        if self.player._group_by_arrival_time_grouped:
-            return False
+    def _gbat_try_to_regroup(self):
 
         GroupClass = type(self.group)
 
