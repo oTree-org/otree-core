@@ -15,8 +15,8 @@ from django.core.checks import register, Error, Warning
 from django.template import Template
 from django.template import TemplateSyntaxError
 
-import otree.views.abstract
-from otree.api import BasePlayer, BaseGroup, BaseSubsession, Currency
+from otree.api import (
+    BasePlayer, BaseGroup, BaseSubsession, Currency, WaitPage, Page)
 from otree.common_internal import _get_all_configs
 
 
@@ -392,8 +392,7 @@ def pages_function(rules, **kwargs):
                         "and give your page a different name."
                     )
                     rules.push_error(msg)
-                if issubclass(ViewCls,
-                              otree.views.abstract.WaitPage):
+                if issubclass(ViewCls, WaitPage):
                     if hasattr(ViewCls, 'before_next_page'):
                         rules.push_error(
                             'views.py: "{}" defines before_next_page, '
@@ -411,11 +410,17 @@ def pages_function(rules, **kwargs):
                                 'views.py: "{}" has group_by_arrival_time=True, so '
                                 'it cannot have wait_for_all_groups=True also.'.format(
                                     ViewCls.__name__))
-
-                elif issubclass(ViewCls,
-                                otree.views.abstract.Page):
-                    # ok
-                    pass
+                    # alternative technique is to not define the method on WaitPage
+                    # and then use hasattr, but I want to keep all complexity
+                    # out of views.abstract
+                    elif (ViewCls.get_players_for_group != WaitPage.get_players_for_group):
+                        rules.push_error(
+                            'views.py: "{}" defines get_players_for_group, '
+                            'but in order to use this method, you must set '
+                            'group_by_arrival_time=True'.format(
+                                ViewCls.__name__))
+                elif issubclass(ViewCls, Page):
+                    pass # ok
                 else:
                     msg = 'views.py: "{}" is not a valid page'.format(ViewCls)
                     rules.push_error(msg)
