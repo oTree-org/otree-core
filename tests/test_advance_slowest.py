@@ -1,7 +1,7 @@
 from django.core.management import call_command
 from otree.models.session import Session
 from otree.bots.bot import ParticipantBot
-from tests import TestCase
+from .utils import TestCase
 
 
 # use a wrapper so that unittest doesn't find this base class at the

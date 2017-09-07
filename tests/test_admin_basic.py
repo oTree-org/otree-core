@@ -7,9 +7,7 @@ import splinter.browser
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
-from tests.utils import OTreePhantomBrowser
-from tests import TestCase
-from .utils import get_path
+from .utils import OTreePhantomBrowser, TestCase, get_path
 
 
 def reload_urlconf():

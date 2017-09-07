@@ -2,7 +2,7 @@ import otree.forms
 from otree import widgets
 from otree.db import models
 
-from tests import TestCase
+from .utils import TestCase
 from .models import CurrencyFieldTestModel, SimpleModel, FormFieldModel
 
 

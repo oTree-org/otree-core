@@ -1,4 +1,4 @@
-from tests import TestCase
+from .utils import TestCase
 from django.core.management import call_command
 from otree.models import Session
 import django.test

@@ -3,7 +3,7 @@ from six import StringIO
 from otree.management.commands.webandworkers import OTreeHonchoManager
 from django.core.management import call_command
 from otree.management import cli
-from tests import TestCase
+from .utils import TestCase
 
 
 class OTreeAndDjangoVersion(TestCase):

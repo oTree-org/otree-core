@@ -4,8 +4,7 @@ import tempfile
 
 from django.core.management import call_command
 
-from tests import TestCase
-from .utils import capture_stdout, cd
+from .utils import TestCase, capture_stdout, cd
 
 
 class StartProjectTest(TestCase):

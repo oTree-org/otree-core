@@ -1,7 +1,7 @@
 from otree.session import create_session
 from otree.models.participant import Participant
 from otree.bots.bot import ParticipantBot
-from tests import TestCase
+from .utils import TestCase
 from tests.timeout_submission.models import Player, Constants
 from tests.timeout_submission import views
 import django.test

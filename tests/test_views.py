@@ -6,8 +6,7 @@ from otree.models import Participant
 
 from .simple.views import MyPage
 from .simple.models import Player
-from .utils import capture_stdout
-from tests import TestCase
+from .utils import capture_stdout, TestCase
 
 
 class Attribute(object):

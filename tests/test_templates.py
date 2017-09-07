@@ -1,6 +1,6 @@
 import otree.session
 from otree.bots.bot import ParticipantBot
-from tests import TestCase
+from .utils import TestCase
 from unittest import mock
 
 

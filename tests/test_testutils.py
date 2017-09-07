@@ -2,8 +2,7 @@ import os
 import sys
 import tempfile
 
-from tests import TestCase
-from .utils import add_path, capture_stdout, cd
+from .utils import TestCase, add_path, capture_stdout, cd
 
 
 class AddPathTest(TestCase):

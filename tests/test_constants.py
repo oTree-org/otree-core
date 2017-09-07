@@ -4,7 +4,7 @@
 # it's saved and serialized?
 
 
-from . import TestCase
+from .utils import TestCase
 from tests.constants.models import Constants
 from otree.constants import MustCopyError
 import random

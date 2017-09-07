@@ -1,4 +1,4 @@
-from tests import TestCase
+from .utils import TestCase
 
 
 class TestLegacy(TestCase):

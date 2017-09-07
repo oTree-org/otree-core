@@ -9,12 +9,11 @@ from otree.models import Participant, Session
 from otree.models.varsmixin import ModelWithVars
 from otree.db.idmap import (
     save_objects, _get_save_objects_model_instances, use_cache)
-from tests import TestCase
+from .utils import TestCase, run_bots
 from tests.simple.models import Player
 from otree.db.serializedfields import VarsError
 from otree.api import BaseConstants
 import django.db.models
-from .utils import run_bots
 import numpy
 
 class SavingTests(TestCase):

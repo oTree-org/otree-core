@@ -1,11 +1,8 @@
 from otree.session import create_session
-from otree.models.session import Session
 from otree.bots.bot import ParticipantBot
-from tests import TestCase
+from .utils import TestCase, run_bots
 from unittest import mock
 import tests.wait_page.views
-from otree.bots.runner import session_bot_runner_factory
-from .utils import run_bots
 
 class TestWaitForAllGroups(TestCase):
     def setUp(self):

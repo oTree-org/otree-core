@@ -9,7 +9,7 @@ import floppyforms.__future__ as forms
 import otree.db.models
 import otree.forms
 import otree.widgets
-from tests import TestCase
+from .utils import TestCase
 from otree.api import BasePlayer, models, widgets
 
 class BasicWidgetTests(TestCase):

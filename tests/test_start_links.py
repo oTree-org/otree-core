@@ -1,9 +1,6 @@
 from django.core.urlresolvers import reverse
 import splinter
-import unittest
-from otree.session import create_session
-from .utils import get_path
-from tests import TestCase
+from .utils import TestCase
 from django.core.management import call_command
 from otree.models.session import Session
 from otree.models.participant import Participant

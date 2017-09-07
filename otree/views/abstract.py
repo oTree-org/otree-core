@@ -1193,7 +1193,7 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
 
     ## THE REST OF THIS CLASS IS GROUP_BY_ARRIVAL_TIME STUFF
 
-    def _gbat_try_to_regroup(self):
+    def _gbat_try_to_regroup(self): 
         if self.player._group_by_arrival_time_grouped:
             return False
 

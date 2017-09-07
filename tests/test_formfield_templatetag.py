@@ -7,10 +7,9 @@ from django.template import VariableDoesNotExist
 import otree.db.models
 import otree.forms
 
-from tests import TestCase
+from .utils import TestCase, capture_stdout
 from .models import SimplePlayer
 from .simple.models import Player
-from .utils import capture_stdout
 
 
 class PlayerForm(otree.forms.ModelForm):

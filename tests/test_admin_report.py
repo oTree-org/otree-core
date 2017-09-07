@@ -1,7 +1,7 @@
 from django.core.management import call_command
 from django.core.urlresolvers import reverse
 from otree.models import Session
-from tests import TestCase
+from .utils import TestCase
 import splinter
 
 class TestAdminReport(TestCase):

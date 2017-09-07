@@ -8,8 +8,7 @@ from django.core.management import call_command, CommandError
 from unittest.mock import patch
 
 import otree.checks
-from tests import TestCase
-from .utils import add_path, capture_stdout, cd
+from .utils import TestCase, add_path, capture_stdout, cd
 
 
 class StartAppTest(TestCase):

@@ -1,9 +1,5 @@
-from tests import TestCase
 from otree.session import create_session
-from otree.bots.bot import ParticipantBot
-from . import TestCase
-from unittest import mock
-from otree.models.session import Session
+from .utils import TestCase
 from otree.bots.runner import session_bot_runner_factory
 from django.test import override_settings
 

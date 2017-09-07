@@ -7,7 +7,7 @@ from otree.views.mturk import MTurkClient
 import django.test.client
 from unittest import mock
 from unittest.mock import MagicMock
-from tests import TestCase
+from .utils import TestCase
 from django.test import override_settings, LiveServerTestCase
 from tests.utils import OTreePhantomBrowser
 
