@@ -43,6 +43,8 @@ def use_cache():
 class IdMapModel(idmap.models.IdMapModel):
     class Meta:
         abstract = True
+        # needs to be here for Participant and Session
+        use_strong_refs = True
 
     # The ``get_cached_instance`` method is the canonical access point for
     # idmap to retrieve objects for a particular model from the cache. If it
@@ -98,5 +100,6 @@ def _get_save_objects_model_instances():
 def save_objects():
     for instance in _get_save_objects_model_instances():
         # if there are no changes on the instance, SaveTheChange will detect
-        # that very quickly and skip saving.
+        # that very quickly and skip saving. I tested and it made no difference
+        # if I test whether _changed_fields is empty.
         instance.save()

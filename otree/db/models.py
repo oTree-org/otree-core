@@ -43,6 +43,8 @@ class OTreeModelBase(IdMapModelBase):
             app_label = get_app_label_from_import_path(module)
             meta.app_label = app_label
             meta.db_table = "{}_{}".format(app_label, name.lower())
+            # i think needs to be here even though it's set on base model,
+            # because meta is not inherited (but not tested this)
             meta.use_strong_refs = True
             attrs["Meta"] = meta
 

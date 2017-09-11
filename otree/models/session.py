@@ -258,6 +258,8 @@ class Session(ModelWithVars):
                             page_index=page_index,
                             app_name=player._meta.app_config.name,
                             player_pk=player.pk,
+                            subsession_pk=player.subsession.pk,
+                            session_pk=self.pk,
                             url=reverse(View.url_name(),
                                         args=[participant.code, page_index]))
                     )

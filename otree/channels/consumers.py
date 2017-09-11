@@ -96,7 +96,7 @@ class GroupByArrivalTime(OTreeJsonWebsocketConsumer):
             page_index=page_index,
             id_in_subsession=int(group_id_in_subsession),
             session_id=session_pk,
-            fully_completed=True).exists()
+            ).exists()
         if ready:
             self.send({'status': 'ready'})
 
@@ -123,12 +123,12 @@ class WaitPage(OTreeJsonWebsocketConsumer):
                 page_index=page_index,
                 id_in_subsession=int(group_id_in_subsession),
                 session_id=session_pk,
-                fully_completed=True).exists()
+                ).exists()
         else:  # subsession
             ready = CompletedSubsessionWaitPage.objects.filter(
                 page_index=page_index,
                 session_id=session_pk,
-                fully_completed=True).exists()
+                ).exists()
         if ready:
             self.send({'status': 'ready'})
 

@@ -38,7 +38,6 @@ class CompletedGroupWaitPage(models.Model):
     page_index = models.PositiveIntegerField()
     session = models.ForeignKey('otree.Session')
     id_in_subsession = models.PositiveIntegerField(default=0)
-    fully_completed = models.BooleanField(default=False)
 
 
 class CompletedSubsessionWaitPage(models.Model):
@@ -49,7 +48,6 @@ class CompletedSubsessionWaitPage(models.Model):
 
     page_index = models.PositiveIntegerField()
     session = models.ForeignKey('otree.Session')
-    fully_completed = models.BooleanField(default=False)
 
 
 class ParticipantToPlayerLookup(models.Model):
@@ -62,6 +60,9 @@ class ParticipantToPlayerLookup(models.Model):
     page_index = models.PositiveIntegerField()
     app_name = models.CharField(max_length=300)
     player_pk = models.PositiveIntegerField()
+    # can't store group_pk because group can change!
+    subsession_pk = models.PositiveIntegerField()
+    session_pk = models.PositiveIntegerField()
     url = models.CharField(max_length=300)
 
 
