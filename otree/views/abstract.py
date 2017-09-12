@@ -1256,7 +1256,7 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
         pass
 
     def _get_default_body_text(self):
-        num_other_players = len(self._group_or_subsession.get_players()) - 1
+        num_other_players = self._group_or_subsession.player_set.count() - 1
         if num_other_players > 1:
             return _('Waiting for the other participants.')
         if num_other_players == 1:

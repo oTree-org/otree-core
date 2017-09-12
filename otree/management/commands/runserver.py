@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 from channels.management.commands import runserver
 import otree.bots.browser
 from django.conf import settings
@@ -29,8 +26,12 @@ class Command(runserver.Command):
 
         # so we know not to use Huey
         otree.common_internal.USE_REDIS = False
+        super().handle(*args, **options)
+
+    def inner_run(self, *args, **options):
+        '''inner_run does not get run twice with runserver, unlike .handle()'''
 
         # initialize browser bot worker in process memory
         otree.bots.browser.browser_bot_worker = otree.bots.browser.Worker()
 
-        super(Command, self).handle(*args, **options)
+        super().inner_run(*args, **options)
