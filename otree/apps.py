@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import otree.common_internal
 import sys
 import logging
 from importlib import import_module
@@ -155,3 +156,5 @@ class OtreeConfig(AppConfig):
         patch_raven_config()
         monkey_patch_static_tag()
         monkey_patch_db_cursor()
+
+

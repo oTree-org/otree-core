@@ -13,7 +13,6 @@ import vanilla
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.forms.forms import pretty_name
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from six.moves import range
 from six.moves import zip
@@ -35,6 +34,13 @@ from otree.models_concrete import (
 from otree.room import ROOM_DICT
 from otree.session import SESSION_CONFIGS_DICT, create_session, SessionConfig
 from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
+
+
+def pretty_name(name):
+    """Converts 'first_name' to 'first name'"""
+    if not name:
+        return ''
+    return name.replace('_', ' ')
 
 
 class CreateSessionForm(forms.Form):

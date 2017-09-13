@@ -252,12 +252,11 @@ class FormPageOrInGameWaitPage(vanilla.View):
             vars_for_template.update(views_module.vars_for_all_templates(self) or {})
 
         vars_for_template.update(self.vars_for_template() or {})
-        self._vars_for_template = vars_for_template
 
         context.update(vars_for_template)
 
         if settings.DEBUG:
-            self.debug_tables = self._get_debug_tables()
+            self.debug_tables = self._get_debug_tables(vars_for_template)
         return context
 
     def render_to_response(self, context):
@@ -273,11 +272,19 @@ class FormPageOrInGameWaitPage(vanilla.View):
     def vars_for_template(self):
         return {}
 
-    def _get_debug_tables(self):
+    def _get_debug_tables(self, vars_for_template):
         try:
             group_id = self.group.id_in_subsession
         except:
             group_id = ''
+
+        tables = []
+        if vars_for_template:
+            # use repr() so that we can distinguish strings from numbers
+            # and can see currency types, etc.
+            items = [(k, repr(v)) for (k, v) in vars_for_template.items()]
+            rows = sorted(items)
+            tables.append(DebugTable(title='Vars for template', rows=rows))
 
         basic_info_table = DebugTable(
             title='Basic info',
@@ -291,12 +298,9 @@ class FormPageOrInGameWaitPage(vanilla.View):
             ]
         )
 
-        new_tables = [basic_info_table]
-        if self._vars_for_template:
-            rows = sorted(self._vars_for_template.items())
-            new_tables.append(DebugTable(title='Vars for template', rows=rows))
+        tables.append(basic_info_table)
 
-        return new_tables
+        return tables
 
     def _load_all_models(self):
         '''Load all model instances into idmap cache'''
