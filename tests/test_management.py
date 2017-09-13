@@ -3,7 +3,7 @@ from six import StringIO
 from otree.management.commands.webandworkers import OTreeHonchoManager
 from django.core.management import call_command
 from otree.management import cli
-from .utils import TestCase
+from .utils import TestCase, capture_stdout
 
 
 class OTreeAndDjangoVersion(TestCase):
@@ -148,7 +148,8 @@ class OTreeCli(TestCase):
 
         for command, expected_address, expected_port in specs:
             add_otree_process.reset_mock()
-            call_command(*command.split(' '))
+            with capture_stdout():
+                call_command(*command.split(' '))
             add_otree_process.assert_any_call(
                 'daphne',
                 'daphne otree.asgi:channel_layer -b {} -p {}'.format(
@@ -158,7 +159,8 @@ class OTreeCli(TestCase):
     @mock.patch.object(OTreeHonchoManager, 'loop')
     @mock.patch.object(OTreeHonchoManager, 'add_otree_process')
     def test_runprodserver(self, add_otree_process, *args):
-        call_command('runprodserver')
+        with capture_stdout():
+            call_command('runprodserver')
         add_otree_process.assert_any_call(
             'botworker', 'otree botworker')
         add_otree_process.assert_any_call(

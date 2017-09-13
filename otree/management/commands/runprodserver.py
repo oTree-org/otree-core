@@ -42,7 +42,7 @@ class Command(webandworkers.Command):
         collectstatic = options['collectstatic']
 
         if collectstatic:
-            logger.info('Running collectstatic ...')
+            self.stdout.write('Running collectstatic ...')
             call_command('collectstatic', interactive=False, verbosity=1)
 
         return super(Command, self).handle(*args, **options)

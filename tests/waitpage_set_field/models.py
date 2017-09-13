@@ -11,7 +11,7 @@ doc = ""
 class Constants(BaseConstants):
     name_in_url = 'waitpage_set_field'
     players_per_group = 4
-    num_rounds = 50
+    num_rounds = 3
 
 
 class Subsession(BaseSubsession):
