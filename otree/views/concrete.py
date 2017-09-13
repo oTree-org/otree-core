@@ -1,13 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-
-# =============================================================================
-# IMPORTS
-# =============================================================================
-
 import time
-
+import threading
 import django.utils.timezone
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404, render_to_response
@@ -23,17 +15,20 @@ import vanilla
 import otree.constants_internal as constants
 import otree.models
 from otree.models import Participant, Session
-from otree.common_internal import make_hash, add_params_to_url, get_redis_conn
+from otree.common_internal import (
+    make_hash, add_params_to_url, get_redis_conn
+)
 import otree.views.admin
 import otree.views.mturk
 import otree.common_internal
 from otree.views.abstract import (
     GenericWaitPageMixin,
-    global_scoped_db_lock, NO_PARTICIPANTS_LEFT_MSG)
+    get_redis_lock, NO_PARTICIPANTS_LEFT_MSG)
 from otree.room import ROOM_DICT
 from otree.models_concrete import (
     ParticipantRoomVisit, BrowserBotsLauncherSessionCode)
 
+start_link_thread_lock = threading.RLock()
 
 class OutOfRangeNotification(vanilla.View):
     name_in_url = 'shared'
@@ -159,9 +154,9 @@ class MTurkStart(vanilla.View):
             participant = self.session.participant_set.get(
                 mturk_worker_id=worker_id)
         except Participant.DoesNotExist:
-            with global_scoped_db_lock():
+            with get_redis_lock(name='start_links') or start_link_thread_lock:
                 try:
-                    participant = self.session.get_participants().filter(
+                    participant = self.session.participant_set.filter(
                         visited=False
                     ).order_by('start_order')[0]
                 except IndexError:
@@ -205,7 +200,7 @@ def get_participant_with_cookie_check(session, cookies):
 
 def participant_start_page_or_404(session, *, label, cookies=None):
     '''pass request.session as an arg if you want to get/set a cookie'''
-    with global_scoped_db_lock():
+    with get_redis_lock(name='start_links') or start_link_thread_lock:
         if cookies is None:
             participant = get_existing_or_new_participant(session, label)
         else:
@@ -436,8 +431,8 @@ class BrowserBotStartLink(GenericWaitPageMixin, vanilla.View):
         session_info = BrowserBotsLauncherSessionCode.objects.first()
         if session_info:
             session = Session.objects.get(code=session_info.code)
-            with global_scoped_db_lock():
-                participant = session.get_participants().filter(
+            with get_redis_lock(name='start_links') or start_link_thread_lock:
+                participant = session.participant_set.filter(
                     visited=False).order_by('start_order').first()
                 if not participant:
                     return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)

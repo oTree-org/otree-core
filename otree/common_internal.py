@@ -27,8 +27,14 @@ from six.moves import urllib
 from huey.contrib.djhuey import HUEY
 import contextlib
 from django.db import transaction
+import threading
 # set to False if using runserver
 USE_REDIS = True
+
+# these locks need to be here rather than views.abstract or views.concrete
+# because they need to be imported when the main thread runs.
+start_link_thread_lock = threading.RLock()
+wait_page_thread_lock = threading.RLock()
 
 
 def add_params_to_url(url, params):

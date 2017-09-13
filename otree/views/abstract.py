@@ -33,7 +33,8 @@ from otree.bots.bot import bot_prettify_post_data
 from otree.bots.browser import EphemeralBrowserBot
 from otree.common_internal import (
     get_app_label_from_import_path, get_dotted_name, get_admin_secret_code,
-    DebugTable, BotError)
+    DebugTable, BotError, wait_page_thread_lock
+)
 from otree.models import Participant, Session
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
@@ -56,28 +57,6 @@ def get_view_from_url(url):
     module = importlib.import_module(view_func.__module__)
     Page = getattr(module, view_func.__name__)
     return Page
-
-
-@contextlib.contextmanager
-def global_scoped_db_lock(recheck_interval=0.1):
-    TIMEOUT = 10
-    start_time = time.time()
-    while time.time() - start_time < TIMEOUT:
-        updated_locks = GlobalLockModel.objects.filter(
-            locked=False
-        ).update(locked=True)
-        if not updated_locks:
-            time.sleep(recheck_interval)
-        else:
-            try:
-                yield
-            finally:
-                GlobalLockModel.objects.update(locked=False)
-            return
-
-    # could happen if the request that has the lock is paused somehow,
-    # e.g. in a debugger
-    raise Exception('Another HTTP request has the global lock.')
 
 
 @contextlib.contextmanager
@@ -120,17 +99,15 @@ def participant_scoped_db_lock(participant_code):
             participant_code))
 
 
-def get_redis_or_global_scoped_db_lock(*, name='global'):
+def get_redis_lock(*, name='global'):
     if otree.common_internal.USE_REDIS:
-        lock = redis_lock.Lock(
+        return redis_lock.Lock(
             redis_client=otree.common_internal.get_redis_conn(),
-            name=name,
-            expire=60,
+            name='OTREE_LOCK_{}'.format(name),
+            expire=10,
             auto_renewal=True
         )
-    else:
-        lock = global_scoped_db_lock()
-    return lock
+
 
 BOT_COMPLETE_HTML_MESSAGE = '''
 <html>
@@ -915,7 +892,7 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
                 return self._get_wait_page()
         ## END EARLY EXITS
 
-        with get_redis_or_global_scoped_db_lock(name='otree_waitpage'):
+        with get_redis_lock(name='otree_waitpage') or wait_page_thread_lock:
             # setting myself to _gbat_arrived = True should happen inside the lock
             # because otherwise, another player might be able to see that I have arrived
             # before I can run get_players_for_group, and they might end up grouping

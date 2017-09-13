@@ -156,5 +156,7 @@ class OtreeConfig(AppConfig):
         patch_raven_config()
         monkey_patch_static_tag()
         monkey_patch_db_cursor()
+        # to initialize locks
+        import otree.common_internal
 
 
