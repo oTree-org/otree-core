@@ -19,7 +19,7 @@ AUTH_LEVEL = ''
 
 environ['DATABASE_URL'] = 'postgres://postgres@localhost/django_db'
 
-'''
+
 DATABASES = {
     'default': dj_database_url.config(
         default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3')
@@ -43,7 +43,7 @@ DATABASES = {
         }
     }
 }
-
+'''
 
 CREATE_DEFAULT_SUPERUSER = True
 ADMIN_USERNAME = 'admin'
@@ -286,3 +286,4 @@ REDIS_URL = globals()['REDIS_URL']
 # i could put this in otree-core, but i don't want to mess anything up,
 # e.g. bots
 CHANNEL_LAYERS['default']["TEST_CONFIG"] = {"hosts": [REDIS_URL]}
+

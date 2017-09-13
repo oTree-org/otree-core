@@ -44,6 +44,7 @@ from otree.models_concrete import (
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
+
 NO_PARTICIPANTS_LEFT_MSG = (
     "The maximum number of participants for this session has been exceeded.")
 
@@ -119,7 +120,7 @@ def participant_scoped_db_lock(participant_code):
             participant_code))
 
 
-def get_redis_or_global_db_lock(*, name='global'):
+def get_redis_or_global_scoped_db_lock(*, name='global'):
     if otree.common_internal.USE_REDIS:
         lock = redis_lock.Lock(
             redis_client=otree.common_internal.get_redis_conn(),
@@ -130,6 +131,15 @@ def get_redis_or_global_db_lock(*, name='global'):
     else:
         lock = global_scoped_db_lock()
     return lock
+
+BOT_COMPLETE_HTML_MESSAGE = '''
+<html>
+    <head>
+        <title>Bot completed</title>
+    </head>
+    <body>Bot completed</body>
+</html>
+'''
 
 
 class FormPageOrInGameWaitPage(vanilla.View):
@@ -548,7 +558,7 @@ class Page(FormPageOrInGameWaitPage):
                 submission = bot.get_next_post_data()
             except StopIteration:
                 bot.send_completion_message()
-                return HttpResponse('Bot completed')
+                return HttpResponse(BOT_COMPLETE_HTML_MESSAGE)
             else:
                 # convert MultiValueKeyDict to regular dict
                 # so that we can add entries to it in a simple way
@@ -616,7 +626,7 @@ class Page(FormPageOrInGameWaitPage):
                     submission = bot.get_next_post_data()
                 except StopIteration:
                     bot.send_completion_message()
-                    return HttpResponse('Bot completed')
+                    return HttpResponse(BOT_COMPLETE_HTML_MESSAGE)
                 else:
                     raise BotError(
                         'Finished the last page, '
@@ -901,31 +911,43 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
                 return self._get_wait_page()
         ## END EARLY EXITS
 
-        if self.group_by_arrival_time:
-            self.player._group_by_arrival_time_arrived = True
-            # _last_request_timestamp is already set in set_attributes,
-            # but set it here just so we can guarantee
-            self.participant._last_request_timestamp = time.time()
-            # we call save_objects() below
+        with get_redis_or_global_scoped_db_lock(name='otree_waitpage'):
+            # setting myself to _gbat_arrived = True should happen inside the lock
+            # because otherwise, another player might be able to see that I have arrived
+            # before I can run get_players_for_group, and they might end up grouping
+            # me. But because I am not in their group, they will not run AAPA for me
+            # so I will be considered 'already_grouped' and redirected to a wait page,
+            # and AAPA will never be run.
 
-        otree.db.idmap.save_objects()
-        idmap.flush()
+            # also, it's simpler in general to have a broad lock.
+            # and easier to explain to users that it will be run as each player
+            # arrives.
 
-        # make a clean copy for GBAT and AAPA
-        # self.player and self.participant etc are undefined
-        # and no objects are cached inside it
-        # and it doesn't affect the current instance
-        wp = type(self)() # type: WaitPage
-        wp.set_attributes_waitpage_clone(original_view=self)
+            if self.group_by_arrival_time:
+                self.player._gbat_arrived = True
+                # _last_request_timestamp is already set in set_attributes,
+                # but set it here just so we can guarantee
+                self.participant._last_request_timestamp = time.time()
+                # we call save_objects() below
 
-        # needs to happen before calculating participant_pk_set
-        # because this can change the group or PK
-        if wp.group_by_arrival_time:
-            wp._player_access_forbidden = Undefined_GetPlayersForGroup()
-            wp._participant_access_forbidden = Undefined_GetPlayersForGroup()
-            wp._group_access_forbidden = Undefined_GetPlayersForGroup()
+            otree.db.idmap.save_objects()
+            idmap.flush()
 
-            with get_redis_or_global_db_lock(name='gbat'):
+            # make a clean copy for GBAT and AAPA
+            # self.player and self.participant etc are undefined
+            # and no objects are cached inside it
+            # and it doesn't affect the current instance
+            wp = type(self)() # type: WaitPage
+            wp.set_attributes_waitpage_clone(original_view=self)
+
+
+            # needs to happen before calculating participant_pk_set
+            # because this can change the group or PK
+            if wp.group_by_arrival_time:
+                wp._player_access_forbidden = Undefined_GetPlayersForGroup()
+                wp._participant_access_forbidden = Undefined_GetPlayersForGroup()
+                wp._group_access_forbidden = Undefined_GetPlayersForGroup()
+
                 # check if the player was already grouped.
                 # this is a 'check' of the check-then-act, so it needs to be
                 # inside the lock.
@@ -934,28 +956,26 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
                 # because aapa was not run.
                 already_grouped = type(self.player).objects.filter(
                     id=self.player.id).values_list(
-                    '_group_by_arrival_time_grouped', flat=True)[0]
-
+                    '_gbat_grouped', flat=True)[0]
                 if already_grouped:
                     regrouped = False
                 else:
                     regrouped = wp._gbat_try_to_regroup()
 
-            if not regrouped:
-                self.participant.is_on_wait_page = True
-                return self._get_wait_page()
+                if not regrouped:
+                    self.participant.is_on_wait_page = True
+                    return self._get_wait_page()
 
-            wp._player_access_forbidden = None
-            wp._participant_access_forbidden = None
-            wp._group_access_forbidden = None
+                wp._player_access_forbidden = None
+                wp._participant_access_forbidden = None
+                wp._group_access_forbidden = None
 
-        # the group membership might be modified
-        # in after_all_players_arrive, so calculate this first
-        participant_pk_set = set(
-            self._group_or_subsession.player_set
-            .values_list('participant__pk', flat=True))
+            # the group membership might be modified
+            # in after_all_players_arrive, so calculate this first
+            participant_pk_set = set(
+                self._group_or_subsession.player_set
+                .values_list('participant__pk', flat=True))
 
-        with get_redis_or_global_db_lock(name='aapa'):
             if not self._was_completed():
                 if is_displayed:
                     # if any player can skip the wait page,
@@ -989,6 +1009,94 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
                 self._mark_completed()
                 self.send_completion_message(participant_pk_set)
         return self._save_and_flush_and_response_when_ready()
+
+    def _gbat_try_to_regroup(self):
+        # if someone arrives within this many seconds of the last heartbeat of
+        # a player who drops out, they will be stuck.
+        # that sounds risky, but remember that
+        # if a player drops out at any point after that,
+        # the other players in the group will also be stuck.
+        # so the purpose of this is not to prevent dropouts that happen
+        # for random reasons, but specifically on a wait page,
+        # which is usually because someone gets stuck waiting for a long time.
+        # we don't want to make it too short, because that means the page
+        # would have to refresh very quickly, which could be disruptive.
+        STALE_THRESHOLD_SECONDS = 20
+
+        # count how many are re-grouped
+        waiting_players = list(self.subsession.player_set.filter(
+            _gbat_arrived=True,
+            _gbat_grouped=False,
+            participant___last_request_timestamp__gte=time.time()-STALE_THRESHOLD_SECONDS
+        ))
+
+        players_for_group = self.get_players_for_group(waiting_players)
+
+        if not players_for_group:
+            return False
+        participant_ids = [p.participant.id for p in players_for_group]
+
+        group_id_in_subsession = self._gbat_next_group_id_in_subsession()
+
+        Constants = self._Constants
+
+        with otree.common_internal.transaction_except_for_sqlite():
+            for round_number in range(self.round_number, Constants.num_rounds+1):
+                subsession = self.subsession.in_round(round_number)
+
+                unordered_players = subsession.player_set.filter(
+                    participant_id__in=participant_ids)
+
+                participant_ids_to_players = {
+                    player.participant.id: player for player in unordered_players}
+
+                ordered_players_for_group = [
+                    participant_ids_to_players[participant_id]
+                    for participant_id in participant_ids]
+
+                if round_number == self.round_number:
+                    for player in ordered_players_for_group:
+                        player._gbat_grouped = True
+                        player.save()
+
+                group = self.GroupClass.objects.create(
+                    subsession=subsession, id_in_subsession=group_id_in_subsession,
+                    session=self.session, round_number=round_number)
+                group.set_players(ordered_players_for_group)
+
+                # prune groups without players
+                # apparently player__isnull=True works, didn't know you could
+                # use this in a reverse direction.
+                subsession.group_set.filter(player__isnull=True).delete()
+        return True
+
+    def get_players_for_group(self, waiting_players):
+        Constants = self._Constants
+
+        if Constants.players_per_group is None:
+            raise AssertionError(
+                'Page "{}": if using group_by_arrival_time, you must either set '
+                'Constants.players_per_group to a value other than None, '
+                'or define get_players_for_group() on the page.'.format(
+                    self.__class__.__name__
+                )
+            )
+
+        # we're doing this inside a lock, so it actually should never be
+        # greater than, only equal.
+        if len(waiting_players) >= Constants.players_per_group:
+            return waiting_players[:Constants.players_per_group]
+
+    def _gbat_next_group_id_in_subsession(self):
+        # 2017-05-05: seems like this can result in id_in_subsession that
+        # doesn't start from 1.
+        # especially if you do group_by_arrival_time in every round
+        # is that a problem?
+        res = self.GroupClass.objects.filter(
+            session=self.session).aggregate(Max('id_in_subsession'))
+        return res['id_in_subsession__max'] + 1
+
+
 
     _player_access_forbidden = None
     @property
@@ -1176,94 +1284,6 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
         return ''
 
     ## THE REST OF THIS CLASS IS GROUP_BY_ARRIVAL_TIME STUFF
-
-    def _gbat_try_to_regroup(self):
-        # if someone arrives within this many seconds of the last heartbeat of
-        # a player who drops out, they will be stuck.
-        # that sounds risky, but remember that
-        # if a player drops out at any point after that,
-        # the other players in the group will also be stuck.
-        # so the purpose of this is not to prevent dropouts that happen
-        # for random reasons, but specifically on a wait page,
-        # which is usually because someone gets stuck waiting for a long time.
-        # we don't want to make it too short, because that means the page
-        # would have to refresh very quickly, which could be disruptive.
-        STALE_THRESHOLD_SECONDS = 20
-
-        # count how many are re-grouped
-        waiting_players = list(self.subsession.player_set.filter(
-            _group_by_arrival_time_arrived=True,
-            _group_by_arrival_time_grouped=False,
-            participant___last_request_timestamp__gte=time.time()-STALE_THRESHOLD_SECONDS
-        ))
-
-        players_for_group = self.get_players_for_group(waiting_players)
-
-        if not players_for_group:
-            return False
-        participant_ids = [p.participant.id for p in players_for_group]
-
-        group_id_in_subsession = self._gbat_next_group_id_in_subsession()
-
-        Constants = self._Constants
-
-        with otree.common_internal.transaction_except_for_sqlite():
-            for round_number in range(self.round_number, Constants.num_rounds+1):
-                subsession = self.subsession.in_round(round_number)
-
-                unordered_players = subsession.player_set.filter(
-                    participant_id__in=participant_ids)
-
-                participant_ids_to_players = {
-                    player.participant.id: player for player in unordered_players}
-
-                ordered_players_for_group = [
-                    participant_ids_to_players[participant_id]
-                    for participant_id in participant_ids]
-
-                if round_number == self.round_number:
-                    for player in ordered_players_for_group:
-                        player._group_by_arrival_time_grouped = True
-                        player.save()
-
-                group = self.GroupClass.objects.create(
-                    subsession=subsession, id_in_subsession=group_id_in_subsession,
-                    session=self.session, round_number=round_number)
-                group.set_players(ordered_players_for_group)
-
-                # prune groups without players
-                # apparently player__isnull=True works, didn't know you could
-                # use this in a reverse direction.
-                subsession.group_set.filter(player__isnull=True).delete()
-        return True
-
-    def get_players_for_group(self, waiting_players):
-        Constants = self._Constants
-
-        if Constants.players_per_group is None:
-            raise AssertionError(
-                'Page "{}": if using group_by_arrival_time, you must either set '
-                'Constants.players_per_group to a value other than None, '
-                'or define get_players_for_group() on the page.'.format(
-                    self.__class__.__name__
-                )
-            )
-
-        # we're locking, so it shouldn't be more
-        if len(waiting_players) > Constants.players_per_group:
-            raise AssertionError('Too many waiting players', waiting_players)
-
-        if len(waiting_players) == Constants.players_per_group:
-            return waiting_players
-
-    def _gbat_next_group_id_in_subsession(self):
-        # 2017-05-05: seems like this can result in id_in_subsession that
-        # doesn't start from 1.
-        # especially if you do group_by_arrival_time in every round
-        # is that a problem?
-        res = self.GroupClass.objects.filter(
-            session=self.session).aggregate(Max('id_in_subsession'))
-        return res['id_in_subsession__max'] + 1
 
 
     def _gbat_get_channels_group_name(self):

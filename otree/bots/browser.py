@@ -188,15 +188,21 @@ class BotWorkerPingError(Exception):
     pass
 
 
-def ping(redis_conn, unique_response_code):
+def ping(redis_conn, *, timeout):
+    '''
+    timeout arg is required because this is often called together
+    with another function that has a timeout. need to be aware of double
+    timeouts piling up.
+    '''
+    unique_response_code = otree.common_internal.random_chars_8()
     response_key = '{}-ping-{}'.format(REDIS_KEY_PREFIX, unique_response_code)
     msg = {
         'command': 'ping',
         'response_key': response_key,
     }
     redis_conn.rpush(REDIS_KEY_PREFIX, json.dumps(msg))
-    # people were getting
-    result = redis_conn.blpop(response_key, timeout=3)
+    # make it very long, so we don't get spurious ping errors
+    result = redis_conn.blpop(response_key, timeout)
 
     if result is None:
         raise BotWorkerPingError(
@@ -210,10 +216,10 @@ def ping(redis_conn, unique_response_code):
         )
 
 
-def ping_bool(redis_conn, unique_response_code):
+def ping_bool(redis_conn, *, timeout):
     '''version of ping that returns True/False rather than raising'''
     try:
-        ping(redis_conn, unique_response_code)
+        ping(redis_conn, timeout=timeout)
         return True
     except BotWorkerPingError:
         return False
@@ -239,7 +245,7 @@ def initialize_bot_redis(redis_conn, participant_code):
         'response_key': response_key,
     }
     # ping will raise if it times out
-    ping(redis_conn, participant_code)
+    ping(redis_conn, timeout=5)
     redis_conn.rpush(REDIS_KEY_PREFIX, json.dumps(msg))
 
     # timeout must be int
@@ -287,7 +293,6 @@ class EphemeralBrowserBot(object):
 
     def prepare_next_submit_redis(self, html):
         participant_code = self.participant.code
-        redis_conn = self.redis_conn
         response_key = '{}-prepare_next_submit-{}'.format(
             REDIS_KEY_PREFIX, participant_code)
         msg = {
@@ -299,19 +304,26 @@ class EphemeralBrowserBot(object):
             },
             'response_key': response_key,
         }
+        return self.get_redis_response(msg)
+
+    def get_redis_response(self, msg: dict):
+        response_key = msg['response_key']
+        redis_conn = self.redis_conn
         redis_conn.rpush(REDIS_KEY_PREFIX, json.dumps(msg))
         # in practice is very fast...around 1ms
         # however, if an exception occurs, could take quite long.
-        result = redis_conn.blpop(response_key, timeout=3)
+        # so, make this very long so we don't get spurious errors.
+        # no advantage to cutting it off early.
+        # if it's that slow consistently, people will complain.
+        result = redis_conn.blpop(response_key, timeout=6)
         if result is None:
             # ping will raise if it times out
-            ping(redis_conn, participant_code)
+            ping(redis_conn, timeout=3)
             raise Exception(
                 'botworker is running but did not return a submission.'
             )
         key, submit_bytes = result
-        response = load_redis_response_dict(submit_bytes)
-        return response
+        return load_redis_response_dict(submit_bytes)
 
     def prepare_next_submit_in_process(self, html):
         return browser_bot_worker.prepare_next_submit(
@@ -337,17 +349,7 @@ class EphemeralBrowserBot(object):
             },
             'response_key': response_key,
         }
-        redis_conn.rpush(REDIS_KEY_PREFIX, json.dumps(msg))
-        # in practice is very fast...around 1ms
-        result = redis_conn.blpop(response_key, timeout=1)
-        if result is None:
-            # ping will raise if it times out
-            ping(redis_conn, participant_code)
-            raise Exception(
-                'botworker is running but did not return a submission.'
-            )
-        key, submit_bytes = result
-        return load_redis_response_dict(submit_bytes)
+        return self.get_redis_response(msg)
 
     def get_next_post_data(self):
         if otree.common_internal.USE_REDIS:

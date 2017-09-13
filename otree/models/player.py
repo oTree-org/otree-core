@@ -48,9 +48,8 @@ class BasePlayer(models.Model):
 
     round_number = models.PositiveIntegerField(db_index=True)
 
-    _group_by_arrival_time_arrived = models.BooleanField(default=False)
-    _group_by_arrival_time_grouped = models.BooleanField(default=False)
-    _group_by_arrival_time_timestamp = models.FloatField(default=None, null=True)
+    _gbat_arrived = models.BooleanField(default=False)
+    _gbat_grouped = models.BooleanField(default=False)
 
     def __getattribute__(self, name):
         try:

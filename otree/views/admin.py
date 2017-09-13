@@ -698,8 +698,7 @@ class ServerCheck(vanilla.TemplateView):
     def timeoutworker_is_running(self):
         if otree.common_internal.USE_REDIS:
             redis_conn = otree.common_internal.get_redis_conn()
-            key = 'server-check-{}'.format(random.randint(0,10000))
-            return otree.bots.browser.ping_bool(redis_conn, key)
+            return otree.bots.browser.ping_bool(redis_conn, timeout=2)
         else:
             # the timeoutworker relies on Redis (Huey),
             # so if Redis is not being used, the timeoutworker is not functional
