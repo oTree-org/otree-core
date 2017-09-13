@@ -7,8 +7,6 @@ import otree.db.idmap
 
 class TestPayoff(TestCase):
 
-
-
     def test_payoff(self):
         with self.settings(USE_POINTS=True):
             # Currency.DECIMAL_PLACES needs to be patched because the setting
@@ -24,7 +22,6 @@ class TestPayoff(TestCase):
 
     def helper(self):
 
-
         session = otree.session.create_session(
             session_config_name='two_rounds_1p',
             num_participants=1,
@@ -32,18 +29,19 @@ class TestPayoff(TestCase):
 
         # need to activate cache after creating a session
         # because inside create_session, cache is deactivated
-        otree.db.idmap.activate_cache()
+        with otree.db.idmap.use_cache():
 
-        participant = session.participant_set.get(id=1)
+            # for some reason id=1 test fails, because the session only has
+            # participant with id=2. ah, that makes sense. even if the DB
+            # is truncated, PKs will still be incremented, i think.
+            participant = session.participant_set.first()
 
-        round_players = participant.get_players()
+            round_players = participant.get_players()
 
-        round_payoff = Currency(13)
+            round_payoff = Currency(13)
 
-        round_players[0].payoff = round_payoff
-        round_players[1].payoff = round_payoff
-
-        otree.db.idmap.deactivate_cache()
+            round_players[0].payoff = round_payoff
+            round_players[1].payoff = round_payoff
 
         payoff = participant.payoff
         self.assertEqual(payoff, 2*round_payoff)
