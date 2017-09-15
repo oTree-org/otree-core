@@ -1,5 +1,7 @@
 import os
 from django.core.management.commands import startproject
+from django.core.management.base import CommandError
+import sys
 
 import six
 
@@ -31,19 +33,31 @@ class Command(startproject.Command):
                     answer = answer[0].lower()
         else:
             answer = 'n'
-        self.core_project_template_path = os.path.join(
-                os.path.dirname(otree.__file__), 'project_template')
         if answer == "y":
             project_template_path = (
                 "https://github.com/oTree-org/oTree/archive/master.zip")
         else:
-            project_template_path = self.core_project_template_path
+            project_template_path = os.path.join(
+                os.path.dirname(otree.__file__), 'project_template')
         if options.get('template', None) is None:
             options['template'] = project_template_path
-        super(Command, self).handle(*args, **options)
-
+        try:
+            super().handle(*args, **options)
+        except CommandError as exc:
+            is_macos = sys.platform.startswith('darwin')
+            if is_macos and 'CERTIFICATE_VERIFY_FAILED' in str(exc):
+                py_major, py_minor = sys.version_info[:2]
+                msg = (
+                    'CERTIFICATE_VERIFY_FAILED: '
+                    'Before downloading the sample games, '
+                    'you need to install SSL certificates. '
+                    'Usually this can be resolved by running:\n'
+                    '/Applications/Python\\ {}.{}/Install\\ Certificates.command'
+                ).format(py_major, py_minor)
+                raise CommandError(msg)
+            raise
         try:
             pypi_updates_cli()
         except:
             pass
-        print('Created project folder.')
+        self.stdout.write('Created project folder.')

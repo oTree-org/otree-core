@@ -22,4 +22,4 @@ class Command(startapp.Command):
             pypi_updates_cli()
         except:  # noqa
             pass  # noqa
-        print('Created app folder.')
+        self.stdout.write('Created app folder.')
