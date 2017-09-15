@@ -2,6 +2,8 @@ asgi-redis==0.14.1
 asgiref==0.14.0
 autobahn==0.16.0
 Babel==2.3.4
+# To avoid CERTIFICATE_VERIFY_FAILED on mac when downloading sample games etc
+certifi
 channels==0.17.3
 colorama==0.3.7
 contextlib2==0.5.4
