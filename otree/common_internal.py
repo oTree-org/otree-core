@@ -341,7 +341,7 @@ class InvalidRoundError(ValueError):
 
 def in_round(ModelClass, round_number, **kwargs):
     if round_number < 1:
-        raise InvalidRoundError('Round number cannot be less than 1')
+        raise InvalidRoundError('Invalid round number: {}'.format(round_number))
     try:
         return ModelClass.objects.get(round_number=round_number, **kwargs)
     except ModelClass.DoesNotExist:
@@ -352,7 +352,7 @@ def in_round(ModelClass, round_number, **kwargs):
 
 def in_rounds(ModelClass, first, last, **kwargs):
     if first < 1:
-        raise InvalidRoundError('Round number cannot be less than 1')
+        raise InvalidRoundError('Invalid round number: {}'.format(first))
     qs = ModelClass.objects.filter(
             round_number__range=(first, last),
             **kwargs

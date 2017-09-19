@@ -8,7 +8,6 @@ import idmap
 _toggle = threading.local()
 
 
-
 def is_active():
     return getattr(_toggle, 'is_active', False)
 

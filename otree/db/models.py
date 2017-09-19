@@ -80,6 +80,9 @@ class OTreeModel(SaveTheChange, IdMapModel, metaclass=OTreeModelBase):
     class Meta:
         abstract = True
 
+    def __repr__(self):
+        return '<{} pk={}>'.format(self.__class__.__name__, self.pk)
+
 
 Model = OTreeModel
 

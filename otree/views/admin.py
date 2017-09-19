@@ -46,6 +46,8 @@ def pretty_name(name):
 class CreateSessionForm(forms.Form):
     session_configs = SESSION_CONFIGS_DICT.values()
     session_config_choices = (
+        # use '' instead of None. '' seems to immediately invalidate the choice,
+        # rather than None which seems to be coerced to 'None'.
         [('', '-----')] +
         [(s['name'], s['display_name']) for s in session_configs])
 
@@ -73,8 +75,12 @@ class CreateSessionForm(forms.Form):
     def clean_num_participants(self):
         session_config_name = self.cleaned_data.get('session_config')
 
-        # We must check for an empty string in case validation is not run
-        if session_config_name != '':
+        # I think when this is checked, it's possible that basic validation
+        # for session_config_name was not done yet.
+        # when I tested it was None
+        # but maybe it could also be the empty string because that's what's
+        # explicitly put above.
+        if session_config_name:
             lcm = SESSION_CONFIGS_DICT[session_config_name].get_lcm()
             num_participants = self.cleaned_data['num_participants']
             if num_participants % lcm:

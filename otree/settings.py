@@ -71,18 +71,8 @@ def get_default_settings(initial_settings=None):
                     'SentryHandler'
                 ),
             },
-            'waitpage-file': {
-                'level': 'DEBUG',
-                'class': 'logging.FileHandler',
-                'filename': 'waitpage-race.log',
-            },
         },
         'loggers': {
-            'waitpage': {
-                'handlers': ['waitpage-file'],
-                'level': 'DEBUG',
-                'propagate': True,
-            },
             'otree.test.core': {
                 'handlers': ['console'],
                 'propagate': False,
