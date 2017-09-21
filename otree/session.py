@@ -265,7 +265,7 @@ def app_labels_from_sessions(config_names):
 
 
 def create_session(
-        session_config_name, label='', num_participants=None,
+        session_config_name, *, label='', num_participants=None,
         _pre_create_id=None,
         room_name=None, for_mturk=False, use_cli_bots=False,
         is_demo=False, force_browser_bots=False,

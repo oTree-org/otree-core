@@ -3,6 +3,8 @@ from otree.bots.bot import ParticipantBot
 from .utils import TestCase, run_bots
 from unittest import mock
 import tests.wait_page.views
+import splinter
+import tests.waitpage_template.models
 
 class TestWaitForAllGroups(TestCase):
     def setUp(self):
@@ -63,3 +65,20 @@ class TestWaitPageMisuse(TestCase):
     def test_attribute_access(self):
         '''Test accessing self.player, self.group, self.participant in a wait page'''
         run_bots('waitpage_misuse', num_participants=2)
+
+
+class TemplateTests(TestCase):
+    def test_customization(self):
+
+        # need 2 participants so the wait page is not skipped
+        session = create_session('waitpage_template', num_participants=2)
+        participant = session.participant_set.first()
+        br = splinter.Browser('django')
+        Constants = tests.waitpage_template.models.Constants
+        with self.assertTemplateUsed(template_name=Constants.wait_page_template):
+            br.visit(participant._start_url())
+        for substring in [
+            Constants.custom_title_text,
+            Constants.custom_body_text,
+        ]:
+            self.assertTrue(br.is_text_present(substring))

@@ -238,6 +238,11 @@ SESSION_CONFIGS = [
         'app_sequence': ['tests.constants'],
     },
     {
+        'name': 'waitpage_template',
+        'num_demo_participants': 1,
+        'app_sequence': ['tests.waitpage_template'],
+    },
+    {
         'name': 'mturk',
         'num_demo_participants': 1,
         'app_sequence': ['tests.simple'],
