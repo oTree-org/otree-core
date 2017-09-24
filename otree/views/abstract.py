@@ -21,7 +21,6 @@ from django.template.response import TemplateResponse
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext as _, ugettext_lazy
 from django.views.decorators.cache import never_cache, cache_control
-from six.moves import range
 import idmap
 
 import otree.common_internal
@@ -413,8 +412,8 @@ class FormPageOrInGameWaitPage(vanilla.View):
 
                 unvisited = page._get_unvisited_ids()
                 if not unvisited:
-                    # mark it fully completed right away,
-                    # since we don't run after_all_players_arrive()
+                    # we don't run after_all_players_arrive()
+                    page._mark_completed()
                     participant_pk_set = set(
                         page._group_or_subsession.player_set.values_list(
                             'participant__pk', flat=True))
@@ -1078,8 +1077,6 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
             session=self.session).aggregate(Max('id_in_subsession'))
         return res['id_in_subsession__max'] + 1
 
-
-
     _player_access_forbidden = None
     @property
     def player(self):
@@ -1141,6 +1138,9 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
         ).exists()
 
     def _mark_completed(self):
+        # could be 2 people creating the record at the same time
+        # in _increment_index_in_pages, so could end up creating 2 records
+        # but it's not a problem.
         if self.wait_for_all_groups:
             CompletedSubsessionWaitPage.objects.create(
                 page_index=self._index_in_pages,

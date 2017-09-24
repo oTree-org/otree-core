@@ -32,7 +32,6 @@ class PageTimeout(models.Model):
 class CompletedGroupWaitPage(models.Model):
     class Meta:
         app_label = "otree"
-        unique_together = ['page_index', 'session', 'id_in_subsession']
         index_together = ['page_index', 'session', 'id_in_subsession']
 
     page_index = models.PositiveIntegerField()
@@ -43,7 +42,6 @@ class CompletedGroupWaitPage(models.Model):
 class CompletedSubsessionWaitPage(models.Model):
     class Meta:
         app_label = "otree"
-        unique_together = ['page_index', 'session']
         index_together = ['page_index', 'session']
 
     page_index = models.PositiveIntegerField()
