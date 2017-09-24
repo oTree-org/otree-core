@@ -1,5 +1,5 @@
 from django.core.management import call_command
-
+from django.core.urlresolvers import reverse
 from otree.models import Session
 import django.test.client
 from .utils import TestCase
@@ -13,6 +13,10 @@ class TestSessionAdmin(TestCase):
         self.browser = django.test.client.Client()
 
     def test_tabs(self):
+        p1 = self.session.participant_set.first()
+        # have to load 1 participant so that the monitor view shows data
+        self.client.get(p1._start_url(), follow=True)
+
         tabs = [
             'SessionDescription',
             'SessionMonitor',
@@ -21,12 +25,10 @@ class TestSessionAdmin(TestCase):
             'SessionStartLinks',
             'SessionSplitScreen',
         ]
-        urls = ['/{}/{}/'.format(PageName, self.session.code) for
-                PageName in tabs]
+        urls = [reverse(PageName, args=[self.session.code]) for PageName in tabs]
 
-        urls.extend([
-            '/sessions/{}/participants/'.format(self.session.code),
-        ])
+        # REST feed
+        urls.append('/sessions/{}/participants/'.format(self.session.code))
 
         for url in urls:
             response = self.browser.get(url, follow=True)
