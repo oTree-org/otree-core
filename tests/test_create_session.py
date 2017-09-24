@@ -10,6 +10,11 @@ from .saving import models as sgc_models
 import six
 from six.moves import range
 from otree.session import create_session, SESSION_CONFIGS_DICT
+from django.core.urlresolvers import reverse
+import splinter
+from channels.tests import ChannelTestCase, HttpClient
+from otree.channels import consumers
+
 
 class TestCreateSessionsCommand(TestCase):
 
@@ -90,7 +95,86 @@ class TestCreateSessionsCommand(TestCase):
         self.assertEqual(session2.config[config_key], original_config_value)
 
 
-class TestCreateSessionView(TestCase):
+class ViewTests(ChannelTestCase):
 
     def test_create_session(self):
-        pass
+        br = splinter.Browser('django')
+
+        config_name = 'edit_session_config'
+
+        new_values = {
+            'int': 1,
+            'float': 1.57,
+            'bool': True,
+            'str': 'hello2',
+            'participation_fee': 1
+        }
+
+        create_session_url = reverse('CreateSession')
+        br.visit(create_session_url)
+
+        form_values = {
+            'session_config': 'edit_session_config',
+            'num_participants': '1',
+        }
+
+        for k, v in new_values.items():
+            if isinstance(v, bool):
+                br.check('{}.{}'.format(config_name, k))
+            else:
+                field_name = '{}.{}'.format(config_name, k)
+                form_values[field_name] = str(v)
+
+        br.fill_form(form_values)
+        button = br.find_by_value('Create')
+        button.click()
+
+        # make sure undesired fields are not present? Like you can't edit
+        # 'app_sequence' or 'num_demo_participants'.
+        # test fail to create session
+
+        # i can't test waiting for the session
+        # because i don't know the pre_create_id
+
+        message = self.get_next_message('otree.create_session', require=True)
+        consumers.create_session(message)
+
+        # test connecting before session is created
+
+        session = Session.objects.first()
+        config = session.config
+
+        ORIGINAL_CONFIG = SESSION_CONFIGS_DICT[config_name]
+        for k, v in new_values.items():
+            # make sure we actually changed it, and that we didn't mutate
+            # the original config
+            self.assertNotEqual(config[k], ORIGINAL_CONFIG[k])
+            # make sure equal to new value
+            self.assertEqual(config[k], v)
+
+
+'''
+Not working because splinter doesn't seem to recognize formaction, so I get:
+Method Not Allowed (POST): /sessions/
+
+Anyway, this test doesn't seem very useful. The test is longer than the code itself.
+
+ToggleArchived will have the same issue
+
+class DeleteTests(TestCase):
+    def test_delete(self):
+
+        session = create_session('simple', num_participants=1)
+        br = splinter.Browser('django')
+        sessions_url = reverse('Sessions')
+        br.visit(sessions_url)
+        # it seems splinter Django browser doesn't let you select checkboxes by value?
+        # so i can't specify the session code
+        #checkboxes = br.find_by_name('session')
+        #for checkbox in checkboxes:
+        #    print('checking checkbox')
+        #    checkbox.check()
+        br.check('session')
+        br.find_by_id('action-delete-confirm').click()
+        self.assertFalse(Session.objects.filter(code=session.code).exists())
+'''

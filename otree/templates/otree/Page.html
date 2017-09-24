@@ -71,31 +71,30 @@
             One user reported that with a 588 bot session,
             web socket for auto-advance adds 4s to each page load.
             {% endcomment %}
-            {% if session.pages_auto_reload_when_advanced %}
-                var socket;
+            var socket;
 
-                function initWebSocket() {
-                    var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-                    var ws_path = ws_scheme + '://' + window.location.host + "{{ view.socket_url|safe }}";
+            function initWebSocket() {
+                var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+                var ws_path = ws_scheme + '://' + window.location.host + "{{ view.socket_url|safe }}";
 
-                    socket = new ReconnectingWebSocket(ws_path);
-                    socket.onmessage = function (e) {
-                        var data = JSON.parse(e.data);
+                socket = new ReconnectingWebSocket(ws_path);
+                socket.onmessage = function (e) {
+                    var data = JSON.parse(e.data);
 
-                        if (data.error) {
-                            $("#_otree-server-error").show();
-                            return;
-                        }
+                    if (data.error) {
+                        $("#_otree-server-error").show();
+                        return;
+                    }
 
-                        if (data.auto_advanced) {
-                            console.log('Received redirect message', e.data);
-                            window.location.href = '{{ view.redirect_url|safe }}';
-                        }
-                    };
-                }
+                    if (data.auto_advanced) {
+                        console.log('Received redirect message', e.data);
+                        window.location.href = '{{ view.redirect_url|safe }}';
+                    }
+                };
+            }
 
-                initWebSocket();
-            {% endif %}
+            initWebSocket();
+
 
             {% if session.use_browser_bots %}
                 {# submit the form instantly #}

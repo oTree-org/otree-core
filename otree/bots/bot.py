@@ -248,33 +248,29 @@ class ParticipantBot(test.Client, metaclass=abc.ABCMeta):
         for player_bot in self.player_bots:
             # play_round populates legacy submit list
             generator = player_bot.play_round()
-            if player_bot._legacy_submit_list:
-                for submission in player_bot._legacy_submit_list:
+            try:
+                for submission in generator:
+                    # Submission or SubmissionMustFail returns a dict
+                    # so, we normalize to a dict
+                    if not isinstance(submission, dict):
+                        submission = BareYieldToSubmission(submission)
+                    self.assert_correct_page(submission)
+                    self.assert_html_ok(submission)
                     yield submission
-            else:
-                try:
-                    for submission in generator:
-                        # Submission or SubmissionMustFail returns a dict
-                        # so, we normalize to a dict
-                        if not isinstance(submission, dict):
-                            submission = BareYieldToSubmission(submission)
-                        self.assert_correct_page(submission)
-                        self.assert_html_ok(submission)
-                        yield submission
-                # handle the case where it's empty
-                # it's fragile to rely on a substring in the exception,
-                # but i have a test case covering this
-                except TypeError as exc:
-                    if 'is not iterable' in str(exc):
-                        # we used to raise StopIteration here. But shouldn't
-                        # do that, because then the whole participant bot
-                        # stops running (e.g. doesn't play any of the
-                        # PlayerBots in the following apps).
-                        # this was causing a bug where we got "bot completed"
-                        # but the bot had only played half the game
-                        pass
-                    else:
-                        raise
+            # handle the case where it's empty
+            # it's fragile to rely on a substring in the exception,
+            # but i have a test case covering this
+            except TypeError as exc:
+                if 'is not iterable' in str(exc):
+                    # we used to raise StopIteration here. But shouldn't
+                    # do that, because then the whole participant bot
+                    # stops running (e.g. doesn't play any of the
+                    # PlayerBots in the following apps).
+                    # this was causing a bug where we got "bot completed"
+                    # but the bot had only played half the game
+                    pass
+                else:
+                    raise
 
     def _play_individually(self):
         '''convenience method for testing'''
@@ -374,7 +370,6 @@ class PlayerBot(object):
         self._cached_subsession = player.subsession
         self._cached_participant = player.participant
         self._cached_session = player.session
-        self._legacy_submit_list = []
 
         self.round_number = player.round_number
 
@@ -408,16 +403,6 @@ class PlayerBot(object):
     @property
     def participant(self):
         return refresh_from_db(self._cached_participant)
-
-    def submit(self, ViewClass, param_dict=None):
-        self._legacy_submit_list.append(
-            _Submission(ViewClass, param_dict, check_html=False))
-
-    def submit_invalid(self, ViewClass, param_dict=None):
-        # simpler to make this a no-op, it makes porting to yield easier
-        # then we can just do a search-and-replace
-        # self._legacy_submit_list.append((ViewClass, param_dict, 'invalid'))
-        pass
 
     @property
     def html(self):

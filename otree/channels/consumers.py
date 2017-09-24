@@ -16,10 +16,9 @@ from otree.models import Participant, Session
 from otree.models_concrete import (
     CompletedGroupWaitPage, CompletedSubsessionWaitPage)
 from otree.common_internal import (
-    channels_wait_page_group_name, channels_create_session_group_name,
-    channels_group_by_arrival_time_group_name, get_models_module,
-    channels_room_participants_group_name
+    get_models_module
 )
+import otree.channels.utils as channel_utils
 from otree.models_concrete import (
     FailedSessionCreation, ParticipantRoomVisit,
     FAILURE_MESSAGE_MAX_LENGTH, BrowserBotsLauncherSessionCode)
@@ -83,7 +82,7 @@ class GroupByArrivalTime(OTreeJsonWebsocketConsumer):
         }
 
     def group_name(self, app_name, player_id, page_index, session_pk):
-        return channels_group_by_arrival_time_group_name(
+        return channel_utils.group_by_arrival_time_group_name(
             session_pk, page_index)
 
     def post_connect(self, app_name, player_id, page_index, session_pk):
@@ -113,7 +112,7 @@ class WaitPage(OTreeJsonWebsocketConsumer):
         }
 
     def group_name(self, session_pk, page_index, group_id_in_subsession):
-        return channels_wait_page_group_name(
+        return channel_utils.wait_page_group_name(
                 session_pk, page_index, group_id_in_subsession)
 
     def post_connect(self, session_pk, page_index, group_id_in_subsession):
@@ -181,7 +180,7 @@ def create_session(message):
                 })}
         )
         FailedSessionCreation.objects.create(
-            pre_create_id=kwargs['_pre_create_id'],
+            pre_create_id=kwargs['pre_create_id'],
             message=error_message[:FAILURE_MESSAGE_MAX_LENGTH],
             traceback=traceback_str
         )
@@ -193,7 +192,7 @@ def create_session(message):
     )
 
     if 'room_name' in kwargs:
-        Group(channels_room_participants_group_name(kwargs['room_name'])).send(
+        Group(channel_utils.room_participants_group_name(kwargs['room_name'])).send(
             {'text': json.dumps(
                 {'status': 'session_ready'})}
         )
@@ -204,7 +203,7 @@ class WaitForSession(OTreeJsonWebsocketConsumer):
         return kwargs
 
     def group_name(self, pre_create_id):
-        return channels_create_session_group_name(pre_create_id)
+        return channel_utils.create_session_group_name(pre_create_id)
 
     def post_connect(self, pre_create_id):
 
@@ -268,7 +267,7 @@ class RoomParticipant(OTreeJsonWebsocketConsumer):
         }
 
     def group_name(self, room_name, participant_label, tab_unique_id):
-        return channels_room_participants_group_name(room_name)
+        return channel_utils.room_participants_group_name(room_name)
 
     def post_connect(self, room_name, participant_label, tab_unique_id):
         if room_name in ROOM_DICT:

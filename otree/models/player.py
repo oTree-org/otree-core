@@ -57,10 +57,6 @@ class BasePlayer(models.Model):
         except AttributeError:
             raise AttributeError(ATTRIBUTE_ERROR_MESSAGE.format(name)) from None
 
-    # it's _name instead of name because people might define
-    # their own name field
-    def _name(self):
-        return self.participant.__unicode__()
 
     @property
     def payoff(self):
@@ -112,16 +108,6 @@ class BasePlayer(models.Model):
 
     def get_others_in_subsession(self):
         return [p for p in self.subsession.get_players() if p != self]
-
-    def __unicode__(self):
-        return self._name()
-
-    def _GroupClass(self):
-        return self._meta.get_field('group').rel.to
-
-    @property
-    def _Constants(self):
-        return get_models_module(self._meta.app_config.name).Constants
 
     @classmethod
     def _ensure_required_fields(cls):

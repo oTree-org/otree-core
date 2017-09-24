@@ -4,7 +4,7 @@ import otree.forms
 import otree.widgets
 from otree.forms import ModelForm
 
-from .utils import TestCase
+from .utils import TestCase, run_bots
 from .models import FormFieldModel
 from otree.api import BasePlayer, models, currency_range
 
@@ -117,3 +117,8 @@ class UseFloppyformWidgetsTests(TestCase):
             TestModelForm.base_fields['currency_choice'].widget,
             otree.widgets.Select
         )
+
+
+class FormTests(TestCase):
+    def test_bots(self):
+        run_bots('form_validation', num_participants=1)

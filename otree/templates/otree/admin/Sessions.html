@@ -31,7 +31,7 @@ in the header
 ****************************
 */
 $(function() {
-    checkFunction('item-action', 'checkAll');
+    checkFunction('session', 'checkAll');
 });
 function checkFunction(checkName, checkAllName) {
 // code for "checkAll" checkbox
@@ -55,8 +55,8 @@ one action-item is selected
 ****************************
 */
 $(function() {
-    $('input[name=item-action]').change(function () {
-        if ( $('input[name=item-action]:checked').length == 0 ) {
+    $('input[name=session]').change(function () {
+        if ( $('input[name=session]:checked').length == 0 ) {
             $('button.action').attr('disabled', true);
         }
         else {
@@ -177,9 +177,9 @@ Sessions
             </thead>
             <tbody>
             {% for s in object_list %}
-            <tr {% add_class s.archived 'hidden' %}>
+            <tr {% if s.archived %}class="hidden"{% endif %}>
                 <td>
-                    <input name="item-action" type="checkbox" value="{{ s.code }}">
+                    <input name="session" type="checkbox" value="{{ s.code }}">
                 </td>
                 <td><a href="{% url 'SessionDescription' s.code %}">{{ s.code }}</a></td>
                 <td>{{ s.label }}</td>

@@ -91,10 +91,6 @@ class BaseGroup(models.Model):
     def in_all_rounds(self):
         return self.in_previous_rounds() + [self]
 
-    @property
-    def _Constants(self):
-        return get_models_module(self._meta.app_config.name).Constants
-
     @classmethod
     def _ensure_required_fields(cls):
         """

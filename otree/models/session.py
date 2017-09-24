@@ -227,13 +227,6 @@ class Session(ModelWithVars):
                     {'auto_advanced': True})}
             )
 
-    def pages_auto_reload_when_advanced(self):
-        # keep it enable until I determine
-        # (a) the usefulness of the feature
-        # (b) the impact on performance
-        return True
-        # return settings.DEBUG or self.is_demo
-
     def build_participant_to_player_lookups(self):
         subsession_app_names = self.config['app_sequence']
 

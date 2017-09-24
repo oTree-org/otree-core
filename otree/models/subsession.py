@@ -16,9 +16,13 @@ it must be declared on the Subsession class in models.py.
 '''.replace('\n', '')
 
 
-class RoundMismatchError(ValueError):
+
+class GroupMatrixError(ValueError):
     pass
 
+
+class RoundMismatchError(GroupMatrixError):
+    pass
 
 #from save_the_change.decorators import SaveTheChange
 #@SaveTheChange
@@ -78,41 +82,6 @@ class BaseSubsession(models.Model):
     def app_name(self):
         return self._meta.app_config.name
 
-    def _get_players_per_group_list(self):
-        """
-        DEPRECATED
-
-        get a list whose elements are the number of players in each group
-
-        Example: a group of 30 players
-
-        # everyone is in the same group
-        [30]
-
-        # 5 groups of 6
-        [6, 6, 6, 6, 6,]
-
-        # 2 groups of 5 players, 2 groups of 10 players
-        [5, 10, 5, 10] # (you can do this with players_per_group = [5, 10]
-
-        """
-
-        ppg = self._Constants.players_per_group
-        subsession_size = self.player_set.count()
-        if ppg is None:
-            return [subsession_size]
-
-        # if groups have variable sizes, you can put it in a list
-        if isinstance(ppg, (list, tuple)):
-            assert all(n > 1 for n in ppg)
-            group_cycle = ppg
-        else:
-            assert isinstance(ppg, six.integer_types) and ppg > 1
-            group_cycle = [ppg]
-
-        num_group_cycles = subsession_size // sum(group_cycle)
-        return group_cycle * num_group_cycles
-
     def get_groups(self):
         return list(self.group_set.order_by('id_in_subsession'))
 
@@ -137,7 +106,7 @@ class BaseSubsession(models.Model):
         try:
             players_flat = [p for g in matrix for p in g]
         except TypeError:
-            raise TypeError(
+            raise GroupMatrixError(
                 'Group matrix must be a list of lists.'
             ) from None
         try:
@@ -154,13 +123,13 @@ class BaseSubsession(models.Model):
                         for j, val in enumerate(row):
                             matrix[i][j] = players_from_db[val - 1]
                 else:
-                    raise ValueError(
+                    raise GroupMatrixError(
                         'If you pass a matrix of integers to this function, '
                         'It must contain all integers from 1 to '
                         'the number of players in the subsession.'
                     ) from None
             else:
-                raise TypeError(
+                raise GroupMatrixError(
                     'The elements of the group matrix '
                     'must either be Player objects, or integers.'
                 ) from None
@@ -174,14 +143,14 @@ class BaseSubsession(models.Model):
                     p.round_number for p in players_flat
                     if p.round_number != self.round_number]
                 if wrong_round_numbers:
-                    raise RoundMismatchError(
+                    raise GroupMatrixError(
                         'You are setting the groups for round {}, '
                         'but the matrix contains players from round {}.'.format(
                             self.round_number,
                             wrong_round_numbers[0]
                         )
                     )
-                raise ValueError(
+                raise GroupMatrixError(
                     'The group matrix must contain each player '
                     'in the subsession exactly once.'
                 )
@@ -204,14 +173,6 @@ class BaseSubsession(models.Model):
     def set_groups(self, matrix):
         '''renamed this to set_group_matrix, but keeping in for compat'''
         return self.set_group_matrix(matrix)
-
-    def check_group_integrity(self):
-        ''' should be moved from here to a test case'''
-        players = self.player_set.values_list('pk', flat=True)
-        players_from_groups = self.player_set.filter(
-            group__subsession=self).values_list('pk', flat=True)
-        if not set(players) == set(players_from_groups):
-            raise Exception('Group integrity check failed')
 
     @property
     def _Constants(self):
@@ -276,7 +237,7 @@ class BaseSubsession(models.Model):
             fixed_id_in_group)
         self.set_group_matrix(group_matrix)
 
-    def group_by_rank(self, ranked_list):
+    def _group_by_rank(self, ranked_list):
         group_matrix = matching.by_rank(
             ranked_list,
             self._Constants.players_per_group

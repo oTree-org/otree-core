@@ -89,6 +89,7 @@ class Command(BaseCommand):
 
         daphne_cmd = 'daphne otree.asgi:channel_layer -b {} -p {}'.format(addr, port)
         logger.info('Starting daphne server on {}:{}'.format(addr, port))
+        logger.info(daphne_cmd)
 
         honcho = self.honcho
         honcho.add_otree_process('daphne', daphne_cmd)

@@ -272,15 +272,11 @@ def check_pypi_for_updates():
         update_needed = newest_dotted != installed_dotted
 
     if update_needed:
-        if sys.version_info[0] == 3:
-            pip_command = 'pip3'
-        else:
-            pip_command = 'pip'
         update_message = (
             'Your otree-core package is out-of-date '
             '(version {}; latest is {}). '
             'You should upgrade with:\n '
-            '"{} install --upgrade otree-core"\n '
+            '"pip3 install --upgrade otree-core"\n '
             'and update your requirements_base.txt.'.format(
                 installed_dotted, newest_dotted, pip_command))
     else:

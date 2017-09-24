@@ -5,7 +5,7 @@ from unittest.mock import patch
 import six
 from django.core.management import call_command
 from otree.models import Session
-from otree.models.subsession import RoundMismatchError
+from otree.models.subsession import GroupMatrixError
 from .utils import TestCase
 from .misc_3p import models as mpg_models
 
@@ -16,6 +16,15 @@ RANDOM_5_BY_3 = [
     [2, 6, 8],
     [11, 14, 4],
 ]
+
+
+def check_group_integrity(subsession):
+    ''' should be moved from here to a test case'''
+    players = subsession.player_set.values_list('pk', flat=True)
+    players_from_groups = subsession.player_set.filter(
+        group__subsession=subsession).values_list('pk', flat=True)
+    if not set(players) == set(players_from_groups):
+        raise Exception('Group integrity check failed')
 
 
 class TestMatchPlayers(TestCase):
@@ -65,7 +74,7 @@ class TestMatchPlayers(TestCase):
         desired_structure = RANDOM_5_BY_3
         subsession = self.subsession_1
         subsession.set_group_matrix(desired_structure)
-        subsession.check_group_integrity()
+        check_group_integrity(subsession)
         mat = subsession.get_group_matrix()
         for i, sublist in enumerate(mat):
             for j, player in enumerate(sublist):
@@ -74,10 +83,25 @@ class TestMatchPlayers(TestCase):
                     desired_structure[i][j]
                 )
 
-    def test_round_mismatch(self):
+    def test_set_group_matrix_invalid(self):
         subsessions = self.session.get_subsessions()
-        with self.assertRaises(RoundMismatchError):
-            subsessions[1].set_group_matrix(subsessions[0].get_group_matrix())
+        subsession = subsessions[0]
+        players = subsession.get_players()
+        player_ids = [p.id_in_subsession for p in players]
+
+        invalid_matrixes = [
+            players, # flat list
+            player_ids, # flat list of ints
+            [players[1:]], # matrix missing an element
+            [player_ids[1:]], # matrix of ints missing an element
+            [player_ids + [20]], # matrix of ints with an extra element
+            subsession.get_groups(), # must be a list of lists, not of groups
+            subsessions[1].get_group_matrix() # players from a different round
+        ]
+
+        for invalid_matrix in invalid_matrixes:
+            with self.assertRaises(GroupMatrixError):
+                subsession.set_group_matrix(invalid_matrix)
 
     def test_group_like_round(self):
         subsession_1 = self.subsession_1

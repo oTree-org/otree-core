@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+import contextlib
 import hashlib
 import logging
-import os
 import random
 import re
 import string
+import threading
 import uuid
 from collections import OrderedDict
 from importlib import import_module
@@ -18,20 +19,19 @@ import six
 from django.apps import apps
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.db.models.base import ModelBase
 from django.db import connection
+from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.template.defaultfilters import title
 from django.utils.safestring import mark_safe
-from six.moves import urllib
 from huey.contrib.djhuey import HUEY
-import contextlib
-from django.db import transaction
-import threading
+import otree.channels.utils as channel_utils
+from six.moves import urllib
+
 # set to False if using runserver
 USE_REDIS = True
 
-# these locks need to be here rather than views.abstract or views.concrete
+# these locks need to be here rather than views.abstract or views.participant
 # because they need to be imported when the main thread runs.
 start_link_thread_lock = threading.RLock()
 wait_page_thread_lock = threading.RLock()
@@ -46,12 +46,6 @@ def add_params_to_url(url, params):
     query.update(params)
     url_parts[4] = urllib.parse.urlencode(query)
     return urllib.parse.urlunparse(url_parts)
-
-
-def id_label_name(id, label):
-    if label:
-        return '{} (label: {})'.format(id, label)
-    return '{}'.format(id)
 
 
 def git_commit_timestamp():
@@ -81,10 +75,6 @@ def random_chars_10():
 def app_name_format(app_name):
     app_label = app_name.split('.')[-1]
     return title(app_label.replace("_", " "))
-
-
-def directory_name(path):
-    return os.path.basename(os.path.normpath(path))
 
 
 def get_models_module(app_name):
@@ -134,15 +124,6 @@ def get_app_label_from_name(app_name):
     return app_name.split('.')[-1]
 
 
-def get_app_name_from_label(app_label):
-    '''
-    >>> get_app_name_from_label('simple')
-    'tests.simple'
-
-    '''
-    return apps.get_app_config(app_label).name
-
-
 def expand_choice_tuples(choices):
     '''allows the programmer to define choices as a list of values rather
     than (value, display_value)
@@ -153,29 +134,6 @@ def expand_choice_tuples(choices):
     if not isinstance(choices[0], (list, tuple)):
         choices = [(value, value) for value in choices]
     return choices
-
-
-def contract_choice_tuples(choices):
-    '''Return only values of a choice tuple. If the choices are simple lists
-    without display name the same list is returned
-
-    '''
-    if not choices:
-        return None
-    if not isinstance(choices[0], (list, tuple)):
-        return choices
-    return [value for value, _ in choices]
-
-
-def min_players_multiple(players_per_group):
-    ppg = players_per_group
-
-    if isinstance(ppg, six.integer_types) and ppg >= 1:
-        return ppg
-    if isinstance(ppg, (list, tuple)):
-        return sum(ppg)
-    # else, it's probably None
-    return 1
 
 
 def missing_db_tables():
@@ -211,25 +169,6 @@ def get_admin_secret_code():
     s = settings.SECRET_KEY
     return hashlib.sha224(s.encode()).hexdigest()[:8]
 
-
-def channels_create_session_group_name(pre_create_id):
-    return 'wait_for_session_{}'.format(pre_create_id)
-
-
-def channels_wait_page_group_name(session_pk, page_index,
-                                  group_id_in_subsession=''):
-
-    return 'wait-page-{}-page{}-{}'.format(
-        session_pk, page_index, group_id_in_subsession)
-
-
-def channels_group_by_arrival_time_group_name(session_pk, page_index):
-    return 'group_by_arrival_time_session{}_page{}'.format(
-        session_pk, page_index)
-
-def channels_room_participants_group_name(room_name):
-    return 'room-participants-{}'.format(room_name)
-
 def validate_alphanumeric(identifier, identifier_description):
     if re.match(r'^[a-zA-Z0-9_]+$', identifier):
         return identifier
@@ -244,8 +183,8 @@ def validate_alphanumeric(identifier, identifier_description):
 
 def create_session_and_redirect(session_kwargs):
     pre_create_id = uuid.uuid4().hex
-    session_kwargs['_pre_create_id'] = pre_create_id
-    channels_group_name = channels_create_session_group_name(
+    session_kwargs['pre_create_id'] = pre_create_id
+    channels_group_name = channel_utils.create_session_group_name(
         pre_create_id)
     channels.Channel('otree.create_session').send({
         'kwargs': session_kwargs,

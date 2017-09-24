@@ -13,13 +13,12 @@ from unittest import mock
 from otree.common import Currency as c
 
 from .utils import TestCase
-from six.moves import range
 
 
 class TestFilters(TestCase):
 
     def parse(self, fragment):
-        return Template('{% load otree_tags %}' + fragment)
+        return Template('{% load otree %}' + fragment)
 
     def render(self, fragment, context=None):
         if context is None:
@@ -51,6 +50,10 @@ class TestFilters(TestCase):
             self.render("{{value|abs}}", context={'value': "foo"})
         with self.assertRaises(TypeError):
             self.render("{{value|abs}}", context={'value': None})
+
+    def test_currency_filter(self):
+        # just make sure it doesn't crash
+        self.render('{{1|c}}')
 
     def test_json(self):
         for python_input, expected_output in [

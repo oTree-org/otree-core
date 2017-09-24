@@ -8,6 +8,7 @@ import warnings
 
 import channels
 import django.db
+import otree.channels.utils as channel_utils
 import redis_lock
 import vanilla
 from django.conf import settings
@@ -565,7 +566,7 @@ class Page(FormPageOrInGameWaitPage):
 
         # todo: make sure users can't change the result by removing 'timeout_happened'
         # from URL
-        if auto_submitted and (has_secret_code or self.has_timeout()):
+        if auto_submitted and (has_secret_code or self.has_timeout_()):
             self.timeout_happened = True  # for public API
             self._process_auto_submitted_form(form)
         else:
@@ -693,7 +694,7 @@ class Page(FormPageOrInGameWaitPage):
         for field_name in auto_submit_values_to_use:
             setattr(self.object, field_name, auto_submit_values_to_use[field_name])
 
-    def has_timeout(self):
+    def has_timeout_(self):
         return PageTimeout.objects.filter(
             participant=self.participant,
             page_index=self.participant._index_in_pages).exists()
@@ -1182,7 +1183,7 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
             return self._gbat_get_channels_group_name()
         group_id_in_subsession = self._channels_group_id_in_subsession()
 
-        return otree.common_internal.channels_wait_page_group_name(
+        return channel_utils.wait_page_group_name(
             session_pk=self.session.pk,
             page_index=self._index_in_pages,
             group_id_in_subsession=group_id_in_subsession)
@@ -1268,7 +1269,7 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
 
 
     def _gbat_get_channels_group_name(self):
-            return otree.common_internal.channels_group_by_arrival_time_group_name(
+            return channel_utils.group_by_arrival_time_group_name(
                 session_pk=self.session.pk, page_index=self._index_in_pages,
             )
 

@@ -4,6 +4,11 @@ from .utils import TestCase
 import splinter
 from django.conf import settings
 from otree.models.participant import Participant
+import otree.channels.utils as channel_utils
+from channels.tests import ChannelTestCase, HttpClient
+from unittest.mock import patch
+import django.test
+import json
 
 URL_ADMIN_LABELS = reverse('RoomWithoutSession', args=[settings.ROOM_WITH_LABELS_NAME])
 URL_ADMIN_NO_LABELS = reverse('RoomWithoutSession', args=[settings.ROOM_WITHOUT_LABELS_NAME])
@@ -144,3 +149,224 @@ class TestRoomWithSession(RoomTestCase):
 
     def test_session_start_links_room(self):
         pass
+
+class RoomClient(HttpClient):
+    def __init__(self, path):
+        self.path = path
+        super().__init__()
+
+    def connect(self):
+        self.send_and_consume('websocket.connect', {'path': self.path})
+
+    def disconnect(self):
+        self.send_and_consume('websocket.disconnect', {'path': self.path})
+
+
+class PresenceWithLabelsTests(ChannelTestCase):
+
+    def setUp(self):
+        self.participant_label = LABEL_REAL
+        room_name = settings.ROOM_WITH_LABELS_NAME
+        self.room_name = room_name
+        self.tab_unique_id = '12123123'
+        self.path = channel_utils.room_participant_path(
+            room_name, self.participant_label, self.tab_unique_id)
+        self.admin_path = channel_utils.room_admin_path(room_name)
+        self.participant_client = RoomClient(self.path)
+        self.admin_client = RoomClient(self.admin_path)
+
+    @patch('time.time')
+    def test_stale_visits(self, patched_time):
+
+        patched_time.return_value = 0
+
+        # participant connects
+        self.participant_client.connect()
+
+        # time passes, participant does not disconnect but becomes stale
+        patched_time.return_value = 30
+
+        # admin requests StaleRoomVisits, should include that participant
+        client = django.test.Client()
+        heartbeat_url = reverse('ParticipantRoomHeartbeat', args=[self.tab_unique_id])
+        stale_room_visits_url = reverse('StaleRoomVisits', args=[self.room_name])
+
+        resp = client.get(stale_room_visits_url)
+        self.assertJSONEqual(
+            resp.content.decode('utf8'),
+            {'participant_labels': [self.participant_label]}
+        )
+
+        # participant heartbeat occurs
+        client.get(heartbeat_url)
+
+        resp = client.get(stale_room_visits_url)
+        self.assertJSONEqual(
+            resp.content.decode('utf8'),
+            {'participant_labels': []}
+        )
+
+
+    def test_participant_before_admin(self):
+
+        participant_client = self.participant_client
+        admin_client = self.admin_client
+
+        participant_client.connect()
+
+        admin_client.connect()
+
+        # check that DB record created properly
+        self.assertEqual(
+            admin_client.receive(),
+            {
+                'status': 'load_participant_lists',
+                'participants_present': [self.participant_label],
+            }
+        )
+
+    def test_admin_before_participant(self):
+        participant_client = self.participant_client
+        admin_client = self.admin_client
+
+        admin_client.connect()
+        self.assertEqual(
+            admin_client.receive(),
+            {
+                'status': 'load_participant_lists',
+                'participants_present': [],
+            }
+        )
+
+        participant_client.connect()
+
+        self.assertEqual(
+            admin_client.receive(),
+            {'status': 'add_participant', 'participant': self.participant_label}
+        )
+
+    def test_participant_disconnect(self):
+        participant_client = self.participant_client
+        admin_client = self.admin_client
+
+        participant_client.connect()
+        admin_client.connect()
+        admin_client.receive()
+
+        participant_client.disconnect()
+        self.assertEqual(
+            admin_client.receive(),
+            {'status': 'remove_participant', 'participant': self.participant_label}
+        )
+
+    def test_with_session(self):
+        participant_client = self.participant_client
+        create_session(
+            'simple',
+            num_participants=2,
+            room_name=settings.ROOM_WITH_LABELS_NAME,
+        )
+        participant_client.connect()
+        self.assertEqual(
+            participant_client.receive(),
+            {'status': 'session_ready'}
+        )
+
+
+class PresenceWithoutLabelsTests(ChannelTestCase):
+
+    def setUp(self):
+
+        room_name = settings.ROOM_WITHOUT_LABELS_NAME
+        self.room_name = room_name
+        self.tab_unique_id = '12123123'
+        self.path = channel_utils.room_participant_path(
+            room_name=room_name,
+            participant_label='',
+            tab_unique_id=self.tab_unique_id)
+        self.admin_path = channel_utils.room_admin_path(room_name)
+        self.participant_client = RoomClient(self.path)
+        self.admin_client = RoomClient(self.admin_path)
+
+    @patch('time.time')
+    def test_stale_visits(self, patched_time):
+
+        patched_time.return_value = 0
+
+        # participant connects
+        self.participant_client.connect()
+
+        # time passes, participant does not disconnect but becomes stale
+        patched_time.return_value = 30
+
+        # admin requests StaleRoomVisits, should include that participant
+        client = django.test.Client()
+        heartbeat_url = reverse('ParticipantRoomHeartbeat', args=[self.tab_unique_id])
+        participant_count_url = reverse('ActiveRoomParticipantsCount', args=[self.room_name])
+
+        resp = client.get(participant_count_url)
+        self.assertJSONEqual(
+            resp.content.decode('utf8'),
+            {'count': 0}
+        )
+
+        # participant heartbeat occurs
+        client.get(heartbeat_url)
+
+        resp = client.get(participant_count_url)
+        self.assertJSONEqual(
+            resp.content.decode('utf8'),
+            {'count': 1}
+        )
+
+
+    def test_participant_before_admin(self):
+
+        participant_client = self.participant_client
+        admin_client = self.admin_client
+
+        participant_client.connect()
+        admin_client.connect()
+
+        # check that DB record created properly
+        self.assertEqual(
+            admin_client.receive(),
+            {
+                'status': 'load_participant_lists',
+                'participants_present': [''],
+            }
+        )
+
+    def test_admin_before_participant(self):
+        participant_client = self.participant_client
+        admin_client = self.admin_client
+
+        admin_client.connect()
+        self.assertEqual(
+            admin_client.receive(),
+            {
+                'status': 'load_participant_lists',
+                'participants_present': [],
+            }
+        )
+
+        participant_client.connect()
+
+        self.assertEqual(
+            admin_client.receive(),
+            {'status': 'add_participant', 'participant': ''}
+        )
+
+    def test_participant_disconnect(self):
+        participant_client = self.participant_client
+        admin_client = self.admin_client
+
+        participant_client.connect()
+        admin_client.connect()
+        admin_client.receive()
+
+        participant_client.disconnect()
+        self.assertEqual(
+            admin_client.receive(),
+            {'status': 'remove_participant'}
+        )

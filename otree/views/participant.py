@@ -1,32 +1,32 @@
-import time
 import threading
+import time
+
 import django.utils.timezone
-from django.core.urlresolvers import reverse
-from django.shortcuts import get_object_or_404, render_to_response
-from django.template.response import TemplateResponse
-from django.http import (
-    HttpResponse, HttpResponseRedirect,
-    HttpResponseNotFound, Http404, JsonResponse
-)
-from django.utils.translation import ugettext as _
-
-import vanilla
-
+import otree.common_internal
 import otree.constants_internal as constants
 import otree.models
-from otree.models import Participant, Session
+import otree.views.admin
+import otree.views.mturk
+import vanilla
+from django.core.urlresolvers import reverse
+from django.http import (
+    HttpResponse, HttpResponseRedirect,
+    HttpResponseNotFound
+)
+from django.shortcuts import get_object_or_404, render_to_response
+from django.template.response import TemplateResponse
+from django.utils.translation import ugettext as _
 from otree.common_internal import (
     make_hash, add_params_to_url, get_redis_conn
 )
-import otree.views.admin
-import otree.views.mturk
-import otree.common_internal
+import otree.channels.utils as channel_utils
+from otree.models import Participant, Session
+from otree.models_concrete import (
+    ParticipantRoomVisit, BrowserBotsLauncherSessionCode)
+from otree.room import ROOM_DICT
 from otree.views.abstract import (
     GenericWaitPageMixin,
     get_redis_lock, NO_PARTICIPANTS_LEFT_MSG)
-from otree.room import ROOM_DICT
-from otree.models_concrete import (
-    ParticipantRoomVisit, BrowserBotsLauncherSessionCode)
 
 start_link_thread_lock = threading.RLock()
 
@@ -243,8 +243,6 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.View):
         except KeyError:
             return HttpResponseNotFound('Invalid room specified in url')
 
-        self.uses_pin = room.has_pin_code()
-
         label = self.request.GET.get(
             'participant_label', ''
         )
@@ -264,23 +262,15 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.View):
                 if hash != make_hash(label):
                     return HttpResponseNotFound('Invalid hash parameter.')
 
-        if self.uses_pin:
-            pin_code = self.request.GET.get('pin')
-            if not pin_code:
-                return super(AssignVisitorToRoom, self).get(args, kwargs)
-
-            if pin_code != room.get_pin_code():
-                return HttpResponseNotFound('The given pin code is incorrect.')
-
         session = room.session
         if session is None:
             self.tab_unique_id = otree.common_internal.random_chars_10()
-            self._socket_url_params = ','.join([
+            self._socket_url = channel_utils.room_participant_path(
                 self.room_name,
                 label,
                 # random chars in case the participant has multiple tabs open
-                self.tab_unique_id,
-            ])
+                self.tab_unique_id
+            )
             return render_to_response(
                 "otree/WaitPageRoom.html",
                 {
@@ -304,46 +294,13 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.View):
     def get_context_data(self, **kwargs):
         return {
             'room': self.room_name,
-            'uses_pin': self.uses_pin,
         }
 
     def socket_url(self):
-        return '/wait_for_session_in_room/{}/'.format(
-            self._socket_url_params
-        )
+        return self._socket_url
 
     def redirect_url(self):
         return self.request.get_full_path()
-
-
-class StaleRoomVisits(vanilla.View):
-
-    url_pattern = r'^StaleRoomVisits/(?P<room>\w+)/$'
-
-    def get(self, request, *args, **kwargs):
-        stale_threshold = time.time() - 20
-        stale_participant_labels = ParticipantRoomVisit.objects.filter(
-            room_name=kwargs['room'],
-            last_updated__lt=stale_threshold
-        ).values_list('participant_label', flat=True)
-
-        # make json serializable
-        stale_participant_labels = list(stale_participant_labels)
-
-        return JsonResponse({'participant_labels': stale_participant_labels})
-
-
-class ActiveRoomParticipantsCount(vanilla.View):
-
-    url_pattern = r'^ActiveRoomParticipantsCount/(?P<room>\w+)/$'
-
-    def get(self, request, *args, **kwargs):
-        count = ParticipantRoomVisit.objects.filter(
-            room_name=kwargs['room'],
-            last_updated__gte=time.time() - 20
-        ).count()
-
-        return JsonResponse({'count': count})
 
 
 class ParticipantRoomHeartbeat(vanilla.View):
@@ -366,60 +323,6 @@ class ParticipantHeartbeatGBAT(vanilla.View):
         Participant.objects.filter(code=kwargs['participant_code']).update(
             _last_request_timestamp=time.time())
         return HttpResponse('')
-
-
-class AdvanceSession(vanilla.View):
-
-    url_pattern = r'^AdvanceSession/(?P<session_code>[a-z0-9]+)/$'
-
-    def post(self, *args, **kwargs):
-        session = get_object_or_404(
-            otree.models.Session, code=kwargs['session_code']
-        )
-        session.advance_last_place_participants()
-        return HttpResponse('ok')
-
-
-class ToggleArchivedSessions(vanilla.View):
-
-    url_pattern = r'^ToggleArchivedSessions/'
-
-    def post(self, request, *args, **kwargs):
-        code_list = request.POST.getlist('item-action')
-        sessions = otree.models.Session.objects.filter(
-            code__in=code_list)
-        code_dict = {True: [], False: []}
-        for code, archived in sessions.values_list('code', 'archived'):
-            code_dict[archived].append(code)
-
-        for code in code_list:
-            if not (code in code_dict[True] or code in code_dict[False]):
-                raise Http404('No session with the code %s.' % code)
-
-        # TODO: When `F` implements a toggle, use this instead:
-        #       sessions.update(archived=~F('archived'))
-        otree.models.Session.objects.filter(
-            code__in=code_dict[True]).update(archived=False)
-        otree.models.Session.objects.filter(
-            code__in=code_dict[False]).update(archived=True)
-
-        return HttpResponseRedirect(request.POST['origin_url'])
-
-
-class DeleteSessions(vanilla.View):
-
-    url_pattern = r'^DeleteSessions/'
-
-    def dispatch(self, *args, **kwargs):
-        return super(DeleteSessions, self).dispatch(*args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        for code in request.POST.getlist('item-action'):
-            session = get_object_or_404(
-                otree.models.Session, code=code
-            )
-            session.delete()
-        return HttpResponseRedirect(reverse('Sessions'))
 
 
 class BrowserBotStartLink(GenericWaitPageMixin, vanilla.View):

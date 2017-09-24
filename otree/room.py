@@ -25,7 +25,6 @@ class Room(object):
         self.display_name = config_dict['display_name']
         # secure URLs are complicated, don't use them by default
         self.use_secure_urls = config_dict['use_secure_urls']
-        self.pin_code = config_dict.get('pin_code')
         if self.use_secure_urls and not self.participant_label_file:
             raise ValueError(
                 'Room "{}": you must either set "participant_label_file", '
@@ -123,12 +122,6 @@ class Room(object):
                 participant_urls.append(participant_url)
 
         return participant_urls
-
-    def has_pin_code(self):
-        return bool(self.pin_code)
-
-    def get_pin_code(self):
-        return self.pin_code
 
 
 def augment_room(room, ROOM_DEFAULTS):

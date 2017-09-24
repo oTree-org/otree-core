@@ -27,7 +27,7 @@ from otree.common_internal import get_models_module, app_name_format
 import numbers
 
 import csv
-
+import xlsxwriter
 
 def inspect_field_names(Model):
     # filter out BinaryField, because it's not useful for CSV export or
@@ -406,7 +406,6 @@ def _export_xlsx(fp, rows):
     '''
     CSV often does not open properly in Excel, e.g. unicode
     '''
-    import xlsxwriter
     workbook = xlsxwriter.Workbook(fp, {'in_memory': True})
     worksheet = workbook.add_worksheet()
 

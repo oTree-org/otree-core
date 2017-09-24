@@ -183,9 +183,10 @@ def augment_urlpatterns(urlpatterns):
         urlpatterns += url_patterns_from_game_module(
             views_module_name, name_in_url)
 
-    urlpatterns += url_patterns_from_module('otree.views.concrete')
+    urlpatterns += url_patterns_from_module('otree.views.participant')
     urlpatterns += url_patterns_from_module('otree.views.demo')
     urlpatterns += url_patterns_from_module('otree.views.admin')
+    urlpatterns += url_patterns_from_module('otree.views.room')
     urlpatterns += url_patterns_from_module('otree.views.mturk')
     urlpatterns += url_patterns_from_module('otree.views.export')
 

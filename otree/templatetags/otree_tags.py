@@ -30,23 +30,6 @@ def active_page(request, view_name, *args, **kwargs):
         return ""
 
 
-def add_class(var, css_class, *extra_css_classes):
-    '''
-    tag for specifying css classes
-    '''
-    try:
-        if var or extra_css_classes:
-            css_class_template = 'class="%s"'
-        else:
-            return ''
-        css_classes = list(extra_css_classes)
-        if var:
-            css_classes.append(css_class)
-        return css_class_template % ' '.join(css_classes)
-    except Resolver404:
-        return ""
-
-
 NO_USER_MSG = '''
 You must set ADMIN_USERNAME and
 ADMIN_PASSWORD in settings.py
@@ -78,7 +61,6 @@ def abs_value(var):
 register = template.Library()
 register.tag('formfield', FormFieldNode.parse)
 register.tag('next_button', NextButtonNode.parse)
-register.simple_tag(name='add_class', func=add_class)
 register.simple_tag(name='ensure_superuser_exists',
                     func=ensure_superuser_exists)
 register.simple_tag(name='active_page', func=active_page)

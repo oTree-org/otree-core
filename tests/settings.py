@@ -260,6 +260,15 @@ SESSION_CONFIGS = [
             'qualification_requirements': []
         }
     },
+    {
+        'name': 'edit_session_config',
+        'num_demo_participants': 1,
+        'app_sequence': ['tests.simple'],
+        'int': 0,
+        'float': 0.5,
+        'bool': False,
+        'str': ''
+    },
 ]
 
 

@@ -7,6 +7,23 @@ import otree.db.idmap
 
 class TestPayoff(TestCase):
 
+    def test_participant_payoff(self):
+        '''Should be able to set participant.payoff directly'''
+        session = otree.session.create_session(
+            session_config_name='two_rounds_1p',
+            num_participants=1,
+        )
+
+        payoff = Currency(10)
+
+        participant = session.participant_set.first()
+        participant.payoff = payoff
+        participant.save()
+
+        participant = session.participant_set.first()
+        self.assertEqual(participant.payoff, payoff)
+
+
     def test_payoff(self):
         with self.settings(USE_POINTS=True):
             # Currency.DECIMAL_PLACES needs to be patched because the setting

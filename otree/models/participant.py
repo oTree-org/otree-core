@@ -4,7 +4,7 @@ from django.core.urlresolvers import reverse
 
 import otree.common_internal
 from otree import constants_internal
-from otree.common_internal import id_label_name, random_chars_8
+from otree.common_internal import random_chars_8
 from otree.db import models
 from otree.models_concrete import ParticipantToPlayerLookup
 from .varsmixin import ModelWithVars
@@ -125,14 +125,6 @@ class Participant(ModelWithVars):
                 self._player_lookups[player_lookup['page_index']] = player_lookup
         return self._player_lookups[index]
 
-    def future_player_lookup(self, pages_ahead):
-        try:
-            return ParticipantToPlayerLookup.objects.get(
-                participant=self.pk,
-                page_index=self._index_in_pages + pages_ahead)
-        except ParticipantToPlayerLookup.DoesNotExist:
-            return
-
     def _current_page(self):
         return '{}/{} pages'.format(self._index_in_pages, self._max_page_index)
 
@@ -183,9 +175,6 @@ class Participant(ModelWithVars):
             return url
         return reverse('OutOfRangeNotification')
 
-    def __unicode__(self):
-        return self.name()
-
     @permalink
     def _start_url(self):
         return 'InitializeParticipant', (self.code,)
@@ -201,6 +190,3 @@ class Participant(ModelWithVars):
 
     def payoff_plus_participation_fee(self):
         return self.session._get_payoff_plus_participation_fee(self.payoff)
-
-    def name(self):
-        return id_label_name(self.pk, self.label)

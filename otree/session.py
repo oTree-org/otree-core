@@ -23,7 +23,7 @@ from otree.models import Participant, Session
 from otree.deprecate import OtreeDeprecationWarning
 from otree.common_internal import (
     get_models_module, get_app_constants, validate_alphanumeric,
-    min_players_multiple, get_bots_module)
+    get_bots_module)
 import otree.common_internal
 from otree.common import RealWorldCurrency
 from otree.models_concrete import ParticipantLockModel
@@ -52,10 +52,9 @@ class SessionConfig(dict):
     def get_lcm(self):
         min_multiple_list = []
         for app_name in self['app_sequence']:
-            app_constants = get_app_constants(app_name)
+            Constants = get_app_constants(app_name)
             # if players_per_group is None, 0, etc.
-            min_multiple = min_players_multiple(
-                app_constants.players_per_group)
+            min_multiple = Constants.players_per_group or 1
             min_multiple_list.append(min_multiple)
         return lcmm(*min_multiple_list)
 
@@ -256,17 +255,9 @@ def get_session_configs_dict():
 SESSION_CONFIGS_DICT = get_session_configs_dict()
 
 
-def app_labels_from_sessions(config_names):
-    apps = set()
-    for config_name in config_names:
-        config = SESSION_CONFIGS_DICT[config_name]
-        apps.update(config["app_sequence"])
-    return apps
-
-
 def create_session(
         session_config_name, *, label='', num_participants=None,
-        _pre_create_id=None,
+        pre_create_id=None,
         room_name=None, for_mturk=False, use_cli_bots=False,
         is_demo=False, force_browser_bots=False,
         honor_browser_bots_config=False, bot_case_number=None,
@@ -318,7 +309,7 @@ def create_session(
         session = Session.objects.create(
             config=session_config,
             label=label,
-            _pre_create_id=_pre_create_id,
+            _pre_create_id=pre_create_id,
             use_browser_bots=use_browser_bots,
             is_demo=is_demo,
             num_participants=num_participants,
@@ -344,6 +335,7 @@ def create_session(
                     num_participants /
                     settings.MTURK_NUM_PARTICIPANTS_MULTIPLE)
 
+        # TODO: remove start_order
         start_order = list(range(num_participants))
         if session_config.get('random_start_order'):
             random.shuffle(start_order)

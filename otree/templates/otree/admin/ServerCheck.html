@@ -11,14 +11,6 @@
         see <a href="http://otree.readthedocs.io/en/latest/server.html">here</a>.
     </p>
 
-    {% if python2 %}
-        <div class="alert alert-danger">
-            <strong>You are using Python 2</strong>
-            Python 2 is not fully supported.
-            We recommend upgrading to Python 3.
-        </div>
-    {% endif %}
-
     {% if pypi_results.pypi_connection_error %}
         <div class="alert alert-warning">
             <strong>Update status unknown</strong>

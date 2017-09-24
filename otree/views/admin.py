@@ -4,34 +4,33 @@ from __future__ import absolute_import
 
 import json
 import os
-import random
 import sys
 from collections import OrderedDict
 
 import channels
+import otree.bots.browser
+import otree.channels.utils as channel_utils
+import otree.common_internal
+import otree.export
+import otree.models
 import vanilla
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
-from six.moves import range
-from six.moves import zip
-
-import otree.bots.browser
-import otree.common_internal
-import otree.export
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, \
+    Http404
+from django.shortcuts import get_object_or_404
 from otree import forms
 from otree.common import RealWorldCurrency
 from otree.common_internal import (
     create_session_and_redirect, missing_db_tables,
-    get_models_module, get_app_label_from_name, DebugTable
+    get_models_module, get_app_label_from_name, DebugTable,
 )
 from otree.forms import widgets
 from otree.management.cli import check_pypi_for_updates
 from otree.models import Participant, Session
 from otree.models_concrete import (
-    ParticipantRoomVisit, BrowserBotsLauncherSessionCode)
-from otree.room import ROOM_DICT
+    BrowserBotsLauncherSessionCode)
 from otree.session import SESSION_CONFIGS_DICT, create_session, SessionConfig
 from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
 
@@ -166,88 +165,6 @@ class CreateSession(vanilla.FormView):
             session_kwargs)
 
 
-class Rooms(vanilla.TemplateView):
-    template_name = 'otree/admin/Rooms.html'
-
-    url_pattern = r"^rooms/$"
-
-    def get_context_data(self, **kwargs):
-        return {'rooms': ROOM_DICT.values()}
-
-
-class RoomWithoutSession(CreateSession):
-    template_name = 'otree/admin/RoomWithoutSession.html'
-    room = None
-
-    url_pattern = r"^room_without_session/(?P<room_name>.+)/$"
-
-    def dispatch(self, request, *args, **kwargs):
-        self.room = ROOM_DICT[kwargs['room_name']]
-        if self.room.has_session():
-            return HttpResponseRedirect(
-                reverse('RoomWithSession', args=[kwargs['room_name']]))
-        return super(RoomWithoutSession, self).dispatch(
-            request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = {
-            'participant_urls': self.room.get_participant_urls(self.request),
-            'room_wide_url': self.room.get_room_wide_url(self.request),
-            'room': self.room,
-            'collapse_links': True,
-        }
-        kwargs.update(context)
-
-        return super(RoomWithoutSession, self).get_context_data(**kwargs)
-
-    def socket_url(self):
-        return '/room_without_session/{}/'.format(self.room.name)
-
-
-class RoomWithSession(vanilla.TemplateView):
-    template_name = 'otree/admin/RoomWithSession.html'
-    room = None
-
-    url_pattern = r"^room_with_session/(?P<room_name>.+)/$"
-
-    def dispatch(self, request, *args, **kwargs):
-        self.room = ROOM_DICT[kwargs['room_name']]
-        if not self.room.has_session():
-            return HttpResponseRedirect(
-                reverse('RoomWithoutSession', args=[kwargs['room_name']]))
-        return super(RoomWithSession, self).dispatch(
-            request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = {
-            'participant_urls': self.room.get_participant_urls(self.request),
-            'room_wide_url': self.room.get_room_wide_url(self.request),
-            'session_url': reverse(
-                'SessionMonitor',
-                args=(self.room.session.code,)),
-            'room': self.room,
-            'collapse_links': True,
-        }
-        kwargs.update(context)
-
-        return super(RoomWithSession, self).get_context_data(**kwargs)
-
-
-class CloseRoom(vanilla.View):
-    url_pattern = r"^CloseRoom/(?P<room_name>.+)/$"
-
-    def post(self, request, *args, **kwargs):
-        room_name = kwargs['room_name']
-        self.room = ROOM_DICT[room_name]
-        self.room.session = None
-        # in case any failed to be cleared through regular ws.disconnect
-        ParticipantRoomVisit.objects.filter(
-            room_name=room_name,
-        ).delete()
-        return HttpResponseRedirect(
-            reverse('RoomWithoutSession', args=[room_name]))
-
-
 class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
 
     url_pattern = r"^WaitUntilSessionCreated/(?P<pre_create_id>.+)/$"
@@ -287,7 +204,7 @@ class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
         return self._get_wait_page()
 
     def socket_url(self):
-        return '/wait_for_session/{}/'.format(self._pre_create_id)
+        return channel_utils.wait_for_session_path(self._pre_create_id)
 
 
 class SessionSplitScreen(AdminSessionPageMixin, vanilla.TemplateView):
@@ -484,13 +401,6 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
             "Advance the slowest user(s) by one page, "
             "by forcing a timeout on their current page. "
         )
-        if not self.session.pages_auto_reload_when_advanced():
-            advance_users_button_text += (
-                'NOTE: oTree is currently running in production mode, '
-                'so participants will not see their page auto-advance until '
-                'they refresh the page. This is a server performance '
-                'optimization.'
-            )
         context['advance_users_button_text'] = advance_users_button_text
         return context
 
@@ -635,6 +545,7 @@ class AdminReportForm(forms.Form):
 
         return cleaned_data
 
+
 class AdminReport(AdminSessionPageMixin, vanilla.TemplateView):
 
     def get(self, request, *args, **kwargs):
@@ -682,23 +593,6 @@ class AdminReport(AdminSessionPageMixin, vanilla.TemplateView):
         return context
 
 
-class Sessions(vanilla.ListView):
-    template_name = 'otree/admin/Sessions.html'
-
-    url_pattern = r"^sessions/(?P<archive>archive)?$"
-
-    def get_context_data(self, **kwargs):
-        context = super(Sessions, self).get_context_data(**kwargs)
-        context.update({
-            'is_debug': settings.DEBUG,
-        })
-        return context
-
-    def get_queryset(self):
-        return Session.objects.filter(
-            is_demo=False).order_by('archived', '-pk')
-
-
 class ServerCheck(vanilla.TemplateView):
     template_name = 'otree/admin/ServerCheck.html'
 
@@ -716,7 +610,6 @@ class ServerCheck(vanilla.TemplateView):
             # so if Redis is not being used, the timeoutworker is not functional
             return False
 
-
     def get_context_data(self, **kwargs):
         sqlite = settings.DATABASES['default']['ENGINE'].endswith('sqlite3')
         debug = settings.DEBUG
@@ -729,7 +622,6 @@ class ServerCheck(vanilla.TemplateView):
         runserver = 'runserver' in sys.argv
         db_synced = not missing_db_tables()
         pypi_results = check_pypi_for_updates()
-        python2 = sys.version_info[0] == 2
         timeoutworker = self.timeoutworker_is_running()
 
         return {
@@ -742,7 +634,6 @@ class ServerCheck(vanilla.TemplateView):
             'runserver': runserver,
             'db_synced': db_synced,
             'pypi_results': pypi_results,
-            'python2': python2,
             'timeoutworker': timeoutworker,
         }
 
@@ -803,3 +694,74 @@ class CloseBrowserBotsSession(vanilla.View):
     def post(self, request, *args, **kwargs):
         BrowserBotsLauncherSessionCode.objects.all().delete()
         return HttpResponse('ok')
+
+
+class AdvanceSession(vanilla.View):
+
+    url_pattern = r'^AdvanceSession/(?P<session_code>[a-z0-9]+)/$'
+
+    def post(self, *args, **kwargs):
+        session = get_object_or_404(
+            otree.models.Session, code=kwargs['session_code']
+        )
+        session.advance_last_place_participants()
+        return HttpResponse('ok')
+
+
+class Sessions(vanilla.ListView):
+    template_name = 'otree/admin/Sessions.html'
+
+    url_pattern = r"^sessions/(?P<archive>archive)?$"
+
+    def get_context_data(self, **kwargs):
+        context = super(Sessions, self).get_context_data(**kwargs)
+        context.update({
+            'is_debug': settings.DEBUG,
+        })
+        return context
+
+    def get_queryset(self):
+        return Session.objects.filter(
+            is_demo=False).order_by('archived', '-pk')
+
+
+class ToggleArchivedSessions(vanilla.View):
+
+    url_pattern = r'^ToggleArchivedSessions/'
+
+    def post(self, request, *args, **kwargs):
+        code_list = request.POST.getlist('session')
+        sessions = otree.models.Session.objects.filter(
+            code__in=code_list)
+        code_dict = {True: [], False: []}
+        for code, archived in sessions.values_list('code', 'archived'):
+            code_dict[archived].append(code)
+
+        for code in code_list:
+            if not (code in code_dict[True] or code in code_dict[False]):
+                raise Http404('No session with the code %s.' % code)
+
+        # TODO: When `F` implements a toggle, use this instead:
+        #       sessions.update(archived=~F('archived'))
+        otree.models.Session.objects.filter(
+            code__in=code_dict[True]).update(archived=False)
+        otree.models.Session.objects.filter(
+            code__in=code_dict[False]).update(archived=True)
+
+        return HttpResponseRedirect(request.POST['origin_url'])
+
+
+class DeleteSessions(vanilla.View):
+
+    url_pattern = r'^DeleteSessions/'
+
+    def dispatch(self, *args, **kwargs):
+        return super(DeleteSessions, self).dispatch(*args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        for code in request.POST.getlist('session'):
+            session = get_object_or_404(
+                otree.models.Session, code=code
+            )
+            session.delete()
+        return HttpResponseRedirect(reverse('Sessions'))

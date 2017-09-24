@@ -1,8 +1,10 @@
 from six import StringIO
-
+from unittest.mock import patch
 from django.conf import settings
 from django.core.management import call_command
+from django.core.urlresolvers import reverse
 
+import xlsxwriter
 from otree import common_internal
 import otree.export
 from otree.session import SESSION_CONFIGS_DICT
@@ -10,10 +12,9 @@ import re
 from .utils import TestCase
 import otree.session
 from tests.export.models import Constants
+import splinter
 
-class TestDataExport(TestCase):
-    def setUp(self):
-        self.client.login()
+class TestExport(TestCase):
 
     def test_export(self):
 
@@ -29,7 +30,14 @@ class TestDataExport(TestCase):
                 num_participants=num_participants,
             )
 
-        url = "/ExportApp/{}/".format(app_name)
+        url = reverse('ExportApp', args=[app_name])
+
+        # make sure it's found on page
+        br = splinter.Browser('django')
+        br.visit(reverse('ExportIndex'))
+        found_links = br.find_link_by_href(url)
+        self.assertGreaterEqual(len(found_links), 1)
+
         response = self.client.get(url)
 
         # HEADERS CHECK
@@ -84,6 +92,31 @@ class TestDataExport(TestCase):
 
             subsession_id = re.search(',SUBSESSION_(\d+),', row).group(1)
             self.assertIn(',ALIGN_TO_SUBSESSION_{},'.format(subsession_id), row)
+
+
+class ExcelTest(TestCase):
+
+    def test_export(self):
+
+        otree.session.create_session(
+            session_config_name='export',
+            num_participants=3,
+        )
+
+        # splinter code takes 0.2 seconds...not bad including the page request
+        br = splinter.Browser('django')
+        br.visit(reverse('ExportIndex'))
+        export_url = reverse('ExportWide') + '?xlsx=1'
+        found_links = br.find_link_by_href(export_url)
+        self.assertEqual(len(found_links), 1)
+
+        # i don't know how to download a file with splinter
+        resp = self.client.get(reverse('ExportWide'), data={'xlsx': '1'})
+
+        # basic tests
+        self.assertIn('openxmlformats', resp["content-type"])
+        # should at least be something in the excel file
+        self.assertGreaterEqual(len(resp.content), 100)
 
 
 class TestWideCSV(TestCase):
@@ -208,3 +241,4 @@ class TestTimeSpentExport(TestCase):
         buff = StringIO()
         otree.export.export_time_spent(buff)
         self.assertEqual(response.content, buff.getvalue().encode('utf-8'))
+
