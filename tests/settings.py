@@ -147,6 +147,11 @@ SESSION_CONFIGS = [
         'app_sequence': ['tests.waitpage_misuse'],
     },
     {
+        'name': 'waitpage_skip_race',
+        'num_demo_participants': 2,
+        'app_sequence': ['tests.waitpage_skip_race'],
+    },
+    {
         'name': 'skip_waitpage_lookahead',
         'num_demo_participants': 2,
         'app_sequence': ['tests.skip_waitpage_lookahead'],
@@ -168,27 +173,27 @@ SESSION_CONFIGS = [
         'app_sequence': ['tests.bots_empty', 'tests.bots_raise'],
     },
     {
-        'name': 'group_by_arrival_time',
+        'name': 'gbat',
         'num_demo_participants': 6,
-        'app_sequence': ['tests.group_by_arrival_time'],
+        'app_sequence': ['tests.gbat'],
         'use_browser_bots': True,
     },
     {
-        'name': 'group_by_arrival_time_round1',
+        'name': 'gbat_round1',
         'num_demo_participants': 6,
-        'app_sequence': ['tests.group_by_arrival_time_round1'],
+        'app_sequence': ['tests.gbat_round1'],
         'use_browser_bots': True,
     },
     {
-        'name': 'group_by_arrival_time_custom',
+        'name': 'gbat_custom',
         'num_demo_participants': 6,
-        'app_sequence': ['tests.group_by_arrival_time_custom'],
+        'app_sequence': ['tests.gbat_custom'],
         'use_browser_bots': True,
     },
     {
-        'name': 'group_by_arrival_time_heartbeat',
+        'name': 'gbat_heartbeat',
         'num_demo_participants': 4,
-        'app_sequence': ['tests.group_by_arrival_time_heartbeat'],
+        'app_sequence': ['tests.gbat_heartbeat'],
     },
     {
         'name': 'bots_check_html',

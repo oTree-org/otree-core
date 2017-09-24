@@ -1,10 +1,13 @@
 from otree.session import create_session
 from otree.bots.bot import ParticipantBot
-from .utils import TestCase, run_bots
+from .utils import TestCase, run_bots, ConnectingWSClient
 from unittest import mock
 import tests.wait_page.views
 import splinter
 import tests.waitpage_template.models
+from channels.tests import ChannelTestCase
+import tests.wait_page.views
+import tests.waitpage_skip_race.views
 
 class TestWaitForAllGroups(TestCase):
     def setUp(self):
@@ -82,3 +85,81 @@ class TemplateTests(TestCase):
             Constants.custom_body_text,
         ]:
             self.assertTrue(br.is_text_present(substring))
+
+
+class Wrapper:
+    '''Wrapper for base class so that test runner doesn't run this'''
+
+    class RaceTestsBase(ChannelTestCase):
+
+        '''Race conditions in connecting to wait pages'''
+
+        config_name = None
+        wait_page_index = None
+        WaitPageClass = None # type: otree.views.abstract.WaitPage
+
+        def play(self, participant):
+            self.br.visit(participant._start_url())
+
+        def get_ws_client(self):
+            page = self.WaitPageClass()
+            self.p1.refresh_from_db()
+            page.set_attributes(participant=self.p1)
+            return ConnectingWSClient(path=page.socket_url())
+
+        def setUp(self):
+            session = create_session(self.config_name, num_participants=2)
+            self.p1, self.p2 = session.get_participants()
+
+            #path = channel_utils.wait_page_path(
+            #    session.pk, group_id_in_subsession=1, index_in_pages=self.wait_page_index)
+            #self.p1_client = ConnectingWSClient(path=path)
+            self.br = splinter.Browser('django')
+
+        def test_slow_websocket(self):
+            p1 = self.p1
+            p2 = self.p2
+            #p1_client = self.p1_client
+
+            self.play(p1)
+            self.play(p2)
+
+            p1_client = self.get_ws_client()
+            p1_client.connect()
+            self.assertEqual(
+                p1_client.receive(),
+                {'status': 'ready'}
+            )
+
+        def test_other_player_last(self):
+            p1 = self.p1
+            p2 = self.p2
+
+            self.play(p1)
+            p1_client = self.get_ws_client()
+            p1_client.connect()
+
+            self.play(p2)
+            self.assertEqual(
+                p1_client.receive(),
+                {'status': 'ready'}
+            )
+
+
+class RaceTests(Wrapper.RaceTestsBase):
+    config_name = 'wait_page'
+    WaitPageClass = tests.wait_page.views.MyWait
+
+
+class SkipRaceTests(Wrapper.RaceTestsBase):
+
+    '''Need a separate test for wait pages that are skipped, because
+    they go through a different code path (_increment_index_in_pages)
+    '''
+
+    config_name = 'waitpage_skip_race'
+    WaitPageClass = tests.waitpage_skip_race.views.MyWait
+
+    def play(self, participant):
+        self.br.visit(participant._start_url())
+        self.br.find_by_tag('button').first.click()

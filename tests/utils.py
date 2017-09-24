@@ -7,6 +7,7 @@ import warnings
 
 import django.test
 import splinter.browser
+from channels.tests import HttpClient
 
 from six import StringIO
 from six.moves import urllib
@@ -151,3 +152,15 @@ def run_bots(session_config_name, num_participants):
         session_config_name, num_participants=num_participants, use_cli_bots=True)
     bot_runner = session_bot_runner_factory(session)
     bot_runner.play()
+
+
+class ConnectingWSClient(HttpClient):
+    def __init__(self, path):
+        self.path = path
+        super().__init__()
+
+    def connect(self):
+        self.send_and_consume('websocket.connect', {'path': self.path})
+
+    def disconnect(self):
+        self.send_and_consume('websocket.disconnect', {'path': self.path})

@@ -3,12 +3,15 @@ from django.core.management import call_command
 from otree.models import Session
 import django.test
 import time
-from tests.group_by_arrival_time_heartbeat.models import Subsession
+from tests.gbat_heartbeat.models import Subsession
+from tests.test_wait_page import Wrapper
+import otree.channels.utils as channel_utils
+import tests.gbat_round1.views
 
 class TestGBAT(TestCase):
 
     def setUp(self):
-        call_command('create_session', 'group_by_arrival_time_heartbeat', '4')
+        call_command('create_session', 'gbat_heartbeat', '4')
         self.session = Session.objects.get()
         self.participants = list(self.session.get_participants())
         self.client = django.test.Client()
@@ -30,4 +33,9 @@ class TestGBAT(TestCase):
         player1, player2, player3, player4 = subsession.get_players()
         self.assertEqual(player2.group, player3.group)
         self.assertNotEqual(player1.group, player2.group)
+
+
+class RaceTests(Wrapper.RaceTestsBase):
+    config_name = 'gbat_round1'
+    WaitPageClass = tests.gbat_round1.views.MyWait
 

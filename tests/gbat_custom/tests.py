@@ -3,7 +3,7 @@ from __future__ import division, absolute_import
 from . import views
 from .models import Constants
 from otree.api import Bot
-from ..group_by_arrival_time_round1.tests import GBATMixin
+from ..gbat_round1.tests import GBATMixin
 
 
 class PlayerBot(Bot, GBATMixin):

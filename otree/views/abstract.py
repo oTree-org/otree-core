@@ -369,11 +369,6 @@ class FormPageOrInGameWaitPage(vanilla.View):
         # we should allow a user to move beyond the last page if it's mturk
         # also in general maybe we should show the 'out of sequence' page
 
-        # this is causing crashes because of the weird DB issue
-        # ParticipantToPlayerLookup.objects.filter(
-        #    participant=self.participant.pk,
-        #    page_index=self.participant._index_in_pages).delete()
-
         # we skip any page that is a sequence page where is_displayed
         # evaluates to False to eliminate unnecessary redirection
 
@@ -400,7 +395,10 @@ class FormPageOrInGameWaitPage(vanilla.View):
 
                 if page.group_by_arrival_time:
                     # keep looping
-                    # 2017-08-22: should explain why we keep looping
+                    # if 1 participant can skip the page,
+                    # then all other participants should skip it also,
+                    # as described in the docs
+                    # so there is no need to mark as complete.
                     continue
 
                 # save the participant, because tally_unvisited
@@ -1188,14 +1186,13 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
             page_index=self._index_in_pages,
             group_id_in_subsession=group_id_in_subsession)
 
-
     def socket_url(self):
         if self.group_by_arrival_time:
             return self._gbat_socket_url()
 
         group_id_in_subsession = self._channels_group_id_in_subsession()
 
-        return '/wait_page/{},{},{}/'.format(
+        return channel_utils.wait_page_path(
             self.session.pk,
             self._index_in_pages,
             group_id_in_subsession
@@ -1269,12 +1266,12 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
 
 
     def _gbat_get_channels_group_name(self):
-            return channel_utils.group_by_arrival_time_group_name(
+            return channel_utils.gbat_group_name(
                 session_pk=self.session.pk, page_index=self._index_in_pages,
             )
 
     def _gbat_socket_url(self):
-        return '/group_by_arrival_time/{},{},{},{}/'.format(
+        return channel_utils.gbat_path(
             self.session.id, self._index_in_pages,
             self.player._meta.app_config.name, self.player.id)
 

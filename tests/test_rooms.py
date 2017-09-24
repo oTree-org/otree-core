@@ -1,14 +1,16 @@
-from django.core.urlresolvers import reverse
-from otree.session import create_session
-from .utils import TestCase
-import splinter
-from django.conf import settings
-from otree.models.participant import Participant
-import otree.channels.utils as channel_utils
-from channels.tests import ChannelTestCase, HttpClient
 from unittest.mock import patch
+
 import django.test
-import json
+import otree.channels.utils as channel_utils
+import splinter
+from channels.tests import ChannelTestCase
+from django.conf import settings
+from django.core.urlresolvers import reverse
+from otree.models.participant import Participant
+from otree.session import create_session
+from tests.utils import ConnectingWSClient
+
+from .utils import TestCase
 
 URL_ADMIN_LABELS = reverse('RoomWithoutSession', args=[settings.ROOM_WITH_LABELS_NAME])
 URL_ADMIN_NO_LABELS = reverse('RoomWithoutSession', args=[settings.ROOM_WITHOUT_LABELS_NAME])
@@ -150,17 +152,6 @@ class TestRoomWithSession(RoomTestCase):
     def test_session_start_links_room(self):
         pass
 
-class RoomClient(HttpClient):
-    def __init__(self, path):
-        self.path = path
-        super().__init__()
-
-    def connect(self):
-        self.send_and_consume('websocket.connect', {'path': self.path})
-
-    def disconnect(self):
-        self.send_and_consume('websocket.disconnect', {'path': self.path})
-
 
 class PresenceWithLabelsTests(ChannelTestCase):
 
@@ -172,8 +163,8 @@ class PresenceWithLabelsTests(ChannelTestCase):
         self.path = channel_utils.room_participant_path(
             room_name, self.participant_label, self.tab_unique_id)
         self.admin_path = channel_utils.room_admin_path(room_name)
-        self.participant_client = RoomClient(self.path)
-        self.admin_client = RoomClient(self.admin_path)
+        self.participant_client = ConnectingWSClient(self.path)
+        self.admin_client = ConnectingWSClient(self.admin_path)
 
     @patch('time.time')
     def test_stale_visits(self, patched_time):
@@ -285,8 +276,8 @@ class PresenceWithoutLabelsTests(ChannelTestCase):
             participant_label='',
             tab_unique_id=self.tab_unique_id)
         self.admin_path = channel_utils.room_admin_path(room_name)
-        self.participant_client = RoomClient(self.path)
-        self.admin_client = RoomClient(self.admin_path)
+        self.participant_client = ConnectingWSClient(self.path)
+        self.admin_client = ConnectingWSClient(self.admin_path)
 
     @patch('time.time')
     def test_stale_visits(self, patched_time):

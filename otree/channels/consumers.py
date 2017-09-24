@@ -82,8 +82,9 @@ class GroupByArrivalTime(OTreeJsonWebsocketConsumer):
         }
 
     def group_name(self, app_name, player_id, page_index, session_pk):
-        return channel_utils.group_by_arrival_time_group_name(
+        gn = channel_utils.gbat_group_name(
             session_pk, page_index)
+        return gn
 
     def post_connect(self, app_name, player_id, page_index, session_pk):
         models_module = get_models_module(app_name)
@@ -343,10 +344,12 @@ class RoomParticipant(OTreeJsonWebsocketConsumer):
             )
 
 
-class BrowserBotsClient(OTreeJsonWebsocketConsumer):
+class BrowserBotsLauncher(OTreeJsonWebsocketConsumer):
 
     def group_name(self, session_code):
         return 'browser-bots-client-{}'.format(self.kwargs['session_code'])
+
+
 
 
 class BrowserBot(OTreeJsonWebsocketConsumer):

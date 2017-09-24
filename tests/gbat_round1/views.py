@@ -13,7 +13,6 @@ class MyWait(WaitPage):
         return self.round_number == 1
 
 
-
 class Page1(Page):
     pass
 

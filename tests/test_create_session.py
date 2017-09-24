@@ -152,6 +152,11 @@ class ViewTests(ChannelTestCase):
             # make sure equal to new value
             self.assertEqual(config[k], v)
 
+'''
+Don't have a test case for WaitForSession consumer because it's routinely
+tested manually, and writing the test is a lot of work to test a small amount
+of code.
+'''
 
 '''
 Not working because splinter doesn't seem to recognize formaction, so I get:

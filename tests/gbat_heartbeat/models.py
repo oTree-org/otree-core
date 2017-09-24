@@ -9,9 +9,9 @@ from otree.api import (
 doc = ""
 
 class Constants(BaseConstants):
-    name_in_url = 'group_by_arrival_time_round1'
+    name_in_url = 'gbat_heartbeat'
     players_per_group = 2
-    num_rounds = 2
+    num_rounds = 1
 
 
 class Subsession(BaseSubsession):

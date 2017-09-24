@@ -7,7 +7,7 @@ import itertools
 doc = "Testing get_players_for_group()"
 
 class Constants(BaseConstants):
-    name_in_url = 'group_by_arrival_time_custom'
+    name_in_url = 'gbat_custom'
     players_per_group = None
     num_rounds = 2
 

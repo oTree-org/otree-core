@@ -28,7 +28,7 @@ channel_routing = [
           consumers.RoomAdmin,
           path=r'^/room_without_session/(?P<room>\w+)/$'),
     route_class(
-          consumers.BrowserBotsClient,
+          consumers.BrowserBotsLauncher,
           path=r'^/browser_bots_client/(?P<session_code>\w+)/$'),
     route_class(
           consumers.BrowserBot,
