@@ -205,12 +205,6 @@ def get_default_settings(initial_settings=None):
 
 def augment_settings(settings):
 
-    if 'POINTS_CUSTOM_NAME' in settings:
-        settings.setdefault(
-            'POINTS_CUSTOM_FORMAT',
-            '{} ' + settings['POINTS_CUSTOM_NAME']
-        )
-
     all_otree_apps_set = set()
 
     if ('SESSION_CONFIGS' not in settings and
@@ -343,18 +337,9 @@ def augment_settings(settings):
 
     settings.setdefault('LANGUAGE_CODE', global_settings.LANGUAGE_CODE)
 
-    CURRENCY_LOCALE = settings.get('REAL_WORLD_CURRENCY_LOCALE', None)
-    if not CURRENCY_LOCALE:
-
-        # favor en_GB currency formatting since it represents negative amounts
-        # with minus signs rather than parentheses
-        # if settings['LANGUAGE_CODE'][:2] == 'en':
-        #     CURRENCY_LOCALE = 'en_GB'
-        # else:
-        CURRENCY_LOCALE = settings['LANGUAGE_CODE']
-
-        settings.setdefault('REAL_WORLD_CURRENCY_LOCALE',
-                            CURRENCY_LOCALE.replace('-', '_'))
+    settings.setdefault(
+        'REAL_WORLD_CURRENCY_LOCALE',
+        settings['LANGUAGE_CODE'].replace('-', '_'))
 
     overridable_settings = get_default_settings(settings)
 

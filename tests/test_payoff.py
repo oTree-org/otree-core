@@ -4,6 +4,8 @@ from django.core.urlresolvers import reverse
 import django.test
 from otree.api import Currency
 import otree.db.idmap
+from django.test import override_settings
+
 
 class TestPayoff(TestCase):
 
@@ -23,21 +25,8 @@ class TestPayoff(TestCase):
         participant = session.participant_set.first()
         self.assertEqual(participant.payoff, payoff)
 
-
+    @override_settings(USE_POINTS=True, POINTS_DECIMAL_PLACES=2)
     def test_payoff(self):
-        with self.settings(USE_POINTS=True):
-            # Currency.DECIMAL_PLACES needs to be patched because the setting
-            # is determined at startup, and does not change if you patch
-            # USE_POINTS
-
-            DECIMAL_PLACES_ORIGINAL_VALUE = Currency.DECIMAL_PLACES
-            Currency.DECIMAL_PLACES = 2
-            try:
-                self.helper()
-            finally:
-                Currency.DECIMAL_PLACES = DECIMAL_PLACES_ORIGINAL_VALUE
-
-    def helper(self):
 
         session = otree.session.create_session(
             session_config_name='two_rounds_1p',

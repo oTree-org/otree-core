@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import copy
 import six
 from decimal import Decimal
@@ -17,15 +14,12 @@ from django.forms import models as django_model_forms
 from django.utils.translation import ugettext as _
 from django.db.models.options import FieldDoesNotExist
 
-
-import easymoney
-
 import otree.common_internal
 import otree.models
 import otree.constants_internal
 from otree.forms import fields
 from otree.db import models
-
+from otree.currency import Currency, RealWorldCurrency
 
 __all__ = (
     'formfield_callback', 'modelform_factory', 'BaseModelForm', 'ModelForm')
@@ -257,9 +251,9 @@ class BaseModelForm(forms.ModelForm, metaclass=BaseModelFormMetaclass):
             )
             if cond:
                 min_bound, max_bound = self._get_field_min_max(field_name)
-                if isinstance(min_bound, easymoney.Money):
+                if isinstance(min_bound, (Currency, RealWorldCurrency)):
                     min_bound = Decimal(min_bound)
-                if isinstance(max_bound, easymoney.Money):
+                if isinstance(max_bound, (Currency, RealWorldCurrency)):
                     max_bound = Decimal(max_bound)
                 if min_bound is not None:
                     field.widget.attrs['min'] = min_bound

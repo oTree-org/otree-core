@@ -52,8 +52,11 @@ class TestFilters(TestCase):
             self.render("{{value|abs}}", context={'value': None})
 
     def test_currency_filter(self):
-        # just make sure it doesn't crash
-        self.render('{{1|c}}')
+        with self.settings(USE_POINTS=False, REAL_WORLD_CURRENCY_CODE='USD'):
+            self.assertEqual(
+                self.render('{{1|c}}'),
+                '$1.00'
+            )
 
     def test_json(self):
         for python_input, expected_output in [

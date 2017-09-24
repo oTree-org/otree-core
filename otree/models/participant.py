@@ -28,13 +28,6 @@ class Participant(ModelWithVars):
 
     id_in_session = models.PositiveIntegerField(null=True)
 
-    exclude_from_data_analysis = models.BooleanField(
-        default=False, doc=(
-            "if set to 1, the experimenter indicated that this participant's "
-            "data points should be excluded from the data analysis (e.g. a "
-            "problem took place during the experiment)")
-    )
-
     payoff = models.CurrencyField(default=0)
 
     time_started = models.DateTimeField(null=True)

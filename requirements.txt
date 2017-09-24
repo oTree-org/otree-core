@@ -10,7 +10,6 @@ daphne==0.14.3
 dj-database-url==0.4.1
 Django==1.8.8
 django-countries==4.0
-django-easymoney==0.7.2
 django-floppyforms==1.7.0
 django-idmap==1.0
 django-vanilla-views==1.0.4

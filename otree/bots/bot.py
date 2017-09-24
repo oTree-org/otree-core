@@ -12,7 +12,7 @@ from six.moves.html_parser import HTMLParser
 from django import test
 from django.core.urlresolvers import resolve
 from django.conf import settings
-from easymoney import Money as Currency
+from otree.currency import Currency
 
 from otree import constants_internal
 

@@ -75,7 +75,6 @@ def _get_table_fields(Model, for_export=False):
                 '_current_page_name',
                 'ip_address',
                 'time_started',
-                'exclude_from_data_analysis',
                 'visited',
                 'mturk_worker_id',
                 'mturk_assignment_id',

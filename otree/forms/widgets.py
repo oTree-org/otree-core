@@ -6,7 +6,7 @@ from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy
 import babel
 import babel.numbers
-import easymoney
+from otree.currency import Currency, RealWorldCurrency
 import floppyforms.__future__ as forms
 import floppyforms.widgets
 
@@ -81,12 +81,13 @@ class _BaseMoneyInput(forms.NumberInput):
         currency_symbol_is_prefix = u'\xa4' in pattern.prefix[0]
 
     def _format_value(self, value):
-        if isinstance(value, easymoney.Money):
+        if isinstance(value, (Currency, RealWorldCurrency)):
             value = Decimal(value)
         return force_text(value)
 
 
 class _RealWorldCurrencyInput(_BaseMoneyInput):
+    '''it's a class attribute so take care with patching it in tests'''
     CURRENCY_SYMBOL = babel.numbers.get_currency_symbol(
         settings.REAL_WORLD_CURRENCY_CODE,
         settings.REAL_WORLD_CURRENCY_LOCALE
@@ -94,6 +95,7 @@ class _RealWorldCurrencyInput(_BaseMoneyInput):
 
 
 class _CurrencyInput(_RealWorldCurrencyInput):
+    '''it's a class attribute so take care with patching it in tests'''
     if settings.USE_POINTS:
         if hasattr(settings, 'POINTS_CUSTOM_NAME'):
             CURRENCY_SYMBOL = settings.POINTS_CUSTOM_NAME
@@ -117,7 +119,7 @@ class SliderInput(forms.RangeInput):
         super(SliderInput, self).__init__(*args, **kwargs)
 
     def _format_value(self, value):
-        if isinstance(value, easymoney.Money):
+        if isinstance(value, (Currency, RealWorldCurrency)):
             value = Decimal(value)
         return force_text(value)
 

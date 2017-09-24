@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import easymoney
-
 from django.utils import translation
 from django.utils.encoding import force_text
 
@@ -11,6 +9,7 @@ import otree.forms
 import otree.widgets
 from .utils import TestCase
 from otree.api import BasePlayer, models, widgets
+from otree.currency import Currency
 
 class BasicWidgetTests(TestCase):
 
@@ -33,7 +32,7 @@ class CurrencyInputTests(TestCase):
         currency = otree.forms.CurrencyField()
 
     def test_widget(self):
-        form = self.CurrencyForm({'currency': easymoney.Money('52.23')})
+        form = self.CurrencyForm({'currency': Currency('52.23')})
         rendered = force_text(form['currency'])
 
         self.assertTrue(
