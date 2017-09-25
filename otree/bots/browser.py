@@ -49,18 +49,18 @@ class Worker(object):
         self.prepared_submits = {}
 
     def initialize_participant(self, participant_code):
+        '''
+        initialize participants one-by-one because when i did it all at once,
+        i was getting some sort of timeout error
+        See 4206a91e7d883983c59c240f61a342d93a582c93
+        '''
         self.prune()
 
         participant = Participant.objects.select_related('session').get(
             code=participant_code)
         session_code = participant.session.code
 
-        # in order to do .assertEqual etc, need to pass a reference to a
-        # SimpleTestCase down to the Player bot
-        test_case = SimpleTestCase()
-
-        self.browser_bots[participant.code] = ParticipantBot(
-            participant, unittest_case=test_case)
+        self.browser_bots[participant.code] = ParticipantBot(participant)
 
         with add_or_remove_bot_lock:
             if session_code not in self.participants_by_session:
@@ -246,14 +246,14 @@ def initialize_bot_redis(redis_conn, participant_code):
     }
     redis_conn.rpush(REDIS_KEY_PREFIX, json.dumps(msg))
 
-    # ping will raise if it times out
-    ping(redis_conn, timeout=5)
     # timeout must be int
-    # this is about 20x as much time as it should take
-    # some users were still getting timeout errors with timeout=1
-    timeout = 2
+    # in my testing it takes 0.1 seconds usually.
+    # but some users were still getting timeout errors with timeout=2
+    timeout = 5
     result = redis_conn.blpop(response_key, timeout=timeout)
     if result is None:
+        # ping will raise if it times out
+        ping(redis_conn, timeout=5)
         raise Exception(
             'botworker is running but could not initialize the bot '
             'within {} seconds.'.format(timeout)

@@ -211,12 +211,10 @@ def refresh_from_db(obj):
     return type(obj).objects.get(pk=obj.pk)
 
 
-# 2017-06-21: why ABCMeta? Was this something from when I was trying to get
-# the self.assert* methods working?
-class ParticipantBot(test.Client, metaclass=abc.ABCMeta):
+class ParticipantBot(test.Client):
 
     def __init__(
-            self, participant, load_player_bots=True, **kwargs):
+            self, participant, load_player_bots=True):
         self.participant = participant
         self.url = None
         self._response = None
