@@ -168,9 +168,8 @@ class Participant(ModelWithVars):
             return url
         return reverse('OutOfRangeNotification')
 
-    @permalink
     def _start_url(self):
-        return 'InitializeParticipant', (self.code,)
+        return otree.common_internal.participant_start_url(self.code)
 
     def payoff_in_real_world_currency(self):
         return self.payoff.to_real_world_currency(

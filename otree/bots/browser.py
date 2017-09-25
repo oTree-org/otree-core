@@ -1,14 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-from __future__ import absolute_import
-
 import json
 import threading
 import logging
 from collections import OrderedDict
-
-from django.test import SimpleTestCase
 
 import channels
 import traceback
@@ -17,8 +10,11 @@ import otree.common_internal
 from otree.models.participant import Participant
 from otree.common_internal import get_redis_conn
 
+from .runner import get_bots
 from .bot import ParticipantBot
-
+import random
+from otree.models_concrete import ParticipantToPlayerLookup
+from otree.models import Session
 
 REDIS_KEY_PREFIX = 'otree-bots'
 
@@ -48,32 +44,31 @@ class Worker(object):
         self.browser_bots = {}
         self.prepared_submits = {}
 
-    def initialize_participant(self, participant_code):
-        '''
-        initialize participants one-by-one because when i did it all at once,
-        i was getting some sort of timeout error
-        See 4206a91e7d883983c59c240f61a342d93a582c93
-        '''
+    def initialize_session(self, session_pk):
         self.prune()
+        self.participants_by_session[session_pk] = []
 
-        participant = Participant.objects.select_related('session').get(
-            code=participant_code)
-        session_code = participant.session.code
+        session = Session.objects.get(pk=session_pk)
+        # choose one randomly
+        from otree.session import SessionConfig
+        config = SessionConfig(session.config)
+        num_cases = config.get_num_bot_cases()
+        # choose bot case number randomly...maybe reconsider this?
+        # we can only run one.
+        case_number = random.choice(range(num_cases))
 
-        self.browser_bots[participant.code] = ParticipantBot(participant)
-
-        with add_or_remove_bot_lock:
-            if session_code not in self.participants_by_session:
-                self.participants_by_session[session_code] = []
-            self.participants_by_session[session_code].append(participant_code)
-
+        bots = get_bots(session_pk=session_pk, case_number=case_number)
+        for bot in bots:
+            self.participants_by_session[session_pk].append(
+                bot.participant_code)
+            self.browser_bots[bot.participant_code] = bot
         return {'ok': True}
 
     def get_method(self, command_name):
         commands = {
             'prepare_next_submit': self.prepare_next_submit,
             'consume_next_submit': self.consume_next_submit,
-            'initialize_participant': self.initialize_participant,
+            'initialize_session': self.initialize_session,
             'clear_all': self.clear_all,
             'ping': self.ping,
         }
@@ -237,23 +232,22 @@ def load_redis_response_dict(response_bytes):
     return response
 
 
-def initialize_bot_redis(redis_conn, participant_code):
-    response_key = '{}-initialize-{}'.format(REDIS_KEY_PREFIX, participant_code)
+def initialize_bots_redis(*, redis_conn, session_pk, num_players_total):
+    response_key = '{}-initialize-{}'.format(REDIS_KEY_PREFIX, session_pk)
     msg = {
-        'command': 'initialize_participant',
-        'kwargs': {'participant_code': participant_code},
+        'command': 'initialize_session',
+        'kwargs': {'session_pk': session_pk},
         'response_key': response_key,
     }
+    # ping will raise if it times out
+    ping(redis_conn, timeout=4)
     redis_conn.rpush(REDIS_KEY_PREFIX, json.dumps(msg))
 
     # timeout must be int
-    # in my testing it takes 0.1 seconds usually.
-    # but some users were still getting timeout errors with timeout=2
-    timeout = 5
+    # this is about 10x as much time as it should take
+    timeout = int(max(1, num_players_total * 0.1))
     result = redis_conn.blpop(response_key, timeout=timeout)
     if result is None:
-        # ping will raise if it times out
-        ping(redis_conn, timeout=5)
         raise Exception(
             'botworker is running but could not initialize the bot '
             'within {} seconds.'.format(timeout)
@@ -263,19 +257,19 @@ def initialize_bot_redis(redis_conn, participant_code):
     return {'ok': True}
 
 
-def initialize_bot_in_process(participant_code):
-    browser_bot_worker.initialize_participant(participant_code)
+def initialize_bots_in_process(*, session_pk: int):
+    browser_bot_worker.initialize_session(session_pk=session_pk)
 
 
-def initialize_bot(participant_code):
+def initialize_bots(*, session_pk, num_players_total):
     if otree.common_internal.USE_REDIS:
-        initialize_bot_redis(
+        initialize_bots_redis(
             redis_conn=get_redis_conn(),
-            participant_code=participant_code,
+            session_pk=session_pk,
+            num_players_total=num_players_total
         )
     else:
-        initialize_bot_in_process(participant_code)
-
+        initialize_bots_in_process(session_pk=session_pk)
 
 def redis_flush_bots(redis_conn):
     for key in redis_conn.scan_iter(match='{}*'.format(REDIS_KEY_PREFIX)):
@@ -339,7 +333,6 @@ class EphemeralBrowserBot(object):
 
     def get_next_post_data_redis(self):
         participant_code = self.participant.code
-        redis_conn = self.redis_conn
         response_key = '{}-consume_next_submit-{}'.format(
             REDIS_KEY_PREFIX, participant_code)
         msg = {

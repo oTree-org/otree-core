@@ -1,9 +1,6 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-
+from typing import List
 import logging
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from unittest import mock
 
 from django.db.migrations.loader import MigrationLoader
@@ -20,16 +17,18 @@ import os
 import codecs
 import otree.export
 from otree.constants_internal import AUTO_NAME_BOTS_EXPORT_FOLDER
+from otree.models_concrete import ParticipantToPlayerLookup
+from otree.models import Session
 
 logger = logging.getLogger(__name__)
 
 
 class SessionBotRunner(object):
-    def __init__(self, bots):
+    def __init__(self, bots: List[ParticipantBot]):
         self.bots = OrderedDict()
 
         for bot in bots:
-            self.bots[bot.participant.id] = bot
+            self.bots[bot.participant_id] = bot
 
     def play(self):
         '''round-robin'''
@@ -66,13 +65,31 @@ class SessionBotRunner(object):
             bot.open_start_url()
 
 
-def session_bot_runner_factory(session) -> SessionBotRunner:
+def get_bots(*, session_pk, case_number) -> List[ParticipantBot]:
     bots = []
-    for participant in session.get_participants():
-        bot = ParticipantBot(participant)
+
+    # can't use .distinct('player_pk') because it only works on Postgres
+    # this implicitly orders by round also
+    lookups = ParticipantToPlayerLookup.objects.filter(
+        session_pk=session_pk).order_by('page_index')
+
+    seen_player_pks = set()
+    lookups_per_participant = defaultdict(list)
+    for lookup in lookups:
+        if not lookup.player_pk in seen_player_pks:
+            lookups_per_participant[lookup.participant_code].append(lookup)
+            seen_player_pks.add(lookup.player_pk)
+
+    for participant_code, lookups in lookups_per_participant.items():
+        bot = ParticipantBot(lookups=lookups, case_number=case_number)
         bots.append(bot)
 
-    return SessionBotRunner(bots)
+    return bots
+
+
+def session_bot_runner_factory(session: Session, case_number) -> SessionBotRunner:
+    bot_list = get_bots(session_pk=session.pk, case_number=case_number)
+    return SessionBotRunner(bots=bot_list)
 
 
 @pytest.mark.django_db(transaction=True)
@@ -97,10 +114,9 @@ def test_bots(session_config_name, num_participants, run_export):
             session_config_name=config_name,
             num_participants=num_participants,
             use_cli_bots=True,
-            bot_case_number=case_number
         )
 
-        bot_runner = session_bot_runner_factory(session)
+        bot_runner = session_bot_runner_factory(session, case_number=case_number)
         bot_runner.play()
         logger.info('Bots completed session')
     if run_export:

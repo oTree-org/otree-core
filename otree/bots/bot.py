@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
+from typing import List
 import re
 import decimal
 import logging
@@ -9,15 +7,19 @@ import six
 from six.moves import urllib
 from six.moves.html_parser import HTMLParser
 
+from otree.models_concrete import ParticipantToPlayerLookup
 from django import test
 from django.core.urlresolvers import resolve
 from django.conf import settings
 from otree.currency import Currency
-
+from django.apps import apps
 from otree import constants_internal
-
+from otree.models import Participant, Session
+from otree import common_internal
 from otree.common_internal import (
-    get_dotted_name, get_bots_module, get_admin_secret_code)
+    get_dotted_name, get_bots_module, get_admin_secret_code,
+    get_models_module
+)
 
 ADMIN_SECRET_CODE = get_admin_secret_code()
 
@@ -214,31 +216,53 @@ def refresh_from_db(obj):
 class ParticipantBot(test.Client):
 
     def __init__(
-            self, participant, load_player_bots=True):
-        self.participant = participant
+            self, participant: Participant=None, *,
+            lookups: List[ParticipantToPlayerLookup] = None,
+            load_player_bots=True, case_number=None
+    ):
+        # usually lookups should be passed in. for ad-hoc testing,
+        # ok to pass a participant
+        if not lookups:
+            lookups_with_duplicates = ParticipantToPlayerLookup.objects.filter(
+                participant_id=participant.id).order_by('player_pk')
+            seen_player_pks = set()
+            lookups = []
+            for lookup in lookups_with_duplicates:
+                if not lookup.player_pk in seen_player_pks:
+                    lookups.append(lookup)
+                    seen_player_pks.add(lookup.player_pk)
+
+        self.participant_id = lookups[0].participant_id
+        self.participant_code = lookups[0].participant_code
+
+        if not lookups:
+            lookups = []
         self.url = None
         self._response = None
         self._html = None
         self.path = None
         self.submits = None
-        super(ParticipantBot, self).__init__()
+        super().__init__()
 
         self.player_bots = []
 
         # load_player_bots can be set to False when it's convenient for
         # internal testing
         if load_player_bots:
-            for player in self.participant.get_players():
-                bots_module = get_bots_module(player._meta.app_config.name)
+            for lookup in lookups:
+                app_name = lookup.app_name
+                bots_module = get_bots_module(app_name)
                 player_bot = bots_module.PlayerBot(
-                    player=player,
-                    participant_bot=self)
+                    lookup=lookup, case_number=case_number,
+                    participant_bot=self
+                )
                 self.player_bots.append(player_bot)
             self.submits_generator = self.get_submits()
 
     def open_start_url(self):
+        start_url = common_internal.participant_start_url(self.participant_code)
         self.response = self.get(
-            self.participant._start_url(),
+            start_url,
             follow=True
         )
 
@@ -357,21 +381,27 @@ class ParticipantBot(test.Client):
         self.response = self.post(self.url, post_data, follow=True)
 
 
-class PlayerBot(object):
+class PlayerBot:
 
     cases = []
 
-    def __init__(self, player, participant_bot, **kwargs):
+    def __init__(
+            self, case_number: int, participant_bot: ParticipantBot,
+            lookup: ParticipantToPlayerLookup):
+
+        app_name = lookup.app_name
+        models_module = get_models_module(app_name)
+
+        self.PlayerClass = models_module.Player
+        self.GroupClass = models_module.Group
+        self.SubsessionClass = models_module.Subsession
+        self._player_pk = lookup.player_pk
+        self._subsession_pk = lookup.subsession_pk
+        self._session_pk = lookup.session_pk
+        self._participant_pk = lookup.participant_id
 
         self.participant_bot = participant_bot
-        self._cached_player = player
-        self._cached_subsession = player.subsession
-        self._cached_participant = player.participant
-        self._cached_session = player.session
 
-        self.round_number = player.round_number
-
-        case_number = self._cached_session._bot_case_number
         cases = self.cases
         if len(cases) >= 1:
             self.case = cases[case_number % len(cases)]
@@ -383,24 +413,28 @@ class PlayerBot(object):
 
     @property
     def player(self):
-        return refresh_from_db(self._cached_player)
+        return self.PlayerClass.objects.get(pk=self._player_pk)
 
     @property
     def group(self):
-        # the group can change, so can't use cached version
+        '''can't cache self._group_pk because group can change'''
         return self.player.group
 
     @property
     def subsession(self):
-        return refresh_from_db(self._cached_subsession)
+        return self.SubsessionClass.objects.get(pk=self._subsession_pk)
 
     @property
-    def session(self):
-        return refresh_from_db(self._cached_session)
+    def round_number(self):
+        return self.player.round_number
 
     @property
     def participant(self):
-        return refresh_from_db(self._cached_participant)
+        return Participant.objects.get(pk=self._participant_pk)
+
+    @property
+    def session(self):
+        return Session.objects.get(pk=self._session_pk)
 
     @property
     def html(self):

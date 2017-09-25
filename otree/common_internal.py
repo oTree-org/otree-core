@@ -317,3 +317,19 @@ def _get_all_configs():
         for app in apps.get_app_configs()
         if app.name in settings.INSTALLED_OTREE_APPS]
 
+
+def participant_start_url(code):
+    return '/InitializeParticipant/{}'.format(code)
+
+def _get_player_app_labels_and_ids(participant_code, app_sequence):
+    lst = []
+    for app in app_sequence:
+        models_module = get_models_module(app)
+        PlayerClass = models_module.Player
+        player_ids = PlayerClass.objects.filter(
+            participant__code=participant_code
+        ).values_list('id', flat=True).order_by('round_number')
+        for id in player_ids:
+            list.append((PlayerClass,))
+        lst.extend(list(players))
+    return lst

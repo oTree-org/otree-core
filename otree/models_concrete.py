@@ -54,6 +54,8 @@ class ParticipantToPlayerLookup(models.Model):
         index_together = ['participant', 'page_index']
         unique_together = ['participant', 'page_index']
 
+    # TODO: add session code and round number, for browser bots?
+    participant_code = models.CharField(max_length=20)
     participant = models.ForeignKey('otree.Participant')
     page_index = models.PositiveIntegerField()
     app_name = models.CharField(max_length=300)

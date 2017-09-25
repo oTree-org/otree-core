@@ -90,7 +90,6 @@ class Session(ModelWithVars):
     _cannot_restart_bots = models.BooleanField(default=False)
     _bots_finished = models.BooleanField(default=False)
     _bots_errored = models.BooleanField(default=False)
-    _bot_case_number = models.PositiveIntegerField()
 
     is_demo = models.BooleanField(default=False)
 
@@ -248,6 +247,7 @@ class Session(ModelWithVars):
                     records_to_create.append(
                         ParticipantToPlayerLookup(
                             participant=participant,
+                            participant_code=participant.code,
                             page_index=page_index,
                             app_name=player._meta.app_config.name,
                             player_pk=player.pk,

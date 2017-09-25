@@ -8,10 +8,6 @@ from collections import OrderedDict
 from decimal import Decimal
 import warnings
 
-import six
-from six.moves import range
-from six.moves import zip
-
 from django.conf import settings
 from django.db import transaction
 from django.db.utils import OperationalError
@@ -260,12 +256,13 @@ def create_session(
         pre_create_id=None,
         room_name=None, for_mturk=False, use_cli_bots=False,
         is_demo=False, force_browser_bots=False,
+        # i think bot_case_number is unused.
         honor_browser_bots_config=False, bot_case_number=None,
         edited_session_config_fields=None):
 
     session = None
     use_browser_bots = False
-    participants = []
+    num_subsessions = 0
     edited_session_config_fields = edited_session_config_fields or {}
 
     with transaction.atomic():
@@ -299,12 +296,6 @@ def create_session(
             use_browser_bots = True
         else:
             use_browser_bots = False
-        if use_browser_bots and bot_case_number is None:
-            # choose one randomly
-            num_bot_cases = session_config.get_num_bot_cases()
-            # choose bot case number randomly...maybe reconsider this?
-            # we can only run one.
-            bot_case_number = random.choice(range(num_bot_cases))
 
         session = Session.objects.create(
             config=session_config,
@@ -313,7 +304,7 @@ def create_session(
             use_browser_bots=use_browser_bots,
             is_demo=is_demo,
             num_participants=num_participants,
-            _bot_case_number=bot_case_number) # type: Session
+            ) # type: Session
 
         def bulk_create(model, descriptions):
             model.objects.bulk_create([
@@ -358,6 +349,7 @@ def create_session(
 
             models_module = get_models_module(app_name)
             app_constants = get_app_constants(app_name)
+            num_subsessions += app_constants.num_rounds
 
             round_numbers = list(range(1, app_constants.num_rounds + 1))
 
@@ -389,9 +381,10 @@ def create_session(
         # UI, when do we run that? it should be run when the session
         # is deleted
         try:
-            for participant in participants:
-                otree.bots.browser.initialize_bot(
-                    participant.code)
+            num_players_total = num_participants * num_subsessions
+            otree.bots.browser.initialize_bots(
+                session_pk=session.pk, num_players_total=num_players_total,
+            )
         except:
             session.delete()
             raise
