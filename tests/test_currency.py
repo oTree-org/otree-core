@@ -31,24 +31,25 @@ class CurrencyTests(TestCase):
         assert Currency(Decimal('3.141')) == Decimal('3.14')
         assert Currency(Decimal('3.145')) == Decimal('3.15')
 
-
     def test_str(self):
-        with self.settings(USE_POINTS=False, REAL_WORLD_CURRENCY_CODE='USD'):
-            # should truncate
-            self.assertEqual(str(Currency(3.141)), '$3.14')
-            self.assertEqual(str(Currency(3.00)), '$3.00')
-        with self.settings(USE_POINTS=False, REAL_WORLD_CURRENCY_CODE='EUR'):
-            self.assertEqual(str(Currency(3.14)), '€3.14')
-            self.assertEqual(str(Currency(3.00)), '€3.00')
+        with self.settings(USE_POINTS=False):
+            with self.settings(REAL_WORLD_CURRENCY_CODE='USD'):
+                # should truncate
+                self.assertEqual(str(Currency(3.141)), '$3.14')
+                self.assertEqual(str(Currency(3.00)), '$3.00')
+            with self.settings(REAL_WORLD_CURRENCY_CODE='EUR'):
+                self.assertEqual(str(Currency(3.14)), '€3.14')
+                self.assertEqual(str(Currency(3.00)), '€3.00')
+            with self.settings(
+                    REAL_WORLD_CURRENCY_CODE='USD',
+                    REAL_WORLD_CURRENCY_DECIMAL_PLACES=3):
+                self.assertEqual(str(Currency(3.141)), '$3.141')
         with self.settings(USE_POINTS=True):
             self.assertEqual(str(Currency(3)), '3 points')
-        with self.settings(USE_POINTS=True, POINTS_DECIMAL_PLACES=2):
-            self.assertEqual(str(Currency(3)), '3.00 points')
-        with self.settings(
-                USE_POINTS=False,
-                REAL_WORLD_CURRENCY_CODE='USD',
-                REAL_WORLD_CURRENCY_DECIMAL_PLACES=3):
-            self.assertEqual(str(Currency(3.141)), '$3.141')
+            with self.settings(POINTS_DECIMAL_PLACES=2):
+                self.assertEqual(str(Currency(3)), '3.00 points')
+            with self.settings(POINTS_CUSTOM_NAME='tokens'):
+                self.assertEqual(str(Currency(3)), '3 tokens')
 
     def test_currency_non_ascii_character(self):
         # https://github.com/oTree-org/otree-core/issues/387

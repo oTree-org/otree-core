@@ -9,16 +9,21 @@ from django.core.urlresolvers import reverse
 from otree.models.participant import Participant
 from otree.session import create_session
 from tests.utils import ConnectingWSClient
+from otree.common_internal import add_params_to_url
 
 from .utils import TestCase
 
 URL_ADMIN_LABELS = reverse('RoomWithoutSession', args=[settings.ROOM_WITH_LABELS_NAME])
 URL_ADMIN_NO_LABELS = reverse('RoomWithoutSession', args=[settings.ROOM_WITHOUT_LABELS_NAME])
+URL_ADMIN_SECURE_URLS = reverse('RoomWithoutSession', args=[settings.ROOM_WITH_SECURE_URLS_NAME])
 URL_PARTICIPANT_LABELS = reverse('AssignVisitorToRoom', args=[settings.ROOM_WITH_LABELS_NAME])
 URL_PARTICIPANT_NO_LABELS = reverse('AssignVisitorToRoom', args=[settings.ROOM_WITHOUT_LABELS_NAME])
+URL_PARTICIPANT_SECURE_URLS = reverse('AssignVisitorToRoom', args=[settings.ROOM_WITH_SECURE_URLS_NAME])
 
 LABEL_REAL = 'JohnSmith'
 LABEL_FAKE = 'NotInParticipantLabelsFile'
+
+WAITING_STR = 'Waiting for your session to begin'
 
 
 def add_label(base_url, label):
@@ -32,6 +37,57 @@ class RoomTestCase(TestCase):
 
     def get(self, url):
         self.browser.visit(url)
+
+
+class SecureURLTests(RoomTestCase):
+
+    def test_click_link(self):
+        # visiting without hash code or participant label should give 404
+        # visiting with participant label
+        br = self.browser
+
+        br.visit(URL_ADMIN_SECURE_URLS)
+        br.click_link_by_partial_href(LABEL_REAL)
+        self.assertIn(WAITING_STR, br.html)
+
+    def test_missing_hash(self):
+        br = self.browser
+        url_without_hash = add_params_to_url(
+            URL_PARTICIPANT_SECURE_URLS,
+            {'participant_label': LABEL_REAL}
+        )
+
+        br.visit(url_without_hash)
+        self.assertEqual(br.status_code, 404)
+
+    def test_wrong_hash(self):
+        url_wrong_hash = add_params_to_url(
+            URL_PARTICIPANT_SECURE_URLS,
+            {'participant_label': LABEL_REAL, 'hash': 'fakehash'}
+        )
+
+        br = self.browser
+        br.visit(url_wrong_hash)
+        self.assertEqual(br.status_code, 404)
+
+    def test_has_session_but_missing_hash(self):
+
+        create_session(
+            'simple',
+            # make it 6 so that we can test if the participant is reassigned
+            # if they open their start link again (1/6 chance)
+            num_participants=1,
+            room_name=settings.ROOM_WITH_SECURE_URLS_NAME,
+        )
+
+        url_without_hash = add_params_to_url(
+            URL_PARTICIPANT_SECURE_URLS,
+            {'participant_label': LABEL_REAL}
+        )
+
+        br = self.browser
+        br.visit(url_without_hash)
+        self.assertEqual(br.status_code, 404)
 
 
 class TestRoomWithoutSession(RoomTestCase):
@@ -48,7 +104,6 @@ class TestRoomWithoutSession(RoomTestCase):
 
     def test_open_participant_links(self):
 
-        WAITING_STR = 'Waiting for your session to begin'
 
         br = self.browser
 
@@ -361,3 +416,4 @@ class PresenceWithoutLabelsTests(ChannelTestCase):
             admin_client.receive(),
             {'status': 'remove_participant'}
         )
+

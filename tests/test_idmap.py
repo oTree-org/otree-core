@@ -7,6 +7,56 @@ from otree.db.idmap import (
     save_objects, use_cache)
 import django.test
 from .utils import TestCase, run_bots
+import tests.simple.models as simple_models
+from otree.session import create_session
+
+class ModelTests(TestCase):
+    def setUp(self):
+        session = create_session('simple', num_participants=1)
+        self.session_id = session.id
+        self.player_id = simple_models.Player.objects.get(
+                session_id=self.session_id).id
+
+    def test_strong_refs(self):
+
+        def inside_function():
+            '''do these queries in a function so we can know use_strong_refs
+            is working correctly
+            '''
+            player = simple_models.Player.objects.get(
+                session_id=self.session_id, id_in_group=1
+            )
+            player.nonexistent_attribute = 'temp_value'
+            group = player.group
+            subsession = simple_models.Subsession.objects.get(
+                session_id=self.session_id)
+            session = player.session
+            # do a query rather than FK lookup player.participant
+            # to avoid participant from being cached on player
+            # we want to make sure it actually goes into the IDmap cache
+            participant = session.participant_set.first()
+
+        with use_cache():
+            inside_function()
+            with self.assertNumQueries(0):
+                # if you use get() by PK, it skips the query entirely
+                player = simple_models.Player.objects.get(id=self.player_id)
+                self.assertEqual(player.nonexistent_attribute, 'temp_value')
+                group = player.group
+                subsession = player.subsession
+                session = player.session
+                # this shouldn't do a query because we know the participant PK
+                # (it's player.participant_id), and the participant
+                # should have been stored in the IDmap cache
+                participant = player.participant
+            with self.assertNumQueries(1):
+                # this does a query because we don't know the pk.
+                # but after retrieving the object, it checks the cache
+                # if that item already exists.
+                player = simple_models.Player.objects.get(
+                    session_id=self.session_id, id_in_group=1
+                )
+
 
 class ViewTests(TestCase):
 

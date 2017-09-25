@@ -1,6 +1,6 @@
 import importlib
 import sys
-
+from unittest.mock import patch
 import django.test.client
 import splinter
 import splinter.browser
@@ -92,7 +92,29 @@ class TestAdminBasic(TestCase):
             # so other tests can run normally
             reload_urlconf()
 
+
+
+
+
 '''
+# not sure if it's worth it to test this...
+from django.contrib.auth.models import User
+
+class SuperuserTests(TestCase):
+
+    @patch.object(User, 'objects')
+    def test_no_password(self, patched_objects):
+        patched_objects.filter.return_value.exists.return_value = False
+        create_superuser = patched_objects.create_superuser
+        create_superuser.return_value = True
+        with self.settings(ADMIN_PASSWORD=''):
+            
+            
+        # if no admin password, should
+
+    def test_with_password(self):
+        # should create superuser
+
 # We can't enable these test cases until we upgrade to CHannels 1.0+
 class TestAdminJS(ChannelLiveServerTestCase):
 

@@ -244,10 +244,10 @@ def initialize_bot_redis(redis_conn, participant_code):
         'kwargs': {'participant_code': participant_code},
         'response_key': response_key,
     }
-    # ping will raise if it times out
-    ping(redis_conn, timeout=5)
     redis_conn.rpush(REDIS_KEY_PREFIX, json.dumps(msg))
 
+    # ping will raise if it times out
+    ping(redis_conn, timeout=5)
     # timeout must be int
     # this is about 20x as much time as it should take
     # some users were still getting timeout errors with timeout=1

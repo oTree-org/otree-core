@@ -281,6 +281,7 @@ ROOM_DEFAULTS = {}
 
 ROOM_WITH_LABELS_NAME = 'with_labels'
 ROOM_WITHOUT_LABELS_NAME = 'without_labels'
+ROOM_WITH_SECURE_URLS_NAME = 'with_secure_urls'
 
 ROOMS = [
     {
@@ -293,6 +294,12 @@ ROOMS = [
         'name': ROOM_WITHOUT_LABELS_NAME,
         'display_name': 'Anonymous',
     },
+    {
+        'name': ROOM_WITH_SECURE_URLS_NAME,
+        'display_name': 'with_labels',
+        'participant_label_file': 'tests/participant_labels.txt',
+        'use_secure_urls': True
+    }
 ]
 
 BOTS_CHECK_HTML = False
