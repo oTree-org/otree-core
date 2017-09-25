@@ -239,13 +239,14 @@ def initialize_bots_redis(*, redis_conn, session_pk, num_players_total):
         'kwargs': {'session_pk': session_pk},
         'response_key': response_key,
     }
+    redis_conn.rpush(REDIS_KEY_PREFIX, json.dumps(msg))
     # ping will raise if it times out
     ping(redis_conn, timeout=4)
-    redis_conn.rpush(REDIS_KEY_PREFIX, json.dumps(msg))
 
-    # timeout must be int
-    # this is about 10x as much time as it should take
-    timeout = int(max(1, num_players_total * 0.1))
+    # timeout must be int.
+    # my tests show that it can initialize about 3000 players per second.
+    # so 300-500 is conservative, plus pad for a few seconds
+    timeout = int(6 + num_players_total / 500)
     result = redis_conn.blpop(response_key, timeout=timeout)
     if result is None:
         raise Exception(
