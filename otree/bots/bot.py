@@ -220,6 +220,7 @@ class ParticipantBot(test.Client):
             lookups: List[ParticipantToPlayerLookup] = None,
             load_player_bots=True, case_number=None
     ):
+
         # usually lookups should be passed in. for ad-hoc testing,
         # ok to pass a participant
         if not lookups:
@@ -235,8 +236,6 @@ class ParticipantBot(test.Client):
         self.participant_id = lookups[0].participant_id
         self.participant_code = lookups[0].participant_code
 
-        if not lookups:
-            lookups = []
         self.url = None
         self._response = None
         self._html = None
@@ -401,6 +400,10 @@ class PlayerBot:
         self._participant_pk = lookup.participant_id
 
         self.participant_bot = participant_bot
+
+        if case_number == None:
+            # default to case 0
+            case_number = 0
 
         cases = self.cases
         if len(cases) >= 1:

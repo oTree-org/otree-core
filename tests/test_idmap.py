@@ -60,20 +60,19 @@ class ModelTests(TestCase):
 
 class ViewTests(TestCase):
 
-
     def setUp(self):
 
         call_command('create_session', 'simple', '1')
         participant = Participant.objects.get()
-        client = django.test.Client()
-        client.get(participant._start_url())
+        self.client.get(participant._start_url(), follow=True)
+        self.participant_pk = participant.pk
 
     def test_not_lazy(self):
 
         with use_cache():
 
             page = Page()
-            participant = Participant.objects.get()
+            participant = Participant.objects.get(pk=self.participant_pk)
             # 2 queries: for all objects, and for player_lookup
             with self.assertNumQueries(2):
                 page.set_attributes(participant)
@@ -87,7 +86,7 @@ class ViewTests(TestCase):
     def test_lazy(self):
         with use_cache():
             page = Page()
-            participant = Participant.objects.get()
+            participant = Participant.objects.get(pk=self.participant_pk)
             # set_attributes causes player_lookups
 
             # only makes 1 query, for player_lookup

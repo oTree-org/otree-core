@@ -73,12 +73,13 @@ def get_bots(*, session_pk, case_number) -> List[ParticipantBot]:
     lookups = ParticipantToPlayerLookup.objects.filter(
         session_pk=session_pk).order_by('page_index')
 
-    seen_player_pks = set()
+    seen_players = set()
     lookups_per_participant = defaultdict(list)
     for lookup in lookups:
-        if not lookup.player_pk in seen_player_pks:
+        player_identifier = (lookup.app_name, lookup.player_pk)
+        if not player_identifier in seen_players:
             lookups_per_participant[lookup.participant_code].append(lookup)
-            seen_player_pks.add(lookup.player_pk)
+            seen_players.add(player_identifier)
 
     for participant_code, lookups in lookups_per_participant.items():
         bot = ParticipantBot(lookups=lookups, case_number=case_number)
@@ -87,7 +88,7 @@ def get_bots(*, session_pk, case_number) -> List[ParticipantBot]:
     return bots
 
 
-def session_bot_runner_factory(session: Session, case_number) -> SessionBotRunner:
+def session_bot_runner_factory(session: Session, case_number=None) -> SessionBotRunner:
     bot_list = get_bots(session_pk=session.pk, case_number=case_number)
     return SessionBotRunner(bots=bot_list)
 

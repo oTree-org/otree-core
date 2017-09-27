@@ -15,9 +15,9 @@ class TestBots(TestCase):
 
         session = otree.session.create_session(
             session_config_name='bots_raise',
-            num_participants=2,
+            num_participants=1,
             use_cli_bots=True,
-            bot_case_number=0,
+            browser_bots_case_number=0,
         )
 
         bot_runner = session_bot_runner_factory(session)
@@ -31,7 +31,7 @@ class TestBots(TestCase):
             session_config_name='bots_check_html',
             num_participants=3,
             use_cli_bots=True,
-            bot_case_number=0,
+            browser_bots_case_number=0,
         )
 
         p1, p2, p3 = session.get_participants()
@@ -56,7 +56,7 @@ class TestBots(TestCase):
             session_config_name='bots_bad_post',
             num_participants=1,
             use_cli_bots=True,
-            bot_case_number=0,
+            browser_bots_case_number=0,
         )
 
         bot_runner = session_bot_runner_factory(session)

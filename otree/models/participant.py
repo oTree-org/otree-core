@@ -105,8 +105,9 @@ class Participant(ModelWithVars):
         Code is more complicated because of a performance optimization
         '''
         index = self._index_in_pages
-        if not self._player_lookups or index not in self._player_lookups:
-            self._player_lookups = self._player_lookups or {}
+        if self._player_lookups is None:
+            self._player_lookups = {}
+        if index not in self._player_lookups:
             # kind of a binary search type logic. limit the number of queries
             # to log2(n). similar to the way arraylists grow.
             num_extra_lookups = len(self._player_lookups) + 1

@@ -4,7 +4,7 @@ from django.core.management import call_command
 
 from otree.models import Session
 
-from .utils import TestCase
+from .utils import TestCase, ConnectingWSClient
 from .simple import models as sg_models
 from .saving import models as sgc_models
 import six
@@ -14,6 +14,8 @@ from django.core.urlresolvers import reverse
 import splinter
 from channels.tests import ChannelTestCase, HttpClient
 from otree.channels import consumers
+import otree.channels.utils as channel_utils
+from unittest.mock import patch
 
 
 class TestCreateSessionsCommand(TestCase):
@@ -77,6 +79,7 @@ class TestCreateSessionsCommand(TestCase):
         self.assertEqual(player1.participant.vars.get(key), value)
 
     def test_edit_session_config(self):
+        '''maybe no longer needed now that we test the whole view'''
         session_config_name = 'simple'
         config_key = 'use_browser_bots'
         session_config = SESSION_CONFIGS_DICT[session_config_name]
@@ -97,7 +100,7 @@ class TestCreateSessionsCommand(TestCase):
 
 class ViewTests(ChannelTestCase):
 
-    def test_create_session(self):
+    def test_edit_config(self):
         br = splinter.Browser('django')
 
         config_name = 'edit_session_config'
@@ -133,13 +136,9 @@ class ViewTests(ChannelTestCase):
         # 'app_sequence' or 'num_demo_participants'.
         # test fail to create session
 
-        # i can't test waiting for the session
-        # because i don't know the pre_create_id
-
         message = self.get_next_message('otree.create_session', require=True)
-        consumers.create_session(message)
 
-        # test connecting before session is created
+        consumers.create_session(message)
 
         session = Session.objects.first()
         config = session.config
@@ -152,11 +151,83 @@ class ViewTests(ChannelTestCase):
             # make sure equal to new value
             self.assertEqual(config[k], v)
 
-'''
-Don't have a test case for WaitForSession consumer because it's routinely
-tested manually, and writing the test is a lot of work to test a small amount
-of code.
-'''
+    def request_simple_session(self) -> dict:
+        br = splinter.Browser('django')
+
+        create_session_url = reverse('CreateSession')
+        br.visit(create_session_url)
+
+        form_values = {
+            'session_config': 'simple',
+            'num_participants': '1',
+        }
+
+        br.fill_form(form_values)
+        button = br.find_by_value('Create')
+        button.click()
+
+        message = self.get_next_message('otree.create_session', require=True)
+        return message
+
+    def test_slow_session(self):
+        message = self.request_simple_session()
+
+        # test connecting before session is created
+        pre_create_id = message['kwargs']['pre_create_id']
+        ws_client = ConnectingWSClient(
+            path=channel_utils.wait_for_session_path(pre_create_id))
+        ws_client.connect()
+        self.assertEqual(ws_client.receive(), None)
+
+        consumers.create_session(message)
+
+        self.assertEqual(ws_client.receive(), {'status': 'ready'})
+
+    def test_slow_websocket(self):
+
+        message = self.request_simple_session()
+        consumers.create_session(message)
+
+        # test connecting after session is created
+        pre_create_id = message['kwargs']['pre_create_id']
+        ws_client = ConnectingWSClient(
+            path=channel_utils.wait_for_session_path(pre_create_id))
+        ws_client.connect()
+
+        self.assertEqual(ws_client.receive(), {'status': 'ready'})
+
+    @patch('otree.session.create_session', side_effect=ZeroDivisionError)
+    def test_failure_with_slow_websocket(self, patched):
+        message = self.request_simple_session()
+        pre_create_id = message['kwargs']['pre_create_id']
+        ws_client = ConnectingWSClient(
+            path=channel_utils.wait_for_session_path(pre_create_id))
+
+        with self.assertRaises(ZeroDivisionError):
+            consumers.create_session(message)
+        ws_client.connect()
+
+        message_dict = ws_client.receive()
+        self.assertTrue(bool(message_dict.get('error')))
+        self.assertTrue(bool(message_dict.get('traceback')))
+
+
+    @patch('otree.session.create_session', side_effect=ZeroDivisionError)
+    def test_failure_with_slow_session(self, patched):
+        message = self.request_simple_session()
+        pre_create_id = message['kwargs']['pre_create_id']
+        ws_client = ConnectingWSClient(
+            path=channel_utils.wait_for_session_path(pre_create_id))
+
+        ws_client.connect()
+        self.assertEqual(ws_client.receive(), None)
+        with self.assertRaises(ZeroDivisionError):
+            consumers.create_session(message)
+
+        message_dict = ws_client.receive()
+        self.assertTrue(bool(message_dict.get('error')))
+        self.assertTrue(bool(message_dict.get('traceback')))
+
 
 '''
 Not working because splinter doesn't seem to recognize formaction, so I get:

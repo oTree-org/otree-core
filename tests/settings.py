@@ -18,7 +18,7 @@ SECRET_KEY = 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz'
 AUTH_LEVEL = ''
 
 
-environ['DATABASE_URL'] = 'postgres://postgres@localhost/django_db'
+#environ['DATABASE_URL'] = 'postgres://postgres@localhost/django_db'
 
 
 DATABASES = {
@@ -169,7 +169,7 @@ SESSION_CONFIGS = [
     },
     {
         'name': 'bots_raise',
-        'num_demo_participants': 2,
+        'num_demo_participants': 1,
         'app_sequence': ['tests.bots_empty', 'tests.bots_raise'],
     },
     {

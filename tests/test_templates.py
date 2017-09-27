@@ -10,7 +10,7 @@ class TestTemplates(TestCase):
             session_config_name='templates_app',
             num_participants=1,
             use_cli_bots=True,
-            bot_case_number=0,
+            browser_bots_case_number=0,
         )
 
         participant = session.get_participants()[0]

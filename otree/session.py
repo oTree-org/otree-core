@@ -257,13 +257,36 @@ def create_session(
         room_name=None, for_mturk=False, use_cli_bots=False,
         is_demo=False, force_browser_bots=False,
         # i think bot_case_number is unused.
-        honor_browser_bots_config=False, bot_case_number=None,
+        honor_browser_bots_config=False, case_number_for_browser_bots=None,
         edited_session_config_fields=None):
 
     session = None
-    use_browser_bots = False
     num_subsessions = 0
     edited_session_config_fields = edited_session_config_fields or {}
+
+    try:
+        session_config = SESSION_CONFIGS_DICT[session_config_name]
+    except KeyError:
+        msg = 'Session config "{}" not found in settings.SESSION_CONFIGS.'
+        raise KeyError(msg.format(session_config_name)) from None
+    else:
+        # copy so that we don't mutate the original
+        # .copy() returns a dict, so need to convert back to SessionConfig
+        session_config = SessionConfig(session_config.copy())
+        session_config.update(edited_session_config_fields)
+
+        # check validity and converts serialized decimal & currency values
+        # back to their original data type (because they were serialized
+        # when passed through channels
+        session_config.clean()
+
+    if force_browser_bots:
+        use_browser_bots = True
+    elif (session_config.get('use_browser_bots') and
+          honor_browser_bots_config):
+        use_browser_bots = True
+    else:
+        use_browser_bots = False
 
     with transaction.atomic():
         # 2014-5-2: i could implement this by overriding the __init__ on the
@@ -272,30 +295,6 @@ def create_session(
         # 2014-9-22: preassign to groups for demo mode.
 
         otree.db.idmap.activate_cache()
-
-        try:
-            session_config = SESSION_CONFIGS_DICT[session_config_name]
-        except KeyError:
-            msg = 'Session config "{}" not found in settings.SESSION_CONFIGS.'
-            raise KeyError(msg.format(session_config_name)) from None
-        else:
-            # copy so that we don't mutate the original
-            # .copy() returns a dict, so need to convert back to SessionConfig
-            session_config = SessionConfig(session_config.copy())
-            session_config.update(edited_session_config_fields)
-
-            # check validity and converts serialized decimal & currency values
-            # back to their original data type (because they were serialized
-            # when passed through channels
-            session_config.clean()
-
-        if force_browser_bots:
-            use_browser_bots = True
-        elif (session_config.get('use_browser_bots') and
-              honor_browser_bots_config):
-            use_browser_bots = True
-        else:
-            use_browser_bots = False
 
         session = Session.objects.create(
             config=session_config,
@@ -377,9 +376,6 @@ def create_session(
         otree.db.idmap.deactivate_cache()
 
     if use_browser_bots:
-        # what about clear_browser_bots? if session is created through
-        # UI, when do we run that? it should be run when the session
-        # is deleted
         try:
             num_players_total = num_participants * num_subsessions
             otree.bots.browser.initialize_bots(
