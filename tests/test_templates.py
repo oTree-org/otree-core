@@ -9,8 +9,6 @@ class TestTemplates(TestCase):
         session = otree.session.create_session(
             session_config_name='templates_app',
             num_participants=1,
-            use_cli_bots=True,
-            browser_bots_case_number=0,
         )
 
         participant = session.get_participants()[0]

@@ -1,17 +1,16 @@
 from otree.session import create_session
 from .utils import TestCase
-from otree.bots.runner import session_bot_runner_factory
+from otree.bots.runner import run_bots
 from django.test import override_settings
 
 class TestI18N(TestCase):
     def setUp(self):
-        session = create_session('i18n', num_participants=1, use_cli_bots=True)
-        self.bot_runner = session_bot_runner_factory(session)
+        self.session = create_session('i18n', num_participants=1)
 
     @override_settings(LANGUAGE_CODE='de')
     def test_german(self):
-        self.bot_runner.play()
+        run_bots(self.session)
 
     @override_settings(LANGUAGE_CODE='zh-hans')
     def test_chinese(self):
-        self.bot_runner.play()
+        run_bots(self.session)

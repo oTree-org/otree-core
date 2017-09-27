@@ -18,7 +18,7 @@ SECRET_KEY = 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz'
 AUTH_LEVEL = ''
 
 
-#environ['DATABASE_URL'] = 'postgres://postgres@localhost/django_db'
+environ['DATABASE_URL'] = 'postgres://postgres@localhost/django_db'
 
 
 DATABASES = {

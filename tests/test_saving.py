@@ -9,12 +9,14 @@ from otree.models import Participant, Session
 from otree.models.varsmixin import ModelWithVars
 from otree.db.idmap import (
     save_objects, _get_save_objects_model_instances, use_cache)
-from .utils import TestCase, run_bots
+from .utils import TestCase
 from tests.simple.models import Player
 from otree.db.serializedfields import VarsError
 from otree.api import BaseConstants
 import django.db.models
 import numpy
+from otree.session import create_session
+from otree.bots.runner import run_bots
 
 class SavingTests(TestCase):
     # We need to make sure to flush the idmap cache here after every save in
@@ -104,7 +106,8 @@ class SavingTests(TestCase):
 
 class SavingBots(TestCase):
     def test_bots(self):
-        run_bots('saving', 1)
+        session = create_session('saving', num_participants=1)
+        run_bots(session)
 
 
 class PickleFieldTests(TestCase):

@@ -1,7 +1,7 @@
 from otree.api import Submission, SubmissionMustFail
 from .utils import TestCase
 import otree.session
-from otree.bots.runner import session_bot_runner_factory, test_bots
+from otree.bots.runner import run_bots, test_all_bots_for_session_config
 import logging
 import unittest.mock
 from tests.bots_cases.tests import PlayerBot
@@ -16,22 +16,18 @@ class TestBots(TestCase):
         session = otree.session.create_session(
             session_config_name='bots_raise',
             num_participants=1,
-            use_cli_bots=True,
-            browser_bots_case_number=0,
         )
 
-        bot_runner = session_bot_runner_factory(session)
 
         with self.assertRaises(ZeroDivisionError):
-            bot_runner.play()
+            run_bots(session)
+
 
     def test_bots_check_html(self):
 
         session = otree.session.create_session(
             session_config_name='bots_check_html',
             num_participants=3,
-            use_cli_bots=True,
-            browser_bots_case_number=0,
         )
 
         p1, p2, p3 = session.get_participants()
@@ -55,17 +51,14 @@ class TestBots(TestCase):
         session = otree.session.create_session(
             session_config_name='bots_bad_post',
             num_participants=1,
-            use_cli_bots=True,
-            browser_bots_case_number=0,
         )
 
-        bot_runner = session_bot_runner_factory(session)
 
         with self.assertRaises(BotError):
             # need to disable log output, because this triggers an exception
             # that is logged to stdout
             logging.disable(logging.CRITICAL)
-            bot_runner.play()
+            run_bots(session)
             logging.disable(logging.NOTSET)
 
     def test_bots_submission_varieties(self):
@@ -88,6 +81,6 @@ class TestBots(TestCase):
         Test that all cases are run
         '''
 
-        test_bots('bots_cases', 1, False)
+        test_all_bots_for_session_config('bots_cases', 1, run_export=False)
         self.assertTrue(patched_case1.called)
         self.assertTrue(patched_case2.called)

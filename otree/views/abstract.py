@@ -35,7 +35,8 @@ from otree.common_internal import (
     get_app_label_from_import_path, get_dotted_name, get_admin_secret_code,
     DebugTable, BotError, wait_page_thread_lock
 )
-from otree.models import Participant, Session
+from otree.models import (
+    Participant, Session, BasePlayer, BaseGroup, BaseSubsession)
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
     CompletedGroupWaitPage, PageTimeout, UndefinedFormModel,
@@ -198,7 +199,7 @@ class FormPageOrInGameWaitPage(vanilla.View):
                 response.render()
             otree.db.idmap.save_objects()
             if (
-                    self.session.use_browser_bots and
+                    self.participant.is_browser_bot and
                     'browser-bot-auto-submit' in response.content.decode(
                             'utf-8')):
                 bot = EphemeralBrowserBot(self)
@@ -287,27 +288,27 @@ class FormPageOrInGameWaitPage(vanilla.View):
 
 
     @property
-    def player(self):
+    def player(self) -> BasePlayer:
         # NOTE:
         # these properties look in the idmap cache, so they don't touch
         # the database if they are already loaded
         return self.PlayerClass.objects.get(pk=self._player_pk)
 
     @property
-    def group(self):
+    def group(self) -> BaseGroup:
         '''can't cache self._group_pk because group can change'''
         return self.player.group
 
     @property
-    def subsession(self):
+    def subsession(self) -> BaseSubsession:
         return self.SubsessionClass.objects.get(pk=self._subsession_pk)
 
     @property
-    def participant(self):
+    def participant(self) -> Participant:
         return Participant.objects.get(pk=self._participant_pk)
 
     @property
-    def session(self):
+    def session(self) -> Session:
         return Session.objects.get(pk=self._session_pk)
 
     _round_number = None
@@ -531,7 +532,7 @@ class Page(FormPageOrInGameWaitPage):
 
         self.object = self.get_object()
 
-        if self.session.use_browser_bots:
+        if self.participant.is_browser_bot:
             bot = EphemeralBrowserBot(self)
             try:
                 submission = bot.get_next_post_data()
@@ -597,7 +598,7 @@ class Page(FormPageOrInGameWaitPage):
                         ))
                 return self.form_invalid(form)
         self.before_next_page()
-        if self.session.use_browser_bots:
+        if self.participant.is_browser_bot:
             if self._index_in_pages == self.participant._max_page_index:
                 bot = EphemeralBrowserBot(self)
                 try:
@@ -723,7 +724,7 @@ class Page(FormPageOrInGameWaitPage):
                 # doesn't query the botworker (it is distinguished from bot
                 # submits by the timeout_happened flag), it will "skip ahead"
                 # and therefore confuse the bot system.
-                if not self.session.use_browser_bots:
+                if not self.participant.is_browser_bot:
                     otree.timeout.tasks.submit_expired_url.schedule(
                         (
                             self.participant.code,
@@ -1182,7 +1183,7 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
         group_id_in_subsession = self._channels_group_id_in_subsession()
 
         return channel_utils.wait_page_group_name(
-            session_pk=self.session.pk,
+            session_pk=self._session_pk,
             page_index=self._index_in_pages,
             group_id_in_subsession=group_id_in_subsession)
 
@@ -1193,7 +1194,7 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
         group_id_in_subsession = self._channels_group_id_in_subsession()
 
         return channel_utils.wait_page_path(
-            self.session.pk,
+            self._session_pk,
             self._index_in_pages,
             group_id_in_subsession
         )
@@ -1267,12 +1268,12 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
 
     def _gbat_get_channels_group_name(self):
             return channel_utils.gbat_group_name(
-                session_pk=self.session.pk, page_index=self._index_in_pages,
+                session_pk=self._session_pk, page_index=self._index_in_pages,
             )
 
     def _gbat_socket_url(self):
         return channel_utils.gbat_path(
-            self.session.id, self._index_in_pages,
+            self._session_pk, self._index_in_pages,
             self.player._meta.app_config.name, self.player.id)
 
 

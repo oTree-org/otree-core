@@ -4,10 +4,11 @@ import otree.forms
 import otree.widgets
 from otree.forms import ModelForm
 
-from .utils import TestCase, run_bots
+from .utils import TestCase
 from .models import FormFieldModel
 from otree.api import BasePlayer, models, currency_range
-
+from otree.session import create_session
+from otree.bots.runner import run_bots
 
 class TestModelForm(ModelForm):
 
@@ -121,4 +122,5 @@ class UseFloppyformWidgetsTests(TestCase):
 
 class FormTests(TestCase):
     def test_bots(self):
-        run_bots('form_validation', num_participants=1)
+        session = create_session('form_validation', num_participants=1)
+        run_bots(session)

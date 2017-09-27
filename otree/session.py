@@ -254,11 +254,9 @@ SESSION_CONFIGS_DICT = get_session_configs_dict()
 def create_session(
         session_config_name, *, label='', num_participants=None,
         pre_create_id=None,
-        room_name=None, for_mturk=False, use_cli_bots=False,
-        is_demo=False, force_browser_bots=False,
-        # i think bot_case_number is unused.
-        honor_browser_bots_config=False, case_number_for_browser_bots=None,
-        edited_session_config_fields=None):
+        room_name=None, for_mturk=False,
+        is_demo=False,
+        edited_session_config_fields=None) -> Session:
 
     session = None
     num_subsessions = 0
@@ -280,14 +278,6 @@ def create_session(
         # when passed through channels
         session_config.clean()
 
-    if force_browser_bots:
-        use_browser_bots = True
-    elif (session_config.get('use_browser_bots') and
-          honor_browser_bots_config):
-        use_browser_bots = True
-    else:
-        use_browser_bots = False
-
     with transaction.atomic():
         # 2014-5-2: i could implement this by overriding the __init__ on the
         # Session model, but I don't really know how that works, and it seems
@@ -300,7 +290,6 @@ def create_session(
             config=session_config,
             label=label,
             _pre_create_id=pre_create_id,
-            use_browser_bots=use_browser_bots,
             is_demo=is_demo,
             num_participants=num_participants,
             ) # type: Session
@@ -335,8 +324,6 @@ def create_session(
             [{
                 'id_in_session': id_in_session,
                 'start_order': j,
-                # check if id_in_session is in the bots ID list
-                '_is_bot': use_cli_bots or use_browser_bots,
              }
              for id_in_session, j in enumerate(start_order, start=1)])
 
@@ -375,19 +362,11 @@ def create_session(
         otree.db.idmap.save_objects()
         otree.db.idmap.deactivate_cache()
 
-    if use_browser_bots:
-        try:
-            num_players_total = num_participants * num_subsessions
-            otree.bots.browser.initialize_bots(
-                session_pk=session.pk, num_players_total=num_players_total,
-            )
-        except:
-            session.delete()
-            raise
-
-    session._set_admin_report_app_names()
-    session.ready = True
-    session.save()
+        # 2017-09-27: moving this inside the transaction
+        session._set_admin_report_app_names()
+        session.save()
+        # we don't need to mark it ready=True here...because it's in a
+        # transaction
 
     # this should happen after session.ready = True
     if room_name is not None:

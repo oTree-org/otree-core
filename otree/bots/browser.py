@@ -10,7 +10,7 @@ import otree.common_internal
 from otree.models.participant import Participant
 from otree.common_internal import get_redis_conn
 
-from .runner import get_bots
+from .runner import make_bots
 from .bot import ParticipantBot
 import random
 from otree.models_concrete import ParticipantToPlayerLookup
@@ -44,20 +44,21 @@ class Worker(object):
         self.browser_bots = {}
         self.prepared_submits = {}
 
-    def initialize_session(self, session_pk):
+    def initialize_session(self, session_pk, case_number):
         self.prune()
         self.participants_by_session[session_pk] = []
 
         session = Session.objects.get(pk=session_pk)
-        # choose one randomly
-        from otree.session import SessionConfig
-        config = SessionConfig(session.config)
-        num_cases = config.get_num_bot_cases()
-        # choose bot case number randomly...maybe reconsider this?
-        # we can only run one.
-        case_number = random.choice(range(num_cases))
+        if case_number is None:
+            # choose one randomly
+            from otree.session import SessionConfig
+            config = SessionConfig(session.config)
+            num_cases = config.get_num_bot_cases()
+            case_number = random.choice(range(num_cases))
 
-        bots = get_bots(session_pk=session_pk, case_number=case_number)
+        bots = make_bots(
+            session_pk=session_pk, case_number=case_number, use_browser_bots=True
+        )
         for bot in bots:
             self.participants_by_session[session_pk].append(
                 bot.participant_code)
@@ -142,41 +143,45 @@ class Worker(object):
     def redis_listen(self):
         print('botworker is listening for messages through Redis')
         while True:
-            retval = None
+            self.process_one_message()
 
-            # blpop returns a tuple
-            result = None
+    def process_one_message(self):
+        '''break it out into a separate method for testing purposes'''
+        retval = None
 
-            # put it in a loop so that we can still receive KeyboardInterrupts
-            # otherwise it will block
-            while result is None:
-                result = self.redis_conn.blpop(REDIS_KEY_PREFIX, timeout=3)
+        # blpop returns a tuple
+        result = None
 
-            key, message_bytes = result
-            message = json.loads(message_bytes.decode('utf-8'))
-            response_key = message['response_key']
+        # put it in a loop so that we can still receive KeyboardInterrupts
+        # otherwise it will block
+        while result is None:
+            result = self.redis_conn.blpop(REDIS_KEY_PREFIX, timeout=3)
 
-            try:
-                cmd = message['command']
-                args = message.get('args', [])
-                kwargs = message.get('kwargs', {})
-                method = self.get_method(cmd)
-                retval = method(*args, **kwargs)
-            except Exception as exc:
-                # request_error means the request received through Redis
-                # was invalid.
-                # response_error means the botworker raised while processing
-                # the request.
-                retval = {
-                    'response_error': repr(exc),
-                    'traceback': traceback.format_exc()
-                }
-                # don't raise, because then this would crash.
-                # logger.exception() will record the full traceback
-                logger.exception(repr(exc))
-            finally:
-                retval_json = json.dumps(retval or {})
-                self.redis_conn.rpush(response_key, retval_json)
+        key, message_bytes = result
+        message = json.loads(message_bytes.decode('utf-8'))
+        response_key = message['response_key']
+
+        try:
+            cmd = message['command']
+            args = message.get('args', [])
+            kwargs = message.get('kwargs', {})
+            method = self.get_method(cmd)
+            retval = method(*args, **kwargs)
+        except Exception as exc:
+            # request_error means the request received through Redis
+            # was invalid.
+            # response_error means the botworker raised while processing
+            # the request.
+            retval = {
+                'response_error': repr(exc),
+                'traceback': traceback.format_exc()
+            }
+            # don't raise, because then this would crash.
+            # logger.exception() will record the full traceback
+            logger.exception(repr(exc))
+        finally:
+            retval_json = json.dumps(retval or {})
+            self.redis_conn.rpush(response_key, retval_json)
 
 
 class BotWorkerPingError(Exception):
@@ -232,11 +237,11 @@ def load_redis_response_dict(response_bytes):
     return response
 
 
-def initialize_bots_redis(*, redis_conn, session_pk, num_players_total):
+def initialize_bots_redis(*, redis_conn, session_pk, case_number=None):
     response_key = '{}-initialize-{}'.format(REDIS_KEY_PREFIX, session_pk)
     msg = {
         'command': 'initialize_session',
-        'kwargs': {'session_pk': session_pk},
+        'kwargs': {'session_pk': session_pk, 'case_number': case_number},
         'response_key': response_key,
     }
     redis_conn.rpush(REDIS_KEY_PREFIX, json.dumps(msg))
@@ -246,7 +251,10 @@ def initialize_bots_redis(*, redis_conn, session_pk, num_players_total):
     # timeout must be int.
     # my tests show that it can initialize about 3000 players per second.
     # so 300-500 is conservative, plus pad for a few seconds
-    timeout = int(6 + num_players_total / 500)
+    #timeout = int(6 + num_players_total / 500)
+    timeout = 6 # FIXME: adjust to number of players
+    # maybe number of ParticipantToPlayerLookups?
+
     result = redis_conn.blpop(response_key, timeout=timeout)
     if result is None:
         raise Exception(
@@ -258,19 +266,21 @@ def initialize_bots_redis(*, redis_conn, session_pk, num_players_total):
     return {'ok': True}
 
 
-def initialize_bots_in_process(*, session_pk: int):
-    browser_bot_worker.initialize_session(session_pk=session_pk)
+def initialize_bots_in_process(*, session_pk: int, case_number):
+    browser_bot_worker.initialize_session(
+        session_pk=session_pk, case_number=case_number)
 
 
-def initialize_bots(*, session_pk, num_players_total):
+def initialize_bots(*, session: Session, case_number):
+
     if otree.common_internal.USE_REDIS:
         initialize_bots_redis(
             redis_conn=get_redis_conn(),
-            session_pk=session_pk,
-            num_players_total=num_players_total
+            session_pk=session.pk,
+            case_number=case_number,
         )
     else:
-        initialize_bots_in_process(session_pk=session_pk)
+        initialize_bots_in_process(session_pk=session.pk, case_number=case_number)
 
 def redis_flush_bots(redis_conn):
     for key in redis_conn.scan_iter(match='{}*'.format(REDIS_KEY_PREFIX)):

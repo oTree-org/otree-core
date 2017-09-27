@@ -6,7 +6,7 @@ from otree.views.abstract import Page
 from otree.db.idmap import (
     save_objects, use_cache)
 import django.test
-from .utils import TestCase, run_bots
+from .utils import TestCase
 import tests.simple.models as simple_models
 from otree.session import create_session
 

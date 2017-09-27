@@ -23,6 +23,7 @@ from otree.models_concrete import (
     FailedSessionCreation, ParticipantRoomVisit,
     FAILURE_MESSAGE_MAX_LENGTH, BrowserBotsLauncherSessionCode)
 from otree.room import ROOM_DICT
+import otree.bots.browser
 
 logger = logging.getLogger(__name__)
 
@@ -164,10 +165,15 @@ def create_session(message):
 
     kwargs = message['kwargs']
 
-    # because it's launched through web UI
-    kwargs['honor_browser_bots_config'] = True
     try:
-        otree.session.create_session(**kwargs)
+        session = otree.session.create_session(**kwargs)
+        if message['use_browser_bots']:
+            otree.bots.browser.initialize_bots(
+                session=session,
+                case_number=None
+            )
+        session.ready_for_browser = True
+        session.save()
     except Exception as e:
 
         # full error message is printed to console (though sometimes not?)
@@ -212,7 +218,7 @@ class WaitForSession(OTreeJsonWebsocketConsumer):
 
         # in case message was sent before this web socket connects
         if Session.objects.filter(
-                _pre_create_id=pre_create_id, ready=True).exists():
+                _pre_create_id=pre_create_id, ready_for_browser=True).exists():
             self.group_send(group_name, {'status': 'ready'})
         else:
             failure = FailedSessionCreation.objects.filter(

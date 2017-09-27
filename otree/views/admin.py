@@ -161,8 +161,14 @@ class CreateSession(vanilla.FormView):
                 edited_session_config_fields[k] = float(
                     edited_session_config_fields[k])
         session_kwargs['edited_session_config_fields'] = edited_session_config_fields
+
+
+        use_browser_bots = edited_session_config_fields.get('use_browser_bots')
+        if use_browser_bots is None:
+            use_browser_bots = config.get('use_browser_bots', False)
+
         return create_session_and_redirect(
-            session_kwargs)
+            session_kwargs, use_browser_bots=use_browser_bots)
 
 
 class WaitUntilSessionCreated(GenericWaitPageMixin, vanilla.GenericView):
@@ -232,11 +238,11 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
         session = self.session
         room = session.get_room()
 
-        context = super(SessionStartLinks, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         sqlite = settings.DATABASES['default']['ENGINE'].endswith('sqlite3')
         context.update({
-            'use_browser_bots': session.use_browser_bots,
+            'use_browser_bots': session.use_browser_bots(),
             'sqlite': sqlite,
             'runserver': 'runserver' in sys.argv
         })
@@ -667,13 +673,13 @@ class CreateBrowserBotsSession(vanilla.View):
     def post(self, request, *args, **kwargs):
         num_participants = int(request.POST['num_participants'])
         session_config_name = request.POST['session_config_name']
-        bot_case_number = int(request.POST['bot_case_number'])
+        case_number = int(request.POST['case_number'])
         session = create_session(
             session_config_name=session_config_name,
             num_participants=num_participants,
-            browser_bots_case_number=bot_case_number,
-            force_browser_bots=True
         )
+        otree.bots.browser.initialize_bots(
+            session=session, case_number=case_number)
         BrowserBotsLauncherSessionCode.objects.update_or_create(
             # i don't know why the update_or_create arg is called 'defaults'
             # because it will update even if the instance already exists

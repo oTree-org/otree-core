@@ -97,6 +97,9 @@ class Participant(ModelWithVars):
     _browser_bot_finished = models.BooleanField(default=False)
 
     _is_bot = models.BooleanField(default=False)
+    # can't start with an underscore because used in template
+    # can't end with underscore because it's a django field (fields.E001)
+    is_browser_bot = models.BooleanField(default=False)
 
     _player_lookups = None
 

@@ -96,7 +96,7 @@
             initWebSocket();
 
 
-            {% if session.use_browser_bots %}
+            {% if participant.is_browser_bot %}
                 {# submit the form instantly #}
                 {# below comment is used as a flag #}
                 // browser-bot-auto-submit

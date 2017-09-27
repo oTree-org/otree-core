@@ -18,12 +18,12 @@ import codecs
 import otree.export
 from otree.constants_internal import AUTO_NAME_BOTS_EXPORT_FOLDER
 from otree.models_concrete import ParticipantToPlayerLookup
-from otree.models import Session
+from otree.models import Session, Participant
 
 logger = logging.getLogger(__name__)
 
 
-class SessionBotRunner(object):
+class SessionBotRunner:
     def __init__(self, bots: List[ParticipantBot]):
         self.bots = OrderedDict()
 
@@ -65,7 +65,12 @@ class SessionBotRunner(object):
             bot.open_start_url()
 
 
-def get_bots(*, session_pk, case_number) -> List[ParticipantBot]:
+def make_bots(*, session_pk, case_number, use_browser_bots) -> List[ParticipantBot]:
+    update_kwargs = {'_is_bot': True}
+    if use_browser_bots:
+        update_kwargs['is_browser_bot'] = True
+
+    Participant.objects.filter(session_id=session_pk).update(**update_kwargs)
     bots = []
 
     # can't use .distinct('player_pk') because it only works on Postgres
@@ -88,13 +93,19 @@ def get_bots(*, session_pk, case_number) -> List[ParticipantBot]:
     return bots
 
 
-def session_bot_runner_factory(session: Session, case_number=None) -> SessionBotRunner:
-    bot_list = get_bots(session_pk=session.pk, case_number=case_number)
-    return SessionBotRunner(bots=bot_list)
+def run_bots(session: Session, case_number=None):
+    bot_list = make_bots(
+        session_pk=session.pk, case_number=case_number, use_browser_bots=False
+    )
+    runner = SessionBotRunner(bots=bot_list)
+    runner.play()
 
 
+# function name needs to start with "test" for pytest to discover it
+# in this module
 @pytest.mark.django_db(transaction=True)
-def test_bots(session_config_name, num_participants, run_export):
+def test_all_bots_for_session_config(
+        session_config_name, num_participants, *, run_export):
     config_name = session_config_name
     session_config = otree.session.SESSION_CONFIGS_DICT[config_name]
 
@@ -114,11 +125,9 @@ def test_bots(session_config_name, num_participants, run_export):
         session = otree.session.create_session(
             session_config_name=config_name,
             num_participants=num_participants,
-            use_cli_bots=True,
         )
 
-        bot_runner = session_bot_runner_factory(session, case_number=case_number)
-        bot_runner.play()
+        run_bots(session, case_number=case_number)
         logger.info('Bots completed session')
     if run_export:
         # bug: if the user tests multiple session configs,
@@ -150,7 +159,6 @@ def test_bots(session_config_name, num_participants, run_export):
 
 
 def run_pytests(**kwargs):
-
     session_config_name = kwargs['session_config_name']
     num_participants = kwargs['num_participants']
     verbosity = kwargs['verbosity']

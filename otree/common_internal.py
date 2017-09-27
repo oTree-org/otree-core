@@ -181,14 +181,15 @@ def validate_alphanumeric(identifier, identifier_description):
     )
 
 
-def create_session_and_redirect(session_kwargs):
+def create_session_and_redirect(session_kwargs, *, use_browser_bots):
     pre_create_id = uuid.uuid4().hex
     session_kwargs['pre_create_id'] = pre_create_id
     channels_group_name = channel_utils.create_session_group_name(
         pre_create_id)
     channels.Channel('otree.create_session').send({
         'kwargs': session_kwargs,
-        'channels_group_name': channels_group_name
+        'channels_group_name': channels_group_name,
+        'use_browser_bots': use_browser_bots,
     })
 
     wait_for_session_url = reverse(

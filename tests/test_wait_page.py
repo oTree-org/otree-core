@@ -1,6 +1,6 @@
 from otree.session import create_session
 from otree.bots.bot import ParticipantBot
-from .utils import TestCase, run_bots, ConnectingWSClient
+from .utils import TestCase, ConnectingWSClient
 from unittest import mock
 import tests.wait_page.views
 import splinter
@@ -8,11 +8,13 @@ import tests.waitpage_template.models
 from channels.tests import ChannelTestCase
 import tests.wait_page.views
 import tests.waitpage_skip_race.views
+from otree.session import create_session
+from otree.bots.runner import run_bots
 
 class TestWaitForAllGroups(TestCase):
     def setUp(self):
         session = create_session(
-            'wait_page', num_participants=4, use_cli_bots=True)
+            'wait_page', num_participants=4)
         subsession = session.get_subsessions()[0]
         self.group1 = subsession.get_groups()[0]
 
@@ -42,7 +44,7 @@ class TestWaitForAllGroups(TestCase):
 class TestSkipWaitPage(TestCase):
     def setUp(self):
         session = create_session(
-            'skip_wait_page', num_participants=2, use_cli_bots=True)
+            'skip_wait_page', num_participants=2)
         bots = []
         for participant in session.get_participants():
             bot = ParticipantBot(participant, load_player_bots=False)
@@ -67,7 +69,10 @@ class TestWaitPageMisuse(TestCase):
 
     def test_attribute_access(self):
         '''Test accessing self.player, self.group, self.participant in a wait page'''
-        run_bots('waitpage_misuse', num_participants=2)
+
+        session = create_session('waitpage_misuse', num_participants=2)
+        run_bots(session)
+
 
 
 class TemplateTests(TestCase):

@@ -42,7 +42,7 @@ class Session(ModelWithVars):
         max_length=300, null=True, blank=True,
         help_text='For internal record-keeping')
 
-    ready = models.BooleanField(default=False)
+    ready_for_browser = models.BooleanField(default=False)
 
     code = models.CharField(
         default=random_chars_8,
@@ -83,7 +83,8 @@ class Session(ModelWithVars):
 
     _pre_create_id = models.CharField(max_length=255, db_index=True, null=True)
 
-    use_browser_bots = models.BooleanField(default=False)
+    def use_browser_bots(self):
+        return self.participant_set.filter(is_browser_bot=True).exists()
 
     # if the user clicks 'start bots' twice, this will prevent the bots
     # from being run twice.

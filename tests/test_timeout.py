@@ -45,7 +45,6 @@ class TestTimeout(TestCase):
         session = create_session(
             session_config_name='timeout_submission',
             num_participants=1,
-            use_cli_bots=True,
         )
         self.participant = session.get_participants()[0]
 
@@ -73,18 +72,17 @@ class TestTimeout(TestCase):
         # if you call it a second time, it should be the same
         self.assertEqual(remaining_seconds, remaining_seconds2 + 5)
 
+    @patch('otree.common_internal.USE_REDIS', True)
     def test_timeout_scheduling(self):
         '''Loading a page with timeout should schedule a page submission'''
 
         with patch.object(otree.timeout.tasks.submit_expired_url, 'schedule') as schedule_method:
             page = self.get_page(PageWithNoTimeout, self.participant)
             page.remaining_timeout_seconds()
-
             self.assertFalse(schedule_method.called)
 
             page = self.get_page(PageWithTimeout, self.participant)
             page.remaining_timeout_seconds()
-
             self.assertTrue(schedule_method.called)
 
         # calling remaining_timeout_seconds() twice in the same request should
@@ -101,7 +99,6 @@ class TestTimeoutSubmission(TestCase):
         create_session(
             session_config_name='timeout_submission',
             num_participants=1,
-            use_cli_bots=True,
         )
 
     def submit_form(self, values, timeout_happened):

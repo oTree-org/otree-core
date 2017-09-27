@@ -209,10 +209,6 @@ def is_wait_page(response):
         constants_internal.get_param_truth_value)
 
 
-def refresh_from_db(obj):
-    return type(obj).objects.get(pk=obj.pk)
-
-
 class ParticipantBot(test.Client):
 
     def __init__(

@@ -37,6 +37,8 @@ def runtests(argv):
     django.setup()
 
     from django.core.management.commands.test import Command
+    import otree.common_internal
+    otree.common_internal.USE_REDIS = False
 
     class TestCommand(Command):
         def execute(self, *args, **options):

@@ -17,8 +17,6 @@ from django.core.management import call_command
 from django.test.utils import override_settings
 
 from otree.api import Page
-from otree.session import create_session
-from otree.bots.runner import session_bot_runner_factory
 
 
 class BlankTemplatePage(Page):
@@ -145,13 +143,6 @@ class OTreePhantomBrowser(splinter.browser.PhantomJSWebDriver):
 
     def go(self, relative_url):
         self.visit(self.live_server_url + relative_url)
-
-
-def run_bots(session_config_name, num_participants):
-    session = create_session(
-        session_config_name, num_participants=num_participants, use_cli_bots=True)
-    bot_runner = session_bot_runner_factory(session)
-    bot_runner.play()
 
 
 class ConnectingWSClient(HttpClient):
