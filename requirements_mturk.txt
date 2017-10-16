@@ -1,0 +1,19 @@
+# pyopenssl
+
+asn1crypto==0.22.0
+cffi==1.10.0
+cryptography==2.0
+idna==2.5
+pyasn1==0.2.3
+pyasn1-modules==0.0.9
+pycparser==2.18
+pyOpenSSL==17.2.0
+service-identity==17.0.0
+
+# boto3
+boto3==1.4.4
+botocore==1.5.86
+docutils==0.13.1
+jmespath==0.9.3
+python-dateutil==2.6.1
+s3transfer==0.1.10

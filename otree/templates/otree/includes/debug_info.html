@@ -1,0 +1,27 @@
+{% load staticfiles otree_tags %}
+{# spaces to make debug info less distracting #}
+<br/>
+<br/>
+<br/>
+<div class="well">
+<h4>Debug info</h4>
+{% include 'otree/includes/hidden_form_errors.html' %}
+{% for table in view.debug_tables %}
+    <div class="panel panel-default">
+        <div class="panel-heading">{{ table.title }}</div>
+        <div class="scrollable">
+            <table class="table table-hover table-debug">
+                {% for k, v in table.rows %}
+                    <tr>
+                        <td class="debug-var-name">{{ k }}</td>
+                        <td class="debug-var-value">
+                            <code>{{ v }}</code>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+{% endfor %}
+
+</div>

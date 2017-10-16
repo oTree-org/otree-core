@@ -1,0 +1,107 @@
+{% load floppyforms otree_tags %}
+
+<form action="" method="post" role="form" class="form" id="form">
+    {% csrf_token %}
+    <input type="hidden" value="{{ request.path }}" name="origin_url"/>
+    {% form form using %}
+        {% formconfig row using "floppyforms/rows/bootstrap.html" %}
+        {% formrow form.session_config %}
+
+        <div class="form-group{% if form.num_participants.errors %} has-error{% endif %} required">
+            <label class="control-label" for="id_num_participants">
+                {{ form.num_participants.label }}
+            </label>
+            <div class="controls  field-num_participants">
+                {% block widget %}
+                    {{ form.num_participants }}
+                {% endblock %}
+                {% if form.num_participants.errors %}
+                    {% block errors %}
+                        {% include "floppyforms/errors.html" with errors=form.num_participants.errors %}{% endblock %}
+                {% endif %}
+                {% for config in configs %}
+                    <div id="lcm-{{ config.name }}" class="lcm"
+                         style="display:none">
+                        <p>Must be a multiple of {{ config.get_lcm }}</p></div>
+                {% endfor %}
+                <p class="help-block">{{ form.num_participants.help_text }}</p>
+            </div>
+            {{ form.is_for_mturk }}
+        </div>
+
+        <input class="btn btn-primary next-button"
+               value="Create"
+               type="submit">
+
+        <br><br>
+        {% for config in configs %}
+
+            <div class="edit-config"
+                 id="edit-config-{{ config.name }}" style="display: none">
+                <h4>
+                    <a data-toggle="collapse"
+                       href="#edit-config-table-{{ config.name }}"
+                       class="btn-block">
+                        Configure session
+                        <span class="glyphicon glyphicon-cog"></span>
+                    </a>
+                </h4>
+                <div class="collapse"
+                     id="edit-config-table-{{ config.name }}">
+                    {% if config.custom_editable_fields %}
+                        <h5>Custom</h5>
+                        <table class="table">
+                            {% for field in config.custom_editable_fields_html %}
+                                {{ field|safe }}
+                            {% endfor %}
+                        </table>
+                    {% else %}
+                        <p><i>
+                            You can make more properties configurable
+                            by adding them to your session config in
+                            settings.py.
+                        </i></p>
+                    {% endif %}
+
+                    {# we only need to clarify that these are built-in if there are also custom ones #}
+                    {% if config.custom_editable_fields %}
+                        <h5>General</h5>{% endif %}
+                    <table class="table">
+                        {% for field in config.builtin_editable_fields_html %}
+                            {{ field|safe }}
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+
+
+            {% include "otree/includes/SessionInfo.html" with config=config config_display="none" %}
+
+        {% endfor %}
+    {% endform %}
+</form>
+
+<script>
+    function showSessionConfigInfo(sessionconfigname) {
+        $('.summary').hide();
+        $('.edit-config').hide();
+        $('#session-config-' + sessionconfigname).show();
+        $('#edit-config-' + sessionconfigname).show();
+        $('.lcm').hide();
+        $('#lcm-' + sessionconfigname).show();
+    }
+
+    $(document).ready(function () {
+        $('.summary').hide();
+        $('.edit-config').hide();
+        $('.lcm').hide();
+        var current_session_config = $('#id_session_config').val();
+        if (current_session_config) {
+            showSessionConfigInfo(current_session_config);
+        }
+
+        $('#id_session_config').change(function () {
+            showSessionConfigInfo($(this).val());
+        })
+    });
+</script>

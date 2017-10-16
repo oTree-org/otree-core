@@ -1,0 +1,156 @@
+{% extends 'otree/Base.html' %}
+{% load i18n %}
+{% load staticfiles %}
+{% block head_title %}{{ title_text }}{% endblock %}
+
+{% block internal_styles %}
+    {{ block.super }}
+    <style>
+        body {
+            background-color: #c0c0c0;
+        }
+
+        .panel-primary {
+            background: white;
+            border: 1px solid #3b84c3;
+            border-radius: 5px;
+            box-shadow: 0 0 20px #999;
+            /*width: 940px; */
+            margin: 22px auto;
+        }
+
+        panel-body {
+            margin-top: 10px;
+        }
+
+        .page-header {
+           border: 1px solid #c0c0c0;
+        }
+
+        .otree-wait-page {
+            max-width:970px
+        }
+
+        .progress-bar {
+            width: 100%;
+        }
+    </style>
+{% endblock %}
+
+{% block body_main %}
+
+<!-- use the selector .otree-wait-page -->
+<div class="otree-wait-page container" id="otree-wait-page-body">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <!-- use the selector .otree-wait-page__title -->
+            <h3 class="otree-wait-page__title panel-title" id="otree-wait-page-title-text">{% block title %}{{ title_text }}{% endblock %}</h3>
+        </div>
+        <div class="panel-body">
+            <div id="_otree-server-error" class="alert alert-danger" style="display:none">
+                {% blocktrans trimmed %}An error occurred. Please check the logs or ask the administrator for help.{% endblocktrans %}
+            </div>
+            <div id="error-traceback" class="alert alert-danger" style="display:none"></div>
+            {% block content %}
+            <!-- use the selector .otree-wait-page__body -->
+            <p class="otree-wait-page__body" id="otree-wait-page-body-text">{{ body_text }}</p>
+            {% endblock %}
+            <div class="progress progress-striped active">
+                <div class="progress-bar" role="progressbar"></div>
+            </div>
+        </div>
+    </div>
+    {% if view.is_debug %}
+        {% include 'otree/includes/debug_info.html' %}
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block internal_scripts %}
+    {{ block.super }}
+    <!-- this is an HTML file rather than JavaScript static file because context variables need to be passed to it -->
+<script type="text/javascript">
+$(document).ready(function () {
+
+    var socket;
+
+    initWebSocket();
+
+    function initWebSocket() {
+
+        var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+        var ws_path = ws_scheme + '://' + window.location.host + "{{ view.socket_url|safe }}";
+        socket = new ReconnectingWebSocket(ws_path);
+        socket.onmessage = function(e) {
+
+            var data = JSON.parse(e.data);
+
+            // Handle errors
+            if (data.error) {
+                // maybe the div's default text doesn't get shown
+                $("#_otree-server-error").text(data.error);
+                $("#_otree-server-error").show();
+                if (data.traceback) {
+                    $("#error-traceback").html('<pre>' + data.traceback + '</pre>');
+                    $("#error-traceback").show();
+                }
+                return;
+            }
+
+
+            console.log('Received redirect message', e.data);
+            window.location.href = '{{ view.redirect_url|safe }}';
+
+        };
+        socket.onopen = function() {
+            console.log('WebSocket connected');
+        };
+        socket.onclose = function() {
+            console.log('WebSocket disconnected');
+        };
+    }
+
+    {% if view.group_by_arrival_time %}
+
+        {% comment %}
+        We should use an AJAX heartbeat rather than relying on just
+        refreshing the page, because on slow servers, this could take a long time,
+        and could be disruptive.
+        We can do this refresh frequently, without worrying about overloading the server
+        or disrupting the user.
+        And other wait pages in oTree don't refresh frequently, so we should be consistent.
+        The extra AJAX view doesn't really add much complexity.
+        Also it makes it easier for folks to test this functionality.
+        {% endcomment %}
+        function heartbeat() {
+            var args = {
+                type: "GET",
+                url: '{% url "ParticipantHeartbeatGBAT" participant.code %}',
+                // necessary for IE
+                cache: false
+            };
+            $.ajax(args);
+        }
+
+        var SECOND = 1000;
+        window.setInterval(heartbeat, 10 * SECOND);
+
+        {% comment %}
+        Refresh the whole page, because if we just used an AJAX heartbeat,
+        then someone could go offline then comes back online,
+        and then enough people would be online, but nothing happens because
+        try_to_regroup is not re-executed. that only happens with a full page load.
+        {% endcomment %}
+
+        window.setInterval(function() {
+                  window.location.reload();
+                }, 60*SECOND);
+
+
+    {% endif %}
+
+
+ });
+ </script>
+ {% endblock %}
+

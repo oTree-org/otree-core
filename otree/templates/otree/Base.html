@@ -1,0 +1,41 @@
+{% load staticfiles %}
+{% load i18n %}
+{% load floppyforms otree_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{% block head_title %}{% block title %}
+    {% endblock %}{% endblock %}</title>
+
+    <meta name="description"
+          content="otree">
+    <meta name="keywords"
+          content="otree">
+
+    {% block internal_styles %}
+        {% include 'otree/includes/InternalStyles.html' %}
+    {% endblock %}
+    {% block global_styles %}
+    {% endblock %}
+    {% block app_styles %}
+    {% endblock %}
+    {# 'styles' block is for page-specific styles (for 3rd party programmers only) #}
+    {% block styles %}
+    {% endblock %}
+</head>
+<body>
+{% block body_main %}{% endblock %}
+
+{% block internal_scripts %}
+    {% include 'otree/includes/InternalScripts.html' %}
+{% endblock %}
+{% block global_scripts %}
+{% endblock %}
+{% block app_scripts %}
+{% endblock %}
+{# 'scripts' block is for page-specific scripts (for 3rd party programmers only) #}
+{% block scripts %}
+{% endblock %}
+</body>
+</html>

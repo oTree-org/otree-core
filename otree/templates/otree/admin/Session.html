@@ -1,0 +1,63 @@
+{% extends "otree/BaseAdmin.html" %}
+{% load otree_tags floppyforms %}
+
+{% block head_title %}
+{{ session.config.display_name }}: session '{{ session.code }}'{% if session.is_demo %} (demo) {% endif %}
+{% endblock %}
+
+{% block title %}
+{{ session.config.display_name }}: session <code>{{ session.code }}</code>{% if session.is_demo %} (demo) {% endif %}
+{% endblock %}
+
+{% block menus %}
+<nav class="navbar">
+    <div class="container-fluid">
+        <ul class="nav nav-pills nav-justified">
+            <li role="presentation" class="{% active_page request 'SessionDescription' session.code %}">
+                <a href="{% url 'SessionDescription' session.code %}"><span class="glyphicon glyphicon-pushpin"></span> Description</a>
+            </li>
+            <li role="presentation" class="{% active_page request 'SessionStartLinks' session.code %}">
+                <a href="{% url 'SessionStartLinks' session.code %}"><span class="glyphicon glyphicon-link"></span> Links</a>
+            </li>
+            {% if not session.is_demo %}
+            <li role="presentation" class="{% active_page request 'SessionEditProperties' session.code %}">
+                <a href="{% url 'SessionEditProperties' session.code %}"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
+            </li>
+            {% endif %}
+            <li role="presentation" class="{% active_page request 'SessionMonitor' session.code %}">
+                <a href="{% url 'SessionMonitor' session.code %}"><span class="glyphicon glyphicon-eye-open"></span> Monitor</a>
+            </li>
+            <li role="presentation" class="{% active_page request 'SessionData' session.code %}">
+                <a href="{% url 'SessionData' session.code %}"><span class="glyphicon glyphicon-list-alt"></span> Data</a>
+            </li>
+            {% if session.is_for_mturk %}
+            <li role="presentation" class="{% active_page request 'MTurkSessionPayments' session.code %}">
+                <a href="{% url 'MTurkSessionPayments' session.code %}">
+            {% else %}
+            <li role="presentation" class="{% active_page request 'SessionPayments' session.code %}">
+                <a href="{% url 'SessionPayments' session.code %}">
+            {% endif %}
+                    <span class="glyphicon glyphicon-usd"></span> Payments
+                </a>
+            </li>
+            {% if session.has_admin_report %}
+            <li role="presentation" class="{% active_page request 'AdminReport' session.code %}">
+                <a href="{% url 'AdminReport' session.code %}"><span class="glyphicon glyphicon-stats"></span> Report</a>
+            {% endif %}
+            {% if session.is_for_mturk %}
+            <li role="presentation" class="{% active_page request 'MTurkCreateHIT' session.code %}">
+                <a href="{% url 'MTurkCreateHIT' session.code %}"><span class="glyphicon glyphicon-cloud"></span> MTurk</a>
+            </li>
+            {% endif %}
+            {% if session.is_demo %}
+            <li role="presentation">
+                <a href="{% url 'CreateDemoSession' session.config.name %}" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Recreate session from scratch. You can also copy this link and share with others.">
+                    <span class="glyphicon glyphicon-refresh"></span> New
+                </a>
+            </li>
+            {% endif %}
+
+        </ul>
+    </div><!-- /.container-fluid -->
+</nav>
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends "otree/BaseAdmin.html" %}
+
+{% block title %}
+    Data Export
+{% endblock %}
+
+
+{% block content %}
+
+    {% if db_is_empty %}
+        <p>No sessions have taken place yet.</p>
+    {% else %}
+
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">Citation requirement</h3>
+            </div>
+            <div class="panel-body">
+                <p>
+                    If you publish research conducted using oTree,
+                    you are required by the oTree license to cite <a
+                        href="http://dx.doi.org/10.1016/j.jbef.2015.12.001">this
+                    paper</a>.
+                </p>
+                <p>
+                    Citation:
+                </p>
+                <p>
+                    Chen, D.L., Schonger, M., Wickens, C., 2016. oTree - An
+                    open-source
+                    platform for laboratory, online and field experiments.
+                    Journal of Behavioral and Experimental Finance, vol 9: 88-97
+                </p>
+
+            </div>
+        </div>
+
+        <h3>All apps</h3>
+        <p>
+
+            <a href="{% url 'ExportWide' %}?xlsx=1"><b>Excel</b></a> |
+            <a href="{% url 'ExportWide' %}"><b>CSV</b></a>
+        </p>
+        <p>
+            Data for all apps in one file.
+            There is one row per participant;
+            different apps and rounds are stacked horizontally.
+            This format is useful if you want to correlate participants'
+            behavior in one app with their behavior in another app.
+        </p>
+
+        <h3>Per-app</h3>
+        <p>
+            These files contain a row for each player in the given app.
+            If there are multiple rounds, there will be multiple rows for the
+            same participant.
+            This format is useful if you are mainly interested in one app,
+            or if you want to correlate data between rounds of the same app.
+        </p>
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th>App</th>
+                <th>Data</th>
+                <th>Documentation</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for app in apps %}
+                <tr>
+                    <td>
+                        {{ app.name }}
+                    </td>
+                    <td>
+                        <a href="{% url 'ExportApp' app.label %}?xlsx=1"><b>Excel</b></a>
+                        |
+                        <a href="{% url 'ExportApp' app.label %}"><b>CSV</b></a>
+                    </td>
+                    <td>
+                        <a href="{% url 'ExportAppDocs' app.label %}">TXT</a>
+                    </td>
+                    <td>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <h3>Time spent on each page</h3>
+        <p><a href="{% url 'ExportTimeSpent' %}"><span
+                class="glyphicon glyphicon-download-alt"></span>
+            <b>Download</b></a></p>
+
+        {% if chat_messages_exist %}
+        <h3>Chat logs</h3>
+        <p><a href="{% url 'ExportChat' %}"><span
+                class="glyphicon glyphicon-download-alt"></span>
+            <b>Download</b></a></p>
+        {% endif %}
+
+    {% endif %}
+
+    <br/>
+
+    {% if extensions_views %}
+        <h3>Third-party data exports</h3>
+
+        {% for ViewCls in extensions_views %}
+            <p><a href="{% url ViewCls.url_name %}"><span
+                class="glyphicon glyphicon-download-alt"></span>
+            <b>{{ ViewCls.display_name }}</b></a></p>
+        {% endfor %}
+
+    {% endif %}
+
+    <br/>
+
+{% endblock %}
