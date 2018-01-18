@@ -2,7 +2,8 @@ from channels.routing import route, route_class
 
 from otree.channels import consumers
 from otree.extensions import get_extensions_modules
-
+from channels.routing import route, route_class
+from otree.channels.consumers import ChatConsumer
 
 channel_routing = [
 
@@ -33,7 +34,10 @@ channel_routing = [
     route_class(
           consumers.BrowserBot,
           path=r'^/browser_bot_wait/$'),
-
+    route_class(
+        ChatConsumer,
+        # so it doesn't clash with addon
+        path=r"^/otreechat_core/(?P<params>[a-zA-Z0-9_/-]+)/$"),
 
 ]
 

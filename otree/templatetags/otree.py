@@ -1,9 +1,9 @@
 from otree.currency import Currency
 
 from .otree_tags import (
-    template, FormFieldNode, NextButtonNode,
+    template, FormFieldNode,
 )
-from otree.chat.models import chat_template_tag
+from otree.chat import chat_template_tag
 from otree.api import safe_json
 
 
@@ -14,7 +14,12 @@ from otree.api import safe_json
 
 register = template.Library()
 register.tag('formfield', FormFieldNode.parse)
-register.tag('next_button', NextButtonNode.parse)
+
+NEXT_BUTTON_TEMPLATE_PATH = 'otree/tags/NextButton.html'
+@register.inclusion_tag(NEXT_BUTTON_TEMPLATE_PATH)
+def next_button(*args, **kwargs):
+    return {}
+
 
 def my_abs(val):
     '''

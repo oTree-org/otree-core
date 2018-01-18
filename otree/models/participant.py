@@ -1,6 +1,6 @@
 
 from django.db.models import permalink, Sum
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 import otree.common_internal
 from otree import constants_internal
@@ -16,7 +16,9 @@ class Participant(ModelWithVars):
         app_label = "otree"
         index_together = ['session', 'mturk_worker_id', 'mturk_assignment_id']
 
-    session = models.ForeignKey('otree.Session')
+    session = models.ForeignKey(
+        'otree.Session', on_delete=models.CASCADE
+    )
 
     label = models.CharField(
         max_length=50, null=True, doc=(

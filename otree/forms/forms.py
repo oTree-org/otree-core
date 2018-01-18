@@ -3,13 +3,8 @@ import six
 from decimal import Decimal
 from six.moves import map
 
-import floppyforms.__future__ as forms
-from floppyforms.__future__.models import (
-    FORMFIELD_OVERRIDES as FLOPPYFORMS_FORMFIELD_OVERRIDES)
-from floppyforms.__future__.models import (
-    ModelFormMetaclass as FloppyformsModelFormMetaclass)
 
-import django.forms as django_forms
+from django import forms
 from django.forms import models as django_model_forms
 from django.utils.translation import ugettext as _
 from django.db.models.options import FieldDoesNotExist
@@ -22,93 +17,89 @@ from otree.db import models
 from otree.currency import Currency, RealWorldCurrency
 
 __all__ = (
-    'formfield_callback', 'modelform_factory', 'BaseModelForm', 'ModelForm')
+    'formfield_callback', 'modelform_factory', 'ModelForm')
 
 
-FORMFIELD_OVERRIDES = FLOPPYFORMS_FORMFIELD_OVERRIDES.copy()
-
-FORMFIELD_OVERRIDES.update({
-    # Overrides from fields defined in otree.db.models
-
-    models.BigIntegerField: {
-        'form_class': forms.IntegerField,
-        'choices_form_class': forms.TypedChoiceField},
-    # Binary field is never editable, so we don't need to convert it.
-    models.BooleanField: {
-        'form_class': forms.BooleanField,
-        'choices_form_class': forms.TypedChoiceField,
-        'widget': forms.RadioSelect},
-    models.CharField: {
-        'form_class': forms.CharField,
-        'choices_form_class': forms.TypedChoiceField},
-    models.CommaSeparatedIntegerField: {
-        'form_class': forms.CharField,
-        'choices_form_class': forms.TypedChoiceField},
-    models.DateField: {
-        'form_class': forms.DateField,
-        'choices_form_class': forms.TypedChoiceField},
-    models.DateTimeField: {
-        'form_class': forms.DateTimeField,
-        'choices_form_class': forms.TypedChoiceField},
-    models.DecimalField: {
-        'form_class': forms.DecimalField,
-        'choices_form_class': forms.TypedChoiceField},
-    models.EmailField: {
-        'form_class': forms.EmailField,
-        'choices_form_class': forms.TypedChoiceField},
-    models.FileField: {
-        'form_class': forms.FileField,
-        'choices_form_class': forms.TypedChoiceField},
-    models.FilePathField: {
-        'form_class': forms.FilePathField,
-        'choices_form_class': forms.TypedChoiceField},
-    models.FloatField: {
-        'form_class': forms.FloatField,
-        'choices_form_class': forms.TypedChoiceField},
-    models.IntegerField: {
-        'form_class': forms.IntegerField,
-        'choices_form_class': forms.TypedChoiceField},
-    models.GenericIPAddressField: {
-        'form_class': forms.GenericIPAddressField,
-        'choices_form_class': forms.TypedChoiceField},
-    models.PositiveIntegerField: {
-        'form_class': forms.IntegerField,
-        'choices_form_class': forms.TypedChoiceField},
-    models.PositiveSmallIntegerField: {
-        'form_class': forms.IntegerField,
-        'choices_form_class': forms.TypedChoiceField},
-    models.SlugField: {
-        'form_class': forms.SlugField,
-        'choices_form_class': forms.TypedChoiceField},
-    models.SmallIntegerField: {
-        'form_class': forms.IntegerField,
-        'choices_form_class': forms.TypedChoiceField},
-    models.TextField: {
-        'form_class': forms.CharField,
-        'widget': forms.Textarea,
-        'choices_form_class': forms.TypedChoiceField},
-    models.TimeField: {
-        'form_class': forms.TimeField,
-        'choices_form_class': forms.TypedChoiceField},
-    models.URLField: {
-        'form_class': forms.URLField,
-        'choices_form_class': forms.TypedChoiceField},
-    models.OneToOneField: {
-        'form_class': forms.ModelChoiceField,
-        'choices_form_class': forms.TypedChoiceField},
-
-    # Other custom db fields used in otree.
-    models.CurrencyField: {
-        'form_class': fields.CurrencyField,
-        'choices_form_class': fields.CurrencyChoiceField},
-    models.RealWorldCurrencyField: {
-        'form_class': fields.RealWorldCurrencyField,
-        'choices_form_class': fields.CurrencyChoiceField},
-})
+# FORMFIELD_OVERRIDES.update({
+#     # Overrides from fields defined in otree.db.models
+#
+#     models.BigIntegerField: {
+#         'form_class': forms.IntegerField,
+#         'choices_form_class': forms.TypedChoiceField},
+#     # Binary field is never editable, so we don't need to convert it.
+#     models.BooleanField: {
+#         'form_class': forms.BooleanField,
+#         'choices_form_class': forms.TypedChoiceField,
+#         'widget': forms.RadioSelect},
+#     models.CharField: {
+#         'form_class': forms.CharField,
+#         'choices_form_class': forms.TypedChoiceField},
+#     models.DateField: {
+#         'form_class': forms.DateField,
+#         'choices_form_class': forms.TypedChoiceField},
+#     models.DateTimeField: {
+#         'form_class': forms.DateTimeField,
+#         'choices_form_class': forms.TypedChoiceField},
+#     models.DecimalField: {
+#         'form_class': forms.DecimalField,
+#         'choices_form_class': forms.TypedChoiceField},
+#     models.EmailField: {
+#         'form_class': forms.EmailField,
+#         'choices_form_class': forms.TypedChoiceField},
+#     models.FileField: {
+#         'form_class': forms.FileField,
+#         'choices_form_class': forms.TypedChoiceField},
+#     models.FilePathField: {
+#         'form_class': forms.FilePathField,
+#         'choices_form_class': forms.TypedChoiceField},
+#     models.FloatField: {
+#         'form_class': forms.FloatField,
+#         'choices_form_class': forms.TypedChoiceField},
+#     models.IntegerField: {
+#         'form_class': forms.IntegerField,
+#         'choices_form_class': forms.TypedChoiceField},
+#     models.GenericIPAddressField: {
+#         'form_class': forms.GenericIPAddressField,
+#         'choices_form_class': forms.TypedChoiceField},
+#     models.PositiveIntegerField: {
+#         'form_class': forms.IntegerField,
+#         'choices_form_class': forms.TypedChoiceField},
+#     models.PositiveSmallIntegerField: {
+#         'form_class': forms.IntegerField,
+#         'choices_form_class': forms.TypedChoiceField},
+#     models.SlugField: {
+#         'form_class': forms.SlugField,
+#         'choices_form_class': forms.TypedChoiceField},
+#     models.SmallIntegerField: {
+#         'form_class': forms.IntegerField,
+#         'choices_form_class': forms.TypedChoiceField},
+#     models.TextField: {
+#         'form_class': forms.CharField,
+#         'widget': forms.Textarea,
+#         'choices_form_class': forms.TypedChoiceField},
+#     models.TimeField: {
+#         'form_class': forms.TimeField,
+#         'choices_form_class': forms.TypedChoiceField},
+#     models.URLField: {
+#         'form_class': forms.URLField,
+#         'choices_form_class': forms.TypedChoiceField},
+#     models.OneToOneField: {
+#         'form_class': forms.ModelChoiceField,
+#         'choices_form_class': forms.TypedChoiceField},
+#
+#     # Other custom db fields used in otree.
+#     models.CurrencyField: {
+#         'form_class': fields.CurrencyField,
+#         'choices_form_class': fields.CurrencyChoiceField},
+#     models.RealWorldCurrencyField: {
+#         'form_class': fields.RealWorldCurrencyField,
+#         'choices_form_class': fields.CurrencyChoiceField},
+# })
 
 
 def formfield_callback(db_field, **kwargs):
-    formfield_kwargs = FORMFIELD_OVERRIDES.get(db_field.__class__, {}).copy()
+    # TODO: clean this up
+    formfield_kwargs = {}
     # Take the `widget` attribute into account that might be set for a db
     # field. We want to override the widget given by FORMFIELD_OVERRIDES.
     widget = getattr(db_field, 'widget', None)
@@ -144,8 +135,9 @@ def modelform_factory(*args, **kwargs):
     kwargs.setdefault('formfield_callback', formfield_callback)
     return django_model_forms.modelform_factory(*args, **kwargs)
 
+import django.forms.models
 
-class BaseModelFormMetaclass(FloppyformsModelFormMetaclass):
+class ModelFormMetaclass(django.forms.models.ModelFormMetaclass):
     """
     Metaclass for BaseModelForm in order to inject our custom implementation of
     `formfield_callback`.
@@ -153,11 +145,12 @@ class BaseModelFormMetaclass(FloppyformsModelFormMetaclass):
     def __new__(mcs, name, bases, attrs):
         if 'formfield_callback' not in attrs:
             attrs['formfield_callback'] = formfield_callback
-        return super(BaseModelFormMetaclass, mcs).__new__(
+        return super(ModelFormMetaclass, mcs).__new__(
             mcs, name, bases, attrs)
 
 
-class BaseModelForm(forms.ModelForm, metaclass=BaseModelFormMetaclass):
+
+class ModelForm(forms.ModelForm, metaclass=ModelFormMetaclass):
 
     def __init__(self, *args, **kwargs):
         """Special handling for 'choices' argument, BooleanFields, and
@@ -191,12 +184,12 @@ class BaseModelForm(forms.ModelForm, metaclass=BaseModelFormMetaclass):
                 model_field = self.instance._meta.get_field(field_name)
                 model_field_copy = copy.copy(model_field)
 
-                # .choices is a read-only property
-                # ._choices is the actual value
-                model_field_copy._choices = choices
+                # in Django 1.11, _choices renamed to choices
+                model_field_copy.choices = choices
 
                 field = formfield_callback(model_field_copy)
                 self.fields[field_name] = field
+
 
             if isinstance(field.widget, forms.RadioSelect):
                 # Fields with a RadioSelect should be rendered without the
@@ -241,7 +234,7 @@ class BaseModelForm(forms.ModelForm, metaclass=BaseModelFormMetaclass):
         # SessionEditProperties is a ModelForm with extra field which is not
         # part of the model. In case your ModelForm has an extra field.
         try:
-            model_field = self.instance._meta.get_field_by_name(field_name)[0]
+            model_field = self.instance._meta.get_field(field_name)
         except FieldDoesNotExist:
             return [None, None]
 
@@ -261,10 +254,7 @@ class BaseModelForm(forms.ModelForm, metaclass=BaseModelFormMetaclass):
 
     def _set_min_max_on_widgets(self):
         for field_name, field in self.fields.items():
-            # We want to support both, django and floppyforms widgets.
-            if isinstance(
-                field.widget, (django_forms.NumberInput, forms.NumberInput)
-            ):
+            if isinstance(field.widget, forms.NumberInput):
                 min_bound, max_bound = self._get_field_min_max(field_name)
                 if isinstance(min_bound, (Currency, RealWorldCurrency)):
                     min_bound = Decimal(min_bound)
@@ -306,7 +296,7 @@ class BaseModelForm(forms.ModelForm, metaclass=BaseModelFormMetaclass):
                 self.cleaned_data[name] = value
 
                 if name in boolean_field_names and value is None:
-                    mfield = self.instance._meta.get_field_by_name(name)[0]
+                    mfield = self.instance._meta.get_field(name)
                     if not mfield.allow_blank:
                         msg = otree.constants_internal.field_required_msg
                         raise forms.ValidationError(msg)
@@ -346,7 +336,3 @@ class BaseModelForm(forms.ModelForm, metaclass=BaseModelFormMetaclass):
             if error_string:
                 e = forms.ValidationError(error_string)
                 self.add_error(None, e)
-
-
-class ModelForm(BaseModelForm):
-    pass

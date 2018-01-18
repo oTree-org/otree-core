@@ -1,11 +1,14 @@
-from django.apps import apps
 from importlib import import_module
+from django.conf import settings
+import importlib.util
+
 
 """
 (THIS IS CURRENTLY PRIVATE API, MAY CHANGE WITHOUT NOTICE)
 
 To create an oTree extension, add a package called ``otree_extensions``
-to your app. It can contain any of the following submodules:
+to your app, and add the app name in settings.py to EXTENSION_APPS. 
+It can contain any of the following submodules:
 
 urls.py
 -------
@@ -54,20 +57,21 @@ not just data export.)
 """
 
 def get_extensions_modules(submodule_name):
-    '''TODO: performance issue. this 'autodiscover' adds to oTree startup time'''
     modules = []
-    for app_config in apps.get_app_configs():
-        try:
-            dotted_path = '{}.otree_extensions.{}'.format(
-                app_config.name, submodule_name)
-            module = import_module(dotted_path)
+    extension_apps = getattr(settings, 'EXTENSION_APPS', [])
+    # legacy support for otreechat
+    if 'otreechat' in settings.INSTALLED_APPS:
+        extension_apps.append('otreechat')
+    find_spec = importlib.util.find_spec
+    for app_name in extension_apps:
+        package_dotted = '{}.otree_extensions'.format(app_name)
+        submodule_dotted = '{}.{}'.format(package_dotted, submodule_name)
+        # need to check if base package exists; otherwise we get ImportError
+        if find_spec(package_dotted) and find_spec(submodule_dotted):
+            module = import_module(submodule_dotted)
             modules.append(module)
-        # ModuleNotFoundError is new in Python 3.6
-        # FIXME: ImportError doesn't distinguish between
-        # the file not existing vs the file existing but having some error
-        except ImportError:
-            continue
     return modules
+
 
 def get_extensions_data_export_views():
     view_classes = []

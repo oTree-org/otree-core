@@ -38,7 +38,9 @@ class BaseSubsession(models.Model):
         index_together = ['session', 'round_number']
 
     session = models.ForeignKey(
-        'otree.Session', related_name='%(app_label)s_%(class)s', null=True)
+        'otree.Session', related_name='%(app_label)s_%(class)s', null=True,
+        on_delete=models.CASCADE,
+    )
 
     round_number = models.PositiveIntegerField(
         db_index=True,
@@ -59,7 +61,7 @@ class BaseSubsession(models.Model):
 
     def __getattribute__(self, name):
         try:
-            return super(BaseSubsession, self).__getattribute__(name)
+            return super().__getattribute__(name)
         except AttributeError:
             raise AttributeError(ATTRIBUTE_ERROR_MESSAGE.format(name)) from None
 

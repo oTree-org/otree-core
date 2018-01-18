@@ -10,7 +10,7 @@ from django.contrib.messages import constants as messages
 from six.moves.urllib import parse as urlparse
 
 
-DEFAULT_MIDDLEWARE_CLASSES = (
+DEFAULT_MIDDLEWARE = (
     'otree.middleware.CheckDBMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -178,6 +178,8 @@ def get_default_settings(user_settings: dict):
 
         'LOGGING': logging,
 
+        'FORM_RENDERER':  'django.forms.renderers.TemplatesSetting',
+
         'REAL_WORLD_CURRENCY_CODE': 'USD',
         'REAL_WORLD_CURRENCY_DECIMAL_PLACES': 2,
         'USE_POINTS': True,
@@ -202,17 +204,16 @@ def get_default_settings(user_settings: dict):
                     'CHANNEL_ROUTING',
                     'otree.channels.routing.channel_routing'),
             },
-        },
-        # not a top-level setting, just used for patching with runserver and test
-        # I put it here so it's right next to the Redis channel layer
-        # before, I had it inside the CHANNEL_LAYERS dict,
-        # but as at 2017-07-17, ChannelsLiveServerTestCase doesn't work with multiple
-        # channel layers.
-        'INMEMORY_CHANNEL_LAYER': {
-            "BACKEND": "asgiref.inmemory.ChannelLayer",
-            'ROUTING': user_settings.get(
-                'CHANNEL_ROUTING',
-                'otree.channels.routing.channel_routing'),
+            # note: if I start using ChannelsLiveServerTestCase again,
+            # i might have to move this out,
+            # but because it doesn't work with multiple
+            # channel layers.
+            'inmemory': {
+                "BACKEND": "asgiref.inmemory.ChannelLayer",
+                'ROUTING': user_settings.get(
+                    'CHANNEL_ROUTING',
+                    'otree.channels.routing.channel_routing'),
+            },
         },
 
         # for convenience within oTree
@@ -252,15 +253,15 @@ def augment_settings(settings: dict):
     no_experiment_apps = [
         'django.contrib.auth',
         'otree',
-        'floppyforms',
+        'django.forms',
         # need this for admin login
-        'django.contrib.admin',
+        # SimpleAdminConfig skips autodiscover, for perf
+        'django.contrib.admin.apps.SimpleAdminConfig',
         'django.contrib.contenttypes',
         'django.contrib.sessions',
         'django.contrib.messages',
         'django.contrib.staticfiles',
         'otree.timeout',
-        'otree.chat',
         'channels',
         'huey.contrib.djhuey',
         'rest_framework',
@@ -275,7 +276,8 @@ def augment_settings(settings: dict):
     # otree templates need to get loaded before the admin.
     no_experiment_apps = collapse_to_unique_list(
         no_experiment_apps,
-        settings['INSTALLED_APPS']
+        settings['INSTALLED_APPS'],
+        settings.get('EXTENSION_APPS', [])
     )
 
     new_installed_apps = collapse_to_unique_list(
@@ -301,9 +303,10 @@ def augment_settings(settings: dict):
         additional_static_dirs,
     )
 
-    new_middleware_classes = collapse_to_unique_list(
-        DEFAULT_MIDDLEWARE_CLASSES,
+    new_middleware = collapse_to_unique_list(
+        DEFAULT_MIDDLEWARE,
         settings.get('MIDDLEWARE_CLASSES'))
+
 
     augmented_settings = {
         'INSTALLED_APPS': new_installed_apps,
@@ -318,7 +321,18 @@ def augment_settings(settings: dict):
                 # but then in 2c10188b33f2ac36c046f4f0f8764e15d6a6fa81,
                 # i set this to False, but I'm not sure why and there is no
                 # note in the commit explaining why.
+
                 'debug': True,
+
+                # in Django 1.11, the cached template loader is applied
+                # automatically if template 'debug' is False,
+                # but for now we need 'debug' True because otherwise
+                # {% include %} fails silently.
+                # in django 2.1, we can remove:
+                # - the explicit 'debug': True
+                # - 'loaders' below
+                # - the patch in runserver.py
+                # as long as we set 'APP_DIRS': True
                 'loaders': [
                     ('django.template.loaders.cached.Loader', [
                         'django.template.loaders.filesystem.Loader',
@@ -326,20 +340,25 @@ def augment_settings(settings: dict):
                     ]),
                 ],
                 'context_processors': collapse_to_unique_list(
-                    global_settings.TEMPLATE_CONTEXT_PROCESSORS, (
-                        'django.core.context_processors.request',
-                    )
+                    # default ones in Django 1.8
+                    ('django.contrib.auth.context_processors.auth',
+                     'django.template.context_processors.debug',
+                     'django.template.context_processors.i18n',
+                     'django.template.context_processors.media',
+                     'django.template.context_processors.static',
+                     'django.template.context_processors.tz',
+                     'django.contrib.messages.context_processors.messages'),
+
+                    ('django.template.context_processors.request',)
                 ),
             },
         }],
         'STATICFILES_DIRS': new_staticfiles_dirs,
-        'MIDDLEWARE_CLASSES': new_middleware_classes,
+        'MIDDLEWARE': new_middleware,
         'INSTALLED_OTREE_APPS': all_otree_apps,
         'MESSAGE_TAGS': {messages.ERROR: 'danger'},
         'LOGIN_REDIRECT_URL': 'Sessions',
     }
 
+
     settings.update(augmented_settings)
-
-
-

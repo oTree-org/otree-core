@@ -1,7 +1,7 @@
 import time
 
 import vanilla
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import HttpResponseRedirect, JsonResponse
 from otree.channels import utils as channel_utils
 from otree.models_concrete import ParticipantRoomVisit

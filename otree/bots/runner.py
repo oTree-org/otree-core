@@ -3,7 +3,7 @@ import logging
 from collections import OrderedDict, defaultdict
 from unittest import mock
 
-from django.db.migrations.loader import MigrationLoader
+
 from django.conf import settings
 import pytest
 import sys
@@ -195,10 +195,5 @@ def run_pytests(**kwargs):
     # same hack as in resetdb code
     # because this method uses the serializer
     # it breaks if the app has migrations but they aren't up to date
-    with mock.patch.object(
-            MigrationLoader,
-            'migrations_module',
-            return_value='migrations nonexistent hack'
-    ):
-
-        return pytest.main(argv)
+    otree.common_internal.patch_migrations_module()
+    return pytest.main(argv)

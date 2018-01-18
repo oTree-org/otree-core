@@ -9,7 +9,7 @@ import logging
 
 from django.conf import settings
 from django.contrib import messages
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import HttpResponseRedirect, HttpResponseServerError
 from django.shortcuts import get_object_or_404
 
@@ -205,7 +205,7 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
             'https': https,
             'aws_keys_exist': aws_keys_exist,
             'mturk_ready': mturk_ready,
-            'runserver': 'runserver' in sys.argv,
+            'runserver': ('runserver' in sys.argv) or ('devserver' in sys.argv),
             'secured_url': secured_url,
             'missing_next_button_warning': missing_next_button_warning
         })

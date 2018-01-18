@@ -1,5 +1,5 @@
 {% extends "otree/BaseAdmin.html" %}
-{% load otree_tags floppyforms %}
+{% load otree %}
 
 {% block title %}
     Room: {{ room.display_name }}
@@ -21,7 +21,7 @@
 
     <div id="participants_waiting_list" class="collapse" style="font-size:20px">
         {% for participant_label in room.get_participant_labels %}
-            <span style="display: none" class="label label-success present-participant-label" id="present-participant-label-{{ participant_label|escape }}">
+            <span style="display: none" class="badge badge-success present-participant-label" id="present-participant-label-{{ participant_label|escape }}">
                 {{ participant_label }}
             </span>
         {% endfor %}
@@ -38,7 +38,7 @@
 
     <div id="participants_not_waiting_list" class="collapse" style="font-size:20px">
         {% for participant_label in room.get_participant_labels %}
-            <span class="label label-default absent-participant-label count-this" id="absent-participant-label-{{ participant_label|escape }}">{{ participant_label }}</span>
+            <span class="badge badge-secondary absent-participant-label count-this" id="absent-participant-label-{{ participant_label|escape }}">{{ participant_label }}</span>
         {% endfor %}
     </div>
 

@@ -1,7 +1,6 @@
 from django.db import models
-from six.moves import cPickle as pickle
+import pickle
 import binascii
-import six
 from django.utils.encoding import force_text
 
 __all__ = ('_PickleField',)
@@ -54,7 +53,7 @@ def scan_for_model_instances(data):
                     inspect_obj(ele)
 
 
-class _PickleField(six.with_metaclass(models.SubfieldBase, models.TextField)):
+class _PickleField(models.TextField):
     """
     PickleField is a generic textfield that neatly serializes/unserializes
     any python objects seamlessly"""
@@ -65,7 +64,7 @@ class _PickleField(six.with_metaclass(models.SubfieldBase, models.TextField)):
             return None
 
         try:
-            if isinstance(value, six.string_types):
+            if isinstance(value, str):
                 return deserialize_from_string(value)
         except ValueError:
             pass
@@ -79,5 +78,11 @@ class _PickleField(six.with_metaclass(models.SubfieldBase, models.TextField)):
 
         scan_for_model_instances(value)
         value = serialize_to_string(value)
-        value = force_text(value)
-        return super().get_prep_value(value)
+        return force_text(value)
+
+    def from_db_value(self, value, expression, connection, context):
+        return self.to_python(value)
+
+    def value_to_string(self, obj):
+        value = self.value_from_object(obj)
+        return pickle.dumps(value)

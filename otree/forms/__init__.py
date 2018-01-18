@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 # flake8: noqa
 
-from floppyforms.__future__ import *
+from django.forms import *
 
-# Delete `fields` and `widgets` attributes which came from floppyforms and
+# Delete `fields` and `widgets` attributes which came from Django and
 # would otherwise make it impossible to import e.g. the otree.forms.fields
 # module.
 del fields

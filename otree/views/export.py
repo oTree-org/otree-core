@@ -1,3 +1,4 @@
+import csv
 import datetime
 
 from django.http import HttpResponse
@@ -7,11 +8,11 @@ import vanilla
 
 import otree.common_internal
 import otree.models
-from otree.common_internal import app_name_format
 import otree.export
 from otree.models.participant import Participant
 from otree.extensions import get_extensions_data_export_views
-from otree.chat.models import ChatMessage
+from otree.models_concrete import ChatMessage
+
 
 class ExportIndex(vanilla.TemplateView):
 
@@ -24,17 +25,13 @@ class ExportIndex(vanilla.TemplateView):
 
         context['db_is_empty'] = not Participant.objects.exists()
 
-        app_labels = settings.INSTALLED_OTREE_APPS
+        app_names = settings.INSTALLED_OTREE_APPS
         app_labels_with_data = []
-        for app_label in app_labels:
-            model_module = otree.common_internal.get_models_module(app_label)
+        for app_name in app_names:
+            model_module = otree.common_internal.get_models_module(app_name)
             if model_module.Player.objects.exists():
-                app_labels_with_data.append(app_label)
-        apps = [
-            {"name": app_name_format(app_label), "label": app_label}
-            for app_label in app_labels_with_data
-        ]
-        context['apps'] = apps
+                app_labels_with_data.append(app_name)
+        context['app_names'] = app_labels_with_data
 
         context['chat_messages_exist'] = ChatMessage.objects.exists()
         context['extensions_views'] = get_extensions_data_export_views()
@@ -48,7 +45,7 @@ class ExportAppDocs(vanilla.View):
 
     def _doc_file_name(self, app_label):
         return '{} - documentation ({}).txt'.format(
-            otree.common_internal.app_name_format(app_label),
+            app_label,
             datetime.date.today().isoformat()
         )
 
@@ -115,4 +112,37 @@ class ExportTimeSpent(vanilla.View):
             )
         )
         otree.export.export_time_spent(response)
+        return response
+
+
+class ExportChat(vanilla.View):
+
+    url_pattern = '^otreechatcore_export/$'
+
+    def get(request, *args, **kwargs):
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="{}"'.format(
+            'Chat messages (accessed {}).csv'.format(
+                datetime.date.today().isoformat()
+            )
+        )
+
+        column_names = [
+            'participant__session__code',
+            'participant__session_id',
+            'participant__id_in_session',
+            'participant__code',
+            'channel',
+            'nickname',
+            'body',
+            'timestamp',
+        ]
+
+        rows = ChatMessage.objects.order_by('timestamp').values_list(*column_names)
+
+        writer = csv.writer(response)
+        writer.writerows([column_names])
+        writer.writerows(rows)
+
         return response

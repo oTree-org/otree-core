@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from __future__ import print_function
 from importlib import import_module
 import json
@@ -14,6 +17,7 @@ import django.conf
 import otree
 from otree.settings import get_default_settings
 
+logger = logging.getLogger(__name__)
 
 class OTreeManagementUtility(django.core.management.ManagementUtility):
     def fetch_command(self, subcommand):
@@ -34,15 +38,13 @@ def otree_and_django_version(*args, **kwargs):
     return "oTree: {} - Django: {}".format(otree_ver, django_ver)
 
 
-class SettingsNotFoundError(Exception):
-    pass
-
-
-SETTINGS_NOT_FOUND_MESSAGE = (
-    "Cannot import otree settings.\n"
-    "Please make sure that you are in the root directory of your "
-    "oTree project. This directory contains a settings.py "
-    "and a manage.py file.")
+def print_settings_not_found_error():
+    msg = (
+        "Cannot find oTree settings. "
+        "Please 'cd' to your oTree project folder, "
+        "which contains a settings.py file."
+    )
+    logger.warning(msg)
 
 
 def otree_cli():
@@ -83,6 +85,7 @@ def otree_cli():
             'startproject',
             'help', 'version', '--help', '--version', '-h',
             'compilemessages', 'makemessages',
+            'upgrade_my_code',
         ]:
             settings.configure(**get_default_settings({}))
         # need to differentiate between an ImportError because settings.py
@@ -91,27 +94,35 @@ def otree_cli():
         elif os.path.isfile('{}.py'.format(DJANGO_SETTINGS_MODULE)):
             raise
         else:
-            raise SettingsNotFoundError(SETTINGS_NOT_FOUND_MESSAGE)
+            print_settings_not_found_error()
+            return
 
-    if subcommand in ['run', 'runserver']:
+    if subcommand in ['runserver', 'devserver']:
         # apparently required by restart_with_reloader
         # otherwise, i get:
         # python.exe: can't open file 'C:\oTree\venv\Scripts\otree':
         # [Errno 2] No such file or directory
 
-        args = [sys.executable, 'manage.py'] + argv[1:]
-        process = subprocess.Popen(args,
-                                   stdin=sys.stdin,
-                                   stdout=sys.stdout,
-                                   stderr=sys.stderr)
-        return_code = process.wait()
-        sys.exit(return_code)
+        sys.argv = ['manage.py'] + argv[1:]
 
-    execute_from_command_line(argv)
+        # previous solution here was using subprocess.Popen,
+        # but changing it to modifying sys.argv changed average
+        # startup time on my machine from 2.7s to 2.3s.
+
+    try:
+        execute_from_command_line(argv)
+    except Exception as exc:
+        import colorama
+        from otree.common_internal import print_colored_traceback_and_exit
+        colorama.init(autoreset=True)
+        print_colored_traceback_and_exit(exc)
 
 
 def execute_from_command_line(argv, script_file=None):
-    '''script_file is no longer used, but we need it for compat'''
+    '''
+    This is called if people use manage.py
+    script_file is no longer used, but we need it for compat
+    '''
 
     if len(argv) == 1:
         # default command
@@ -127,6 +138,8 @@ def execute_from_command_line(argv, script_file=None):
             pass
     else:
         utility = OTreeManagementUtility(argv)
+        # TODO: consider overriding execute() in otree-core.
+        # most of the stuff it does is unnecessary for oTree.
         utility.execute()
 
 
@@ -143,7 +156,7 @@ def check_pypi_for_updates() -> dict:
 
     try:
         response = requests.get(
-            'http://pypi.python.org/pypi/otree-core/json',
+            'http://pypi.python.org/pypi/otree/json',
             timeout=5,
         )
         assert response.ok
@@ -187,10 +200,10 @@ def check_pypi_for_updates() -> dict:
 
     if update_needed:
         update_message = (
-            'Your otree-core package is out-of-date '
+            'Your otree package is out-of-date '
             '(version {}; latest is {}). '
             'You should upgrade with:\n '
-            '"pip3 install --upgrade otree-core"\n '
+            '"pip3 install --upgrade otree"\n '
             'and update your requirements_base.txt.'.format(
                 installed_dotted, newest_dotted))
     else:

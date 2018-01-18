@@ -1,27 +1,12 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-
-# =============================================================================
-# IMPORTS
-# =============================================================================
-
 import logging
+import six
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
 from django.db import connections, transaction
-from django.db.migrations.loader import MigrationLoader
-from django.db.migrations.autodetector import MigrationAutodetector
+from otree import common_internal
 
-import six
-from unittest import mock
-
-
-# =============================================================================
-# LOGGER
-# =============================================================================
 
 logger = logging.getLogger('otree')
 
@@ -117,16 +102,15 @@ class Command(BaseCommand):
 
                 logger.info("Creating Database '{}'...".format(db))
 
-                self.syncdb(db, options)
-
-                # second call to 'migrate', simply to
-                # fake migrations so that runserver doesn't complain
-                # about unapplied migrations
-                # note: In 1.9, will need to pass --run-syncdb flag
+                # need to hide the migrations/ folder so that Django thinks
+                # it doesn't exist.
+                # Tried setting MIGRATIONS_MODULES but doesn't work
+                # (causes ModuleNotFoundError)
+                common_internal.patch_migrations_module()
 
                 call_command(
-                    'migrate', database=db, fake=True,
-                    interactive=False, **options)
+                    'migrate', database=db,
+                    interactive=False, run_syncdb=True, **options)
 
         # mention the word 'columns' here, so people make the connection
         # between columns and resetdb, so that when they get a 'no such column'
@@ -135,41 +119,3 @@ class Command(BaseCommand):
         # but I recall that this was difficult - because there were many
         # code paths or exception classes. Could re-investigate.)
         logger.info('Created new tables and columns.')
-
-    @mock.patch.object(
-        MigrationLoader, 'migrations_module',
-        return_value='migrations nonexistent hack')
-    @mock.patch.object(
-        MigrationAutodetector, 'changes', return_value=False)
-    def syncdb(self, db, options, *mocked_args):
-        '''
-        patch .migrations_module() to return a nonexistent module,
-        instead of app_name.migrations.
-        because this module is not found,
-        migration system will assume the app has no migrations,
-        and run syncdb instead.
-
-        Hack so that migrate can't find migrations files
-        this way, syncdb will be run instead of migrate.
-        This is preferable because
-        users who are used to running "otree resetdb"
-        may not know how to run 'otree makemigrations'.
-        This means their migration files will not be up to date,
-        ergo migrate will create tables with an outdated schema.
-
-        after the majority of oTree users have this new version
-        of resetdb, we can add a migrations/ folder to each app
-        in the sample games and the app template,
-        and deprecate resetdb
-        and instead use "otree makemigrations" and "otree migrate".
-
-        also, syncdb is faster than migrate, and there is no
-        advantage to migrate since it's being run on a newly
-        created DB anyway.
-
-        also patch MigrationAutodetector.changes() to suppress the warning
-        "Your models have changes that are not yet reflected in a migration..."
-        '''
-        call_command(
-            'migrate', database=db,
-            interactive=False, **options)

@@ -11,7 +11,7 @@ from otree.models_concrete import RoomToSession
 from otree.common_internal import (
     add_params_to_url, make_hash, validate_alphanumeric)
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import transaction
 
 class Room(object):

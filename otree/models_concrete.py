@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import time
 from django.db import models
 
 
@@ -14,8 +14,8 @@ class PageCompletion(models.Model):
     time_stamp = models.PositiveIntegerField()
     seconds_on_page = models.PositiveIntegerField()
     subsession_pk = models.PositiveIntegerField()
-    participant = models.ForeignKey('otree.Participant')
-    session = models.ForeignKey('otree.Session')
+    participant = models.ForeignKey('otree.Participant', on_delete=models.CASCADE)
+    session = models.ForeignKey('otree.Session', on_delete=models.CASCADE)
     auto_submitted = models.BooleanField()
 
 
@@ -24,7 +24,7 @@ class PageTimeout(models.Model):
         app_label = "otree"
         index_together = ['participant', 'page_index']
 
-    participant = models.ForeignKey('otree.Participant')
+    participant = models.ForeignKey('otree.Participant', on_delete=models.CASCADE)
     page_index = models.PositiveIntegerField()
     expiration_time = models.FloatField()
 
@@ -35,7 +35,7 @@ class CompletedGroupWaitPage(models.Model):
         index_together = ['page_index', 'session', 'id_in_subsession']
 
     page_index = models.PositiveIntegerField()
-    session = models.ForeignKey('otree.Session')
+    session = models.ForeignKey('otree.Session', on_delete=models.CASCADE)
     id_in_subsession = models.PositiveIntegerField(default=0)
 
 
@@ -45,7 +45,7 @@ class CompletedSubsessionWaitPage(models.Model):
         index_together = ['page_index', 'session']
 
     page_index = models.PositiveIntegerField()
-    session = models.ForeignKey('otree.Session')
+    session = models.ForeignKey('otree.Session', on_delete=models.CASCADE)
 
 
 class ParticipantToPlayerLookup(models.Model):
@@ -56,7 +56,7 @@ class ParticipantToPlayerLookup(models.Model):
 
     # TODO: add session code and round number, for browser bots?
     participant_code = models.CharField(max_length=20)
-    participant = models.ForeignKey('otree.Participant')
+    participant = models.ForeignKey('otree.Participant', on_delete=models.CASCADE)
     page_index = models.PositiveIntegerField()
     app_name = models.CharField(max_length=300)
     player_pk = models.PositiveIntegerField()
@@ -95,7 +95,7 @@ class RoomToSession(models.Model):
         app_label = "otree"
 
     room_name = models.CharField(unique=True, max_length=255)
-    session = models.ForeignKey('otree.Session')
+    session = models.ForeignKey('otree.Session', on_delete=models.CASCADE)
 
 
 FAILURE_MESSAGE_MAX_LENGTH = 300
@@ -128,3 +128,22 @@ class BrowserBotsLauncherSessionCode(models.Model):
 
     # hack to enforce singleton
     is_only_record = models.BooleanField(unique=True, default=True)
+
+
+class ChatMessage(models.Model):
+    class Meta:
+        index_together = ['channel', 'timestamp']
+
+    # the name "channel" here is unrelated to Django channels
+    channel = models.CharField(max_length=255)
+    # related_name necessary to disambiguate with otreechat add on
+    participant = models.ForeignKey(
+        'otree.Participant', related_name='chat_messages_core',
+        on_delete=models.CASCADE
+    )
+    nickname = models.CharField(max_length=255)
+
+    # call it 'body' instead of 'message' or 'content' because those terms
+    # are already used by channels
+    body = models.TextField()
+    timestamp = models.FloatField(default=time.time)

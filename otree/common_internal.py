@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
 import contextlib
@@ -12,13 +10,11 @@ import threading
 import uuid
 from collections import OrderedDict
 from importlib import import_module
-from os.path import dirname, join
-
 import channels
 import six
 from django.apps import apps
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import connection
 from django.db import transaction
 from django.http import HttpResponseRedirect
@@ -27,7 +23,7 @@ from django.utils.safestring import mark_safe
 from huey.contrib.djhuey import HUEY
 import otree.channels.utils as channel_utils
 from six.moves import urllib
-import importlib
+import importlib.util
 
 # set to False if using runserver
 USE_REDIS = True
@@ -66,11 +62,6 @@ def random_chars_10():
     return random_chars(10)
 
 
-def app_name_format(app_name):
-    app_label = app_name.split('.')[-1]
-    return title(app_label.replace("_", " "))
-
-
 def get_models_module(app_name):
     module_name = '{}.models'.format(app_name)
     return import_module(module_name)
@@ -85,7 +76,7 @@ def get_bots_module(app_name):
 
 
 def get_views_module(app_name):
-    for module_name in ['views', 'pages']:
+    for module_name in ['pages', 'views']:
         dotted = '{}.{}'.format(app_name, module_name)
         if importlib.util.find_spec(dotted):
             return import_module(dotted)
@@ -316,3 +307,41 @@ def _get_all_configs():
 
 def participant_start_url(code):
     return '/InitializeParticipant/{}'.format(code)
+
+
+def patch_migrations_module():
+    from django.db.migrations.loader import MigrationLoader
+    def migrations_module(*args, **kwargs):
+        # need to return None so that load_disk() considers it
+        # unmigrated, and False so that load_disk() considers it
+        # non-explicit
+        return None, False
+    MigrationLoader.migrations_module = migrations_module
+
+
+def print_colored_traceback_and_exit(exc):
+    import traceback
+    from termcolor import colored
+    import sys
+
+    def highlight(string):
+        return colored(string, 'white', 'on_blue')
+
+    frames = traceback.extract_tb(sys.exc_info()[2])
+    new_frames = []
+    for frame in frames:
+        filename, lineno, name, line = frame
+        if settings.BASE_DIR in filename:
+            filename = highlight(filename)
+            line = highlight(line)
+        new_frames.append([filename, lineno, name, line])
+    lines = ['Traceback (most recent call last):\n']
+    lines += traceback.format_list(new_frames)
+    final_lines = traceback.format_exception_only(type(exc), exc)
+    # filename is only available for SyntaxError
+    if isinstance(exc, SyntaxError) and settings.BASE_DIR in exc.filename:
+        final_lines = [highlight(line) for line in final_lines]
+    lines += final_lines
+    for line in lines:
+        sys.stdout.write(line)
+    sys.exit(-1)

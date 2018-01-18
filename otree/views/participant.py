@@ -8,7 +8,7 @@ import otree.models
 import otree.views.admin
 import otree.views.mturk
 import vanilla
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import (
     HttpResponse, HttpResponseRedirect,
     HttpResponseNotFound

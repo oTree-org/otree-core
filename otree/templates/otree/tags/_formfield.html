@@ -1,6 +1,5 @@
-{% load floppyforms %}
 {% if bound_field.field.widget.input_type == "checkbox" %}
-    {% formrow bound_field using "floppyforms/rows/bootstrap_checkbox.html" %}
+    {% include "otree/forms/rows/bootstrap_checkbox.html" with field=bound_field %}
 {% else %}
-    {% formrow bound_field %}
+    {% include "otree/forms/rows/bootstrap.html" with field=bound_field %}
 {% endif %}

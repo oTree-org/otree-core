@@ -56,3 +56,7 @@ def chat_path(channel, participant_id):
     channel_and_id_signed = Signer(sep='/').sign(channel_and_id)
 
     return '/otreechat_core/{}/'.format(channel_and_id_signed)
+
+
+def get_chat_group(channel):
+    return 'otreechat-{}'.format(channel)

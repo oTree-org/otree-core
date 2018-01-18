@@ -1,14 +1,18 @@
-{% load staticfiles otree_tags %}
+{% load staticfiles otree %}
 {# spaces to make debug info less distracting #}
 <br/>
 <br/>
 <br/>
-<div class="well">
-<h4>Debug info</h4>
-{% include 'otree/includes/hidden_form_errors.html' %}
+
+
+<div class="card">
+    <h5 class="card-header">Debug info</h5>
+{% comment %}
+    {% include 'otree/includes/hidden_form_errors.html' %}
+    {% endcomment %}
 {% for table in view.debug_tables %}
-    <div class="panel panel-default">
-        <div class="panel-heading">{{ table.title }}</div>
+    <div class="card-body">
+        <h6 class="card-title">{{ table.title }}</h6>
         <div class="scrollable">
             <table class="table table-hover table-debug">
                 {% for k, v in table.rows %}

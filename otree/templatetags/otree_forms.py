@@ -7,7 +7,8 @@ from django.template import TemplateSyntaxError
 from django.template import Variable
 from django.template import VariableDoesNotExist
 from django.template.base import token_kwargs
-from django.template.loader import get_template
+from django.template.loader import render_to_string
+
 from django.utils import six
 
 from otree.models_concrete import UndefinedFormModel
@@ -15,7 +16,7 @@ from otree.models_concrete import UndefinedFormModel
 
 
 class FormFieldNode(Node):
-    default_template = get_template('otree/tags/_formfield.html')
+    default_template = 'otree/tags/_formfield.html'
 
     def __init__(self, field_variable_name, arg_dict):
         self.field_variable_name = field_variable_name
@@ -120,13 +121,10 @@ class FormFieldNode(Node):
         return extra_context
 
     def render(self, context):
+        t = context.template.engine.get_template(self.default_template)
         extra_context = self.get_extra_context(context)
-        context.update(extra_context)
-        try:
-            rendered = self.default_template.render(context)
-        finally:
-            context.pop()
-        return rendered
+        new_context = context.new(extra_context)
+        return t.render(new_context)
 
     @classmethod
     def parse(cls, parser, token):

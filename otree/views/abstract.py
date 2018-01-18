@@ -43,6 +43,7 @@ from otree.models_concrete import (
     CompletedGroupWaitPage, PageTimeout, UndefinedFormModel,
     ParticipantLockModel,
 )
+from django.core.handlers.exception import response_for_exception
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -199,13 +200,16 @@ class FormPageOrInGameWaitPage(vanilla.View):
 
             self.set_attributes(participant)
 
-            response = self.inner_dispatch()
+            try:
+                response = self.inner_dispatch()
+                # need to render the response before saving objects,
+                # because the template might call a method that modifies
+                # player/group/etc.
+                if hasattr(response, 'render'):
+                    response.render()
+            except Exception as exc:
+                response = response_for_exception(self.request, exc)
 
-            # need to render the response before saving objects,
-            # because the template might call a method that modifies
-            # player/group/etc.
-            if hasattr(response, 'render'):
-                response.render()
             otree.db.idmap.save_objects()
             if (self.participant.is_browser_bot and
                     'browser-bot-auto-submit' in response.content.decode('utf-8')):
@@ -477,18 +481,21 @@ class Page(FormPageOrInGameWaitPage):
         return self.get()
 
     def get(self):
-        if not self.is_displayed():
-            self._increment_index_in_pages()
-            return self._redirect_to_page_the_user_should_be_on()
+        try:
+            if not self.is_displayed():
+                self._increment_index_in_pages()
+                return self._redirect_to_page_the_user_should_be_on()
 
-        # this needs to be set AFTER scheduling submit_expired_url,
-        # to prevent race conditions.
-        # see that function for an explanation.
-        self.participant._current_form_page_url = self.request.path
-        self.object = self.get_object()
-        form = self.get_form(instance=self.object)
-        context = self.get_context_data(form=form)
-        return self.render_to_response(context)
+            # this needs to be set AFTER scheduling submit_expired_url,
+            # to prevent race conditions.
+            # see that function for an explanation.
+            self.participant._current_form_page_url = self.request.path
+            self.object = self.get_object()
+            form = self.get_form(instance=self.object)
+            context = self.get_context_data(form=form)
+            return self.render_to_response(context)
+        except Exception as exc:
+            return response_for_exception(self.request, exc)
 
     def get_template_names(self):
         if self.template_name is not None:
@@ -632,7 +639,11 @@ class Page(FormPageOrInGameWaitPage):
                                 bot_prettify_post_data(post_data),
                             ))
                 return response
-        self.before_next_page()
+        try:
+            self.before_next_page()
+        except Exception as exc:
+            return response_for_exception(self.request, exc)
+
         if self.participant.is_browser_bot:
             if self._index_in_pages == self.participant._max_page_index:
                 # fixme: is it right to set html=''?
@@ -925,6 +936,7 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
         if self._was_completed():
             return self._save_and_flush_and_response_when_ready()
         is_displayed = self.is_displayed()
+
         if self.group_by_arrival_time and not is_displayed:
             # in GBAT, either all players should skip a page, or none should.
             # we don't support some players skipping and others not.

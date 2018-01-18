@@ -7,7 +7,7 @@ from functools import reduce
 from collections import OrderedDict
 from decimal import Decimal
 import warnings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.conf import settings
 from django.db import transaction
 from django.db.utils import OperationalError
@@ -122,17 +122,6 @@ class SessionConfig(dict):
         self.setdefault('display_name', self['name'])
         self.setdefault('doc', '')
 
-        # TODO: fixed_pay is deprecated as of 2015-05-07,
-        # in favor of participation_fee. make this required at some point.
-        if (('participation_fee' not in self) and
-                ('fixed_pay' in self)):
-            warn_msg = (
-                "'fixed_pay' is deprecated; "
-                "you should rename it to 'participation_fee'.")
-            raise ValueError(warn_msg)
-
-            self['participation_fee'] = self['fixed_pay']
-
         self['participation_fee'] = RealWorldCurrency(
             self['participation_fee'])
 
@@ -141,11 +130,11 @@ class SessionConfig(dict):
         for app_name in self['app_sequence']:
             models_module = get_models_module(app_name)
             num_rounds = models_module.Constants.num_rounds
-            formatted_app_name = otree.common_internal.app_name_format(
-                app_name)
             if num_rounds > 1:
                 formatted_app_name = '{} ({} rounds)'.format(
-                    formatted_app_name, num_rounds)
+                    app_name, num_rounds)
+            else:
+                formatted_app_name = app_name
             subsssn = {
                 'doc': getattr(models_module, 'doc', ''),
                 'name': formatted_app_name}
@@ -305,8 +294,8 @@ def create_session(
         session_lcm = session_config.get_lcm()
         if num_participants % session_lcm:
             msg = (
-                'Session Config {}: Number of participants ({}) does not '
-                'divide evenly into group size ({})'
+                'Session Config {}: Number of participants ({}) is not a multiple '
+                'of group size ({})'
             ).format(session_config['name'], num_participants, session_lcm)
             raise ValueError(msg)
 

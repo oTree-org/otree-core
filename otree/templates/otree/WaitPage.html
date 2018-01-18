@@ -10,7 +10,7 @@
             background-color: #c0c0c0;
         }
 
-        .panel-primary {
+        .card {
             background: white;
             border: 1px solid #3b84c3;
             border-radius: 5px;
@@ -19,7 +19,7 @@
             margin: 22px auto;
         }
 
-        panel-body {
+        .card-body {
             margin-top: 10px;
         }
 
@@ -40,11 +40,11 @@
 {% block body_main %}
 
 <div class="otree-wait-page container">
-    <div class="panel panel-primary">
-        <div class="panel-heading">
-            <h3 class="otree-wait-page__title panel-title">{% block title %}{{ title_text }}{% endblock %}</h3>
-        </div>
-        <div class="panel-body">
+    <div class="card">
+        <h4 class="otree-wait-page__title card-header">
+            {% block title %}{{ title_text }}{% endblock %}
+        </h4>
+        <div class="card-body">
             <div id="_otree-server-error" class="alert alert-danger" style="display:none">
                 {% blocktrans trimmed %}An error occurred. Please check the logs or ask the administrator for help.{% endblocktrans %}
             </div>
@@ -52,8 +52,8 @@
             {% block content %}
             <p class="otree-wait-page__body">{{ body_text }}</p>
             {% endblock %}
-            <div class="progress progress-striped active">
-                <div class="progress-bar" role="progressbar"></div>
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"></div>
             </div>
         </div>
     </div>

@@ -15,12 +15,13 @@
 
     <p><span id="num_participants_visited"></span>/{{ session.num_participants }} participants started.</p>
     <br/>
+    {% if not session.use_browser_bots %}
     <button id="advance_users" class="btn btn-primary" type="button"
        data-toggle="popover" data-trigger="hover"
-       data-content="{{ advance_users_button_text }}"
-       {% if session.use_browser_bots %}disabled{% endif %}>
+       data-content="{{ advance_users_button_text }}">
         Advance slowest user(s)
     </button>
+    {% endif %}
 
 
     <br>
@@ -49,6 +50,8 @@ $(document).ready(function() {
     setup_ajax_advance();
 
     makeTableDraggable($('#monitor-table'));
+
+    $('[data-toggle="popover"]').popover();
 });
 // wrap timestamp into timeago tag
 function wrap_timestamp() {

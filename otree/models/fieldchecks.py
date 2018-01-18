@@ -10,5 +10,5 @@ def ensure_field(model, name, field):
         if not isinstance(existing_field, field.__class__):
             raise TypeError(
                 '{model} requires a field with name {name} of type {type}.'
-                .format(model=model, name=name, type=field.__class__.name))
+                .format(model=model, name=name, type=field.__class__.__name__))
     return field

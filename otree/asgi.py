@@ -2,12 +2,13 @@
 import os
 import channels.asgi
 
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+channel_layer = channels.asgi.get_channel_layer()
 
 from otree.common_internal import (
     release_any_stale_locks, get_redis_conn  # noqa
 )
-release_any_stale_locks()
 
 # clear any tasks in Huey DB, so they don't pile up over time,
 # especially if you run the server without the timeoutworker to consume the
@@ -22,4 +23,5 @@ HUEY.flush()
 from otree.bots.browser import redis_flush_bots  # noqa
 redis_flush_bots(get_redis_conn())
 
-channel_layer = channels.asgi.get_channel_layer()
+# needs to happen after Django setup
+release_any_stale_locks()

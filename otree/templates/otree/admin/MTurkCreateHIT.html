@@ -1,5 +1,5 @@
 {% extends "otree/admin/Session.html" %}
-{% load otree_tags floppyforms %}
+{% load otree %}
 
 {% block internal_scripts %}
     {{ block.super }}
@@ -40,9 +40,9 @@
         </tr>
         <tr>
             <td>
-                Run <code>pip3 install otree-core[mturk]</code>
+                Run <code>pip3 install otree[mturk]</code>
                 and in your <code>requirements_base.txt</code>,
-                replace <code>otree-core==N.N.N</code> with <code>otree-core[mturk]==N.N.N</code>.
+                replace <code>otree==N.N.N</code> with <code>otree[mturk]==N.N.N</code>.
                 This will install oTree along with extra MTurk-specific packages.
             </td>
             <td>{% if boto3_installed %}Yes{% else %}No{% endif %}</td>
@@ -89,17 +89,11 @@
           id="form">{% csrf_token %}
     <input type="hidden" value="{{ request.path }}" name="origin_url"/>
 
-    <div class="modal fade" id="mturk-production" tabindex="-1"
-         role="dialog" aria-labelledby="exampleModalLabel"
-         aria-hidden="true">
+    <div class="modal fade" id="mturk-production" tabindex="-1" role="dialog">
         <div class="modal-dialog">
-            <div class="modal-content panel-warning">
-                <div class="modal-header panel-heading">
-                    <button type="button" class="close"
-                            data-dismiss="modal" aria-label="Close"><span
-                            aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="exampleModalLabel">Publish
-                        HIT?</h4>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Publish HIT?</h4>
                 </div>
                 <div class="modal-body">
                     <p>
@@ -108,7 +102,7 @@
                     </p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default"
+                    <button type="button" class="btn btn-secondary"
                             data-dismiss="modal">Cancel
                     </button>
                     <button type="submit" class="btn btn-primary">Publish
@@ -119,7 +113,7 @@
         </div>
     </div>
     {% if not session.mturk_HITId %}
-        {% form form using "floppyforms/layouts/bootstrap.html" %}
+        {% include 'otree/forms/layouts/bootstrap.html' %}
         {% if missing_next_button_warning %}
         <div class="alert alert-warning">
             {{ missing_next_button_warning }}

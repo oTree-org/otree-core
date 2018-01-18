@@ -20,7 +20,7 @@ textarea.form-control {
 
 /* This allows the number field to contain around 7 digits. */
 input[type=number].form-control {
-    width: 100px;
+    max-width: 100px;
 }
 
 .input-group-narrow {
@@ -28,7 +28,7 @@ input[type=number].form-control {
      * type and input-group-addon. That way we don't allow a gap between the
      * two. See: https://github.com/oTree-org/otree-core/issues/257
      */
-    max-width: 10px;
+    max-width: 200px;
 }
 
 /* Dropdowns shall occupy only the needed space. */
@@ -39,6 +39,19 @@ select.form-control {
 .form-control-errors {
     margin-top: 5px;
     color: #b94a48;
+}
+
+/* Don't break BS3 wells */
+/* a little while after the oTree 2.0 upgrade, remove this */
+.instructions {
+    min-height: 20px;
+    padding: 19px;
+    margin-bottom: 20px;
+    background-color: #f5f5f5;
+    border: 1px solid #e3e3e3;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.05);
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.05);
 }
 
 
@@ -61,6 +74,11 @@ input[type=number] { -moz-appearance : textfield; }
 .help-block {
     margin-top:5px;
     margin-bottom:5px;
+}
+
+.page-header {
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 

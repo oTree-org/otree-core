@@ -1,5 +1,5 @@
 {% extends "otree/admin/Session.html" %}
-{% load floppyforms otree_tags %}
+{% load otree %}
 
 {% block content %}
     {{ block.super }}
@@ -7,7 +7,7 @@
     <form action="" method="post" role="form" class="form" id="form">
         {% csrf_token %}
         <input type="hidden" value="{{ request.path }}" name="origin_url"/>
-        {% form form using "floppyforms/layouts/bootstrap.html" %}
+        {% include "otree/forms/layouts/bootstrap.html" %}
         {% next_button %}
     </form>
 

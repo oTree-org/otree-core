@@ -1,0 +1,9 @@
+{% load l10n %}{% localize off %}
+    {% for name, value in widget.attrs.items %}
+        {{ name }}{% if widget.type != "checkbox" and widget.type != "radio" and name == "class" %}="form-control
+            {{ value }}"
+            {% else %}{% if value is not True %}="{{ value }}"{% endif %}
+        {% endif %}{% endfor %}
+    {% if widget.type != "checkbox" and widget.type != "radio" and "class" not in widget.attrs %} class="form-control"
+{% endif %}
+{% endlocalize %}

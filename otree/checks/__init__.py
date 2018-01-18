@@ -96,7 +96,7 @@ def files(helper: AppCheckHelper, **kwargs):
                     app=helper.app_config.label)
             )
             helper.add_error(
-                "TemplatesInWrongDir: Templates files in app's root template directory",
+                "TemplatesInWrongDir: Templates files in app's root template folder",
                 hint=hint, numeric_id=103,
             )
 
@@ -281,35 +281,11 @@ def template_valid(template_name: str, helper: AppCheckHelper):
     try:
         with io.open(template_name, 'r', encoding='utf8') as f:
             compiled_template = Template(f.read())
-    # 2017-10-25: what's the necessity of this? why check AOT?
-    # well, we are already compiling the template. extra perf cost is low
-    except TemplateSyntaxError as error:
-        # The django_template_source attribute will only be available on
-        # DEBUG = True.
-        if hasattr(error, 'django_template_source'):
-            template_source, position = error.django_template_source
-            snippet = format_source_snippet(
-                template_source.source,
-                arrow_position=position[0])
-            message = (
-                'Template syntax error in {template}\n'
-                '\n'
-                '{snippet}\n'
-                '\n'
-                'Error: {error}'.format(
-                    template=template_name,
-                    error=error,
-                    snippet=snippet))
-        else:
-            message = (
-                'Template syntax error in {template}\n'
-                'Error: {error}\n'
-                'Set "DEBUG = True" to see more details.'.format(
-                    template=template_name, error=error))
-        helper.add_error(message, numeric_id=70)
-        return
-    except (IOError, OSError):
-        # Ignore errors that occured during file-read or compilation.
+    except (IOError, OSError, TemplateSyntaxError):
+        # When we used Django 1.8
+        # we used to show the line from the source that caused the error,
+        # but django_template_source was removed at some point,
+        # so it's better to let the yellow error page show the error nicely
         return
 
     def format_content(text):

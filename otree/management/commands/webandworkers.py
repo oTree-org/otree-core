@@ -101,7 +101,7 @@ class Command(BaseCommand):
             except ImportError:
                 raise ImportError(
                     'To run oTree server in HTTPS mode for MTurk testing, you need pyopenssl. '
-                    'You can install it and related packages by installing otree-core[mturk].'
+                    'You can install it and related packages by installing otree[mturk].'
                 ) from None
             daphne_cmd += ' -e ssl:{}:privateKey={}:certKey={}:interface={}'.format(
                 port,

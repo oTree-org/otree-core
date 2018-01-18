@@ -1,6 +1,6 @@
 {% extends "otree/Base.html" %}
 {% load i18n %}
-{% load floppyforms otree_tags %}
+{% load otree %}
 {% block body_main %}
     <div class="otree-body container">
         <div class="page-header">
@@ -28,12 +28,9 @@
             <form action="" method="post" role="form" id="form">{% csrf_token %}
                 <input type="hidden" value="{{ request.path }}"
                        name="origin_url"/>
-                {% form form using %}
-                    {% formconfig row using "floppyforms/rows/bootstrap.html" %}
-                    <div class="_otree-content">
-                        {% block content %}{% endblock %}
-                    </div>
-                {% endform %}
+                <div class="_otree-content">
+                    {% block content %}{% endblock %}
+                </div>
             </form>
         </div>
         <br/>

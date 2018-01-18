@@ -3,14 +3,14 @@
 {{ block.super }}
 <div class="container" style='max-width:970px'>
     <p>
-    PDF generated: <strong>{% now "DATETIME_FORMAT" %}</strong>
+    Generated: <strong>{% now "DATETIME_FORMAT" %}</strong>
     </p>
 
 
     <h3>Session</h3>
     <table class="table">
         <tr>
-            <th>Session type</th>
+            <th>Session config</th>
             <td>{{ session.config.name }}</td>
         </tr>
 
@@ -68,7 +68,7 @@
 
 
     <h3>Notes/Signature</h3>
-    <div class="well well-lg">
+    <div class="card bg-light">
         <br/>
         <br/>
         <br/>

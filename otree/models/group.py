@@ -5,6 +5,7 @@ from otree.common_internal import (
 )
 from otree.models.fieldchecks import ensure_field
 import django.core.exceptions
+from django.db import models as djmodels
 
 ATTRIBUTE_ERROR_MESSAGE = '''
 Group object has no attribute '{}'. If it is a model field or method,
@@ -24,14 +25,15 @@ class BaseGroup(models.Model):
 
     def __getattribute__(self, name):
         try:
-            return super(BaseGroup, self).__getattribute__(name)
+            return super().__getattribute__(name)
         except AttributeError:
             raise AttributeError(ATTRIBUTE_ERROR_MESSAGE.format(name)) from None
 
     id_in_subsession = models.PositiveIntegerField(db_index=True)
 
     session = models.ForeignKey(
-        'otree.Session', related_name='%(app_label)s_%(class)s'
+        'otree.Session', related_name='%(app_label)s_%(class)s',
+        on_delete=models.CASCADE
     )
 
     round_number = models.PositiveIntegerField(db_index=True)
@@ -99,5 +101,7 @@ class BaseGroup(models.Model):
         """
         subsession_model = '{app_label}.Subsession'.format(
             app_label=cls._meta.app_label)
-        subsession_field = models.ForeignKey(subsession_model)
+        subsession_field = djmodels.ForeignKey(
+            subsession_model, on_delete=models.CASCADE
+        )
         ensure_field(cls, 'subsession', subsession_field)

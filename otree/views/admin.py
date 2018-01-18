@@ -7,6 +7,7 @@ import os
 import sys
 from collections import OrderedDict
 
+
 import channels
 import otree.bots.browser
 import otree.channels.utils as channel_utils
@@ -16,7 +17,7 @@ import otree.models
 import vanilla
 from django.conf import settings
 from django.contrib import messages
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, \
     Http404
 from django.shortcuts import get_object_or_404
@@ -33,7 +34,7 @@ from otree.models_concrete import (
     BrowserBotsLauncherSessionCode)
 from otree.session import SESSION_CONFIGS_DICT, create_session, SessionConfig
 from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
-
+from django.db.models import Case, Value, When
 
 def pretty_name(name):
     """Converts 'first_name' to 'first name'"""
@@ -249,7 +250,7 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
         context.update({
             'use_browser_bots': session.use_browser_bots(),
             'sqlite': sqlite,
-            'runserver': 'runserver' in sys.argv
+            'runserver': 'runserver' in sys.argv or 'devserver' in sys.argv
         })
 
         session_start_urls = [
@@ -630,7 +631,7 @@ class ServerCheck(vanilla.TemplateView):
         auth_level = settings.AUTH_LEVEL
         auth_level_ok = settings.AUTH_LEVEL in {'DEMO', 'STUDY'}
         heroku = self.app_is_on_heroku()
-        runserver = 'runserver' in sys.argv
+        runserver = ('runserver' in sys.argv) or ('devserver' in sys.argv)
         db_synced = not missing_db_tables()
         pypi_results = check_pypi_for_updates()
         worker_is_running = self.worker_is_running()
@@ -672,7 +673,7 @@ class CreateBrowserBotsSession(vanilla.View):
 
         return JsonResponse({
             'sqlite': sqlite,
-            'runserver': 'runserver' in sys.argv
+            'runserver': 'runserver' in sys.argv or 'devserver' in sys.argv
         })
 
     def post(self, request, *args, **kwargs):
@@ -722,18 +723,25 @@ class AdvanceSession(vanilla.View):
 class Sessions(vanilla.ListView):
     template_name = 'otree/admin/Sessions.html'
 
-    url_pattern = r"^sessions/(?P<archive>archive)?$"
+    url_pattern = r"^sessions/$"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.is_archive = self.request.GET.get('archived') == '1'
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = super(Sessions, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
+        archived_sessions_exist = Session.objects.filter(archived=True).exists()
         context.update({
+            'is_archive': self.is_archive,
             'is_debug': settings.DEBUG,
+            'archived_sessions_exist': archived_sessions_exist
         })
         return context
 
     def get_queryset(self):
         return Session.objects.filter(
-            is_demo=False).order_by('archived', '-pk')
+            is_demo=False, archived=self.is_archive).order_by('-pk')
 
 
 class ToggleArchivedSessions(vanilla.View):
@@ -742,22 +750,13 @@ class ToggleArchivedSessions(vanilla.View):
 
     def post(self, request, *args, **kwargs):
         code_list = request.POST.getlist('session')
-        sessions = otree.models.Session.objects.filter(
-            code__in=code_list)
-        code_dict = {True: [], False: []}
-        for code, archived in sessions.values_list('code', 'archived'):
-            code_dict[archived].append(code)
 
-        for code in code_list:
-            if not (code in code_dict[True] or code in code_dict[False]):
-                raise Http404('No session with the code %s.' % code)
-
-        # TODO: When `F` implements a toggle, use this instead:
-        #       sessions.update(archived=~F('archived'))
-        otree.models.Session.objects.filter(
-            code__in=code_dict[True]).update(archived=False)
-        otree.models.Session.objects.filter(
-            code__in=code_dict[False]).update(archived=True)
+        (Session.objects.filter(code__in=code_list)
+            .update(archived=Case(
+                When(archived=True, then=Value(False)),
+                default=Value(True))
+            )
+        )
 
         return HttpResponseRedirect(request.POST['origin_url'])
 

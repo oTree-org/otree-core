@@ -1,5 +1,4 @@
 from otree.extensions import get_extensions_modules, get_extensions_data_export_views
-from django.conf.urls import patterns
 import inspect
 from importlib import import_module
 
@@ -68,7 +67,7 @@ def url_patterns_from_game_module(module_name, name_in_url):
             urls.url(url_pattern, ViewCls.as_view(), name=url_name)
         )
 
-    return urls.patterns('', *view_urls)
+    return view_urls
 
 
 def url_patterns_from_module(module_name):
@@ -110,7 +109,7 @@ def url_patterns_from_module(module_name):
             urls.url(url_pattern, as_view, name=url_name)
         )
 
-    return urls.patterns('', *view_urls)
+    return view_urls
 
 
 def extensions_urlpatterns():
@@ -134,35 +133,36 @@ def extensions_export_urlpatterns():
             as_view = ViewCls.as_view()
         view_urls.append(urls.url(ViewCls.url_pattern, as_view, name=ViewCls.url_name))
 
-    return urls.patterns('', *view_urls)
+    return view_urls
 
 
-def augment_urlpatterns(urlpatterns):
+def get_urlpatterns():
 
-    urlpatterns += urls.patterns(
-        '',
+    from django.contrib.auth.views import login, logout
+
+    urlpatterns = [
         urls.url(r'^$', RedirectView.as_view(url='/demo', permanent=True)),
         urls.url(
             r'^accounts/login/$',
-            'django.contrib.auth.views.login',
+            login,
             {'template_name': 'otree/login.html'},
             name='login_url',
         ),
         urls.url(
             r'^accounts/logout/$',
-            'django.contrib.auth.views.logout',
+            logout,
             {'next_page': 'DemoIndex'},
             name='logout',
         ),
-    )
+    ]
 
-    rest_api_urlpatterns = (
+    rest_api_urlpatterns = [
         urls.url(r'^ping/$', Ping.as_view(), name="ping"),
         urls.url(
             r'^sessions/(?P<session_code>[a-z0-9]+)/participants/$',
             SessionParticipantsList.as_view(),
             name="session_participants_list")
-    )
+    ]
     urlpatterns += rest_api_urlpatterns
 
     urlpatterns += staticfiles_urlpatterns()
@@ -191,7 +191,6 @@ def augment_urlpatterns(urlpatterns):
     urlpatterns += url_patterns_from_module('otree.views.room')
     urlpatterns += url_patterns_from_module('otree.views.mturk')
     urlpatterns += url_patterns_from_module('otree.views.export')
-    urlpatterns += url_patterns_from_module('otree.chat.views')
 
     urlpatterns += extensions_urlpatterns()
     urlpatterns += extensions_export_urlpatterns()
@@ -199,5 +198,4 @@ def augment_urlpatterns(urlpatterns):
     return urlpatterns
 
 
-urlpatterns = patterns('',)
-augment_urlpatterns(urlpatterns)
+urlpatterns = get_urlpatterns()

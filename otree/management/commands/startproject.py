@@ -54,7 +54,8 @@ class Command(startproject.Command):
                     'Usually this can be resolved by entering this command:\n'
                     '/Applications/Python\\ {}.{}/Install\\ Certificates.command'
                 ).format(py_major, py_minor)
-                raise CommandError(msg)
+                self.stdout.write(msg)
+                sys.exit(-1)
             raise
         try:
             pypi_updates_cli()

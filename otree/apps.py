@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import colorama
 import otree.common_internal
 import sys
 import logging
@@ -13,15 +13,14 @@ from django.db.models import signals
 import six
 
 import otree
-from otree.models_concrete import UndefinedFormModel
 from otree.common_internal import (
     ensure_superuser_exists
 )
 logger = logging.getLogger('otree')
 
-import otree.checks
 
 def create_singleton_objects(sender, **kwargs):
+    from otree.models_concrete import UndefinedFormModel
     for ModelClass in [UndefinedFormModel]:
         # if it doesn't already exist, create one.
         ModelClass.objects.get_or_create()
@@ -48,7 +47,7 @@ def monkey_patch_static_tag():
             # automatically, so there is ordinarily no need to suggest
             # running collectstatic if a file is not found. It's more likely
             # that the file doesn't exist or wasn't added in git.
-            if 'runserver' in sys.argv:
+            if 'runserver' in sys.argv or 'devserver' in sys.argv:
                 msg = '{} - did you remember to run "otree collectstatic"?'
                 raise ValueError(msg.format(exc)) from None
             else:
@@ -75,10 +74,7 @@ def monkey_patch_db_cursor():
     '''
 
 
-    # This is actually a method
-    # it seems safe to monkey patch, because
-    # it hasn't changed for several releases.
-    # just a ~5-line function.
+    # In Django 2.0, this method is renamed to _execute.
     def execute(self, sql, params=None):
         self.db.validate_no_broken_transaction()
         with self.db.wrap_database_errors:
@@ -157,6 +153,9 @@ class OtreeConfig(AppConfig):
         # to initialize locks
         import otree.common_internal
 
+        colorama.init(autoreset=True)
+
+        import otree.checks
         otree.checks.register_system_checks()
 
 

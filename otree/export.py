@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from otree.common import Currency
+from otree.common import Currency, RealWorldCurrency
 from django.db.models import BinaryField
 import sys
 import datetime
@@ -23,7 +23,7 @@ from otree.session import SessionConfig
 
 from otree.models_concrete import (
     PageCompletion)
-from otree.common_internal import get_models_module, app_name_format
+from otree.common_internal import get_models_module
 import numbers
 
 import csv
@@ -132,6 +132,11 @@ def sanitize_for_csv(value):
         return 1
     if value is False:
         return 0
+    if isinstance(value, (Currency, RealWorldCurrency)):
+        # FIXME: django 1.11 upgrade: make sure querying currency values
+        # doesn't slow it down too much (behavior of .values() changed)
+        # Alexander has an idea, contact him if it's slow
+        return Decimal(value)
     if isinstance(value, numbers.Number):
         return value
     value = force_text(value)
@@ -492,7 +497,7 @@ def export_docs(fp, app_name):
                         'positive integer']
                     doc_dict[model_name][member_name]['doc'] = ['Unique ID']
                 elif member_name in field_names:
-                    member = Model._meta.get_field_by_name(member_name)[0]
+                    member = Model._meta.get_field(member_name)
 
                     internal_type = member.get_internal_type()
                     data_type = data_types_readable.get(
@@ -518,7 +523,7 @@ def export_docs(fp, app_name):
 
     def docs_as_string(doc_dict):
 
-        first_line = '{}: Documentation'.format(app_name_format(app_name))
+        first_line = '{}: Documentation'.format(app_name)
         second_line = '*' * len(first_line)
 
         lines = [

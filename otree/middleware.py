@@ -10,11 +10,14 @@ from django.http import HttpResponseServerError
 from otree.common_internal import missing_db_tables
 
 
-class CheckDBMiddleware(object):
-
+class CheckDBMiddleware:
     synced = None
 
-    def process_request(self, request):
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+
         if not CheckDBMiddleware.synced:
             missing_tables = missing_db_tables()
             if missing_tables:
@@ -28,3 +31,5 @@ class CheckDBMiddleware(object):
                 return HttpResponseServerError(msg)
             else:
                 CheckDBMiddleware.synced = True
+
+        return self.get_response(request)

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 import vanilla
 
@@ -16,7 +16,7 @@ MAX_SESSIONS_TO_CREATE = 1 if settings.DEBUG else 3
 
 class DemoIndex(vanilla.TemplateView):
 
-    template_name = 'otree/demo/index.html'
+    template_name = 'otree/DemoIndex.html'
 
     url_pattern = r'^demo/$'
 

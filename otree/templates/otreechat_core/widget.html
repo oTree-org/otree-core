@@ -1,3 +1,5 @@
+{% load otree %}
+
 <div class='otree-chat' id='_js-otree-chat-{{ channel }}'>
     <div class='otree-chat__messages'></div>
     <input type="text" class="otree-chat__input" size="40">
@@ -48,7 +50,7 @@ $(function () {
       });
     }
 
-    var varsFromDjango = {{ vars_for_js }};
+    var varsFromDjango = {{ vars_for_js|json }};
     var channel = varsFromDjango.channel;
     var socketPath = varsFromDjango.socket_path;
     var participantID = varsFromDjango.participant_id;

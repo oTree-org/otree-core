@@ -1,4 +1,4 @@
-import floppyforms.__future__ as forms
+from django import forms
 from otree.currency import to_dec
 from . import widgets
 

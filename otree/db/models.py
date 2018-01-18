@@ -46,6 +46,9 @@ class OTreeModelBase(IdMapModelBase):
             attrs["Meta"] = meta
 
         new_class = super().__new__(mcs, name, bases, attrs)
+        if not hasattr(new_class._meta, 'use_strong_refs'):
+            new_class._meta.use_strong_refs = False
+
 
         # 2015-12-22: this probably doesn't work anymore,
         # since we moved _choices to views.py
@@ -162,15 +165,14 @@ class _OtreeModelFieldMixin(object):
         if 'default' in kwargs and kwargs['default'] is None:
             kwargs.pop('default')
 
-        super(_OtreeModelFieldMixin, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 class _OtreeNumericFieldMixin(_OtreeModelFieldMixin):
     auto_submit_default = 0
 
 class BaseCurrencyField(
-    _OtreeNumericFieldMixin, models.DecimalField,
-    metaclass=models.SubfieldBase):
+    _OtreeNumericFieldMixin, models.DecimalField):
 
     MONEY_CLASS = None # need to set in subclasses
 
@@ -202,6 +204,14 @@ class BaseCurrencyField(
             return None
         return Decimal(self.to_python(value))
 
+    def from_db_value(self, value, expression, connection, context):
+        return self.to_python(value)
+
+
+class CurrencyField(BaseCurrencyField):
+    MONEY_CLASS = Currency
+    auto_submit_default = Currency(0)
+
     def formfield(self, **kwargs):
         import otree.forms
         defaults = {
@@ -212,14 +222,18 @@ class BaseCurrencyField(
         return super().formfield(**defaults)
 
 
-class CurrencyField(BaseCurrencyField):
-    MONEY_CLASS = Currency
-    auto_submit_default = Currency(0)
-
-
 class RealWorldCurrencyField(BaseCurrencyField):
     MONEY_CLASS = RealWorldCurrency
     auto_submit_default = RealWorldCurrency(0)
+
+    def formfield(self, **kwargs):
+        import otree.forms
+        defaults = {
+            'form_class': otree.forms.RealWorldCurrencyField,
+            'choices_form_class': otree.forms.CurrencyChoiceField,
+        }
+        defaults.update(kwargs)
+        return super().formfield(**defaults)
 
 
 class BooleanField(_OtreeModelFieldMixin, models.NullBooleanField):
@@ -251,7 +265,7 @@ class BooleanField(_OtreeModelFieldMixin, models.NullBooleanField):
         kwargs.setdefault('help_text', '')
         kwargs.setdefault('null', True)
 
-        super(BooleanField, self).__init__(
+        super().__init__(
             choices=choices,
             widget=widget,
             initial=initial,
@@ -267,7 +281,7 @@ class BooleanField(_OtreeModelFieldMixin, models.NullBooleanField):
     def clean(self, value, model_instance):
         if value is None and not self.allow_blank:
             raise exceptions.ValidationError(field_required_msg)
-        return super(BooleanField, self).clean(value, model_instance)
+        return super().clean(value, model_instance)
 
     def formfield(self, *args, **kwargs):
         from otree import widgets
@@ -279,7 +293,7 @@ class BooleanField(_OtreeModelFieldMixin, models.NullBooleanField):
             # this use the allow_blank for the form fields
             kwargs.setdefault('required', not self.allow_blank)
 
-        return super(BooleanField, self).formfield(*args, **kwargs)
+        return super().formfield(*args, **kwargs)
 
 
 class AutoField(_OtreeModelFieldMixin, models.AutoField):
@@ -295,9 +309,12 @@ class BinaryField(_OtreeModelFieldMixin, models.BinaryField):
     pass
 
 
-# FIXME: CharField should never be nullable, otherwise there is ambiguity
-# when a form field is left empty (whether it's null or empty string)
-class CharField(_OtreeModelFieldMixin, models.CharField):
+class StringField(_OtreeModelFieldMixin, models.CharField):
+    '''
+    Many people are already using initial=None, and i don't think it's
+    causing any problems, even though Django recommends against that, but
+    that's for forms on pages that get viewed multiple times
+    '''
     def __init__(
             self,
             *,
@@ -320,7 +337,7 @@ class CharField(_OtreeModelFieldMixin, models.CharField):
         kwargs.setdefault('help_text', '')
         kwargs.setdefault('null', True)
 
-        super(CharField, self).__init__(
+        super().__init__(
             choices=choices,
             widget=widget,
             initial=initial,
@@ -331,11 +348,6 @@ class CharField(_OtreeModelFieldMixin, models.CharField):
             **kwargs)
 
     auto_submit_default = ''
-
-
-class CommaSeparatedIntegerField(_OtreeModelFieldMixin,
-                                 models.CommaSeparatedIntegerField):
-    pass
 
 
 class DateField(_OtreeModelFieldMixin, models.DateField):
@@ -401,7 +413,7 @@ class SmallIntegerField(
     pass
 
 
-class TextField(_OtreeModelFieldMixin, models.TextField):
+class LongStringField(_OtreeModelFieldMixin, models.TextField):
     auto_submit_default = ''
 
 
@@ -413,11 +425,10 @@ class URLField(_OtreeModelFieldMixin, models.URLField):
     pass
 
 
+CharField = StringField
+TextField = LongStringField
 ForeignKey = models.ForeignKey
 ManyToOneRel = related.ManyToOneRel
 ManyToManyField = models.ManyToManyField
 OneToOneField = models.OneToOneField
-
-# aliases we might use in the future
-StringField = CharField
-LongStringField = TextField
+CASCADE = models.CASCADE
