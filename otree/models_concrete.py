@@ -66,13 +66,6 @@ class ParticipantToPlayerLookup(models.Model):
     url = models.CharField(max_length=300)
 
 
-class GlobalLockModel(models.Model):
-    class Meta:
-        app_label = "otree"
-
-    locked = models.BooleanField(default=False)
-
-
 class ParticipantLockModel(models.Model):
     class Meta:
         app_label = "otree"

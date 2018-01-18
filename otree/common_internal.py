@@ -27,6 +27,7 @@ from django.utils.safestring import mark_safe
 from huey.contrib.djhuey import HUEY
 import otree.channels.utils as channel_utils
 from six.moves import urllib
+import importlib
 
 # set to False if using runserver
 USE_REDIS = True
@@ -76,18 +77,19 @@ def get_models_module(app_name):
 
 
 def get_bots_module(app_name):
-    try:
-        bots_module_name = '{}.bots'.format(app_name)
-        bots_module = import_module(bots_module_name)
-    except ImportError:
-        bots_module_name = '{}.tests'.format(app_name)
-        bots_module = import_module(bots_module_name)
-    return bots_module
+    for module_name in ['tests', 'bots']:
+        dotted = '{}.{}'.format(app_name, module_name)
+        if importlib.util.find_spec(dotted):
+            return import_module(dotted)
+    raise ImportError('No tests/bots module found for app {}'.format(app_name))
 
 
 def get_views_module(app_name):
-    module_name = '{}.views'.format(app_name)
-    return import_module(module_name)
+    for module_name in ['views', 'pages']:
+        dotted = '{}.{}'.format(app_name, module_name)
+        if importlib.util.find_spec(dotted):
+            return import_module(dotted)
+    raise ImportError('No views/pages module found for app {}'.format(app_name))
 
 
 def get_app_constants(app_name):
@@ -218,8 +220,8 @@ def release_any_stale_locks():
     Need to release locks in case the server was stopped abruptly,
     and the 'finally' block in each lock did not execute
     '''
-    from otree.models_concrete import GlobalLockModel, ParticipantLockModel
-    for LockModel in [GlobalLockModel, ParticipantLockModel]:
+    from otree.models_concrete import ParticipantLockModel
+    for LockModel in [ParticipantLockModel]:
         try:
             LockModel.objects.filter(locked=True).update(locked=False)
         except:

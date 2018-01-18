@@ -62,51 +62,42 @@ class models:
                 choices=None,
                 widget=None,
                 initial=None,
-                verbose_name=None,
+                label=None,
                 doc='',
-                null=True,
-                help_text='',
+                blank=False,
                 **kwargs):
             pass
 
-    class CharField(str):
+    class StringField(str):
         def __init__(
                 self,
                 *,
                 choices=None,
                 widget=None,
                 initial=None,
-                verbose_name=None,
+                label=None,
                 doc='',
                 max_length=10000,
                 blank=False,
-                null=True,
-                help_text='',
+                **kwargs):
+            pass
+
+    class LongStringField(str):
+        def __init__(
+                self,
+                *,
+                initial=None,
+                label=None,
+                doc='',
+                max_length=None,
+                blank=False,
                 **kwargs):
             pass
 
     # need to copy-paste the __init__ between
-    # PositiveInteger, Integer, Float, and Currency
+    # Integer, Float, and Currency
     # because if I use inheritance, PyCharm doesn't auto-complete
     # while typing args
-
-    class PositiveIntegerField(int):
-
-        def __init__(
-            self,
-            *,
-            choices=None,
-            widget=None,
-            initial=None,
-            verbose_name=None,
-            doc='',
-            min=None,
-            max=None,
-            blank=False,
-            null=True,
-            help_text='',
-            **kwargs):
-                pass
 
     class IntegerField(int):
         def __init__(
@@ -115,13 +106,11 @@ class models:
             choices=None,
             widget=None,
             initial=None,
-            verbose_name=None,
+            label=None,
             doc='',
             min=None,
             max=None,
             blank=False,
-            null=True,
-            help_text='',
             **kwargs):
                 pass
 
@@ -132,13 +121,11 @@ class models:
             choices=None,
             widget=None,
             initial=None,
-            verbose_name=None,
+            label=None,
             doc='',
             min=None,
             max=None,
             blank=False,
-            null=True,
-            help_text='',
             **kwargs):
                 pass
 
@@ -149,30 +136,30 @@ class models:
             choices=None,
             widget=None,
             initial=None,
-            verbose_name=None,
+            label=None,
             doc='',
             min=None,
             max=None,
             blank=False,
-            null=True,
-            help_text='',
             **kwargs):
                 pass
 
-    class TextField(str):
-        pass
 
 
 class widgets:
     def __getattr__(self, item):
         pass
 
-    class HiddenInput: pass
+    # don't need HiddenInput because you can just write <input type="hidden" ...>
+    # and then you know the element's selector
     class CheckboxInput: pass
     class Select: pass
     class RadioSelect: pass
     class RadioSelectHorizontal: pass
-    class SliderInput: pass
+    class Slider: pass
+    # useful if you use choices= but don't want a dropdown
+    # (e.g. don't want bias)
+    class TextInput: pass
 
 
 class Session:

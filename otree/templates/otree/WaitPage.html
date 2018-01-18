@@ -39,12 +39,10 @@
 
 {% block body_main %}
 
-<!-- use the selector .otree-wait-page -->
-<div class="otree-wait-page container" id="otree-wait-page-body">
+<div class="otree-wait-page container">
     <div class="panel panel-primary">
         <div class="panel-heading">
-            <!-- use the selector .otree-wait-page__title -->
-            <h3 class="otree-wait-page__title panel-title" id="otree-wait-page-title-text">{% block title %}{{ title_text }}{% endblock %}</h3>
+            <h3 class="otree-wait-page__title panel-title">{% block title %}{{ title_text }}{% endblock %}</h3>
         </div>
         <div class="panel-body">
             <div id="_otree-server-error" class="alert alert-danger" style="display:none">
@@ -52,8 +50,7 @@
             </div>
             <div id="error-traceback" class="alert alert-danger" style="display:none"></div>
             {% block content %}
-            <!-- use the selector .otree-wait-page__body -->
-            <p class="otree-wait-page__body" id="otree-wait-page-body-text">{{ body_text }}</p>
+            <p class="otree-wait-page__body">{{ body_text }}</p>
             {% endblock %}
             <div class="progress progress-striped active">
                 <div class="progress-bar" role="progressbar"></div>

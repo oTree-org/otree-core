@@ -114,21 +114,25 @@
     {% endif %}
 
     {% if not runserver %}
-        {% if timeoutworker %}
+        {% if worker_is_running %}
             <div class="alert alert-success">
-            The timeoutworker is running
+            The worker process is running
             </div>
         {% else %}
         <div class="alert alert-warning">
-            <strong>No timeoutworker found</strong>
-            <p>If your study has timeouts on pages (with <code>timeout_seconds</code>),
-            then the timeoutworker will automatically advance a user when they exceed the timeout,
-            even if they close their browser.
-            Also, the timeoutworker is necessary if you want to use browser bots.
-            </p>
+            <strong>No worker process found</strong>
+            <p>The worker process enables the following functionality:</p>
+            <ul>
+                <li>Browser bots</li>
+                <li>If your study has timeouts on pages (with <code>timeout_seconds</code>),
+                    then the timeoutworker will automatically advance a user
+                    when they exceed the timeout,
+                    even if they close their browser.
+                </li>
+            </ul>
 
             {% if heroku %}
-                <p>In your app dashboard, make sure your timeoutworker dyno is turned on.</p>
+                <p>In your app dashboard, make sure the second dyno is turned on.</p>
             {% else %}
                 <p>
                     It is launched automatically as part of <code>otree runprodserver</code>.

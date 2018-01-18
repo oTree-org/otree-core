@@ -27,7 +27,7 @@ class Command(BaseCommand):
 
         manager = Manager()
 
-
+        # if I change these, I need to modify the ServerCheck also
         manager.add_process(
             'botworker',
             'otree botworker',

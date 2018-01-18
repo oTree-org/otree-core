@@ -1,11 +1,10 @@
 # In consumers.py
 from channels import Group, Channel
 from .models import ChatMessage
-from otree.models.participant import Participant
 import json
-from channels.generic.websockets import JsonWebsocketConsumer
-from otree.channels.consumers import OTreeJsonWebsocketConsumer
-from django.core.signing import Signer
+from otree.channels.consumers import (
+    OTreeJsonWebsocketConsumer, InvalidWebSocketParams)
+from django.core.signing import Signer, BadSignature
 
 def get_chat_group(channel):
     return 'otreechat-{}'.format(channel)
@@ -19,7 +18,11 @@ class ChatConsumer(OTreeJsonWebsocketConsumer):
     def clean_kwargs(self, params):
 
         signer = Signer(sep='/')
-        original_params = signer.unsign(params)
+        try:
+            original_params = signer.unsign(params)
+        except BadSignature:
+            raise InvalidWebSocketParams
+
         channel, participant_id = original_params.split('/')
 
         return {

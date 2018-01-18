@@ -13,10 +13,6 @@ with open('README.rst', encoding='utf-8') as f:
 with open('requirements.txt', encoding='utf-8') as f:
     required = f.read().splitlines()
 
-if os.name == 'nt':
-    # http://twistedmatrix.com/trac/ticket/6032
-    required.append('pypiwin32==220')
-
 with open('requirements_mturk.txt', encoding='utf-8') as f:
     required_mturk = f.read().splitlines()
 

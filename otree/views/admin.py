@@ -612,7 +612,7 @@ class ServerCheck(vanilla.TemplateView):
     def app_is_on_heroku(self):
         return 'heroku' in self.request.get_host()
 
-    def timeoutworker_is_running(self):
+    def worker_is_running(self):
         if otree.common_internal.USE_REDIS:
             redis_conn = otree.common_internal.get_redis_conn()
             return otree.bots.browser.ping_bool(redis_conn, timeout=2)
@@ -633,7 +633,7 @@ class ServerCheck(vanilla.TemplateView):
         runserver = 'runserver' in sys.argv
         db_synced = not missing_db_tables()
         pypi_results = check_pypi_for_updates()
-        timeoutworker = self.timeoutworker_is_running()
+        worker_is_running = self.worker_is_running()
 
         return {
             'sqlite': sqlite,
@@ -645,7 +645,7 @@ class ServerCheck(vanilla.TemplateView):
             'runserver': runserver,
             'db_synced': db_synced,
             'pypi_results': pypi_results,
-            'timeoutworker': timeoutworker,
+            'worker_is_running': worker_is_running,
         }
 
 

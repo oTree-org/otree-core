@@ -6,6 +6,7 @@ from otree.chat.consumers import ChatConsumer
 channel_routing = [
     route_class(
         ChatConsumer,
-        path=r"^/otreechat/(?P<params>[a-zA-Z0-9_/-]+)/$"),
+        # so it doesn't clash with addon
+        path=r"^/otreechat_core/(?P<params>[a-zA-Z0-9_/-]+)/$"),
     #route('otree.chat_messages', msg_consumer),
 ]

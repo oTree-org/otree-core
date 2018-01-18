@@ -8,6 +8,9 @@
 {% endblock %}</h2>
 
 <form method="get">
+    {% if invalid_label %}
+        <p class="error text-danger">Invalid label; try again.</p>
+    {% endif %}
     <label for="participant_label">{% trans 'Please enter your participant label.' %}</label>
     <br/>
     <input type="text" id="participant_label" name="participant_label" class="form-control" />

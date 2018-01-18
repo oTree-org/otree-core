@@ -11,7 +11,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from otree.views.rest import SessionParticipantsList, Ping
 
-from otree.common_internal import get_models_module
+from otree import common_internal
 
 
 STUDY_UNRESTRICTED_VIEWS = {
@@ -169,7 +169,7 @@ def augment_urlpatterns(urlpatterns):
 
     used_names_in_url = set()
     for app_name in settings.INSTALLED_OTREE_APPS:
-        models_module = get_models_module(app_name)
+        models_module = common_internal.get_models_module(app_name)
         name_in_url = models_module.Constants.name_in_url
         if name_in_url in used_names_in_url:
             msg = (
@@ -179,9 +179,11 @@ def augment_urlpatterns(urlpatterns):
             raise ValueError(msg)
 
         used_names_in_url.add(name_in_url)
-        views_module_name = '{}.views'.format(app_name)
+
+        views_module = common_internal.get_views_module(app_name)
         urlpatterns += url_patterns_from_game_module(
-            views_module_name, name_in_url)
+            views_module.__name__, name_in_url)
+
 
     urlpatterns += url_patterns_from_module('otree.views.participant')
     urlpatterns += url_patterns_from_module('otree.views.demo')

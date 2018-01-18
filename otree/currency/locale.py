@@ -1,13 +1,18 @@
-CURRENCY_SYMBOLS = a = {
+# these symbols are a fallback if we don't have an explicit rule
+# for the currency/language combination.
+# (most common situation is where the language is English)
+
+CURRENCY_SYMBOLS = {
     'AED': 'AED',
     'ARS': '$',
     'AUD': '$',
     'BRL': 'R$',
     'CAD': '$',
     'CHF': 'CHF',
-    'CNY': '￥',
+    # 2017-11-29: this used to be ￥, don't know where that came from
+    'CNY': '¥',
     'CZK': 'Kč',
-    'DKK': 'kr.',
+    'DKK': 'kr',
     'EGP': 'ج.م.‏',
     'EUR': '€',
     'GBP': '£',
@@ -15,7 +20,7 @@ CURRENCY_SYMBOLS = a = {
     'HUF': 'Ft',
     'ILS': '₪',
     'INR': '₹',
-    'JPY': '￥',
+    'JPY': '¥',
     'KRW': '₩',
     'MXN': '$',
     'MYR': 'RM',
@@ -27,13 +32,15 @@ CURRENCY_SYMBOLS = a = {
     'THB': 'THB',
     'TRY': '₺',
     'TWD': '$',
-    'UAH': '₴',
     'USD': '$',
     'ZAR': 'R',
 }
 
 
 def get_currency_format(lc: str, LO: str, CUR: str) -> str:
+
+    '''because of all the if statements, this has very low code coverage
+    but it's ok'''
 
     ##############################
     # Languages with complex rules
@@ -49,12 +56,12 @@ def get_currency_format(lc: str, LO: str, CUR: str) -> str:
         if CUR == 'INR':
             return '₹ #'
         if CUR == 'SGD':
-            return 'SGD #'
+            return '$#'
         return '¤#'
 
     if lc == 'zh':
         if CUR == 'CNY':
-            return '￥#'
+            return '¥#'
         if CUR == 'HKD':
             return 'HK$#'
         if CUR == 'TWD':
@@ -82,14 +89,14 @@ def get_currency_format(lc: str, LO: str, CUR: str) -> str:
         return '# ¤'
 
     if lc == 'nl':
-        if LO == 'NL':
-            if CUR == 'EUR':
-                return '€ #'
-            return '¤ #'
         if LO == 'BE':
             if CUR == 'EUR':
                 return '# €'
             return '# ¤'
+        # default NL
+        if CUR == 'EUR':
+            return '€ #'
+        return '¤ #'
 
     if lc == 'pt':
         if CUR == 'BRL':
@@ -101,10 +108,6 @@ def get_currency_format(lc: str, LO: str, CUR: str) -> str:
     if lc == 'ar':
         if CUR == 'AED':
             return 'د.إ.‏ #'
-        return '¤ #'
-    if lc == 'ar':
-        if CUR == 'EGP':
-            return 'ج.م.‏ #'
         return '¤ #'
 
     #############################
@@ -141,7 +144,7 @@ def get_currency_format(lc: str, LO: str, CUR: str) -> str:
         return '# ¤'
     if lc == 'ja':
         if CUR == 'JPY':
-            return '￥#'
+            return '¥#'
         return '¤#'
     if lc == 'ko':
         if CUR == 'KRW':
@@ -151,7 +154,7 @@ def get_currency_format(lc: str, LO: str, CUR: str) -> str:
         if CUR == 'MYR':
             return 'RM#'
         return '¤#'
-    if lc == 'no':
+    if lc == 'nb':
         if CUR == 'NOK':
             return 'kr #'
         return '¤ #'
@@ -174,10 +177,6 @@ def get_currency_format(lc: str, LO: str, CUR: str) -> str:
     if lc == 'tr':
         if CUR == 'TRY':
             return '# ₺'
-        return '# ¤'
-    if lc == 'uk':
-        if CUR == 'UAH':
-            return '# ₴'
         return '# ¤'
     if lc == 'zu':
         if CUR == 'ZAR':
@@ -227,7 +226,6 @@ curs = [('ar_AE', 'AED'),
  ('sv_SE', 'SEK'),
  ('th', 'THB'),
  ('tr_TR', 'TRY'),
- ('uk', 'UAH'),
  ('zh_CN', 'CNY'),
  ('zh_HK', 'HKD'),
  ('zh_TW', 'TWD'),
@@ -278,7 +276,6 @@ ru		RUB	1,00 ₽
 sv	SE	SEK	1,00 kr
 th		THB	THB1.00
 tr	TR	TRY	1,00 ₺
-uk		UAH	1,00 ₴
 zh	CN	CNY	￥1.00
 zh	HK	HKD	HK$1.00
 zh	TW	TWD	$1.00
@@ -321,13 +318,17 @@ ru		RUB	-1,00 ₽
 sv	SE	SEK	-1,00 kr
 th		THB	-THB1.00
 tr	TR	TRY	-1,00 ₺
-uk		UAH	-1,00 ₴
 zh	CN	CNY	-￥1.00
 zh	HK	HKD	-HK$1.00
 zh	TW	TWD	-$1.00
 zu		ZAR	-R1.00
 
 In English:
+
+# comment: this is maybe not optimal for our use, 
+because experiments in non-USD currencies are usually run locally, 
+where people are already familiar with the currency. 
+In Canada, people don't write 'CA$1.00', they just write $1.00.
 
 AED en_US AED1.00
 EGP en_US E£1.00
@@ -364,7 +365,6 @@ RUB en_US ₽1.00
 SEK en_US kr1.00
 THB en_US ฿1.00
 TRY en_US ₺1.00
-UAH en_US ₴1.00
 CNY en_US CN¥1.00
 HKD en_US HK$1.00
 TWD en_US NT$1.00

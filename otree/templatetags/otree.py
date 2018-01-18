@@ -1,6 +1,7 @@
+from otree.currency import Currency
+
 from .otree_tags import (
     template, FormFieldNode, NextButtonNode,
-    c, abs_value, safe_json
 )
 from otree.chat.models import chat_template_tag
 from otree.api import safe_json
@@ -14,10 +15,33 @@ from otree.api import safe_json
 register = template.Library()
 register.tag('formfield', FormFieldNode.parse)
 register.tag('next_button', NextButtonNode.parse)
-register.filter(name='c', filter_func=c)
-register.filter(name='abs', filter_func=abs_value)
-register.filter(name='json', filter_func=safe_json)
 
-@register.inclusion_tag('otreechat/widget.html', takes_context=True)
+def my_abs(val):
+    '''
+    it seems you can't use a builtin as a filter_func:
+    File "C:\oTree\venv\lib\site-packages\django\template\base.py", line 1179, in filter
+    filter_func._filter_name = name
+    AttributeError: 'builtin_function_or_method' object has no attribute '_filter_name'
+    '''
+    return abs(val)
+
+# it seems that if you use positional args, PyCharm autocomplete doesn't work
+# (highlights in yellow)
+register.filter('abs', my_abs)
+
+# use decorator because that way, PyCharm
+# will autocomplete it correctly (no yellow highlight)
+# i think that's safer than registering the Currency function directly,
+# because it seems that Library.filter mutates the filter_func (see above)
+@register.filter
+def c(val):
+    return Currency(val)
+
+@register.filter
+def json(val):
+    return safe_json(val)
+
+# this code is duplicated in otree_tags.py
+@register.inclusion_tag('otreechat_core/widget.html', takes_context=True, name='chat')
 def chat(context, *args, **kwargs):
     return chat_template_tag(context, *args, **kwargs)

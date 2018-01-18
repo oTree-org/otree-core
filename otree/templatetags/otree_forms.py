@@ -53,12 +53,11 @@ class FormFieldNode(Node):
                 if type(instance_from_view) == UndefinedFormModel:
                     raise ValueError(
                         'Template contains a formfield, but '
-                        'you did not set form_model on the Page '
-                        'in views.py.'
+                        'you did not set form_model on the Page class.'
                     )
                 elif type(instance_in_template) != type(instance_from_view):
                     raise ValueError(
-                        'In views.py you set form_model to {!r}, '
+                        'In the page class, you set form_model to {!r}, '
                         'but in the template you have a formfield for '
                         '"{}", which is a different model.'.format(
                             type(instance_from_view),
@@ -81,8 +80,7 @@ class FormFieldNode(Node):
                 except KeyError:
                     raise ValueError(
                         "'{field_name}' was used as a formfield in the template, "
-                        "but was not included in the Page's 'form_fields' "
-                        "in views.py ".format(
+                        "but was not included in the Page's 'form_fields'".format(
                             field_name=field_name)) from None
 
         # Second we try to resolve it to a bound field.
@@ -132,6 +130,15 @@ class FormFieldNode(Node):
 
     @classmethod
     def parse(cls, parser, token):
+
+        # {% formfield player.f1 label="f1 label" %}
+        # ...yields:
+        # ['formfield', 'player.f1', 'label="f1 label"']
+
+        # {% formfield player.f2 "f2 label with no kwarg" %}
+        # ...yields:
+        # ['formfield', 'player.f2', '"f2 label with no kwarg"']
+
         bits = token.split_contents()
         tagname = bits.pop(0)
         if len(bits) < 1:

@@ -7,7 +7,7 @@ from .models import ChatMessage
 
 class ExportChat(vanilla.View):
 
-    url_pattern = '^otreechat_export/$'
+    url_pattern = '^otreechatcore_export/$'
 
     def get(request, *args, **kwargs):
 

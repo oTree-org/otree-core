@@ -8,6 +8,7 @@ import floppyforms.__future__ as forms
 import floppyforms.widgets
 from otree.currency.locale import CURRENCY_SYMBOLS
 
+# this __all__ is used by otree.widgets, which is the old widgets module
 __all__ = (
     '_BaseMoneyInput',
     'CheckboxInput',
@@ -17,7 +18,7 @@ __all__ = (
     'NullBooleanSelect', 'NumberInput', 'PasswordInput',
     'PhoneNumberInput', 'RadioSelect', 'RadioSelectHorizontal', 'RangeInput',
     'SearchInput', 'Select', 'SelectDateWidget',
-    'SliderInput', 'SlugInput', 'SplitDateTimeWidget',
+    'Slider', 'SliderInput', 'SlugInput', 'SplitDateTimeWidget',
     'SplitHiddenDateTimeWidget', 'TextInput', 'Textarea', 'TimeInput',
     'URLInput', 'Widget',
 )
@@ -97,7 +98,7 @@ class RadioSelectHorizontal(forms.RadioSelect):
     template_name = 'floppyforms/radio_select_horizontal.html'
 
 
-class SliderInput(forms.RangeInput):
+class Slider(forms.RangeInput):
     template_name = 'floppyforms/slider.html'
     show_value = True
 
@@ -105,7 +106,7 @@ class SliderInput(forms.RangeInput):
         show_value = kwargs.pop('show_value', None)
         if show_value is not None:
             self.show_value = show_value
-        super(SliderInput, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def _format_value(self, value):
         if isinstance(value, (Currency, RealWorldCurrency)):
@@ -113,6 +114,10 @@ class SliderInput(forms.RangeInput):
         return force_text(value)
 
     def get_context(self, *args, **kwargs):
-        context = super(SliderInput, self).get_context(*args, **kwargs)
+        context = super().get_context(*args, **kwargs)
         context['show_value'] = self.show_value
         return context
+
+class SliderInput(Slider):
+    '''old name for Slider widget'''
+    pass

@@ -246,10 +246,10 @@ def to_dec(value):
 
 def format_currency(number, lc, LO, CUR):
 
-    currency_symbol = CURRENCY_SYMBOLS.get(CUR, CUR)
+    symbol = CURRENCY_SYMBOLS.get(CUR, CUR)
     c_format = get_currency_format(lc, LO, CUR)
     formatted_abs = formats.number_format(abs(number))
-    retval = c_format.replace('¤', CUR).replace('#', formatted_abs)
+    retval = c_format.replace('¤', symbol).replace('#', formatted_abs)
     if number < 0:
         retval = '-{}'.format(retval)
     return retval

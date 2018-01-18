@@ -2,11 +2,9 @@
 {% load i18n %}
 {% load floppyforms otree_tags %}
 {% block body_main %}
-    <!-- use the selector .otree-body -->
-    <div class="otree-body container" id="otree-body">
+    <div class="otree-body container">
         <div class="page-header">
-            <!-- use the selector .otree-title -->
-            <h2 class="otree-title" id="otree-title">{% block title %}{% endblock %}</h2>
+            <h2 class="otree-title">{% block title %}{% endblock %}</h2>
         </div>
         <div>
             {% if view.remaining_timeout_seconds != None %}
@@ -14,8 +12,7 @@
             {% endif %}
 
             {% if form.errors %}
-                <!-- use the selector .otree-form-errors -->
-                <div class="otree-form-errors alert alert-danger" id="otree-form-errors">
+                <div class="otree-form-errors alert alert-danger">
                     {% blocktrans trimmed %}Please fix the errors in the form.{% endblocktrans %}
                     {{ form.non_field_errors }}
                 </div>

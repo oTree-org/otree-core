@@ -118,13 +118,11 @@ class _OtreeModelFieldMixin(object):
             choices=None,
             widget=None,
             initial=None,
-            verbose_name=None,
+            label=None,
             doc='',
             min=None,
             max=None,
             blank=False,
-            null=True,
-            help_text='',
             **kwargs):
 
         # ...but put them all back into kwargs so that there is a consistent
@@ -133,24 +131,28 @@ class _OtreeModelFieldMixin(object):
             choices=choices,
             widget=widget,
             initial=initial,
-            verbose_name=verbose_name,
+            label=label,
             doc=doc,
             min=min,
             max=max,
             blank=blank,
-            null=null,
-            help_text=help_text,
         ))
 
         self.set_otree_properties(kwargs)
         self.fix_choices_arg(kwargs)
 
+        kwargs.setdefault('help_text', '')
+        kwargs.setdefault('null', True)
+
+        # to be more consistent with {% formfield %}
+        # this is more intuitive for newbies
+        kwargs.setdefault('verbose_name', kwargs.pop('label'))
+
         # "initial" is an alias for default. in the context of oTree, 'initial'
         # is a more intuitive name. (since the user never instantiates objects
         # themselves. also, "default" could be misleading -- people could think
         # it's the default choice in the form
-        if 'initial' in kwargs:
-            kwargs.setdefault('default', kwargs.pop('initial'))
+        kwargs.setdefault('default', kwargs.pop('initial'))
 
         # if default=None, Django will omit the blank choice from form widget
         # https://code.djangoproject.com/ticket/10792
@@ -229,10 +231,8 @@ class BooleanField(_OtreeModelFieldMixin, models.NullBooleanField):
                  choices=None,
                  widget=None,
                  initial=None,
-                 verbose_name=None,
+                 label=None,
                  doc='',
-                 null=True,
-                 help_text='',
                  **kwargs):
         # 2015-1-19: why is this here? isn't this the default behavior?
         # 2013-1-26: ah, because we don't want the "----" (None) choice
@@ -248,14 +248,15 @@ class BooleanField(_OtreeModelFieldMixin, models.NullBooleanField):
         # checkbox input is used.
         self._blank_is_explicit = 'blank' in kwargs
 
+        kwargs.setdefault('help_text', '')
+        kwargs.setdefault('null', True)
+
         super(BooleanField, self).__init__(
             choices=choices,
             widget=widget,
             initial=initial,
-            verbose_name=verbose_name,
+            label=label,
             doc=doc,
-            null=null,
-            help_text=help_text,
             **kwargs)
 
         # you cant override "blank" or you will destroy the migration system
@@ -294,8 +295,8 @@ class BinaryField(_OtreeModelFieldMixin, models.BinaryField):
     pass
 
 
-# FIXME: CharField should never be nullable, otherwise we have to check for two
-#        empty values: None and the empty string.
+# FIXME: CharField should never be nullable, otherwise there is ambiguity
+# when a form field is left empty (whether it's null or empty string)
 class CharField(_OtreeModelFieldMixin, models.CharField):
     def __init__(
             self,
@@ -303,7 +304,7 @@ class CharField(_OtreeModelFieldMixin, models.CharField):
             choices=None,
             widget=None,
             initial=None,
-            verbose_name=None,
+            label=None,
             doc='',
             # varchar max length doesn't affect performance or even storage
             # size; it's just for validation. so, to be easy to use,
@@ -314,19 +315,19 @@ class CharField(_OtreeModelFieldMixin, models.CharField):
             # which have explicit max_lengths anyway.
             max_length=10000,
             blank=False,
-            null=True,
-            help_text='',
             **kwargs):
+
+        kwargs.setdefault('help_text', '')
+        kwargs.setdefault('null', True)
+
         super(CharField, self).__init__(
             choices=choices,
             widget=widget,
             initial=initial,
-            verbose_name=verbose_name,
+            label=label,
             doc=doc,
             max_length=max_length,
             blank=blank,
-            null=null,
-            help_text=help_text,
             **kwargs)
 
     auto_submit_default = ''
@@ -416,3 +417,7 @@ ForeignKey = models.ForeignKey
 ManyToOneRel = related.ManyToOneRel
 ManyToManyField = models.ManyToManyField
 OneToOneField = models.OneToOneField
+
+# aliases we might use in the future
+StringField = CharField
+LongStringField = TextField

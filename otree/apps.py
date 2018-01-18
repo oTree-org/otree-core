@@ -13,18 +13,16 @@ from django.db.models import signals
 import six
 
 import otree
-from otree.models_concrete import UndefinedFormModel, GlobalLockModel
+from otree.models_concrete import UndefinedFormModel
 from otree.common_internal import (
     ensure_superuser_exists
 )
 logger = logging.getLogger('otree')
 
-# 2017-02-10: move this inside AppConfig.ready?
-import_module('otree.checks')   # this made that style check work
-
+import otree.checks
 
 def create_singleton_objects(sender, **kwargs):
-    for ModelClass in (UndefinedFormModel, GlobalLockModel):
+    for ModelClass in [UndefinedFormModel]:
         # if it doesn't already exist, create one.
         ModelClass.objects.get_or_create()
 
@@ -158,6 +156,8 @@ class OtreeConfig(AppConfig):
         monkey_patch_db_cursor()
         # to initialize locks
         import otree.common_internal
+
+        otree.checks.register_system_checks()
 
 
 

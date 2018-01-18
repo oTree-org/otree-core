@@ -95,7 +95,7 @@ class Command(BaseCommand):
         port = port or os.environ.get('PORT') or DEFAULT_PORT
 
         daphne_cmd = 'daphne otree.asgi:channel_layer'
-        if options['dev_https']:
+        if False: #options['dev_https']: # disabled until we upgrade channels
             try:
                 import OpenSSL
             except ImportError:

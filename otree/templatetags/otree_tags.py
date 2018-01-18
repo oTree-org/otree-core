@@ -1,13 +1,13 @@
+import otree.common_internal
 from django import template
-from django.template.loader import render_to_string
 from django.core.urlresolvers import Resolver404, reverse
+from django.template.loader import render_to_string
+from otree.chat.models import (
+    chat_template_tag)
+from otree.common import safe_json
+from otree.currency import Currency
 from .otree_forms import FormFieldNode
 from .otree_forms import defaultlabel
-from otree.common import Currency, safe_json
-import otree.common_internal
-from otree.chat.models import (
-    ChatTagError, chat_template_tag)
-import re
 
 
 class NextButtonNode(template.Node):
@@ -52,15 +52,17 @@ def ensure_superuser_exists():
         return ''
     return NO_USER_MSG
 
-
 def c(val):
     return Currency(val)
 
-
-def abs_value(var):
-    return abs(var)
-
-
+def my_abs(val):
+    '''
+    it seems you can't use a builtin as a filter_func:
+    File "C:\oTree\venv\lib\site-packages\django\template\base.py", line 1179, in filter
+    filter_func._filter_name = name
+    AttributeError: 'builtin_function_or_method' object has no attribute '_filter_name'
+    '''
+    return abs(val)
 
 register = template.Library()
 register.tag('formfield', FormFieldNode.parse)
@@ -69,10 +71,11 @@ register.simple_tag(name='ensure_superuser_exists',
                     func=ensure_superuser_exists)
 register.simple_tag(name='active_page', func=active_page)
 register.filter(name='c', filter_func=c)
-register.filter(name='abs', filter_func=abs_value)
+register.filter(name='abs', filter_func=my_abs)
 register.filter('json', safe_json)
 register.filter('defaultlabel', defaultlabel)
 
-@register.inclusion_tag('otreechat/widget.html', takes_context=True, name='chat')
+# this code is duplicated in otree.py
+@register.inclusion_tag('otreechat_core/widget.html', takes_context=True)
 def chat(context, *args, **kwargs):
     return chat_template_tag(context, *args, **kwargs)

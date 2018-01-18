@@ -12,7 +12,9 @@ class ChatMessage(models.Model):
 
     # the name "channel" here is unrelated to Django channels
     channel = models.CharField(max_length=255)
-    participant = models.ForeignKey(Participant)
+    # related_name necessary to disambiguate with otreechat add on
+    participant = models.ForeignKey(
+        Participant, related_name='chat_messages_core')
     nickname = models.CharField(max_length=255)
 
     # call it 'body' instead of 'message' or 'content' because those terms

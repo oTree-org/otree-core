@@ -240,13 +240,19 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.View):
         )
 
         if room.has_participant_labels():
-            if not label:
-                if not room.use_secure_urls:
-                    return render_to_response("otree/RoomInputLabel.html")
+            if label:
+                missing_label = False
+                invalid_label = label not in room.get_participant_labels()
+            else:
+                missing_label = True
+                invalid_label = False
 
-            if not label in room.get_participant_labels():
-                return HttpResponseNotFound(
-                    _('Invalid participant label.')
+            # needs to be easy to re-enter label, in case we are in kiosk
+            # mode
+            if missing_label or invalid_label and not room.use_secure_urls:
+                return render_to_response(
+                    "otree/RoomInputLabel.html",
+                    {'invalid_label': invalid_label}
                 )
 
             if room.use_secure_urls:

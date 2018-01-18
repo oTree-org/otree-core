@@ -1,12 +1,9 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import glob
 import inspect
 import io
 import os
-import types
-from functools import wraps
+
+from otree import common_internal
 from importlib import import_module
 
 from django.apps import apps
@@ -20,81 +17,35 @@ from otree.api import (
 from otree.common_internal import _get_all_configs
 
 
-class Rules(object):
-    """A helper class incapsulating common checks.
-
-    Usage:
-        rules = Rules(app_config, errors_list)
-
-        # various rule checks, see below for list of rules
-        rules.file_exists('some_file.py')
-        ...
-
-        # custom checks
-        if <your-condition>:
-            rules.push_error('...', id='...')
-
-        # using checks as guards
-        if rules.module_exists('tests'):
-            tests = rules.get_module('tests') # won't fail
-            ...
-
+class AppCheckHelper:
+    """Basically a wrapper around the AppConfig
     """
 
-    common_buffer = {}
-
-    def __init__(self, config, errors, id=None):
-        self.config = config
+    def __init__(self, app_config, errors):
+        self.app_config = app_config
         self.errors = errors
-        self.id = id
 
-    def rule(meth):
-        '''
-        wrapper to return True if the method doesn't return anything.
-        and False if it does return something.
-        '''
-        @wraps(meth)
-        def wrapper(self, *args, **kwargs):
-            res = meth(self, *args, **kwargs)
-            if res:
-                self.errors.append(res)
-                return False
-            else:
-                return True
-        return wrapper
+    def add_error(self, title, numeric_id: int, **kwargs):
+        issue_id = 'otree.E' + str(numeric_id).zfill(3)
+        kwargs.setdefault('obj', self.app_config.label)
+        return self.errors.append(Error(title, id=issue_id, **kwargs))
 
-    def error(self, title, **kwargs):
-        kwargs.setdefault('obj', self.config.label)
-        kwargs.setdefault('id', self.id)
-        return Error(title, **kwargs)
-
-    def push_error(self, title, **kwargs):
-        return self.errors.append(self.error(title, **kwargs))
-
-    def warning(self, title, **kwargs):
-        kwargs.setdefault('obj', self.config.label)
-        kwargs.setdefault('id', self.id)
-        return Warning(title, **kwargs)
-
-    def push_warning(self, title, **kwargs):
-        return self.errors.append(self.warning(title, **kwargs))
+    def add_warning(self, title, numeric_id: int, **kwargs):
+        kwargs.setdefault('obj', self.app_config.label)
+        issue_id = 'otree.W' + str(numeric_id).zfill(3)
+        return self.errors.append(Warning(title, id=issue_id, **kwargs))
 
     # Helper meythods
 
     def get_path(self, name):
-        return os.path.join(self.config.path, name)
+        return os.path.join(self.app_config.path, name)
 
     def get_rel_path(self, name):
         basepath = os.getcwd()
         return os.path.relpath(name, basepath)
 
     def get_module(self, name):
-        return import_module(self.config.name + '.' + name)
-
-    def get_module_attr(self, module, name):
-        if not isinstance(module, types.ModuleType):
-            module = self.get_module(module)
-        return getattr(module, name)
+        return import_module(self.app_config.name + '.' + name)
 
     def get_template_names(self):
         path = self.get_path('templates')
@@ -104,175 +55,49 @@ class Rules(object):
                 template_names.append(os.path.join(root, filename))
         return template_names
 
-    # Rule methods
-
-    @rule
-    def file_exists(self, filename):
-        if not os.path.isfile(self.get_path(filename)):
-            return self.error('No "%s" file found in game folder' % filename)
-
-    @rule
-    def dir_exists(self, filename):
-        if not os.path.isdir(self.get_path(filename)):
-            msg = 'No "%s" directory found in game folder' % filename
-            return self.error(msg)
-
-    @rule
-    def model_exists(self, name):
-        try:
-            self.config.get_model(name)
-        except LookupError:
-            return self.error('Model "%s" not defined' % name)
-
-    @rule
     def module_exists(self, module):
         try:
-            module = self.get_module(module)
+            self.get_module(module)
+            return True
         except ImportError as e:
-            return self.error('Can\'t import module "%s": %s' % (module, e))
+            return False
 
-    @rule
     def class_exists(self, module, name):
         module = self.get_module(module)
         cls = getattr(module, name, None)
-        if not inspect.isclass(cls):
-            msg = 'No class "%s" in module "%s"' % (name, module.__name__)
-            return self.error(msg)
-
-    @rule
-    def template_has_valid_syntax(self, template_name):
-        from otree.checks.templates import has_valid_encoding
-        from otree.checks.templates import format_source_snippet
-
-        # Only test files that are valid templates.
-        if not has_valid_encoding(template_name):
-            return
-
-        try:
-            with io.open(template_name, 'r', encoding='utf8') as f:
-                Template(f.read())
-        except (IOError, OSError):
-            pass
-        except TemplateSyntaxError as error:
-            # The django_template_source attribute will only be available on
-            # DEBUG = True.
-            if hasattr(error, 'django_template_source'):
-                template_source, position = error.django_template_source
-                snippet = format_source_snippet(
-                    template_source.source,
-                    arrow_position=position[0])
-                message = (
-                    'Template syntax error in {template}\n'
-                    '\n'
-                    '{snippet}\n'
-                    '\n'
-                    'Error: {error}'.format(
-                        template=template_name,
-                        error=error,
-                        snippet=snippet))
-            else:
-                message = (
-                    'Template syntax error in {template}\n'
-                    'Error: {error}\n'
-                    'Set "DEBUG = True" to see more details.'.format(
-                        template=template_name, error=error))
-            return self.error(message)
-
-    @rule
-    def template_has_no_dead_code(self, template_name):
-        from otree.checks.templates import get_unreachable_content
-        from otree.checks.templates import has_valid_encoding
-
-        # Only test files that are valid templates.
-        if not has_valid_encoding(template_name):
-            return
-
-        try:
-            with io.open(template_name, 'r', encoding='utf8') as f:
-                compiled_template = Template(f.read())
-        except (IOError, OSError, TemplateSyntaxError):
-            # Ignore errors that occured during file-read or compilation.
-            return
-
-        def format_content(text):
-            text = text.strip()
-            lines = text.splitlines()
-            lines = ['> {0}'.format(line) for line in lines]
-            return '\n'.join(lines)
-
-        contents = get_unreachable_content(compiled_template)
-        content_bits = '\n\n'.join(
-            format_content(bit)
-            for bit in contents)
-        if contents:
-            return self.error(
-                'Template contains the following text outside of a '
-                '{% block %}. This text will never be displayed.'
-                '\n\n' + content_bits,
-                obj=os.path.join(self.config.label,
-                                 self.get_rel_path(template_name)))
-
-    @rule
-    def template_has_valid_encoding(self, template_name):
-        from otree.checks.templates import has_valid_encoding
-
-        if not has_valid_encoding(template_name):
-            return self.error(
-                'The template {template} is not UTF-8 encoded. '
-                'Please configure your text editor to always save files '
-                'as UTF-8. Then open the file and save it again.'
-                .format(template=self.get_rel_path(template_name)))
+        return inspect.isclass(cls)
 
 
-def register_rules(tags=(), id=None, once_per_project=False):
-    """Transform a function based on rules, to a something
-    django.core.checks.register takes.
-    Passes Rules instance as first argument.
-    """
-    def decorator(func):
-        @register(*tags)
-        @wraps(func)
-        def wrapper(app_configs, **kwargs):
-            if once_per_project:
-                # some checks should only be run once, not for each app
-                app_configs = [apps.get_app_config('otree')]
-            else:
-                # if app_configs list is given (e.g. otree check app1 app2), run on those
-                # if it's None, run on all apps
-                # (system check API requires this)
-                app_configs = app_configs or _get_all_configs()
-            errors = []
-            for config in app_configs:
-                rules = Rules(config, errors, id=id)
-                func(rules, **kwargs)
-            return errors
-        return wrapper
-    return decorator
 
 
-# Checks
-@register_rules(id='otree.E001')
-def files(rules, **kwargs):
-    rules.file_exists('models.py')
-    rules.file_exists('views.py')
 
-    if os.path.isdir(rules.get_path('templates')):
+# CHECKS
+
+def files(helper: AppCheckHelper, **kwargs):
+    for fn in ['models.py']: # don't check views.py because it might be pages.py
+        if not os.path.isfile(helper.get_path(fn)):
+            helper.add_error(
+                'NoModelsOrViews: No "%s" file found in game folder' % fn,
+                numeric_id=102
+            )
+
+    if os.path.isdir(helper.get_path('templates')):
 
         # check for files in templates, but not in templates/<label>
 
         misplaced_templates = set(glob.glob(
-            os.path.join(rules.get_path('templates'), '*.html')
+            os.path.join(helper.get_path('templates'), '*.html')
         ))
-        misplaced_templates.discard(rules.config.label)
+        misplaced_templates.discard(helper.app_config.label)
         if misplaced_templates:
             hint = (
                 'Move template files from "{app}/templates/" '
                 'to "{app}/templates/{app}" subfolder'.format(
-                    app=rules.config.label)
+                    app=helper.app_config.label)
             )
-            rules.push_error(
-                "Templates files in app's root template directory",
-                hint=hint, id='otree.E001'
+            helper.add_error(
+                "TemplatesInWrongDir: Templates files in app's root template directory",
+                hint=hint, numeric_id=103,
             )
 
 
@@ -287,20 +112,24 @@ model_field_substitutes = {
     float: 'FloatField',
     bool: 'BooleanField',
     str: 'CharField',
-    Currency: 'CurrencyField'
+    Currency: 'CurrencyField',
+    type(None): 'IntegerField' # not always int, but it's a reasonable suggestion
 }
 
 
-@register_rules(id='otree.E002')
-def model_classes(rules, **kwargs):
-    rules.model_exists('Subsession')
-    rules.model_exists('Group')
-    rules.model_exists('Player')
+def model_classes(helper: AppCheckHelper, **kwargs):
 
-    config = rules.config
-    Player = config.get_model('Player')
-    Group = config.get_model('Group')
-    Subsession = config.get_model('Subsession')
+    for name in ['Subsession', 'Group', 'Player']:
+        try:
+            helper.app_config.get_model(name)
+        except LookupError:
+            helper.add_error(
+                'MissingModel: Model "%s" not defined' % name, numeric_id=110)
+
+    app_config = helper.app_config
+    Player = app_config.get_model('Player')
+    Group = app_config.get_model('Group')
+    Subsession = app_config.get_model('Subsession')
 
     for Model in [Player, Group, Subsession]:
         for attr in dir(Model):
@@ -314,18 +143,23 @@ def model_classes(rules, **kwargs):
                     pass
                 else:
                     if _type in model_field_substitutes.keys():
-                        rules.push_warning(
+                        msg = (
+                            'NonModelFieldAttr: '
                             '{} has attribute "{}", which is not a model field, '
                             'and will therefore not be saved '
-                            'to the database.'.format(
-                                Model.__name__, attr
-                            ),
-                            hint='Consider changing to "{} = models.{}(...)"'.format(attr, model_field_substitutes[_type])
+                            'to the database.'.format(Model.__name__, attr))
+
+                        helper.add_error(
+                            msg,
+                            numeric_id=111,
+                            hint='Consider changing to "{} = models.{}(initial={})"'.format(
+                                attr, model_field_substitutes[_type], repr(getattr(Model, attr)))
                         )
                     # if people just need an iterable of choices for a model field,
                     # they should use a tuple, not list or dict
                     if _type in {list, dict, set}:
                         warning = (
+                            'MutableModelClassAttr: '
                             '{ModelName}.{attr} is a {type_name}. '
                             'Modifying it during a session (e.g. appending or setting values) '
                             'will have unpredictable results; '
@@ -338,136 +172,249 @@ def model_classes(rules, **kwargs):
                                  attr=attr,
                                  type_name=_type.__name__)
 
-                        rules.push_warning(warning)
+                        helper.add_error(warning, numeric_id=112)
 
 
-@register_rules(id='otree.E003')
-def constants(rules, **kwargs):
-    cond = (
-        rules.module_exists('models') and
-        rules.class_exists('models', 'Constants')
-    )
-    if cond:
-        Constants = rules.get_module_attr('models', 'Constants')
-        attrs = ['name_in_url', 'players_per_group', 'num_rounds']
-        for attr_name in attrs:
-            if not hasattr(Constants, attr_name):
-                msg = "models.py: 'Constants' class needs to define '{}'"
-                rules.push_error(msg.format(attr_name))
-        ppg = Constants.players_per_group
-        if ppg == 0 or ppg == 1:
-            rules.push_error(
-                "models.py: 'Constants.players_per_group' cannot be {}. You "
-                "should set it to None, which makes the group "
-                "all players in the subsession.".format(ppg)
-            )
+def constants(helper: AppCheckHelper, **kwargs):
+    if not helper.module_exists('models'):
+        return
+    if not helper.class_exists('models', 'Constants'):
+        helper.add_error(
+            'models.py does not contain Constants class', numeric_id=11
+        )
+        return
+
+    models = helper.get_module('models')
+    Constants = getattr(models, 'Constants')
+    attrs = ['name_in_url', 'players_per_group', 'num_rounds']
+    for attr_name in attrs:
+        if not hasattr(Constants, attr_name):
+            msg = "models.py: 'Constants' class needs to define '{}'"
+            helper.add_error(msg.format(attr_name), numeric_id=12)
+    ppg = Constants.players_per_group
+    if ppg == 0 or ppg == 1:
+        helper.add_error(
+            "models.py: 'Constants.players_per_group' cannot be {}. You "
+            "should set it to None, which makes the group "
+            "all players in the subsession.".format(ppg),
+            numeric_id=13
+        )
 
 
-@register_rules(id='otree.E004')
-def pages_function(rules, **kwargs):
-    if rules.module_exists('views'):
-        views_module = rules.get_module('views')
-        try:
-            page_list = views_module.page_sequence
-        except:
-            rules.push_error('views.py is missing the variable page_sequence.')
-            return
-        else:
-            for i, ViewCls in enumerate(page_list):
-                # there is no good reason to include Page in page_sequence.
-                # As for WaitPage: even though it works fine currently
-                # and can save the effort of subclassing,
-                # we should restrict it, because:
-                # - one user had "class WaitPage(Page):".
-                # - if someone makes "class WaitPage(WaitPage):", they might
-                #   not realize why it's inheriting the extra behavior.
-                # overall, I think the small inconvenience of having to subclass
-                # once per app
-                # is outweighed by the unexpected behavior if someone subclasses
-                # it without understanding inheritance.
-                # BUT: built-in Trust game has a wait page called WaitPage.
-                # need to get rid of that first.
-                if ViewCls.__name__ == 'Page':
-                    msg = (
-                        "views.py: page_sequence cannot contain "
-                        "a class called 'Page'. You should subclass Page "
-                        "and give your page a different name."
+def pages_function(helper: AppCheckHelper, **kwargs):
+    views_module = common_internal.get_views_module(helper.app_config.name)
+    views_or_pages = views_module.__name__.split('.')[-1]
+    try:
+        page_list = views_module.page_sequence
+    except:
+        helper.add_error(
+            '{}.py is missing the variable page_sequence.'.format(views_or_pages),
+            numeric_id=21
+        )
+        return
+    else:
+        for i, ViewCls in enumerate(page_list):
+            # there is no good reason to include Page in page_sequence.
+            # As for WaitPage: even though it works fine currently
+            # and can save the effort of subclassing,
+            # we should restrict it, because:
+            # - one user had "class WaitPage(Page):".
+            # - if someone makes "class WaitPage(WaitPage):", they might
+            #   not realize why it's inheriting the extra behavior.
+            # overall, I think the small inconvenience of having to subclass
+            # once per app
+            # is outweighed by the unexpected behavior if someone subclasses
+            # it without understanding inheritance.
+            # BUT: built-in Trust game has a wait page called WaitPage.
+            # need to get rid of that first.
+            if ViewCls.__name__ == 'Page':
+                msg = (
+                    "page_sequence cannot contain "
+                    "a class called 'Page'. You should subclass Page "
+                    "and give your page a different name."
+                )
+                helper.add_error(msg, numeric_id=22)
+            if issubclass(ViewCls, WaitPage):
+                if hasattr(ViewCls, 'before_next_page'):
+                    helper.add_error(
+                        '"{}" defines before_next_page, '
+                        'which is not valid on wait pages.'.format(
+                            ViewCls.__name__),
+                        numeric_id=27
                     )
-                    rules.push_error(msg)
-                if issubclass(ViewCls, WaitPage):
-                    if hasattr(ViewCls, 'before_next_page'):
-                        rules.push_error(
-                            'views.py: "{}" defines before_next_page, '
-                            'which is not valid on wait pages.'.format(
-                                ViewCls.__name__)
-                        )
-                    if ViewCls.group_by_arrival_time:
-                        if i > 0:
-                            rules.push_error(
-                                'views.py: "{}" has group_by_arrival_time=True, so '
-                                'it must be placed first in page_sequence.'.format(
-                                    ViewCls.__name__))
-                        if ViewCls.wait_for_all_groups:
-                            rules.push_error(
-                                'views.py: "{}" has group_by_arrival_time=True, so '
-                                'it cannot have wait_for_all_groups=True also.'.format(
-                                    ViewCls.__name__))
-                    # alternative technique is to not define the method on WaitPage
-                    # and then use hasattr, but I want to keep all complexity
-                    # out of views.abstract
-                    elif (ViewCls.get_players_for_group != WaitPage.get_players_for_group):
-                        rules.push_error(
-                            'views.py: "{}" defines get_players_for_group, '
-                            'but in order to use this method, you must set '
-                            'group_by_arrival_time=True'.format(
-                                ViewCls.__name__))
-                elif issubclass(ViewCls, Page):
-                    pass # ok
-                else:
-                    msg = 'views.py: "{}" is not a valid page'.format(ViewCls)
-                    rules.push_error(msg)
+                if ViewCls.group_by_arrival_time:
+                    if i > 0:
+                        helper.add_error(
+                            '"{}" has group_by_arrival_time=True, so '
+                            'it must be placed first in page_sequence.'.format(
+                                ViewCls.__name__), numeric_id=23)
+                    if ViewCls.wait_for_all_groups:
+                        helper.add_error(
+                            '"{}" has group_by_arrival_time=True, so '
+                            'it cannot have wait_for_all_groups=True also.'.format(
+                                ViewCls.__name__), numeric_id=24)
+                # alternative technique is to not define the method on WaitPage
+                # and then use hasattr, but I want to keep all complexity
+                # out of views.abstract
+                elif (ViewCls.get_players_for_group != WaitPage.get_players_for_group):
+                    helper.add_error(
+                        '"{}" defines get_players_for_group, '
+                        'but in order to use this method, you must set '
+                        'group_by_arrival_time=True'.format(
+                            ViewCls.__name__), numeric_id=25)
+            elif issubclass(ViewCls, Page):
+                pass # ok
+            else:
+                msg = '"{}" is not a valid page'.format(ViewCls)
+                helper.add_error(msg, numeric_id=26)
 
 
-@register_rules(id='otree.E005')
-def templates_have_no_dead_code(rules, **kwargs):
-    for template_name in rules.get_template_names():
-        rules.template_has_no_dead_code(template_name)
+def template_valid(template_name: str, helper: AppCheckHelper):
+    from otree.checks.templates import get_unreachable_content
+    from otree.checks.templates import has_valid_encoding
+    from otree.checks.templates import format_source_snippet
+
+    # Only test files that are valid templates.
+    if not has_valid_encoding(template_name):
+        return
+
+    try:
+        with io.open(template_name, 'r', encoding='utf8') as f:
+            compiled_template = Template(f.read())
+    # 2017-10-25: what's the necessity of this? why check AOT?
+    # well, we are already compiling the template. extra perf cost is low
+    except TemplateSyntaxError as error:
+        # The django_template_source attribute will only be available on
+        # DEBUG = True.
+        if hasattr(error, 'django_template_source'):
+            template_source, position = error.django_template_source
+            snippet = format_source_snippet(
+                template_source.source,
+                arrow_position=position[0])
+            message = (
+                'Template syntax error in {template}\n'
+                '\n'
+                '{snippet}\n'
+                '\n'
+                'Error: {error}'.format(
+                    template=template_name,
+                    error=error,
+                    snippet=snippet))
+        else:
+            message = (
+                'Template syntax error in {template}\n'
+                'Error: {error}\n'
+                'Set "DEBUG = True" to see more details.'.format(
+                    template=template_name, error=error))
+        helper.add_error(message, numeric_id=70)
+        return
+    except (IOError, OSError):
+        # Ignore errors that occured during file-read or compilation.
+        return
+
+    def format_content(text):
+        text = text.strip()
+        lines = text.splitlines()
+        lines = ['> {0}'.format(line) for line in lines]
+        return '\n'.join(lines)
+
+    contents = get_unreachable_content(compiled_template)
+    content_bits = '\n\n'.join(
+        format_content(bit)
+        for bit in contents)
+    if contents:
+        helper.add_error(
+            'Template contains the following text outside of a '
+            '{% block %}. This text will never be displayed.'
+            '\n\n' + content_bits,
+            obj=os.path.join(helper.app_config.label,
+                             helper.get_rel_path(template_name)),
+            numeric_id=7)
 
 
-@register_rules(id='otree.E006', once_per_project=True)
-def unique_sessions_names(rules, **kwargs):
+def templates_valid(helper: AppCheckHelper, **kwargs):
+    for template_name in helper.get_template_names():
+        template_valid(template_name, helper)
+
+def unique_sessions_names(helper: AppCheckHelper, **kwargs):
     already_seen = set()
     for st in settings.SESSION_CONFIGS:
         st_name = st["name"]
         if st_name in already_seen:
             msg = "Duplicate SESSION_CONFIG name '{}'".format(st_name)
-            rules.push_error(msg)
+            helper.add_error(msg, numeric_id=40)
         else:
             already_seen.add(st_name)
 
 
-@register_rules(id='otree.E009', once_per_project=True)
-def unique_room_names(rules, **kwargs):
+def unique_room_names(helper: AppCheckHelper, **kwargs):
     already_seen = set()
     for room in getattr(settings, 'ROOMS', []):
         room_name = room["name"]
         if room_name in already_seen:
             msg = "Duplicate ROOM name '{}'".format(room_name)
-            rules.push_error(msg)
+            helper.add_error(msg, numeric_id=50)
         else:
             already_seen.add(room_name)
 
 
-@register_rules(id='otree.E007')
-def template_encoding(rules, **kwargs):
-    for template_name in rules.get_template_names():
-        rules.template_has_valid_encoding(template_name)
+def template_encoding(helper: AppCheckHelper, **kwargs):
+    from otree.checks.templates import has_valid_encoding
+    for template_name in helper.get_template_names():
+        if not has_valid_encoding(template_name):
+            helper.add_error(
+                'The template {template} is not UTF-8 encoded. '
+                'Please configure your text editor to always save files '
+                'as UTF-8. Then open the file and save it again.'
+                .format(template=helper.get_rel_path(template_name)),
+                numeric_id=60,
+            )
 
 
-@register_rules(id='otree.E008')
-def templates_have_valid_syntax(rules, **kwargs):
-    for template_name in rules.get_template_names():
-        rules.template_has_valid_syntax(template_name)
+def make_check_function(func):
+
+    def check_function(app_configs, **kwargs):
+        # if app_configs list is given (e.g. otree check app1 app2), run on those
+        # if it's None, run on all apps
+        # (system check API requires this)
+        app_configs = app_configs or _get_all_configs()
+        errors = []
+        for app_config in app_configs:
+            helper = AppCheckHelper(app_config, errors)
+            func(helper, **kwargs)
+        return errors
+
+    return check_function
 
 
-# TODO: startapp should pass validation checks
+def make_check_function_run_once(func):
+    def check_function(app_configs, **kwargs):
+        otree_app_config = apps.get_app_config('otree')
+        #ignore app_configs list -- just run once
+        errors = []
+        helper = AppCheckHelper(otree_app_config, errors)
+        func(helper, **kwargs)
+        return errors
+
+    return check_function
+
+
+def register_system_checks():
+
+    for func in [
+        unique_room_names,
+        unique_sessions_names,
+    ]:
+        check_function = make_check_function_run_once(func)
+        register(check_function)
+
+    for func in [
+        model_classes,
+        files,
+        constants,
+        pages_function,
+        templates_valid,
+        template_encoding,
+    ]:
+        check_function = make_check_function(func)
+        register(check_function)

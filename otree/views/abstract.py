@@ -41,7 +41,7 @@ from otree.models import (
 from otree.models_concrete import (
     PageCompletion, CompletedSubsessionWaitPage,
     CompletedGroupWaitPage, PageTimeout, UndefinedFormModel,
-    ParticipantLockModel, GlobalLockModel
+    ParticipantLockModel,
 )
 
 # Get an instance of a logger
@@ -500,16 +500,30 @@ class Page(FormPageOrInGameWaitPage):
     def get_form_fields(self):
         return self.form_fields
 
+    def _get_form_model(self):
+        form_model = self.form_model
+        if isinstance(form_model, str):
+            if form_model == 'player':
+                return self.PlayerClass
+            if form_model == 'group':
+                return self.GroupClass
+            raise ValueError(
+                "'{}' is an invalid value for form_model. "
+                "Try 'player' or 'group' instead.".format(form_model)
+            )
+        return form_model
+
     def get_form_class(self):
         fields = self.get_form_fields()
-        if self.form_model is UndefinedFormModel and fields:
+        form_model = self._get_form_model()
+        if form_model is UndefinedFormModel and fields:
             raise Exception(
                 'Page "{}" defined form_fields but not form_model'.format(
                     self.__class__.__name__
                 )
             )
         return otree.forms.modelform_factory(
-            self.form_model, fields=fields,
+            form_model, fields=fields,
             form=otree.forms.ModelForm,
             formfield_callback=otree.forms.formfield_callback)
 
@@ -647,7 +661,7 @@ class Page(FormPageOrInGameWaitPage):
         return self._redirect_to_page_the_user_should_be_on()
 
     def get_object(self):
-        Cls = self.form_model
+        Cls = self._get_form_model()
         if Cls == self.GroupClass:
             return self.group
         if Cls == self.PlayerClass:
@@ -676,9 +690,9 @@ class Page(FormPageOrInGameWaitPage):
         for field_name in self.get_form_fields():
             if field_name not in timeout_submission:
                 # get default value for datatype if the user didn't specify
-                ModelField = self.form_model._meta.get_field_by_name(
-                    field_name
-                )[0]
+
+                ModelClass = self._get_form_model()
+                ModelField = ModelClass._meta.get_field(field_name)
                 # TODO: should we warn if the attribute doesn't exist?
                 value = getattr(ModelField, 'auto_submit_default', None)
                 timeout_submission[field_name] = value
@@ -971,6 +985,8 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
                 if already_grouped:
                     regrouped = False
                 else:
+                    # 2017-10-29: what if the current player is not one
+                    # of the people being regrouped?
                     regrouped = wp._gbat_try_to_regroup()
 
                 if not regrouped:
