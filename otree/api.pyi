@@ -291,4 +291,4 @@ class Bot:
     round_number = None # type: int
 
 def Submission(PageClass, post_data: dict={}, *, check_html=True, timeout_happened=False): pass
-def SubmissionMustFail(PageClass, post_data: dict={}, *, check_html=True): pass
+def SubmissionMustFail(PageClass, post_data: dict={}, *, check_html=True, error_fields=[]): pass

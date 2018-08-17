@@ -27,7 +27,6 @@ import IPy
 
 import otree
 from otree import forms
-from otree.deprecate import OtreeDeprecationWarning
 from otree.views.abstract import AdminSessionPageMixin
 from otree.checks.mturk import MTurkValidator
 from otree.forms import widgets
@@ -166,6 +165,13 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
             # probably is a public domain
             return True
 
+    # make these class attributes so they can be mocked
+    aws_keys_exist = bool(
+        getattr(settings, 'AWS_ACCESS_KEY_ID', None) and
+        getattr(settings, 'AWS_SECRET_ACCESS_KEY', None)
+    )
+    boto3_installed = bool(boto3)
+
     def get(self, request, *args, **kwargs):
 
         mturk_settings = self.session.config['mturk_hit_settings']
@@ -176,7 +182,7 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
             'description': mturk_settings['description'],
             'keywords': ', '.join(mturk_settings['keywords']),
             'money_reward': self.session.config['participation_fee'],
-            'use_sandbox': settings.DEBUG,
+            'use_sandbox': True,
             'minutes_allotted_per_assignment': (
                 mturk_settings['minutes_allotted_per_assignment']
             ),
@@ -194,16 +200,16 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
         https = parsed_url.scheme == 'https'
         secured_url = urlunparse(parsed_url._replace(scheme='https'))
 
-        aws_keys_exist = bool(settings.AWS_ACCESS_KEY_ID) and bool(settings.AWS_SECRET_ACCESS_KEY)
-        boto3_installed = bool(boto3)
-        mturk_ready = aws_keys_exist and boto3_installed and https
+
+
+        mturk_ready = self.aws_keys_exist and self.boto3_installed and https
         missing_next_button_warning = MTurkValidator(self.session).validation_message()
 
         context.update({
             # boto3 module must be imported, not None
-            'boto3_installed': boto3_installed,
+            'boto3_installed': self.boto3_installed,
             'https': https,
-            'aws_keys_exist': aws_keys_exist,
+            'aws_keys_exist': self.aws_keys_exist,
             'mturk_ready': mturk_ready,
             'runserver': ('runserver' in sys.argv) or ('devserver' in sys.argv),
             'secured_url': secured_url,
@@ -330,8 +336,9 @@ class MTurkSessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         session = self.session
-        if not session.mturk_HITId:
-            context.update({'not_published_yet': True})
+        published = bool(session.mturk_HITId)
+        context['published'] = published
+        if not published:
             return context
         with MTurkClient(use_sandbox=session.mturk_use_sandbox, request=self.request) as mturk_client:
             workers_by_status = get_workers_by_status(

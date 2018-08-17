@@ -1,6 +1,5 @@
 from django import template
 from django.urls import reverse, Resolver404
-from .otree_forms import defaultlabel
 import otree.common_internal
 
 
@@ -40,12 +39,10 @@ def ensure_superuser_exists():
     If eventually we use migrations instead of resetdb, then maybe won't
     need this anymore.
     '''
-    success = otree.common_internal.ensure_superuser_exists()
-    if success:
-        return ''
-    return NO_USER_MSG
+    return otree.common_internal.ensure_superuser_exists()
+
 
 register.simple_tag(name='ensure_superuser_exists',
                     func=ensure_superuser_exists)
 register.simple_tag(name='active_page', func=active_page)
-register.filter('defaultlabel', defaultlabel)
+

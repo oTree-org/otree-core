@@ -1,34 +1,32 @@
-from __future__ import absolute_import
-
 import contextlib
 import hashlib
+import importlib.util
 import logging
 import random
 import re
 import string
+import sys
 import threading
 import uuid
 from collections import OrderedDict
 from importlib import import_module
+from io import StringIO
+
 import channels
+import otree.channels.utils as channel_utils
 import six
 from django.apps import apps
 from django.conf import settings
-from django.urls import reverse
 from django.db import connection
 from django.db import transaction
 from django.http import HttpResponseRedirect
-from django.template.defaultfilters import title
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 from huey.contrib.djhuey import HUEY
-import otree.channels.utils as channel_utils
 from six.moves import urllib
-import importlib.util
 
 # set to False if using runserver
 USE_REDIS = True
-
-PYPI_CHECK_UPDATES = True
 
 # these locks need to be here rather than views.abstract or views.participant
 # because they need to be imported when the main thread runs.
@@ -63,6 +61,9 @@ def random_chars_10():
 
 
 def get_models_module(app_name):
+    '''shouldn't rely on app registry because the app might have been removed
+    from SESSION_CONFIGS, especially if the session was created a long time
+    ago and you want to export it'''
     module_name = '{}.models'.format(app_name)
     return import_module(module_name)
 
@@ -75,7 +76,7 @@ def get_bots_module(app_name):
     raise ImportError('No tests/bots module found for app {}'.format(app_name))
 
 
-def get_views_module(app_name):
+def get_pages_module(app_name):
     for module_name in ['pages', 'views']:
         dotted = '{}.{}'.format(app_name, module_name)
         if importlib.util.find_spec(dotted):
@@ -184,26 +185,29 @@ def create_session_and_redirect(session_kwargs, *, use_browser_bots):
     return HttpResponseRedirect(wait_for_session_url)
 
 
-def ensure_superuser_exists(*args, **kwargs):
+EMPTY_ADMIN_USERNAME_MSG = 'settings.ADMIN_USERNAME is empty'
+EMPTY_ADMIN_PASSWORD_MSG = 'settings.ADMIN_PASSWORD is empty'
+
+def ensure_superuser_exists(*args, **kwargs) -> str:
     """
-    Creates our default superuser, returns True for success
-    and False for failure
+    Creates our default superuser.
+    If it fails, it returns a failure message
     """
-    from django.contrib.auth.models import User
     username = settings.ADMIN_USERNAME
     password = settings.ADMIN_PASSWORD
-    logger = logging.getLogger('otree')
+    if not username:
+        return EMPTY_ADMIN_USERNAME_MSG
+    if not password:
+        return EMPTY_ADMIN_PASSWORD_MSG
+    from django.contrib.auth.models import User
     if User.objects.filter(username=username).exists():
         # msg = 'Default superuser exists.'
         # logger.info(msg)
-        return True
-    if not password:
-        return False
-    assert User.objects.create_superuser(username, email='',
-                                         password=password)
+        return ''
+    User.objects.create_superuser(username, email='', password=password)
     msg = 'Created superuser "{}"'.format(username)
-    logger.info(msg)
-    return True
+    logging.getLogger('otree').info(msg)
+    return ''
 
 
 def release_any_stale_locks():
@@ -230,7 +234,7 @@ def get_redis_conn():
     return HUEY.storage.conn
 
 def has_group_by_arrival_time(app_name):
-    page_sequence = get_views_module(app_name).page_sequence
+    page_sequence = get_pages_module(app_name).page_sequence
     if len(page_sequence) == 0:
         return False
     return getattr(page_sequence[0], 'group_by_arrival_time', False)
@@ -319,29 +323,36 @@ def patch_migrations_module():
     MigrationLoader.migrations_module = migrations_module
 
 
-def print_colored_traceback_and_exit(exc):
-    import traceback
-    from termcolor import colored
-    import sys
+class ResponseForException(Exception):
+    '''
+    allows us to show a much simplified traceback without
+    framework code.
+    '''
+    pass
 
-    def highlight(string):
-        return colored(string, 'white', 'on_blue')
 
-    frames = traceback.extract_tb(sys.exc_info()[2])
-    new_frames = []
-    for frame in frames:
-        filename, lineno, name, line = frame
-        if settings.BASE_DIR in filename:
-            filename = highlight(filename)
-            line = highlight(line)
-        new_frames.append([filename, lineno, name, line])
-    lines = ['Traceback (most recent call last):\n']
-    lines += traceback.format_list(new_frames)
-    final_lines = traceback.format_exception_only(type(exc), exc)
-    # filename is only available for SyntaxError
-    if isinstance(exc, SyntaxError) and settings.BASE_DIR in exc.filename:
-        final_lines = [highlight(line) for line in final_lines]
-    lines += final_lines
-    for line in lines:
-        sys.stdout.write(line)
-    sys.exit(-1)
+@contextlib.contextmanager
+def capture_stdout(target=None):
+    original = sys.stdout
+    if target is None:
+        target = StringIO()
+    sys.stdout = target
+    try:
+        yield target
+        target.seek(0)
+    finally:
+        sys.stdout = original
+
+
+@contextlib.contextmanager
+def capture_stderr():
+    original = sys.stderr
+    from io import StringIO
+    target = StringIO()
+    sys.stderr = target
+    try:
+        yield target
+        target.seek(0)
+    finally:
+        sys.stderr = original
+

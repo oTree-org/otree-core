@@ -5,10 +5,9 @@
 # =============================================================================
 # IMPORTS
 # =============================================================================
-from __future__ import print_function, unicode_literals
 
 from django.core.management.base import BaseCommand
-
+import sys
 from otree.models import Session
 
 
@@ -42,12 +41,12 @@ class Command(BaseCommand):
 
             for idx, row in enumerate(rows):
                 if idx == 1:
-                    print(
+                    sys.stdout.write(
                         "-" * name_just, "-" * code_just,
                         "-" * participants_just, "-" * appsequence_just)
-                print(
+                self.stdout.write(
                     row["name"].ljust(name_just),
                     row["code"].ljust(code_just),
                     row["participants"].ljust(participants_just),
                     row["appsequence"].ljust(appsequence_just))
-        print("")
+        self.stdout.write('\n')

@@ -121,12 +121,11 @@ class Worker:
             submission.pop('page_class')
             return submission['post_data']
 
-    def set_attributes(self, participant_code, request_path, html, form_errors):
+    def set_attributes(self, participant_code, request_path, html):
         bot = self.get_bot(participant_code)
         # so that any asserts in the PlayerBot work.
         bot.path = request_path
         bot.html = html
-        bot.form_errors = form_errors
 
     def ping(self, *args, **kwargs):
         pass

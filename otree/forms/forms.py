@@ -10,9 +10,9 @@ from django.utils.translation import ugettext as _
 from django.db.models.options import FieldDoesNotExist
 
 import otree.common_internal
+from otree.common_internal import ResponseForException
 import otree.models
 import otree.constants_internal
-from otree.forms import fields
 from otree.db import models
 from otree.currency import Currency, RealWorldCurrency
 
@@ -20,88 +20,11 @@ __all__ = (
     'formfield_callback', 'modelform_factory', 'ModelForm')
 
 
-# FORMFIELD_OVERRIDES.update({
-#     # Overrides from fields defined in otree.db.models
-#
-#     models.BigIntegerField: {
-#         'form_class': forms.IntegerField,
-#         'choices_form_class': forms.TypedChoiceField},
-#     # Binary field is never editable, so we don't need to convert it.
-#     models.BooleanField: {
-#         'form_class': forms.BooleanField,
-#         'choices_form_class': forms.TypedChoiceField,
-#         'widget': forms.RadioSelect},
-#     models.CharField: {
-#         'form_class': forms.CharField,
-#         'choices_form_class': forms.TypedChoiceField},
-#     models.DateField: {
-#         'form_class': forms.DateField,
-#         'choices_form_class': forms.TypedChoiceField},
-#     models.DateTimeField: {
-#         'form_class': forms.DateTimeField,
-#         'choices_form_class': forms.TypedChoiceField},
-#     models.DecimalField: {
-#         'form_class': forms.DecimalField,
-#         'choices_form_class': forms.TypedChoiceField},
-#     models.EmailField: {
-#         'form_class': forms.EmailField,
-#         'choices_form_class': forms.TypedChoiceField},
-#     models.FileField: {
-#         'form_class': forms.FileField,
-#         'choices_form_class': forms.TypedChoiceField},
-#     models.FilePathField: {
-#         'form_class': forms.FilePathField,
-#         'choices_form_class': forms.TypedChoiceField},
-#     models.FloatField: {
-#         'form_class': forms.FloatField,
-#         'choices_form_class': forms.TypedChoiceField},
-#     models.IntegerField: {
-#         'form_class': forms.IntegerField,
-#         'choices_form_class': forms.TypedChoiceField},
-#     models.GenericIPAddressField: {
-#         'form_class': forms.GenericIPAddressField,
-#         'choices_form_class': forms.TypedChoiceField},
-#     models.PositiveIntegerField: {
-#         'form_class': forms.IntegerField,
-#         'choices_form_class': forms.TypedChoiceField},
-#     models.PositiveSmallIntegerField: {
-#         'form_class': forms.IntegerField,
-#         'choices_form_class': forms.TypedChoiceField},
-#     models.SlugField: {
-#         'form_class': forms.SlugField,
-#         'choices_form_class': forms.TypedChoiceField},
-#     models.SmallIntegerField: {
-#         'form_class': forms.IntegerField,
-#         'choices_form_class': forms.TypedChoiceField},
-#     models.TextField: {
-#         'form_class': forms.CharField,
-#         'widget': forms.Textarea,
-#         'choices_form_class': forms.TypedChoiceField},
-#     models.TimeField: {
-#         'form_class': forms.TimeField,
-#         'choices_form_class': forms.TypedChoiceField},
-#     models.URLField: {
-#         'form_class': forms.URLField,
-#         'choices_form_class': forms.TypedChoiceField},
-#     models.OneToOneField: {
-#         'form_class': forms.ModelChoiceField,
-#         'choices_form_class': forms.TypedChoiceField},
-#
-#     # Other custom db fields used in otree.
-#     models.CurrencyField: {
-#         'form_class': fields.CurrencyField,
-#         'choices_form_class': fields.CurrencyChoiceField},
-#     models.RealWorldCurrencyField: {
-#         'form_class': fields.RealWorldCurrencyField,
-#         'choices_form_class': fields.CurrencyChoiceField},
-# })
 
 
 def formfield_callback(db_field, **kwargs):
-    # TODO: clean this up
-    formfield_kwargs = {}
     # Take the `widget` attribute into account that might be set for a db
-    # field. We want to override the widget given by FORMFIELD_OVERRIDES.
+    # field.
     widget = getattr(db_field, 'widget', None)
     if widget:
         # dynamic methods like FOO_choices, FOO_min, etc
@@ -118,19 +41,14 @@ def formfield_callback(db_field, **kwargs):
         # leaving as is.
         if not isinstance(widget, type):
             widget = copy.copy(widget)
-        formfield_kwargs['widget'] = widget
-    formfield_kwargs.update(kwargs)
-    return db_field.formfield(**formfield_kwargs)
+        kwargs['widget'] = widget
+    return db_field.formfield(**kwargs)
 
 
 def modelform_factory(*args, **kwargs):
     """
-    This custom modelform_factory must be used in all places instead of the
-    default django implemention in order to use the correct
-    `formfield_callback` function.
-
-    Otherwise the created modelform will not use the floppyfied fields defined
-    in FORMFIELD_OVERRIDES.
+    2018-07-11: now this exists only to make a copy of the widget if necessary.
+    maybe there is a better way.
     """
     kwargs.setdefault('formfield_callback', formfield_callback)
     return django_model_forms.modelform_factory(*args, **kwargs)
@@ -321,7 +239,10 @@ class ModelForm(forms.ModelForm, metaclass=ModelFormMetaclass):
                 error_message_method = getattr(
                     self.view, '{}_error_message'.format(name), None)
                 if error_message_method:
-                    error_string = error_message_method(value)
+                    try:
+                        error_string = error_message_method(value)
+                    except:
+                        raise ResponseForException
                     if error_string:
                         raise forms.ValidationError(error_string)
 
@@ -332,7 +253,10 @@ class ModelForm(forms.ModelForm, metaclass=ModelFormMetaclass):
             except forms.ValidationError as e:
                 self.add_error(name, e)
         if not self.errors and hasattr(self.view, 'error_message'):
-            error_string = self.view.error_message(self.cleaned_data)
+            try:
+                error_string = self.view.error_message(self.cleaned_data)
+            except:
+                raise ResponseForException
             if error_string:
                 e = forms.ValidationError(error_string)
                 self.add_error(None, e)

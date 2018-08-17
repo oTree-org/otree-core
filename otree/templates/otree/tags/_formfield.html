@@ -1,4 +1,4 @@
-{% if bound_field.field.widget.input_type == "checkbox" %}
+{% if bound_field.field.widget.input_type|default:None == "checkbox" %}
     {% include "otree/forms/rows/bootstrap_checkbox.html" with field=bound_field %}
 {% else %}
     {% include "otree/forms/rows/bootstrap.html" with field=bound_field %}

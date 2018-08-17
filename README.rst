@@ -23,10 +23,10 @@ Typical setup
 
 ::
 
-    pip install --upgrade otree
+    pip install -U otree
     otree startproject oTree
-    otree resetdb
-    otree runserver
+    cd oTree
+    otree devserver
 
 Core dev setup
 ~~~~~~~~~~~~~~
@@ -39,16 +39,13 @@ then run this from the project root:
     pip install -e .
     cd .. # or wherever you will start your project
     otree startproject oTree
-    otree resetdb
-    otree runserver
+    cd oTree
+    otree devserver
 
-See `this`_ document that explains how oTree differs from a typical
-Django project.
 
 |Build Status|
 
 .. _Homepage: http://www.otree.org/
-.. _this: http://otree.readthedocs.io/en/latest/django.html
 
 .. |Build Status| image:: https://travis-ci.org/oTree-org/otree-core.svg?branch=master
    :target: https://travis-ci.org/oTree-org/otree-core

@@ -1,18 +1,21 @@
+from django.core import signals
+from django.core.exceptions import (
+    PermissionDenied, SuspiciousOperation,
+)
+from django.http.multipartparser import MultiPartParserError
+from django.urls import get_resolver, get_urlconf
 
 import contextlib
 import importlib
 import json
 import logging
 import time
-import warnings
 
 import channels
-import django.db
 import otree.channels.utils as channel_utils
 import redis_lock
 import vanilla
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import resolve
 from django.db.models import Max
 from django.http import HttpResponseRedirect, Http404, HttpResponse
@@ -22,9 +25,7 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext as _, ugettext_lazy
 from django.views.decorators.cache import never_cache, cache_control
 import idmap
-
 import otree.common_internal
-from otree import common_internal
 import otree.constants_internal as constants
 import otree.db.idmap
 import otree.forms
@@ -34,7 +35,7 @@ from otree.bots.bot import bot_prettify_post_data
 import otree.bots.browser as browser_bots
 from otree.common_internal import (
     get_app_label_from_import_path, get_dotted_name, get_admin_secret_code,
-    DebugTable, BotError, wait_page_thread_lock
+    DebugTable, BotError, wait_page_thread_lock, ResponseForException
 )
 from otree.models import (
     Participant, Session, BasePlayer, BaseGroup, BaseSubsession)
@@ -43,11 +44,37 @@ from otree.models_concrete import (
     CompletedGroupWaitPage, PageTimeout, UndefinedFormModel,
     ParticipantLockModel,
 )
-from django.core.handlers.exception import response_for_exception
+from django.core.handlers.exception import handle_uncaught_exception
 
-# Get an instance of a logger
+
 logger = logging.getLogger(__name__)
 
+
+UNHANDLED_EXCEPTIONS = (
+    Http404, PermissionDenied, MultiPartParserError,
+    SuspiciousOperation, SystemExit
+)
+
+def response_for_exception(request, exc):
+    '''simplified from Django 1.11 source.
+    The difference is that we use the exception that was passed in,
+    rather than referencing sys.exc_info(), which gives us the ResponseForException
+    the original exception was wrapped in, which we don't want to show to users.
+        '''
+    if isinstance(exc, UNHANDLED_EXCEPTIONS):
+        '''copied from Django 1.11 source, but i don't think these
+        exceptions will actually occur.'''
+        raise exc
+    signals.got_request_exception.send(sender=None, request=request)
+    exc_info = (type(exc), exc, exc.__traceback__)
+    response = handle_uncaught_exception(
+        request, get_resolver(get_urlconf()), exc_info)
+
+    # Force a TemplateResponse to be rendered.
+    if not getattr(response, 'is_rendered', True) and callable(getattr(response, 'render', None)):
+        response = response.render()
+
+    return response
 
 NO_PARTICIPANTS_LEFT_MSG = (
     "The maximum number of participants for this session has been exceeded.")
@@ -207,21 +234,34 @@ class FormPageOrInGameWaitPage(vanilla.View):
                 # player/group/etc.
                 if hasattr(response, 'render'):
                     response.render()
+            except ResponseForException as exc:
+                response = response_for_exception(
+                    self.request, exc.__cause__ or exc.__context__
+                )
             except Exception as exc:
+                # this is still necessary, e.g. if an attribute on the page
+                # is invalid, like form_fields, form_model, etc.
                 response = response_for_exception(self.request, exc)
 
             otree.db.idmap.save_objects()
-            if (self.participant.is_browser_bot and
-                    'browser-bot-auto-submit' in response.content.decode('utf-8')):
-                form_errors = getattr(response, 'form_errors', {})
-                # needs to happen in GET, so that we can set the .html
-                # and .form_errors attributes on the bot.
-                browser_bots.set_attributes(
-                    participant_code=self.participant.code,
-                    request_path=self.request.path,
-                    html=response.content.decode('utf-8'),
-                    form_errors=form_errors
-                )
+            if self.participant.is_browser_bot:
+                html = response.content.decode('utf-8')
+                # 2018-04-25: not sure why i didn't use an HTTP header.
+                # the if statement doesn't even seem to make a difference.
+                # shouldn't it always submit, if we're in a Page class?
+                # or why not just set an attribute directly on the response object?
+                # OTOH, this is pretty guaranteed to work. whereas i'm not sure
+                # that we can isolate the exact set of cases when we have to
+                # add the auto-submit flag (only GET requests, not wait pages,
+                # ...etc?)
+                if 'browser-bot-auto-submit' in html:
+                    # needs to happen in GET, so that we can set the .html
+                    # attribute on the bot.
+                    browser_bots.set_attributes(
+                        participant_code=self.participant.code,
+                        request_path=self.request.path,
+                        html=html,
+                    )
             return response
 
     def get_context_data(self, **context):
@@ -242,12 +282,17 @@ class FormPageOrInGameWaitPage(vanilla.View):
         })
 
         vars_for_template = {}
-        views_module = otree.common_internal.get_views_module(
+        views_module = otree.common_internal.get_pages_module(
             self.subsession._meta.app_config.name)
         if hasattr(views_module, 'vars_for_all_templates'):
             vars_for_template.update(views_module.vars_for_all_templates(self) or {})
 
-        vars_for_template.update(self.vars_for_template() or {})
+        try:
+            user_vars = self.vars_for_template()
+        except:
+            raise ResponseForException
+
+        vars_for_template.update(user_vars or {})
 
         context.update(vars_for_template)
 
@@ -304,6 +349,19 @@ class FormPageOrInGameWaitPage(vanilla.View):
             'group', 'subsession', 'session'
         ).get(pk=self._player_pk)
 
+    def _is_displayed(self):
+        try:
+            is_displayed = self.is_displayed()
+        except:
+            raise ResponseForException
+        if is_displayed is None:
+            msg = (
+                '{}: is_displayed() did not return anything. '
+                'You should fix this. To show the page, you should return True; '
+                'to skip the page, return False.'
+            ).format(self.__class__.__name__)
+            logger.warning(msg)
+        return is_displayed
 
     @property
     def player(self) -> BasePlayer:
@@ -364,6 +422,8 @@ class FormPageOrInGameWaitPage(vanilla.View):
             self._load_all_models()
             self.participant._round_number = self.player.round_number
 
+        self._is_frozen = True
+
     # python 3.5 type hint
     def set_attributes_waitpage_clone(self, *, original_view: 'WaitPage'):
         '''put it here so it can be compared with set_attributes...
@@ -405,7 +465,7 @@ class FormPageOrInGameWaitPage(vanilla.View):
             page = Page()
 
             page.set_attributes(self.participant, lazy=True)
-            if page.is_displayed():
+            if page._is_displayed():
                 break
 
             # if it's a wait page, record that they visited
@@ -468,6 +528,42 @@ class FormPageOrInGameWaitPage(vanilla.View):
             auto_submitted=timeout_happened)
         self.participant.save()
 
+    _is_frozen = False
+
+    _setattr_whitelist = {
+        '_is_frozen',
+        'object',
+        'form',
+        'timeout_happened',
+        # i should send some of these through context
+        '_remaining_timeout_seconds',
+        'first_field_with_errors',
+        'other_fields_with_errors',
+        'debug_tables',
+        '_round_number',
+        'request' # this is just used in a test case mock.
+    }
+
+    def __setattr__(self, attr: str, value):
+        if self._is_frozen and not attr in self._setattr_whitelist:
+            msg = (
+                'You set the attribute "{}" on the page {}. '
+                'Setting attributes on page instances is not permitted. '
+            ).format(attr, self.__class__.__name__)
+            raise AttributeError(msg)
+        else:
+            # super() is a bit slower but only gets run during __init__
+            super().__setattr__(attr, value)
+
+    def _force_setattr(self, attr: str, value):
+        '''maybe better to use whitelist rather than this;
+        that keeps all the code in 1 place'''
+        orig = self._is_frozen
+        self._is_frozen = False
+        try:
+            setattr(self, attr, value)
+        finally:
+            self._is_frozen = orig
 
 class Page(FormPageOrInGameWaitPage):
 
@@ -481,21 +577,18 @@ class Page(FormPageOrInGameWaitPage):
         return self.get()
 
     def get(self):
-        try:
-            if not self.is_displayed():
-                self._increment_index_in_pages()
-                return self._redirect_to_page_the_user_should_be_on()
+        if not self._is_displayed():
+            self._increment_index_in_pages()
+            return self._redirect_to_page_the_user_should_be_on()
 
-            # this needs to be set AFTER scheduling submit_expired_url,
-            # to prevent race conditions.
-            # see that function for an explanation.
-            self.participant._current_form_page_url = self.request.path
-            self.object = self.get_object()
-            form = self.get_form(instance=self.object)
-            context = self.get_context_data(form=form)
-            return self.render_to_response(context)
-        except Exception as exc:
-            return response_for_exception(self.request, exc)
+        # this needs to be set AFTER scheduling submit_expired_url,
+        # to prevent race conditions.
+        # see that function for an explanation.
+        self.participant._current_form_page_url = self.request.path
+        self.object = self.get_object()
+        form = self.get_form(instance=self.object)
+        context = self.get_context_data(form=form)
+        return self.render_to_response(context)
 
     def get_template_names(self):
         if self.template_name is not None:
@@ -521,7 +614,19 @@ class Page(FormPageOrInGameWaitPage):
         return form_model
 
     def get_form_class(self):
-        fields = self.get_form_fields()
+        try:
+            fields = self.get_form_fields()
+        except:
+            raise ResponseForException
+        if isinstance(fields, str):
+            # it could also happen with get_form_fields,
+            # but that is much less commonly used, so we word the error
+            # message just about form_fields.
+            msg = (
+                'form_fields should be a list, not the string {fld}. '
+                'Maybe you meant this: form_fields = [{fld}]'
+            ).format(fld=repr(fields))
+            raise ValueError(msg)
         form_model = self._get_form_model()
         if form_model is UndefinedFormModel and fields:
             raise Exception(
@@ -623,9 +728,8 @@ class Page(FormPageOrInGameWaitPage):
             else:
                 response = self.form_invalid(form)
                 if is_bot:
-                    if post_data.get('must_fail'):
-                        response.form_errors = dict(form.errors)
-                    else:
+                    PageName = self.__class__.__name__
+                    if not post_data.get('must_fail'):
                         errors = [
                             "{}: {}".format(k, repr(v))
                             for k, v in form.errors.items()]
@@ -634,10 +738,26 @@ class Page(FormPageOrInGameWaitPage):
                             'Check your bot in tests.py, '
                             'then create a new session. '
                             'Data submitted was: {}'.format(
-                                self.__class__.__name__,
+                                PageName,
                                 errors,
                                 bot_prettify_post_data(post_data),
                             ))
+                    if post_data.get('error_fields'):
+                        # need to convert to dict because MultiValueKeyDict
+                        # doesn't properly retrieve values that are lists
+                        post_data_dict = dict(post_data)
+                        expected_error_fields = set(post_data_dict['error_fields'])
+                        actual_error_fields = set(form.errors.keys())
+                        if not expected_error_fields == actual_error_fields:
+                            raise BotError(
+                                'Page {}, SubmissionMustFail: '
+                                'Expected error_fields were {}, but actual '
+                                'error_fields are {}'.format(
+                                    PageName,
+                                    expected_error_fields,
+                                    actual_error_fields,
+                                )
+                            )
                 return response
         try:
             self.before_next_page()
@@ -652,7 +772,6 @@ class Page(FormPageOrInGameWaitPage):
                     participant_code=self.participant.code,
                     request_path=self.request.path,
                     html='',
-                    form_errors={},
                 )
                 submission = browser_bots.get_next_post_data(
                         participant_code=self.participant.code)
@@ -759,7 +878,11 @@ class Page(FormPageOrInGameWaitPage):
         if self._remaining_timeout_seconds is not 'unset':
             return self._remaining_timeout_seconds
 
-        timeout_seconds = self.get_timeout_seconds()
+        try:
+            timeout_seconds = self.get_timeout_seconds()
+        except:
+            raise ResponseForException
+
         if timeout_seconds is None:
             # don't hit the DB at all
             pass
@@ -935,7 +1058,7 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
         ## EARLY EXITS
         if self._was_completed():
             return self._save_and_flush_and_response_when_ready()
-        is_displayed = self.is_displayed()
+        is_displayed = self._is_displayed()
 
         if self.group_by_arrival_time and not is_displayed:
             # in GBAT, either all players should skip a page, or none should.
@@ -1038,7 +1161,10 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
                     else:
                         wp._group_access_forbidden = None
                         wp._group_for_aapa = self.group
-                    wp.after_all_players_arrive()
+                    try:
+                        wp.after_all_players_arrive()
+                    except:
+                        raise ResponseForException
                     # need to save to the results of after_all_players_arrive
                     # to the DB, before sending the completion message to other players
                     # this was causing a race condition on 2016-11-04
@@ -1069,7 +1195,10 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
             participant___last_request_timestamp__gte=time.time()-STALE_THRESHOLD_SECONDS
         ))
 
-        players_for_group = self.get_players_for_group(waiting_players)
+        try:
+            players_for_group = self.get_players_for_group(waiting_players)
+        except:
+            raise ResponseForException
 
         if not players_for_group:
             return False
@@ -1121,8 +1250,6 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
                 )
             )
 
-        # we're doing this inside a lock, so it actually should never be
-        # greater than, only equal.
         if len(waiting_players) >= Constants.players_per_group:
             return waiting_players[:Constants.players_per_group]
 
@@ -1346,7 +1473,9 @@ class AdminSessionPageMixin:
         context = super().get_context_data(**kwargs)
         context.update({
             'session': self.session,
-            'is_debug': settings.DEBUG})
+            'is_debug': settings.DEBUG,
+            'request': self.request,
+        })
         return context
 
     def get_template_names(self):

@@ -28,6 +28,7 @@ from otree.views.abstract import (
     GenericWaitPageMixin,
     get_redis_lock, NO_PARTICIPANTS_LEFT_MSG)
 
+
 start_link_thread_lock = threading.RLock()
 
 class OutOfRangeNotification(vanilla.View):
@@ -90,12 +91,24 @@ class MTurkLandingPage(vanilla.TemplateView):
             request, *args, **kwargs
         )
 
+    def get_context_data(self):
+        '''
+        hack for compatibility because the project template's
+        MTurkPreview.html inherits from Page.html which uses all these
+        nonexistent template vars. Should change that.
+        '''
+        return {
+            'view': {
+                'remaining_timeout_seconds': None,
+                'socket_url': '',
+                'redirect_url': '',
+            },
+            'form': {'errors': None, 'non_field_errors': None},
+            'participant': {'is_browser_bot': False}
+        }
+
     def get(self, request, *args, **kwargs):
-        assignment_id = (
-            self.request.GET['assignmentId']
-            if 'assignmentId' in self.request.GET else
-            ''
-        )
+        assignment_id = self.request.GET.get('assignmentId')
         if assignment_id and assignment_id != 'ASSIGNMENT_ID_NOT_AVAILABLE':
             url_start = reverse('MTurkStart', args=(self.session.code,))
             url_start = add_params_to_url(url_start, {
@@ -103,7 +116,7 @@ class MTurkLandingPage(vanilla.TemplateView):
                 'workerId': self.request.GET['workerId']})
             return HttpResponseRedirect(url_start)
 
-        context = super().get_context_data(**kwargs)
+        context = self.get_context_data()
         return self.render_to_response(context)
 
 
@@ -258,7 +271,10 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.View):
             if room.use_secure_urls:
                 hash = self.request.GET.get('hash')
                 if hash != make_hash(label):
-                    return HttpResponseNotFound('Invalid hash parameter.')
+                    return HttpResponseNotFound(
+                        'Invalid hash parameter. use_secure_urls is True, '
+                        'so you must use the participant-specific URL.'
+                    )
 
         session = room.get_session()
         if session is None:
@@ -354,3 +370,5 @@ class BrowserBotStartLink(GenericWaitPageMixin, vanilla.View):
 
     def redirect_url(self):
         return self.request.get_full_path()
+
+

@@ -14,7 +14,7 @@
         </div>
     {% endif %}
 
-{% if room %}
+{% if room|default:False %}
 
     <div class="alert alert-info">
     <p>

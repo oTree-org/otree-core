@@ -1,21 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import colorama
-import otree.common_internal
-import sys
 import logging
-from importlib import import_module
+import sys
 
-from django.apps import AppConfig, apps
+import colorama
+from django.apps import AppConfig
 from django.conf import settings
 from django.db.models import signals
 
-import six
-
 import otree
+import otree.common_internal
 from otree.common_internal import (
     ensure_superuser_exists
 )
+from otree.strict_templates import patch_template_silent_failures
+
+
 logger = logging.getLogger('otree')
 
 
@@ -113,11 +113,9 @@ def monkey_patch_db_cursor():
 
 
 def setup_create_default_superuser():
-    authconfig = apps.get_app_config('auth')
     signals.post_migrate.connect(
         ensure_superuser_exists,
-        sender=authconfig,
-        dispatch_uid='common.models.create_testuser'
+        dispatch_uid='otree.create_superuser'
     )
 
 
@@ -131,7 +129,7 @@ def patch_raven_config():
     # after other settings loaded
     if hasattr(settings, 'RAVEN_CONFIG'):
         settings.RAVEN_CONFIG['release'] = '{}{}'.format(
-            otree.get_version(),
+            otree.__version__,
             # need to pass the server if it's DEBUG
             # mode. could do this in extra context or tags,
             # but this seems the most straightforward way
@@ -151,12 +149,11 @@ class OtreeConfig(AppConfig):
         monkey_patch_static_tag()
         monkey_patch_db_cursor()
         # to initialize locks
-        import otree.common_internal
 
         colorama.init(autoreset=True)
 
         import otree.checks
         otree.checks.register_system_checks()
-
+        patch_template_silent_failures()
 
 

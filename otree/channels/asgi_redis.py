@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import  # for channels module
-
 import sys
 
 import asgi_redis
@@ -11,7 +9,7 @@ import six
 
 REDIS_MSG = (
     "oTree requires Redis to be installed and running, "
-    "unless you are using the development server (runserver). "
+    "unless you are using the development server (devserver). "
 )
 
 

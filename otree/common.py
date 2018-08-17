@@ -7,6 +7,7 @@ from django.conf import settings
 from django.utils import formats, numberformat
 from django.utils.safestring import mark_safe
 from django.utils.translation import ungettext
+from otree.common_internal import capture_stderr
 from otree.currency import Currency, RealWorldCurrency
 import six
 
@@ -70,3 +71,28 @@ def currency_range(first, last, increment):
             return values
         values.append(current_value)
         current_value += increment
+
+
+def breakpoint():
+    '''experimental 'breakpoint' function
+    that starts the python >>> interpreter,
+    so that users can inspect locals, etc.
+    (i found PDB too unintuitive and unfamiliar)
+    we may integrate this with python 3.7's built-in breakpoint()
+    '''
+    import inspect
+    import code
+    frame = inspect.currentframe()
+    try:
+        # need to capture stderr, to suppress output from
+        # channels runserver's log_action(), like:
+        # [2018/03/15 05:33:16] HTTP GET /SomeURL/xcaf9jev 301 ...
+        # those messages interrupt the interactive prompt and can be
+        # disorienting
+        # the problem is that the prompt itself writes to stderr,
+        # e.g. if an invalid expression is entered.
+        print()
+        with capture_stderr():
+            code.interact(local=frame.f_back.f_locals)
+    finally:
+        del frame

@@ -21,7 +21,7 @@ class MTurkValidator(object):
         '''
         missing_next_button_pages = []
         for app in self.session.config['app_sequence']:
-            views_module = otree.common_internal.get_views_module(app)
+            views_module = otree.common_internal.get_pages_module(app)
             for page_class in views_module.page_sequence:
                 page = page_class()
                 if isinstance(page, Page):
@@ -57,7 +57,7 @@ class MTurkValidator(object):
 
 
     def app_has_no_wait_pages(self, app):
-        views_module = otree.common_internal.get_views_module(app)
+        views_module = otree.common_internal.get_pages_module(app)
         return not any(issubclass(page_class, WaitPage)
                        for page_class in views_module.page_sequence)
 

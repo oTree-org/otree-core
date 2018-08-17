@@ -5,12 +5,12 @@
 <br/>
 
 
-<div class="card">
+<div class="card debug-info"> {# .debug-info so it's visible in inspector #}
     <h5 class="card-header">Debug info</h5>
-{% comment %}
+
     {% include 'otree/includes/hidden_form_errors.html' %}
-    {% endcomment %}
-{% for table in view.debug_tables %}
+
+{% for table in view.debug_tables|default:None %}
     <div class="card-body">
         <h6 class="card-title">{{ table.title }}</h6>
         <div class="scrollable">

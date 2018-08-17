@@ -1,17 +1,12 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import json
 import logging
 import django.db
 import django.utils.timezone
 import traceback
 import time
-
 from channels import Group
 from channels.generic.websockets import JsonWebsocketConsumer
 from django.core.signing import Signer, BadSignature
-
 import otree.session
 from otree.channels.utils import get_chat_group
 from otree.models import Participant, Session
@@ -26,6 +21,11 @@ from otree.models_concrete import (
     FAILURE_MESSAGE_MAX_LENGTH, BrowserBotsLauncherSessionCode)
 from otree.room import ROOM_DICT
 import otree.bots.browser
+from otree.export import export_wide, export_app
+import io
+import base64
+import datetime
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -89,6 +89,7 @@ class OTreeJsonWebsocketConsumer(JsonWebsocketConsumer):
 
     def post_receive(self, content, **kwargs):
         pass
+
 
 class GroupByArrivalTime(OTreeJsonWebsocketConsumer):
 
@@ -449,3 +450,61 @@ class ChatConsumer(OTreeJsonWebsocketConsumer):
             body=body,
             nickname=nickname
         )
+
+
+class ExportData(OTreeJsonWebsocketConsumer):
+    # access to self.message.user for auth
+    http_user = True
+
+    def post_receive(self, content: dict):
+        '''
+        if an app name is given, export the app.
+        otherwise, export all the data (wide).
+        don't need time_spent or chat yet, they are quick enough
+        '''
+
+        # authenticate
+        # maybe it should be is_superuser or something else more specific
+        # but this is to be consistent with the rest of Django's login
+        if settings.AUTH_LEVEL and not self.message.user.is_authenticated:
+            logger.warning(
+                'rejected access to data export through non-authenticated '
+                'websocket'
+            )
+            return
+
+        file_extension = content['file_extension']
+        app_name = content.get('app_name')
+
+        if file_extension == 'xlsx':
+            mime_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            IOClass = io.BytesIO
+        else:
+            mime_type = 'text/csv'
+            IOClass = io.StringIO
+
+        iso_date = datetime.date.today().isoformat()
+        with IOClass() as fp:
+            if app_name:
+                export_app(app_name, fp, file_extension=file_extension)
+                file_name_prefix = app_name
+            else:
+                export_wide(fp, file_extension=file_extension)
+                file_name_prefix = 'all_apps_wide'
+            data = fp.getvalue()
+
+        file_name = '{}_{}.{}'.format(
+            file_name_prefix, iso_date, file_extension)
+
+        if file_extension == 'xlsx':
+            data = base64.b64encode(data).decode('utf-8')
+
+        content.update({
+            'file_name': file_name,
+            'data': data,
+            'mime_type': mime_type,
+        })
+        self.send(content)
+
+    def connection_groups(self, **kwargs):
+        return []

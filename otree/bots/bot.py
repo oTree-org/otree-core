@@ -26,8 +26,8 @@ ADMIN_SECRET_CODE = get_admin_secret_code()
 logger = logging.getLogger('otree.bots')
 
 INTERNAL_FORM_FIELDS = {
-        'csrfmiddlewaretoken', 'origin_url', 'must_fail', 'timeout_happened',
-        'admin_secret_code'
+        'csrfmiddlewaretoken', 'must_fail', 'timeout_happened',
+        'admin_secret_code', 'error_fields'
 }
 
 DISABLE_CHECK_HTML_INSTRUCTIONS = '''
@@ -78,7 +78,6 @@ class ParticipantBot(test.Client):
         self.url = None
         self._response = None
         self._html = None
-        self.form_errors = {}
         self.path = None
         self.submits = None
         super().__init__()
@@ -187,7 +186,6 @@ class ParticipantBot(test.Client):
             self.path = urllib.parse.urlsplit(self.url).path
         self._response = response
         self.html = response.content.decode('utf-8')
-        self.form_errors = getattr(response, 'form_errors', {})
 
     @property
     def html(self):
@@ -284,10 +282,6 @@ class PlayerBot:
     def html(self):
         return self.participant_bot.html
 
-    @property
-    def form_errors(self):
-        return getattr(self.participant_bot, 'form_errors', {})
-
 
 
 
@@ -305,7 +299,7 @@ class BOTS_CHECK_HTML:
 
 def _Submission(
         PageClass, post_data=None, *, check_html=BOTS_CHECK_HTML,
-        must_fail=False, timeout_happened=False):
+        must_fail=False, error_fields=None, timeout_happened=False):
 
     post_data = post_data or {}
 
@@ -320,6 +314,9 @@ def _Submission(
         # dict key, because CLI bots and browser bots need to work the same way.
         # CLI bots can only talk to server through post data
         post_data['must_fail'] = True
+
+    if error_fields:
+        post_data['error_fields'] = error_fields
 
     if timeout_happened:
         post_data[constants_internal.timeout_happened] = True
@@ -355,13 +352,17 @@ def Submission(
 
 
 def SubmissionMustFail(
-        PageClass, post_data=None, *, check_html=BOTS_CHECK_HTML):
+        PageClass, post_data=None, *, check_html=BOTS_CHECK_HTML,
+        error_fields=None
+):
     '''lets you intentionally submit with invalid
     input to ensure it's correctly rejected'''
 
     return _Submission(
         PageClass,
-        post_data=post_data, check_html=check_html, must_fail=True)
+        post_data=post_data, check_html=check_html, must_fail=True,
+        error_fields=error_fields
+    )
 
 
 def BareYieldToSubmission(yielded_value):
@@ -455,6 +456,7 @@ def bot_prettify_post_data(post_data):
         # MultiValueKeyDict, because that's what request.POST
         # contains. we need to turn it into a regular dict
         # (i.e. values should not be single-element lists)
+        # 2018-03-25: why not use dict()?
         post_data = post_data.dict()
 
     return {k: v for k,v in post_data.items() if k not in INTERNAL_FORM_FIELDS}

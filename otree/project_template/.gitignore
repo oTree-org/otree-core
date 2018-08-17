@@ -9,3 +9,4 @@ _bots*s
 __temp*
 __pycache__/
 *.py[cod]
+.DS_Store

@@ -16,7 +16,7 @@
 
 {% block internal_scripts %}
 {{ block.super }}
-<script type="text/javascript" charset="utf-8">
+<script>
 $(function () {
     $('[data-toggle="popover"]').popover()
 });
@@ -49,7 +49,7 @@ $(function () {
 <script src="{% static 'otree/js/jquery.color-2.1.2.min.js' %}"></script>
 <script src="{% static 'otree/js/jquery.timeago.js' %}"></script>
 <script src="{% static 'otree/js/jsondiffpatch.min.js' %}"></script>
-<script src="{% static 'otree/js/table-utils2.js' %}"></script>
+<script src="{% static 'otree/js/table-utils3.js' %}"></script>
 
 {% endblock %}
 {% block body_main %}
@@ -62,14 +62,14 @@ $(function () {
 
         <div class="navbar-collapse collapse" id="navbarSupportedContent">
             <ul class="navbar-nav">
-                <li class="nav-item {% active_page request 'DemoIndex' %}"><a class="nav-link" href="{% url 'DemoIndex' %}">Demo</a></li>
-                <li class="nav-item {% active_page request 'Sessions' %}"><a class="nav-link" href="{% url 'Sessions' %}">Sessions</a></li>
-                <li class="nav-item {% active_page request 'Rooms' %}"><a class="nav-link" href="{% url 'Rooms' %}">Rooms</a></li>
-                <li class="nav-item {% active_page request 'ExportIndex' %}"><a class="nav-link" href="{% url 'ExportIndex' %}">Data</a></li>
-                <li class="nav-item {% active_page request 'ServerCheck' %}"><a class="nav-link" href="{% url 'ServerCheck' %}">Server Check</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'DemoIndex' %}">Demo</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'Sessions' %}">Sessions</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'Rooms' %}">Rooms</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'ExportIndex' %}">Data</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'ServerCheck' %}">Server Check</a></li>
                 <li class="nav-item _otree-updates"></li>
 
-                {% if request.user.is_authenticated %}
+                {% if request.user.is_authenticated|default:False %}
                     <li><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
                 {% endif %}
             </ul>
@@ -82,12 +82,6 @@ $(function () {
     </div>
     {% block menus %}{% endblock %}
     <div>
-        {% if form.errors %}
-            <div class="alert alert-danger">
-            {% blocktrans trimmed %}Please fix the errors in the form.{% endblocktrans %}
-            </div>
-        {% endif %}
-
         {% block content %}{% endblock %}
 
     </div>

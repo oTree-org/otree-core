@@ -35,3 +35,7 @@ def chat(context, *args, **kwargs):
 def next_button(*args, **kwargs):
     return {}
 
+# this code is duplicated in otree.py
+@register.inclusion_tag('otree/tags/formfields.html', takes_context=True)
+def formfields(context, *args, **kwargs):
+    return context

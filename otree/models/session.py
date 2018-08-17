@@ -129,22 +129,31 @@ class Session(ModelWithVars):
         return list(self.participant_set.order_by('id_in_session'))
 
     def mturk_requester_url(self):
-        if self.mturk_use_sandbox:
-            requester_url = (
-                "https://requestersandbox.mturk.com/mturk/manageHITs"
-            )
-        else:
-            requester_url = "https://requester.mturk.com/mturk/manageHITs"
-        return requester_url
+        subdomain = 'requestersandbox' if self.mturk_use_sandbox else 'requester'
+        return "https://{}.mturk.com/mturk/manageHITs".format(subdomain)
 
     def mturk_worker_url(self):
-        if self.mturk_use_sandbox:
-            return (
-                "https://workersandbox.mturk.com/mturk/preview?groupId={}"
-            ).format(self.mturk_HITGroupId)
-        return (
-            "https://www.mturk.com/mturk/preview?groupId={}"
-        ).format(self.mturk_HITGroupId)
+        # different HITs
+        # get the same preview page, because they are lumped into the same
+        # "hit group". This is not documented, but it seems HITs are lumped
+        # if a certain subset of properties are the same:
+        # https://forums.aws.amazon.com/message.jspa?messageID=597622#597622
+        # this seems like the correct design; the only case where this will
+        # not work is if the HIT was deleted from the server, but in that case,
+        # the HIT itself should be canceled.
+
+
+        # 2018-06-04:
+        # the format seems to have changed to this:
+        # https://worker.mturk.com/projects/{group_id}/tasks?ref=w_pl_prvw
+        # but the old format still works.
+        # it seems I can't replace groupId by hitID, which i would like to do
+        # because it's more precise.
+        subdomain = "workersandbox" if self.mturk_use_sandbox else 'www'
+        return "https://{}.mturk.com/mturk/preview?groupId={}".format(
+            subdomain,
+            self.mturk_HITGroupId
+        )
 
     def advance_last_place_participants(self):
         # django.test takes 0.5 sec to import,

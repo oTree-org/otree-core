@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-06 13:23+0900\n"
+"POT-Creation-Date: 2018-05-27 20:55-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,27 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+
+#. Translators: A player's default chat nickname,
+#. which is "Player" + their ID in group. For example:
+#. "Player 2".
+#: .\chat.py:21
+#, python-brace-format
+msgid "Player {id_in_group}"
+msgstr ""
+
+#. Translators: the name someone sees displayed for themselves in a chat.
+#. It's their nickname followed by "(Me)". For example:
+#. "Michael (Me)" or "Player 1 (Me)".
+#: .\chat.py:60
+#, python-brace-format
+msgid "{nickname} (Me)"
+msgstr ""
+
+#. Translators: for required form fields
+#: .\constants_internal.py:56
+msgid "This field is required."
+msgstr ""
 
 #. Translators: display a number of points,
 #. like "1 point", "2 points", ...
@@ -27,102 +48,95 @@ msgstr ""
 #. and msgstr[1] is plural
 #. the {} represents the number;
 #. don't forget to include it in your translation
-#: .\otree\common.py:108
+#: .\currency\__init__.py:225
 msgid "{} point"
 msgid_plural "{} points"
 msgstr[0] ""
 msgstr[1] ""
 
-#. Translators: for required form fields
-#: .\otree\constants_internal.py:62
-msgid "This field is required."
-msgstr ""
-
-#: .\otree\db\models.py:188
+#: .\db\models.py:254
 msgid "Yes"
 msgstr ""
 
-#: .\otree\db\models.py:189
+#: .\db\models.py:255
 msgid "No"
 msgstr ""
 
-#: .\otree\forms\forms.py:315
+#: .\forms\forms.py:238
 msgid "Value must be greater than or equal to {}."
 msgstr ""
 
-#: .\otree\forms\forms.py:321
+#: .\forms\forms.py:244
 msgid "Value must be less than or equal to {}."
 msgstr ""
 
-#. Translators: for multiple-choice fields,
-#. show the valid choices.
-#. e.g. "Value must be one of: A, B, C"
-#: .\otree\forms\forms.py:333
-msgid "Value must be one of: {}"
-msgstr ""
-
 #. Translators: the label next to a "points" input field
-#: .\otree\forms\widgets.py:101
+#: .\forms\widgets.py:43
 msgid "points"
 msgstr ""
 
-#: .\otree\templates\otree\BaseAdmin.html:61
-#: .\otree\templates\otree\BaseParticipant.html:18
+#: .\templates\otree\OutOfRangeNotification.html:9
+msgid "No more pages left to show."
+msgstr ""
+
+#: .\templates\otree\Page.html:17
+#: .\templates\otree\admin\MTurkCreateHIT.html:67
 msgid "Please fix the errors in the form."
 msgstr ""
 
-#: .\otree\templates\otree\BaseParticipant.html:24
-#: .\otree\templates\otree\WaitPage.html:41
+#: .\templates\otree\RoomInputLabel.html:7
+msgid "Welcome"
+msgstr ""
+
+#. Translators: If the user enters an invalid participant label
+#: .\templates\otree\RoomInputLabel.html:13
+msgid "Invalid entry; try again."
+msgstr ""
+
+#: .\templates\otree\RoomInputLabel.html:15
+msgid "Please enter your participant label."
+msgstr ""
+
+#: .\templates\otree\WaitPage.html:49
 msgid ""
 "An error occurred. Please check the logs or ask the administrator for help."
 msgstr ""
 
-#: .\otree\templates\otree\OutOfRangeNotification.html:11
-msgid "No more pages left to show."
-msgstr ""
-
-#: .\otree\templates\otree\RoomInputLabel.html:7
-msgid "Welcome"
-msgstr ""
-
-#: .\otree\templates\otree\RoomInputLabel.html:11
-msgid "Please enter your participant label."
-msgstr ""
-
-#: .\otree\templates\otree\includes\TimeLimit.html:6
-msgid "Time left to complete this page:"
-msgstr ""
-
-#: .\otree\templates\otree\login.html:37
+#: .\templates\otree\login.html:47
 msgid "Forgotten your password or username?"
 msgstr ""
 
-#: .\otree\templates\otree\login.html:41
+#: .\templates\otree\login.html:52
 msgid "Log in"
 msgstr ""
 
 #. Translators: The text on the button the user clicks to get to the next page
-#: .\otree\templates\otree\tags\NextButton.html:4
+#: .\templates\otree\tags\NextButton.html:5
 msgid "Next"
 msgstr ""
 
-#: .\otree\views\abstract.py:658
-msgid "Waiting for the other participants."
+#. Translators: Chat widget "send" button text
+#: .\templates\otreechat_core\widget.html:7
+msgid "Send"
 msgstr ""
 
-#: .\otree\views\abstract.py:660
-msgid "Waiting for the other participant."
+#: .\views\abstract.py:886
+msgid "Time left to complete this page:"
 msgstr ""
 
 #. Translators: the default title of a wait page
-#: .\otree\views\abstract.py:898 .\otree\views\concrete.py:265
+#: .\views\abstract.py:961 .\views\participant.py:291
 msgid "Please wait"
 msgstr ""
 
-#: .\otree\views\concrete.py:237
-msgid "Invalid participant label."
+#: .\views\abstract.py:1403
+msgid "Waiting for the other participants."
 msgstr ""
 
-#: .\otree\views\concrete.py:266
+#: .\views\abstract.py:1405
+msgid "Waiting for the other participant."
+msgstr ""
+
+#: .\views\participant.py:292
 msgid "Waiting for your session to begin"
 msgstr ""

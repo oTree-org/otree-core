@@ -1,10 +1,10 @@
 from collections import namedtuple
 import sys
-
+from typing import List, Dict
 from django.db import models
 from django.template import Node
 from django.template import TemplateSyntaxError
-from django.template import Variable
+from django.template import Variable, Context
 from django.template import VariableDoesNotExist
 from django.template.base import token_kwargs
 from django.template.loader import render_to_string
@@ -12,15 +12,15 @@ from django.template.loader import render_to_string
 from django.utils import six
 
 from otree.models_concrete import UndefinedFormModel
-
+from django.template.base import Token, FilterExpression
 
 
 class FormFieldNode(Node):
     default_template = 'otree/tags/_formfield.html'
 
-    def __init__(self, field_variable_name, arg_dict):
+    def __init__(self, field_variable_name, label_arg:FilterExpression):
         self.field_variable_name = field_variable_name
-        self.arg_dict = arg_dict
+        self.label_arg = label_arg
 
     def get_form_instance(self, context):
         try:
@@ -101,33 +101,34 @@ class FormFieldNode(Node):
                     variable=bound_field))
         return bound_field
 
-    def get_extra_context(self, context):
+    def get_tag_specific_context(self, context: Context) -> Dict:
         bound_field = self.get_bound_field(context)
         extra_context = {
-            'bound_field': bound_field
+            'bound_field': bound_field,
+            'help_text': bound_field.help_text
         }
-        if self.arg_dict:
-            with_context = dict(
-                (name, var.resolve(context))
-                for name, var in self.arg_dict.items())
+        if self.label_arg:
+            label = self.label_arg.resolve(context)
             # If the with argument label="" was set explicitly, we set it to
             # None. That is required to differentiate between 'use the default
             # label since we didn't set any in the template' and 'do not print
             # a label at all' as defined in
             # https://github.com/oTree-org/otree-core/issues/325
-            if with_context.get('label', None) == '':
-                with_context['label'] = None
-            extra_context.update(with_context)
+        else:
+            label = bound_field.label
+        extra_context['label'] = label
         return extra_context
 
-    def render(self, context):
+    def render(self, context: Context):
         t = context.template.engine.get_template(self.default_template)
-        extra_context = self.get_extra_context(context)
-        new_context = context.new(extra_context)
+        tag_specific_context = self.get_tag_specific_context(context)
+        new_context = context.new(tag_specific_context)
         return t.render(new_context)
 
     @classmethod
-    def parse(cls, parser, token):
+    def parse(cls, parser, token: Token):
+
+        # here is how split_contents() works:
 
         # {% formfield player.f1 label="f1 label" %}
         # ...yields:
@@ -137,6 +138,8 @@ class FormFieldNode(Node):
         # ...yields:
         # ['formfield', 'player.f2', '"f2 label with no kwarg"']
 
+        # handle where the user did {% formfield player.f label = "foo" %}
+        token.contents = token.contents.replace('label = ', 'label=')
         bits = token.split_contents()
         tagname = bits.pop(0)
         if len(bits) < 1:
@@ -148,35 +151,15 @@ class FormFieldNode(Node):
             if bits[0] == 'with':
                 bits.pop(0)
             arg_dict = token_kwargs(bits, parser, support_legacy=False)
-
-            # Validate against spaces around the '='.
-            has_lonely_equal_sign = any(
-                bit.startswith('=') or bit.endswith('=')
-                for bit in bits)
-            if has_lonely_equal_sign:
-                # If '=' is leading/trailing or is the own char in the token,
-                # then the user has used spaces around it. We can use a
-                # distinct error message for this to aid the user.
-                raise TemplateSyntaxError(
-                    "In the {tagname} tag, "
-                    "you must not put spaces around the '='. "
-                    "For example, do label='value', not label = 'value'."
-                    ".".format(tagname=tagname))
+            label_arg = arg_dict.pop('label', None)
+            for key in arg_dict:
+                msg = '{} tag received unknown argument "{}"'.format(tagname, key)
+                raise TemplateSyntaxError(msg)
         else:
-            arg_dict = {}
+            label_arg = None
         if bits:
             raise TemplateSyntaxError(
                 'Unknown argument for {tagname} tag: {bits!r}'.format(
                     tagname=tagname,
                     bits=bits))
-        return cls(field, arg_dict)
-
-
-def defaultlabel(given_label, default):
-    # We check for an explicit None here in order to allow the label to be made
-    # empty.
-    if given_label is None:
-        return None
-    if not given_label:
-        return default
-    return given_label
+        return cls(field, label_arg=label_arg)

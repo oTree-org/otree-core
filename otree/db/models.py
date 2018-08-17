@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from django.db import models
 from django.db.models.fields import related
 from django.core import exceptions
@@ -9,7 +8,7 @@ from decimal import Decimal
 from otree.currency import (
     Currency, RealWorldCurrency
 )
-
+import logging
 from idmap.models import IdMapModelBase
 from .idmap import IdMapModel
 
@@ -21,6 +20,9 @@ from otree_save_the_change.mixins import SaveTheChange
 
 # this is imported from other modules
 from .serializedfields import _PickleField
+
+logger = logging.getLogger(__name__)
+
 
 class _JSONField(models.TextField):
     '''just keeping around so that Migrations don't crash'''
@@ -82,6 +84,72 @@ class OTreeModel(SaveTheChange, IdMapModel, metaclass=OTreeModelBase):
 
     def __repr__(self):
         return '<{} pk={}>'.format(self.__class__.__name__, self.pk)
+
+
+    _is_frozen = False
+    NoneType = type(None)
+    _setattr_datatypes = {
+        'BooleanField': (bool, NoneType),
+        # forms seem to save Decimal to CurrencyField
+        'CurrencyField': (Currency, NoneType, int, float, Decimal),
+        'FloatField': (float, NoneType, int),
+        'IntegerField': (int, NoneType),
+        'StringField': (str, NoneType),
+        'LongStringField': (str, NoneType),
+    }
+    _setattr_whitelist = {
+        '_initial_prep_values',
+        # used by Prefetch.
+        '_ordered_players',
+        '_is_frozen',
+    }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # cache it for performance
+        self._super_setattr = super().__setattr__
+        self._dir_attributes = set(dir(self))
+        self._is_frozen = True
+
+    def __setattr__(self, field_name: str, value):
+        if self._is_frozen:
+            # idmap uses _group_cache, _subsession_cache, _prefetched_objects_cache, etc
+            if not (field_name in self._setattr_whitelist or field_name.endswith('_cache')):
+                # using _dir_attributes because hasattr() cannot be used inside
+                # a Django model's setattr, as I discovered.
+                if not field_name in self._dir_attributes:
+                    msg = (
+                        '{} has no field "{}".'
+                    ).format(self.__class__.__name__, field_name)
+                    raise AttributeError(msg)
+                try:
+                    field = self._meta.get_field(field_name)
+                except exceptions.FieldDoesNotExist:
+                    # django sometimes reassigns to non-field attributes that
+                    # were set before the class was frozen, such as
+                    # .pk and ._changed_fields (from SaveTheChange)
+                    # or assigning to a property like Player.payoff
+                    pass
+                else:
+                    field_type_name = field.__class__.__name__
+                    # everything is an instance of "object"
+                    allowed_types = self._setattr_datatypes.get(field_type_name, object)
+                    if not isinstance(value, allowed_types):
+                        # 2018-07-18:
+                        # have an exception for the bug in the 'quiz' sample game
+                        # after a while, we can remove this
+                        if field_name != 'question_id':
+                            friendly_value_type = value.__class__.__name__
+                            if friendly_value_type == 'str':
+                                friendly_value_type = 'string'
+                            msg = (
+                                'Wrong data type: {} cannot be set to {}.'
+                            ).format(field_type_name, friendly_value_type)
+                            raise TypeError(msg)
+            self._super_setattr(field_name, value)
+        else:
+            # super() is a bit slower but only gets run during __init__
+            super().__setattr__(field_name, value)
 
 
 Model = OTreeModel

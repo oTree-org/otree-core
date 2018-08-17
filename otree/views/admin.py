@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import
-
 import json
 import os
 import sys
@@ -28,7 +24,7 @@ from otree.common_internal import (
     get_models_module, get_app_label_from_name, DebugTable,
 )
 from otree.forms import widgets
-from otree.management.cli import check_pypi_for_updates
+from otree_startup import check_pypi_for_updates
 from otree.models import Participant, Session
 from otree.models_concrete import (
     BrowserBotsLauncherSessionCode)
@@ -387,36 +383,6 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
         return context
 
 
-class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
-
-    def get_context_data(self, **kwargs):
-
-        field_names = otree.export.get_field_names_for_live_update(Participant)
-        display_names = {
-            '_id_in_session': 'ID in session',
-            'code': 'Code',
-            'label': 'Label',
-            '_current_page': 'Page',
-            '_current_app_name': 'App',
-            '_round_number': 'Round',
-            '_current_page_name': 'Page name',
-            'status': 'Status',
-            '_last_page_timestamp': 'Time on page',
-        }
-
-        column_names = [display_names[col] for col in field_names]
-
-        context = super(SessionMonitor, self).get_context_data(**kwargs)
-        context['column_names'] = column_names
-
-        advance_users_button_text = (
-            "Advance the slowest user(s) by one page, "
-            "by forcing a timeout on their current page. "
-        )
-        context['advance_users_button_text'] = advance_users_button_text
-        return context
-
-
 def pretty_round_name(app_label, round_number):
     app_label = pretty_name(app_label)
     if round_number > 1:
@@ -440,12 +406,10 @@ class SessionData(AdminSessionPageMixin, vanilla.TemplateView):
         field_names_json = []
 
         for subsession in session.get_subsessions():
-            app_label = subsession._meta.app_config.name
-
-            columns_for_models, subsession_rows = otree.export.get_rows_for_live_update(
-                subsession._meta.app_config.name,
-                subsession_pk=subsession.pk
-            )
+            # can't use subsession._meta.app_config.name, because it won't work
+            # if the app is removed from SESSION_CONFIGS after the session is
+            # created.
+            columns_for_models, subsession_rows = otree.export.get_rows_for_live_update(subsession)
 
             if not rows:
                 rows = subsession_rows
@@ -459,7 +423,7 @@ class SessionData(AdminSessionPageMixin, vanilla.TemplateView):
                 model_headers.append((model_name.title(), colspan))
                 round_colspan += colspan
 
-            round_name = pretty_round_name(app_label, subsession.round_number)
+            round_name = pretty_round_name(subsession._meta.app_label, subsession.round_number)
 
             round_headers.append((round_name, round_colspan))
 
@@ -490,7 +454,7 @@ class SessionData(AdminSessionPageMixin, vanilla.TemplateView):
                 d_row[t] = v
             self.context_json.append(d_row)
 
-        context = super(SessionData, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context.update({
             'subsession_headers': round_headers,
             'model_headers': model_headers,
@@ -504,6 +468,62 @@ class SessionData(AdminSessionPageMixin, vanilla.TemplateView):
             return JsonResponse(self.context_json, safe=False)
         else:
             return self.render_to_response(context)
+
+
+class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
+
+    def get_context_data(self, **kwargs):
+
+        field_names = otree.export.get_field_names_for_live_update(Participant)
+        display_names = {
+            '_id_in_session': 'ID in session',
+            'code': 'Code',
+            'label': 'Label',
+            '_current_page': 'Page',
+            '_current_app_name': 'App',
+            '_round_number': 'Round',
+            '_current_page_name': 'Page name',
+            'status': 'Status',
+            '_last_page_timestamp': 'Time on page',
+        }
+
+        callable_fields = {'status', '_id_in_session', '_current_page'}
+
+        column_names = [display_names[col] for col in field_names]
+
+        context = super().get_context_data(**kwargs)
+        context['column_names'] = column_names
+
+        advance_users_button_text = (
+            "Advance the slowest user(s) by one page, "
+            "by forcing a timeout on their current page. "
+        )
+        context['advance_users_button_text'] = advance_users_button_text
+
+
+        participants = self.session.participant_set.filter(visited=True)
+        rows = []
+
+        for participant in participants:
+            row = {}
+            for field_name in field_names:
+                value = getattr(participant, field_name)
+                if field_name in callable_fields:
+                    value = value()
+                row[field_name] = value
+            rows.append(row)
+
+        self.context_json = rows
+
+        return context
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data()
+        if self.request.META.get('CONTENT_TYPE') == 'application/json':
+            return JsonResponse(self.context_json, safe=False)
+        else:
+            return self.render_to_response(context)
+
 
 
 class SessionDescription(AdminSessionPageMixin, vanilla.TemplateView):
@@ -758,7 +778,7 @@ class ToggleArchivedSessions(vanilla.View):
             )
         )
 
-        return HttpResponseRedirect(request.POST['origin_url'])
+        return HttpResponseRedirect(reverse('Sessions'))
 
 
 class DeleteSessions(vanilla.View):

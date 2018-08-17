@@ -17,8 +17,8 @@ class CheckDBMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-
         if not CheckDBMiddleware.synced:
+            # very fast, 0.01-0.02 seconds for the whole check
             missing_tables = missing_db_tables()
             if missing_tables:
                 listed_tables = missing_tables[:3]
@@ -31,5 +31,4 @@ class CheckDBMiddleware:
                 return HttpResponseServerError(msg)
             else:
                 CheckDBMiddleware.synced = True
-
         return self.get_response(request)

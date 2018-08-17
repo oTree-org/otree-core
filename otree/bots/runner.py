@@ -139,7 +139,8 @@ def test_all_bots_for_session_config(
         now = datetime.datetime.now()
 
         if export_path == AUTO_NAME_BOTS_EXPORT_FOLDER:
-            export_path = now.strftime('_bots_%b%d_%Hh%Mm%S.%f')[:-5] + 's'
+            # oTree convention to prefix __temp all temp folders.
+            export_path = now.strftime('__temp_bots_%b%d_%Hh%Mm%S.%f')[:-5] + 's'
 
         if os.path.isdir(export_path):
             msg = "Directory '{}' already exists".format(export_path)

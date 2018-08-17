@@ -11,10 +11,11 @@ from django.conf import settings
 from django.core.checks import register, Error, Warning
 from django.template import Template
 from django.template import TemplateSyntaxError
-
+import django.db.models.fields
 from otree.api import (
     BasePlayer, BaseGroup, BaseSubsession, Currency, WaitPage, Page)
 from otree.common_internal import _get_all_configs
+from pathlib import Path
 
 
 class AppCheckHelper:
@@ -68,37 +69,44 @@ class AppCheckHelper:
         return inspect.isclass(cls)
 
 
-
-
-
 # CHECKS
 
 def files(helper: AppCheckHelper, **kwargs):
-    for fn in ['models.py']: # don't check views.py because it might be pages.py
+    # don't check views.py because it might be pages.py
+    for fn in ['models.py']:
         if not os.path.isfile(helper.get_path(fn)):
             helper.add_error(
-                'NoModelsOrViews: No "%s" file found in game folder' % fn,
+                'No "%s" file found in game folder' % fn,
                 numeric_id=102
             )
 
-    if os.path.isdir(helper.get_path('templates')):
-
-        # check for files in templates, but not in templates/<label>
-
-        misplaced_templates = set(glob.glob(
-            os.path.join(helper.get_path('templates'), '*.html')
-        ))
-        misplaced_templates.discard(helper.app_config.label)
-        if misplaced_templates:
+    templates_dir = Path(helper.get_path('templates'))
+    app_label = helper.app_config.label
+    if templates_dir.is_dir():
+        # check for files in templates/, but not in templates/<label>
+        misplaced_files = list(templates_dir.glob('*.html'))
+        if misplaced_files:
             hint = (
                 'Move template files from "{app}/templates/" '
                 'to "{app}/templates/{app}" subfolder'.format(
-                    app=helper.app_config.label)
+                    app=app_label)
             )
+
             helper.add_error(
-                "TemplatesInWrongDir: Templates files in app's root template folder",
+                "Templates files in wrong folder",
                 hint=hint, numeric_id=103,
             )
+
+        all_subfolders = set(templates_dir.glob('*/'))
+        correctly_named_subfolders = set(
+            templates_dir.glob('{}/'.format(app_label)))
+        other_subfolders = all_subfolders - correctly_named_subfolders
+        if other_subfolders and not correctly_named_subfolders:
+            msg = (
+                "The 'templates' folder has a subfolder called '{}', "
+                "but it should be renamed '{}' to match the name of the app. "
+            ).format(other_subfolders.pop().name, app_label)
+            helper.add_error(msg, numeric_id=104)
 
 
 base_model_attrs = {
@@ -113,12 +121,12 @@ model_field_substitutes = {
     bool: 'BooleanField',
     str: 'CharField',
     Currency: 'CurrencyField',
-    type(None): 'IntegerField' # not always int, but it's a reasonable suggestion
+    type(None): 'IntegerField'
+    # not always int, but it's a reasonable suggestion
 }
 
 
 def model_classes(helper: AppCheckHelper, **kwargs):
-
     for name in ['Subsession', 'Group', 'Player']:
         try:
             helper.app_config.get_model(name)
@@ -132,10 +140,11 @@ def model_classes(helper: AppCheckHelper, **kwargs):
     Subsession = app_config.get_model('Subsession')
 
     for Model in [Player, Group, Subsession]:
-        for attr in dir(Model):
-            if attr not in base_model_attrs[Model.__name__]:
+        for attr_name in dir(Model):
+            if attr_name not in base_model_attrs[Model.__name__]:
                 try:
-                    _type = type(getattr(Model, attr))
+                    attr_value = getattr(Model, attr_name)
+                    _type = type(attr_value)
                 except AttributeError:
                     # I got "The 'q_country' attribute can only be accessed
                     # from Player instances."
@@ -147,17 +156,19 @@ def model_classes(helper: AppCheckHelper, **kwargs):
                             'NonModelFieldAttr: '
                             '{} has attribute "{}", which is not a model field, '
                             'and will therefore not be saved '
-                            'to the database.'.format(Model.__name__, attr))
+                            'to the database.'.format(Model.__name__,
+                                                      attr_name))
 
                         helper.add_error(
                             msg,
                             numeric_id=111,
                             hint='Consider changing to "{} = models.{}(initial={})"'.format(
-                                attr, model_field_substitutes[_type], repr(getattr(Model, attr)))
+                                attr_name, model_field_substitutes[_type],
+                                repr(getattr(Model, attr_name)))
                         )
                     # if people just need an iterable of choices for a model field,
                     # they should use a tuple, not list or dict
-                    if _type in {list, dict, set}:
+                    elif _type in {list, dict, set}:
                         warning = (
                             'MutableModelClassAttr: '
                             '{ModelName}.{attr} is a {type_name}. '
@@ -169,10 +180,23 @@ def model_classes(helper: AppCheckHelper, **kwargs):
                             "then it's recommended to move it outside of this class "
                             '(e.g. put it in Constants).'
                         ).format(ModelName=Model.__name__,
-                                 attr=attr,
+                                 attr=attr_name,
                                  type_name=_type.__name__)
 
                         helper.add_error(warning, numeric_id=112)
+                    # isinstance(X, type) means X is a class, not instance
+                    elif (isinstance(attr_value, type) and
+                              issubclass(attr_value,
+                                         django.db.models.fields.Field)):
+                        msg = (
+                            '{}.{} is missing parentheses.'
+                        ).format(Model.__name__, attr_name)
+                        helper.add_error(
+                            msg, numeric_id=113,
+                            hint=(
+                                'Consider changing to "{} = models.{}()"'
+                            ).format(attr_name, attr_value.__name__)
+                        )
 
 
 def constants(helper: AppCheckHelper, **kwargs):
@@ -194,21 +218,42 @@ def constants(helper: AppCheckHelper, **kwargs):
     ppg = Constants.players_per_group
     if ppg == 0 or ppg == 1:
         helper.add_error(
-            "models.py: 'Constants.players_per_group' cannot be {}. You "
+            "models.py: Constants.players_per_group cannot be {}. You "
             "should set it to None, which makes the group "
             "all players in the subsession.".format(ppg),
             numeric_id=13
         )
+    if ' ' in Constants.name_in_url:
+        helper.add_error(
+            "models.py: Constants.name_in_url must not contain spaces",
+            numeric_id=14
+        )
+
+
+def orphan_methods(helper: AppCheckHelper, **kwargs):
+    '''i saw several people making this mistake in the workshop'''
+    pages_module = common_internal.get_pages_module(helper.app_config.name)
+    for method_name in ['vars_for_template', 'is_displayed',
+                        'after_all_players_arrive']:
+        if hasattr(pages_module, method_name):
+            helper.add_error(
+                'pages.py has a function {} that is not inside a class.'.format(
+                    method_name),
+                numeric_id=70
+            )
+
+    return
 
 
 def pages_function(helper: AppCheckHelper, **kwargs):
-    views_module = common_internal.get_views_module(helper.app_config.name)
-    views_or_pages = views_module.__name__.split('.')[-1]
+    pages_module = common_internal.get_pages_module(helper.app_config.name)
+    views_or_pages = pages_module.__name__.split('.')[-1]
     try:
-        page_list = views_module.page_sequence
+        page_list = pages_module.page_sequence
     except:
         helper.add_error(
-            '{}.py is missing the variable page_sequence.'.format(views_or_pages),
+            '{}.py is missing the variable page_sequence.'.format(
+                views_or_pages),
             numeric_id=21
         )
         return
@@ -225,23 +270,24 @@ def pages_function(helper: AppCheckHelper, **kwargs):
             # once per app
             # is outweighed by the unexpected behavior if someone subclasses
             # it without understanding inheritance.
-            # BUT: built-in Trust game has a wait page called WaitPage.
-            # need to get rid of that first.
+            # BUT: built-in Trust game had a wait page called WaitPage.
+            # that was fixed on Aug 24, 2017, need to wait a while...
+            # see below in ensure_no_misspelled_attributes,
+            # we can get rid of a check there also
             if ViewCls.__name__ == 'Page':
                 msg = (
                     "page_sequence cannot contain "
-                    "a class called 'Page'. You should subclass Page "
-                    "and give your page a different name."
+                    "a class called 'Page'."
                 )
                 helper.add_error(msg, numeric_id=22)
+            if ViewCls.__name__ == 'WaitPage':
+                msg = (
+                    "page_sequence cannot contain "
+                    "a class called 'WaitPage'."
+                )
+                helper.add_warning(msg, numeric_id=221)
+
             if issubclass(ViewCls, WaitPage):
-                if hasattr(ViewCls, 'before_next_page'):
-                    helper.add_error(
-                        '"{}" defines before_next_page, '
-                        'which is not valid on wait pages.'.format(
-                            ViewCls.__name__),
-                        numeric_id=27
-                    )
                 if ViewCls.group_by_arrival_time:
                     if i > 0:
                         helper.add_error(
@@ -250,26 +296,109 @@ def pages_function(helper: AppCheckHelper, **kwargs):
                                 ViewCls.__name__), numeric_id=23)
                     if ViewCls.wait_for_all_groups:
                         helper.add_error(
-                            '"{}" has group_by_arrival_time=True, so '
+                            'Page "{}" has group_by_arrival_time=True, so '
                             'it cannot have wait_for_all_groups=True also.'.format(
                                 ViewCls.__name__), numeric_id=24)
                 # alternative technique is to not define the method on WaitPage
                 # and then use hasattr, but I want to keep all complexity
                 # out of views.abstract
-                elif (ViewCls.get_players_for_group != WaitPage.get_players_for_group):
+                elif (
+                            ViewCls.get_players_for_group != WaitPage.get_players_for_group):
                     helper.add_error(
-                        '"{}" defines get_players_for_group, '
+                        'Page "{}" defines get_players_for_group, '
                         'but in order to use this method, you must set '
                         'group_by_arrival_time=True'.format(
                             ViewCls.__name__), numeric_id=25)
             elif issubclass(ViewCls, Page):
-                pass # ok
+                pass  # ok
             else:
                 msg = '"{}" is not a valid page'.format(ViewCls)
                 helper.add_error(msg, numeric_id=26)
 
+            ensure_no_misspelled_attributes(ViewCls, helper)
 
-def template_valid(template_name: str, helper: AppCheckHelper):
+
+def ensure_no_misspelled_attributes(ViewCls: type, helper: AppCheckHelper):
+    '''just a helper function'''
+
+    # this messes with the logic of base classes.
+    # do this instead of ViewCls == WaitPage, because _builtin already
+    # subclasses it, so you would get a warning like:
+    # Page "WaitPage" has the following method that is not recognized by oTree:
+    # "z_autocomplete".
+    if ViewCls.__name__ == 'WaitPage' or ViewCls.__name__ == 'Page':
+        return
+
+    # make sure no misspelled attributes
+    base_members = set()
+    for Cls in ViewCls.__bases__:
+        base_members.update(dir(Cls))
+    child_members = set(dir(ViewCls))
+    child_only_members = child_members - base_members
+
+    dynamic_form_methods = set()  # needs to be a set
+    for member in child_only_members:
+        # error_message, not _error_message
+        for valid_ending in ['error_message', '_min', '_max', '_choices']:
+            if member.endswith(valid_ending):
+                dynamic_form_methods.add(member)
+    invalid_members = child_only_members - dynamic_form_methods
+    if invalid_members:
+        ALLOW_CUSTOM_ATTRIBUTES = '_allow_custom_attributes'
+        if getattr(ViewCls, ALLOW_CUSTOM_ATTRIBUTES, False):
+            return
+
+        page_attrs = set(dir(Page))
+        wait_page_attrs = set(dir(WaitPage))
+        ATTRS_ON_PAGE_ONLY = page_attrs - wait_page_attrs
+        ATTRS_ON_WAITPAGE_ONLY = wait_page_attrs - page_attrs
+
+        for member in invalid_members:
+            # this assumes that ViewCls is a Page or WaitPage
+            if member in ATTRS_ON_PAGE_ONLY:
+                assert issubclass(ViewCls, WaitPage), (ViewCls, member)
+                msg = (
+                    'WaitPage "{ViewClsName}" has the attribute "{member}" that is not '
+                    'allowed on a WaitPage. '
+                )
+                numeric_id = 27
+            elif member in ATTRS_ON_WAITPAGE_ONLY:
+                assert issubclass(ViewCls, Page), (ViewCls, member)
+                msg = (
+                    'Page "{ViewClsName}" has the attribute "{member}" that is '
+                    'only allowed on a WaitPage, not a regular Page. '
+                )
+                numeric_id=271
+            elif callable(getattr(ViewCls, member)):
+                msg = (
+                    'Page "{ViewClsName}" has the following method that is not '
+                    'recognized by oTree: "{member}". '
+                    'Consider moving it into '
+                    'the Player class in models.py. '
+                )
+
+                numeric_id=28
+            else:
+                msg = (
+                    'Page "{ViewClsName}" has the following attribute that is not '
+                    'recognized by oTree: "{member}". '
+                )
+                numeric_id=29
+
+            fmt_kwargs = {
+                'ViewClsName': ViewCls.__name__,
+                'FLAG': ALLOW_CUSTOM_ATTRIBUTES,
+                'member': member,
+            }
+            # when i make this an error, should add this workaround.
+            #msg +=  'If you want to keep it here, you need to set '
+            #        '{FLAG}=True on the page class.'
+
+            # at first, just make it a warning.
+            helper.add_error(msg.format(**fmt_kwargs), numeric_id)
+
+
+def template_content_is_in_blocks(template_name: str, helper: AppCheckHelper):
     from otree.checks.templates import get_unreachable_content
     from otree.checks.templates import has_valid_encoding
     from otree.checks.templates import format_source_snippet
@@ -280,7 +409,21 @@ def template_valid(template_name: str, helper: AppCheckHelper):
 
     try:
         with io.open(template_name, 'r', encoding='utf8') as f:
-            compiled_template = Template(f.read())
+
+            # when we upgraded to Django 1.11, we got an error
+            # if someone used "{% include %}" with a relative
+            # path (like ../Foo.html):
+            # File "c:\otree\ve_dj11\lib\site-packages\django\template\loader_tags.py", line 278, in construct_relative_path
+            #  posixpath.dirname(current_template_name.lstrip('/')),
+            # AttributeError: 'NoneType' object has no attribute 'lstrip'
+            # can fix this by passing a dummy 'Origin' param.
+            # i tried also with Engin.get_default().from_string(template_name),
+            # but got the same error.
+            class Origin:
+                name = ''
+                template_name = ''
+
+            compiled_template = Template(f.read(), origin=Origin)
     except (IOError, OSError, TemplateSyntaxError):
         # When we used Django 1.8
         # we used to show the line from the source that caused the error,
@@ -295,9 +438,14 @@ def template_valid(template_name: str, helper: AppCheckHelper):
         return '\n'.join(lines)
 
     contents = get_unreachable_content(compiled_template)
+
     content_bits = '\n\n'.join(
         format_content(bit)
         for bit in contents)
+    # note: this seems to not detect unreachable content
+    # if the template has a relative include,
+    # like {% include "../Foo.html" %}
+    # not sure why, but that's not common usage.
     if contents:
         helper.add_error(
             'Template contains the following text outside of a '
@@ -310,7 +458,8 @@ def template_valid(template_name: str, helper: AppCheckHelper):
 
 def templates_valid(helper: AppCheckHelper, **kwargs):
     for template_name in helper.get_template_names():
-        template_valid(template_name, helper)
+        template_content_is_in_blocks(template_name, helper)
+
 
 def unique_sessions_names(helper: AppCheckHelper, **kwargs):
     already_seen = set()
@@ -342,13 +491,12 @@ def template_encoding(helper: AppCheckHelper, **kwargs):
                 'The template {template} is not UTF-8 encoded. '
                 'Please configure your text editor to always save files '
                 'as UTF-8. Then open the file and save it again.'
-                .format(template=helper.get_rel_path(template_name)),
+                    .format(template=helper.get_rel_path(template_name)),
                 numeric_id=60,
             )
 
 
 def make_check_function(func):
-
     def check_function(app_configs, **kwargs):
         # if app_configs list is given (e.g. otree check app1 app2), run on those
         # if it's None, run on all apps
@@ -366,7 +514,7 @@ def make_check_function(func):
 def make_check_function_run_once(func):
     def check_function(app_configs, **kwargs):
         otree_app_config = apps.get_app_config('otree')
-        #ignore app_configs list -- just run once
+        # ignore app_configs list -- just run once
         errors = []
         helper = AppCheckHelper(otree_app_config, errors)
         func(helper, **kwargs)
@@ -376,7 +524,6 @@ def make_check_function_run_once(func):
 
 
 def register_system_checks():
-
     for func in [
         unique_room_names,
         unique_sessions_names,
@@ -391,6 +538,7 @@ def register_system_checks():
         pages_function,
         templates_valid,
         template_encoding,
+        orphan_methods,
     ]:
         check_function = make_check_function(func)
         register(check_function)

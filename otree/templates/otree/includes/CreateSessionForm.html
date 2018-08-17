@@ -2,7 +2,6 @@
 
 <form action="" method="post" role="form" class="form" id="form">
     {% csrf_token %}
-    <input type="hidden" value="{{ request.path }}" name="origin_url"/>
 
     {% formfield form.session_config %}
 
@@ -22,7 +21,6 @@
             {% endfor %}
             <p class="help-block">{{ form.num_participants.help_text }}</p>
         </div>
-        {{ form.is_for_mturk }}
     </div>
 
     <input class="btn btn-primary next-button"

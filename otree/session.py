@@ -12,11 +12,8 @@ from django.conf import settings
 from django.db import transaction
 from django.db.utils import OperationalError
 
-import schema
-
 import otree.db.idmap
 from otree.models import Participant, Session
-from otree.deprecate import OtreeDeprecationWarning
 from otree.common_internal import (
     get_models_module, get_app_constants, validate_alphanumeric,
     get_bots_module)
@@ -45,6 +42,10 @@ def lcmm(*args):
     return reduce(lcm, args)
 
 
+class SessionConfigError(Exception):
+    pass
+
+
 class SessionConfig(dict):
 
     def get_lcm(self):
@@ -66,20 +67,34 @@ class SessionConfig(dict):
 
     def clean(self):
 
-        config_schema = schema.Schema({
-            'name': str,
-            'app_sequence': list,
-            'participation_fee': object,
-            'real_world_currency_per_point': object,
-            'num_demo_participants': int,
-            'doc': str,
-            str: object,
-        })
+        required_keys = [
+            'name',
+            'app_sequence',
+            'num_demo_participants',
+            'participation_fee',
+            'real_world_currency_per_point',
+        ]
 
-        try:
-            config_schema.validate(self)
-        except schema.SchemaError as e:
-            raise ValueError('settings.SESSION_CONFIGS: {}'.format(e)) from None
+        for key in required_keys:
+            if key not in self:
+                raise SessionConfigError(
+                    'settings.SESSION_CONFIGS: all configs must have a '
+                    '"{}"'.format(key)
+                )
+
+        datatypes = {
+            'app_sequence': list,
+            'num_demo_participants': int,
+            'name': str,
+        }
+
+        for key, datatype in datatypes.items():
+            if not isinstance(self[key], datatype):
+                msg = (
+                    'SESSION_CONFIGS "{}": '
+                    'the entry "{}" must be of type {}'
+                ).format(self['name'], key, datatype.__name__)
+                raise SessionConfigError(msg)
 
         # Allow non-ASCII chars in session config keys, because they are
         # configurable in the admin, so need to be readable by non-English
@@ -98,7 +113,7 @@ class SessionConfig(dict):
 
         for key in self:
             if not key.isidentifier():
-                raise ValueError(INVALID_IDENTIFIER_MSG.format(key))
+                raise SessionConfigError(INVALID_IDENTIFIER_MSG.format(key))
 
         validate_alphanumeric(
             self['name'],
@@ -113,11 +128,11 @@ class SessionConfig(dict):
                 'must not contain duplicate elements. '
                 'If you want multiple rounds, '
                 'you should set Constants.num_rounds.')
-            raise ValueError(msg.format(self['name']))
+            raise SessionConfigError(msg.format(self['name']))
 
         if len(app_sequence) == 0:
-            raise ValueError(
-                'settings.SESSION_CONFIGS: Need at least one subsession.')
+            raise SessionConfigError(
+                'settings.SESSION_CONFIGS: app_sequence cannot be empty.')
 
         self.setdefault('display_name', self['name'])
         self.setdefault('doc', '')
@@ -317,7 +332,7 @@ def create_session(
 
         for app_name in session_config['app_sequence']:
 
-            views_module = common_internal.get_views_module(app_name)
+            views_module = common_internal.get_pages_module(app_name)
             models_module = get_models_module(app_name)
             Constants = models_module.Constants
             num_subsessions += Constants.num_rounds

@@ -1,17 +1,16 @@
 from otree.extensions import get_extensions_modules, get_extensions_data_export_views
 import inspect
 from importlib import import_module
-
+from django.templatetags.static import static
 from django.conf import urls
 
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic.base import RedirectView
 from django.conf import settings
+
 from django.contrib.auth.decorators import login_required
-from otree.views.rest import SessionParticipantsList, Ping
-
 from otree import common_internal
-
+from django.http import HttpResponse
 
 STUDY_UNRESTRICTED_VIEWS = {
     'AssignVisitorToRoom',
@@ -156,15 +155,6 @@ def get_urlpatterns():
         ),
     ]
 
-    rest_api_urlpatterns = [
-        urls.url(r'^ping/$', Ping.as_view(), name="ping"),
-        urls.url(
-            r'^sessions/(?P<session_code>[a-z0-9]+)/participants/$',
-            SessionParticipantsList.as_view(),
-            name="session_participants_list")
-    ]
-    urlpatterns += rest_api_urlpatterns
-
     urlpatterns += staticfiles_urlpatterns()
 
     used_names_in_url = set()
@@ -173,14 +163,14 @@ def get_urlpatterns():
         name_in_url = models_module.Constants.name_in_url
         if name_in_url in used_names_in_url:
             msg = (
-                "App {} has name_in_url='{}', "
+                "App {} has Constants.name_in_url='{}', "
                 "which is already used by another app"
             ).format(app_name, name_in_url)
             raise ValueError(msg)
 
         used_names_in_url.add(name_in_url)
 
-        views_module = common_internal.get_views_module(app_name)
+        views_module = common_internal.get_pages_module(app_name)
         urlpatterns += url_patterns_from_game_module(
             views_module.__name__, name_in_url)
 
@@ -194,6 +184,36 @@ def get_urlpatterns():
 
     urlpatterns += extensions_urlpatterns()
     urlpatterns += extensions_export_urlpatterns()
+
+    # serve an empty favicon?
+    # otherwise, the logs will contain:
+    # [WARNING] django.request > Not Found: /favicon.ico
+    # Not Found: /favicon.ico
+    # don't want to add a <link> in base template because even if it exists,
+    # browsers will still request /favicon.ico.
+    # plus it makes the HTML noisier
+    # can't use the static() function here because maybe collectstatic
+    # has not been run yet
+    # and it seems an empty HttpResponse or even a 204 response makes the browser
+    # just keep requesting the file with every page load
+    # hmmm...now it seems that chrome is not re-requesting with every page load
+    # but firefox does. but if i remove the favicon, there's 1 404 then FF doesn't
+    # ask for it again.
+
+
+    # import os
+    # dir_path = os.path.dirname(os.path.realpath(__file__))
+    # with open(os.path.join(dir_path, 'favicon_invisible.ico'), 'rb') as f:
+    # #with open('favicon.ico', 'rb') as f:
+    #     favicon_content = f.read()
+    #
+    #
+    # urlpatterns.append(
+    #     urls.url(
+    #         r'^favicon\.ico$',
+    #         lambda request: HttpResponse(favicon_content, content_type="image/x-icon")
+    #     )
+    # )
 
     return urlpatterns
 

@@ -57,7 +57,7 @@
             </div>
         </div>
     </div>
-    {% if view.is_debug %}
+    {% if view.is_debug|default:False %}
         {% include 'otree/includes/debug_info.html' %}
     {% endif %}
 </div>
@@ -107,7 +107,7 @@ $(document).ready(function () {
         };
     }
 
-    {% if view.group_by_arrival_time %}
+    {% if view.group_by_arrival_time|default:False %}
 
         {% comment %}
         We should use an AJAX heartbeat rather than relying on just

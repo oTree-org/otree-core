@@ -4,14 +4,8 @@ from django.conf import settings
 from django.urls import reverse
 
 import vanilla
-
 from otree.session import SESSION_CONFIGS_DICT
 from otree.common_internal import create_session_and_redirect
-
-# if it's debug mode, we should always generate a new session
-# because a bug might have been fixed
-# in production, we optimize for UX and quick loading
-MAX_SESSIONS_TO_CREATE = 1 if settings.DEBUG else 3
 
 
 class DemoIndex(vanilla.TemplateView):
@@ -25,7 +19,7 @@ class DemoIndex(vanilla.TemplateView):
         intro_html = (
             getattr(settings, 'DEMO_PAGE_INTRO_HTML', '') or
             getattr(settings, 'DEMO_PAGE_INTRO_TEXT', ''))
-        context = super(DemoIndex, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         session_info = []
         for session_config in SESSION_CONFIGS_DICT.values():

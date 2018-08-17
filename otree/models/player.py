@@ -8,13 +8,7 @@ from otree.db import models
 from otree.models.fieldchecks import ensure_field
 from django.db import models as djmodels
 
-ATTRIBUTE_ERROR_MESSAGE = '''
-Player object has no attribute '{}'. If it is a model field or method,
-it must be declared on the Player class in models.py.
-'''.replace('\n', ' ')
 
-#from save_the_change.decorators import SaveTheChange
-#@SaveTheChange
 class BasePlayer(models.Model):
     """
     Base class for all players.
@@ -53,13 +47,6 @@ class BasePlayer(models.Model):
 
     _gbat_arrived = models.BooleanField(default=False)
     _gbat_grouped = models.BooleanField(default=False)
-
-    def __getattribute__(self, name):
-        try:
-            return super().__getattribute__(name)
-        except AttributeError:
-            raise AttributeError(ATTRIBUTE_ERROR_MESSAGE.format(name)) from None
-
 
     @property
     def payoff(self):

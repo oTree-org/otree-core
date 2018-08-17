@@ -3,9 +3,7 @@
 
 {% block internal_scripts %}
 {{ block.super }}
-<script type="text/javascript" charset="utf-8">
-
-
+<script>
 
 /*
 ****************************
@@ -89,7 +87,6 @@ $(function() {
     {% if object_list %}
     <form action="{% url 'DeleteSessions' %}" method="post">
         {% csrf_token %}
-        <input type="hidden" value="{{ request.path }}" name="origin_url"/>
 
         <div class="modal fade" id="delete-confirm" tabindex="-1" role="dialog">
             <div class="modal-dialog">

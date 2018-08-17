@@ -7,6 +7,7 @@ from otree.currency import Currency, RealWorldCurrency
 from django.forms.widgets import * # noqa
 from django import forms
 
+
 from otree.currency.locale import CURRENCY_SYMBOLS
 
 
@@ -53,6 +54,12 @@ class Slider(forms.NumberInput):
     show_value = True
 
     def __init__(self, *args, **kwargs):
+        try:
+            # fix bug where currency "step" values were ignored.
+            step = kwargs['attrs']['step']
+            kwargs['attrs']['step'] = self._format_value(step)
+        except KeyError:
+            pass
         show_value = kwargs.pop('show_value', None)
         if show_value is not None:
             self.show_value = show_value

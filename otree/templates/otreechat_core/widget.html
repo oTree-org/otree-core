@@ -1,9 +1,10 @@
-{% load otree %}
+{% load otree i18n %}
 
 <div class='otree-chat' id='_js-otree-chat-{{ channel }}'>
     <div class='otree-chat__messages'></div>
     <input type="text" class="otree-chat__input" size="40">
-    <button type="button" class="otree-chat__btn-send">Send</button>
+    {% comment %}Translators: Chat widget "send" button text{% endcomment %}
+    <button type="button" class="otree-chat__btn-send">{% trans 'Send' %}</button>
 </div>
 
 
@@ -54,6 +55,7 @@ $(function () {
     var channel = varsFromDjango.channel;
     var socketPath = varsFromDjango.socket_path;
     var participantID = varsFromDjango.participant_id;
+    var nickname_i_see_for_myself = varsFromDjango.nickname_i_see_for_myself;
 
     var $chatWidget = $('#_js-otree-chat-' + channel);
 
@@ -81,7 +83,7 @@ $(function () {
             {% endcomment %}
             // need to use ID instead of code, for security
             if (chatMessage.participant_id === participantID) {
-                nickname += ' (Me)';
+                nickname = nickname_i_see_for_myself;
             }
 
             messagesHTML += "<div class='otree-chat__msg'>" +

@@ -5,7 +5,8 @@ from setuptools import setup, find_packages
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
-version = __import__('otree').get_version()
+import otree
+version = otree.__version__
 
 with open('README.rst', encoding='utf-8') as f:
     README = f.read()
@@ -21,21 +22,21 @@ with open('requirements_mturk.txt', encoding='utf-8') as f:
 if sys.argv[-1] == 'publish':
 
     cmd = "python setup.py sdist upload"
-    print(cmd)
+    sys.stdout.write(cmd + '\n')
     os.system(cmd)
 
     cmd = 'git tag -a %s -m "version %s"' % (version, version)
-    print(cmd)
+    sys.stdout.write(cmd + '\n')
     os.system(cmd)
 
     cmd = "git push --tags"
-    print(cmd)
+    sys.stdout.write(cmd + '\n')
     os.system(cmd)
 
     sys.exit()
 
-if sys.version_info < (3, 5):
-    sys.exit('Error: This version of otree requires Python 3.5 or higher')
+if sys.version_info < (3, 6):
+    sys.exit('Error: This version of oTree requires Python 3.6 or higher')
 
 
 setup(
@@ -72,7 +73,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'otree=otree.management.cli:otree_cli',
+            'otree=otree_startup:execute_from_command_line',
         ],
     },
     zip_safe=False,

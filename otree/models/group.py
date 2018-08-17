@@ -7,13 +7,7 @@ from otree.models.fieldchecks import ensure_field
 import django.core.exceptions
 from django.db import models as djmodels
 
-ATTRIBUTE_ERROR_MESSAGE = '''
-Group object has no attribute '{}'. If it is a model field or method,
-it must be declared on the Group class in models.py.
-'''.replace('\n', '')
 
-#from save_the_change.decorators import SaveTheChange
-#@SaveTheChange
 class BaseGroup(models.Model):
     """Base class for all Groups.
     """
@@ -22,12 +16,6 @@ class BaseGroup(models.Model):
         abstract = True
         index_together = ['session', 'id_in_subsession']
         ordering = ['pk']
-
-    def __getattribute__(self, name):
-        try:
-            return super().__getattribute__(name)
-        except AttributeError:
-            raise AttributeError(ATTRIBUTE_ERROR_MESSAGE.format(name)) from None
 
     id_in_subsession = models.PositiveIntegerField(db_index=True)
 

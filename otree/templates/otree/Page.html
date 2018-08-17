@@ -1,114 +1,54 @@
 {% extends "otree/Base.html" %}
 {% load i18n %}
-{% load otree %}
+{% load otree static %}
+{% comment %}
+NOTE:
+we should keep this page as simple as possible so that 'view source' is friendly
+i removed many linebreaks to make output HTML cleaner
+{% endcomment %}
 {% block body_main %}
     <div class="otree-body container">
-        <div class="page-header">
-            <h2 class="otree-title">{% block title %}{% endblock %}</h2>
-        </div>
-        <div>
-            {% if view.remaining_timeout_seconds != None %}
-                {% include 'otree/includes/TimeLimit.html' with form_element_id="form" %}
-            {% endif %}
-
-            {% if form.errors %}
-                <div class="otree-form-errors alert alert-danger">
-                    {% blocktrans trimmed %}Please fix the errors in the form.{% endblocktrans %}
-                    {{ form.non_field_errors }}
-                </div>
-            {% endif %}
-
-            <div id="_otree-server-error" class="alert alert-danger"
-                 style="display:none">
-                {% blocktrans trimmed %}
-                    An error occurred. Please check the logs or ask
-                    the administrator for help.{% endblocktrans %}
+        <h2 class="otree-title page-header">{% block title %}{% endblock %}</h2>
+        {% if view.remaining_timeout_seconds != None %}
+            {% include 'otree/includes/TimeLimit.html' with form_element_id="form" %}
+        {% endif %}
+        {% if form.errors %}
+            <div class="otree-form-errors alert alert-danger">
+                {% blocktrans trimmed %}Please fix the errors in the form.{% endblocktrans %}
+                {{ form.non_field_errors }}
             </div>
+        {% endif %}
+        <form action="" method="post" role="form" id="form" autocomplete="off">{% csrf_token %}
 
-            <form action="" method="post" role="form" id="form">{% csrf_token %}
-                <input type="hidden" value="{{ request.path }}"
-                       name="origin_url"/>
-                <div class="_otree-content">
-                    {% block content %}{% endblock %}
-                </div>
-            </form>
-        </div>
+            <div class="_otree-content">{% block content %}{% endblock %}</div>
+        </form>
         <br/>
-        {% if view.is_debug %}
+        {% if view.is_debug|default:False %}
             <br>
             {% include 'otree/includes/debug_info.html' %}
         {% endif %}
     </div>
 {% endblock %}
-
 {% block internal_styles %}
 {{ block.super }}
-<style>
-    .otree-body {
-        max-width:970px
-    }
-
-    .page-header {
-        padding-top: 40px
-    }
-
-</style>
+<link rel="stylesheet" href="{% static 'otree/css/page.css' %}">
 {% endblock %}
-
 {% block internal_scripts %}
     {{ block.super }}
-    <!-- this is an HTML file rather than JavaScript static file because context variables need to be passed to it -->
-    <script type="text/javascript">
-        $(document).ready(function () {
-
-            {% comment %}
-            One user reported that with a 588 bot session,
-            web socket for auto-advance adds 4s to each page load.
-            {% endcomment %}
-            var socket;
-
-            function initWebSocket() {
-                var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-                var ws_path = ws_scheme + '://' + window.location.host + "{{ view.socket_url|safe }}";
-
-                socket = new ReconnectingWebSocket(ws_path);
-                socket.onmessage = function (e) {
-                    var data = JSON.parse(e.data);
-
-                    if (data.error) {
-                        $("#_otree-server-error").show();
-                        return;
-                    }
-
-                    if (data.auto_advanced) {
-                        console.log('Received redirect message', e.data);
-                        window.location.href = '{{ view.redirect_url|safe }}';
-                    }
-                };
-            }
-
-            initWebSocket();
-
-
-            {% if participant.is_browser_bot %}
-                {# submit the form instantly #}
-                {# below comment is used as a flag #}
-                // browser-bot-auto-submit
-                var form = $('#form');
-                form.submit();
-
-                {# prevent duplicate submissions, e.g. timeout_seconds #}
-                form.on('submit', function (e) {
-                    e.preventDefault();
-                });
-            {% endif %}
-
-        });
-
-    </script>
-
+    <script id="websocket-redirect" src="{% static 'otree/js/page-websocket-redirect.js' %}"
+            data-socket-url="{{ view.socket_url|safe }}"
+            data-redirect-url="{{ view.redirect_url|safe }}"
+            data-is-browser-bot="{{ participant.is_browser_bot  }}"
+    ></script>
+    {% comment %}
+    the below is a special flag.
+    2018-04-25: why not put it in a response header?
+    ...this had to do with handling an edge case with OutOfRangeNotification.
+    look at this again when i have time.
+    {% endcomment %}
+    {% if participant.is_browser_bot %} <!-- browser-bot-auto-submit -->{% endif %}
     {% if view.remaining_timeout_seconds != None %}
         {% include 'otree/includes/TimeLimit.js.html' %}
     {% endif %}
-
+    {{ form.media|default:"" }}
 {% endblock %}

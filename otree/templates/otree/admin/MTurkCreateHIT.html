@@ -1,27 +1,5 @@
 {% extends "otree/admin/Session.html" %}
-{% load otree %}
-
-{% block internal_scripts %}
-    {{ block.super }}
-    <script type="text/javascript" charset="utf-8">
-        // show modal warning window if user tries to create hit in non-sandbox mode
-        // and if we are not already showing this modal to user
-        $(document).ready(function () {
-            // this select text in text input box so it is easier to change it
-            $("input[type=text]").click(function () {
-                $(this).select();
-            });
-            $('#form').on('submit', function (ev) {
-                if (($("input[name=in_sandbox]:checked").length == 0) && !($("#mturk-production").hasClass('in'))) {
-                    $('#mturk-production').modal({
-                        show: 'false'
-                    });
-                    ev.preventDefault();
-                }
-            })
-        });
-    </script>
-{% endblock %}
+{% load otree i18n %}
 
 {% block content %}
 
@@ -84,12 +62,16 @@
            target="_blank">here</a>.
     </p>
 {% else %}
+    {% if form.errors %}
+        <div class="alert alert-danger">
+        {% blocktrans trimmed %}Please fix the errors in the form.{% endblocktrans %}
+        </div>
+    {% endif %}
 
     <form action="" method="post" role="form" class="form"
           id="form">{% csrf_token %}
-    <input type="hidden" value="{{ request.path }}" name="origin_url"/>
 
-    <div class="modal fade" id="mturk-production" tabindex="-1" role="dialog">
+    <div class="modal fade" id="mturk-confirm-publish" tabindex="-1" role="dialog">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -119,7 +101,12 @@
             {{ missing_next_button_warning }}
         </div>
         {% endif %}
-        <button type="submit" class="btn btn-primary">Publish HIT</button>
+        <button type="button"
+                data-toggle="modal"
+                data-target="#mturk-confirm-publish"
+                class="btn btn-primary">
+            Publish HIT
+        </button>
 
     {% else %}
         <p>

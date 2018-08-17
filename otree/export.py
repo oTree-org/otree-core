@@ -1,8 +1,6 @@
-from __future__ import absolute_import
-
 from otree.common import Currency, RealWorldCurrency
-from django.db.models import BinaryField
-import sys
+from django.db.models import BinaryField, ForeignKey
+from importlib import import_module
 import datetime
 import inspect
 import otree
@@ -29,14 +27,22 @@ import numbers
 import csv
 import xlsxwriter
 
+
 def inspect_field_names(Model):
     # filter out BinaryField, because it's not useful for CSV export or
     # live results. could be very big, and causes problems with utf-8 export
 
     # I tried .get_fields() instead of .fields, but that method returns
     # fields that cause problems, like saying group has an attribute 'player'
-    return [f.name for f in Model._meta.fields
-            if not isinstance(f, BinaryField)]
+    field_names = []
+    for f in Model._meta.fields:
+        if not isinstance(f, BinaryField):
+            if isinstance(f, ForeignKey):
+                field_names.append('{}_id'.format(f.name))
+            else:
+                field_names.append(f.name)
+
+    return field_names
 
 
 def get_field_names_for_live_update(Model):
@@ -71,7 +77,9 @@ def _get_table_fields(Model, for_export=False):
                 '_index_in_pages',
                 '_max_page_index',
                 '_current_app_name',
-                '_round_number',
+                # this could be confusing because it will be in every row,
+                # even rows for different rounds.
+                #'_round_number',
                 '_current_page_name',
                 'ip_address',
                 'time_started',
@@ -98,7 +106,7 @@ def _get_table_fields(Model, for_export=False):
         subclass_fields = [
             f for f in inspect_field_names(Model)
             if f not in inspect_field_names(BasePlayer)
-            and f not in ['id', 'group', 'subsession']
+            and f not in ['id', 'group_id', 'subsession_id']
             ]
 
         if for_export:
@@ -110,7 +118,7 @@ def _get_table_fields(Model, for_export=False):
         subclass_fields = [
             f for f in inspect_field_names(Model)
             if f not in inspect_field_names(BaseGroup)
-            and f not in ['id', 'subsession']
+            and f not in ['id', 'subsession_id']
             ]
 
         return ['id_in_subsession'] + subclass_fields
@@ -125,7 +133,7 @@ def _get_table_fields(Model, for_export=False):
         return ['round_number'] + subclass_fields
 
 
-def sanitize_for_csv(value):
+def sanitize_for_csv(value) -> str:
     if value is None:
         return ''
     if value is True:
@@ -146,8 +154,11 @@ def sanitize_for_csv(value):
 def sanitize_for_live_update(value):
     # force_text is necessary e.g. for CountryField, which is otherwise
     # not Json serializable
-    return sanitize_for_csv(value)
-
+    value = str(sanitize_for_csv(value))
+    MAX_LENGTH = 30
+    if len(value) > MAX_LENGTH:
+        return value[:MAX_LENGTH] + '...'
+    return value
 
 def get_payoff_plus_participation_fee(session, participant_values_dict):
     payoff = Currency(participant_values_dict['payoff'])
@@ -196,8 +207,15 @@ def get_rows_for_wide_csv():
         app_sequences[tuple(app_sequence)] += session.num_participants
     most_common_app_sequence = app_sequences.most_common(1)[0][0]
 
+    # can't use settings.INSTALLED_OTREE_APPS, because maybe the app
+    # was removed from SESSION_CONFIGS.
+    app_names_with_data = set()
+    for session in sessions:
+        for app_name in session.config['app_sequence']:
+            app_names_with_data.add(app_name)
+
     apps_not_in_popular_sequence = [
-        app for app in settings.INSTALLED_OTREE_APPS
+        app for app in app_names_with_data
         if app not in most_common_app_sequence]
 
     order_of_apps = list(most_common_app_sequence) + apps_not_in_popular_sequence
@@ -288,6 +306,8 @@ def get_rows_for_wide_csv_round(app_name, round_number, sessions):
 
 
 def get_rows_for_csv(app_name):
+    # need to use app_name and not app_label because the app might have been
+    # removed from SESSION_CONFIGS
     models_module = otree.common_internal.get_models_module(app_name)
     Player = models_module.Player
     Group = models_module.Group
@@ -338,8 +358,9 @@ def get_rows_for_csv(app_name):
     return rows
 
 
-def get_rows_for_live_update(app_name, subsession_pk):
-    models_module = otree.common_internal.get_models_module(app_name)
+def get_rows_for_live_update(subsession: BaseSubsession):
+
+    models_module = import_module(subsession.__module__)
     Player = models_module.Player
     Group = models_module.Group
     Subsession = models_module.Subsession
@@ -353,7 +374,7 @@ def get_rows_for_live_update(app_name, subsession_pk):
     # where Meta.ordering on the Player was being ingnored
     # when you use a filter. So we add one explicitly.
     players = Player.objects.filter(
-        subsession_id=subsession_pk).select_related(
+        subsession_id=subsession.pk).select_related(
         'group', 'subsession').order_by('pk')
 
     model_order = ['player', 'group', 'subsession']

@@ -1,8 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import codecs
-import errno
 from collections import OrderedDict
 
 import schema

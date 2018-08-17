@@ -1,5 +1,5 @@
 {% extends "otree/admin/Session.html" %}
-{% load otree %}
+{% load otree i18n %}
 
 
 {% block content %}
@@ -20,7 +20,7 @@
 
     {% include user_template %}
 
-    {% if view.is_debug %}
+    {% if view.is_debug|default:False %}
         <br><br>
         {% include 'otree/includes/debug_info.html' %}
     {% endif %}
