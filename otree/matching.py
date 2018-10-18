@@ -40,8 +40,8 @@ def randomly(group_matrix, fixed_id_in_group=False):
 
     if fixed_id_in_group:
         group_matrix = [list(col) for col in zip(*group_matrix)]
-        for column in group_matrix:
-            random.shuffle(column)
+        for idx,column in enumerate(group_matrix):
+            random.shuffle(group_matrix[idx])
         return list(zip(*group_matrix))
     else:
         random.shuffle(players)
