@@ -1,1 +1,0 @@
-from otree_startup.asgi import channel_layer

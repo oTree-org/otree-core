@@ -1,10 +1,12 @@
 
 import os
-import channels.asgi
+import django
+from channels.routing import get_default_application
 from . import configure_settings
 
 configure_settings()
-channel_layer = channels.asgi.get_channel_layer()
+django.setup()
+application = get_default_application()
 
 from otree.common_internal import (
     release_any_stale_locks, get_redis_conn  # noqa
@@ -25,3 +27,4 @@ redis_flush_bots(get_redis_conn())
 
 # needs to happen after Django setup
 release_any_stale_locks()
+

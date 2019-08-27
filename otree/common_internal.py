@@ -11,8 +11,7 @@ import uuid
 from collections import OrderedDict
 from importlib import import_module
 from io import StringIO
-
-import channels
+from channels.layers import get_channel_layer
 import otree.channels.utils as channel_utils
 import six
 from django.apps import apps
@@ -24,6 +23,7 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 from huey.contrib.djhuey import HUEY
 from six.moves import urllib
+from django.shortcuts import redirect
 
 # set to False if using runserver
 USE_REDIS = True
@@ -73,7 +73,7 @@ def get_bots_module(app_name):
         dotted = '{}.{}'.format(app_name, module_name)
         if importlib.util.find_spec(dotted):
             return import_module(dotted)
-    raise ImportError('No tests/bots module found for app {}'.format(app_name))
+    raise ImportError('No tests module found for app {}'.format(app_name))
 
 
 def get_pages_module(app_name):
@@ -81,7 +81,7 @@ def get_pages_module(app_name):
         dotted = '{}.{}'.format(app_name, module_name)
         if importlib.util.find_spec(dotted):
             return import_module(dotted)
-    raise ImportError('No views/pages module found for app {}'.format(app_name))
+    raise ImportError('No pages module found for app {}'.format(app_name))
 
 
 def get_app_constants(app_name):
@@ -166,23 +166,6 @@ def validate_alphanumeric(identifier, identifier_description):
             identifier
         )
     )
-
-
-def create_session_and_redirect(session_kwargs, *, use_browser_bots):
-    pre_create_id = uuid.uuid4().hex
-    session_kwargs['pre_create_id'] = pre_create_id
-    channels_group_name = channel_utils.create_session_group_name(
-        pre_create_id)
-    channels.Channel('otree.create_session').send({
-        'kwargs': session_kwargs,
-        'channels_group_name': channels_group_name,
-        'use_browser_bots': use_browser_bots,
-    })
-
-    wait_for_session_url = reverse(
-        'WaitUntilSessionCreated', args=(pre_create_id,)
-    )
-    return HttpResponseRedirect(wait_for_session_url)
 
 
 EMPTY_ADMIN_USERNAME_MSG = 'settings.ADMIN_USERNAME is empty'
@@ -293,7 +276,7 @@ def in_rounds(ModelClass, first, last, **kwargs):
     expected_num_results = last-first+1
     if num_results != expected_num_results:
         raise InvalidRoundError(
-            'Database only contains {} records for rounds {}-{}, expected {}'.format(
+            'Database contains {} records for rounds {}-{}, but expected {}'.format(
                 num_results, first, last, expected_num_results))
     return ret
 
@@ -329,30 +312,4 @@ class ResponseForException(Exception):
     framework code.
     '''
     pass
-
-
-@contextlib.contextmanager
-def capture_stdout(target=None):
-    original = sys.stdout
-    if target is None:
-        target = StringIO()
-    sys.stdout = target
-    try:
-        yield target
-        target.seek(0)
-    finally:
-        sys.stdout = original
-
-
-@contextlib.contextmanager
-def capture_stderr():
-    original = sys.stderr
-    from io import StringIO
-    target = StringIO()
-    sys.stderr = target
-    try:
-        yield target
-        target.seek(0)
-    finally:
-        sys.stderr = original
 

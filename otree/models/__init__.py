@@ -39,6 +39,7 @@ def ensure_required_fields(sender, **kwargs):
     if hasattr(sender, '_ensure_required_fields'):
         sender._ensure_required_fields()
 
+
 class_prepared.connect(ensure_required_fields)
 
 

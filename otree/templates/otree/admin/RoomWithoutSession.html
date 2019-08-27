@@ -144,10 +144,7 @@ $(document).ready(function () {
     }
 
     function initWebSocket() {
-
-        var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-        var ws_path = ws_scheme + '://' + window.location.host + {{ view.socket_url|json }};
-        socket = new ReconnectingWebSocket(ws_path);
+        socket = makeReconnectingWebSocket({{ view.socket_url|json }});
         socket.onmessage = function (e) {
             var data = JSON.parse(e.data);
 
@@ -185,13 +182,6 @@ $(document).ready(function () {
                 }
                 $('#present_count').text(no_labels_present_count);
             }
-
-        };
-        socket.onopen = function () {
-            console.log('WebSocket connected');
-        };
-        socket.onclose = function () {
-            console.log('WebSocket disconnected');
         };
     }
 

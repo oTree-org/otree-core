@@ -1,25 +1,27 @@
 from channels.management.commands import runserver
-from channels.management.commands.runserver import WorkerThread, Server
 import otree.bots.browser
 from django.conf import settings
 import otree.common_internal
-from channels import channel_layers
 import logging
-
+from daphne.endpoints import build_endpoint_description_strings
+from daphne.server import Server
 import otree_startup
 from otree import common_internal
 import os
 import sys
+from channels.worker import Worker
+import threading
+from channels.layers import get_channel_layer
 
 class Command(runserver.Command):
 
     def handle(self, *args, **options):
 
+        self.verbosity = options.get("verbosity", 1)
 
-        # seems it would be simpler if i just set
-        # self.channel_layer = channel_layers['inmemory']
-        # in inner_run below, but when I do that, messages don't get sent
-        settings.CHANNEL_LAYERS['default'] = settings.CHANNEL_LAYERS['inmemory']
+        # i think this won't work, because channels reads this setting
+        # during django.setup()
+        #settings.CHANNEL_LAYERS['default'] = settings.CHANNEL_LAYERS['inmemory']
 
         from otree.common_internal import release_any_stale_locks
         release_any_stale_locks()
@@ -53,25 +55,15 @@ class Command(runserver.Command):
         super().handle(*args, **options)
 
     def inner_run(self, *args, **options):
-        '''
-        Adapted from channels 0.17.3.
-        When we upgrade channels, we need to modify this somewhat.
 
+        '''
         inner_run does not get run twice with runserver, unlike .handle()
         '''
 
         # initialize browser bot worker in process memory
         otree.bots.browser.browser_bot_worker = otree.bots.browser.Worker()
 
-        # oTree use in-memory.
-        # this is the simplest way to patch tests to use in-memory,
-        # while still using Redis in production
-        self.channel_layer = channel_layers['default']
-        self.channel_layer.router.check_default(
-            http_consumer=self.get_consumer(*args, **options),
-        )
-
-        addr = '[%s]' % self.addr if self._raw_ipv6 else self.addr
+        addr = f'[{self.addr}]' if self._raw_ipv6 else self.addr
         # 0.0.0.0 is not a regular IP address, so we can't tell the user
         # to open their browser to that address
         if addr == '127.0.0.1':
@@ -91,34 +83,36 @@ class Command(runserver.Command):
         # 2018-01-10 18:51:18,092 - INFO - worker - Listening on channels
         # http.request, otree.create_session, websocket.connect,
         # websocket.disconnect, websocket.receive
-        channels_logger = logging.getLogger('django.channels')
-        log_level = channels_logger.level
-        channels_logger.level = logging.WARNING
-        try:
-            for _ in range(4):
-                worker = WorkerThread(self.channel_layer, self.logger)
-                worker.daemon = True
-                worker.start()
-        finally:
-            channels_logger.setLevel(log_level)
+        daphne_logger = logging.getLogger('django.channels')
+        original_log_level = daphne_logger.level
+        daphne_logger.level = logging.WARNING
 
-        # Launch server in 'main' thread. Signals are disabled as it's still
-        # actually a subthread under the autoreloader.
+        endpoints = build_endpoint_description_strings(host=self.addr, port=self.port)
+        application = self.get_application(options)
+
+        # silence the lines like:
+        # INFO HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+        # INFO Configuring endpoint tcp:port=8000:interface=127.0.0.1
+        # INFO Listening on TCP address 127.0.0.1:8000
+        logging.getLogger('daphne.server').level = logging.WARNING
+
         try:
-            Server(
-                channel_layer=self.channel_layer,
-                host=self.addr,
-                port=int(self.port),
-                signal_handlers=not options['use_reloader'],
+            self.server_cls(
+                application=application,
+                endpoints=endpoints,
+                signal_handlers=not options["use_reloader"],
                 action_logger=self.log_action,
-                http_timeout=60,  # Shorter timeout than normal as it's dev
-                ws_protocols=getattr(settings, 'CHANNELS_WS_PROTOCOLS', None),
+                http_timeout=self.http_timeout,
+                root_path=getattr(settings, "FORCE_SCRIPT_NAME", "") or "",
+                websocket_handshake_timeout=self.websocket_handshake_timeout,
             ).run()
+            daphne_logger.debug("Daphne exited")
         except KeyboardInterrupt:
-            shutdown_message = options.get('shutdown_message', '')
+            shutdown_message = options.get("shutdown_message", "")
             if shutdown_message:
                 self.stdout.write(shutdown_message)
             return
+
 
     def add_arguments(self, parser):
         super().add_arguments(parser)

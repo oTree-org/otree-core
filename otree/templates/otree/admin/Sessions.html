@@ -77,7 +77,7 @@ $(function() {
             <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown">
             </button>
             <div class="dropdown-menu" role="menu">
-                <a class="dropdown-item" href="{% url 'CreateSession' %}?mturk=1">For MTurk</a>
+                <a class="dropdown-item" href="{% url 'CreateSession' %}?is_mturk=1">For MTurk</a>
             </div>
         </div>
     </form>
@@ -161,25 +161,14 @@ $(function() {
                     <a href="{% url 'SessionData' s.code %}" class="btn btn-sm" role="button">
                         <img src='{% static "glyphicons/list-alt.png" %}'> Data
                     </a>
-                    <a href="{% if s.is_for_mturk %}{% url 'MTurkSessionPayments' s.code %}{% else %}{% url 'SessionPayments' s.code %}{% endif %}" class="btn btn-sm" role="button">
+                    <a href="{% if s.is_mturk %}{% url 'MTurkSessionPayments' s.code %}{% else %}{% url 'SessionPayments' s.code %}{% endif %}" class="btn btn-sm" role="button">
                         <img src='{% static "glyphicons/usd.png" %}'> Payments
                     </a>
-                    {% if s.is_for_mturk %}
-                        {% if not s.mturk_HITId %}
-                        <a href="{% url 'MTurkCreateHIT' s.code %}" class="btn btn-sm" role="button">
+                    {% if s.is_mturk %}
+                        <a href="{% url 'MTurkCreateHIT' s.code %}"
+                           class="btn btn-sm {% if s.mturk_is_active %}btn-success{% endif %}" role="button">
                             <img src='{% static "glyphicons/cloud.png" %}'> MTurk&nbsp;&nbsp;&nbsp;
                         </a>
-                        {% else %}
-                        <div class="btn-group">
-                            <button class="btn btn-success btn-sm dropdown-toggle" type="button" data-toggle="dropdown">
-                                <img src='{% static "glyphicons/cloud.png" %}'> MTurk <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu" role="menu">
-                                <li><a href="{{ s.mturk_requester_url }}" target="_blank">Requester link</a></li>
-                                <li><a href="{{ s.mturk_worker_url }}" target="_blank">Worker link</a></li>
-                            </ul>
-                        </div>
-                        {% endif %}
                     {% endif %}
                 </td>
             </tr>

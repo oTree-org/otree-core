@@ -1,21 +1,42 @@
 import os
 import os.path
 from django.contrib.messages import constants as messages
-from six.moves.urllib import parse as urlparse
 import dj_database_url
+from otree import __version__
 
 DEFAULT_MIDDLEWARE = (
     'otree.middleware.CheckDBMiddleware',
+    'otree.middleware.perf_middleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-
-    # 2015-04-08: disabling SSLify until we make this work better
-    # 'sslify.middleware.SSLifyMiddleware',
 )
+
+SENTRY_DSN = os.environ.get('SENTRY_DSN')
+if SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        # 2018-11-24: breadcrumbs were causing memory leaks when doing queries,
+        # especially when creating sessions, which construct hugely verbose
+        # queries with bulk_create.
+        # however, i could only clearly observe the difference this line makes
+        # when testing
+        # on a script that bulk_created thousands of non-otree models.
+        # when testing on a live server, things are more ambiguous.
+        # maybe just refreshing the page several times after creating a session
+        # is enough to reset memory to reasnoable levels?
+        # disabling also may make things faster...
+        # in anecdotal test, 40 vs 50 seconds
+        max_breadcrumbs=0,
+        release=__version__,
+    )
 
 
 def collapse_to_unique_list(*args):
@@ -38,17 +59,8 @@ def get_default_settings(user_settings: dict):
     '''
     default_settings = {}
 
-    if user_settings.get('SENTRY_DSN'):
-        default_settings['RAVEN_CONFIG'] = {
-            'dsn': user_settings['SENTRY_DSN'],
-            'processors': ['raven.processors.SanitizePasswordsProcessor'],
-        }
-        # SentryHandler is very slow with URL resolving...can add 2 seconds
-        # to runserver startup! so only use when it's needed
-        sentry_handler_class = 'raven.contrib.django.raven_compat.handlers.SentryHandler'
-    else:
-        sentry_handler_class = 'logging.StreamHandler'
-
+    # 2019-04-02: it seems logging works fine inside botworker and channels,
+    # without any special logger config.
     logging = {
         'version': 1,
         'disable_existing_loggers': False,
@@ -70,14 +82,6 @@ def get_default_settings(user_settings: dict):
                 'class': 'logging.StreamHandler',
                 'formatter': 'simple'
             },
-            'sentry': {
-                'level': 'WARNING',
-                # perf issue. just use StreamHandler by default.
-                # only use the real sentry handler if a DSN exists.
-                # see below.
-                'class': sentry_handler_class,
-
-            },
         },
         'loggers': {
             'otree.test.core': {
@@ -85,12 +89,10 @@ def get_default_settings(user_settings: dict):
                 'propagate': False,
                 'level': 'INFO',
             },
-            # 2016-07-25: botworker seems to be sending messages to Sentry
-            # without any special configuration, not sure why.
             # but, i should use a logger, because i need to catch exceptions
             # in botworker so it keeps running
             'otree.test.browser_bots': {
-                'handlers': ['sentry', 'console'],
+                'handlers': ['console'],
                 'propagate': False,
                 'level': 'INFO',
             },
@@ -99,54 +101,25 @@ def get_default_settings(user_settings: dict):
                 'propagate': True,
                 'level': 'DEBUG',
             },
-            # logger so that we can explicitly send certain warnings to sentry,
-            # without raising an exception.
-            # 2016-10-23: has not been used yet
-            'otree.sentry': {
-                'handlers': ['sentry'],
-                'propagate': True,
-                'level': 'DEBUG',
-            },
-            # log any error that occurs inside channels code
-            'django.channels': {
-                'handlers': ['sentry'],
-                'propagate': True,
-                'level': 'ERROR',
-            },
-            # This is required for exceptions inside Huey tasks to get logged
-            # to Sentry
-            'huey.consumer': {
-                'handlers': ['sentry', 'console'],
-                'level': 'INFO'
-            },
-            # suppress the INFO message: 'raven is not configured (logging
-            # disabled).....', in case someone doesn't have a DSN
-            'raven.contrib.django.client.DjangoClient': {
-                'handlers': ['console'],
-                'level': 'WARNING'
-            }
-
-
         }
     }
 
     REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379')
-    redis_url_parsed = urlparse.urlparse(REDIS_URL)
     BASE_DIR = user_settings.get('BASE_DIR', '')
 
-
-    default_settings.update({
-        'DATABASES': {
+    default_settings.update(
+        DEBUG=os.environ.get('OTREE_PRODUCTION') in [None, '', '0'],
+        AWS_ACCESS_KEY_ID=os.environ.get('AWS_ACCESS_KEY_ID'),
+        AWS_SECRET_ACCESS_KEY=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+        AUTH_LEVEL=os.environ.get('OTREE_AUTH_LEVEL'), DATABASES={
             'default': dj_database_url.config(
                 default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3')
             )
         },
-        'HUEY': {
+        HUEY={
             'name': 'otree-huey',
             'connection': {
-                'host': redis_url_parsed.hostname,
-                'port': redis_url_parsed.port,
-                'password': redis_url_parsed.password
+                'url': REDIS_URL,
             },
             'always_eager': False,
             # I need a result store to retrieve the results of browser-bots
@@ -160,80 +133,44 @@ def get_default_settings(user_settings: dict):
                 'loglevel': 'warning',
             },
         },
-        # set to True so that if there is an error in an {% include %}'d
-        # template, it doesn't just fail silently. instead should raise
-        # an error (and send through Sentry etc)
-        'STATIC_ROOT': os.path.join(BASE_DIR, '__temp_static_root'),
-        'STATIC_URL': '/static/',
-        'STATICFILES_STORAGE': (
+        STATIC_ROOT=os.path.join(BASE_DIR, '__temp_static_root'),
+        STATIC_URL='/static/',
+        STATICFILES_STORAGE=(
             'whitenoise.django.GzipManifestStaticFilesStorage'
         ),
-        'ROOT_URLCONF': 'otree.urls',
-
-        'TIME_ZONE': 'UTC',
-        'USE_TZ': True,
-        'ALLOWED_HOSTS': ['*'],
-
-        'LOGGING': logging,
-
-        'FORM_RENDERER':  'django.forms.renderers.TemplatesSetting',
-
-        'REAL_WORLD_CURRENCY_CODE': 'USD',
-        'REAL_WORLD_CURRENCY_DECIMAL_PLACES': 2,
-        'USE_POINTS': True,
-        'POINTS_DECIMAL_PLACES': 0,
-
-        # eventually can remove this,
-        # when it's present in otree-library
-        # that most people downloaded
-        'USE_L10N': True,
-        'SECURE_PROXY_SSL_HEADER': ('HTTP_X_FORWARDED_PROTO', 'https'),
-
-        # The project can override the routing.py used as entry point by
-        # setting CHANNEL_ROUTING.
-
-        'CHANNEL_LAYERS': {
+        ROOT_URLCONF='otree.urls',
+        TIME_ZONE='UTC',
+        USE_TZ=True,
+        ALLOWED_HOSTS=['*'],
+        LOGGING=logging,
+        FORM_RENDERER='django.forms.renderers.TemplatesSetting',
+        REAL_WORLD_CURRENCY_CODE='USD',
+        REAL_WORLD_CURRENCY_DECIMAL_PLACES=2,
+        USE_POINTS=True,
+        POINTS_DECIMAL_PLACES=0,
+        ADMIN_PASSWORD=os.environ.get('OTREE_ADMIN_PASSWORD', ''),
+        USE_L10N=True,
+        SECURE_PROXY_SSL_HEADER=('HTTP_X_FORWARDED_PROTO', 'https'),
+        ASGI_APPLICATION="otree.channels.routing.application",
+        CHANNEL_LAYERS={
             'default': {
-                "BACKEND": "otree.channels.asgi_redis.RedisChannelLayer",
+                "BACKEND": "channels_redis.core.RedisChannelLayer",
                 "CONFIG": {
                     "hosts": [REDIS_URL],
                 },
-                'ROUTING': user_settings.get(
-                    'CHANNEL_ROUTING',
-                    'otree.channels.routing.channel_routing'),
             },
-            # note: if I start using ChannelsLiveServerTestCase again,
-            # i might have to move this out,
-            # but because it doesn't work with multiple
-            # channel layers.
             'inmemory': {
-                "BACKEND": "asgiref.inmemory.ChannelLayer",
-                'ROUTING': user_settings.get(
-                    'CHANNEL_ROUTING',
-                    'otree.channels.routing.channel_routing'),
+                "BACKEND": "channels.layers.InMemoryChannelLayer",
             },
         },
-
-        # for convenience within oTree
-        'REDIS_URL': REDIS_URL,
-
-        # since workers on Amazon MTurk can return the hit
-        # we need extra participants created on the
-        # server.
-        # The following setting is ratio:
-        # num_participants_server / num_participants_mturk
-        'MTURK_NUM_PARTICIPANTS_MULTIPLE': 2,
-        'LOCALE_PATHS': [
+        REDIS_URL=REDIS_URL,
+        MTURK_NUM_PARTICIPANTS_MULTIPLE=2,
+        LOCALE_PATHS=[
             os.path.join(user_settings.get('BASE_DIR', ''), 'locale')
         ],
-
-        # ideally this would be a per-app setting, but I don't want to
-        # pollute Constants. It doesn't make as much sense per session config,
-        # so I'm just going the simple route and making it a global setting.
-        'BOTS_CHECK_HTML': True,
-    })
+        BOTS_CHECK_HTML=True
+    )
     return default_settings
-
 
 
 class InvalidVariableError(Exception):
@@ -279,7 +216,30 @@ class InvalidTemplateVariable(str):
         # checking if it's an attribute, dict key, list index ...
         raise InvalidVariableError(msg) from None
 
+
+def validate_user_settings(settings: dict):
+    '''
+    These are the settings that from my testing must not be None.
+    This just exists so that oTree doesn't give a cryptic error later on
+    '''
+
+    # currently not using the datatypes, maybe do that later
+    required_settings = {
+        'SESSION_CONFIG_DEFAULTS': dict,
+        'SESSION_CONFIGS': list,
+        'LANGUAGE_CODE': str,
+        'SECRET_KEY': str,
+        'ADMIN_USERNAME': str,
+    }
+    for SETTING in required_settings:
+        if SETTING not in settings:
+            raise ValueError(f'Required setting {SETTING} is missing from settings.py.')
+        elif settings.get(SETTING) is None:
+            raise ValueError(f'settings.py: setting {SETTING} cannot be None.')
+
+
 def augment_settings(settings: dict):
+    validate_user_settings(settings)
     default_settings = get_default_settings(settings)
     for k, v in default_settings.items():
         settings.setdefault(k, v)
@@ -313,9 +273,17 @@ def augment_settings(settings: dict):
         'idmap',
     ]
 
-    # these are slow...only add if we need them
-    if settings.get('RAVEN_CONFIG'):
-        no_experiment_apps.append('raven.contrib.django.raven_compat')
+    if os.environ.get('OTREE_SECRET_KEY'):
+        # then override the SECRET_KEY from settings file, which might
+        # be exposed if the source code is made public
+        # an alternative is to change the project template so that
+        # SECRET_KEY = os.environ.get('OTREE_SECRET_KEY', '{{ secret_key }}')
+        # but this change is just as good and backward compatible
+        # and doesn't involve any churn.
+        # people don't usually care about the specific value of their secret key.
+        # eventually maybe we can make SECRET_KEY an optional setting,
+        # but that will require people to set the env vars.
+        settings['SECRET_KEY'] = os.environ['OTREE_SECRET_KEY']
 
     # order is important:
     # otree unregisters User & Group, which are installed by auth.
@@ -353,9 +321,9 @@ def augment_settings(settings: dict):
         DEFAULT_MIDDLEWARE,
         settings.get('MIDDLEWARE_CLASSES'))
 
-    augmented_settings = {
-        'INSTALLED_APPS': new_installed_apps,
-        'TEMPLATES': [{
+    augmented_settings = dict(
+        INSTALLED_APPS=new_installed_apps,
+        TEMPLATES=[{
             'BACKEND': 'django.template.backends.django.DjangoTemplates',
             'DIRS': new_template_dirs,
             'OPTIONS': {
@@ -391,14 +359,14 @@ def augment_settings(settings: dict):
                     'django.template.context_processors.static',
                     'django.contrib.messages.context_processors.messages',
                     'django.template.context_processors.request',
-                 )
+                )
             },
         }],
-        'STATICFILES_DIRS': new_staticfiles_dirs,
-        'MIDDLEWARE': new_middleware,
-        'INSTALLED_OTREE_APPS': all_otree_apps,
-        'MESSAGE_TAGS': {messages.ERROR: 'danger'},
-        'LOGIN_REDIRECT_URL': 'Sessions',
-    }
+        STATICFILES_DIRS=new_staticfiles_dirs,
+        MIDDLEWARE=new_middleware,
+        INSTALLED_OTREE_APPS=all_otree_apps,
+        MESSAGE_TAGS={messages.ERROR: 'danger'},
+        LOGIN_REDIRECT_URL='Sessions'
+    )
 
     settings.update(augmented_settings)

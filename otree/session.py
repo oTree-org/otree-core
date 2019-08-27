@@ -48,6 +48,15 @@ class SessionConfigError(Exception):
 
 class SessionConfig(dict):
 
+    # convenient access
+    @property
+    def app_sequence(self) -> list:
+        return self['app_sequence']
+
+    @property
+    def participation_fee(self) -> RealWorldCurrency:
+        return self['participation_fee']
+
     def get_lcm(self):
         min_multiple_list = []
         for app_name in self['app_sequence']:
@@ -180,15 +189,11 @@ class SessionConfig(dict):
         # before making an HTML attribute. even '>漢 ."&'
         # so i'll just put a general recommendation in the docs
 
-        fields = [
+        return [
             k for k, v in self.items()
             if k not in self.non_editable_fields
             and k not in self.builtin_editable_fields()
             and type(v) in [bool, int, float, str]]
-
-        # they're in a dict so we can't preserve the original ordering
-        # this is the best we can do
-        return sorted(fields)
 
     def editable_fields(self):
         return self.builtin_editable_fields() + self.custom_editable_fields()
@@ -258,9 +263,8 @@ SESSION_CONFIGS_DICT = get_session_configs_dict()
 
 
 def create_session(
-        session_config_name, *, label='', num_participants=None,
-        pre_create_id=None,
-        room_name=None, for_mturk=False,
+        session_config_name, *, num_participants, label='',
+        room_name=None, is_mturk=False,
         is_demo=False,
         edited_session_config_fields=None) -> Session:
 
@@ -289,7 +293,7 @@ def create_session(
         # to be a bit discouraged: http://goo.gl/dEXZpv
         # 2014-9-22: preassign to groups for demo mode.
 
-        if for_mturk:
+        if is_mturk:
             mturk_num_participants = (
                     num_participants /
                     settings.MTURK_NUM_PARTICIPANTS_MULTIPLE)
@@ -299,7 +303,6 @@ def create_session(
         session = Session.objects.create(
             config=session_config,
             label=label,
-            _pre_create_id=pre_create_id,
             is_demo=is_demo,
             num_participants=num_participants,
             mturk_num_participants=mturk_num_participants

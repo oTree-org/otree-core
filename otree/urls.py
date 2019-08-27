@@ -1,18 +1,15 @@
 from otree.extensions import get_extensions_modules, get_extensions_data_export_views
 import inspect
 from importlib import import_module
-from django.templatetags.static import static
 from django.conf import urls
-
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic.base import RedirectView
 from django.conf import settings
-
 from django.contrib.auth.decorators import login_required
 from otree import common_internal
-from django.http import HttpResponse
 
-STUDY_UNRESTRICTED_VIEWS = {
+
+ALWAYS_UNRESTRICTED = {
     'AssignVisitorToRoom',
     'InitializeParticipant',
     'MTurkLandingPage',
@@ -20,10 +17,11 @@ STUDY_UNRESTRICTED_VIEWS = {
     'JoinSessionAnonymously',
     'OutOfRangeNotification',
     'ParticipantRoomHeartbeat',
+    'ParticipantHeartbeatGBAT',
 }
 
 
-DEMO_UNRESTRICTED_VIEWS = STUDY_UNRESTRICTED_VIEWS.union({
+UNRESTRICTED_IN_DEMO_MODE = ALWAYS_UNRESTRICTED.union({
     'AdminReport',
     'AdvanceSession',
     'CreateDemoSession',
@@ -34,7 +32,6 @@ DEMO_UNRESTRICTED_VIEWS = STUDY_UNRESTRICTED_VIEWS.union({
     'SessionPayments',
     'SessionData',
     'SessionStartLinks',
-    'WaitUntilSessionCreated',
 })
 
 
@@ -49,16 +46,11 @@ def view_classes_from_module(module_name):
     ]
 
 
-def url_patterns_from_game_module(module_name, name_in_url):
+def url_patterns_from_app_pages(module_name, name_in_url):
     views_module = import_module(module_name)
 
-    all_views = [
-        ViewCls
-        for _, ViewCls in inspect.getmembers(views_module)
-        if hasattr(ViewCls, 'url_pattern')]
-
     view_urls = []
-    for ViewCls in all_views:
+    for ViewCls in views_module.page_sequence:
 
         url_pattern = ViewCls.url_pattern(name_in_url)
         url_name = ViewCls.url_name()
@@ -69,16 +61,7 @@ def url_patterns_from_game_module(module_name, name_in_url):
     return view_urls
 
 
-def url_patterns_from_module(module_name):
-    """automatically generates URLs for all Views in the module,
-    So that you don't need to enumerate them all in urlpatterns.
-    URLs take the form "gamename/ViewName".
-    See the method url_pattern() for more info
-
-    So call this function in your urls.py and pass it the names of all
-    Views modules as strings.
-
-    """
+def url_patterns_from_builtin_module(module_name: str):
 
     all_views = view_classes_from_module(module_name)
 
@@ -89,15 +72,19 @@ def url_patterns_from_module(module_name):
         url_name = getattr(ViewCls, 'url_name', ViewCls.__name__)
 
         if settings.AUTH_LEVEL == 'STUDY':
-            unrestricted = url_name in STUDY_UNRESTRICTED_VIEWS
+            unrestricted = url_name in ALWAYS_UNRESTRICTED
         elif settings.AUTH_LEVEL == 'DEMO':
-            unrestricted = url_name in DEMO_UNRESTRICTED_VIEWS
+            unrestricted = url_name in UNRESTRICTED_IN_DEMO_MODE
         else:
             unrestricted = True
 
         if unrestricted:
             as_view = ViewCls.as_view()
         else:
+            # i want to use
+            # staff_member_required decorator
+            # but then .test_auth_level fails on client.get():
+            # NoReverseMatch: 'admin' is not a registered namespace
             as_view = login_required(ViewCls.as_view())
 
         url_pattern = ViewCls.url_pattern
@@ -145,7 +132,7 @@ def get_urlpatterns():
             r'^accounts/login/$',
             login,
             {'template_name': 'otree/login.html'},
-            name='login_url',
+            name='login',
         ),
         urls.url(
             r'^accounts/logout/$',
@@ -171,16 +158,16 @@ def get_urlpatterns():
         used_names_in_url.add(name_in_url)
 
         views_module = common_internal.get_pages_module(app_name)
-        urlpatterns += url_patterns_from_game_module(
+        urlpatterns += url_patterns_from_app_pages(
             views_module.__name__, name_in_url)
 
 
-    urlpatterns += url_patterns_from_module('otree.views.participant')
-    urlpatterns += url_patterns_from_module('otree.views.demo')
-    urlpatterns += url_patterns_from_module('otree.views.admin')
-    urlpatterns += url_patterns_from_module('otree.views.room')
-    urlpatterns += url_patterns_from_module('otree.views.mturk')
-    urlpatterns += url_patterns_from_module('otree.views.export')
+    urlpatterns += url_patterns_from_builtin_module('otree.views.participant')
+    urlpatterns += url_patterns_from_builtin_module('otree.views.demo')
+    urlpatterns += url_patterns_from_builtin_module('otree.views.admin')
+    urlpatterns += url_patterns_from_builtin_module('otree.views.room')
+    urlpatterns += url_patterns_from_builtin_module('otree.views.mturk')
+    urlpatterns += url_patterns_from_builtin_module('otree.views.export')
 
     urlpatterns += extensions_urlpatterns()
     urlpatterns += extensions_export_urlpatterns()

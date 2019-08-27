@@ -8,6 +8,11 @@
 <div class="row">
     <div class="col-md-3 card bg-light">
         <div class="card-body">
+            {% if otreehub_url %}
+                <div class="alert alert-secondary" role="alert">
+                    Download this project on <a href="{{ otreehub_url }}">oTree Hub</a>.
+                </div>
+            {% endif %}
             <div>
                 {{ intro_html|safe }}
             </div>
@@ -23,7 +28,7 @@
     <div class="col-md-9">
         <div class="list-group">
         {% for s in session_info %}
-            <a href="{{ s.url }}" class="list-group-item" target="_blank">
+            <a href="{{ s.url }}" class="list-group-item session-config" target="_blank">
                 {% if s.num_demo_participants == 1 %}
                 <span class="badge badge-secondary float-right">
                 {% elif s.num_demo_participants == 2 %}
@@ -39,3 +44,4 @@
     </div>
 </div>
 {% endblock %}
+

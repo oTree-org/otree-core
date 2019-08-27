@@ -98,17 +98,6 @@ class RoomToSession(models.Model):
     session = models.ForeignKey('otree.Session', on_delete=models.CASCADE)
 
 
-FAILURE_MESSAGE_MAX_LENGTH = 300
-
-
-class FailedSessionCreation(models.Model):
-    class Meta:
-        app_label = "otree"
-
-    pre_create_id = models.CharField(max_length=100, db_index=True)
-    message = models.CharField(max_length=FAILURE_MESSAGE_MAX_LENGTH)
-    traceback = models.TextField(default='')
-
 
 class ParticipantRoomVisit(models.Model):
     class Meta:

@@ -47,6 +47,8 @@ class OTreeModelBase(IdMapModelBase):
             meta.use_strong_refs = True
             attrs["Meta"] = meta
 
+
+
         new_class = super().__new__(mcs, name, bases, attrs)
         if not hasattr(new_class._meta, 'use_strong_refs'):
             new_class._meta.use_strong_refs = False
@@ -60,6 +62,9 @@ class OTreeModelBase(IdMapModelBase):
             if hasattr(new_class, f.name + '_choices'):
                 attr_name = 'get_%s_display' % f.name
                 setattr(new_class, attr_name, make_get_display(f))
+
+        new_class._setattr_fields = frozenset(f.name for f in new_class._meta.fields)
+        new_class._setattr_attributes = frozenset(dir(new_class))
 
         return new_class
 
@@ -88,8 +93,14 @@ class OTreeModel(SaveTheChange, IdMapModel, metaclass=OTreeModelBase):
 
     _is_frozen = False
     NoneType = type(None)
+
     _setattr_datatypes = {
-        'BooleanField': (bool, NoneType),
+        # first value should be the "recommmended" datatype,
+        # because that's what we recommend in the error message.
+        # it seems the habit of setting boolean values to 0 or 1
+        # is very common. that's even what oTree shows in the "live update"
+        # view, and the data export.
+        'BooleanField': (bool, int, NoneType),
         # forms seem to save Decimal to CurrencyField
         'CurrencyField': (Currency, NoneType, int, float, Decimal),
         'FloatField': (float, NoneType, int),
@@ -102,50 +113,67 @@ class OTreeModel(SaveTheChange, IdMapModel, metaclass=OTreeModelBase):
         # used by Prefetch.
         '_ordered_players',
         '_is_frozen',
+
+        # extras on 2018-11-24
+        'id',
+        '_changed_fields',
+        'pk',
     }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # cache it for performance
         self._super_setattr = super().__setattr__
-        self._dir_attributes = set(dir(self))
+        # originally I had:
+        # self._dir_attributes = set(dir(self))
+        # but this tripled memory usage when creating a session
         self._is_frozen = True
 
     def __setattr__(self, field_name: str, value):
         if self._is_frozen:
-            # idmap uses _group_cache, _subsession_cache, _prefetched_objects_cache, etc
-            if not (field_name in self._setattr_whitelist or field_name.endswith('_cache')):
-                # using _dir_attributes because hasattr() cannot be used inside
+
+            if field_name in self._setattr_fields:
+                # hasattr() cannot be used inside
                 # a Django model's setattr, as I discovered.
-                if not field_name in self._dir_attributes:
-                    msg = (
-                        '{} has no field "{}".'
-                    ).format(self.__class__.__name__, field_name)
-                    raise AttributeError(msg)
-                try:
-                    field = self._meta.get_field(field_name)
-                except exceptions.FieldDoesNotExist:
-                    # django sometimes reassigns to non-field attributes that
-                    # were set before the class was frozen, such as
-                    # .pk and ._changed_fields (from SaveTheChange)
-                    # or assigning to a property like Player.payoff
-                    pass
-                else:
-                    field_type_name = field.__class__.__name__
-                    # everything is an instance of "object"
-                    allowed_types = self._setattr_datatypes.get(field_type_name, object)
-                    if not isinstance(value, allowed_types):
-                        # 2018-07-18:
-                        # have an exception for the bug in the 'quiz' sample game
-                        # after a while, we can remove this
-                        if field_name != 'question_id':
-                            friendly_value_type = value.__class__.__name__
-                            if friendly_value_type == 'str':
-                                friendly_value_type = 'string'
-                            msg = (
-                                'Wrong data type: {} cannot be set to {}.'
-                            ).format(field_type_name, friendly_value_type)
-                            raise TypeError(msg)
+                field = self._meta.get_field(field_name)
+
+                field_type_name = type(field).__name__
+                if field_type_name in self._setattr_datatypes:
+                    allowed_types = self._setattr_datatypes[field_type_name]
+                    if (
+                            isinstance(value, allowed_types)
+                            # numpy uses its own datatypes, e.g. numpy._bool,
+                            # which doesn't inherit from python bool.
+                            or 'numpy' in str(type(value))
+                            # 2018-07-18:
+                            # have an exception for the bug in the 'quiz' sample game
+                            # after a while, we can remove this
+                            or field_name == 'question_id'
+                    ):
+                        pass
+                    else:
+                        msg = (
+                            '{} should be set to {}, not {}.'
+                        ).format(field_type_name, allowed_types[0].__name__, type(value).__name__)
+                        raise TypeError(msg)
+            elif (
+                    field_name in self._setattr_attributes or
+                    field_name in self._setattr_whitelist or
+                    # idmap uses _group_cache, _subsession_cache,
+                    # _prefetched_objects_cache, etc
+                    field_name.endswith('_cache')
+            ):
+                # django sometimes reassigns to non-field attributes that
+                # were set before the class was frozen, such as
+                # .pk and ._changed_fields (from SaveTheChange)
+                # or assigning to a property like Player.payoff
+                pass
+            else:
+                msg = (
+                    '{} has no field "{}".'
+                ).format(self.__class__.__name__, field_name)
+                raise AttributeError(msg)
+
             self._super_setattr(field_name, value)
         else:
             # super() is a bit slower but only gets run during __init__
@@ -155,75 +183,50 @@ class OTreeModel(SaveTheChange, IdMapModel, metaclass=OTreeModelBase):
 Model = OTreeModel
 
 
+def fix_choices_arg(kwargs):
+    '''allows the programmer to define choices as a list of values rather
+    than (value, display_value)
+
+    '''
+    choices = kwargs.get('choices')
+    if not choices:
+        return
+    choices = expand_choice_tuples(choices)
+    kwargs['choices'] = choices
+
+
 class _OtreeModelFieldMixin(object):
-    def fix_choices_arg(self, kwargs):
-        '''allows the programmer to define choices as a list of values rather
-        than (value, display_value)
-
-        '''
-        choices = kwargs.get('choices')
-        if not choices:
-            return
-        choices = expand_choice_tuples(choices)
-        kwargs['choices'] = choices
-
-    def set_otree_properties(self, kwargs):
-
-        # Give a `widget` argument to a model field in order to override the
-        # default widget used for this field in a model form.
-
-        # The given widget will only be used when you subclass your model form from
-        # otree.forms.forms.BaseModelForm.
-
-        self.widget = kwargs.pop('widget', None)
-        self.doc = kwargs.pop('doc', None)
-        self.min = kwargs.pop('min', None)
-        self.max = kwargs.pop('max', None)
 
     def __init__(
-            # list args explicitly so they show up in IDE autocomplete.
-            # Hide the ones that oTree users will rarely need, like
-            # db_index, primary_key, etc...
             self,
             *,
-            choices=None,
-            widget=None,
             initial=None,
             label=None,
-            doc='',
             min=None,
             max=None,
-            blank=False,
+            doc='',
+            widget=None,
             **kwargs):
 
-        # ...but put them all back into kwargs so that there is a consistent
-        # interface to work with them
-        kwargs.update(dict(
-            choices=choices,
-            widget=widget,
-            initial=initial,
-            label=label,
-            doc=doc,
-            min=min,
-            max=max,
-            blank=blank,
-        ))
+        self.widget = widget
+        self.doc = doc
+        self.min = min
+        self.max = max
 
-        self.set_otree_properties(kwargs)
-        self.fix_choices_arg(kwargs)
+        fix_choices_arg(kwargs)
 
         kwargs.setdefault('help_text', '')
         kwargs.setdefault('null', True)
 
         # to be more consistent with {% formfield %}
         # this is more intuitive for newbies
-        kwargs.setdefault('verbose_name', kwargs.pop('label'))
+        kwargs.setdefault('verbose_name', label)
 
         # "initial" is an alias for default. in the context of oTree, 'initial'
         # is a more intuitive name. (since the user never instantiates objects
         # themselves. also, "default" could be misleading -- people could think
         # it's the default choice in the form
-        kwargs.setdefault('default', kwargs.pop('initial'))
+        kwargs.setdefault('default', initial)
 
         # if default=None, Django will omit the blank choice from form widget
         # https://code.djangoproject.com/ticket/10792
@@ -311,10 +314,6 @@ class BooleanField(_OtreeModelFieldMixin, models.NullBooleanField):
     def __init__(self,
                  *,
                  choices=None,
-                 widget=None,
-                 initial=None,
-                 label=None,
-                 doc='',
                  **kwargs):
         # 2015-1-19: why is this here? isn't this the default behavior?
         # 2013-1-26: ah, because we don't want the "----" (None) choice
@@ -330,15 +329,8 @@ class BooleanField(_OtreeModelFieldMixin, models.NullBooleanField):
         # checkbox input is used.
         self._blank_is_explicit = 'blank' in kwargs
 
-        kwargs.setdefault('help_text', '')
-        kwargs.setdefault('null', True)
-
         super().__init__(
             choices=choices,
-            widget=widget,
-            initial=initial,
-            label=label,
-            doc=doc,
             **kwargs)
 
         # you cant override "blank" or you will destroy the migration system
@@ -386,11 +378,6 @@ class StringField(_OtreeModelFieldMixin, models.CharField):
     def __init__(
             self,
             *,
-            choices=None,
-            widget=None,
-            initial=None,
-            label=None,
-            doc='',
             # varchar max length doesn't affect performance or even storage
             # size; it's just for validation. so, to be easy to use,
             # there is no reason for oTree to set a short default length
@@ -399,20 +386,10 @@ class StringField(_OtreeModelFieldMixin, models.CharField):
             # because oTree only uses indexes for fields defined in otree-core,
             # which have explicit max_lengths anyway.
             max_length=10000,
-            blank=False,
             **kwargs):
 
-        kwargs.setdefault('help_text', '')
-        kwargs.setdefault('null', True)
-
         super().__init__(
-            choices=choices,
-            widget=widget,
-            initial=initial,
-            label=label,
-            doc=doc,
             max_length=max_length,
-            blank=blank,
             **kwargs)
 
     auto_submit_default = ''

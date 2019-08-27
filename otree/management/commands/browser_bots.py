@@ -22,9 +22,13 @@ class Command(BaseCommand):
             'num_participants', type=int, nargs='?',
             help=ahelp)
 
-    def handle(self, *args, **options):
+    def handle(self, session_config_name, server_url, num_participants, **options):
 
-        launcher = Launcher(options)
+        launcher = Launcher(
+            session_config_name=session_config_name,
+            server_url=server_url,
+            num_participants=num_participants
+        )
         launcher.run()
 
 

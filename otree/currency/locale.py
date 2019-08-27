@@ -9,8 +9,10 @@ CURRENCY_SYMBOLS = {
     'BRL': 'R$',
     'CAD': '$',
     'CHF': 'CHF',
-    # 2017-11-29: this used to be ￥, don't know where that came from
-    'CNY': '¥',
+    # need to use yuan character here, that's what gets shown
+    # on form inputs. but if you run a study in english, it will
+    # still show 元, which is not ideal. but that is rare.
+    'CNY': '元',
     'CZK': 'Kč',
     'DKK': 'kr',
     'EGP': 'ج.م.‏',
@@ -20,8 +22,8 @@ CURRENCY_SYMBOLS = {
     'HUF': 'Ft',
     'ILS': '₪',
     'INR': '₹',
-    'JPY': '¥',
-    'KRW': '₩',
+    'JPY': '円',
+    'KRW': '원',
     'MXN': '$',
     'MYR': 'RM',
     'NOK': 'kr',
@@ -61,7 +63,7 @@ def get_currency_format(lc: str, LO: str, CUR: str) -> str:
 
     if lc == 'zh':
         if CUR == 'CNY':
-            return '¥#'
+            return '#元'
         if CUR == 'HKD':
             return 'HK$#'
         if CUR == 'TWD':
@@ -144,11 +146,11 @@ def get_currency_format(lc: str, LO: str, CUR: str) -> str:
         return '# ¤'
     if lc == 'ja':
         if CUR == 'JPY':
-            return '¥#'
+            return '#円'
         return '¤#'
     if lc == 'ko':
         if CUR == 'KRW':
-            return '₩#'
+            return '#원'
         return '¤#'
     if lc == 'ms':
         if CUR == 'MYR':

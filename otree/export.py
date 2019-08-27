@@ -26,7 +26,9 @@ import numbers
 
 import csv
 import xlsxwriter
+import logging
 
+logger = logging.getLogger(__name__)
 
 def inspect_field_names(Model):
     # filter out BinaryField, because it's not useful for CSV export or
@@ -222,7 +224,16 @@ def get_rows_for_wide_csv():
 
     rounds_per_app = OrderedDict()
     for app_name in order_of_apps:
-        models_module = get_models_module(app_name)
+        try:
+            models_module = get_models_module(app_name)
+        except ModuleNotFoundError:
+            # this should only happen with devserver because on production server,
+            # you would need to resetdb after renaming an app.
+            logger.warning(
+                f'Cannot export data for app {app_name}, which existed when the session was run '
+                f'but no longer exists.'
+            )
+            continue
         agg_dict = models_module.Subsession.objects.all().aggregate(Max('round_number'))
         highest_round_number = agg_dict['round_number__max']
 
@@ -446,17 +457,17 @@ def export_time_spent(fp):
     """
 
     column_names = [
-            'session_id',
-            'participant__id_in_session',
-            'participant__code',
-            'page_index',
-            'app_name',
-            'page_name',
-            'time_stamp',
-            'seconds_on_page',
-            'subsession_pk',
-            'auto_submitted',
-        ]
+        'session_id',
+        'participant__id_in_session',
+        'participant__code',
+        'page_index',
+        'app_name',
+        'page_name',
+        'time_stamp',
+        'seconds_on_page',
+        'subsession_pk',
+        'auto_submitted',
+    ]
 
     rows = PageCompletion.objects.order_by(
         'session', 'participant', 'page_index'

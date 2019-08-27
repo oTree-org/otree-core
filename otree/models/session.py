@@ -5,6 +5,9 @@ import logging
 import channels
 import json
 from django.urls import reverse
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+from otree.channels.utils import auto_advance_group
 
 from otree import constants_internal
 import otree.common_internal
@@ -12,11 +15,11 @@ from otree.common_internal import (
     random_chars_8, random_chars_10, get_admin_secret_code,
     get_app_label_from_name
 )
-
+import time
 
 from otree.db import models
 from otree.models_concrete import ParticipantToPlayerLookup, RoomToSession
-from django.template.loader import get_template
+from django.template.loader import select_template
 from django.template import TemplateDoesNotExist
 from .varsmixin import ModelWithVars
 
@@ -45,8 +48,6 @@ class Session(ModelWithVars):
         max_length=300, null=True, blank=True,
         help_text='For internal record-keeping')
 
-    ready_for_browser = models.BooleanField(default=False)
-
     code = models.CharField(
         default=random_chars_8,
         max_length=16,
@@ -73,6 +74,13 @@ class Session(ModelWithVars):
         default=True,
         help_text="Should this session be created in mturk sandbox?")
 
+    # use Float instead of DateTime because DateTime
+    # is a pain to work with (e.g. naive vs aware datetime objects)
+    # and there is no need here for DateTime
+    mturk_expiration = models.FloatField(
+        null=True
+    )
+
     archived = models.BooleanField(
         default=False,
         db_index=True,
@@ -83,8 +91,6 @@ class Session(ModelWithVars):
 
     _anonymous_code = models.CharField(
         default=random_chars_10, max_length=10, null=False, db_index=True)
-
-    _pre_create_id = models.CharField(max_length=255, db_index=True, null=True)
 
     def use_browser_bots(self):
         return self.participant_set.filter(is_browser_bot=True).exists()
@@ -111,7 +117,7 @@ class Session(ModelWithVars):
         but still useful internally (like data export)'''
         return self.config['real_world_currency_per_point']
 
-    def is_for_mturk(self):
+    def is_mturk(self):
         return (not self.is_demo) and (self.mturk_num_participants > 0)
 
     def get_subsessions(self):
@@ -127,10 +133,6 @@ class Session(ModelWithVars):
 
     def get_participants(self):
         return list(self.participant_set.order_by('id_in_session'))
-
-    def mturk_requester_url(self):
-        subdomain = 'requestersandbox' if self.mturk_use_sandbox else 'requester'
-        return "https://{}.mturk.com/mturk/manageHITs".format(subdomain)
 
     def mturk_worker_url(self):
         # different HITs
@@ -154,6 +156,14 @@ class Session(ModelWithVars):
             subdomain,
             self.mturk_HITGroupId
         )
+
+    def mturk_is_expired(self):
+        # self.mturk_expiration is offset-aware, so therefore we must compare
+        # it against an offset-aware value.
+        return self.mturk_expiration and self.mturk_expiration < time.time()
+
+    def mturk_is_active(self):
+        return self.mturk_HITId and not self.mturk_is_expired()
 
     def advance_last_place_participants(self):
         # django.test takes 0.5 sec to import,
@@ -218,16 +228,14 @@ class Session(ModelWithVars):
                 logging.exception("Failed to advance participants.")
                 raise
 
-
             # do the auto-advancing here,
             # rather than in increment_index_in_pages,
             # because it's only needed here.
-            channels.Group(
-                'auto-advance-{}'.format(p.code)
-            ).send(
-                {'text': json.dumps(
-                    {'auto_advanced': True})}
+            otree.channels.utils.sync_group_send(
+                auto_advance_group(p.code),
+                {'type': 'auto_advanced'}
             )
+
 
     def get_room(self):
         from otree.room import ROOM_DICT
@@ -256,11 +264,16 @@ class Session(ModelWithVars):
             models_module = otree.common_internal.get_models_module(app_name)
             app_label = get_app_label_from_name(app_name)
             try:
-                get_template('{}/AdminReport.html'.format(app_label))
-                admin_report_app_names.append(app_name)
-                num_rounds_list.append(models_module.Constants.num_rounds)
+                select_template([
+                    f'{app_label}/admin_report.html',
+                    f'{app_label}/AdminReport.html',
+                ])
             except TemplateDoesNotExist:
                 pass
+            else:
+                admin_report_app_names.append(app_name)
+                num_rounds_list.append(models_module.Constants.num_rounds)
+
         self._admin_report_app_names = ';'.join(admin_report_app_names)
         self._admin_report_num_rounds = ';'.join(str(n) for n in num_rounds_list)
 

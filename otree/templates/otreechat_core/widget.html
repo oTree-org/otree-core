@@ -51,7 +51,7 @@ $(function () {
       });
     }
 
-    var varsFromDjango = {{ vars_for_js|json }};
+    var varsFromDjango = {{ chat_vars_for_js|json }};
     var channel = varsFromDjango.channel;
     var socketPath = varsFromDjango.socket_path;
     var participantID = varsFromDjango.participant_id;
@@ -60,10 +60,7 @@ $(function () {
     var $chatWidget = $('#_js-otree-chat-' + channel);
 
     var $messageInput = $chatWidget.find('input');
-
-    var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-    var ws_path = ws_scheme + '://' + window.location.host + socketPath;
-    var socket = new ReconnectingWebSocket(ws_path);
+    var socket = makeReconnectingWebSocket(socketPath);
     var $msgdiv = $chatWidget.find('.otree-chat__messages');
 
     // Handle incoming messages

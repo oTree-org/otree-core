@@ -115,7 +115,6 @@ function refreshTable(new_json) {
     var old_json = $table.data("raw");
     // build table for the first time
     if (old_json === undefined) {
-        console.log('Creating table body');
         populateTableBody($tbody, new_json);
     } else {
         // compute delta and update

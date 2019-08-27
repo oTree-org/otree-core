@@ -19,10 +19,10 @@ i removed many linebreaks to make output HTML cleaner
             </div>
         {% endif %}
         <form action="" method="post" role="form" id="form" autocomplete="off">{% csrf_token %}
-
             <div class="_otree-content">{% block content %}{% endblock %}</div>
         </form>
         <br/>
+        {# need the default:False for projects with old MTurkLandingPage #}
         {% if view.is_debug|default:False %}
             <br>
             {% include 'otree/includes/debug_info.html' %}
@@ -39,6 +39,7 @@ i removed many linebreaks to make output HTML cleaner
             data-socket-url="{{ view.socket_url|safe }}"
             data-redirect-url="{{ view.redirect_url|safe }}"
             data-is-browser-bot="{{ participant.is_browser_bot  }}"
+            data-is-debug="{{ view.is_debug|default:"" }}"
     ></script>
     {% comment %}
     the below is a special flag.

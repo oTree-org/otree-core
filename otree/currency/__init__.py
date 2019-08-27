@@ -175,13 +175,6 @@ class BaseCurrency(Decimal):
         return '{}.{}'.format(self.__module__, self.__class__.__name__), \
                [Decimal.__str__(self)], {}
 
-    def to_number(self):
-        '''
-        Deprecated. This has trivial functionality; it's not clear from the API
-        whether this returns a float or Decimal. Better to let the user do it explicitly
-        '''
-        return Decimal(self)
-
     @classmethod
     def get_num_decimal_places(cls):
         raise NotImplementedError()

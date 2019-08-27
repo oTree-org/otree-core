@@ -16,4 +16,4 @@ class Command(HueyCommand):
         # to ensure the database is flushed in all circumstances.
         from huey.contrib.djhuey import HUEY
         HUEY.flush()
-        super(Command, self).handle(*args, **options)
+        super().handle(*args, **options)

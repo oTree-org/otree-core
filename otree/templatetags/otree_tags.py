@@ -6,7 +6,7 @@ from otree.currency import Currency
 from otree.templatetags.otree_internal import active_page, \
     ensure_superuser_exists
 from .otree_forms import FormFieldNode
-
+from otree.staticfiles import StaticNode
 
 def c(val):
     return Currency(val)
@@ -39,3 +39,8 @@ def next_button(*args, **kwargs):
 @register.inclusion_tag('otree/tags/formfields.html', takes_context=True)
 def formfields(context, *args, **kwargs):
     return context
+
+@register.tag('static')
+def do_static(parser, token):
+    '''this is copied from Django source'''
+    return StaticNode.handle_token(parser, token)

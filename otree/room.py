@@ -12,20 +12,19 @@ from django.db import transaction
 
 class Room(object):
 
-    def __init__(self, config_dict):
-        self.participant_label_file = config_dict.get('participant_label_file')
-
+    def __init__(self, name, display_name, use_secure_urls, participant_label_file=None):
         self.name = validate_alphanumeric(
-            config_dict['name'],
+            name,
             identifier_description='settings.ROOMS room name')
-        self.display_name = config_dict['display_name']
-        # secure URLs are complicated, don't use them by default
-        self.use_secure_urls = config_dict['use_secure_urls']
-        if self.use_secure_urls and not self.participant_label_file:
+        if use_secure_urls and not participant_label_file:
             raise ValueError(
                 'Room "{}": you must either set "participant_label_file", '
-                'or set "use_secure_urls": False'.format(self.name)
+                'or set "use_secure_urls": False'.format(name)
             )
+        self.participant_label_file = participant_label_file
+        self.display_name = display_name
+        # secure URLs are complicated, don't use them by default
+        self.use_secure_urls = use_secure_urls
 
     def has_session(self):
         return self.get_session() is not None
@@ -64,6 +63,8 @@ class Room(object):
             than looking it up in the DB table, even with .filter() and and index!
             (tested on Postgres with 10000 iterations: 17s vs 18s)
         '''
+
+        # if i refactor this, i should use chardet instead
         encodings = ['ascii', 'utf-8', 'utf-16']
         for e in encodings:
             try:
@@ -75,8 +76,8 @@ class Room(object):
                         label = line.strip()
                         if not label:
                             continue
-                        label = validate_alphanumeric(
-                            line.strip(),
+                        validate_alphanumeric(
+                            label,
                             identifier_description='participant label'
                         )
                         if label not in seen:
@@ -120,7 +121,7 @@ class Room(object):
 
 
 def augment_room(room, ROOM_DEFAULTS):
-    new_room = {'doc': ''}
+    new_room = {}
     new_room.update(ROOM_DEFAULTS)
     new_room.update(room)
     return new_room
@@ -131,7 +132,6 @@ def get_room_dict():
         {
             schema.Optional('use_secure_urls', default=False): bool,
             schema.Optional('participant_label_file'): str,
-            schema.Optional('doc'): str,
         }
     )
 
@@ -141,7 +141,6 @@ def get_room_dict():
             'display_name': str,
             schema.Optional('use_secure_urls'): bool,
             schema.Optional('participant_label_file'): str,
-            schema.Optional('doc'): str,
         }
     )
 
@@ -157,7 +156,7 @@ def get_room_dict():
             room = room_schema.validate(room)
         except schema.SchemaError as e:
             raise(ValueError('settings.ROOMS: {}'.format(e))) from None
-        room_object = Room(room)
+        room_object = Room(**room)
         ROOM_DICT[room_object.name] = room_object
     return ROOM_DICT
 

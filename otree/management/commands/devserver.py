@@ -6,12 +6,11 @@ import sys
 import termcolor
 import time
 import traceback
+from unittest.mock import patch
 from django.conf import settings
 from django.core.management import call_command
 from pathlib import Path
 from django.apps import apps
-
-from otree.common_internal import capture_stdout
 
 from . import runserver
 
@@ -57,11 +56,16 @@ else:
 
 class Command(runserver.Command):
 
+    inside_runzip = False
+
     def add_arguments(self, parser):
         super().add_arguments(parser)
+        parser.add_argument(
+            '--inside-runzip', action='store_true', dest='inside_runzip', default=False,
+        )
+    def inner_run(self, *args, inside_runzip, **options):
 
-    def inner_run(self, *args, **options):
-
+        self.inside_runzip = inside_runzip
         self.handle_migrations()
 
         super().inner_run(*args, **options)
@@ -98,7 +102,7 @@ class Command(runserver.Command):
             # or raise CommandError.
             # if someone needs to see the details of makemigrations,
             # they can do "otree makemigrations".
-            with capture_stdout():
+            with patch('sys.stdout.write'):
                 call_command('makemigrations', '--noinput', *migrations_modules.keys())
         except SystemExit as exc:
             # SystemExit will be raised if NonInteractiveMigrationQuestioner
@@ -120,9 +124,9 @@ class Command(runserver.Command):
         importlib.invalidate_caches()
 
         try:
-            # see above comment about makemigrations and capture_stdout.
+            # see above comment about makemigrations and capturing stdout.
             # it applies to migrate command also.
-            with capture_stdout():
+            with patch('sys.stdout.write'):
                 # call_command does not add much overhead (0.1 seconds typical)
                 call_command('migrate', '--noinput')
         except Exception as exc:
@@ -146,12 +150,14 @@ class Command(runserver.Command):
     def print_error_and_exit(self, advice):
         '''this won't actually exit because we can't kill the autoreload process'''
         self.stdout.write('\n')
-        show_error_details = self.verbosity >= PRINT_DETAILS_VERBOSITY_LEVEL
+        is_verbose = self.verbosity >= PRINT_DETAILS_VERBOSITY_LEVEL
+        show_error_details = is_verbose or self.inside_runzip
         if show_error_details:
             traceback.print_exc()
         else:
             self.stdout.write('An error occurred.')
-        termcolor.cprint(advice, 'white', 'on_red')
+        if not self.inside_runzip:
+            termcolor.cprint(advice, 'white', 'on_red')
         if not show_error_details:
             self.stdout.write(ADVICE_PRINT_DETAILS)
         sys.exit(0)

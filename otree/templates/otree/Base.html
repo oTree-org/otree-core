@@ -26,15 +26,16 @@
 {% block body_main %}{% endblock %}
 
 {% block internal_scripts %}
-    <script src="{% static 'otree/js/reconnecting-websocket.js' %}" type="text/javascript"></script>
+    <script src="{% static 'otree/js/reconnecting-websocket-iife.min.js' %}" type="text/javascript"></script>
     {% block bootstrap_scripts %}
     <script src="{% static 'bootstrap4/js/bootstrap.bundle.min.js' %}"></script>
     {% endblock %}
-    <script src="{% static 'otree/js/init_widgets.js' %}"></script>
+    <script src="{% static 'otree/js/common.js' %}"></script>
 {% endblock %}
 {# these blocks are for public API #}
 {% block global_scripts %}{% endblock %}
 {% block app_scripts %}{% endblock %}
 {% block scripts %}{% endblock %}
+<div id='disconnected-alert' class="top-left-fixed-alert" style="visibility: hidden">Lost server connection...</div>
 </body>
 </html>

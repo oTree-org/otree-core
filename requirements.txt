@@ -1,40 +1,66 @@
-asgi-redis==0.14.1
-asgiref==0.14.0
-autobahn==0.16.0
-channels==0.17.3
+#-e git@github.com:twisted/twisted.git#egg=Twisted
+asgiref==3.1.2
+asn1crypto==0.24.0
+async-timeout==3.0.1
+attrs==19.1.0
+autobahn==19.6.2
+Automat==0.7.0
+certifi==2019.3.9
+cffi==1.12.3
+channels==2.2.0
+channels_redis
 colorama==0.3.7
+constantly==15.1.0
 contextlib2==0.5.4
-daphne==0.14.3
+cryptography==2.7
+cssselect==1.0.3
+daphne==2.3.0
 dj-database-url==0.4.1
-Django==1.11.2
+Django==1.11.21
 django-idmap==1.0.3
+django-slowtests==1.1.1
 django-vanilla-views==1.0.4
 honcho==0.7.1
-huey==1.2.0
+huey==1.10.2
+Hypercorn==0.8.1
+hyperframe==5.2.0
+hyperlink==19.0.0
+idna==2.8
+incremental==17.5.0
 IPy==0.83
-msgpack-python==0.4.8
+lxml==4.3.3
+msgpack==0.6.1
+# msgpack-python was renamed to msgpack.
+# supposedly installing version 0.5.6 allows
+# a smooth upgrade to msgpack
+# (though i still had problems)
+msgpack-python==0.5.6
 otree-boto2-shim==0.3.2
 otree-core==0.0.0b1
 otree-save-the-change==1.1.3
-pbr==1.10.0
-py==1.4.31
-# can't upgrade to 3.0 because assert reinterp mode was removed
-# and now we have plain assertions. maybe can figure out
-pytest==2.9.2
-pytest-django==3.0.0
-python-redis-lock
+priority==1.3.0
+py==1.8.0
+pytest==4.6.3
+pytest-django==3.5.0
+pycparser==2.19
+PyHamcrest==1.9.0
+pytest-asyncio
+python-redis-lock==3.3.1
 pytz==2017.3
-raven==6.9.0
 redis==2.10.5
 requests==2.11.1
 schema==0.6.2
-six==1.10.0
+selenium==3.141.0
+sentry-sdk==0.7.9
+six==1.12.0
+splinter==0.8.0
 termcolor==1.1.0
-Twisted==16.2.0
-txaio==2.5.1
+Twisted>=19.7.0rc1
+txaio==18.8.1
 unicodecsv==0.14.1
-wheel==0.29.0
+urllib3==1.25.3
 whitenoise==3.2.1
 ws4py==0.3.5
+wsproto==0.14.1
 XlsxWriter==0.9.3
-zope.interface==4.2.0
+zope.interface==4.6.0

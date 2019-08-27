@@ -61,16 +61,20 @@ class ModelFormMetaclass(django.forms.models.ModelFormMetaclass):
     `formfield_callback`.
     """
     def __new__(mcs, name, bases, attrs):
-        if 'formfield_callback' not in attrs:
-            attrs['formfield_callback'] = formfield_callback
+        attrs.setdefault('formfield_callback', formfield_callback)
         return super(ModelFormMetaclass, mcs).__new__(
             mcs, name, bases, attrs)
 
 
-
 class ModelForm(forms.ModelForm, metaclass=ModelFormMetaclass):
+    def _get_method_from_page_or_model(self, method_name):
+        for obj in [self.view, self.instance]:
+            if hasattr(obj, method_name):
+                meth = getattr(obj, method_name)
+                if callable(meth):
+                    return meth
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, view=None, **kwargs):
         """Special handling for 'choices' argument, BooleanFields, and
         initial choice: If the user explicitly specifies a None choice
         (which is usually  rendered as '---------'), we should always respect
@@ -88,13 +92,15 @@ class ModelForm(forms.ModelForm, metaclass=ModelFormMetaclass):
 
         """
         # first extract the view instance
-        self.view = kwargs.pop("view", None)
+        self.view = view
 
         super().__init__(*args, **kwargs)
 
         for field_name in self.fields:
             field = self.fields[field_name]
-            choices_method = getattr(self.view, '%s_choices' % field_name, None)
+
+            choices_method = self._get_method_from_page_or_model(f'{field_name}_choices')
+
             if choices_method:
                 choices = choices_method()
                 choices = otree.common_internal.expand_choice_tuples(choices)
@@ -156,13 +162,13 @@ class ModelForm(forms.ModelForm, metaclass=ModelFormMetaclass):
         except FieldDoesNotExist:
             return [None, None]
 
-        min_method = getattr(self.view, '{}_min'.format(field_name), None)
+        min_method = self._get_method_from_page_or_model(f'{field_name}_min')
         if min_method:
             min_value = min_method()
         else:
             min_value = getattr(model_field, 'min', None)
 
-        max_method = getattr(self.view, '{}_max'.format(field_name), None)
+        max_method = self._get_method_from_page_or_model(f'{field_name}_max')
         if max_method:
             max_value = max_method()
         else:
@@ -236,8 +242,8 @@ class ModelForm(forms.ModelForm, metaclass=ModelFormMetaclass):
                     msg = _('Value must be less than or equal to {}.')
                     raise forms.ValidationError(msg.format(upper))
 
-                error_message_method = getattr(
-                    self.view, '{}_error_message'.format(name), None)
+                error_message_method = self._get_method_from_page_or_model(
+                    f'{name}_error_message')
                 if error_message_method:
                     try:
                         error_string = error_message_method(value)

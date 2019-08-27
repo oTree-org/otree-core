@@ -18,6 +18,8 @@ from .bot import ParticipantBot
 import random
 
 from otree.models import Session
+from channels.layers import get_channel_layer
+
 
 REDIS_KEY_PREFIX = 'otree-bots'
 
@@ -196,19 +198,9 @@ def ping(redis_conn, *, timeout):
             'If you want to use browser bots, '
             'you need to be running the botworker '
             '(which is started automatically if you run "otree runprodserver" '
-            'or "otree timeoutworker"). '
             'Otherwise, set ("use_browser_bots": False) in the session config '
             'in settings.py.'
         )
-
-
-def ping_bool(redis_conn, *, timeout):
-    '''version of ping that returns True/False rather than raising'''
-    try:
-        ping(redis_conn, timeout=timeout)
-        return True
-    except BotWorkerPingError:
-        return False
 
 
 def load_redis_response_dict(response_bytes: bytes):
@@ -300,5 +292,11 @@ def initialize_session(**kwargs):
 
 def send_completion_message(*, session_code, participant_code):
     group_name = channel_utils.browser_bots_launcher_group(session_code)
-    # don't need to put in JSON since it's just a participant code
-    channels.Group(group_name).send({'text': participant_code})
+
+    channel_utils.sync_group_send(
+        group_name,
+        {
+            'text': participant_code,
+            'type': 'send_completion_message'
+        }
+    )

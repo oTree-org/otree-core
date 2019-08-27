@@ -10,7 +10,9 @@ from otree import matching
 import copy
 from collections import defaultdict
 from otree.common_internal import has_group_by_arrival_time
-
+from django.template.loader import select_template
+from django.template import TemplateDoesNotExist, Template
+from typing import Optional
 
 class GroupMatrixError(ValueError):
     pass
@@ -36,17 +38,8 @@ class BaseSubsession(models.Model):
     round_number = models.PositiveIntegerField(
         db_index=True,
         doc='''If this subsession is repeated (i.e. has multiple rounds), this
-        field stores the position (index) of this subsession, among subsessions
+        field stores the position of this subsession, among subsessions
         in the same app.
-
-        For example, if a session consists of the subsessions:
-
-            [app1, app2, app1, app1, app3]
-
-        Then the round numbers of these subsessions would be:
-
-            [1, 1, 2, 3, 1]
-
         '''
     )
 

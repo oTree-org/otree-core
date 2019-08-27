@@ -22,9 +22,6 @@ class ExportIndex(vanilla.TemplateView):
     url_pattern = r"^export/$"
 
     def get_context_data(self, **kwargs):
-        context = super(ExportIndex, self).get_context_data(**kwargs)
-
-        context['db_is_empty'] = not Participant.objects.exists()
 
         # can't use settings.INSTALLED_OTREE_APPS, because maybe the app
         # was removed from SESSION_CONFIGS.
@@ -32,11 +29,14 @@ class ExportIndex(vanilla.TemplateView):
         for session in Session.objects.all():
             for app_name in session.config['app_sequence']:
                 app_names_with_data.add(app_name)
-        context['app_names'] = app_names_with_data
-        context['chat_messages_exist'] = ChatMessage.objects.exists()
-        context['extensions_views'] = get_extensions_data_export_views()
 
-        return context
+        return super().get_context_data(
+            db_is_empty=not Participant.objects.exists(),
+            app_names=app_names_with_data,
+            chat_messages_exist=ChatMessage.objects.exists(),
+            extensions_views=get_extensions_data_export_views(),
+            **kwargs
+        )
 
 
 class ExportAppDocs(vanilla.View):
@@ -49,8 +49,7 @@ class ExportAppDocs(vanilla.View):
             datetime.date.today().isoformat()
         )
 
-    def get(self, request, *args, **kwargs):
-        app_name = kwargs['app_name']
+    def get(self, request, app_name):
         response = HttpResponse(content_type='text/plain')
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(
             self._doc_file_name(app_name)
@@ -81,9 +80,7 @@ class ExportApp(vanilla.View):
 
     url_pattern = r"^ExportApp/(?P<app_name>[\w.]+)/$"
 
-    def get(self, request, *args, **kwargs):
-
-        app_name = kwargs['app_name']
+    def get(self, request, app_name):
         response, file_extension = get_export_response(request, app_name)
         otree.export.export_app(app_name, response, file_extension=file_extension)
         return response
@@ -93,7 +90,7 @@ class ExportWide(vanilla.View):
 
     url_pattern = r"^ExportWide/$"
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
         response, file_extension = get_export_response(
             request, 'All apps - wide')
         otree.export.export_wide(response, file_extension)
@@ -104,7 +101,7 @@ class ExportTimeSpent(vanilla.View):
 
     url_pattern = r"^ExportTimeSpent/$"
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(
             'TimeSpent (accessed {}).csv'.format(
@@ -119,7 +116,7 @@ class ExportChat(vanilla.View):
 
     url_pattern = '^otreechatcore_export/$'
 
-    def get(request, *args, **kwargs):
+    def get(self, request):
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(

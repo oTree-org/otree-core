@@ -6,8 +6,9 @@ from django.http import HttpResponseRedirect, JsonResponse
 from otree.channels import utils as channel_utils
 from otree.models_concrete import ParticipantRoomVisit
 from otree.room import ROOM_DICT
-from otree.views.admin import CreateSession
-
+from otree.views.admin import CreateSessionForm
+from django.shortcuts import redirect
+from otree.session import SESSION_CONFIGS_DICT
 
 class Rooms(vanilla.TemplateView):
     template_name = 'otree/admin/Rooms.html'
@@ -18,30 +19,31 @@ class Rooms(vanilla.TemplateView):
         return {'rooms': ROOM_DICT.values()}
 
 
-class RoomWithoutSession(CreateSession):
+class RoomWithoutSession(vanilla.TemplateView):
+    '''similar to CreateSession view'''
+
     template_name = 'otree/admin/RoomWithoutSession.html'
     room = None
 
     url_pattern = r"^room_without_session/(?P<room_name>.+)/$"
 
-    def dispatch(self, request, *args, **kwargs):
-        self.room = ROOM_DICT[kwargs['room_name']]
+    def dispatch(self, request, room_name):
+        self.room_name = room_name
+        self.room = ROOM_DICT[room_name]
         if self.room.has_session():
-            return HttpResponseRedirect(
-                reverse('RoomWithSession', args=[kwargs['room_name']]))
-        return super(RoomWithoutSession, self).dispatch(
-            request, *args, **kwargs)
+            return redirect('RoomWithSession', room_name)
+        return super().dispatch(request)
 
     def get_context_data(self, **kwargs):
-        context = {
-            'participant_urls': self.room.get_participant_urls(self.request),
-            'room_wide_url': self.room.get_room_wide_url(self.request),
-            'room': self.room,
-            'collapse_links': True,
-        }
-        kwargs.update(context)
-
-        return super(RoomWithoutSession, self).get_context_data(**kwargs)
+        return super().get_context_data(
+            configs=SESSION_CONFIGS_DICT.values(),
+            participant_urls=self.room.get_participant_urls(self.request),
+            room_wide_url=self.room.get_room_wide_url(self.request),
+            room=self.room,
+            form=CreateSessionForm(room_name=self.room_name),
+            collapse_links=True,
+            **kwargs
+        )
 
     def socket_url(self):
         return channel_utils.room_admin_path(self.room.name)
@@ -53,52 +55,45 @@ class RoomWithSession(vanilla.TemplateView):
 
     url_pattern = r"^room_with_session/(?P<room_name>.+)/$"
 
-    def dispatch(self, request, *args, **kwargs):
-        self.room = ROOM_DICT[kwargs['room_name']]
+    def dispatch(self, request, room_name):
+        self.room = ROOM_DICT[room_name]
         if not self.room.has_session():
-            return HttpResponseRedirect(
-                reverse('RoomWithoutSession', args=[kwargs['room_name']]))
-        return super(RoomWithSession, self).dispatch(
-            request, *args, **kwargs)
+            return redirect('RoomWithoutSession', room_name)
+        return super().dispatch(request)
 
     def get_context_data(self, **kwargs):
-        context = {
-            'participant_urls': self.room.get_participant_urls(self.request),
-            'room_wide_url': self.room.get_room_wide_url(self.request),
-            'session_url': reverse(
-                'SessionMonitor',
-                args=(self.room.get_session().code,)),
-            'room': self.room,
-            'collapse_links': True,
-        }
-        kwargs.update(context)
-
-        return super(RoomWithSession, self).get_context_data(**kwargs)
+        session_code = self.room.get_session().code
+        return super().get_context_data(
+            participant_urls=self.room.get_participant_urls(self.request),
+            room_wide_url=self.room.get_room_wide_url(self.request),
+            session_url=reverse('SessionMonitor', args=[session_code]),
+            room=self.room,
+            collapse_links=True,
+            **kwargs
+        )
 
 
 class CloseRoom(vanilla.View):
     url_pattern = r"^CloseRoom/(?P<room_name>.+)/$"
 
-    def post(self, request, *args, **kwargs):
-        room_name = kwargs['room_name']
+    def post(self, request, room_name):
         self.room = ROOM_DICT[room_name]
         self.room.set_session(None)
         # in case any failed to be cleared through regular ws.disconnect
         ParticipantRoomVisit.objects.filter(
             room_name=room_name,
         ).delete()
-        return HttpResponseRedirect(
-            reverse('RoomWithoutSession', args=[room_name]))
+        return redirect('RoomWithoutSession', room_name)
 
 
 class StaleRoomVisits(vanilla.View):
 
     url_pattern = r'^StaleRoomVisits/(?P<room>\w+)/$'
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, room):
         stale_threshold = time.time() - 20
         stale_participant_labels = ParticipantRoomVisit.objects.filter(
-            room_name=kwargs['room'],
+            room_name=room,
             last_updated__lt=stale_threshold
         ).values_list('participant_label', flat=True)
 
@@ -112,9 +107,9 @@ class ActiveRoomParticipantsCount(vanilla.View):
 
     url_pattern = r'^ActiveRoomParticipantsCount/(?P<room>\w+)/$'
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, room):
         count = ParticipantRoomVisit.objects.filter(
-            room_name=kwargs['room'],
+            room_name=room,
             last_updated__gte=time.time() - 20
         ).count()
 

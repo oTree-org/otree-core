@@ -99,6 +99,13 @@
             {% endfor %}
             </tbody>
         </table>
+
+        <p>
+            If the above links don't work for you, you can try the URLs
+            /ExportWide/ and /ExportApp/your_app_name/
+            For xlsx, add ?xlsx=1 to the URL.
+        </p>
+
         <h3>Time spent on each page</h3>
         <p><a href="{% url 'ExportTimeSpent' %}">
             <img src='{% static "glyphicons/download-alt.png" %}'>
@@ -136,15 +143,11 @@
         var socket;
 
         function initWebSocket() {
-
-            var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-            var ws_path = ws_scheme + '://' + window.location.host + '/export/';
-            socket = new ReconnectingWebSocket(ws_path);
+            socket = makeReconnectingWebSocket('/export/');
             socket.onmessage = function (e) {
-                console.log('received message');
                 var content = JSON.parse(e.data);
                 saveReceivedFile(content);
-            }
+            };
         }
 
         initWebSocket();
@@ -189,7 +192,6 @@
         }
 
         function saveReceivedFile(content) {
-            console.log('In saveReceivedfile');
             var c = content;
             if (c.file_extension === 'xlsx') {
                 var data = s2ab(atob(c.data));

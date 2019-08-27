@@ -4,7 +4,7 @@ import decimal
 import logging
 import abc
 import six
-from six.moves import urllib
+from urllib.parse import unquote, urlsplit
 from six.moves.html_parser import HTMLParser
 
 from otree.models_concrete import ParticipantToPlayerLookup
@@ -89,6 +89,7 @@ class ParticipantBot(test.Client):
         if load_player_bots:
             for lookup in lookups:
                 app_name = lookup.app_name
+
                 bots_module = get_bots_module(app_name)
                 player_bot = bots_module.PlayerBot(
                     lookup=lookup, case_number=case_number,
@@ -136,7 +137,7 @@ class ParticipantBot(test.Client):
         '''convenience method for testing'''
         self.open_start_url()
         for submission in self.submits_generator:
-            self.submit(submission)
+            self.submit(**submission)
 
     def assert_html_ok(self, submission):
         if submission['check_html']:
@@ -177,13 +178,16 @@ class ParticipantBot(test.Client):
     @response.setter
     def response(self, response):
         try:
-            self.url = response.redirect_chain[-1][0]
+            # have to use unquote in case the name_in_url or PageClass
+            # contains non-ascii characters. playing the games in the browser
+            # works generally, so we should also support non-ascii in bots.
+            self.url = unquote(response.redirect_chain[-1][0])
         except IndexError as exc:
             # this happens e.g. if you use SubmissionMustFail
             # and it returns the same URL
             pass
         else:
-            self.path = urllib.parse.urlsplit(self.url).path
+            self.path = urlsplit(self.url).path
         self._response = response
         self.html = response.content.decode('utf-8')
 
@@ -205,15 +209,14 @@ class ParticipantBot(test.Client):
         self.response = self.get(self.url, follow=True)
         return is_wait_page(self.response)
 
-    def submit(self, submission):
-        post_data = submission['post_data']
+    def submit(self, *, post_data, must_fail=False, timeout_happened=False, **kwargs):
         pretty_post_data = bot_prettify_post_data(post_data)
         log_string = self.path
         if pretty_post_data:
             log_string += ', {}'.format(pretty_post_data)
-        if post_data.get('must_fail'):
+        if must_fail:
             log_string += ', SubmissionMustFail'
-        if post_data.get('timeout_happened'):
+        if timeout_happened:
             log_string += ', timeout_happened'
         logger.info(log_string)
         self.response = self.post(self.url, post_data, follow=True)
@@ -411,7 +414,7 @@ class HtmlString(str):
 class PageHtmlChecker(HTMLParser, object):
 
     def __init__(self, fields_to_check):
-        super(PageHtmlChecker, self).__init__()
+        super().__init__()
         self.missing_fields = set(fields_to_check)
         self.field_tags = {'input', 'button', 'select', 'textarea'}
         self.submit_button_found = False

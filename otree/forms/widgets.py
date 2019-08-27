@@ -16,7 +16,7 @@ class _BaseMoneyInput(forms.NumberInput):
     template_name = 'otree/forms/moneyinput.html'
 
     def get_context(self, *args, **kwargs):
-        context = super(_BaseMoneyInput, self).get_context(*args, **kwargs)
+        context = super().get_context(*args, **kwargs)
         context['currency_symbol'] = self.CURRENCY_SYMBOL
         return context
 
@@ -53,14 +53,13 @@ class Slider(forms.NumberInput):
     template_name = 'otree/forms/slider.html'
     show_value = True
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, show_value=None, **kwargs):
         try:
             # fix bug where currency "step" values were ignored.
             step = kwargs['attrs']['step']
             kwargs['attrs']['step'] = self._format_value(step)
         except KeyError:
             pass
-        show_value = kwargs.pop('show_value', None)
         if show_value is not None:
             self.show_value = show_value
         super().__init__(*args, **kwargs)

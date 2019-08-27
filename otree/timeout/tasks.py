@@ -35,7 +35,7 @@ def submit_expired_url(participant_code, url):
 
 
 @db_task()
-def ensure_pages_visited(participant_pk_set):
+def ensure_pages_visited(participant_pks):
     """This is necessary when a wait page is followed by a timeout page.
     We can't guarantee the user's browser will properly continue to poll
     the wait page and get redirected, so after a grace period we load the page
@@ -47,7 +47,7 @@ def ensure_pages_visited(participant_pk_set):
     # we used to filter by _index_in_pages, but that is not reliable,
     # because of the race condition described above.
     unvisited_participants = Participant.objects.filter(
-        pk__in=participant_pk_set,
+        pk__in=participant_pks,
     )
     for participant in unvisited_participants:
 

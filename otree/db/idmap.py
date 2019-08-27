@@ -42,6 +42,8 @@ class IdMapModel(idmap.models.IdMapModel):
     class Meta:
         abstract = True
         # needs to be here for Participant and Session
+        # 2018-11-24: but it seems Participant and Session don't inherit
+        # from this; that's why we set use_strong_refs in the metaclass
         use_strong_refs = True
 
     # The ``get_cached_instance`` method is the canonical access point for

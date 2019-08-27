@@ -16,6 +16,7 @@ from otree.api import (
     BasePlayer, BaseGroup, BaseSubsession, Currency, WaitPage, Page)
 from otree.common_internal import _get_all_configs
 from pathlib import Path
+import re
 
 
 class AppCheckHelper:
@@ -280,12 +281,12 @@ def pages_function(helper: AppCheckHelper, **kwargs):
                     "a class called 'Page'."
                 )
                 helper.add_error(msg, numeric_id=22)
-            if ViewCls.__name__ == 'WaitPage':
+            if ViewCls.__name__ == 'WaitPage' and helper.app_config.name != 'trust':
                 msg = (
                     "page_sequence cannot contain "
                     "a class called 'WaitPage'."
                 )
-                helper.add_warning(msg, numeric_id=221)
+                helper.add_error(msg, numeric_id=221)
 
             if issubclass(ViewCls, WaitPage):
                 if ViewCls.group_by_arrival_time:
@@ -451,6 +452,7 @@ def template_content_is_in_blocks(template_name: str, helper: AppCheckHelper):
             'Template contains the following text outside of a '
             '{% block %}. This text will never be displayed.'
             '\n\n' + content_bits,
+            # why do we do this? isn't template_name already the full path?
             obj=os.path.join(helper.app_config.label,
                              helper.get_rel_path(template_name)),
             numeric_id=7)
@@ -459,6 +461,45 @@ def template_content_is_in_blocks(template_name: str, helper: AppCheckHelper):
 def templates_valid(helper: AppCheckHelper, **kwargs):
     for template_name in helper.get_template_names():
         template_content_is_in_blocks(template_name, helper)
+
+
+def no_model_class_references(helper: AppCheckHelper, **kwargs):
+    models_path = helper.get_path('models.py')
+
+    from otree.checks.templates import has_valid_encoding
+
+    # Only test files that are valid templates.
+    if not has_valid_encoding(models_path):
+        return
+
+    try:
+        with io.open(models_path, 'r', encoding='utf8') as f:
+            content = f.read()
+    except (IOError, OSError):
+        # when would these errors occur?
+        # (this was originally copied from template check)
+        return
+
+    allowed_attr_names = ['add_to_class', 'objects']
+    matches = re.finditer(r'(Player|Group|Subsession)\.(\w+)', content)
+
+    for m in matches:
+        matched_text = m.group(0)
+        ModelName = m.group(1)
+        attr_name = m.group(2)
+        if attr_name in allowed_attr_names:
+            continue
+        position = m.start(0)
+        num_newlines = content[:position].count('\n')
+        line_number = num_newlines + 1
+        first_letter_uppercase = ModelName[0]
+        helper.add_error(
+            f'models.py contains a reference to "{matched_text}" around line {line_number}. '
+            f'You should not refer to {ModelName} with an uppercase {ModelName[0]}, '
+            f'because that refers to the whole class, '
+            f'rather than any individual {ModelName.lower()}. '
+            'Learn about how to access instances using "self".',
+            numeric_id=120)
 
 
 def unique_sessions_names(helper: AppCheckHelper, **kwargs):
@@ -539,6 +580,7 @@ def register_system_checks():
         templates_valid,
         template_encoding,
         orphan_methods,
+        no_model_class_references,
     ]:
         check_function = make_check_function(func)
         register(check_function)
