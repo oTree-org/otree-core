@@ -16,7 +16,7 @@ cryptography==2.7
 cssselect==1.0.3
 daphne==2.3.0
 dj-database-url==0.4.1
-Django==1.11.21
+Django==1.11.23
 django-idmap==1.0.3
 django-slowtests==1.1.1
 django-vanilla-views==1.0.4
