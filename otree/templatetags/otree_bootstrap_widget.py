@@ -2,6 +2,7 @@ from django import template
 
 register = template.Library()
 
+
 @register.filter
 def attrs_items(widget: dict):
     '''
@@ -25,7 +26,7 @@ def attrs_items(widget: dict):
     else:
         bootstrap_class = 'form-control'
     if 'class' in attrs:
-        attrs['class'] += (' ' + bootstrap_class)
+        attrs['class'] += ' ' + bootstrap_class
     else:
         attrs['class'] = bootstrap_class
     return attrs.items()

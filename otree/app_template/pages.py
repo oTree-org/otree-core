@@ -8,7 +8,6 @@ class MyPage(Page):
 
 
 class ResultsWaitPage(WaitPage):
-
     def after_all_players_arrive(self):
         pass
 
@@ -17,8 +16,4 @@ class Results(Page):
     pass
 
 
-page_sequence = [
-    MyPage,
-    ResultsWaitPage,
-    Results
-]
+page_sequence = [MyPage, ResultsWaitPage, Results]

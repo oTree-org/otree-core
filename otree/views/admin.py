@@ -1,13 +1,11 @@
 import json
-import os
 import sys
 from collections import OrderedDict
-
-from channels.layers import get_channel_layer
-import channels
+import otree
+import re
 import otree.bots.browser
 import otree.channels.utils as channel_utils
-import otree.common_internal
+import otree.common
 import otree.export
 import otree.models
 import vanilla
@@ -15,22 +13,21 @@ from django.conf import settings
 from django.contrib import messages
 from django.urls import reverse
 from django.template.loader import select_template
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, \
-    Http404
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from otree import forms
-from otree.common import RealWorldCurrency
-from otree.common_internal import (
+from otree.currency import RealWorldCurrency
+from otree.common import (
     missing_db_tables,
-    get_models_module, get_app_label_from_name, DebugTable,
+    get_models_module,
+    get_app_label_from_name,
+    DebugTable,
 )
 from otree.forms import widgets
-from otree_startup import check_pypi_for_updates
 from otree.models import Participant, Session
-from otree.models_concrete import (
-    BrowserBotsLauncherSessionCode)
+from otree.models_concrete import BrowserBotsLauncherSessionCode, add_time_spent_waiting
 from otree.session import SESSION_CONFIGS_DICT, create_session, SessionConfig
-from otree.views.abstract import GenericWaitPageMixin, AdminSessionPageMixin
+from otree.views.abstract import AdminSessionPageMixin
 from django.db.models import Case, Value, When
 
 
@@ -46,22 +43,18 @@ class CreateSessionForm(forms.Form):
     session_config_choices = (
         # use '' instead of None. '' seems to immediately invalidate the choice,
         # rather than None which seems to be coerced to 'None'.
-        [('', '-----')] +
-        [(s['name'], s['display_name']) for s in session_configs])
+        [('', '-----')]
+        + [(s['name'], s['display_name']) for s in session_configs]
+    )
 
-    session_config = forms.ChoiceField(
-        choices=session_config_choices, required=True)
+    session_config = forms.ChoiceField(choices=session_config_choices, required=True)
 
     num_participants = forms.IntegerField(required=False)
     is_mturk = forms.BooleanField(
-        widget=widgets.HiddenInput,
-        initial=False,
-        required=False
+        widget=widgets.HiddenInput, initial=False, required=False
     )
     room_name = forms.CharField(
-        initial=None,
-        widget=widgets.HiddenInput,
-        required=False
+        initial=None, widget=widgets.HiddenInput, required=False
     )
 
     def __init__(self, *args, is_mturk=False, room_name=None, **kwargs):
@@ -69,7 +62,9 @@ class CreateSessionForm(forms.Form):
         self.fields['room_name'].initial = room_name
         if is_mturk:
             self.fields['is_mturk'].initial = True
-            self.fields['num_participants'].label = "Number of MTurk workers (assignments)"
+            self.fields[
+                'num_participants'
+            ].label = "Number of MTurk workers (assignments)"
             self.fields['num_participants'].help_text = (
                 'Since workers can return an assignment or drop out, '
                 'some "spare" participants will be created: '
@@ -89,9 +84,7 @@ class CreateSessionForm(forms.Form):
         lcm = config.get_lcm()
         num_participants = self.cleaned_data.get('num_participants')
         if num_participants is None or num_participants % lcm:
-            raise forms.ValidationError(
-                'Please enter a valid number of participants.'
-            )
+            raise forms.ValidationError('Please enter a valid number of participants.')
 
 
 class CreateSession(vanilla.TemplateView):
@@ -99,13 +92,13 @@ class CreateSession(vanilla.TemplateView):
     url_pattern = r"^create_session/$"
 
     def get_context_data(self, **kwargs):
-        x= super().get_context_data(
+        x = super().get_context_data(
             configs=SESSION_CONFIGS_DICT.values(),
             # splinter makes request.GET.get('mturk') == ['1\\']
             # no idea why
             # so just see if it's non-empty
             form=CreateSessionForm(is_mturk=bool(self.request.GET.get('is_mturk'))),
-            **kwargs
+            **kwargs,
         )
         return x
 
@@ -121,23 +114,15 @@ class SessionSplitScreen(AdminSessionPageMixin, vanilla.TemplateView):
             self.request.build_absolute_uri(participant._start_url())
             for participant in self.session.get_participants()
         ]
-        return dict(
-            session=self.session,
-            participant_urls=participant_urls,
-        )
+        return dict(session=self.session, participant_urls=participant_urls)
 
 
 class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
-
     def vars_for_template(self):
         session = self.session
         room = session.get_room()
 
-        context = dict(
-            use_browser_bots=session.use_browser_bots(),
-            sqlite=settings.DATABASES['default']['ENGINE'].endswith('sqlite3'),
-            runserver='runserver' in sys.argv or 'devserver' in sys.argv,
-        )
+        context = dict(use_browser_bots=session.use_browser_bots)
 
         session_start_urls = [
             self.request.build_absolute_uri(participant._start_url())
@@ -150,98 +135,76 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
                 room_wide_url=room.get_room_wide_url(self.request),
                 session_start_urls=session_start_urls,
                 room=room,
-                collapse_links=True
+                collapse_links=True,
             )
         else:
             anonymous_url = self.request.build_absolute_uri(
-                reverse(
-                    'JoinSessionAnonymously',
-                    args=[session._anonymous_code]
-                )
+                reverse('JoinSessionAnonymously', args=[session._anonymous_code])
             )
 
             context.update(
                 participant_urls=session_start_urls,
                 anonymous_url=anonymous_url,
                 num_participants=len(session_start_urls),
-                splitscreen_mode_on=len(session_start_urls) <= 3
+                splitscreen_mode_on=len(session_start_urls) <= 3,
             )
 
         return context
 
 
-class SessionEditPropertiesForm(forms.ModelForm):
+class SessionEditPropertiesForm(forms.Form):
     participation_fee = forms.RealWorldCurrencyField(
         required=False,
         # it seems that if this is omitted, the step defaults to an integer,
         # meaninng fractional inputs are not accepted
-        widget=widgets._RealWorldCurrencyInput(attrs={'step': 0.01})
+        widget=widgets._RealWorldCurrencyInput(attrs={'step': 0.01}),
     )
-    real_world_currency_per_point = forms.FloatField(
-        required=False
-    )
+    real_world_currency_per_point = forms.FloatField(required=False)
 
-    class Meta:
-        model = Session
-        fields = [
-            'label',
-            'experimenter_name',
-            'comment',
-        ]
+    label = forms.CharField(required=False)
+    comment = forms.CharField(required=False)
 
 
-class SessionEditProperties(AdminSessionPageMixin, vanilla.UpdateView):
-
-    # required for vanilla.UpdateView
-    lookup_field = 'code'
-    model = Session
+class SessionEditProperties(AdminSessionPageMixin, vanilla.FormView):
     form_class = SessionEditPropertiesForm
     template_name = 'otree/admin/SessionEditProperties.html'
 
     def get_form(self, data=None, files=None, **kwargs):
-        form = super(
-            SessionEditProperties, self
-        ).get_form(data, files, **kwargs)
-        config = self.session.config
-        form.fields[
-            'participation_fee'
-        ].initial = config['participation_fee']
-        form.fields[
+        form = super().get_form(data, files, **kwargs)
+        session = self.session
+        config = session.config
+        fields = form.fields
+        fields['participation_fee'].initial = config['participation_fee']
+        fields['real_world_currency_per_point'].initial = config[
             'real_world_currency_per_point'
-        ].initial = config['real_world_currency_per_point']
-        if self.session.mturk_HITId:
-            form.fields['participation_fee'].widget.attrs['readonly'] = 'True'
+        ]
+        fields['label'].initial = session.label
+        fields['comment'].initial = session.comment
+        if session.mturk_HITId:
+            fields['participation_fee'].widget.attrs['readonly'] = 'True'
         return form
 
-    def get_success_url(self):
-        return reverse('SessionEditProperties', args=(self.session.code,))
-
     def form_valid(self, form):
-        super().form_valid(form)
-        participation_fee = form.cleaned_data[
-            'participation_fee'
-        ]
-        real_world_currency_per_point = form.cleaned_data[
-            'real_world_currency_per_point'
-        ]
-        config = self.session.config
-        if form.cleaned_data['participation_fee'] is not None:
-            config[
-                'participation_fee'
+        session = self.session
+        session.label = form.cleaned_data['label']
+        session.comment = form.cleaned_data['comment']
+
+        participation_fee = form.cleaned_data['participation_fee']
+        rwc_per_point = form.cleaned_data['real_world_currency_per_point']
+
+        if participation_fee is not None:
             # need to convert back to RealWorldCurrency, because easymoney
             # MoneyFormField returns a decimal, not Money (not sure why)
-            ] = RealWorldCurrency(participation_fee)
-        if form.cleaned_data['real_world_currency_per_point'] is not None:
-            config[
-                'real_world_currency_per_point'
-            ] = real_world_currency_per_point
+            session.config['participation_fee'] = RealWorldCurrency(participation_fee)
+        if rwc_per_point is not None:
+            session.config['real_world_currency_per_point'] = rwc_per_point
+
         self.session.save()
         messages.success(self.request, 'Properties have been updated')
-        return HttpResponseRedirect(self.get_success_url())
+        return redirect('SessionEditProperties', session.code)
 
 
 class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
-
     def vars_for_template(self):
         session = self.session
         participants = session.get_participants()
@@ -253,13 +216,14 @@ class SessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
             )
             mean_payment = total_payments / len(participants)
 
+        add_time_spent_waiting(participants=participants)
+
         return dict(
             participants=participants,
             total_payments=total_payments,
             mean_payment=mean_payment,
-            participation_fee=session.config['participation_fee']
+            participation_fee=session.config['participation_fee'],
         )
-
 
 
 def pretty_round_name(app_label, round_number):
@@ -271,7 +235,6 @@ def pretty_round_name(app_label, round_number):
 
 
 class SessionData(AdminSessionPageMixin, vanilla.TemplateView):
-
     def vars_for_template(self):
         session = self.session
 
@@ -288,7 +251,9 @@ class SessionData(AdminSessionPageMixin, vanilla.TemplateView):
             # can't use subsession._meta.app_config.name, because it won't work
             # if the app is removed from SESSION_CONFIGS after the session is
             # created.
-            columns_for_models, subsession_rows = otree.export.get_rows_for_live_update(subsession)
+            columns_for_models, subsession_rows = otree.export.get_rows_for_live_update(
+                subsession
+            )
 
             if not rows:
                 rows = subsession_rows
@@ -302,7 +267,9 @@ class SessionData(AdminSessionPageMixin, vanilla.TemplateView):
                 model_headers.append((model_name.title(), colspan))
                 round_colspan += colspan
 
-            round_name = pretty_round_name(subsession._meta.app_label, subsession.round_number)
+            round_name = pretty_round_name(
+                subsession._meta.app_label, subsession.round_number
+            )
 
             round_headers.append((round_name, round_colspan))
 
@@ -349,7 +316,6 @@ class SessionData(AdminSessionPageMixin, vanilla.TemplateView):
 
 
 class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
-
     def vars_for_template(self):
 
         field_names = otree.export.get_field_names_for_live_update(Participant)
@@ -401,13 +367,9 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
             return self.render_to_response(context)
 
 
-
 class SessionDescription(AdminSessionPageMixin, vanilla.TemplateView):
-
     def vars_for_template(self):
-        return dict(
-            config=SessionConfig(self.session.config),
-        )
+        return dict(config=SessionConfig(self.session.config))
 
 
 class AdminReportForm(forms.Form):
@@ -455,7 +417,6 @@ class AdminReportForm(forms.Form):
 
 
 class AdminReport(AdminSessionPageMixin, vanilla.TemplateView):
-
     def get(self, request, *args, **kwargs):
         form = AdminReportForm(data=request.GET, session=self.session)
         # validate to get error messages
@@ -464,37 +425,32 @@ class AdminReport(AdminSessionPageMixin, vanilla.TemplateView):
         return self.render_to_response(context)
 
     def get_context_data(self, **kwargs):
-
         cleaned_data = kwargs['form'].cleaned_data
 
         models_module = get_models_module(cleaned_data['app_name'])
         subsession = models_module.Subsession.objects.get(
-            session=self.session,
-            round_number=cleaned_data['round_number'],
+            session=self.session, round_number=cleaned_data['round_number']
         )
-
 
         vars_for_admin_report = subsession.vars_for_admin_report() or {}
         self.debug_tables = [
             DebugTable(
-                title='vars_for_admin_report',
-                rows=vars_for_admin_report.items()
+                title='vars_for_admin_report', rows=vars_for_admin_report.items()
             )
         ]
         # determine whether to display debug tables
         self.is_debug = settings.DEBUG
 
         app_label = subsession._meta.app_config.label
-        user_template = select_template([
-            f'{app_label}/admin_report.html',
-            f'{app_label}/AdminReport.html',
-        ])
+        user_template = select_template(
+            [f'{app_label}/admin_report.html', f'{app_label}/AdminReport.html']
+        )
 
         context = super().get_context_data(
             subsession=subsession,
             Constants=models_module.Constants,
             user_template=user_template,
-            **kwargs
+            **kwargs,
         )
         # it's passed by parent class
         assert 'session' in context
@@ -505,6 +461,42 @@ class AdminReport(AdminSessionPageMixin, vanilla.TemplateView):
         return context
 
 
+def get_json_from_pypi() -> dict:
+    # import only if we need it
+    import urllib.request
+    import urllib.parse
+
+    try:
+        f = urllib.request.urlopen('https://pypi.python.org/pypi/otree/json')
+        return json.loads(f.read().decode('utf-8'))
+    except:
+        return {'releases': []}
+
+
+def get_installed_and_pypi_version() -> dict:
+    '''return a dict because it needs to be json serialized for the AJAX
+    response'''
+    # need to import it so it can be patched outside
+
+    semver_re = re.compile(r'^(\d+)\.(\d+)\.(\d+)$')
+
+    installed_dotted = otree.__version__
+
+    data = get_json_from_pypi()
+
+    releases = data['releases']
+    newest_tuple = [0, 0, 0]
+    newest_dotted = ''
+    for release in releases:
+        release_match = semver_re.match(release)
+        if release_match:
+            release_tuple = [int(n) for n in release_match.groups()]
+            if release_tuple > newest_tuple:
+                newest_tuple = release_tuple
+                newest_dotted = release
+    return dict(newest=newest_dotted, installed=installed_dotted)
+
+
 class ServerCheck(vanilla.TemplateView):
     template_name = 'otree/admin/ServerCheck.html'
 
@@ -512,70 +504,46 @@ class ServerCheck(vanilla.TemplateView):
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(
-            sqlite=settings.DATABASES['default']['ENGINE'].endswith('sqlite3'),
+            sqlite=otree.common.is_sqlite(),
             debug=settings.DEBUG,
             auth_level=settings.AUTH_LEVEL,
             auth_level_ok=settings.AUTH_LEVEL in {'DEMO', 'STUDY'},
             db_synced=not missing_db_tables(),
-            pypi_results=check_pypi_for_updates(),
-            **kwargs
+            pypi_results=get_installed_and_pypi_version(),
+            **kwargs,
         )
 
 
-class OtreeCoreUpdateCheck(vanilla.View):
-
-    url_pattern = r"^version_cached/$"
-
-    # cached per process
-    results = None
-
-    def get(self, request, *args, **kwargs):
-        if OtreeCoreUpdateCheck.results is None:
-            OtreeCoreUpdateCheck.results = check_pypi_for_updates()
-        return JsonResponse(OtreeCoreUpdateCheck.results, safe=True)
-
-
 class CreateBrowserBotsSession(vanilla.View):
-
     url_pattern = r"^create_browser_bots_session/$"
 
     def get(self, request, *args, **kwargs):
-        # return browser bots check
-        sqlite = settings.DATABASES['default']['ENGINE'].endswith('sqlite3')
-
-        return JsonResponse({
-            'sqlite': sqlite,
-            'runserver': 'runserver' in sys.argv or 'devserver' in sys.argv
-        })
+        return JsonResponse({})
 
     def post(self, request):
         num_participants = int(request.POST['num_participants'])
         session_config_name = request.POST['session_config_name']
         case_number = int(request.POST['case_number'])
         session = create_session(
-            session_config_name=session_config_name,
-            num_participants=num_participants,
+            session_config_name=session_config_name, num_participants=num_participants
         )
         otree.bots.browser.initialize_session(
-            session_pk=session.pk, case_number=case_number)
+            session_pk=session.pk, case_number=case_number
+        )
         BrowserBotsLauncherSessionCode.objects.update_or_create(
             # i don't know why the update_or_create arg is called 'defaults'
             # because it will update even if the instance already exists
             # maybe for consistency with get_or_create
             defaults={'code': session.code}
         )
-        channel_utils.sync_group_send(
-            'browser_bot_wait',
-            {
-                'type': 'browserbot_sessionready'
-            }
+        channel_utils.sync_group_send_wrapper(
+            type='browserbot_sessionready', group='browser_bot_wait', event={}
         )
 
         return HttpResponse(session.code)
 
 
 class CloseBrowserBotsSession(vanilla.View):
-
     url_pattern = r"^close_browser_bots_session/$"
 
     def post(self, request):
@@ -584,13 +552,10 @@ class CloseBrowserBotsSession(vanilla.View):
 
 
 class AdvanceSession(vanilla.View):
-
     url_pattern = r'^AdvanceSession/(?P<session_code>[a-z0-9]+)/$'
 
     def post(self, request, session_code):
-        session = get_object_or_404(
-            otree.models.Session, code=session_code
-        )
+        session = get_object_or_404(otree.models.Session, code=session_code)
         session.advance_last_place_participants()
         return HttpResponse('ok')
 
@@ -609,25 +574,26 @@ class Sessions(vanilla.ListView):
             is_archive=self.is_archive,
             is_debug=settings.DEBUG,
             archived_sessions_exist=Session.objects.filter(archived=True).exists(),
-            **kwargs
+            **kwargs,
         )
 
     def get_queryset(self):
-        return Session.objects.filter(
-            is_demo=False, archived=self.is_archive).order_by('-pk')
+        return Session.objects.filter(is_demo=False, archived=self.is_archive).order_by(
+            '-pk'
+        )
 
 
 class ToggleArchivedSessions(vanilla.View):
-
     url_pattern = r'^ToggleArchivedSessions/'
 
     def post(self, request):
         code_list = request.POST.getlist('session')
 
-        (Session.objects.filter(code__in=code_list)
-            .update(archived=Case(
-                When(archived=True, then=Value(False)),
-                default=Value(True))
+        (
+            Session.objects.filter(code__in=code_list).update(
+                archived=Case(
+                    When(archived=True, then=Value(False)), default=Value(True)
+                )
             )
         )
 
@@ -635,11 +601,8 @@ class ToggleArchivedSessions(vanilla.View):
 
 
 class DeleteSessions(vanilla.View):
-
     url_pattern = r'^DeleteSessions/'
 
     def post(self, request):
-        Session.objects.filter(
-            code__in=request.POST.getlist('session')
-        ).delete()
+        Session.objects.filter(code__in=request.POST.getlist('session')).delete()
         return redirect('Sessions')

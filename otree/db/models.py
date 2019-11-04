@@ -1,32 +1,19 @@
-from django.db import models
-from django.db.models.fields import related
-from django.core import exceptions
-from django.utils.translation import ugettext_lazy
-from django.conf import settings
-from django.apps import apps
-from decimal import Decimal
-from otree.currency import (
-    Currency, RealWorldCurrency
-)
 import logging
+from decimal import Decimal
+
+from django.core import exceptions
+from django.db import models
+from django.utils.translation import ugettext_lazy
 from idmap.models import IdMapModelBase
+
+from otree.common import expand_choice_tuples, get_app_label_from_import_path
+from otree.constants import field_required_msg
+from otree.currency import Currency, RealWorldCurrency
 from .idmap import IdMapModel
-
-import otree.common
-from otree.common_internal import (
-    expand_choice_tuples, get_app_label_from_import_path)
-from otree.constants_internal import field_required_msg
-from otree_save_the_change.mixins import SaveTheChange
-
-# this is imported from other modules
-from .serializedfields import _PickleField
+from django.forms import widgets as dj_widgets
+from .serializedfields import _PickleField  # noqa
 
 logger = logging.getLogger(__name__)
-
-
-class _JSONField(models.TextField):
-    '''just keeping around so that Migrations don't crash'''
-    pass
 
 
 class OTreeModelBase(IdMapModelBase):
@@ -47,17 +34,10 @@ class OTreeModelBase(IdMapModelBase):
             meta.use_strong_refs = True
             attrs["Meta"] = meta
 
-
-
         new_class = super().__new__(mcs, name, bases, attrs)
         if not hasattr(new_class._meta, 'use_strong_refs'):
             new_class._meta.use_strong_refs = False
 
-
-        # 2015-12-22: this probably doesn't work anymore,
-        # since we moved _choices to views.py
-        # but we can tell users they can define FOO_choices in models.py,
-        # and then call it in the equivalent method in views.py
         for f in new_class._meta.fields:
             if hasattr(new_class, f.name + '_choices'):
                 attr_name = 'get_%s_display' % f.name
@@ -69,10 +49,6 @@ class OTreeModelBase(IdMapModelBase):
         return new_class
 
 
-def get_model(*args, **kwargs):
-    return apps.get_model(*args, **kwargs)
-
-
 def make_get_display(field):
     def get_FIELD_display(self):
         choices = getattr(self, field.name + '_choices')()
@@ -82,14 +58,12 @@ def make_get_display(field):
     return get_FIELD_display
 
 
-class OTreeModel(SaveTheChange, IdMapModel, metaclass=OTreeModelBase):
-
+class OTreeModel(IdMapModel, metaclass=OTreeModelBase):
     class Meta:
         abstract = True
 
     def __repr__(self):
         return '<{} pk={}>'.format(self.__class__.__name__, self.pk)
-
 
     _is_frozen = False
     NoneType = type(None)
@@ -113,7 +87,6 @@ class OTreeModel(SaveTheChange, IdMapModel, metaclass=OTreeModelBase):
         # used by Prefetch.
         '_ordered_players',
         '_is_frozen',
-
         # extras on 2018-11-24
         'id',
         '_changed_fields',
@@ -141,27 +114,30 @@ class OTreeModel(SaveTheChange, IdMapModel, metaclass=OTreeModelBase):
                 if field_type_name in self._setattr_datatypes:
                     allowed_types = self._setattr_datatypes[field_type_name]
                     if (
-                            isinstance(value, allowed_types)
-                            # numpy uses its own datatypes, e.g. numpy._bool,
-                            # which doesn't inherit from python bool.
-                            or 'numpy' in str(type(value))
-                            # 2018-07-18:
-                            # have an exception for the bug in the 'quiz' sample game
-                            # after a while, we can remove this
-                            or field_name == 'question_id'
+                        isinstance(value, allowed_types)
+                        # numpy uses its own datatypes, e.g. numpy._bool,
+                        # which doesn't inherit from python bool.
+                        or 'numpy' in str(type(value))
+                        # 2018-07-18:
+                        # have an exception for the bug in the 'quiz' sample game
+                        # after a while, we can remove this
+                        or field_name == 'question_id'
                     ):
                         pass
                     else:
-                        msg = (
-                            '{} should be set to {}, not {}.'
-                        ).format(field_type_name, allowed_types[0].__name__, type(value).__name__)
+                        msg = ('{} should be set to {}, not {}.').format(
+                            field_type_name,
+                            allowed_types[0].__name__,
+                            type(value).__name__,
+                        )
                         raise TypeError(msg)
             elif (
-                    field_name in self._setattr_attributes or
-                    field_name in self._setattr_whitelist or
-                    # idmap uses _group_cache, _subsession_cache,
-                    # _prefetched_objects_cache, etc
-                    field_name.endswith('_cache')
+                field_name in self._setattr_attributes
+                or field_name in self._setattr_whitelist
+                or
+                # idmap uses _group_cache, _subsession_cache,
+                # _prefetched_objects_cache, etc
+                field_name.endswith('_cache')
             ):
                 # django sometimes reassigns to non-field attributes that
                 # were set before the class was frozen, such as
@@ -169,15 +145,21 @@ class OTreeModel(SaveTheChange, IdMapModel, metaclass=OTreeModelBase):
                 # or assigning to a property like Player.payoff
                 pass
             else:
-                msg = (
-                    '{} has no field "{}".'
-                ).format(self.__class__.__name__, field_name)
+                msg = ('{} has no field "{}".').format(
+                    self.__class__.__name__, field_name
+                )
                 raise AttributeError(msg)
 
             self._super_setattr(field_name, value)
         else:
             # super() is a bit slower but only gets run during __init__
             super().__setattr__(field_name, value)
+
+    def save(self, *args, **kwargs):
+        # Use with FieldTracker
+        if self.pk and hasattr(self, '_ft') and 'update_fields' not in kwargs:
+            kwargs['update_fields'] = [k for k in self._ft.changed()]
+        super().save(*args, **kwargs)
 
 
 Model = OTreeModel
@@ -195,18 +177,18 @@ def fix_choices_arg(kwargs):
     kwargs['choices'] = choices
 
 
-class _OtreeModelFieldMixin(object):
-
+class _OtreeModelFieldMixin:
     def __init__(
-            self,
-            *,
-            initial=None,
-            label=None,
-            min=None,
-            max=None,
-            doc='',
-            widget=None,
-            **kwargs):
+        self,
+        *,
+        initial=None,
+        label=None,
+        min=None,
+        max=None,
+        doc='',
+        widget=None,
+        **kwargs,
+    ):
 
         self.widget = widget
         self.doc = doc
@@ -238,23 +220,27 @@ class _OtreeModelFieldMixin(object):
 
         super().__init__(**kwargs)
 
+    def formfield(self, **kwargs):
+        if self.widget:
+            kwargs['widget'] = self.widget
+        return super().formfield(**kwargs)
+
 
 class _OtreeNumericFieldMixin(_OtreeModelFieldMixin):
     auto_submit_default = 0
 
-class BaseCurrencyField(
-    _OtreeNumericFieldMixin, models.DecimalField):
 
-    MONEY_CLASS = None # need to set in subclasses
+class BaseCurrencyField(_OtreeNumericFieldMixin, models.DecimalField):
+
+    MONEY_CLASS = None  # need to set in subclasses
 
     def __init__(self, **kwargs):
         # i think it's sufficient just to store a high number;
         # this needs to be higher than decimal_places
         decimal_places = self.MONEY_CLASS.get_num_decimal_places()
         # where does this come from?
-        max_digits=12
-        super().__init__(
-            max_digits=max_digits, decimal_places=decimal_places, **kwargs)
+        max_digits = 12
+        super().__init__(max_digits=max_digits, decimal_places=decimal_places, **kwargs)
 
     def deconstruct(self):
         name, path, args, kwargs = super().deconstruct()
@@ -275,7 +261,7 @@ class BaseCurrencyField(
             return None
         return Decimal(self.to_python(value))
 
-    def from_db_value(self, value, expression, connection, context):
+    def from_db_value(self, value, expression, connection):
         return self.to_python(value)
 
 
@@ -285,6 +271,7 @@ class CurrencyField(BaseCurrencyField):
 
     def formfield(self, **kwargs):
         import otree.forms
+
         defaults = {
             'form_class': otree.forms.CurrencyField,
             'choices_form_class': otree.forms.CurrencyChoiceField,
@@ -299,6 +286,7 @@ class RealWorldCurrencyField(BaseCurrencyField):
 
     def formfield(self, **kwargs):
         import otree.forms
+
         defaults = {
             'form_class': otree.forms.RealWorldCurrencyField,
             'choices_form_class': otree.forms.CurrencyChoiceField,
@@ -307,66 +295,21 @@ class RealWorldCurrencyField(BaseCurrencyField):
         return super().formfield(**defaults)
 
 
-class BooleanField(_OtreeModelFieldMixin, models.NullBooleanField):
-    # 2014/3/28: i just define the allowable choices on the model field,
-    # instead of customizing the widget since then it works for any widget
+class BooleanField(_OtreeModelFieldMixin, models.BooleanField):
+    def __init__(self, **kwargs):
+        # usually checkbox is not required, except for consent forms.
+        widget = kwargs.get('widget')
+        if isinstance(widget, dj_widgets.CheckboxInput):
+            kwargs.setdefault('blank', True)
 
-    def __init__(self,
-                 *,
-                 choices=None,
-                 **kwargs):
-        # 2015-1-19: why is this here? isn't this the default behavior?
-        # 2013-1-26: ah, because we don't want the "----" (None) choice
-        if choices is None:
-            choices = (
-                (True, ugettext_lazy('Yes')),
-                (False, ugettext_lazy('No'))
-            )
-
-        # We need to store whether blank is explicitly specified or not. If
-        # it's not specified explicitly (which will make it default to False)
-        # we need to special case validation logic in the form field if a
-        # checkbox input is used.
-        self._blank_is_explicit = 'blank' in kwargs
-
-        super().__init__(
-            choices=choices,
-            **kwargs)
-
-        # you cant override "blank" or you will destroy the migration system
-        self.allow_blank = bool(kwargs.get("blank"))
+        # we need to set explicitly because otherwise the empty choice will show up as
+        # "Unknown" in a select widget. This makes it set to '-----------'.
+        kwargs.setdefault(
+            'choices', [(True, ugettext_lazy('Yes')), (False, ugettext_lazy('No'))]
+        )
+        super().__init__(**kwargs)
 
     auto_submit_default = False
-
-    def clean(self, value, model_instance):
-        if value is None and not self.allow_blank:
-            raise exceptions.ValidationError(field_required_msg)
-        return super().clean(value, model_instance)
-
-    def formfield(self, *args, **kwargs):
-        from otree import widgets
-
-        is_checkbox_widget = isinstance(self.widget, widgets.CheckboxInput)
-        if not self._blank_is_explicit and is_checkbox_widget:
-            kwargs.setdefault('required', False)
-        else:
-            # this use the allow_blank for the form fields
-            kwargs.setdefault('required', not self.allow_blank)
-
-        return super().formfield(*args, **kwargs)
-
-
-class AutoField(_OtreeModelFieldMixin, models.AutoField):
-    pass
-
-
-class BigIntegerField(
-        _OtreeNumericFieldMixin, models.BigIntegerField):
-    auto_submit_default = 0
-
-
-class BinaryField(_OtreeModelFieldMixin, models.BinaryField):
-    pass
 
 
 class StringField(_OtreeModelFieldMixin, models.CharField):
@@ -375,86 +318,39 @@ class StringField(_OtreeModelFieldMixin, models.CharField):
     causing any problems, even though Django recommends against that, but
     that's for forms on pages that get viewed multiple times
     '''
-    def __init__(
-            self,
-            *,
-            # varchar max length doesn't affect performance or even storage
-            # size; it's just for validation. so, to be easy to use,
-            # there is no reason for oTree to set a short default length
-            # for CharFields. The main consideration is that MySQL cannot index
-            # varchar longer than 255 chars, but that is not relevant here
-            # because oTree only uses indexes for fields defined in otree-core,
-            # which have explicit max_lengths anyway.
-            max_length=10000,
-            **kwargs):
 
-        super().__init__(
-            max_length=max_length,
-            **kwargs)
+    def __init__(
+        self,
+        *,
+        # varchar max length doesn't affect performance or even storage
+        # size; it's just for validation. so, to be easy to use,
+        # there is no reason for oTree to set a short default length
+        # for CharFields. The main consideration is that MySQL cannot index
+        # varchar longer than 255 chars, but that is not relevant here
+        # because oTree only uses indexes for fields defined in otree-core,
+        # which have explicit max_lengths anyway.
+        max_length=10000,
+        **kwargs,
+    ):
+
+        super().__init__(max_length=max_length, **kwargs)
 
     auto_submit_default = ''
 
 
-class DateField(_OtreeModelFieldMixin, models.DateField):
+class DecimalField(_OtreeNumericFieldMixin, models.DecimalField):
     pass
 
 
-class DateTimeField(_OtreeModelFieldMixin, models.DateTimeField):
+class FloatField(_OtreeNumericFieldMixin, models.FloatField):
     pass
 
 
-class DecimalField(
-        _OtreeNumericFieldMixin,
-        models.DecimalField):
+class IntegerField(_OtreeNumericFieldMixin, models.IntegerField):
     pass
 
 
-class EmailField(_OtreeModelFieldMixin, models.EmailField):
-    pass
-
-
-class FileField(_OtreeModelFieldMixin, models.FileField):
-    pass
-
-
-class FilePathField(_OtreeModelFieldMixin, models.FilePathField):
-    pass
-
-
-class FloatField(
-        _OtreeNumericFieldMixin,
-        models.FloatField):
-    pass
-
-
-class IntegerField(
-        _OtreeNumericFieldMixin, models.IntegerField):
-    pass
-
-
-class GenericIPAddressField(_OtreeModelFieldMixin,
-                            models.GenericIPAddressField):
-    pass
-
-
-class PositiveIntegerField(
-        _OtreeNumericFieldMixin,
-        models.PositiveIntegerField):
-    pass
-
-
-class PositiveSmallIntegerField(
-        _OtreeNumericFieldMixin,
-        models.PositiveSmallIntegerField):
-    pass
-
-
-class SlugField(_OtreeModelFieldMixin, models.SlugField):
-    pass
-
-
-class SmallIntegerField(
-        _OtreeNumericFieldMixin, models.SmallIntegerField):
+class PositiveIntegerField(_OtreeNumericFieldMixin, models.PositiveIntegerField):
     pass
 
 
@@ -462,18 +358,45 @@ class LongStringField(_OtreeModelFieldMixin, models.TextField):
     auto_submit_default = ''
 
 
-class TimeField(_OtreeModelFieldMixin, models.TimeField):
-    pass
+MSG_DEPRECATED_FIELD = """
+{FieldName} does not exist in oTree. 
+You should either replace it with one of oTree's field types, or import it from Django directly.
+Note that Django model fields do not accept oTree-specific arguments like label= and widget=.
+""".replace(
+    '\n', ' '
+)
 
 
-class URLField(_OtreeModelFieldMixin, models.URLField):
-    pass
+def make_deprecated_field(FieldName):
+    def DeprecatedField(*args, **kwargs):
+        # putting the msg on a separate line gives better tracebacks
+        raise Exception(MSG_DEPRECATED_FIELD.format(FieldName))
+
+    return DeprecatedField
+
+
+ManyToOneRel = make_deprecated_field("ManyToOneRel")
+ManyToManyField = make_deprecated_field("ManyToManyField")
+OneToOneField = make_deprecated_field("OneToOneField")
+AutoField = make_deprecated_field("AutoField")
+BigIntegerField = make_deprecated_field("BigIntegerField")
+BinaryField = make_deprecated_field("BinaryField")
+EmailField = make_deprecated_field("EmailField")
+FileField = make_deprecated_field("FileField")
+GenericIPAddressField = make_deprecated_field("GenericIPAddressField")
+PositiveSmallIntegerField = make_deprecated_field("PositiveSmallIntegerField")
+SlugField = make_deprecated_field("SlugField")
+SmallIntegerField = make_deprecated_field("SmallIntegerField")
+TimeField = make_deprecated_field("TimeField")
+URLField = make_deprecated_field("URLField")
+DateField = make_deprecated_field("DateField")
+DateTimeField = make_deprecated_field("DateTimeField")
 
 
 CharField = StringField
 TextField = LongStringField
+# keep ForeignKey around
 ForeignKey = models.ForeignKey
-ManyToOneRel = related.ManyToOneRel
-ManyToManyField = models.ManyToManyField
-OneToOneField = models.OneToOneField
+
+
 CASCADE = models.CASCADE

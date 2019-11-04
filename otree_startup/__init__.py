@@ -1,12 +1,13 @@
 import json
 import logging
-import re
 import django.core.management
 import django.conf
 import os
 import sys
 from sys import argv
 from collections import OrderedDict, defaultdict
+from pathlib import Path
+from typing import Optional
 
 # avoid confusion with otree_startup.settings
 from django.conf import settings as django_settings
@@ -15,8 +16,7 @@ from django.core.management import get_commands, load_command_class
 import django
 from django.apps import apps
 from django.core.management.base import BaseCommand
-from django.core.management.color import color_style
-from django.utils import autoreload, six
+from django.utils import autoreload
 
 # "from .settings import ..." actually imports the whole settings module
 # confused me, it was overwriting django.conf.settings above
@@ -44,14 +44,13 @@ resetdb
 runprodserver
 runprodserver1of2
 runprodserver2of2
-runzip
 shell
 startapp
 startproject
 test
 unzip
-update_my_code
 zip
+zipserver
 '''
 
 
@@ -84,13 +83,7 @@ def execute_from_command_line(*args, **kwargs):
 
     subcommand = argv[1]
 
-    if subcommand == 'runserver':
-        sys.stdout.write(
-            "Suggestion: use 'otree devserver' instead of 'otree runserver'. "
-            "devserver automatically syncs your database.\n"
-        )
-
-    if subcommand == 'runzip':
+    if subcommand in ['runzip', 'zipserver']:
         runzip.main(argv[2:])
         # better to return than sys.exit because testing is complicated
         # with sys.exit -- if you mock it, then the function keeps executing.
@@ -116,10 +109,12 @@ def execute_from_command_line(*args, **kwargs):
     # INSTALLED_APPS, so those management commands are available.
     if subcommand in [
         'startproject',
-        'version', '--version',
-        'compilemessages', 'makemessages',
-        'upgrade_my_code', 'update_my_code',
-        'unzip', 'zip',
+        'version',
+        '--version',
+        'compilemessages',
+        'makemessages',
+        'unzip',
+        'zip',
     ]:
         django_settings.configure(**get_default_settings({}))
     else:
@@ -139,10 +134,15 @@ def execute_from_command_line(*args, **kwargs):
                 )
                 logger.warning(msg)
                 return
+        warning = check_update_needed(
+            Path('.').resolve().joinpath('requirements_base.txt')
+        )
+        if warning:
+            logger.warning(warning)
 
-    runserver_or_devserver = subcommand in ['runserver', 'devserver']
+    is_devserver = subcommand == 'devserver'
 
-    if runserver_or_devserver:
+    if is_devserver:
         # apparently required by restart_with_reloader
         # otherwise, i get:
         # python.exe: can't open file 'C:\oTree\venv\Scripts\otree':
@@ -161,7 +161,7 @@ def execute_from_command_line(*args, **kwargs):
     # The hardcoded condition is a code smell but we can't rely on a
     # flag on the command class because we haven't located it yet.
 
-    if runserver_or_devserver and '--noreload' not in argv:
+    if is_devserver and '--noreload' not in argv:
         try:
             autoreload.check_errors(do_django_setup)()
         except Exception:
@@ -181,10 +181,6 @@ def execute_from_command_line(*args, **kwargs):
         fetch_command(command_to_explain).print_help('otree', command_to_explain)
     elif subcommand in ("version", "--version"):
         sys.stdout.write(__version__ + '\n')
-        try:
-            pypi_updates_cli()
-        except:
-            pass
     else:
         fetch_command(subcommand).run_from_argv(argv)
 
@@ -200,7 +196,8 @@ def configure_settings(DJANGO_SETTINGS_MODULE: str = 'settings'):
         raise ImportSettingsError
     user_settings_dict = {}
     user_settings_dict['BASE_DIR'] = os.path.dirname(
-        os.path.abspath(user_settings_module.__file__))
+        os.path.abspath(user_settings_module.__file__)
+    )
     # this is how Django reads settings from a settings module
     for setting_name in dir(user_settings_module):
         if setting_name.isupper():
@@ -218,6 +215,7 @@ def do_django_setup():
         # to differentiate between the app being in SESSION_CONFIGS vs
         # EXTENSION_APPS vs a regular import statement.
         import colorama
+
         colorama.init(autoreset=True)
         print_colored_traceback_and_exit(exc)
 
@@ -233,7 +231,8 @@ def fetch_command(subcommand: str) -> BaseCommand:
     """
     if subcommand in ['startapp', 'startproject', 'unzip', 'zip']:
         command_module = import_module(
-            'otree.management.commands.{}'.format(subcommand))
+            'otree.management.commands.{}'.format(subcommand)
+        )
         return command_module.Command()
 
     commands = get_commands()
@@ -241,8 +240,7 @@ def fetch_command(subcommand: str) -> BaseCommand:
         app_name = commands[subcommand]
     except KeyError:
         sys.stderr.write(
-            "Unknown command: %r\nType 'otree help' for usage.\n"
-            % subcommand
+            "Unknown command: %r\nType 'otree help' for usage.\n" % subcommand
         )
         sys.exit(1)
     if isinstance(app_name, BaseCommand):
@@ -253,102 +251,41 @@ def fetch_command(subcommand: str) -> BaseCommand:
     return klass
 
 
-def check_pypi_for_updates() -> dict:
-    '''return a dict because it needs to be json serialized for the AJAX
-    response'''
-    # need to import it so it can be patched outside
-    import otree_startup
-    if not otree_startup.PYPI_CHECK_UPDATES:
-        return {'pypi_connection_error': True}
-    # import only if we need it
-    import requests
-
-    logging.getLogger("requests").setLevel(logging.WARNING)
-
+def check_update_needed(requirements_path: Path) -> Optional[str]:
     try:
-        response = requests.get(
-            'https://pypi.python.org/pypi/otree/json',
-            timeout=5,
-        )
-        assert response.ok
-        data = json.loads(response.content.decode())
-    except:
-        # could be requests.exceptions.Timeout
-        # or another error (404/500/firewall issue etc)
-        return {'pypi_connection_error': True}
-
-    semver_re = re.compile(r'^(\d+)\.(\d+)\.(\d+)$')
-
-    installed_dotted = __version__
-    installed_match = semver_re.match(installed_dotted)
-
-    if installed_match:
-        # compare to the latest stable release
-
-        installed_tuple = [int(n) for n in installed_match.groups()]
-
-        releases = data['releases']
-        newest_tuple = [0, 0, 0]
-        newest_dotted = ''
-        for release in releases:
-            release_match = semver_re.match(release)
-            if release_match:
-                release_tuple = [int(n) for n in release_match.groups()]
-                if release_tuple > newest_tuple:
-                    newest_tuple = release_tuple
-                    newest_dotted = release
-        newest = newest_tuple
-        installed = installed_tuple
-
-        update_needed = (newest > installed and (
-                newest[0] > installed[0] or newest[1] > installed[1] or
-                newest[2] - installed[2] >= 8))
-
-    else:
-        # compare to the latest release, whether stable or not
-        # 2018-12-29: it seems now that ['info']['version'] reports the latest
-        # *stable* release. maybe they changed their format?
-        # it's not currently a high priority since few people install beta
-        # releases. if i do fix it later, i could basically flip the
-        # "if" and "else". actually it looks like "releases" list is ordered
-        # from oldest to newest, so i can just take the last element, and that
-        # is the newest (whether stable or not). because it could be hard to parse
-        # pre-release versions and determine which is newest.
-        newest_dotted = data['info']['version'].strip()
-        update_needed = newest_dotted != installed_dotted
-
-    if update_needed:
-        update_message = (
-            'Your otree package is out-of-date '
-            '(version {}; latest is {}). '
-            'You should upgrade with:\n '
-            '"pip3 install --U otree"\n '
-            'and update your requirements_base.txt.'.format(
-                installed_dotted, newest_dotted))
-    else:
-        update_message = ''
-    return {
-        'pypi_connection_error': False,
-        'update_needed': update_needed,
-        'installed_version': installed_dotted,
-        'newest_version': newest_dotted,
-        'update_message': update_message,
-    }
-
-
-def pypi_updates_cli():
-    result = check_pypi_for_updates()
-    if result['pypi_connection_error']:
+        import pkg_resources as pkg
+    except ModuleNotFoundError:
         return
-    if result['update_needed']:
-        print(result['update_message'])
-
-
-PYPI_CHECK_UPDATES = True
+    try:
+        # ignore all weird things like "-r foo.txt"
+        req_lines = [
+            r
+            for r in requirements_path.read_text('utf8').split('\n')
+            if r.strip().startswith('otree')
+        ]
+    except FileNotFoundError:
+        return
+    reqs = pkg.parse_requirements(req_lines)
+    for req in reqs:
+        if req.project_name == 'otree':
+            try:
+                pkg.require(str(req))
+            except pkg.DistributionNotFound:
+                # if you require otree[mturk], then the mturk packages
+                # will be missing and you get:
+                # The 's3transfer==0.1.10' distribution was not found and is required by otree
+                # which is very confusing.
+                # all we care about is otree.
+                pass
+            except pkg.VersionConflict as exc:
+                # can't say to install requirements_base.txt because if they are using runzip,
+                # that file doesn't exist.
+                return f'{exc.report()}. Enter: pip3 install "{exc.req}"'
 
 
 def highlight(string):
     from termcolor import colored
+
     return colored(string, 'white', 'on_blue')
 
 

@@ -4,19 +4,22 @@ import sys
 import logging
 
 import honcho.manager
-
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 import otree
 
 logger = logging.getLogger(__name__)
 
-naiveip_re = re.compile(r"""^(?:
+naiveip_re = re.compile(
+    r"""^(?:
 (?P<addr>
     (?P<ipv4>\d{1,3}(?:\.\d{1,3}){3}) |         # IPv4 address
     (?P<ipv6>\[[a-fA-F0-9:]+\]) |               # IPv6 address
     (?P<fqdn>[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*) # FQDN
-):)?(?P<port>\d+)$""", re.X)
+):)?(?P<port>\d+)$""",
+    re.X,
+)
 
 DEFAULT_PORT = "8000"
 DEFAULT_ADDR = '0.0.0.0'
@@ -31,10 +34,6 @@ if sys.platform.startswith("win"):
 else:
     NUM_WORKERS = 3
 
-def get_ssl_file_path(filename):
-    otree_dir = os.path.dirname(otree.__file__)
-    pth = os.path.join(otree_dir, 'certs', filename)
-    return pth.replace('\\', '/')
 
 # made this simple class to reduce code duplication,
 # and to make testing easier (I didn't know how to check that it was called
@@ -49,30 +48,27 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
 
-        parser.add_argument('addrport', nargs='?',
-            help='Optional port number, or ipaddr:port')
-
-        ahelp = (
-            'Run an SSL server directly in Daphne with a self-signed cert/key'
-        )
         parser.add_argument(
-            '--dev-https', action='store_true', dest='dev_https', default=False,
-            help=ahelp)
+            'addrport', nargs='?', help='Optional port number, or ipaddr:port'
+        )
 
-    def handle(self, *args, addrport=None, verbosity=1, dev_https, **kwargs):
+    def handle(self, *args, addrport=None, verbosity=1, **kwargs):
         self.verbosity = verbosity
+        os.environ['OTREE_USE_REDIS'] = '1'
         self.honcho = OTreeHonchoManager()
-        self.setup_honcho(addrport=addrport, dev_https=dev_https)
+        self.setup_honcho(addrport=addrport)
         self.honcho.loop()
         sys.exit(self.honcho.returncode)
 
-    def setup_honcho(self, *, addrport, dev_https):
+    def setup_honcho(self, *, addrport):
 
         if addrport:
             m = re.match(naiveip_re, addrport)
             if m is None:
-                raise CommandError('"%s" is not a valid port number '
-                                   'or address:port pair.' % addrport)
+                raise CommandError(
+                    '"%s" is not a valid port number '
+                    'or address:port pair.' % addrport
+                )
             addr, _, _, _, port = m.groups()
         else:
             addr = None
@@ -84,25 +80,12 @@ class Command(BaseCommand):
 
         # https://github.com/encode/uvicorn/issues/185
 
-        #asgi_server_cmd = f'uvicorn --host={addr} --port={port} --workers={NUM_WORKERS} otree_startup.asgi:application --log-level=debug'
-        #asgi_server_cmd += ' --ws=wsproto'
-        asgi_server_cmd = f'hypercorn -b {addr}:{port} --workers={NUM_WORKERS} otree_startup.asgi:application'
-
-        if dev_https:
-            # Because of HSTS, Chrome and other browsers will "get stuck" forcing HTTPS,
-            # which makes it impossible to run regular devserver again on that port
-            if int(port) == 8000:
-                self.stderr.write('ERROR: oTree cannot use HTTPS on port 8000. Please specify a different port.')
-                raise SystemExit(-1)
-            asgi_server_cmd += ' --keyfile="{}" --certfile="{}"'.format(
-                get_ssl_file_path('development.key'),
-                get_ssl_file_path('development.crt'),
-            )
+        # asgi_server_cmd = f'uvicorn --host={addr} --port={port} --workers={NUM_WORKERS} otree_startup.asgi:application --log-level=debug'
+        # keep-alive is needed, otherwise pages that take more than 5 seconds to load will trigger h13
+        # asgi_server_cmd = f'hypercorn -b {addr}:{port} --workers={NUM_WORKERS} --keep-alive=35 otree_startup.asgi:application'
+        asgi_server_cmd = f'daphne -b {addr} -p {port} otree_startup.asgi:application'
 
         logger.info(asgi_server_cmd)
 
         honcho = self.honcho
-        honcho.add_otree_process(
-            'asgiserver',
-            asgi_server_cmd
-        )
+        honcho.add_otree_process('asgiserver', asgi_server_cmd)

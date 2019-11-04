@@ -7,7 +7,6 @@ __all__ = ('CurrencyField', 'CurrencyChoiceField', 'RealWorldCurrencyField')
 
 
 class BaseCurrencyField(forms.DecimalField):
-
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('widget', self.widget)
         super().__init__(*args, **kwargs)

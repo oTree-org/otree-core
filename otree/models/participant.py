@@ -1,41 +1,41 @@
-
-from django.db.models import permalink, Sum
+from django.db import models as dj_models
 from django.urls import reverse
 
-import otree.common_internal
-from otree import constants_internal
-from otree.common_internal import random_chars_8
+import otree.common
+from otree.common import random_chars_8, FieldTrackerWithVarsSupport
 from otree.db import models
 from otree.models_concrete import ParticipantToPlayerLookup
-from .varsmixin import ModelWithVars
 
-class Participant(ModelWithVars):
+
+class Participant(models.Model):
 
     class Meta:
         ordering = ['pk']
         app_label = "otree"
         index_together = ['session', 'mturk_worker_id', 'mturk_assignment_id']
 
-    session = models.ForeignKey(
-        'otree.Session', on_delete=models.CASCADE
-    )
+    _ft = FieldTrackerWithVarsSupport()
+    vars: dict = models._PickleField(default=dict)
+
+
+    session = models.ForeignKey('otree.Session', on_delete=models.CASCADE)
 
     label = models.CharField(
-        max_length=50, null=True, doc=(
+        max_length=50,
+        null=True,
+        doc=(
             "Label assigned by the experimenter. Can be assigned by passing a "
             "GET param called 'participant_label' to the participant's start "
             "URL"
-        )
+        ),
     )
 
     id_in_session = models.PositiveIntegerField(null=True)
 
     payoff = models.CurrencyField(default=0)
 
-    time_started = models.DateTimeField(null=True)
-    user_type_in_url = constants_internal.user_type_participant
-    mturk_assignment_id = models.CharField(
-        max_length=50, null=True)
+    time_started = dj_models.DateTimeField(null=True)
+    mturk_assignment_id = models.CharField(max_length=50, null=True)
     mturk_worker_id = models.CharField(max_length=50, null=True)
 
     _index_in_subsessions = models.PositiveIntegerField(default=0, null=True)
@@ -60,16 +60,22 @@ class Participant(ModelWithVars):
             "would like to merge this dataset with those from another "
             "subsession in the same session, you should join on this field, "
             "which will be the same across subsessions."
-        )
+        ),
     )
-
 
     visited = models.BooleanField(
-        default=False, db_index=True,
-        doc="""Whether this user's start URL was opened"""
+        default=False, db_index=True, doc="""Whether this user's start URL was opened"""
     )
 
-    ip_address = models.GenericIPAddressField(null=True)
+    # deprecated on 2019-10-16. eventually get rid of this
+    @property
+    def ip_address(self):
+        return 'deprecated'
+
+    @ip_address.setter
+    def ip_address(self, value):
+        if value:
+            raise ValueError('Do not store anything into participant.ip_address')
 
     # stores when the page was first visited
     _last_page_timestamp = models.PositiveIntegerField(null=True)
@@ -80,17 +86,15 @@ class Participant(ModelWithVars):
 
     # these are both for the admin
     # In the changelist, simply call these "page" and "app"
-    _current_page_name = models.CharField(max_length=200, null=True,
-                                          verbose_name='page')
-    _current_app_name = models.CharField(max_length=200, null=True,
-                                         verbose_name='app')
+    _current_page_name = models.CharField(
+        max_length=200, null=True, verbose_name='page'
+    )
+    _current_app_name = models.CharField(max_length=200, null=True, verbose_name='app')
 
     # only to be displayed in the admin participants changelist
-    _round_number = models.PositiveIntegerField(
-        null=True
-    )
+    _round_number = models.PositiveIntegerField(null=True)
 
-    _current_form_page_url = models.URLField()
+    _current_form_page_url = dj_models.URLField()
 
     _max_page_index = models.PositiveIntegerField()
 
@@ -115,8 +119,7 @@ class Participant(ModelWithVars):
             # to log2(n). similar to the way arraylists grow.
             num_extra_lookups = len(self._player_lookups) + 1
             qs = ParticipantToPlayerLookup.objects.filter(
-                participant=self,
-                page_index__range=(index, index+num_extra_lookups)
+                participant=self, page_index__range=(index, index + num_extra_lookups)
             ).values()
             for player_lookup in qs:
                 self._player_lookups[player_lookup['page_index']] = player_lookup
@@ -134,10 +137,10 @@ class Participant(ModelWithVars):
         lst = []
         app_sequence = self.session.config['app_sequence']
         for app in app_sequence:
-            models_module = otree.common_internal.get_models_module(app)
-            players = models_module.Player.objects.filter(
-                participant=self
-            ).order_by('round_number')
+            models_module = otree.common.get_models_module(app)
+            players = models_module.Player.objects.filter(participant=self).order_by(
+                'round_number'
+            )
             lst.extend(list(players))
         return lst
 
@@ -156,33 +159,13 @@ class Participant(ModelWithVars):
             return self._start_url()
         if self._index_in_pages <= self._max_page_index:
             return self.player_lookup()['url']
-        if self.session.mturk_HITId:
-            assignment_id = self.mturk_assignment_id
-            if self.session.mturk_use_sandbox:
-                url = 'https://workersandbox.mturk.com/mturk/externalSubmit'
-            else:
-                url = "https://www.mturk.com/mturk/externalSubmit"
-            url = otree.common_internal.add_params_to_url(
-                url,
-                {
-                    'assignmentId': assignment_id,
-                    'extra_param': '1'  # required extra param?
-                }
-            )
-            return url
         return reverse('OutOfRangeNotification')
 
     def _start_url(self):
-        return otree.common_internal.participant_start_url(self.code)
+        return otree.common.participant_start_url(self.code)
 
     def payoff_in_real_world_currency(self):
-        return self.payoff.to_real_world_currency(
-            self.session
-        )
-
-    def money_to_pay(self):
-        '''deprecated'''
-        return self.payoff_plus_participation_fee()
+        return self.payoff.to_real_world_currency(self.session)
 
     def payoff_plus_participation_fee(self):
         return self.session._get_payoff_plus_participation_fee(self.payoff)

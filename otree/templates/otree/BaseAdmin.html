@@ -28,19 +28,6 @@ $(function () {
         }
     });
 
-    $.ajax({
-        url: '{% url 'OtreeCoreUpdateCheck' %}',
-        type: 'GET',
-        success: function(data) {
-            if (!data.pypi_connection_error) {
-                if (data.update_needed) {
-                    $('._otree-updates').html(
-                        '<a class="nav-link" href="{% url 'ServerCheck' %}"><small>Update available</small></a>')
-                }
-            }
-        }
-    });
-
     // i guess sockets must be global variables, and i should name it
     // something other than 'socket' because there might be other sockets
     // in descendant pages
@@ -86,7 +73,6 @@ $(function () {
                 <li class="nav-item"><a class="nav-link" href="{% url 'Rooms' %}">Rooms</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'ExportIndex' %}">Data</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'ServerCheck' %}">Server Check</a></li>
-                <li class="nav-item _otree-updates"></li>
 
                 {% if request.user.is_authenticated|default:False %}
                     <li><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>

@@ -1,25 +1,18 @@
-from typing import Dict
 import json
-import threading
 import logging
-from collections import OrderedDict
-
-import channels
-import otree.channels.utils as channel_utils
-import traceback
-
-import otree.common_internal
-from otree import common_internal
-
-from otree.common_internal import get_redis_conn
-
-from .runner import make_bots
-from .bot import ParticipantBot
 import random
+import threading
+import traceback
+from collections import OrderedDict
+from typing import Dict
 
+import otree.channels.utils as channel_utils
+import otree.common
+from otree import common
+from otree.common import get_redis_conn
 from otree.models import Session
-from channels.layers import get_channel_layer
-
+from .bot import ParticipantBot
+from .runner import make_bots
 
 REDIS_KEY_PREFIX = 'otree-bots'
 
@@ -48,6 +41,7 @@ class BotRequestError(Exception):
     and passed through Redis.
     if USE_REDIS==False, this will raise normally.
     '''
+
     pass
 
 
@@ -66,7 +60,7 @@ class Worker:
     def __init__(self, redis_conn=None):
         self.redis_conn = redis_conn
         self.participants_by_session = OrderedDict()
-        self.browser_bots = {} # type: Dict[str, ParticipantBot]
+        self.browser_bots = {}  # type: Dict[str, ParticipantBot]
 
     def initialize_session(self, session_pk, case_number):
         self.prune()
@@ -76,6 +70,7 @@ class Worker:
         if case_number is None:
             # choose one randomly
             from otree.session import SessionConfig
+
             config = SessionConfig(session.config)
             num_cases = config.get_num_bot_cases()
             case_number = random.choice(range(num_cases))
@@ -84,8 +79,7 @@ class Worker:
             session_pk=session_pk, case_number=case_number, use_browser_bots=True
         )
         for bot in bots:
-            self.participants_by_session[session_pk].append(
-                bot.participant_code)
+            self.participants_by_session[session_pk].append(bot.participant_code)
             self.browser_bots[bot.participant_code] = bot
 
     def prune(self):
@@ -101,7 +95,8 @@ class Worker:
             return self.browser_bots[participant_code]
         except KeyError:
             msg = PARTICIPANT_NOT_IN_BOTWORKER_MSG.format(
-                participant_code=participant_code, prune_limit=SESSIONS_PRUNE_LIMIT)
+                participant_code=participant_code, prune_limit=SESSIONS_PRUNE_LIMIT
+            )
             raise BotRequestError(msg)
 
     def get_next_post_data(self, participant_code):
@@ -164,10 +159,7 @@ class Worker:
             response = {'error': str(exc)}
         except Exception as exc:
             # un-anticipated error
-            response = {
-                'error': repr(exc),
-                'traceback': traceback.format_exc()
-            }
+            response = {'error': repr(exc), 'traceback': traceback.format_exc()}
             # don't raise, because then this would crash.
             # logger.exception() will record the full traceback
             logger.exception(repr(exc))
@@ -187,7 +179,8 @@ def ping(redis_conn, *, timeout):
     timeouts piling up.
     '''
     response_key = redis_enqueue_method_call(
-        redis_conn=redis_conn, method_name='ping', method_kwargs={})
+        redis_conn=redis_conn, method_name='ping', method_kwargs={}
+    )
 
     # make it very long, so we don't get spurious ping errors
     result = redis_conn.blpop(response_key, timeout)
@@ -211,7 +204,7 @@ def load_redis_response_dict(response_bytes: bytes):
     if 'traceback' in response:
         # cram the other traceback in this traceback message.
         # note:
-        raise common_internal.BotError(response['traceback'])
+        raise common.BotError(response['traceback'])
     elif 'error' in response:
         # handled exception
         raise BotRequestError(response['error'])
@@ -224,12 +217,8 @@ def redis_flush_bots(redis_conn):
 
 
 def redis_enqueue_method_call(redis_conn, method_name, method_kwargs) -> str:
-    response_key = '{}-{}'.format(REDIS_KEY_PREFIX, random.randint(1,10**9))
-    msg = {
-        'method': method_name,
-        'kwargs': method_kwargs,
-        'response_key': response_key,
-    }
+    response_key = '{}-{}'.format(REDIS_KEY_PREFIX, random.randint(1, 10 ** 9))
+    msg = {'method': method_name, 'kwargs': method_kwargs, 'response_key': response_key}
     redis_conn.rpush(REDIS_KEY_PREFIX, json.dumps(msg))
     return response_key
 
@@ -250,21 +239,18 @@ def redis_get_method_retval(redis_conn, response_key: str) -> dict:
     if result is None:
         # ping will raise if it times out
         ping(redis_conn, timeout=3)
-        raise Exception(
-            'botworker is running but did not return a submission.'
-        )
+        raise Exception('botworker is running but did not return a submission.')
     key, submit_bytes = result
     return load_redis_response_dict(submit_bytes)
 
 
 def wrap_method_call(method_name: str, method_kwargs):
-    if otree.common_internal.USE_REDIS:
+    if otree.common.USE_REDIS:
         redis_conn = get_redis_conn()
         response_key = redis_enqueue_method_call(
-            redis_conn=redis_conn, method_name=method_name,
-            method_kwargs=method_kwargs)
-        return redis_get_method_retval(
-            redis_conn=redis_conn, response_key=response_key)
+            redis_conn=redis_conn, method_name=method_name, method_kwargs=method_kwargs
+        )
+        return redis_get_method_retval(redis_conn=redis_conn, response_key=response_key)
     else:
         method = getattr(browser_bot_worker, method_name)
         return method(**method_kwargs)
@@ -283,20 +269,18 @@ def initialize_session(**kwargs):
     # timeout must be int.
     # my tests show that it can initialize about 3000 players per second.
     # so 300-500 is conservative, plus pad for a few seconds
-    #timeout = int(6 + num_players_total / 500)
+    # timeout = int(6 + num_players_total / 500)
     # maybe number of ParticipantToPlayerLookups?
 
-    timeout = 6 # FIXME: adjust to number of players
+    timeout = 6  # FIXME: adjust to number of players
     return wrap_method_call('initialize_session', kwargs)
 
 
 def send_completion_message(*, session_code, participant_code):
     group_name = channel_utils.browser_bots_launcher_group(session_code)
 
-    channel_utils.sync_group_send(
-        group_name,
-        {
-            'text': participant_code,
-            'type': 'send_completion_message'
-        }
+    channel_utils.sync_group_send_wrapper(
+        group=group_name,
+        type='send_completion_message',
+        event={'text': participant_code},
     )

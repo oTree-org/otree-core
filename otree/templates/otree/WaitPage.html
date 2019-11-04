@@ -1,6 +1,6 @@
 {% extends 'otree/Base.html' %}
 {% load i18n %}
-{% load staticfiles %}
+{% load otree %}
 {% block head_title %}{{ title_text }}{% endblock %}
 
 {% block internal_styles %}
@@ -36,9 +36,8 @@
         }
     </style>
 {% endblock %}
-
-{% block body_main %}
-
+{% comment %}this template is used by rooms, where javascript_vars does not exist{% endcomment %}
+{% block body_main %}<script>var js_vars = {{ js_vars|json }};</script>
 <div class="otree-wait-page container">
     <div class="card">
         <h4 class="otree-wait-page__title card-header">
@@ -75,7 +74,6 @@ $(document).ready(function () {
     function initWebSocket() {
         socket = makeReconnectingWebSocket("{{ view.socket_url|safe }}");
         socket.onmessage = function(e) {
-
             var data = JSON.parse(e.data);
 
             // Handle errors
@@ -86,8 +84,6 @@ $(document).ready(function () {
                 return;
             }
 
-
-            console.log('Received redirect message', e.data);
             window.location.href = '{{ view.redirect_url|safe }}';
 
         };

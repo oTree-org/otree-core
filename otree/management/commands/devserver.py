@@ -1,26 +1,36 @@
 import importlib
+import logging
 import os
 import os.path
-import pathlib
+import shutil
 import sys
-import termcolor
 import time
 import traceback
+from pathlib import Path
 from unittest.mock import patch
+
+import termcolor
+from channels.management.commands import runserver
+from daphne.endpoints import build_endpoint_description_strings
+from django.apps import apps
 from django.conf import settings
 from django.core.management import call_command
-from pathlib import Path
-from django.apps import apps
 
-from . import runserver
+import otree.bots.browser
+import otree.common
+import otree_startup
+from otree import __version__ as CURRENT_VERSION
 
-TMP_MIGRATIONS_DIR = '__temp_migrations'
+TMP_MIGRATIONS_DIR = Path('__temp_migrations')
+VERSION_FILE = TMP_MIGRATIONS_DIR.joinpath('otree-version.txt')
 
 ADVICE_DELETE_TMP = (
     "ADVICE: Try deleting the folder {}. If that doesn't work, "
     "look for the error in your models.py."
 ).format(TMP_MIGRATIONS_DIR)
 
+# this happens when I add a non-nullable field to oTree-core
+# (includes renaming a non-nullable field)
 ADVICE_FIX_NOT_NULL_FIELD = (
     'You may have added a non-nullable field without a default. '
     'This typically happens when importing model fields from django instead of otree.'
@@ -34,7 +44,7 @@ ADVICE_PRINT_DETAILS = (
 
 db_engine = settings.DATABASES['default']['ENGINE'].lower()
 
-if 'sqlite' in db_engine:
+if otree.common.is_sqlite():
     ADVICE_DELETE_DB = (
         'ADVICE: Stop the server, '
         'then delete the file db.sqlite3 in your project folder, '
@@ -53,46 +63,138 @@ else:
         'command or the other.'
     ).format(db_engine)
 
+# They should start fresh so that:
+# (1) performance refresh
+# (2) don't have to worry about old references to things that were removed from otree-core.
+MSG_OTREE_UPDATE_DELETE_DB = (
+    'oTree has been updated. Please delete your database (usually "db.sqlite3") '
+    f'and the folder "{TMP_MIGRATIONS_DIR}".'
+)
+
 
 class Command(runserver.Command):
-
-    inside_runzip = False
-
     def add_arguments(self, parser):
         super().add_arguments(parser)
+        # see log_action below; we only show logs of each request
+        # if verbosity >= 1.
+        # this still allows logger.info and logger.warning to be shown.
+        # NOTE: if we change this back to 1, then need to update devserver
+        # not to show traceback of errors.
+        parser.set_defaults(verbosity=0)
+
         parser.add_argument(
-            '--inside-runzip', action='store_true', dest='inside_runzip', default=False,
+            '--inside-runzip', action='store_true', dest='inside_runzip', default=False
         )
+
+    def handle(self, *args, **options):
+        self.verbosity = options.get("verbosity", 1)
+        from otree.common import release_any_stale_locks
+
+        release_any_stale_locks()
+
+        # for performance,
+        # only run checks when the server starts, not when it reloads
+        # (RUN_MAIN is set by Django autoreloader).
+        if not os.environ.get('RUN_MAIN'):
+
+            try:
+                # don't suppress output. it's good to know that check is
+                # not failing silently or not being run.
+                # also, intercepting stdout doesn't even seem to work here.
+                self.check(display_num_errors=True)
+
+            except Exception as exc:
+                otree_startup.print_colored_traceback_and_exit(exc)
+
+            # better to do this here, because:
+            # (1) it's redundant to do it on every reload
+            # (2) we can exit if we run this before the autoreloader is started
+            if TMP_MIGRATIONS_DIR.exists() and (
+                not VERSION_FILE.exists() or VERSION_FILE.read_text() != CURRENT_VERSION
+            ):
+                # - Don't delete the DB, because it might have important data
+                # - Don't delete __temp_migrations, because then we erase the knowledge that
+                # oTree was updated. If the user starts the server at a later time, we can't remind them
+                # that they needed to delete the DB. So, the two things must be deleted together.
+                self.stdout.write(MSG_OTREE_UPDATE_DELETE_DB)
+                sys.exit(0)
+            TMP_MIGRATIONS_DIR.mkdir(exist_ok=True)
+            VERSION_FILE.write_text(CURRENT_VERSION)
+            TMP_MIGRATIONS_DIR.joinpath('__init__.py').touch(exist_ok=True)
+
+        super().handle(*args, **options)
+
     def inner_run(self, *args, inside_runzip, **options):
+        '''
+        inner_run does not get run twice with runserver, unlike .handle()
+        '''
 
         self.inside_runzip = inside_runzip
-        self.handle_migrations()
+        self.makemigrations_and_migrate()
 
-        super().inner_run(*args, **options)
+        # initialize browser bot worker in process memory
+        otree.bots.browser.browser_bot_worker = otree.bots.browser.Worker()
 
-    def handle_migrations(self):
+        # silence the lines like:
+        # 2018-01-10 18:51:18,092 - INFO - worker - Listening on channels
+        # http.request, otree.create_session, websocket.connect,
+        # websocket.disconnect, websocket.receive
+        daphne_logger = logging.getLogger('django.channels')
+        original_log_level = daphne_logger.level
+        daphne_logger.level = logging.WARNING
+
+        endpoints = build_endpoint_description_strings(host=self.addr, port=self.port)
+        application = self.get_application(options)
+
+        # silence the lines like:
+        # INFO HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+        # INFO Configuring endpoint tcp:port=8000:interface=127.0.0.1
+        # INFO Listening on TCP address 127.0.0.1:8000
+        logging.getLogger('daphne.server').level = logging.WARNING
+
+        # I removed the IPV6 stuff here because its not commonly used yet
+        addr = self.addr
+        # 0.0.0.0 is not a regular IP address, so we can't tell the user
+        # to open their browser to that address
+        if addr == '127.0.0.1':
+            addr = 'localhost'
+        elif addr == '0.0.0.0':
+            addr = '<ip_address>'
+        self.stdout.write(
+            (
+                f"Open your browser to http://{addr}:{self.port}/\n"
+                "To quit the server, press Control+C.\n"
+            )
+        )
+
+        try:
+            self.server_cls(
+                application=application,
+                endpoints=endpoints,
+                signal_handlers=not options["use_reloader"],
+                action_logger=self.log_action,
+                http_timeout=self.http_timeout,
+                root_path=getattr(settings, "FORCE_SCRIPT_NAME", "") or "",
+                websocket_handshake_timeout=self.websocket_handshake_timeout,
+            ).run()
+            daphne_logger.debug("Daphne exited")
+        except KeyboardInterrupt:
+            shutdown_message = options.get("shutdown_message", "")
+            if shutdown_message:
+                self.stdout.write(shutdown_message)
+            return
+
+    def makemigrations_and_migrate(self):
 
         # only get apps with labels, otherwise migrate will raise an error
         # when it tries to migrate that app but no migrations dir was created
-        app_labels = set(
-            model._meta.app_config.label
-            for model in apps.get_models()
-        )
+        app_labels = set(model._meta.app_config.label for model in apps.get_models())
 
         migrations_modules = {
             app_label: '{}.{}'.format(TMP_MIGRATIONS_DIR, app_label)
             for app_label in app_labels
         }
-
         settings.MIGRATION_MODULES = migrations_modules
-
-        migrations_dir_path = os.path.join(settings.BASE_DIR, TMP_MIGRATIONS_DIR)
-        pathlib.Path(TMP_MIGRATIONS_DIR).mkdir(exist_ok=True)
-
-        init_file_path = os.path.join(migrations_dir_path, '__init__.py')
-        pathlib.Path(init_file_path).touch(exist_ok=True)
-
-        self.perf_check()
 
         start = time.time()
 
@@ -136,9 +238,10 @@ class Command(runserver.Command):
             # so, simplest to use the string name
 
             if type(exc).__name__ in (
-                    'OperationalError',
-                    'ProgrammingError',
-                    'InconsistentMigrationHistory'):
+                'OperationalError',
+                'ProgrammingError',
+                'InconsistentMigrationHistory',
+            ):
                 self.print_error_and_exit(ADVICE_DELETE_DB)
             else:
                 raise
@@ -162,25 +265,20 @@ class Command(runserver.Command):
             self.stdout.write(ADVICE_PRINT_DETAILS)
         sys.exit(0)
 
-    def perf_check(self):
-        '''after about 150 migrations,
-        load time increased from 0.6 to 1.2+ second'''
+    def log_action(self, protocol, action, details):
+        '''
+        Override log_action method.
+        Need this until https://github.com/django/channels/issues/612
+        is fixed.
+        maybe for some minimal output use this?
+            self.stderr.write('.', ending='')
+        so that you can see that the server is running
+        (useful if you are accidentally running multiple servers)
 
-        MAX_MIGRATIONS = 200
+        idea: maybe only show details if it's a 4xx or 5xx.
 
-        # we want to delete migrations files, but keep __init__.py
-        # and directories, because then we don't need to
-        # migrations files are named 0001_xxx.py, 0002_xxx.py, etc.
-        # so, we assume they will all
-        file_glob = '{}/*/0*.py'.format(TMP_MIGRATIONS_DIR)
-        python_fns = list(Path('.').glob(file_glob))
-        num_files = len(python_fns)
+        '''
+        if self.verbosity >= 1:
+            super().log_action(protocol, action, details)
 
-        if num_files > MAX_MIGRATIONS:
-            advice = (
-                'You have too many migrations files ({}). '
-                'This can slow down performance. '
-                'You should delete the directory {} '
-                'and also delete your database.'
-            ).format(num_files, TMP_MIGRATIONS_DIR)
-            termcolor.cprint(advice, 'white', 'on_red')
+    inside_runzip = False

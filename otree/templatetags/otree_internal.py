@@ -1,12 +1,12 @@
 from django import template
 from django.urls import reverse, Resolver404
-import otree.common_internal
+import otree.common
 
 
 NO_USER_MSG = '''
-You must set ADMIN_USERNAME and
-ADMIN_PASSWORD in settings.py
-(or disable authentication by unsetting AUTH_LEVEL).
+You must set the
+OTREE_ADMIN_PASSWORD environment variable
+(or disable authentication by unsetting OTREE_AUTH_LEVEL).
 '''
 
 
@@ -22,7 +22,7 @@ def id(bound_field):
     return for_id
 
 
-def active_page(request, view_name, *args, **kwargs):
+def active_page(request, view_name, *args, **kwargs) -> str:
     if not request:
         return ""
     try:
@@ -39,10 +39,8 @@ def ensure_superuser_exists():
     If eventually we use migrations instead of resetdb, then maybe won't
     need this anymore.
     '''
-    return otree.common_internal.ensure_superuser_exists()
+    return otree.common.ensure_superuser_exists()
 
 
-register.simple_tag(name='ensure_superuser_exists',
-                    func=ensure_superuser_exists)
+register.simple_tag(name='ensure_superuser_exists', func=ensure_superuser_exists)
 register.simple_tag(name='active_page', func=active_page)
-

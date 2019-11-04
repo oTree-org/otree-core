@@ -12,7 +12,7 @@ class BackslashError(ValueError):
 
 
 class StaticNode(DjStaticNode):
-    def __init__(self, varname=None, path:FilterExpression=None):
+    def __init__(self, varname=None, path: FilterExpression = None):
         # path.token is the literal string, not the value of the variable
         # it resolves to,
         # so there should never be a \

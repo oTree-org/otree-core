@@ -1,6 +1,7 @@
 from importlib import import_module
 from django.conf import settings
 import importlib.util
+import sys
 
 
 """
@@ -19,12 +20,8 @@ oTree's built-in URL patterns.
 routing.py
 ----------
 
-Should contain a variable ``channel_routing``,
-with a list of channel routes, as described in the Django channels documentation:
-
-https://channels.readthedocs.io/en/stable/getting-started.html#routing
-
-These routes will be appended to oTree's built-in channel routes.
+Should contain a variable ``websocket_routes``,
+with a list of channel routes, as described in the Django channels documentation.
 
 admin.py
 --------
@@ -50,26 +47,22 @@ Each view must also have the following attributes:
 
 You don't need to worry about login_required and AUTH_LEVEL;
 oTree will handle this automatically.
-
-(In the future, admin.py may be used for other admin customizations,
-not just data export.)
-
 """
+
+from logging import getLogger
+
+logger = getLogger(__name__)
+
 
 def get_extensions_modules(submodule_name):
     modules = []
-    extension_apps = getattr(settings, 'EXTENSION_APPS', [])
-    # legacy support for otreechat
-    if 'otreechat' in settings.INSTALLED_APPS:
-        extension_apps.append('otreechat')
     find_spec = importlib.util.find_spec
-    for app_name in extension_apps:
-        package_dotted = '{}.otree_extensions'.format(app_name)
-        submodule_dotted = '{}.{}'.format(package_dotted, submodule_name)
+    for app_name in getattr(settings, 'EXTENSION_APPS', []):
+        package_dotted = f'{app_name}.otree_extensions'
+        submodule_dotted = f'{package_dotted}.{submodule_name}'
         # need to check if base package exists; otherwise we get ImportError
         if find_spec(package_dotted) and find_spec(submodule_dotted):
-            module = import_module(submodule_dotted)
-            modules.append(module)
+            modules.append(import_module(submodule_dotted))
     return modules
 
 

@@ -9,72 +9,33 @@ from channels.auth import AuthMiddlewareStack
 
 websocket_routes = [
     # WebSockets
-    url(
-        r'^wait_page/(?P<params>[\w,]+)/$',
-        consumers.WaitPage,
-    ),
-    url(
-        r'^group_by_arrival_time/(?P<params>[\w,\.]+)/$',
-        consumers.GroupByArrivalTime,
-    ),
-    url(
-        r'^auto_advance/(?P<params>[\w,]+)/$',
-        consumers.DetectAutoAdvance,
-    ),
-    url(
-        r'^create_session/$',
-        consumers.CreateSession,
-    ),
-    url(
-        r'^create_demo_session/$',
-        consumers.CreateDemoSession,
-    ),
-    url(
-        r'^wait_for_session_in_room/(?P<params>[\w,]+)/$',
-        consumers.RoomParticipant,
-    ),
-    url(
-        r'^room_without_session/(?P<room>\w+)/$',
-        consumers.RoomAdmin,
-    ),
-    url(
-        r'^browser_bots_client/(?P<session_code>\w+)/$',
-        consumers.BrowserBotsLauncher,
-    ),
-    url(
-        r'^browser_bot_wait/$',
-        consumers.BrowserBot,
-    ),
+    url(r'^wait_page/$', consumers.GroupWaitPage),
+    url(r'^subsession_wait_page/$', consumers.SubsessionWaitPage),
+    url(r'^group_by_arrival_time/$', consumers.GroupByArrivalTime),
+    url(r'^auto_advance/$', consumers.DetectAutoAdvance),
+    url(r'^create_session/$', consumers.CreateSession),
+    url(r'^create_demo_session/$', consumers.CreateDemoSession),
+    url(r'^wait_for_session_in_room/$', consumers.RoomParticipant),
+    url(r'^room_without_session/(?P<room>\w+)/$', consumers.RoomAdmin),
+    url(r'^browser_bots_client/(?P<session_code>\w+)/$', consumers.BrowserBotsLauncher),
+    url(r'^browser_bot_wait/$', consumers.BrowserBot),
     url(
         # so it doesn't clash with addon
         r"^otreechat_core/(?P<params>[a-zA-Z0-9_/-]+)/$",
         consumers.ChatConsumer,
     ),
-    url(
-        r"^export/$",
-        consumers.ExportData,
-    ),
+    url(r"^export/$", consumers.ExportData),
     # for django autoreloader
     # just so client can detect when server has finished restarting
-    url(
-        r'^no_op/$',
-        consumers.NoOp,
-    ),
+    url(r'^no_op/$', consumers.NoOp),
 ]
 
 
 extensions_modules = get_extensions_modules('routing')
 for extensions_module in extensions_modules:
-    if hasattr(extensions_module, 'channel_routing'):
-        raise Exception(
-            f'The extension {extensions_module} is built for an older version '
-            'of oTree (2.2). You should remove it from your EXTENSION_APPS setting.'
-        )
     websocket_routes += getattr(extensions_module, 'websocket_routes', [])
 
 
-application = ProtocolTypeRouter({
-    # WebSocket chat handler
-    "websocket": AuthMiddlewareStack(URLRouter(websocket_routes)),
-    "lifespan": consumers.LifespanApp,
-})
+application = ProtocolTypeRouter(
+    {"websocket": AuthMiddlewareStack(URLRouter(websocket_routes))}
+)

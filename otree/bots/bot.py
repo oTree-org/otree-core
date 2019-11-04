@@ -2,23 +2,24 @@ from typing import List
 import re
 import decimal
 import logging
-import abc
-import six
-from urllib.parse import unquote, urlsplit
-from six.moves.html_parser import HTMLParser
+import operator
 
+from urllib.parse import unquote, urlsplit
+from html.parser import HTMLParser
+
+import otree.constants
 from otree.models_concrete import ParticipantToPlayerLookup
 from django import test
-from django.core.urlresolvers import resolve
+from django.urls import resolve
 from django.conf import settings
 from otree.currency import Currency
-from django.apps import apps
-from otree import constants_internal
 from otree.models import Participant, Session
-from otree import common_internal
-from otree.common_internal import (
-    get_dotted_name, get_bots_module, get_admin_secret_code,
-    get_models_module
+from otree import common
+from otree.common import (
+    get_dotted_name,
+    get_bots_module,
+    get_admin_secret_code,
+    get_models_module,
 )
 
 ADMIN_SECRET_CODE = get_admin_secret_code()
@@ -26,8 +27,11 @@ ADMIN_SECRET_CODE = get_admin_secret_code()
 logger = logging.getLogger('otree.bots')
 
 INTERNAL_FORM_FIELDS = {
-        'csrfmiddlewaretoken', 'must_fail', 'timeout_happened',
-        'admin_secret_code', 'error_fields'
+    'csrfmiddlewaretoken',
+    'must_fail',
+    'timeout_happened',
+    'admin_secret_code',
+    'error_fields',
 }
 
 DISABLE_CHECK_HTML_INSTRUCTIONS = '''
@@ -39,32 +43,92 @@ with check_html=False, e.g.:
 yield Submission(views.PageName, {{...}}, check_html=False)
 '''
 
-HTML_MISSING_BUTTON_WARNING = ('''
+HTML_MISSING_BUTTON_WARNING = (
+    (
+        '''
 Bot is trying to submit page {page_name},
 but no button was found in the HTML of the page.
 (searched for <input> with type='submit' or <button> with type != 'button').
-''' + DISABLE_CHECK_HTML_INSTRUCTIONS).replace('\n', ' ').strip()
+'''
+        + DISABLE_CHECK_HTML_INSTRUCTIONS
+    )
+    .replace('\n', ' ')
+    .strip()
+)
 
-HTML_MISSING_FIELD_WARNING = ('''
+HTML_MISSING_FIELD_WARNING = (
+    (
+        '''
 Bot is trying to submit page {page_name} with fields: "{fields}",
 but these form fields were not found in the HTML of the page
 (searched for tags {tags} with name= attribute matching the field name).
-''' + DISABLE_CHECK_HTML_INSTRUCTIONS).replace('\n', ' ').strip()
+'''
+        + DISABLE_CHECK_HTML_INSTRUCTIONS
+    )
+    .replace('\n', ' ')
+    .strip()
+)
+
+
+class ExpectError(AssertionError):
+    pass
+
+
+def expect(*args):
+    if len(args) == 2:
+        lhs, rhs = args
+        op = '=='
+    elif len(args) == 3:
+        lhs, op, rhs = args
+    else:
+        msg = f'expect() takes 2 or 3 arguments'
+        raise ValueError(msg)
+
+    operators = {
+        '==': operator.eq,
+        '!=': operator.ne,
+        '>': operator.gt,
+        '<': operator.lt,
+        '>=': operator.ge,
+        '<=': operator.le,
+        # operator.contains() has args in opposite order (rhs, lhs), so use this:
+        'in': lambda a, b: a in b,
+        'not in': lambda a, b: a not in b,
+    }
+
+    if op not in operators:
+        msg = f'"{op}" not allowed in expect()'
+        raise ValueError(msg)
+
+    res = operators[op](lhs, rhs)
+    if not res:
+        error_messages = {
+            '==': f'Expected {rhs!r}, actual value is {lhs!r}',
+            # rhs might be huge, can't print it
+            'in': f'{lhs!r} was not found',
+            'not in': f'{lhs!r} was not expected but was found anyway',
+        }
+        default_msg = f'Assertion failed: {lhs!r} {op} {rhs!r}'
+        msg = error_messages.get(op, default_msg)
+        raise ExpectError(msg)
 
 
 class ParticipantBot(test.Client):
-
     def __init__(
-            self, participant: Participant=None, *,
-            lookups: List[ParticipantToPlayerLookup] = None,
-            load_player_bots=True, case_number=None
+        self,
+        participant: Participant = None,
+        *,
+        lookups: List[ParticipantToPlayerLookup] = None,
+        load_player_bots=True,
+        case_number=None,
     ):
 
         # usually lookups should be passed in. for ad-hoc testing,
         # ok to pass a participant
         if not lookups:
             lookups_with_duplicates = ParticipantToPlayerLookup.objects.filter(
-                participant_id=participant.id).order_by('player_pk')
+                participant_id=participant.id
+            ).order_by('player_pk')
             seen_player_pks = set()
             lookups = []
             for lookup in lookups_with_duplicates:
@@ -92,18 +156,14 @@ class ParticipantBot(test.Client):
 
                 bots_module = get_bots_module(app_name)
                 player_bot = bots_module.PlayerBot(
-                    lookup=lookup, case_number=case_number,
-                    participant_bot=self
+                    lookup=lookup, case_number=case_number, participant_bot=self
                 )
                 self.player_bots.append(player_bot)
             self.submits_generator = self.get_submits()
 
     def open_start_url(self):
-        start_url = common_internal.participant_start_url(self.participant_code)
-        self.response = self.get(
-            start_url,
-            follow=True
-        )
+        start_url = common.participant_start_url(self.participant_code)
+        self.response = self.get(start_url, follow=True)
 
     def get_submits(self):
         for player_bot in self.player_bots:
@@ -132,6 +192,14 @@ class ParticipantBot(test.Client):
                     pass
                 else:
                     raise
+            except ExpectError as exc:
+                # the point is to re-raise so that i can reference the original
+                # exception as exc.__cause__ or exc.__context__, since that exception
+                # is much smaller and doesn't have all the extra layers.
+                # pass it to response_for_exception.
+                # this results in much nicer output for browser bots (devserver and runprodserver)
+                # but keep the original message, which is needed for CLI bots
+                raise ExpectError(str(exc))
 
     def _play_individually(self):
         '''convenience method for testing'''
@@ -142,8 +210,8 @@ class ParticipantBot(test.Client):
     def assert_html_ok(self, submission):
         if submission['check_html']:
             fields_to_check = [
-                f for f in submission['post_data']
-                if f not in INTERNAL_FORM_FIELDS]
+                f for f in submission['post_data'] if f not in INTERNAL_FORM_FIELDS
+            ]
             checker = PageHtmlChecker(fields_to_check)
             missing_fields = checker.get_missing_fields(self.html)
             if missing_fields:
@@ -152,12 +220,16 @@ class ParticipantBot(test.Client):
                     HTML_MISSING_FIELD_WARNING.format(
                         page_name=page_name,
                         fields=', '.join(missing_fields),
-                        tags=', '.join('<{}>'.format(tag)
-                                       for tag in checker.field_tags)))
+                        tags=', '.join(
+                            '<{}>'.format(tag) for tag in checker.field_tags
+                        ),
+                    )
+                )
             if not checker.submit_button_found:
                 page_name = submission['page_class'].url_name()
-                raise MissingHtmlButtonError(HTML_MISSING_BUTTON_WARNING.format(
-                    page_name=page_name))
+                raise MissingHtmlButtonError(
+                    HTML_MISSING_BUTTON_WARNING.format(page_name=page_name)
+                )
 
     def assert_correct_page(self, submission):
         PageClass = submission['page_class']
@@ -168,8 +240,9 @@ class ParticipantBot(test.Client):
             raise AssertionError(
                 "Bot expects to be on page {}, "
                 "but current page is {}. "
-                "Check your bot in tests.py, "
-                "then create a new session.".format(expected_url, actual_url))
+                "Check your bot code, "
+                "then create a new session.".format(expected_url, actual_url)
+            )
 
     @property
     def response(self):
@@ -227,8 +300,11 @@ class PlayerBot:
     cases = []
 
     def __init__(
-            self, case_number: int, participant_bot: ParticipantBot,
-            lookup: ParticipantToPlayerLookup):
+        self,
+        case_number: int,
+        participant_bot: ParticipantBot,
+        lookup: ParticipantToPlayerLookup,
+    ):
 
         app_name = lookup.app_name
         models_module = get_models_module(app_name)
@@ -286,8 +362,6 @@ class PlayerBot:
         return self.participant_bot.html
 
 
-
-
 class MissingHtmlButtonError(AssertionError):
     pass
 
@@ -301,8 +375,14 @@ class BOTS_CHECK_HTML:
 
 
 def _Submission(
-        PageClass, post_data=None, *, check_html=BOTS_CHECK_HTML,
-        must_fail=False, error_fields=None, timeout_happened=False):
+    PageClass,
+    post_data=None,
+    *,
+    check_html=BOTS_CHECK_HTML,
+    must_fail=False,
+    error_fields=None,
+    timeout_happened=False,
+):
 
     post_data = post_data or {}
 
@@ -322,8 +402,8 @@ def _Submission(
         post_data['error_fields'] = error_fields
 
     if timeout_happened:
-        post_data[constants_internal.timeout_happened] = True
-        post_data[constants_internal.admin_secret_code] = ADMIN_SECRET_CODE
+        post_data[otree.constants.timeout_happened] = True
+        post_data[otree.constants.admin_secret_code] = ADMIN_SECRET_CODE
 
     # easy way to check if it's a wait page, without any messy imports
     if hasattr(PageClass, 'wait_for_all_groups'):
@@ -347,24 +427,25 @@ def _Submission(
 
 
 def Submission(
-        PageClass, post_data=None, *, check_html=BOTS_CHECK_HTML,
-        timeout_happened=False):
+    PageClass, post_data=None, *, check_html=BOTS_CHECK_HTML, timeout_happened=False
+):
     return _Submission(
-        PageClass, post_data, check_html=check_html,
-        timeout_happened=timeout_happened)
+        PageClass, post_data, check_html=check_html, timeout_happened=timeout_happened
+    )
 
 
 def SubmissionMustFail(
-        PageClass, post_data=None, *, check_html=BOTS_CHECK_HTML,
-        error_fields=None
+    PageClass, post_data=None, *, check_html=BOTS_CHECK_HTML, error_fields=None
 ):
     '''lets you intentionally submit with invalid
     input to ensure it's correctly rejected'''
 
     return _Submission(
         PageClass,
-        post_data=post_data, check_html=check_html, must_fail=True,
-        error_fields=error_fields
+        post_data=post_data,
+        check_html=check_html,
+        must_fail=True,
+        error_fields=error_fields,
     )
 
 
@@ -390,7 +471,6 @@ def normalize_html_whitespace(html):
 
 
 class HtmlString(str):
-
     def truncated(self):
         '''
         Make output more readable by truncating everything before the
@@ -412,7 +492,6 @@ class HtmlString(str):
 # inherit from object for Python2.7 support.
 # otherwise, get
 class PageHtmlChecker(HTMLParser, object):
-
     def __init__(self, fields_to_check):
         super().__init__()
         self.missing_fields = set(fields_to_check)
@@ -448,9 +527,9 @@ class PageHtmlChecker(HTMLParser, object):
 
 def is_wait_page(response):
     return (
-        response.get(constants_internal.wait_page_http_header) ==
-        constants_internal.get_param_truth_value)
-
+        response.get(otree.constants.wait_page_http_header)
+        == otree.constants.get_param_truth_value
+    )
 
 
 def bot_prettify_post_data(post_data):
@@ -462,4 +541,4 @@ def bot_prettify_post_data(post_data):
         # 2018-03-25: why not use dict()?
         post_data = post_data.dict()
 
-    return {k: v for k,v in post_data.items() if k not in INTERNAL_FORM_FIELDS}
+    return {k: v for k, v in post_data.items() if k not in INTERNAL_FORM_FIELDS}

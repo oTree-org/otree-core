@@ -1,28 +1,24 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-import random
-import sys
-from functools import reduce
 from collections import OrderedDict
+from collections import defaultdict
 from decimal import Decimal
-import warnings
-from django.urls import reverse
+from functools import reduce
+from typing import List, Dict
 from django.conf import settings
 from django.db import transaction
-from django.db.utils import OperationalError
 
-import otree.db.idmap
-from otree.models import Participant, Session
-from otree.common_internal import (
-    get_models_module, get_app_constants, validate_alphanumeric,
-    get_bots_module)
-from otree import common_internal
-import otree.common_internal
-from otree.common import RealWorldCurrency
-from otree.models_concrete import ParticipantLockModel, ParticipantToPlayerLookup
 import otree.bots.browser
-from collections import defaultdict
+import otree.common
+import otree.db.idmap
+from otree import common
+from otree.common import (
+    get_models_module,
+    get_app_constants,
+    validate_alphanumeric,
+    get_bots_module,
+)
+from otree.currency import RealWorldCurrency
+from otree.models import Participant, Session
+from otree.models_concrete import ParticipantLockModel, ParticipantToPlayerLookup
 
 
 def gcd(a, b):
@@ -76,57 +72,13 @@ class SessionConfig(dict):
 
     def clean(self):
 
-        required_keys = [
-            'name',
-            'app_sequence',
-            'num_demo_participants',
-            'participation_fee',
-            'real_world_currency_per_point',
-        ]
-
-        for key in required_keys:
-            if key not in self:
-                raise SessionConfigError(
-                    'settings.SESSION_CONFIGS: all configs must have a '
-                    '"{}"'.format(key)
-                )
-
-        datatypes = {
-            'app_sequence': list,
-            'num_demo_participants': int,
-            'name': str,
-        }
-
-        for key, datatype in datatypes.items():
-            if not isinstance(self[key], datatype):
-                msg = (
-                    'SESSION_CONFIGS "{}": '
-                    'the entry "{}" must be of type {}'
-                ).format(self['name'], key, datatype.__name__)
+        for k in ['name', 'app_sequence', 'num_demo_participants']:
+            if k not in self:
+                msg = f'Session config is missing "{k}"'
                 raise SessionConfigError(msg)
 
-        # Allow non-ASCII chars in session config keys, because they are
-        # configurable in the admin, so need to be readable by non-English
-        # speakers. However, don't allow punctuation, spaces, etc.
-        # They make it harder to reason about and could cause problems
-        # later on. also could uglify the user's code.
-
-        INVALID_IDENTIFIER_MSG = (
-            'Key "{}" in settings.SESSION_CONFIGS '
-            'must not contain spaces, punctuation, '
-            'or other special characters. '
-            'It can contain non-English characters, '
-            'but it must be a valid Python variable name '
-            'according to string.isidentifier().'
-        )
-
-        for key in self:
-            if not key.isidentifier():
-                raise SessionConfigError(INVALID_IDENTIFIER_MSG.format(key))
-
         validate_alphanumeric(
-            self['name'],
-            identifier_description='settings.SESSION_CONFIGS name'
+            self['name'], identifier_description='settings.SESSION_CONFIGS name'
         )
 
         app_sequence = self['app_sequence']
@@ -136,18 +88,19 @@ class SessionConfig(dict):
                 'app_sequence of "{}" '
                 'must not contain duplicate elements. '
                 'If you want multiple rounds, '
-                'you should set Constants.num_rounds.')
+                'you should set Constants.num_rounds.'
+            )
             raise SessionConfigError(msg.format(self['name']))
 
         if len(app_sequence) == 0:
             raise SessionConfigError(
-                'settings.SESSION_CONFIGS: app_sequence cannot be empty.')
+                'settings.SESSION_CONFIGS: app_sequence cannot be empty.'
+            )
 
         self.setdefault('display_name', self['name'])
         self.setdefault('doc', '')
 
-        self['participation_fee'] = RealWorldCurrency(
-            self['participation_fee'])
+        self['participation_fee'] = RealWorldCurrency(self['participation_fee'])
 
     def app_sequence_display(self):
         app_sequence = []
@@ -155,13 +108,13 @@ class SessionConfig(dict):
             models_module = get_models_module(app_name)
             num_rounds = models_module.Constants.num_rounds
             if num_rounds > 1:
-                formatted_app_name = '{} ({} rounds)'.format(
-                    app_name, num_rounds)
+                formatted_app_name = '{} ({} rounds)'.format(app_name, num_rounds)
             else:
                 formatted_app_name = app_name
             subsssn = {
                 'doc': getattr(models_module, 'doc', ''),
-                'name': formatted_app_name}
+                'name': formatted_app_name,
+            }
             app_sequence.append(subsssn)
         return app_sequence
 
@@ -190,10 +143,12 @@ class SessionConfig(dict):
         # so i'll just put a general recommendation in the docs
 
         return [
-            k for k, v in self.items()
+            k
+            for k, v in self.items()
             if k not in self.non_editable_fields
             and k not in self.builtin_editable_fields()
-            and type(v) in [bool, int, float, str]]
+            and type(v) in [bool, int, float, str]
+        ]
 
     def editable_fields(self):
         return self.builtin_editable_fields() + self.custom_editable_fields()
@@ -234,39 +189,53 @@ class SessionConfig(dict):
             attrs = [
                 "type='text'",
                 "value='{}'".format(existing_value),
-                "class='form-control'"
+                "class='form-control'",
             ]
         html = '''
         <tr><td><b>{}</b><td><input {}></td>
-        '''.format(field_name, ' '.join(base_attrs + attrs))
+        '''.format(
+            field_name, ' '.join(base_attrs + attrs)
+        )
         return html
 
     def builtin_editable_fields_html(self):
-        return [self.editable_field_html(k)
-                for k in self.builtin_editable_fields()]
+        return [self.editable_field_html(k) for k in self.builtin_editable_fields()]
 
     def custom_editable_fields_html(self):
-        return [self.editable_field_html(k)
-                for k in self.custom_editable_fields()]
+        return [self.editable_field_html(k) for k in self.custom_editable_fields()]
 
 
-def get_session_configs_dict():
-    SESSION_CONFIGS_DICT = OrderedDict()
-    for config_dict in settings.SESSION_CONFIGS:
-        config_obj = SessionConfig(settings.SESSION_CONFIG_DEFAULTS)
+def get_session_configs_dict(
+    SESSION_CONFIGS: List[Dict], SESSION_CONFIG_DEFAULTS: Dict
+):
+    SESSION_CONFIGS_DICT = {}
+    for config_dict in SESSION_CONFIGS:
+        config_obj = SessionConfig(SESSION_CONFIG_DEFAULTS)
         config_obj.update(config_dict)
         config_obj.clean()
-        SESSION_CONFIGS_DICT[config_dict['name']] = config_obj
+        config_name = config_dict['name']
+        if config_name in SESSION_CONFIGS_DICT:
+            msg = f"Duplicate SESSION_CONFIG name: {config_name}"
+            raise SessionConfigError(msg)
+        SESSION_CONFIGS_DICT[config_name] = config_obj
     return SESSION_CONFIGS_DICT
 
-SESSION_CONFIGS_DICT = get_session_configs_dict()
+
+SESSION_CONFIGS_DICT = get_session_configs_dict(
+    settings.SESSION_CONFIGS, settings.SESSION_CONFIG_DEFAULTS
+)
 
 
 def create_session(
-        session_config_name, *, num_participants, label='',
-        room_name=None, is_mturk=False,
-        is_demo=False,
-        edited_session_config_fields=None) -> Session:
+    session_config_name,
+    *,
+    num_participants,
+    label='',
+    room_name=None,
+    is_mturk=False,
+    is_demo=False,
+    edited_session_config_fields=None,
+) -> Session:
 
     num_subsessions = 0
     edited_session_config_fields = edited_session_config_fields or {}
@@ -293,10 +262,23 @@ def create_session(
         # to be a bit discouraged: http://goo.gl/dEXZpv
         # 2014-9-22: preassign to groups for demo mode.
 
+        # check that it divides evenly
+        session_lcm = session_config.get_lcm()
+        if num_participants is None:
+            # most games are multiplayer, so if it's under 2, we bump it to 2
+            num_participants = max(session_lcm, 2)
+        else:
+            if num_participants % session_lcm:
+                msg = (
+                    'Session Config {}: Number of participants ({}) is not a multiple '
+                    'of group size ({})'
+                ).format(session_config['name'], num_participants, session_lcm)
+                raise ValueError(msg)
+
         if is_mturk:
             mturk_num_participants = (
-                    num_participants /
-                    settings.MTURK_NUM_PARTICIPANTS_MULTIPLE)
+                num_participants / settings.MTURK_NUM_PARTICIPANTS_MULTIPLE
+            )
         else:
             mturk_num_participants = -1
 
@@ -305,37 +287,31 @@ def create_session(
             label=label,
             is_demo=is_demo,
             num_participants=num_participants,
-            mturk_num_participants=mturk_num_participants
-            ) # type: Session
-
-        # check that it divides evenly
-        session_lcm = session_config.get_lcm()
-        if num_participants % session_lcm:
-            msg = (
-                'Session Config {}: Number of participants ({}) is not a multiple '
-                'of group size ({})'
-            ).format(session_config['name'], num_participants, session_lcm)
-            raise ValueError(msg)
+            mturk_num_participants=mturk_num_participants,
+        )  # type: Session
 
         Participant.objects.bulk_create(
             [
                 Participant(id_in_session=id_in_session, session=session)
-                for id_in_session in list(range(1, num_participants+1))
+                for id_in_session in list(range(1, num_participants + 1))
             ]
         )
 
         participant_values = session.participant_set.order_by('id').values('code', 'id')
 
-        ParticipantLockModel.objects.bulk_create([
-            ParticipantLockModel(participant_code=participant['code'])
-            for participant in participant_values])
+        ParticipantLockModel.objects.bulk_create(
+            [
+                ParticipantLockModel(participant_code=participant['code'])
+                for participant in participant_values
+            ]
+        )
 
         participant_to_player_lookups = []
         page_index = 0
 
         for app_name in session_config['app_sequence']:
 
-            views_module = common_internal.get_pages_module(app_name)
+            views_module = common.get_pages_module(app_name)
             models_module = get_models_module(app_name)
             Constants = models_module.Constants
             num_subsessions += Constants.num_rounds
@@ -353,19 +329,21 @@ def create_session(
                 ]
             )
 
-            subsessions = Subsession.objects.filter(
-                session=session).order_by('round_number').values(
-                'id', 'round_number')
+            subsessions = (
+                Subsession.objects.filter(session=session)
+                .order_by('round_number')
+                .values('id', 'round_number')
+            )
 
             ppg = Constants.players_per_group
             if ppg is None or Subsession._has_group_by_arrival_time():
                 ppg = num_participants
 
-            num_groups_per_round = int(num_participants/ppg)
+            num_groups_per_round = int(num_participants / ppg)
 
             groups_to_create = []
             for subsession in subsessions:
-                for id_in_subsession in range(1, num_groups_per_round+1):
+                for id_in_subsession in range(1, num_groups_per_round + 1):
                     groups_to_create.append(
                         Group(
                             session=session,
@@ -377,9 +355,11 @@ def create_session(
 
             Group.objects.bulk_create(groups_to_create)
 
-            groups = Group.objects.filter(session=session).values(
-                'id_in_subsession', 'subsession_id', 'id'
-            ).order_by('id_in_subsession')
+            groups = (
+                Group.objects.filter(session=session)
+                .values('id_in_subsession', 'subsession_id', 'id')
+                .order_by('id_in_subsession')
+            )
 
             groups_lookup = defaultdict(list)
 
@@ -390,11 +370,11 @@ def create_session(
             players_to_create = []
 
             for subsession in subsessions:
-                subsession_id=subsession['id']
-                round_number=subsession['round_number']
+                subsession_id = subsession['id']
+                round_number = subsession['round_number']
                 participant_index = 0
                 for group_id in groups_lookup[subsession_id]:
-                    for id_in_group in range(1, ppg+1):
+                    for id_in_group in range(1, ppg + 1):
                         participant = participant_values[participant_index]
                         players_to_create.append(
                             Player(
@@ -403,7 +383,7 @@ def create_session(
                                 round_number=round_number,
                                 participant_id=participant['id'],
                                 group_id=group_id,
-                                id_in_group=id_in_group
+                                id_in_group=id_in_group,
                             )
                         )
                         participant_index += 1
@@ -412,13 +392,16 @@ def create_session(
             Player.objects.bulk_create(players_to_create)
 
             players_flat = Player.objects.filter(session=session).values(
-                'id', 'participant__code', 'participant__id', 'subsession__id',
-                'round_number'
+                'id',
+                'participant__code',
+                'participant__id',
+                'subsession__id',
+                'round_number',
             )
 
             players_by_round = [[] for _ in range(Constants.num_rounds)]
             for p in players_flat:
-                players_by_round[p['round_number']-1].append(p)
+                players_by_round[p['round_number'] - 1].append(p)
 
             for round_number, round_players in enumerate(players_by_round, start=1):
                 for View in views_module.page_sequence:
@@ -430,7 +413,7 @@ def create_session(
                         url = View.get_url(
                             participant_code=participant_code,
                             name_in_url=Constants.name_in_url,
-                            page_index=page_index
+                            page_index=page_index,
                         )
 
                         participant_to_player_lookups.append(
@@ -442,11 +425,11 @@ def create_session(
                                 player_pk=p['id'],
                                 subsession_pk=p['subsession__id'],
                                 session_pk=session.pk,
-                                url=url))
+                                url=url,
+                            )
+                        )
 
-        ParticipantToPlayerLookup.objects.bulk_create(
-            participant_to_player_lookups
-        )
+        ParticipantToPlayerLookup.objects.bulk_create(participant_to_player_lookups)
         session.participant_set.update(_max_page_index=page_index)
 
         with otree.db.idmap.use_cache():
@@ -469,6 +452,7 @@ def create_session(
     # this should happen after session.ready = True
     if room_name is not None:
         from otree.room import ROOM_DICT
+
         room = ROOM_DICT[room_name]
         room.set_session(session)
 

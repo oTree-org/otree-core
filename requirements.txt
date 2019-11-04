@@ -5,30 +5,31 @@ async-timeout==3.0.1
 attrs==19.1.0
 autobahn==19.6.2
 Automat==0.7.0
-certifi==2019.3.9
+# MacPython "Install certificates" command may install
+# a newer version of the certifi package, so keep it flexible.
+certifi>=2019.3.9
 cffi==1.12.3
 channels==2.2.0
 channels_redis
-colorama==0.3.7
+chardet==3.0.4
+colorama==0.4.1
 constantly==15.1.0
-contextlib2==0.5.4
-cryptography==2.7
+cryptography==2.8
+# cssselect not used?
 cssselect==1.0.3
 daphne==2.3.0
-dj-database-url==0.4.1
-Django==1.11.21
+dj-database-url==0.5.0
+Django==2.2.4
 django-idmap==1.0.3
-django-slowtests==1.1.1
-django-vanilla-views==1.0.4
-honcho==0.7.1
-huey==1.10.2
+django-model-utils==3.2.0
+django-vanilla-views==1.0.6
+honcho==1.0.1
+huey==2.1.1
 Hypercorn==0.8.1
 hyperframe==5.2.0
 hyperlink==19.0.0
 idna==2.8
 incremental==17.5.0
-IPy==0.83
-lxml==4.3.3
 msgpack==0.6.1
 # msgpack-python was renamed to msgpack.
 # supposedly installing version 0.5.6 allows
@@ -37,29 +38,19 @@ msgpack==0.6.1
 msgpack-python==0.5.6
 otree-boto2-shim==0.3.2
 otree-core==0.0.0b1
-otree-save-the-change==1.1.3
 priority==1.3.0
-py==1.8.0
-pytest==4.6.3
-pytest-django==3.5.0
+pytz==2019.2
 pycparser==2.19
 PyHamcrest==1.9.0
-pytest-asyncio
 python-redis-lock==3.3.1
-pytz==2017.3
-redis==2.10.5
-requests==2.11.1
-schema==0.6.2
-selenium==3.141.0
+redis==3.3.8
+schema==0.7.0
 sentry-sdk==0.7.9
-six==1.12.0
-splinter==0.8.0
 termcolor==1.1.0
 Twisted>=19.7.0rc1
 txaio==18.8.1
-unicodecsv==0.14.1
 urllib3==1.25.3
-whitenoise==3.2.1
+whitenoise==4.1.3
 ws4py==0.3.5
 wsproto==0.14.1
 XlsxWriter==0.9.3

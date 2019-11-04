@@ -12,6 +12,7 @@ are not used by oTree. So we just need to consider users' templates,
 which are unlikely to rely on silent failures.
 '''
 
+
 def patch_filter_expression():
     '''
     don't allow code like {{ bogus }} or {{ player.bogus }} to fail silently
@@ -38,7 +39,9 @@ def patch_filter_expression():
             # such as in django/forms/templates/django/forms/widgets:
             # {% if widget.attrs.class %}
             return original_resolve(self, context, ignore_failures=False)
+
     FilterExpression.resolve = resolve
+
 
 def patch_smartif():
     '''
@@ -55,14 +58,18 @@ def patch_smartif():
 
     def make_infix_eval(func):
         '''see infix()'s Operator.eval()'''
+
         def new_eval(self, context):
             return func(context, self.first, self.second)
+
         return new_eval
 
     def make_prefix_eval(func):
         '''see prefix()'s Operator.eval()'''
+
         def new_eval(self, context):
             return func(context, self.first)
+
         return new_eval
 
     infix_operators = {
@@ -81,6 +88,7 @@ def patch_smartif():
     }
 
     from django.template.smartif import OPERATORS
+
     for operator, func in infix_operators.items():
         OPERATORS[operator].eval = make_infix_eval(func)
     OPERATORS['not'].eval = make_prefix_eval(lambda context, x: not x.eval(context))
@@ -97,6 +105,7 @@ def patch_28935():
             if context.template.engine.debug and not hasattr(e, 'template_debug'):
                 e.template_debug = context.template.get_exception_info(e, self.token)
             raise
+
     Node.render_annotated = render_annotated
 
 
@@ -104,6 +113,3 @@ def patch_template_silent_failures():
     patch_filter_expression()
     patch_smartif()
     patch_28935()
-
-
-

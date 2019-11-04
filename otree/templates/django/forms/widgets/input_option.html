@@ -3,4 +3,4 @@ override of django's built-in input_option, except add |default to nonexistent w
 this was discovered when someone couldn't use RadioGridField.
 I have confirmed that this new version works with RadioGridField
 {% endcomment %}
-{% if wrap_label|default:False %}<label{% if widget.attrs.id %} for="{{ widget.attrs.id }}"{% endif %}>{% endif %}{% include "django/forms/widgets/input.html" %}{% if wrap_label|default:False %} {{ widget.label }}</label>{% endif %}
+{% if widget.wrap_label %}<label{% if widget.attrs.id %} for="{{ widget.attrs.id }}"{% endif %}>{% endif %}{% include "django/forms/widgets/input.html" %}{% if widget.wrap_label %} {{ widget.label }}</label>{% endif %}

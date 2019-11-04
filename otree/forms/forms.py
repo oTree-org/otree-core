@@ -1,72 +1,18 @@
 import copy
-import six
 from decimal import Decimal
-from six.moves import map
-
 
 from django import forms
-from django.forms import models as django_model_forms
 from django.utils.translation import ugettext as _
-from django.db.models.options import FieldDoesNotExist
 
-import otree.common_internal
-from otree.common_internal import ResponseForException
+import otree.common
+import otree.constants
 import otree.models
-import otree.constants_internal
-from otree.db import models
+from otree.common import ResponseForException
 from otree.currency import Currency, RealWorldCurrency
-
-__all__ = (
-    'formfield_callback', 'modelform_factory', 'ModelForm')
+from otree.db import models
 
 
-
-
-def formfield_callback(db_field, **kwargs):
-    # Take the `widget` attribute into account that might be set for a db
-    # field.
-    widget = getattr(db_field, 'widget', None)
-    if widget:
-        # dynamic methods like FOO_choices, FOO_min, etc
-        # modify the form field's widget (self.widget)
-        # Django is not designed for this kind of dynamic modification,
-        # self.widget can actually be shared across
-        # all instances of that form field, meaning you are modifying the
-        # widget globally. However, this doesn't happen if the widget= arg
-        # is a class, because then it gets instantiated, which
-        # basically makes a copy.
-        # i reproduced this for FOO_choices, but not for FOO_min.
-        # if it's min, it sets the attrs on the widget, which means
-        # a shallow copy is not enough. but until i can reproduce this,
-        # leaving as is.
-        if not isinstance(widget, type):
-            widget = copy.copy(widget)
-        kwargs['widget'] = widget
-    return db_field.formfield(**kwargs)
-
-
-def modelform_factory(*args, **kwargs):
-    """
-    2018-07-11: now this exists only to make a copy of the widget if necessary.
-    maybe there is a better way.
-    """
-    kwargs.setdefault('formfield_callback', formfield_callback)
-    return django_model_forms.modelform_factory(*args, **kwargs)
-
-import django.forms.models
-
-class ModelFormMetaclass(django.forms.models.ModelFormMetaclass):
-    """
-    Metaclass for BaseModelForm in order to inject our custom implementation of
-    `formfield_callback`.
-    """
-    def __new__(mcs, name, bases, attrs):
-        attrs.setdefault('formfield_callback', formfield_callback)
-        return super(ModelFormMetaclass, mcs).__new__(
-            mcs, name, bases, attrs)
-
-
-class ModelForm(forms.ModelForm, metaclass=ModelFormMetaclass):
+class ModelForm(forms.ModelForm):
     def _get_method_from_page_or_model(self, method_name):
         for obj in [self.view, self.instance]:
             if hasattr(obj, method_name):
@@ -99,21 +45,20 @@ class ModelForm(forms.ModelForm, metaclass=ModelFormMetaclass):
         for field_name in self.fields:
             field = self.fields[field_name]
 
-            choices_method = self._get_method_from_page_or_model(f'{field_name}_choices')
+            choices_method = self._get_method_from_page_or_model(
+                f'{field_name}_choices'
+            )
 
             if choices_method:
                 choices = choices_method()
-                choices = otree.common_internal.expand_choice_tuples(choices)
+                choices = otree.common.expand_choice_tuples(choices)
 
                 model_field = self.instance._meta.get_field(field_name)
+                # this is necessary so we don't modify the field for other players
                 model_field_copy = copy.copy(model_field)
-
-                # in Django 1.11, _choices renamed to choices
                 model_field_copy.choices = choices
-
-                field = formfield_callback(model_field_copy)
+                field = model_field_copy.formfield()
                 self.fields[field_name] = field
-
 
             if isinstance(field.widget, forms.RadioSelect):
                 # Fields with a RadioSelect should be rendered without the
@@ -134,76 +79,26 @@ class ModelForm(forms.ModelForm, metaclass=ModelFormMetaclass):
 
         self._set_min_max_on_widgets()
 
-    def _get_field_min_max(self, field_name):
-        """
-        Get the field boundaries from a methods defined on the view.
+    def _get_field_bound(self, field_name, min_or_max: str):
+        model_field = self.instance._meta.get_field(field_name)
 
-        Example (will get boundaries from `amount_<min|max>`):
-
-
-            class Offer(Page):
-                ...
-                form_model = models.Group
-                form_fields = ['amount']
-
-                def amount_min(self):
-                    return 1
-
-                def amount_max(self):
-                    return 5
-
-        If the method is not found, it will return ``(None, None)``.
-        """
-
-        # SessionEditProperties is a ModelForm with extra field which is not
-        # part of the model. In case your ModelForm has an extra field.
-        try:
-            model_field = self.instance._meta.get_field(field_name)
-        except FieldDoesNotExist:
-            return [None, None]
-
-        min_method = self._get_method_from_page_or_model(f'{field_name}_min')
+        min_method = self._get_method_from_page_or_model(f'{field_name}_{min_or_max}')
         if min_method:
-            min_value = min_method()
+            return min_method()
         else:
-            min_value = getattr(model_field, 'min', None)
-
-        max_method = self._get_method_from_page_or_model(f'{field_name}_max')
-        if max_method:
-            max_value = max_method()
-        else:
-            max_value = getattr(model_field, 'max', None)
-
-        return [min_value, max_value]
+            return getattr(model_field, min_or_max, None)
 
     def _set_min_max_on_widgets(self):
         for field_name, field in self.fields.items():
             if isinstance(field.widget, forms.NumberInput):
-                min_bound, max_bound = self._get_field_min_max(field_name)
-                if isinstance(min_bound, (Currency, RealWorldCurrency)):
-                    min_bound = Decimal(min_bound)
-                if isinstance(max_bound, (Currency, RealWorldCurrency)):
-                    max_bound = Decimal(max_bound)
-                if min_bound is not None:
-                    field.widget.attrs['min'] = min_bound
-                if max_bound is not None:
-                    field.widget.attrs['max'] = max_bound
-                # is this UI too intrusive?
-                # if min_bound is not None and max_bound is not None:
-                #    field.widget.attrs['placeholder'] = '({} - {})'.format(
-                #        min_bound, max_bound
-                #    )
-
-    def boolean_field_names(self):
-        boolean_fields_in_model = [
-            field.name for field in self.Meta.model._meta.fields
-            if isinstance(field, models.BooleanField)
-        ]
-        return [field_name for field_name in self.fields
-                if field_name in boolean_fields_in_model]
+                for min_or_max in ['min', 'max']:
+                    bound = self._get_field_bound(field_name, min_or_max)
+                    if isinstance(bound, (Currency, RealWorldCurrency)):
+                        bound = Decimal(bound)
+                    if bound is not None:
+                        field.widget.attrs[min_or_max] = bound
 
     def _clean_fields(self):
-        boolean_field_names = self.boolean_field_names()
         for name, field in self.fields.items():
             # value_from_datadict() gets the data from the data dictionaries.
             # Each widget type knows how to retrieve its own data, because some
@@ -219,31 +114,32 @@ class ModelForm(forms.ModelForm, metaclass=ModelFormMetaclass):
                     value = field.clean(value)
                 self.cleaned_data[name] = value
 
-                if name in boolean_field_names and value is None:
-                    mfield = self.instance._meta.get_field(name)
-                    if not mfield.allow_blank:
-                        msg = otree.constants_internal.field_required_msg
-                        raise forms.ValidationError(msg)
+                model_field = self.instance._meta.get_field(name)
+                if (
+                    isinstance(model_field, models.BooleanField)
+                    and value is None
+                    and not model_field.blank
+                ):
+                    msg = otree.constants.field_required_msg
+                    raise forms.ValidationError(msg)
 
-                lower, upper = self._get_field_min_max(name)
+                lower = self._get_field_bound(name, 'min')
+                upper = self._get_field_bound(name, 'max')
 
                 # allow blank=True and min/max to be used together
                 # the field is optional, but
                 # if a value is submitted, it must be within [min,max]
-                if lower is None or value is None:
-                    pass
-                elif value < lower:
-                    msg = _('Value must be greater than or equal to {}.')
-                    raise forms.ValidationError(msg.format(lower))
-
-                if upper is None or value is None:
-                    pass
-                elif value > upper:
-                    msg = _('Value must be less than or equal to {}.')
-                    raise forms.ValidationError(msg.format(upper))
+                if value is not None:
+                    if lower is not None and value < lower:
+                        msg = _('Value must be greater than or equal to {}.')
+                        raise forms.ValidationError(msg.format(lower))
+                    if upper is not None and value > upper:
+                        msg = _('Value must be less than or equal to {}.')
+                        raise forms.ValidationError(msg.format(upper))
 
                 error_message_method = self._get_method_from_page_or_model(
-                    f'{name}_error_message')
+                    f'{name}_error_message'
+                )
                 if error_message_method:
                     try:
                         error_string = error_message_method(value)
@@ -251,10 +147,6 @@ class ModelForm(forms.ModelForm, metaclass=ModelFormMetaclass):
                         raise ResponseForException
                     if error_string:
                         raise forms.ValidationError(error_string)
-
-                if hasattr(self, 'clean_%s' % name):
-                    value = getattr(self, 'clean_%s' % name)()
-                    self.cleaned_data[name] = value
 
             except forms.ValidationError as e:
                 self.add_error(name, e)

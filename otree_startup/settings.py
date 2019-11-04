@@ -64,24 +64,17 @@ def get_default_settings(user_settings: dict):
     logging = {
         'version': 1,
         'disable_existing_loggers': False,
-        'root': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
-        },
+        'root': {'level': 'DEBUG', 'handlers': ['console']},
         'formatters': {
-            'verbose': {
-                'format': '[%(levelname)s|%(asctime)s] %(name)s > %(message)s'
-            },
-            'simple': {
-                'format': '%(levelname)s %(message)s'
-            },
+            'verbose': {'format': '[%(levelname)s|%(asctime)s] %(name)s > %(message)s'},
+            'simple': {'format': '%(levelname)s %(message)s'},
         },
         'handlers': {
             'console': {
                 'level': 'INFO',
                 'class': 'logging.StreamHandler',
-                'formatter': 'simple'
-            },
+                'formatter': 'simple',
+            }
         },
         'loggers': {
             'otree.test.core': {
@@ -101,26 +94,35 @@ def get_default_settings(user_settings: dict):
                 'propagate': True,
                 'level': 'DEBUG',
             },
-        }
+        },
     }
 
     REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379')
-    BASE_DIR = user_settings.get('BASE_DIR', '')
+
+    # I thought about just checking if REDIS_URL is defined,
+    # but using Redis when it's not necessary makes things much slower.
+    # for example, running a 5 second bot test takes 22 seconds with Redis.
+    # it would be a pain for me to keep setting and unsetting REDIS_URL.
+    if os.environ.get('OTREE_USE_REDIS'):
+        channel_layer = {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            # the timeout arg was recommended by Heroku support around 2019-10-17
+            # when users were getting ConnectionClosed('reader at end of file')
+            # Heroku uses 300 so we should stay under that?
+            "CONFIG": {"hosts": [dict(address=REDIS_URL, timeout=280)]},
+        }
+    else:
+        channel_layer = {"BACKEND": "channels.layers.InMemoryChannelLayer"}
 
     default_settings.update(
         DEBUG=os.environ.get('OTREE_PRODUCTION') in [None, '', '0'],
         AWS_ACCESS_KEY_ID=os.environ.get('AWS_ACCESS_KEY_ID'),
         AWS_SECRET_ACCESS_KEY=os.environ.get('AWS_SECRET_ACCESS_KEY'),
-        AUTH_LEVEL=os.environ.get('OTREE_AUTH_LEVEL'), DATABASES={
-            'default': dj_database_url.config(
-                default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3')
-            )
-        },
+        AUTH_LEVEL=os.environ.get('OTREE_AUTH_LEVEL'),
+        DATABASES={'default': dj_database_url.config(default='sqlite:///db.sqlite3')},
         HUEY={
             'name': 'otree-huey',
-            'connection': {
-                'url': REDIS_URL,
-            },
+            'connection': {'url': REDIS_URL},
             'always_eager': False,
             # I need a result store to retrieve the results of browser-bots
             # tasks and pinging, even if the result is evaluated immediately
@@ -133,13 +135,11 @@ def get_default_settings(user_settings: dict):
                 'loglevel': 'warning',
             },
         },
-        STATIC_ROOT=os.path.join(BASE_DIR, '__temp_static_root'),
+        STATIC_ROOT='__temp_static_root',
         STATIC_URL='/static/',
-        STATICFILES_STORAGE=(
-            'whitenoise.django.GzipManifestStaticFilesStorage'
-        ),
+        STATICFILES_STORAGE='whitenoise.storage.CompressedManifestStaticFilesStorage',
         ROOT_URLCONF='otree.urls',
-        TIME_ZONE='UTC',
+        TIME_ZONE='Europe/Zurich',
         USE_TZ=True,
         ALLOWED_HOSTS=['*'],
         LOGGING=logging,
@@ -152,23 +152,11 @@ def get_default_settings(user_settings: dict):
         USE_L10N=True,
         SECURE_PROXY_SSL_HEADER=('HTTP_X_FORWARDED_PROTO', 'https'),
         ASGI_APPLICATION="otree.channels.routing.application",
-        CHANNEL_LAYERS={
-            'default': {
-                "BACKEND": "channels_redis.core.RedisChannelLayer",
-                "CONFIG": {
-                    "hosts": [REDIS_URL],
-                },
-            },
-            'inmemory': {
-                "BACKEND": "channels.layers.InMemoryChannelLayer",
-            },
-        },
+        CHANNEL_LAYERS={'default': channel_layer},
         REDIS_URL=REDIS_URL,
         MTURK_NUM_PARTICIPANTS_MULTIPLE=2,
-        LOCALE_PATHS=[
-            os.path.join(user_settings.get('BASE_DIR', ''), 'locale')
-        ],
-        BOTS_CHECK_HTML=True
+        LOCALE_PATHS=['locale'],
+        BOTS_CHECK_HTML=True,
     )
     return default_settings
 
@@ -198,14 +186,11 @@ class InvalidTemplateVariable(str):
         if bits[0] in built_in_vars:
             # This will not make sense in the admin report!
             # but that's OK, it's a rare case, more advanced users
-            return (
-                '{} has no attribute "{}"'
-            ).format(bits[0], '.'.join(bits[1:]))
+            return ('{} has no attribute "{}"').format(bits[0], '.'.join(bits[1:]))
         elif bits[0] == 'self' and bits[1] in built_in_vars:
-            return (
-                "Don't use 'self' in the template. "
-                "Just write: {}"
-            ).format('.'.join(bits[1:]))
+            return ("Don't use 'self' in the template. " "Just write: {}").format(
+                '.'.join(bits[1:])
+            )
         else:
             return 'Invalid variable: {}'.format(variable_name_dotted)
 
@@ -244,6 +229,9 @@ def augment_settings(settings: dict):
     for k, v in default_settings.items():
         settings.setdefault(k, v)
 
+    if settings['AUTH_LEVEL'] == 'STUDY' and os.environ.get('OTREEHUB_PUB'):
+        settings['AUTH_LEVEL'] = 'DEMO'
+
     all_otree_apps_set = set()
 
     for s in settings['SESSION_CONFIGS']:
@@ -254,7 +242,6 @@ def augment_settings(settings: dict):
 
     no_experiment_apps = [
         'otree',
-
         # django.contrib.auth is slow, about 300ms.
         # would be nice to only add it if there is actually a password
         # i tried that but would need to add various complicated "if"s
@@ -266,7 +253,7 @@ def augment_settings(settings: dict):
         'django.contrib.sessions',
         'django.contrib.messages',
         # need to keep this around indefinitely for all the people who
-        # have {% load staticfiles %}
+        # have {% load static %}
         'django.contrib.staticfiles',
         'channels',
         'huey.contrib.djhuey',
@@ -291,82 +278,42 @@ def augment_settings(settings: dict):
     no_experiment_apps = collapse_to_unique_list(
         no_experiment_apps,
         settings['INSTALLED_APPS'],
-        settings.get('EXTENSION_APPS', [])
+        settings.get('EXTENSION_APPS', []),
     )
 
-    new_installed_apps = collapse_to_unique_list(
-        no_experiment_apps, all_otree_apps)
-
-    # TEMPLATES
-    _template_dir = os.path.join(settings['BASE_DIR'], '_templates')
-    if os.path.exists(_template_dir):
-        new_template_dirs = [_template_dir]
-    else:
-        new_template_dirs = []
-
-    # STATICFILES
-    _static_dir = os.path.join(settings['BASE_DIR'], '_static')
-
-    if os.path.exists(_static_dir):
-        additional_static_dirs = [_static_dir]
-    else:
-        additional_static_dirs = []
-
-    new_staticfiles_dirs = collapse_to_unique_list(
-        settings.get('STATICFILES_DIRS'),
-        additional_static_dirs,
-    )
+    new_installed_apps = collapse_to_unique_list(no_experiment_apps, all_otree_apps)
 
     new_middleware = collapse_to_unique_list(
-        DEFAULT_MIDDLEWARE,
-        settings.get('MIDDLEWARE_CLASSES'))
+        DEFAULT_MIDDLEWARE, settings.get('MIDDLEWARE')
+    )
 
     augmented_settings = dict(
         INSTALLED_APPS=new_installed_apps,
-        TEMPLATES=[{
-            'BACKEND': 'django.template.backends.django.DjangoTemplates',
-            'DIRS': new_template_dirs,
-            'OPTIONS': {
-                # 2016-10-08: setting template debug back to True,
-                # because if an included template has an error, we need
-                # to surface the error, rather than not showing the template.
-                # that's how I set it in d1cd00ebfd43c7eff408dea6363fd14bb90e7c06,
-                # but then in 2c10188b33f2ac36c046f4f0f8764e15d6a6fa81,
-                # i set this to False, but I'm not sure why and there is no
-                # note in the commit explaining why.
-                'debug': True,
-                'string_if_invalid': InvalidTemplateVariable("%s"),
-
-                # in Django 1.11, the cached template loader is applied
-                # automatically if template 'debug' is False,
-                # but for now we need 'debug' True because otherwise
-                # {% include %} fails silently.
-                # in django 2.1, we can remove:
-                # - the explicit 'debug': True
-                # - 'loaders' below
-                # - the patch in runserver.py
-                # as long as we set 'APP_DIRS': True
-                'loaders': [
-                    ('django.template.loaders.cached.Loader', [
-                        'django.template.loaders.filesystem.Loader',
-                        'django.template.loaders.app_directories.Loader',
-                    ]),
-                ],
-                'context_processors': (
-                    # default ones in Django 1.8
-                    'django.contrib.auth.context_processors.auth',
-                    'django.template.context_processors.media',
-                    'django.template.context_processors.static',
-                    'django.contrib.messages.context_processors.messages',
-                    'django.template.context_processors.request',
-                )
-            },
-        }],
-        STATICFILES_DIRS=new_staticfiles_dirs,
+        TEMPLATES=[
+            {
+                'BACKEND': 'django.template.backends.django.DjangoTemplates',
+                'DIRS': ['_templates'],
+                'APP_DIRS': True,
+                'OPTIONS': {
+                    'debug': True,
+                    'string_if_invalid': InvalidTemplateVariable("%s"),
+                    'context_processors': (
+                        'django.contrib.auth.context_processors.auth',
+                        'django.template.context_processors.media',
+                        'django.template.context_processors.static',
+                        'django.contrib.messages.context_processors.messages',
+                        'django.template.context_processors.request',
+                    ),
+                },
+            }
+        ],
+        STATICFILES_DIRS=collapse_to_unique_list(
+            settings.get('STATICFILES_DIRS'), ['_static']
+        ),
         MIDDLEWARE=new_middleware,
         INSTALLED_OTREE_APPS=all_otree_apps,
         MESSAGE_TAGS={messages.ERROR: 'danger'},
-        LOGIN_REDIRECT_URL='Sessions'
+        LOGIN_REDIRECT_URL='Sessions',
     )
 
     settings.update(augmented_settings)

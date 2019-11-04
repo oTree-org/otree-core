@@ -1,7 +1,7 @@
 import logging
 from django.core.management.base import BaseCommand
 import otree.bots.browser
-from otree.common_internal import get_redis_conn
+from otree.common import get_redis_conn
 
 logger = logging.getLogger('otree.botworker')
 

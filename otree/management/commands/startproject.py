@@ -3,18 +3,17 @@ from django.core.management.commands import startproject
 from django.core.management.base import CommandError
 import sys
 import otree
-from otree_startup import pypi_updates_cli
 
 
 class Command(startproject.Command):
-    help = ("Creates a new oTree project.")
+    help = "Creates a new oTree project."
 
     def add_arguments(self, parser):
         super().add_arguments(parser)
         '''need this so we can test startproject automatically'''
         parser.add_argument(
-            '--noinput', action='store_false', dest='interactive',
-            default=True)
+            '--noinput', action='store_false', dest='interactive', default=True
+        )
 
     def handle(self, *args, **options):
         project_name = options['name']
@@ -38,10 +37,12 @@ class Command(startproject.Command):
             answer = 'n'
         if answer and answer[0].lower() == "y":
             project_template_path = (
-                "https://github.com/oTree-org/oTree/archive/master.zip")
+                "https://github.com/oTree-org/oTree/archive/master.zip"
+            )
         else:
             project_template_path = os.path.join(
-                os.path.dirname(otree.__file__), 'project_template')
+                os.path.dirname(otree.__file__), 'project_template'
+            )
 
         options['template'] = project_template_path
 
@@ -56,28 +57,12 @@ class Command(startproject.Command):
             if os.path.exists(project_name):
                 os.rmdir(project_name)
 
-            is_macos = sys.platform.startswith('darwin')
-            if is_macos and 'CERTIFICATE_VERIFY_FAILED' in str(exc):
-                py_major, py_minor = sys.version_info[:2]
-                msg = (
-                    'CERTIFICATE_VERIFY_FAILED: '
-                    'Before downloading the sample games, '
-                    'you need to install SSL certificates. '
-                    'Usually this can be resolved by entering this command:\n'
-                    '/Applications/Python\\ {}.{}/Install\\ Certificates.command'
-                ).format(py_major, py_minor)
-                self.stdout.write(msg)
-                sys.exit(-1)
             raise
-        try:
-            pypi_updates_cli()
-        except:
-            pass
         # this assumes the 'directory' arg was unused, which will be true
         # for 99% of oTree users.
         msg = (
             'Created project folder.\n'
             'Enter "cd {}" to move inside the project folder, '
-            'then start the server with "otree devserver".' #
+            'then start the server with "otree devserver".'  #
         ).format(project_name)
         self.stdout.write(msg)

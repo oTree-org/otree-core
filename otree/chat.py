@@ -3,8 +3,10 @@ from django.core.signing import Signer
 from otree.channels import utils as channel_utils
 from django.utils.translation import ugettext as _
 
+
 class ChatTagError(Exception):
     pass
+
 
 class UNDEFINED:
     pass
@@ -24,14 +26,15 @@ def chat_template_tag(context, *, channel=UNDEFINED, nickname=UNDEFINED):
     if not re.match(r'^[a-zA-Z0-9_-]+$', channel):
         raise ChatTagError(
             "'channel' can only contain ASCII letters, numbers, underscores, and hyphens. "
-            "Value given was: {}".format(channel))
+            "Value given was: {}".format(channel)
+        )
     # prefix the channel name with session code and app name
     prefixed_channel = '{}-{}-{}'.format(
         context['session'].id,
         Constants.name_in_url,
         # previously used a hash() here to ensure name_in_url is the same,
         # but hash() is non-reproducible across processes
-        channel
+        channel,
     )
     context['channel'] = prefixed_channel
 
@@ -53,7 +56,7 @@ def chat_template_tag(context, *, channel=UNDEFINED, nickname=UNDEFINED):
         # Translators: the name someone sees displayed for themselves in a chat.
         # It's their nickname followed by "(Me)". For example:
         # "Michael (Me)" or "Player 1 (Me)".
-        'nickname_i_see_for_myself': _("{nickname} (Me)").format(nickname=nickname)
+        'nickname_i_see_for_myself': _("{nickname} (Me)").format(nickname=nickname),
     }
 
     context['chat_vars_for_js'] = chat_vars_for_js

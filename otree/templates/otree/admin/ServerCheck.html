@@ -1,75 +1,71 @@
 {% extends "otree/BaseAdmin.html" %}
 
 {% block title %}
-    Server Readiness Checks
+  Server Readiness Checks
 {% endblock %}
 
 {% block content %}
 
-    {% if pypi_results.pypi_connection_error %}
-        <div class="alert alert-warning">
-            <strong>Update status unknown</strong>
-            Could not connect to <a href="https://pypi.python.org/pypi/otree">PyPI</a>
-            to check if oTree is up to date.
-        </div>
-    {% elif pypi_results.update_needed %}
-        <div class="alert alert-danger">
-            <strong>You are using an old oTree version</strong>
-            {{ pypi_results.update_message }}
-        </div>
+
+    {% if pypi_results.installed == pypi_results.newest %}
+      <div class="alert alert-success">
+      You have the latest version of oTree ({{ pypi_results.installed }}).
+      </div>
     {% else %}
-        <div class="alert alert-success">
-          You have a recent version of oTree ({{ pypi_results.installed_version }}).
-        </div>
+      <div class="alert alert-secondary">
+      You have oTree {{ pypi_results.installed }}.
+      The newest version is {{ pypi_results.newest|default:"(unknown_pypi_connection_error)" }}.
+      </div>
     {% endif %}
 
-    {% if sqlite %}
-        <div class="alert alert-danger">
-            <strong>Using SQLite</strong> You are using SQLite, which is only suitable for testing.
-            Before launching a study, you should upgrade to Postgres.
-        </div>
-    {% else %}
-        <div class="alert alert-success">
-          You are using a proper database (Postgres, MySQL, etc).
-        </div>
-    {% endif %}
 
-    {% if debug %}
-        <div class="alert alert-danger">
-            <strong>DEBUG mode is on</strong>
-            You should only use DEBUG mode when testing.
-            Before launching a study, you should switch DEBUG mode off
-            by setting the environment variable <code>OTREE_PRODUCTION</code>.
-        </div>
-    {% else %}
-        <div class="alert alert-success">
-          DEBUG mode is off
-        </div>
-    {% endif %}
+  {% if sqlite %}
+    <div class="alert alert-danger">
+      <strong>Using SQLite</strong> You are using SQLite, which is only suitable for testing.
+      Before launching a study, you should upgrade to Postgres.
+    </div>
+  {% else %}
+    <div class="alert alert-success">
+      You are using a proper database (Postgres, MySQL, etc).
+    </div>
+  {% endif %}
 
-    {% if not auth_level_ok %}
-        <div class="alert alert-danger">
-            <strong>No password protection</strong>
-            To prevent unauthorized server access, you should
-            set the environment variable <code>OTREE_AUTH_LEVEL</code>.
-        </div>
-    {% else %}
-        <div class="alert alert-success">
-            Password protection is on.
-            Your app's <code>AUTH_LEVEL</code> is <code>{{ auth_level }}</code>.
-        </div>
-    {% endif %}
+  {% if debug %}
+    <div class="alert alert-danger">
+      <strong>DEBUG mode is on</strong>
+      You should only use DEBUG mode when testing.
+      Before launching a study, you should switch DEBUG mode off
+      by setting the environment variable <code>OTREE_PRODUCTION</code>.
+    </div>
+  {% else %}
+    <div class="alert alert-success">
+      DEBUG mode is off
+    </div>
+  {% endif %}
 
-    {% if not db_synced %}
-        <div class="alert alert-danger">
-            <strong>Database is missing tables</strong>
-            You should reset the database (resetdb).
-        </div>
-    {% else %}
-        <div class="alert alert-success">
-            Your database appears to be synced.
-        </div>
-    {% endif %}
+  {% if not auth_level_ok %}
+    <div class="alert alert-danger">
+      <strong>No password protection</strong>
+      To prevent unauthorized server access, you should
+      set the environment variable <code>OTREE_AUTH_LEVEL</code>.
+    </div>
+  {% else %}
+    <div class="alert alert-success">
+      Password protection is on.
+      Your app's <code>AUTH_LEVEL</code> is <code>{{ auth_level }}</code>.
+    </div>
+  {% endif %}
+
+  {% if not db_synced %}
+    <div class="alert alert-danger">
+      <strong>Database is missing tables</strong>
+      You should reset the database (resetdb).
+    </div>
+  {% else %}
+    <div class="alert alert-success">
+      Your database appears to be synced.
+    </div>
+  {% endif %}
 
 {% endblock %}
 

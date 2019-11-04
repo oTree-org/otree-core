@@ -20,23 +20,22 @@ class Command(webandworkers.Command):
         ahelp = (
             'By default we will collect all static files into the directory '
             'configured in your settings. Disable it with this switch if you '
-            'want to do it manually.')
+            'want to do it manually.'
+        )
         parser.add_argument(
-            '--no-collectstatic', action='store_false', dest='collectstatic',
-            default=True, help=ahelp)
+            '--no-collectstatic',
+            action='store_false',
+            dest='collectstatic',
+            default=True,
+            help=ahelp,
+        )
 
     def setup_honcho(self, **options):
         super().setup_honcho(**options)
         honcho = self.honcho
 
-        honcho.add_otree_process(
-            'botworker',
-            'otree botworker',
-        )
-        honcho.add_otree_process(
-            'timeoutworkeronly',
-            'otree timeoutworkeronly',
-        )
+        honcho.add_otree_process('botworker', 'otree botworker')
+        honcho.add_otree_process('timeoutworkeronly', 'otree timeoutworkeronly')
 
     def handle(self, *args, collectstatic, **options):
 

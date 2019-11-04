@@ -8,16 +8,12 @@ from pathlib import Path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 import otree
+
 version = otree.__version__
 
-with open('README.rst', encoding='utf-8') as f:
-    README = f.read()
-
-with open('requirements.txt', encoding='utf-8') as f:
-    required = f.read().splitlines()
-
-with open('requirements_mturk.txt', encoding='utf-8') as f:
-    required_mturk = f.read().splitlines()
+README = Path('README.rst').read_text('utf8')
+required = Path('requirements.txt').read_text().splitlines()
+required_mturk = Path('requirements_mturk.txt').read_text().splitlines()
 
 
 if sys.argv[-1] == 'publish':
@@ -28,7 +24,7 @@ if sys.argv[-1] == 'publish':
         "python setup.py sdist",
         "twine upload dist/*",
         f'git tag -a {version} -m "version {version}"',
-        "git push --tags"
+        "git push --tags",
     ]:
         sys.stdout.write(cmd + '\n')
         exit_code = os.system(cmd)
@@ -37,10 +33,21 @@ if sys.argv[-1] == 'publish':
 
     sys.exit()
 
+MSG_PY_VERSION = f"""
+Error: This version of oTree requires Python 3.7 or higher.
 
-# 3.7 because of hypercorn
+If you're seeing this message on oTree Hub, 
+upgrade oTree locally and run "otree zip" again.
+
+If using Heroku without oTree Hub, you should create a runtime.txt 
+as described in the Heroku documentation.
+"""
+
 if sys.version_info < (3, 7):
-    sys.exit('Error: This version of oTree requires Python 3.7 or higher')
+    sys.exit(MSG_PY_VERSION)
+
+# need to consider also whether Heroku supports 3.8
+
 
 setup(
     name='otree',
@@ -74,13 +81,7 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
-    entry_points={
-        'console_scripts': [
-            'otree=otree_startup:execute_from_command_line',
-        ],
-    },
+    entry_points={'console_scripts': ['otree=otree_startup:execute_from_command_line']},
     zip_safe=False,
-    extras_require={
-        'mturk': required_mturk
-    }
+    extras_require={'mturk': required_mturk},
 )

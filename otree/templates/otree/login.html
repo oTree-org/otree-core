@@ -36,10 +36,6 @@
                     {% formfield form.password %}
                     <input type="hidden" name="next" value="{{ next }}"/>
                 </div>
-                <p>
-                    The password is defined in your <code>settings.py</code>
-                    file.
-                </p>
 
                 {% url 'admin_password_reset' as password_reset_url %}
                 {% if password_reset_url %}

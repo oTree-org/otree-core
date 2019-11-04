@@ -1,20 +1,17 @@
-#!/usr/bin/env python
-# encoding: utf-8
-
-import warnings
+import json
 from datetime import datetime
 from collections import defaultdict
-import sys
+from typing import List, Dict, Union, Optional
 import logging
+from xml.etree import ElementTree
 
 from django.conf import settings
 from django.contrib import messages
 from django.urls import reverse
-from django.http import HttpResponseRedirect, HttpResponseServerError
+from django.http import HttpResponseServerError
 from django.shortcuts import get_object_or_404
 
-from six.moves.urllib.parse import urlparse
-from six.moves.urllib.parse import urlunparse
+from django.template.loader import render_to_string
 
 import vanilla
 
@@ -23,25 +20,35 @@ try:
 except ImportError:
     boto3 = None
 
-import IPy
-
 import otree
-from otree import forms
+
 from otree.views.abstract import AdminSessionPageMixin
-from otree.checks.mturk import MTurkValidator
-from otree.forms import widgets
-from otree.common import RealWorldCurrency
-from otree.models import Session
+
+from otree.models_concrete import add_time_spent_waiting
+from otree.models import Session, Participant
 from decimal import Decimal
 from django.shortcuts import redirect
 
 logger = logging.getLogger('otree')
 
 import contextlib
+from dataclasses import dataclass
+
+
+@dataclass
+class MTurkSettings:
+    keywords: Union[str, list]
+    title: str
+    description: str
+    frame_height: int
+    template: str
+    minutes_allotted_per_assignment: int
+    expiration_hours: float
+    qualification_requirements: List
+    grant_qualification_id: Optional[str] = None
 
 
 def get_mturk_client(*, use_sandbox=True):
-
     if use_sandbox:
         endpoint_url = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
     else:
@@ -79,7 +86,7 @@ def get_all_assignments(mturk_client, hit_id):
         HITId=hit_id,
         # i think 100 is the max page size
         MaxResults=100,
-        AssignmentStatuses=['Submitted', 'Approved', 'Rejected']
+        AssignmentStatuses=['Submitted', 'Approved', 'Rejected'],
     )
 
     while True:
@@ -92,189 +99,103 @@ def get_all_assignments(mturk_client, hit_id):
     return assignments
 
 
-def get_workers_by_status(mturk_client, hit_id):
-    all_assignments = get_all_assignments(mturk_client, hit_id)
-    workers_by_status = defaultdict(list)
-    for assignment in all_assignments:
-        workers_by_status[
-            assignment['AssignmentStatus']
-        ].append(assignment['WorkerId'])
-    return workers_by_status
+def in_public_domain(request):
+    """This method validates if oTree are published on a public domain
+    because mturk need it
 
-
-
-class MTurkCreateHITForm(forms.Form):
-
-    use_sandbox = forms.BooleanField(
-        required=False,
-        label='Use MTurk Sandbox (for development and testing)',
-        help_text=(
-            "If this box is checked, your HIT will not be published to "
-            "the MTurk live site, but rather to the MTurk Sandbox, "
-            "so you can test how it will look to MTurk workers."
-        ))
-    title = forms.CharField()
-    description = forms.CharField()
-    keywords = forms.CharField()
-    money_reward = forms.RealWorldCurrencyField(
-        # it seems that if this is omitted, the step defaults to an integer,
-        # meaninng fractional inputs are not accepted
-        widget=widgets._RealWorldCurrencyInput(attrs={'step': 0.01})
-    )
-    assignments = forms.IntegerField(
-        label="Number of assignments",
-        help_text="How many unique Workers do you want to work on the HIT?")
-    minutes_allotted_per_assignment = forms.IntegerField(
-        label="Minutes allotted per assignment",
-        help_text=(
-            "Number of minutes, that a Worker has to "
-            "complete the HIT after accepting it."
-        ))
-    expiration_hours = forms.FloatField(
-        label="Hours until HIT expiration",
-        help_text=(
-            "Number of hours after which the HIT "
-            "is no longer available for users to accept. "
-        ))
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['assignments'].widget.attrs['readonly'] = True
+    """
+    host = request.get_host().lower()
+    if ":" in host:
+        host = host.split(":", 1)[0]
+    if host in ["localhost", '127.0.0.1']:
+        return False
+    # IPy had a compat problem with py 3.8.
+    # in the future, could move some IPy code here.
+    return True
 
 
 class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
-    '''This view creates mturk HIT for session provided in request
-    AWS externalQuestion API is used to generate HIT.
-
-    '''
-    form_class = MTurkCreateHITForm
-
-    def in_public_domain(self, request, *args, **kwargs):
-        """This method validates if oTree are published on a public domain
-        because mturk need it
-
-        """
-        host = request.get_host().lower()
-        if ":" in host:
-            host = host.split(":", 1)[0]
-        if host == "localhost":
-            return False
-        try:
-            ip = IPy.IP(host)
-            return ip.iptype() == "PUBLIC"
-        except ValueError:
-            # probably is a public domain
-            return True
 
     # make these class attributes so they can be mocked
     aws_keys_exist = bool(
-        getattr(settings, 'AWS_ACCESS_KEY_ID', None) and
-        getattr(settings, 'AWS_SECRET_ACCESS_KEY', None)
+        getattr(settings, 'AWS_ACCESS_KEY_ID', None)
+        and getattr(settings, 'AWS_SECRET_ACCESS_KEY', None)
     )
     boto3_installed = bool(boto3)
 
-    def get(self, request, **kwargs):
+    def get(self, request):
 
-        mturk_settings = self.session.config['mturk_hit_settings']
+        session = self.session
 
-        keywords = mturk_settings['keywords']
-        if isinstance(keywords, (list, tuple)):
-            keywords = ', '.join(keywords)
+        mturk_settings = session.config['mturk_hit_settings']
 
-        initial = {
-            'title': mturk_settings['title'],
-            'description': mturk_settings['description'],
-            'keywords': keywords,
-            'money_reward': self.session.config['participation_fee'],
-            'use_sandbox': True,
-            'minutes_allotted_per_assignment': (
-                mturk_settings['minutes_allotted_per_assignment']
-            ),
-            'expiration_hours': mturk_settings['expiration_hours'],
-            'assignments': self.session.mturk_num_participants,
-        }
-
-        form = self.get_form(initial=initial)
-
-        url = self.request.build_absolute_uri()
-        parsed_url = urlparse(url)
-        https = parsed_url.scheme == 'https'
+        is_new_format = 'template' in mturk_settings
+        is_usd = settings.REAL_WORLD_CURRENCY_CODE == 'USD'
+        mturk_ready = (
+            self.aws_keys_exist and self.boto3_installed and is_new_format and is_usd
+        )
 
         context = self.get_context_data(
-            form=form,
+            mturk_settings=mturk_settings,
+            participation_fee=session.config['participation_fee'],
+            mturk_num_participants=session.mturk_num_participants,
+            mturk_ready=mturk_ready,
             boto3_installed=self.boto3_installed,
-            https=https,
             aws_keys_exist=self.aws_keys_exist,
-            mturk_ready=self.aws_keys_exist and self.boto3_installed and https,
-            missing_next_button_warning=MTurkValidator(self.session).validation_message(),
+            is_new_format=is_new_format,
+            is_usd=is_usd,
         )
 
         return self.render_to_response(context)
 
-    def post(self, request, **kwargs):
-        form = self.get_form(
-            data=request.POST,
-            files=request.FILES
-        )
-        if not form.is_valid():
-            return self.form_invalid(form)
+    def post(self, request):
         session = self.session
-        cleaned_data = form.cleaned_data
+        use_sandbox = bool(request.POST.get('use_sandbox'))
+        if not in_public_domain(request) and not use_sandbox:
+            msg = (
+                '<h1>Error: '
+                'oTree must run on a public domain for Mechanical Turk'
+                '</h1>'
+            )
+            return HttpResponseServerError(msg)
+        mturk_settings = MTurkSettings(**session.config['mturk_hit_settings'])
 
-        use_sandbox = bool(cleaned_data['use_sandbox'])
-        if (not self.in_public_domain(request, **kwargs) and
-           not use_sandbox):
-                msg = (
-                    '<h1>Error: '
-                    'oTree must run on a public domain for Mechanical Turk'
-                    '</h1>')
-                return HttpResponseServerError(msg)
-        mturk_settings = session.config['mturk_hit_settings']
+        start_url = self.request.build_absolute_uri(
+            reverse('MTurkStart', args=(session.code,))
+        )
 
-        url_landing_page = self.request.build_absolute_uri(
-            reverse('MTurkLandingPage', args=(session.code,)))
+        keywords = mturk_settings.keywords
+        if isinstance(keywords, (list, tuple)):
+            keywords = ', '.join(keywords)
 
-        # updating schema from http to https
-        # this is compulsory for MTurk exteranlQuestion
-        #       (heroku does support by default)
-        secured_url_landing_page = urlunparse(
-            urlparse(url_landing_page)._replace(scheme='https'))
-
-        # TODO: validate that there is enough money for the hit
-        money_reward = cleaned_data['money_reward']
-
-        # assign back to participation_fee, in case it was changed
-        # in the form
-        # need to convert back to RealWorldCurrency, because easymoney
-        # MoneyFormField returns a decimal, not Money (not sure why)
-        # see views.admin.EditSessionProperties
-        session.config['participation_fee'] = RealWorldCurrency(money_reward)
-
-        external_question = '''
-        <ExternalQuestion xmlns="http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2006-07-14/ExternalQuestion.xsd">
-          <ExternalURL>{}</ExternalURL>
-          <FrameHeight>{}</FrameHeight>
-        </ExternalQuestion>
-        '''.format(secured_url_landing_page, mturk_settings['frame_height'])
+        html_question = render_to_string(
+            'otree/MTurkHTMLQuestion.html',
+            context=dict(
+                user_template=mturk_settings.template,
+                frame_height=mturk_settings.frame_height,
+                start_url=start_url,
+            ),
+        )
 
         mturk_hit_parameters = {
-            'Title': cleaned_data['title'],
-            'Description': cleaned_data['description'],
-            'Keywords': cleaned_data['keywords'],
-            'Question': external_question,
-            'MaxAssignments': cleaned_data['assignments'],
-            'Reward': str(float(money_reward)),
-            'AssignmentDurationInSeconds': 60*cleaned_data['minutes_allotted_per_assignment'],
-            'LifetimeInSeconds': int(60*60*cleaned_data['expiration_hours']),
+            'Title': mturk_settings.title,
+            'Description': mturk_settings.description,
+            'Keywords': keywords,
+            'MaxAssignments': session.mturk_num_participants,
+            'Reward': str(float(session.config['participation_fee'])),
+            'AssignmentDurationInSeconds': 60
+            * mturk_settings.minutes_allotted_per_assignment,
+            'LifetimeInSeconds': int(60 * 60 * mturk_settings.expiration_hours),
             # prevent duplicate HITs
-            'UniqueRequestToken':'otree_{}'.format(session.code),
+            'UniqueRequestToken': 'otree_{}'.format(session.code),
+            'Question': html_question,
         }
 
         if not use_sandbox:
             # drop requirements checks in sandbox mode.
-            mturk_hit_parameters['QualificationRequirements'] = (
-                mturk_settings.get('qualification_requirements', [])
-            )
+            mturk_hit_parameters[
+                'QualificationRequirements'
+            ] = mturk_settings.qualification_requirements
 
         with MTurkClient(use_sandbox=use_sandbox, request=request) as mturk_client:
 
@@ -290,17 +211,17 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
 
 
 class MTurkSessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
-
     def vars_for_template(self):
         session = self.session
         published = bool(session.mturk_HITId)
         if not published:
             return dict(published=False)
-        with MTurkClient(use_sandbox=session.mturk_use_sandbox, request=self.request) as mturk_client:
-            workers_by_status = get_workers_by_status(
-                mturk_client,
-                session.mturk_HITId
-            )
+        with MTurkClient(
+            use_sandbox=session.mturk_use_sandbox, request=self.request
+        ) as mturk_client:
+            all_assignments = get_all_assignments(mturk_client, session.mturk_HITId)
+
+        workers_by_status = get_workers_by_status(all_assignments)
 
         participants_not_reviewed = session.participant_set.filter(
             mturk_worker_id__in=workers_by_status['Submitted']
@@ -312,6 +233,9 @@ class MTurkSessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
             mturk_worker_id__in=workers_by_status['Rejected']
         )
 
+        add_time_spent_waiting(participants_not_reviewed)
+        add_answers(participants_not_reviewed, all_assignments)
+
         return dict(
             published=True,
             participants_approved=participants_approved,
@@ -321,8 +245,36 @@ class MTurkSessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
         )
 
 
-class PayMTurk(vanilla.View):
+def get_workers_by_status(all_assignments) -> Dict[str, List[str]]:
+    workers_by_status = defaultdict(list)
+    for assignment in all_assignments:
+        workers_by_status[assignment['AssignmentStatus']].append(assignment['WorkerId'])
+    return workers_by_status
 
+
+def get_completion_code(xml: str) -> str:
+    if not xml:
+        return ''
+    root = ElementTree.fromstring(xml)
+    for ans in root:
+        if ans[0].text == 'taskAnswers':
+            answer_data = json.loads(ans[1].text)
+            try:
+                return answer_data[0]['completion_code']
+            except:
+                return ''
+    return ''
+
+
+def add_answers(participants: List[Participant], all_assignments: List[dict]):
+    answers = {}
+    for assignment in all_assignments:
+        answers[assignment['WorkerId']] = assignment['Answer']
+    for p in participants:
+        p.mturk_answers_formatted = get_completion_code(answers[p.mturk_worker_id])
+
+
+class PayMTurk(vanilla.View):
     url_pattern = r'^PayMTurk/(?P<session_code>[a-z0-9]+)/$'
 
     def post(self, request, session_code):
@@ -374,18 +326,21 @@ class PayMTurk(vanilla.View):
                         AssignmentId=p.mturk_assignment_id,
                         BonusAmount='{0:.2f}'.format(Decimal(payoff)),
                         # prevent duplicate payments
-                        UniqueRequestToken='{}_{}'.format(p.mturk_worker_id, p.mturk_assignment_id),
+                        UniqueRequestToken='{}_{}'.format(
+                            p.mturk_worker_id, p.mturk_assignment_id
+                        ),
                         # although the Boto documentation doesn't say so,
                         # this field is required. A user reported:
                         # "Value null at 'reason' failed to satisfy constraint:
                         # Member must not be null."
-                        Reason='Thank you'
+                        Reason='Thank you',
                     )
                 successful_payments += 1
             except Exception as e:
                 msg = (
                     'Could not pay {} because of an error communicating '
-                    'with MTurk: {}'.format(p._id_in_session(), str(e)))
+                    'with MTurk: {}'.format(p._id_in_session(), str(e))
+                )
                 messages.error(request, msg)
                 logger.error(msg)
                 failed_payments += 1
@@ -399,14 +354,13 @@ class PayMTurk(vanilla.View):
 
 
 class RejectMTurk(vanilla.View):
-
     url_pattern = r'^RejectMTurk/(?P<session_code>[a-z0-9]+)/$'
 
     def post(self, request, session_code):
         session = get_object_or_404(Session, code=session_code)
-        with MTurkClient(use_sandbox=session.mturk_use_sandbox,
-                         request=request) as mturk_client:
-
+        with MTurkClient(
+            use_sandbox=session.mturk_use_sandbox, request=request
+        ) as mturk_client:
             for p in session.participant_set.filter(
                 mturk_worker_id__in=request.POST.getlist('workers')
             ):
@@ -416,28 +370,29 @@ class RejectMTurk(vanilla.View):
                     # An error occurred (ValidationException) when calling the RejectAssignment operation:
                     # 1 validation error detected: Value null at 'requesterFeedback'
                     # failed to satisfy constraint: Member must not be null
-                    RequesterFeedback=''
+                    RequesterFeedback='',
                 )
 
-            messages.success(request, "You successfully rejected "
-                                      "selected assignments")
+            messages.success(
+                request, "You successfully rejected " "selected assignments"
+            )
         return redirect('MTurkSessionPayments', session_code)
 
 
 class MTurkExpireHIT(vanilla.View):
-
     url_pattern = r'^MTurkExpireHIT/(?P<session_code>[a-z0-9]+)/$'
 
     def post(self, request, session_code):
         session = get_object_or_404(Session, code=session_code)
-        with MTurkClient(use_sandbox=session.mturk_use_sandbox,
-                         request=request) as mturk_client:
+        with MTurkClient(
+            use_sandbox=session.mturk_use_sandbox, request=request
+        ) as mturk_client:
             expiration = datetime(2015, 1, 1)
             mturk_client.update_expiration_for_hit(
                 HITId=session.mturk_HITId,
                 # If you update it to a time in the past,
                 # the HIT will be immediately expired.
-                ExpireAt=expiration
+                ExpireAt=expiration,
             )
             session.mturk_expiration = expiration.timestamp()
             session.save()
@@ -446,4 +401,3 @@ class MTurkExpireHIT(vanilla.View):
             # statically say the HIT has expired.
 
         return redirect('MTurkCreateHIT', session.code)
-

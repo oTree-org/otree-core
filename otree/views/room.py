@@ -10,6 +10,7 @@ from otree.views.admin import CreateSessionForm
 from django.shortcuts import redirect
 from otree.session import SESSION_CONFIGS_DICT
 
+
 class Rooms(vanilla.TemplateView):
     template_name = 'otree/admin/Rooms.html'
 
@@ -80,9 +81,7 @@ class CloseRoom(vanilla.View):
         self.room = ROOM_DICT[room_name]
         self.room.set_session(None)
         # in case any failed to be cleared through regular ws.disconnect
-        ParticipantRoomVisit.objects.filter(
-            room_name=room_name,
-        ).delete()
+        ParticipantRoomVisit.objects.filter(room_name=room_name).delete()
         return redirect('RoomWithoutSession', room_name)
 
 
@@ -93,8 +92,7 @@ class StaleRoomVisits(vanilla.View):
     def get(self, request, room):
         stale_threshold = time.time() - 20
         stale_participant_labels = ParticipantRoomVisit.objects.filter(
-            room_name=room,
-            last_updated__lt=stale_threshold
+            room_name=room, last_updated__lt=stale_threshold
         ).values_list('participant_label', flat=True)
 
         # make json serializable
@@ -109,8 +107,7 @@ class ActiveRoomParticipantsCount(vanilla.View):
 
     def get(self, request, room):
         count = ParticipantRoomVisit.objects.filter(
-            room_name=room,
-            last_updated__gte=time.time() - 20
+            room_name=room, last_updated__gte=time.time() - 20
         ).count()
 
         return JsonResponse({'count': count})

@@ -13,25 +13,23 @@ class Command(BaseCommand):
     help = "Unzip a zipped oTree project"
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            'zip_file', type=str, help="The .otreezip file")
+        parser.add_argument('zip_file', type=str, help="The .otreezip file")
         # it's good to require this arg because then it's obvious that the files
         # will be put in that subfolder, and not dumped in the current dir
         parser.add_argument(
-            'output_folder', type=str, nargs='?',
-            help="What to call the new project folder")
+            'output_folder',
+            type=str,
+            nargs='?',
+            help="What to call the new project folder",
+        )
 
     def handle(self, **options):
         zip_file = options['zip_file']
         output_folder = options['output_folder'] or auto_named_output_folder(zip_file)
         unzip(zip_file, output_folder)
-        msg = (
-            f'Unzipped file. Enter this:\n'
-            f'cd {esc_fn(output_folder)}\n'
-        )
+        msg = f'Unzipped file. Enter this:\n' f'cd {esc_fn(output_folder)}\n'
 
         logger.info(msg)
-
 
     def run_from_argv(self, argv):
         '''
@@ -58,6 +56,7 @@ def esc_fn(fn):
     if ' ' in fn:
         return f'\"{fn}\"'
     return fn
+
 
 def auto_named_output_folder(zip_file_name) -> str:
     default_folder_name = Path(zip_file_name).stem
@@ -89,4 +88,3 @@ def unzip(zip_file: str, output_folder):
 
     with tarfile.open(zip_file) as tar:
         tar.extractall(output_folder)
-

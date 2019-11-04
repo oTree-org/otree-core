@@ -32,25 +32,21 @@ def inspect_obj(obj):
         )
 
 
-def scan_for_model_instances(data):
+def scan_for_model_instances(vars_dict: dict):
     '''
     I don't know how to entirely block pickle from storing model instances,
     (I tried overriding __reduce__ but that interferes with deepcopy())
     so this simple shallow scan should be good enough.
     '''
 
-    # vars should always be a dict
-    if isinstance(data, dict):
-        for k, v in data.items():
-            inspect_obj(k)
-            inspect_obj(v)
-            if isinstance(v, dict):
-                for kk, vv in v.items():
-                    inspect_obj(kk)
-                    inspect_obj(vv)
-            elif isinstance(v, list):
-                for ele in v:
-                    inspect_obj(ele)
+    for v in vars_dict.values():
+        inspect_obj(v)
+        if isinstance(v, dict):
+            for vv in v.values():
+                inspect_obj(vv)
+        elif isinstance(v, list):
+            for ele in v:
+                inspect_obj(ele)
 
 
 class _PickleField(models.TextField):
@@ -80,7 +76,7 @@ class _PickleField(models.TextField):
         value = serialize_to_string(value)
         return force_text(value)
 
-    def from_db_value(self, value, expression, connection, context):
+    def from_db_value(self, value, expression, connection):
         return self.to_python(value)
 
     def value_to_string(self, obj):

@@ -1,6 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import time
+from collections import defaultdict
+from typing import Iterable
+
 from django.db import models
 
 
@@ -11,12 +12,24 @@ class PageCompletion(models.Model):
     app_name = models.CharField(max_length=300)
     page_index = models.PositiveIntegerField()
     page_name = models.CharField(max_length=300)
-    time_stamp = models.PositiveIntegerField()
+    # it needs a default, otherwise i get "added a non-nullable field without default"
+    # eventually i can remove the default, if I am sure people did not skip over all
+    # the intermediate versions.
+    epoch_time = models.PositiveIntegerField(null=True)
     seconds_on_page = models.PositiveIntegerField()
     subsession_pk = models.PositiveIntegerField()
     participant = models.ForeignKey('otree.Participant', on_delete=models.CASCADE)
     session = models.ForeignKey('otree.Session', on_delete=models.CASCADE)
     auto_submitted = models.BooleanField()
+
+
+class WaitPagePassage(models.Model):
+    participant = models.ForeignKey('otree.Participant', on_delete=models.CASCADE)
+    session = models.ForeignKey('otree.Session', on_delete=models.CASCADE)
+    # don't set default=time.time because that's harder to patch
+    epoch_time = models.PositiveIntegerField(null=True)
+    # if False, means they exit the wait page
+    is_enter = models.BooleanField()
 
 
 class PageTimeout(models.Model):
@@ -70,9 +83,7 @@ class ParticipantLockModel(models.Model):
     class Meta:
         app_label = "otree"
 
-    participant_code = models.CharField(
-        max_length=16, unique=True
-    )
+    participant_code = models.CharField(max_length=16, unique=True)
 
     locked = models.BooleanField(default=False)
 
@@ -96,7 +107,6 @@ class RoomToSession(models.Model):
 
     room_name = models.CharField(unique=True, max_length=255)
     session = models.ForeignKey('otree.Session', on_delete=models.CASCADE)
-
 
 
 class ParticipantRoomVisit(models.Model):
@@ -127,8 +137,7 @@ class ChatMessage(models.Model):
     channel = models.CharField(max_length=255)
     # related_name necessary to disambiguate with otreechat add on
     participant = models.ForeignKey(
-        'otree.Participant', related_name='chat_messages_core',
-        on_delete=models.CASCADE
+        'otree.Participant', related_name='chat_messages_core', on_delete=models.CASCADE
     )
     nickname = models.CharField(max_length=255)
 
@@ -136,3 +145,38 @@ class ChatMessage(models.Model):
     # are already used by channels
     body = models.TextField()
     timestamp = models.FloatField(default=time.time)
+
+
+def add_time_spent_waiting(participants):
+    session_passages_qs = WaitPagePassage.objects.filter(
+        participant__in=participants
+    ).order_by('id')
+    _add_time_spent_waiting_inner(
+        participants=participants, session_passages_qs=session_passages_qs
+    )
+
+
+def _add_time_spent_waiting_inner(
+    *, participants, session_passages_qs: Iterable[WaitPagePassage]
+):
+    '''adds the attribute to each participant object so it can be shown in the template'''
+
+    session_passages = defaultdict(list)
+    for passage in session_passages_qs:
+        session_passages[passage.participant_id].append(passage)
+
+    for participant in participants:
+        total = 0
+        enter_time = None
+        passages = session_passages.get(participant.id, [])
+        for p in passages:
+            if p.is_enter and not enter_time:
+                enter_time = p.epoch_time
+            if not p.is_enter and enter_time:
+                total += p.epoch_time - enter_time
+                enter_time = None
+        # means they are still waiting
+        if enter_time:
+            total += time.time() - enter_time
+        participant._is_frozen = False
+        participant.waiting_seconds = int(total)

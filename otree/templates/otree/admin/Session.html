@@ -1,5 +1,5 @@
 {% extends "otree/BaseAdmin.html" %}
-{% load otree_internal staticfiles %}
+{% load otree_internal static %}
 
 {% block head_title %}
 {{ session.config.display_name }}: session '{{ session.code }}'{% if session.is_demo %} (demo) {% endif %}

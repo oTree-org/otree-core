@@ -59,6 +59,15 @@ def get_currency_format(lc: str, LO: str, CUR: str) -> str:
             return '₹ #'
         if CUR == 'SGD':
             return '$#'
+        # override for CNY/JPY/KRW, otherwise it would be written as 원10
+        # need to use the chinese character because that's already what's used in
+        # form inputs
+        if CUR == 'CNY':
+            return '#元'
+        if CUR == 'JPY':
+            return '#円'
+        if CUR == 'KRW':
+            return '#원'
         return '¤#'
 
     if lc == 'zh':
