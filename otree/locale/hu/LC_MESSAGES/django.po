@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: oTree\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-05-27 20:55-0600\n"
-"PO-Revision-Date: 2015-10-13 20:33+0200\n"
+"PO-Revision-Date: 2020-01-19 16:14+0100\n"
 "Last-Translator: Linda Dezső <linda.dezso@gmail.com>\n"
 "Language-Team: \n"
 "Language: hu\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 1.8.5\n"
+"X-Generator: Poedit 2.0.6\n"
 
 #. Translators: A player's default chat nickname,
 #. which is "Player" + their ID in group. For example:
@@ -24,7 +24,7 @@ msgstr ""
 #: .\chat.py:21
 #, python-brace-format
 msgid "Player {id_in_group}"
-msgstr ""
+msgstr "{id_in_group}-*s játékos"
 
 #. Translators: the name someone sees displayed for themselves in a chat.
 #. It's their nickname followed by "(Me)". For example:
@@ -32,7 +32,7 @@ msgstr ""
 #: .\chat.py:60
 #, python-brace-format
 msgid "{nickname} (Me)"
-msgstr ""
+msgstr "{nickname} (Én)"
 
 #. Translators: for required form fields
 #: .\constants_internal.py:56
@@ -86,16 +86,16 @@ msgstr "Kérjük, javítsa ki az oldalon lévő hibákat."
 
 #: .\templates\otree\RoomInputLabel.html:7
 msgid "Welcome"
-msgstr ""
+msgstr "Üdvözöljük"
 
 #. Translators: If the user enters an invalid participant label
 #: .\templates\otree\RoomInputLabel.html:13
 msgid "Invalid entry; try again."
-msgstr ""
+msgstr "Érvénytelen; próbája újra."
 
 #: .\templates\otree\RoomInputLabel.html:15
 msgid "Please enter your participant label."
-msgstr ""
+msgstr "Kerjük, adja meg kísérleti azonosítóját."
 
 #: .\templates\otree\WaitPage.html:49
 msgid ""
@@ -120,7 +120,7 @@ msgstr "Tovább"
 #. Translators: Chat widget "send" button text
 #: .\templates\otreechat_core\widget.html:7
 msgid "Send"
-msgstr ""
+msgstr "Elküldés"
 
 # incomplete sentence
 #: .\views\abstract.py:886
@@ -130,7 +130,7 @@ msgstr "Az oldal kitöltésére maradt idő:"
 #. Translators: the default title of a wait page
 #: .\views\abstract.py:961 .\views\participant.py:291
 msgid "Please wait"
-msgstr "Kérjük, várjon."
+msgstr "Kérjük, várjon"
 
 #: .\views\abstract.py:1403
 msgid "Waiting for the other participants."
@@ -142,4 +142,4 @@ msgstr "Kérjük, várjon, amíg a többi résztvevő is készen áll."
 
 #: .\views\participant.py:292
 msgid "Waiting for your session to begin"
-msgstr ""
+msgstr "Kérjük, várjon, amíg a kísérlete elkezdödik"
