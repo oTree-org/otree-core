@@ -1,0 +1,51 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+
+{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-body text-center text-danger">
+            <h3>Hello, <strong>{{ player.name }}</strong>!</h3>
+        </div>
+    </div>
+    <h5>Please, check the names of your friends in this list:</h5>
+
+    {% if formset.non_form_errors %}
+        {% for error in formset.non_form_errors %}
+            <div class="alert alert-danger">
+                {{ error }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+
+    {{ formset.management_form }}
+    <div class="form-group">
+        {% for form in formset.forms %}
+            <div class="form-check">
+                <label for="{{ form.edge.id_for_label }}">{{ form.edge }}
+                    {{ form.instance.target.name }}
+
+                </label>
+            </div>
+            {% for hidden in form.hidden_fields %}
+                {{ hidden }}
+            {% endfor %}
+
+
+        {% endfor %}
+    </div>
+    {% next_button %}
+{% endblock %}
+
+
+{% block scripts %}
+
+{% endblock %}
+
+{% block styles %}
+
+{% endblock %}

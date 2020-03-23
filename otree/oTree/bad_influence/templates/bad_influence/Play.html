@@ -1,0 +1,182 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block content %}
+    <h2>{{ question.title }}</h2>
+    <p>{{ question.text }}</p>
+    <p>{{ question.preference }}</p>
+    <p>{{ question.challenge }}</p>
+
+    <style>
+        .flash {
+            animation-name: flash;
+            animation-duration: 0.2s;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+            animation-direction: alternate;
+            animation-play-state: running;
+        }
+
+        @keyframes flash {
+            from {
+                color: red;
+            }
+            to {
+                color: black;
+            }
+        }
+    </style>
+
+
+
+    <div style="display: flex; flex-direction: column; position: relative; min-height: 300px" class="answer-container" id="d3container">
+    <div id="timer-text" style="position: absolute; top: 0; left: 8px; font-size: 40px">Tid tilbage:
+        <strong><span id="timer" class="otree-timer__time-left"></span></strong>
+    </div>
+    </div>
+    <script>
+        $('#timer').on('DOMSubtreeModified', function () {
+            let element = $('#timer');
+
+            if (!element.hasClass('flash')) {
+                let split = element.text().split(':');
+                let minutes = parseInt(split[0]);
+                let seconds = parseInt(split[1]);
+
+                if (minutes <= 0 && seconds <= 20) {
+                    $('#timer-text').addClass('flash');
+                    element.addClass('flash')
+                }
+            }
+        })
+    </script>
+
+
+    <style>
+        .otree-timer {
+            display: none
+        }
+
+        .otree-title {
+            display: none
+        }
+
+        .info-div {
+            display: flex;
+            flex-direction: row;
+            border-style: solid;
+            border-width: thin;
+            border-radius: 10px;
+            padding: 1%;
+            margin: 2%
+        }
+
+        .image-div {
+            margin: 1%;
+            flex: 1 1 0
+        }
+
+        .image-img {
+            width: 90%;
+            border-style: solid;
+            border-width: thin;
+            background: #f5f5f5
+        }
+
+        .guess-div {
+            margin: 1%;
+            flex: 1 1 0
+        }
+
+        tr {
+            line-height: 20%
+        }
+
+        tr:nth-child(odd) {
+            background: #CCC
+        }
+
+        tr:nth-child(even) {
+            background: #FFF
+        }
+
+        .answer-container {
+            display: flex;
+            flex-direction: column;
+            height: 10%;
+            align-items: center;
+            border-style: solid;
+            border-width: thin;
+            border-radius: 10px;
+            padding: 1%;
+            margin: 2%
+        }
+
+        ,
+        .text-container {
+            display: flex;
+            flex-direction: column;
+            height: 10%;
+            align-items: center;
+            border-style: solid;
+            border-width: thin;
+            border-radius: 10px;
+            padding: 1%;
+            margin: 2%
+        }
+
+        .answer-item {
+            padding-left: 20px;
+        }
+
+        .text-item {
+            padding-left: 20px;
+        }
+    </style>
+    <div id="ButtonsHolder" class="choice-button-holder">
+        <button id="GuessFalseButton" type="button" name="choice" value="False" class="btn choice-button">
+            <img width="30px" height="30px" src="{{ question.majority_color_img }}"> {{ question.majority_choice }}
+        </button>
+        <button id="GuessTrueButton" type="button" name="choice" value="True" class="btn choice-button">
+            <img width="30px" height="30px" src="{{ question.minority_color_img }}"> {{ question.minority_choice }}
+        </button>
+    </div>
+    <script>
+        // We want to randomise whether the button for the majority choice is on the left or the right
+        // so that players can't catch on an tell which is the majority for the button position
+        $('#ButtonsHolder').css('flex-direction', Math.random() > 0.5 ? 'row' : 'row-reverse')
+    </script>
+
+
+    {% for config in player.chat_configs %}
+        <div class="answer-container" style="width: 100%;">
+            <h4>{{ config.label }}</h4>
+            {% chat nickname=player.chat_nickname channel=config.channel %}
+        </div>
+    {% endfor %}
+    <style>
+        .otree-chat__input {
+            width: 100%;
+        }
+    </style>
+{% endblock %}
+
+
+{% block scripts %}
+    {% include 'bad_influence/d3/d3_graph.html' %}
+    {% include 'bad_influence/channels/network_voting_channel.html' %}
+    {% if view.remaining_timeout_seconds != None %}
+        {% include 'otree/includes/TimeLimit.js.html' %}
+    {% endif %}
+    {{ form.media|default:"" }}
+{% endblock %}
+
+{% block styles %}
+    <style type="text/css">
+        #cy {
+            width: 100%;
+            height: 600px;
+            display: block;
+        }
+    </style>
+{% endblock %}

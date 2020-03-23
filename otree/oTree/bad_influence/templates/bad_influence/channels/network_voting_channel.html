@@ -1,0 +1,39 @@
+<script>
+    $(function () {
+        let ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+        let ws_path = ws_scheme + '://' + window.location.host + "/network_voting/{{ player.id }}/{{ group.pk }}";
+        let socket = new ReconnectingWebSocket(ws_path);
+
+        let $guess_true_button = $('#GuessTrueButton');
+        let $guess_false_button = $('#GuessFalseButton');
+        let $consensus_bar = $('#ConsensusBar');
+
+        let send_guess = function(guess) {
+            let msg = {
+                'action': 'guess',
+                'payload': guess,
+                'subjective_time': timer.innerText
+            };
+
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify(msg));
+            }
+        };
+
+        $guess_true_button.click(function() {
+            send_guess(true);
+        });
+        $guess_false_button.click(function() {
+            send_guess(false);
+        });
+
+        socket.onmessage = function (event) {
+            let obj = jQuery.parseJSON(event.data);
+            let newConsensus = (obj.consensus * 100).toFixed(0) + "%";
+            $consensus_bar.html(newConsensus);
+            $consensus_bar.attr('aria-valuenow', newConsensus).css('width', newConsensus);
+            setNodeColors(obj.ego_graph.nodes)
+        };
+    })
+    ;
+</script>

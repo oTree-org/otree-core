@@ -1,0 +1,61 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block content %}
+
+    <h2>Du fik {{ payoff | c}} point</h2>
+
+    <table class="table">
+            <tr>
+                <th><strong>Runde</strong></th>
+                <th>point</th>
+                <th>influencer</th>
+                <th>#venner</th>
+                <th>#skift</th>
+                <th>stædighed</th>
+            </tr>
+            {% for p in player_in_all_rounds %}
+            <tr>
+                <td><strong>{{ p.round_number }} ({{p.spg}})</strong></td>
+                <td>{{ p.payoff }} </td>
+                <td>{% if p.hub %}ja{% else%}nej{% endif %}</td>
+                <td>{{ p.number_of_friends }}</td>
+                <td>{{ p.opinion_change }}</td>
+                <td>{{ p.stubborn }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td><strong> i alt </strong></td>
+                <td><strong>{{ payoff }}</strong></td>
+                <td><strong>{{ fraction_hub }}</strong></td>
+                <td><strong>{{ total_friends }}</strong></td>
+                <td><strong>{{ total_opinion_changes }}</strong></td>
+                <td><strong>{{ total_stubborn }} sek</strong></td>
+        </table>
+
+
+    <p></p>
+    <h4>Vælg et spørgsmål for at se hvordan det gik:</h4>
+
+    <p id="d3historyChoice"></p>
+    <div id="questionHolder"></div>
+    <div style="display: inline-block;" id="d3container"></div>
+    <div style="display: inline-block;" id="d3consensus"></div>
+    <p id="d3playback"></p>
+    <button type="button" id="play-button">Play</button>
+{% endblock %}
+
+
+{% block scripts %}
+    {% include 'bad_influence/d3/d3_graph_results.html' %}
+{% endblock %}
+
+{% block styles %}
+    <style type="text/css">
+        #cy {
+            width: 100%;
+            height: 600px;
+            display: block;
+        }
+    </style>
+{% endblock %}

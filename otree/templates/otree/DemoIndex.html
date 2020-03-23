@@ -1,26 +1,17 @@
 {% extends "otree/BaseAdmin.html" %}
 
 {% block title %}
-    {{ title }}
+   KU-læringsspil
 {% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-md-3 card bg-light">
         <div class="card-body">
-            {% if otreehub_url %}
-                <div class="alert alert-secondary" role="alert">
-                    Download this project on <a href="{{ otreehub_url }}">oTree Hub</a>.
-                </div>
-            {% endif %}
-            <div>
-                {{ intro_html|safe }}
-            </div>
-            {% if is_debug %}
                 <div>
-                    To add to this list, create a new session config.
+                 <h3>   Velkommen</h3>
+                    <p>Vælg et spil</p>
                 </div>
-            {% endif %}
         </div>
     </div>
 

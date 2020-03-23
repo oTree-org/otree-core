@@ -1,0 +1,609 @@
+{% load staticfiles otree %}
+<style>
+    .node {
+        stroke: #000;
+        stroke-width: 0px;
+    }
+
+    .node-player {
+        stroke: #000;
+        stroke-width: 3px;
+    }
+
+    .link {
+        stroke: #999;
+        stroke-width: 1.5px;
+    }
+
+    .node-text {
+        font-family: annie_use_your_telescope;
+        font-size: 25px;
+    }
+
+    .ticks {
+        font: annie_use_your_telescope;
+        font: 12px;
+        fill: black;
+    }
+
+    .track,
+    .track-inset,
+    .track-overlay {
+        stroke-linecap: round;
+    }
+
+    .track {
+        stroke: #000;
+        stroke-opacity: 0.3;
+        stroke-width: 10px;
+    }
+
+    .track-inset {
+        stroke: #ddd;
+        stroke-width: 8px;
+    }
+
+    .track-overlay {
+        pointer-events: stroke;
+        stroke-width: 50px;
+        cursor: pointer;
+    }
+
+    .handle {
+        fill: #fff;
+        stroke: #000;
+        stroke-opacity: 0.5;
+        stroke-width: 1.25px;
+    }
+
+    path {
+        stroke: darkgray;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .axis {
+        shape-rendering: crispEdges;
+    }
+
+    .x.axis line {
+        stroke: lightgrey;
+    }
+
+    .x.axis .minor {
+        stroke-opacity: .5;
+    }
+
+    .x.axis path {
+        display: none;
+    }
+
+    .y.axis line, .y.axis path {
+        fill: none;
+        stroke: #000;
+    }
+</style>
+<script src="https://d3js.org/d3.v3.js"></script>
+<script src="http://marvl.infotech.monash.edu/webcola/cola.min.js"></script>
+<script>
+    let svgContainer = undefined;
+    let networkGroup = undefined;
+    let sliderGroup = undefined;
+    let width = 400;
+    let height = 400;
+    let data = JSON.parse('{{ data | safe }}');
+    let selectedRunIdx = 0;
+    let $questionHolder = $('#questionHolder');
+    let startTime = undefined;
+    let currentTime = undefined;
+    let endTime = undefined;
+    let timer = undefined;
+    let playButton = undefined;
+    let playing = false;
+    let timerStepSizeInSeconds = 0.01;
+
+    let initRun = function (runIdx) {
+        let selectedRun = data[runIdx];
+        selectedRun.history = selectedRun.history.filter(function (e) {
+            return e.time !== undefined
+        });
+
+        startTime = currentTime = selectedRun.start_time;
+        endTime = selectedRun.end_time;
+
+        let graph = selectedRun.graph;
+        let history = selectedRun.history;
+        question = selectedRun.question;
+
+        setupNetwork(graph);
+        setNodeColors(history[0].nodes);
+        setupConsensus(selectedRun);
+        setupHistory(selectedRun);
+
+        $questionHolder.html(selectedRun.question.result_page_text)
+    };
+
+    $(document).ready(function () {
+        svgContainer = d3.select("#d3container")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+        networkGroup = svgContainer
+            .append("g");
+        sliderGroup = d3.select("#d3playback")
+            .append("svg")
+            .attr("width", 800)
+            .attr("height", 60)
+            .attr("transform", "translate(15,20)");
+
+        playButton = d3.select("#play-button");
+
+        initRun(selectedRunIdx);
+    });
+</script>
+<script>
+    let nodeById = d3.map();
+
+    let red = "{% static "media/red_peep.png" %}";
+    let blue = "{% static "media/blue_peep.png" %}";
+    let pink = "{% static "media/pink_peep.png" %}";
+    let yellow = "{% static "media/yellow_peep.png" %}";
+    let grey = "{% static "media/grey_peep.png" %}";
+    let green = "{% static "media/green_peep.png" %}";
+
+    let open_eyes = "{% static "media/open_eyes.png" %}";
+    let closed_eyes = "{% static "media/closed_eyes.png" %}";
+    let happy_eyes = "{% static "media/happy_eyes.png" %}";
+
+    let question = undefined;
+
+    let get_color = function (choice) {
+        return choice ? question.minority_color_img : question.majority_color_img;
+    };
+
+    let setNodeColors = function (nodes) {
+        nodes.forEach(function (n) {
+            let node = nodeById.get(n.id);
+            if (node) {
+                node.choice = n.choice;
+                networkGroup.select("#node_image_" + node.id)
+                    .attr("xlink:href", get_color(node.choice));
+            }
+        });
+    };
+
+    let setupNetwork = function (chosenGraph) {
+        let graph = JSON.parse(JSON.stringify(chosenGraph));
+
+        networkGroup.selectAll("*").remove();
+
+        let force = cola.d3adaptor()
+            .linkDistance(80)
+            .size([width, height]);
+
+        let linked = {};
+
+        graph.nodes.forEach(function (node) {
+            nodeById.set(node.id, node);
+            node.x = width / 2;
+            node.y = height / 2;
+            node.blinking = false;
+            linked[node.id + "," + node.id] = 1;
+        });
+
+        graph.links.forEach(function (link) {
+            link.source = nodeById.get(link.source);
+            link.target = nodeById.get(link.target);
+            linked[link.source.id + "," + link.target.id] = 1
+        });
+
+        let neighboring = function (a, b) {
+            return linked[a.id + "," + b.id] || linked[b.id + "," + a.id];
+        };
+
+        let highlighted = null;
+
+        function connectedNodes(d) {
+            if (highlighted !== d) {
+                //Make all nodes that aren't neighbours transparent
+                node.transition(1000).style("opacity", function (o) {
+                    return neighboring(d, o) ? 1 : 0.3;
+                });
+
+
+                // Keep all links
+                link.transition(1000).style("opacity", function (o) {
+                    if (neighboring(d, o.source) && neighboring(d, o.target)) {
+                        return 1;
+                    }
+                    else {
+                        return 0.3;
+                    }
+
+                });
+
+
+            } else {
+                highlighted = null;
+
+                // Restore all nodes to being fully opaque
+                node.transition(1000).style("opacity", 1);
+                link.transition(1000).style("opacity", 1);
+            }
+        }
+
+        force
+            .nodes(graph.nodes)
+            .links(graph.links)
+            .start();
+
+        let link = networkGroup.selectAll(".link")
+            .data(graph.links)
+            .enter().append("line")
+            .attr("class", "link");
+
+        let node = networkGroup.selectAll(".node")
+            .data(graph.nodes)
+            .enter().append("g")
+            .attr("class", "node")
+            .call(force.drag)
+            .on('click', function (d) {
+                connectedNodes(d)
+            });
+
+        node
+            .append("circle")
+            .attr("id", function (d) {
+                return "node_" + d.id
+            })
+            .attr("class", function (d) {
+                return d.id === {{ id_in_group }} ? "node-player" : "node"
+            })
+            .attr("r", function (d) {
+                return d.id === {{ id_in_group }} ? 17 : 10
+            });
+
+        node.append("svg:image")
+            .attr("id", function (d) {
+                return "node_image_" + d.id
+            })
+            .attr('x', -20)
+            .attr('y', -20)
+            .attr('width', 40)
+            .attr('height', 40)
+            .attr("xlink:href", function (d) {
+                return d.choice === get_color(d.choice)
+            });
+
+        let get_open_eyes = function (d) {
+            return d.preference === d.choice ? happy_eyes : open_eyes
+        };
+
+        let eyes = node.append("svg:image")
+            .attr("id", function (d) {
+                return "node_image_eyes" + d.id
+            })
+            .attr('x', -20)
+            .attr('y', -20)
+            .attr('width', 40)
+            .attr('height', 40)
+            .attr("xlink:href", get_open_eyes);
+
+        d3.timer(function () {
+            eyes.attr("xlink:href", function (d) {
+                if (d.blinking) {
+                    if (Math.random() < 0.05) {
+                        d.blinking = false
+                    }
+                } else {
+                    if (Math.random() < 0.01) {
+                        d.blinking = true
+                    }
+                }
+
+                return d.blinking ? closed_eyes : get_open_eyes(d);
+            });
+        });
+
+        node.append("text")
+            .attr("class", "node-text")
+            .attr("text-anchor", "right")
+            .attr("dx", 15)
+            .attr("dy", 20)
+            .text(function (d) {
+                return d.id;
+            });
+
+        force.on("tick", function () {
+            link.attr("x1", function (d) {
+                return d.source.x;
+            })
+                .attr("y1", function (d) {
+                    return d.source.y;
+                })
+                .attr("x2", function (d) {
+                    return d.target.x;
+                })
+                .attr("y2", function (d) {
+                    return d.target.y;
+                });
+
+            node.attr("transform", function (d) {
+                return "translate(" + d.x + "," + d.y + ")";
+            })
+        });
+    };
+</script>
+<script>
+    let numHistories = data.length;
+    $(document).ready(function () {
+        let dropdownChange = function () {
+            let newHistory = parseInt(d3.select(this).property('value'));
+
+            if (newHistory !== selectedRunIdx) {
+                selectedRunIdx = newHistory;
+                initRun(newHistory);
+            }
+        };
+
+        let dropdown = d3.select("#d3historyChoice")
+            .insert("select", "svg")
+            .attr("style", "font-family: annie_use_your_telescope; width: 10rem")
+            .on("change", dropdownChange);
+
+        dropdown.selectAll("option")
+            .data(d3.range(0, numHistories, 1))
+            .enter().append("option")
+            .attr("value", function (idx) {
+                return idx;
+            })
+            .text(function (idx) {
+                return data[idx].question.title;
+            });
+    });
+</script>
+<script>
+    let setupHistory = function (chosenHistory) {
+        let w = width * 2;
+        let history = JSON.parse(JSON.stringify(chosenHistory));
+        history = history.history;
+        sliderGroup.selectAll("*").remove();
+
+        let L = history.length;
+        let slider_size = 0.75 * w;
+        let left_margin = 0.5 * (w - slider_size);
+
+        let x = d3.scale.linear()
+            .domain([chosenHistory.start_time, chosenHistory.end_time])
+            .range([left_margin, slider_size + left_margin])
+            .clamp(true);
+
+        let slider = sliderGroup.append("g").attr("transform", "translate(15,20)");
+
+        let dispatch = d3.dispatch("sliderChange");
+        let drag = d3.behavior.drag()
+            .on("dragstart", function () {
+                d3.event.sourceEvent.preventDefault();
+            })
+            .on("drag", function () {
+                dispatch.sliderChange(x.invert(d3.event.x));
+            });
+
+        slider.append("line")
+            .attr("class", "track")
+            .attr("x1", x.range()[0])
+            .attr("x2", x.range()[1])
+            .select(function () {
+                return this.parentNode.appendChild(this.cloneNode(true));
+            })
+            .attr("class", "track-inset")
+            .select(function () {
+                return this.parentNode.appendChild(this.cloneNode(true));
+            })
+            .attr("class", "track-overlay")
+            .call(drag);
+
+        let historyTicks = d3.range(0, history.length, 1);
+        let dx = L / (historyTicks.length - 1);
+        let xticks = d3.range(0, L + dx, dx);
+
+        let handle = slider.insert("circle", ".track-overlay")
+            .attr("class", "handle")
+            .attr("r", 9)
+            .attr("cx", x.range()[0]);
+
+        let step = function () {
+            let newTime = currentTime += timerStepSizeInSeconds;
+            if (newTime >= endTime) {
+                if (playing) {
+                    togglePlay()
+                }
+                changeTime(endTime);
+            } else {
+                changeTime(currentTime += timerStepSizeInSeconds)
+            }
+        };
+
+        let togglePlay = function () {
+            if (playButton.text() === "Pause") {
+                playing = false;
+                clearInterval(timer);
+                playButton.text("Play");
+            } else {
+                playing = true;
+                if (currentTime === endTime) {
+                    changeTime(startTime)
+                }
+                timer = setInterval(step, timerStepSizeInSeconds * 1000);
+                playButton.text("Pause");
+            }
+        };
+
+
+        playButton
+            .on("click", togglePlay);
+
+        let changeTime = function (chosenTime) {
+            currentTime = chosenTime;
+            handle.attr("cx", x(currentTime));
+
+            let chosenMoment = history[0];
+
+            if (chosenTime > history[0].time) {
+                let momentsBeforeTime = history.filter(function (e) {
+                    return e.time <= currentTime
+                });
+
+                chosenMoment = momentsBeforeTime[momentsBeforeTime.length - 1]
+            }
+
+            setNodeColors(chosenMoment.nodes);
+            updateRatio(currentTime);
+        };
+
+
+        changeTime(chosenHistory.start_time);
+        dispatch.on("sliderChange.slider", changeTime);
+    };
+</script>
+<script>
+    let margin = {top: 30, right: 30, bottom: 30, left: 65},
+        widthG = 300 - margin.left - margin.right,
+        heightG = 300 - margin.top - margin.bottom;
+
+    let updateRatio = undefined;
+
+    let setupConsensus = function (selectedRun) {
+        let start_time = selectedRun.start_time;
+        let end_time = selectedRun.end_time;
+        let history = selectedRun.history;
+        let question = selectedRun.question;
+        console.log(question);
+
+        let data = history.map(function (tick) {
+            return {
+                time: tick.time,
+                ratio: tick.minority_ratio * 100,
+            }
+        });
+
+        let i;
+        let newData = [];
+        newData.push(data[0]);
+
+        for (i = 1; i < data.length; i++) {
+            let prevPoint = data[i - 1];
+            let nextPoint = data[i];
+
+            let interpolationPoint = {
+                time: nextPoint.time - 0.0000001,
+                ratio: prevPoint.ratio
+            };
+
+            newData.push(interpolationPoint);
+            newData.push(nextPoint);
+        }
+
+        newData.push({
+            time: end_time,
+            ratio: newData[newData.length - 1].ratio
+        });
+
+        data = newData;
+        d3.select("#d3consensus").selectAll("*").remove();
+
+        // Add an SVG element with the desired dimensions and margin.
+        let graph = d3.select("#d3consensus")
+            .append("svg")
+            .attr("width", widthG + margin.left + margin.right)
+            .attr("height", heightG + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        // create a simple data array that we'll plot with a line (this array represents only the Y values, X will just be the index location)
+        // Initialise a X axis:
+        // X scale will fit all values from consensus[] within pixels 0-w
+        let x = d3.scale.linear().domain([start_time, end_time]).range([0, widthG]);
+        // Y scale will fit values from 0-10 within pixels h-0 (Note the inverted domain for the y-scale: bigger is up!)
+        let y = d3.scale.linear().domain([0, 100]).range([heightG, 0]);
+        // automatically determining max range can work something like this
+        // let y = d3.scale.linear().domain([0, d3.max(consensus)]).range([h, 0]);
+
+        // create a line function that can convert consensus[] into x and y points
+        let lineF = d3.svg.line()
+        // assign the X function to plot our line as we wish
+            .x(function (d) {
+                // verbose logging to show what's actually being done
+                // console.log('Plotting X value for consensus point: ' + d + ' using index: ' + i + ' to be at: ' + x(i) + ' using our xScale.');
+                // return the X coordinate where we want to plot this consensuspoint
+                return x(d.time);
+            })
+            .y(function (d) {
+                // verbose logging to show what's actually being done
+                // console.log('Plotting Y value for consensus point: ' + d + ' to be at: ' + y(d) + " using our yScale.");
+                // return the Y coordinate where we want to plot this consensuspoint
+                return y(d.ratio);
+            });
+
+        // create right yAxis
+        let yAxisLeft = d3.svg.axis().scale(y).ticks(4).tickFormat(function (d) {
+            return d + "%"
+        }).orient("left");
+
+        // Add the y-axis to the left
+        graph.append("svg:g")
+            .attr("class", "y axis")
+            .attr("transform", "translate(" + "-20" + ",0)")
+            .call(yAxisLeft);
+
+        graph.append("defs").append("svg:clipPath")
+            .attr("id", "clip")
+            .append("svg:rect")
+            .attr("id", "clip-rect")
+            .attr("x", "0")
+            .attr("y", "0")
+            .attr("width", widthG)
+            .attr("height", heightG);
+
+        graph.append("svg:path")
+            .attr("class", "path")
+            .attr("clip-path", "url(#clip)")
+            .attr("d", lineF(data));
+
+        let circleGroup = graph.append("g");
+        let circleText = circleGroup
+            .append("text")
+            .attr("text-anchor", "middle")
+            .attr("dy", -10)
+            .text(data[0].ratio.toFixed(0) + "%");
+
+        circleGroup.append("svg:image")
+            .attr('x', -10)
+            .attr('y', -10)
+            .attr('width', 20)
+            .attr('height', 20)
+            .attr("xlink:href", question.minority_color_img);
+
+        circleGroup.append("svg:image")
+            .attr('x', -10)
+            .attr('y', -10)
+            .attr('width', 20)
+            .attr('height', 20)
+            .attr("xlink:href", open_eyes);
+
+        updateRatio = function (newTime) {
+            let closestsPoint = data.find(function (e) {
+                return e.time >= newTime
+            });
+
+            if (closestsPoint === undefined) {
+                closestsPoint = data[data.length - 1]
+            }
+
+            circleGroup.attr("transform", "translate(" + x(newTime) + "," + y(closestsPoint.ratio) + ")");
+            circleText.text(closestsPoint.ratio.toFixed(0) + "%");
+
+        };
+    };
+</script>
+

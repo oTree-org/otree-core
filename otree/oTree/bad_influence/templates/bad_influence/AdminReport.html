@@ -1,0 +1,65 @@
+{% load otree static %}
+<style>
+        @font-face {
+    font-family: 'annie_use_your_telescope';
+    src: local('annie_use_your_telescope'),
+        url('{% static 'bad_influence/AnnieUseYourTelescope-Regular.ttf' %}');
+}
+html * {
+    font-family: annie_use_your_telescope;
+    }
+body {
+    font-size: 140.0%;
+}
+.form {
+    display: none;
+}
+.choice-button-holder {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    width: 100%;
+}
+.choice-button {
+    background-color: whitesmoke;
+    border-color: black;
+    color: black;
+    text-transform: capitalize;
+    font-size: 100%;
+    width: 45%;
+}
+</style>
+
+
+<h4>Vælg et spørgsmål for at se hvordan det gik:</h4>
+
+<p id="d3historyChoice"></p>
+    <div id="questionHolder"></div>
+    <div style="display: inline-block;" id="d3container"></div>
+    <div style="display: inline-block;" id="d3consensus"></div>
+    <p id="d3playback"></p>
+<button type="button" id="play-button">Play</button>
+
+{% include 'bad_influence/d3/d3_graph_results.html' %}
+
+<p></p><p></p>
+<h2>Final Rankings</h2>
+
+<table class="table">
+        <tr>
+            <th></th>
+            <th>point<p></p>i alt</th>
+            <th>stædighed <p></p>(i sekunder)</th>
+            <th># venner <p></p>i alt</th>
+            <th># holdnings-<p></p>skift</th>
+        </tr>
+        {% for ranking in rankings %}
+        <tr>
+            <td><strong>player {{ ranking.0 }}</strong></td>
+            <td>{{ ranking.1 }}</td>
+            <td>{{ ranking.2 }}</td>
+            <td>{{ ranking.3 }}</td>
+            <td>{{ ranking.4 }}</td>
+        </tr>
+        {% endfor %}
+</table>

@@ -1,0 +1,115 @@
+<style>
+
+.ticks {
+  font: 12px sans-serif;
+  fill: black;
+}
+
+.track,
+.track-inset,
+.track-overlay {
+  stroke-linecap: round;
+}
+
+.track {
+  stroke: #000;
+  stroke-opacity: 0.3;
+  stroke-width: 10px;
+}
+
+.track-inset {
+  stroke: #ddd;
+  stroke-width: 8px;
+}
+
+.track-overlay {
+  pointer-events: stroke;
+  stroke-width: 50px;
+  cursor: pointer;
+}
+
+.handle {
+  fill: #fff;
+  stroke: #000;
+  stroke-opacity: 0.5;
+  stroke-width: 1.25px;
+}
+
+</style>
+<script>
+    let histories = JSON.parse('{{ histories|safe }}');
+    let sliderSvg = undefined;
+
+    let setupHistory = function(chosenHistory) {
+        let history = JSON.parse(JSON.stringify(histories[chosenHistory]));
+        sliderSvg.selectAll("*").remove();
+
+        let L = history.length;
+        let slider_size = 0.75*width;
+        let left_margin = 0.5*(width - slider_size);
+
+        let x = d3.scale.linear()
+            .domain([0,history.length])
+            .range([left_margin, slider_size + left_margin])
+            .clamp(true);
+
+        let slider = sliderSvg.append("g").attr("transform", "translate(15,20)");
+
+        let dispatch = d3.dispatch("sliderChange");
+        let drag = d3.behavior.drag()
+            .on("dragstart", function() {
+                d3.event.sourceEvent.preventDefault();
+            })
+            .on("drag", function() {
+              dispatch.sliderChange(x.invert(d3.event.x));
+            });
+
+        slider.append("line")
+            .attr("class", "track")
+            .attr("x1", x.range()[0])
+            .attr("x2", x.range()[1])
+            .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+                .attr("class", "track-inset")
+                .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+                .attr("class", "track-overlay")
+            .call(drag);
+
+        let historyTicks = d3.range(0, history.length, 1);
+        let dx = L/(historyTicks.length-1);
+        let xticks = d3.range(0,L+dx,dx);
+
+        slider.insert("g", ".track-overlay")
+            .attr("class", "ticks")
+            .attr("transform", "translate(0," + 25 + ")")
+          .selectAll("text")
+          .data(xticks)
+              .enter().append("text")
+                .attr("x", x)
+                .attr("text-anchor", "middle")
+                .text(function(d,i) { return historyTicks[i]; });
+
+        let handle = slider.insert("circle", ".track-overlay")
+            .attr("class", "handle")
+            .attr("r", 9)
+            .attr("cx", x.range()[0]);
+
+        let changeTime = function(value) {
+            handle.attr("cx", x(value));
+            let currentTick = Math.round(x.invert(jQuery(".handle").attr("cx"))/dx);
+            let newHistory = history[currentTick];
+            setNodeColors(newHistory);
+        };
+
+        changeTime(0);
+        dispatch.on("sliderChange.slider", changeTime);
+    };
+
+    $(document).ready(function() {
+        sliderSvg = d3.select("#d3playback")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", 60);
+        setupHistory(chosenHistory);
+    });
+
+</script>
