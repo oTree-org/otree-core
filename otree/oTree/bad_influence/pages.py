@@ -1,3 +1,5 @@
+from django.template import response
+
 from ._builtin import Page, WaitPage
 import networkx as nx
 from networkx.readwrite import json_graph
@@ -6,11 +8,27 @@ from .models import Constants
 from .questions import make_question
 import time
 import numpy as np
+from django.shortcuts import render, redirect
+from .forms import RegisterForm
+
+
+def register(response):
+    if response.method == "POST":
+        form = RegisterForm(response.POST)
+        if form.is_valid():
+            form.save()
+
+        return redirect("/demo")
+    else:
+        form = RegisterForm()
+
+    return render(response, "otree/DemoIndex.html", {"form": form})
 
 
 class MyNormalWaitPage(WaitPage):
     template_name = 'bad_influence/MyResultsWaitPage.html'
     title_text = "Vent..."
+
     def after_all_players_arrive(self):
         group = self.group
         group.round_start_time = time.time()
@@ -35,10 +53,10 @@ class Play(Page):
             nx.ego_graph(self.group.get_graph(), self.player.id_in_group))
 
         return {
-                'network': json.dumps(graph),
-                'consensus': int(self.group.get_consensus() * 100),
-                'question': make_question(self.group, self.player.hub, self.player.gender, self.player.number_of_friends)
-               }
+            'network': json.dumps(graph),
+            'consensus': int(self.group.get_consensus() * 100),
+            'question': make_question(self.group, self.player.hub, self.player.gender, self.player.number_of_friends)
+        }
 
     def before_next_page(self):
         self.group.round_end_time = time.time()
@@ -47,6 +65,7 @@ class Play(Page):
 class MyResultsWaitPage(WaitPage):
     template_name = 'bad_influence/MyResultsWaitPage.html'
     title_text = "Vent..."
+
     def after_all_players_arrive(self):
         for player in self.group.get_players():
             player.set_payoffs()
@@ -75,10 +94,10 @@ class Results(Page):
             "payoff": int(self.participant.payoff),
             'player_in_all_rounds': self.player.in_all_rounds(),
             'get_others_in_group': self.player.get_others_in_group(),
-            'fraction_hub': str(np.sum([p.hub for p in self.player.in_all_rounds()]))+'/'+str(Constants.num_rounds),
+            'fraction_hub': str(np.sum([p.hub for p in self.player.in_all_rounds()])) + '/' + str(Constants.num_rounds),
             'total_friends': np.sum([p.number_of_friends for p in self.player.in_all_rounds()]),
             'total_opinion_changes': np.sum([p.opinion_change for p in self.player.in_all_rounds()]),
-            'total_stubborn': np.around(np.sum([p.stubborn for p in self.player.in_all_rounds()]),1),
+            'total_stubborn': np.around(np.sum([p.stubborn for p in self.player.in_all_rounds()]), 1),
             "id_in_group": self.player.id_in_group
         }
 
