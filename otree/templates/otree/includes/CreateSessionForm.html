@@ -1,4 +1,5 @@
 {% load otree static %}
+{% load i18n %}
 
 <form id="form">
   {% csrf_token %}
@@ -28,7 +29,7 @@
 
   <div>
     <input class="btn btn-primary"
-           value="Create"
+           value='Opret nyt spil'
            id="btn-create-session"
            type="submit">
   </div>

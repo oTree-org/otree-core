@@ -17,9 +17,9 @@
 
     <div class="col-md-9">
         <div class="list-group">
-        {% for s in session_info %}
-            <a href="{{ s.url }}" class="list-group-item session-config" target="_blank">
-                {{ s.display_name }}
+        {% for game in session_info %}
+            <a href="{{ game.url }}" class="list-group-item session-config" target="_blank">
+                {{ game.display_name }}
             </a>
         {% endfor %}
         </div>

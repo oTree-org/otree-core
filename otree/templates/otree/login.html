@@ -1,6 +1,6 @@
 {% extends "otree/BaseAdmin.html" %}
 {% load i18n otree otree_internal %}
-{% block title %}Admin Login{% endblock %}
+{% block title %}{% trans 'Log in' %}{% endblock %}
 
 {% block content %}
     {% if form.errors and not form.non_field_errors %}
@@ -23,8 +23,6 @@
             first you may need to reset the database.
         </p>
     {% endif %}
-
-    <p class="text-danger">{% ensure_superuser_exists %}</p>
 
     <div id="content-main">
         <form action="" method="post"

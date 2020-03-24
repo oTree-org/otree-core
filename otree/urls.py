@@ -1,3 +1,5 @@
+from django.urls import include
+from django.contrib import admin
 from otree.extensions import get_extensions_modules, get_extensions_data_export_views
 import inspect
 from importlib import import_module
@@ -138,6 +140,8 @@ def get_urlpatterns():
         urls.url(r'^$', RedirectView.as_view(url='/demo', permanent=True)),
         urls.url(r'^accounts/login/$', LoginView.as_view(), name='login'),
         urls.url(r'^accounts/logout/$', LogoutView.as_view(), name='logout'),
+        urls.url(r'^admin/', admin.site.urls),
+
     ]
 
     urlpatterns += staticfiles_urlpatterns()
