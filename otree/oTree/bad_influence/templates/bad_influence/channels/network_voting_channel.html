@@ -1,7 +1,7 @@
 <script>
     $(function () {
         let ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-        let ws_path = ws_scheme + '://' + window.location.host + "/network_voting/{{ player.id }}/{{ group.pk }}";
+        let ws_path = ws_scheme + '://' + window.location.host + "/ws/chat/{{ player.pk }}/{{ group.pk }}";
         let socket = new ReconnectingWebSocket(ws_path);
 
         let $guess_true_button = $('#GuessTrueButton');

@@ -29,10 +29,11 @@
 
 
 
-    <div style="display: flex; flex-direction: column; position: relative; min-height: 300px" class="answer-container" id="d3container">
-    <div id="timer-text" style="position: absolute; top: 0; left: 8px; font-size: 40px">Tid tilbage:
-        <strong><span id="timer" class="otree-timer__time-left"></span></strong>
-    </div>
+    <div style="display: flex; flex-direction: column; position: relative; min-height: 300px" class="answer-container"
+         id="d3container">
+        <div id="timer-text" style="position: absolute; top: 0; left: 8px; font-size: 40px">Tid tilbage:
+            <strong><span id="timer" class="otree-timer__time-left"></span></strong>
+        </div>
     </div>
     <script>
         $('#timer').on('DOMSubtreeModified', function () {
@@ -147,7 +148,7 @@
         $('#ButtonsHolder').css('flex-direction', Math.random() > 0.5 ? 'row' : 'row-reverse')
     </script>
 
-
+    {% comment %}
     {% for config in player.chat_configs %}
         <div class="answer-container" style="width: 100%;">
             <h4>{{ config.label }}</h4>
@@ -159,6 +160,23 @@
             width: 100%;
         }
     </style>
+    {% endcomment %}
+    <div class="container">
+        <h4 class="text-center">Chat med dine venner</h4>
+        <div class="container d-flex justify-content-center flex-column col-6">
+            <form action="">
+                <div class="form-group">
+                    <textarea name="msg" id="message" placeholder="Send besked..." cols="30" rows="10"
+                              class="form-control"></textarea>
+                </div>
+                <button type="submit" class="col-3 btn btn-success">Send</button>
+
+            </form>
+        </div>
+    </div>
+    <script>
+
+    </script>
 {% endblock %}
 
 
