@@ -37,7 +37,7 @@ class Play(Page):
         return {
                 'network': json.dumps(graph),
                 'consensus': int(self.group.get_consensus() * 100),
-                'question': make_question(self.group, self.player.hub, self.player.gender, self.player.number_of_friends)
+                'question': make_question(self.group, self.player.hub, self.player.gender, self.player.number_of_friends),
                }
 
     def before_next_page(self):

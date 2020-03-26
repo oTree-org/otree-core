@@ -1,7 +1,7 @@
 import networkx as nx
 from networkx.readwrite import json_graph
-from channels.generic.websocket import AsyncWebsocketConsumer, JsonWebsocketConsumer
-from otree.oTree.bad_influence.models import Player, Group, Constants
+from channels.generic.websocket import AsyncWebsocketConsumer, JsonWebsocketConsumer, WebsocketConsumer
+from bad_influence.models import Player, Group, Constants
 import time
 import json
 from asgiref.sync import async_to_sync
@@ -130,3 +130,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "player_pk": self.player_pk
             }
         )
+
+
+class ChatroomConsumer(WebsocketConsumer):
+    def connect(self):
+        self.accept()
+
+    def disconnect(self, close_code):
+        pass
+
+    def receive(self, text_data):
+        text_data_json = json.loads(text_data)
+        message = text_data_json['message']
+
+        self.send(text_data=json.dumps({
+            'message': message
+        }))
