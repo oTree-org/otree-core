@@ -1,4 +1,3 @@
-from django.urls import include
 from django.contrib import admin
 from otree.extensions import get_extensions_modules, get_extensions_data_export_views
 import inspect
@@ -9,6 +8,9 @@ from django.views.generic.base import RedirectView
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from otree import common
+#from otree.views.admin import SignUpView
+
+
 
 
 ALWAYS_UNRESTRICTED = {
@@ -141,6 +143,7 @@ def get_urlpatterns():
         urls.url(r'^accounts/login/$', LoginView.as_view(), name='login'),
         urls.url(r'^accounts/logout/$', LogoutView.as_view(), name='logout'),
         urls.url(r'^admin/', admin.site.urls),
+        #urls.url(r'^signup/$', SignUpView.as_view(), name='signup'),
 
     ]
 

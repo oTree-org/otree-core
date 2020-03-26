@@ -1,3 +1,5 @@
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.forms import UserCreationForm
 from django.template import response
 
 from ._builtin import Page, WaitPage
@@ -8,21 +10,6 @@ from .models import Constants
 from .questions import make_question
 import time
 import numpy as np
-from django.shortcuts import render, redirect
-from .forms import RegisterForm
-
-
-def register(response):
-    if response.method == "POST":
-        form = RegisterForm(response.POST)
-        if form.is_valid():
-            form.save()
-
-        return redirect("/demo")
-    else:
-        form = RegisterForm()
-
-    return render(response, "otree/DemoIndex.html", {"form": form})
 
 
 class MyNormalWaitPage(WaitPage):

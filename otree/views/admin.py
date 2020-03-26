@@ -1,5 +1,5 @@
+import code
 import json
-import sys
 from collections import OrderedDict
 import otree
 import re
@@ -11,9 +11,10 @@ import otree.models
 import vanilla
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth.models import User
 from django.urls import reverse
 from django.template.loader import select_template
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from otree import forms
 from otree.currency import RealWorldCurrency
@@ -30,6 +31,12 @@ from otree.session import SESSION_CONFIGS_DICT, create_session, SessionConfig
 from otree.views.abstract import AdminSessionPageMixin
 from django.db.models import Case, Value, When
 
+from random import choice
+from string import ascii_lowercase, digits
+from django.contrib.auth.models import User
+
+
+
 
 def pretty_name(name):
     """Converts 'first_name' to 'first name'"""
@@ -43,8 +50,8 @@ class CreateSessionForm(forms.Form):
     session_config_choices = (
         # use '' instead of None. '' seems to immediately invalidate the choice,
         # rather than None which seems to be coerced to 'None'.
-        [('', '-----')]
-        + [(s['name'], s['display_name']) for s in session_configs]
+            [('', '-----')]
+            + [(s['name'], s['display_name']) for s in session_configs]
     )
 
     session_config = forms.ChoiceField(choices=session_config_choices, required=True)
@@ -113,6 +120,7 @@ class SessionSplitScreen(AdminSessionPageMixin, vanilla.TemplateView):
         participant_urls = [
             self.request.build_absolute_uri(participant._start_url())
             for participant in self.session.get_participants()
+
         ]
         return dict(session=self.session, participant_urls=participant_urls)
 
@@ -121,13 +129,18 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
     def vars_for_template(self):
         session = self.session
         room = session.get_room()
-
         context = dict(use_browser_bots=session.use_browser_bots)
+
 
         session_start_urls = [
             self.request.build_absolute_uri(participant._start_url())
             for participant in session.get_participants()
+
         ]
+
+        for urls in session_start_urls:
+            user = User.objects.create_user(generate_random_username())
+            user.save()
 
         if room:
             context.update(
@@ -600,9 +613,27 @@ class ToggleArchivedSessions(vanilla.View):
         return redirect('Sessions')
 
 
+def generate_random_username(length=3, chars=ascii_lowercase + digits, split=7, delimiter='_'):
+    username = 'Spiller' + ''.join([choice(chars) for i in range(length)])
+
+    if split:
+        username = delimiter.join([username[start:start + split] for start in range(0, len(username), split)])
+
+    try:
+        User.objects.get(username=username)
+        return generate_random_username(length=length, chars=chars, split=split, delimiter=delimiter)
+    except User.DoesNotExist:
+
+        return username
+
+
 class DeleteSessions(vanilla.View):
     url_pattern = r'^DeleteSessions/'
 
     def post(self, request):
         Session.objects.filter(code__in=request.POST.getlist('session')).delete()
         return redirect('Sessions')
+
+
+# user = User.objects.create_user(generate_random_username())
+# user.save()
