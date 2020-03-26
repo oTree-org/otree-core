@@ -11,5 +11,5 @@ from django.conf.urls import re_path
 #         ]
 
 websocket_routes = [
-    re_path(r'ws/chat/$', consumers.ChatroomConsumer),
+    re_path(r'ws/chat/(?P<player_pk>[0-9]+)/(?P<group_pk>[0-9]+)$', consumers.ChatroomConsumer),
 ]
