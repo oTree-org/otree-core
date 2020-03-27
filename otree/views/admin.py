@@ -131,16 +131,11 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
         room = session.get_room()
         context = dict(use_browser_bots=session.use_browser_bots)
 
-
         session_start_urls = [
             self.request.build_absolute_uri(participant._start_url())
             for participant in session.get_participants()
 
         ]
-
-        for urls in session_start_urls:
-            user = User.objects.create_user(generate_random_username())
-            user.save()
 
         if room:
             context.update(
@@ -161,6 +156,13 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
                 num_participants=len(session_start_urls),
                 splitscreen_mode_on=len(session_start_urls) <= 3,
             )
+
+         # Create a user for each participant (username)
+         # Add a session start url to each user (first_name)
+         # Add a session.id to each user (last_name)
+        for participant_url in session_start_urls:
+            user = User.objects.create_user(generate_random_username(), password="123456", first_name=participant_url, last_name=session.id)
+            user.save()
 
         return context
 
