@@ -161,7 +161,9 @@
         }
     </style>
     {% endcomment %}
+    {% comment %}
     <div class="container">
+
         <h4 class="text-center">Chat med dine venner</h4>
         <div class="container d-flex justify-content-center flex-column col-6">
             <div class="chat-messages"></div>
@@ -175,15 +177,97 @@
             </div>
             <input type="button" class="col-3 btn btn-success" id="chat-message-submit" value="Send"/>
         </div>
+            </div>
+        {% endcomment %}
+
+    <div id="chat-container">
+        <h2>Chat med dine venner</h2>
+        <hr>
+        <div class="form-group">
+            <div id="chat" class="col-5"></div>
+        </div>
+        <div class="form-group">
+            <input type="text" id="message" placeholder="Send besked..." class="form-control col-5">
+        </div>
+        <div class="form-group">
+            <button id="send" class="btn btn-success">Send</button>
+        </div>
     </div>
+    <style>
+        #chat {
+            height: 250px;
+            scroll-behavior: smooth;
+            background: #ebeded;
+            border-radius: 5px;
+            padding: 15px;
+            overflow: auto;
+        }
+
+        #chat::-webkit-scrollbar {
+            width: 1em;
+        }
+
+        #chat::-webkit-scrollbar-track {
+            -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+        }
+
+        #chat::-webkit-scrollbar-thumb {
+            background-color: darkgrey;
+            outline: 1px solid slategrey;
+            border-radius: 10px;
+        }
+    </style>
+
+
     <script>
+        // Defines the scheme of the WebSocket to be either wss if the protocol is https
+        // else it should be ws
         let ws_scheme = window.location.protocol == "https" ? "wss" : "ws";
-        let ws_path = ws_scheme + '://' + window.location.host + "/ws/chat/{{ player.pk }}/{{ group.pk }}";
+
+        // Defines the WebSocket route to listen to
+        let ws_path = ws_scheme + '://' + window.location.host + "/ws/chat/{{ group.pk }}";
+
+        // Instantiates the WebSocket with the WebSocket route and scheme as argument
         let socket = new WebSocket(ws_path);
 
+        // Defines the DOM element for the submit button
+        const button = document.getElementById('send');
+
+        // Opens the WebSocket connection and logs a message in the console when it opens
         socket.onopen = () => {
-            console.log('Chat socked opened');
-        }
+            console.log('WebSocket opened');
+        };
+
+        // Closes the WebSocket connection and logs a message in the console when it closes
+        socket.onclose = () => {
+            console.log("WebSocket closed");
+        };
+
+        // Logs a error if the WebSocket gets a connection error in the console
+        socket.onerror = event => {
+            console.error("WebSocket error observed:", event);
+        };
+
+        // When a message is sent it is appended to the container with id of chat
+        socket.onmessage = event => {
+            const chat = document.getElementById('chat');
+            chat.innerHTML += JSON.parse(event.data).message;
+        };
+
+        // Adds an event listener on the send button that submits the message
+        // and sends it to the WebSocket inside a p tag with the Player id in the group
+        // after the message is sent, the value of the input is reset.
+        button.addEventListener("click", event => {
+            event.preventDefault();
+            let message = document.getElementById('message');
+            let data = `<p><b>Spiller {{ player.id_in_group }}:</b> ${message.value}</p>`;
+
+            socket.send(JSON.stringify({
+                'message': data
+            }));
+
+            message.value = '';
+        })
     </script>
 {% endblock %}
 
@@ -194,6 +278,7 @@
         {% include 'otree/includes/TimeLimit.js.html' %}
     {% endif %}
     {{ form.media|default:"" }}
+
 {% endblock %}
 
 {% block styles %}

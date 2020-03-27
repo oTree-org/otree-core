@@ -1,10 +1,10 @@
 import networkx as nx
 from networkx.readwrite import json_graph
 from channels.generic.websocket import AsyncWebsocketConsumer, JsonWebsocketConsumer, WebsocketConsumer
-from bad_influence.models import Player, Group, Constants
 import time
 import json
 from asgiref.sync import async_to_sync
+from bad_influence.models import Player, Group, Constants
 
 
 class NetworkVoting(JsonWebsocketConsumer):
@@ -95,54 +95,53 @@ class NetworkVoting(JsonWebsocketConsumer):
                 )
 
 
-class ChatConsumer(AsyncWebsocketConsumer):
-    async def connect(self):
-        self.player_pk = self.scope['url_route']['kwargs']['player_pk']
+class ChatConsumer(JsonWebsocketConsumer):
+    def connect(self):
+        # self.player_pk = self.scope['url_route']['kwargs']['player_pk']
         self.group_pk = self.scope['url_route']['kwargs']['group_pk']
-        self.room_name = "{}-{}".format(self.player_pk, self.group_pk)
+        self.room_name = 'chat_%s' % self.group_pk
+        print("Player connected onto Chat Socket in group {}".format(self.group_pk))
 
         # Join room group
-        await self.channel_layer.group_add(
+        async_to_sync(self.channel_layer.group_add)(
             self.room_name,
             self.channel_name
         )
 
-        await self.accept()
-
-    async def disconnect(self, close_code):
-        # Leave room group
-        await self.channel_layer.group_discard(
-            self.room_name,
-            self.channel_name
-        )
-
-    # Receive message from websocket
-    async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json['message']
-
-        # Send message to room group
-        await self.channel_layer.group_send(
-            self.room_name,
-            {
-                "type": "chat_message",
-                "message": message,
-                "player_pk": self.player_pk
-            }
-        )
-
-
-class ChatroomConsumer(WebsocketConsumer):
-    def connect(self):
         self.accept()
 
     def disconnect(self, close_code):
-        pass
+        # Leave room group
+        async_to_sync(self.channel_layer.group_discard)(
+            self.room_name,
+            self.channel_name
+        )
+        print('Disconnect from socket')
 
+    # Receive message from WebSocket
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
 
+        # Send message to room group
+        async_to_sync(self.channel_layer.group_send)(
+            self.room_name,
+            {
+                'type': 'chat_message',
+                'message': message
+            }
+        )
+
+        print('Received message')
+
+    # Receive message from room group
+    def chat_message(self, event):
+        message = event['message']
+
+        # Send message to WebSocket
+
         self.send(text_data=json.dumps({
             'message': message
         }))
+
+        print("Sent message")
