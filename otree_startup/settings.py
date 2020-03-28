@@ -313,7 +313,7 @@ def augment_settings(settings: dict):
         MIDDLEWARE=new_middleware,
         INSTALLED_OTREE_APPS=all_otree_apps,
         MESSAGE_TAGS={messages.ERROR: 'danger'},
-        LOGIN_REDIRECT_URL='Sessions',
+        LOGIN_REDIRECT_URL='home',
     )
 
     settings.update(augmented_settings)

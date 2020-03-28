@@ -1,0 +1,20 @@
+{% extends "otree/BaseAdmin.html" %}
+{% load static %}
+{% if user.is_authenticated %}
+{% block title %}
+    Velkommen  <b>{{ user.username }}</b>
+{% endblock %}
+
+{% block content %}
+<div>
+    <p>Tryk på knappen for at begynde spillet.</p>
+</div>
+
+<!--The link navigates to the users URL which is placed in "first_name" for now -->
+<div>
+    <a href={{ user.first_name }} class="btn btn-primary">Forsæt til spillet</a>
+</div>
+
+{% include "otree/includes/messages.html" %}
+{% endblock %}
+{% endif %}
