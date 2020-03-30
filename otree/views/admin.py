@@ -96,7 +96,7 @@ class CreateSessionForm(forms.Form):
 
 class CreateSession(vanilla.TemplateView):
     template_name = 'otree/admin/CreateSession.html'
-    url_pattern = r"^create_session/$"
+    url_pattern = r"^opret_spil/$"
 
     def get_context_data(self, **kwargs):
         x = super().get_context_data(
@@ -167,7 +167,7 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
         count = 0
         for participant_url in session_start_urls:
             count = count + 1
-            user = User.objects.create_user(username='Player'+str(session.id)+'_'+str(count), password="123456", first_name=participant_url, last_name=session.id)
+            user = User.objects.create_user(username='Spiller'+str(session.id)+'_'+str(count), password="123456", first_name=participant_url, last_name=session.id)
             user.save()
 
         return context

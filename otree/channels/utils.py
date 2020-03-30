@@ -57,7 +57,8 @@ def room_admin_path(room_name):
 
 
 def create_session_path():
-    return '/create_session/'
+    return '/opret_spil/'
+    #return '/create_session/'
 
 
 def create_demo_session_path():

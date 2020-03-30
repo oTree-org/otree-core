@@ -1,7 +1,10 @@
 {% extends "otree/BaseAdmin.html" %}
 
 {% block title %}
+{% if user.is_authenticated and user.is_staff or user.is_superuser %}
    Konfigurer dit spil
+{% else %}
+{% endif %}
 {% endblock %}
 
 {% block content %}

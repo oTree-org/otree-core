@@ -19,13 +19,40 @@ KU-LÆRINGSSPIL
 </div>
 
 
-<div>
-  <h2>Bad Influence</h2>
+<div class="card" style="margin-bottom: 30px;">
+  <h2 class="card-header">Bad Influence</h2>
+<p class="card-body">Bad Influence er et multiplayer spil.
+    Hver spiller har et “netværk” af venner/medspillere.
+    Hver spille kan kun se og kommunikere med sit eget netværk.
+    Spillet vil gennemgå en række scenarier hvor hver spiller skal vælge mellem to muligheder.
+    Målet er at ens netværk skal være i konsensus med hinanden før tiden udløber, dette skal ske ved at chatte sammen i spillet.  </p>
+ <div class="card-footer">
+     <form action="{% url 'CreateSession' %}">
+
+             <button class="btn btn-primary" >
+                 Opret spil
+             </button>
+
+     </form>
+ </div>
+
 </div>
 
-<div>
-    <h2>Bad Influence</h2>
-</div>
+<div class="card">
+    <h2 class="card-header">Day Trader</h2>
+    <p class="card-body">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been
+        the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled
+        it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting,
+        remaining essentially unchanged.</p>
+    <div class="card-footer">
+        <form action="{% url 'CreateSession' %}">
+
+            <button class="btn btn-primary">
+                Opret spil
+            </button>
+
+        </form>
+    </div>
 
 {% include "otree/includes/messages.html" %}
 {% endblock %}

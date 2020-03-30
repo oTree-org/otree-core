@@ -1,6 +1,7 @@
 {% load otree static %}
 {% load i18n %}
 
+{% if user.is_authenticated and user.is_staff or user.is_superuser %}
 <form id="form">
   {% csrf_token %}
 
@@ -85,6 +86,9 @@
 
   {% endfor %}
 </form>
+{% else %}
+<p>This is a create session for non-admins</p>
+{% endif %}
 
 <script>
 
@@ -112,7 +116,8 @@
 
         let $createSessionError = $("#create-session-error");
         let $createSessionWait = $("#create-session-wait");
-        let socket = makeReconnectingWebSocket("/create_session/");
+        //let socket = makeReconnectingWebSocket("/create_session/");
+        let socket = makeReconnectingWebSocket("/opret_spil/");
         let $btnCreateSession = $('#btn-create-session');
         $btnCreateSession.click(function (e) {
             $btnCreateSession.prop('disabled', true);
