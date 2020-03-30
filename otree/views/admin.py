@@ -157,14 +157,13 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
                 splitscreen_mode_on=len(session_start_urls) <= 3,
             )
 
-    """
-    - Set count = 0, so when we count in the loop, it can increment from 1++
-    - Create a user for each participant (username)
-    - Syntax of user is: Spiller<session_id>_1...and upwards depending on number of participants created for the session
-    - Add a session start url to each user (first_name)
-    - Add a session.id to each user (last_name)
-
-    """
+        """
+        - Set count = 0, so when we count in the loop, it can increment from 1++
+        - Create a user for each participant (username)
+        - Syntax of user is: Spiller<session_id>_1...and upwards depending on number of participants created for the session
+        - Add a session start url to each user (first_name)
+        - Add a session.id to each user (last_name)
+        """
         count = 0
         for participant_url in session_start_urls:
             count = count + 1
