@@ -252,6 +252,7 @@
         socket.onmessage = event => {
             const chat = document.getElementById('chat');
             chat.innerHTML += JSON.parse(event.data).message;
+            displayFriends();
         };
 
         // Adds an event listener on the send button that submits the message
@@ -272,31 +273,39 @@
             message.value = '';
         });
 
-        let friends = {{ player.get_friends }};
-        let players = [];
 
-        friends.map(
-            item => {
-                players.push(`player_${item}`)
-            }
-        )
+        const mapFriends = () => {
+            let friends = {{ player.get_friends }};
+            let players = [];
 
-        console.log(players);
+            friends.map(
+                item => {
+                    players.push(`player_${item}`)
+                }
+            )
 
-        let chat_class = document.querySelector('.chat-message').getAttribute('id');
-        console.log(chat_class);
-
-        if (!chat_class in players) {
-            console.log("If statement caught.")
-        }
+            return players;
+        };
 
 
         const displayFriends = () => {
+            let players = mapFriends();
+            let network = [];
 
+            let chat_class = document.getElementsByClassName('chat-message');
 
+            for (let i = 0; i < chat_class.length; i++) {
+                network.push(chat_class[i].getAttribute('id'));
+            }
+
+            for (let player in network) {
+                if (players.includes(network[player])) {
+                    document.getElementById(network[player]).style.display = 'block';
+                } else {
+                    document.getElementById(network[player]).style.display = 'none';
+                }
+            }
         };
-
-        // window.addEventListener('load', displayFriends);
     </script>
 {% endblock %}
 
