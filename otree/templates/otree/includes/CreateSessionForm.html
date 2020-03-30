@@ -33,6 +33,7 @@
            id="btn-create-session"
            type="submit">
   </div>
+
   <br>
 
   <progress id="create-session-wait" style="display:none"></progress>
@@ -50,6 +51,7 @@
           <img src='{% static "glyphicons/cogwheel.png" %}'>
         </a>
       </h4>
+
       <div class="collapse"
            id="edit-config-table-{{ config.name }}">
         {% if config.custom_editable_fields %}

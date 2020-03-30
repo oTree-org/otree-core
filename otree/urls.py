@@ -1,4 +1,3 @@
-from django.urls import include
 from django.contrib import admin
 from otree.extensions import get_extensions_modules, get_extensions_data_export_views
 import inspect
@@ -9,6 +8,10 @@ from django.views.generic.base import RedirectView
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from otree import common
+
+import vanilla
+
+
 
 
 ALWAYS_UNRESTRICTED = {
@@ -134,13 +137,24 @@ class LogoutView(auth_views.LogoutView):
     next_page = 'DemoIndex'
 
 
+class HomeView(vanilla.TemplateView):
+    template_name = 'otree/home.html'
+
+
+class GamesView(vanilla.TemplateView):
+    template_name = 'otree/games.html'
+
+
 def get_urlpatterns():
 
     urlpatterns = [
         urls.url(r'^$', RedirectView.as_view(url='/demo', permanent=True)),
         urls.url(r'^accounts/login/$', LoginView.as_view(), name='login'),
         urls.url(r'^accounts/logout/$', LogoutView.as_view(), name='logout'),
+        urls.url(r'^home/', HomeView.as_view(), name='home'),
+        urls.url(r'^spil/', GamesView.as_view(), name='games'),
         urls.url(r'^admin/', admin.site.urls),
+
 
     ]
 

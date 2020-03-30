@@ -48,7 +48,10 @@
             <tr>
                 <td><strong>P{{ forloop.counter }}</strong></td>
                 <td><a href="{{ participant_url }}" class="participant-link" target="_blank">{{ participant_url }}</a></td>
+
             </tr>
+
+
         {% endfor %}
         </table>
         </div>
@@ -91,6 +94,7 @@
         <tr>
             <td><strong>P{{ forloop.counter }}</strong></td>
             <td><a href="{{ participant_url }}" class="participant-link" target="_blank">{{ participant_url }}</a></td>
+
         </tr>
     {% endfor %}
     </table>
@@ -131,10 +135,12 @@
     </p>
 
     <table class="table">
+
     {% for participant_url in participant_urls %}
         <tr>
-            <td><strong>P{{ forloop.counter }}</strong></td>
+            <td><strong>Spiller-link {{ forloop.counter }}:</strong></td>
             <td><a href="{{ participant_url }}" class="participant-link" target="_blank">{{ participant_url }}</a></td>
+
         </tr>
     {% endfor %}
     </table>

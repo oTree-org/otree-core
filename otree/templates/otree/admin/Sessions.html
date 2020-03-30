@@ -137,6 +137,7 @@ $(function() {
                 <th>Code</th>
                 <th>Label</th>
                 <th>Config</th>
+                <th>Session ID</th>
                 <th></th>
             </thead>
             <tbody>
@@ -148,6 +149,7 @@ $(function() {
                 <td><a href="{% url 'SessionDescription' s.code %}">{{ s.code }}</a></td>
                 <td>{{ s.label }}</td>
                 <td>{{ s.config.name }}</td>
+                <td>{{ s.id }}</td>
                 <td>
                     <a href="{% url 'SessionStartLinks' s.code %}" class="btn btn-sm" role="button">
                         <img src='{% static "glyphicons/link.png" %}'> Links
@@ -161,6 +163,7 @@ $(function() {
                     <a href="{% url 'SessionData' s.code %}" class="btn btn-sm" role="button">
                         <img src='{% static "glyphicons/list-alt.png" %}'> Data
                     </a>
+
                     <a href="{% if s.is_mturk %}{% url 'MTurkSessionPayments' s.code %}{% else %}{% url 'SessionPayments' s.code %}{% endif %}" class="btn btn-sm" role="button">
                         <img src='{% static "glyphicons/usd.png" %}'> Payments
                     </a>

@@ -4,6 +4,11 @@ from otree.common import add_params_to_url, make_hash, validate_alphanumeric
 from django.conf import settings
 from django.urls import reverse
 from django.db import transaction
+from random import choice
+from string import ascii_lowercase, digits
+from django.contrib.auth.models import User
+
+
 
 
 class Room:
@@ -67,7 +72,9 @@ class Room:
         room_base_url = reverse('AssignVisitorToRoom', args=(self.name,))
         room_base_url = request.build_absolute_uri(room_base_url)
 
+
         if self.has_participant_labels():
+
             for label in self.get_participant_labels():
                 params = {'participant_label': label}
                 if self.use_secure_urls:

@@ -16,11 +16,13 @@ SESSION_CONFIGS = [
         display_name="bad influence",
         num_demo_participants=5,
         app_sequence=['bad_influence'],
+        participant_label_file='_rooms/users.txt',
+        use_secure_urls=True
     ),
 ]
 
 # ISO-639 code
-# for example: de, fr, ja, ko, zh-hans
+# for example: de, fr, ja, ko, zh-hansSubsession
 LANGUAGE_CODE = 'da'
 
 # e.g. EUR, GBP, CNY, JPY

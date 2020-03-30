@@ -2,6 +2,8 @@ import copy
 from decimal import Decimal
 
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
 
 import otree.common
@@ -10,6 +12,16 @@ import otree.models
 from otree.common import ResponseForException
 from otree.currency import Currency, RealWorldCurrency
 from otree.db import models
+
+
+class RegisterForm(UserCreationForm):
+
+    class Meta:
+        model = User
+        fields = (
+            'first_name',
+            'password'
+        )
 
 
 class ModelForm(forms.ModelForm):

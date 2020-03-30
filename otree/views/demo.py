@@ -9,9 +9,7 @@ import os
 
 
 class DemoIndex(vanilla.TemplateView):
-
     template_name = 'otree/DemoIndex.html'
-
     url_pattern = r'^demo/$'
 
     def get_context_data(self, **kwargs):
@@ -48,9 +46,9 @@ class DemoIndex(vanilla.TemplateView):
 
 
 class CreateDemoSession(vanilla.TemplateView):
-
     template_name = 'otree/admin/CreateDemoSession.html'
     url_pattern = r"^demo/(?P<session_config_name>.+)/$"
+
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(
