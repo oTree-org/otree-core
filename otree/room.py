@@ -7,7 +7,7 @@ from django.db import transaction
 from random import choice
 from string import ascii_lowercase, digits
 from django.contrib.auth.models import User
-from otree.views.admin import generate_random_username
+
 
 
 

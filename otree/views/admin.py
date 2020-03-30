@@ -157,14 +157,25 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
                 splitscreen_mode_on=len(session_start_urls) <= 3,
             )
 
-         # Create a user for each participant (username)
-         # Add a session start url to each user (first_name)
-         # Add a session.id to each user (last_name)
+    """
+    - Set count = 0, so when we count in the loop, it can increment from 1++
+    - Create a user for each participant (username)
+    - Syntax of user is: Spiller<session_id>_1...and upwards depending on number of participants created for the session
+    - Add a session start url to each user (first_name)
+    - Add a session.id to each user (last_name)
+
+    """
+        count = 0
         for participant_url in session_start_urls:
-            user = User.objects.create_user(generate_random_username(), password="123456", first_name=participant_url, last_name=session.id)
+            count = count + 1
+            user = User.objects.create_user(username='Player'+str(session.id)+'_'+str(count), password="123456", first_name=participant_url, last_name=session.id)
             user.save()
 
         return context
+
+
+
+
 
 
 class SessionEditPropertiesForm(forms.Form):
@@ -615,7 +626,29 @@ class ToggleArchivedSessions(vanilla.View):
         return redirect('Sessions')
 
 
-def generate_random_username(length=3, chars=ascii_lowercase + digits, split=7, delimiter='_'):
+class DeleteSessions(vanilla.View):
+    url_pattern = r'^DeleteSessions/'
+
+    def post(self, request):
+        Session.objects.filter(code__in=request.POST.getlist('session')).delete()
+        return redirect('Sessions')
+
+
+"""
+def generate_random_username(length=3, split=7, delimiter='_'):
+    game_number = Session.objects.get(id=session.id)
+    username = 'Spiller' + ''.join([choice(game_number) for i in range(length)])
+
+    if split:
+        username = delimiter.join([username[start:start + split] for start in range(0, len(username), split)])
+
+    try:
+        User.objects.get(username=username)
+        return generate_random_username(length=length, split=split, delimiter=delimiter)
+    except User.DoesNotExist:
+
+        return username
+def generate_random_username(length=3, chars=ascii_lowercase, split=7, delimiter='_'):
     username = 'Spiller' + ''.join([choice(chars) for i in range(length)])
 
     if split:
@@ -627,15 +660,4 @@ def generate_random_username(length=3, chars=ascii_lowercase + digits, split=7, 
     except User.DoesNotExist:
 
         return username
-
-
-class DeleteSessions(vanilla.View):
-    url_pattern = r'^DeleteSessions/'
-
-    def post(self, request):
-        Session.objects.filter(code__in=request.POST.getlist('session')).delete()
-        return redirect('Sessions')
-
-
-# user = User.objects.create_user(generate_random_username())
-# user.save()
+"""
