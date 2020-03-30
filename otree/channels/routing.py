@@ -6,7 +6,6 @@ from django.conf.urls import url
 from channels.routing import ProtocolTypeRouter, URLRouter, ChannelNameRouter
 from channels.auth import AuthMiddlewareStack
 
-
 websocket_routes = [
     # WebSockets
     url(r'^wait_page/$', consumers.GroupWaitPage),

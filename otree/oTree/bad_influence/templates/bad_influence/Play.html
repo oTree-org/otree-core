@@ -1,6 +1,6 @@
 {% extends "global/Page.html" %}
 {% load otree static %}
-
+{% load static %}
 {% block content %}
     <h2>{{ question.title }}</h2>
     <p>{{ question.text }}</p>
@@ -29,10 +29,11 @@
 
 
 
-    <div style="display: flex; flex-direction: column; position: relative; min-height: 300px" class="answer-container" id="d3container">
-    <div id="timer-text" style="position: absolute; top: 0; left: 8px; font-size: 40px">Tid tilbage:
-        <strong><span id="timer" class="otree-timer__time-left"></span></strong>
-    </div>
+    <div style="display: flex; flex-direction: column; position: relative; min-height: 300px" class="answer-container"
+         id="d3container">
+        <div id="timer-text" style="position: absolute; top: 0; left: 8px; font-size: 40px">Tid tilbage:
+            <strong><span id="timer" class="otree-timer__time-left"></span></strong>
+        </div>
     </div>
     <script>
         $('#timer').on('DOMSubtreeModified', function () {
@@ -147,7 +148,7 @@
         $('#ButtonsHolder').css('flex-direction', Math.random() > 0.5 ? 'row' : 'row-reverse')
     </script>
 
-
+    {% comment %}
     {% for config in player.chat_configs %}
         <div class="answer-container" style="width: 100%;">
             <h4>{{ config.label }}</h4>
@@ -159,16 +160,179 @@
             width: 100%;
         }
     </style>
+    {% endcomment %}
+    {% comment %}
+    <div class="container">
+
+        <h4 class="text-center">Chat med dine venner</h4>
+        <div class="container d-flex justify-content-center flex-column col-6">
+            <div class="chat-messages"></div>
+            <div class="form-group">
+                    <textarea id="chat-log" cols="100" rows="10"
+                              class="form-control" disabled></textarea>
+            </div>
+            <div class="form-group">
+                <input type="text" class="form-control" id="chat-message-input">
+
+            </div>
+            <input type="button" class="col-3 btn btn-success" id="chat-message-submit" value="Send"/>
+        </div>
+            </div>
+        {% endcomment %}
+
+    <div id="chat-container">
+        <h2>Chat med dine venner</h2>
+        <hr>
+        <div class="form-group">
+            <div id="chat" class="col-5"></div>
+        </div>
+        <div class="form-group">
+            <input type="text" id="message" placeholder="Send besked..." class="form-control col-5">
+        </div>
+        <div class="form-group">
+            <button id="send" class="btn btn-success">Send</button>
+        </div>
+    </div>
+    <style>
+        #chat {
+            height: 250px;
+            scroll-behavior: smooth;
+            background: #ebeded;
+            border-radius: 5px;
+            padding: 15px;
+            overflow: auto;
+        }
+
+        #chat::-webkit-scrollbar {
+            width: 1em;
+        }
+
+        #chat::-webkit-scrollbar-track {
+            -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+        }
+
+        #chat::-webkit-scrollbar-thumb {
+            background-color: darkgrey;
+            outline: 1px solid slategrey;
+            border-radius: 10px;
+        }
+    </style>
+
+
+    <script>
+        // Array container for the sent messages to be used in localstorage
+        let storage = {
+            messages: [
+
+            ]
+        };
+
+        window.localStorage.setItem('messages', storage.messages);
+
+        // Defines the scheme of the WebSocket to be either wss if the protocol is https
+        // else it should be ws
+        let ws_scheme = window.location.protocol == "https" ? "wss" : "ws";
+
+        // Defines the WebSocket route to listen to
+        let ws_path = ws_scheme + '://' + window.location.host + "/ws/chat/{{ group.pk }}";
+
+        // Instantiates the WebSocket with the WebSocket route and scheme as argument
+        let socket = new WebSocket(ws_path);
+
+        // Defines the DOM element for the submit button
+        const button = document.getElementById('send');
+
+        // Opens the WebSocket connection and logs a message in the console when it opens
+        socket.onopen = () => {
+            console.log('WebSocket opened');
+            const chat = document.getElementById('chat');
+            for (let message in storage.messages) {
+                chat.innerHTML = storage.messages[message];
+            }
+            console.log(localStorage);
+        };
+
+        // Closes the WebSocket connection and logs a message in the console when it closes
+        socket.onclose = () => {
+            console.log("WebSocket closed");
+        };
+
+        // Logs a error if the WebSocket gets a connection error in the console
+        socket.onerror = event => {
+            console.error("WebSocket error observed:", event);
+        };
+
+        // When a message is sent it is appended to the container with id of chat
+        socket.onmessage = event => {
+            storage.messages.push(JSON.stringify(event.data).message);
+            console.log(storage);
+            const chat = document.getElementById('chat');
+            chat.innerHTML += JSON.parse(event.data).message;
+            displayFriends();
+        };
+
+        // Adds an event listener on the send button that submits the message
+        // and sends it to the WebSocket inside a p tag with the Player id in the group
+        // after the message is sent, the value of the input is reset.
+        button.addEventListener("click", event => {
+            event.preventDefault();
+            let message = document.getElementById('message');
+            let chat_class = "player_" + {{ player.id_in_group }};
+            let data = `<p class="chat-message" id="${chat_class}"><b>Spiller {{ player.id_in_group }}:</b> ${message.value}</p>`;
+
+            if (message.value !== '') {
+                socket.send(JSON.stringify({
+                    'message': data
+                }));
+            }
+
+            message.value = '';
+        });
+
+        // Function that adds the player id to each message
+        const mapFriends = () => {
+            let friends = {{ player.get_friends }};
+            let players = [];
+
+            friends.map(
+                item => {
+                    players.push(`player_${item}`)
+                }
+            )
+
+            return players;
+        };
+
+        // Function that hides the messages outside of the players network
+        const displayFriends = () => {
+            let players = mapFriends();
+            let network = [];
+
+            let chat_class = document.getElementsByClassName('chat-message');
+
+            for (let i = 0; i < chat_class.length; i++) {
+                network.push(chat_class[i].getAttribute('id'));
+            }
+
+            for (let player in network) {
+                if (players.includes(network[player])) {
+                    document.getElementById(network[player]).style.display = 'block';
+                } else {
+                    document.getElementById(network[player]).style.display = 'none';
+                }
+            }
+        };
+    </script>
 {% endblock %}
 
 
 {% block scripts %}
     {% include 'bad_influence/d3/d3_graph.html' %}
-    {% include 'bad_influence/channels/network_voting_channel.html' %}
     {% if view.remaining_timeout_seconds != None %}
         {% include 'otree/includes/TimeLimit.js.html' %}
     {% endif %}
     {{ form.media|default:"" }}
+
 {% endblock %}
 
 {% block styles %}

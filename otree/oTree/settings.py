@@ -55,7 +55,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'otree',
+]
 
+EXTENSION_APPS = [
+    'bad_influence',
 ]
 
 # inactive session configs

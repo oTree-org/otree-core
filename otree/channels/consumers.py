@@ -32,6 +32,7 @@ from otree.room import ROOM_DICT
 from otree.session import SESSION_CONFIGS_DICT
 from otree.views.admin import CreateSessionForm
 
+
 logger = logging.getLogger(__name__)
 
 ALWAYS_UNRESTRICTED = 'ALWAYS_UNRESTRICTED'
@@ -747,3 +748,4 @@ def _create_waitpage_passage(*, participant_id, session_pk, is_enter):
         )
     except:
         pass
+
