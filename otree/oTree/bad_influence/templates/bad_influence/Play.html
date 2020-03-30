@@ -260,14 +260,43 @@
         button.addEventListener("click", event => {
             event.preventDefault();
             let message = document.getElementById('message');
-            let data = `<p><b>Spiller {{ player.id_in_group }}:</b> ${message.value}</p>`;
+            let chat_class = "player_" + {{ player.id_in_group }};
+            let data = `<p class="chat-message" id="${chat_class}"><b>Spiller {{ player.id_in_group }}:</b> ${message.value}</p>`;
 
-            socket.send(JSON.stringify({
-                'message': data
-            }));
+            if (message.value !== '') {
+                socket.send(JSON.stringify({
+                    'message': data
+                }));
+            }
 
             message.value = '';
-        })
+        });
+
+        let friends = {{ player.get_friends }};
+        let players = [];
+
+        friends.map(
+            item => {
+                players.push(`player_${item}`)
+            }
+        )
+
+        console.log(players);
+
+        let chat_class = document.querySelector('.chat-message').getAttribute('id');
+        console.log(chat_class);
+
+        if (!chat_class in players) {
+            console.log("If statement caught.")
+        }
+
+
+        const displayFriends = () => {
+
+
+        };
+
+        // window.addEventListener('load', displayFriends);
     </script>
 {% endblock %}
 
