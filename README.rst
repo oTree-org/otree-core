@@ -17,7 +17,7 @@ How to log into the system as an admin:
         Log in with this admin login and enter the admin panel with the URL:
     /admin/
 
-How to log into the system:
+How to log into the system as a player:
 ::
     To log in as a player:
        1. create a session/game
