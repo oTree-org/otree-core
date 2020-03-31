@@ -14,16 +14,6 @@ from otree.currency import Currency, RealWorldCurrency
 from otree.db import models
 
 
-class RegisterForm(UserCreationForm):
-
-    class Meta:
-        model = User
-        fields = (
-            'first_name',
-            'password'
-        )
-
-
 class ModelForm(forms.ModelForm):
     def _get_method_from_page_or_model(self, method_name):
         for obj in [self.view, self.instance]:

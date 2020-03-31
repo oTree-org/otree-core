@@ -40,7 +40,7 @@ class Command(BaseCommand):
             'num_participants',
             type=int,
             nargs='?',
-            help='Number of participants (if omitted, use num_demo_participants)',
+            help='Antal Spillere (if omitted, use num_demo_participants)',
         )
 
         # don't call it --data because then people might think that

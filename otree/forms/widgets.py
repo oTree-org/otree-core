@@ -33,7 +33,7 @@ def make_deprecated_widget(WidgetName):
 Media = make_deprecated_widget('Media')
 MediaDefiningClass = make_deprecated_widget('MediaDefiningClass')
 Widget = make_deprecated_widget('Widget')
-NumberInput = make_deprecated_widget('NumberInput')
+#NumberInput = make_deprecated_widget('NumberInput')
 EmailInput = make_deprecated_widget('EmailInput')
 URLInput = make_deprecated_widget('URLInput')
 PasswordInput = make_deprecated_widget('PasswordInput')

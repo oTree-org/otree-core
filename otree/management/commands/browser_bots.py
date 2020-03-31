@@ -19,7 +19,7 @@ class Command(BaseCommand):
             default='http://127.0.0.1:8000',
             help="Server's root URL",
         )
-        ahelp = 'Number of participants. ' 'Defaults to minimum for the session config.'
+        ahelp = 'Antal spillere. ' 'Defaults to minimum for the session config.'
         parser.add_argument('num_participants', type=int, nargs='?', help=ahelp)
 
     def handle(self, session_config_name, server_url, num_participants, **options):

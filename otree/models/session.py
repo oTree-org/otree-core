@@ -70,7 +70,7 @@ class Session(models.Model):
     # greater than number of participants on mturk
     # value -1 indicates that this session it not intended to run on mturk
     mturk_num_participants = models.IntegerField(
-        default=-1, help_text="Number of participants on MTurk"
+        default=-1, help_text="Antal spillere på MTurk"
     )
 
     mturk_use_sandbox = models.BooleanField(

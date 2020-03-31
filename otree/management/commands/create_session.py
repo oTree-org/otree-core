@@ -21,7 +21,7 @@ class Command(BaseCommand):
         parser.add_argument(
             'num_participants',
             type=int,
-            help="Number of participants for the created session",
+            help="Antal spillere for spillet",
         )
         parser.add_argument(
             "--room",

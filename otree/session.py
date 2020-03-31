@@ -270,7 +270,7 @@ def create_session(
         else:
             if num_participants % session_lcm:
                 msg = (
-                    'Session Config {}: Number of participants ({}) is not a multiple '
+                    'Session Config {}: Antal spillere ({}) is not a multiple '
                     'of group size ({})'
                 ).format(session_config['name'], num_participants, session_lcm)
                 raise ValueError(msg)

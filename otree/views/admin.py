@@ -34,7 +34,7 @@ from django.db.models import Case, Value, When
 from random import choice
 from string import ascii_lowercase, digits
 from django.contrib.auth.models import User
-
+from django.forms import NumberInput
 
 
 
@@ -48,15 +48,11 @@ def pretty_name(name):
 class CreateSessionForm(forms.Form):
     session_configs = SESSION_CONFIGS_DICT.values()
     session_config_choices = (
-        # use '' instead of None. '' seems to immediately invalidate the choice,
-        # rather than None which seems to be coerced to 'None'.
-            [('', '-----')]
-            + [(s['name'], s['display_name']) for s in session_configs]
-    )
-
+        [('bad_influence', 'bad_influence')])
+    #[('', '-----')] + [for  (['bad_influence'], s['bad influence']) in session_configs]
     session_config = forms.ChoiceField(choices=session_config_choices, required=True)
 
-    num_participants = forms.IntegerField(required=False)
+    num_participants = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={'placeholder': 'Indtast antal spillere..'}))
     is_mturk = forms.BooleanField(
         widget=widgets.HiddenInput, initial=False, required=False
     )
@@ -79,7 +75,7 @@ class CreateSessionForm(forms.Form):
                 '{} times more participant objects than the number you enter here.'
             )
         else:
-            self.fields['num_participants'].label = "Number of participants"
+            self.fields['num_participants'].label = "Antal spillere"
 
     def clean(self):
         super().clean()

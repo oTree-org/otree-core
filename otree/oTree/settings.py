@@ -16,7 +16,6 @@ SESSION_CONFIGS = [
         display_name="bad influence",
         num_demo_participants=5,
         app_sequence=['bad_influence'],
-        participant_label_file='_rooms/users.txt',
         use_secure_urls=True
     ),
 ]
