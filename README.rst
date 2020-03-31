@@ -17,3 +17,4 @@ How to log into the system:
         Log in with this admin login and enter the admin panel with the URL:
     /admin/
     
+    To log in as a player, create a session/game, go to the admin panel and choose a player username, then log into the system with the username and the password **123456**
