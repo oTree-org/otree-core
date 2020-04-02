@@ -1,3 +1,4 @@
+from django.contrib.auth.models import AbstractUser
 from otree.common import (
     add_field_tracker,
     in_round,

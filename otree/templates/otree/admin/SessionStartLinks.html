@@ -1,7 +1,9 @@
-{% extends "otree/admin/Session.html" %}
+{% extends "otree/BaseAdmin.html" %}
 
 
 {% block content %}
+{% if user.is_authenticated and user.is_staff or user.is_superuser %}
+{% include "otree/admin/Session.html" %}
 {{ block.super }}
 
     {% if use_browser_bots %}
@@ -135,16 +137,25 @@
     </p>
 
     <table class="table">
-
     {% for participant_url in participant_urls %}
         <tr>
             <td><strong>Spiller-link {{ forloop.counter }}:</strong></td>
             <td><a href="{{ participant_url }}" class="participant-link" target="_blank">{{ participant_url }}</a></td>
-
         </tr>
     {% endfor %}
     </table>
 
 
+{% endif %}
+{% else %}
+{% include "otree/admin/Session.html" %}
+<p>Not logged in</p>
+
+    {% for user in users %}
+        <ul>
+            <li><strong>Spiller {{ forloop.counter }}:</strong></li>
+            <li>{{ user.username }}</li>
+        </ul>
+    {% endfor %}
 {% endif %}
 {% endblock %}

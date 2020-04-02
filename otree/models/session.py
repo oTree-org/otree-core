@@ -1,12 +1,11 @@
 import logging
-import logging
 import time
-
+from django.contrib.auth.models import User
 from django.template import TemplateDoesNotExist
 from django.template.loader import select_template
-
 import otree.common
 import otree.constants
+from otree.oTree import settings
 from otree.channels.utils import auto_advance_group
 from otree.common import (
     random_chars_8,
@@ -17,6 +16,7 @@ from otree.common import (
 )
 from otree.db import models
 from otree.models_concrete import RoomToSession
+
 
 
 logger = logging.getLogger('otree')
@@ -34,6 +34,9 @@ class Session(models.Model):
     _ft = FieldTrackerWithVarsSupport()
     vars: dict = models._PickleField(default=dict)
     config: dict = models._PickleField(default=dict, null=True)
+
+    # Foreign key to user table
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
     # label of this session instance
     label = models.CharField(

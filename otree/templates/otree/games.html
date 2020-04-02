@@ -27,7 +27,7 @@
     Spillet vil gennemgå en række scenarier hvor hver spiller skal vælge mellem to muligheder.
     Målet er at ens netværk skal være i konsensus med hinanden før tiden udløber, dette skal ske ved at chatte sammen i spillet.  </p>
  <div class="card-footer">
-     <form action="{% url 'CreateSession' %}">
+     <form action="{% url 'CreateSessionBadInfluence' %}">
 
              <button class="btn btn-primary" >
                  Opret spil
@@ -45,15 +45,13 @@
         it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting,
         remaining essentially unchanged.</p>
     <div class="card-footer">
-        <form action="{% url 'CreateSession' %}">
-
+        <form action="{% url 'CreateSessionDayTrader' %}">
             <button class="btn btn-primary">
                 Opret spil
             </button>
 
         </form>
     </div>
-
+</div>
 {% include "otree/includes/messages.html" %}
 {% endblock %}
-

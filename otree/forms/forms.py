@@ -1,11 +1,7 @@
 import copy
 from decimal import Decimal
-
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
-
 import otree.common
 import otree.constants
 import otree.models

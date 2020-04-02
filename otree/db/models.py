@@ -397,6 +397,4 @@ CharField = StringField
 TextField = LongStringField
 # keep ForeignKey around
 ForeignKey = models.ForeignKey
-
-
 CASCADE = models.CASCADE
