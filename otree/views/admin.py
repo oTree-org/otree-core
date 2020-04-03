@@ -226,7 +226,7 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
                 users=users,
             )
         """
-        - If users exist, then do not create new ones, else create new users for session.
+        - If users exist, then do not create new ones, else create new users for self.session
         - Set count = 0, so when we count in the loop, it can increment from 1++
         - Create a user for each participant (username)
         - Syntax of user is: Spiller<session_id>_1...and upwards depending on number of participants created for the session
