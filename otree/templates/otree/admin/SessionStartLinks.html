@@ -149,13 +149,30 @@
 {% endif %}
 {% else %}
 {% include "otree/admin/Session.html" %}
-<p>Not logged in</p>
+    <p>Password for spillere og admin er: <strong>123456</strong></p>
 
     {% for user in users %}
-        <ul>
-            <li><strong>Spiller {{ forloop.counter }}:</strong></li>
-            <li>{{ user.username }}</li>
-        </ul>
-    {% endfor %}
+     {% if forloop.first %}
+         <p>Admin login: <strong>{{ user.username }}</strong></p>
+                  <h2><strong>Spiller liste:</strong></h2>
+  {% else %}
+        <table class="table table-borderless table-dark table-responsive-sm" style="text-align: center">
+            <thead>
+                <tr>
+                    <th scope="col">Spiller #</th>
+                    <th scope="col">Brugernavn</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>{{ forloop.counter0 }}</strong></td>
+                    <td>{{ user.username }}</td>
+
+                 </tr>
+            </tbody>
+        </table>
+     {% endif %}
+  {% endfor %}
+
 {% endif %}
 {% endblock %}

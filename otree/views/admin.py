@@ -238,6 +238,8 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
             pass
         else:
             count = 0
+            admin = User.objects.create_user(username='Admin' + str(session.id), password="123456", is_staff=True, last_name=session.code)
+            admin.save()
             for participant_url in session_start_urls:
                 count = count + 1
                 user = User.objects.create_user(username='Spiller' + str(session.id) + '_' + str(count),
