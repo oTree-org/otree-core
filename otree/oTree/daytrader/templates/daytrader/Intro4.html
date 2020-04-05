@@ -1,0 +1,35 @@
+{% extends "global/Base.html" %}
+{% load otree %}
+{% block content %}
+
+  <table class="table">
+    <tr>
+      <th>trader</th>
+      <th>pris</th>
+      <th>ansigt</th>
+      <th>handel</th>
+    </tr>
+    <tr>
+      <td> {{ 1 }}. </td>
+      <td> {{ 50|c }}</td>
+      <td> ? </td>
+      <td> + 23 aktier</td>
+    </tr>
+    <tr>
+      <td> {{ 2 }}. </td>
+      <td> {{ 50.06|c }}</td>
+      <td> ? </td>
+      <td> + 45 aktier</td>
+    </tr>
+    <tr>
+      <td> {{ 3 }}. </td>
+      <td> {{ 50.26|c }}</td>
+      <td> ked af det </td>
+      <td> + 30 aktier</td>
+    </tr>
+  </table>
+  <p>
+    Du gik long og købte 30 aktier i firmaet.
+  </p>
+  {%  next_button %}
+{% endblock %}

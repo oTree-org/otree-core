@@ -1,0 +1,46 @@
+
+
+{% block title %}
+    Børsen er lukket for i dag
+{% endblock %}
+
+{% block content %}
+
+<p>
+  Vi lukker nu dine positioner. Du har handlet for i alt {{ handlet }}.
+  I tabellen kan du se, hvordan det gik.
+<p/>
+
+<table class="table">
+    <tr>
+        <th> firma         </th>
+        <th> tilstand      </th>
+        <th> handler       </th>
+        <th> din købspris  </th>
+        <th> lukkepris     </th>
+        <th> tjent         </th>
+    </tr>
+    {% for firma, tilstand, choice, deal, price, closing, tjent in data %}
+        <tr>
+            <td> {{ firma }}    </td>
+            <td> {{ tilstand }} </td>
+            <td> {%if choice == True %} + {% else %} - {% endif %}
+                 {{ deal }}     </td>
+            <td> {{ price }}    </td>
+            <td> {{ closing }}  </td>
+            <td> <strong> {{ tjent }} </strong> </td>
+        </tr>
+    {% endfor %}
+</table>
+
+<p>
+  Du har tjent i alt {{ player.payoff }}.
+  Gebyrer og kurtage ({{ kurtage_pct }} procent af handelsværdi) beløber sig til {{ kurtage }}.
+<p/>
+<p>
+  Din samlede fortjeneste er {{ ialt }}.
+<p/>
+<p>
+  Tak for at handle hos os.
+<p/>
+{% endblock %}

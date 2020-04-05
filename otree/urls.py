@@ -1,4 +1,9 @@
+
+import os
 from django.contrib import admin
+from django.http import HttpResponseServerError, HttpResponse
+from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
 from otree.extensions import get_extensions_modules, get_extensions_data_export_views
 import inspect
 from importlib import import_module
@@ -8,7 +13,8 @@ from django.views.generic.base import RedirectView
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from otree import common
-
+from otree.models import Session
+from . import views
 import vanilla
 
 
@@ -146,7 +152,6 @@ class GamesView(vanilla.TemplateView):
 
 
 def get_urlpatterns():
-
     urlpatterns = [
         urls.url(r'^$', RedirectView.as_view(url='/demo', permanent=True)),
         urls.url(r'^accounts/login/$', LoginView.as_view(), name='login'),
@@ -154,6 +159,7 @@ def get_urlpatterns():
         urls.url(r'^home/', HomeView.as_view(), name='home'),
         urls.url(r'^spil/', GamesView.as_view(), name='games'),
         urls.url(r'^admin/', admin.site.urls),
+
     ]
     urlpatterns += staticfiles_urlpatterns()
 

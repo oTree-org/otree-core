@@ -1,0 +1,41 @@
+{# templates/evalsys/pdf/eval_pdf.html #}
+{% load staticfiles i18n %}
+{% load static %}
+{% get_media_prefix as MEDIA_URL %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>PDF Template</title>
+    <style>
+        @page {
+            margin: 2cm;
+        }
+
+        h1 {
+            font-size: 3em;
+        }
+
+        h2 {
+            font-size: 2em;
+        }
+
+        h4 {
+            font-size: 2em;
+        }
+
+        h5 {
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+
+<div>
+<p>Hello Eartheans</p>
+</div>
+</body>
+</html>

@@ -148,10 +148,30 @@
 
 {% endif %}
 {% else %}
-{% include "otree/admin/Session.html" %}
+{% include "otree/admin/CustomSession.html" %}
+<div>
+ Session-wide URL: <p><a target="_blank" href="{{ anonymous_url }}">{{ anonymous_url }}</a></p>
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+
+
+
+{% comment %}
+DETTE ER AUTHENTICATIONS MULIGHEDEN TIL
+    Download spiller listen som PDF
+  <h4 class="eksport_pdf text-center"><span class="fas fa-file-pdf fa-1x eksport_alle"
+                                               aria-hidden="true"></span>&nbsp;<a
+                        href="{% url 'SessionStartLinks' session.code %}">Eksporter til PDF.</a></h4>
+
+
     <p>Password for spillere og admin er: <strong>123456</strong></p>
 
-    {% for user in users %}
+
+  {% for user in users %}
      {% if forloop.first %}
          <p>Admin login: <strong>{{ user.username }}</strong></p>
                   <h2><strong>Spiller liste:</strong></h2>
@@ -173,6 +193,4 @@
         </table>
      {% endif %}
   {% endfor %}
-
-{% endif %}
-{% endblock %}
+{% endcomment %}

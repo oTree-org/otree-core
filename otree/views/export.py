@@ -1,14 +1,15 @@
 import csv
 import datetime
+import os
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseServerError
 from django.conf import settings
-
 import vanilla
-
 import otree.common
 import otree.models
 import otree.export
+from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
 from otree.models.participant import Participant
 from otree.models.session import Session
 from otree.extensions import get_extensions_data_export_views
@@ -16,7 +17,6 @@ from otree.models_concrete import ChatMessage
 
 
 class ExportIndex(vanilla.TemplateView):
-
     template_name = 'otree/admin/Export.html'
 
     url_pattern = r"^export/$"
@@ -39,7 +39,6 @@ class ExportIndex(vanilla.TemplateView):
         )
 
 
-
 def get_export_response(request, file_prefix):
     if bool(request.GET.get('xlsx')):
         content_type = (
@@ -59,7 +58,6 @@ def get_export_response(request, file_prefix):
 
 
 class ExportApp(vanilla.View):
-
     url_pattern = r"^ExportApp/(?P<app_name>[\w.]+)/$"
 
     def get(self, request, app_name):
@@ -69,7 +67,6 @@ class ExportApp(vanilla.View):
 
 
 class ExportWide(vanilla.View):
-
     url_pattern = r"^ExportWide/$"
 
     def get(self, request):
@@ -79,7 +76,6 @@ class ExportWide(vanilla.View):
 
 
 class ExportTimeSpent(vanilla.View):
-
     url_pattern = r"^ExportTimeSpent/$"
 
     def get(self, request):
@@ -92,11 +88,9 @@ class ExportTimeSpent(vanilla.View):
 
 
 class ExportChat(vanilla.View):
-
     url_pattern = '^otreechatcore_export/$'
 
     def get(self, request):
-
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(
             'Chat messages (accessed {}).csv'.format(datetime.date.today().isoformat())
