@@ -1,24 +1,17 @@
-
-import os
-from django.contrib import admin
-from django.http import HttpResponseServerError, HttpResponse
-from django.shortcuts import get_object_or_404
-from django.template.loader import render_to_string
 from otree.extensions import get_extensions_modules, get_extensions_data_export_views
+from otree import common
+
 import inspect
+import vanilla
 from importlib import import_module
+
 from django.conf import urls
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic.base import RedirectView
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from otree import common
-from otree.models import Session
-from . import views
-import vanilla
-
-
-
+from django.contrib import admin
+from django.urls import path
 
 ALWAYS_UNRESTRICTED = {
     'AssignVisitorToRoom',
@@ -140,7 +133,7 @@ class LoginView(auth_views.LoginView):
 
 
 class LogoutView(auth_views.LogoutView):
-    next_page = 'DemoIndex'
+    next_page = 'games'
 
 
 class HomeView(vanilla.TemplateView):
@@ -151,13 +144,15 @@ class GamesView(vanilla.TemplateView):
     template_name = 'otree/games.html'
 
 
+
 def get_urlpatterns():
     urlpatterns = [
-        urls.url(r'^$', RedirectView.as_view(url='/demo', permanent=True)),
+        ##urls.url('', GamesView.as_view(), name='index'),
+        urls.url(r'^spil/$', GamesView.as_view(), name='games'),
+        urls.url(r'^$', RedirectView.as_view(url='/spil/', permanent=True)),
         urls.url(r'^accounts/login/$', LoginView.as_view(), name='login'),
         urls.url(r'^accounts/logout/$', LogoutView.as_view(), name='logout'),
-        urls.url(r'^home/', HomeView.as_view(), name='home'),
-        urls.url(r'^spil/', GamesView.as_view(), name='games'),
+        urls.url(r'^home/$', HomeView.as_view(), name='home'),
         urls.url(r'^admin/', admin.site.urls),
 
     ]

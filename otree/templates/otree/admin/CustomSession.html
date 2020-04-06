@@ -1,15 +1,17 @@
 {% extends "otree/BaseAdmin.html" %}
 {% load otree_internal static %}
-
+{% comment %}
 {% block head_title %}
 {{ session.config.display_name }}: session '{{ session.code }}'{% if session.is_demo %} (demo) {% endif %}
 {% endblock %}
 
+{% endcomment %}
 {% block title %}
-{{ session.config.display_name }}: session <code>{{ session.code }}</code>{% if session.is_demo %} (demo) {% endif %}
+Admin Panel
 {% endblock %}
 
 {% block menus %}
+        <h4>Admin panelet giver dig mulighed som admin at holde øje med spillets fremgang og se slutresultatet af spillet. </h4>
 <ul class="nav nav-tabs justify-content-center">
     <li role="presentation" class="nav-item">
         <a class="nav-link {% active_page request 'SessionStartLinks' session.code %}" href="{% url 'SessionStartLinks' session.code %}"><img src='{% static "glyphicons/link.png" %}'> Links</a>

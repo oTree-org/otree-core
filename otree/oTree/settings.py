@@ -33,14 +33,14 @@ SESSION_CONFIG_DEFAULTS = dict(
 SESSION_CONFIGS = [
     dict(
         name='bad_influence',
-        display_name="bad influence",
+        display_name="Bad Influence",
         num_demo_participants=5,
         app_sequence=['bad_influence'],
         use_secure_urls=True
     ),
     dict(
         name='daytrader',
-        display_name="daytrader",
+        display_name="Day Trader",
         num_demo_participants=3,
         app_sequence=['daytrader'],
     ),
