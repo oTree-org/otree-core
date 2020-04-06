@@ -82,9 +82,11 @@ class NetworkVoting(WebsocketConsumer):
 
             for p in group.get_players():
                 ego_graph = json_graph.node_link_data(nx.ego_graph(graph, p.id_in_group))
-                async_to_sync(self.channel_layer.group_send(p.get_personal_channel_name(), {
-                    'ego_graph': ego_graph,
-                    'consensus': consensus
+                self.send(text_data=json.dumps({
+                    'message': {
+                        'ego_graph': ego_graph,
+                        'consensus': consensus
+                    }
                 }))
 
     def chat_message(self, event):
