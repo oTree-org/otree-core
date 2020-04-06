@@ -1,0 +1,10 @@
+def return_none(*args, **kwargs):
+    """Ignores all arguments and returns None."""
+    return None
+
+class AllMethodsReturnNone:
+    def __getattr__(self, attrname):
+        """Handles lookups of attributes that aren't found through the normal lookup."""
+        return return_none
+
+qualification = AllMethodsReturnNone()
