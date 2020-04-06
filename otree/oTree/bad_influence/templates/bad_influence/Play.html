@@ -193,6 +193,10 @@
             <button id="send" class="btn btn-success">Send</button>
         </div>
     </div>
+    <div>
+        <button id="genNew">Generate New Random Color</button>
+        <span id="color"></span>
+    </div>
     <style>
         #chat {
             height: 250px;
@@ -280,8 +284,8 @@
         // When a message is sent it is appended to the container with id of chat
         socket.onmessage = event => {
             /*
-
              */
+            console.log(event);
             const chat = document.getElementById('chat');
             chat.innerHTML += JSON.parse(event.data).message;
             displayFriends();
@@ -326,6 +330,7 @@
             }
         };
     </script>
+
 {% endblock %}
 
 

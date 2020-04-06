@@ -5,6 +5,7 @@ import time
 import json
 from asgiref.sync import async_to_sync
 from bad_influence.models import Player, Group, Constants
+import random
 
 
 class NetworkVoting(WebsocketConsumer):
@@ -89,6 +90,8 @@ class NetworkVoting(WebsocketConsumer):
                     }
                 }))
 
+
+
     def chat_message(self, event):
         message = event['message']
 
@@ -142,10 +145,12 @@ class ChatConsumer(JsonWebsocketConsumer):
     # Receive message from room group
     def chat_message(self, event):
         message = event['message']
+        random_color = Player.generate_random_chat_color(self)
 
         # Send message to WebSocket
         self.send(text_data=json.dumps({
-            'message': message
+            'message': message,
+            'random_color': random_color
         }))
 
         print("Sent message")

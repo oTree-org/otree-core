@@ -105,13 +105,6 @@ class Subsession(BaseSubsession):
         color_dict = nx.get_node_attributes(G, 'choice')
         color_array = sorted(color_dict.values())  # array with blues first
         color_hist = [len(list(group)) for key, group in groupby(color_array)]
-        color_freq = np.array(color_hist)/np.sum(np.array(color_hist))
-        self.consensus = max(color_freq)
-
-        # generate random gender attribution
-        gen = random.choice([True, False])
-        for p in self.get_players():
-            p.gender = gen
 
     def vars_for_admin_report(self):
         group = self.get_groups()[0]
@@ -257,6 +250,12 @@ class Player(BasePlayer):
     stubborn_total = models.FloatField(initial=0)
     opinion_change_total = models.IntegerField(initial=0)
     number_of_friends_total = models.IntegerField(initial=0)
+    player_chat_color = models.StringField()
+
+    def generate_random_chat_color(self):
+        r = lambda: random.randint(0, 255)
+        random_color = "%02X%02X%02X" % (r(), r(), r())
+        self.player_chat_color = random_color
 
     def get_personal_channel_name(self):
         return '{}-{}'.format(self.id_in_group, self.id)

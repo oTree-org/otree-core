@@ -23,18 +23,14 @@
         };
 
         $guess_true_button.click(function () {
-            console.log("Clicked true");
             send_guess(true);
         });
         $guess_false_button.click(function () {
-            console.log("Clicked false");
             send_guess(false);
         });
 
         socket.onmessage = event => {
-            console.log("On message executed");
             let obj = JSON.parse(event.data).message;
-            console.log(obj);
             let new_consensus = (obj.consensus * 100).toFixed(0) + "%";
             $consensus_bar.html(new_consensus);
             $consensus_bar.attr('aria-valuenow', new_consensus).css('width', new_consensus);
