@@ -1,3 +1,5 @@
+pandas
+xhtml2pdf
 asgiref==3.1.2
 asn1crypto==0.24.0
 async-timeout==3.0.1
