@@ -148,14 +148,49 @@
 
 {% endif %}
 {% else %}
-{% include "otree/admin/Session.html" %}
-<p>Not logged in</p>
+{% include "otree/admin/CustomSession.html" %}
+<div>
+ Session-wide URL: <p><a target="_blank" href="{{ anonymous_url }}">{{ anonymous_url }}</a></p>
+</div>
 
-    {% for user in users %}
-        <ul>
-            <li><strong>Spiller {{ forloop.counter }}:</strong></li>
-            <li>{{ user.username }}</li>
-        </ul>
-    {% endfor %}
 {% endif %}
+
 {% endblock %}
+
+
+
+
+{% comment %}
+DETTE ER AUTHENTICATIONS MULIGHEDEN - IKKE SLETTE
+    Download spiller listen som PDF
+  <h4 class="eksport_pdf text-center"><span class="fas fa-file-pdf fa-1x eksport_alle"
+                                               aria-hidden="true"></span>&nbsp;<a
+                        href="{% url 'SessionStartLinks' session.code %}">Eksporter til PDF.</a></h4>
+
+
+    <p>Password for spillere og admin er: <strong>123456</strong></p>
+
+
+  {% for user in users %}
+     {% if forloop.first %}
+         <p>Admin login: <strong>{{ user.username }}</strong></p>
+                  <h2><strong>Spiller liste:</strong></h2>
+  {% else %}
+        <table class="table table-borderless table-dark table-responsive-sm" style="text-align: center">
+            <thead>
+                <tr>
+                    <th scope="col">Spiller #</th>
+                    <th scope="col">Brugernavn</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>{{ forloop.counter0 }}</strong></td>
+                    <td>{{ user.username }}</td>
+
+                 </tr>
+            </tbody>
+        </table>
+     {% endif %}
+  {% endfor %}
+{% endcomment %}

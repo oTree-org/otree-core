@@ -1,0 +1,24 @@
+{% extends "global/Base.html" %}
+{% load otree %}
+{% block content %}
+
+    <p> Der er mange måder, hvorpå der kan opstå bobler i finansverdenen.
+        Her er en simpel forklaring. Forestil dig et firma, repræsenteret
+        af en sæk med glade og ikke så glade medarbejdere:
+    </p>
+    <p>
+      (billede af sæk med tre hoveder i, hvor den ene er ked af det
+      og de to andre er glade)
+    </p>
+    <p>
+      Lad os sige, at hvis fimaet har en overvægt af glade medarbejdere,
+      så går det godt, og så får firmaet overskud.
+      Hvis der er en overvægt af medarbejdere som er kede af det,
+      går det skidt og firmaet giver underskud.
+    </p>
+    <p>
+      (billede af samme sæk, nu med to ked af det hoveder, og en graf, hvor
+      aktieprisen styrtdykker)
+    </p>
+    {%  next_button %}
+{% endblock %}

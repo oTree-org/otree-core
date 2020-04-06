@@ -1,3 +1,5 @@
+pandas
+xhtml2pdf
 #-e git@github.com:twisted/twisted.git#egg=Twisted
 asgiref==3.1.2
 asn1crypto==0.24.0

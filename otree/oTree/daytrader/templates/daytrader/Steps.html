@@ -1,0 +1,17 @@
+{% extends "global/Base.html" %}
+{% load staticfiles otree %}
+
+{% block title %}
+    Round {{ subsession.round_number }} (of {{ Constants.num_rounds }})
+{% endblock %}
+
+{% block content %}
+
+    <p>
+        How many trades do you want to look back at before making a choice?
+        (max = {{ max_steps }})
+    </p>
+        {% formfield player.choice_of_steps label=None%}
+
+    {%  next_button %}
+{% endblock %}

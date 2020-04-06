@@ -1,5 +1,25 @@
 from os import environ
 
+import os
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
 # if you set a property in SESSION_CONFIG_DEFAULTS, it will be inherited by all configs
 # in SESSION_CONFIGS, except those that explicitly override it.
 # the session config can be accessed from methods in your apps as self.session.config,
@@ -18,7 +38,14 @@ SESSION_CONFIGS = [
         app_sequence=['bad_influence'],
         use_secure_urls=True
     ),
+    dict(
+        name='daytrader',
+        display_name="daytrader",
+        num_demo_participants=3,
+        app_sequence=['daytrader'],
+    ),
 ]
+
 
 
 # ISO-639 code
@@ -31,11 +58,8 @@ USE_POINTS = True
 
 ROOMS = [
     dict(
-        name='econ101',
-        display_name='Econ 101 class',
-        participant_label_file='_rooms/econ101.txt',
-    ),
-    dict(name='live_demo', display_name='Room for live demo (no participant labels)'),
+        name='live_demo',
+        display_name='Room for live demo (no participant labels)'),
 ]
 
 ADMIN_USERNAME = 'admin'
@@ -57,10 +81,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'otree',
+    'bad_influence',
+    'daytrader'
 ]
 
 EXTENSION_APPS = [
     'bad_influence',
+    'daytrader'
 ]
 
 

@@ -1,0 +1,63 @@
+{% extends "global/Base.html" %}
+{% load otree %}
+{% block content %}
+
+<p>
+  Nu kan du starte med at handle.
+</p>
+<p>
+  (billede af sæk med tre skjulte ansigter)
+</p>
+<p>
+  Du må gerne klikke på eet af ansigterne for at se om det er glad eller ked af det.
+  Mere kan du ikke få at vide om firmaet. Du ved dog, at de to første to futures
+  tradere også fik lov at se et ansigt inden de lavede deres handel.
+  Og du kan se hvor meget de gik short eller long i tabellen her: (minus er short, plus er long)
+</p>
+
+<table class="table">
+    <tr>
+      <th>trader</th>
+      <th>pris</th>
+      <th>ansigt</th>
+      <th>handel</th>
+    </tr>
+    <tr>
+      <td> {{ 1 }}. </td>
+      <td> {{ 50|c }}</td>
+      <td> ? </td>
+      <td> + 23 aktier</td>
+    </tr>
+    <tr>
+      <td> {{ 2 }}. </td>
+      <td> {{ 50.06|c }}</td>
+      <td> ? </td>
+      <td> + 45 aktier</td>
+    </tr>
+</table>
+<p>
+  Du er trader nummer 3, og du skal handle aktier i firmaet.
+  Du kigger i sækken, og ser et
+  ansigt der er ked af det. Du har {{ player.wallet|c }}
+  og aktieprisen er lige nu {{ player.price|c }}. Hvad vil du gøre?
+</p>
+<p>
+  Nuvel, den første trader må have set et gladt ansigt. Ellers ville
+  han/hun ikke være gået long.
+  (Tradernes private information er usynlig for andre.)
+</p>
+<p>
+  Den anden sælger må også have set et glad ansigt. Hvis hun/han havde set et
+  ked af det ansigt, ville han/hun nok have stolet mere på sin egen private
+  information end den første traders private information. Man kan også se, at den
+  anden trader har købt flere aktier end den første. Det tyder på at han/hun
+  er blevet mere sikker i sin tro på at firmaet er i god stand.
+</p>
+<p>
+  Din private information er et ked af det ansigt. Da du ved, at de to
+  første tradere fandt glade ansigter, er din samlede information om firmaets
+  tilstand = 2 glade og 1 ked af det ansigt. Det ville derfor være mest
+  fornuftigt at satse på, at fimaet er i god stand! Du burde altså gå long.
+
+    {%  next_button %}
+{% endblock %}

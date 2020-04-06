@@ -1,0 +1,13 @@
+{% extends "global/Base.html" %}
+{% load otree %}
+{% block content %}
+
+<p>
+  Nu skal du selv prøve at handle med aktier i {{ Constants.num_rounds }}
+  firmaer på en enkel dag.
+  Du spiller sammen med de andre i klassen, og vinderen er den, der ved
+  dagens afslutning har tjent flest penge.
+</p>
+
+{% next_button %}
+{% endblock %}

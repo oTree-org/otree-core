@@ -1,7 +1,10 @@
-{% extends "otree/admin/Session.html" %}
 
+ {% extends "otree/admin/Session.html" %}
 {% block content %}
-    {{ block.super }}
+
+    {% if user.is_authenticated and user.is_staff or user.is_superuser %}
+
+{{ block.super }}
     <table id="monitor-table"
            class="table table-bordered table-hover table-condensed">
         <thead>
@@ -39,6 +42,45 @@
 
     {% csrf_token %}
 
+{% else %}
+        {{ block.super }}
+    <table id="monitor-table"
+           class="table table-bordered table-hover table-condensed">
+        <thead>
+        <tr>
+            {% for header in column_names %}
+                <th>{{ header }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <p><span id="num_participants_visited"></span>/{{ session.num_participants }} spillere er startet.</p>
+    <br/>
+    {% if not session.use_browser_bots %}
+    <button id="advance_users" class="btn btn-primary" type="button"
+       data-toggle="popover" data-trigger="hover"
+       data-content="{{ advance_users_button_text }}">
+        Fremryk den langsomste bruger
+    </button>
+    {% endif %}
+
+
+    <br>
+    <div id="refresh_server_error" class="alert alert-danger"
+         style="display: none;">
+        Fejl ved indlæsning af data fra serveren.
+    </div>
+
+    <div id="auto_advance_server_error" class="alert alert-danger"
+         style="display: none;">
+        En fejl er opstået og den langsomte bruger kunne ikke blive fremrykket.
+    </div>
+
+    {% csrf_token %}
+
+{% endif %}
 {% endblock %}
 
 
