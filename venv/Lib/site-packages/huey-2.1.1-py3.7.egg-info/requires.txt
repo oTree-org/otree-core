@@ -1,0 +1,6 @@
+
+[backends]
+redis>=3.0.0
+
+[redis]
+redis>=3.0.0

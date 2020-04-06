@@ -193,6 +193,10 @@
             <button id="send" class="btn btn-success">Send</button>
         </div>
     </div>
+    <div>
+        <button id="genNew">Generate New Random Color</button>
+        <span id="color"></span>
+    </div>
     <style>
         #chat {
             height: 250px;
@@ -221,13 +225,8 @@
 
     <script>
         // Array container for the sent messages to be used in localstorage
-        let storage = {
-            messages: [
-
-            ]
-        };
-
-        window.localStorage.setItem('messages', storage.messages);
+        let messages = [];
+        console.log("the type is a " + typeof localStorage.getItem('messages'));
 
         // Defines the scheme of the WebSocket to be either wss if the protocol is https
         // else it should be ws
@@ -242,20 +241,40 @@
         // Defines the DOM element for the submit button
         const button = document.getElementById('send');
 
+        // Function that adds the player id to each message
+        const mapFriends = () => {
+            let friends = {{ player.get_friends }};
+            let players = [];
+
+            friends.map(
+                item => {
+                    players.push(`player_${item}`)
+                }
+            )
+
+            return players;
+        };
+
+        // Returns all the players friends in the network
+        let players = mapFriends();
+
+        // Variable used for displaying the right messages
+        let network = [];
+
         // Opens the WebSocket connection and logs a message in the console when it opens
         socket.onopen = () => {
             console.log('WebSocket opened');
+            /*
             const chat = document.getElementById('chat');
-            for (let message in storage.messages) {
-                chat.innerHTML = storage.messages[message];
-            }
-            console.log(localStorage);
+            let chat_messages = JSON.parse(localStorage.getItem('messages'));
+            chat.innerHTML = chat_messages;
+            */
         };
 
         // Closes the WebSocket connection and logs a message in the console when it closes
         socket.onclose = () => {
             console.log("WebSocket closed");
-        };
+        }
 
         // Logs a error if the WebSocket gets a connection error in the console
         socket.onerror = event => {
@@ -264,11 +283,14 @@
 
         // When a message is sent it is appended to the container with id of chat
         socket.onmessage = event => {
-            storage.messages.push(JSON.stringify(event.data).message);
-            console.log(storage);
+            /*
+             */
+            console.log(event);
             const chat = document.getElementById('chat');
             chat.innerHTML += JSON.parse(event.data).message;
             displayFriends();
+            messages.push(JSON.parse(event.data).message);
+            localStorage.setItem('messages', JSON.stringify(messages));
         };
 
         // Adds an event listener on the send button that submits the message
@@ -289,24 +311,9 @@
             message.value = '';
         });
 
-        // Function that adds the player id to each message
-        const mapFriends = () => {
-            let friends = {{ player.get_friends }};
-            let players = [];
-
-            friends.map(
-                item => {
-                    players.push(`player_${item}`)
-                }
-            )
-
-            return players;
-        };
 
         // Function that hides the messages outside of the players network
         const displayFriends = () => {
-            let players = mapFriends();
-            let network = [];
 
             let chat_class = document.getElementsByClassName('chat-message');
 
@@ -323,10 +330,12 @@
             }
         };
     </script>
+
 {% endblock %}
 
 
 {% block scripts %}
+    {% include 'bad_influence/channels/network_voting_channel.html' %}
     {% include 'bad_influence/d3/d3_graph.html' %}
     {% if view.remaining_timeout_seconds != None %}
         {% include 'otree/includes/TimeLimit.js.html' %}

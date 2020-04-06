@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <module type="PYTHON_MODULE" version="4">
   <component name="FacetManager">
     <facet type="django" name="Django">
@@ -16,6 +15,7 @@
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Django Lib" level="project" />
   </component>
   <component name="TemplatesService">
     <option name="TEMPLATE_CONFIGURATION" value="Django" />
@@ -26,7 +26,6 @@
     </option>
   </component>
   <component name="TestRunnerService">
-    <option name="projectConfiguration" value="pytest" />
     <option name="PROJECT_TEST_RUNNER" value="pytest" />
   </component>
 </module>

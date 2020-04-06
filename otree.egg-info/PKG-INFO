@@ -6,57 +6,32 @@ Home-page: http://otree.org/
 Author: chris@otree.org
 Author-email: chris@otree.org
 License: MIT License
-Description: `Homepage`_
-        
-        These are the core oTree libraries.
-        
-        Before you fork this project, keep in mind that otree-core is updated
-        frequently, and over time you might get upstream merge conflicts, as
-        your local project diverges from the oTree mainline version.
-        
-        Instead, consider creating a project with ``otree startproject`` and
-        making your modifications in an app, using oTree’s public API. You can
-        create custom URLs, channels, override settings, etc.
-        
-        Docs
-        ----
-        
-        http://otree.readthedocs.io/en/latest/index.html
-        
-        Quickstart
-        ----------
-        
-        Typical setup
-        ~~~~~~~~~~~~~
-        
-        ::
-        
-            pip install -U otree
-            otree startproject oTree
-            cd oTree
-            otree devserver
-        
-        Core dev setup
+Description: 
+        How to
         ~~~~~~~~~~~~~~
-        
-        If you are modifying otree-core locally, clone or download this repo,
-        then run this from the project root:
-        
+        Use following methodology when git cloning the project:
         ::
         
             pip install -e .
-            cd .. # or wherever you will start your project
-            otree startproject oTree
+            cd otree
             cd oTree
             otree devserver
+         
+        How to log into the system as an admin:
+        ::
         
+            Create an admin/superuser with the following commands in your terminal:
+            # otree createsuperuser
+                Log in with this admin login and enter the admin panel with the URL:
+            /admin/
         
-        |Build Status|
+        How to log into the system as a player:
+        ::
+            To log in as a player:
+               1. create a session/game
+               2. go to the admin panel and choose a player username
+               3. then log into the system with the username and the password: 123456
         
-        .. _Homepage: http://www.otree.org/
-        
-        .. |Build Status| image:: https://travis-ci.org/oTree-org/otree-core.svg?branch=master
-           :target: https://travis-ci.org/oTree-org/otree-core
 Platform: UNKNOWN
 Classifier: Environment :: Web Environment
 Classifier: Framework :: Django
