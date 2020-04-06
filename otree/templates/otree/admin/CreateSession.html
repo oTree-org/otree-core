@@ -9,7 +9,18 @@
 
 {% block content %}
 
-{% include "otree/includes/CreateSessionFormBadInfluence.html" %}
+
+
+
+
+
+
+     <!-- Use Day Trader Session form -->
+    {% if request.path == "/opret_spil/bad_influence/" %}
+            {% include "otree/includes/CreateSessionFormBadInfluence.html" %}
+    {% elif request.path == "/opret_spil/day_trader/" %}
+        {% include "otree/includes/CreateSessionFormDayTrader.html" %}
+    {% endif %}
 
 
 {% endblock %}

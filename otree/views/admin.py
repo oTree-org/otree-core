@@ -1,6 +1,11 @@
 import json
 import os
 from collections import OrderedDict
+
+from django.conf.urls import url
+from django.views.generic import CreateView
+from django.views.generic.edit import FormMixin
+
 import otree
 import re
 import otree.bots.browser
@@ -41,11 +46,23 @@ def pretty_name(name):
     return name.replace('_', ' ')
 
 
+def get_games(current_game, session_config_choices):
+    if current_game == "bad_influence":
+        return [('bad_influence', 'bad_influence')]
+    elif current_game == "daytrader":
+        return [('daytrader', 'daytrader')]
+    else:
+        return session_config_choices()
+
+
 class CreateSessionForm(forms.Form):
     session_configs = SESSION_CONFIGS_DICT.values()
-    session_config_choices = (
-        [('bad_influence', 'bad_influence')])
-    session_config = forms.ChoiceField(choices=session_config_choices, required=True)
+    session_config_choices = ([
+        ('bad_influence', 'bad_influence'),
+        ('daytrader', 'daytrader')
+    ])
+
+    session_config = forms.ChoiceField(choices=session_config_choices, required=True, initial="daytrader")
 
     num_participants = forms.IntegerField(required=False,
                                           widget=forms.NumberInput(attrs={'placeholder': 'Indtast antal spillere..'}))
@@ -59,6 +76,7 @@ class CreateSessionForm(forms.Form):
     def __init__(self, *args, is_mturk=False, room_name=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['room_name'].initial = room_name
+
         if is_mturk:
             self.fields['is_mturk'].initial = True
             self.fields[
@@ -86,6 +104,7 @@ class CreateSessionForm(forms.Form):
             raise forms.ValidationError('Please enter a valid number of participants.')
 
 
+"""
 class CreateSessionFormBadInfluence(forms.Form):
     session_configs = SESSION_CONFIGS_DICT.values()
     session_config_choices = (
@@ -131,7 +150,53 @@ class CreateSessionFormBadInfluence(forms.Form):
             raise forms.ValidationError('Please enter a valid number of participants.')
 
 
-class CreateSession(vanilla.TemplateView):
+class CreateSessionFormDayTrader(forms.Form):
+    session_configs = SESSION_CONFIGS_DICT.values()
+    session_config_choices = (
+        [('daytrader', 'daytrader')])
+    session_config = forms.ChoiceField(choices=session_config_choices, required=True)
+
+    num_participants = forms.IntegerField(required=False,
+                                          widget=forms.NumberInput(attrs={'placeholder': 'Indtast antal spillere..'}))
+    is_mturk = forms.BooleanField(
+        widget=widgets.HiddenInput, initial=False, required=False
+    )
+    room_name = forms.CharField(
+        initial=None, widget=widgets.HiddenInput, required=False
+    )
+
+    def __init__(self, *args, is_mturk=False, room_name=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['room_name'].initial = room_name
+        if is_mturk:
+            self.fields['is_mturk'].initial = True
+            self.fields[
+                'num_participants'
+            ].label = "Number of MTurk workers (assignments)"
+            self.fields['num_participants'].help_text = (
+                'Since workers can return an assignment or drop out, '
+                'some "spare" participants will be created: '
+                f'the oTree session will have {settings.MTURK_NUM_PARTICIPANTS_MULTIPLE}'
+                '{} times more participant objects than the number you enter here.'
+            )
+        else:
+            self.fields['num_participants'].label = "Antal spillere"
+
+    def clean(self):
+        super().clean()
+        if self.errors:
+            return
+        session_config_name = self.cleaned_data['session_config']
+
+        config = SESSION_CONFIGS_DICT[session_config_name]
+        lcm = config.get_lcm()
+        num_participants = self.cleaned_data.get('num_participants')
+        if num_participants is None or num_participants % lcm:
+            raise forms.ValidationError('Please enter a valid number of participants.')
+
+
+
+class CreateSession(CreateView):
     template_name = 'otree/admin/CreateSession.html'
     url_pattern = r"^opret_spil/$"
 
@@ -145,35 +210,41 @@ class CreateSession(vanilla.TemplateView):
             **kwargs,
         )
         return x
+"""
 
 
-class CreateSessionBadInfluence(vanilla.TemplateView):
+class CreateSessionBadInfluence(FormMixin, vanilla.TemplateView):
     template_name = 'otree/admin/CreateSession.html'
     url_pattern = r"^opret_spil/bad_influence/"
+    form_class = CreateSessionForm
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['session_config'] = "bad_influence"
+        return initial
 
     def get_context_data(self, **kwargs):
         x = super().get_context_data(
             configs=SESSION_CONFIGS_DICT.values(),
-            # splinter makes request.GET.get('mturk') == ['1\\']
-            # no idea why
-            # so just see if it's non-empty
-            form=CreateSessionForm(is_mturk=bool(self.request.GET.get('is_mturk'))),
             **kwargs,
         )
+
         return x
 
 
-class CreateSessionDayTrader(vanilla.TemplateView):
+class CreateSessionDayTrader(FormMixin, vanilla.TemplateView):
     template_name = 'otree/admin/CreateSession.html'
     url_pattern = r"^opret_spil/day_trader/"
+    form_class = CreateSessionForm
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['session_config'] = "daytrader"
+        return initial
 
     def get_context_data(self, **kwargs):
         x = super().get_context_data(
             configs=SESSION_CONFIGS_DICT.values(),
-            # splinter makes request.GET.get('mturk') == ['1\\']
-            # no idea why
-            # so just see if it's non-empty
-            form=CreateSessionForm(is_mturk=bool(self.request.GET.get('is_mturk'))),
             **kwargs,
         )
         return x
@@ -222,7 +293,6 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
         room = session.get_room()
         context = dict(use_browser_bots=session.use_browser_bots)
 
-
         session_start_urls = [
             self.request.build_absolute_uri(participant._start_url())
             for participant in session.get_participants()
@@ -236,7 +306,6 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
                 room=room,
                 collapse_links=True,
                 users=users,
-
 
             )
         else:
@@ -254,29 +323,6 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
             )
 
         return context
-        """
-        IKKE SLETTE!
-        - If users exist, then do not create new ones, else create new users for self.session
-        - Set count = 0, so when we count in the loop, it can increment from 1++
-        - Create a user for each participant (username)
-        - Syntax of user is: Spiller<session_id>_1...and upwards depending on number of participants created for the session
-        - Add a session start url to each user (first_name)
-        - Add a session.code to each user (last_name)
-    
-
-        if User.objects.filter(last_name=self.session.code).exists():
-            pass
-        else:
-            count = 0
-            admin = User.objects.create_user(username='Admin' + str(session.id), password="123456", is_staff=True,
-                                             last_name=session.code)
-            admin.save()
-            for participant_url in session_start_urls:
-                count = count + 1
-                user = User.objects.create_user(username='Spiller' + str(session.id) + '_' + str(count),
-                                                password="123456", first_name=participant_url, last_name=session.code)
-                user.save()
-        """
 
 
 class SessionEditPropertiesForm(forms.Form):
@@ -736,6 +782,7 @@ class DeleteSessions(vanilla.View):
 
 
 """
+IKKE SLETTE!
 def generate_random_username(length=3, split=7, delimiter='_'):
     game_number = Session.objects.get(id=session.id)
     username = 'Spiller' + ''.join([choice(game_number) for i in range(length)])
@@ -761,4 +808,28 @@ def generate_random_username(length=3, chars=ascii_lowercase, split=7, delimiter
     except User.DoesNotExist:
 
         return username
+"""
+
+"""
+IKKE SLETTE!
+- If users exist, then do not create new ones, else create new users for self.session
+- Set count = 0, so when we count in the loop, it can increment from 1++
+- Create a user for each participant (username)
+- Syntax of user is: Spiller<session_id>_1...and upwards depending on number of participants created for the session
+- Add a session start url to each user (first_name)
+- Add a session.code to each user (last_name)
+
+
+if User.objects.filter(last_name=self.session.code).exists():
+    pass
+else:
+    count = 0
+    admin = User.objects.create_user(username='Admin' + str(session.id), password="123456", is_staff=True,
+                                     last_name=session.code)
+    admin.save()
+    for participant_url in session_start_urls:
+        count = count + 1
+        user = User.objects.create_user(username='Spiller' + str(session.id) + '_' + str(count),
+                                        password="123456", first_name=participant_url, last_name=session.code)
+        user.save()
 """

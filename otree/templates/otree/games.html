@@ -22,22 +22,19 @@
 <div class="card" style="margin-bottom: 30px;">
   <h2 class="card-header"><b>Bad Influence</b></h2>
     <div class="card-body">
-<p><b>Bad Influence</b> er et multiplayer spil.
+    <p><b>Bad Influence</b> er et multiplayer spil.
     Hver spiller har et “netværk” af venner/medspillere.
     Hver spille kan kun se og kommunikere med sit eget netværk.
     Spillet vil gennemgå en række scenarier hvor hver spiller skal vælge mellem to muligheder.
     Målet er at ens netværk skal være i konsensus med hinanden før tiden udløber, dette skal ske ved at chatte sammen i spillet.  </p>
-    <p style="font-size: 10px; margin-bottom: 0; "><em>*Spille længe: 20min</em></p>
+    <p style="font-size: 10px; margin-bottom: 0; "><em>*Spil varighed: 20min</em></p>
     <p style="font-size: 10px; margin-bottom: 0; "><em>*Minimum 4 spillere</em></p>
 </div>
  <div class="card-footer">
-     <form action="{% url 'CreateSessionBadInfluence' %}">
-
+         <form action="{% url 'CreateSessionBadInfluence' %}">
              <button class="btn btn-primary" >
                  Opret spil
              </button>
-
-
      </form>
  </div>
 
@@ -45,7 +42,11 @@
 
 <div class="card">
     <h2 class="card-header"><b>Day Trader</b></h2>
-    <p class="card-body">OVERSÆT BESKRIVELSE: In this experiment a firm is represented by a bag, containing a variable number of 'good' and 'bad' faces. Players have to pull out one face and guess the overall state of the firm, e.g. whether it is in a mainly 'good' or mainly 'bad' condition. Informational cascades will form, but since the bag (in a secondary treatment) can change its state with a fixed probability, a mix of strategies need to be employed.</p>
+    <div class="card-body">
+        <p >Day Trader er et multiplayerlæringsspil omkring hvordan bobler kan opstå i finansverdenen. I dette spil er et firma repræsenteret af en sæk med glade og ikke glade medarbejdere (ansigter). Hver spiller skal gætte om firmaet er bestående af primært ”glade” eller ”ikke glade” omstændigheder, ud fra den information spillerne får i spillet. </p>
+        <p style="font-size: 10px; margin-bottom: 0; "><em>*Spil varighed: ?</em></p>
+        <p style="font-size: 10px; margin-bottom: 0; "><em>*Minimum 3 spillere</em></p>
+    </div>
     <div class="card-footer">
         <form action="{% url 'CreateSessionDayTrader' %}">
             <button class="btn btn-primary">
