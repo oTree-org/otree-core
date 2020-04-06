@@ -7,29 +7,32 @@ from asgiref.sync import async_to_sync
 from bad_influence.models import Player, Group, Constants
 
 
-class NetworkVoting(JsonWebsocketConsumer):
-    # url_pattern = r'^/network_voting/(?P<player_pk>[0-9]+)/(?P<group_pk>[0-9]+)$'
+class NetworkVoting(WebsocketConsumer):
 
-    def clean_kwargs(self, **kwargs):
-        self.player_pk = kwargs['player_pk']
-        self.group_pk = kwargs['group_pk']
-
-    def connect(self):
+    def clean_kwargs(self):
         self.player_pk = self.scope['url_route']['kwargs']['player_pk']
         self.group_pk = self.scope['url_route']['kwargs']['group_pk']
 
+    def connect(self):
+        self.clean_kwargs()
+        # self.player_pk = self.scope['url_route']['kwargs']['player_pk']
+        # self.group_pk = self.scope['url_route']['kwargs']['group_pk']
         # Join
         self.channel_layer.group_add(
-            self.player_pk,
-            self.group_pk
+            self.connection_groups(),
+            self.channel_name
         )
+
+        self.accept()
+        print("Connected to Network Socket")
 
     def disconnect(self, close_code):
         self.clean_kwargs()
-        print('disconnect from {}:{}'.format(self.group_pk, self.player_pk))
         async_to_sync(self.channel_layer.group_discard)(
-            self.connection_groups()
+            self.connection_groups(),
+            self.channel_name
         )
+        print("Disconnected from Network Socket")
 
     def connection_groups(self, **kwargs):
         group_name = self.get_group().get_channel_group_name()
@@ -37,25 +40,23 @@ class NetworkVoting(JsonWebsocketConsumer):
         return [group_name, personal_channel]
 
     def get_player(self):
-        self.clean_kwargs()
         return Player.objects.get(pk=self.player_pk)
 
     def get_group(self):
-        self.clean_kwargs()
         return Group.objects.get(pk=self.group_pk)
 
-    def receive(self, text):
+    def receive(self, text_data):
         self.clean_kwargs()
-        text_json = json.loads(text)
-        message = text_json['message']
+        text_data_json = json.loads(text_data)
+        msg = text_data_json['message']
         player = self.get_player()
         group = self.get_group()
 
-        if message['action'] == 'guess' and message['payload'] != player.choice:
-            new_guess = message['payload']
+        if msg['action'] == 'guess' and msg['payload'] != Player.choice:
+            new_guess = msg['payload']
             timestamp = time.time()
 
-            subjective_time = message['subjective_time'].split(":")
+            subjective_time = msg['subjective_time'].split(":")
             if len(subjective_time) == 1:
                 subjective_time = int(subjective_time[0]) * 60
             else:
@@ -81,18 +82,20 @@ class NetworkVoting(JsonWebsocketConsumer):
 
             for p in group.get_players():
                 ego_graph = json_graph.node_link_data(nx.ego_graph(graph, p.id_in_group))
-                async_to_sync(self.channel_layer.group_send)(
-                    "chat",
-                    {
-                        "type": "chat.message",
-                        "text": text
-                    },
-                    p.get_personal_channel_name(),
-                    {
-                        "ego_graph": ego_graph,
-                        "consensus": consensus
-                    }
-                )
+                async_to_sync(self.channel_layer.group_send(p.get_personal_channel_name(), {
+                    'ego_graph': ego_graph,
+                    'consensus': consensus
+                }))
+
+    def chat_message(self, event):
+        message = event['message']
+
+        # Send message to WebSocket
+        self.send(text_data=json.dumps({
+            'message': message
+        }))
+
+        print("Sent message")
 
 
 class ChatConsumer(JsonWebsocketConsumer):

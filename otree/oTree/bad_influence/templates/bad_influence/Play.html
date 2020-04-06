@@ -222,6 +222,7 @@
     <script>
         // Array container for the sent messages to be used in localstorage
         let messages = [];
+        console.log("the type is a " + typeof localStorage.getItem('messages'));
 
         // Defines the scheme of the WebSocket to be either wss if the protocol is https
         // else it should be ws
@@ -256,24 +257,14 @@
         // Variable used for displaying the right messages
         let network = [];
 
-        // Variable used to keep track of all the previous and current group ids
-        let group_ids = [];
-
-        // Variable used to keep track of the current group id
-        let current_group_id = {{ group.id }}
-
-
         // Opens the WebSocket connection and logs a message in the console when it opens
         socket.onopen = () => {
-            group_ids.push(current_group_id);
-            group_ids.push({{ player.id }})
-            localStorage.setItem('group_ids', JSON.stringify(group_ids));
-            console.log(localStorage);
             console.log('WebSocket opened');
+            /*
             const chat = document.getElementById('chat');
             let chat_messages = JSON.parse(localStorage.getItem('messages'));
-
             chat.innerHTML = chat_messages;
+            */
         };
 
         // Closes the WebSocket connection and logs a message in the console when it closes
@@ -288,12 +279,14 @@
 
         // When a message is sent it is appended to the container with id of chat
         socket.onmessage = event => {
-            messages.push(JSON.parse(event.data).message);
-            localStorage.setItem('messages', JSON.stringify(messages));
-            console.log(localStorage);
+            /*
+
+             */
             const chat = document.getElementById('chat');
             chat.innerHTML += JSON.parse(event.data).message;
             displayFriends();
+            messages.push(JSON.parse(event.data).message);
+            localStorage.setItem('messages', JSON.stringify(messages));
         };
 
         // Adds an event listener on the send button that submits the message
@@ -337,6 +330,7 @@
 
 
 {% block scripts %}
+    {% include 'bad_influence/channels/network_voting_channel.html' %}
     {% include 'bad_influence/d3/d3_graph.html' %}
     {% if view.remaining_timeout_seconds != None %}
         {% include 'otree/includes/TimeLimit.js.html' %}

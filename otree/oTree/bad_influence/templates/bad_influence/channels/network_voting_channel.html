@@ -1,39 +1,47 @@
 <script>
     $(function () {
         let ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-        let ws_path = ws_scheme + '://' + window.location.host + "/ws/chat/{{ player.pk }}/{{ group.pk }}";
+        let ws_path = ws_scheme + '://' + window.location.host + "/ws/network_voting/{{ player.id }}/{{ group.pk }}";
         let socket = new ReconnectingWebSocket(ws_path);
 
         let $guess_true_button = $('#GuessTrueButton');
         let $guess_false_button = $('#GuessFalseButton');
         let $consensus_bar = $('#ConsensusBar');
 
-        let send_guess = function(guess) {
-            let msg = {
+        let send_guess = function (guess) {
+            let message = {
                 'action': 'guess',
                 'payload': guess,
                 'subjective_time': timer.innerText
             };
 
             if (socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify(msg));
+                socket.send(JSON.stringify({
+                    'message': message
+                }));
+
+            $(function () {
+                let object = message;
+                let new_consensus = (object.consensus * 100).toFixed(0) + "%";
+                $consensus_bar.html(new_consensus);
+                $consensus_bar.attr('aria-valuenow', new_consensus).css('width', new_consensus);
+
+                for(let key in object) {
+                    console.log(key, object[key]);
+
+                }
+            })
             }
         };
 
-        $guess_true_button.click(function() {
+        $guess_true_button.click(function () {
+            console.log("Clicked true");
             send_guess(true);
         });
-        $guess_false_button.click(function() {
+        $guess_false_button.click(function () {
+            console.log("Clicked false")
             send_guess(false);
         });
-
-        socket.onmessage = function (event) {
-            let obj = jQuery.parseJSON(event.data);
-            let newConsensus = (obj.consensus * 100).toFixed(0) + "%";
-            $consensus_bar.html(newConsensus);
-            $consensus_bar.attr('aria-valuenow', newConsensus).css('width', newConsensus);
-            setNodeColors(obj.ego_graph.nodes)
-        };
     })
     ;
 </script>

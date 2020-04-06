@@ -259,7 +259,7 @@ class Player(BasePlayer):
     number_of_friends_total = models.IntegerField(initial=0)
 
     def get_personal_channel_name(self):
-        return '{}_{}'.format(self.id_in_group, self.id)
+        return '{}-{}'.format(self.id_in_group, self.id)
 
     def set_payoffs(self):
         all_choices = [p.choice for p in self.group.get_players()]
