@@ -6,6 +6,7 @@ requirements_mturk.txt
 setup.cfg
 setup.py
 otree/__init__.py
+otree/admin.py
 otree/api.py
 otree/api.pyi
 otree/apps.py
@@ -22,6 +23,7 @@ otree/session.py
 otree/settings.py
 otree/staticfiles.py
 otree/strict_templates.py
+otree/throw.py
 otree/urls.py
 otree/widgets.py
 otree.egg-info/PKG-INFO
@@ -114,6 +116,12 @@ otree/models/participant.py
 otree/models/player.py
 otree/models/session.py
 otree/models/subsession.py
+otree/oTree/venv/Lib/site-packages/attr/__init__.pyi
+otree/oTree/venv/Lib/site-packages/attr/converters.pyi
+otree/oTree/venv/Lib/site-packages/attr/exceptions.pyi
+otree/oTree/venv/Lib/site-packages/attr/filters.pyi
+otree/oTree/venv/Lib/site-packages/attr/validators.pyi
+otree/oTree/venv/Lib/site-packages/~tree/api.pyi
 otree/project_template/.gitignore
 otree/project_template/Procfile
 otree/project_template/manage.py
@@ -189,6 +197,8 @@ otree/templates/otree/Page.html
 otree/templates/otree/RoomInputLabel.html
 otree/templates/otree/WaitPage.html
 otree/templates/otree/WaitPageRoom.html
+otree/templates/otree/games.html
+otree/templates/otree/home.html
 otree/templates/otree/login.html
 otree/templates/otree/admin/AdminReport.html
 otree/templates/otree/admin/CreateDemoSession.html
@@ -217,6 +227,8 @@ otree/templates/otree/forms/layouts/bootstrap.html
 otree/templates/otree/forms/rows/bootstrap.html
 otree/templates/otree/forms/rows/bootstrap_checkbox.html
 otree/templates/otree/includes/CreateSessionForm.html
+otree/templates/otree/includes/CreateSessionFormBadInfluence.html
+otree/templates/otree/includes/CreateSessionFormDayTrader.html
 otree/templates/otree/includes/RoomParticipantLinks.html
 otree/templates/otree/includes/SessionInfo.html
 otree/templates/otree/includes/TimeLimit.html
