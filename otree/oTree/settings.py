@@ -82,7 +82,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'otree',
     'bad_influence',
-    'daytrader'
+    'daytrader',
 ]
 
 EXTENSION_APPS = [
