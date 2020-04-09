@@ -2,7 +2,7 @@
     $(function () {
         let ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
         let ws_path = ws_scheme + '://' + window.location.host + "/ws/network_voting/{{ player.id }}/{{ group.pk }}";
-        let socket = new WebSocket(ws_path);
+        let socket = new ReconnectingWebSocket(ws_path);
 
         let $guess_true_button = $('#GuessTrueButton');
         let $guess_false_button = $('#GuessFalseButton');
@@ -15,31 +15,30 @@
                 'subjective_time': timer.innerText
             };
 
-            socket.send(JSON.stringify({
-                'message': message
-            }));
-
-            console.log("Message Send")
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    'message': message
+                }));
+            }
         };
 
         $guess_true_button.click(function () {
-            console.log("Button clicked.");
             send_guess(true);
         });
         $guess_false_button.click(function () {
-            console.log("Button clicked.");
             send_guess(false);
         });
 
+
         socket.onmessage = event => {
-            console.log("Message received");
-            console.log(event);
+            let date = new Date();
+            console.log(event, date.getTime());
             let obj = JSON.parse(event.data).message;
             let new_consensus = (obj.consensus * 100).toFixed(0) + "%";
             $consensus_bar.html(new_consensus);
             $consensus_bar.attr('aria-valuenow', new_consensus).css('width', new_consensus);
             setNodeColors(obj.ego_graph.nodes);
-        };
+        }
     })
     ;
 </script>

@@ -1,6 +1,6 @@
 import networkx as nx
 from networkx.readwrite import json_graph
-from channels.generic.websocket import AsyncJsonWebsocketConsumer, JsonWebsocketConsumer
+from channels.generic.websocket import AsyncJsonWebsocketConsumer
 import time
 import json
 from asgiref.sync import async_to_sync
@@ -44,6 +44,7 @@ class NetworkVoting(AsyncJsonWebsocketConsumer):
         return Group.objects.get(pk=self.group_pk)
 
     async def receive(self, text_data):
+        print("Player received message.")
         self.clean_kwargs()
         text_data_json = json.loads(text_data)
         msg = text_data_json['message']
@@ -78,11 +79,28 @@ class NetworkVoting(AsyncJsonWebsocketConsumer):
                 }
             })
 
+            group_channels = []
+            #group_ego_graphs =
+
             for p in group.get_players():
+                print(p)
                 ego_graph = json_graph.node_link_data(nx.ego_graph(graph, p.id_in_group))
 
+                channel_cur = "{}-{}".format(self.get_group().get_channel_group_name(), p.get_personal_channel_name())
+
+                """await self.channel_layer.send(
+                    self.channel_layer.groups.get(channel_cur, set()),
+                    {
+                        "type": "send_choice",
+                        "message": {
+                            "ego_graph": ego_graph,
+                            "consensus": consensus
+                        }
+                    }
+                )"""
+
                 await self.channel_layer.group_send(
-                    self.connection_groups(),
+                    channel_cur,
                     {
                         "type": "send_choice",
                         "message": {
@@ -91,7 +109,6 @@ class NetworkVoting(AsyncJsonWebsocketConsumer):
                         }
                     }
                 )
-            print("Player received message.")
 
     async def send_choice(self, event):
         message = event['message']
@@ -101,6 +118,7 @@ class NetworkVoting(AsyncJsonWebsocketConsumer):
             'message': message
         }))
 
+        print(event)
         print("Sent message")
 
 
