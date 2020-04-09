@@ -158,6 +158,7 @@ def get_default_settings(user_settings: dict):
         MTURK_NUM_PARTICIPANTS_MULTIPLE=2,
         LOCALE_PATHS=['locale'],
         BOTS_CHECK_HTML=True,
+
     )
     return default_settings
 

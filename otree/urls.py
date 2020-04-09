@@ -1,3 +1,5 @@
+from django.http import HttpResponseRedirect
+#from django.http.response import HttpResponseRedirect
 from otree.extensions import get_extensions_modules, get_extensions_data_export_views
 from otree import common
 
@@ -138,19 +140,21 @@ class HomeView(vanilla.TemplateView):
 
 class GamesView(vanilla.TemplateView):
     template_name = 'otree/games.html'
+    #url_pattern = r'^spil/'
 
 
 def get_urlpatterns():
     urlpatterns = [
-        #urls.url(r'^$', lambda r: HttpResponseRedirect('spil/')),
-        urls.url(r'^$', GamesView.as_view(), name='games'),
-        urls.url(r'^spil/$', RedirectView.as_view(url='/spil/', permanent=True)),
+        urls.url(r'^$', RedirectView.as_view(url='spil/', permanent=True)),
+        urls.url(r'^spil/', GamesView.as_view(), name='games'),
+
         urls.url(r'^accounts/login/$', LoginView.as_view(), name='login'),
         urls.url(r'^accounts/logout/$', LogoutView.as_view(), name='logout'),
         urls.url(r'^home/$', HomeView.as_view(), name='home'),
         urls.url(r'^admin/', admin.site.urls),
 
     ]
+
 
     urlpatterns += staticfiles_urlpatterns()
 

@@ -1,0 +1,234 @@
+#monitor-table th, #monitor-table td, #results-table th, #results-table td {
+  text-align: center;
+  word-wrap: break-word;
+}
+
+table.draggable {
+  display: block;
+  overflow-x: auto;
+  margin-bottom: 0;
+  cursor: move;
+  cursor: grab;
+  cursor: -moz-grab;
+  cursor: -webkit-grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+table.draggable.grabbing {
+  cursor: move;
+}
+
+/* the 104px comes from 940/9...it's hardcoded to fit the current container
+ size...maybe there is a better way */
+table.draggable td, table.draggable th {
+  min-width: 104px;
+  max-width: 104px;
+}
+
+table.draggable thead {
+  display: block;
+}
+
+table.draggable tbody {
+  display: block;
+  max-height: 450px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/*************************
+ *         FORMS         *
+ *************************/
+/* Checkbox and radio button lists shall not have bullet points for every
+   item. */
+.controls > ul {
+  list-style-type: none;
+  padding-left: 2em;
+}
+
+/* Input fields should only take up to 400px width and not stretch over the
+   whole screen */
+.input-group,
+input.form-control,
+select.form-control,
+textarea.form-control {
+  max-width: 400px;
+}
+
+/* This allows the number field to contain around 7 digits. */
+input[type=number].form-control {
+  max-width: 100px;
+}
+
+.input-group-narrow {
+  /* Choosing a very small value that will always be filled with the input
+   * type and input-group-addon. That way we don't allow a gap between the
+   * two. See: https://github.com/oTree-org/otree-core/issues/257
+   */
+  max-width: 200px;
+}
+
+/* Dropdowns shall occupy only the needed space. */
+select.form-control {
+  width: auto;
+}
+
+.form-control-errors {
+  margin-top: 5px;
+  color: #b94a48;
+}
+
+/* Don't break BS3 wells */
+/* a little while after the oTree 2.0 upgrade, remove this */
+.instructions {
+  min-height: 20px;
+  padding: 19px;
+  margin-bottom: 20px;
+  background-color: #f5f5f5;
+  border: 1px solid #e3e3e3;
+  border-radius: 4px;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+/* Hide those input spinners on webkit and mozilla browsers */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Slider Widget */
+.slider [data-slider-value] {
+  min-width: 5em;
+}
+
+.asteriskField {
+  display: none;
+}
+
+.radio {
+  margin-top: 0px;
+}
+
+.help-block {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.page-header {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* DEBUG TOOLBAR */
+.scrollable {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+}
+
+table.table-debug td.debug-var-name {
+  width: 20% !important;
+}
+
+table.table-debug td.debug-var-value {
+  max-width: 0px;
+}
+
+.top-left-fixed-alert {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: lightgray;
+  font-style: italic;
+  visibility: hidden;
+  /* need to be on top of bs4 navbar which is 1030 */
+  z-index: 1100;
+}
+
+.otree-body {
+  max-width: 970px;
+}
+
+.page-header {
+  padding-top: 40px;
+}
+
+@media (min-width: 0px) {
+  /*************************
+  *       Base.html        *
+  *************************/
+  .top-left-fixed-alert {
+    visbility: hidden;
+  }
+
+  /**************************************
+  *  Main container  - BaseAdmin.html  *
+  **************************************/
+  .container {
+    max-width: 970px;
+  }
+  .container .page-header {
+    padding-top: 40px;
+  }
+
+  /******************************
+  *  Front Page  - games.html  *
+  ******************************/
+  .background-frontpage {
+    background-image: url("../../media/ku-bgkujpg.jpg");
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+
+  .title-container {
+    margin-bottom: 15%;
+  }
+
+  .games-title {
+    color: #901A1E;
+    font-weight: bold;
+    font-family: "Catamaran", sans-serif;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 60px;
+    margin-top: 8%;
+    margin-bottom: 0;
+  }
+
+  .sub-games-title {
+    color: #901A1E;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 30px;
+  }
+
+  /******************************
+  *        Navbar Styling       *
+  ******************************/
+  .login-button {
+    color: #901A1E;
+    text-decoration: none;
+    font-size: 20px;
+  }
+  .login-button:hover {
+    text-decoration: none;
+    color: #901A1E;
+  }
+}
+
+/*# sourceMappingURL=styles.css.map */
