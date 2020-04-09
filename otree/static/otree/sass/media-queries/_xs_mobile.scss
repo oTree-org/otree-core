@@ -1,0 +1,80 @@
+@media (min-width: 0px) {
+
+
+/*************************
+*       Base.html        *
+*************************/
+.top-left-fixed-alert {
+  visbility: hidden;
+}
+
+/**************************************
+*  Main container  - BaseAdmin.html  *
+**************************************/
+.container {
+   max-width: 970px;
+
+  .page-header {
+      padding-top: 40px;
+  }
+}
+
+/******************************
+*  Front Page  - games.html  *
+******************************/
+
+.background-frontpage {
+  background-image: url("../../media/ku-bgkujpg.jpg");
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+
+}
+
+.title-container {
+  margin-bottom: 15%;
+}
+
+.games-title {
+  color: $ku-red;
+  font-weight: bold;
+  font-family: 'Catamaran', sans-serif;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  font-size: 60px;
+  margin-top: 8%;
+  margin-bottom: 0;
+}
+
+.sub-games-title {
+  color: $ku-red;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  font-size: 30px;
+}
+
+/******************************
+*        Navbar Styling       *
+******************************/
+
+.login-button {
+  color: $ku-red;
+  text-decoration: none;
+  font-size: 20px;
+
+  &:hover {
+    text-decoration: none;
+    color: $ku-red;
+  }
+}
+
+
+
+
+
+
+
+}

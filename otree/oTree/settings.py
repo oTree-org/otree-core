@@ -5,6 +5,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -89,5 +90,7 @@ EXTENSION_APPS = [
     'bad_influence',
     'daytrader'
 ]
+
+
 
 

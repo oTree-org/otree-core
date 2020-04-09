@@ -1,11 +1,16 @@
 import os
 import sys
+
+from otree.oTree.settings import BASE_DIR
 from setuptools import setup, find_packages
 import shutil
 from pathlib import Path
 
 # allow setup.py to be run from any path
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
+
+
+
 
 import otree
 
@@ -14,7 +19,6 @@ version = otree.__version__
 README = Path('README.rst').read_text('utf8')
 required = Path('requirements.txt').read_text().splitlines()
 required_mturk = Path('requirements_mturk.txt').read_text().splitlines()
-
 
 if sys.argv[-1] == 'publish':
 
@@ -85,3 +89,6 @@ setup(
     zip_safe=False,
     extras_require={'mturk': required_mturk},
 )
+
+
+

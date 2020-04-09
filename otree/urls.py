@@ -11,7 +11,7 @@ from django.views.generic.base import RedirectView
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib import admin
-from django.urls import path
+
 
 ALWAYS_UNRESTRICTED = {
     'AssignVisitorToRoom',
@@ -23,7 +23,6 @@ ALWAYS_UNRESTRICTED = {
     'ParticipantRoomHeartbeat',
     'ParticipantHeartbeatGBAT',
 }
-
 
 UNRESTRICTED_IN_DEMO_MODE = ALWAYS_UNRESTRICTED.union(
     {
@@ -49,7 +48,7 @@ def view_classes_from_module(module_name):
         ViewCls
         for _, ViewCls in inspect.getmembers(views_module)
         if hasattr(ViewCls, 'url_pattern')
-        and inspect.getmodule(ViewCls) == views_module
+           and inspect.getmodule(ViewCls) == views_module
     ]
 
 
@@ -58,7 +57,6 @@ def url_patterns_from_app_pages(module_name, name_in_url):
 
     view_urls = []
     for ViewCls in views_module.page_sequence:
-
         url_pattern = ViewCls.url_pattern(name_in_url)
         url_name = ViewCls.url_name()
         view_urls.append(urls.url(url_pattern, ViewCls.as_view(), name=url_name))
@@ -67,7 +65,6 @@ def url_patterns_from_app_pages(module_name, name_in_url):
 
 
 def url_patterns_from_builtin_module(module_name: str):
-
     all_views = view_classes_from_module(module_name)
 
     view_urls = []
@@ -102,7 +99,6 @@ def url_patterns_from_builtin_module(module_name: str):
 
 
 def extensions_urlpatterns():
-
     urlpatterns = []
 
     for url_module in get_extensions_modules('urls'):
@@ -144,18 +140,18 @@ class GamesView(vanilla.TemplateView):
     template_name = 'otree/games.html'
 
 
-
 def get_urlpatterns():
     urlpatterns = [
-        ##urls.url('', GamesView.as_view(), name='index'),
-        urls.url(r'^spil/$', GamesView.as_view(), name='games'),
-        urls.url(r'^$', RedirectView.as_view(url='/spil/', permanent=True)),
+        #urls.url(r'^$', lambda r: HttpResponseRedirect('spil/')),
+        urls.url(r'^$', GamesView.as_view(), name='games'),
+        urls.url(r'^spil/$', RedirectView.as_view(url='/spil/', permanent=True)),
         urls.url(r'^accounts/login/$', LoginView.as_view(), name='login'),
         urls.url(r'^accounts/logout/$', LogoutView.as_view(), name='logout'),
         urls.url(r'^home/$', HomeView.as_view(), name='home'),
         urls.url(r'^admin/', admin.site.urls),
 
     ]
+
     urlpatterns += staticfiles_urlpatterns()
 
     used_names_in_url = set()
@@ -185,5 +181,6 @@ def get_urlpatterns():
     urlpatterns += extensions_export_urlpatterns()
 
     return urlpatterns
+
 
 urlpatterns = get_urlpatterns()

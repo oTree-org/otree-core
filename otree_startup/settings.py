@@ -3,6 +3,7 @@ import os.path
 from django.contrib.messages import constants as messages
 import dj_database_url
 from otree import __version__
+from otree.oTree.settings import BASE_DIR
 
 DEFAULT_MIDDLEWARE = (
     'otree.middleware.CheckDBMiddleware',
@@ -314,6 +315,7 @@ def augment_settings(settings: dict):
         INSTALLED_OTREE_APPS=all_otree_apps,
         MESSAGE_TAGS={messages.ERROR: 'danger'},
         LOGIN_REDIRECT_URL='games',
+
     )
 
     settings.update(augmented_settings)
