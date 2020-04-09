@@ -1,35 +1,32 @@
 import networkx as nx
 from networkx.readwrite import json_graph
-from channels.generic.websocket import AsyncWebsocketConsumer, JsonWebsocketConsumer, WebsocketConsumer
+from channels.generic.websocket import AsyncJsonWebsocketConsumer, JsonWebsocketConsumer
 import time
 import json
 from asgiref.sync import async_to_sync
 from bad_influence.models import Player, Group, Constants
-import random
 
 
-class NetworkVoting(WebsocketConsumer):
+class NetworkVoting(AsyncJsonWebsocketConsumer):
 
     def clean_kwargs(self):
         self.player_pk = self.scope['url_route']['kwargs']['player_pk']
         self.group_pk = self.scope['url_route']['kwargs']['group_pk']
 
-    def connect(self):
+    async def connect(self):
         self.clean_kwargs()
-        # self.player_pk = self.scope['url_route']['kwargs']['player_pk']
-        # self.group_pk = self.scope['url_route']['kwargs']['group_pk']
         # Join
-        self.channel_layer.group_add(
+        await self.channel_layer.group_add(
             self.connection_groups(),
             self.channel_name
         )
 
-        self.accept()
+        await self.accept()
         print("Connected to Network Socket")
 
-    def disconnect(self, close_code):
+    async def disconnect(self, close_code):
         self.clean_kwargs()
-        async_to_sync(self.channel_layer.group_discard)(
+        await self.channel_layer.group_discard(
             self.connection_groups(),
             self.channel_name
         )
@@ -38,7 +35,7 @@ class NetworkVoting(WebsocketConsumer):
     def connection_groups(self, **kwargs):
         group_name = self.get_group().get_channel_group_name()
         personal_channel = self.get_player().get_personal_channel_name()
-        return [group_name, personal_channel]
+        return "{}-{}".format(group_name, personal_channel)
 
     def get_player(self):
         return Player.objects.get(pk=self.player_pk)
@@ -46,14 +43,14 @@ class NetworkVoting(WebsocketConsumer):
     def get_group(self):
         return Group.objects.get(pk=self.group_pk)
 
-    def receive(self, text_data):
+    async def receive(self, text_data):
         self.clean_kwargs()
         text_data_json = json.loads(text_data)
         msg = text_data_json['message']
         player = self.get_player()
         group = self.get_group()
 
-        if msg['action'] == 'guess' and msg['payload'] != Player.choice:
+        if msg['action'] == 'guess' and msg['payload'] != player.choice:
             new_guess = msg['payload']
             timestamp = time.time()
 
@@ -83,74 +80,79 @@ class NetworkVoting(WebsocketConsumer):
 
             for p in group.get_players():
                 ego_graph = json_graph.node_link_data(nx.ego_graph(graph, p.id_in_group))
-                self.send(text_data=json.dumps({
-                    'message': {
-                        'ego_graph': ego_graph,
-                        'consensus': consensus
+
+                await self.channel_layer.group_send(
+                    self.connection_groups(),
+                    {
+                        "type": "send_choice",
+                        "message": {
+                            "ego_graph": ego_graph,
+                            "consensus": consensus
+                        }
                     }
-                }))
+                )
+            print("Player received message.")
 
-
-
-    def chat_message(self, event):
+    async def send_choice(self, event):
         message = event['message']
 
         # Send message to WebSocket
-        self.send(text_data=json.dumps({
+        await self.send(text_data=json.dumps({
             'message': message
         }))
 
         print("Sent message")
 
 
-class ChatConsumer(JsonWebsocketConsumer):
-    def connect(self):
+class ChatConsumer(AsyncJsonWebsocketConsumer):
+    async def connect(self):
         # self.player_pk = self.scope['url_route']['kwargs']['player_pk']
         self.group_pk = self.scope['url_route']['kwargs']['group_pk']
         self.room_name = 'chat_%s' % self.group_pk
         print("Player connected onto Chat Socket in group {}".format(self.group_pk))
 
         # Join room group
-        async_to_sync(self.channel_layer.group_add)(
+        await self.channel_layer.group_add(
             self.room_name,
             self.channel_name
         )
 
-        self.accept()
+        await self.accept()
 
-    def disconnect(self, close_code):
+    async def disconnect(self, close_code):
         # Leave room group
-        async_to_sync(self.channel_layer.group_discard)(
+        await self.channel_layer.group_discard(
             self.room_name,
             self.channel_name
         )
         print('Disconnect from socket')
 
+    def get_group(self):
+        return Group.objects.get(pk=self.group_pk)
+
     # Receive message from WebSocket
-    def receive(self, text_data):
+    async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
 
         # Send message to room group
-        async_to_sync(self.channel_layer.group_send)(
+        await self.channel_layer.group_send(
             self.room_name,
             {
                 'type': 'chat_message',
-                'message': message
+                "message": message
             }
         )
 
         print('Received message')
 
     # Receive message from room group
-    def chat_message(self, event):
+    async def chat_message(self, event):
         message = event['message']
-        random_color = Player.generate_random_chat_color(self)
 
         # Send message to WebSocket
-        self.send(text_data=json.dumps({
-            'message': message,
-            'random_color': random_color
+        await self.send(text_data=json.dumps({
+            'message': message
         }))
 
         print("Sent message")
