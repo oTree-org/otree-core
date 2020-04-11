@@ -5,7 +5,6 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -30,7 +29,6 @@ SESSION_CONFIG_DEFAULTS = dict(
     real_world_currency_per_point=1.00, participation_fee=0.00, doc=""
 )
 
-
 SESSION_CONFIGS = [
     dict(
         name='bad_influence',
@@ -46,8 +44,6 @@ SESSION_CONFIGS = [
         app_sequence=['daytrader'],
     ),
 ]
-
-
 
 # ISO-639 code
 # for example: de, fr, ja, ko, zh-hansSubsession
@@ -91,6 +87,13 @@ EXTENSION_APPS = [
     'daytrader'
 ]
 
+STATIC_URL = '/static/'
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "../otree/static/otree"),
+    '/var/www/static/otree',
+]
 
+MEDIA_URL = 'media/'
 
+MEDIA_ROOT = 'otree/static/otree'

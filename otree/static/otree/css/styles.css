@@ -176,7 +176,7 @@ table.table-debug td.debug-var-value {
   *  Main container  - BaseAdmin.html  *
   **************************************/
   .container {
-    max-width: 970px;
+    max-width: 100%;
   }
   .container .page-header {
     padding-top: 40px;
@@ -186,19 +186,20 @@ table.table-debug td.debug-var-value {
   *  Front Page  - games.html  *
   ******************************/
   .background-frontpage {
-    background-image: url("../../media/ku-bgkujpg.jpg");
+    background-image: url("../../media/background-ku-desktop.jpg");
+    background-repeat: no-repeat;
+    background-size: 100%, 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 100%;
   }
 
   .title-container {
-    margin-bottom: 15%;
+    margin-bottom: 5%;
   }
 
   .games-title {
-    color: #901A1E;
+    color: white;
     font-weight: bold;
     font-family: "Catamaran", sans-serif;
     display: flex;
@@ -210,18 +211,64 @@ table.table-debug td.debug-var-value {
   }
 
   .sub-games-title {
-    color: #901A1E;
+    color: white;
     display: flex;
     justify-content: center;
     text-align: center;
     font-size: 30px;
   }
 
+  .align-games {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+  }
+  .align-games .card {
+    margin-bottom: 30px;
+    width: 50%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+  }
+  .align-games .card-header,
+.align-games .card-footer {
+    color: #901A1E;
+    border: none;
+  }
+  .align-games .card-body {
+    color: #901A1E;
+  }
+  .align-games .card-body .body-row {
+    flex-direction: row;
+    display: flex;
+  }
+  .align-games .card-body .body-row span {
+    font-size: 18px;
+    margin-left: 20px;
+  }
+
+  .card-footer .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+  }
+  .card-footer .game-info {
+    margin-top: 20px;
+    font-size: 11px;
+  }
+  .card-footer .game-info p {
+    margin-bottom: 0;
+  }
+  .card-footer .games-image {
+    width: 200px;
+    height: 200px;
+  }
+
   /******************************
   *        Navbar Styling       *
   ******************************/
   .login-button {
-    color: #901A1E;
+    color: white;
     text-decoration: none;
     font-size: 20px;
   }

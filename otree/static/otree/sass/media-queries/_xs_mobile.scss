@@ -12,7 +12,7 @@
 *  Main container  - BaseAdmin.html  *
 **************************************/
 .container {
-   max-width: 970px;
+   max-width: 100%;
 
   .page-header {
       padding-top: 40px;
@@ -24,20 +24,21 @@
 ******************************/
 
 .background-frontpage {
-  background-image: url("../../media/ku-bgkujpg.jpg");
+  background-image: url("../../media/background-ku-desktop.jpg");
+  background-repeat: no-repeat;
+  background-size: 100%, 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
 
 }
 
 .title-container {
-  margin-bottom: 15%;
+  margin-bottom: 5%;
 }
 
 .games-title {
-  color: $ku-red;
+  color: white;
   font-weight: bold;
   font-family: 'Catamaran', sans-serif;
   display: flex;
@@ -49,11 +50,75 @@
 }
 
 .sub-games-title {
-  color: $ku-red;
+  color: white;
   display: flex;
   justify-content: center;
   text-align: center;
   font-size: 30px;
+}
+
+.align-games {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+
+  .card {
+    margin-bottom: 30px;
+    width: 50%;
+    border-color: $ku-red;
+    border-style: solid;
+    border-width: 3px;
+    }
+
+
+  .card-header,
+  .card-footer {
+    color: $ku-red;
+    border: none;
+  }
+
+  .card-body {
+    color: $ku-red;
+
+      .body-row {
+        flex-direction: row;
+        display: flex;
+
+        span {
+          font-size: 18px;
+          margin-left: 20px;
+        }
+      }
+
+
+
+      }
+  }
+
+   .card-footer {
+
+
+    .btn-primary {
+      background-color: $ku-red;
+      border-color: $ku-red;
+
+
+    }
+    .game-info {
+      margin-top: 20px;
+      font-size: 11px;
+
+      p {
+        margin-bottom: 0;
+      }
+  }
+
+
+  .games-image {
+      width: 200px;
+      height: 200px;
+  }
 }
 
 /******************************
@@ -61,7 +126,7 @@
 ******************************/
 
 .login-button {
-  color: $ku-red;
+  color: white;
   text-decoration: none;
   font-size: 20px;
 

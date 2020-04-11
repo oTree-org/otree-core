@@ -1,5 +1,6 @@
+from django.conf.urls.static import static
 from django.http import HttpResponseRedirect
-#from django.http.response import HttpResponseRedirect
+# from django.http.response import HttpResponseRedirect
 from otree.extensions import get_extensions_modules, get_extensions_data_export_views
 from otree import common
 
@@ -13,7 +14,7 @@ from django.views.generic.base import RedirectView
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib import admin
-
+from django.conf.urls.static import static
 
 ALWAYS_UNRESTRICTED = {
     'AssignVisitorToRoom',
@@ -140,21 +141,17 @@ class HomeView(vanilla.TemplateView):
 
 class GamesView(vanilla.TemplateView):
     template_name = 'otree/games.html'
-    #url_pattern = r'^spil/'
 
 
 def get_urlpatterns():
     urlpatterns = [
-        urls.url(r'^$', RedirectView.as_view(url='spil/', permanent=True)),
-        urls.url(r'^spil/', GamesView.as_view(), name='games'),
-
-        urls.url(r'^accounts/login/$', LoginView.as_view(), name='login'),
-        urls.url(r'^accounts/logout/$', LogoutView.as_view(), name='logout'),
-        urls.url(r'^home/$', HomeView.as_view(), name='home'),
-        urls.url(r'^admin/', admin.site.urls),
-
-    ]
-
+                      urls.url(r'^$', RedirectView.as_view(url='spil/', permanent=True)),
+                      urls.url(r'^spil/', GamesView.as_view(), name='games'),
+                      urls.url(r'^accounts/login/$', LoginView.as_view(), name='login'),
+                      urls.url(r'^accounts/logout/$', LogoutView.as_view(), name='logout'),
+                      urls.url(r'^home/$', HomeView.as_view(), name='home'),
+                      urls.url(r'^admin/', admin.site.urls),
+                  ]
 
     urlpatterns += staticfiles_urlpatterns()
 
@@ -187,4 +184,4 @@ def get_urlpatterns():
     return urlpatterns
 
 
-urlpatterns = get_urlpatterns()
+urlpatterns = get_urlpatterns() + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

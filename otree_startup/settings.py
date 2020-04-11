@@ -158,7 +158,8 @@ def get_default_settings(user_settings: dict):
         MTURK_NUM_PARTICIPANTS_MULTIPLE=2,
         LOCALE_PATHS=['locale'],
         BOTS_CHECK_HTML=True,
-
+        MEDIA_URL="media/",
+        MEDIA_ROOT='otree/static/media',
     )
     return default_settings
 
@@ -244,18 +245,11 @@ def augment_settings(settings: dict):
 
     no_experiment_apps = [
         'otree',
-        # django.contrib.auth is slow, about 300ms.
-        # would be nice to only add it if there is actually a password
-        # i tried that but would need to add various complicated "if"s
-        # throughout the code
         'django.contrib.auth',
         'django.forms',
-        # needed for auth and very quick to load
         'django.contrib.contenttypes',
         'django.contrib.sessions',
         'django.contrib.messages',
-        # need to keep this around indefinitely for all the people who
-        # have {% load static %}
         'django.contrib.staticfiles',
         'channels',
         'huey.contrib.djhuey',
@@ -316,7 +310,6 @@ def augment_settings(settings: dict):
         INSTALLED_OTREE_APPS=all_otree_apps,
         MESSAGE_TAGS={messages.ERROR: 'danger'},
         LOGIN_REDIRECT_URL='games',
-
     )
 
     settings.update(augmented_settings)
