@@ -205,6 +205,371 @@ table.table-debug td.debug-var-value {
     display: flex;
     justify-content: center;
     text-align: center;
+    font-size: 18px;
+    margin-top: 6%;
+    margin-bottom: 0;
+  }
+
+  .sub-games-title {
+    color: white;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 12px;
+  }
+
+  .align-games {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+  }
+  .align-games .card {
+    margin-bottom: 30px;
+    width: 90%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+  }
+  .align-games .card-header,
+.align-games .card-footer {
+    color: #901A1E;
+    border: none;
+    background-color: white;
+    font-size: 18px;
+    font-weight: bolder;
+  }
+  .align-games .card-body {
+    color: #901A1E;
+  }
+  .align-games .card-body .body-row {
+    flex-direction: row;
+    display: flex;
+  }
+  .align-games .card-body .body-row span {
+    font-size: 12px;
+  }
+
+  .card-footer .footer-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .card-footer .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+    width: 100%;
+  }
+  .card-footer .btn-primary:hover {
+    background-color: #7C992B;
+    border-color: transparent;
+  }
+  .card-footer .game-info {
+    padding-bottom: 20px;
+    font-size: 11px;
+  }
+  .card-footer .game-info p {
+    margin-bottom: 0;
+  }
+
+  .games-image {
+    width: 80px;
+    height: 80px;
+    display: none;
+  }
+
+  /******************************
+  *        Navbar Styling       *
+  ******************************/
+  .login-button {
+    color: white;
+    text-decoration: none;
+    font-size: 12px;
+  }
+  .login-button:hover {
+    text-decoration: none;
+    color: #A7C5E9;
+  }
+}
+@media (min-width: 375px) {
+  /*************************
+  *       Base.html        *
+  *************************/
+  .top-left-fixed-alert {
+    visbility: hidden;
+  }
+
+  /**************************************
+  *  Main container  - BaseAdmin.html  *
+  **************************************/
+  .container {
+    max-width: 100%;
+  }
+  .container .page-header {
+    padding-top: 40px;
+  }
+
+  /******************************
+  *  Front Page  - games.html  *
+  ******************************/
+  .background-frontpage {
+    background-image: url("../../media/background-ku-desktop.jpg");
+    background-repeat: no-repeat;
+    background-size: 100%, 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .title-container {
+    margin-bottom: 5%;
+  }
+
+  .games-title {
+    color: white;
+    font-weight: bold;
+    font-family: "Catamaran", sans-serif;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 20px;
+    margin-top: 7%;
+    margin-bottom: 0;
+  }
+
+  .sub-games-title {
+    color: white;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 14px;
+  }
+
+  .align-games {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+  }
+  .align-games .card {
+    margin-bottom: 30px;
+    width: 90%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+  }
+  .align-games .card-header,
+.align-games .card-footer {
+    color: #901A1E;
+    border: none;
+    background-color: white;
+    font-size: 20px;
+  }
+  .align-games .card-body {
+    color: #901A1E;
+  }
+  .align-games .card-body .body-row {
+    flex-direction: row;
+    display: flex;
+  }
+  .align-games .card-body .body-row span {
+    font-size: 14px;
+  }
+
+  .card-footer .footer-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .card-footer .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+    width: 100%;
+  }
+  .card-footer .game-info {
+    padding-bottom: 20px;
+    font-size: 11px;
+  }
+  .card-footer .game-info p {
+    margin-bottom: 0;
+  }
+
+  .games-image {
+    width: 80px;
+    height: 80px;
+    display: none;
+  }
+
+  /******************************
+  *        Navbar Styling       *
+  ******************************/
+  .login-button {
+    color: white;
+    text-decoration: none;
+    font-size: 12px;
+  }
+}
+@media (min-width: 768px) {
+  /*************************
+  *       Base.html        *
+  *************************/
+  .top-left-fixed-alert {
+    visbility: hidden;
+  }
+
+  /**************************************
+  *  Main container  - BaseAdmin.html  *
+  **************************************/
+  .container {
+    max-width: 100%;
+  }
+  .container .page-header {
+    padding-top: 40px;
+  }
+
+  /******************************
+  *  Front Page  - games.html  *
+  ******************************/
+  .background-frontpage {
+    background-image: url("../../media/background-ku-desktop.jpg");
+    background-repeat: no-repeat;
+    background-size: 100%, 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .title-container {
+    margin-bottom: 5%;
+  }
+
+  .games-title {
+    color: white;
+    font-weight: bold;
+    font-family: "Catamaran", sans-serif;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 30px;
+    margin-top: 7%;
+    margin-bottom: 0;
+  }
+
+  .sub-games-title {
+    color: white;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 20px;
+  }
+
+  .align-games {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+  }
+  .align-games .card {
+    margin-bottom: 30px;
+    width: 90%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+  }
+  .align-games .card-header,
+.align-games .card-footer {
+    color: #901A1E;
+    border: none;
+    background-color: white;
+    font-size: 20px;
+  }
+  .align-games .card-body {
+    color: #901A1E;
+  }
+  .align-games .card-body .body-row {
+    flex-direction: row;
+    display: flex;
+  }
+  .align-games .card-body .body-row span {
+    font-size: 14px;
+    margin-left: 20px;
+  }
+
+  .card-footer .footer-row {
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: row;
+  }
+  .card-footer .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+    width: 180px;
+  }
+  .card-footer .game-info {
+    padding-bottom: 20px;
+    padding-right: 20px;
+    font-size: 11px;
+  }
+  .card-footer .game-info p {
+    margin-bottom: 0;
+  }
+
+  .games-image {
+    width: 150px;
+    height: 150px;
+    display: block;
+  }
+
+  /******************************
+  *        Navbar Styling       *
+  ******************************/
+  .login-button {
+    color: white;
+    text-decoration: none;
+    font-size: 12px;
+  }
+}
+@media (min-width: 1025px) {
+  /*************************
+  *       Base.html        *
+  *************************/
+  .top-left-fixed-alert {
+    visbility: hidden;
+  }
+
+  /**************************************
+  *  Main container  - BaseAdmin.html  *
+  **************************************/
+  .container {
+    max-width: 100%;
+  }
+  .container .page-header {
+    padding-top: 40px;
+  }
+
+  /******************************
+  *  Front Page  - games.html  *
+  ******************************/
+  .background-frontpage {
+    background-image: url("../../media/background-ku-desktop.jpg");
+    background-repeat: no-repeat;
+    background-size: 100%, 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .title-container {
+    margin-bottom: 5%;
+  }
+
+  .games-title {
+    color: white;
+    font-weight: bold;
+    font-family: "Catamaran", sans-serif;
+    display: flex;
+    justify-content: center;
+    text-align: center;
     font-size: 60px;
     margin-top: 8%;
     margin-bottom: 0;
@@ -226,7 +591,7 @@ table.table-debug td.debug-var-value {
   }
   .align-games .card {
     margin-bottom: 30px;
-    width: 50%;
+    width: 60%;
     border-color: #901A1E;
     border-style: solid;
     border-width: 3px;
@@ -235,6 +600,8 @@ table.table-debug td.debug-var-value {
 .align-games .card-footer {
     color: #901A1E;
     border: none;
+    background-color: white;
+    font-size: 1.5em;
   }
   .align-games .card-body {
     color: #901A1E;
@@ -248,20 +615,28 @@ table.table-debug td.debug-var-value {
     margin-left: 20px;
   }
 
+  .card-footer .footer-row {
+    display: flex;
+    justify-content: flex-end;
+  }
   .card-footer .btn-primary {
     background-color: #901A1E;
     border-color: #901A1E;
+    width: 200px;
+    height: 50px;
+    font-size: 20px;
   }
   .card-footer .game-info {
-    margin-top: 20px;
-    font-size: 11px;
+    padding-right: 20px;
+    font-size: 14px;
   }
   .card-footer .game-info p {
     margin-bottom: 0;
   }
-  .card-footer .games-image {
-    width: 200px;
-    height: 200px;
+
+  .games-image {
+    width: 160px;
+    height: 160px;
   }
 
   /******************************
@@ -271,10 +646,6 @@ table.table-debug td.debug-var-value {
     color: white;
     text-decoration: none;
     font-size: 20px;
-  }
-  .login-button:hover {
-    text-decoration: none;
-    color: #901A1E;
   }
 }
 

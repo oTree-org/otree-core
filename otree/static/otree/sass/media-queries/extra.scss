@@ -1,15 +1,17 @@
-@media (min-width: 768px) {
-
 /*************************
+@media (min-width: 0px) {
+
+
+
 *       Base.html        *
-*************************/
+
 .top-left-fixed-alert {
   visbility: hidden;
 }
 
 /**************************************
 *  Main container  - BaseAdmin.html  *
-**************************************/
+
 .container {
    max-width: 100%;
 
@@ -17,10 +19,10 @@
       padding-top: 40px;
   }
 }
-
+**************************************/
 /******************************
 *  Front Page  - games.html  *
-******************************/
+
 
 .background-frontpage {
   background-image: url("../../media/background-ku-desktop.jpg");
@@ -43,8 +45,8 @@
   display: flex;
   justify-content: center;
   text-align: center;
-  font-size: 30px;
-  margin-top: 7%;
+  font-size: 60px;
+  margin-top: 8%;
   margin-bottom: 0;
 }
 
@@ -53,7 +55,7 @@
   display: flex;
   justify-content: center;
   text-align: center;
-  font-size: 20px;
+  font-size: 30px;
 }
 
 .align-games {
@@ -64,7 +66,7 @@
 
   .card {
     margin-bottom: 30px;
-    width: 90%;
+    width: 60%;
     border-color: $ku-red;
     border-style: solid;
     border-width: 3px;
@@ -76,19 +78,17 @@
     color: $ku-red;
     border: none;
     background-color: white;
-    font-size: 20px;
   }
 
   .card-body {
     color: $ku-red;
-
 
       .body-row {
         flex-direction: row;
         display: flex;
 
         span {
-          font-size: 14px;
+          font-size: 18px;
           margin-left: 20px;
         }
       }
@@ -101,8 +101,6 @@
      .footer-row {
        display: flex;
        justify-content: flex-end;
-       flex-direction: row;
-
      }
 
     .btn-primary {
@@ -111,10 +109,8 @@
       width: 180px;
     }
     .game-info {
-      padding-bottom: 20px;
       padding-right: 20px;
       font-size: 11px;
-
 
       p {
         margin-bottom: 0;
@@ -122,21 +118,31 @@
   }
 }
   .games-image {
-      width: 150px;
-      height: 150px;
-      display: block;
+      width: 160px;
+      height: 160px;
   }
+*************************/
 /******************************
 *        Navbar Styling       *
-******************************/
+
 
 .login-button {
   color: white;
   text-decoration: none;
-  font-size: 12px;
+  font-size: 20px;
 
+  &:hover {
+    text-decoration: none;
+    color: $ku-red;
+  }
 }
 
 
 
+
+
+
+
 }
+*************************/
+

@@ -1,4 +1,138 @@
 @media (min-width: 375px) {
 
+/*************************
+*       Base.html        *
+*************************/
+.top-left-fixed-alert {
+  visbility: hidden;
+}
+
+/**************************************
+*  Main container  - BaseAdmin.html  *
+**************************************/
+.container {
+   max-width: 100%;
+
+  .page-header {
+      padding-top: 40px;
+  }
+}
+
+/******************************
+*  Front Page  - games.html  *
+******************************/
+
+.background-frontpage {
+  background-image: url("../../media/background-ku-desktop.jpg");
+  background-repeat: no-repeat;
+  background-size: 100%, 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
 }
+
+.title-container {
+  margin-bottom: 5%;
+}
+
+.games-title {
+  color: white;
+  font-weight: bold;
+  font-family: 'Catamaran', sans-serif;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  font-size: 20px;
+  margin-top: 7%;
+  margin-bottom: 0;
+}
+
+.sub-games-title {
+  color: white;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  font-size: 14px;
+}
+
+.align-games {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+
+  .card {
+    margin-bottom: 30px;
+    width: 90%;
+    border-color: $ku-red;
+    border-style: solid;
+    border-width: 3px;
+  }
+
+
+  .card-header,
+  .card-footer {
+    color: $ku-red;
+    border: none;
+    background-color: white;
+    font-size: 20px;
+  }
+
+  .card-body {
+    color: $ku-red;
+
+      .body-row {
+        flex-direction: row;
+        display: flex;
+
+        span {
+          font-size: 14px;
+        }
+      }
+
+      }
+  }
+
+   .card-footer {
+
+     .footer-row {
+       display: flex;
+       justify-content: center;
+       flex-direction: column;
+
+     }
+
+    .btn-primary {
+      background-color: $ku-red;
+      border-color: $ku-red;
+      width: 100%;
+    }
+    .game-info {
+      padding-bottom: 20px;
+      font-size: 11px;
+
+
+      p {
+        margin-bottom: 0;
+      }
+  }
+}
+  .games-image {
+      width: 80px;
+      height: 80px;
+      display: none;
+  }
+/******************************
+*        Navbar Styling       *
+******************************/
+
+.login-button {
+  color: white;
+  text-decoration: none;
+  font-size: 12px;
+
+}
+
+}
+

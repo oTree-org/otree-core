@@ -1,6 +1,5 @@
 @media (min-width: 0px) {
 
-
 /*************************
 *       Base.html        *
 *************************/
@@ -44,8 +43,8 @@
   display: flex;
   justify-content: center;
   text-align: center;
-  font-size: 60px;
-  margin-top: 8%;
+  font-size: 18px;
+  margin-top: 6%;
   margin-bottom: 0;
 }
 
@@ -54,7 +53,7 @@
   display: flex;
   justify-content: center;
   text-align: center;
-  font-size: 30px;
+  font-size: 12px;
 }
 
 .align-games {
@@ -65,17 +64,20 @@
 
   .card {
     margin-bottom: 30px;
-    width: 50%;
+    width: 90%;
     border-color: $ku-red;
     border-style: solid;
     border-width: 3px;
-    }
+  }
 
 
   .card-header,
   .card-footer {
     color: $ku-red;
     border: none;
+    background-color: white;
+    font-size: 18px;
+    font-weight: bolder;
   }
 
   .card-body {
@@ -86,41 +88,47 @@
         display: flex;
 
         span {
-          font-size: 18px;
-          margin-left: 20px;
+          font-size: 12px;
         }
       }
-
-
 
       }
   }
 
    .card-footer {
 
+     .footer-row {
+       display: flex;
+       justify-content: center;
+       flex-direction: column;
+
+     }
 
     .btn-primary {
       background-color: $ku-red;
       border-color: $ku-red;
+      width: 100%;
 
-
+      &:hover {
+        background-color: #7C992B;
+        border-color: transparent;
+      }
     }
     .game-info {
-      margin-top: 20px;
+      padding-bottom: 20px;
       font-size: 11px;
+
 
       p {
         margin-bottom: 0;
       }
   }
-
-
-  .games-image {
-      width: 200px;
-      height: 200px;
-  }
 }
-
+  .games-image {
+      width: 80px;
+      height: 80px;
+      display: none;
+  }
 /******************************
 *        Navbar Styling       *
 ******************************/
@@ -128,14 +136,13 @@
 .login-button {
   color: white;
   text-decoration: none;
-  font-size: 20px;
+  font-size: 12px;
 
   &:hover {
     text-decoration: none;
-    color: $ku-red;
+    color: #A7C5E9;
   }
 }
-
 
 
 

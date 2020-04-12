@@ -82,7 +82,7 @@ $(function () {
     </nav>
 
 {% elif user.is_authenticated and user.is_active %}
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="top_menu1">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top position-absolute" id="top_menu1">
             <a class="navbar-brand" href="{% url 'home' %}">KU-Læringsspil</a>
 
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
@@ -101,7 +101,7 @@ $(function () {
             </div>
         </nav>
 {% else %}
-  <nav class="navbar navbar-expand-lg fixed-top" id="top_menu1">
+  <nav class="navbar navbar-expand-lg fixed-top position-absolute" id="top_menu1">
   <div class="container-fluid">
     <ul class="nav navbar-nav ml-auto">
       <li>

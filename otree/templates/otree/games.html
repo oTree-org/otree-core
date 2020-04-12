@@ -12,58 +12,67 @@
 
 <div class="align-games">
     <div class="card">
-      <h2 class="card-header"><b>Bad Influence</b></h2>
+      <header class="card-header">Bad Influence</header>
         <div class="card-body">
             <div class="body-row">
-                <img src="https://s3.amazonaws.com/codecademy-content/courses/web-101/web101-image_brownbear.jpg?fbclid=IwAR29jtEM5_--fUXy1IAMJxdQta75rkoj8277P-kIowxSZZ7Ekrf_g5IS2m4" alt="" class="games-image">
+                <img src="https://images.fastcompany.net/image/upload/w_596,c_limit,q_auto:best,f_auto/fc/1683023-inline-inline-1-why-video-games-were-never-the-same-after-pac-man-burst-into-arcades.jpg" alt="" class="games-image">
                 <span><b>Bad Influence</b> er et multiplayerlæringsspil hvor hver spiller har et “netværk” af venner/medspillere.
                 Hver spille kan kun se og kommunikere med sit eget netværk.
                 Spillet vil gennemgå en række scenarier hvor hver spiller skal vælge mellem to muligheder.
                     <br>
                     <br>
                 Målet er at ens netværk skal være i konsensus med hinanden før tiden udløber, dette skal ske ved at chatte sammen i spillet.
-
                 </span>
-
             </div>
-
-
-
-    </div>
-     <div class="card-footer">
-
-             <form action="{% url 'CreateSessionBadInfluence' %}">
-         <button class="btn btn-primary" >
-         Opret spil
-         </button>
-         </form>
-      <span>
-        <div class="game-info">
-            <p>*Spil varighed: 20min</p>
-            <p>*Minimum 4 spillere</p>
-        </div>
-    </span>
-     </div>
-
-    </div>
-
-    <div class="card">
-        <h2 class="card-header"><b>Day Trader</b></h2>
-        <div class="card-body">
-            <p >Day Trader er et multiplayerlæringsspil omkring hvordan bobler kan opstå i finansverdenen. I dette spil er et firma repræsenteret af en sæk med glade og ikke glade medarbejdere(ansigter). Hver spiller skal gætte om firmaet er bestående af primært ”glade” eller ”ikke glade” omstændigheder, ud fra den information spillerne får i spillet. </p>
-            <p style="font-size: 11px; margin-bottom: 0; ">*Spil varighed: ?</p>
-            <p style="font-size: 11px; margin-bottom: 0; ">*Minimum 3 spillere</p>
         </div>
         <div class="card-footer">
-            <form action="{% url 'CreateSessionDayTrader' %}">
-                <button class="btn btn-primary">
-                    Opret spil
+        <div class="footer-row">
+                <span class="game-info">
+                <p>*Spil varighed: 20min</p>
+                <p>*Minimum 4 spillere</p>
+            </span>
+            <form action="{% url 'CreateSessionBadInfluence' %}">
+                <button class="btn btn-primary" >
+                Opret spil
                 </button>
-
             </form>
+
         </div>
     </div>
 </div>
+
+
+    <div class="card">
+      <header class="card-header">Day Trader</header>
+        <div class="card-body">
+            <div class="body-row">
+                <img src="https://images.fastcompany.net/image/upload/w_596,c_limit,q_auto:best,f_auto/fc/1683023-inline-inline-1-why-video-games-were-never-the-same-after-pac-man-burst-into-arcades.jpg" alt="" class="games-image">
+                <span><b>Day Trader</b> er et multiplayerlæringsspil omkring hvordan bobler kan opstå i finansverdenen. I dette spil er et firma repræsenteret af en sæk med glade og ikke glade medarbejdere(ansigter).
+                    <br>
+                    <br>
+                    Hver spiller skal gætte om firmaet er bestående af primært ”glade” eller ”ikke glade” omstændigheder, ud fra den information spillerne får i spillet.
+
+                </span>
+            </div>
+        </div>
+        <div class="card-footer">
+        <div class="footer-row">
+                <span class="game-info">
+                <p>*Spil varighed: 20-30min</p>
+                <p>*Minimum 3 spillere</p>
+            </span>
+            <form action="{% url 'CreateSessionDayTrader' %}}">
+                <button class="btn btn-primary" >
+                Opret spil
+                </button>
+            </form>
+
+        </div>
+    </div>
+</div>
+</div>
+
+
 
 {% include "otree/includes/messages.html" %}
 {% endblock %}
