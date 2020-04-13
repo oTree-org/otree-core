@@ -1,6 +1,7 @@
 from otree.api import (
-    models, BaseConstants, BaseSubsession, BaseGroup, BasePlayer,
+    BaseConstants, BaseSubsession, BaseGroup, BasePlayer,
 )
+from otree.api import models as otree_models
 import json
 import networkx as nx
 from networkx.readwrite import json_graph
@@ -10,6 +11,7 @@ import numpy as np
 import random
 from itertools import chain
 from .questions import make_question, question_order
+from django.db import models
 
 
 class Constants(BaseConstants):
@@ -24,7 +26,7 @@ class Constants(BaseConstants):
 
 
 class Subsession(BaseSubsession):
-    full_network = models.LongStringField()
+    full_network = otree_models.LongStringField()
     consensus = models.FloatField()
 
     def print_graph_stats(self, G):
@@ -132,10 +134,10 @@ class Subsession(BaseSubsession):
 
 
 class Group(BaseGroup):
-    history = models.LongStringField(initial=json.dumps([]))
-    graph = models.LongStringField()
+    history = otree_models.LongStringField(initial=json.dumps([]))
+    graph = otree_models.LongStringField()
     consensus = models.FloatField()
-    question = models.StringField()
+    question = otree_models.StringField()
     round_start_time = models.FloatField()
     round_end_time = models.FloatField()
     choice = models.BooleanField()
@@ -232,8 +234,8 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
-    ego_network = models.LongStringField()
-    friends = models.LongStringField()
+    ego_network = otree_models.LongStringField()
+    friends = otree_models.LongStringField()
     hub = models.BooleanField()
     choice = models.BooleanField(
                 choices=[
@@ -243,19 +245,17 @@ class Player(BasePlayer):
     )
     gender = models.BooleanField()
     number_of_friends = models.IntegerField()
-    spg = models.LongStringField()
+    spg = otree_models.LongStringField()
     last_choice_made_at = models.IntegerField()
-    stubborn = models.FloatField(initial=0)
-    opinion_change = models.IntegerField(initial=0)
-    stubborn_total = models.FloatField(initial=0)
-    opinion_change_total = models.IntegerField(initial=0)
-    number_of_friends_total = models.IntegerField(initial=0)
-    player_chat_color = models.StringField()
+    stubborn = otree_models.FloatField(initial=0)
+    opinion_change = otree_models.IntegerField(initial=0)
+    stubborn_total = otree_models.FloatField(initial=0)
+    opinion_change_total = otree_models.IntegerField(initial=0)
+    number_of_friends_total = otree_models.IntegerField(initial=0)
 
     def generate_random_chat_color(self):
-        r = lambda: random.randint(0, 255)
-        random_color = "%02X%02X%02X" % (r(), r(), r())
-        self.player_chat_color = random_color
+        random_color = lambda: random.randint(0, 255)
+        return "%02X%02X%02X" % (random_color(), random_color(), random_color())
 
     def get_personal_channel_name(self):
         return '{}-{}'.format(self.id_in_group, self.id)
@@ -309,3 +309,15 @@ class Player(BasePlayer):
 
     def count_times_has_been_hub(self):
         return sum([p.hub for p in self.in_previous_rounds()])
+
+
+class Message(models.Model):
+    player = Player.chat_nickname
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.player
+
+    def last_ten_messages(self):
+        return Message.objects.order_by('-timestamp').all()[:10]

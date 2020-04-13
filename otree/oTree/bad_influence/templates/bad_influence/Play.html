@@ -236,7 +236,7 @@
         let ws_path = ws_scheme + '://' + window.location.host + "/ws/chat/{{ group.pk }}";
 
         // Instantiates the WebSocket with the WebSocket route and scheme as argument
-        let socket = new WebSocket(ws_path);
+        let socket = new ReconnectingWebSocket(ws_path);
 
         // Defines the DOM element for the submit button
         const button = document.getElementById('send');
@@ -283,12 +283,23 @@
 
         // When a message is sent it is appended to the container with id of chat
         socket.onmessage = event => {
+            let data = JSON.parse(event.data);
+            if(data['command'] === 'messages') {
+                for(let i = 0; i<data['message'].length; i++) {}
+            }
             /*
              */
             console.log(event);
             const chat = document.getElementById('chat');
+            let hex = JSON.parse(event.data).color;
+            console.log(hex);
+            let color = "#" + hex;
+            console.log(color);
             chat.innerHTML += JSON.parse(event.data).message;
             displayFriends();
+
+            $('.col-player_{{ player.id_in_group }}').css('color', 'red');
+
             messages.push(JSON.parse(event.data).message);
             localStorage.setItem('messages', JSON.stringify(messages));
         };
@@ -300,7 +311,7 @@
             event.preventDefault();
             let message = document.getElementById('message');
             let chat_class = "player_" + {{ player.id_in_group }};
-            let data = `<p class="chat-message" id="${chat_class}"><b>Spiller {{ player.id_in_group }}:</b> ${message.value}</p>`;
+            let data = `<p class="chat-message" id="${chat_class}"><b class="col-player_{{ player.id_in_group }}">Spiller {{ player.id_in_group }}:</b> ${message.value}</p>`;
 
             if (message.value !== '') {
                 socket.send(JSON.stringify({
@@ -329,6 +340,14 @@
                 }
             }
         };
+
+        const fetchMessage = () => {
+            socket.send(JSON.stringify({
+                'command': 'fetch_messages'
+            }))
+        };
+
+        console.log(fetchMessage());
     </script>
 
 {% endblock %}
