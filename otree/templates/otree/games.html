@@ -1,7 +1,18 @@
 {% extends "otree/BaseAdmin.html" %}
 {% load static %}
 
-
+{% block styles %}
+    <style>
+        body {
+            background-image: url("../../static/otree/media/ku-bgku-bgkujpg.jpg");
+            background-repeat: no-repeat;
+            background-size: 100%, 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+{% endblock %}
 
 {% block content %}
 <div class="title-container">
@@ -16,7 +27,7 @@
         <div class="card-body">
             <div class="body-row">
                 <img src="https://images.fastcompany.net/image/upload/w_596,c_limit,q_auto:best,f_auto/fc/1683023-inline-inline-1-why-video-games-were-never-the-same-after-pac-man-burst-into-arcades.jpg" alt="" class="games-image">
-                <span><b>Bad Influence</b> er et multiplayerlæringsspil hvor hver spiller har et “netværk” af medspillere.
+                <span><b>Bad Influence</b> er et multiplayerspil hvor hver spiller har et “netværk” af medspillere.
                 Hver spille kan kun se og kommunikere med sit eget netværk.
                 Spillet vil gennemgå en række scenarier hvor hver spiller skal vælge mellem to muligheder.
                     <br>
@@ -47,7 +58,7 @@
         <div class="card-body">
             <div class="body-row">
                 <img src="https://images.fastcompany.net/image/upload/w_596,c_limit,q_auto:best,f_auto/fc/1683023-inline-inline-1-why-video-games-were-never-the-same-after-pac-man-burst-into-arcades.jpg" alt="" class="games-image">
-                <span><b>Day Trader</b> er et multiplayerlæringsspil omkring hvordan bobler kan opstå i finansverdenen. I dette spil er et firma repræsenteret af en sæk med glade og ikke glade medarbejdere(ansigter).
+                <span><b>Day Trader</b> er et multiplayerspil omkring hvordan bobler kan opstå i finansverdenen. I dette spil er et firma repræsenteret af en sæk med glade og ikke glade medarbejdere(ansigter).
                     <br>
                     <br>
                     Hver spiller skal gætte om firmaet er bestående af primært ”glade” eller ”ikke glade” omstændigheder, ud fra den information spillerne får i spillet.
@@ -61,7 +72,7 @@
                 <p>*Spil varighed: 20-30min</p>
                 <p>*Minimum 3 spillere</p>
             </span>
-            <form action="{% url 'CreateSessionDayTrader' %}}">
+            <form action="{% url 'CreateSessionDayTrader' %}">
                 <button class="btn btn-primary" >
                 Opret spil
                 </button>

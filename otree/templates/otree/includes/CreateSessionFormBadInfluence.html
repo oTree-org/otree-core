@@ -1,5 +1,20 @@
+
 {% load otree static %}
 {% load i18n %}
+
+{% block styles %}
+    <style>
+        body {
+            background-image: url("../../../static/otree/media/opret-bgkusvg.svg");
+            background-repeat: no-repeat;
+              background-size: 100%, 100%;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+
+        }
+    </style>
+{% endblock %}
 
 <!-- Game/session view as active or admin with settings/config-->
 {% if user.is_authenticated and user.is_staff or user.is_superuser %}
@@ -92,22 +107,26 @@
 <!-- Game/session creation without login -->
 {% else %}
 
+<div class="create-game">
+    <div class="card">
+      <header class="card-header">Opret spil</header>
+        <div class="card-body">
+            <div>
+                <p>Du har valgt spillet <b>Bad Influence</b></p>
+                <p>Før spillet bliver oprettet skal du vælge antal spillere, og derefter trykke <b>"Opret nyt spil"</b></p>
+            </div>
+        </div>
+        <div class="card-footer">
+
 <form id="form">
+        {% csrf_token %}
+                <div style="display: none;" >{% formfield form.session_config %}</div>
 
-    {% csrf_token %}
-    <h1>Opret Spil</h1>
-    <h4>Du har valgt spillet <b>Bad Influence</b></h4>
-    <p>Vælg antal spillere, og tryk <b>"Opret nyt spil"</b></p>
+                <div class="form-group{% if form.num_participants.errors %} has-error{% endif %} required">
 
-    <!-- Default is bad_influence atm. -->
-    <div style="display: none;" >{% formfield form.session_config %}</div>
-
-    <div class="form-group{% if form.num_participants.errors %} has-error{% endif %} required">
-        <label class="col-form-label" for="num_participants" >
-            {{ form.num_participants.label }}
-        </label>
-        <div class=" controls field-num_participants">
-            <div style="flex-direction: row" class="row">
+                <div class="footer-row ">
+                <div class="controls field-num_participants">
+                <div>
                 {{ form.num_participants }}
 
                 <div>
@@ -116,23 +135,27 @@
                            id="btn-create-session"
                            type="submit">
                 </div>
-            </div>
-            <!-- Error handling for the form -->
-            {% if form.num_participants.errors %}
-            {% include "otree/forms/errors.html" with errors=form.num_participants.errors %}
-            {% endif %}
-            {% for config in configs %}
-            <div id="lcm-{{ config.name }}" class="lcm"
+                </div>
+                </div>
+                <!-- Error handling for the form -->
+                {% if form.num_participants.errors %}
+                {% include "otree/forms/errors.html" with errors=form.num_participants.errors %}
+                {% endif %}
+                {% for config in configs %}
+                <div id="lcm-{{ config.name }}" class="lcm"
                  style="display:none">
-                <p>Must be a multiple of {{ config.get_lcm }}</p></div>
-            {% endfor %}
-            <p class="help-block">{{ form.num_participants.help_text }}</p>
+               <!-- <p>Must be a multiple of {{ config.get_lcm }}</p></div> -->
+                {% endfor %}
+                <p class="help-block">{{ form.num_participants.help_text }}</p>
 
 
-        </div>
+                </div>
+                </div>
+            </form>
+
     </div>
+</div>
 
-</form>
 
 {% endif %}
 
