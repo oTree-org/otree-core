@@ -231,6 +231,9 @@ table.table-debug td.debug-var-value {
     border-style: solid;
     border-width: 3px;
   }
+  .align-games .card-header {
+    padding-bottom: 0;
+  }
   .align-games .card-header,
 .align-games .card-footer {
     color: #901A1E;
@@ -250,6 +253,9 @@ table.table-debug td.debug-var-value {
     font-size: 12px;
   }
 
+  .card-footer {
+    padding-top: 0;
+  }
   .card-footer .footer-row {
     display: flex;
     justify-content: center;
@@ -571,7 +577,7 @@ table.table-debug td.debug-var-value {
     justify-content: center;
     text-align: center;
     font-size: 60px;
-    margin-top: 8%;
+    margin-top: 6%;
     margin-bottom: 0;
   }
 

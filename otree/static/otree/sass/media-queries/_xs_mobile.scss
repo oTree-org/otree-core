@@ -70,6 +70,9 @@
     border-width: 3px;
   }
 
+  .card-header {
+    padding-bottom:0;
+  }
 
   .card-header,
   .card-footer {
@@ -95,8 +98,9 @@
       }
   }
 
-   .card-footer {
 
+   .card-footer {
+      padding-top: 0;
      .footer-row {
        display: flex;
        justify-content: center;
