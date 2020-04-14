@@ -31,3 +31,4 @@ How to log into the system as an admin:
 #       2. go to the admin panel and choose a player username
 #       3. then log into the system with the username and the password: 123456
 
+<!--and without jargon in this [Technograph article](http://www.dailyillini.com/article/2016/04/automatic-speech-recognition).-->
