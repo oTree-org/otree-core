@@ -1,7 +1,7 @@
 
-## How to run KU-Læringsspil:
+## How to run KU-Læringsspil
 
-Use following methodology when git cloning the project:
+### Use following methodology when git cloning the project:
 
 ```
     pip install -e .
@@ -11,15 +11,21 @@ Use following methodology when git cloning the project:
     otree devserver
 ```
 
-How to log into the system as an admin:
+### How to log into the system as an admin:
 
+Create an admin/superuser with the following commands in your terminal:
+``` 
+    otree createsuperuser
+    otree devserver
+```
+Log in via. login button on the front page /spil/
+OR
+Log in with the admin login and enter the admin panel with the URL:
+/admin/
 
-    Create an admin/superuser with the following commands in your terminal:
-    # otree createsuperuser
-        Log in with this admin login and enter the admin panel with the URL:
-    /admin/
     
-    IF you are using shellbash and getting an error when creating a super user, try to use the following command:
+IF you are using shellbash and getting an error when creating a super user, try to use the following command:
+
 ```
     winpty python manage.py createsuperuser
 ```
