@@ -23,12 +23,3 @@ How to log into the system as an admin:
     winpty python manage.py createsuperuser
     
 
-
-#How to log into the system as a player:
-#::
-#    To log in as a player:
-#       1. create a session/game
-#       2. go to the admin panel and choose a player username
-#       3. then log into the system with the username and the password: 123456
-
-<!--and without jargon in this [Technograph article](http://www.dailyillini.com/article/2016/04/automatic-speech-recognition).-->
