@@ -17,6 +17,10 @@ How to log into the system as an admin:
     # otree createsuperuser
         Log in with this admin login and enter the admin panel with the URL:
     /admin/
+    
+    IF you are using shellbash and getting an error when creating a super user, try to use the following command:
+::
+    winpty python manage.py createsuperuser
 
 How to log into the system as a player:
 ::
