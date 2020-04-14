@@ -19,8 +19,11 @@ Create an admin/superuser with the following commands in your terminal:
     otree devserver
 ```
 Log in via. login button on the front page /spil/
+
 OR
+
 Log in with the admin login and enter the admin panel with the URL:
+
 /admin/
 
     
