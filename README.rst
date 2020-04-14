@@ -22,7 +22,7 @@ How to log into the system as an admin:
 ::
     winpty python manage.py createsuperuser
 
-<--
+<!--
 How to log into the system as a player:
 ::
     To log in as a player:
