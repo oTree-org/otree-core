@@ -1,6 +1,6 @@
 import networkx as nx
 from networkx.readwrite import json_graph
-from channels.generic.websocket import AsyncJsonWebsocketConsumer, JsonWebsocketConsumer
+from channels.generic.websocket import AsyncJsonWebsocketConsumer, WebsocketConsumer
 import time
 import json
 from asgiref.sync import async_to_sync
@@ -106,7 +106,7 @@ class NetworkVoting(AsyncJsonWebsocketConsumer):
         print("Sent message")
 
 
-class ChatConsumer(AsyncJsonWebsocketConsumer):
+class ChatConsumer(WebsocketConsumer):
     def new_message(self, data):
         player = data['from']
         player_user = Player.objects.filter(id=player)[0]
