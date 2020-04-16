@@ -81,9 +81,10 @@ class NetworkVoting(AsyncJsonWebsocketConsumer):
 
             for p in group.get_players():
                 ego_graph = json_graph.node_link_data(nx.ego_graph(graph, p.id_in_group))
+                channel_cur = "{}-{}".format(self.get_group().get_channel_group_name(), p.get_personal_channel_name())
 
                 await self.channel_layer.group_send(
-                    self.connection_groups(),
+                    channel_cur,
                     {
                         "type": "send_choice",
                         "message": {
