@@ -1,9 +1,9 @@
 
- {% extends "otree/admin/Session.html" %}
+ {% extends "otree/BaseAdmin.html" %}
+
 {% block content %}
-
-    {% if user.is_authenticated and user.is_staff or user.is_superuser %}
-
+{% if user.is_authenticated and user.is_staff or user.is_superuser %}
+{% include "otree/admin/Session.html" %}
 {{ block.super }}
     <table id="monitor-table"
            class="table table-bordered table-hover table-condensed">
@@ -43,9 +43,15 @@
     {% csrf_token %}
 
 {% else %}
+
+        {% include "otree/admin/CustomSession.html" %}
         {{ block.super }}
+    <div class="info">
+    <h1>Spiller oversigt</h1>
+    <p>Dette er en oversigt over alle spillerne i spillet. Her kan du følge deres fremgang.</p>
+
     <table id="monitor-table"
-           class="table table-bordered table-hover table-condensed">
+           class="table table-dark player-table">
         <thead>
         <tr>
             {% for header in column_names %}
@@ -56,8 +62,11 @@
         <tbody></tbody>
     </table>
 
-    <p><span id="num_participants_visited"></span>/{{ session.num_participants }} spillere er startet.</p>
+   <!-- <p><span id="num_participants_visited"></span>/{{ session.num_participants }} spillere er startet.</p>-->
+  </div>
     <br/>
+
+    <!--
     {% if not session.use_browser_bots %}
     <button id="advance_users" class="btn btn-primary" type="button"
        data-toggle="popover" data-trigger="hover"
@@ -65,7 +74,7 @@
         Fremryk den langsomste bruger
     </button>
     {% endif %}
-
+    -->
 
     <br>
     <div id="refresh_server_error" class="alert alert-danger"

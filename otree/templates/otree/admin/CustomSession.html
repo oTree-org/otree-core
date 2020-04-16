@@ -11,20 +11,56 @@ Admin Panel
 {% endblock %}
 
 {% block menus %}
-        <h4>Admin panelet giver dig mulighed som admin at holde øje med spillets fremgang og se slutresultatet af spillet. </h4>
-<ul class="nav nav-tabs justify-content-center">
-    <li role="presentation" class="nav-item">
-        <a class="nav-link {% active_page request 'SessionStartLinks' session.code %}" href="{% url 'SessionStartLinks' session.code %}"><img src='{% static "glyphicons/link.png" %}'> Links</a>
-    </li>
 
-    <li role="presentation" class="nav-item">
-        <a class="nav-link {% active_page request 'SessionMonitor' session.code %}" href="{% url 'SessionMonitor' session.code %}"><img src='{% static "glyphicons/eye-open.png" %}'> Spillets fremgang</a>
-    </li>
-    <li role="presentation" class="nav-item">
-        <a class="nav-link {% active_page request 'SessionData' session.code %}" href="{% url 'SessionData' session.code %}"><img src='{% static "glyphicons/list-alt.png" %}'> Data</a>
-    </li>
+<div id="admin-panel">
+    <ul class="nav justify-content-center">
+        <li role="presentation" class="nav-item active">
+             <a class="nav-link {% active_page request 'SessionStartLinks' session.code %}" href="{% url 'SessionStartLinks' session.code %}">
+           <button class="btn btn-default btn-circle">
+               Start link
+               <br>
+             <!--  <img src='{% static "glyphicons/link.png" %}'>-->
+           </button>
+            </a>
+        </li>
 
-    <li role="presentation" class="nav-item">
-        <a class="nav-link {% active_page request 'AdminReport' session.code %}" href="{% url 'AdminReport' session.code %}"><img src='{% static "glyphicons/stats.png" %}'> Report</a>
-</ul>
+        <li role="presentation" class="nav-item">
+            <a class="nav-link active {% active_page request 'SessionMonitor' session.code %}" href="{% url 'SessionMonitor' session.code %}">
+                <button class="btn btn-default btn-circle">
+                    Fremgang
+                    <br>
+                  <!--  <img class="icon" alt="Monitor"src='{% static "glyphicons/eye-open.png" %}'>-->
+                </button>
+            </a>
+        </li>
+        <li role="presentation" class="nav-item">
+            <a class="nav-link {% active_page request 'SessionData' session.code %}" href="#{% url 'SessionData' session.code %}">
+                 <button class="btn btn-default btn-circle">
+                     Data
+                     <br>
+                    <!-- <img src='{% static "glyphicons/list-alt.png" %}'>-->
+                 </button>
+            </a>
+        </li>
+
+        <li role="presentation" class="nav-item">
+            <a class="nav-link {% active_page request 'AdminReport' session.code %}" href="#{% url 'AdminReport' session.code %}">
+                 <button class="btn btn-default btn-circle">
+                      Rapport
+                     <br>
+                    <!--    <img src='{% static "glyphicons/stats.png" %}'>-->
+                 </button>
+
+            </a>
+    </ul>
+</div>
+
+<!--  Use jQuery to append cláss active to the active menu item allowing it to change color -->
+<script>
+
+    $( '#admin-panel .nav a' ).on( 'click', function () {
+	$( '#admin-panel .nav' ).find( 'li.active' ).removeClass( 'active' );
+	$( this ).parent( 'li' ).addClass( 'active' );
+});
+    </script>
 {% endblock %}

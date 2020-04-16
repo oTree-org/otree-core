@@ -103,7 +103,12 @@ $(function () {
 {% else %}
   <nav class="navbar navbar-expand-lg fixed-top position-absolute" id="top_menu1">
   <div class="container-fluid">
-    <ul class="nav navbar-nav ml-auto">
+  <!--  <a class="navbar-brand"  href="{% url 'games' %}">
+        <img class="navbar-brand" src="../../static/otree/media/mellem-logokusvg.svg" alt="" height="100px" width="100px">
+
+  </a>-->
+
+    <ul class="nav navbar-nav ml-auto login-nav">
       <li>
             {% if request.user.is_authenticated|default:False %}
                 <a class="navbar-link login-button" href="{% url 'logout' %}">{% trans 'Log out' %}</a>
@@ -116,7 +121,7 @@ $(function () {
 </nav>
 
 {% endif %}
-    <div class="container">
+    <div>
         {% block menus %}{% endblock %}
     <div>
         {% block content %}{% endblock %}

@@ -2,6 +2,25 @@
 
 
 {% block content %}
+{% block styles %}
+    <style>
+        html, body {
+            padding:0;
+            margin:0;
+            height: 100%;
+            overflow-y:hidden;
+            background-image: linear-gradient(to bottom, #901a1e, #901a1e, #901a1e, #901a1e, #901a1e, #9f2d38, #ab4152, #b5546b, #c5809f, #d1acc9, #e2d6e9, #ffffff);
+        }
+
+        .login-button {
+              color: orange;
+              text-decoration: none;
+              font-size: 12px;
+        }
+
+    </style>
+{% endblock %}
+    <!-- ADMIN VIEW IF AUTHENTICATED -->
 {% if user.is_authenticated and user.is_staff or user.is_superuser %}
 {% include "otree/admin/Session.html" %}
 {{ block.super }}
@@ -147,21 +166,36 @@
 
 
 {% endif %}
+
+        <!-- USERS VIEW - NOT AUTHENTICATED -->
 {% else %}
 
-<div>
-<h1>{{ session.config.display_name }}</h1>
-<p>Du har startet spillet {{ session.config.display_name }} med {{ session.num_participants }} spillere.</p>
-</div>
-<div>
- <p> Alle spillere skal bruge følgende link for at deltage i spillet. Det er vigtigt at hver spiller kun bruger linket en gang.</p>
-<a style="font-size: 30px;" target="_blank" href="{{ anonymous_url }}">{{ anonymous_url }}</a>
-</div>
-    <br>
-<div>
-
 {% include "otree/admin/CustomSession.html" %}
+
+<div class="gamelink-content">
+    <div>
+        <header>Fantastisk! Du har oprettet spillet <b>{{ session.config.display_name }}</b> med <b>{{ session.num_participants }} spillere.</b></header>
+    </div>
+    <div>
+        <p>Spillet er nu klar til at blive sat igang.</p>
+        <br>
+    </div>
+    <div>
+        <p>Alle spillere skal bruge følgende start link for at deltage i spillet.</p>
+        <p>Det er vigtigt at hver spiller <b>KUN bruger linket en gang.</b></p>
+    </div>
+
+    <div class="start-link">
+
+        <a style="font-size: 30px;" target="_blank" href="{{ anonymous_url }}">{{ anonymous_url }}</a>
+    </div>
 </div>
+
+    <!--
+    <footer class="footer">
+   <a href="{% url 'games' %}" class="back-button">Hjem</a>
+</footer>
+-->
 {% endif %}
 
 {% endblock %}

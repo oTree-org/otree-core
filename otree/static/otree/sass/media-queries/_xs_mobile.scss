@@ -152,22 +152,20 @@
 }
 
 
+
 /**********************************************************
 *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
-
-
-.background-creategame {
-  background-image: url("../../media/opret-bgkusvg.svg");
-  background-repeat: no-repeat;
-  background-size: 100%, 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-}
 ***********************************************************/
 
+.back-button {
+  color: $ku-red;
+  padding-left: 20px;
+  padding-top: 10px;
 
+  &:hover {
+    color: #41739D;
+  }
+}
 
 .create-game {
   display: flex;
@@ -196,6 +194,7 @@
     padding-bottom:0;
     display: flex;
    justify-content: center;
+    padding-top: 0;
 
   }
 
@@ -224,20 +223,21 @@
     display: none;
   }
 
-
     .card-footer {
       padding-top: 0;
 
       .form-control {
-       max-width: 100%;
+        max-width: 100%;
         margin-bottom: 20px;
         font-size: 14px;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
       }
-     .footer-row {
-       display: flex;
-       justify-content: center;
-       flex-direction: column;
-
+      .footer-row {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
      }
 
     .btn-primary {
@@ -250,27 +250,126 @@
         border-color: transparent;
       }
     }
+  }
+}
 
+
+/*********************************************
+*  Admin/Teacher panel - CustomSession.html  *
+**********************************************/
+
+#admin-panel {
+    margin-top: 5%;
+
+    .nav-tabs {
+      border-color: transparent;
+    }
+
+    .btn-circle {
+      width:180px;
+      height: 180px;
+      padding: 10px 16px;
+      font-size: 24px;
+      line-height: 1.33;
+      border-radius: 150px;
+      background-color: white;
+      color: $ku-red;
+      box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+
+
+      &:hover {
+        color: white;
+        background-color: $ku-red;
+
+
+      }
+    }
+}
+
+  #admin-panel .nav li > a {
+	text-transform: capitalize;
+	color:  $ku-red;
+	transition: background-color .2s, color .2s;
+
+}
+
+#admin-panel .nav li.active > a {
+	background-color: transparent;
+	color: green;
+
+    .btn-circle {
+      background-color: $ku-red;
+      color: white;
+    }
+}
+
+.gamelink-content {
+  width: 100%;
+  position: relative;
+  margin-top: 10px;
+  color: white;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  font-size: 25px;
+
+  padding-top: 3%;
+  padding-bottom: 4%;
+
+  .start-link {
+    margin-top: 20px;
+    font-size: 30px;
+    background-color: white;
+    border-radius: 40px;
+    padding: 20px 0 20px 0;
+    width: 40%;
+    display: flex;
+    justify-content: center;
+    align-self: center;
+
+
+    a {
+      text-decoration: none;
+      color: $ku-red;
+
+      &:hover {
+        color: #7C992B;
+      }
+    }
+  }
+
+
+}
+
+  .frontpage-button-white {
+    color: white;
+    padding-left: 20px;
+    padding-top: 10px;
+    text-decoration: none;
+    position: relative;
+
+  &:hover {
+    color: #41739D;
+    text-decoration: none;
+  }
+  }
+
+/*********************************************
+*  Monitor game progress - SessionMonitor.html  *
+**********************************************/
+.info {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+  .player-table {
+    width: 70%;
 
   }
- }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
 
 
 
