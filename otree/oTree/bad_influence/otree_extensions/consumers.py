@@ -1,6 +1,6 @@
 import networkx as nx
 from networkx.readwrite import json_graph
-from channels.generic.websocket import AsyncJsonWebsocketConsumer, JsonWebsocketConsumer
+from channels.generic.websocket import AsyncJsonWebsocketConsumer, WebsocketConsumer
 import time
 import json
 from asgiref.sync import async_to_sync
@@ -81,9 +81,10 @@ class NetworkVoting(AsyncJsonWebsocketConsumer):
 
             for p in group.get_players():
                 ego_graph = json_graph.node_link_data(nx.ego_graph(graph, p.id_in_group))
+                channel_cur = "{}-{}".format(self.get_group().get_channel_group_name(), p.get_personal_channel_name())
 
                 await self.channel_layer.group_send(
-                    self.connection_groups(),
+                    channel_cur,
                     {
                         "type": "send_choice",
                         "message": {
@@ -105,7 +106,7 @@ class NetworkVoting(AsyncJsonWebsocketConsumer):
         print("Sent message")
 
 
-class ChatConsumer(AsyncJsonWebsocketConsumer):
+class ChatConsumer(WebsocketConsumer):
     def new_message(self, data):
         player = data['from']
         player_user = Player.objects.filter(id=player)[0]

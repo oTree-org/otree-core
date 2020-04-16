@@ -1,0 +1,964 @@
+#monitor-table th, #monitor-table td, #results-table th, #results-table td {
+  text-align: center;
+  word-wrap: break-word;
+}
+
+table.draggable {
+  display: block;
+  overflow-x: auto;
+  margin-bottom: 0;
+  cursor: move;
+  cursor: grab;
+  cursor: -moz-grab;
+  cursor: -webkit-grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+table.draggable.grabbing {
+  cursor: move;
+}
+
+/* the 104px comes from 940/9...it's hardcoded to fit the current container
+ size...maybe there is a better way */
+table.draggable td, table.draggable th {
+  min-width: 104px;
+  max-width: 104px;
+}
+
+table.draggable thead {
+  display: block;
+}
+
+table.draggable tbody {
+  display: block;
+  max-height: 450px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/*************************
+ *         FORMS         *
+ *************************/
+/* Checkbox and radio button lists shall not have bullet points for every
+   item. */
+.controls > ul {
+  list-style-type: none;
+  padding-left: 2em;
+}
+
+/* Input fields should only take up to 400px width and not stretch over the
+   whole screen */
+.input-group,
+input.form-control,
+select.form-control,
+textarea.form-control {
+  max-width: 400px;
+}
+
+/* This allows the number field to contain around 7 digits. */
+input[type=number].form-control {
+  max-width: 100px;
+}
+
+.input-group-narrow {
+  /* Choosing a very small value that will always be filled with the input
+   * type and input-group-addon. That way we don't allow a gap between the
+   * two. See: https://github.com/oTree-org/otree-core/issues/257
+   */
+  max-width: 200px;
+}
+
+/* Dropdowns shall occupy only the needed space. */
+select.form-control {
+  width: auto;
+}
+
+.form-control-errors {
+  margin-top: 5px;
+  color: #b94a48;
+}
+
+/* Don't break BS3 wells */
+/* a little while after the oTree 2.0 upgrade, remove this */
+.instructions {
+  min-height: 20px;
+  padding: 19px;
+  margin-bottom: 20px;
+  background-color: #f5f5f5;
+  border: 1px solid #e3e3e3;
+  border-radius: 4px;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+/* Hide those input spinners on webkit and mozilla browsers */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Slider Widget */
+.slider [data-slider-value] {
+  min-width: 5em;
+}
+
+.asteriskField {
+  display: none;
+}
+
+.radio {
+  margin-top: 0px;
+}
+
+.help-block {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.page-header {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* DEBUG TOOLBAR */
+.scrollable {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+}
+
+table.table-debug td.debug-var-name {
+  width: 20% !important;
+}
+
+table.table-debug td.debug-var-value {
+  max-width: 0px;
+}
+
+.top-left-fixed-alert {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: lightgray;
+  font-style: italic;
+  visibility: hidden;
+  /* need to be on top of bs4 navbar which is 1030 */
+  z-index: 1100;
+}
+
+.otree-body {
+  max-width: 970px;
+}
+
+.page-header {
+  padding-top: 40px;
+}
+
+@media (min-width: 0px) {
+  /*************************
+  *       Base.html        *
+  *************************/
+  .top-left-fixed-alert {
+    visbility: hidden;
+  }
+
+  /**************************************
+  *  Main container  - BaseAdmin.html  *
+  **************************************/
+  .container {
+    max-width: 100%;
+  }
+  .container .page-header {
+    padding-top: 40px;
+  }
+
+  /******************************
+  *  Front Page  - games.html  *
+
+
+  .background-frontpage {
+    background-image: url("../../media/ku-bgkusvg.svg");
+    background-repeat: no-repeat;
+    background-size: 100%, 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+  }
+  ******************************/
+  .title-container {
+    margin-bottom: 5%;
+  }
+
+  .games-title {
+    color: white;
+    font-weight: bold;
+    font-family: "Catamaran", sans-serif;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 18px;
+    margin-top: 6%;
+    margin-bottom: 0;
+  }
+
+  .sub-games-title {
+    color: white;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 12px;
+  }
+
+  .align-games {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+  }
+  .align-games .card {
+    margin-bottom: 30px;
+    width: 90%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+  }
+  .align-games .card-header {
+    padding-bottom: 0;
+  }
+  .align-games .card-header,
+.align-games .card-footer {
+    color: #901A1E;
+    border: none;
+    background-color: white;
+    font-size: 18px;
+    font-weight: bolder;
+  }
+  .align-games .card-body {
+    color: #901A1E;
+  }
+  .align-games .card-body .body-row {
+    flex-direction: row;
+    display: flex;
+  }
+  .align-games .card-body .body-row span {
+    font-size: 12px;
+  }
+  .align-games .games-image {
+    width: 80px;
+    height: 80px;
+    display: none;
+  }
+  .align-games .card-footer {
+    padding-top: 0;
+  }
+  .align-games .card-footer .footer-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .align-games .card-footer .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+    width: 100%;
+  }
+  .align-games .card-footer .btn-primary:hover {
+    background-color: #7C992B;
+    border-color: transparent;
+  }
+  .align-games .card-footer .game-info {
+    padding-bottom: 20px;
+    font-size: 11px;
+  }
+  .align-games .card-footer .game-info p {
+    margin-bottom: 0;
+  }
+
+  /******************************
+  *        Navbar Styling       *
+  ******************************/
+  .login-button {
+    color: white;
+    text-decoration: none;
+    font-size: 12px;
+  }
+  .login-button:hover {
+    text-decoration: none;
+    color: #A7C5E9;
+  }
+
+  /**********************************************************
+  *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
+
+
+  .background-creategame {
+    background-image: url("../../media/opret-bgkusvg.svg");
+    background-repeat: no-repeat;
+    background-size: 100%, 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+  }
+  ***********************************************************/
+  .create-game {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    overflow: auto;
+  }
+  .create-game .card {
+    margin-bottom: 30px;
+    width: 90%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+  }
+  .create-game .card-header {
+    padding-bottom: 0;
+    display: flex;
+    justify-content: center;
+  }
+  .create-game .card-header,
+.create-game .card-footer {
+    color: #901A1E;
+    border: none;
+    background-color: white;
+    font-size: 18px;
+    font-weight: bolder;
+  }
+  .create-game .card-body {
+    color: #901A1E;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 14px;
+    padding-bottom: 0;
+  }
+  .create-game .games-image {
+    width: 80px;
+    height: 80px;
+    display: none;
+  }
+  .create-game .card-footer {
+    padding-top: 0;
+  }
+  .create-game .card-footer .form-control {
+    max-width: 100%;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+  .create-game .card-footer .footer-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .create-game .card-footer .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+    width: 100%;
+  }
+  .create-game .card-footer .btn-primary:hover {
+    background-color: #7C992B;
+    border-color: transparent;
+  }
+}
+@media (min-width: 375px) {
+  /*************************
+  *       Base.html        *
+  *************************/
+  .top-left-fixed-alert {
+    visbility: hidden;
+  }
+
+  /**************************************
+  *  Main container  - BaseAdmin.html  *
+  **************************************/
+  .container {
+    max-width: 100%;
+  }
+  .container .page-header {
+    padding-top: 40px;
+  }
+
+  /******************************
+  *  Front Page  - games.html  *
+  ******************************/
+  .background-frontpage {
+    background-image: url("../../media/background-ku-desktop.jpg");
+    background-repeat: no-repeat;
+    background-size: 100%, 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .title-container {
+    margin-bottom: 5%;
+  }
+
+  .games-title {
+    color: white;
+    font-weight: bold;
+    font-family: "Catamaran", sans-serif;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 20px;
+    margin-top: 7%;
+    margin-bottom: 0;
+  }
+
+  .sub-games-title {
+    color: white;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 14px;
+  }
+
+  .align-games {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+  }
+  .align-games .card {
+    margin-bottom: 30px;
+    width: 90%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+  }
+  .align-games .card-header,
+.align-games .card-footer {
+    color: #901A1E;
+    border: none;
+    background-color: white;
+    font-size: 20px;
+  }
+  .align-games .card-body {
+    color: #901A1E;
+  }
+  .align-games .card-body .body-row {
+    flex-direction: row;
+    display: flex;
+  }
+  .align-games .card-body .body-row span {
+    font-size: 14px;
+  }
+  .align-games .games-image {
+    width: 80px;
+    height: 80px;
+    display: none;
+  }
+  .align-games .card-footer .footer-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .align-games .card-footer .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+    width: 100%;
+  }
+  .align-games .card-footer .game-info {
+    padding-bottom: 20px;
+    font-size: 11px;
+  }
+  .align-games .card-footer .game-info p {
+    margin-bottom: 0;
+  }
+
+  /******************************
+  *        Navbar Styling       *
+  ******************************/
+  .login-button {
+    color: white;
+    text-decoration: none;
+    font-size: 12px;
+  }
+
+  /**********************************************************
+  *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
+  ***********************************************************/
+  .create-game {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    overflow: auto;
+  }
+  .create-game .card {
+    margin-bottom: 30px;
+    width: 90%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+  }
+  .create-game .card-header {
+    padding-bottom: 0;
+    display: flex;
+    justify-content: center;
+  }
+  .create-game .card-header,
+.create-game .card-footer {
+    color: #901A1E;
+    border: none;
+    background-color: white;
+    font-size: 18px;
+    font-weight: bolder;
+  }
+  .create-game .card-body {
+    color: #901A1E;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 14px;
+    padding-bottom: 0;
+  }
+  .create-game .games-image {
+    width: 80px;
+    height: 80px;
+    display: none;
+  }
+  .create-game .card-footer {
+    padding-top: 0;
+    display: flex;
+    justify-content: center;
+  }
+  .create-game .card-footer .form-control {
+    max-width: 100%;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+  .create-game .card-footer .footer-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+  }
+  .create-game .card-footer .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+    width: 100%;
+  }
+  .create-game .card-footer .btn-primary:hover {
+    background-color: #7C992B;
+    border-color: transparent;
+  }
+}
+@media (min-width: 768px) {
+  /*************************
+  *       Base.html        *
+  *************************/
+  .top-left-fixed-alert {
+    visbility: hidden;
+  }
+
+  /**************************************
+  *  Main container  - BaseAdmin.html  *
+  **************************************/
+  .container {
+    max-width: 100%;
+  }
+  .container .page-header {
+    padding-top: 40px;
+  }
+
+  /******************************
+  *  Front Page  - games.html  *
+  ******************************/
+  .background-frontpage {
+    background-image: url("../../media/background-ku-desktop.jpg");
+    background-repeat: no-repeat;
+    background-size: 100%, 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .title-container {
+    margin-bottom: 5%;
+  }
+
+  .games-title {
+    color: white;
+    font-weight: bold;
+    font-family: "Catamaran", sans-serif;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 30px;
+    margin-top: 7%;
+    margin-bottom: 0;
+  }
+
+  .sub-games-title {
+    color: white;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 20px;
+  }
+
+  .align-games {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+  }
+  .align-games .card {
+    margin-bottom: 30px;
+    width: 90%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+  }
+  .align-games .card-header,
+.align-games .card-footer {
+    color: #901A1E;
+    border: none;
+    background-color: white;
+    font-size: 20px;
+  }
+  .align-games .card-body {
+    color: #901A1E;
+  }
+  .align-games .card-body .body-row {
+    flex-direction: row;
+    display: flex;
+  }
+  .align-games .card-body .body-row span {
+    font-size: 14px;
+    margin-left: 20px;
+  }
+  .align-games .games-image {
+    width: 150px;
+    height: 150px;
+    display: block;
+  }
+  .align-games .card-footer .footer-row {
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: row;
+  }
+  .align-games .card-footer .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+    width: 180px;
+  }
+  .align-games .card-footer .game-info {
+    padding-bottom: 20px;
+    padding-right: 20px;
+    font-size: 11px;
+  }
+  .align-games .card-footer .game-info p {
+    margin-bottom: 0;
+  }
+
+  /******************************
+  *        Navbar Styling       *
+  ******************************/
+  .login-button {
+    color: white;
+    text-decoration: none;
+    font-size: 12px;
+  }
+
+  /**********************************************************
+  *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
+  ***********************************************************/
+  .background-frontpage {
+    background-image: url("../../media/background-ku-desktop.jpg");
+    background-repeat: no-repeat;
+    background-size: 100%, 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .create-game {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    overflow: auto;
+  }
+  .create-game .card {
+    margin-bottom: 30px;
+    width: 70%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+  }
+  .create-game .card-header {
+    padding-bottom: 0;
+    display: flex;
+    justify-content: center;
+  }
+  .create-game .card-header,
+.create-game .card-footer {
+    color: #901A1E;
+    border: none;
+    background-color: white;
+    font-size: 22px;
+    font-weight: bolder;
+  }
+  .create-game .card-body {
+    color: #901A1E;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 18px;
+    padding-bottom: 0;
+  }
+  .create-game .games-image {
+    width: 80px;
+    height: 80px;
+    display: none;
+  }
+  .create-game .card-footer {
+    padding-top: 0;
+    display: flex;
+    justify-content: center;
+  }
+  .create-game .card-footer .form-control {
+    max-width: 100%;
+    margin-bottom: 20px;
+    font-size: 18px;
+  }
+  .create-game .card-footer .footer-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+  }
+  .create-game .card-footer .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+    width: 100%;
+    font-size: 18px;
+  }
+  .create-game .card-footer .btn-primary:hover {
+    background-color: #7C992B;
+    border-color: transparent;
+  }
+}
+@media (min-width: 1025px) {
+  /*************************
+  *       Base.html        *
+  *************************/
+  .top-left-fixed-alert {
+    visbility: hidden;
+  }
+
+  /**************************************
+  *  Main container  - BaseAdmin.html  *
+  **************************************/
+  .container {
+    max-width: 100%;
+  }
+  .container .page-header {
+    padding-top: 40px;
+  }
+
+  /******************************
+  *  Front Page  - games.html  *
+  ******************************/
+  .background-frontpage {
+    background-image: url("../../media/background-ku-desktop.jpg");
+    background-repeat: no-repeat;
+    background-size: 100%, 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .title-container {
+    margin-bottom: 5%;
+  }
+
+  .games-title {
+    color: white;
+    font-weight: bold;
+    font-family: "Catamaran", sans-serif;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 60px;
+    margin-top: 6%;
+    margin-bottom: 0;
+  }
+
+  .sub-games-title {
+    color: white;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 30px;
+  }
+
+  .align-games {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+  }
+  .align-games .card {
+    margin-bottom: 30px;
+    width: 60%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+  }
+  .align-games .card-header,
+.align-games .card-footer {
+    color: #901A1E;
+    border: none;
+    background-color: white;
+    font-size: 24px;
+  }
+  .align-games .card-body {
+    color: #901A1E;
+  }
+  .align-games .card-body .body-row {
+    flex-direction: row;
+    display: flex;
+  }
+  .align-games .card-body .body-row span {
+    font-size: 18px;
+    margin-left: 20px;
+  }
+  .align-games .games-image {
+    width: 160px;
+    height: 160px;
+  }
+  .align-games .card-footer .footer-row {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .align-games .card-footer .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+    width: 200px;
+    height: 50px;
+    font-size: 20px;
+  }
+  .align-games .card-footer .game-info {
+    padding-right: 20px;
+    font-size: 14px;
+  }
+  .align-games .card-footer .game-info p {
+    margin-bottom: 0;
+  }
+
+  /******************************
+  *        Navbar Styling       *
+  ******************************/
+  .login-button {
+    color: white;
+    text-decoration: none;
+    font-size: 20px;
+  }
+
+  /**********************************************************
+  *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
+  ***********************************************************/
+  .create-game {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    overflow: auto;
+  }
+  .create-game .card {
+    margin-bottom: 30px;
+    width: 50%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+  }
+  .create-game .card-header {
+    padding-bottom: 0;
+    display: flex;
+    justify-content: center;
+  }
+  .create-game .card-header,
+.create-game .card-footer {
+    color: #901A1E;
+    border: none;
+    background-color: white;
+    font-size: 22px;
+    font-weight: bolder;
+  }
+  .create-game .card-body {
+    color: #901A1E;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 18px;
+    padding-bottom: 0;
+  }
+  .create-game .games-image {
+    width: 80px;
+    height: 80px;
+    display: none;
+  }
+  .create-game .card-footer {
+    padding-top: 0;
+    display: flex;
+    justify-content: center;
+  }
+  .create-game .card-footer .form-control {
+    max-width: 100%;
+    margin-bottom: 20px;
+    font-size: 18px;
+  }
+  .create-game .card-footer .footer-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+  }
+  .create-game .card-footer .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+    width: 100%;
+    font-size: 18px;
+  }
+  .create-game .card-footer .btn-primary:hover {
+    background-color: #7C992B;
+    border-color: transparent;
+  }
+}
+
+/*# sourceMappingURL=styles.css.map */

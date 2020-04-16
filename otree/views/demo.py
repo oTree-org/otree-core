@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from django.conf import settings
 from django.urls import reverse
 
@@ -10,7 +8,7 @@ import os
 
 class DemoIndex(vanilla.TemplateView):
     template_name = 'otree/DemoIndex.html'
-    url_pattern = r'^demo/$'
+    url_pattern = r'^demo/'
 
     def get_context_data(self, **kwargs):
         title = getattr(settings, 'DEMO_PAGE_TITLE', 'Demo')

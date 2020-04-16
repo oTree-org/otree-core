@@ -46,15 +46,6 @@ def pretty_name(name):
     return name.replace('_', ' ')
 
 
-def get_games(current_game, session_config_choices):
-    if current_game == "bad_influence":
-        return [('bad_influence', 'bad_influence')]
-    elif current_game == "daytrader":
-        return [('daytrader', 'daytrader')]
-    else:
-        return session_config_choices()
-
-
 class CreateSessionForm(forms.Form):
     session_configs = SESSION_CONFIGS_DICT.values()
     session_config_choices = ([

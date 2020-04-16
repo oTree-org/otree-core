@@ -29,24 +29,21 @@ SESSION_CONFIG_DEFAULTS = dict(
     real_world_currency_per_point=1.00, participation_fee=0.00, doc=""
 )
 
-
 SESSION_CONFIGS = [
     dict(
         name='bad_influence',
-        display_name="bad influence",
+        display_name="Bad Influence",
         num_demo_participants=5,
         app_sequence=['bad_influence'],
         use_secure_urls=True
     ),
     dict(
         name='daytrader',
-        display_name="daytrader",
+        display_name="Day Trader",
         num_demo_participants=3,
         app_sequence=['daytrader'],
     ),
 ]
-
-
 
 # ISO-639 code
 # for example: de, fr, ja, ko, zh-hansSubsession
@@ -82,7 +79,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'otree',
     'bad_influence',
-    'daytrader'
+    'daytrader',
 ]
 
 EXTENSION_APPS = [
@@ -90,4 +87,13 @@ EXTENSION_APPS = [
     'daytrader'
 ]
 
+STATIC_URL = '/static/'
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "../otree/static/otree"),
+    '/var/www/static/otree',
+]
+
+MEDIA_URL = 'media/'
+
+MEDIA_ROOT = 'otree/static/otree'

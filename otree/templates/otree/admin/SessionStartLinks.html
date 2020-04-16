@@ -148,11 +148,20 @@
 
 {% endif %}
 {% else %}
-{% include "otree/admin/CustomSession.html" %}
-<div>
- Session-wide URL: <p><a target="_blank" href="{{ anonymous_url }}">{{ anonymous_url }}</a></p>
-</div>
 
+<div>
+<h1>{{ session.config.display_name }}</h1>
+<p>Du har startet spillet {{ session.config.display_name }} med {{ session.num_participants }} spillere.</p>
+</div>
+<div>
+ <p> Alle spillere skal bruge følgende link for at deltage i spillet. Det er vigtigt at hver spiller kun bruger linket en gang.</p>
+<a style="font-size: 30px;" target="_blank" href="{{ anonymous_url }}">{{ anonymous_url }}</a>
+</div>
+    <br>
+<div>
+
+{% include "otree/admin/CustomSession.html" %}
+</div>
 {% endif %}
 
 {% endblock %}

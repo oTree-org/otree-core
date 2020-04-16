@@ -1,5 +1,7 @@
 import os
 import sys
+
+from otree.oTree.settings import BASE_DIR
 from setuptools import setup, find_packages
 import shutil
 from pathlib import Path
@@ -14,7 +16,6 @@ version = otree.__version__
 README = Path('README.rst').read_text('utf8')
 required = Path('requirements.txt').read_text().splitlines()
 required_mturk = Path('requirements_mturk.txt').read_text().splitlines()
-
 
 if sys.argv[-1] == 'publish':
 
