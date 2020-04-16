@@ -2,7 +2,7 @@
     $(function () {
         let ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
         let ws_path = ws_scheme + '://' + window.location.host + "/ws/network_voting/{{ player.id }}/{{ group.pk }}";
-        let socket = new ReconnectingWebSocket(ws_path);
+        let socket = new WebSocket(ws_path);
 
         let $guess_true_button = $('#GuessTrueButton');
         let $guess_false_button = $('#GuessFalseButton');
