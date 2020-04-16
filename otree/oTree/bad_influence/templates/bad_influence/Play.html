@@ -230,7 +230,7 @@
 
         // Defines the scheme of the WebSocket to be either wss if the protocol is https
         // else it should be ws
-        let ws_scheme = window.location.protocol == "https" ? "wss" : "ws";
+        let ws_scheme = window.location.protocol === "https" ? "wss" : "ws";
 
         // Defines the WebSocket route to listen to
         let ws_path = ws_scheme + '://' + window.location.host + "/ws/chat/{{ group.pk }}";
@@ -264,11 +264,16 @@
         // Opens the WebSocket connection and logs a message in the console when it opens
         socket.onopen = () => {
             console.log('WebSocket opened');
+            console.log("{{ player.id }}");
+            console.log("{{ player.id_in_group }}");
             /*
             const chat = document.getElementById('chat');
             let chat_messages = JSON.parse(localStorage.getItem('messages'));
             chat.innerHTML = chat_messages;
             */
+
+
+
         };
 
         // Closes the WebSocket connection and logs a message in the console when it closes
@@ -285,12 +290,40 @@
         socket.onmessage = event => {
             /*
              */
-            console.log(event);
+
+
+
+            let data = JSON.parse(event.data).message;
+            let message = data.chat_message;
+            let chat_id = data.player_id;
+            let player_id = {{ player.id_in_group }};
+            console.log(data);
             const chat = document.getElementById('chat');
-            chat.innerHTML += JSON.parse(event.data).message;
+            //chat.innerHTML += JSON.parse(event.data).message;
             displayFriends();
-            messages.push(JSON.parse(event.data).message);
-            localStorage.setItem('messages', JSON.stringify(messages));
+            //messages.push(JSON.parse(event.data).message);
+            //localStorage.setItem('messages', JSON.stringify(messages));
+
+
+            let divElement = document.createElement('div');
+            let paragraphElement = document.createElement('p');
+            let boldElement = document.createElement('b');
+
+
+            divElement.appendChild(boldElement);
+            divElement.appendChild(paragraphElement);
+            divElement.setAttribute('class', 'chat-message');
+            divElement.setAttribute('id', `player_${chat_id}`);
+
+            if(chat_id === player_id) {
+                boldElement.textContent = "Dig:"
+            } else {
+                boldElement.textContent = `Spiller ${chat_id}`;
+            }
+            paragraphElement.textContent = message;
+            chat.appendChild(divElement);
+
+            console.log("{{ player.chat_color }}")
         };
 
         // Adds an event listener on the send button that submits the message
@@ -298,17 +331,22 @@
         // after the message is sent, the value of the input is reset.
         button.addEventListener("click", event => {
             event.preventDefault();
+
             let message = document.getElementById('message');
-            let chat_class = "player_" + {{ player.id_in_group }};
-            let data = `<p class="chat-message" id="${chat_class}"><b>Spiller {{ player.id_in_group }}:</b> ${message.value}</p>`;
+
+
 
             if (message.value !== '') {
                 socket.send(JSON.stringify({
-                    'message': data
+                    'message': {
+                        "chat_message": message.value,
+                        "player_id": {{ player.id_in_group }}
+                    }
                 }));
             }
 
             message.value = '';
+
         });
 
 
