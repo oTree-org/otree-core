@@ -1,12 +1,14 @@
 {% load i18n otree static %}
 {# NOTE: keep this compact so that view-source is friendly for users #}
 <!DOCTYPE html>
-<html>
+<html lang="da">
 <head>
     <title>{% block head_title %}{% block title %}
     {% endblock %}{% endblock %}</title>
     {% block internal_styles %}
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link href="https://fonts.googleapis.com/css2?family=Annie+Use+Your+Telescope&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="{% static 'bootstrap4/css/bootstrap.min.css' %}">
         <link rel="stylesheet" href="{% static 'bootstrap4/css/bootstrap-reboot.min.css' %}">
         <link rel="stylesheet" href="{% static 'otree/css/styles.css' %}">

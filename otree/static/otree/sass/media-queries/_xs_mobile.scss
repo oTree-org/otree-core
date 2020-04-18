@@ -20,17 +20,6 @@
 
 /******************************
 *  Front Page  - games.html  *
-
-
-.background-frontpage {
-  background-image: url("../../media/ku-bgkusvg.svg");
-  background-repeat: no-repeat;
-  background-size: 100%, 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-}
 ******************************/
 
 
@@ -254,12 +243,12 @@
 }
 
 
-/*********************************************
-*  Admin/Teacher panel - CustomSession.html  *
-**********************************************/
+/********************************************************
+*  Admin/Teacher panel navigation - CustomSession.html  *
+*********************************************************/
 
 #admin-panel {
-    margin-top: 5%;
+    margin-top: 3%;
 
     .nav-tabs {
       border-color: transparent;
@@ -269,17 +258,17 @@
       width:180px;
       height: 180px;
       padding: 10px 16px;
-      font-size: 24px;
+      font-size: 30px;
       line-height: 1.33;
       border-radius: 150px;
       background-color: white;
       color: $ku-red;
       box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
-
+      font-family: "Annie Use Your Telescope", serif;
 
       &:hover {
         color: white;
-        background-color: $ku-red;
+        background-color: #5f861e;
 
 
       }
@@ -298,10 +287,14 @@
 	color: green;
 
     .btn-circle {
-      background-color: $ku-red;
+      background-color: #5f861e;
       color: white;
     }
 }
+
+/*********************************************
+*  Start link / intro - SessionStartLinks.html  *
+**********************************************/
 
 .gamelink-content {
   width: 100%;
@@ -313,14 +306,14 @@
   flex-direction: column;
   text-align: center;
   font-size: 25px;
-
   padding-top: 3%;
   padding-bottom: 4%;
+
 
   .start-link {
     margin-top: 20px;
     font-size: 30px;
-    background-color: white;
+
     border-radius: 40px;
     padding: 20px 0 20px 0;
     width: 40%;
@@ -331,10 +324,10 @@
 
     a {
       text-decoration: none;
-      color: $ku-red;
+      color: white;
 
       &:hover {
-        color: #7C992B;
+        color: #5f861e;
       }
     }
   }
@@ -365,13 +358,84 @@
     align-items: center;
     flex-direction: column;
 
+  h1 {
+    color: white;
+  }
+
+  p {
+    font-size: 25px;
+    color: white;
+  }
   .player-table {
     width: 70%;
+    background-color: white;
+	border-collapse: collapse;
+	overflow: hidden;
+	box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    color: $ku-red;
 
+  th, td {
+	padding: 15px;
+	background-color: rgba(255,255,255,0.2);
+
+}
+tbody {
+	tr {
+		&:hover {
+			background-color: rgba(255,255,255,0.3);
+		}
+	}
+	td {
+		position: relative;
+		&:hover {
+			&:before {
+				content: "";
+				position: absolute;
+				left: 0;
+				right: 0;
+				top: -9999px;
+				bottom: -9999px;
+				background-color: rgba(255,255,255,0.2);
+				z-index: -1;
+			}
+		}
+	}
   }
 }
+}
+
+/*********************************************
+*  Game report page - AdminReport.html  *
+**********************************************/
+.report-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  color: $ku-red;
 
 
+   .report-info {
+    width: 70%;
+	border-collapse: collapse;
+	overflow: hidden;
+	box-shadow: 0 0 20px rgba(0,0,0,0.1);
+     background-color: white;
+     border-radius: 10px;
+     display: flex;
+     justify-content: center;
 
+}
 
+}
+  .resultater {
+    display: flex;
+    justify-content: center;
+  }
+
+  .d3-row {
+    display: flex;
+    flex-direction: row;
+  }
 }

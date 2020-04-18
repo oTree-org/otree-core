@@ -1,7 +1,19 @@
-
  {% extends "otree/BaseAdmin.html" %}
 
+{% block styles %}
+    <style>
+        html, body {
+            padding:0;
+            margin:0;
+            height: 100%;
+            background-color: #901A1E !important;
+
+        }
+    </style>
+{% endblock %}
 {% block content %}
+
+
 {% if user.is_authenticated and user.is_staff or user.is_superuser %}
 {% include "otree/admin/Session.html" %}
 {{ block.super }}
@@ -46,24 +58,31 @@
 
         {% include "otree/admin/CustomSession.html" %}
         {{ block.super }}
+
     <div class="info">
     <h1>Spiller oversigt</h1>
     <p>Dette er en oversigt over alle spillerne i spillet. Her kan du følge deres fremgang.</p>
 
     <table id="monitor-table"
-           class="table table-dark player-table">
+           class="table player-table container">
         <thead>
         <tr>
-            {% for header in column_names %}
-                <th>{{ header }}</th>
+            {% for header in column_names  %}
+                    <th>{{ header }}</th>
             {% endfor %}
         </tr>
         </thead>
-        <tbody></tbody>
+        <tbody>
+
+        </tbody>
+
     </table>
 
+
+</div>
+
    <!-- <p><span id="num_participants_visited"></span>/{{ session.num_participants }} spillere er startet.</p>-->
-  </div>
+
     <br/>
 
     <!--
