@@ -207,6 +207,7 @@ table.table-debug td.debug-var-value {
     justify-content: center;
     text-align: center;
     font-size: 12px;
+    font-family: "Roboto Slab", serif;
   }
 
   .align-games {
@@ -221,6 +222,7 @@ table.table-debug td.debug-var-value {
     border-color: #901A1E;
     border-style: solid;
     border-width: 3px;
+    font-family: "Roboto Slab", serif;
   }
   .align-games .card-header {
     padding-bottom: 0;
@@ -280,6 +282,7 @@ table.table-debug td.debug-var-value {
     color: white;
     text-decoration: none;
     font-size: 12px;
+    font-family: "Roboto Slab", serif;
   }
   .login-button:hover {
     text-decoration: none;
@@ -293,6 +296,7 @@ table.table-debug td.debug-var-value {
     color: #901A1E;
     padding-left: 20px;
     padding-top: 10px;
+    font-family: "Roboto Slab", serif;
   }
   .back-button:hover {
     color: #41739D;
@@ -316,6 +320,7 @@ table.table-debug td.debug-var-value {
     border-color: #901A1E;
     border-style: solid;
     border-width: 3px;
+    font-family: "Roboto Slab", serif;
   }
   .create-game .card-header {
     padding-bottom: 0;
@@ -426,10 +431,12 @@ table.table-debug td.debug-var-value {
     font-size: 25px;
     padding-top: 3%;
     padding-bottom: 4%;
+    font-family: "Roboto Slab", serif;
   }
   .gamelink-content .start-link {
     margin-top: 20px;
     font-size: 30px;
+    background-color: white;
     border-radius: 40px;
     padding: 20px 0 20px 0;
     width: 40%;
@@ -439,7 +446,7 @@ table.table-debug td.debug-var-value {
   }
   .gamelink-content .start-link a {
     text-decoration: none;
-    color: white;
+    color: #901A1E;
   }
   .gamelink-content .start-link a:hover {
     color: #5f861e;
@@ -466,6 +473,7 @@ table.table-debug td.debug-var-value {
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    font-family: "Roboto Slab", serif;
   }
   .info h1 {
     color: white;
@@ -1059,7 +1067,7 @@ table.table-debug td.debug-var-value {
   }
   .create-game .card {
     margin-bottom: 30px;
-    width: 50%;
+    width: 55%;
     border-color: #901A1E;
     border-style: solid;
     border-width: 3px;
@@ -1074,7 +1082,7 @@ table.table-debug td.debug-var-value {
     color: #901A1E;
     border: none;
     background-color: white;
-    font-size: 22px;
+    font-size: 24px;
     font-weight: bolder;
   }
   .create-game .card-body {

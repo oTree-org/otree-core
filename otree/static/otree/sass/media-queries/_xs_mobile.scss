@@ -45,6 +45,7 @@
   justify-content: center;
   text-align: center;
   font-size: 12px;
+  font-family: 'Roboto Slab', serif;
 }
 
 .align-games {
@@ -59,6 +60,7 @@
     border-color: $ku-red;
     border-style: solid;
     border-width: 3px;
+    font-family: 'Roboto Slab', serif;
   }
 
   .card-header {
@@ -133,6 +135,7 @@
   color: white;
   text-decoration: none;
   font-size: 12px;
+  font-family: 'Roboto Slab', serif;
 
   &:hover {
     text-decoration: none;
@@ -150,6 +153,7 @@
   color: $ku-red;
   padding-left: 20px;
   padding-top: 10px;
+  font-family: 'Roboto Slab', serif;
 
   &:hover {
     color: #41739D;
@@ -169,14 +173,14 @@
   overflow: auto;
 
 
+
   .card {
     margin-bottom: 30px;
     width: 90%;
     border-color: $ku-red;
     border-style: solid;
     border-width: 3px;
-
-
+    font-family: 'Roboto Slab', serif;
   }
 
   .card-header {
@@ -308,12 +312,13 @@
   font-size: 25px;
   padding-top: 3%;
   padding-bottom: 4%;
+  font-family: 'Roboto Slab', serif;
 
 
   .start-link {
     margin-top: 20px;
     font-size: 30px;
-
+    background-color: white;
     border-radius: 40px;
     padding: 20px 0 20px 0;
     width: 40%;
@@ -324,10 +329,10 @@
 
     a {
       text-decoration: none;
-      color: white;
+      color: $ku-red;
 
       &:hover {
-        color: #5f861e;
+        color: $ku-dark-green;
       }
     }
   }
@@ -357,6 +362,8 @@
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    font-family: 'Roboto Slab', serif;
+
 
   h1 {
     color: white;
