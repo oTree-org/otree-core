@@ -218,6 +218,10 @@
             border-radius: 10px;
         }
 
+    .chat-message {
+        display: flex;
+    }
+
     .chat-message b {
         padding: 0 10px 0 0;
     }
@@ -305,9 +309,9 @@
             divElement.setAttribute('id', `player_${chat_id}`);
 
             if(chat_id === player_id) {
-                boldElement.textContent = "Dig:"
+                boldElement.textContent = `Spiller ${chat_id} (Dig):`
             } else {
-                boldElement.textContent = `Spiller: ${chat_id}`;
+                boldElement.textContent = `Spiller ${chat_id}:`;
             }
             paragraphElement.textContent = message;
             chat.appendChild(divElement);
