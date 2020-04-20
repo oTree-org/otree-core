@@ -299,8 +299,6 @@
             let player_id = {{ player.id_in_group }};
             const chat = document.getElementById('chat');
 
-            displayFriends();
-
             let divElement = document.createElement('div');
             let paragraphElement = document.createElement('p');
             let boldElement = document.createElement('b');
@@ -311,15 +309,14 @@
             divElement.setAttribute('id', `player_${chat_id}`);
 
             if(chat_id === player_id) {
-                boldElement.textContent = "Dig:"
+                boldElement.textContent = `Spiller ${chat_id} (Dig):`
             } else {
-                boldElement.textContent = `Spiller: ${chat_id}`;
+                boldElement.textContent = `Spiller ${chat_id}:`;
             }
             paragraphElement.textContent = message;
             chat.appendChild(divElement);
+            displayFriends();
 
-
-            // createMessage();
         };
 
         // Adds an event listener on the send button that submits the message
@@ -357,7 +354,7 @@
 
             for (let player in network) {
                 if (players.includes(network[player])) {
-                    document.getElementById(network[player]).style.display = 'block';
+                    document.getElementById(network[player]).style.display = 'flex';
                 } else {
                     document.getElementById(network[player]).style.display = 'none';
                 }
