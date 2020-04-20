@@ -1,15 +1,9 @@
-{% load otree static %}
+{% load otree_internal static %}
 <style>
-        @font-face {
-    font-family: 'annie_use_your_telescope';
-    src: local('annie_use_your_telescope'),
-        url('{% static 'bad_influence/AnnieUseYourTelescope-Regular.ttf' %}');
-}
-html * {
-    font-family: annie_use_your_telescope;
-    }
+
 body {
     font-size: 140.0%;
+    background-color: #901A1E;
 }
 .form {
     display: none;
@@ -29,21 +23,27 @@ body {
     width: 45%;
 }
 </style>
-
-
+<div>
+<h2>Spil rapport</h2>
 <h4>Vælg et spørgsmål for at se hvordan det gik:</h4>
+
+
+
 
 <p id="d3historyChoice"></p>
     <div id="questionHolder"></div>
-    <div style="display: inline-block;" id="d3container"></div>
-    <div style="display: inline-block;" id="d3consensus"></div>
+<div class="d3-row">
+    <div id="d3container"></div>
+    <div id="d3consensus"></div>
+</div>
+
     <p id="d3playback"></p>
 <button type="button" id="play-button">Play</button>
 
 {% include 'bad_influence/d3/d3_graph_results.html' %}
 
-<p></p><p></p>
-<h2>Final Rankings</h2>
+
+<h2 class="resultater">Spil resultater</h2>
 
 <table class="table">
         <tr>
@@ -63,3 +63,4 @@ body {
         </tr>
         {% endfor %}
 </table>
+</div>

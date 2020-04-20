@@ -184,17 +184,6 @@ table.table-debug td.debug-var-value {
 
   /******************************
   *  Front Page  - games.html  *
-
-
-  .background-frontpage {
-    background-image: url("../../media/ku-bgkusvg.svg");
-    background-repeat: no-repeat;
-    background-size: 100%, 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-  }
   ******************************/
   .title-container {
     margin-bottom: 5%;
@@ -218,6 +207,7 @@ table.table-debug td.debug-var-value {
     justify-content: center;
     text-align: center;
     font-size: 12px;
+    font-family: "Roboto Slab", serif;
   }
 
   .align-games {
@@ -232,6 +222,7 @@ table.table-debug td.debug-var-value {
     border-color: #901A1E;
     border-style: solid;
     border-width: 3px;
+    font-family: "Roboto Slab", serif;
   }
   .align-games .card-header {
     padding-bottom: 0;
@@ -291,6 +282,7 @@ table.table-debug td.debug-var-value {
     color: white;
     text-decoration: none;
     font-size: 12px;
+    font-family: "Roboto Slab", serif;
   }
   .login-button:hover {
     text-decoration: none;
@@ -304,6 +296,7 @@ table.table-debug td.debug-var-value {
     color: #901A1E;
     padding-left: 20px;
     padding-top: 10px;
+    font-family: "Roboto Slab", serif;
   }
   .back-button:hover {
     color: #41739D;
@@ -327,6 +320,7 @@ table.table-debug td.debug-var-value {
     border-color: #901A1E;
     border-style: solid;
     border-width: 3px;
+    font-family: "Roboto Slab", serif;
   }
   .create-game .card-header {
     padding-bottom: 0;
@@ -381,11 +375,11 @@ table.table-debug td.debug-var-value {
     border-color: transparent;
   }
 
-  /*********************************************
-  *  Admin/Teacher panel - CustomSession.html  *
-  **********************************************/
+  /********************************************************
+  *  Admin/Teacher panel navigation - CustomSession.html  *
+  *********************************************************/
   #admin-panel {
-    margin-top: 5%;
+    margin-top: 3%;
   }
   #admin-panel .nav-tabs {
     border-color: transparent;
@@ -394,16 +388,17 @@ table.table-debug td.debug-var-value {
     width: 180px;
     height: 180px;
     padding: 10px 16px;
-    font-size: 24px;
+    font-size: 30px;
     line-height: 1.33;
     border-radius: 150px;
     background-color: white;
     color: #901A1E;
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    font-family: "Annie Use Your Telescope", serif;
   }
   #admin-panel .btn-circle:hover {
     color: white;
-    background-color: #901A1E;
+    background-color: #5f861e;
   }
 
   #admin-panel .nav li > a {
@@ -417,10 +412,13 @@ table.table-debug td.debug-var-value {
     color: green;
   }
   #admin-panel .nav li.active > a .btn-circle {
-    background-color: #901A1E;
+    background-color: #5f861e;
     color: white;
   }
 
+  /*********************************************
+  *  Start link / intro - SessionStartLinks.html  *
+  **********************************************/
   .gamelink-content {
     width: 100%;
     position: relative;
@@ -433,6 +431,7 @@ table.table-debug td.debug-var-value {
     font-size: 25px;
     padding-top: 3%;
     padding-bottom: 4%;
+    font-family: "Roboto Slab", serif;
   }
   .gamelink-content .start-link {
     margin-top: 20px;
@@ -450,7 +449,7 @@ table.table-debug td.debug-var-value {
     color: #901A1E;
   }
   .gamelink-content .start-link a:hover {
-    color: #7C992B;
+    color: #5f861e;
   }
 
   .frontpage-button-white {
@@ -474,9 +473,74 @@ table.table-debug td.debug-var-value {
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    font-family: "Roboto Slab", serif;
+  }
+  .info h1 {
+    color: white;
+  }
+  .info p {
+    font-size: 25px;
+    color: white;
   }
   .info .player-table {
     width: 70%;
+    background-color: white;
+    border-collapse: collapse;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    color: #901A1E;
+  }
+  .info .player-table th, .info .player-table td {
+    padding: 15px;
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  .info .player-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+  .info .player-table tbody td {
+    position: relative;
+  }
+  .info .player-table tbody td:hover:before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -9999px;
+    bottom: -9999px;
+    background-color: rgba(255, 255, 255, 0.2);
+    z-index: -1;
+  }
+
+  /*********************************************
+  *  Game report page - AdminReport.html  *
+  **********************************************/
+  .report-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: #901A1E;
+  }
+  .report-container .report-info {
+    width: 70%;
+    border-collapse: collapse;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .resultater {
+    display: flex;
+    justify-content: center;
+  }
+
+  .d3-row {
+    display: flex;
+    flex-direction: row;
   }
 }
 @media (min-width: 375px) {
@@ -1003,7 +1067,7 @@ table.table-debug td.debug-var-value {
   }
   .create-game .card {
     margin-bottom: 30px;
-    width: 50%;
+    width: 55%;
     border-color: #901A1E;
     border-style: solid;
     border-width: 3px;
@@ -1018,7 +1082,7 @@ table.table-debug td.debug-var-value {
     color: #901A1E;
     border: none;
     background-color: white;
-    font-size: 22px;
+    font-size: 24px;
     font-weight: bolder;
   }
   .create-game .card-body {

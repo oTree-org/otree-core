@@ -14,7 +14,7 @@ Admin Panel
 
 <div id="admin-panel">
     <ul class="nav justify-content-center">
-        <li role="presentation" class="nav-item active">
+        <li role="presentation" class="nav-item">
              <a class="nav-link {% active_page request 'SessionStartLinks' session.code %}" href="{% url 'SessionStartLinks' session.code %}">
            <button class="btn btn-default btn-circle">
                Start link
@@ -25,7 +25,7 @@ Admin Panel
         </li>
 
         <li role="presentation" class="nav-item">
-            <a class="nav-link active {% active_page request 'SessionMonitor' session.code %}" href="{% url 'SessionMonitor' session.code %}">
+            <a class="nav-link {% active_page request 'SessionMonitor' session.code %}" href="{% url 'SessionMonitor' session.code %}">
                 <button class="btn btn-default btn-circle">
                     Fremgang
                     <br>
@@ -33,18 +33,19 @@ Admin Panel
                 </button>
             </a>
         </li>
+    <!--
         <li role="presentation" class="nav-item">
-            <a class="nav-link {% active_page request 'SessionData' session.code %}" href="#{% url 'SessionData' session.code %}">
+            <a class="nav-link {% active_page request 'SessionData' session.code %}" href="{% url 'SessionData' session.code %}">
                  <button class="btn btn-default btn-circle">
                      Data
                      <br>
-                    <!-- <img src='{% static "glyphicons/list-alt.png" %}'>-->
+                   <img src='{% static "glyphicons/list-alt.png" %}'>
                  </button>
             </a>
         </li>
-
+-->
         <li role="presentation" class="nav-item">
-            <a class="nav-link {% active_page request 'AdminReport' session.code %}" href="#{% url 'AdminReport' session.code %}">
+            <a class="nav-link {% active_page request 'AdminReport' session.code %}" href="{% url 'AdminReport' session.code %}">
                  <button class="btn btn-default btn-circle">
                       Rapport
                      <br>
@@ -55,12 +56,36 @@ Admin Panel
     </ul>
 </div>
 
-<!--  Use jQuery to append cláss active to the active menu item allowing it to change color -->
+<!--  Use jQuery change color depending on active menu item / HREF -->
 <script>
+$(document).ready(function(){
+    	$(document).activeNavigation("#admin-panel")
+	});
 
-    $( '#admin-panel .nav a' ).on( 'click', function () {
-	$( '#admin-panel .nav' ).find( 'li.active' ).removeClass( 'active' );
-	$( this ).parent( 'li' ).addClass( 'active' );
-});
+(function( $ ) {
+    $.fn.activeNavigation = function(selector) {
+        var pathname = window.location.pathname;
+        var extension_position;
+        var href;
+        var hrefs = []
+        $(selector).find("a").each(function(){
+            // Remove href file extension
+            extension_position = $(this).attr("href").lastIndexOf('.');
+            href = (extension_position >= 0) ? $(this).attr("href").substr(0, extension_position) : $(this).attr("href");
+
+            if (pathname.indexOf(href) > -1) {
+                hrefs.push($(this));
+            }
+        })
+        if (hrefs.length) {
+            hrefs.sort(function(a,b){
+                return b.attr("href").length - a.attr("href").length
+            })
+            hrefs[0].closest('li').addClass("active")
+        }
+    };
+})(jQuery);
+
+
     </script>
 {% endblock %}
