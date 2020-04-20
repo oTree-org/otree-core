@@ -3,8 +3,8 @@ from networkx.readwrite import json_graph
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 import time
 import json
-from asgiref.sync import async_to_sync
-from bad_influence.models import Player, Group, Constants
+from bad_influence.models import Player, Group, Constants, Message
+from datetime import datetime
 
 
 class NetworkVoting(AsyncJsonWebsocketConsumer):
@@ -79,25 +79,10 @@ class NetworkVoting(AsyncJsonWebsocketConsumer):
                 }
             })
 
-            group_channels = []
-            #group_ego_graphs =
-
             for p in group.get_players():
-                print(p)
                 ego_graph = json_graph.node_link_data(nx.ego_graph(graph, p.id_in_group))
 
                 channel_cur = "{}-{}".format(self.get_group().get_channel_group_name(), p.get_personal_channel_name())
-
-                """await self.channel_layer.send(
-                    self.channel_layer.groups.get(channel_cur, set()),
-                    {
-                        "type": "send_choice",
-                        "message": {
-                            "ego_graph": ego_graph,
-                            "consensus": consensus
-                        }
-                    }
-                )"""
 
                 await self.channel_layer.group_send(
                     channel_cur,
@@ -118,7 +103,6 @@ class NetworkVoting(AsyncJsonWebsocketConsumer):
             'message': message
         }))
 
-        print(event)
         print("Sent message")
 
 
@@ -152,6 +136,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
+        print(message['chat_message'])
 
         # Send message to room group
         await self.channel_layer.group_send(
@@ -160,6 +145,11 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 'type': 'chat_message',
                 "message": message
             }
+        )
+
+        Message.objects.create(
+             content=message['chat_message'],
+             timestamp=datetime.now()
         )
 
         print('Received message')

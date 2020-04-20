@@ -295,7 +295,7 @@
         socket.onmessage = event => {
             let data = JSON.parse(event.data).message;
             let message = data.chat_message;
-            let chat_id = data.player_id;
+            let chat_id = data.chat_id;
             let player_id = {{ player.id_in_group }};
             const chat = document.getElementById('chat');
 
@@ -333,7 +333,8 @@
                 socket.send(JSON.stringify({
                     'message': {
                         "chat_message": message.value,
-                        "player_id": {{ player.id_in_group }}
+                        "chat_id": {{ player.id_in_group }},
+                        "player_id": {{ player.id }}
                     }
                 }));
             }

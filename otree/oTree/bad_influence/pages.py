@@ -12,6 +12,7 @@ import time
 import numpy as np
 
 
+
 class MyNormalWaitPage(WaitPage):
     template_name = 'bad_influence/MyResultsWaitPage.html'
     title_text = "Vent..."
@@ -42,11 +43,15 @@ class Play(Page):
         return {
             'network': json.dumps(graph),
             'consensus': int(self.group.get_consensus() * 100),
-            'question': make_question(self.group, self.player.hub, self.player.gender, self.player.number_of_friends)
+            'question': make_question(self.group, self.player.hub, self.player.gender, self.player.number_of_friends),
         }
 
     def before_next_page(self):
         self.group.round_end_time = time.time()
+
+    def new_message(self):
+        new_message = Message.objects.create()
+        return new_message
 
 
 class MyResultsWaitPage(WaitPage):
