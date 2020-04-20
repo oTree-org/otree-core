@@ -24,26 +24,31 @@ body {
 }
 </style>
 <div>
-<h2>Spil rapport</h2>
-<h4>Vælg et spørgsmål for at se hvordan det gik:</h4>
+<div class="rapport-header">
+    <h2>Spil rapport</h2>
+    <h4>Vælg et spørgsmål for at se hvordan det gik:</h4>
+</div>
 
 
 
+<div class="dropdown-questions dropdown">
+  <p id="d3historyChoice" >Spørgsmål:  </p>
+</div>
 
-<p id="d3historyChoice"></p>
-    <div id="questionHolder"></div>
+   <!-- <div id="questionHolder"></div> -->
 <div class="d3-row">
     <div id="d3container"></div>
     <div id="d3consensus"></div>
 </div>
 
+<div class="d3-row">
     <p id="d3playback"></p>
-<button type="button" id="play-button">Play</button>
-
+<button type="button" id="play-button" class="btn btn-primary play-button">Afspil</button>
+</div>
 {% include 'bad_influence/d3/d3_graph_results.html' %}
 
 
-<h2 class="resultater">Spil resultater</h2>
+<h2 class="rapport-header">Spil resultater</h2>
 
 <table class="table">
         <tr>
@@ -63,4 +68,5 @@ body {
         </tr>
         {% endfor %}
 </table>
+
 </div>

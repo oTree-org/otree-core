@@ -13,7 +13,9 @@ Admin Panel
 {% block menus %}
 
 <div id="admin-panel">
+<a href="{% url 'games' %}" class="tilbage-button">Forside </a>
     <ul class="nav justify-content-center">
+
         <li role="presentation" class="nav-item">
              <a class="nav-link {% active_page request 'SessionStartLinks' session.code %}" href="{% url 'SessionStartLinks' session.code %}">
            <button class="btn btn-default btn-circle">

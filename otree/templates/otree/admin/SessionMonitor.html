@@ -61,11 +61,13 @@
         {{ block.super }}
 
     <div class="info">
-    <h1>Spiller oversigt</h1>
-    <p>Dette er en oversigt over alle spillerne i spillet. Her kan du følge deres fremgang.</p>
-
+        <div class="info-content">
+        <h1>Spiller oversigt</h1>
+        <p>Dette er en oversigt over alle spillerne i spillet. Her kan du følge deres fremgang.</p>
+        </div>
+    <div class="table-responsive">
     <table id="monitor-table"
-           class="table player-table container">
+           class="table player-table container ">
         <thead>
         <tr>
             {% for header in column_names  %}
@@ -78,6 +80,7 @@
         </tbody>
 
     </table>
+</div>
 
 
 </div>

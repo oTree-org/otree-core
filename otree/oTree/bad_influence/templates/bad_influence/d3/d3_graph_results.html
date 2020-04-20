@@ -349,6 +349,7 @@
         let dropdown = d3.select("#d3historyChoice")
             .insert("select", "svg")
             .attr("style", "font-family: annie_use_your_telescope; width: 10rem")
+            .attr("class", "btn btn-secondary dropdown-toggle")
             .on("change", dropdownChange);
 
         dropdown.selectAll("option")
@@ -468,8 +469,8 @@
 </script>
 <script>
     let margin = {top: 30, right: 30, bottom: 30, left: 65},
-        widthG = 300 - margin.left - margin.right,
-        heightG = 300 - margin.top - margin.bottom;
+        widthG = 400 - margin.left - margin.right,
+        heightG = 400 - margin.top - margin.bottom;
 
     let updateRatio = undefined;
 
