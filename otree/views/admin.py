@@ -311,6 +311,7 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
                 splitscreen_mode_on=len(session_start_urls) <= 3,
                 users=users,
 
+
             )
 
         return context
@@ -518,9 +519,12 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
 
         self.context_json = rows
 
+        page_url_active = {"next_page": "active"}
+
         return dict(
             column_names=column_names,
             advance_users_button_text=advance_users_button_text,
+            page_url_active=page_url_active,
         )
 
     def get(self, request, *args, **kwargs):

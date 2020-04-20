@@ -109,7 +109,11 @@
 
 <div class="create-game">
     <div class="card">
-      <header class="card-header">Opret spil</header>
+        <a href="{% url 'games' %}" class="back-button">Gå tilbage</a>
+        <header class="card-header">
+          Opret spil
+        </header>
+
         <div class="card-body">
             <div>
                 <p>Du har valgt spillet <b>Bad Influence</b></p>
@@ -121,20 +125,15 @@
 <form id="form">
         {% csrf_token %}
                 <div style="display: none;" >{% formfield form.session_config %}</div>
-
                 <div class="form-group{% if form.num_participants.errors %} has-error{% endif %} required">
-
                 <div class="footer-row ">
                 <div class="controls field-num_participants">
-                <div>
                 {{ form.num_participants }}
-
                 <div>
                     <input class="btn btn-primary"
                            value='Opret nyt spil'
                            id="btn-create-session"
                            type="submit">
-                </div>
                 </div>
                 </div>
                 <!-- Error handling for the form -->

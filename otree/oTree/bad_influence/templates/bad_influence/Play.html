@@ -113,7 +113,7 @@
             margin: 2%
         }
 
-        ,
+        
         .text-container {
             display: flex;
             flex-direction: column;
@@ -193,10 +193,7 @@
             <button id="send" class="btn btn-success">Send</button>
         </div>
     </div>
-    <div>
-        <button id="genNew">Generate New Random Color</button>
-        <span id="color"></span>
-    </div>
+
     <style>
         #chat {
             height: 250px;
@@ -220,6 +217,14 @@
             outline: 1px solid slategrey;
             border-radius: 10px;
         }
+
+    .chat-message {
+        display: flex;
+    }
+
+    .chat-message b {
+        padding: 0 10px 0 0;
+    }
     </style>
 
 
@@ -283,14 +288,33 @@
 
         // When a message is sent it is appended to the container with id of chat
         socket.onmessage = event => {
-            /*
-             */
-            console.log(event);
+            let data = JSON.parse(event.data).message;
+            let message = data.chat_message;
+            let chat_id = data.player_id;
+            let player_id = {{ player.id_in_group }};
             const chat = document.getElementById('chat');
-            chat.innerHTML += JSON.parse(event.data).message;
+
             displayFriends();
-            messages.push(JSON.parse(event.data).message);
-            localStorage.setItem('messages', JSON.stringify(messages));
+
+            let divElement = document.createElement('div');
+            let paragraphElement = document.createElement('p');
+            let boldElement = document.createElement('b');
+            divElement.appendChild(boldElement);
+            divElement.appendChild(paragraphElement);
+
+            divElement.setAttribute('class', 'chat-message');
+            divElement.setAttribute('id', `player_${chat_id}`);
+
+            if(chat_id === player_id) {
+                boldElement.textContent = "Dig:"
+            } else {
+                boldElement.textContent = `Spiller: ${chat_id}`;
+            }
+            paragraphElement.textContent = message;
+            chat.appendChild(divElement);
+
+
+            // createMessage();
         };
 
         // Adds an event listener on the send button that submits the message
@@ -329,6 +353,7 @@
                 }
             }
         };
+
     </script>
 
 {% endblock %}
