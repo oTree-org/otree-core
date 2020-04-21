@@ -11,7 +11,7 @@ import random
 from itertools import chain
 from .questions import make_question, question_order
 from django.db import models as django_models
-
+from otree.models import Participant
 
 class Constants(BaseConstants):
     name_in_url = 'bad_influence'
@@ -323,6 +323,7 @@ class Message(django_models.Model):
     content = django_models.TextField()
     timestamp = django_models.DateTimeField(auto_now=True)
     player = django_models.ForeignKey('Player', on_delete=models.CASCADE)
+
 
     def last_ten_messages(self):
         return Message.objects.order_by('-timestamp').all()[:10]

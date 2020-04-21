@@ -56,10 +56,8 @@
     {% csrf_token %}
 
 {% else %}
-
         {% include "otree/admin/CustomSession.html" %}
         {{ block.super }}
-
     <div class="info">
         <div class="info-content">
         <h1>Spiller oversigt</h1>
@@ -78,17 +76,13 @@
         <tbody>
 
         </tbody>
-
     </table>
 </div>
-
 
 </div>
 
    <!-- <p><span id="num_participants_visited"></span>/{{ session.num_participants }} spillere er startet.</p>-->
-
     <br/>
-
     <!--
     {% if not session.use_browser_bots %}
     <button id="advance_users" class="btn btn-primary" type="button"
@@ -98,7 +92,6 @@
     </button>
     {% endif %}
     -->
-
     <br>
     <div id="refresh_server_error" class="alert alert-danger"
          style="display: none;">
