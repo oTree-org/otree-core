@@ -128,7 +128,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         # self.player_pk = self.scope['url_route']['kwargs']['player_pk']
         self.group_pk = self.scope['url_route']['kwargs']['group_pk']
         self.room_name = 'chat_%s' % self.group_pk
-        self.session = Player.objects.filter(self.session)
+        self.session = Player.objects.filter(id=self.group_pk.player_id)
         print("Player connected onto Chat Socket in group {}".format(self.group_pk))
         print(self.session)
 
