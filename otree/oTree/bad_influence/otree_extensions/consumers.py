@@ -7,7 +7,6 @@ from asgiref.sync import async_to_sync
 from bad_influence.models import Player, Group, Constants
 
 
-
 class NetworkVoting(AsyncJsonWebsocketConsumer):
 
     def clean_kwargs(self):
@@ -128,10 +127,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         # self.player_pk = self.scope['url_route']['kwargs']['player_pk']
         self.group_pk = self.scope['url_route']['kwargs']['group_pk']
         self.room_name = 'chat_%s' % self.group_pk
-        self.session = Player.objects.filter(id=self.group_pk.player_id)
         print("Player connected onto Chat Socket in group {}".format(self.group_pk))
-        print(self.session)
-
 
         # Join room group
         await self.channel_layer.group_add(
