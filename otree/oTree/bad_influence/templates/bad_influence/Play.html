@@ -179,7 +179,6 @@
         </div>
             </div>
         {% endcomment %}
-
     <div id="chat-container">
         <h2>Chat med dine venner</h2>
         <hr>
@@ -193,7 +192,21 @@
             <button id="send" class="btn btn-success">Send</button>
         </div>
     </div>
+    {% comment %}
+    <div class="chat-container">
+        <div class="messages">
+            <ul id="chat-log">
 
+            </ul>
+        </div>
+        <div class="message-input">
+            <div class="wrap">
+                <input type="text" id="chat-message-input" placeholder="Skriv en besked...">
+                <button id="chat-message-submit">Send</button>
+            </div>
+        </div>
+    </div>
+    {% endcomment %}
     <style>
         #chat {
             height: 250px;
@@ -218,20 +231,18 @@
             border-radius: 10px;
         }
 
-    .chat-message {
-        display: flex;
-    }
+        .chat-message {
+            display: flex;
+        }
 
-    .chat-message b {
-        padding: 0 10px 0 0;
-    }
+        .chat-message b {
+            padding: 0 10px 0 0;
+        }
     </style>
-
 
     <script>
         // Array container for the sent messages to be used in localstorage
         let messages = [];
-        console.log("the type is a " + typeof localStorage.getItem('messages'));
 
         // Defines the scheme of the WebSocket to be either wss if the protocol is https
         // else it should be ws
@@ -267,16 +278,14 @@
         let network = [];
 
         // Opens the WebSocket connection and logs a message in the console when it opens
-        socket.onopen = () => {
+        socket.onopen = event => {
             console.log('WebSocket opened');
-            console.log("{{ player.id }}");
-            console.log("{{ player.id_in_group }}");
+            fetchMessages();
             /*
             const chat = document.getElementById('chat');
             let chat_messages = JSON.parse(localStorage.getItem('messages'));
             chat.innerHTML = chat_messages;
             */
-
 
 
         };
@@ -293,55 +302,98 @@
 
         // When a message is sent it is appended to the container with id of chat
         socket.onmessage = event => {
-            let data = JSON.parse(event.data).message;
-            let message = data.chat_message;
-            let chat_id = data.chat_id;
-            let player_id = {{ player.id_in_group }};
-            const chat = document.getElementById('chat');
+            let data = JSON.parse(event.data);
+            for (let i of data.messages) {
+                let data_player = `player_${i.chat_id}`;
 
-            let divElement = document.createElement('div');
-            let paragraphElement = document.createElement('p');
-            let boldElement = document.createElement('b');
-            divElement.appendChild(boldElement);
-            divElement.appendChild(paragraphElement);
-
-            divElement.setAttribute('class', 'chat-message');
-            divElement.setAttribute('id', `player_${chat_id}`);
-
-            if(chat_id === player_id) {
-                boldElement.textContent = `Spiller ${chat_id} (Dig):`
-            } else {
-                boldElement.textContent = `Spiller ${chat_id}:`;
             }
-            paragraphElement.textContent = message;
-            chat.appendChild(divElement);
-            displayFriends();
+            if (data['command'] === 'messages') {
+                for (let i = 0; i < data['messages'].length; i++) {
+                    let data_player = "player_" + data['messages'][i]['chat_id'];
+                    if (players.includes(data_player)) {
+                        createMessage(data['messages'][i]);
+                    }
+                }
+            } else if (data['command'] === 'new_message') {
+                createMessage(data['message']);
+            }
 
+            {#let data = JSON.parse(event.data).message;#}
+            {#let messages_from_db = JSON.parse(data.db);#}
+            {#let player_id = {{ player.id_in_group }};#}
+            {#const chat = document.getElementById('chat');#}
+            {#let output = '';#}
+            {##}
+            {#let divElement = document.createElement('div');#}
+            {#let paragraphElement = document.createElement('p');#}
+            {#let boldElement = document.createElement('b');#}
+            {#divElement.appendChild(boldElement);#}
+            {#divElement.appendChild(paragraphElement);#}
+            {#divElement.setAttribute('class', 'chat-message');#}
+            {##}
+            {#messages_from_db.forEach(message => {#}
+            {#    let message_content = message.fields.content;#}
+            {#    let message_player_id = message.fields.player;#}
+            {#    let message_chat_id = message.fields.chat_id;#}
+            {##}
+            {#    let player_name = `Spiller ${message_chat_id}`;#}
+            {##}
+            {#    if(message_chat_id === player_id) {#}
+            {#        player_name = `Spiller ${message_chat_id} (Dig):`#}
+            {#    }#}
+            {##}
+            {#    output += `<div>` +#}
+            {#        `<b>${player_name}</b>` +#}
+            {#        `<p>${message_content}</p>` +#}
+            {#        `</div>`;#}
+            {##}
+            {#    chat.innerHTML = output;#}
+            {#);#}
+            //displayFriends();
         };
 
         // Adds an event listener on the send button that submits the message
         // and sends it to the WebSocket inside a p tag with the Player id in the group
         // after the message is sent, the value of the input is reset.
-        button.addEventListener("click", event => {
-            event.preventDefault();
+        {#button.addEventListener("click", event => {#}
+        {#    event.preventDefault();#}
+        {##}
+        {#    let message = document.getElementById('message');#}
+        {##}
+        {##}
+        {#    if (message.value !== '') {#}
+        {#        socket.send(JSON.stringify({#}
+        {#            'message': {#}
+        {#                "chat_message": message.value,#}
+        {#                "chat_id": {{ player.id_in_group }},#}
+        {#                "player_id": {{ player.id }},#}
+        {#            }#}
+        {#        }));#}
+        {#    }#}
+        {##}
+        {#    message.value = '';#}
+        {##}
+        {#);#}
 
-            let message = document.getElementById('message');
-
-
-
-            if (message.value !== '') {
-                socket.send(JSON.stringify({
-                    'message': {
-                        "chat_message": message.value,
-                        "chat_id": {{ player.id_in_group }},
-                        "player_id": {{ player.id }}
-                    }
-                }));
+        document.querySelector("#message").onkeyup = function (e) {
+            e.preventDefault();
+            if (e.keyCode === 13) {
+                document.querySelector("#send").click();
             }
+        };
 
-            message.value = '';
-
-        });
+        document.querySelector("#send").onclick = function (e) {
+            e.preventDefault();
+            let messageInputDom = document.getElementById("message");
+            let message = messageInputDom.value;
+            socket.send(JSON.stringify({
+                'command': 'new_message',
+                'message': message,
+                'player_id': {{ player.id }},
+                'chat_id': {{ player.id_in_group }}
+            }));
+            messageInputDom.value = '';
+        };
 
 
         // Function that hides the messages outside of the players network
@@ -362,8 +414,115 @@
             }
         };
 
-    </script>
+        function createMessage(data) {
+            let divElement = document.createElement('div');
+            let pElement = document.createElement('p');
+            let bElement = document.createElement('b');
 
+            pElement.textContent = data.content;
+            if (data.chat_id === {{ player.id_in_group }}) {
+                bElement.textContent = "Spiller " + data.chat_id + "(Dig):";
+            } else {
+                bElement.textContent = "Spiller " + data.chat_id + ":";
+            }
+
+            divElement.appendChild(bElement);
+            divElement.appendChild(pElement);
+            divElement.setAttribute('style', 'display: flex;')
+            divElement.setAttribute('class', 'chat-message')
+            divElement.setAttribute('id', `player_${data.chat_id}`)
+
+            document.querySelector("#chat").appendChild(divElement);
+
+            let chat_class = divElement;
+
+            for (let i = 0; i < chat_class.length; i++) {
+                network.push(chat_class[i].getAttribute('id'));
+            }
+
+            for (let player in network) {
+                if (players.includes(network[player])) {
+                    document.getElementById(network[player]).style.display = 'flex';
+                } else {
+                    document.getElementById(network[player]).style.display = 'none';
+                }
+            }
+        }
+
+        function fetchMessages() {
+            socket.send(JSON.stringify({'command': 'fetch_messages'}))
+        }
+
+        displayFriends();
+
+    </script>
+    {% comment %}
+    <script>
+        let chatSocket = new ReconnectingWebSocket(
+            'ws://' + window.location.host +
+            '/test_chat/' + {{ group.pk }} + '/'
+        );
+
+        chatSocket.onopen = function (e) {
+            fetchMessages();
+        }
+
+        chatSocket.onmessage = function (e) {
+            let data = JSON.parse(e.data);
+            if(data['command'] === 'messages') {
+                for(let i = 0; i<data['messages'].length; i++) {
+                    createMessage(data['message']);
+                }
+            } else if(data['command'] === 'new_message') {
+                createMessage(data['message'])
+            }
+        };
+
+        chatSocket.onclose = function (e) {
+            console.error("Chat socket closed unexpectedly.");
+        };
+
+        document.querySelector("#chat-message-input").onkeyup = function (e) {
+            e.preventDefault();
+            if(e.keyCode === 13) {
+                document.querySelector("#chat-message-submit").click();
+            }
+        };
+
+        document.querySelector("#chat-message-submit").onclick = function (e) {
+            e.preventDefault();
+            let messageInputDom = document.getElementById('chat-message-input');
+            let message = messageInputDom.value;
+            chatSocket.send(JSON.stringify({
+                'command': 'new_message',
+                'message': message,
+                'from': {{ player.id }}
+            }));
+
+            messageInputDom.value = '';
+        };
+
+        function fetchMessages() {
+            chatSocket.send(JSON.stringify({'command': 'fetch_messages'}))
+        }
+
+        function createMessage(data) {
+            let author = data['from'];
+            let msgListTag = document.createElement('li');
+            let pTag = document.createElement('p');
+            pTag.textContent = data.content;
+
+            if(author === {{ player.id }}) {
+                msgListTag.className = 'sent';
+            } else {
+                msgListTag.className = 'replies';
+            }
+
+            msgListTag.appendChild(pTag);
+            document.querySelector("#chat-log").appendChild(msgListTag);
+        }
+    </script>
+    {% endcomment %}
 {% endblock %}
 
 

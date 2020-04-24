@@ -11,7 +11,6 @@ import random
 from itertools import chain
 from .questions import make_question, question_order
 from django.db import models as django_models
-from otree.db.models import ForeignKey
 
 
 class Constants(BaseConstants):
@@ -320,11 +319,15 @@ class Player(BasePlayer):
         self.chat_color = "%02X%02X%02X".format(random_hex(), random_hex(), random_hex())
 
 
-class Message(django_models.Model):
-    content = django_models.TextField()
+class Message(models.Model):
+    content = models.TextField()
     timestamp = django_models.DateTimeField(auto_now=True)
-    player = ForeignKey(Player, on_delete=models.CASCADE)
+    player = models.ForeignKey('Player', on_delete=models.CASCADE, null=True)
+    chat_id = models.IntegerField()
 
+    def __str__(self):
+        return self.author.username
 
-    def last_ten_messages(self):
+    @staticmethod
+    def last_10_messages():
         return Message.objects.order_by('-timestamp').all()[:10]

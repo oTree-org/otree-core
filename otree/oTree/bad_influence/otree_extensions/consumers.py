@@ -1,10 +1,12 @@
 import networkx as nx
 from networkx.readwrite import json_graph
-from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from channels.generic.websocket import AsyncJsonWebsocketConsumer, WebsocketConsumer
 import time
 import json
-from bad_influence.models import Player, Group, Constants, Message
-from datetime import datetime
+from bad_influence.models import Player, Group, Constants, Message, Subsession
+from otree.models import BasePlayer, Participant, BaseSubsession
+import datetime
+from asgiref.sync import async_to_sync
 
 
 class NetworkVoting(AsyncJsonWebsocketConsumer):
@@ -83,7 +85,7 @@ class NetworkVoting(AsyncJsonWebsocketConsumer):
                 ego_graph = json_graph.node_link_data(nx.ego_graph(graph, p.id_in_group))
 
                 channel_cur = "{}-{}".format(self.get_group().get_channel_group_name(), p.get_personal_channel_name())
-
+                print(self.get_player())
                 await self.channel_layer.group_send(
                     channel_cur,
                     {
@@ -106,24 +108,64 @@ class NetworkVoting(AsyncJsonWebsocketConsumer):
         print("Sent message")
 
 
-class ChatConsumer(AsyncJsonWebsocketConsumer):
-    async def connect(self):
-        # self.player_pk = self.scope['url_route']['kwargs']['player_pk']
+class ChatConsumer(WebsocketConsumer):
+    def fetch_messages(self, data):
+        messages = Message.last_10_messages()
+        content = {
+            'command': 'messages',
+            'messages': self.messages_to_json(messages)
+        }
+        self.send_message(content)
+
+    def new_message(self, data):
+        message = Message.objects.create(
+             content=data['message'],
+             timestamp=datetime.datetime.now(),
+             player_id=data['player_id'],
+             chat_id=data['chat_id']
+        )
+        content = {
+            'message': self.message_to_json(message),
+            'command': 'new_message'
+        }
+        return self.send_chat_message(content)
+
+    def messages_to_json(self, messages):
+        result = []
+        for message in messages:
+            result.append(self.message_to_json(message))
+        return result
+
+    def message_to_json(self, message):
+        return {
+            'player_id': message.player_id,
+            'chat_id': message.chat_id,
+            'content': message.content,
+            'timestamp': str(message.timestamp)
+        }
+
+    commands = {
+        'fetch_messages': fetch_messages,
+        'new_message': new_message
+    }
+
+    def connect(self):
         self.group_pk = self.scope['url_route']['kwargs']['group_pk']
+        # self.player_pk = self.group_pk['player_pk']
         self.room_name = 'chat_%s' % self.group_pk
         print("Player connected onto Chat Socket in group {}".format(self.group_pk))
 
         # Join room group
-        await self.channel_layer.group_add(
+        async_to_sync(self.channel_layer.group_add)(
             self.room_name,
             self.channel_name
         )
 
-        await self.accept()
+        self.accept()
 
-    async def disconnect(self, close_code):
+    def disconnect(self, close_code):
         # Leave room group
-        await self.channel_layer.group_discard(
+        async_to_sync(self.channel_layer.group_discard)(
             self.room_name,
             self.channel_name
         )
@@ -132,35 +174,22 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     def get_group(self):
         return Group.objects.get(pk=self.group_pk)
 
-    # Receive message from WebSocket
-    async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json['message']
-        print(message['chat_message'])
+    def receive(self, text_data):
+        data = json.loads(text_data)
+        self.commands[data['command']](self, data)
 
-        # Send message to room group
-        await self.channel_layer.group_send(
+    def send_chat_message(self, message):
+        async_to_sync(self.channel_layer.group_send)(
             self.room_name,
             {
                 'type': 'chat_message',
-                "message": message
+                'message': message
             }
         )
 
-        Message.objects.create(
-             content=message['chat_message'],
-             timestamp=datetime.now()
-        )
+    def send_message(self, message):
+        self.send(text_data=json.dumps(message))
 
-        print('Received message')
-
-    # Receive message from room group
-    async def chat_message(self, event):
+    def chat_message(self, event):
         message = event['message']
-
-        # Send message to WebSocket
-        await self.send(text_data=json.dumps({
-            'message': message
-        }))
-
-        print("Sent message")
+        self.send(text_data=json.dumps(message))

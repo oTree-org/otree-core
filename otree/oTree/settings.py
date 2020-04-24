@@ -49,6 +49,9 @@ SESSION_CONFIGS = [
 # for example: de, fr, ja, ko, zh-hansSubsession
 LANGUAGE_CODE = 'da'
 
+TIME_ZONE = 'Europe/Copenhagen'
+USE_TZ = False
+
 # e.g. EUR, GBP, CNY, JPY
 REAL_WORLD_CURRENCY_CODE = 'USD'
 USE_POINTS = True
