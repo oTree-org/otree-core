@@ -1,6 +1,10 @@
 {% extends "otree/admin/Session.html" %}
 
 {% block content %}
+
 {{ block.super }}
+     <div class="game-admin">
+     {% include "otree/admin/Session.html" %}
 {% include 'otree/includes/SessionInfo.html' %}
+    </div>
 {% endblock %}

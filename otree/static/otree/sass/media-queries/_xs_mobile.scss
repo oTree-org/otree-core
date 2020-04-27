@@ -143,6 +143,35 @@
   }
 }
 
+.tilbage-button {
+  justify-content: left;
+  display: flex;
+  font-family: "Roboto Slab", serif;
+  font-weight: bold;
+  color: white;
+  font-size: 12px;
+
+
+  &:hover {
+      text-decoration: none;
+      color: $ku-dark-green;
+  }
+
+  img {
+    color: white;
+  }
+}
+
+.home-button {
+  .fa-home {
+  padding-right: 8px;
+  padding-top: 8px;
+  font-size: 20px;
+}
+ span {
+   display: none;
+ }
+}
 
 
 /**********************************************************
@@ -294,24 +323,7 @@
     }
 }
 
-.tilbage-button {
-  justify-content: center;
-  display: flex;
-  width: 10%;
-  font-family: "Roboto Slab", serif;
-  font-weight: bold;
-  color: white;
-  font-size: 10px;
 
-  &:hover {
-      text-decoration: none;
-      color: $ku-dark-green;
-  }
-
-  img {
-    color: white;
-  }
-}
 /*********************************************
 *  Start link / intro - SessionStartLinks.html  *
 **********************************************/
@@ -440,83 +452,119 @@ tbody {
   width: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
-  flex-direction: column;
   color: $ku-red;
-
+  font-family: "Roboto Slab", serif;
 
    .report-info {
     width: 90%;
-	border-collapse: collapse;
-	overflow: hidden;
-	box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    border-collapse: collapse;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
     background-color: white;
     border-radius: 10px;
-    display: flex;
-    justify-content: center;
-
-
-}
-
-}
-  .resultater {
-    display: flex;
-    justify-content: center;
   }
 
+  .rapport-header {
+  padding-top: 20px;
+  justify-content: center;
+  display: flex;
+  padding-bottom: 20px;
+  flex-direction: column;
 
-  .d3-row {
+    h3 {
+      font-size: 20px;
+    }
+    p {
+       font-size: 18px;
+    }
+  }
+
+  .dropdown-questions {
     display: flex;
-    flex-direction: row;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+    .resultater {
+      display: flex;
+      justify-content: center;
+    }
+
+    .d3-row {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
     justify-content: space-evenly;
-    width: 100%;
     font-size: 14px;
     font-family: "Roboto Slab", serif;
 
+        #d3consensus {
+          width: 90%;
+        }
+    }
 
 
-  }
-}
- .dropdown-toggle {
+  .dropdown-toggle {
       background-color: $ku-red;
       color: white;
 
       &:hover {
        background-color: $ku-dark-green;
-
       }
+  }
+
+  .play-button {
+    background-color: $ku-red;
+    color: white;
+    height: 60px;
+    width: 100px;
+    display: flex;
+    justify-content: center;
+
+    &:hover {
+      background-color: $ku-dark-green;
     }
-
-
-     .rapport-header {
-  padding-top: 20px;
-  justify-content: center;
-  display: flex;
-  width: 90%;
-  text-align: center;
-  font-family: "Roboto Slab", serif;
-  padding-bottom: 20px;
-  flex-direction: column;
-       text-align: center;
-
-  p {
-     font-size: 16px;
   }
 }
-.dropdown-questions {
-  display: flex;
-  justify-content: center;
-  font-size: 16px;
-  font-family: "Roboto Slab", serif;
+  .d3-container {
+    background-color: orange;
+    width: 20%;
+  }
+
+
+/*****************************************************
+*  Authenticated demo page - DemoIndex.html  *
+******************************************************/
+.demo-container {
+  margin-top: 10%;
+  padding: 10px 50px 10px 50px;
 }
 
-.play-button {
-  background-color: $ku-red;
-  color: white;
-  height: 60px;
-  width: 100px;
 
-  &:hover {
-    background-color: $ku-dark-green;
+/*****************************************************
+*  Authenticated create session - Sessions.html  *
+******************************************************/
+  .create-session-container {
+     margin-top: 10%;
+     padding: 10px 50px 10px 50px;
+  }
+
+.game-admin {
+  margin-top: 5%;
+  padding: 10px 50px 10px 50px;
+  background-color: white !important;
+
+}
+
+/****************************
+*  Login view - login.html  *
+****************************/
+  .game-login {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    margin-top: 5%;
+    align-items: center;
   }
 }
+

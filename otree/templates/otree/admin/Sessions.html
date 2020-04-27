@@ -68,7 +68,7 @@ $(function() {
 
 {% block content %}
 {{ block.super }}
-
+<div class="create-session-container">
     <form action="{% url 'CreateSession' %}">
         <div class="btn-group" style="float: right;">
             <button class="btn btn-primary">
@@ -188,4 +188,5 @@ $(function() {
         </div>
     {% endif %}
     {% include "otree/includes/messages.html" %}
+    </div>
 {% endblock %}

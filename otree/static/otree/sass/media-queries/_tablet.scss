@@ -134,9 +134,21 @@
 .login-button {
   color: white;
   text-decoration: none;
-  font-size: 12px;
+  font-size: 18px;
 
 }
+
+.home-button {
+  .fa-home {
+  padding-right: 8px;
+  padding-top: 8px;
+  font-size: 30px;
+}
+ span {
+   display: inline;
+ }
+}
+
 
   /**********************************************************
 *  Create Game - e.g. CreateSessionFormBadInfluence.html  *

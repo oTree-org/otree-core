@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block content %}
-
+  <div class="game-admin">
 
     {% if pypi_results.installed == pypi_results.newest %}
       <div class="alert alert-success">
@@ -66,6 +66,6 @@
       Your database appears to be synced.
     </div>
   {% endif %}
-
+  </div>
 {% endblock %}
 

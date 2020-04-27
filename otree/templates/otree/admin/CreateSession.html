@@ -1,13 +1,20 @@
 {% extends "otree/BaseAdmin.html" %}
 
 {% block title %}
+{% endblock %}
+{% block content %}
 {% if user.is_authenticated and user.is_staff or user.is_superuser %}
-   Konfigurer dit spil
+    <div class="create-session-container">
+          {% include "otree/includes/CreateSessionForm.html" %}
+    </div>
+
+
+
 {% else %}
 {% endif %}
-{% endblock %}
 
-{% block content %}
+
+
 
 
 

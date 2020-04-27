@@ -62,7 +62,9 @@
         svg = d3.select("#d3container")
             .append("svg")
             .attr("width", width)
-            .attr("height", height);
+            .attr("height", height)
+            .addClass("new-class");
+
 
         let force = cola.d3adaptor()
             .linkDistance(80)

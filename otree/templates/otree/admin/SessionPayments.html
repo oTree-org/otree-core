@@ -1,5 +1,7 @@
 {% extends "otree/admin/Session.html" %}
 {% block content %}
+     <div class="game-admin">
+{% include "otree/admin/Session.html" %}
   {{ block.super }}
   <div class="container" style='max-width:970px'>
     <p>
@@ -72,4 +74,5 @@
       <br/>
     </div>
   </div>
+     </div>
 {% endblock %}

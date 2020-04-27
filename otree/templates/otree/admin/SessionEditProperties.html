@@ -3,11 +3,13 @@
 
 {% block content %}
     {{ block.super }}
+  <div class="game-admin">
+     {% include "otree/admin/Session.html" %}
     {% include "otree/includes/messages.html" %}
     <form action="" method="post" role="form" class="form" id="form">
         {% csrf_token %}
         {% include "otree/forms/layouts/bootstrap.html" %}
         {% next_button %}
     </form>
-
+  </div>
 {% endblock %}

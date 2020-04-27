@@ -132,8 +132,19 @@
 .login-button {
   color: white;
   text-decoration: none;
-  font-size: 12px;
+  font-size: 16px;
 
+}
+
+.home-button {
+  .fa-home {
+  padding-right: 8px;
+  padding-top: 8px;
+  font-size: 25px;
+}
+ span {
+   display: none;
+ }
 }
 
   /**********************************************************

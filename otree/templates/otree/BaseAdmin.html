@@ -101,19 +101,20 @@ $(function () {
             </div>
         </nav>
 {% else %}
+
   <nav class="navbar navbar-expand-lg fixed-top position-absolute" id="top_menu1">
   <div class="container-fluid">
-  <!--  <a class="navbar-brand"  href="{% url 'games' %}">
-        <img class="navbar-brand" src="../../static/otree/media/mellem-logokusvg.svg" alt="" height="100px" width="100px">
-
-  </a>-->
-
-    <ul class="nav navbar-nav ml-auto login-nav">
+   <ul class="nav navbar-nav login-nav navbar-left">
+      <li>
+        <a class="navbar-link login-button home-button" href="{% url 'games' %}" class="tilbage-button"><i class="fas fa-home"></i><span>Forside</span></a>
+      </li>
+    </ul>
+    <ul class="nav navbar-nav ml-auto login-nav navbar-right">
       <li>
             {% if request.user.is_authenticated|default:False %}
-                <a class="navbar-link login-button" href="{% url 'logout' %}">{% trans 'Log out' %}</a>
+                <a class="navbar-link login-button navbar-right" href="{% url 'logout' %}">{% trans 'Log out' %}</a>
             {% else %}
-                <a class="navbar-link login-button" href="{% url 'login' %}">{% trans 'Log in' %}</a>
+                <a class="navbar-link login-button navbar-right" href="{% url 'login' %}">{% trans 'Log in' %}</a>
             {% endif %}
       </li>
     </ul>

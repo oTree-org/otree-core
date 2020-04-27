@@ -36,6 +36,8 @@ function ajax_json_results() {
 
 
 {% if user.is_authenticated and user.is_staff or user.is_superuser %}
+     <div class="game-admin">
+
 {% include "otree/admin/Session.html" %}
 {{ block.super }}
 <table id="results-table" class="table table-bordered table-hover table-condensed">
@@ -95,4 +97,5 @@ function ajax_json_results() {
 </div>
 <small>You can download data in Excel or CSV format <a href="{% url 'ExportIndex' %}">here</a>.</small>
 {% endif %}
+</div>
 {% endblock %}

@@ -187,6 +187,10 @@ class CreateSessionFormDayTrader(forms.Form):
 
 
 
+
+"""
+
+
 class CreateSession(CreateView):
     template_name = 'otree/admin/CreateSession.html'
     url_pattern = r"^opret_spil/$"
@@ -201,7 +205,6 @@ class CreateSession(CreateView):
             **kwargs,
         )
         return x
-"""
 
 
 class CreateSessionBadInfluence(FormMixin, vanilla.TemplateView):
