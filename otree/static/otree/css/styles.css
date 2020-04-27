@@ -510,6 +510,20 @@ table.table-debug td.debug-var-value {
   .info .info-content p {
     font-size: 16px;
   }
+  .info .info-content .fremryk-spiller {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+  }
+  .info .info-content .fremryk-spiller .fremryk-spiller-knap {
+    background-color: white;
+    color: #901A1E;
+    padding: 10px 10px 10px 10px;
+    margin: 0 0 10px 10px;
+  }
+  .info .info-content .fremryk-spiller .fremryk-spiller-knap:hover {
+    color: #5f861e;
+  }
   .info .player-table {
     width: 70%;
     background-color: white;

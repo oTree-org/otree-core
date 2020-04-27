@@ -404,6 +404,23 @@
      font-size: 16px;
 
     }
+    .fremryk-spiller {
+      display: flex;
+      justify-content: center;
+      flex-direction: row;
+
+      .fremryk-spiller-knap {
+        background-color: white;
+        color: $ku-red;
+        padding: 10px 10px 10px 10px;
+        margin: 0 0 10px 10px;
+
+         &:hover {
+        color: $ku-dark-green;
+      }
+
+      }
+    }
   }
 
   .player-table {
@@ -444,6 +461,7 @@ tbody {
   }
 }
 }
+
 
 /*****************************************************
 *  Game report page - BadInfluence/AdminReport.html  *
