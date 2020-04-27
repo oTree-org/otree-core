@@ -122,13 +122,22 @@ class ChatConsumer(WebsocketConsumer):
              content=data['message'],
              timestamp=datetime.datetime.now(),
              player_id=data['player_id'],
-             chat_id=data['chat_id']
+             chat_id=data['chat_id'],
+             group_id=data['group_id']
         )
         content = {
             'message': self.message_to_json(message),
             'command': 'new_message'
         }
         return self.send_chat_message(content)
+
+    def delete_messages(self, data):
+        message = Message.delete_messages()
+        content = {
+            'message': message,
+            'command': 'delete_messages'
+        }
+        self.send_message(content)
 
     def messages_to_json(self, messages):
         result = []
@@ -141,12 +150,14 @@ class ChatConsumer(WebsocketConsumer):
             'player_id': message.player_id,
             'chat_id': message.chat_id,
             'content': message.content,
-            'timestamp': str(message.timestamp)
+            'timestamp': str(message.timestamp),
+            'group_id': message.group_id
         }
 
     commands = {
         'fetch_messages': fetch_messages,
-        'new_message': new_message
+        'new_message': new_message,
+        'delete_messages': delete_messages
     }
 
     def connect(self):

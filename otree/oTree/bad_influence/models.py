@@ -324,10 +324,16 @@ class Message(models.Model):
     timestamp = django_models.DateTimeField(auto_now=True)
     player = models.ForeignKey('Player', on_delete=models.CASCADE, null=True)
     chat_id = models.IntegerField()
+    group = models.ForeignKey('Group', on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return self.author.username
 
     @staticmethod
     def last_10_messages():
-        return Message.objects.order_by('-timestamp').all()[:10]
+        last_ten = Message.objects.order_by('-timestamp')[:10]
+        return reversed(last_ten)
+
+    @staticmethod
+    def delete_messages():
+        Message.objects.all().delete()

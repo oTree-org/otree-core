@@ -277,17 +277,12 @@
         // Variable used for displaying the right messages
         let network = [];
 
+        let groups = [];
+
         // Opens the WebSocket connection and logs a message in the console when it opens
         socket.onopen = event => {
             console.log('WebSocket opened');
             fetchMessages();
-            /*
-            const chat = document.getElementById('chat');
-            let chat_messages = JSON.parse(localStorage.getItem('messages'));
-            chat.innerHTML = chat_messages;
-            */
-
-
         };
 
         // Closes the WebSocket connection and logs a message in the console when it closes
@@ -303,10 +298,6 @@
         // When a message is sent it is appended to the container with id of chat
         socket.onmessage = event => {
             let data = JSON.parse(event.data);
-            for (let i of data.messages) {
-                let data_player = `player_${i.chat_id}`;
-
-            }
             if (data['command'] === 'messages') {
                 for (let i = 0; i < data['messages'].length; i++) {
                     let data_player = "player_" + data['messages'][i]['chat_id'];
@@ -318,63 +309,15 @@
                 createMessage(data['message']);
             }
 
-            {#let data = JSON.parse(event.data).message;#}
-            {#let messages_from_db = JSON.parse(data.db);#}
-            {#let player_id = {{ player.id_in_group }};#}
-            {#const chat = document.getElementById('chat');#}
-            {#let output = '';#}
+            console.log(data);
+            {#if(data.group_id === {{ player.group_id }}) {#}
+            {#    deleteMessages();#}
             {##}
-            {#let divElement = document.createElement('div');#}
-            {#let paragraphElement = document.createElement('p');#}
-            {#let boldElement = document.createElement('b');#}
-            {#divElement.appendChild(boldElement);#}
-            {#divElement.appendChild(paragraphElement);#}
-            {#divElement.setAttribute('class', 'chat-message');#}
-            {##}
-            {#messages_from_db.forEach(message => {#}
-            {#    let message_content = message.fields.content;#}
-            {#    let message_player_id = message.fields.player;#}
-            {#    let message_chat_id = message.fields.chat_id;#}
-            {##}
-            {#    let player_name = `Spiller ${message_chat_id}`;#}
-            {##}
-            {#    if(message_chat_id === player_id) {#}
-            {#        player_name = `Spiller ${message_chat_id} (Dig):`#}
-            {#    }#}
-            {##}
-            {#    output += `<div>` +#}
-            {#        `<b>${player_name}</b>` +#}
-            {#        `<p>${message_content}</p>` +#}
-            {#        `</div>`;#}
-            {##}
-            {#    chat.innerHTML = output;#}
-            {#);#}
-            //displayFriends();
         };
 
         // Adds an event listener on the send button that submits the message
         // and sends it to the WebSocket inside a p tag with the Player id in the group
         // after the message is sent, the value of the input is reset.
-        {#button.addEventListener("click", event => {#}
-        {#    event.preventDefault();#}
-        {##}
-        {#    let message = document.getElementById('message');#}
-        {##}
-        {##}
-        {#    if (message.value !== '') {#}
-        {#        socket.send(JSON.stringify({#}
-        {#            'message': {#}
-        {#                "chat_message": message.value,#}
-        {#                "chat_id": {{ player.id_in_group }},#}
-        {#                "player_id": {{ player.id }},#}
-        {#            }#}
-        {#        }));#}
-        {#    }#}
-        {##}
-        {#    message.value = '';#}
-        {##}
-        {#);#}
-
         document.querySelector("#message").onkeyup = function (e) {
             e.preventDefault();
             if (e.keyCode === 13) {
@@ -386,15 +329,17 @@
             e.preventDefault();
             let messageInputDom = document.getElementById("message");
             let message = messageInputDom.value;
-            socket.send(JSON.stringify({
-                'command': 'new_message',
-                'message': message,
-                'player_id': {{ player.id }},
-                'chat_id': {{ player.id_in_group }}
-            }));
+            if (message !== '') {
+                socket.send(JSON.stringify({
+                    'command': 'new_message',
+                    'message': message,
+                    'player_id': {{ player.id }},
+                    'chat_id': {{ player.id_in_group }},
+                    'group_id': {{ player.group_id }}
+                }));
+            }
             messageInputDom.value = '';
         };
-
 
         // Function that hides the messages outside of the players network
         const displayFriends = () => {
@@ -431,9 +376,7 @@
             divElement.setAttribute('style', 'display: flex;')
             divElement.setAttribute('class', 'chat-message')
             divElement.setAttribute('id', `player_${data.chat_id}`)
-
             document.querySelector("#chat").appendChild(divElement);
-
             let chat_class = divElement;
 
             for (let i = 0; i < chat_class.length; i++) {
@@ -451,6 +394,10 @@
 
         function fetchMessages() {
             socket.send(JSON.stringify({'command': 'fetch_messages'}))
+        }
+
+        function deleteMessages() {
+            socket.send(JSON.stringify({'command': 'delete_messages'}))
         }
 
         displayFriends();

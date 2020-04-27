@@ -390,7 +390,7 @@ SmallIntegerField = make_deprecated_field("SmallIntegerField")
 TimeField = make_deprecated_field("TimeField")
 URLField = make_deprecated_field("URLField")
 DateField = make_deprecated_field("DateField")
-DateTimeField = make_deprecated_field("DateTimeField")
+# DateTimeField = make_deprecated_field("DateTimeField")
 
 
 CharField = StringField
