@@ -372,42 +372,156 @@
   }
 
   .player-table {
-    width: 70%;
+    width: auto;
     background-color: white;
 	border-collapse: collapse;
 	overflow: hidden;
 	box-shadow: 0 0 20px rgba(0,0,0,0.1);
     color: $ku-red;
+    font-size: 18px;
 
-  th, td {
-	padding: 15px;
-	background-color: rgba(255,255,255,0.2);
+  }
+  }
 
+  .results-table {
+    width: 100%;
+    background-color: white;
+    border-collapse: collapse;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    color: $ku-red;
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+  }
+
+/*****************************************************
+*  Game report page - BadInfluence/AdminReport.html  *
+******************************************************/
+.report-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  color: $ku-red;
+  font-family: "Roboto Slab", serif;
+
+   .report-info {
+    width: 90%;
+    border-collapse: collapse;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    background-color: white;
+    border-radius: 10px;
+  }
+
+  .rapport-header {
+  padding-top: 20px;
+  justify-content: center;
+  display: flex;
+  padding-bottom: 20px;
+  flex-direction: column;
+  align-items: center;
+
+
+    h2 {
+      font-size: 16px;
+    }
+    p {
+     font-size: 16px;
+      text-align: center;
+    }
+  }
+
+  .dropdown-questions {
+    display: flex;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+    .resultater {
+      display: flex;
+      justify-content: center;
+    }
+
+    .d3-row {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: center;
+    font-size: 14px;
+    font-family: "Roboto Slab", serif;
+
+        #d3consensus {
+
+        }
+
+        #d3playback {
+          display: inline;
+
+        }
+    }
+
+
+.dropdown-toggle {
+    background-color: $ku-red;
+    color: white;
+
+    &:hover {
+     background-color: $ku-dark-green;
+    }
 }
-tbody {
-	tr {
-		&:hover {
-			background-color: rgba(255,255,255,0.3);
-		}
-	}
-	td {
-		position: relative;
-		&:hover {
-			&:before {
-				content: "";
-				position: absolute;
-				left: 0;
-				right: 0;
-				top: -9999px;
-				bottom: -9999px;
-				background-color: rgba(255,255,255,0.2);
-				z-index: -1;
-			}
-		}
-	}
+
+  .play-button {
+    background-color: $ku-red;
+    color: white;
+    width: 100px;
+    display: flex;
+    justify-content: center;
+
+    &:hover {
+      background-color: $ku-dark-green;
+    }
   }
 }
-}
+
+.d3-container {
+  background-color: orange;
+  width: 20%;
 }
 
+
+/*****************************************************
+*  Authenticated demo page - DemoIndex.html  *
+******************************************************/
+.demo-container {
+  margin-top: 10%;
+  padding: 10px 50px 10px 50px;
+}
+
+
+/*****************************************************
+*  Authenticated create session - Sessions.html  *
+******************************************************/
+.create-session-container {
+   margin-top: 10%;
+   padding: 10px 50px 10px 50px;
+}
+
+.game-admin {
+  margin-top: 5%;
+  padding: 10px 50px 10px 50px;
+  background-color: white !important;
+}
+
+/****************************
+*  Login view - login.html  *
+****************************/
+.game-login {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  margin-top: 5%;
+  align-items: center;
+}
+}
 

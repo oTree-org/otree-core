@@ -407,16 +407,16 @@
     .fremryk-spiller {
       display: flex;
       justify-content: center;
-      flex-direction: row;
+      flex-direction: column;
 
       .fremryk-spiller-knap {
         background-color: white;
         color: $ku-red;
-        padding: 10px 10px 10px 10px;
-        margin: 0 0 10px 10px;
+        margin: 0 0 10px 0;
 
          &:hover {
-        color: $ku-dark-green;
+         color: white;
+         background-color: $ku-dark-green;
       }
 
       }
@@ -424,43 +424,29 @@
   }
 
   .player-table {
-    width: 70%;
     background-color: white;
 	border-collapse: collapse;
-	overflow: hidden;
+	overflow: scroll;
 	box-shadow: 0 0 20px rgba(0,0,0,0.1);
     color: $ku-red;
-    font-size: 13px;
-
-  th, td {
-	padding: 15px;
-	background-color: rgba(255,255,255,0.2);
-
-}
-tbody {
-	tr {
-		&:hover {
-			background-color: rgba(255,255,255,0.3);
-		}
-	}
-	td {
-		position: relative;
-		&:hover {
-			&:before {
-				content: "";
-				position: absolute;
-				left: 0;
-				right: 0;
-				top: -9999px;
-				bottom: -9999px;
-				background-color: rgba(255,255,255,0.2);
-				z-index: -1;
-			}
-		}
-	}
+    font-size: 10px;
+    border-radius: 8px;
   }
 }
-}
+
+    .results-table {
+    width: 100%;
+    background-color: white;
+    border-collapse: collapse;
+    overflow: scroll;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    color: $ku-red;
+    font-size: 12px;
+    display: flex;
+    justify-content: center;
+    border-radius: 8px;
+  }
+
 
 
 /*****************************************************
@@ -488,12 +474,15 @@ tbody {
   display: flex;
   padding-bottom: 20px;
   flex-direction: column;
+  align-items: center;
 
-    h3 {
-      font-size: 20px;
+
+    h2 {
+      font-size: 16px;
     }
     p {
-       font-size: 18px;
+     font-size: 16px;
+      text-align: center;
     }
   }
 
@@ -509,15 +498,20 @@ tbody {
     }
 
     .d3-row {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    justify-content: space-evenly;
-    font-size: 14px;
-    font-family: "Roboto Slab", serif;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      justify-content: space-evenly;
+      font-size: 14px;
+      font-family: "Roboto Slab", serif;
 
         #d3consensus {
-          width: 90%;
+          display: flex;
+          justify-content: center;
+        }
+
+        #d3playback {
+          display: none;
         }
     }
 
@@ -534,7 +528,6 @@ tbody {
   .play-button {
     background-color: $ku-red;
     color: white;
-    height: 60px;
     width: 100px;
     display: flex;
     justify-content: center;
@@ -584,5 +577,6 @@ tbody {
     margin-top: 5%;
     align-items: center;
   }
+
 }
 
