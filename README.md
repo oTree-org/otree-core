@@ -3,6 +3,7 @@
 
 ### Use following methodology when git cloning the project:
 
+type
 ```
     cd otree-core
     pip install -e .
