@@ -11,6 +11,8 @@ import random
 from itertools import chain
 from .questions import make_question, question_order
 from django.db import models as django_models
+from django.utils import timezone
+from datetime import datetime, timedelta
 
 
 class Constants(BaseConstants):
@@ -331,9 +333,10 @@ class Message(models.Model):
 
     @staticmethod
     def last_10_messages():
+        print("Messages fetched")
         last_ten = Message.objects.order_by('-timestamp')[:10]
         return reversed(last_ten)
 
-    @staticmethod
-    def delete_messages():
+    def delete_all_messages(self):
+        print("Messages deleted")
         Message.objects.all().delete()

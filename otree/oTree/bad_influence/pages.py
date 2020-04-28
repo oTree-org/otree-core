@@ -1,16 +1,14 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import UserCreationForm
 from django.template import response
-
 from ._builtin import Page, WaitPage
 import networkx as nx
 from networkx.readwrite import json_graph
 import json
-from .models import Constants
+from .models import Constants, Message
 from .questions import make_question
 import time
 import numpy as np
-
 
 
 class MyNormalWaitPage(WaitPage):

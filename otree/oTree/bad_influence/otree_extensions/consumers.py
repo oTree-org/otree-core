@@ -4,7 +4,7 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer, WebsocketCons
 import time
 import json
 from bad_influence.models import Player, Group, Constants, Message, Subsession
-from otree.models import BasePlayer, Participant, BaseSubsession
+from django.utils import timezone
 import datetime
 from asgiref.sync import async_to_sync
 
@@ -132,7 +132,7 @@ class ChatConsumer(WebsocketConsumer):
         return self.send_chat_message(content)
 
     def delete_messages(self, data):
-        message = Message.delete_messages()
+        message = Message.delete_all_messages()
         content = {
             'message': message,
             'command': 'delete_messages'
