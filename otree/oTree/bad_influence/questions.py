@@ -4,7 +4,7 @@ colors = {
     "pink": "/static/bad_influence/media/pink_peep.png",
     "yellow": "/static/bad_influence/media/yellow_peep.png",
     "grey": "/static/bad_influence/media/grey_peep.png",
-    "green": "/static/bad_influence/green_peep.png",
+    "green": "/static/bad_influence/media/green_peep.png",
 }
 
 color_pairs = [('red','blue'), ('blue','yellow'), ('yellow','red'), ('green','blue'),
