@@ -148,38 +148,6 @@
         $('#ButtonsHolder').css('flex-direction', Math.random() > 0.5 ? 'row' : 'row-reverse')
     </script>
 
-    {% comment %}
-    {% for config in player.chat_configs %}
-        <div class="answer-container" style="width: 100%;">
-            <h4>{{ config.label }}</h4>
-            {% chat nickname=player.chat_nickname channel=config.channel %}
-        </div>
-    {% endfor %}
-    <style>
-        .otree-chat__input {
-            width: 100%;
-        }
-    </style>
-    {% endcomment %}
-    {% comment %}
-    <div class="container">
-
-        <h4 class="text-center">Chat med dine venner</h4>
-        <div class="container d-flex justify-content-center flex-column col-6">
-            <div class="chat-messages"></div>
-            <div class="form-group">
-                    <textarea id="chat-log" cols="100" rows="10"
-                              class="form-control" disabled></textarea>
-            </div>
-            <div class="form-group">
-                <input type="text" class="form-control" id="chat-message-input">
-
-            </div>
-            <input type="button" class="col-3 btn btn-success" id="chat-message-submit" value="Send"/>
-        </div>
-            </div>
-        {% endcomment %}
-
     <div id="chat-container">
         <h2>Chat med dine venner</h2>
         <hr>
