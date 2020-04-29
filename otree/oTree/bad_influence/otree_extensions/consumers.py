@@ -116,6 +116,7 @@ class ChatConsumer(WebsocketConsumer):
             'messages': self.messages_to_json(messages)
         }
         self.send_message(content)
+        print(self.messages_to_json(messages))
 
     def new_message(self, data):
         message = Message.objects.create(

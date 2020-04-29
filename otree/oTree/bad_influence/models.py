@@ -337,6 +337,6 @@ class Message(models.Model):
         last_ten = Message.objects.order_by('-timestamp')[:10]
         return reversed(last_ten)
 
-    def delete_all_messages(self):
+    def delete_all_messages():
         print("Messages deleted")
         Message.objects.all().delete()

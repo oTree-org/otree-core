@@ -252,7 +252,7 @@
         let ws_path = ws_scheme + '://' + window.location.host + "/ws/chat/{{ group.pk }}";
 
         // Instantiates the WebSocket with the WebSocket route and scheme as argument
-        let socket = new ReconnectingWebSocket(ws_path);
+        let socket = new WebSocket(ws_path);
 
         // Defines the DOM element for the submit button
         const button = document.getElementById('send');
@@ -283,6 +283,10 @@
         socket.onopen = event => {
             console.log('WebSocket opened');
             fetchMessages();
+            if (!groups.includes({{ group.id }})) {
+                deleteMessages();
+            }
+            displayFriends();
         };
 
         // Closes the WebSocket connection and logs a message in the console when it closes
@@ -299,6 +303,10 @@
         // When a message is sent it is appended to the container with id of chat
         socket.onmessage = event => {
             let data = JSON.parse(event.data);
+            let chat_messages = data.messages;
+
+            console.log(groups);
+            console.log(data['command']);
 
             if (data['command'] === 'messages') {
                 for (let i = 0; i < data['messages'].length; i++) {
@@ -313,6 +321,9 @@
 
             displayFriends();
 
+            chat_messages.forEach(item => {
+                groups.push(item);
+            });
         };
 
         // Adds an event listener on the send button that submits the message
@@ -357,6 +368,8 @@
                     document.getElementById(network[player]).style.display = 'none';
                 }
             }
+
+
         };
 
         function createMessage(data) {
@@ -474,7 +487,6 @@
 {% block scripts %}
     {% include 'bad_influence/channels/network_voting_channel.html' %}
     {% include 'bad_influence/d3/d3_graph.html' %}
-    {% include 'bad_influence/channels/reconnecting-websocket.js' %}
     {% if view.remaining_timeout_seconds != None %}
         {% include 'otree/includes/TimeLimit.js.html' %}
     {% endif %}
