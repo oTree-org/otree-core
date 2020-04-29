@@ -1,14 +1,146 @@
 @media (min-width: 0px) {
   /*************************
-  *       xx.html      *
+  *       otree defaults  *
   *************************/
-  #ButtonsHolder {
-    display: flex;
-    justify-content: space-around;
+  .otree-timer {
+    display: none;
   }
 
-  body {
-    font-size: 12px;
+  .otree-title {
+    display: none;
+  }
+
+  /*************************
+  *       Play.html      *
+  *************************/
+  .round-info {
+    font-size: 20px;
+    width: 60%;
+    display: flex;
+    justify-content: left;
+    flex-direction: column;
+  }
+
+  .game-container {
+    background-image: url("/otree/oTree/bad_influence/static/bad_influence/media/red_peep.png");
+    background-size: cover;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2%;
+    /*************************
+    *      chat styling      *
+    *************************/
+  }
+  .game-container .rounde-title {
+    font-family: "Patrick Hand", cursive;
+    font-size: 40px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+  }
+  .game-container .round-introduction {
+    font-family: "Patrick Hand", cursive;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 60%;
+  }
+  .game-container .answer-container {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    align-items: center;
+    min-height: 300px;
+    font-size: 20px;
+    width: 60%;
+    border-style: solid;
+    border-width: thick;
+    border-radius: 10px;
+    border-color: #901A1E;
+    padding: 1%;
+    margin: 2%;
+  }
+  .game-container .answer-container .timer-text {
+    position: absolute;
+    top: 0;
+    left: 8px;
+  }
+  .game-container .flash {
+    animation-name: flash;
+    animation-duration: 0.2s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-play-state: running;
+  }
+  @keyframes flash {
+    from {
+      color: red;
+    }
+    to {
+      color: black;
+    }
+  }
+  .game-container #chat {
+    height: 250px;
+    scroll-behavior: smooth;
+    background: #ebeded;
+    border-radius: 5px;
+    padding: 15px;
+    overflow: auto;
+  }
+  .game-container #chat::-webkit-scrollbar {
+    width: 1em;
+  }
+  .game-container #chat::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  }
+  .game-container #chat::-webkit-scrollbar-thumb {
+    background-color: darkgrey;
+    outline: 1px solid slategrey;
+    border-radius: 10px;
+  }
+  .game-container .chat-message {
+    display: flex;
+  }
+  .game-container .chat-message b {
+    padding: 0 10px 0 0;
+  }
+  .game-container #chat-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    font-family: "Patrick Hand", cursive;
+    width: 60%;
+    align-items: center;
+  }
+  .game-container #chat-container .chat-title {
+    justify-content: left;
+    display: flex;
+    font-size: 50px;
+  }
+  .game-container #chat-container .form-group {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    font-size: 20px;
+  }
+  .game-container #chat-container .form-group #chat {
+    width: 60%;
+  }
+  .game-container #chat-container .form-group #message {
+    font-size: 20px;
+  }
+  .game-container #chat-container .form-group #send {
+    width: 40%;
+    height: 50px;
+    background-color: #901A1E;
+    font-size: 20px;
+  }
+  .game-container #chat-container .form-group #send:hover {
+    background-color: #5f861e;
   }
 }
 /*
