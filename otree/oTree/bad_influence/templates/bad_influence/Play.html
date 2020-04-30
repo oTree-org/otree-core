@@ -4,7 +4,7 @@
 {% block content %}
 <div class="game-container">
     <div class="round-introduction">
-        <h2 class="rounde-title">{{ question.title }}</h2>
+        <h2 class="round-title">{{ question.title }}</h2>
         <div class="round-info">
             <h3>Sådan spiller du</h3>
             <p>{{ question.text }}</p>
@@ -13,71 +13,55 @@
         </div>
     </div>
 
-    <div class="answer-container" id="d3container">
+<div class="game-row">
+        <!-- Left hand side-->
+    <div class="svg-column">
+      <div class="answer-container" id="d3container">
         <div id="timer-text">
             Tid tilbage:
             <strong><span id="timer" class="otree-timer__time-left"></span></strong>
         </div>
-    </div>
+        </div>
 
-    <style>
-
-
-
-        tr {
-            line-height: 20%
-        }
-
-        tr:nth-child(odd) {
-            background: #CCC
-        }
-
-        tr:nth-child(even) {
-            background: #FFF
-        }
-
-
-
-    .text-container {
-        display: flex;
-        flex-direction: column;
-        height: 10%;
-        align-items: center;
-        border-style: solid;
-        border-width: thin;
-        border-radius: 10px;
-        padding: 1%;
-        margin: 2%
-    }
-
-    </style>
-
-    <div id="ButtonsHolder" class="choice-button-holder">
-        <button id="GuessFalseButton" type="button" name="choice" value="False" class="btn choice-button">
-            <img width="30px" height="30px" src="{{ question.majority_color_img }}"> {{ question.majority_choice }}
+      <div id="ButtonsHolder" class="choice-button-holder">
+        <button style="background-image: url({{ question.majority_color_img }})" id="GuessFalseButton" type="button" name="choice" value="False" class="btn choice-button">
+            {{ question.majority_choice }}
         </button>
-        <button id="GuessTrueButton" type="button" name="choice" value="True" class="btn choice-button">
-            <img width="30px" height="30px" src="{{ question.minority_color_img }}"> {{ question.minority_choice }}
+
+        <button style="background-image: url({{ question.minority_color_img  }})" id="GuessTrueButton" type="button" name="choice" value="True" class="btn choice-button">
+           {{ question.minority_choice }}
         </button>
+        </div>
     </div>
 
 
+      <!-- Right hand side -->
     <div id="chat-container">
         <div class="chat-title">
             <h2>Chat med dine venner</h2>
         </div>
 
-        <div class="form-group">
-            <div id="chat"></div>
+        <div class="form-group chat">
+            <div id="chat" type="text-area"></div>
         </div>
-        <div class="form-group">
+        <div class="form-group message">
             <input type="text" id="message" placeholder="Send besked..." class="form-control">
         </div>
-        <div class="form-group">
+        <div class="form-group send">
             <button id="send" class="btn btn-success">Send</button>
         </div>
     </div>
 </div>
+
+</div>
+
+
+
+
+
+
+
+
 
 
     <script>
@@ -149,15 +133,12 @@
             let chat_messages = JSON.parse(localStorage.getItem('messages'));
             chat.innerHTML = chat_messages;
             */
-
-
-
         };
 
         // Closes the WebSocket connection and logs a message in the console when it closes
         socket.onclose = () => {
             console.log("WebSocket closed");
-        }
+        };
 
         // Logs a error if the WebSocket gets a connection error in the console
         socket.onerror = event => {

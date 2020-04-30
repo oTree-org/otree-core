@@ -1,7 +1,7 @@
 @media (min-width: 0px) {
-  /*************************
-  *       otree defaults  *
-  *************************/
+  /*******************************
+  *  Hide otree default message  *
+  ********************************/
   .otree-timer {
     display: none;
   }
@@ -10,64 +10,82 @@
     display: none;
   }
 
-  /*************************
-  *       Play.html      *
-  *************************/
+  /******************************
+  *   Play.html info styling    *
+  *******************************/
   .round-info {
     font-size: 20px;
-    width: 60%;
+    width: 100%;
     display: flex;
     justify-content: left;
     flex-direction: column;
   }
 
-  .game-container {
-    background-image: url("/otree/oTree/bad_influence/static/bad_influence/media/red_peep.png");
-    background-size: cover;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 2%;
-    /*************************
-    *      chat styling      *
-    *************************/
-  }
-  .game-container .rounde-title {
+  .round-title {
     font-family: "Patrick Hand", cursive;
     font-size: 40px;
     display: flex;
     justify-content: center;
     flex-direction: column;
     text-align: center;
+    background-image: url("../../media/Bad_influence_titlekujpg.jpg");
   }
-  .game-container .round-introduction {
+
+  .game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2%;
+  }
+
+  .round-introduction {
     font-family: "Patrick Hand", cursive;
     display: flex;
     justify-content: center;
     flex-direction: column;
     width: 60%;
   }
-  .game-container .answer-container {
+
+  /*****************************
+  *   Play.html svg styling    *
+  *******************************/
+  .answer-container {
     display: flex;
     flex-direction: column;
     position: relative;
     align-items: center;
     min-height: 300px;
-    font-size: 20px;
-    width: 60%;
-    border-style: solid;
-    border-width: thick;
-    border-radius: 10px;
-    border-color: #901A1E;
+    width: 100%;
     padding: 1%;
     margin: 2%;
   }
-  .game-container .answer-container .timer-text {
+
+  .timer-text {
     position: absolute;
     top: 0;
     left: 8px;
+    font-size: 25px;
   }
-  .game-container .flash {
+
+  .game-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    width: 100%;
+  }
+
+  .svg-column {
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: column;
+    width: 60%;
+    border: 1px #901A1E;
+  }
+
+  /*********************************
+  *   Play.html timer styling     *
+  *********************************/
+  .flash {
     animation-name: flash;
     animation-duration: 0.2s;
     animation-timing-function: linear;
@@ -75,6 +93,7 @@
     animation-direction: alternate;
     animation-play-state: running;
   }
+
   @keyframes flash {
     from {
       color: red;
@@ -83,7 +102,10 @@
       color: black;
     }
   }
-  .game-container #chat {
+  /*********************************
+  *   Play.html chat styling      *
+  *********************************/
+  #chat {
     height: 250px;
     scroll-behavior: smooth;
     background: #ebeded;
@@ -91,56 +113,115 @@
     padding: 15px;
     overflow: auto;
   }
-  .game-container #chat::-webkit-scrollbar {
+
+  #chat::-webkit-scrollbar {
     width: 1em;
   }
-  .game-container #chat::-webkit-scrollbar-track {
+
+  #chat::-webkit-scrollbar-track {
     -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
   }
-  .game-container #chat::-webkit-scrollbar-thumb {
+
+  #chat::-webkit-scrollbar-thumb {
     background-color: darkgrey;
     outline: 1px solid slategrey;
     border-radius: 10px;
   }
-  .game-container .chat-message {
+
+  .chat-message {
     display: flex;
   }
-  .game-container .chat-message b {
+
+  .chat-message b {
     padding: 0 10px 0 0;
   }
-  .game-container #chat-container {
+
+  #chat-container {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     flex-direction: column;
     font-family: "Patrick Hand", cursive;
-    width: 60%;
-    align-items: center;
+    width: 40%;
+    margin-right: 5%;
   }
-  .game-container #chat-container .chat-title {
-    justify-content: left;
+
+  .chat-title {
+    justify-content: center;
     display: flex;
     font-size: 50px;
+    width: 100%;
   }
-  .game-container #chat-container .form-group {
+
+  .chat, .message {
     width: 100%;
     justify-content: center;
     display: flex;
     font-size: 20px;
   }
-  .game-container #chat-container .form-group #chat {
+  .chat #chat, .message #chat {
     width: 60%;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    margin-bottom: 2%;
   }
-  .game-container #chat-container .form-group #message {
+  .chat #message, .message #message {
+    font-size: 20px;
+    max-width: 60%;
+  }
+
+  .send {
+    width: 100%;
+    justify-content: center;
+    display: flex;
     font-size: 20px;
   }
-  .game-container #chat-container .form-group #send {
-    width: 40%;
+  .send #send {
+    width: 60%;
     height: 50px;
     background-color: #901A1E;
     font-size: 20px;
   }
-  .game-container #chat-container .form-group #send:hover {
+  .send #send:hover {
     background-color: #5f861e;
+  }
+
+  /*********************************
+  *   Play.html button styling    *
+  *********************************/
+  .choice-button-holder {
+    justify-content: center;
+    display: flex;
+  }
+  .choice-button-holder button:first-child {
+    margin-right: 4%;
+  }
+
+  .choice-button {
+    background-size: cover;
+    background-repeat: no-repeat;
+    width: 200px;
+    height: 200px;
+    font-size: 20px;
+    border-radius: 30%;
+    color: #901A1E;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    font-family: "Annie Use Your Telescope", serif;
+    margin-bottom: 8%;
+  }
+  .choice-button:hover {
+    filter: contrast(100%);
+  }
+
+  /* results?*/
+  tr {
+    line-height: 20%;
+  }
+
+  tr:nth-child(odd) {
+    background: #CCC;
+  }
+
+  tr:nth-child(even) {
+    background: green;
   }
 }
 /*

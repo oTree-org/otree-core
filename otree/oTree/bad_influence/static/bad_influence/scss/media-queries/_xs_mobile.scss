@@ -1,7 +1,8 @@
 @media (min-width: 0px) {
-/*************************
-*       otree defaults  *
-*************************/
+
+/*******************************
+*  Hide otree default message  *
+********************************/
 
 .otree-timer {
   display: none
@@ -11,34 +12,35 @@
   display: none
 }
 
-/*************************
-*       Play.html      *
-*************************/
+/******************************
+*   Play.html info styling    *
+*******************************/
 
 .round-info {
     font-size: 20px;
-    width: 60%;
+    width: 100%;
     display: flex;
     justify-content: left;
     flex-direction: column;
 }
 
-.game-container {
-    background-image: url("/otree/oTree/bad_influence/static/bad_influence/media/red_peep.png");
-    background-size: cover;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 2%;
-
-  .rounde-title {
+ .round-title {
     font-family: "Patrick Hand", cursive;
     font-size: 40px;
     display: flex;
     justify-content: center;
     flex-direction: column;
     text-align: center;
+    background-image: url("../../media/Bad_influence_titlekujpg.jpg");
   }
+
+.game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2%;
+
+}
 
   .round-introduction {
     font-family: "Patrick Hand", cursive;
@@ -49,37 +51,48 @@
   }
 
 
-
-  .answer-container {
+/*****************************
+*   Play.html svg styling    *
+*******************************/
+.answer-container {
     display: flex;
     flex-direction: column;
     position: relative;
     align-items: center;
     min-height: 300px;
-    font-size: 20px;
-    width: 60%;
-
-    border-style: solid;
-    border-width: thick;
-    border-radius: 10px;
-    border-color: $ku-red;
+    width: 100%;
     padding: 1%;
     margin: 2%;
+}
+
+.timer-text {
+    position: absolute;
+    top: 0;
+    left: 8px;
+    font-size: 25px;
+}
 
 
-    .timer-text {
-      position: absolute;
-      top: 0;
-      left: 8px;
-    }
+.game-row {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  width: 100%;
+
+}
+
+.svg-column {
+  display: flex;
+  justify-content: flex-end;
+  flex-direction: column;
+  width: 60%;
+  border: 1px $ku-red;
+}
 
 
-
-
-  }
-
-
-
+/*********************************
+*   Play.html timer styling     *
+*********************************/
 
   .flash {
       animation-name: flash;
@@ -99,9 +112,9 @@
       }
   }
 
-/*************************
-*      chat styling      *
-*************************/
+/*********************************
+*   Play.html chat styling      *
+*********************************/
 
 #chat {
     height: 250px;
@@ -135,76 +148,105 @@
 }
 
 #chat-container {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    font-family: "Patrick Hand", cursive;
+  display: flex;
+  justify-content: flex-start;
+  flex-direction: column;
+  font-family: "Patrick Hand", cursive;
+  width: 40%;
+
+  margin-right: 5%;
+
+}
+ .chat-title {
+   justify-content: center;
+  display: flex;
+  font-size: 50px;
+   width: 100%;
+}
+
+.chat, .message {
+  width: 100%;
+  justify-content: center;
+  display: flex;
+  font-size: 20px;
+
+
+  #chat {
     width: 60%;
-    align-items: center;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+     margin-bottom: 2%;
 
-     .chat-title {
-      justify-content: left;
-      display: flex;
-      font-size: 50px;
+  }
+
+  #message {
+    font-size: 20px;
+    max-width: 60%;
+
+  }
+
+}
+
+.send {
+  width: 100%;
+  justify-content: center;
+  display: flex;
+  font-size: 20px;
+
+   #send {
+    width: 60%;
+    height: 50px;
+    background-color: $ku-red;
+    font-size: 20px;
+
+    &:hover {
+      background-color: $ku-dark-green;
+    }
+  }
+
+}
+/*********************************
+*   Play.html button styling    *
+*********************************/
+.choice-button-holder {
+  justify-content: center;
+  display: flex;
+
+  button:first-child {
+    margin-right: 4%;
+  }
+}
+
+ .choice-button {
+    background-size: cover;
+    background-repeat: no-repeat;
+    width: 200px;
+    height: 200px;
+    font-size: 20px;
+    border-radius: 30%;
+    color: #901A1E;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    font-family: "Annie Use Your Telescope", serif;
+    margin-bottom: 8%;
+
+   &:hover {
+     filter: contrast(100%);
+   }
+
+}
+
+/* results?*/
+   tr {
+        line-height: 20%;
     }
 
-    .form-group {
-      width: 100%;
-      justify-content: center;
-      display: flex;
-      font-size: 20px;
-
-      #chat {
-        width: 60%;
-      }
-
-      #message {
-        font-size: 20px;
-      }
-
-      #send {
-        width: 40%;
-        height: 50px;
-        background-color: $ku-red;
-        font-size: 20px;
-
-
-        &:hover {
-          background-color: $ku-dark-green;
-        }
-      }
+    tr:nth-child(odd) {
+        background: #CCC;
     }
 
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
+    tr:nth-child(even) {
+        background: green;
+    }
 
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-}
