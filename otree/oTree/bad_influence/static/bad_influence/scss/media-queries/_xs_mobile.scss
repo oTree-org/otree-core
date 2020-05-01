@@ -39,16 +39,21 @@
   flex-direction: column;
   align-items: center;
   margin-top: 2%;
-
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+  width: 80%;
+  background-color: white;
+  padding-top: 40px;
 }
 
-  .round-introduction {
-    font-family: "Patrick Hand", cursive;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    width: 60%;
-  }
+
+
+.round-introduction {
+  font-family: "Patrick Hand", cursive;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  width: 70%;
+}
 
 
 /*****************************
@@ -58,15 +63,15 @@
     display: flex;
     flex-direction: column;
     position: relative;
-    align-items: center;
+
     min-height: 300px;
     width: 100%;
-    padding: 1%;
-    margin: 2%;
+
+
+
 }
 
-.timer-text {
-    position: absolute;
+#timer-text {
     top: 0;
     left: 8px;
     font-size: 25px;
@@ -78,14 +83,14 @@
   justify-content: center;
   flex-direction: row;
   width: 100%;
-
+  margin-top: 2%;
 }
 
 .svg-column {
   display: flex;
   justify-content: flex-end;
   flex-direction: column;
-  width: 60%;
+  width: 50%;
   border: 1px $ku-red;
 }
 
@@ -152,7 +157,7 @@
   justify-content: flex-start;
   flex-direction: column;
   font-family: "Patrick Hand", cursive;
-  width: 40%;
+  width: 50%;
 
   margin-right: 5%;
 
@@ -211,6 +216,8 @@
   justify-content: center;
   display: flex;
 
+  margin: 0 10% 0 10%;
+
   button:first-child {
     margin-right: 4%;
   }
@@ -220,32 +227,22 @@
     background-size: cover;
     background-repeat: no-repeat;
     width: 200px;
-    height: 200px;
+    height: 150px;
     font-size: 20px;
-    border-radius: 30%;
-    color: #901A1E;
+    border-radius: 50%;
+    color: black;
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     font-family: "Annie Use Your Telescope", serif;
     margin-bottom: 8%;
+    background-color: transparent;
 
    &:hover {
-     filter: contrast(100%);
+     background-color: $ku-red;
    }
 
 }
 
-/* results?*/
-   tr {
-        line-height: 20%;
-    }
 
-    tr:nth-child(odd) {
-        background: #CCC;
-    }
-
-    tr:nth-child(even) {
-        background: green;
-    }
 
 }
 

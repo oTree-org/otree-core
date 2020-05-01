@@ -1,18 +1,26 @@
 {% extends "global/Page.html" %}
 {% load otree static %}
 {% load static %}
+{% block styles %}
+    <style>
+        body {
+            background-color: #901A1E;
+        }
+    </style>
+{% endblock %}
 {% block content %}
-<div class="game-container">
+<div class="game-container container">
     <div class="round-introduction">
         <h2 class="round-title">{{ question.title }}</h2>
         <div class="round-info">
             <h3>Sådan spiller du</h3>
             <p>{{ question.text }}</p>
-            <p>{{ question.preference }}</p>
             <p>{{ question.challenge }}</p>
+            <p>{{ question.preference }}</p>
+
         </div>
     </div>
-
+<div class="surround">
 <div class="game-row">
         <!-- Left hand side-->
     <div class="svg-column">
@@ -25,11 +33,11 @@
 
       <div id="ButtonsHolder" class="choice-button-holder">
         <button style="background-image: url({{ question.majority_color_img }})" id="GuessFalseButton" type="button" name="choice" value="False" class="btn choice-button">
-            {{ question.majority_choice }}
+           <b> {{ question.majority_choice }}</b>
         </button>
 
         <button style="background-image: url({{ question.minority_color_img  }})" id="GuessTrueButton" type="button" name="choice" value="True" class="btn choice-button">
-           {{ question.minority_choice }}
+           <b>{{ question.minority_choice }}</b>
         </button>
         </div>
     </div>
@@ -54,7 +62,7 @@
 </div>
 
 </div>
-
+</div>
 
 
 
