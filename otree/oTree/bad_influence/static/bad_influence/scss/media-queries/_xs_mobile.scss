@@ -40,12 +40,11 @@
   align-items: center;
   margin-top: 2%;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+  border-radius: 10px;
   width: 80%;
   background-color: white;
   padding-top: 40px;
 }
-
-
 
 .round-introduction {
   font-family: "Patrick Hand", cursive;
@@ -63,11 +62,8 @@
     display: flex;
     flex-direction: column;
     position: relative;
-
     min-height: 300px;
     width: 100%;
-
-
 
 }
 
@@ -94,33 +90,37 @@
   border: 1px $ku-red;
 }
 
-
 /*********************************
 *   Play.html timer styling     *
 *********************************/
+.flash {
+    animation-name: flash;
+    animation-duration: 0.2s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-play-state: running;
+}
 
-  .flash {
-      animation-name: flash;
-      animation-duration: 0.2s;
-      animation-timing-function: linear;
-      animation-iteration-count: infinite;
-      animation-direction: alternate;
-      animation-play-state: running;
-  }
+@keyframes flash {
+    from {
+        color: red;
+    }
+    to {
+        color: black;
+    }
+}
 
-  @keyframes flash {
-      from {
-          color: red;
-      }
-      to {
-          color: black;
-      }
-  }
+/***********************************
+*   Play.html chat+svg container  *
+***********************************/
+.surround {
+  width: 100%;
+}
 
 /*********************************
 *   Play.html chat styling      *
 *********************************/
-
 #chat {
     height: 250px;
     scroll-behavior: smooth;
@@ -154,12 +154,11 @@
 
 #chat-container {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   flex-direction: column;
   font-family: "Patrick Hand", cursive;
   width: 50%;
-
-  margin-right: 5%;
+  align-items: center;
 
 }
  .chat-title {
@@ -175,20 +174,16 @@
   display: flex;
   font-size: 20px;
 
-
   #chat {
-    width: 60%;
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
-     margin-bottom: 2%;
-
+    margin-bottom: 2%;
+    width: 80%;
   }
 
   #message {
     font-size: 20px;
     max-width: 60%;
-
   }
-
 }
 
 .send {
@@ -197,16 +192,16 @@
   display: flex;
   font-size: 20px;
 
-   #send {
+  #send {
     width: 60%;
     height: 50px;
     background-color: $ku-red;
     font-size: 20px;
 
-    &:hover {
-      background-color: $ku-dark-green;
-    }
+  &:hover {
+    background-color: $ku-dark-green;
   }
+}
 
 }
 /*********************************
@@ -223,23 +218,22 @@
   }
 }
 
- .choice-button {
-    background-size: cover;
-    background-repeat: no-repeat;
-    width: 200px;
-    height: 150px;
-    font-size: 20px;
-    border-radius: 50%;
-    color: black;
-    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
-    font-family: "Annie Use Your Telescope", serif;
-    margin-bottom: 8%;
-    background-color: transparent;
+.choice-button {
+  background-size: cover;
+  background-repeat: no-repeat;
+  width: 200px;
+  height: 150px;
+  font-size: 20px;
+  border-radius: 50%;
+  color: black;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+  font-family: "Annie Use Your Telescope", serif;
+  margin-bottom: 8%;
+  background-color: transparent;
 
-   &:hover {
-     background-color: $ku-red;
-   }
-
+ &:hover {
+   background-color: $ku-red;
+ }
 }
 
 

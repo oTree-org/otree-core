@@ -1,17 +1,15 @@
 {% extends "global/Page.html" %}
 {% load otree static %}
 {% load static %}
-{% block content %}
-    <h2>{{ question.title }}</h2>
-    <p>{{ question.text }}</p>
-    <p>{{ question.preference }}</p>
-    <p>{{ question.challenge }}</p>
+{% block styles %}
+
     <style>
         body {
             background-color: #901A1E;
         }
     </style>
 {% endblock %}
+
 {% block content %}
 <div class="game-container container">
     <div class="round-introduction">
@@ -261,7 +259,8 @@
             // Appends each chat message to the chat log
             document.querySelector("#chat").appendChild(divElement);
         }
-
+        </script>
+{% endblock %}
 {% block scripts %}
     {% include 'bad_influence/channels/network_voting_channel.html' %}
     {% include 'bad_influence/d3/d3_graph.html' %}
