@@ -1,4 +1,21 @@
+<style>
+#table {
+  border-collapse: collapse;
+  width: 100%;
+}
 
+#table td, #table th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#table th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  color: black;
+}
+</style>
 
 {% block title %}
     Børsen er lukket for i dag
@@ -11,14 +28,14 @@
   I tabellen kan du se, hvordan det gik.
 <p/>
 
-<table class="table">
+<table id="table">
     <tr>
-        <th> firma         </th>
-        <th> tilstand      </th>
-        <th> handler       </th>
-        <th> din købspris  </th>
-        <th> lukkepris     </th>
-        <th> tjent         </th>
+        <th> firma     </th>
+        <th> tilstand  </th>
+        <th> dine handler   </th>
+        <th> købspris  </th>
+        <th> lukkepris </th>
+        <th> tjent     </th>
     </tr>
     {% for firma, tilstand, choice, deal, price, closing, tjent in data %}
         <tr>

@@ -6,10 +6,11 @@ from django.conf import settings
 import random
 import json
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+
 names = pd.read_excel("daytrader/Fictional_Company_Names.xlsx")
-
 author = 'Robin Engelhardt'
-
 doc = """
 In this experiment a firm is represented by a bag, containing a
 variable number of 'happy' and 'sad' faces. Players have to pull
@@ -18,6 +19,7 @@ in a mainly 'happy' or mainly 'sad' condition. Informational cascades will
 form, but since the bag (in a secondary treatment) can change
 its state with a fixed probability, a mix of strategies need to be employed.
 """
+#random.seed(8)
 
 
 class Constants(BaseConstants):
@@ -76,6 +78,34 @@ class Subsession(BaseSubsession):
                                    company_states[(idp + self.round_number - 1)%number_of_players])
             player.drawn_face = random.choice(Json_action.from_string(player.company_state))
             #player.number_of_glad_faces = sum(Json_action.from_string(player.company_state))
+
+    def vars_for_admin_report(self):
+        if self.round_number == Constants.num_rounds:
+            fig = plt.figure(figsize=(4,3))
+            ax = plt.axes()
+            x = np.linspace(1, Constants.num_rounds + 1, Constants.num_rounds + 1)
+            for state, firma in enumerate(self.session.vars['company_names']):
+                prices = [self.session.vars['{}{}'.format(firma, r)][0]
+                          for r in range(1, Constants.num_rounds + 1)]
+                tmp = '{}{}'.format(firma, Constants.num_rounds + 1)
+                prices.append(self.session.vars[tmp])
+                ax.plot(x, prices, label=firma)
+                print(x, prices)
+            ax.legend(loc='upper left', bbox_to_anchor=(1.04, 1))
+            ax.set_xlabel('runde', fontdict={'fontsize': 12})
+            ax.set_ylabel('pris', fontdict={'fontsize': 12})
+            ax.set_title('Aktieprisudvikling', fontsize='x-large')
+            fig.savefig('_static/daytrader/test.pdf', transparent=True,
+                        bbox_inches='tight', dpi=300)
+
+            names = self.session.vars['company_names']
+            states = self.session.vars['company_states']
+            choices = [[self.session.vars['{}{}'.format(name, r)][3]
+                        for r in range(1, self.round_number + 1)] for name in names]
+
+        print(dict(company=list(zip(names, states, choices))))
+        return dict(company=list(zip(names, states, choices)))
+
 
 
 class Group(BaseGroup):
@@ -164,6 +194,9 @@ class Player(BasePlayer):
                                   self.drawn_face,
                                   self.choice_of_trade,
                                   self.choice_of_number_of_shares)
+        if self.round_number == Constants.num_rounds:
+            tmp1 = '{}{}'.format(self.company_name, Constants.num_rounds + 1)
+            self.session.vars[tmp1] = self.closing_price(self.company_name)
 
     def closing_price(self, company):
         # retrieve actions from last trade:
@@ -177,6 +210,7 @@ class Player(BasePlayer):
             price_change += Constants.price_change_per_share * tmp4
         else:
             price_change -= Constants.price_change_per_share * tmp4
+
         return tmp0 + price_change * tmp0
 
 
