@@ -328,15 +328,7 @@ class Message(models.Model):
     chat_id = models.IntegerField()
     group = models.ForeignKey('Group', on_delete=models.CASCADE, null=True)
 
-    def __str__(self):
-        return self.author.username
-
     @staticmethod
-    def last_10_messages():
-        print("Messages fetched")
-        last_ten = Message.objects.order_by('-timestamp')[:10]
-        return reversed(last_ten)
-
-    def delete_all_messages():
-        print("Messages deleted")
-        Message.objects.all().delete()
+    def last_15_messages():
+        last_15 = Message.objects.order_by('-timestamp')[:15]
+        return reversed(last_15)
