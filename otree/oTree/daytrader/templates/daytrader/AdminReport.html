@@ -1,0 +1,232 @@
+{% load otree static %}
+
+<h4>Aktiepriser:</h4>
+<embed src="{% static 'daytrader/test.pdf' %}" width="600" height="500"/>
+
+
+<h4>
+  Firmaernes faktisk tilstand:
+</h4>
+
+<ul>
+  {% for firma in company %}
+    <li>
+      {{ firma.0 }}
+      {% for state in firma.1 %}
+        {% if forloop.parentloop.counter0 == 0 %}
+          {% if state == 1 %}
+            <embed src="{% static 'daytrader/C0glad.png' %}" width="20" height="20"/>
+          {% else %}
+            <embed src="{% static 'daytrader/C0sad.png' %}" width="20" height="20"/>
+          {% endif %}
+        {% elif forloop.parentloop.counter0 == 1 %}
+          {% if state == 1 %}
+            <embed src="{% static 'daytrader/C1glad.png' %}" width="20" height="20"/>
+          {% else %}
+            <embed src="{% static 'daytrader/C1sad.png' %}" width="20" height="20"/>
+          {% endif %}
+        {% elif forloop.parentloop.counter0 == 2 %}
+          {% if state == 1 %}
+            <embed src="{% static 'daytrader/C2glad.png' %}" width="20" height="20"/>
+          {% else %}
+            <embed src="{% static 'daytrader/C2sad.png' %}" width="20" height="20"/>
+          {% endif %}
+        {% elif forloop.parentloop.counter0 == 3 %}
+          {% if state == 1 %}
+            <embed src="{% static 'daytrader/C3glad.png' %}" width="20" height="20"/>
+          {% else %}
+            <embed src="{% static 'daytrader/C3sad.png' %}" width="20" height="20"/>
+          {% endif %}
+        {% elif forloop.parentloop.counter0 == 4 %}
+          {% if state == 1 %}
+            <embed src="{% static 'daytrader/C4glad.png' %}" width="20" height="20"/>
+          {% else %}
+            <embed src="{% static 'daytrader/C4sad.png' %}" width="20" height="20"/>
+          {% endif %}
+          {% elif forloop.parentloop.counter0 == 5 %}
+            {% if state == 1 %}
+              <embed src="{% static 'daytrader/C5glad.png' %}" width="20" height="20"/>
+            {% else %}
+              <embed src="{% static 'daytrader/C5sad.png' %}" width="20" height="20"/>
+            {% endif %}
+          {% elif forloop.parentloop.counter0 == 6 %}
+            {% if state == 1 %}
+              <embed src="{% static 'daytrader/C6glad.png' %}" width="20" height="20"/>
+            {% else %}
+              <embed src="{% static 'daytrader/C6sad.png' %}" width="20" height="20"/>
+            {% endif %}
+          {% elif forloop.parentloop.counter0 == 7 %}
+            {% if state == 1 %}
+              <embed src="{% static 'daytrader/C7glad.png' %}" width="20" height="20"/>
+            {% else %}
+              <embed src="{% static 'daytrader/C7sad.png' %}" width="20" height="20"/>
+            {% endif %}
+          {% elif forloop.parentloop.counter0 == 8 %}
+            {% if state == 1 %}
+              <embed src="{% static 'daytrader/C8glad.png' %}" width="20" height="20"/>
+            {% else %}
+              <embed src="{% static 'daytrader/C8sad.png' %}" width="20" height="20"/>
+            {% endif %}
+          {% else %}
+            {% if state == 1 %}
+              <embed src="{% static 'daytrader/C9glad.png' %}" width="20" height="20"/>
+            {% else %}
+              <embed src="{% static 'daytrader/C9sad.png' %}" width="20" height="20"/>
+            {% endif %}
+          {% endif %}
+      {% endfor %}
+    </li>
+  {% endfor %}
+</ul>
+
+
+<H4>
+  Kaskader:
+</H4>
+<p>
+  Prøv at se, om der er kaskader i de valg, der blev taget, og om de er korrekte eller forkerte.
+
+<table id="table" border=1>
+  <tr>
+      <th> firma     </th>
+      <th> tilstand  </th>
+      {% for f in company %}
+        <th> {{ forloop.counter }} </th>
+      {% endfor %}
+  </tr>
+  {% for navn, tilstand, valg in company %}
+      <tr>
+        <td> {{ navn }} </td>
+        <td>
+        {% for state in tilstand %}
+          {% if forloop.parentloop.counter0 == 0 %}
+            {% if state == 1 %}
+              <embed src="{% static 'daytrader/C0glad.png' %}" width="20" height="20"/>
+            {% else %}
+              <embed src="{% static 'daytrader/C0sad.png' %}" width="20" height="20"/>
+            {% endif %}
+          {% elif forloop.parentloop.counter0 == 1 %}
+            {% if state == 1 %}
+              <embed src="{% static 'daytrader/C1glad.png' %}" width="20" height="20"/>
+            {% else %}
+              <embed src="{% static 'daytrader/C1sad.png' %}" width="20" height="20"/>
+            {% endif %}
+          {% elif forloop.parentloop.counter0 == 2 %}
+            {% if state == 1 %}
+              <embed src="{% static 'daytrader/C2glad.png' %}" width="20" height="20"/>
+            {% else %}
+              <embed src="{% static 'daytrader/C2sad.png' %}" width="20" height="20"/>
+            {% endif %}
+          {% elif forloop.parentloop.counter0 == 3 %}
+            {% if state == 1 %}
+              <embed src="{% static 'daytrader/C3glad.png' %}" width="20" height="20"/>
+            {% else %}
+              <embed src="{% static 'daytrader/C3sad.png' %}" width="20" height="20"/>
+            {% endif %}
+          {% elif forloop.parentloop.counter0 == 4 %}
+            {% if state == 1 %}
+              <embed src="{% static 'daytrader/C4glad.png' %}" width="20" height="20"/>
+            {% else %}
+              <embed src="{% static 'daytrader/C4sad.png' %}" width="20" height="20"/>
+            {% endif %}
+            {% elif forloop.parentloop.counter0 == 5 %}
+              {% if state == 1 %}
+                <embed src="{% static 'daytrader/C5glad.png' %}" width="20" height="20"/>
+              {% else %}
+                <embed src="{% static 'daytrader/C5sad.png' %}" width="20" height="20"/>
+              {% endif %}
+            {% elif forloop.parentloop.counter0 == 6 %}
+              {% if state == 1 %}
+                <embed src="{% static 'daytrader/C6glad.png' %}" width="20" height="20"/>
+              {% else %}
+                <embed src="{% static 'daytrader/C6sad.png' %}" width="20" height="20"/>
+              {% endif %}
+            {% elif forloop.parentloop.counter0 == 7 %}
+              {% if state == 1 %}
+                <embed src="{% static 'daytrader/C7glad.png' %}" width="20" height="20"/>
+              {% else %}
+                <embed src="{% static 'daytrader/C7sad.png' %}" width="20" height="20"/>
+              {% endif %}
+            {% elif forloop.parentloop.counter0 == 8 %}
+              {% if state == 1 %}
+                <embed src="{% static 'daytrader/C8glad.png' %}" width="20" height="20"/>
+              {% else %}
+                <embed src="{% static 'daytrader/C8sad.png' %}" width="20" height="20"/>
+              {% endif %}
+            {% else %}
+              {% if state == 1 %}
+                <embed src="{% static 'daytrader/C9glad.png' %}" width="20" height="20"/>
+              {% else %}
+                <embed src="{% static 'daytrader/C9sad.png' %}" width="20" height="20"/>
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          </td>
+          {% for state in valg %}
+            <td>
+            {% if forloop.parentloop.counter0 == 0 %}
+              {% if state == 1 %}
+                <embed src="{% static 'daytrader/C0glad.png' %}" width="20" height="20"/>
+              {% else %}
+                <embed src="{% static 'daytrader/C0sad.png' %}" width="20" height="20"/>
+              {% endif %}
+            {% elif forloop.parentloop.counter0 == 1 %}
+              {% if state == 1 %}
+                <embed src="{% static 'daytrader/C1glad.png' %}" width="20" height="20"/>
+              {% else %}
+                <embed src="{% static 'daytrader/C1sad.png' %}" width="20" height="20"/>
+              {% endif %}
+            {% elif forloop.parentloop.counter0 == 2 %}
+              {% if state == 1 %}
+                <embed src="{% static 'daytrader/C2glad.png' %}" width="20" height="20"/>
+              {% else %}
+                <embed src="{% static 'daytrader/C2sad.png' %}" width="20" height="20"/>
+              {% endif %}
+            {% elif forloop.parentloop.counter0 == 3 %}
+              {% if state == 1 %}
+                <embed src="{% static 'daytrader/C3glad.png' %}" width="20" height="20"/>
+              {% else %}
+                <embed src="{% static 'daytrader/C3sad.png' %}" width="20" height="20"/>
+              {% endif %}
+            {% elif forloop.parentloop.counter0 == 4 %}
+              {% if state == 1 %}
+                <embed src="{% static 'daytrader/C4glad.png' %}" width="20" height="20"/>
+              {% else %}
+                <embed src="{% static 'daytrader/C4sad.png' %}" width="20" height="20"/>
+              {% endif %}
+            {% elif forloop.parentloop.counter0 == 5 %}
+              {% if state == 1 %}
+                <embed src="{% static 'daytrader/C5glad.png' %}" width="20" height="20"/>
+              {% else %}
+                <embed src="{% static 'daytrader/C5sad.png' %}" width="20" height="20"/>
+              {% endif %}
+            {% elif forloop.parentloop.counter0 == 6 %}
+              {% if state == 1 %}
+                <embed src="{% static 'daytrader/C6glad.png' %}" width="20" height="20"/>
+              {% else %}
+                <embed src="{% static 'daytrader/C6sad.png' %}" width="20" height="20"/>
+              {% endif %}
+            {% elif forloop.parentloop.counter0 == 7 %}
+              {% if state == 1 %}
+                <embed src="{% static 'daytrader/C7glad.png' %}" width="20" height="20"/>
+              {% else %}
+                <embed src="{% static 'daytrader/C7sad.png' %}" width="20" height="20"/>
+              {% endif %}
+            {% elif forloop.parentloop.counter0 == 8 %}
+              {% if state == 1 %}
+                <embed src="{% static 'daytrader/C8glad.png' %}" width="20" height="20"/>
+              {% else %}
+                <embed src="{% static 'daytrader/C8sad.png' %}" width="20" height="20"/>
+              {% endif %}
+            {% else %}
+              {% if state == 1 %}
+                <embed src="{% static 'daytrader/C9glad.png' %}" width="20" height="20"/>
+              {% else %}
+                <embed src="{% static 'daytrader/C9sad.png' %}" width="20" height="20"/>
+              {% endif %}
+            {% endif %}
+            </td>
+          {% endfor %}
+      </tr>
+  {% endfor %}
+</table>

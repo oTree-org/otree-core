@@ -29,7 +29,6 @@
             send_guess(false);
         });
 
-
         socket.onmessage = event => {
             let date = new Date();
             console.log(event, date.getTime());

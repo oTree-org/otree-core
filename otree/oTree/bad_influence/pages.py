@@ -1,12 +1,11 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import UserCreationForm
 from django.template import response
-
 from ._builtin import Page, WaitPage
 import networkx as nx
 from networkx.readwrite import json_graph
 import json
-from .models import Constants
+from .models import Constants, Message
 from .questions import make_question
 import time
 import numpy as np
@@ -42,11 +41,15 @@ class Play(Page):
         return {
             'network': json.dumps(graph),
             'consensus': int(self.group.get_consensus() * 100),
-            'question': make_question(self.group, self.player.hub, self.player.gender, self.player.number_of_friends)
+            'question': make_question(self.group, self.player.hub, self.player.gender, self.player.number_of_friends),
         }
 
     def before_next_page(self):
         self.group.round_end_time = time.time()
+
+    def new_message(self):
+        new_message = Message.objects.create()
+        return new_message
 
 
 class MyResultsWaitPage(WaitPage):
