@@ -3,7 +3,10 @@
 {% block title %}{% trans 'Log in' %}{% endblock %}
 
 {% block content %}
+    <div class="game-login">
+    <h1>Log Ind</h1>
     {% if form.errors and not form.non_field_errors %}
+
         <p class="errornote">
             Please correct the error(s).
         </p>
@@ -51,4 +54,5 @@
             document.getElementById('id_username').focus()
         </script>
     </div>
+</div>
 {% endblock %}

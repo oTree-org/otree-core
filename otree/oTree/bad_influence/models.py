@@ -11,9 +11,7 @@ import random
 from itertools import chain
 from .questions import make_question, question_order
 from django.db import models as django_models
-from django.utils import timezone
-from datetime import datetime, timedelta
-
+from otree.models import Participant
 
 class Constants(BaseConstants):
     name_in_url = 'bad_influence'

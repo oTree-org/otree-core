@@ -16,13 +16,14 @@
     }
 
     .node-text {
-        font-family: annie_use_your_telescope;
+        font-family: annie_use_your_telescope, serif;
         font-size: 25px;
     }
 
 </style>
 <script src="https://d3js.org/d3.v3.js"></script>
 <script src="http://marvl.infotech.monash.edu/webcola/cola.js"></script>
+<script src="http://marvl.infotech.monash.edu/webcola/cola.min.js"></script>
 <script>
     let width = 300;
     let height = 300;
@@ -31,16 +32,16 @@
     let svg = undefined;
     let d3Element = document.getElementById("d3container");
 
-    let red = "{% static "media/red_peep.png" %}";
-    let blue = "{% static "media/blue_peep.png" %}";
-    let pink = "{% static "media/pink_peep.png" %}";
-    let yellow = "{% static "media/yellow_peep.png" %}";
-    let grey = "{% static "media/grey_peep.png" %}";
-    let green = "{% static "media/green_peep.png" %}";
+    let red = "{% static "bad_influence/media/red_peep.png" %}";
+    let blue = "{% static "bad_influence/media/blue_peep.png" %}";
+    let pink = "{% static "bad_influence/media/pink_peep.png" %}";
+    let yellow = "{% static "bad_influence/media/yellow_peep.png" %}";
+    let grey = "{% static "bad_influence/media/grey_peep.png" %}";
+    let green = "{% static "bad_influence/media/green_peep.png" %}";
 
-    let open_eyes = "{% static "media/open_eyes.png" %}";
-    let closed_eyes = "{% static "media/closed_eyes.png" %}";
-    let happy_eyes = "{% static "media/happy_eyes.png" %}";
+    let open_eyes = "{% static "bad_influence/media/open_eyes.png" %}";
+    let closed_eyes = "{% static "bad_influence/media/closed_eyes.png" %}";
+    let happy_eyes = "{% static "bad_influence/media/happy_eyes.png" %}";
 
     let get_color = function (choice) {
         return choice ? "{{ question.minority_color_img }}" : "{{ question.majority_color_img }}";
@@ -63,6 +64,7 @@
             .append("svg")
             .attr("width", width)
             .attr("height", height);
+
 
         let force = cola.d3adaptor()
             .linkDistance(80)

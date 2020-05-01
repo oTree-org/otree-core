@@ -1,10 +1,10 @@
 colors = {
-    "red": "/static/media/red_peep.png",
-    "blue": "/static/media/blue_peep.png",
-    "pink": "/static/media/pink_peep.png",
-    "yellow": "/static/media/yellow_peep.png",
-    "grey": "/static/media/grey_peep.png",
-    "green": "/static/media/green_peep.png",
+    "red": "/static/bad_influence/media/red_peep.png",
+    "blue": "/static/bad_influence/media/blue_peep.png",
+    "pink": "/static/bad_influence/media/pink_peep.png",
+    "yellow": "/static/bad_influence/media/yellow_peep.png",
+    "grey": "/static/bad_influence/media/grey_peep.png",
+    "green": "/static/bad_influence/media/green_peep.png",
 }
 
 color_pairs = [('red','blue'), ('blue','yellow'), ('yellow','red'), ('green','blue'),

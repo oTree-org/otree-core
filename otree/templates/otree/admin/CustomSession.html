@@ -13,7 +13,9 @@ Admin Panel
 {% block menus %}
 
 <div id="admin-panel">
+
     <ul class="nav justify-content-center">
+
         <li role="presentation" class="nav-item">
              <a class="nav-link {% active_page request 'SessionStartLinks' session.code %}" href="{% url 'SessionStartLinks' session.code %}">
            <button class="btn btn-default btn-circle">
@@ -54,6 +56,8 @@ Admin Panel
 
             </a>
     </ul>
+
+
 </div>
 
 <!--  Use jQuery change color depending on active menu item / HREF -->

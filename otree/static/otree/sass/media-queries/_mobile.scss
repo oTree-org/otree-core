@@ -132,8 +132,19 @@
 .login-button {
   color: white;
   text-decoration: none;
-  font-size: 12px;
+  font-size: 16px;
 
+}
+
+.home-button {
+  .fa-home {
+  padding-right: 8px;
+  padding-top: 8px;
+  font-size: 25px;
+}
+ span {
+   display: none;
+ }
 }
 
   /**********************************************************
@@ -228,5 +239,296 @@
   }
   }
 
+/********************************************************
+*  Admin/Teacher panel navigation - CustomSession.html  *
+*********************************************************/
+
+#admin-panel {
+    margin-top: 3%;
+
+    .nav-tabs {
+      border-color: transparent;
+    }
+
+    .btn-circle {
+      width: 100px;
+      height: 100px;
+      padding: 10px 16px;
+      font-size: 18px;
+      line-height: 1.33;
+      border-radius: 150px;
+      background-color: white;
+      color: $ku-red;
+      box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+      font-family: "Annie Use Your Telescope", serif;
+
+      &:hover {
+        color: white;
+        background-color: #5f861e;
+      }
+    }
 }
 
+  #admin-panel .nav li > a {
+	text-transform: capitalize;
+	color:  $ku-red;
+	transition: background-color .2s, color .2s;
+
+}
+
+#admin-panel .nav li.active > a {
+	background-color: transparent;
+	color: green;
+
+    .btn-circle {
+      background-color: #5f861e;
+      color: white;
+    }
+}
+
+/*********************************************
+*  Start link / intro - SessionStartLinks.html  *
+**********************************************/
+
+.gamelink-content {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  font-family: 'Roboto Slab', serif;
+  padding-top: 3%;
+  padding-bottom: 4%;
+  position: relative;
+  margin-top: 10px;
+  color: white;
+  text-align: center;
+
+  .game-link-info {
+    font-size: 18px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 70%;
+    align-self: center;
+  }
+
+
+  .start-link {
+    margin-top: 20px;
+    background-color: white;
+    border-radius: 40px;
+    padding: 20px 0 20px 0;
+    width: 70%;
+    display: flex;
+    justify-content: center;
+    align-self: center;
+
+
+    a {
+      text-decoration: none;
+      color: $ku-red;
+       font-size: 16px;
+
+      &:hover {
+        color: $ku-dark-green;
+      }
+    }
+  }
+}
+
+/*********************************************
+*  Monitor game progress - SessionMonitor.html  *
+**********************************************/
+.info {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-family: 'Roboto Slab', serif;
+
+  .info-content {
+    display: flex;
+    justify-content: center;
+    width: 90%;
+    flex-direction: column;
+    text-align: center;
+    color: white;
+    align-items: center;
+
+    h1 {
+      font-size: 18px;
+    }
+
+    p {
+     font-size: 16px;
+
+    }
+  }
+  .fremryk-spiller {
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+
+      .fremryk-spiller-knap {
+        background-color: white;
+        color: $ku-red;
+        margin: 0 0 10px 0;
+
+         &:hover {
+        color: $ku-dark-green;
+      }
+
+      }
+    }
+    .player-table {
+    width: 80%;
+    background-color: white;
+    border-collapse: collapse;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    color: $ku-red;
+    font-size: 15px;
+  }
+}
+
+
+
+.results-table {
+    width: 100%;
+    background-color: white;
+    border-collapse: collapse;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    color: $ku-red;
+    font-size: 15px;
+    display: flex;
+    justify-content: center;
+  }
+
+/*****************************************************
+*  Game report page - BadInfluence/AdminReport.html  *
+******************************************************/
+.report-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  color: $ku-red;
+  font-family: "Roboto Slab", serif;
+
+   .report-info {
+    width: 90%;
+    border-collapse: collapse;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    background-color: white;
+    border-radius: 10px;
+  }
+
+  .rapport-header {
+  padding-top: 20px;
+  justify-content: center;
+  display: flex;
+  padding-bottom: 20px;
+  flex-direction: column;
+  align-items: center;
+
+
+    h2 {
+      font-size: 16px;
+    }
+    p {
+     font-size: 16px;
+      text-align: center;
+    }
+  }
+
+  .dropdown-questions {
+    display: flex;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+    .resultater {
+      display: flex;
+      justify-content: center;
+    }
+
+    .d3-row {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: space-evenly;
+    font-size: 14px;
+    font-family: "Roboto Slab", serif;
+
+        #d3consensus {
+
+        }
+
+        #d3playback {
+          display: none;
+        }
+    }
+
+
+  .dropdown-toggle {
+      background-color: $ku-red;
+      color: white;
+
+      &:hover {
+       background-color: $ku-dark-green;
+      }
+  }
+
+  .play-button {
+    background-color: $ku-red;
+    color: white;
+    width: 100px;
+    display: flex;
+    justify-content: center;
+
+    &:hover {
+      background-color: $ku-dark-green;
+    }
+  }
+}
+
+.d3-container {
+  background-color: orange;
+  width: 20%;
+}
+
+
+/*****************************************************
+*  Authenticated demo page - DemoIndex.html  *
+******************************************************/
+.demo-container {
+  margin-top: 10%;
+  padding: 10px 50px 10px 50px;
+}
+
+
+/*****************************************************
+*  Authenticated create session - Sessions.html  *
+******************************************************/
+.create-session-container {
+   margin-top: 10%;
+   padding: 10px 50px 10px 50px;
+}
+
+.game-admin {
+  margin-top: 5%;
+  padding: 10px 50px 10px 50px;
+  background-color: white !important;
+}
+
+/****************************
+*  Login view - login.html  *
+****************************/
+  .game-login {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    margin-top: 5%;
+    align-items: center;
+  }
+}

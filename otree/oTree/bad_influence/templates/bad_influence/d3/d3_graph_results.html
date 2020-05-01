@@ -143,17 +143,16 @@
 </script>
 <script>
     let nodeById = d3.map();
+    let red = "{% static "bad_influence/media/red_peep.png" %}";
+    let blue = "{% static "bad_influence/media/blue_peep.png" %}";
+    let pink = "{% static "bad_influence/media/pink_peep.png" %}";
+    let yellow = "{% static "bad_influence/media/yellow_peep.png" %}";
+    let grey = "{% static "bad_influence/media/grey_peep.png" %}";
+    let green = "{% static "bad_influence/media/green_peep.png" %}";
 
-    let red = "{% static "media/red_peep.png" %}";
-    let blue = "{% static "media/blue_peep.png" %}";
-    let pink = "{% static "media/pink_peep.png" %}";
-    let yellow = "{% static "media/yellow_peep.png" %}";
-    let grey = "{% static "media/grey_peep.png" %}";
-    let green = "{% static "media/green_peep.png" %}";
-
-    let open_eyes = "{% static "media/open_eyes.png" %}";
-    let closed_eyes = "{% static "media/closed_eyes.png" %}";
-    let happy_eyes = "{% static "media/happy_eyes.png" %}";
+    let open_eyes = "{% static "bad_influence/media/open_eyes.png" %}";
+    let closed_eyes = "{% static "bad_influence/media/closed_eyes.png" %}";
+    let happy_eyes = "{% static "bad_influence/media/happy_eyes.png" %}";
 
     let question = undefined;
 
@@ -349,6 +348,7 @@
         let dropdown = d3.select("#d3historyChoice")
             .insert("select", "svg")
             .attr("style", "font-family: annie_use_your_telescope; width: 10rem")
+            .attr("class", "btn btn-secondary dropdown-toggle")
             .on("change", dropdownChange);
 
         dropdown.selectAll("option")
@@ -468,8 +468,8 @@
 </script>
 <script>
     let margin = {top: 30, right: 30, bottom: 30, left: 65},
-        widthG = 300 - margin.left - margin.right,
-        heightG = 300 - margin.top - margin.bottom;
+        widthG = 400 - margin.left - margin.right,
+        heightG = 400 - margin.top - margin.bottom;
 
     let updateRatio = undefined;
 
