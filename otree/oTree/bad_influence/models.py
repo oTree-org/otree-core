@@ -319,11 +319,14 @@ class Player(BasePlayer):
         self.chat_color = "%02X%02X%02X".format(random_hex(), random_hex(), random_hex())
 
 
-class Message(django_models.Model):
-    content = django_models.TextField()
+class Message(models.Model):
+    content = models.TextField()
     timestamp = django_models.DateTimeField(auto_now=True)
-    player = django_models.ForeignKey('Player', on_delete=models.CASCADE)
+    player = models.ForeignKey('Player', on_delete=models.CASCADE, null=True)
+    chat_id = models.IntegerField()
+    group = models.ForeignKey('Group', on_delete=models.CASCADE, null=True)
 
-
-    def last_ten_messages(self):
-        return Message.objects.order_by('-timestamp').all()[:10]
+    @staticmethod
+    def last_15_messages():
+        last_15 = Message.objects.order_by('-timestamp')[:15]
+        return reversed(last_15)
