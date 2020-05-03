@@ -31,7 +31,11 @@
     justify-content: center;
     flex-direction: column;
     text-align: center;
-    background-image: url("../../media/Bad_influence_titlekujpg.jpg");
+    background-image: url("../../../../../../static/otree/media/Bad_influence_titlekusvg.svg");
+    background-repeat: no-repeat;
+    background-position: center;
+    padding: 35px 0 35px 0;
+    color: white;
   }
 
 .game-container {
@@ -41,7 +45,7 @@
   margin-top: 2%;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
   border-radius: 10px;
-  width: 80%;
+  width: 90%;
   background-color: white;
   padding-top: 40px;
 }
@@ -65,12 +69,21 @@
     min-height: 300px;
     width: 100%;
 
+
 }
 
 #timer-text {
-    top: 0;
-    left: 8px;
-    font-size: 25px;
+  top: 0;
+  left: 8px;
+  font-size: 25px;
+  display: flex;
+  justify-content: center;
+  padding-top: 2%;
+  font-family: "Patrick Hand", cursive;
+
+  #timer {
+    padding-left: 5px;
+  }
 }
 
 
@@ -87,7 +100,12 @@
   justify-content: flex-end;
   flex-direction: column;
   width: 50%;
-  border: 1px $ku-red;
+  margin-left: 5%;
+  padding-right: 20px;
+  margin-bottom: 5%;
+  border-color: $ku-red;
+  border-radius: 2px;
+  border-style: solid solid solid solid;
 }
 
 /*********************************
@@ -159,6 +177,7 @@
   font-family: "Patrick Hand", cursive;
   width: 50%;
   align-items: center;
+  margin-bottom: 5%;
 
 }
  .chat-title {
@@ -182,24 +201,28 @@
 
   #message {
     font-size: 20px;
-    max-width: 60%;
+    max-width: 50%;
   }
 }
 
 .send {
   width: 100%;
+  font-size: 20px;
+  border: none;
   justify-content: center;
   display: flex;
-  font-size: 20px;
 
   #send {
-    width: 60%;
+    width: 50%;
     height: 50px;
     background-color: $ku-red;
     font-size: 20px;
+    border-color: transparent;
+
 
   &:hover {
     background-color: $ku-dark-green;
+
   }
 }
 
@@ -211,29 +234,47 @@
   justify-content: center;
   display: flex;
 
-  margin: 0 10% 0 10%;
 
-  button:first-child {
-    margin-right: 4%;
-  }
 }
 
 .choice-button {
-  background-size: cover;
-  background-repeat: no-repeat;
-  width: 200px;
-  height: 150px;
+  width: 230px;
+  height: 70px;
   font-size: 20px;
-  border-radius: 50%;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: 50px;
   color: black;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
   font-family: "Annie Use Your Telescope", serif;
-  margin-bottom: 8%;
   background-color: transparent;
+  border: 2px solid $ku-red;
+  margin-bottom: 10%;
+  margin-left: 5%;
+  filter: opacity(100%);
 
- &:hover {
-   background-color: $ku-red;
- }
+   &:hover {
+      background-color: $ku-dark-green;
+      color: white;
+      border-color: transparent;
+
+  }
+  &:active {
+      background-color: $ku-dark-green;
+      color: white;
+
+  }
+
+  &:focus {
+    border-color: $ku-dark-green;
+    background-color: $ku-dark-green;
+    color: white;
+  }
+
+  img {
+    width: 55px;
+    height: 55px;
+  }
 }
 
 
