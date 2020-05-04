@@ -85,8 +85,7 @@ class Subsession(BaseSubsession):
             ax = plt.axes()
             x = np.linspace(1, Constants.num_rounds + 1, Constants.num_rounds + 1)
             for state, firma in enumerate(self.session.vars['company_names']):
-                prices = [self.session.vars['{}{}'.format(firma, r)][0]
-                          for r in range(1, Constants.num_rounds + 1)]
+                prices = [self.session.vars['{}{}'.format(firma, r)][0] for r in range(1, Constants.num_rounds + 1)]
                 tmp = '{}{}'.format(firma, Constants.num_rounds + 1)
                 prices.append(self.session.vars[tmp])
                 ax.plot(x, prices, label=firma)

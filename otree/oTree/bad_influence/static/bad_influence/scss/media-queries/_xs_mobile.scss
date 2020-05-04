@@ -26,7 +26,7 @@
 
  .round-title {
     font-family: "Patrick Hand", cursive;
-    font-size: 40px;
+    font-size: 30px;
     display: flex;
     justify-content: center;
     flex-direction: column;
@@ -45,7 +45,6 @@
   margin-top: 2%;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
   border-radius: 10px;
-  width: 90%;
   background-color: white;
   padding-top: 40px;
 }
@@ -55,7 +54,7 @@
   display: flex;
   justify-content: center;
   flex-direction: column;
-  width: 70%;
+
 }
 
 
@@ -90,7 +89,7 @@
 .game-row {
   display: flex;
   justify-content: center;
-  flex-direction: row;
+  flex-direction: column;
   width: 100%;
   margin-top: 2%;
 }
@@ -99,7 +98,7 @@
   display: flex;
   justify-content: flex-end;
   flex-direction: column;
-  width: 50%;
+  width: 90%;
   margin-left: 5%;
   padding-right: 20px;
   margin-bottom: 5%;
@@ -175,7 +174,7 @@
   justify-content: center;
   flex-direction: column;
   font-family: "Patrick Hand", cursive;
-  width: 50%;
+  width: 90%;
   align-items: center;
   margin-bottom: 5%;
 
@@ -201,7 +200,7 @@
 
   #message {
     font-size: 20px;
-    max-width: 50%;
+    max-width: 90%;
   }
 }
 
@@ -213,7 +212,7 @@
   display: flex;
 
   #send {
-    width: 50%;
+    width: 90%;
     height: 50px;
     background-color: $ku-red;
     font-size: 20px;
@@ -238,7 +237,7 @@
 }
 
 .choice-button {
-  width: 230px;
+  width: 235px;
   height: 70px;
   font-size: 20px;
   text-transform: uppercase;
