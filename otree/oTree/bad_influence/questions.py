@@ -62,8 +62,8 @@ def studietur(hub, gender, number_of_friends):
 
 
 def matematik(hub, gender, number_of_friends):
-    minority_choice = "er at mobbe ham"
-    majority_choice = "er ikke at mobbe ham"
+    minority_choice = "mobbe ham"
+    majority_choice = "ikke mobbe ham"
 
     prefers, other = (minority_choice, majority_choice) if hub else (majority_choice, minority_choice)
 
@@ -73,7 +73,7 @@ def matematik(hub, gender, number_of_friends):
             ("I har fået en ny matematiklærer, og han er lidt speciel. " +
              "I kan vælge at mobbe ham kollektivt eller ikke at mobbe ham."),
         'preference':
-            ("Din præference {prefers}.")
+            ("Din præference: {prefers}.")
                 .format(prefers=prefers, other=other),
         'challenge':
             ("Du får 3 point hvis det du vælger får flertal i klassen. " +
@@ -90,8 +90,8 @@ def matematik(hub, gender, number_of_friends):
 
 
 def hpv(hub, gender, number_of_friends):
-    minority_choice = "ikke vaccineres"
-    majority_choice = "gerne vaccineres"
+    minority_choice = "du vil ikke vaccineres"
+    majority_choice = "du vil gerne vaccineres"
 
     prefers, other = (minority_choice, majority_choice) if hub else (majority_choice, minority_choice)
 
@@ -100,7 +100,7 @@ def hpv(hub, gender, number_of_friends):
         'text':
             ("Du har fået et tilbud på en gratis vaccination mod hpv."),
         'preference':
-            ("Du vil {prefers}.")
+            ("Din præference: {prefers}.")
                 .format(prefers=prefers, other=other),
         'challenge':
             ("Du får 3 point hvis det du vælger får flertal i klassen. " +
@@ -116,8 +116,8 @@ def hpv(hub, gender, number_of_friends):
 
 
 def billeddeling(hub, gender, number_of_friends):
-    minority_choice = "er at dele billedet"
-    majority_choice = "er ikke at dele billedet"
+    minority_choice = "dele billedet med andre"
+    majority_choice = "ikke dele billedet med andre"
     prefers, other = (minority_choice, majority_choice) if hub else (majority_choice, minority_choice)
 
     return {
@@ -126,7 +126,7 @@ def billeddeling(hub, gender, number_of_friends):
             ("I har fået tilsendt et nøgenbillede af en irriterende pige fra parallelklassen. " +
              "I kan vælge at dele det med andre i og uden for skolen eller lade være."),
         'preference':
-            ("Din præference {prefers}.")
+            ("Din præference: {prefers}.")
                 .format(prefers=prefers, other=other),
         'challenge':
             ("Du får 3 point hvis det du vælger får flertal i klassen. " +
@@ -158,7 +158,7 @@ def stikkeri(hub, gender, number_of_friends, city):
              "I ved godt, at det var Oscar og William der delte en joint sidste fredag i skolegården. " +
              "I kan vælge at udlevere deres navne til lærerne eller at holde mund.").format(city=city),
         'preference':
-            ("Din præference er at {prefers}.")
+            ("Din præference: {prefers}.")
                 .format(prefers=prefers, other=other),
         'challenge':
             ("Du får 3 point hvis det du vælger får flertal i klassen. " +
@@ -209,16 +209,18 @@ def alkohol(hub, gender, number_of_friends):
 
 
 def klima(hub, gender, number_of_friends):
-    minority_choice = "ikke"
-    majority_choice = ""
+    minority_choice = "du tror ikke på at klimaforandringerne er menneskeskabte"
+    majority_choice = "du tror selvfølgelig på at klimaforandringerne er menneskeskabte"
 
     prefers, other = (minority_choice, majority_choice) if hub else (majority_choice, minority_choice)
 
     return {
         'title': 'Klimaforandringer',
-        'text': "",
+        'text':
+             ("Der er uenighed om, hvorvidt klimaforandringerne " +
+             "er menneskeskabte eller ej."),
         'preference':
-            ("Du tror faktisk {prefers} på at klimaforandringerne er menneskeskabte.")
+            ("Din præference: {prefers}.")
                 .format(prefers=prefers, other=other),
         'challenge':
             ("Du får 3 point hvis det du vælger får flertal i klassen. " +
@@ -250,7 +252,7 @@ def sexchikane(hub, gender, number_of_friends):
              "Eller I kan lade som ingenting med risiko for at vikaren bare forsætter.")
                 .format(koen=koen),
         'preference':
-            ("Din præference er {prefers}.")
+            ("Din præference: {prefers}.")
                 .format(prefers=prefers, other=other),
         'challenge':
             ("Du får 3 point hvis det du vælger får flertal i klassen. " +
@@ -268,16 +270,18 @@ def sexchikane(hub, gender, number_of_friends):
 
 
 def moon(hub, gender, number_of_friends):
-    minority_choice = "ikke"
-    majority_choice = ""
+    minority_choice = "du tror ikke på at amerikanerne landede på månen"
+    majority_choice = "du tror selvfølgelig på at amerikanerne landede på månen"
 
     prefers, other = (minority_choice, majority_choice) if hub else (majority_choice, minority_choice)
 
     return {
         'title': 'Månelanding',
-        'text': "",
+        'text':
+             ("Der er uenighed om, hvorvidt amerikanerne " +
+             "faktisk landede på månen eller ej."),
         'preference':
-            ("Du tror selvfølgelig {prefers} på at amerikanerne landede på månen.")
+            ("Din præference: {prefers}.")
                 .format(prefers=prefers, other=other),
         'challenge':
             ("Du får 3 point hvis det du vælger får flertal i klassen. " +
