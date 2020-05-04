@@ -25,7 +25,7 @@ its state with a fixed probability, a mix of strategies need to be employed.
 class Constants(BaseConstants):
     name_in_url = 'daytrader'
     players_per_group = None
-    num_rounds = 3
+    num_rounds = 10
 
     # share attributes
     num_shares = 100000

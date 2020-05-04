@@ -8,43 +8,71 @@
 {% block content %}
 
     {% if subsession.round_number > 1 %}
-    <p>
-    <table class="table">
-        <tr>
-            <th>trader</th>
-            <th>pris</th>
-            <th>ansigt</th>
-            <th>handel</th>
-        </tr>
-        {% for r, price, choice, deals in data %}
+        <p>
+        <table class="table">
             <tr>
-                <td> {{ r }}. </td>
-                <td> {{ price|c }}</td>
-                <td> ? </td>
-                <td> {%if choice == True %} + {% else %} - {% endif %}
-                     {{ deals }} aktier</td>
+                <th>trader</th>
+                <th>pris</th>
+                <th>ansigt</th>
+                <th>handel</th>
             </tr>
-        {% endfor %}
-    </table>
-    <p> Nu er du trader nummer {{ player.round_number }},
+            {% for r, price, choice, deals in data %}
+                <tr>
+                    <td> {{ r }}.</td>
+                    <td> {{ price|c }}</td>
+                    <td class="faceContainer">
+                    </td>
+                    <td> {% if choice == True %} + {% else %} - {% endif %}
+                        {{ deals }} aktier
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+        <p> Nu er du trader nummer {{ player.round_number }},
     {% else %}
-    Du er den første trader,
+        Du er den første trader,
     {% endif %}
-    og du skal nu handle aktier i firmaet '{{ player.company_name }}'.
-    Du kigger i sækken, og ser et ansigt der er
-    {% if player.drawn_face == True %}
-        <strong>glad</strong>
-    {% else %}
-        <strong>ked af det</strong>
-    {% endif%}.
-
-    </p>
+og du skal nu handle aktier i firmaet '{{ player.company_name }}'.
+Du kigger i sækken, og ser et ansigt der er
+{% if player.drawn_face == True %}
+    <strong>glad</strong>
+{% else %}
+    <strong>ked af det</strong>
+{% endif %}.
+</p>
     <p>
         Du har {{ player.wallet|c }} og aktieprisen er lige nu {{ player.price|c }}. Hvad vil du gøre?
     </p>
-        {% formfield player.choice_of_trade label=None%}
+    {% formfield player.choice_of_trade label=None %}
     <p> Hvor mange aktier? (du kan handle med maksimalt {{ player.can_buy }} aktier)</p>
-        {% formfield player.choice_of_number_of_shares label=None%}
-    {%  next_button %}
+    {% formfield player.choice_of_number_of_shares label=None %}
+    {% next_button %}
+
+    <script>
+
+        let drawn_face = {{ player.drawn_face|yesno:"true,false" }};
+        let divElement = document.createElement('div');
+        let containers = document.getElementsByClassName("faceContainer");
+
+
+        for (let i = 0; i < containers.length; i++) {
+            let button = document.createElement("button");
+            button.textContent = "?";
+            button.className = "revealFaces btn btn-success";
+            containers[i].appendChild(button);
+
+            for (let j = 0; i < button[j].length; j++) {
+                button[j].onclick = event => {
+                    event.preventDefault();
+                    if(drawn_face === true) {
+                        containers[i].textContent = "Glad"
+                    } else {
+                        containers[i].textContent = "Ked af det"
+                    }
+                    button[j].style.display = "none";
+                }
+            }
+        }
+    </script>
 
 {% endblock %}
