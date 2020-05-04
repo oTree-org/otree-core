@@ -33,13 +33,20 @@
         </div>
         </div>
 
+
+
+
       <div id="ButtonsHolder" class="choice-button-holder">
         <button id="GuessFalseButton" type="button" name="choice" value="False" class="btn choice-button">
-              <img src="{{ question.majority_color_img }}"><b> {{ question.majority_choice }}</b>
+             <div class="mobile-column tablet-row">
+                  <img src="{{ question.majority_color_img }}"><b> {{ question.majority_choice }}</b>
+             </div>
         </button>
 
         <button id="GuessTrueButton" type="button" name="choice" value="True" class="btn choice-button">
+             <div class="mobile-column tablet-row">
            <img src="{{ question.minority_color_img }}">  <b>{{ question.minority_choice }}</b>
+                 </div>
         </button>
         </div>
     </div>

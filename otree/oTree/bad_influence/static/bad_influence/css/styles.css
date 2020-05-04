@@ -19,6 +19,7 @@
     display: flex;
     justify-content: left;
     flex-direction: column;
+    text-align: center;
   }
 
   .round-title {
@@ -43,7 +44,6 @@
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     border-radius: 10px;
     background-color: white;
-    padding-top: 40px;
   }
 
   .round-introduction {
@@ -90,8 +90,7 @@
     justify-content: flex-end;
     flex-direction: column;
     width: 90%;
-    margin-left: 5%;
-    padding-right: 20px;
+    align-self: center;
     margin-bottom: 5%;
     border-color: #901A1E;
     border-radius: 2px;
@@ -164,7 +163,7 @@
     justify-content: center;
     flex-direction: column;
     font-family: "Patrick Hand", cursive;
-    width: 90%;
+    width: 100%;
     align-items: center;
     margin-bottom: 5%;
   }
@@ -172,7 +171,7 @@
   .chat-title {
     justify-content: center;
     display: flex;
-    font-size: 50px;
+    font-size: 20px;
     width: 100%;
   }
 
@@ -185,7 +184,7 @@
   .chat #chat, .message #chat {
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     margin-bottom: 2%;
-    width: 80%;
+    width: 100%;
   }
   .chat #message, .message #message {
     font-size: 20px;
@@ -213,15 +212,22 @@
   /*********************************
   *   Play.html button styling    *
   *********************************/
+  .mobile-column {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+
   .choice-button-holder {
     justify-content: center;
     display: flex;
+    width: 100%;
   }
 
   .choice-button {
-    width: 235px;
-    height: 70px;
-    font-size: 20px;
+    width: 120px;
+    height: 110px;
+    font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 1px;
     border-radius: 50px;
@@ -230,9 +236,7 @@
     font-family: "Annie Use Your Telescope", serif;
     background-color: transparent;
     border: 2px solid #901A1E;
-    margin-bottom: 10%;
-    margin-left: 5%;
-    filter: opacity(100%);
+    margin: 5px 5px 10% 5px;
   }
   .choice-button:hover {
     background-color: #5f861e;
@@ -249,8 +253,9 @@
     color: white;
   }
   .choice-button img {
-    width: 55px;
-    height: 55px;
+    width: 50px;
+    height: 50px;
+    align-self: center;
   }
 }
 @media (min-width: 1024px) {
@@ -470,6 +475,12 @@
   /*********************************
   *   Play.html button styling    *
   *********************************/
+  .mobile-column {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+  }
+
   .choice-button-holder {
     justify-content: center;
     display: flex;
@@ -489,7 +500,6 @@
     border: 2px solid #901A1E;
     margin-bottom: 10%;
     margin-left: 5%;
-    filter: opacity(100%);
   }
   .choice-button:hover {
     background-color: #5f861e;
