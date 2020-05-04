@@ -115,7 +115,7 @@
                 friend => {
                     players.push(`player_${friend}`)
                 }
-            );
+            )
 
             return players;
         };
@@ -129,19 +129,16 @@
         // Opens the WebSocket connection and logs a message in the console when it opens
         socket.onopen = event => {
             console.log('WebSocket opened');
-            console.log("{{ player.id }}");
-            console.log("{{ player.id_in_group }}");
-            /*
-            const chat = document.getElementById('chat');
-            let chat_messages = JSON.parse(localStorage.getItem('messages'));
-            chat.innerHTML = chat_messages;
-            */
+            // Sends a message to the socket to fetch all messages from the database
+            fetchMessages();
+            // Displays the correct messages based on the player's network
+            displayFriends();
         };
 
         // Closes the WebSocket connection and logs a message in the console when it closes
         socket.onclose = event => {
             console.log("WebSocket closed");
-        };
+        }
 
         // Logs a error if the WebSocket gets a connection error in the console
         socket.onerror = event => {
@@ -259,7 +256,13 @@
             // Appends each chat message to the chat log
             document.querySelector("#chat").appendChild(divElement);
         }
-        </script>
+
+        // Sends a message to the WebSocket to fetch the last 15 messages from the Database
+        function fetchMessages() {
+            socket.send(JSON.stringify({'command': 'fetch_messages', 'group_id': {{ group.id }}}));
+        }
+
+    </script>
 {% endblock %}
 {% block scripts %}
     {% include 'bad_influence/channels/network_voting_channel.html' %}
