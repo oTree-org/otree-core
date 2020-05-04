@@ -1,37 +1,84 @@
 {% extends "global/Page.html" %}
 {% load otree static %}
 {% load static %}
-{% block content %}
-    <h2>{{ question.title }}</h2>
-    <p>{{ question.text }}</p>
-    <p>{{ question.preference }}</p>
-    <p>{{ question.challenge }}</p>
-    <style>
-        .flash {
-            animation-name: flash;
-            animation-duration: 0.2s;
-            animation-timing-function: linear;
-            animation-iteration-count: infinite;
-            animation-direction: alternate;
-            animation-play-state: running;
-        }
+{% block styles %}
 
-        @keyframes flash {
-            from {
-                color: red;
-            }
-            to {
-                color: black;
-            }
+    <style>
+        body {
+            background-color: #901A1E;
         }
     </style>
-    <div style="display: flex; flex-direction: column; position: relative; min-height: 300px" class="answer-container"
-         id="d3container">
-        <div id="timer-text" style="position: absolute; top: 0; left: 8px; font-size: 40px">Tid tilbage:
-            <strong><span id="timer" class="otree-timer__time-left"></span></strong>
+{% endblock %}
+
+{% block content %}
+<div class="game-container container">
+    <div class="round-introduction">
+        <h2 class="round-title">{{ question.title }}</h2>
+        <div class="round-info">
+            <h3>Sådan spiller du</h3>
+            <p>{{ question.text }}</p>
+            <p>{{ question.challenge }}</p>
+            <p>{{ question.preference }}</p>
+
         </div>
     </div>
+<div class="surround">
+<div class="game-row">
+        <!-- Left hand side-->
+    <div class="svg-column">
+      <div class="answer-container" id="d3container">
+        <div id="timer-text">
+            Tid tilbage:
+            <strong><span id="timer" class="otree-timer__time-left"></span></strong>
+        </div>
+        </div>
+
+      <div id="ButtonsHolder" class="choice-button-holder">
+        <button id="GuessFalseButton" type="button" name="choice" value="False" class="btn choice-button">
+              <img src="{{ question.majority_color_img }}"><b> {{ question.majority_choice }}</b>
+        </button>
+
+        <button id="GuessTrueButton" type="button" name="choice" value="True" class="btn choice-button">
+           <img src="{{ question.minority_color_img }}">  <b>{{ question.minority_choice }}</b>
+        </button>
+        </div>
+    </div>
+
+
+      <!-- Right hand side -->
+    <div id="chat-container">
+        <div class="chat-title">
+            <h2>Chat med dine venner</h2>
+        </div>
+
+        <div class="form-group chat">
+            <div id="chat" type="text-area"></div>
+        </div>
+        <div class="form-group message">
+            <input type="text" id="message" placeholder="Send besked..." class="form-control">
+        </div>
+        <div class="form-group send">
+            <button id="send" class="btn btn-success">Send</button>
+        </div>
+    </div>
+</div>
+
+</div>
+</div>
+
+
+
+
+
+
+
+
+
     <script>
+    // We want to randomise whether the button for the majority choice is on the left or the right
+    // so that players can't catch on an tell which is the majority for the button position
+    $('#ButtonsHolder').css('flex-direction', Math.random() > 0.5 ? 'row' : 'row-reverse');
+
         $('#timer').on('DOMSubtreeModified', function () {
             let element = $('#timer');
 
@@ -47,146 +94,6 @@
             }
         })
     </script>
-    <style>
-        .otree-timer {
-            display: none
-        }
-
-        .otree-title {
-            display: none
-        }
-
-        .info-div {
-            display: flex;
-            flex-direction: row;
-            border-style: solid;
-            border-width: thin;
-            border-radius: 10px;
-            padding: 1%;
-            margin: 2%
-        }
-
-        .image-div {
-            margin: 1%;
-            flex: 1 1 0
-        }
-
-        .image-img {
-            width: 90%;
-            border-style: solid;
-            border-width: thin;
-            background: #f5f5f5
-        }
-
-        .guess-div {
-            margin: 1%;
-            flex: 1 1 0
-        }
-
-        tr {
-            line-height: 20%
-        }
-
-        tr:nth-child(odd) {
-            background: #CCC
-        }
-
-        tr:nth-child(even) {
-            background: #FFF
-        }
-
-        .answer-container {
-            display: flex;
-            flex-direction: column;
-            height: 10%;
-            align-items: center;
-            border-style: solid;
-            border-width: thin;
-            border-radius: 10px;
-            padding: 1%;
-            margin: 2%
-        }
-
-        ,
-        .text-container {
-            display: flex;
-            flex-direction: column;
-            height: 10%;
-            align-items: center;
-            border-style: solid;
-            border-width: thin;
-            border-radius: 10px;
-            padding: 1%;
-            margin: 2%
-        }
-
-        .answer-item {
-            padding-left: 20px;
-        }
-
-        .text-item {
-            padding-left: 20px;
-        }
-    </style>
-    <div id="ButtonsHolder" class="choice-button-holder">
-        <button id="GuessFalseButton" type="button" name="choice" value="False" class="btn choice-button">
-            <img width="30px" height="30px" src="{{ question.majority_color_img }}"> {{ question.majority_choice }}
-        </button>
-        <button id="GuessTrueButton" type="button" name="choice" value="True" class="btn choice-button">
-            <img width="30px" height="30px" src="{{ question.minority_color_img }}"> {{ question.minority_choice }}
-        </button>
-    </div>
-    <script>
-        // We want to randomise whether the button for the majority choice is on the left or the right
-        // so that players can't catch on an tell which is the majority for the button position
-        $('#ButtonsHolder').css('flex-direction', Math.random() > 0.5 ? 'row' : 'row-reverse')
-    </script>
-
-    <div id="chat-container">
-        <h2>Chat med dine venner</h2>
-        <hr>
-        <div class="form-group">
-            <div id="chat" class="col-5"></div>
-        </div>
-        <div class="form-group">
-            <input type="text" id="message" placeholder="Send besked..." class="form-control col-5">
-        </div>
-        <div class="form-group">
-            <button id="send" class="btn btn-success">Send</button>
-        </div>
-    </div>
-    <style>
-        #chat {
-            height: 250px;
-            scroll-behavior: smooth;
-            background: #ebeded;
-            border-radius: 5px;
-            padding: 15px;
-            overflow: auto;
-        }
-
-        #chat::-webkit-scrollbar {
-            width: 1em;
-        }
-
-        #chat::-webkit-scrollbar-track {
-            -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-        }
-
-        #chat::-webkit-scrollbar-thumb {
-            background-color: darkgrey;
-            outline: 1px solid slategrey;
-            border-radius: 10px;
-        }
-
-        .chat-message {
-            display: flex;
-        }
-
-        .chat-message b {
-            padding: 0 10px 0 0;
-        }
-    </style>
 
     <script>
         // Defines the scheme of the WebSocket to be either wss if the protocol is https
@@ -208,7 +115,7 @@
                 friend => {
                     players.push(`player_${friend}`)
                 }
-            )
+            );
 
             return players;
         };
@@ -222,16 +129,19 @@
         // Opens the WebSocket connection and logs a message in the console when it opens
         socket.onopen = event => {
             console.log('WebSocket opened');
-            // Sends a message to the socket to fetch all messages from the database
-            fetchMessages();
-            // Displays the correct messages based on the player's network
-            displayFriends();
+            console.log("{{ player.id }}");
+            console.log("{{ player.id_in_group }}");
+            /*
+            const chat = document.getElementById('chat');
+            let chat_messages = JSON.parse(localStorage.getItem('messages'));
+            chat.innerHTML = chat_messages;
+            */
         };
 
         // Closes the WebSocket connection and logs a message in the console when it closes
         socket.onclose = event => {
             console.log("WebSocket closed");
-        }
+        };
 
         // Logs a error if the WebSocket gets a connection error in the console
         socket.onerror = event => {
@@ -349,13 +259,7 @@
             // Appends each chat message to the chat log
             document.querySelector("#chat").appendChild(divElement);
         }
-
-        // Sends a message to the WebSocket to fetch the last 15 messages from the Database
-        function fetchMessages() {
-            socket.send(JSON.stringify({'command': 'fetch_messages', 'group_id': {{ group.id }}}));
-        }
-
-    </script>
+        </script>
 {% endblock %}
 {% block scripts %}
     {% include 'bad_influence/channels/network_voting_channel.html' %}
@@ -366,12 +270,5 @@
     {{ form.media|default:"" }}
 
 {% endblock %}
-{% block styles %}
-    <style type="text/css">
-        #cy {
-            width: 100%;
-            height: 600px;
-            display: block;
-        }
-    </style>
-{% endblock %}
+
+

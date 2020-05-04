@@ -22,11 +22,13 @@ i removed many linebreaks to make output HTML cleaner
             <div class="_otree-content">{% block content %}{% endblock %}</div>
         </form>
         <br/>
+
         {# need the default:False for projects with old MTurkLandingPage #}
-        {% if view.is_debug|default:False %}
+      <!--  {% if view.is_debug|default:False %}
             <br>
             {% include 'otree/includes/debug_info.html' %}
         {% endif %}
+    -->
     </div>
 {% endblock %}
 {% block internal_styles %}
