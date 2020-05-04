@@ -1988,6 +1988,7 @@ table.table-debug td.debug-var-value {
     margin-top: 5%;
     padding: 10px 50px 10px 50px;
     background-color: white !important;
+    border-radius: 10px;
   }
 
   /****************************

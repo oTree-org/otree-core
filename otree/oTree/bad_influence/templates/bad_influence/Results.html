@@ -1,11 +1,26 @@
 {% extends "global/Page.html" %}
 {% load otree static %}
+{% block styles %}
+    <style>
+        html, body {
+            padding:0;
+            margin:0;
+            height: 100%;
+            background-color: #901A1E !important;
+            font-family: "Patrick Hand", cursive;
 
+        }
+
+    </style>
+{% endblock %}
 {% block content %}
+<div class="game-admin">
+    <div class="results-title">
+        <p>Du fik {{ payoff | c }} point</p>
+    </div>
 
-    <h2>Du fik {{ payoff | c }} point</h2>
+    <table class="table table-responsive game-results-table">
 
-    <table class="table">
             <tr>
                 <th><strong>Runde</strong></th>
                 <th>Point</th>
@@ -43,6 +58,7 @@
     <div style="display: inline-block;" id="d3consensus"></div>
     <p id="d3playback"></p>
     <button type="button" id="play-button">Afspil</button>
+</div>
 {% endblock %}
 
 
@@ -50,12 +66,3 @@
     {% include 'bad_influence/d3/d3_graph_results.html' %}
 {% endblock %}
 
-{% block styles %}
-    <style type="text/css">
-        #cy {
-            width: 100%;
-            height: 600px;
-            display: block;
-        }
-    </style>
-{% endblock %}

@@ -16,16 +16,20 @@
 *******************************/
 
 .round-info {
-    font-size: 30px;
+    font-size: 25px;
     width: 100%;
     display: flex;
     justify-content: left;
     flex-direction: column;
+
+  h3 {
+    font-weight: bold;
+  }
 }
 
  .round-title {
     font-family: "Patrick Hand", cursive;
-    font-size: 40px;
+    font-size: 30px;
     display: flex;
     justify-content: center;
     flex-direction: column;
@@ -229,11 +233,7 @@
 /*********************************
 *   Play.html button styling    *
 *********************************/
-.mobile-column {
-  display: flex;
-  justify-content: center;
-  flex-direction: row;
-}
+
 
 .choice-button-holder {
   justify-content: center;
@@ -280,6 +280,35 @@
     width: 55px;
     height: 55px;
   }
+}
+
+/*********************************
+*   Results.html table styling   *
+*********************************/
+
+.results-title {
+  font-size: 35px;
+  display: flex;
+  justify-content: center;
+  color: $ku-red;
+
+  font-weight: bold;
+
+}
+
+
+.game-results-table {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  border-radius: 10px;
+    background-color: white;
+    border-collapse: collapse;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    color: $ku-red;
+    font-size: 20px;
+
 }
 
 
