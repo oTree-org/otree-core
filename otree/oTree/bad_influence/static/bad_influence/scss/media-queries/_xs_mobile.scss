@@ -22,11 +22,12 @@
     display: flex;
     justify-content: left;
     flex-direction: column;
+    text-align: center;
 }
 
  .round-title {
     font-family: "Patrick Hand", cursive;
-    font-size: 40px;
+    font-size: 30px;
     display: flex;
     justify-content: center;
     flex-direction: column;
@@ -45,9 +46,7 @@
   margin-top: 2%;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
   border-radius: 10px;
-  width: 90%;
   background-color: white;
-  padding-top: 40px;
 }
 
 .round-introduction {
@@ -55,7 +54,7 @@
   display: flex;
   justify-content: center;
   flex-direction: column;
-  width: 70%;
+
 }
 
 
@@ -69,6 +68,9 @@
     min-height: 300px;
     width: 100%;
 
+  svg {
+    width: 100%;
+  }
 
 }
 
@@ -90,7 +92,7 @@
 .game-row {
   display: flex;
   justify-content: center;
-  flex-direction: row;
+  flex-direction: column;
   width: 100%;
   margin-top: 2%;
 }
@@ -99,9 +101,9 @@
   display: flex;
   justify-content: flex-end;
   flex-direction: column;
-  width: 50%;
-  margin-left: 5%;
-  padding-right: 20px;
+  width: 90%;
+  align-self: center;
+
   margin-bottom: 5%;
   border-color: $ku-red;
   border-radius: 2px;
@@ -175,7 +177,7 @@
   justify-content: center;
   flex-direction: column;
   font-family: "Patrick Hand", cursive;
-  width: 50%;
+  width: 100%;
   align-items: center;
   margin-bottom: 5%;
 
@@ -183,7 +185,7 @@
  .chat-title {
    justify-content: center;
   display: flex;
-  font-size: 50px;
+  font-size: 20px;
    width: 100%;
 }
 
@@ -196,12 +198,12 @@
   #chat {
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     margin-bottom: 2%;
-    width: 80%;
+    width: 100%;
   }
 
   #message {
     font-size: 20px;
-    max-width: 50%;
+    max-width: 90%;
   }
 }
 
@@ -213,7 +215,7 @@
   display: flex;
 
   #send {
-    width: 50%;
+    width: 90%;
     height: 50px;
     background-color: $ku-red;
     font-size: 20px;
@@ -230,17 +232,24 @@
 /*********************************
 *   Play.html button styling    *
 *********************************/
+.mobile-column {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
 .choice-button-holder {
   justify-content: center;
   display: flex;
+  width: 100%;
 
 
 }
 
 .choice-button {
-  width: 230px;
-  height: 70px;
-  font-size: 20px;
+  width: 120px;
+  height: 110px;
+  font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 1px;
   border-radius: 50px;
@@ -249,9 +258,7 @@
   font-family: "Annie Use Your Telescope", serif;
   background-color: transparent;
   border: 2px solid $ku-red;
-  margin-bottom: 10%;
-  margin-left: 5%;
-  filter: opacity(100%);
+  margin: 5px 5px 10% 5px;
 
    &:hover {
       background-color: $ku-dark-green;
@@ -272,8 +279,9 @@
   }
 
   img {
-    width: 55px;
-    height: 55px;
+    width: 50px;
+    height: 50px;
+    align-self: center;
   }
 }
 
