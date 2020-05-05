@@ -25,7 +25,7 @@ its state with a fixed probability, a mix of strategies need to be employed.
 class Constants(BaseConstants):
     name_in_url = 'daytrader'
     players_per_group = None
-    num_rounds = 3
+    num_rounds = 5
 
     # share attributes
     num_shares = 100000
@@ -53,7 +53,8 @@ class Subsession(BaseSubsession):
         # creating static company names and states in round 1, save in session.vars
         # and retrieve for next rounds. Else we get an assignment error.
         if self.round_number == 1:
-            number_of_players = self.session.config['num_demo_participants']
+            number_of_players = self.session.num_participants
+            # number_of_players = self.session.config['num_demo_participants']
             company_names = random.sample(names["Name"].tolist(), number_of_players)
             company_states = [[bool(random.getrandbits(1))
                                 for _ in range(Constants.num_faces)]
@@ -102,8 +103,10 @@ class Subsession(BaseSubsession):
             choices = [[self.session.vars['{}{}'.format(name, r)][3]
                         for r in range(1, self.round_number + 1)] for name in names]
 
+            round_list = [r for r in range(1, Constants.num_rounds+1)]
+
         print(dict(company=list(zip(names, states, choices))))
-        return dict(company=list(zip(names, states, choices)))
+        return dict(company=list(zip(names, states, choices)), round_list=round_list)
 
 
 
@@ -112,20 +115,22 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
-    wallet = models.FloatField()
+    wallet = models.CurrencyField()
     company_name = models.StringField()
     company_state = models.StringField()
     #number_of_glad_faces = models.PositiveIntegerField()
     drawn_face = models.BooleanField()
-    choice_of_trade = models.BooleanField(
+    choice_of_trade = models.IntegerField(
         choices=[
-            [True, 'køb (long)'],
-            [False, 'lån og sælg (short)'],
+            [2, 'gør ingenting'],
+            [1, 'køb (long)'],
+            [0, 'lån og sælg (short)'],
         ],
+        default=2,
         widget=widgets.RadioSelectHorizontal()
     )
-    price = models.FloatField()
-    price_change = models.FloatField()
+    price = models.CurrencyField()
+    price_change = models.CurrencyField()
     choice_of_number_of_shares = models.PositiveIntegerField(max=1000)
     can_buy = models.PositiveIntegerField()
 
@@ -143,12 +148,12 @@ class Player(BasePlayer):
         else:
             return Constants.start_price
 
-    def old_choice(self):
-        if self.round_number == 1:
-            return 0
-        else:
-            tmp = '{}{}'.format(self.company_name, self.round_number-1)
-            return self.session.vars[tmp][3]
+    # def old_choice(self):
+    #     if self.round_number == 1:
+    #         return 2
+    #     else:
+    #         tmp = '{}{}'.format(self.company_name, self.round_number-1)
+    #         return self.session.vars[tmp][3]
 
     def old_num_shares(self):
         if self.round_number == 1:
@@ -169,10 +174,12 @@ class Player(BasePlayer):
             previous_choice_of_number_of_shares = self.session.vars[tmp][4]
 
             # calculate price change and add up
-            if previous_choice_of_trade == True:
+            if previous_choice_of_trade == 1:
                 price_change += Constants.price_change_per_share * previous_choice_of_number_of_shares
-            else:
+            elif previous_choice_of_trade == 0:
                 price_change -= Constants.price_change_per_share * previous_choice_of_number_of_shares
+            else:
+                price_change += 0
             self.price = self.old_share_price() + price_change * self.old_share_price()
         return self.price
 
@@ -205,10 +212,12 @@ class Player(BasePlayer):
         tmp4 = self.session.vars[tmp][4]
 
         price_change = 0.0
-        if tmp3 == True:
+        if tmp3 == 1:
             price_change += Constants.price_change_per_share * tmp4
-        else:
+        elif tmp3 == 0:
             price_change -= Constants.price_change_per_share * tmp4
+        else:
+            price_change += 0
 
         return tmp0 + price_change * tmp0
 
@@ -218,11 +227,13 @@ class Player(BasePlayer):
         # in participant.vars and summed in self.payoff
         self.participant.vars['profit'] = []
         for idp, p in enumerate(self.in_all_rounds()):
-            if p.choice_of_trade == True:
-                self.participant.vars['profit'].append(c((self.closing_price(p.company_name)
-                                                - p.price) * p.choice_of_number_of_shares))
+            if p.choice_of_trade == 1:
+                self.participant.vars['profit'].append((self.closing_price(p.company_name)
+                                                - p.price) * p.choice_of_number_of_shares)
+            elif p.choice_of_trade == 0:
+                self.participant.vars['profit'].append(-(self.closing_price(p.company_name)
+                                                - p.price) * p.choice_of_number_of_shares)
             else:
-                self.participant.vars['profit'].append(c(-(self.closing_price(p.company_name)
-                                                - p.price) * p.choice_of_number_of_shares))
+                self.participant.vars['profit'].append(0)
         self.payoff = sum(self.participant.vars['profit'])
         return self.participant.vars['profit']
