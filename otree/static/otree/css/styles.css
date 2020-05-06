@@ -572,18 +572,25 @@ table.table-debug td.debug-var-value {
     padding-bottom: 20px;
     flex-direction: column;
     align-items: center;
+    text-align: center;
   }
   .report-container .rapport-header h2 {
     font-size: 16px;
+    width: 90%;
   }
   .report-container .rapport-header p {
     font-size: 16px;
-    text-align: center;
   }
   .report-container .dropdown-questions {
     display: flex;
     justify-content: center;
     font-size: 16px;
+    flex-direction: column;
+  }
+  .report-container .dropdown-questions .question-title {
+    font-size: 16px;
+    font-weight: bold;
+    padding-bottom: 5px;
   }
   .report-container .resultater {
     display: flex;
@@ -600,13 +607,34 @@ table.table-debug td.debug-var-value {
   .report-container .d3-row #d3consensus {
     display: flex;
     justify-content: center;
+    width: 95%;
   }
   .report-container .d3-row #d3playback {
     display: none;
   }
+  .report-container .alert-info {
+    color: #901A1E;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+  }
+  .report-container .alert {
+    width: 100%;
+  }
+  .report-container .graf {
+    height: 130px;
+  }
+  .report-container .explanation {
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: column;
+  }
   .report-container .dropdown-toggle {
     background-color: #901A1E;
     color: white;
+    font-size: 14px;
+    width: auto !important;
   }
   .report-container .dropdown-toggle:hover {
     background-color: #5f861e;
@@ -1028,7 +1056,7 @@ table.table-debug td.debug-var-value {
     align-items: center;
   }
   .report-container .rapport-header h2 {
-    font-size: 16px;
+    font-size: 18px;
   }
   .report-container .rapport-header p {
     font-size: 16px;
@@ -1038,6 +1066,12 @@ table.table-debug td.debug-var-value {
     display: flex;
     justify-content: center;
     font-size: 16px;
+    flex-direction: column;
+  }
+  .report-container .dropdown-questions .question-title {
+    font-size: 18px;
+    font-weight: bold;
+    padding-bottom: 5px;
   }
   .report-container .resultater {
     display: flex;
@@ -1051,12 +1085,36 @@ table.table-debug td.debug-var-value {
     font-size: 14px;
     font-family: "Roboto Slab", serif;
   }
+  .report-container .d3-row #d3consensus {
+    display: flex;
+    justify-content: center;
+  }
   .report-container .d3-row #d3playback {
     display: none;
+  }
+  .report-container .alert-info {
+    color: #901A1E;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+  }
+  .report-container .alert {
+    width: 100%;
+  }
+  .report-container .graf {
+    height: 130px;
+  }
+  .report-container .explanation {
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: column;
   }
   .report-container .dropdown-toggle {
     background-color: #901A1E;
     color: white;
+    font-size: 16px;
+    width: auto !important;
   }
   .report-container .dropdown-toggle:hover {
     background-color: #5f861e;
@@ -1476,16 +1534,22 @@ table.table-debug td.debug-var-value {
     align-items: center;
   }
   .report-container .rapport-header h2 {
-    font-size: 16px;
+    font-size: 20px;
   }
   .report-container .rapport-header p {
-    font-size: 16px;
+    font-size: 18px;
     text-align: center;
   }
   .report-container .dropdown-questions {
     display: flex;
     justify-content: center;
     font-size: 16px;
+    flex-direction: column;
+  }
+  .report-container .dropdown-questions .question-title {
+    font-size: 20px;
+    font-weight: bold;
+    padding-bottom: 5px;
   }
   .report-container .resultater {
     display: flex;
@@ -1495,16 +1559,41 @@ table.table-debug td.debug-var-value {
     display: flex;
     align-items: center;
     flex-direction: column;
-    justify-content: center;
-    font-size: 14px;
+    justify-content: space-evenly;
+    font-size: 18px;
     font-family: "Roboto Slab", serif;
   }
+  .report-container .d3-row #d3consensus {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
   .report-container .d3-row #d3playback {
-    display: inline;
+    display: none;
+  }
+  .report-container .alert-info {
+    color: #901A1E;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+  }
+  .report-container .alert {
+    width: 100%;
+  }
+  .report-container .graf {
+    height: 130px;
+  }
+  .report-container .explanation {
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: column;
   }
   .report-container .dropdown-toggle {
     background-color: #901A1E;
     color: white;
+    font-size: 18px;
+    width: auto !important;
   }
   .report-container .dropdown-toggle:hover {
     background-color: #5f861e;
@@ -1579,15 +1668,6 @@ table.table-debug td.debug-var-value {
   /******************************
   *  Front Page  - games.html  *
   ******************************/
-  .background-frontpage {
-    background-image: url("../../media/background-ku-desktop.jpg");
-    background-repeat: no-repeat;
-    background-size: 100%, 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
   .title-container {
     margin-bottom: 5%;
   }
@@ -1911,7 +1991,7 @@ table.table-debug td.debug-var-value {
     border-radius: 10px;
   }
   .report-container .rapport-header {
-    padding-top: 20px;
+    padding-top: 22px;
     justify-content: center;
     display: flex;
     padding-bottom: 20px;
@@ -1919,7 +1999,7 @@ table.table-debug td.debug-var-value {
     align-items: center;
   }
   .report-container .rapport-header h2 {
-    font-size: 16px;
+    font-size: 20px;
   }
   .report-container .rapport-header p {
     font-size: 16px;
@@ -1929,6 +2009,12 @@ table.table-debug td.debug-var-value {
     display: flex;
     justify-content: center;
     font-size: 16px;
+    flex-direction: column;
+  }
+  .report-container .dropdown-questions .question-title {
+    font-size: 20px;
+    font-weight: bold;
+    padding-bottom: 5px;
   }
   .report-container .resultater {
     display: flex;
@@ -1939,15 +2025,39 @@ table.table-debug td.debug-var-value {
     align-items: center;
     flex-direction: row;
     justify-content: center;
-    font-size: 14px;
+    font-size: 16px;
     font-family: "Roboto Slab", serif;
+  }
+  .report-container .d3-row #d3consensus {
+    width: 50%;
   }
   .report-container .d3-row #d3playback {
     display: inline;
   }
+  .report-container .alert-info {
+    color: #901A1E;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+  }
+  .report-container .alert {
+    width: 60%;
+  }
+  .report-container .graf {
+    width: 40%;
+    height: 140px;
+  }
+  .report-container .explanation {
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: row;
+  }
   .report-container .dropdown-toggle {
     background-color: #901A1E;
     color: white;
+    font-size: 18px;
+    width: auto !important;
   }
   .report-container .dropdown-toggle:hover {
     background-color: #5f861e;

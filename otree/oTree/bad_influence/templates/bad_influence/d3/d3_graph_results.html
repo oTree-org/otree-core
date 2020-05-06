@@ -93,8 +93,11 @@
     let height = 400;
     let data = JSON.parse('{{ data | safe }}');
     let selectedRunIdx = 0;
-    let $questionHolder = $('#questionHolder');
+    let $questionHolder1 = $('#questionHolder1');
     let $questionHolder2 = $('#questionHolder2');
+    let $graphExplanation = $('#graphExplanation');
+    let $faceExplanation = $('#faceExplanation');
+    let $stubbornness = $('#stubbornness');
     let startTime = undefined;
     let currentTime = undefined;
     let endTime = undefined;
@@ -121,8 +124,11 @@
         setupConsensus(selectedRun);
         setupHistory(selectedRun);
 
-        $questionHolder.html(selectedRun.question.result_page_text_1);
+        $questionHolder1.html(selectedRun.question.result_page_text_1);
         $questionHolder2.html(selectedRun.question.result_page_text_2);
+        $graphExplanation.html(selectedRun.question.graph_explanation);
+        $faceExplanation.html(selectedRun.question.face_explanation);
+        $stubbornness.html(selectedRun.question.stubbornness);
     };
 
     $(document).ready(function () {
@@ -349,7 +355,6 @@
 
         let dropdown = d3.select("#d3historyChoice")
             .insert("select", "svg")
-            .attr("style", "font-family: annie_use_your_telescope; width: 10rem")
             .attr("class", "btn btn-secondary dropdown-toggle")
             .on("change", dropdownChange);
 
@@ -608,4 +613,3 @@
         };
     };
 </script>
-
