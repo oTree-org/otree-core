@@ -11,6 +11,18 @@ import time
 import numpy as np
 
 
+class Intro1(Page):
+    timeout_seconds = Constants.round_length
+    def is_displayed(self):
+        return self.round_number == 1
+
+
+class Intro2(Page):
+    timeout_seconds = Constants.round_length
+    def is_displayed(self):
+        return self.round_number == 1
+
+
 class MyNormalWaitPage(WaitPage):
     template_name = 'bad_influence/MyResultsWaitPage.html'
     title_text = "Vent..."
@@ -92,9 +104,25 @@ class Results(Page):
         }
 
 
+class Outro1(Page):
+    timeout_seconds = Constants.round_length
+    def is_displayed(self):
+        return self.round_number == Constants.num_rounds
+
+
+class Outro2(Page):
+    timeout_seconds = Constants.round_length
+    def is_displayed(self):
+        return self.round_number == Constants.num_rounds
+
+
 page_sequence = [
+    Intro1,
+    Intro2,
     MyNormalWaitPage,
     Play,
     MyResultsWaitPage,
     Results,
+    Outro1,
+    Outro2,
 ]
