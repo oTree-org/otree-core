@@ -1,4 +1,6 @@
-{% load otree_internal static %}
+
+{% load otree_internal otree static %}
+
 <style>
 
 body {
@@ -7,34 +9,65 @@ body {
 .form {
     display: none;
 }
-.choice-button-holder {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    width: 100%;
-}
-.choice-button {
-    background-color: whitesmoke;
-    border-color: black;
-    color: black;
-    text-transform: capitalize;
-    font-family: "Patrick Hand", cursive;
-    font-size: 100%;
-    width: 45%;
-}
 </style>
+
+
 <div>
+
+<!-- Rapport header -->
 <div class="rapport-header">
-    <p>Vælg et spørgsmål for at se hvordan det gik:</p>
+    <h2>Vælg et spørgsmål for at se hvordan det gik</h2>
+</div>
+
+
+    <div class="dropdown-questions dropdown">
+        <div class="d3-row question-title">
+            Spørgsmål
+        </div>
+        <div class="d3-row">
+              <p id="d3historyChoice"></p>
+        </div>
+
+
+
+
+    <div class="alert alert-info">
+        <div class="d3-row question-title">
+            Spørgsmål kontekst
+        </div>
+        <div class="d3-row">
+         <div id="questionHolder1"></div>
+        </div>
+
+        <div class="d3-row">
+            <div id="questionHolder2"></div>
+        </div>
+    </div>
+
+
+<div class="explanation">
+    <div class="alert alert-info graf">
+        <div class="d3-row question-title">
+            Venne-netværk forklaring
+        </div>
+        <div class="d3-row">
+            <div id="faceExplanation"></div>
+        </div>
+    </div>
+
+    <div class="alert alert-info graf">
+        <div class="d3-row question-title">
+            Graf forklaring
+        </div>
+        <div class="d3-row">
+            <div id="graphExplanation"></div>
+        </div>
+    </div>
 </div>
 
 
 
-<div class="dropdown-questions dropdown">
-  <p id="d3historyChoice" >Spørgsmål:  </p>
-</div>
 
-   <!-- <div id="questionHolder"></div> -->
 <div class="d3-row">
     <div id="d3container"></div>
     <div id="d3consensus"></div>
@@ -44,28 +77,27 @@ body {
     <p id="d3playback"></p>
 <button type="button" id="play-button" class="btn btn-primary play-button">Afspil</button>
 </div>
-{% include 'bad_influence/d3/d3_graph_results.html' %}
-
-<div class="rapport-header">
-    <p>Her mangler forklaring på hvad farverne i grafen repræsenterer
-      (og de skifter jo med spørgsmålet). Hvis spørgsmålet f.eks. er "klimaforandringer"
-      så kunne der stå:
-    </p>
-    <p>
-      "Blå: dem som ikke tror at klimaforandringerne er menneskeskabte <br>
-      Grøn: dem som tror at klimaforandringerne er menneskeskabte.<br>
-      Hvis den blå linje overstiger 50% (der mangler også en stiplet linje for 50%), har
-      det oprindelige mindretal formået at snyde det oprindelige flertal
-      til at hoppe på en konspirationsteori."<br>
-      Klik på ansigterne for at se de individuelle venne-netværk. Klik igen
-      for at se hele netværket (dette klik igen virker ikke mere!).
-    </p>
-</div>
 
 
+
+
+
+<div>
 <h2 class="rapport-header ">Topscorerliste</h2>
 
-
+<div class="explanation">
+    <div class="alert alert-info">
+        <div class="d3-row question-title">
+           Stædighed forklaring
+        </div>
+ <div class="d3-row">
+         <div id="stubbornness"></div>
+        </div>
+    </div>
+    </div>
+</div>
+    </div>
+{% include 'bad_influence/d3/d3_graph_results.html' %}
 <table class="table results-table table-responsive">
         <tr>
             <th></th>
@@ -85,10 +117,5 @@ body {
         {% endfor %}
 </table>
 
-</div>
-<div>
-  Stædighed (i sekunder) angiver hvor længe en spiller har bibeholdt sin
-  præference når spilleren var i mindretal i venne-netværket. Det giver et praj
-  om, hvor stædig spilleren forsøgte at få de andre til at skifte mening, og
-  stædigheden antages at korrelere med de opnåede antal point.
+
 </div>

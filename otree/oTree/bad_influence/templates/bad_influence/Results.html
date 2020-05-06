@@ -14,7 +14,7 @@
     </style>
 {% endblock %}
 {% block content %}
-<div class="game-admin">
+<div class="game-results">
     <div class="results-title">
         <p>Du fik {{ payoff | c }} point</p>
     </div>
@@ -48,21 +48,21 @@
                 <td><strong>{{ total_stubborn }} sek</strong></td>
         </table>
 
-
-    <p></p>
-    <h4>Vælg et spørgsmål for at se hvordan det gik:</h4>
-
-    <p id="d3historyChoice"></p>
-    <div id="questionHolder"></div>
-    <div style="display: inline-block;" id="d3container"></div>
-    <div style="display: inline-block;" id="d3consensus"></div>
-    <p id="d3playback"></p>
-    <button type="button" id="play-button">Afspil</button>
+<div class="dropdown-questions dropdown">
+    <p id="d3historyChoice">Vælg et spørgsmål for at se hvordan det gik: </p>
+    <div id="questionHolder">Kontekst: </div>
 </div>
+
+<div class="d3-results-row">
+    <div id="d3container"></div>
+    <div id="d3consensus"></div>
+</div>
+<div class="d3-results-row">
+    <p id="d3playback"></p>
+    <button type="button" id="play-button" class="btn btn-primary play-button">Afspil</button>
+</div>
+</div>
+     {% include 'bad_influence/d3/d3_graph_results.html' %}
 {% endblock %}
 
-
-{% block scripts %}
-    {% include 'bad_influence/d3/d3_graph_results.html' %}
-{% endblock %}
 

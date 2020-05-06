@@ -21,8 +21,6 @@
 /******************************
 *  Front Page  - games.html  *
 ******************************/
-
-
 .title-container {
   margin-bottom: 5%;
 }
@@ -118,14 +116,12 @@
       padding-bottom: 20px;
       font-size: 11px;
 
-
       p {
         margin-bottom: 0;
       }
     }
   }
  }
-
 
 /******************************
 *        Navbar Styling       *
@@ -475,14 +471,15 @@
   padding-bottom: 20px;
   flex-direction: column;
   align-items: center;
-
+ text-align: center;
 
     h2 {
       font-size: 16px;
+        width: 90%;
     }
     p {
      font-size: 16px;
-      text-align: center;
+
     }
   }
 
@@ -490,6 +487,13 @@
     display: flex;
     justify-content: center;
     font-size: 16px;
+    flex-direction: column;
+
+    .question-title {
+      font-size: 16px;
+      font-weight: bold;
+      padding-bottom: 5px;
+    }
   }
 
     .resultater {
@@ -508,6 +512,7 @@
         #d3consensus {
           display: flex;
           justify-content: center;
+          width: 95%;
         }
 
         #d3playback {
@@ -515,10 +520,35 @@
         }
     }
 
+  .alert-info {
+    color: $ku-red;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+
+  }
+
+  .alert {
+    width: 100%;
+  }
+
+  .graf {
+
+    height: 130px;
+  }
+
+  .explanation {
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: column;
+  }
 
   .dropdown-toggle {
       background-color: $ku-red;
       color: white;
+      font-size: 14px;
+      width: auto !important;
 
       &:hover {
        background-color: $ku-dark-green;

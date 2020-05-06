@@ -430,12 +430,11 @@
   flex-direction: column;
   align-items: center;
 
-
     h2 {
-      font-size: 16px;
+      font-size: 20px;
     }
     p {
-     font-size: 16px;
+     font-size: 18px;
       text-align: center;
     }
   }
@@ -444,6 +443,13 @@
     display: flex;
     justify-content: center;
     font-size: 16px;
+    flex-direction: column;
+
+    .question-title {
+      font-size: 20px;
+      font-weight: bold;
+      padding-bottom: 5px;
+    }
   }
 
     .resultater {
@@ -452,26 +458,53 @@
     }
 
     .d3-row {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    justify-content: center;
-    font-size: 14px;
-    font-family: "Roboto Slab", serif;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      justify-content: space-evenly;
+      font-size: 18px;
+      font-family: "Roboto Slab", serif;
 
         #d3consensus {
-
+          display: flex;
+          justify-content: center;
+          width: 100%;
         }
 
         #d3playback {
-          display: inline;
+          display: none;
         }
     }
 
+  .alert-info {
+    color: $ku-red;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+
+  }
+
+  .alert {
+    width: 100%;
+  }
+
+  .graf {
+
+    height: 130px;
+  }
+
+  .explanation {
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: column;
+  }
 
   .dropdown-toggle {
       background-color: $ku-red;
       color: white;
+      font-size: 18px;
+      width: auto !important;
 
       &:hover {
        background-color: $ku-dark-green;
@@ -490,10 +523,11 @@
     }
   }
 }
-  .d3-container {
-    background-color: orange;
-    width: 20%;
-  }
+
+.d3-container {
+  background-color: orange;
+  width: 20%;
+}
 
 
 /*****************************************************
