@@ -29,7 +29,10 @@ def kontrol(hub, gender, number_of_friends):
             ("Du får 3 point hvis det du vælger får flertal i klassen. " +
              "Du får {num} point ekstra hvis dit valg svarer til din præference.")
                 .format(num=number_of_friends),
-        'result_page_text': "(Du kan vælge mellem rød og blå.)",
+        'result_page_text_1': "De blå ansigter repræsenterer dem som ikke tror klimaforandringerne er menneskeskabte",
+        'result_page_text_2': "De røde ansigter repræsenterer dem som tror klimaforandringerne er menneskeskabte",
+        'graph_explanation': "Hvis den blå linje overstiger 50%, har det oprindelige mindretal formået at snyde det oprindelig flertal til at hoppe på en konspirationsteori.",
+        'face_explanation': "Klik på ansigterne for at se de individuelle venne-netværk. Klik igen for at se hele netværket. ",
         'majority_choice': majority_choice,
         'minority_choice': minority_choice,
         'minority_color_img': colors[color_pairs[0][0]],

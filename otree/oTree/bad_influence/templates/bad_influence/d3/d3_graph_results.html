@@ -94,6 +94,7 @@
     let data = JSON.parse('{{ data | safe }}');
     let selectedRunIdx = 0;
     let $questionHolder = $('#questionHolder');
+    let $questionHolder2 = $('#questionHolder2');
     let startTime = undefined;
     let currentTime = undefined;
     let endTime = undefined;
@@ -120,7 +121,8 @@
         setupConsensus(selectedRun);
         setupHistory(selectedRun);
 
-        $questionHolder.html(selectedRun.question.result_page_text)
+        $questionHolder.html(selectedRun.question.result_page_text_1);
+        $questionHolder2.html(selectedRun.question.result_page_text_2);
     };
 
     $(document).ready(function () {
