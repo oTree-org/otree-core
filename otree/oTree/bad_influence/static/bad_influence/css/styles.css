@@ -212,6 +212,22 @@
     background-color: #5f861e;
   }
 
+  .results-title {
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    color: #901A1E;
+    padding-top: 20px;
+    font-weight: bold;
+  }
+
+  .results-container {
+    margin-top: 4%;
+  }
+  .results-container .report-info {
+    padding-bottom: 30px;
+  }
+
   /*********************************
   *   Play.html button styling    *
   *********************************/
@@ -1054,7 +1070,15 @@
     display: flex;
     justify-content: center;
     color: #901A1E;
+    padding-top: 20px;
     font-weight: bold;
+  }
+
+  .results-container {
+    margin-top: 4%;
+  }
+  .results-container .report-info {
+    padding-bottom: 30px;
   }
 
   .game-results-table {

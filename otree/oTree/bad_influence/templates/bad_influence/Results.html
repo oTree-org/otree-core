@@ -1,5 +1,5 @@
 {% extends "global/Page.html" %}
-{% load otree static %}
+{% load otree_internal otree static %}
 {% block styles %}
     <style>
         html, body {
@@ -14,7 +14,8 @@
     </style>
 {% endblock %}
 {% block content %}
-<div class="game-results">
+<div class="report-container results-container">
+<div class="report-info">
     <div class="results-title">
         <p>Du fik {{ payoff | c }} point</p>
     </div>
@@ -48,21 +49,67 @@
                 <td><strong>{{ total_stubborn }} sek</strong></td>
         </table>
 
-<div class="dropdown-questions dropdown">
-    <p id="d3historyChoice">Vælg et spørgsmål for at se hvordan det gik: </p>
-    <div id="questionHolder">Kontekst: </div>
+<!-- Rapport header -->
+<div class="rapport-header">
+    <h2>Vælg et spørgsmål for at se hvordan det gik</h2>
 </div>
 
-<div class="d3-results-row">
+
+    <div class="dropdown-questions dropdown">
+        <div class="d3-row question-title">
+            Spørgsmål
+        </div>
+        <div class="d3-row">
+              <p id="d3historyChoice"></p>
+        </div>
+
+
+
+
+    <div class="alert alert-info">
+        <div class="d3-row question-title">
+            Spørgsmål kontekst
+        </div>
+        <div class="d3-row">
+         <div id="questionHolder1"></div>
+        </div>
+
+        <div class="d3-row">
+            <div id="questionHolder2"></div>
+        </div>
+    </div>
+
+
+<div class="explanation">
+    <div class="alert alert-info graf">
+        <div class="d3-row question-title">
+            Venne-netværk forklaring
+        </div>
+        <div class="d3-row">
+            <div id="faceExplanation"></div>
+        </div>
+    </div>
+
+    <div class="alert alert-info graf">
+        <div class="d3-row question-title">
+            Graf forklaring
+        </div>
+        <div class="d3-row">
+            <div id="graphExplanation"></div>
+        </div>
+    </div>
+</div>
+
+<div class="d3-row">
     <div id="d3container"></div>
     <div id="d3consensus"></div>
 </div>
-<div class="d3-results-row">
+
+<div class="d3-row">
     <p id="d3playback"></p>
-    <button type="button" id="play-button" class="btn btn-primary play-button">Afspil</button>
+<button type="button" id="play-button" class="btn btn-primary play-button">Afspil</button>
 </div>
 </div>
+</div></div>
      {% include 'bad_influence/d3/d3_graph_results.html' %}
 {% endblock %}
-
-

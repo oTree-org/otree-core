@@ -291,11 +291,17 @@
   display: flex;
   justify-content: center;
   color: $ku-red;
-
+  padding-top: 20px;
   font-weight: bold;
 
 }
+.results-container {
+  margin-top: 4%;
 
+  .report-info {
+    padding-bottom: 30px;
+  }
+}
 
 .game-results-table {
   display: flex;
