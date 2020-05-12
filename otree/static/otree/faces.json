@@ -1,26 +1,73 @@
 {
   "nodes": [
-    {"id": "Myriel", "group": 1},
-    {"id": "Babet", "group": 1},
-    {"id": "Gueulemer", "group": 1},
-    {"id": "Thenardier", "group": 1},
-    {"id": "Gavroche", "group": 1},
-    {"id": "Eponine", "group": 1},
-    {"id": "Claquesous", "group": 1},
-    {"id": "Montparnasse", "group": 1},
-    {"id": "Napoleon", "group": 1},
-    {"id": "Mlle.Baptistine", "group": 1}
+    {"id": "1", "group": 1, "color": "blue"},
+    {"id": "2", "group": 1, "color": "red"},
+    {"id": "3", "group": 1, "color": "red"},
+    {"id": "4", "group": 1, "color": "red"},
+    {"id": "5", "group": 1, "color": "red"},
+    {"id": "6", "group": 1, "color": "blue"},
+    {"id": "7", "group": 1, "color": "blue"},
+    {"id": "8", "group": 1, "color": "blue"},
+    {"id": "9", "group": 1, "color": "red"},
+    {"id": "10", "group": 1, "color": "blue"},
+
+    {"id": "11", "group": 2, "color": "red"},
+    {"id": "12", "group": 2, "color": "yellow"},
+    {"id": "13", "group": 2, "color": "red"},
+    {"id": "14", "group": 2, "color": "yellow"},
+
+    {"id": "15", "group": 3, "color": "green"},
+    {"id": "16", "group": 3, "color": "green"},
+    {"id": "17", "group": 3, "color": "blue"},
+    {"id": "18", "group": 3, "color": "green"},
+    {"id": "19", "group": 3, "color": "blue"},
+    {"id": "20", "group": 3, "color": "blue"},
+    {"id": "21", "group": 3, "color": "green"},
+
+    {"id": "22", "group": 4, "color": "blue"},
+    {"id": "23", "group": 4, "color": "yellow"},
+    {"id": "24", "group": 4, "color": "blue"},
+    {"id": "25", "group": 4, "color": "blue"},
+    {"id": "26", "group": 4, "color": "yellow"},
+    {"id": "27", "group": 4, "color": "yellow"},
+    {"id": "28", "group": 4, "color": "blue"},
+    {"id": "29", "group": 4, "color": "yellow"},
+    {"id": "30", "group": 4, "color": "yellow"},
+    {"id": "31", "group": 4, "color": "blue"}
+
 
   ],
   "links": [
-    {"source": "Napoleon", "target": "Myriel", "value": 1},
-    {"source": "Napoleon", "target": "Babet", "value": 1},
-    {"source": "Napoleon", "target": "Gueulemer", "value": 1},
-    {"source": "Napoleon", "target": "Thenardier", "value": 1},
-    {"source": "Napoleon", "target": "Gavroche", "value": 1},
-    {"source": "Napoleon", "target": "Eponine", "value": 1},
-    {"source": "Napoleon", "target": "Claquesous", "value": 1},
-    {"source": "Napoleon", "target": "Montparnasse", "value": 1},
-    {"source": "Napoleon", "target": "Mlle.Baptistine", "value": 1}
+    {"source": "10", "target": "1", "value": 1},
+    {"source": "10", "target": "2", "value": 1},
+    {"source": "10", "target": "3", "value": 1},
+    {"source": "10", "target": "4", "value": 1},
+    {"source": "10", "target": "5", "value": 1},
+    {"source": "10", "target": "6", "value": 1},
+    {"source": "10", "target": "7", "value": 1},
+    {"source": "10", "target": "8", "value": 1},
+    {"source": "10", "target": "9", "value": 1},
+
+    {"source": "14", "target": "11", "value": 2},
+    {"source": "14", "target": "12", "value": 2},
+    {"source": "14", "target": "13", "value": 2},
+
+    {"source": "20", "target": "15", "value": 3},
+    {"source": "20", "target": "16", "value": 3},
+    {"source": "20", "target": "17", "value": 3},
+    {"source": "20", "target": "18", "value": 3},
+    {"source": "20", "target": "19", "value": 3},
+    {"source": "20", "target": "21", "value": 3},
+
+    {"source": "29", "target": "22", "value": 4},
+    {"source": "29", "target": "23", "value": 4},
+    {"source": "29", "target": "24", "value": 4},
+    {"source": "29", "target": "25", "value": 4},
+    {"source": "29", "target": "26", "value": 4},
+    {"source": "29", "target": "27", "value": 4},
+    {"source": "29", "target": "28", "value": 4},
+    {"source": "29", "target": "30", "value": 4},
+    {"source": "29", "target": "31", "value": 4}
+
   ]
 }
