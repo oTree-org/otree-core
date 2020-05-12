@@ -25,12 +25,20 @@
 <script src="http://marvl.infotech.monash.edu/webcola/cola.js"></script>
 <script src="http://marvl.infotech.monash.edu/webcola/cola.min.js"></script>
 <script>
+ {% include 'bad_influence/d3/d3_intro.html' %}
+
+
+
+    /**
     let width = 300;
     let height = 300;
-    let nodeById = d3.map();
-    let graph = JSON.parse('{{ network|safe }}');
+
+    const json = '{"first":1, "second":2, "third":3}';
+    let graph = JSON.parse(json);
+    let nodeById = graph.map();
+    console.log(graph);
     let svg = undefined;
-    let d3Element = document.getElementById("d3container");
+    let d3Element = document.getElementById("d3_intro");
 
     let red = "{% static "bad_influence/media/red_peep.png" %}";
     let blue = "{% static "bad_influence/media/blue_peep.png" %}";
@@ -43,12 +51,11 @@
     let closed_eyes = "{% static "bad_influence/media/closed_eyes.png" %}";
     let happy_eyes = "{% static "bad_influence/media/happy_eyes.png" %}";
 
-
-    let get_color = function (choice) {
-        return choice ? "{{ question.minority_color_img }}" : "{{ question.majority_color_img }}";
+    let get_color = function(choice) {
+        return choice ? 1 : 2;
     };
 
-    let setNodeColors = function(nodes) {
+    let setNodeColors = function (nodes) {
         nodes.forEach(function (n) {
             var node = nodeById.get(n.id);
             if (node) {
@@ -61,10 +68,11 @@
 
     $(document).ready(function () {
         width = d3Element.clientWidth;
-        svg = d3.select("#d3container")
+        svg = d3.select("#d3_intro")
             .append("svg")
             .attr("width", width)
-            .attr("height", height);
+            .attr("height", height)
+            .attr("style", "background: orange");
 
 
         let force = cola.d3adaptor()
@@ -99,7 +107,7 @@
             .enter().append("g")
             .attr("class", "node")
             .attr("fixed", function (d) {
-                d.fixed = (d.id === {{ player.id_in_group }});
+                d.fixed = (d.id === "1");
                 return null
             })
             .call(force.drag);
@@ -113,10 +121,10 @@
                 return "node_" + d.id
             })
             .attr("class", function (d) {
-                return d.id === {{ player.id_in_group }} ? "node-player" : "node"
+                return d.id === "1" ? "node-player" : "node"
             })
             .attr("r", function (d) {
-                return d.id === {{ player.id_in_group }} ? ownDisplacement-3.5 : 10
+                return d.id === "1" ? ownDisplacement-3.5 : 10
             });
 
 
@@ -125,16 +133,16 @@
                 return "node_image_" + d.id
             })
             .attr('x', function (d) {
-                return d.id === {{ player.id_in_group }} ? -ownDisplacement : -20
+                return d.id === "1" ? -ownDisplacement : -20
             })
             .attr('y', function (d) {
-                return d.id === {{ player.id_in_group }} ? -ownDisplacement : -20
+                return d.id === "1" ? -ownDisplacement : -20
             })
             .attr('width', function (d) {
-                return d.id === {{ player.id_in_group }} ? ownSize : 40
+                return d.id === "1" ? ownSize : 40
             })
             .attr('height', function (d) {
-                return d.id === {{ player.id_in_group }} ? ownSize : 40
+                return d.id === "1" ? ownSize : 40
             })
             .attr("xlink:href", function (d) {
                 return get_color(d.choice)
@@ -145,16 +153,16 @@
                 return "node_image_eyes" + d.id
             })
             .attr('x', function (d) {
-                return d.id === {{ player.id_in_group }} ? -ownDisplacement : -20
+                return d.id === "1" ? -ownDisplacement : -20
             })
             .attr('y', function (d) {
-                return d.id === {{ player.id_in_group }} ? -ownDisplacement : -20
+                return d.id === "1" ? -ownDisplacement : -20
             })
             .attr('width', function (d) {
-                return d.id === {{ player.id_in_group }} ? ownSize : 40
+                return d.id === "1" ? ownSize : 40
             })
             .attr('height', function (d) {
-                return d.id === {{ player.id_in_group }} ? ownSize : 40
+                return d.id === "1" ? ownSize : 40
             })
             .attr("xlink:href", open_eyes);
 
@@ -181,7 +189,7 @@
             .attr("dx", 15)
             .attr("dy", 20)
             .text(function (d) {
-                return (d.id === {{ player.id_in_group }} ? ("\u00A0" + d.id + "(dig)") : d.id);
+                return (d.id === "1" ? ("\u00A0" + d.id + "(dig)") : d.id);
             });
 
         force.on("tick", function () {
@@ -204,4 +212,5 @@
         });
 
     })
+     **/
 </script>

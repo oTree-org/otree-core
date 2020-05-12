@@ -21,7 +21,7 @@ class Constants(BaseConstants):
     high_bonus = 10
     low_bonus = 5
     hub_fraction = 0.33
-    round_length = 60
+    round_length = 500
 
 
 class Subsession(BaseSubsession):

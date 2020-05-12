@@ -1,0 +1,26 @@
+{
+  "nodes": [
+    {"id": "Myriel", "group": 1},
+    {"id": "Babet", "group": 1},
+    {"id": "Gueulemer", "group": 1},
+    {"id": "Thenardier", "group": 1},
+    {"id": "Gavroche", "group": 1},
+    {"id": "Eponine", "group": 1},
+    {"id": "Claquesous", "group": 1},
+    {"id": "Montparnasse", "group": 1},
+    {"id": "Napoleon", "group": 1},
+    {"id": "Mlle.Baptistine", "group": 1}
+
+  ],
+  "links": [
+    {"source": "Napoleon", "target": "Myriel", "value": 1},
+    {"source": "Napoleon", "target": "Babet", "value": 1},
+    {"source": "Napoleon", "target": "Gueulemer", "value": 1},
+    {"source": "Napoleon", "target": "Thenardier", "value": 1},
+    {"source": "Napoleon", "target": "Gavroche", "value": 1},
+    {"source": "Napoleon", "target": "Eponine", "value": 1},
+    {"source": "Napoleon", "target": "Claquesous", "value": 1},
+    {"source": "Napoleon", "target": "Montparnasse", "value": 1},
+    {"source": "Napoleon", "target": "Mlle.Baptistine", "value": 1}
+  ]
+}

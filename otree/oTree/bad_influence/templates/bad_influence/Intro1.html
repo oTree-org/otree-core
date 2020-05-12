@@ -1,8 +1,222 @@
 {% extends "global/Base.html" %}
-{% load otree %}
+{% load otree_internal static otree %}
 {% block content %}
 
-tom side
+{% block styles %}
 
-    {%  next_button %}
+    <style>
+html,
+body {
+    height: 100%;
+}
+   .node {
+        stroke: #000;
+        stroke-width: 0px;
+    }
+
+    .node-player {
+        stroke: #000;
+        stroke-width: 3px;
+    }
+
+    .link {
+        stroke: #999;
+        stroke-width: 1.5px;
+    }
+
+    .node-text {
+        font-family: annie_use_your_telescope, serif;
+        font-size: 25px;
+    }
+    </style>
+
+{% endblock %}
+
+	<div>
+
+		<span style="font-size: 60px;letter-spacing: 4px;">BAD</span>
+		<span style="font-size: 60px;">INFLUENCE</span>
+		<!-- <span>the</span>
+		<br><br>
+		<span style="position: relative;top: -11px;">of</span>
+		<br>
+		<span style="font-size: 100px;line-height: 80px;position: relative;top: -15px; display:block;">CROWDS</span> -->
+	</div>
+<words id="preloader_play">
+	let's play! <div class="rarr"></div>
+</words>
+    <br>
+
+<words id="preloader_play">
+    let's play! <div class="rarr"> {%  next_button %}</div>
+</words>
+
+	<div style="color:#999">
+		<!-- TRANSLATE note: comment out the line below... -->
+		<!-- playing time: 30 min • by nicky case, april 2018 -->
+		<!-- ...and UN-comment + TRANSLATE this line! -->
+		<!-- by nicky case • translated by [your name] • <a href='.'>original in English</a> -->
+	</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script src="//d3js.org/d3.v4.min.js"></script>
+<script src="http://marvl.infotech.monash.edu/webcola/cola.js"></script>
+<script type="application/json" src="{% static 'otree/faces.json' %}"></script>
+<script>
+
+    let red = "{% static "bad_influence/media/red_peep.png" %}";
+    let blue = "{% static "bad_influence/media/blue_peep.png" %}";
+    let pink = "{% static "bad_influence/media/pink_peep.png" %}";
+    let yellow = "{% static "bad_influence/media/yellow_peep.png" %}";
+    let grey = "{% static "bad_influence/media/grey_peep.png" %}";
+    let green = "{% static "bad_influence/media/green_peep.png" %}";
+
+    let open_eyes = "{% static "bad_influence/media/open_eyes.png" %}";
+    let closed_eyes = "{% static "bad_influence/media/closed_eyes.png" %}";
+    let happy_eyes = "{% static "bad_influence/media/happy_eyes.png" %}";
+
+    let width = 500;
+    let height = 500;
+    let nodeById = d3.map();
+
+    let color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    let simulation = d3.forceSimulation()
+        .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(linkDistance).strength(0.1))
+        .force("charge", d3.forceManyBody())
+        .force("center", d3.forceCenter(width / 2, height / 2));
+
+    // Add more distance between nodes
+    function linkDistance() {
+        return 100;
+    }
+
+d3.json("{%  static 'otree/faces.json' %}", function(error, graph) {
+        svg = d3.select("body").append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .style("background-color", "transparent");
+
+
+
+        // Append links to svg and create lines
+        let link = svg.selectAll(".link")
+            .data(graph.links)
+            .enter().append("line")
+            .attr("class", "link");
+
+
+        // Append nodes to svg
+        let node = svg.append("g")
+            .attr("class", "nodes")
+            .selectAll("g")
+            .data(graph.nodes)
+            .enter().append("g");
+
+
+        // Append open eyes to svg
+        let eyes = node.append("svg:image")
+            .attr("class", "open_eyes")
+            .attr('x', -23)
+            .attr('y', -23)
+            .attr('width', 46)
+            .attr('height', 46)
+            .attr("xlink:href", open_eyes);
+
+        // Timer that creates blinking effect
+        d3.timer(function () {
+            eyes.attr("xlink:href", function (d) {
+                if (d.blinking) {
+                    if (Math.random() < 0.05) {
+                        d.blinking = false
+                    }
+                } else {
+                    if (Math.random() < 0.01) {
+                        d.blinking = true
+                    }
+                }
+                return d.blinking ? closed_eyes : open_eyes;
+            });
+        });
+
+
+
+        /**
+         * TODO
+         *  Make the background colors different per group
+        **/
+
+        /**
+         * TODO
+         *  Fill whole body with the SVG
+        **/
+
+
+
+        let circles = node.append("circle")
+            .attr("r", 19.5)
+            .attr("fill", "transparent")
+            .call(d3.drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended));
+
+
+
+          node.append("title")
+              .text(function(d) { return d.id; });
+
+          simulation
+              .nodes(graph.nodes)
+              .on("tick", ticked);
+
+          simulation.force("link")
+              .links(graph.links);
+
+          function ticked() {
+            link
+                .attr("x1", function(d) { return d.source.x; })
+                .attr("y1", function(d) { return d.source.y; })
+                .attr("x2", function(d) { return d.target.x; })
+                .attr("y2", function(d) { return d.target.y; });
+
+            node
+                .attr("transform", function(d) {
+                  return "translate(" + d.x + "," + d.y + ")";
+                })
+          }
+
+
+function dragstarted(d) {
+  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+  d.fx = d.x;
+  d.fy = d.y;
+}
+
+function dragged(d) {
+  d.fx = d3.event.x;
+  d.fy = d3.event.y;
+}
+
+function dragended(d) {
+  if (!d3.event.active) simulation.alphaTarget(0);
+  d.fx = null;
+  d.fy = null;
+}
+
+});
+
+
+  /**    let lables = node.append("text")
+          .text(function(d) {
+            return d.id;
+          })
+          .attr('x', 6)
+          .attr('y', 3); **/
+
+</script>
+
 {% endblock %}
