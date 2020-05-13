@@ -1,7 +1,5 @@
-
 {% load otree static %}
 {% load i18n %}
-
 {% block styles %}
     <style>
         body {
@@ -11,7 +9,6 @@
               display: flex;
               justify-content: center;
               align-items: center;
-
         }
     </style>
 {% endblock %}
@@ -20,7 +17,6 @@
 {% if user.is_authenticated and user.is_staff or user.is_superuser %}
 <form id="form-admin">
     {% csrf_token %}
-
     {% formfield form.session_config %}
 
     <div class="form-group{% if form.num_participants.errors %} has-error{% endif %} required">
@@ -28,10 +24,10 @@
         <label class="col-form-label" for="id_num_participants">
             {{ form.num_participants.label }}
         </label>
-        <div class="controls  field-num_participants">
+        <div class="controls field-num_participants">
             {{ form.num_participants }}
             {% if form.num_participants.errors %}
-            {% include "otree/forms/errors.html" with errors=form.num_participants.errors %}
+                {% include "otree/forms/errors.html" with errors=form.num_participants.errors %}
             {% endif %}
             {% for config in configs %}
             <div id="lcm-admin-{{ config.name }}" class="lcm"
@@ -146,12 +142,9 @@
                <!-- <p>Must be a multiple of {{ config.get_lcm }}</p></div> -->
                 {% endfor %}
                 <p class="help-block">{{ form.num_participants.help_text }}</p>
-
-
                 </div>
                 </div>
             </form>
-
     </div>
 </div>
 

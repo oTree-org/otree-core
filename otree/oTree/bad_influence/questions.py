@@ -137,7 +137,7 @@ def billeddeling(hub, gender, number_of_friends):
     return {
         'title': 'Nøgenbillede',
         'text':
-            ("I har fået tilsendt et nøgenbillede af en irriterende pige fra parallelklassen. " +
+            ("I har fået fat i et nøgenbillede af en irriterende pige fra parallelklassen. " +
              "I kan vælge at dele det med andre i og uden for skolen eller lade være."),
         'preference':
             ("Din præference: {prefers}.")
