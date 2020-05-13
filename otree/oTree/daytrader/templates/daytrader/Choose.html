@@ -18,7 +18,7 @@
             </tr>
             {% for r, price, choice, deals, states in data %}
                 <tr>
-                    <td> {{ r }}.</td>
+                    <td class="company-id"> {{ r }}.</td>
                     <td> {{ price|c }}</td>
                     <td class="faceContainer">
                         <div class="btn-container"></div>
@@ -55,11 +55,20 @@ Du kigger i sækken, og ser et ansigt der er
     {% next_button %}
 
     <script>
+
+
         let containers = document.getElementsByClassName("faceContainer");
         let drawn_face = {{ player.drawn_face|yesno:"true,false" }};
         let states = document.getElementsByClassName("state-container");
         let buttonContainer = document.getElementsByClassName("btn-container");
-        window.localStorage.setItem("clicked", "false");
+        let group_ids = []
+        let current_group_id = {{ group.id }};
+        let companyIds = document.getElementsByClassName("company-id");
+
+        {#if (!localStorage.getItem("all_groups").includes(current_group_id)) {#}
+        {#    localStorage.removeItem("clicked");#}
+        {##}
+
 
         function toggle(className, displayState) {
             let elements = document.getElementsByClassName(className);
@@ -71,23 +80,53 @@ Du kigger i sækken, og ser et ansigt der er
 
 
         for (let i = 0; i < containers.length; i++) {
-            states[i].style.display = "none";
+            toggle("state-container", "none");
             let button = document.createElement("button");
             button.className = "btn btn-primary reveal-btn";
             button.textContent = "?";
             containers[i].appendChild(button);
         }
 
-        let button = document.getElementsByClassName("reveal-btn");
-        if(window.localStorage.getItem("clicked") !== "true") {
-            for (let item = 0; item < button.length; item++) {
-                button[item].onclick = event => {
-                    event.preventDefault();
-                    toggle("reveal-btn", "none");
-                    states[item].style.display = "block";
-                }
-            }
 
+        let button = document.getElementsByClassName("reveal-btn");
+
+        for (let item = 0; item < button.length; item++) {
+
+            button[item].onclick = event => {
+                event.preventDefault();
+                toggle("reveal-btn", "none");
+                states[item].style.display = "block";
+
+                {#let existingGroups = JSON.parse(localStorage.getItem("all_groups"));#}
+                {#if (existingGroups === null) existingGroups = [];#}
+                {#localStorage.setItem("current_group", JSON.stringify(current_group_id));#}
+                {#existingGroups.push(current_group_id);#}
+                {#localStorage.setItem("all_groups", JSON.stringify(existingGroups));#}
+                {##}
+                {#localStorage.setItem("clicked", "true");#}
+
+                let selectedClick = {
+                    id: companyIds[item].textContent,
+                    value: states[item].textContent,
+                    name: "{{ player.company_name }}",
+                    group_id: {{ group.id }}
+                }
+
+
+                let existingSelections = JSON.parse(localStorage.getItem("all_selections"));
+                if (existingSelections === null) existingSelections = [];
+                localStorage.setItem("selected_click", JSON.stringify(selectedClick));
+                existingSelections.push(selectedClick);
+                localStorage.setItem("all_selections", JSON.stringify(existingSelections));
+            }
+        }
+
+        let selection = JSON.parse(localStorage.getItem("selected_click"));
+        for (let i = 0; i < companyIds.length; i++) {
+            if (selection.id === companyIds[i].textContent && selection.name === "{{ player.company_name }}" && selection.group_id === {{ group.id }}) {
+                states[i].style.display = "block";
+                toggle("reveal-btn", "none");
+            }
         }
     </script>
 
