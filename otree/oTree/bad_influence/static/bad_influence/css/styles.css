@@ -1130,17 +1130,6 @@
     width: 100%;
     font-family: "Patrick Hand", cursive;
   }
-  .intro-title body {
-    font-family: "Rubik", sans-serif;
-    font-size: 1rem;
-    line-height: 1.5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0;
-    min-height: 100vh;
-    background: #fff;
-  }
   .intro-title .bad {
     justify-content: center;
     font-weight: bold;
@@ -1156,11 +1145,17 @@
     font-weight: bold;
     font-size: 70px;
     text-align: center;
-    color: darkred;
+    color: #901A1E;
     text-transform: uppercase;
     margin: -55px;
     padding: 0;
     letter-spacing: 7px;
+  }
+  .intro-title * {
+    box-sizing: border-box;
+  }
+  .intro-title *::before, .intro-title *::after {
+    box-sizing: border-box;
   }
   .intro-title button {
     position: relative;
@@ -1170,51 +1165,89 @@
     border: 0;
     vertical-align: middle;
     text-decoration: none;
-    font-size: 20px;
-    width: 22%;
-    margin-top: 40px;
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
   }
   .intro-title button.start-game {
-    font-weight: 600;
-    color: #901A1E;
-    text-transform: uppercase;
-    padding: 1.25em 2em;
-    background: #fff0f0;
-    border: 2px solid #b18597;
-    border-radius: 30px;
-    transform-style: preserve-3d;
-    transition: transform 150ms cubic-bezier(0, 0, 0.58, 1), background 150ms cubic-bezier(0, 0, 0.58, 1);
+    height: auto;
+    width: 20%;
+    margin-top: 40px;
+    font-size: 30px;
   }
-  .intro-title button.start-game::before {
+  .intro-title button.start-game .circle {
+    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+    position: relative;
+    display: block;
+    margin: 0;
+    width: 4rem;
+    height: 4rem;
+    background: #901A1E;
+    border-radius: 3rem;
+  }
+  .intro-title button.start-game .circle .icon {
+    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
     position: absolute;
-    content: "Start spil";
-    width: 100%;
-    height: 100%;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    background: #fff;
+  }
+  .intro-title button.start-game .circle .icon.arrow {
+    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+    left: 0.625rem;
+    width: 1.125rem;
+    height: 0.125rem;
+    background: none;
+  }
+  .intro-title button.start-game .circle .icon.arrow::before {
+    position: absolute;
+    top: -0.25rem;
+    right: 0.0625rem;
+    width: 0.625rem;
+    height: 0.625rem;
+    border-top: 0.125rem solid #fff;
+    border-right: 0.125rem solid #fff;
+    transform: rotate(45deg);
+  }
+  .intro-title button.start-game .button-text {
+    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: #f9c4d2;
-    border-radius: inherit;
-    box-shadow: 0 0 0 2px #b18597, 0 0.625em 0 0 #ffe3e2;
-    transform: translate3d(0, 0.75em, -1em);
-    transition: transform 150ms cubic-bezier(0, 0, 0.58, 1), box-shadow 150ms cubic-bezier(0, 0, 0.58, 1);
+    padding: 0.75rem 0;
+    margin: 0 0 0 1.65rem;
+    color: #901A1E;
+    font-weight: 700;
+    line-height: 1.6;
+    text-align: center;
+    text-transform: uppercase;
   }
-  .intro-title button.start-game:hover {
-    background: #ffe9e9;
-    transform: translate(0, 0.25em);
+  .intro-title button:hover .circle {
+    width: 100%;
   }
-  .intro-title button.start-game:hover::before {
-    box-shadow: 0 0 0 2px #b18597, 0 0.5em 0 0 #ffe3e2;
-    transform: translate3d(0, 0.5em, -1em);
+  .intro-title button:hover .circle .icon.arrow {
+    background: green;
+    transform: translate(1rem, 0);
   }
-  .intro-title button.start-game:active {
-    background: #ffe9e9;
-    transform: translate(0em, 0.75em);
+  .intro-title button:hover .button-text {
+    color: #fff;
   }
-  .intro-title button.start-game:active::before {
-    box-shadow: 0 0 0 2px #b18597, 0 0 #ffe3e2;
-    transform: translate3d(0, 0, -1em);
+  @supports (display: grid) {
+    .intro-title body {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-gap: 0.625rem;
+      grid-template-areas: ". main main ." ". main main .";
+    }
+    .intro-title #container {
+      grid-area: main;
+      align-self: center;
+      justify-self: center;
+    }
   }
 }
 /*

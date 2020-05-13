@@ -38,6 +38,7 @@ svg { width:100%; height: 100% }
 
     </style>
 
+
 {% endblock %}
 
 
@@ -78,10 +79,36 @@ svg { width:100%; height: 100% }
 
 d3.json("{%  static 'otree/faces.json' %}", function(error, graph) {
 
-     let container = d3.select("body").append("div").attr("class", "intro-title");
-     container.append("p").attr("class", "bad").text("Bad");
-     container.append("p").attr("class", "influence").text("Influence");
-     container.append("button").attr("class", "start-game");
+     // Intro page container for title and button
+     let container = d3.select("body")
+         .append("div")
+         .attr("class", "intro-title");
+
+     // Intro page title tags
+         container.append("p")
+             .attr("class", "bad")
+             .text("Bad");
+         container.append("p")
+             .attr("class", "influence")
+             .text("Influence");
+
+     // Intro page button for start game
+     let startButton = d3.select(".intro-title")
+         .append("button").attr("class", "start-game").property("value", "hi");
+
+        startButton.append("span")
+            .attr("class", "circle");
+
+        startButton.select(".circle")
+                .append("span")
+                .attr("class", "icon-arrow");
+
+        startButton.append("span")
+            .attr("class", "button-text")
+            .text("Start spillet!")
+            .style("letter-spacing", "5px");
+
+
 
     svg = d3.select("div").append("svg")
             .attr("width", "100%")
