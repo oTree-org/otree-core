@@ -70,8 +70,10 @@ class MyResultsWaitPage(WaitPage):
 
     def after_all_players_arrive(self):
         for player in self.group.get_players():
-            player.set_payoffs()
+            player.set_points()
             player.get_question_title()
+            player.get_choice_text()
+            player.get_preference_text()
         self.group.stubborness()
 
     def vars_for_template(self):
@@ -93,7 +95,7 @@ class Results(Page):
 
         return {
             "data": json.dumps(data),
-            "payoff": int(self.participant.payoff),
+            "payoff_ialt": np.sum([p.points for p in self.player.in_all_rounds()]),
             'player_in_all_rounds': self.player.in_all_rounds(),
             'get_others_in_group': self.player.get_others_in_group(),
             'fraction_hub': str(np.sum([p.hub for p in self.player.in_all_rounds()])) + '/' + str(Constants.num_rounds),

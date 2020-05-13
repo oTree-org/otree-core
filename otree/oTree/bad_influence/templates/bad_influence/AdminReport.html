@@ -100,16 +100,20 @@ body {
 {% include 'bad_influence/d3/d3_graph_results.html' %}
 <table class="table results-table table-responsive">
         <tr>
-            <th></th>
-            <th>point<p></p>i alt</th>
-            <th>stædighed <p></p>(i sekunder)</th>
-            <th># venner <p></p>i alt</th>
-            <th># holdnings-<p></p>skift</th>
+            <th> spiller <p></p> nr. </th>
+            <th> point <p></p> ialt </th>
+            <th> fulgt <p></p> flertallet </th>
+            <th> fulgt sin <p></p> præference </th>
+            <th>stædighed <p></p> (sekunder)</th>
+            <th># venner </th>
+            <th># skift</th>
         </tr>
         {% for ranking in rankings %}
         <tr>
-            <td><strong>player {{ ranking.0 }}</strong></td>
+            <td><strong> {{ ranking.0 }} </strong></td>
             <td>{{ ranking.1 }}</td>
+            <td>{{ ranking.5 }}%</td>
+            <td>{{ ranking.6 }}%</td>
             <td>{{ ranking.2 }}</td>
             <td>{{ ranking.3 }}</td>
             <td>{{ ranking.4 }}</td>
