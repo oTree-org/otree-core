@@ -2,7 +2,7 @@
 from otree.api import Currency as c, currency_range
 from . import models
 from ._builtin import Page, WaitPage
-from .models import Constants
+from .models import Constants, Player
 
 
 class Intro1(Page):
@@ -65,7 +65,11 @@ class Choose(Page):
         deals = [self.session.vars['{}{}'.format(self.player.company_name, r)][4]
                     for r in range(1, self.player.round_number)]
         rounds = [r for r in range(1, self.player.round_number)]
-        data = zip(rounds, prices, choices, deals)
+        states = []
+        for player in Player.objects.all():
+            states.append(player.drawn_face)
+
+        data = zip(rounds, prices, choices, deals, states)
 
         return {
            'data': data,
