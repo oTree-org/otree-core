@@ -21,7 +21,7 @@ class Constants(BaseConstants):
     high_bonus = 10
     low_bonus = 5
     hub_fraction = 0.33
-    round_length = 120
+    round_length = 6
 
 
 class Subsession(BaseSubsession):
@@ -125,8 +125,12 @@ class Subsession(BaseSubsession):
             p.stubborn_total = sum([player.stubborn for player in p.in_all_rounds()])
             p.opinion_change_total = sum([player.opinion_change for player in p.in_all_rounds()])
             p.number_of_friends_total = sum([player.number_of_friends for player in p.in_all_rounds()])
-            rankings.append((p.id_in_group, p.participant.payoff, np.around(p.stubborn_total, 1),
-                             p.number_of_friends_total, p.opinion_change_total))
+            p.points_total = sum([player.points for player in p.in_all_rounds()])
+            p.fulgt_flertallet_pct = 100*sum([1 for player in p.in_all_rounds() if player.points != 0])/Constants.num_rounds
+            p.fulgt_preference_pct = 100*sum([1 for player in p.in_all_rounds() if player.hub == player.choice])/Constants.num_rounds
+            rankings.append((p.id_in_group, p.points_total, np.around(p.stubborn_total, 1),
+                             p.number_of_friends_total, p.opinion_change_total,
+                             p.fulgt_flertallet_pct, p.fulgt_preference_pct))
 
         return {
             "data": json.dumps(data),
@@ -249,6 +253,8 @@ class Player(BasePlayer):
             [False, 'Blå'],
         ],
     )
+    choice_str = models.StringField()
+    preference_str = models.StringField()
     gender = models.BooleanField()
     number_of_friends = models.IntegerField()
     spg = models.LongStringField()
@@ -259,33 +265,49 @@ class Player(BasePlayer):
     opinion_change_total = models.IntegerField(initial=0)
     number_of_friends_total = models.IntegerField(initial=0)
     chat_color = models.LongStringField()
+    points = models.IntegerField()
+    points_total = models.IntegerField(initial=0)
+    fulgt_flertallet_pct = models.FloatField(initial=0)
+    fulgt_preference_pct = models.FloatField(initial=0)
 
 
     def get_personal_channel_name(self):
         return '{}-{}'.format(self.id_in_group, self.id)
 
-    def set_payoffs(self):
+    def set_points(self):
         all_choices = [p.choice for p in self.group.get_players()]
         self.group.choice = sum(all_choices) > len(all_choices) / 2
         if sum(all_choices) > len(all_choices) / 2:  # if hubs have gotten the majority
             if self.hub == True and self.choice == True:  # if you are a hub and chooses likewise
-                self.payoff = 3 + self.number_of_friends
+                self.points = 3 + self.number_of_friends
             elif self.hub == False and self.choice == True:  # if you are NOT a hub but go with the majority
-                self.payoff = 3  # self.number_of_friends
+                self.points = 3  # self.number_of_friends
             else:
-                self.payoff = 0
+                self.points = 0
         elif sum(all_choices) < len(all_choices) / 2:  # if hubs have NOT gotten the majority
             if self.hub == False and self.choice == False:  # if you are NOT a hub and chooses likewise
-                self.payoff = 3 + self.number_of_friends
+                self.points = 3 + self.number_of_friends
             elif self.hub == True and self.choice == False:  # if you are a hub but go with the majority
-                self.payoff = 3  # self.number_of_friends
+                self.points = 3  # self.number_of_friends
             else:
-                self.payoff = 0
+                self.points = 0
         else:  # if there is a tie:
-            self.payoff = 0
+            self.points = 0
 
     def get_question_title(self):
         self.spg = make_question(self.group, self.hub, self.gender, self.number_of_friends)['title']
+
+    def get_preference_text(self):
+        if self.hub == 0:
+            self.preference_str = make_question(self.group, self.hub, self.gender, self.number_of_friends)['majority_choice']
+        else:
+            self.preference_str = make_question(self.group, self.hub, self.gender, self.number_of_friends)['minority_choice']
+
+    def get_choice_text(self):
+        if self.choice == 0:
+            self.choice_str = make_question(self.group, self.hub, self.gender, self.number_of_friends)['majority_choice']
+        else:
+            self.choice_str = make_question(self.group, self.hub, self.gender, self.number_of_friends)['minority_choice']
 
     def get_friends(self):
         E = json.loads(self.ego_network)

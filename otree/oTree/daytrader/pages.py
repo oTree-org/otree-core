@@ -6,31 +6,37 @@ from .models import Constants
 
 
 class Intro1(Page):
+    timeout_seconds = Constants.timeouts
     def is_displayed(self):
         return self.round_number == 1
 
 
 class Intro2(Page):
+    timeout_seconds = Constants.timeouts
     def is_displayed(self):
         return self.round_number == 1
 
 
 class Intro3(Page):
+    timeout_seconds = Constants.timeouts
     def is_displayed(self):
         return self.round_number == 1
 
 
 class Intro4(Page):
+    timeout_seconds = Constants.timeouts
     def is_displayed(self):
         return self.round_number == 1
 
 
 class Intro5(Page):
+    timeout_seconds = Constants.timeouts
     def is_displayed(self):
         return self.round_number == 1
 
 
 class Intro6(Page):
+    timeout_seconds = Constants.timeouts
     def is_displayed(self):
         return self.round_number == 1
 
@@ -49,7 +55,7 @@ class Choose(Page):
     form_model = 'player' # setting a form model for current player
     form_fields = ['choice_of_trade', 'choice_of_number_of_shares'] # setting a form field to fill out
 
-    timeout_seconds = 20
+    timeout_seconds = Constants.timeouts
     # retrieving variables for a trade history table
     def vars_for_template(self):
         prices = [self.session.vars['{}{}'.format(self.player.company_name, r)][0]
@@ -101,7 +107,7 @@ class Results(Page):
 
         return {
             'handlet': handelsvaerdi,
-            'kurtage_pct': Constants.kurtage * 100,
+            'kurtage_pct': int(Constants.kurtage * 100),
             'kurtage': c(Constants.kurtage * handelsvaerdi),
             'ialt': self.player.payoff - (Constants.kurtage * handelsvaerdi),
             'data': data,

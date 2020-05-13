@@ -291,11 +291,17 @@
   display: flex;
   justify-content: center;
   color: $ku-red;
-
+  padding-top: 20px;
   font-weight: bold;
 
 }
+.results-container {
+  margin-top: 4%;
 
+  .report-info {
+    padding-bottom: 30px;
+  }
+}
 
 .game-results-table {
   display: flex;
@@ -312,6 +318,30 @@
 }
 
 
+  .d3-results-row {
+      display: flex;
+      align-items: center;
+      flex-direction: row;
+      justify-content: space-evenly;
+      font-size: 14px;
+      font-family: "Roboto Slab", serif;
+
+        #d3consensus {
+          display: flex;
+          justify-content: center;
+        }
+
+        #d3playback {
+          display: none;
+        }
+    }
+
+.game-results {
+    margin-top: 2%;
+    padding: 10px 50px 10px 50px;
+    background-color: white !important;
+    border-radius: 10px;
+}
 
 }
 

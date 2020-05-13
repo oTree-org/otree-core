@@ -212,6 +212,22 @@
     background-color: #5f861e;
   }
 
+  .results-title {
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    color: #901A1E;
+    padding-top: 20px;
+    font-weight: bold;
+  }
+
+  .results-container {
+    margin-top: 4%;
+  }
+  .results-container .report-info {
+    padding-bottom: 30px;
+  }
+
   /*********************************
   *   Play.html button styling    *
   *********************************/
@@ -1054,7 +1070,15 @@
     display: flex;
     justify-content: center;
     color: #901A1E;
+    padding-top: 20px;
     font-weight: bold;
+  }
+
+  .results-container {
+    margin-top: 4%;
+  }
+  .results-container .report-info {
+    padding-bottom: 30px;
   }
 
   .game-results-table {
@@ -1068,6 +1092,29 @@
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     color: #901A1E;
     font-size: 20px;
+  }
+
+  .d3-results-row {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-evenly;
+    font-size: 14px;
+    font-family: "Roboto Slab", serif;
+  }
+  .d3-results-row #d3consensus {
+    display: flex;
+    justify-content: center;
+  }
+  .d3-results-row #d3playback {
+    display: none;
+  }
+
+  .game-results {
+    margin-top: 2%;
+    padding: 10px 50px 10px 50px;
+    background-color: white !important;
+    border-radius: 10px;
   }
 }
 /*

@@ -1,5 +1,5 @@
 {% extends "global/Page.html" %}
-{% load otree static %}
+{% load otree_internal otree static %}
 {% block styles %}
     <style>
         html, body {
@@ -14,25 +14,30 @@
     </style>
 {% endblock %}
 {% block content %}
-<div class="game-admin">
+<div class="report-container results-container">
+<div class="report-info">
     <div class="results-title">
-        <p>Du fik {{ payoff | c }} point</p>
+        <p>Du fik {{ payoff_ialt }} point</p>
     </div>
 
     <table class="table table-responsive game-results-table">
 
             <tr>
                 <th><strong>Runde</strong></th>
-                <th>Point</th>
-                <th>Influencer</th>
-                <th>Antal venner</th>
-                <th>Antal skift</th>
-                <th>Stædighed</th>
+                <th>point</th>
+                <th>præference</th>
+                <th>valg</th>
+                <th>influencer</th>
+                <th># venner</th>
+                <th># skift</th>
+                <th>stædighed</th>
             </tr>
             {% for p in player_in_all_rounds %}
             <tr>
                 <td><strong>{{ p.round_number }} ({{p.spg}})</strong></td>
-                <td>{{ p.payoff }} </td>
+                <td>{{ p.points }} </td>
+                <td>{{ p.preference_str }}</td>
+                <td>{{ p.choice_str }} </td>
                 <td>{% if p.hub %}ja{% else%}nej{% endif %}</td>
                 <td>{{ p.number_of_friends }}</td>
                 <td>{{ p.opinion_change }}</td>
@@ -41,28 +46,76 @@
             {% endfor %}
             <tr>
                 <td><strong> i alt </strong></td>
-                <td><strong>{{ payoff }}</strong></td>
+                <td><strong>{{ payoff_ialt }}</strong></td>
+                <td> </td>
+                <td></td>
                 <td><strong>{{ fraction_hub }}</strong></td>
                 <td><strong>{{ total_friends }}</strong></td>
                 <td><strong>{{ total_opinion_changes }}</strong></td>
                 <td><strong>{{ total_stubborn }} sek</strong></td>
         </table>
 
-
-    <p></p>
-    <h4>Vælg et spørgsmål for at se hvordan det gik:</h4>
-
-    <p id="d3historyChoice"></p>
-    <div id="questionHolder"></div>
-    <div style="display: inline-block;" id="d3container"></div>
-    <div style="display: inline-block;" id="d3consensus"></div>
-    <p id="d3playback"></p>
-    <button type="button" id="play-button">Afspil</button>
+<!-- Rapport header -->
+<div class="rapport-header">
+    <h2>Vælg et spørgsmål for at se hvordan det gik</h2>
 </div>
+
+
+    <div class="dropdown-questions dropdown">
+        <div class="d3-row question-title">
+            Spørgsmål
+        </div>
+        <div class="d3-row">
+              <p id="d3historyChoice"></p>
+        </div>
+
+
+
+
+    <div class="alert alert-info">
+        <div class="d3-row question-title">
+            Spørgsmål kontekst
+        </div>
+        <div class="d3-row">
+         <div id="questionHolder1"></div>
+        </div>
+
+        <div class="d3-row">
+            <div id="questionHolder2"></div>
+        </div>
+    </div>
+
+
+<div class="explanation">
+    <div class="alert alert-info graf">
+        <div class="d3-row question-title">
+            Venne-netværk forklaring
+        </div>
+        <div class="d3-row">
+            <div id="faceExplanation"></div>
+        </div>
+    </div>
+
+    <div class="alert alert-info graf">
+        <div class="d3-row question-title">
+            Graf forklaring
+        </div>
+        <div class="d3-row">
+            <div id="graphExplanation"></div>
+        </div>
+    </div>
+</div>
+
+<div class="d3-row">
+    <div id="d3container"></div>
+    <div id="d3consensus"></div>
+</div>
+
+<div class="d3-row">
+    <p id="d3playback"></p>
+<button type="button" id="play-button" class="btn btn-primary play-button">Afspil</button>
+</div>
+</div>
+</div></div>
+     {% include 'bad_influence/d3/d3_graph_results.html' %}
 {% endblock %}
-
-
-{% block scripts %}
-    {% include 'bad_influence/d3/d3_graph_results.html' %}
-{% endblock %}
-

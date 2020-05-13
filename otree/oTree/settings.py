@@ -25,8 +25,11 @@ TEMPLATES = [
 # the session config can be accessed from methods in your apps as self.session.config,
 # e.g. self.session.config['participation_fee']
 
+REAL_WORLD_CURRENCY_CODE = 'EUR'
+USE_POINTS = False
+
 SESSION_CONFIG_DEFAULTS = dict(
-    real_world_currency_per_point=1.00, participation_fee=0.00, doc=""
+    real_world_currency_per_point=0.00, participation_fee=0.00, doc=""
 )
 
 SESSION_CONFIGS = [
@@ -39,7 +42,7 @@ SESSION_CONFIGS = [
     ),
     dict(
         name='daytrader',
-        display_name="Day Trader",
+        display_name="Daytrader",
         num_demo_participants=3,
         app_sequence=['daytrader'],
     ),
@@ -51,10 +54,6 @@ LANGUAGE_CODE = 'da'
 
 TIME_ZONE = 'Europe/Copenhagen'
 USE_TZ = False
-
-# e.g. EUR, GBP, CNY, JPY
-REAL_WORLD_CURRENCY_CODE = 'USD'
-USE_POINTS = True
 
 ROOMS = [
     dict(

@@ -11,6 +11,18 @@ import time
 import numpy as np
 
 
+class Intro1(Page):
+    timeout_seconds = Constants.round_length
+    def is_displayed(self):
+        return self.round_number == 1
+
+
+class Intro2(Page):
+    timeout_seconds = Constants.round_length
+    def is_displayed(self):
+        return self.round_number == 1
+
+
 class MyNormalWaitPage(WaitPage):
     template_name = 'bad_influence/MyResultsWaitPage.html'
     title_text = "Vent..."
@@ -58,8 +70,10 @@ class MyResultsWaitPage(WaitPage):
 
     def after_all_players_arrive(self):
         for player in self.group.get_players():
-            player.set_payoffs()
+            player.set_points()
             player.get_question_title()
+            player.get_choice_text()
+            player.get_preference_text()
         self.group.stubborness()
 
     def vars_for_template(self):
@@ -81,7 +95,7 @@ class Results(Page):
 
         return {
             "data": json.dumps(data),
-            "payoff": int(self.participant.payoff),
+            "payoff_ialt": np.sum([p.points for p in self.player.in_all_rounds()]),
             'player_in_all_rounds': self.player.in_all_rounds(),
             'get_others_in_group': self.player.get_others_in_group(),
             'fraction_hub': str(np.sum([p.hub for p in self.player.in_all_rounds()])) + '/' + str(Constants.num_rounds),
@@ -92,9 +106,25 @@ class Results(Page):
         }
 
 
+class Outro1(Page):
+    timeout_seconds = Constants.round_length
+    def is_displayed(self):
+        return self.round_number == Constants.num_rounds
+
+
+class Outro2(Page):
+    timeout_seconds = Constants.round_length
+    def is_displayed(self):
+        return self.round_number == Constants.num_rounds
+
+
 page_sequence = [
+    Intro1,
+    Intro2,
     MyNormalWaitPage,
     Play,
     MyResultsWaitPage,
     Results,
+    Outro1,
+    Outro2,
 ]
