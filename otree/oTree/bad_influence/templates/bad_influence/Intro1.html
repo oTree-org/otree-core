@@ -9,6 +9,10 @@ html,
 body {
     height: 100%;
 }
+body { margin:0;position:fixed;top:0;right:0;bottom:0;left:0; }
+svg { width:100%; height: 100% }
+
+
    .node {
         stroke: #000;
         stroke-width: 0px;
@@ -28,29 +32,13 @@ body {
         font-family: annie_use_your_telescope, serif;
         font-size: 25px;
     }
+
+
+
+
     </style>
 
 {% endblock %}
-
-	<div>
-
-		<span style="font-size: 60px;letter-spacing: 4px;">BAD</span>
-		<span style="font-size: 60px;">INFLUENCE</span>
-		<!-- <span>the</span>
-		<br><br>
-		<span style="position: relative;top: -11px;">of</span>
-		<br>
-		<span style="font-size: 100px;line-height: 80px;position: relative;top: -15px; display:block;">CROWDS</span> -->
-	</div>
-<words id="preloader_play">
-	let's play! <div class="rarr"></div>
-</words>
-    <br>
-
-<words id="preloader_play">
-    Start spillet!<div class="rarr"> {%  next_button %}</div>
-</words>
-<!-- In a round circle?? -->
 
 
 {% endblock %}
@@ -89,10 +77,20 @@ body {
     }
 
 d3.json("{%  static 'otree/faces.json' %}", function(error, graph) {
-        svg = d3.select("body").append("svg")
-            .attr("width", width)
-            .attr("height", height)
+
+     let container = d3.select("body").append("div").attr("class", "intro-title");
+     container.append("p").attr("class", "bad").text("Bad");
+     container.append("p").attr("class", "influence").text("Influence");
+     container.append("button").attr("class", "start-game");
+
+    svg = d3.select("div").append("svg")
+            .attr("width", "100%")
+            .attr("height", "100%")
             .style("background-color", "transparent");
+           // .style("position", "absolute")
+           // .style("z-index", "2");
+
+
 
 
 
@@ -138,6 +136,8 @@ d3.json("{%  static 'otree/faces.json' %}", function(error, graph) {
                 }
             });
 
+
+
         // Append open eyes to svg
         let eyes = node.append("svg:image")
             .attr("class", "open_eyes")
@@ -146,6 +146,7 @@ d3.json("{%  static 'otree/faces.json' %}", function(error, graph) {
             .attr('width', 46)
             .attr('height', 46)
             .attr("xlink:href", open_eyes);
+
 
 
         // Timer that creates blinking effect
@@ -163,12 +164,6 @@ d3.json("{%  static 'otree/faces.json' %}", function(error, graph) {
                 return d.blinking ? closed_eyes : open_eyes;
             });
         });
-
-        /**
-         * TODO
-         *  Fill whole body with the SVG
-        **/
-
 
 
 
@@ -194,6 +189,7 @@ d3.json("{%  static 'otree/faces.json' %}", function(error, graph) {
                   return "translate(" + d.x + "," + d.y + ")";
                 })
           }
+          console.log(ticked());
 });
 
     function dragstarted(d) {
