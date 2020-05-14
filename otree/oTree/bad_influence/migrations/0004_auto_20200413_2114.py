@@ -7,7 +7,7 @@ import otree.db.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bad_influence', '0003_delete_message'),
+        ('daytrader', '0003_delete_message'),
     ]
 
     operations = [

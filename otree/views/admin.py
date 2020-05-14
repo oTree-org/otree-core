@@ -49,7 +49,7 @@ def pretty_name(name):
 class CreateSessionForm(forms.Form):
     session_configs = SESSION_CONFIGS_DICT.values()
     session_config_choices = ([
-        ('bad_influence', 'bad_influence'),
+        ('daytrader', 'daytrader'),
         ('daytrader', 'daytrader')
     ])
 
@@ -99,7 +99,7 @@ class CreateSessionForm(forms.Form):
 class CreateSessionFormBadInfluence(forms.Form):
     session_configs = SESSION_CONFIGS_DICT.values()
     session_config_choices = (
-        [('bad_influence', 'bad_influence')])
+        [('daytrader', 'daytrader')])
     session_config = forms.ChoiceField(choices=session_config_choices, required=True)
 
     num_participants = forms.IntegerField(required=False,
@@ -209,12 +209,12 @@ class CreateSession(CreateView):
 
 class CreateSessionBadInfluence(FormMixin, vanilla.TemplateView):
     template_name = 'otree/admin/CreateSession.html'
-    url_pattern = r"^opret_spil/bad_influence/"
+    url_pattern = r"^opret_spil/daytrader/"
     form_class = CreateSessionForm
 
     def get_initial(self):
         initial = super().get_initial()
-        initial['session_config'] = "bad_influence"
+        initial['session_config'] = "daytrader"
         return initial
 
     def get_context_data(self, **kwargs):

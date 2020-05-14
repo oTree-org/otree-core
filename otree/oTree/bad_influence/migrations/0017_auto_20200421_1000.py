@@ -7,13 +7,13 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bad_influence', '0016_auto_20200421_0928'),
+        ('daytrader', '0016_auto_20200421_0928'),
     ]
 
     operations = [
         migrations.AlterField(
             model_name='message',
             name='player',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='bad_influence.Player'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='daytrader.Player'),
         ),
     ]

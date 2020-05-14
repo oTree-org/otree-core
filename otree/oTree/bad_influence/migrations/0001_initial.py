@@ -69,10 +69,10 @@ class Migration(migrations.Migration):
                 ('opinion_change_total', otree.db.models.IntegerField(default=0, null=True)),
                 ('number_of_friends_total', otree.db.models.IntegerField(default=0, null=True)),
                 ('player_chat_color', otree.db.models.StringField(max_length=10000, null=True)),
-                ('group', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='bad_influence.Group')),
+                ('group', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='daytrader.Group')),
                 ('participant', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bad_influence_player', to='otree.Participant')),
                 ('session', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bad_influence_player', to='otree.Session')),
-                ('subsession', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='bad_influence.Subsession')),
+                ('subsession', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='daytrader.Subsession')),
             ],
             options={
                 'db_table': 'bad_influence_player',
@@ -81,6 +81,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='group',
             name='subsession',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='bad_influence.Subsession'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='daytrader.Subsession'),
         ),
     ]

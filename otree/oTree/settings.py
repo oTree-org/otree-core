@@ -34,10 +34,10 @@ SESSION_CONFIG_DEFAULTS = dict(
 
 SESSION_CONFIGS = [
     dict(
-        name='bad_influence',
+        name='daytrader',
         display_name="Bad Influence",
         num_demo_participants=5,
-        app_sequence=['bad_influence'],
+        app_sequence=['daytrader'],
         use_secure_urls=True
     ),
     dict(
@@ -92,7 +92,7 @@ EXTENSION_APPS = [
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "../otree/static/otree"),
+    os.path.join(BASE_DIR, "../otree/static/main_platform/otree"),
     '/var/www/static/otree',
 ]
 
