@@ -5,10 +5,41 @@
     {{ player.company_name }}
 {% endblock %}
 
+{% block styles %}
+    <style>
+        body {
+            background: #41739D;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
 
-    {% if subsession.round_number > 1 %}
+    <div class="game-container container">
+
+        {% if subsession.round_number > 1 %}
+            <div class="round-introduction">
+                <h2 class="round-title">{{ player.company_name }}</h2>
+            </div>
+
+            <p> Nu er du trader nummer {{ player.round_number }},
+
+        {% else %}
+            Du er den første trader,
+        {% endif %}
+        og du skal nu handle aktier i firmaet '{{ player.company_name }}'.
+        Du kigger i sækken, og ser et ansigt der er
+
+        {% if player.drawn_face is True %}
+            <strong>glad</strong>
+        {% else %}
+            <strong>ked af det</strong>
+        {% endif %}.
+        </p>
         <p>
+            Du har {{ player.wallet|c }} og aktieprisen er lige nu {{ player.price|c }}. Hvad vil du gøre?
+        </p>
+
         <table class="table">
             <tr>
                 <th>trader</th>
@@ -34,25 +65,13 @@
                 </tr>
             {% endfor %}
         </table>
-        <p> Nu er du trader nummer {{ player.round_number }},
-    {% else %}
-        Du er den første trader,
-    {% endif %}
-og du skal nu handle aktier i firmaet '{{ player.company_name }}'.
-Du kigger i sækken, og ser et ansigt der er
-{% if player.drawn_face == True %}
-    <strong>glad</strong>
-{% else %}
-    <strong>ked af det</strong>
-{% endif %}.
-</p>
-    <p>
-        Du har {{ player.wallet|c }} og aktieprisen er lige nu {{ player.price|c }}. Hvad vil du gøre?
-    </p>
-    {% formfield player.choice_of_trade label=None %}
-    <p> Hvor mange aktier? (du kan handle med maksimalt {{ player.can_buy }} aktier)</p>
-    {% formfield player.choice_of_number_of_shares label=None %}
-    {% next_button %}
+
+
+        {% formfield player.choice_of_trade label=None %}
+        <p> Hvor mange aktier? (du kan handle med maksimalt {{ player.can_buy }} aktier)</p>
+        {% formfield player.choice_of_number_of_shares label=None %}
+        {% next_button %}
+    </div>
 
     <script>
 
@@ -131,6 +150,3 @@ Du kigger i sækken, og ser et ansigt der er
     </script>
 
 {% endblock %}
-<script>
-    console.log("test")
-</script>
