@@ -14,7 +14,7 @@ from django.db import models as django_models
 from otree.models import Participant
 
 class Constants(BaseConstants):
-    name_in_url = 'daytrader'
+    name_in_url = 'bad_influence'
     players_per_group = None
     num_rounds = len(question_order)
     num_initial_friends = 3
