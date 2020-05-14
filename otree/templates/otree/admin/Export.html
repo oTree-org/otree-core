@@ -91,13 +91,13 @@
 
     <h3>Time spent on each page</h3>
     <p><a href="{% url 'ExportTimeSpent' %}">
-      <img src='{% static "main_platform/glyphicons/download-alt.png" %}'>
+      <img src='{% static "glyphicons/download-alt.png" %}'>
       <b>Download</b></a></p>
 
     {% if chat_messages_exist %}
       <h3>Chat logs</h3>
       <p><a href="{% url 'ExportChat' %}">
-        <img src='{% static "main_platform/glyphicons/download-alt.png" %}'>
+        <img src='{% static "glyphicons/download-alt.png" %}'>
         <b>Download</b></a></p>
     {% endif %}
 
@@ -110,7 +110,7 @@
 
     {% for ViewCls in extensions_views %}
       <p><a href="{% url ViewCls.url_name %}">
-        <img src='{% static "main_platform/glyphicons/download-alt.png" %}'>
+        <img src='{% static "glyphicons/download-alt.png" %}'>
         <b>{{ ViewCls.display_name }}</b></a></p>
     {% endfor %}
 

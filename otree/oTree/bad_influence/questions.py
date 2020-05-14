@@ -1,10 +1,10 @@
 colors = {
-    "red": "/static/daytrader/media/red_peep.png",
-    "blue": "/static/daytrader/media/blue_peep.png",
-    "pink": "/static/daytrader/media/pink_peep.png",
-    "yellow": "/static/daytrader/media/yellow_peep.png",
-    "grey": "/static/daytrader/media/grey_peep.png",
-    "green": "/static/daytrader/media/green_peep.png",
+    "red": "/static/bad_influence/media/red_peep.png",
+    "blue": "/static/bad_influence/media/blue_peep.png",
+    "pink": "/static/bad_influence/media/pink_peep.png",
+    "yellow": "/static/bad_influence/media/yellow_peep.png",
+    "grey": "/static/bad_influence/media/grey_peep.png",
+    "green": "/static/bad_influence/media/green_peep.png",
 }
 
 color_pairs = [('red','blue'), ('blue','yellow'), ('yellow','red'), ('green','blue'),

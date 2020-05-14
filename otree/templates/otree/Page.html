@@ -33,11 +33,11 @@ i removed many linebreaks to make output HTML cleaner
 {% endblock %}
 {% block internal_styles %}
 {{ block.super }}
-<link rel="stylesheet" href="{% static 'main_platform/otree/css/page.css' %}">
+<link rel="stylesheet" href="{% static 'otree/css/page.css' %}">
 {% endblock %}
 {% block internal_scripts %}
     {{ block.super }}
-    <script id="websocket-redirect" src="{% static 'main_platform/otree/js/page-websocket-redirect.js' %}"
+    <script id="websocket-redirect" src="{% static 'otree/js/page-websocket-redirect.js' %}"
             data-socket-url="{{ view.socket_url|safe }}"
             data-redirect-url="{{ view.redirect_url|safe }}"
             data-is-browser-bot="{{ participant.is_browser_bot  }}"

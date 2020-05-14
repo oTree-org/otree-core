@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('daytrader', '0008_message_player'),
+        ('bad_influence', '0008_message_player'),
     ]
 
     operations = [

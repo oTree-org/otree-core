@@ -7,13 +7,13 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('daytrader', '0014_remove_message_player'),
+        ('bad_influence', '0014_remove_message_player'),
     ]
 
     operations = [
         migrations.AddField(
             model_name='message',
             name='player',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='daytrader.Player'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='bad_influence.Player'),
         ),
     ]

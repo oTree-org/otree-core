@@ -24,7 +24,7 @@ class Intro2(Page):
 
 
 class MyNormalWaitPage(WaitPage):
-    template_name = 'daytrader/MyResultsWaitPage.html'
+    template_name = 'bad_influence/MyResultsWaitPage.html'
     title_text = "Vent..."
 
     def after_all_players_arrive(self):
@@ -65,7 +65,7 @@ class Play(Page):
 
 
 class MyResultsWaitPage(WaitPage):
-    template_name = 'daytrader/MyResultsWaitPage.html'
+    template_name = 'bad_influence/MyResultsWaitPage.html'
     title_text = "Vent..."
 
     def after_all_players_arrive(self):
