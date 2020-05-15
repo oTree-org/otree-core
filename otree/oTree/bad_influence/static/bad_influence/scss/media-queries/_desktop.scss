@@ -346,27 +346,21 @@
 /*************************************
 *   Intro1.html.html table styling   *
 **************************************/
-
-.start-game {
-
-    }
-
-
-
 .intro-title {
-   display: flex;
+    display: flex;
     justify-content: center;
     flex-direction:column;
     align-items:center;
-    height: 60vh;
     background-color: transparent;
     width: 100%;
-     font-family: "Patrick Hand", cursive;
+    font-family: "Patrick Hand", cursive;
+    height: 100vh;
+
 
       .bad {
           justify-content: center;
           font-weight: bold;
-          font-size: 100px;
+          font-size: 110px;
           text-align: center;
           letter-spacing: 20px;
           color: darkred;
@@ -377,7 +371,7 @@
 
       .influence {
           font-weight: bold;
-          font-size: 70px;
+          font-size: 80px;
           text-align: center;
           color: $ku-red;
           text-transform: uppercase;
@@ -395,42 +389,43 @@
       transition: $property $duration $ease;
     }
 
-* {
-  box-sizing: border-box;
-  &::before, &::after {
+  * {
     box-sizing: border-box;
+    &::before, &::after {
+      box-sizing: border-box;
+    }
   }
-}
 
-button {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
-  outline: none;
-  border: 0;
-  vertical-align: middle;
-  text-decoration: none;
-  background: transparent;
-  padding: 0;
-  font-size: inherit;
-  font-family: inherit;
+  button {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    outline: none;
+    border: 0;
+    vertical-align: middle;
+    text-decoration: none;
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    z-index: 2;
 
 
-  &.start-game {
-    height: auto;
-    width: 20%;
-    margin-top: 40px;
-    font-size: 30px;
+    &.start-game {
+      height: auto;
+      width: 25%;
+      margin-top: 40px;
+      font-size: 40px;
 
-    .circle {
-      @include transition(all, 0.45s, cubic-bezier(0.65,0,.076,1));
-      position: relative;
-      display: block;
-      margin: 0;
-      width: 4rem;
-      height: 4rem;
-      background: $black;
-      border-radius: 3rem;
+      .circle {
+        @include transition(all, 0.45s, cubic-bezier(0.65,0,.076,1));
+        position: relative;
+        display: block;
+        margin: 0;
+        width: 4rem;
+        height: 4rem;
+        background: $black;
+        border-radius: 3rem;
 
     .icon {
         @include transition(all, 0.45s, cubic-bezier(0.65,0,.076,1));
@@ -441,18 +436,18 @@ button {
         background: $white;
         &.arrow {
           @include transition(all, 0.45s, cubic-bezier(0.65,0,.076,1));
-          left: 0.625rem;
-          width: 1.125rem;
-          height: 0.125rem;
+          left: 11px;
+          width: 30px;
+          height: 4px;
           background: none;
           &::before {
             position: absolute;
-            top: -0.25rem;
-            right: 0.0625rem;
-            width: 0.625rem;
-            height: 0.625rem;
-            border-top: 0.125rem solid #fff;
-            border-right: 0.125rem solid #fff;
+            top: -9px;
+            right: 1px;
+            width: 22px;
+             height: 22px;
+            border-top: 4px solid #fff;
+            border-right: 4px solid #fff;
             transform: rotate(45deg);
           }
         }
@@ -461,7 +456,7 @@ button {
     .button-text {
       @include transition(all, 0.45s, cubic-bezier(0.65,0,.076,1));
       position: absolute;
-      top: 0;
+      top: -15px;
       left: 0;
       right: 0;
       bottom: 0;
@@ -472,6 +467,7 @@ button {
       line-height: 1.6;
       text-align: center;
       text-transform: uppercase;
+      letter-spacing: 1px;
     }
   }
   &:hover {
@@ -479,8 +475,8 @@ button {
       width: 100%;
       .icon {
         &.arrow {
-        background: green;
-        transform: translate(1rem, 0);
+        background: white;
+        transform: translate(3rem, 0);
         }
       }
     }
@@ -505,8 +501,181 @@ button {
 }
 
 }
+
+/*************************************
+*   Intro2.html table styling   *
+**************************************/
+.intro-2 {
+   font-family: "Patrick Hand", cursive;
+  .round-title {
+    font-size: 35px;
+
+  }
+
+.game-introduction {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  width: 70%;
+
+}
+  .instruction-column {
+
+  }
+  .round-info {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+
+
+}
+.text-column {
+  display: flex;
+  flex-direction: column;
+  width: 60%;
+  padding-right: 20px;
+
 }
 
+
+  .svg-column {
+  display: flex;
+  justify-content: flex-end;
+  flex-direction: column;
+  width: 40%;
+  margin-right: 5%;
+  padding-right: 20px;
+  margin-bottom: 8%;
+  border-color: $ku-red;
+  border-radius: 2px;
+  border-style: solid solid solid solid;
+}
+
+
+
+
+
+    $bg: #f3f8fa;
+    $white: #fff;
+    $black: #901A1E;
+
+    @mixin transition($property: all, $duration: 0.45s, $ease: cubic-bezier(0.65,0,.076,1)) {
+      transition: $property $duration $ease;
+    }
+
+  * {
+    box-sizing: border-box;
+    &::before, &::after {
+      box-sizing: border-box;
+    }
+  }
+
+  button {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    outline: none;
+    border: 0;
+    vertical-align: middle;
+    text-decoration: none;
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    z-index: 2;
+
+
+    &.start-game {
+      height: auto;
+      width: 68%;
+      margin: 5% 0 5% 0;
+      font-size: 40px;
+
+      .circle {
+        @include transition(all, 0.45s, cubic-bezier(0.65,0,.076,1));
+        position: relative;
+        display: block;
+        margin: 0;
+        width: 4rem;
+        height: 4rem;
+        background: $black;
+        border-radius: 3rem;
+
+    .icon {
+        @include transition(all, 0.45s, cubic-bezier(0.65,0,.076,1));
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        margin: auto;
+        background: $white;
+        &.arrow {
+          @include transition(all, 0.45s, cubic-bezier(0.65,0,.076,1));
+          left: 11px;
+          width: 30px;
+          height: 4px;
+          background: none;
+          &::before {
+            position: absolute;
+            top: -9px;
+            right: 1px;
+            width: 22px;
+            height: 22px;
+            border-top: 4px solid #fff;
+            border-right: 4px solid #fff;
+            transform: rotate(45deg);
+          }
+        }
+      }
+    }
+    .button-text {
+      @include transition(all, 0.45s, cubic-bezier(0.65,0,.076,1));
+      position: absolute;
+      top: -15px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 0.75rem 0;
+      margin: 0 0 0 1.65rem;
+      color: $black;
+      font-weight: 700;
+      line-height: 1.6;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+  }
+  &:hover {
+    .circle {
+      width: 100%;
+      .icon {
+        &.arrow {
+        background: white;
+        transform: translate(3rem, 0);
+        }
+      }
+    }
+    .button-text {
+      color: $white;
+    }
+  }
+}
+  @supports (display: grid) {
+  body {
+    display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 0.625rem;
+  grid-template-areas: ". main main ." ". main main .";
+  }
+
+  #container {
+    grid-area: main;
+    align-self: center;
+    justify-self: center;
+  }
+}
+}
+
+}
 
 
 

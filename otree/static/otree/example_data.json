@@ -1,0 +1,13 @@
+{
+  "nodes": [
+    {"id": "11", "group": 2, "color": "red", "x":  1057, "y": 475},
+    {"id": "12", "group": 2, "color": "yellow", "x":  1057, "y": 475},
+    {"id": "13", "group": 2, "color": "red", "x":  1057, "y": 475},
+    {"id": "14", "group": 2, "color": "yellow", "x":  1057, "y": 475}
+  ],
+  "links": [
+    {"source": "14", "target": "11", "value": 2},
+    {"source": "14", "target": "12", "value": 2},
+    {"source": "14", "target": "13", "value": 2}
+  ]
+}

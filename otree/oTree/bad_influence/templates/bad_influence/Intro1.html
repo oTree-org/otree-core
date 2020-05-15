@@ -1,21 +1,15 @@
 {% extends "global/Base.html" %}
 {% load otree_internal static otree %}
-{% block content %}
-
 {% block styles %}
-
     <style>
 html,
 body {
     height: 100%;
 }
-body { margin:0;position:fixed;top:0;right:0;bottom:0;left:0; }
-svg { width:100%; height: 100% }
-
 
    .node {
         stroke: #000;
-        stroke-width: 0px;
+        stroke-width: 0;
     }
 
     .node-player {
@@ -34,15 +28,23 @@ svg { width:100%; height: 100% }
     }
 
 
+</style>
+{% endblock %}
+    {% block content %}
+<div class="intro-title">
 
+    <p class="bad">Bad</p>
+    <p class="influence">Influence</p>
+     <button class="start-game">
+        <span class="circle" aria-hidden="true">
+          <span class="icon arrow"></span>
+        </span>
+        <span class="button-text">START SPILLET!</span>
+     </button>
 
-    </style>
-
-
+</div>
 {% endblock %}
 
-
-{% endblock %}
 
 {% block scripts %}
 <script src="//d3js.org/d3.v4.min.js"></script>
@@ -61,188 +63,144 @@ svg { width:100%; height: 100% }
     let closed_eyes = "{% static "bad_influence/media/closed_eyes.png" %}";
     let happy_eyes = "{% static "bad_influence/media/happy_eyes.png" %}";
 
-    let width = 1000;
-    let height = 500;
-    let nodeById = d3.map();
-
-
-
-    let simulation = d3.forceSimulation()
-        .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(linkDistance).strength(0.1))
-        .force("charge", d3.forceManyBody())
-        .force("center", d3.forceCenter(width / 2, height / 2));
+    height = 1000;
+    width = 1000;
 
     // Add more distance between nodes
     function linkDistance() {
         return 100;
     }
 
-d3.json("{%  static 'otree/faces.json' %}", function(error, graph) {
-
-     // Intro page container for title and button
-     let container = d3.select("body")
-         .append("div")
-         .attr("class", "intro-title");
-
-     // Intro page title tags
-         container.append("p")
-             .attr("class", "bad")
-             .text("Bad");
-         container.append("p")
-             .attr("class", "influence")
-             .text("Influence");
-
-     // Intro page button for start game
-     let startButton = d3.select(".intro-title")
-         .append("button").attr("class", "start-game").property("value", "hi");
-
-        startButton.append("span")
-            .attr("class", "circle");
-
-        startButton.select(".circle")
-                .append("span")
-                .attr("class", "icon-arrow");
-
-        startButton.append("span")
-            .attr("class", "button-text")
-            .text("Start spillet!")
-            .style("letter-spacing", "5px");
+   let simulation = d3.forceSimulation()
+        .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(linkDistance).strength(0.1))
+        .force('center', d3.forceCenter(width / 2, height / 2))
+        .force("collide", d3.forceCollide(12))
+        .force("charge", d3.forceManyBody())
+        .force("x", d3.forceX())
+        .force("y", d3.forceY());
 
 
 
-    svg = d3.select("div").append("svg")
+d3.json("{% static 'faces.json' %}", function(error, graph) {
+
+    // Append to intro-title div a SVG
+    svg = d3.select(".intro-title").append("svg")
             .attr("width", "100%")
             .attr("height", "100%")
-            .style("background-color", "transparent");
-           // .style("position", "absolute")
-           // .style("z-index", "2");
+            .style("background-color", "transparent")
+            .style("position", "absolute")
+            .style("z-index", "1");
+
+    // Append links to svg and create lines
+    let link = svg.selectAll(".link")
+        .data(graph.links)
+        .enter().append("line")
+        .attr("class", "link");
+
+    // Append nodes to svg
+    let node = svg.selectAll(".node")
+        .data(graph.nodes)
+        .enter().append("g")
+        .attr("class", "nodes")
+        .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended));
+
+    // Make nodes into circles
+    let circles = node.append("circle")
+        .attr("r", 19.5);
+
+    // Append a background color to each node depending on JSON color definition
+    node.append("svg:image")
+        .attr("class", "PeepbackgroundColor")
+        .attr('x', -23)
+        .attr('y', -23)
+        .attr('width', 46)
+        .attr('height', 46)
+        .attr("xlink:href", function(d) {
+            if (d.color === "red") {
+                return red;
+            } else if (d.color === "blue"){
+                return blue;
+            } else if (d.color === "green") {
+                return green;
+            } else if (d.color === "yellow") {
+                return yellow;
+            }  else if (d.color === "pink") {
+                return pink;
+            }
+    });
+
+    // Append open eyes to svg
+    let eyes = node.append("svg:image")
+        .attr("class", "open_eyes")
+        .attr('x', -23)
+        .attr('y', -23)
+        .attr('width', 46)
+        .attr('height', 46)
+        .attr("xlink:href", open_eyes);
 
 
 
-
-
-        // Append links to svg and create lines
-        let link = svg.selectAll(".link")
-            .data(graph.links)
-            .enter().append("line")
-            .attr("class", "link");
-
-
-        // Append nodes to svg
-        let node = svg.selectAll(".node")
-            .data(graph.nodes)
-            .enter().append("g")
-            .attr("class", "nodes")
-            .call(d3.drag()
-              .on("start", dragstarted)
-              .on("drag", dragged)
-              .on("end", dragended));
-
-        // Make nodes into circles
-        let circles = node.append("circle")
-            .attr("r", 19.5);
-
-        // Append a background color to each node depending on JSON color definition
-         node.append("svg:image")
-            .attr("class", "PeepbackgroundColor")
-            .attr('x', -23)
-            .attr('y', -23)
-            .attr('width', 46)
-            .attr('height', 46)
-            .attr("xlink:href", function(d) {
-                if (d.color === "red") {
-                    return red;
-                } else if (d.color === "blue"){
-                    return blue;
-                } else if (d.color === "green") {
-                    return green;
-                } else if (d.color === "yellow") {
-                    return yellow;
-                }  else if (d.color === "pink") {
-                    return pink;
+    // Timer that creates blinking effect
+    d3.timer(function () {
+        eyes.attr("xlink:href", function (d) {
+            if (d.blinking) {
+                if (Math.random() < 0.05) {
+                    d.blinking = false
                 }
-            });
-
-
-
-        // Append open eyes to svg
-        let eyes = node.append("svg:image")
-            .attr("class", "open_eyes")
-            .attr('x', -23)
-            .attr('y', -23)
-            .attr('width', 46)
-            .attr('height', 46)
-            .attr("xlink:href", open_eyes);
-
-
-
-        // Timer that creates blinking effect
-        d3.timer(function () {
-            eyes.attr("xlink:href", function (d) {
-                if (d.blinking) {
-                    if (Math.random() < 0.05) {
-                        d.blinking = false
-                    }
-                } else {
-                    if (Math.random() < 0.01) {
-                        d.blinking = true
-                    }
+            } else {
+                if (Math.random() < 0.01) {
+                    d.blinking = true
                 }
-                return d.blinking ? closed_eyes : open_eyes;
-            });
+            }
+            return d.blinking ? closed_eyes : open_eyes;
         });
+    });
 
+    node.append("title")
+        .text(function(d) { return d.id; });
 
+    simulation
+        .nodes(graph.nodes)
+        .on("tick", ticked);
 
-          node.append("title")
-              .text(function(d) { return d.id; });
+    simulation.force("link")
+        .links(graph.links);
 
-          simulation
-              .nodes(graph.nodes)
-              .on("tick", ticked);
+    function ticked() {
+        link
+            .attr("x1", function(d) { return d.source.x; })
+            .attr("y1", function(d) { return d.source.y; })
+            .attr("x2", function(d) { return d.target.x; })
+            .attr("y2", function(d) { return d.target.y; });
 
-          simulation.force("link")
-              .links(graph.links);
-
-          function ticked() {
-            link
-                .attr("x1", function(d) { return d.source.x; })
-                .attr("y1", function(d) { return d.source.y; })
-                .attr("x2", function(d) { return d.target.x; })
-                .attr("y2", function(d) { return d.target.y; });
-
-            node
-                .attr("transform", function(d) {
-                  return "translate(" + d.x + "," + d.y + ")";
-                })
-          }
+        node
+            .attr("transform", function(d) {
+                return "translate(" + d.x + "," + d.y + ")";
+            })
+    }
           console.log(ticked());
-});
+
 
     function dragstarted(d) {
-  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-  d.fx = d.x;
-  d.fy = d.y;
-}
+      if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+    }
 
-function dragged(d) {
-  d.fx = d3.event.x;
-  d.fy = d3.event.y;
-}
+    function dragged(d) {
+      d.fx = d3.event.x;
+      d.fy = d3.event.y;
+    }
 
-function dragended(d) {
-  if (!d3.event.active) simulation.alphaTarget(0);
-  d.fx = null;
-  d.fy = null;
-}
-
-
-  /**    let lables = node.append("text")
-          .text(function(d) {
-            return d.id;
-          })
-          .attr('x', 6)
-          .attr('y', 3); **/
+    function dragended(d) {
+      if (!d3.event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+    }
+});
 
 </script>
 
