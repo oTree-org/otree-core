@@ -82,7 +82,6 @@ body {
 
 
 d3.json("{% static 'faces.json' %}", function(error, graph) {
-
     // Append to intro-title div a SVG
     svg = d3.select(".intro-title").append("svg")
             .attr("width", "100%")
