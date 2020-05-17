@@ -1,0 +1,91 @@
+@media (min-width: 1150px) {
+
+/*************************************
+*   Intro1.html table styling   *
+**************************************/
+  .intro-title {
+    button {
+
+      &.start-game {
+        max-width: 35%;
+        margin-top: 40px;
+        font-size: 35px;
+
+      }
+    }
+  }
+}
+
+@media (min-width: 1250px) {
+
+/*************************************
+*   Intro1.html table styling   *
+**************************************/
+  .intro-title {
+    button {
+
+      &.start-game {
+        max-width: 33%;
+        margin-top: 40px;
+        font-size: 35px;
+
+      }
+    }
+  }
+}
+
+
+@media (min-width: 1350px) {
+
+/*************************************
+*   Intro1.html table styling   *
+**************************************/
+  .intro-title {
+
+    button {
+
+      &.start-game {
+        max-width: 30%;
+        margin-top: 40px;
+        font-size: 35px;
+
+      }
+    }
+  }
+}
+
+@media (min-width: 1550px) {
+
+/*************************************
+*   Intro1.html table styling   *
+**************************************/
+  .intro-title {
+
+    button {
+
+      &.start-game {
+        max-width: 26%;
+        margin-top: 40px;
+        font-size: 35px;
+      }
+    }
+  }
+}
+
+@media (min-width: 1700px) {
+
+/*************************************
+*   Intro1.html table styling   *
+**************************************/
+  .intro-title {
+
+    button {
+
+      &.start-game {
+        max-width: 23%;
+        margin-top: 40px;
+        font-size: 35px;
+      }
+    }
+  }
+}

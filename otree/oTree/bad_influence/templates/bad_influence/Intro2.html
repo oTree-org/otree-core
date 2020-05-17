@@ -46,7 +46,7 @@
                 </div>
 
               <div id="ButtonsHolder" class="choice-button-holder">
-                <button id="GuessFalseButton" type="button" name="choice" value="False" class="btn choice-button">
+                <button id="GuessFalseButton" type="button" name="choice" value="False" class="btn choice-button" >
                      <div class="mobile-column tablet-row">
                           <img>
                      </div>
@@ -114,6 +114,20 @@
 
     let d3Element = document.getElementById("d3container");
 
+        let get_color = function (choice) {
+        return choice ? red : blue;
+    };
+
+    let setNodeColors = function(nodes) {
+        nodes.forEach(function (n) {
+            let node = nodeById.get(n.id);
+            if (node) {
+                node.choice = true;
+                svg.select("#node_image_" + node.id)
+                    .attr("xlink:href", get_color(n.choice));
+            }
+        });
+    };
 
 d3.json("{% static 'example_data.json' %}", function(error, graph) {
         width = d3Element.clientWidth;
@@ -161,10 +175,6 @@ d3.json("{% static 'example_data.json' %}", function(error, graph) {
             })
             .call(force.drag);
 
-
-
-
-
         let ownSize = 46;
         let ownDisplacement = ownSize / 2;
 
@@ -191,11 +201,9 @@ d3.json("{% static 'example_data.json' %}", function(error, graph) {
                 if (d.id >= 2 && d.color === "blue") {
                     return blue;
                 } else {
-                    return "red" || "blue";
+                    return red;
                 }
         });
-
-
 
         let eyes = node.append("svg:image")
             .attr("id", function (d) {
@@ -215,31 +223,6 @@ d3.json("{% static 'example_data.json' %}", function(error, graph) {
             })
             .attr("xlink:href", open_eyes);
 
-
-        /** CREATE THE BUTTONS OR APPEND TO THEM MANUALLY TO CHANGE COLOR OF ID 1 WITH FUNCTION CALL
-           node.append("svg:image")
-            .on("onClick", changeColor)
-        // Create Event Handlers for mouse
-      function handleMouseOver(d, i) {  // Add interactivity
-
-            // Use D3 to select element, change color and size
-            d3.select(this).attr({
-              fill: "orange",
-              r: radius * 2
-            });
-
-            // Specify where to put label of text
-            svg.append("text").attr({
-               id: "t" + d.x + "-" + d.y + "-" + i,  // Create an id for text so we can select it later for removing on mouseout
-                x: function() { return xScale(d.x) - 30; },
-                y: function() { return yScale(d.y) - 15; }
-            })
-            .text(function() {
-              return [d.x, d.y];  // Value of the text
-            });
-          }
-
-**/
         d3.timer(function () {
             eyes.attr("xlink:href", function (d) {
                 if (d.blinking) {
@@ -255,8 +238,10 @@ d3.json("{% static 'example_data.json' %}", function(error, graph) {
             });
         });
 
-        // Add player ID/name and "dig" to yourself.
 
+
+
+        // Add player ID/name and "dig" to yourself.
         node.append("text")
             .attr("class", "node-text")
             .attr("text-anchor", "right")
@@ -286,37 +271,6 @@ d3.json("{% static 'example_data.json' %}", function(error, graph) {
         });
 
     });
-
-
-    /**
-        // A function that update the color circle
-        let
-    buttonColor = graph.nodes.append("svg:image").attr("xlink:href", color);
-
-    let get_color = function (choice) {
-        return choice ? "red" : "yellow";
-    };
-
- nodes.forEach(function (n) {
-            let node = nodeById.get(n.id);
-            if (node) {
-                node.choice = n.choice;
-                svg.select("#node_image_" + node.id)
-                    .attr("xlink:href", get_color(n.choice));
-            }
-         //console.log(buttonColor);
-/**
-        let changeColor = node.append("svg:image").attr("xlink:href", function(d) {
-            if (d.id === "1" && d.color === "red") {
-            return red;
-            } else {
-            return blue;
-            }
-        });
-
-
-**/
-
 
 </script>
 
