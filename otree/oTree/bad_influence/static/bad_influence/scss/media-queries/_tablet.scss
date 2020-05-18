@@ -406,5 +406,105 @@
 }
 
 }
+/*************************************
+*   Intro2.html table styling   *
+**************************************/
+.intro-2 {
 
+  .svg-column {
+
+      h2 {
+        font-size: 30px;
+      }
+  }
+
+
+    $bg: #f3f8fa;
+    $white: #fff;
+    $black: #901A1E;
+
+    @mixin transition($property: all, $duration: 0.45s, $ease: cubic-bezier(0.65,0,.076,1)) {
+      transition: $property $duration $ease;
+    }
+
+   * {
+    box-sizing: border-box;
+    &::before, &::after {
+      box-sizing: border-box;
+    }
+  }
+
+  button {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    outline: none;
+    border: 0;
+    vertical-align: middle;
+    text-decoration: none;
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    z-index: 2;
+
+    &.start-game {
+      height: auto;
+      width: 60%;
+      margin-top: 30px;
+      font-size: 30px;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+      align-self: center;
+
+      .circle {
+        display: none;
+
+    .icon {
+       display: none;
+        &.arrow {
+         display: none;
+
+        }
+      }
+    }
+    .button-text {
+      position: absolute;
+      top: -5px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      font-weight: 700;
+      line-height: 1.6;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background-color: $ku-red;
+      color: white;
+      border-radius: 20px;
+      height: 50px;
+
+           &:hover {
+        background-color: $ku-dark-green;
+      }
+  }
+
+  }
+}
+  @supports (display: grid) {
+  body {
+    display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 0.625rem;
+  grid-template-areas: ". main main ." ". main main .";
+  }
+
+  #container {
+    grid-area: main;
+    align-self: center;
+    justify-self: center;
+  }
+}
+}
 }
