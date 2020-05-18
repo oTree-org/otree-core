@@ -590,7 +590,8 @@ table.table-debug td.debug-var-value {
   .report-container .dropdown-questions .question-title {
     font-size: 16px;
     font-weight: bold;
-    padding-bottom: 5px;
+    padding-bottom: 10px;
+    padding-top: 20px;
   }
   .report-container .resultater {
     display: flex;
@@ -618,6 +619,9 @@ table.table-debug td.debug-var-value {
     display: flex;
     flex-direction: column;
     align-self: center;
+    text-align: center;
+    padding-top: 0;
+    padding-bottom: 20px;
   }
   .report-container .alert {
     width: 100%;
@@ -645,6 +649,7 @@ table.table-debug td.debug-var-value {
     width: 100px;
     display: flex;
     justify-content: center;
+    margin-bottom: 30px;
   }
   .report-container .play-button:hover {
     background-color: #5f861e;
