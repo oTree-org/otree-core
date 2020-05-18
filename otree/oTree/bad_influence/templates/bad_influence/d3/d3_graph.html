@@ -2,7 +2,7 @@
 <style>
     .node {
         stroke: #000;
-        stroke-width: 0px;
+        stroke-width: 0;
     }
 
     .node-player {
@@ -12,12 +12,12 @@
 
     .link {
         stroke: #999;
-        stroke-width: 1.5px;
+        stroke-width: 2px;
     }
 
     .node-text {
-        font-family: annie_use_your_telescope, serif;
-        font-size: 25px;
+        font-family: "Patrick Hand", cursive;
+        font-size: 20px;
     }
 
 </style>
@@ -43,11 +43,12 @@
     let closed_eyes = "{% static "bad_influence/media/closed_eyes.png" %}";
     let happy_eyes = "{% static "bad_influence/media/happy_eyes.png" %}";
 
+
     let get_color = function (choice) {
         return choice ? "{{ question.minority_color_img }}" : "{{ question.majority_color_img }}";
     };
 
-    let setNodeColors = function (nodes) {
+    let setNodeColors = function(nodes) {
         nodes.forEach(function (n) {
             var node = nodeById.get(n.id);
             if (node) {
@@ -180,7 +181,7 @@
             .attr("dx", 15)
             .attr("dy", 20)
             .text(function (d) {
-                return (d.id === {{ player.id_in_group }} ? ("\u00A0" + d.id + "(dig)") : d.id);
+                return (d.id === {{ player.id_in_group }} ? ("\u00A0" + d.id + " " + "(Dig)") : d.id);
             });
 
         force.on("tick", function () {
@@ -203,4 +204,6 @@
         });
 
     })
+
+
 </script>

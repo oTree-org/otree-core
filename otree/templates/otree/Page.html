@@ -37,6 +37,8 @@ i removed many linebreaks to make output HTML cleaner
 {% endblock %}
 {% block internal_scripts %}
     {{ block.super }}
+
+
     <script id="websocket-redirect" src="{% static 'otree/js/page-websocket-redirect.js' %}"
             data-socket-url="{{ view.socket_url|safe }}"
             data-redirect-url="{{ view.redirect_url|safe }}"

@@ -276,6 +276,108 @@
     height: 50px;
     align-self: center;
   }
+
+  /*************************************
+  *   Intro1.html table styling   *
+  **************************************/
+  .intro-title {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    background-color: transparent;
+    width: 100%;
+    font-family: "Patrick Hand", cursive;
+    height: 100vh;
+  }
+  .intro-title .bad {
+    justify-content: center;
+    font-weight: bold;
+    font-size: 50px;
+    text-align: center;
+    letter-spacing: 20px;
+    color: #901A1E;
+    text-transform: uppercase;
+    margin: 0;
+    padding: 0;
+  }
+  .intro-title .influence {
+    font-weight: bold;
+    font-size: 50px;
+    text-align: center;
+    color: #901A1E;
+    text-transform: uppercase;
+    margin: -25px;
+    padding: 0;
+    letter-spacing: 7px;
+  }
+  .intro-title * {
+    box-sizing: border-box;
+  }
+  .intro-title *::before, .intro-title *::after {
+    box-sizing: border-box;
+  }
+  .intro-title button {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    outline: none;
+    border: 0;
+    vertical-align: middle;
+    text-decoration: none;
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    z-index: 2;
+  }
+  .intro-title button.start-game {
+    height: auto;
+    width: 100%;
+    margin-top: 30px;
+    font-size: 30px;
+  }
+  .intro-title button.start-game .circle {
+    display: none;
+  }
+  .intro-title button.start-game .circle .icon {
+    display: none;
+  }
+  .intro-title button.start-game .circle .icon.arrow {
+    display: none;
+  }
+  .intro-title button.start-game .button-text {
+    position: absolute;
+    top: -5px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    font-weight: 700;
+    line-height: 1.6;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background-color: #901A1E;
+    color: white;
+    border-radius: 20px;
+    height: 50px;
+  }
+  .intro-title button.start-game .button-text {
+    color: #fff;
+  }
+  @supports (display: grid) {
+    .intro-title body {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-gap: 0.625rem;
+      grid-template-areas: ". main main ." ". main main .";
+    }
+    .intro-title #container {
+      grid-area: main;
+      align-self: center;
+      justify-self: center;
+    }
+  }
 }
 @media (min-width: 375px) {
   /*******************************
@@ -539,6 +641,109 @@
     height: 50px;
     align-self: center;
   }
+
+  /*************************************
+  *   Intro1.html.html table styling   *
+  **************************************/
+  .intro-title {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    background-color: transparent;
+    width: 100%;
+    font-family: "Patrick Hand", cursive;
+    height: 100vh;
+  }
+  .intro-title .bad {
+    justify-content: center;
+    font-weight: bold;
+    font-size: 50px;
+    text-align: center;
+    letter-spacing: 20px;
+    color: darkred;
+    text-transform: uppercase;
+    margin: 0;
+    padding: 0;
+  }
+  .intro-title .influence {
+    font-weight: bold;
+    font-size: 50px;
+    text-align: center;
+    color: #901A1E;
+    text-transform: uppercase;
+    margin: -25px;
+    padding: 0;
+    letter-spacing: 7px;
+  }
+  .intro-title * {
+    box-sizing: border-box;
+  }
+  .intro-title *::before, .intro-title *::after {
+    box-sizing: border-box;
+  }
+  .intro-title button {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    outline: none;
+    border: 0;
+    vertical-align: middle;
+    text-decoration: none;
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    z-index: 2;
+  }
+  .intro-title button.start-game {
+    height: auto;
+    width: 70%;
+    margin-top: 30px;
+    font-size: 30px;
+  }
+  .intro-title button.start-game .circle {
+    display: none;
+  }
+  .intro-title button.start-game .circle .icon {
+    display: none;
+  }
+  .intro-title button.start-game .circle .icon.arrow {
+    display: none;
+  }
+  .intro-title button.start-game .button-text {
+    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+    position: absolute;
+    top: -5px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    font-weight: 700;
+    line-height: 1.6;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background-color: #901A1E;
+    color: white;
+    border-radius: 20px;
+    height: 50px;
+  }
+  .intro-title button.start-game .button-text {
+    color: #fff;
+  }
+  @supports (display: grid) {
+    .intro-title body {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-gap: 0.625rem;
+      grid-template-areas: ". main main ." ". main main .";
+    }
+    .intro-title #container {
+      grid-area: main;
+      align-self: center;
+      justify-self: center;
+    }
+  }
 }
 @media (min-width: 768px) {
   /*******************************
@@ -801,6 +1006,109 @@
     width: 50px;
     height: 50px;
     align-self: center;
+  }
+
+  /*************************************
+  *   Intro1.html.html table styling   *
+  **************************************/
+  .intro-title {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    background-color: transparent;
+    width: 100%;
+    font-family: "Patrick Hand", cursive;
+    height: 100vh;
+  }
+  .intro-title .bad {
+    justify-content: center;
+    font-weight: bold;
+    font-size: 50px;
+    text-align: center;
+    letter-spacing: 20px;
+    color: darkred;
+    text-transform: uppercase;
+    margin: 0;
+    padding: 0;
+  }
+  .intro-title .influence {
+    font-weight: bold;
+    font-size: 50px;
+    text-align: center;
+    color: #901A1E;
+    text-transform: uppercase;
+    margin: -25px;
+    padding: 0;
+    letter-spacing: 7px;
+  }
+  .intro-title * {
+    box-sizing: border-box;
+  }
+  .intro-title *::before, .intro-title *::after {
+    box-sizing: border-box;
+  }
+  .intro-title button {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    outline: none;
+    border: 0;
+    vertical-align: middle;
+    text-decoration: none;
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    z-index: 2;
+  }
+  .intro-title button.start-game {
+    height: auto;
+    width: 40%;
+    margin-top: 30px;
+    font-size: 30px;
+  }
+  .intro-title button.start-game .circle {
+    display: none;
+  }
+  .intro-title button.start-game .circle .icon {
+    display: none;
+  }
+  .intro-title button.start-game .circle .icon.arrow {
+    display: none;
+  }
+  .intro-title button.start-game .button-text {
+    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+    position: absolute;
+    top: -5px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    font-weight: 700;
+    line-height: 1.6;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background-color: #901A1E;
+    color: white;
+    border-radius: 20px;
+    height: 50px;
+  }
+  .intro-title button.start-game .button-text {
+    color: #fff;
+  }
+  @supports (display: grid) {
+    .intro-title body {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-gap: 0.625rem;
+      grid-template-areas: ". main main ." ". main main .";
+    }
+    .intro-title #container {
+      grid-area: main;
+      align-self: center;
+      justify-self: center;
+    }
   }
 }
 @media (min-width: 1024px) {
@@ -1116,17 +1424,279 @@
     background-color: white !important;
     border-radius: 10px;
   }
+
+  /*************************************
+  *   Intro1.html table styling   *
+  **************************************/
+  .intro-title .bad {
+    font-size: 110px;
+  }
+  .intro-title .influence {
+    font-size: 80px;
+    margin: -55px;
+  }
+  .intro-title button.start-game {
+    max-width: 40%;
+    margin-top: 40px;
+    font-size: 35px;
+  }
+  .intro-title button.start-game .circle {
+    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+    position: relative;
+    display: block;
+    margin: 0;
+    width: 4rem;
+    height: 4rem;
+    background: #901A1E;
+    border-radius: 3rem;
+  }
+  .intro-title button.start-game .circle .icon {
+    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    background: #fff;
+    display: block;
+  }
+  .intro-title button.start-game .circle .icon.arrow {
+    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+    left: 11px;
+    width: 30px;
+    height: 4px;
+    background: none;
+    display: block;
+  }
+  .intro-title button.start-game .circle .icon.arrow::before {
+    position: absolute;
+    top: -9px;
+    right: 1px;
+    width: 22px;
+    height: 22px;
+    border-top: 4px solid #fff;
+    border-right: 4px solid #fff;
+    transform: rotate(45deg);
+  }
+  .intro-title button.start-game .button-text {
+    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+    top: -8px;
+    padding: 0.75rem 0;
+    margin: 0 0 0 1.65rem;
+    color: #901A1E;
+    background-color: transparent;
+  }
+  .intro-title button:hover .circle {
+    width: 100%;
+  }
+  .intro-title button:hover .circle .icon.arrow {
+    background: white;
+    transform: translate(3rem, 0);
+  }
+  .intro-title button:hover .button-text {
+    color: #fff;
+  }
+  @supports (display: grid) {
+    .intro-title body {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-gap: 0.625rem;
+      grid-template-areas: ". main main ." ". main main .";
+    }
+    .intro-title #container {
+      grid-area: main;
+      align-self: center;
+      justify-self: center;
+    }
+  }
+
+  /*************************************
+  *   Intro2.html table styling   *
+  **************************************/
+  .intro-2 {
+    font-family: "Patrick Hand", cursive;
+  }
+  .intro-2 .round-title {
+    font-size: 35px;
+  }
+  .intro-2 .game-introduction {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 70%;
+  }
+  .intro-2 .round-info {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .intro-2 .text-column {
+    display: flex;
+    flex-direction: column;
+    width: 60%;
+    padding-right: 20px;
+  }
+  .intro-2 .svg-column {
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: column;
+    width: 40%;
+    margin-right: 5%;
+    padding-right: 0;
+    margin-bottom: 8%;
+    border-color: #901A1E;
+    border-radius: 2px;
+    border-style: solid solid solid solid;
+  }
+  .intro-2 * {
+    box-sizing: border-box;
+  }
+  .intro-2 *::before, .intro-2 *::after {
+    box-sizing: border-box;
+  }
+  .intro-2 button {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    outline: none;
+    border: 0;
+    vertical-align: middle;
+    text-decoration: none;
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    z-index: 2;
+  }
+  .intro-2 button.start-game {
+    height: auto;
+    width: 68%;
+    margin: 5% 0 5% 0;
+    font-size: 40px;
+  }
+  .intro-2 button.start-game .circle {
+    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+    position: relative;
+    display: block;
+    margin: 0;
+    width: 4rem;
+    height: 4rem;
+    background: #901A1E;
+    border-radius: 3rem;
+  }
+  .intro-2 button.start-game .circle .icon {
+    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    background: #fff;
+  }
+  .intro-2 button.start-game .circle .icon.arrow {
+    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+    left: 11px;
+    width: 30px;
+    height: 4px;
+    background: none;
+  }
+  .intro-2 button.start-game .circle .icon.arrow::before {
+    position: absolute;
+    top: -9px;
+    right: 1px;
+    width: 22px;
+    height: 22px;
+    border-top: 4px solid #fff;
+    border-right: 4px solid #fff;
+    transform: rotate(45deg);
+  }
+  .intro-2 button.start-game .button-text {
+    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+    position: absolute;
+    top: -15px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0.75rem 0;
+    margin: 0 0 0 1.65rem;
+    color: #901A1E;
+    font-weight: 700;
+    line-height: 1.6;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .intro-2 button:hover .circle {
+    width: 100%;
+  }
+  .intro-2 button:hover .circle .icon.arrow {
+    background: white;
+    transform: translate(3rem, 0);
+  }
+  .intro-2 button:hover .button-text {
+    color: #fff;
+  }
+  @supports (display: grid) {
+    .intro-2 body {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-gap: 0.625rem;
+      grid-template-areas: ". main main ." ". main main .";
+    }
+    .intro-2 #container {
+      grid-area: main;
+      align-self: center;
+      justify-self: center;
+    }
+  }
 }
-/*
-body::before {
-  font-family: "Source Code Pro", "SF Mono", Monaco, Inconsolata, "Fira Mono",
-      "Droid Sans Mono", monospace, monospace;
-  white-space: pre;
-  display: block;
-  padding: 1em;
-  margin-bottom: 1em;
-  border-bottom: 2px solid black;
-  content: 'Error: expected ":".\a   \2577 \a 1 \2502  $uni-red = #901A1E;\d\a   \2502           ^\a   \2575 \a   modules\\_variables.scss 1:10  @import\a   main.scss 2:9                 root stylesheet';
-}*/
+@media (min-width: 1150px) {
+  /*************************************
+  *   Intro1.html table styling   *
+  **************************************/
+  .intro-title button.start-game {
+    max-width: 35%;
+    margin-top: 40px;
+    font-size: 35px;
+  }
+}
+@media (min-width: 1250px) {
+  /*************************************
+  *   Intro1.html table styling   *
+  **************************************/
+  .intro-title button.start-game {
+    max-width: 33%;
+    margin-top: 40px;
+    font-size: 35px;
+  }
+}
+@media (min-width: 1350px) {
+  /*************************************
+  *   Intro1.html table styling   *
+  **************************************/
+  .intro-title button.start-game {
+    max-width: 30%;
+    margin-top: 40px;
+    font-size: 35px;
+  }
+}
+@media (min-width: 1550px) {
+  /*************************************
+  *   Intro1.html table styling   *
+  **************************************/
+  .intro-title button.start-game {
+    max-width: 26%;
+    margin-top: 40px;
+    font-size: 35px;
+  }
+}
+@media (min-width: 1700px) {
+  /*************************************
+  *   Intro1.html table styling   *
+  **************************************/
+  .intro-title button.start-game {
+    max-width: 23%;
+    margin-top: 40px;
+    font-size: 35px;
+  }
+}
 
 /*# sourceMappingURL=styles.css.map */

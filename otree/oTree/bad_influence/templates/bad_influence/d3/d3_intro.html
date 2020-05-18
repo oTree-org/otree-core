@@ -1,15 +1,8 @@
-{% extends "global/Base.html" %}
-{% load staticfiles otree %}
-{% block styles %}
-
-    <style>
-        body {
-            background-color: #901A1E;
-        }
-
+{% load static  %}
+<style>
     .node {
         stroke: #000;
-        stroke-width: 0;
+        stroke-width: 0px;
     }
 
     .node-player {
@@ -19,83 +12,33 @@
 
     .link {
         stroke: #999;
-        stroke-width: 2px;
+        stroke-width: 1.5px;
     }
 
     .node-text {
-        font-family: "Patrick Hand", cursive;
-        font-size: 20px;
-
+        font-family: annie_use_your_telescope, serif;
+        font-size: 25px;
     }
-    </style>
-{% endblock %}
-{% block content %}
-<div class="game-container container intro-2">
-    <div class="game-introduction">
-         <h2 class="round-title">Introduktion</h2>
-    </div>
 
-
-    <div class="instruction-column">
-        <div class="game-row">
-             <div class="svg-column">
-              <div class="answer-container" id="d3container">
-                    <div class="chat-title">
-            <h2>Eksempel et venne-netværk</h2>
-        </div>
-                </div>
-<!--
-              <div id="ButtonsHolder" class="choice-button-holder">
-                <button id="GuessFalseButton" type="button" name="choice" value="False" class="btn choice-button" >
-                     <div class="mobile-column tablet-row">
-                          <img>
-                     </div>
-                </button>
-
-                <button id="GuessTrueButton" type="button" name="choice" value="True" class="btn choice-button">
-                     <div class="mobile-column tablet-row">
-                   <img >
-                         </div>
-                </button>
-                </div>
-                -->
-                </div>
-
-             <!-- Left hand side -->
-            <div class="text-column">
-            <div class="round-info">
-                <h3>Sådan spiller du</h3>
-                <p>Spillet består af 10 runder af 1min.</p>
-                <p>Hver runde indeholder et nyt scenarie hvor du får tildelt en præference. </p>
-                <p>Du får to knapper hvor du kan ændre din præference så mange gange du ønsker.</p>
-            </div>
-            <div class="round-info">
-                <h3>Point system</h3>
-                <p>Du kan score 3 point hvis det endelig valg får flertal i klassen.</p>
-                <p>Du kan score  3 + (antal spillere) hvis jeres endelig valg svarer til jeres præference</p>
-            </div>
-            <button class="start-game">
-                <span class="circle" aria-hidden="true">
-                <span class="icon arrow"></span>
-                </span>
-                <span class="button-text">Jeg er klar!</span>
-            </button>
-            </div>
-
-            <!-- Right hand side -->
-
-            </div>
-        </div>
-
-</div>
-
-{% endblock %}
-{% block scripts %}
+</style>
 <script src="https://d3js.org/d3.v3.js"></script>
 <script src="http://marvl.infotech.monash.edu/webcola/cola.js"></script>
-<script type="application/json" src="{% static 'otree/faces.json' %}"></script>
+<script src="http://marvl.infotech.monash.edu/webcola/cola.min.js"></script>
 <script>
+ {% include 'bad_influence/d3/d3_intro.html' %}
 
+
+
+    /**
+    let width = 300;
+    let height = 300;
+
+    const json = '{"first":1, "second":2, "third":3}';
+    let graph = JSON.parse(json);
+    let nodeById = graph.map();
+    console.log(graph);
+    let svg = undefined;
+    let d3Element = document.getElementById("d3_intro");
 
     let red = "{% static "bad_influence/media/red_peep.png" %}";
     let blue = "{% static "bad_influence/media/blue_peep.png" %}";
@@ -108,47 +51,39 @@
     let closed_eyes = "{% static "bad_influence/media/closed_eyes.png" %}";
     let happy_eyes = "{% static "bad_influence/media/happy_eyes.png" %}";
 
-    let width = 480;
-    let height = 300;
-    let nodeById = d3.map();
-    let graph = d3.json("{% static 'example_data.json' %}");
-    let svg = undefined;
-
-    let d3Element = document.getElementById("d3container");
-
-        let get_color = function (choice) {
-        return choice ? red : blue;
+    let get_color = function(choice) {
+        return choice ? 1 : 2;
     };
 
-    let setNodeColors = function(nodes) {
+    let setNodeColors = function (nodes) {
         nodes.forEach(function (n) {
-            let node = nodeById.get(n.id);
+            var node = nodeById.get(n.id);
             if (node) {
-                node.choice = true;
+                node.choice = n.choice;
                 svg.select("#node_image_" + node.id)
                     .attr("xlink:href", get_color(n.choice));
             }
         });
     };
 
-d3.json("{% static 'example_data.json' %}", function(error, graph) {
+    $(document).ready(function () {
         width = d3Element.clientWidth;
-        // Append to svg to d3container
-        svg = d3.select("#d3container")
+        svg = d3.select("#d3_intro")
             .append("svg")
             .attr("width", width)
             .attr("height", height)
-            .style("background-color", "transparent")
-            .style("position", "absolute")
-            .style("z-index", "6");
+            .attr("style", "background: orange");
+
 
         let force = cola.d3adaptor()
             .linkDistance(80)
             .size([width, height]);
 
+
         graph.nodes.forEach(function (node) {
             nodeById.set(node.id, node);
-
+            node.x = width / 2;
+            node.y = height / 2;
             node.blinking = false;
         });
 
@@ -172,7 +107,7 @@ d3.json("{% static 'example_data.json' %}", function(error, graph) {
             .enter().append("g")
             .attr("class", "node")
             .attr("fixed", function (d) {
-                d.fixed = (d.id === d.id);
+                d.fixed = (d.id === "1");
                 return null
             })
             .call(force.drag);
@@ -192,20 +127,26 @@ d3.json("{% static 'example_data.json' %}", function(error, graph) {
                 return d.id === "1" ? ownDisplacement-3.5 : 10
             });
 
-        // Append a background color to each node depending on JSON color definition
+
         node.append("svg:image")
-            .attr("class", "PeepbackgroundColor")
-            .attr('x', -23)
-            .attr('y', -23)
-            .attr('width', 46)
-            .attr('height', 46)
-            .attr("xlink:href", function(d) {
-                if (d.id >= 2 && d.color === "blue") {
-                    return blue;
-                } else {
-                    return red;
-                }
-        });
+            .attr("id", function (d) {
+                return "node_image_" + d.id
+            })
+            .attr('x', function (d) {
+                return d.id === "1" ? -ownDisplacement : -20
+            })
+            .attr('y', function (d) {
+                return d.id === "1" ? -ownDisplacement : -20
+            })
+            .attr('width', function (d) {
+                return d.id === "1" ? ownSize : 40
+            })
+            .attr('height', function (d) {
+                return d.id === "1" ? ownSize : 40
+            })
+            .attr("xlink:href", function (d) {
+                return get_color(d.choice)
+            });
 
         let eyes = node.append("svg:image")
             .attr("id", function (d) {
@@ -236,21 +177,19 @@ d3.json("{% static 'example_data.json' %}", function(error, graph) {
                         d.blinking = true
                     }
                 }
+
+
                 return d.blinking ? closed_eyes : open_eyes;
             });
         });
 
-
-
-
-        // Add player ID/name and "dig" to yourself.
         node.append("text")
             .attr("class", "node-text")
             .attr("text-anchor", "right")
             .attr("dx", 15)
             .attr("dy", 20)
             .text(function (d) {
-                return (d.id === "1" ? ("\u00A0" + d.id + " " + "(Dig)") : d.id);
+                return (d.id === "1" ? ("\u00A0" + d.id + "(dig)") : d.id);
             });
 
         force.on("tick", function () {
@@ -272,8 +211,6 @@ d3.json("{% static 'example_data.json' %}", function(error, graph) {
             })
         });
 
-    });
-
+    })
+     **/
 </script>
-
-{% endblock %}
