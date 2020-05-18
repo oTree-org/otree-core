@@ -10,10 +10,14 @@
         body {
             background: #41739D;
         }
+    ._otree-content {
+        display: flex;
+        justify-content: center;
+    }
     </style>
 {% endblock %}
 {% block content %}
-    <div class="game-container container">
+    <div class="game-container">
         <div id="timer-text" class="container justify-content-md-start">
             Tid tilbage:
             <strong><span id="timer" class="otree-timer__time-left"></span></strong>
@@ -22,7 +26,7 @@
             <h2 class="round-title">{{ player.company_name }}</h2>
         </div>
         {% if subsession.round_number > 1 %}
-            <div class="container daytrader-round-info">
+            <div class="daytrader-round-info">
             <p class="daytrader-round-info">
                 Nu er du trader nummer {{ player.round_number }} og du skal nu handle aktier i firmaet
                 '{{ player.company_name }}'. Du kigger i sækken, og ser et ansigt der er
@@ -54,38 +58,37 @@
             </div>
         </div>
 
-
-        <table class="table daytrader-table">
-            <tr class="table-corners">
-                <th class="daytrader-table-header border-corner-left">trader</th>
-                <th class="daytrader-table-header">pris</th>
-                <th class="daytrader-table-header">ansigt</th>
-                <th class="daytrader-table-header border-corner-right">handel</th>
-            </tr>
-            {% for r, price, choice, deals, states in data %}
-                <tr>
-                    <td class="company-id daytrader-table-data"> {{ r }}.</td>
-                    <td class="daytrader-table-data"> {{ price|c }}</td>
-                    <td class="faceContainer daytrader-table-data">
-                        <div class="btn-container"></div>
-                        {% if states is True %}
-                            <div class="state-container">
-                                <img src="{% static 'daytrader/media/daytrader_happyface.png' %}" alt="happy face"
-                                     class="company-face">
-                            </div>
-                        {% else %}
-                            <div class="state-container">
-                                <img src="{% static 'daytrader/media/daytrader_sadface.png' %}" alt="sad face"
-                                     class="company-face">
-                            </div>
-                        {% endif %}
-                    </td>
-                    <td class="daytrader-table-data"> {% if choice == True %} + {% else %} - {% endif %}
-                        {{ deals }} aktier
-                    </td>
+            <table class="table daytrader-table">
+                <tr class="table-corners">
+                    <th class="daytrader-table-header border-corner-left">trader</th>
+                    <th class="daytrader-table-header">pris</th>
+                    <th class="daytrader-table-header">ansigt</th>
+                    <th class="daytrader-table-header border-corner-right">handel</th>
                 </tr>
-            {% endfor %}
-        </table>
+                {% for r, price, choice, deals, states in data %}
+                    <tr>
+                        <td class="company-id daytrader-table-data"> {{ r }}.</td>
+                        <td class="daytrader-table-data"> {{ price|c }}</td>
+                        <td class="faceContainer daytrader-table-data">
+                            <div class="btn-container"></div>
+                            {% if states is True %}
+                                <div class="state-container">
+                                    <img src="{% static 'daytrader/media/daytrader_happyface.png' %}" alt="happy face"
+                                         class="company-face">
+                                </div>
+                            {% else %}
+                                <div class="state-container">
+                                    <img src="{% static 'daytrader/media/daytrader_sadface.png' %}" alt="sad face"
+                                         class="company-face">
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td class="daytrader-table-data"> {% if choice == True %} + {% else %} - {% endif %}
+                            {{ deals }} aktier
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
 
         <div class="daytrader-form-container">
             {% formfield player.choice_of_trade label=None %}
@@ -95,7 +98,7 @@
                 <div class="daytrader-formfield">
                     {% formfield player.choice_of_number_of_shares label=None %}
                 </div>
-                <div class="daytrader-next-btn">
+                <div class="daytrader-next-btn-container">
                     {% next_button %}
                 </div>
             </div>
@@ -121,6 +124,7 @@
         let current_group_id = {{ group.id }};
         let companyIds = document.getElementsByClassName("company-id");
         let nextBtn = document.querySelector(".otree-btn-next");
+        let daytraderBtn = document.querySelector(".daytrader-next-btn-container");
 
         {#if (!localStorage.getItem("all_groups").includes(current_group_id)) {#}
         {#    localStorage.removeItem("clicked");#}
@@ -128,6 +132,7 @@
 
         nextBtn.textContent = "Køb/Sælg";
 
+        daytraderBtn.firstElementChild.firstElementChild.className = "daytrader-next-btn";
 
         function toggle(className, displayState) {
             let elements = document.getElementsByClassName(className);
@@ -143,8 +148,6 @@
             let unknownFace = document.createElement("img");
             unknownFace.className = "reveal-face";
             unknownFace.src = "{% static 'daytrader/media/unknown_face.png' %}";
-            unknownFace.style.width = "40px";
-            unknownFace.style.height = "40px";
             containers[i].appendChild(unknownFace);
         }
 
