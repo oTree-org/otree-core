@@ -28,46 +28,6 @@ body {
               <p id="d3historyChoice"></p>
         </div>
 
-
-
-
-    <div class="alert alert-info">
-        <div class="d3-row question-title">
-            Spørgsmål kontekst
-        </div>
-        <div class="d3-row">
-         <div id="questionHolder1"></div>
-        </div>
-
-        <div class="d3-row">
-            <div id="questionHolder2"></div>
-        </div>
-    </div>
-
-
-<div class="explanation">
-    <div class="alert alert-info graf">
-        <div class="d3-row question-title">
-            Venne-netværk forklaring
-        </div>
-        <div class="d3-row">
-            <div id="faceExplanation"></div>
-        </div>
-    </div>
-
-    <div class="alert alert-info graf">
-        <div class="d3-row question-title">
-            Graf forklaring
-        </div>
-        <div class="d3-row">
-            <div id="graphExplanation"></div>
-        </div>
-    </div>
-</div>
-
-
-
-
 <div class="d3-row">
     <div id="d3container"></div>
     <div id="d3consensus"></div>
@@ -78,6 +38,40 @@ body {
 <button type="button" id="play-button" class="btn btn-primary play-button">Afspil</button>
 </div>
 
+<div class="alert alert-info">
+    <div class="d3-row question-title">
+        <p>Data vil fremkomme efter en runde er spillet. </p>
+    </div>
+</div>
+
+<div class="alert alert-info">
+    <!-- Explanation for questions -->
+    <div class="d3-row question-title">
+        Spørgsmål kontekst
+    </div>
+    <div class="d3-row">
+         <div id="questionHolder1"></div>
+    </div>
+     <div class="d3-row">
+        <div id="questionHolder2"></div>
+    </div>
+    <br>
+    <!--  Explanation for network -->
+    <div class="d3-row question-title">
+        Venne-netværk forklaring
+    </div>
+    <div class="d3-row">
+            <div id="faceExplanation"></div>
+    </div>
+    <br>
+   <!--  Explanation for network -->
+      <div class="d3-row question-title">
+            Graf forklaring
+        </div>
+        <div class="d3-row">
+            <div id="graphExplanation"></div>
+        </div>
+</div>
 
 
 
@@ -85,19 +79,8 @@ body {
 <div>
 <h2 class="rapport-header ">Topscorerliste</h2>
 
-<div class="explanation">
-    <div class="alert alert-info">
-        <div class="d3-row question-title">
-           Stædighed forklaring
-        </div>
- <div class="d3-row">
-         <div id="stubbornness"></div>
-        </div>
-    </div>
-    </div>
-</div>
-    </div>
-{% include 'bad_influence/d3/d3_graph_results.html' %}
+
+
 <table class="table results-table table-responsive">
         <tr>
             <th> spiller <p></p> nr. </th>
@@ -120,6 +103,17 @@ body {
         </tr>
         {% endfor %}
 </table>
-
-
+<div class="explanation">
+    <div class="alert alert-info">
+        <div class="d3-row question-title">
+           Stædighed forklaring
+        </div>
+ <div class="d3-row">
+         <div id="stubbornness"></div>
+        </div>
+    </div>
+    </div>
+</div>
+    </div>
+{% include 'bad_influence/d3/d3_graph_results.html' %}
 </div>
