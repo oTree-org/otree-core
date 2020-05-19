@@ -7,7 +7,6 @@ type
 ```
     cd otree-core
     pip install -e .
-    pip install -r requirements.txt
     cd otree
     cd oTree
     otree devserver
