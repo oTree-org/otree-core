@@ -28,46 +28,6 @@ body {
               <p id="d3historyChoice"></p>
         </div>
 
-
-
-
-    <div class="alert alert-info">
-        <div class="d3-row question-title">
-            Spørgsmål kontekst
-        </div>
-        <div class="d3-row">
-         <div id="questionHolder1"></div>
-        </div>
-
-        <div class="d3-row">
-            <div id="questionHolder2"></div>
-        </div>
-    </div>
-
-
-<div class="explanation">
-    <div class="alert alert-info graf">
-        <div class="d3-row question-title">
-            Venne-netværk forklaring
-        </div>
-        <div class="d3-row">
-            <div id="faceExplanation"></div>
-        </div>
-    </div>
-
-    <div class="alert alert-info graf">
-        <div class="d3-row question-title">
-            Graf forklaring
-        </div>
-        <div class="d3-row">
-            <div id="graphExplanation"></div>
-        </div>
-    </div>
-</div>
-
-
-
-
 <div class="d3-row">
     <div id="d3container"></div>
     <div id="d3consensus"></div>
@@ -81,10 +41,65 @@ body {
 
 
 
+<div class="alert alert-info">
+    <!-- Explanation for questions -->
+    <div class="d3-row question-title">
+        Spørgsmål kontekst
+    </div>
+    <div class="d3-row">
+         <div id="questionHolder1"></div>
+    </div>
+     <div class="d3-row">
+        <div id="questionHolder2"></div>
+    </div>
+    <br>
+    <!--  Explanation for network -->
+    <div class="d3-row question-title">
+        Venne-netværk forklaring
+    </div>
+    <div class="d3-row">
+            <div id="faceExplanation"></div>
+    </div>
+    <br>
+   <!--  Explanation for network -->
+      <div class="d3-row question-title">
+            Graf forklaring
+        </div>
+        <div class="d3-row">
+            <div id="graphExplanation"></div>
+        </div>
+</div>
+
+
+
 
 <div>
 <h2 class="rapport-header ">Topscorerliste</h2>
 
+
+
+<table class="table results-table table-responsive">
+        <tr>
+            <th> spiller <br> nr. </th>
+            <th> point <br> ialt </th>
+            <th> fulgt <br> flertallet </th>
+            <th> fulgt sin <br> præference </th>
+            <th> stædighed <br> (sekunder)</th>
+            <th> # venner </th>
+            <th> # skift </th>
+        </tr>
+        {% for ranking in rankings %}
+        <tr>
+            <td><strong> {{ ranking.0 }} </strong></td>
+            <td>{{ ranking.1 }}</td>
+            <td>{{ ranking.2 }}%</td>
+            <td>{{ ranking.3 }}%</td>
+            <td>{{ ranking.4 }}</td>
+            <td>{{ ranking.5 }}</td>
+            <td>{{ ranking.6 }}</td>
+        </tr>
+        {% endfor %}
+</table>
 <div class="explanation">
     <div class="alert alert-info">
         <div class="d3-row question-title">
@@ -98,28 +113,4 @@ body {
 </div>
     </div>
 {% include 'bad_influence/d3/d3_graph_results.html' %}
-<table class="table results-table table-responsive">
-        <tr>
-            <th> spiller <p></p> nr. </th>
-            <th> point <p></p> ialt </th>
-            <th> fulgt <p></p> flertallet </th>
-            <th> fulgt sin <p></p> præference </th>
-            <th>stædighed <p></p> (sekunder)</th>
-            <th># venner </th>
-            <th># skift</th>
-        </tr>
-        {% for ranking in rankings %}
-        <tr>
-            <td><strong> {{ ranking.0 }} </strong></td>
-            <td>{{ ranking.1 }}</td>
-            <td>{{ ranking.5 }}%</td>
-            <td>{{ ranking.6 }}%</td>
-            <td>{{ ranking.2 }}</td>
-            <td>{{ ranking.3 }}</td>
-            <td>{{ ranking.4 }}</td>
-        </tr>
-        {% endfor %}
-</table>
-
-
 </div>

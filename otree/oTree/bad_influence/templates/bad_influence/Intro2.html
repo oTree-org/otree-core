@@ -1,6 +1,276 @@
 {% extends "global/Base.html" %}
 {% load staticfiles otree %}
+{% block styles %}
+
+    <style>
+        body {
+            background-color: #901A1E;
+        }
+
+    .node {
+        stroke: #000;
+        stroke-width: 0;
+    }
+
+    .node-player {
+        stroke: #000;
+        stroke-width: 3px;
+    }
+
+    .link {
+        stroke: #999;
+        stroke-width: 2px;
+    }
+
+    .node-text {
+        font-family: "Patrick Hand", cursive;
+        font-size: 20px;
+
+    }
+    </style>
+{% endblock %}
 {% block content %}
-tom side 2
-    {%  next_button %}
+<div class="game-container container intro-2">
+    <div class="game-introduction">
+         <h2 class="round-title">Introduktion</h2>
+    </div>
+
+
+    <div class="instruction-column">
+        <div class="game-row">
+             <div class="svg-column">
+              <div class="answer-container" id="d3container">
+                    <div class="chat-title">
+            <h2>Eksempel på et venne-netværk</h2>
+        </div>
+                </div>
+<!--
+              <div id="ButtonsHolder" class="choice-button-holder">
+                <button id="GuessFalseButton" type="button" name="choice" value="False" class="btn choice-button" >
+                     <div class="mobile-column tablet-row">
+                          <img>
+                     </div>
+                </button>
+
+                <button id="GuessTrueButton" type="button" name="choice" value="True" class="btn choice-button">
+                     <div class="mobile-column tablet-row">
+                   <img >
+                         </div>
+                </button>
+                </div>
+                -->
+                </div>
+
+             <!-- Left hand side -->
+            <div class="text-column">
+            <div class="round-info">
+                <h3>Sådan spiller du</h3>
+                <p>Spillet består af 10 runder med forskellige scenarier af 1min.</p>
+                <p>Ved hver scenarie du får tildelt en præference og et venne-netværk.  Dit mål er at få dit venne-netværk til at passe din præference.</p>
+                 <p>Du får to knapper hvor du kan ændre din præference så mange gange du ønsker, samt et chat vindue hvor du kan snakke med dit venne-netværk.</p>
+            </div>
+            <div class="round-info">
+                <h3>Point system</h3>
+                <p>Du kan score 3 point hvis det endelig valg får flertal i klassen.</p>
+                <p>Du kan score  3 + (antal spillere) hvis jeres endelig valg svarer til jeres præference</p>
+            </div>
+            <button class="start-game">
+                <span class="button-text">Jeg er klar!</span>
+            </button>
+
+
+            <!-- Right hand side -->
+
+            </div>
+        </div>
+ </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script src="https://d3js.org/d3.v3.js"></script>
+<script src="http://marvl.infotech.monash.edu/webcola/cola.js"></script>
+<script type="application/json" src="{% static 'otree/faces.json' %}"></script>
+<script>
+
+
+    let red = "{% static "bad_influence/media/red_peep.png" %}";
+    let blue = "{% static "bad_influence/media/blue_peep.png" %}";
+    let pink = "{% static "bad_influence/media/pink_peep.png" %}";
+    let yellow = "{% static "bad_influence/media/yellow_peep.png" %}";
+    let grey = "{% static "bad_influence/media/grey_peep.png" %}";
+    let green = "{% static "bad_influence/media/green_peep.png" %}";
+
+    let open_eyes = "{% static "bad_influence/media/open_eyes.png" %}";
+    let closed_eyes = "{% static "bad_influence/media/closed_eyes.png" %}";
+    let happy_eyes = "{% static "bad_influence/media/happy_eyes.png" %}";
+
+    let width = 480;
+    let height = 300;
+    let nodeById = d3.map();
+    let graph = d3.json("{% static 'example_data.json' %}");
+    let svg = undefined;
+
+    let d3Element = document.getElementById("d3container");
+
+        let get_color = function (choice) {
+        return choice ? red : blue;
+    };
+
+    let setNodeColors = function(nodes) {
+        nodes.forEach(function (n) {
+            let node = nodeById.get(n.id);
+            if (node) {
+                node.choice = true;
+                svg.select("#node_image_" + node.id)
+                    .attr("xlink:href", get_color(n.choice));
+            }
+        });
+    };
+
+d3.json("{% static 'example_data.json' %}", function(error, graph) {
+        width = d3Element.clientWidth;
+        // Append to svg to d3container
+        svg = d3.select("#d3container")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .style("background-color", "transparent")
+            .style("position", "absolute")
+            .style("z-index", "6");
+
+        let force = cola.d3adaptor()
+            .linkDistance(80)
+            .size([width, height]);
+
+        graph.nodes.forEach(function (node) {
+            nodeById.set(node.id, node);
+
+            node.blinking = false;
+        });
+
+        graph.links.forEach(function (link) {
+            link.source = nodeById.get(link.source);
+            link.target = nodeById.get(link.target);
+        });
+
+        force
+            .nodes(graph.nodes)
+            .links(graph.links)
+            .start();
+
+        let link = svg.selectAll(".link")
+            .data(graph.links)
+            .enter().append("line")
+            .attr("class", "link");
+
+        let node = svg.selectAll(".node")
+            .data(graph.nodes)
+            .enter().append("g")
+            .attr("class", "node")
+            .attr("fixed", function (d) {
+                d.fixed = (d.id === d.id);
+                return null
+            })
+            .call(force.drag);
+
+        let ownSize = 46;
+        let ownDisplacement = ownSize / 2;
+
+        node
+            .append("circle")
+            .attr("id", function (d) {
+                return "node_" + d.id
+            })
+            .attr("class", function (d) {
+                return d.id === "1" ? "node-player" : "node"
+            })
+            .attr("r", function (d) {
+                return d.id === "1" ? ownDisplacement-3.5 : 10
+            });
+
+        // Append a background color to each node depending on JSON color definition
+        node.append("svg:image")
+            .attr("class", "PeepbackgroundColor")
+            .attr('x', -23)
+            .attr('y', -23)
+            .attr('width', 46)
+            .attr('height', 46)
+            .attr("xlink:href", function(d) {
+                if (d.id >= 2 && d.color === "blue") {
+                    return blue;
+                } else {
+                    return red;
+                }
+        });
+
+        let eyes = node.append("svg:image")
+            .attr("id", function (d) {
+                return "node_image_eyes" + d.id
+            })
+            .attr('x', function (d) {
+                return d.id === "1" ? -ownDisplacement : -20
+            })
+            .attr('y', function (d) {
+                return d.id === "1" ? -ownDisplacement : -20
+            })
+            .attr('width', function (d) {
+                return d.id === "1" ? ownSize : 40
+            })
+            .attr('height', function (d) {
+                return d.id === "1" ? ownSize : 40
+            })
+            .attr("xlink:href", open_eyes);
+
+        d3.timer(function () {
+            eyes.attr("xlink:href", function (d) {
+                if (d.blinking) {
+                    if (Math.random() < 0.05) {
+                        d.blinking = false
+                    }
+                } else {
+                    if (Math.random() < 0.01) {
+                        d.blinking = true
+                    }
+                }
+                return d.blinking ? closed_eyes : open_eyes;
+            });
+        });
+
+
+
+
+        // Add player ID/name and "dig" to yourself.
+        node.append("text")
+            .attr("class", "node-text")
+            .attr("text-anchor", "right")
+            .attr("dx", 15)
+            .attr("dy", 20)
+            .text(function (d) {
+                return (d.id === "1" ? ("\u00A0" + d.id + " " + "(Dig)") : d.id);
+            });
+
+        force.on("tick", function () {
+            link.attr("x1", function (d) {
+                return d.source.x;
+            })
+                .attr("y1", function (d) {
+                    return d.source.y;
+                })
+                .attr("x2", function (d) {
+                    return d.target.x;
+                })
+                .attr("y2", function (d) {
+                    return d.target.y;
+                });
+
+            node.attr("transform", function (d) {
+                return "translate(" + d.x + "," + d.y + ")";
+            })
+        });
+
+    });
+
+</script>
+
 {% endblock %}
