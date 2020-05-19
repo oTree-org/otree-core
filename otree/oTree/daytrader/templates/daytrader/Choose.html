@@ -10,18 +10,21 @@
         body {
             background: #41739D;
         }
-    ._otree-content {
-        display: flex;
-        justify-content: center;
-    }
+
+        ._otree-content {
+            display: flex;
+            justify-content: center;
+        }
+
+        #timer {
+            display: flex;
+            justify-content: center;
+        }
     </style>
 {% endblock %}
 {% block content %}
     <div class="game-container">
-        <div id="timer-text" class="container justify-content-md-start">
-            Tid tilbage:
-            <strong><span id="timer" class="otree-timer__time-left"></span></strong>
-        </div>
+
         <div class="round-introduction">
             <h2 class="round-title">{{ player.company_name }}</h2>
         </div>
@@ -58,37 +61,37 @@
             </div>
         </div>
 
-            <table class="table daytrader-table">
-                <tr class="table-corners">
-                    <th class="daytrader-table-header border-corner-left">trader</th>
-                    <th class="daytrader-table-header">pris</th>
-                    <th class="daytrader-table-header">ansigt</th>
-                    <th class="daytrader-table-header border-corner-right">handel</th>
+        <table class="table daytrader-table">
+            <tr class="table-corners">
+                <th class="daytrader-table-header border-corner-left">trader</th>
+                <th class="daytrader-table-header">pris</th>
+                <th class="daytrader-table-header">ansigt</th>
+                <th class="daytrader-table-header border-corner-right">handel</th>
+            </tr>
+            {% for r, price, choice, deals, states in data %}
+                <tr class="daytrader-table-row">
+                    <td class="company-id daytrader-table-data"> {{ r }}.</td>
+                    <td class="daytrader-table-data"> {{ price|c }}</td>
+                    <td class="faceContainer daytrader-table-data">
+                        <div class="btn-container"></div>
+                        {% if states is True %}
+                            <div class="state-container">
+                                <img src="{% static 'daytrader/media/daytrader_happyface.png' %}" alt="happy face"
+                                     class="company-face">
+                            </div>
+                        {% else %}
+                            <div class="state-container">
+                                <img src="{% static 'daytrader/media/daytrader_sadface.png' %}" alt="sad face"
+                                     class="company-face">
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td class="daytrader-table-data"> {% if choice == True %} + {% else %} - {% endif %}
+                        {{ deals }} aktier
+                    </td>
                 </tr>
-                {% for r, price, choice, deals, states in data %}
-                    <tr>
-                        <td class="company-id daytrader-table-data"> {{ r }}.</td>
-                        <td class="daytrader-table-data"> {{ price|c }}</td>
-                        <td class="faceContainer daytrader-table-data">
-                            <div class="btn-container"></div>
-                            {% if states is True %}
-                                <div class="state-container">
-                                    <img src="{% static 'daytrader/media/daytrader_happyface.png' %}" alt="happy face"
-                                         class="company-face">
-                                </div>
-                            {% else %}
-                                <div class="state-container">
-                                    <img src="{% static 'daytrader/media/daytrader_sadface.png' %}" alt="sad face"
-                                         class="company-face">
-                                </div>
-                            {% endif %}
-                        </td>
-                        <td class="daytrader-table-data"> {% if choice == True %} + {% else %} - {% endif %}
-                            {{ deals }} aktier
-                        </td>
-                    </tr>
-                {% endfor %}
-            </table>
+            {% endfor %}
+        </table>
 
         <div class="daytrader-form-container">
             {% formfield player.choice_of_trade label=None %}
@@ -99,11 +102,18 @@
                     {% formfield player.choice_of_number_of_shares label=None %}
                 </div>
                 <div class="daytrader-next-btn-container">
-                    {% next_button %}
+                    <button class="daytrader-next-btn">
+                        Køb/Sælg
+                    </button>
                 </div>
             </div>
         </div>
+        <div id="timer-text" class="container justify-content-md-start">
+            Tid tilbage:
+            <strong><span id="timer" class="otree-timer__time-left"></span></strong>
         </div>
+        </div>
+
     </div>
 
 
@@ -123,16 +133,10 @@
         let group_ids = []
         let current_group_id = {{ group.id }};
         let companyIds = document.getElementsByClassName("company-id");
-        let nextBtn = document.querySelector(".otree-btn-next");
-        let daytraderBtn = document.querySelector(".daytrader-next-btn-container");
 
         {#if (!localStorage.getItem("all_groups").includes(current_group_id)) {#}
         {#    localStorage.removeItem("clicked");#}
         {##}
-
-        nextBtn.textContent = "Køb/Sælg";
-
-        daytraderBtn.firstElementChild.firstElementChild.className = "daytrader-next-btn";
 
         function toggle(className, displayState) {
             let elements = document.getElementsByClassName(className);
