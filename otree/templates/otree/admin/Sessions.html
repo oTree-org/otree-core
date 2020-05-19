@@ -116,14 +116,14 @@ $(function() {
             <button type="submit"
                     class="action-on-selected-sessions btn btn-secondary"
                     disabled formaction="{% url 'ToggleArchivedSessions' %}">
-                <img src='{% static "glyphicons/folder-closed.png" %}'>
+                <img src='{% static "main_platform/glyphicons/folder-closed.png" %}'>
                 {% if is_archive %}Un-Archive{% else %}Archive{% endif %}
             </button>
             <button type="button"
                     class="action-on-selected-sessions btn btn-secondary"
                     disabled
                     data-toggle="modal" data-target="#delete-confirm">
-                <img src='{% static "glyphicons/delete.png" %}'> Delete
+                <img src='{% static "main_platform/glyphicons/delete.png" %}'> Delete
             </button>
         </div>
 
@@ -152,25 +152,25 @@ $(function() {
                 <td>{{ s.id }}</td>
                 <td>
                     <a href="{% url 'SessionStartLinks' s.code %}" class="btn btn-sm" role="button">
-                        <img src='{% static "glyphicons/link.png" %}'> Links
+                        <img src='{% static "main_platform/glyphicons/link.png" %}'> Links
                     </a>
                     <a href="{% url 'SessionEditProperties' s.code %}" class="btn btn-sm" role="button">
-                        <img src='{% static "glyphicons/pencil.png" %}'> Edit
+                        <img src='{% static "main_platform/glyphicons/pencil.png" %}'> Edit
                     </a>
                     <a href="{% url 'SessionMonitor' s.code %}" class="btn btn-sm" role="button">
-                        <img src='{% static "glyphicons/eye-open.png" %}'> Monitor
+                        <img src='{% static "main_platform/glyphicons/eye-open.png" %}'> Monitor
                     </a>
                     <a href="{% url 'SessionData' s.code %}" class="btn btn-sm" role="button">
-                        <img src='{% static "glyphicons/list-alt.png" %}'> Data
+                        <img src='{% static "main_platform/glyphicons/list-alt.png" %}'> Data
                     </a>
 
                     <a href="{% if s.is_mturk %}{% url 'MTurkSessionPayments' s.code %}{% else %}{% url 'SessionPayments' s.code %}{% endif %}" class="btn btn-sm" role="button">
-                        <img src='{% static "glyphicons/usd.png" %}'> Payments
+                        <img src='{% static "main_platform/glyphicons/usd.png" %}'> Payments
                     </a>
                     {% if s.is_mturk %}
                         <a href="{% url 'MTurkCreateHIT' s.code %}"
                            class="btn btn-sm {% if s.mturk_is_active %}btn-success{% endif %}" role="button">
-                            <img src='{% static "glyphicons/cloud.png" %}'> MTurk&nbsp;&nbsp;&nbsp;
+                            <img src='{% static "main_platform/glyphicons/cloud.png" %}'> MTurk&nbsp;&nbsp;&nbsp;
                         </a>
                     {% endif %}
                 </td>
