@@ -9,15 +9,14 @@
               display: flex;
               justify-content: center;
               align-items: center;
-
         }
     </style>
 {% endblock %}
+
 <!-- Game/session view as active or admin with settings/config-->
 {% if user.is_authenticated and user.is_staff or user.is_superuser %}
 <form id="form-admin">
     {% csrf_token %}
-
     {% formfield form.session_config %}
 
     <div class="form-group{% if form.num_participants.errors %} has-error{% endif %} required">
@@ -25,10 +24,10 @@
         <label class="col-form-label" for="id_num_participants">
             {{ form.num_participants.label }}
         </label>
-        <div class="controls  field-num_participants">
+        <div class="controls field-num_participants">
             {{ form.num_participants }}
             {% if form.num_participants.errors %}
-            {% include "otree/forms/errors.html" with errors=form.num_participants.errors %}
+                {% include "otree/forms/errors.html" with errors=form.num_participants.errors %}
             {% endif %}
             {% for config in configs %}
             <div id="lcm-admin-{{ config.name }}" class="lcm"
@@ -104,12 +103,16 @@
 <!-- Game/session creation without login -->
 {% else %}
 
-    <div class="create-game">
+<div class="create-game">
     <div class="card">
-      <header class="card-header">Opret spil</header>
+        <a href="{% url 'games' %}" class="back-button">Gå tilbage</a>
+        <header class="card-header">
+          Opret spil
+        </header>
+
         <div class="card-body">
             <div>
-                <p>Du har valgt spillet <b>Day Trader</b></p>
+                <p>Du har valgt spillet <b>Bad Influence</b></p>
                 <p>Før spillet bliver oprettet skal du vælge antal spillere, og derefter trykke <b>"Opret nyt spil"</b></p>
             </div>
         </div>
@@ -118,20 +121,15 @@
 <form id="form">
         {% csrf_token %}
                 <div style="display: none;" >{% formfield form.session_config %}</div>
-
                 <div class="form-group{% if form.num_participants.errors %} has-error{% endif %} required">
-
                 <div class="footer-row ">
                 <div class="controls field-num_participants">
-                <div>
                 {{ form.num_participants }}
-
                 <div>
                     <input class="btn btn-primary"
                            value='Opret nyt spil'
                            id="btn-create-session"
                            type="submit">
-                </div>
                 </div>
                 </div>
                 <!-- Error handling for the form -->
@@ -144,12 +142,9 @@
                <!-- <p>Must be a multiple of {{ config.get_lcm }}</p></div> -->
                 {% endfor %}
                 <p class="help-block">{{ form.num_participants.help_text }}</p>
-
-
                 </div>
                 </div>
             </form>
-
     </div>
 </div>
 

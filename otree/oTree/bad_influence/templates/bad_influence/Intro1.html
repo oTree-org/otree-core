@@ -1,8 +1,212 @@
 {% extends "global/Base.html" %}
-{% load otree %}
-{% block content %}
+{% load otree_internal static otree %}
+{% block styles %}
+    <style>
+html,
+body {
+    height: 100%;
+    overflow: hidden;
+}
 
-tom side
+  .node {
+        stroke: #000;
+        stroke-width: 0;
+    }
 
-    {%  next_button %}
+    .node-player {
+        stroke: #000;
+        stroke-width: 3px;
+    }
+
+    .link {
+        stroke: #999;
+        stroke-width: 2px;
+    }
+
+
+
+
+</style>
+{% endblock %}
+    {% block content %}
+<div class="intro-title" id="d3container">
+
+    <p class="bad">Bad</p>
+    <p class="influence">Influence</p>
+     <button class="start-game">
+        <span class="circle" aria-hidden="true">
+          <span class="icon arrow"></span>
+        </span>
+        <span class="button-text">START SPILLET!</span>
+     </button>
+
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="http://marvl.infotech.monash.edu/webcola/cola.js"></script>
+<script type="application/json" src="{% static 'otree/faces.json' %}"></script>
+<script>
+    let red = "{% static "bad_influence/media/red_peep.png" %}";
+    let blue = "{% static "bad_influence/media/blue_peep.png" %}";
+    let pink = "{% static "bad_influence/media/pink_peep.png" %}";
+    let yellow = "{% static "bad_influence/media/yellow_peep.png" %}";
+    let grey = "{% static "bad_influence/media/grey_peep.png" %}";
+    let green = "{% static "bad_influence/media/green_peep.png" %}";
+
+    let open_eyes = "{% static "bad_influence/media/open_eyes.png" %}";
+    let closed_eyes = "{% static "bad_influence/media/closed_eyes.png" %}";
+    let happy_eyes = "{% static "bad_influence/media/happy_eyes.png" %}";
+
+     let width = $(window).width();
+    let height = $(window).height();
+    let d3Element = document.getElementsByClassName("container");
+    // Add more distance between nodes
+    function linkDistance() {
+        return 100;
+    }
+
+   let simulation = d3.forceSimulation()
+        .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(linkDistance).strength(0.5))
+        .force("center", d3.forceCenter().x(width / 2).y(height / 2)) // Attraction to the center of the svg area
+        .force("charge", d3.forceManyBody().strength(1)) // Nodes are attracted one each other of value is > 0
+        .force("collide", d3.forceCollide().strength(.1).radius(40).iterations(1)); // Force that avoids circle overlapping
+
+       /**
+        * var simulation = d3.forceSimulation()
+    .force("center", d3.forceCenter().x(width / 2).y(height / 2)) // Attraction to the center of the svg area
+    .force("charge", d3.forceManyBody().strength(1)) // Nodes are attracted one each other of value is > 0
+    .force("collide", d3.forceCollide().strength(.1).radius(30).iterations(1)) // Force that avoids circle overlapping
+        .force("link", d3.forceLink().id(function(d) { return d.id; }).distance(linkDistance).strength(0.5))
+        .force('center', d3.forceCenter(width / 2, height / 2))
+        .force("collide", d3.forceCollide(12))
+        .force("charge", d3.forceManyBody());
+    **/
+
+
+d3.json("{% static 'faces.json' %}", function(error, graph) {
+    // Append to intro-title div a SVG
+    svg = d3.select(".intro-title").append("svg")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .style("background-color", "transparent")
+            .style("position", "absolute")
+            .style("z-index", "1");
+
+    // Append links to svg and create lines
+    let link = svg.selectAll(".link")
+        .data(graph.links)
+        .enter().append("line")
+        .attr("class", "link");
+
+    // Append nodes to svg
+    let node = svg.selectAll(".node")
+        .data(graph.nodes)
+        .enter().append("g")
+        .attr("class", "nodes")
+        .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended));
+
+    // Make nodes into circles
+    let circles = node.append("circle")
+        .attr("r", 19.5);
+
+    // Append a background color to each node depending on JSON color definition
+    node.append("svg:image")
+        .attr("class", "PeepbackgroundColor")
+        .attr('x', -23)
+        .attr('y', -23)
+        .attr('width', 46)
+        .attr('height', 46)
+        .attr("xlink:href", function(d) {
+            if (d.color === "red") {
+                return red;
+            } else if (d.color === "blue"){
+                return blue;
+            } else if (d.color === "green") {
+                return green;
+            } else if (d.color === "yellow") {
+                return yellow;
+            }  else if (d.color === "pink") {
+                return pink;
+            }
+    });
+
+    // Append open eyes to svg
+    let eyes = node.append("svg:image")
+        .attr("class", "open_eyes")
+        .attr('x', -23)
+        .attr('y', -23)
+        .attr('width', 46)
+        .attr('height', 46)
+        .attr("xlink:href", open_eyes);
+
+
+
+    // Timer that creates blinking effect
+    d3.timer(function () {
+        eyes.attr("xlink:href", function (d) {
+            if (d.blinking) {
+                if (Math.random() < 0.05) {
+                    d.blinking = false
+                }
+            } else {
+                if (Math.random() < 0.01) {
+                    d.blinking = true
+                }
+            }
+            return d.blinking ? closed_eyes : open_eyes;
+        });
+    });
+
+    node.append("title")
+        .text(function(d) { return d.id; });
+
+    simulation
+        .nodes(graph.nodes)
+        .on("tick", ticked);
+
+    simulation.force("link")
+        .links(graph.links);
+
+    function ticked() {
+        link
+            .attr("x1", function(d) { return d.source.x; })
+            .attr("y1", function(d) { return d.source.y; })
+            .attr("x2", function(d) { return d.target.x; })
+            .attr("y2", function(d) { return d.target.y; });
+
+        node
+            .attr("transform", function(d) {
+                return "translate(" + d.x + "," + d.y + ")";
+            })
+    }
+          console.log(ticked());
+
+
+    function dragstarted(d) {
+      if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+    }
+
+    function dragged(d) {
+      d.fx = d3.event.x;
+      d.fy = d3.event.y;
+    }
+
+    function dragended(d) {
+      if (!d3.event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+    }
+});
+
+
+</script>
+
 {% endblock %}

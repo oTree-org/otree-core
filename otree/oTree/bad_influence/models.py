@@ -21,7 +21,7 @@ class Constants(BaseConstants):
     high_bonus = 10
     low_bonus = 5
     hub_fraction = 0.33
-    round_length = 6
+    round_length = 70
 
 
 class Subsession(BaseSubsession):
@@ -128,7 +128,7 @@ class Subsession(BaseSubsession):
             p.points_total = sum([player.points for player in p.in_all_rounds()])
             p.fulgt_flertallet_pct = 100*sum([1 for player in p.in_all_rounds() if player.points != 0])/Constants.num_rounds
             p.fulgt_preference_pct = 100*sum([1 for player in p.in_all_rounds() if player.hub == player.choice])/Constants.num_rounds
-            rankings.append((p.id_in_group, p.points_total, np.around(p.stubborn_total, 1),
+            rankings.append((p.id_in_group, np.around(p.stubborn_total, 1),
                              p.number_of_friends_total, p.opinion_change_total,
                              p.fulgt_flertallet_pct, p.fulgt_preference_pct))
 

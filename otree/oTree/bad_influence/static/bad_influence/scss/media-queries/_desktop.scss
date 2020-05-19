@@ -343,6 +343,228 @@
     border-radius: 10px;
 }
 
+/*************************************
+*   Intro1.html table styling   *
+**************************************/
+.intro-title {
+
+      .bad {
+          font-size: 110px;
+      }
+
+      .influence {
+          font-size: 80px;
+          margin: -55px;
+      }
+
+    @mixin transition($property: all, $duration: 0.45s, $ease: cubic-bezier(0.65,0,.076,1)) {
+      transition: $property $duration $ease;
+    }
+
+  button {
+
+    &.start-game {
+      max-width: 40%;
+      margin-top: 40px;
+      font-size: 35px;
+
+      .circle {
+        @include transition(all, 0.45s, cubic-bezier(0.65,0,.076,1));
+        position: relative;
+        display: block;
+        margin: 0;
+        width: 4rem;
+        height: 4rem;
+        background: $black;
+        border-radius: 3rem;
+
+    .icon {
+        @include transition(all, 0.45s, cubic-bezier(0.65,0,.076,1));
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        margin: auto;
+        background: $white;
+        display: block;
+        &.arrow {
+          @include transition(all, 0.45s, cubic-bezier(0.65,0,.076,1));
+          left: 11px;
+          width: 30px;
+          height: 4px;
+          background: none;
+          display: block;
+          &::before {
+            position: absolute;
+            top: -9px;
+            right: 1px;
+            width: 22px;
+             height: 22px;
+            border-top: 4px solid #fff;
+            border-right: 4px solid #fff;
+            transform: rotate(45deg);
+          }
+        }
+      }
+    }
+    .button-text {
+      @include transition(all, 0.45s, cubic-bezier(0.65,0,.076,1));
+      top: -8px;
+      padding: 0.75rem 0;
+      margin: 0 0 0 1.65rem;
+      color: $black;
+      background-color: transparent;
+    }
+  }
+  &:hover {
+    .circle {
+      width: 100%;
+      .icon {
+        &.arrow {
+        background: white;
+        transform: translate(3rem, 0);
+        }
+      }
+    }
+    .button-text {
+      color: $white;
+    }
+  }
 }
+  @supports (display: grid) {
+  body {
+    display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 0.625rem;
+  grid-template-areas: ". main main ." ". main main .";
+  }
+
+  #container {
+    grid-area: main;
+    align-self: center;
+    justify-self: center;
+  }
+}
+
+}
+
+/*************************************
+*   Intro2.html table styling   *
+**************************************/
+.intro-2 {
+   font-family: "Patrick Hand", cursive;
+  .round-title {
+    font-size: 40px;
+
+  }
+
+.game-introduction {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  width: 70%;
+
+}
+
+  .round-info {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+     text-align: left;
+
+
+}
+.text-column {
+  display: flex;
+  flex-direction: column;
+  width: 60%;
+ text-align: left;
+  padding-right: 10px;
+
+}
+
+
+  .svg-column {
+  display: flex;
+  justify-content: flex-end;
+  flex-direction: column;
+  width: 30%;
+  margin-right: 2%;
+  padding-right: 0;
+  margin-bottom: 8%;
+  border-color: $ku-red;
+  border-radius: 2px;
+  border-style: solid solid solid solid;
+
+     h2 {
+      font-size: 25px;
+       padding: 5px;
+    }
+}
+
+
+  button {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    outline: none;
+    border: 0;
+    vertical-align: middle;
+    text-decoration: none;
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    z-index: 2;
+
+    &.start-game {
+      height: auto;
+      width: 60%;
+      margin-top: 30px;
+      font-size: 30px;
+      padding: 40px;
+      display: flex;
+      justify-content: flex-end;
+      align-self: flex-end;
+
+
+
+    }
+    .button-text {
+      position: absolute;
+      top: -5px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      font-weight: 700;
+      line-height: 1.6;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background-color: $ku-red;
+      color: white;
+      border-radius: 20px;
+      height: 50px;
+
+         &:hover {
+        background-color: $ku-dark-green;
+      }
+  }
+
+    .button-text {
+      color: $white;
+    }
+  }
+}
+
+    }
+
+
+
+
+
+
+
+
+
 
 
