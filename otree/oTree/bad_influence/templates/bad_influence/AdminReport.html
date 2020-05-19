@@ -84,17 +84,17 @@ body {
             <th> point <br> ialt </th>
             <th> fulgt <br> flertallet </th>
             <th> fulgt sin <br> præference </th>
-            <th>stædighed <br> (sekunder)</th>
-            <th># venner </th>
-            <th># skift</th>
+            <th> stædighed <br> (sekunder)</th>
+            <th> # venner </th>
+            <th> # skift </th>
         </tr>
         {% for ranking in rankings %}
         <tr>
             <td><strong> {{ ranking.0 }} </strong></td>
             <td>{{ ranking.1 }}</td>
-            <td>{{ ranking.5 }}%</td>
-            <td>{{ ranking.6 }}%</td>
-            <td>{{ ranking.2 }}</td>
+            <td>{{ ranking.2 }}%</td>
+            <td>{{ ranking.3 }}%</td>
+            <td>{{ ranking.4 }}</td>
             <td>{{ ranking.3 }}</td>
             <td>{{ ranking.4 }}</td>
         </tr>
