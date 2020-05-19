@@ -26,23 +26,8 @@
     }
   }
 
-  .round-title {
-    font-family: "Patrick Hand", cursive;
-    font-size: 32px;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    text-align: center;
-    background-image: url("../../../../../../static/main_platform/otree/media/daytrader_titlekusvg.svg");
-    background-repeat: no-repeat;
-    background-position: center;
-    padding: 35px 0 35px 0;
-    color: white;
-    height: 160px;
-    width: 400px
-  }
 
-  .game-container {
+  .daytrader-game-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -56,15 +41,204 @@
     .content-container {
       width: 80%;
     }
-  }
 
-  .round-introduction {
-    font-family: "Patrick Hand", cursive;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    width: 100%;
-    align-items: center;
+    .daytrader-round-title {
+      font-family: "Patrick Hand", cursive;
+      font-size: 32px;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      background-image: url("../../../../../../static/main_platform/otree/media/daytrader_titlekusvg.svg");
+      background-repeat: no-repeat;
+      background-position: center;
+      padding: 35px 0 35px 0;
+      color: white;
+      height: 160px;
+      width: 400px
+    }
+
+    .round-introduction {
+      font-family: "Patrick Hand", cursive;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      width: 100%;
+      align-items: center;
+    }
+
+    // Styling af det viste ansigt i teksten
+    .company-face {
+      width: 50px;
+      height: 50px;
+    }
+
+
+    // Daytrader Table
+    .daytrader-table {
+      margin: 50px 0 0 0;
+      border-collapse: separate;
+      border-spacing: 0 0.5em;
+
+      .border-corner-left {
+        border-radius: 10px 0 0 10px;
+      }
+
+      .border-corner-right {
+        border-radius: 0 10px 10px 0;
+      }
+
+      .daytrader-table-header {
+        background: $daytrader-blue;
+        color: white;
+        font-weight: bold;
+        font-family: "Patrick Hand", sans-serif;
+        font-size: 30px;
+        border-top: none !important;
+        text-align: center;
+        box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
+      }
+
+      .daytrader-table-data {
+        font-size: 26px;
+        font-family: "Patrick Hand", sans-serif;
+        border-top: none !important;
+        text-align: center;
+      }
+
+      .daytrader-table-row {
+        box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+        border-radius: 10px;
+      }
+    }
+
+    // Container til daytrader formen
+    .daytrader-form-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      .daytrader-form-info {
+        font-size: 22px;
+        font-family: "Patrick Hand", sans-serif;
+        text-align: center;
+      }
+    }
+
+    // Container til input af antal aktier og næste knap
+    .daytrader-submit-value {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      #id_choice_of_number_of_shares {
+        max-width: 344px !important;
+        height: 50px;
+        left: 550px;
+        top: 1637px;
+
+        border: 5px solid #41739D;
+        box-sizing: border-box;
+        border-radius: 30px;
+      }
+    }
+
+    .otree-btn-next {
+
+
+    }
+
+    .field-choice_of_number_of_shares, {
+      display: flex;
+      justify-content: center;
+    }
+
+    .daytrader-next-btn-container {
+
+      display: flex;
+      justify-content: center;
+
+      .daytrader-next-btn {
+        font-size: 30px;
+        background: $daytrader-blue;
+        font-family: "Patrick Hand", sans-serif;
+        width: 344px;
+        height: 55px;
+        color: white;
+
+        border: 5px solid $daytrader-blue;
+        box-sizing: border-box;
+        border-radius: 30px;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+    }
+
+    .reveal-face {
+      width: 40px;
+      height: 40px;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
+    .field-choice_of_trade {
+      margin: 50px 0 0 0;
+      display: flex;
+      justify-content: center;
+      flex-direction: row;
+
+
+      .form-check {
+        display: flex;
+        margin-right: 0;
+        padding-right: 25px;
+        flex-direction: column;
+
+
+        .form-check-label {
+          font-family: "Patrick Hand", sans-serif;
+          font-size: 22px;
+          text-transform: capitalize;
+        }
+
+        input.form-check-input[type="radio"] {
+          -webkit-appearance: none;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          outline: none;
+          border: 3px solid $daytrader-blue;
+
+          &:before {
+            content: '';
+            display: block;
+            width: 60%;
+            height: 60%;
+            margin: 20% auto;
+            border-radius: 50%;
+          }
+
+          &:checked:before {
+            background: $daytrader-blue;
+          }
+
+          &:checked {
+            border-color: $daytrader-blue;
+          }
+        }
+      }
+    }
+
+    .daytrader-info-choice {
+      width: 100%;
+    }
+
+
   }
 
 
@@ -292,175 +466,5 @@
     }
   }
 
-  // Styling af det viste ansigt i teksten
-  .company-face {
-    width: 50px;
-    height: 50px;
-  }
-
-
-  // Daytrader Table
-  .daytrader-table {
-    margin: 50px 0 0 0;
-    border-collapse: separate;
-    border-spacing: 0 0.5em;
-
-    .border-corner-left {
-      border-radius: 10px 0 0 10px;
-    }
-
-    .border-corner-right {
-      border-radius: 0 10px 10px 0;
-    }
-
-    .daytrader-table-header {
-      background: $daytrader-blue;
-      color: white;
-      font-weight: bold;
-      font-family: "Patrick Hand", sans-serif;
-      font-size: 30px;
-      border-top: none !important;
-      text-align: center;
-      box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
-    }
-
-    .daytrader-table-data {
-      font-size: 26px;
-      font-family: "Patrick Hand", sans-serif;
-      border-top: none !important;
-      text-align: center;
-    }
-
-    .daytrader-table-row {
-      box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
-      border-radius: 10px;
-    }
-  }
-
-  // Container til daytrader formen
-  .daytrader-form-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-
-    .daytrader-form-info {
-      font-size: 22px;
-      font-family: "Patrick Hand", sans-serif;
-      text-align: center;
-    }
-  }
-
-  // Container til input af antal aktier og næste knap
-  .daytrader-submit-value {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-
-    #id_choice_of_number_of_shares {
-      max-width: 344px !important;
-      height: 50px;
-      left: 550px;
-      top: 1637px;
-
-      border: 5px solid #41739D;
-      box-sizing: border-box;
-      border-radius: 30px;
-    }
-  }
-
-  .otree-btn-next {
-
-
-  }
-
-  .field-choice_of_number_of_shares, {
-    display: flex;
-    justify-content: center;
-  }
-
-  .daytrader-next-btn-container {
-
-    display: flex;
-    justify-content: center;
-
-      .daytrader-next-btn {
-        font-size: 30px;
-        background: $daytrader-blue;
-        font-family: "Patrick Hand", sans-serif;
-        width: 344px;
-        height: 55px;
-        color: white;
-
-        border: 5px solid $daytrader-blue;
-        box-sizing: border-box;
-        border-radius: 30px;
-
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-
-  }
-
-  .reveal-face {
-    width: 40px;
-    height: 40px;
-
-    &:hover {
-      cursor: pointer;
-    }
-  }
-
-  .field-choice_of_trade {
-    margin: 50px 0 0 0;
-    display: flex;
-    justify-content: center;
-    flex-direction: row;
-
-
-    .form-check {
-      display: flex;
-      margin-right: 0;
-      padding-right: 25px;
-      flex-direction: column;
-
-
-      .form-check-label {
-        font-family: "Patrick Hand", sans-serif;
-        font-size: 22px;
-        text-transform: capitalize;
-      }
-
-      input.form-check-input[type="radio"] {
-        -webkit-appearance: none;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        outline: none;
-        border: 3px solid $daytrader-blue;
-
-        &:before {
-          content: '';
-          display: block;
-          width: 60%;
-          height: 60%;
-          margin: 20% auto;
-          border-radius: 50%;
-        }
-
-        &:checked:before {
-          background: $daytrader-blue;
-        }
-
-        &:checked {
-          border-color: $daytrader-blue;
-        }
-      }
-    }
-  }
-
-  .daytrader-info-choice {
-    width: 100%;
-  }
 
 }
