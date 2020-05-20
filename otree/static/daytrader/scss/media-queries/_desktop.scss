@@ -33,6 +33,15 @@
       width: 70%;
     }
 
+    .daytrader-intro-container-first {
+      display: flex;
+      justify-content: space-evenly;
+
+      .daytrader-intro-first {
+        margin: 0 100px;
+      }
+    }
+
     .daytrader-round-title {
     font-family: "Patrick Hand", cursive;
     font-size: 40px;
@@ -175,8 +184,13 @@
         display: flex;
         justify-content: center;
         align-items: center;
+
+        &:hover {
+          cursor: pointer;
+        }
       }
     }
+
 
     .reveal-face {
       width: 40px;

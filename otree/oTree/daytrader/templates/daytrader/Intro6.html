@@ -1,13 +1,37 @@
 {% extends "global/Base.html" %}
 {% load otree %}
 {% block content %}
+    <style>
+        body {
+            background: #41739D;
+        }
 
-<p>
-  Nu skal du selv prøve at handle med aktier i {{ Constants.num_rounds }}
-  firmaer på en enkel dag.
-  Du spiller sammen med de andre i klassen, og vinderen er den, der ved
-  dagens afslutning har tjent flest penge.
-</p>
+        ._otree-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-{% next_button %}
+        #timer {
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+
+    <div class="daytrader-game-container">
+
+        <p class="daytrader-round-info">
+            Nu skal du selv prøve at handle med aktier i {{ Constants.num_rounds }}
+            firmaer på en enkel dag.
+            Du spiller sammen med de andre i klassen, og vinderen er den, der ved
+            dagens afslutning har tjent flest penge.
+        </p>
+
+        <div class="daytrader-next-btn-container">
+            <button class="daytrader-next-btn">
+                Fortsæt...
+            </button>
+        </div>
+    </div>
+
 {% endblock %}

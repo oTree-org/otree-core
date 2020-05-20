@@ -1214,6 +1214,13 @@
   .daytrader-game-container .content-container {
     width: 70%;
   }
+  .daytrader-game-container .daytrader-intro-container-first {
+    display: flex;
+    justify-content: space-evenly;
+  }
+  .daytrader-game-container .daytrader-intro-container-first .daytrader-intro-first {
+    margin: 0 100px;
+  }
   .daytrader-game-container .daytrader-round-title {
     font-family: "Patrick Hand", cursive;
     font-size: 40px;
@@ -1328,6 +1335,9 @@
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+  .daytrader-game-container .daytrader-next-btn-container .daytrader-next-btn:hover {
+    cursor: pointer;
   }
   .daytrader-game-container .reveal-face {
     width: 40px;

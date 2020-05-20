@@ -1,35 +1,67 @@
 {% extends "global/Base.html" %}
 {% load otree %}
 {% block content %}
+    <style>
+        body {
+            background: #41739D;
+        }
 
-  <table class="table">
-    <tr>
-      <th>trader</th>
-      <th>pris</th>
-      <th>ansigt</th>
-      <th>handel</th>
-    </tr>
-    <tr>
-      <td> {{ 1 }}. </td>
-      <td> {{ 50|c }}</td>
-      <td> ? </td>
-      <td> + 23 aktier</td>
-    </tr>
-    <tr>
-      <td> {{ 2 }}. </td>
-      <td> {{ 50.06|c }}</td>
-      <td> ? </td>
-      <td> + 45 aktier</td>
-    </tr>
-    <tr>
-      <td> {{ 3 }}. </td>
-      <td> {{ 50.26|c }}</td>
-      <td> ked af det </td>
-      <td> + 30 aktier</td>
-    </tr>
-  </table>
-  <p>
-    Du gik long og købte 30 aktier i firmaet.
-  </p>
-  {%  next_button %}
+        ._otree-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #timer {
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+    <div class="daytrader-game-container">
+
+        <table class="table daytrader-table">
+            <tr class="table-corners">
+                <th class="daytrader-table-header border-corner-left">trader</th>
+                <th class="daytrader-table-header">pris</th>
+                <th class="daytrader-table-header">ansigt</th>
+                <th class="daytrader-table-header border-corner-right">handel</th>
+            </tr>
+            <tr class="daytrader-table-row">
+                <td class="daytrader-table-data">{{ 1 }}.</td>
+                <td class="daytrader-table-data">{{ 50|c }}</td>
+                <td class="daytrader-table-data">
+                    <img src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" alt="unknown face"
+                         class="reveal-face">
+                </td>
+                <td class="daytrader-table-data">+23 aktier</td>
+            </tr>
+            <tr class="daytrader-table-row">
+                <td class="daytrader-table-data"> {{ 2 }}.</td>
+                <td class="daytrader-table-data"> {{ 50.06|c }}</td>
+                <td class="daytrader-table-data">
+                    <img src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" alt="unknown face"
+                         class="reveal-face">
+                </td>
+                <td class="daytrader-table-data">+45 aktier</td>
+            </tr>
+            <tr class="daytrader-table-row">
+                <td class="daytrader-table-data"> {{ 3 }}.</td>
+                <td class="daytrader-table-data"> {{ 50.26|c }}</td>
+                <td class="daytrader-table-data">
+                    <img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"
+                         class="reveal-face">
+                </td>
+                <td class="daytrader-table-data">+30 aktier</td>
+            </tr>
+        </table>
+        <p class="daytrader-round-info">
+            Du gik long og købte 30 aktier i firmaet.
+        </p>
+        <div class="daytrader-next-btn-container">
+            <button class="daytrader-next-btn">
+                Fortsæt...
+            </button>
+        </div>
+    </div>
+
 {% endblock %}
