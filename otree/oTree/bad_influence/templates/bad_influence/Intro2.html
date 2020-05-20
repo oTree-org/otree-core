@@ -90,7 +90,7 @@
 {% block scripts %}
 <script src="https://d3js.org/d3.v3.js"></script>
 <script src="http://marvl.infotech.monash.edu/webcola/cola.js"></script>
-<script type="application/json" src="{% static 'otree/faces.json' %}"></script>
+<script type="application/json" src="{% static 'main_platform/example_data.json' %}"></script>
 <script>
 
 
@@ -108,7 +108,7 @@
     let width = 480;
     let height = 300;
     let nodeById = d3.map();
-    let graph = d3.json("{% static 'example_data.json' %}");
+    let graph = d3.json("{% static 'main_platform/example_data.json' %}");
     let svg = undefined;
 
     let d3Element = document.getElementById("d3container");
@@ -128,7 +128,7 @@
         });
     };
 
-d3.json("{% static 'example_data.json' %}", function(error, graph) {
+d3.json("{% static 'main_platform/example_data.json' %}", function(error, graph) {
         width = d3Element.clientWidth;
         // Append to svg to d3container
         svg = d3.select("#d3container")

@@ -6,6 +6,8 @@ from django.conf import settings
 import random
 import json
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -63,8 +65,10 @@ class Subsession(BaseSubsession):
             self.session.vars['number_of_players'] = number_of_players
             self.session.vars['company_names'] = company_names
             self.session.vars['company_states'] = company_states
-            for i in range(len(company_names)):
-                print(i, company_names[i], company_states[i])
+
+            # for i in range(len(company_names)):
+            #     print(i, company_names[i], company_states[i])
+            # print(self.session.vars)
         else:
             number_of_players = self.session.vars['number_of_players']
             company_names = self.session.vars['company_names']
@@ -82,34 +86,33 @@ class Subsession(BaseSubsession):
             #player.number_of_glad_faces = sum(Json_action.from_string(player.company_state))
 
     def vars_for_admin_report(self):
-        if self.round_number == Constants.num_rounds:
-            fig = plt.figure(figsize=(4,3))
-            ax = plt.axes()
-            x = np.linspace(1, Constants.num_rounds + 1, Constants.num_rounds + 1)
-            for state, firma in enumerate(self.session.vars['company_names']):
-                prices = [self.session.vars['{}{}'.format(firma, r)][0] for r in range(1, Constants.num_rounds + 1)]
-                tmp = '{}{}'.format(firma, Constants.num_rounds + 1)
-                prices.append(self.session.vars[tmp])
-                ax.plot(x, prices, label=firma)
-                print(x, prices)
-            ax.legend(loc='upper left', bbox_to_anchor=(1.04, 1))
-            ax.set_xlabel('runde', fontdict={'fontsize': 12})
-            ax.set_ylabel('pris', fontdict={'fontsize': 12})
-            ax.set_title('Aktieprisudvikling', fontsize='x-large')
-            fig.savefig('_static/daytrader/test.pdf', transparent=True,
-                        bbox_inches='tight', dpi=300)
+        fig = plt.figure(figsize=(4,3))
+        ax = plt.axes()
+        for company_name in self.session.vars['company_names']:
+            # find the number of rounds played by looking in the dict and store
+            # in tmp0:
+            tmp0 = sum([1
+                        if '{}{}'.format(company_name, r) in self.session.vars
+                        else 0
+                        for r in range(1, Constants.num_rounds + 2)])
+            prices = [self.session.vars['{}{}'.format(company_name, r)][0]
+                      for r in range(1, tmp0)]
+            x = np.linspace(1, len(prices), len(prices))
+            ax.plot(x, prices, marker='o', label=company_name)
+        ax.legend(loc='upper left', bbox_to_anchor=(1.04, 1))
+        ax.set_xlabel('runde', fontdict={'fontsize': 12})
+        ax.set_ylabel('pris', fontdict={'fontsize': 12})
+        ax.set_title('Aktieprisudvikling', fontsize='x-large')
+        fig.savefig('_static/daytrader/test.pdf', transparent=True,
+                    bbox_inches='tight', dpi=300)
 
-            names = self.session.vars['company_names']
-            states = self.session.vars['company_states']
-            choices = [[self.session.vars['{}{}'.format(name, r)][3]
-                        for r in range(1, self.round_number + 1)] for name in names]
+        names = self.session.vars['company_names']
+        states = self.session.vars['company_states']
+        choices = [[self.session.vars['{}{}'.format(name, r)][3]
+                    for r in range(1, tmp0)] for name in names]
+        round_list = [r for r in range(1, tmp0 + 1)]
 
-            round_list = [r for r in range(1, Constants.num_rounds+1)]
-
-        print(dict(company=list(zip(names, states, choices))))
         return dict(company=list(zip(names, states, choices)), round_list=round_list)
-
-
 
 class Group(BaseGroup):
     pass
