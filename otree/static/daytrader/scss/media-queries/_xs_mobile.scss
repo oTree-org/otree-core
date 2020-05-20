@@ -33,27 +33,27 @@
       width: 96%;
     }
 
-    /* The Modal (background) */
-    .modal {
-      display: none; /* Hidden by default */
-      position: fixed; /* Stay in place */
-      z-index: 1; /* Sit on top */
+    .future-modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
       left: 0;
       top: 0;
-      width: 100%; /* Full width */
-      height: 100%; /* Full height */
-      overflow: auto; /* Enable scroll if needed */
-      background-color: rgb(0, 0, 0); /* Fallback color */
-      background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgb(0, 0, 0);
+      background-color: rgba(0, 0, 0, 0.4);
     }
 
-    /* Modal Content/Box */
-    .modal-content {
+    .future-modal-content {
       background-color: #fefefe;
-      margin: 15% auto; /* 15% from the top and centered */
+      margin: 15% auto;
       padding: 20px;
       border: 1px solid #888;
-      width: 40%; /* Could be more or less, depending on screen size */
+      width: 80%;
+      border-radius: 10px;
+
     }
 
 
@@ -92,6 +92,12 @@
       margin: 0 0 20px 0;
     }
 
+    .future-trader-stickman {
+      width: 100px;
+    }
+
+
+
     .daytrader-intro-container-first {
       display: flex;
       justify-content: space-evenly;
@@ -99,6 +105,29 @@
 
       .daytrader-intro-first {
         align-self: center;
+      }
+    }
+
+    .daytrader-intro-container-second {
+      display: flex;
+      align-items: flex-start;
+      flex-direction: column;
+
+      .daytrader-intro-container-second-info {
+        flex-grow: 1;
+      }
+
+      .daytrader-intro-container-second-button {
+        align-self: center;
+        margin: 0 0 30px 0;
+      }
+    }
+
+    .daytrader-future {
+      color: $daytrader-blue;
+
+      &:hover {
+        cursor: pointer;
       }
     }
 

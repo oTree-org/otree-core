@@ -45,8 +45,7 @@
                 </p>
             </div>
             <div class="daytrader-intro-container-second-button">
-                <img src="{% static 'daytrader/media/future_trader.png' %}" alt="future trader" width="300"
-                     height="300">
+                <img src="{% static 'daytrader/media/stregmand-pengebackground.svg' %}" alt="future trader" class="future-trader-stickman">
             </div>
         </div>
         <div class="daytrader-next-btn-container">
@@ -56,10 +55,10 @@
         </div>
         <!-- Modal content -->
         <!-- The Modal -->
-        <div id="myModal" class="modal">
+        <div id="futureModal" class="future-modal">
 
             <!-- Modal content -->
-            <div class="modal-content">
+            <div class="future-modal-content">
                 <span class="close">&times;</span>
                 <p class="daytrader-round-info">En future trader er en bla bla bla</p>
             </div>
@@ -68,7 +67,7 @@
     </div>
     <script>
         // Get the modal
-        let futureModal = document.getElementById("myModal");
+        let futureModal = document.getElementById("futureModal");
 
         // Get the button that opens the modal
         let futureLink = document.querySelector(".daytrader-future");
