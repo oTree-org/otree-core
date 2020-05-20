@@ -102,10 +102,24 @@
 
     .daytrader-future {
       color: $daytrader-blue;
+      text-decoration: underline;
 
       &:hover {
         cursor: pointer;
       }
+    }
+
+    .short-modal-link, .long-modal-link {
+      color: $daytrader-blue;
+      text-decoration: underline;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
+    .future-modal-content, .short-modal-content, .long-modal-content {
+      width: 50%;
     }
 
 

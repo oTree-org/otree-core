@@ -53,39 +53,24 @@
                 Fortsæt...
             </button>
         </div>
-        <!-- Modal content -->
-        <!-- The Modal -->
-        <div id="futureModal" class="future-modal">
 
-            <!-- Modal content -->
+        <div id="futureModal" class="future-modal">
             <div class="future-modal-content">
-                <span class="close">&times;</span>
                 <p class="daytrader-round-info">En future trader er en bla bla bla</p>
             </div>
-
         </div>
     </div>
     <script>
-        // Get the modal
         let futureModal = document.getElementById("futureModal");
 
-        // Get the button that opens the modal
         let futureLink = document.querySelector(".daytrader-future");
 
-        // Get the <span> element that closes the modal
         let closeModal = document.getElementsByClassName("close")[0];
 
-        // When the user clicks on the button, open the modal
         futureLink.onclick = function () {
             futureModal.style.display = "block";
         }
 
-        // When the user clicks on <span> (x), close the modal
-        closeModal.onclick = function () {
-            futureModal.style.display = "none";
-        }
-
-        // When the user clicks anywhere outside of the modal, close it
         window.onclick = function (event) {
             if (event.target === futureModal) {
                 futureModal.style.display = "none";

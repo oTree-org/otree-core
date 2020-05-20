@@ -33,7 +33,7 @@
       width: 96%;
     }
 
-    .future-modal {
+    .future-modal, .short-modal, .long-modal {
       display: none;
       position: fixed;
       z-index: 1;
@@ -46,7 +46,7 @@
       background-color: rgba(0, 0, 0, 0.4);
     }
 
-    .future-modal-content {
+    .future-modal-content, .short-modal-content, .long-modal-content {
       background-color: #fefefe;
       margin: 15% auto;
       padding: 20px;
@@ -125,6 +125,7 @@
 
     .daytrader-future {
       color: $daytrader-blue;
+      text-decoration: underline;
 
       &:hover {
         cursor: pointer;

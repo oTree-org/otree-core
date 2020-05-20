@@ -27,7 +27,7 @@
   .daytrader-game-container .content-container {
     width: 96%;
   }
-  .daytrader-game-container .future-modal {
+  .daytrader-game-container .future-modal, .daytrader-game-container .short-modal, .daytrader-game-container .long-modal {
     display: none;
     position: fixed;
     z-index: 1;
@@ -39,7 +39,7 @@
     background-color: black;
     background-color: rgba(0, 0, 0, 0.4);
   }
-  .daytrader-game-container .future-modal-content {
+  .daytrader-game-container .future-modal-content, .daytrader-game-container .short-modal-content, .daytrader-game-container .long-modal-content {
     background-color: #fefefe;
     margin: 15% auto;
     padding: 20px;
@@ -102,6 +102,7 @@
   }
   .daytrader-game-container .daytrader-future {
     color: #41739D;
+    text-decoration: underline;
   }
   .daytrader-game-container .daytrader-future:hover {
     cursor: pointer;
@@ -1379,9 +1380,20 @@
   }
   .daytrader-game-container .daytrader-future {
     color: #41739D;
+    text-decoration: underline;
   }
   .daytrader-game-container .daytrader-future:hover {
     cursor: pointer;
+  }
+  .daytrader-game-container .short-modal-link, .daytrader-game-container .long-modal-link {
+    color: #41739D;
+    text-decoration: underline;
+  }
+  .daytrader-game-container .short-modal-link:hover, .daytrader-game-container .long-modal-link:hover {
+    cursor: pointer;
+  }
+  .daytrader-game-container .future-modal-content, .daytrader-game-container .short-modal-content, .daytrader-game-container .long-modal-content {
+    width: 50%;
   }
   .daytrader-game-container .daytrader-round-title {
     font-family: "Patrick Hand", cursive;
