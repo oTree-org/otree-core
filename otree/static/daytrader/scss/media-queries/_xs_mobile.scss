@@ -87,6 +87,21 @@
       }
     }
 
+    .daytrader-sack {
+      height: 150px;
+      margin: 0 0 20px 0;
+    }
+
+    .daytrader-intro-container-first {
+      display: flex;
+      justify-content: space-evenly;
+      flex-direction: column;
+
+      .daytrader-intro-first {
+        align-self: center;
+      }
+    }
+
     .daytrader-round-info {
       font-size: 16px;
       font-family: "Patrick Hand", sans-serif;

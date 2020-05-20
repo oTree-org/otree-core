@@ -63,13 +63,20 @@
       }
     }
 
+    .daytrader-sack {
+      height: 200px;
+      flex: 3;
+      padding-right: 20px;
+    }
+
     .daytrader-intro-container-first {
       display: flex;
       justify-content: space-evenly;
       margin: 50px 0;
+      flex-direction: row;
 
       .daytrader-intro-first {
-        padding: 0 50px;
+        align-self: center;
       }
     }
 
