@@ -23,9 +23,66 @@
     background-color: white;
     width: 98%;
     padding: 10px 10px 30px 10px;
+    /* The Modal (background) */
+    /* Modal Content/Box */
   }
   .daytrader-game-container .content-container {
     width: 96%;
+  }
+  .daytrader-game-container .modal {
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    /* Stay in place */
+    z-index: 1;
+    /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    /* Full width */
+    height: 100%;
+    /* Full height */
+    overflow: auto;
+    /* Enable scroll if needed */
+    background-color: black;
+    /* Fallback color */
+    background-color: rgba(0, 0, 0, 0.4);
+    /* Black w/ opacity */
+  }
+  .daytrader-game-container .modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 40%;
+    /* Could be more or less, depending on screen size */
+  }
+  .daytrader-game-container .daytrader-intro-title {
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 50px;
+    color: #41739D;
+    text-transform: uppercase;
+  }
+  .daytrader-game-container .daytrader-intro-frontpage-img {
+    background: url("../../../../../../static/daytrader/media/front-page-sackbackground.svg") no-repeat;
+    background-size: cover;
+    width: 300px;
+    height: 370px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .daytrader-game-container .daytrader-intro-frontpage-img .daytrader-start-game-btn {
+    border: none;
+    font-family: "Patrick Hand", sans-serif;
+    background: transparent;
+    font-size: 40px;
+    color: white;
+    margin: 180px 0 0 0;
+  }
+  .daytrader-game-container .daytrader-intro-frontpage-img .daytrader-start-game-btn:hover {
+    cursor: pointer;
   }
   .daytrader-game-container .daytrader-round-info {
     font-size: 16px;
@@ -432,6 +489,14 @@
   .daytrader-game-container .daytrader-round-info h3 {
     font-weight: bold;
   }
+  .daytrader-game-container .daytrader-intro-frontpage-img {
+    width: 320px;
+    height: 400px;
+  }
+  .daytrader-game-container .daytrader-intro-frontpage-img .daytrader-start-game-btn {
+    font-size: 40px;
+    margin: 180px 0 0 0;
+  }
   .daytrader-game-container .daytrader-round-title {
     font-family: "Patrick Hand", cursive;
     font-size: 20px;
@@ -817,6 +882,17 @@
   }
   .daytrader-game-container .content-container {
     width: 80%;
+  }
+  .daytrader-game-container .daytrader-intro-frontpage-img {
+    width: 490px;
+    height: 630px;
+  }
+  .daytrader-game-container .daytrader-intro-frontpage-img .daytrader-start-game-btn {
+    font-size: 60px;
+    margin: 250px 0 0 0;
+  }
+  .daytrader-game-container .daytrader-intro-title {
+    font-size: 80px;
   }
   .daytrader-game-container .daytrader-round-info {
     font-size: 22px;
@@ -1212,12 +1288,61 @@
   .daytrader-game-container .content-container {
     width: 70%;
   }
+  .daytrader-game-container .daytrader-intro-title {
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 180px;
+    color: #41739D;
+    text-transform: uppercase;
+    margin: 0;
+  }
+  .daytrader-game-container .daytrader-intro-frontpage-img {
+    background: url("../../../../../../static/daytrader/media/front-page-sackbackground.svg") no-repeat;
+    background-size: cover;
+    width: 600px;
+    height: 750px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .daytrader-game-container .daytrader-intro-frontpage-img .daytrader-start-game-btn {
+    border: none;
+    font-family: "Patrick Hand", sans-serif;
+    background: transparent;
+    font-size: 60px;
+    color: white;
+    margin: 250px 0 0 0;
+  }
+  .daytrader-game-container .daytrader-intro-frontpage-img .daytrader-start-game-btn:hover {
+    cursor: pointer;
+  }
   .daytrader-game-container .daytrader-intro-container-first {
     display: flex;
     justify-content: space-evenly;
+    margin: 50px 0;
   }
   .daytrader-game-container .daytrader-intro-container-first .daytrader-intro-first {
-    margin: 0 100px;
+    padding: 0 50px;
+  }
+  .daytrader-game-container .daytrader-intro-container-second {
+    display: flex;
+    align-items: flex-start;
+    margin: 50px 0 0 0;
+  }
+  .daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-info {
+    flex-grow: 2;
+  }
+  .daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-button {
+    flex-grow: 1;
+    margin: 0 0 0 100px;
+  }
+  .daytrader-game-container .future-modal {
+    display: none;
+  }
+  .daytrader-game-container .daytrader-future {
+    color: #41739D;
+  }
+  .daytrader-game-container .daytrader-future:hover {
+    cursor: pointer;
   }
   .daytrader-game-container .daytrader-round-title {
     font-family: "Patrick Hand", cursive;

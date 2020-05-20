@@ -21,10 +21,100 @@
     <div class="daytrader-game-container">
 
         <p class="daytrader-round-info">
-            Nu skal du selv prøve at handle med aktier i {{ Constants.num_rounds }}
-            firmaer på en enkel dag.
-            Du spiller sammen med de andre i klassen, og vinderen er den, der ved
-            dagens afslutning har tjent flest penge.
+            Den næste trader ser tre longs efter hinanden, og går derfor også long. Og
+            så fremdeles vil alle 'rationelle' tradere fremover gå long, lige meget hvilken
+            information de selv får, simpelthen fordi der er en overvægt af information
+            som peger på at firmaet har det godt.
+        </p>
+        <table class="table daytrader-table">
+            <tr class="table-corners">
+                <th class="daytrader-table-header border-corner-left">trader</th>
+                <th class="daytrader-table-header">pris</th>
+                <th class="daytrader-table-header">ansigt</th>
+                <th class="daytrader-table-header border-corner-right">handel</th>
+            </tr>
+            <tr class="daytrader-table-row">
+                <td class="daytrader-table-data">{{ 1 }}.</td>
+                <td class="daytrader-table-data">{{ 50|c }}</td>
+                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/happy_face_daytrader.png' %}"
+                                                      alt="sad face"
+                                                      class="reveal-face"></td>
+                <td class="daytrader-table-data">+23 aktier</td>
+            </tr>
+            <tr class="daytrader-table-row">
+                <td class="daytrader-table-data">{{ 2 }}.</td>
+                <td class="daytrader-table-data">{{ 50.06|c }}</td>
+                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/happy_face_daytrader.png' %}"
+                                                      alt="happy face"
+                                                      class="reveal-face"></td>
+                <td class="daytrader-table-data">+45 aktier</td>
+            </tr>
+            <tr class="daytrader-table-row">
+                <td class="daytrader-table-data">{{ 3 }}.</td>
+                <td class="daytrader-table-data">{{ 50.26|c }}</td>
+                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/sad_face_daytrader.png' %}"
+                                                      alt="sad face"
+                                                      class="reveal-face"></td>
+                <td class="daytrader-table-data">+30 aktier</td>
+            </tr>
+            <tr class="daytrader-table-row">
+                <td class="daytrader-table-data">{{ 4 }}.</td>
+                <td class="daytrader-table-data">{{ 50.51|c }}</td>
+                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/sad_face_daytrader.png' %}"
+                                                      alt="sad face"
+                                                      class="reveal-face"></td>
+                <td class="daytrader-table-data">+20 aktier</td>
+            </tr>
+            <tr class="daytrader-table-row">
+                <td class="daytrader-table-data">{{ 5 }}.</td>
+                <td class="daytrader-table-data">{{ 50.66|c }}</td>
+                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/sad_face_daytrader.png' %}"
+                                                      alt="sad face"
+                                                      class="reveal-face"></td>
+                <td class="daytrader-table-data">+70 aktier</td>
+            </tr>
+            <tr class="daytrader-table-row">
+                <td class="daytrader-table-data">{{ 6 }}.</td>
+                <td class="daytrader-table-data">{{ 50.92|c }}</td>
+                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/sad_face_daytrader.png' %}"
+                                                      alt="sad face"
+                                                      class="reveal-face"></td>
+                <td class="daytrader-table-data">+120 aktier</td>
+            </tr>
+            <tr class="daytrader-table-row">
+                <td class="daytrader-table-data">{{ 7 }}.</td>
+                <td class="daytrader-table-data">{{ 51.22|c }}</td>
+                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/sad_face_daytrader.png' %}"
+                                                      alt="sad face"
+                                                      class="reveal-face"></td>
+                <td class="daytrader-table-data">+100 aktier</td>
+            </tr>
+            <tr class="daytrader-table-row">
+                <td class="daytrader-table-data">{{ 8 }}.</td>
+                <td class="daytrader-table-data">{{ 51.50|c }}</td>
+                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/sad_face_daytrader.png' %}"
+                                                      alt="sad face"
+                                                      class="reveal-face"></td>
+                <td class="daytrader-table-data">+200 aktier</td>
+            </tr>
+        </table>
+        <p class="daytrader-round-info">
+            Det kaldes en informationskaskade,
+            og det er faktisk rationelt og fornuftigt at gøre.
+        </p>
+        <p class="daytrader-round-info">
+            Men informationskaskader kan tage fejl.
+            Prøv at klikke på tradernes private information.
+            De ser alle kede af det ud. Traderne ignorerede deres private information,
+            fordi de to første tradere så glade ansigter. Firmaet sande tilstand er i
+            virkeligheden et gladt og to ked af det ansigter.
+        </p>
+        <p class="daytrader-round-info">
+            På den måde kan der opstå bobler. Ikke kun i finansverdenen, men også i
+            modeverdenen, i journalistikken og i den almene meningsdannelse:
+            Man modtager masser af informationer, som man tror er ærlige og repræsentative
+            for befolkningen, men i virkeligheden blot er ekkoer af en enkel eller to
+            personers synspunkter.
         </p>
 
         <div class="daytrader-next-btn-container">
