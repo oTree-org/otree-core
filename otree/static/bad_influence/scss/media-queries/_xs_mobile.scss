@@ -1,6 +1,4 @@
-@media (min-width: 375px) {
-
-
+@media (min-width: 0px) {
 
 /*******************************
 *  Hide otree default message  *
@@ -231,6 +229,23 @@
 }
 
 }
+
+  .results-title {
+  font-size: 20px;
+  display: flex;
+  justify-content: center;
+  color: $ku-red;
+  padding-top: 20px;
+  font-weight: bold;
+
+}
+.results-container {
+  margin-top: 4%;
+
+  .report-info {
+    padding-bottom: 30px;
+  }
+}
 /*********************************
 *   Play.html button styling    *
 *********************************/
@@ -288,9 +303,8 @@
 }
 
 /*************************************
-*   Intro1.html.html table styling   *
+*   Intro1.html table styling   *
 **************************************/
-
 .intro-title {
     display: flex;
     justify-content: center;
@@ -301,14 +315,13 @@
     font-family: "Patrick Hand", cursive;
     height: 100vh;
 
-
       .bad {
           justify-content: center;
           font-weight: bold;
           font-size: 50px;
           text-align: center;
           letter-spacing: 20px;
-          color: darkred;
+          color: $ku-red;
           text-transform: uppercase;
           margin: 0;
           padding:0;
@@ -324,10 +337,6 @@
           padding:0;
           letter-spacing: 7px;
       }
-
-    @mixin transition($property: all, $duration: 0.45s, $ease: cubic-bezier(0.65,0,.076,1)) {
-      transition: $property $duration $ease;
-    }
 
   * {
     box-sizing: border-box;
@@ -350,26 +359,14 @@
     font-family: inherit;
     z-index: 2;
 
-
     &.start-game {
       height: auto;
-      width: 70%;
+      width: 100%;
       margin-top: 30px;
       font-size: 30px;
 
-      .circle {
-        display: none;
-
-    .icon {
-       display: none;
-        &.arrow {
-         display: none;
-
-        }
-      }
     }
     .button-text {
-      @include transition(all, 0.45s, cubic-bezier(0.65,0,.076,1));
       position: absolute;
       top: -5px;
       left: 0;
@@ -384,41 +381,70 @@
       color: white;
       border-radius: 20px;
       height: 50px;
-
   }
 
-    .button-text {
-      color: $white;
-    }
-  }
-}
-  @supports (display: grid) {
-  body {
-    display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-gap: 0.625rem;
-  grid-template-areas: ". main main ." ". main main .";
-  }
 
-  #container {
-    grid-area: main;
-    align-self: center;
-    justify-self: center;
   }
 }
 
+
 }
+
 /*************************************
 *   Intro2.html table styling   *
 **************************************/
 .intro-2 {
+   font-family: "Patrick Hand", cursive;
 
+  .round-title {
+    font-size: 35px;
+
+  }
+
+.game-introduction {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  width: 100%;
+
+}
+
+  .round-info {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+
+    h3 {
+      font-weight: bold;
+    }
+
+}
+.text-column {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  width: 100%;
+
+}
   .svg-column {
+  display: flex;
+  justify-content: flex-end;
+  flex-direction: column;
+  width: 100%;
+  padding-right: 0;
+  margin-bottom: 2%;
+  border-color: $ku-red;
+  border-radius: 2px;
+  border-style: solid solid solid solid;
 
       h2 {
-        font-size: 25px;
+        font-size: 20px;
       }
   }
+
+
+
 
 
     $bg: #f3f8fa;
@@ -490,21 +516,7 @@
     }
   }
 }
-  @supports (display: grid) {
-  body {
-    display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-gap: 0.625rem;
-  grid-template-areas: ". main main ." ". main main .";
-  }
 
-  #container {
-    grid-area: main;
-    align-self: center;
-    justify-self: center;
-  }
-}
-}
 }
 
 
