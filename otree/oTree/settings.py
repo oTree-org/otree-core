@@ -92,7 +92,7 @@ EXTENSION_APPS = [
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "../otree/static/otree"),
+    os.path.join(BASE_DIR, "../otree/static/main_platform/otree"),
     '/var/www/static/otree',
 ]
 

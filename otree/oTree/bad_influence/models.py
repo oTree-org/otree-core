@@ -21,7 +21,7 @@ class Constants(BaseConstants):
     high_bonus = 10
     low_bonus = 5
     hub_fraction = 0.33
-    round_length = 70
+    round_length = 800
 
 
 class Subsession(BaseSubsession):
@@ -135,7 +135,8 @@ class Subsession(BaseSubsession):
         return {
             "data": json.dumps(data),
             "id_in_group": -1,
-            'rankings': sorted(rankings, key=lambda x: x[1], reverse=True)
+            'rankings': sorted(rankings, key=lambda x: x[1], reverse=True),
+            'points_total': p.points_total
         }
 
 

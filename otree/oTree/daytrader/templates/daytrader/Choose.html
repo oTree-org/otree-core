@@ -5,55 +5,135 @@
     {{ player.company_name }}
 {% endblock %}
 
+{% block styles %}
+    <style>
+        body {
+            background: #41739D;
+        }
+
+        ._otree-content {
+            display: flex;
+            justify-content: center;
+        }
+
+        #timer {
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+{% endblock %}
 {% block content %}
+    <div class="daytrader-game-container">
+        <div class="content-container">
 
-    {% if subsession.round_number > 1 %}
-        <p>
-        <table class="table">
-            <tr>
-                <th>trader</th>
-                <th>pris</th>
-                <th>ansigt</th>
-                <th>handel</th>
-            </tr>
-            {% for r, price, choice, deals, states in data %}
-                <tr>
-                    <td class="company-id"> {{ r }}.</td>
-                    <td> {{ price|c }}</td>
-                    <td class="faceContainer">
-                        <div class="btn-container"></div>
-                        {% if states is True %}
-                            <div class="state-container">Glad :-)</div>
-                        {% else %}
-                            <div class="state-container">Ked af det :-(</div>
-                        {% endif %}
-                    </td>
-                    <td> {% if choice == True %} + {% else %} - {% endif %}
-                        {{ deals }} aktier
-                    </td>
+            <div class="round-introduction">
+                <h2 class="daytrader-round-title">{{ player.company_name }}</h2>
+            </div>
+            {% if subsession.round_number > 1 %}
+                <div class="daytrader-round-info">
+                <p class="daytrader-round-info">
+                    Nu er du trader nummer {{ player.round_number }} og du skal nu handle aktier i firmaet
+                    '{{ player.company_name }}'. </p>
+
+                <p class="daytrader-round-info">Du kigger i sækken, og ser et
+                    {% if player.drawn_face is True %}
+                        <img src="{% static 'daytrader/media/daytrader_happyface.png' %}" alt="happy face"
+                             class="company-face">
+                    {% else %}
+                        <img src="{% static 'daytrader/media/daytrader_sadface.png' %}" alt="sad face"
+                             class="company-face">
+                    {% endif %}
+                    ansigt
+                </p>
+            {% else %}
+                <p class="daytrader-round-info">
+                    Du er den første trader, og du skal nu handle aktier i firmaet '{{ player.company_name }}'. </p>
+                <p class="daytrader-round-info">Du kigger i sækken, og ser et
+                    {% if player.drawn_face is True %}
+                        <img src="{% static 'daytrader/media/daytrader_happyface.png' %}" alt="happy face"
+                             class="company-face">
+                    {% else %}
+                        <img src="{% static 'daytrader/media/daytrader_sadface.png' %}" alt="sad face"
+                             class="company-face">
+                    {% endif %}
+                    ansigt
+                </p>
+            {% endif %}
+
+
+
+
+
+            <div class="daytrader-info-choice">
+                <div class="daytrader-round-info">
+                    Du har {{ player.wallet|c }} og aktieprisen er lige nu {{ player.price|c }}. Hvad vil du gøre?
+                </div>
+            </div>
+
+            <table class="table daytrader-table">
+                <tr class="table-corners">
+                    <th class="daytrader-table-header border-corner-left">trader</th>
+                    <th class="daytrader-table-header">pris</th>
+                    <th class="daytrader-table-header">ansigt</th>
+                    <th class="daytrader-table-header border-corner-right">handel</th>
                 </tr>
-            {% endfor %}
-        </table>
-        <p> Nu er du trader nummer {{ player.round_number }},
-    {% else %}
-        Du er den første trader,
-    {% endif %}
-og du skal nu handle aktier i firmaet '{{ player.company_name }}'.
-Du kigger i sækken, og ser et ansigt der er
-{% if player.drawn_face == True %}
-    <strong>glad</strong>
-{% else %}
-    <strong>ked af det</strong>
-{% endif %}.
-</p>
-    <p>
-        Du har {{ player.wallet|c }} og aktieprisen er lige nu {{ player.price|c }}. Hvad vil du gøre?
-    </p>
-    {% formfield player.choice_of_trade label=None %}
-    <p> Hvor mange aktier? (du kan handle med maksimalt {{ player.can_buy }} aktier)</p>
-    {% formfield player.choice_of_number_of_shares label=None %}
-    {% next_button %}
+                {% for r, price, choice, deals, states in data %}
+                    <tr class="daytrader-table-row">
+                        <td class="company-id daytrader-table-data"> {{ r }}.</td>
+                        <td class="daytrader-table-data"> {{ price|c }}</td>
+                        <td class="faceContainer daytrader-table-data">
+                            <div class="btn-container"></div>
+                            {% if states is True %}
+                                <div class="state-container">
+                                    <img src="{% static 'daytrader/media/daytrader_happyface.png' %}" alt="happy face"
+                                         class="company-face">
+                                </div>
+                            {% else %}
+                                <div class="state-container">
+                                    <img src="{% static 'daytrader/media/daytrader_sadface.png' %}" alt="sad face"
+                                         class="company-face">
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td class="daytrader-table-data"> {% if choice == True %} + {% else %} - {% endif %}
+                            {{ deals }} aktier
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
 
+            <div id="timer-text" class="container justify-content-md-center">
+                Tid tilbage:
+                <strong><span id="timer" class="otree-timer__time-left"></span></strong>
+            </div>
+
+            <div class="daytrader-form-container">
+                {% formfield player.choice_of_trade label=None %}
+                <p class="daytrader-form-info"> Hvor mange aktier? (du kan handle med maksimalt {{ player.can_buy }}
+                    aktier)</p>
+                <div class="daytrader-submit-value">
+                    <div class="daytrader-formfield">
+                        {% formfield player.choice_of_number_of_shares label=None %}
+                    </div>
+                    <div class="daytrader-next-btn-container">
+                        <button class="daytrader-next-btn">
+                            Køb/Sælg
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+{% endblock %}
+{% block scripts %}
     <script>
 
 
@@ -69,7 +149,6 @@ Du kigger i sækken, og ser et ansigt der er
         {#    localStorage.removeItem("clicked");#}
         {##}
 
-
         function toggle(className, displayState) {
             let elements = document.getElementsByClassName(className);
 
@@ -81,20 +160,20 @@ Du kigger i sækken, og ser et ansigt der er
 
         for (let i = 0; i < containers.length; i++) {
             toggle("state-container", "none");
-            let button = document.createElement("button");
-            button.className = "btn btn-primary reveal-btn";
-            button.textContent = "?";
-            containers[i].appendChild(button);
+            let unknownFace = document.createElement("img");
+            unknownFace.className = "reveal-face";
+            unknownFace.src = "{% static 'daytrader/media/unknown_face.png' %}";
+            containers[i].appendChild(unknownFace);
         }
 
 
-        let button = document.getElementsByClassName("reveal-btn");
+        let button = document.getElementsByClassName("reveal-face");
 
         for (let item = 0; item < button.length; item++) {
 
             button[item].onclick = event => {
                 event.preventDefault();
-                toggle("reveal-btn", "none");
+                toggle("reveal-face", "none");
                 states[item].style.display = "block";
 
                 {#let existingGroups = JSON.parse(localStorage.getItem("all_groups"));#}
@@ -125,12 +204,8 @@ Du kigger i sækken, og ser et ansigt der er
         for (let i = 0; i < companyIds.length; i++) {
             if (selection.id === companyIds[i].textContent && selection.name === "{{ player.company_name }}" && selection.group_id === {{ group.id }}) {
                 states[i].style.display = "block";
-                toggle("reveal-btn", "none");
+                toggle("reveal-face", "none");
             }
         }
     </script>
-
 {% endblock %}
-<script>
-    console.log("test")
-</script>
