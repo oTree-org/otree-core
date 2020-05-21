@@ -1,63 +1,81 @@
 {% extends "global/Base.html" %}
-{% load otree %}
+{% load staticfiles otree %}
 {% block content %}
+    <style>
+        body {
+            background: #41739D;
+        }
 
-<p>
-  Nu kan du starte med at handle.
-</p>
-<p>
-  (billede af sæk med tre skjulte ansigter)
-</p>
-<p>
-  Du må gerne klikke på eet af ansigterne for at se om det er glad eller ked af det.
-  Mere kan du ikke få at vide om firmaet. Du ved dog, at de to første to futures
-  tradere også fik lov at se et ansigt inden de lavede deres handel.
-  Og du kan se hvor meget de gik short eller long i tabellen her: (minus er short, plus er long)
-</p>
+        ._otree-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-<table class="table">
-    <tr>
-      <th>trader</th>
-      <th>pris</th>
-      <th>ansigt</th>
-      <th>handel</th>
-    </tr>
-    <tr>
-      <td> {{ 1 }}. </td>
-      <td> {{ 50|c }}</td>
-      <td> ? </td>
-      <td> + 23 aktier</td>
-    </tr>
-    <tr>
-      <td> {{ 2 }}. </td>
-      <td> {{ 50.06|c }}</td>
-      <td> ? </td>
-      <td> + 45 aktier</td>
-    </tr>
-</table>
-<p>
-  Du er trader nummer 3, og du skal handle aktier i firmaet.
-  Du kigger i sækken, og ser et
-  ansigt der er ked af det. Du har {{ player.wallet|c }}
-  og aktieprisen er lige nu {{ player.price|c }}. Hvad vil du gøre?
-</p>
-<p>
-  Nuvel, den første trader må have set et gladt ansigt. Ellers ville
-  han/hun ikke være gået long.
-  (Tradernes private information er usynlig for andre.)
-</p>
-<p>
-  Den anden sælger må også have set et glad ansigt. Hvis hun/han havde set et
-  ked af det ansigt, ville han/hun nok have stolet mere på sin egen private
-  information end den første traders private information. Man kan også se, at den
-  anden trader har købt flere aktier end den første. Det tyder på at han/hun
-  er blevet mere sikker i sin tro på at firmaet er i god stand.
-</p>
-<p>
-  Din private information er et ked af det ansigt. Da du ved, at de to
-  første tradere fandt glade ansigter, er din samlede information om firmaets
-  tilstand = 2 glade og 1 ked af det ansigt. Det ville derfor være mest
-  fornuftigt at satse på, at fimaet er i god stand! Du burde altså gå long.
+        #timer {
+            display: flex;
+            justify-content: center;
+        }
+    </style>
 
-    {%  next_button %}
+    <div class="daytrader-game-container">
+        <b class="daytrader-round-info">Men vent lige...</b>
+        <p class="daytrader-round-info">
+            Investorerne ved ofte IKKE, hvordan det i virkeligheden står til i firmaet. Hvis de er grundige, læser de
+            måske en enkel årsrapport, men ellers ser de kun aktiekurserne stige og falde.
+        </p>
+        <p class="daytrader-round-info">
+            Prøv og forstil dig, at du er en investor, eller endnu bedre: en <i class="daytrader-future">futures
+            trader</i>
+            der tjener
+            penge på at gætte
+            i hvilken retning kursen vil gå.
+        </p>
+
+        <div class="daytrader-intro-container-second">
+            <div class="daytrader-intro-container-second-info">
+                <p class="daytrader-round-info">
+                    Du har lånt 10.000 euros af din rige onkel, og vil bruge pengene til at handle futures med. Om 14
+                    dage skal du aflevere pengene igen, og alle penge du har tjent ud over de 10.000 euros vil være
+                    dine.
+                </p>
+                <p class="daytrader-round-info">
+                    Men..hvis du taber pengene, bliver nød til at sælge din pladesamling for at betale din onkel
+                    tilbage.
+                </p>
+            </div>
+            <div class="daytrader-intro-container-second-button">
+                <img src="{% static 'daytrader/media/stregmand-pengebackground.svg' %}" alt="future trader" class="future-trader-stickman">
+            </div>
+        </div>
+        <div class="daytrader-next-btn-container">
+            <button class="daytrader-next-btn">
+                Fortsæt...
+            </button>
+        </div>
+
+        <div id="futureModal" class="future-modal">
+            <div class="future-modal-content">
+                <p class="daytrader-round-info">En future trader er en bla bla bla</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        let futureModal = document.getElementById("futureModal");
+
+        let futureLink = document.querySelector(".daytrader-future");
+
+        let closeModal = document.getElementsByClassName("close")[0];
+
+        futureLink.onclick = function () {
+            futureModal.style.display = "block";
+        }
+
+        window.onclick = function (event) {
+            if (event.target === futureModal) {
+                futureModal.style.display = "none";
+            }
+        }
+
+    </script>
 {% endblock %}

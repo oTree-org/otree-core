@@ -33,6 +33,127 @@
       width: 96%;
     }
 
+    .future-modal, .short-modal, .long-modal, .info-cascade-modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgb(0, 0, 0);
+      background-color: rgba(0, 0, 0, 0.4);
+
+      .future-modal-content, .short-modal-content, .long-modal-content, .info-cascade-modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        border-radius: 10px;
+      }
+    }
+
+    .daytrader-future, .short-modal-link, .long-modal-link, .info-cascade-link {
+      color: $daytrader-blue;
+      text-decoration: underline;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
+    .daytrader-intro-info-container {
+      margin: 10px 0;
+    }
+
+
+    .go-long-content {
+      margin: 25px 0;
+      width: 100%;
+      display: none;
+    }
+
+    #continue {
+      display: none;
+    }
+
+
+    .daytrader-intro-title {
+      font-family: "Patrick Hand", sans-serif;
+      font-size: 50px;
+      color: $daytrader-blue;
+      text-transform: uppercase;
+    }
+
+    .daytrader-intro-frontpage-img {
+      background: url("../../../../../../static/daytrader/media/front-page-sackbackground.svg") no-repeat;
+      background-size: cover;
+      width: 300px;
+      height: 370px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      .daytrader-start-game-btn {
+        border: none;
+        font-family: "Patrick Hand", sans-serif;
+        background: transparent;
+        font-size: 40px;
+        color: white;
+        margin: 180px 0 0 0;
+
+        &:hover {
+          cursor: pointer;
+        }
+      }
+    }
+
+    .daytrader-sack {
+      height: 150px;
+      margin: 0 0 20px 0;
+    }
+
+    .future-trader-stickman {
+      width: 100px;
+    }
+
+
+    .daytrader-intro-container-first {
+      display: flex;
+      justify-content: space-evenly;
+      flex-direction: column;
+
+      .daytrader-intro-first {
+        align-self: center;
+      }
+    }
+
+    .daytrader-intro-container-second {
+      display: flex;
+      align-items: flex-start;
+      flex-direction: column;
+
+      .daytrader-intro-container-second-info {
+        flex-grow: 1;
+      }
+
+      .daytrader-intro-container-second-button {
+        align-self: center;
+        margin: 0 0 30px 0;
+      }
+    }
+
+    .daytrader-future {
+      color: $daytrader-blue;
+      text-decoration: underline;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
     .daytrader-round-info {
       font-size: 16px;
       font-family: "Patrick Hand", sans-serif;
@@ -55,6 +176,7 @@
       background-position: center;
       padding: 35px 0;
       color: white;
+      width: 100%;
     }
 
     .round-introduction {
@@ -67,14 +189,14 @@
 
     // Styling af det viste ansigt i teksten
     .company-face {
-      width: 30px;
-      height: 30px;
+      width: 28px;
+      height: 28px;
     }
 
 
     // Daytrader Table
     .daytrader-table {
-      margin: 50px 0 0 0;
+      margin: 25px 0 0 0;
       border-collapse: separate;
       border-spacing: 0 0.5em;
 

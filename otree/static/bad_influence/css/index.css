@@ -63,7 +63,7 @@ a:hover{
 	width: 300px;
     height: 20px;
     padding: 37px 0 43px 0;
-	background-image: url("../../../static/bad_influence/media/sprites/button_large.png");
+	background-image: url("../media/sprites/button_large.png");
 	background-size: 100% auto;
 	text-align: center;
 	line-height: 25px;
@@ -128,7 +128,7 @@ a:hover{
 	display: inline-block;
 	width: 1em;
 	height: 1em;
-	background: url("../../../static/bad_influence/media/sprites/ui/arrow.png");
+	background: url("../media/sprites/ui/arrow.png");
 	background-size: 100% auto;
 	position: relative;
 	top: 3px;
@@ -153,7 +153,7 @@ a:hover{
 .sim_ui > #start_button{
 	width: 200px;
 	padding: 0.5em 0;
-	background-image: url("../../../static/bad_influence/media/sprites/red_button.png");
+	background-image: url("../media/sprites/red_button.png");
 	background-size: 100% auto;
 
 	position: relative;
@@ -192,7 +192,7 @@ a:hover{
 .choose_color{
 	width: 40px;
 	height: 40px;
-	background: url("../../../static/bad_influence/media/sprites/peeps.png");
+	background: url("../media/sprites/peeps.png");
 	background-size: auto 100%;
 	transform: scale(1.2);
 }
@@ -207,7 +207,7 @@ a:hover{
 .choose_tool > #icon{
 	display: inline-block;
 	width:16px; height:16px;
-	background: url("../../../static/bad_influence/media/sprites/sandbox_tools.png");
+	background: url("../media/sprites/sandbox_tools.png");
 	background-size: auto 100%;
 }
 #sandbox_shortcuts_label{
@@ -306,7 +306,7 @@ a:hover{
 	opacity: 0.5;
 }
 #sound_icon{
-	background-image: url("../../../static/bad_influence/media/red_peep.png");
+	background-image: url("../media/red_peep.png");
 	background-size: auto 100%; 
 	width: 60px; height: 60px;
 	position: absolute;
@@ -345,7 +345,7 @@ a:hover{
 	display: block;
 	width: 50px;
 	height: 60px;
-	background: url("../../../static/bad_influence/media/sprites/ui/sharing.png");
+	background: url("..ng");
 	background-size: auto 100%; 
 }
 #sharing #fb{
@@ -494,7 +494,7 @@ bon:before{
     width: 35px;
     height: 70px;
 
-	background: url("../../../static/bad_influence/media/sprites/ui/bonus.png");
+	background: url("..");
 	background-size: 100% 100%;
 }
 bon:hover{

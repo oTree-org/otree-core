@@ -17,15 +17,6 @@
   *   Play.html info styling    *
   *******************************/
 
-  .daytrader-round-info {
-    font-size: 22px;
-    font-family: "Patrick Hand", sans-serif;
-
-    h3 {
-      font-weight: bold;
-    }
-  }
-
 
   .daytrader-game-container {
     display: flex;
@@ -42,6 +33,39 @@
       width: 80%;
     }
 
+    .daytrader-intro-frontpage-img {
+      width: 490px;
+      height: 630px;
+
+      .daytrader-start-game-btn {
+        font-size: 60px;
+        margin: 250px 0 0 0;
+      }
+    }
+
+    .daytrader-intro-container-first {
+      flex-direction: row;
+      margin: 0 0 25px 0;
+    }
+
+    .daytrader-sack {
+      margin: 0 20px;
+    }
+
+    .daytrader-intro-title {
+      font-size: 80px;
+    }
+
+    .daytrader-round-info {
+      font-size: 22px;
+      font-family: "Patrick Hand", sans-serif;
+
+      h3 {
+        font-weight: bold;
+      }
+    }
+
+
     .daytrader-round-title {
       font-family: "Patrick Hand", cursive;
       font-size: 32px;
@@ -54,8 +78,6 @@
       background-position: center;
       padding: 35px 0 35px 0;
       color: white;
-      height: 160px;
-      width: 400px
     }
 
     .round-introduction {

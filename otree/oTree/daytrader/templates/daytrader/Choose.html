@@ -37,10 +37,10 @@
 
                 <p class="daytrader-round-info">Du kigger i sækken, og ser et
                     {% if player.drawn_face is True %}
-                        <img src="{% static 'daytrader/media/daytrader_happyface.png' %}" alt="happy face"
+                        <img src="{% static 'daytrader/media/happy_face_daytrader.png' %}" alt="happy face"
                              class="company-face">
                     {% else %}
-                        <img src="{% static 'daytrader/media/daytrader_sadface.png' %}" alt="sad face"
+                        <img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"
                              class="company-face">
                     {% endif %}
                     ansigt
@@ -50,10 +50,10 @@
                     Du er den første trader, og du skal nu handle aktier i firmaet '{{ player.company_name }}'. </p>
                 <p class="daytrader-round-info">Du kigger i sækken, og ser et
                     {% if player.drawn_face is True %}
-                        <img src="{% static 'daytrader/media/daytrader_happyface.png' %}" alt="happy face"
+                        <img src="{% static 'daytrader/media/happy_face_daytrader.png' %}" alt="happy face"
                              class="company-face">
                     {% else %}
-                        <img src="{% static 'daytrader/media/daytrader_sadface.png' %}" alt="sad face"
+                        <img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"
                              class="company-face">
                     {% endif %}
                     ansigt
@@ -85,12 +85,12 @@
                             <div class="btn-container"></div>
                             {% if states is True %}
                                 <div class="state-container">
-                                    <img src="{% static 'daytrader/media/daytrader_happyface.png' %}" alt="happy face"
+                                    <img src="{% static 'daytrader/media/happy_face_daytrader.png' %}" alt="happy face"
                                          class="company-face">
                                 </div>
                             {% else %}
                                 <div class="state-container">
-                                    <img src="{% static 'daytrader/media/daytrader_sadface.png' %}" alt="sad face"
+                                    <img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"
                                          class="company-face">
                                 </div>
                             {% endif %}
@@ -162,7 +162,7 @@
             toggle("state-container", "none");
             let unknownFace = document.createElement("img");
             unknownFace.className = "reveal-face";
-            unknownFace.src = "{% static 'daytrader/media/unknown_face.png' %}";
+            unknownFace.src = "{% static 'daytrader/media/unknown_face_daytrader.png' %}";
             containers[i].appendChild(unknownFace);
         }
 

@@ -1,4 +1,6 @@
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
+
+
 /*******************************
 *  Hide otree default message  *
 ********************************/
@@ -16,15 +18,12 @@
 *******************************/
 
 .round-info {
-    font-size: 25px;
+    font-size: 20px;
     width: 100%;
     display: flex;
     justify-content: left;
     flex-direction: column;
-
-  h3 {
-    font-weight: bold;
-  }
+    text-align: left;
 }
 
  .round-title {
@@ -48,9 +47,8 @@
   margin-top: 2%;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
   border-radius: 10px;
-  width: 90%;
   background-color: white;
-  padding-top: 40px;
+  width: 90%;
 }
 
 .round-introduction {
@@ -58,7 +56,7 @@
   display: flex;
   justify-content: center;
   flex-direction: column;
-  width: 70%;
+  width: 90%;
 }
 
 
@@ -72,6 +70,9 @@
     min-height: 300px;
     width: 100%;
 
+  svg {
+    width: 100%;
+  }
 
 }
 
@@ -93,7 +94,7 @@
 .game-row {
   display: flex;
   justify-content: center;
-  flex-direction: row;
+  flex-direction: column;
   width: 100%;
   margin-top: 2%;
 }
@@ -102,9 +103,9 @@
   display: flex;
   justify-content: flex-end;
   flex-direction: column;
-  width: 50%;
-  margin-left: 5%;
-  padding-right: 20px;
+  width: 90%;
+  align-self: center;
+
   margin-bottom: 5%;
   border-color: $ku-red;
   border-radius: 2px;
@@ -178,7 +179,7 @@
   justify-content: center;
   flex-direction: column;
   font-family: "Patrick Hand", cursive;
-  width: 50%;
+  width: 100%;
   align-items: center;
   margin-bottom: 5%;
 
@@ -186,7 +187,7 @@
  .chat-title {
    justify-content: center;
   display: flex;
-  font-size: 50px;
+  font-size: 20px;
    width: 100%;
 }
 
@@ -199,12 +200,12 @@
   #chat {
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     margin-bottom: 2%;
-    width: 80%;
+    width: 70%;
   }
 
   #message {
     font-size: 20px;
-    max-width: 50%;
+    max-width: 70%;
   }
 }
 
@@ -216,7 +217,7 @@
   display: flex;
 
   #send {
-    width: 50%;
+    width: 70%;
     height: 50px;
     background-color: $ku-red;
     font-size: 20px;
@@ -233,30 +234,29 @@
 /*********************************
 *   Play.html button styling    *
 *********************************/
-
+.mobile-column {
+  display: initial;
+  justify-content: center;
+  flex-direction: row;
+}
 
 .choice-button-holder {
   justify-content: center;
   display: flex;
-
-
+  width: 100%;
 }
 
 .choice-button {
   width: 235px;
   height: 70px;
-  font-size: 20px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-size: 18px;
   border-radius: 50px;
   color: black;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
   font-family: "Annie Use Your Telescope", serif;
   background-color: transparent;
   border: 2px solid $ku-red;
-  margin-bottom: 10%;
-  margin-left: 5%;
-
+  margin: 5px 5px 10% 5px;
 
    &:hover {
       background-color: $ku-dark-green;
@@ -277,230 +277,149 @@
   }
 
   img {
-    width: 55px;
-    height: 55px;
+    width: 50px;
+    height: 50px;
+    align-self: center;
   }
-}
-
-/*********************************
-*   Results.html table styling   *
-*********************************/
-
-.results-title {
-  font-size: 35px;
-  display: flex;
-  justify-content: center;
-  color: $ku-red;
-  padding-top: 20px;
-  font-weight: bold;
-
-}
-.results-container {
-  margin-top: 4%;
-
-  .report-info {
-    padding-bottom: 30px;
-  }
-}
-
-.game-results-table {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  border-radius: 10px;
-    background-color: white;
-    border-collapse: collapse;
-    overflow: hidden;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    color: $ku-red;
-    font-size: 20px;
-
-}
-
-
-  .d3-results-row {
-      display: flex;
-      align-items: center;
-      flex-direction: row;
-      justify-content: space-evenly;
-      font-size: 14px;
-      font-family: "Roboto Slab", serif;
-
-        #d3consensus {
-          display: flex;
-          justify-content: center;
-        }
-
-        #d3playback {
-          display: none;
-        }
-    }
-
-.game-results {
-    margin-top: 2%;
-    padding: 10px 50px 10px 50px;
-    background-color: white !important;
-    border-radius: 10px;
 }
 
 /*************************************
-*   Intro1.html table styling   *
+*   Intro1.html.html table styling   *
 **************************************/
+
 .intro-title {
+    display: flex;
+    justify-content: center;
+    flex-direction:column;
+    align-items:center;
+    background-color: transparent;
+    width: 100%;
+    font-family: "Patrick Hand", cursive;
+    height: 100vh;
+
 
       .bad {
-          font-size: 110px;
+          justify-content: center;
+          font-weight: bold;
+          font-size: 50px;
+          text-align: center;
+          letter-spacing: 20px;
+          color: darkred;
+          text-transform: uppercase;
+          margin: 0;
+          padding:0;
       }
 
       .influence {
-          font-size: 80px;
-          margin: -55px;
+          font-weight: bold;
+          font-size: 50px;
+          text-align: center;
+          color: $ku-red;
+          text-transform: uppercase;
+          margin: -25px;
+          padding:0;
+          letter-spacing: 7px;
       }
+
+
 
     @mixin transition($property: all, $duration: 0.45s, $ease: cubic-bezier(0.65,0,.076,1)) {
       transition: $property $duration $ease;
     }
 
+  * {
+    box-sizing: border-box;
+    &::before, &::after {
+      box-sizing: border-box;
+    }
+  }
+
   button {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    outline: none;
+    border: 0;
+    vertical-align: middle;
+    text-decoration: none;
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    z-index: 2;
+
 
     &.start-game {
-      max-width: 40%;
-      margin-top: 40px;
-      font-size: 35px;
+      height: auto;
+      width: 40%;
+      margin-top: 30px;
+      font-size: 30px;
 
       .circle {
-        @include transition(all, 0.45s, cubic-bezier(0.65,0,.076,1));
-        position: relative;
-        display: block;
-        margin: 0;
-        width: 4rem;
-        height: 4rem;
-        background: $black;
-        border-radius: 3rem;
+        display: none;
 
     .icon {
-        @include transition(all, 0.45s, cubic-bezier(0.65,0,.076,1));
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        margin: auto;
-        background: $white;
-        display: block;
+       display: none;
         &.arrow {
-          @include transition(all, 0.45s, cubic-bezier(0.65,0,.076,1));
-          left: 11px;
-          width: 30px;
-          height: 4px;
-          background: none;
-          display: block;
-          &::before {
-            position: absolute;
-            top: -9px;
-            right: 1px;
-            width: 22px;
-             height: 22px;
-            border-top: 4px solid #fff;
-            border-right: 4px solid #fff;
-            transform: rotate(45deg);
-          }
+         display: none;
+
         }
       }
     }
     .button-text {
       @include transition(all, 0.45s, cubic-bezier(0.65,0,.076,1));
-      top: -8px;
-      padding: 0.75rem 0;
-      margin: 0 0 0 1.65rem;
-      color: $black;
-      background-color: transparent;
-    }
+      position: absolute;
+      top: -5px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      font-weight: 700;
+      line-height: 1.6;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background-color: $ku-red;
+      color: white;
+      border-radius: 20px;
+      height: 50px;
+
   }
-  &:hover {
-    .circle {
-      width: 100%;
-      .icon {
-        &.arrow {
-        background: white;
-        transform: translate(3rem, 0);
-        }
-      }
-    }
+
     .button-text {
       color: $white;
     }
   }
 }
-  @supports (display: grid) {
-  body {
-    display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-gap: 0.625rem;
-  grid-template-areas: ". main main ." ". main main .";
-  }
 
-  #container {
-    grid-area: main;
-    align-self: center;
-    justify-self: center;
-  }
-}
 
 }
-
 /*************************************
 *   Intro2.html table styling   *
 **************************************/
 .intro-2 {
-   font-family: "Patrick Hand", cursive;
-  .round-title {
-    font-size: 40px;
-
-  }
-
-.game-introduction {
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  width: 70%;
-
-}
-
-  .round-info {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-     text-align: left;
-
-
-}
-.text-column {
-  display: flex;
-  flex-direction: column;
-  width: 60%;
- text-align: left;
-  padding-right: 10px;
-
-}
-
 
   .svg-column {
-  display: flex;
-  justify-content: flex-end;
-  flex-direction: column;
-  width: 30%;
-  margin-right: 2%;
-  padding-right: 0;
-  margin-bottom: 8%;
-  border-color: $ku-red;
-  border-radius: 2px;
-  border-style: solid solid solid solid;
 
-     h2 {
-      font-size: 25px;
-       padding: 5px;
+      h2 {
+        font-size: 30px;
+      }
+  }
+
+
+    $bg: #f3f8fa;
+    $white: #fff;
+    $black: #901A1E;
+
+    @mixin transition($property: all, $duration: 0.45s, $ease: cubic-bezier(0.65,0,.076,1)) {
+      transition: $property $duration $ease;
     }
-}
 
+   * {
+    box-sizing: border-box;
+    &::before, &::after {
+      box-sizing: border-box;
+    }
+  }
 
   button {
     position: relative;
@@ -523,11 +442,19 @@
       font-size: 30px;
       padding: 40px;
       display: flex;
-      justify-content: flex-end;
-      align-self: flex-end;
+      justify-content: center;
+      align-self: center;
 
+      .circle {
+        display: none;
 
+    .icon {
+       display: none;
+        &.arrow {
+         display: none;
 
+        }
+      }
     }
     .button-text {
       position: absolute;
@@ -545,26 +472,13 @@
       border-radius: 20px;
       height: 50px;
 
-         &:hover {
+           &:hover {
         background-color: $ku-dark-green;
       }
   }
 
-    .button-text {
-      color: $white;
-    }
   }
 }
 
-    }
-
-
-
-
-
-
-
-
-
-
-
+}
+}
