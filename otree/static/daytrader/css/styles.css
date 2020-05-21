@@ -47,6 +47,14 @@
     width: 80%;
     border-radius: 10px;
   }
+  .daytrader-game-container .go-long-content {
+    margin: 50px 0;
+    width: 100%;
+    display: none;
+  }
+  .daytrader-game-container #continue {
+    display: none;
+  }
   .daytrader-game-container .daytrader-intro-title {
     font-family: "Patrick Hand", sans-serif;
     font-size: 50px;
@@ -137,8 +145,8 @@
     width: 100%;
   }
   .daytrader-game-container .company-face {
-    width: 30px;
-    height: 30px;
+    width: 25px;
+    height: 25px;
   }
   .daytrader-game-container .daytrader-table {
     margin: 50px 0 0 0;
@@ -1395,6 +1403,17 @@
   .daytrader-game-container .future-modal-content, .daytrader-game-container .short-modal-content, .daytrader-game-container .long-modal-content {
     width: 50%;
   }
+  .daytrader-game-container .daytrader-intro-info-container {
+    margin: 25px 0;
+  }
+  .daytrader-game-container .go-long-content {
+    margin: 50px 0;
+    width: 100%;
+    display: none;
+  }
+  .daytrader-game-container #continue {
+    display: none;
+  }
   .daytrader-game-container .daytrader-round-title {
     font-family: "Patrick Hand", cursive;
     font-size: 40px;
@@ -1421,7 +1440,7 @@
     height: 50px;
   }
   .daytrader-game-container .daytrader-table {
-    margin: 50px 0 0 0;
+    margin: 50px 0;
     border-collapse: separate;
     border-spacing: 0 0.5em;
   }
