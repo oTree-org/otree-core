@@ -33,7 +33,7 @@
       width: 96%;
     }
 
-    .future-modal, .short-modal, .long-modal {
+    .future-modal, .short-modal, .long-modal, .info-cascade-modal {
       display: none;
       position: fixed;
       z-index: 1;
@@ -44,19 +44,33 @@
       overflow: auto;
       background-color: rgb(0, 0, 0);
       background-color: rgba(0, 0, 0, 0.4);
+
+      .future-modal-content, .short-modal-content, .long-modal-content, .info-cascade-modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        border-radius: 10px;
+      }
     }
 
-    .future-modal-content, .short-modal-content, .long-modal-content {
-      background-color: #fefefe;
-      margin: 15% auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 80%;
-      border-radius: 10px;
+    .daytrader-future, .short-modal-link, .long-modal-link, .info-cascade-link {
+      color: $daytrader-blue;
+      text-decoration: underline;
+
+      &:hover {
+        cursor: pointer;
+      }
     }
+
+    .daytrader-intro-info-container {
+      margin: 10px 0;
+    }
+
 
     .go-long-content {
-      margin: 50px 0;
+      margin: 25px 0;
       width: 100%;
       display: none;
     }
@@ -104,7 +118,6 @@
     .future-trader-stickman {
       width: 100px;
     }
-
 
 
     .daytrader-intro-container-first {
@@ -176,14 +189,14 @@
 
     // Styling af det viste ansigt i teksten
     .company-face {
-      width: 25px;
-      height: 25px;
+      width: 28px;
+      height: 28px;
     }
 
 
     // Daytrader Table
     .daytrader-table {
-      margin: 50px 0 0 0;
+      margin: 25px 0 0 0;
       border-collapse: separate;
       border-spacing: 0 0.5em;
 

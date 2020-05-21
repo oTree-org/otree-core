@@ -44,22 +44,18 @@
             <tr class="daytrader-table-row">
                 <td class="daytrader-table-data"> {{ 1 }}.</td>
                 <td class="daytrader-table-data"> {{ 50|c }}</td>
-                <td class="daytrader-table-data d-flex justify-content-md-center">
+                <td class="daytrader-table-data" id="faceContainer1">
                     <img src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" alt="unknown face"
                          class="reveal-face" id="unknownFace1">
-                    <img src="{% static 'daytrader/media/happy_face_daytrader.png' %}" alt="happy-face"
-                         class="company-face" id="introFace1">
                 </td>
                 <td class="daytrader-table-data"> +23 aktier</td>
             </tr>
             <tr class="daytrader-table-row">
                 <td class="daytrader-table-data"> {{ 2 }}.</td>
                 <td class="daytrader-table-data"> {{ 50.06|c }}</td>
-                <td class="daytrader-table-data d-flex justify-content-md-center">
+                <td class="daytrader-table-data" id="faceContainer2">
                     <img src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" alt="unknown face"
                          class="reveal-face" id="unknownFace2">
-                    <img src="{% static 'daytrader/media/happy_face_daytrader.png' %}" alt="happy face"
-                         class="company-face" id="introFace2">
                 </td>
                 <td class="daytrader-table-data"> +45 aktier</td>
             </tr>
@@ -99,7 +95,7 @@
             </button>
         </div>
         <div class="go-long-content">
-            <p class="daytrader-round-info">
+            <p class="daytrader-round-info long-info">
                 Du gik long og købte 30 aktier i firmaet.
             </p>
             <table class="table daytrader-table intro-table">
@@ -112,7 +108,7 @@
                 <tr class="daytrader-table-row">
                     <td class="daytrader-table-data"> {{ 1 }}.</td>
                     <td class="daytrader-table-data"> {{ 50|c }}</td>
-                    <td class="daytrader-table-data d-flex justify-content-md-center">
+                    <td class="daytrader-table-data">
                         <img src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" alt="unknown face"
                              class="reveal-face">
                     </td>
@@ -121,7 +117,7 @@
                 <tr class="daytrader-table-row">
                     <td class="daytrader-table-data"> {{ 2 }}.</td>
                     <td class="daytrader-table-data"> {{ 50.06|c }}</td>
-                    <td class="daytrader-table-data d-flex justify-content-md-center">
+                    <td class="daytrader-table-data">
                         <img src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" alt="unknown face"
                              class="reveal-face">
                     </td>
@@ -130,7 +126,7 @@
                 <tr class="daytrader-table-row">
                     <td class="daytrader-table-data"> {{ 3 }}.</td>
                     <td class="daytrader-table-data"> {{ 50.26|c }}</td>
-                    <td class="daytrader-table-data d-flex justify-content-md-center">
+                    <td class="daytrader-table-data">
                         <img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="happy face"
                              class="company-face" id="introFace3">
                     </td>
@@ -160,27 +156,30 @@
         let longModal = document.getElementById("longModal");
         let shortLink = document.querySelector(".short-modal-link");
         let longLink = document.querySelector(".long-modal-link");
-        let introFace1 = document.getElementById("introFace1");
-        let introFace2 = document.getElementById("introFace2");
         let unknownFace1 = document.getElementById("unknownFace1");
         let unknownFace2 = document.getElementById("unknownFace2");
         let goLong = document.getElementById("goLong");
         let goLongContent = document.querySelector(".go-long-content");
         let continueBtn = document.getElementById("continue");
-
-        introFace1.style.display = "none"
-        introFace2.style.display = "none"
+        let faceContainer1 = document.getElementById("faceContainer1");
+        let faceContainer2 = document.getElementById("faceContainer2");
 
         unknownFace1.onclick = () => {
             unknownFace1.style.display = "none";
             unknownFace2.style.display = "none";
-            introFace1.style.display = "block";
+            let introFace1 = document.createElement("img");
+            introFace1.src = "{% static 'daytrader/media/happy_face_daytrader.png' %}";
+            introFace1.className = "company-face";
+            faceContainer1.appendChild(introFace1);
         }
 
         unknownFace2.onclick = () => {
             unknownFace1.style.display = "none";
             unknownFace2.style.display = "none";
-            introFace2.style.display = "block";
+            let introFace2 = document.createElement("img");
+            introFace2.src = "{% static 'daytrader/media/happy_face_daytrader.png' %}";
+            introFace2.className = "company-face";
+            faceContainer2.appendChild(introFace2);
         }
 
         goLong.onclick = event => {

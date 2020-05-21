@@ -100,25 +100,9 @@
       }
     }
 
-    .daytrader-future {
-      color: $daytrader-blue;
-      text-decoration: underline;
 
-      &:hover {
-        cursor: pointer;
-      }
-    }
 
-    .short-modal-link, .long-modal-link {
-      color: $daytrader-blue;
-      text-decoration: underline;
-
-      &:hover {
-        cursor: pointer;
-      }
-    }
-
-    .future-modal-content, .short-modal-content, .long-modal-content {
+    .future-modal-content, .short-modal-content, .long-modal-content, .info-cascade-modal-content {
       width: 50%;
     }
 
@@ -137,9 +121,10 @@
     }
 
 
+
     .daytrader-round-title {
       font-family: "Patrick Hand", cursive;
-      font-size: 40px;
+      font-size: 34px;
       display: flex;
       justify-content: center;
       flex-direction: column;

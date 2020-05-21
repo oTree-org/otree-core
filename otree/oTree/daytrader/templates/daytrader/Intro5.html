@@ -17,8 +17,16 @@
             justify-content: center;
         }
     </style>
+
     <div class="daytrader-game-container">
 
+        <p class="daytrader-round-info">
+            Den næste trader ser tre longs efter hinanden, og går derfor også long.
+        </p>
+        <p class="daytrader-round-info">
+            Og sådan vil alle ‘rationelle’ tradere fremover gå long, lige meget hvilken information de selv får, fordi
+            der er en overvægt af information som peger på at firmaet har det godt.
+        </p>
         <table class="table daytrader-table">
             <tr class="table-corners">
                 <th class="daytrader-table-header border-corner-left">trader</th>
@@ -29,39 +37,105 @@
             <tr class="daytrader-table-row">
                 <td class="daytrader-table-data">{{ 1 }}.</td>
                 <td class="daytrader-table-data">{{ 50|c }}</td>
-                <td class="daytrader-table-data">
-                    <img src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" alt="unknown face"
-                         class="reveal-face">
-                </td>
+                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/happy_face_daytrader.png' %}"
+                                                      alt="sad face"
+                                                      class="reveal-face"></td>
                 <td class="daytrader-table-data">+23 aktier</td>
             </tr>
             <tr class="daytrader-table-row">
-                <td class="daytrader-table-data"> {{ 2 }}.</td>
-                <td class="daytrader-table-data"> {{ 50.06|c }}</td>
-                <td class="daytrader-table-data">
-                    <img src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" alt="unknown face"
-                         class="reveal-face">
-                </td>
+                <td class="daytrader-table-data">{{ 2 }}.</td>
+                <td class="daytrader-table-data">{{ 50.06|c }}</td>
+                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/happy_face_daytrader.png' %}"
+                                                      alt="happy face"
+                                                      class="reveal-face"></td>
                 <td class="daytrader-table-data">+45 aktier</td>
             </tr>
             <tr class="daytrader-table-row">
-                <td class="daytrader-table-data"> {{ 3 }}.</td>
-                <td class="daytrader-table-data"> {{ 50.26|c }}</td>
-                <td class="daytrader-table-data">
-                    <img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"
-                         class="reveal-face">
-                </td>
+                <td class="daytrader-table-data">{{ 3 }}.</td>
+                <td class="daytrader-table-data">{{ 50.26|c }}</td>
+                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/sad_face_daytrader.png' %}"
+                                                      alt="sad face"
+                                                      class="reveal-face"></td>
                 <td class="daytrader-table-data">+30 aktier</td>
+            </tr>
+            <tr class="daytrader-table-row">
+                <td class="daytrader-table-data">{{ 4 }}.</td>
+                <td class="daytrader-table-data">{{ 50.51|c }}</td>
+                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/sad_face_daytrader.png' %}"
+                                                      alt="sad face"
+                                                      class="reveal-face"></td>
+                <td class="daytrader-table-data">+20 aktier</td>
+            </tr>
+            <tr class="daytrader-table-row">
+                <td class="daytrader-table-data">{{ 5 }}.</td>
+                <td class="daytrader-table-data">{{ 50.66|c }}</td>
+                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/sad_face_daytrader.png' %}"
+                                                      alt="sad face"
+                                                      class="reveal-face"></td>
+                <td class="daytrader-table-data">+70 aktier</td>
+            </tr>
+            <tr class="daytrader-table-row">
+                <td class="daytrader-table-data">{{ 6 }}.</td>
+                <td class="daytrader-table-data">{{ 50.92|c }}</td>
+                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/sad_face_daytrader.png' %}"
+                                                      alt="sad face"
+                                                      class="reveal-face"></td>
+                <td class="daytrader-table-data">+120 aktier</td>
+            </tr>
+            <tr class="daytrader-table-row">
+                <td class="daytrader-table-data">{{ 7 }}.</td>
+                <td class="daytrader-table-data">{{ 51.22|c }}</td>
+                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/sad_face_daytrader.png' %}"
+                                                      alt="sad face"
+                                                      class="reveal-face"></td>
+                <td class="daytrader-table-data">+100 aktier</td>
+            </tr>
+            <tr class="daytrader-table-row">
+                <td class="daytrader-table-data">{{ 8 }}.</td>
+                <td class="daytrader-table-data">{{ 51.50|c }}</td>
+                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/sad_face_daytrader.png' %}"
+                                                      alt="sad face"
+                                                      class="reveal-face"></td>
+                <td class="daytrader-table-data">+200 aktier</td>
             </tr>
         </table>
         <p class="daytrader-round-info">
-            Du gik long og købte 30 aktier i firmaet.
+            Det kaldes en <i class="info-cascade-link">informationskaskade</i> , og det er rationelt at gøre.
         </p>
-        <div class="daytrader-next-btn-container">
+        <p class="daytrader-round-info">
+            Men informationskaskader kan tage fejl. Traderne ignorerede deres private information, fordi de to første
+            tradere gik long. Firmaets sande tilstand er i virkeligheden et
+            <img src="{% static 'daytrader/media/happy_face_daytrader.png' %}" alt="happy face" class="company-face">
+            og to <img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face" class="company-face">
+            ansigter.
+        </p>
+
+        <div class="daytrader-intro-info-container">
+            <div class="daytrader-next-btn-container">
             <button class="daytrader-next-btn">
                 Fortsæt...
             </button>
         </div>
+        </div>
+        <div id="infoCascadeModal" class="info-cascade-modal">
+            <div class="info-cascade-modal-content">
+                <p class="daytrader-round-info">En informationskaskade er blah blah blah</p>
+            </div>
+        </div>
     </div>
 
+    <script>
+        let infoCascadeModal = document.getElementById("infoCascadeModal");
+        let infoCascadeLink = document.querySelector(".info-cascade-link");
+
+        infoCascadeLink.onclick = () => {
+            infoCascadeModal.style.display = "block";
+        }
+
+        window.onclick = event => {
+            if (event.target === infoCascadeModal) {
+                infoCascadeModal.style.display = "none";
+            }
+        }
+    </script>
 {% endblock %}

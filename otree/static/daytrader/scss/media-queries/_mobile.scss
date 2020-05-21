@@ -78,7 +78,7 @@
       display: flex;
       justify-content: center;
       flex-direction: column;
-      width: 90%;
+      width: 100%;
     }
 
     // Styling af det viste ansigt i teksten
@@ -90,7 +90,7 @@
 
     // Daytrader Table
     .daytrader-table {
-      margin: 50px 0 0 0;
+      margin: 30px 0 0 0;
       border-collapse: separate;
       border-spacing: 0 0.5em;
 
@@ -114,7 +114,7 @@
       }
 
       .daytrader-table-data {
-        font-size: 17px;
+        font-size: 16px;
         font-family: "Patrick Hand", sans-serif;
         border-top: none !important;
         text-align: center;
