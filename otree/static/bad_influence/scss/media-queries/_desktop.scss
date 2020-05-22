@@ -34,16 +34,14 @@
     justify-content: center;
     flex-direction: column;
     text-align: center;
-    background-image: url("/main_platform/otree/media/red-round-title-background.svg");
+    background-image: url("../../../../static/main_platform/otree/media/title-backgrounds/red-round-title-background.svg");
     background-repeat: no-repeat;
     background-position: center;
-    padding: 35px 0 35px 0;
+    align-self: center;
     color: white;
-    width: 100%;
+    width: 50%;
 
-
-
-  }
+ }
 
 .game-container {
   display: flex;
@@ -75,8 +73,6 @@
     position: relative;
     min-height: 300px;
     width: 100%;
-
-
 }
 
 #timer-text {

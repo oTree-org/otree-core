@@ -41,10 +41,10 @@
     }
 
     .daytrader-intro-frontpage-img {
-background: url("../../../../static/main_platform/otree/media/front-page-sackbackground.svg") no-repeat;
+      background: url("../../../../static/main_platform/otree/media/front-page-sackbackground.svg") no-repeat;
       background-size: cover;
-      width: 600px;
-      height: 750px;
+      width: 500px;
+      height: 650px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -128,9 +128,7 @@ background: url("../../../../static/main_platform/otree/media/front-page-sackbac
       justify-content: center;
       flex-direction: column;
       text-align: center;
-      background-image: url("../../media/blue-round-title-background.svg");
-      background-repeat: no-repeat;
-      background-position: center;
+      background-image: url("../../../../static/main_platform/otree/media/title-backgrounds/blue-round-title-background.svg");
       padding: 35px 0 35px 0;
       color: white;
       width: 100%;

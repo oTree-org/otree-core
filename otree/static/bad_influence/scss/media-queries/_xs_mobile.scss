@@ -32,9 +32,9 @@
     justify-content: center;
     flex-direction: column;
     text-align: center;
-    background-image: url("../../../main_platform/otree/media/red-round-title-background.svg");
+    background-image: url("../../../../static/main_platform/otree/media/title-backgrounds/red-round-title-background.svg");
     background-repeat: no-repeat;
-    background-position: center;
+    background-size: cover;
     padding: 35px 0 35px 0;
     color: white;
   }
