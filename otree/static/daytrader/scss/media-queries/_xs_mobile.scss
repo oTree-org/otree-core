@@ -33,6 +33,131 @@
       width: 96%;
     }
 
+    .future-modal, .short-modal, .long-modal, .info-cascade-modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgb(0, 0, 0);
+      background-color: rgba(0, 0, 0, 0.4);
+
+      .future-modal-content, .short-modal-content, .long-modal-content, .info-cascade-modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        border-radius: 10px;
+      }
+    }
+
+    .daytrader-future, .short-modal-link, .long-modal-link, .info-cascade-link {
+      color: $ku-dark-blue;
+      text-decoration: underline;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
+    .daytrader-intro-info-container {
+      margin: 10px 0;
+    }
+
+
+    .go-long-content {
+      margin: 25px 0;
+      width: 100%;
+      display: none;
+    }
+
+    #continue {
+      display: none;
+    }
+
+
+    .daytrader-intro-title {
+      font-family: "Patrick Hand", sans-serif;
+      font-size: 50px;
+      color: $ku-dark-blue;
+      text-transform: uppercase;
+    }
+
+    .daytrader-intro-frontpage-img {
+      background: url("../../../main_platform/otree/media/title-backgrounds/blue-round-title-background.svg") no-repeat;
+      background-size: cover;
+      width: 300px;
+      height: 370px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      .daytrader-start-game-btn {
+        border: none;
+        font-family: "Patrick Hand", sans-serif;
+        background: transparent;
+        font-size: 40px;
+        color: white;
+        margin: 180px 0 0 0;
+
+        &:hover {
+          cursor: pointer;
+        }
+      }
+    }
+
+    .daytrader-sack {
+      height: 175px;
+      margin: 0 0 20px 0;
+    }
+
+    .future-trader-stickman {
+      width: 200px;
+      height: 200px;
+      margin: 0 0 25px 0;
+    }
+
+
+    .daytrader-intro-container-first {
+      display: flex;
+      justify-content: space-evenly;
+      flex-direction: column;
+      width: 77%;
+
+      .daytrader-intro-first {
+        align-self: center;
+      }
+    }
+
+    .daytrader-intro-container-second {
+      display: flex;
+      align-items: flex-start;
+      flex-direction: column;
+
+      .daytrader-intro-container-second-info {
+        width: 100%;
+      }
+
+      .daytrader-intro-container-second-button {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+      }
+    }
+
+    .daytrader-future {
+      color: $ku-dark-blue;
+      text-decoration: underline;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
     .daytrader-round-info {
       font-size: 16px;
       font-family: "Patrick Hand", sans-serif;
@@ -50,11 +175,13 @@
       justify-content: center;
       flex-direction: column;
       text-align: center;
-      background-image: url("../../../../../../static/main_platform/otree/media/daytrader_titlekusvg.svg");
+
+      background-image: url("../../../main_platform/otree/media/title-backgrounds/blue-round-title-background.svg");
       background-repeat: no-repeat;
       background-position: center;
       padding: 35px 0;
       color: white;
+      width: 100%;
     }
 
     .round-introduction {
@@ -67,14 +194,14 @@
 
     // Styling af det viste ansigt i teksten
     .company-face {
-      width: 30px;
-      height: 30px;
+      width: 28px;
+      height: 28px;
     }
 
 
     // Daytrader Table
     .daytrader-table {
-      margin: 50px 0 0 0;
+      margin: 10px 0;
       border-collapse: separate;
       border-spacing: 0 0.5em;
 
@@ -87,7 +214,7 @@
       }
 
       .daytrader-table-header {
-        background: $daytrader-blue;
+        background: $ku-dark-blue;
         color: white;
         font-weight: bold;
         font-family: "Patrick Hand", sans-serif;
@@ -146,7 +273,7 @@
 
     }
 
-    .field-choice_of_number_of_shares, {
+    .field-choice_of_number_of_shares {
       display: flex;
       justify-content: center;
     }
@@ -158,13 +285,13 @@
 
       .daytrader-next-btn {
         font-size: 22px;
-        background: $daytrader-blue;
+        background: $ku-dark-blue;
         font-family: "Patrick Hand", sans-serif;
         width: 166px;
         height: 40px;
         color: white;
 
-        border: 5px solid $daytrader-blue;
+        border: 5px solid $ku-dark-blue;
         box-sizing: border-box;
         border-radius: 30px;
 
@@ -207,7 +334,7 @@
           height: 30px;
           border-radius: 50%;
           outline: none;
-          border: 3px solid $daytrader-blue;
+          border: 3px solid $ku-dark-blue;
 
           &:before {
             content: '';
@@ -219,11 +346,11 @@
           }
 
           &:checked:before {
-            background: $daytrader-blue;
+            background: $ku-dark-blue;
           }
 
           &:checked {
-            border-color: $daytrader-blue;
+            border-color: $ku-dark-blue;
           }
         }
       }

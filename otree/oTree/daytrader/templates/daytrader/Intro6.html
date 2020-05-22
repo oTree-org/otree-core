@@ -1,13 +1,52 @@
 {% extends "global/Base.html" %}
 {% load otree %}
 {% block content %}
+    <style>
+        body {
+            background: #41739D;
+        }
 
-<p>
-  Nu skal du selv prøve at handle med aktier i {{ Constants.num_rounds }}
-  firmaer på en enkel dag.
-  Du spiller sammen med de andre i klassen, og vinderen er den, der ved
-  dagens afslutning har tjent flest penge.
-</p>
+        ._otree-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-{% next_button %}
+        #timer {
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+
+    <div class="daytrader-game-container">
+
+        <div class="daytrader-intro-info-container">
+            <p class="daytrader-round-info">
+                Disse fænomener kaldes også for bobler og de kan opstår mange steder, ikke kun i finansverdenen men også
+                i
+                den almene meningsdannelse. Man modtager en masse information som man tror repræsentere hele
+                befolkningen
+                men faktisk kun er ekkoer af en eller to personers synspunkter.
+            </p>
+        </div>
+        <div class="daytrader-intro-info-container">
+            <p class="daytrader-round-info">
+                Nu skal du selv prøve at handle med aktier i fem forskellige firmaer.
+            </p>
+        </div>
+        <div class="daytrader-intro-info-container">
+            <p class="daytrader-round-info">
+                Du spiller sammen med med de andre i klassen og vinderen er den der til slut har tjent flest penge på
+                aktiehandlen.
+            </p>
+        </div>
+
+
+        <div class="daytrader-next-btn-container" style="margin-top: 2.5%;">
+            <button class="daytrader-next-btn">
+                Start spillet
+            </button>
+        </div>
+    </div>
+
 {% endblock %}
