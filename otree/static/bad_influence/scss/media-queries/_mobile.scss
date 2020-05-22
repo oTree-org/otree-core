@@ -34,10 +34,7 @@
     justify-content: center;
     flex-direction: column;
     text-align: center;
-     background-image: url("../../../../static/main_platform/otree/media/title-backgrounds/red-round-title-background.svg");
-    background-repeat: no-repeat;
-    background-position: center;
-    align-self: center;
+
     padding: 35px 0 35px 0;
     color: white;
   }
@@ -245,8 +242,6 @@
   justify-content: center;
   display: flex;
   width: 100%;
-
-
 }
 
 .choice-button {
@@ -262,6 +257,8 @@
   background-color: transparent;
   border: 2px solid $ku-red;
   margin: 5px 5px 10% 5px;
+
+
 
    &:hover {
       background-color: $ku-dark-green;

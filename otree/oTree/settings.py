@@ -92,11 +92,9 @@ EXTENSION_APPS = [
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "../otree/static/main_platform/otree"),
-    '/var/www/static/otree',
+    os.path.join(BASE_DIR, "../otree/static/main_platform/otree")
 ]
 
 MEDIA_URL = 'media/'
 
-#MEDIA_ROOT = 'otree/static/otree'
 MEDIA_ROOT = 'bad_influence/static/main_platform'

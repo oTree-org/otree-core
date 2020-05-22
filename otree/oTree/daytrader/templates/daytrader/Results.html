@@ -38,23 +38,24 @@
             </tr>
             {% for firma, tilstand, choice, deal, price, closing, tjent in data %}
                 <tr class="daytrader-table-row">
-                    <td class="daytrader-table-data"> {{ firma }}    </td>
+                    <td class="daytrader-table-data">{{ firma }}</td>
                     <td class="daytrader-table-data">
                         <div>
-                            {% for foo in tilstand %}
-                                {% if foo is True %}
-                                    <img src="{% static 'daytrader/media/' %}" alt="">
-                                {% endif %}
-                            {% endfor %}
+                            {{ tilstand }}
+
                         </div>
                     </td>
                     <td class="daytrader-table-data"> {% if choice == True %} + {% else %} - {% endif %}
                         {{ deal }}     </td>
                     <td class="daytrader-table-data"> {{ price }}    </td>
-                    <td class="daytrader-table-data"> {{ closing }}  </td>
+                    <td class="daytrader-table-data"> {{ closing }}  </td>bac
                     <td class="daytrader-table-data"><strong> {{ tjent }} </strong></td>
                 </tr>
             {% endfor %}
+{{ tilstand }}
+        {% for faces in tilstand %}
+               <p>hej</p>
+          {% endfor %}
         </table>
 
         <p class="daytrader-round-info">

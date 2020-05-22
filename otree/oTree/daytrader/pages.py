@@ -115,6 +115,7 @@ class Results(Page):
             'kurtage': c(Constants.kurtage * handelsvaerdi),
             'ialt': self.player.payoff - (Constants.kurtage * handelsvaerdi),
             'data': data,
+            'tilstand': tilstand,
         }
 
 

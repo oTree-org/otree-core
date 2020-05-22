@@ -21,17 +21,6 @@
 /******************************
 *  Front Page  - games.html  *
 ******************************/
-
-.background-frontpage {
-  background-image: url("../../media/background-ku-desktop.jpg");
-  background-repeat: no-repeat;
-  background-size: 100%, 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-}
-
 .title-container {
   margin-bottom: 5%;
 }
@@ -94,10 +83,17 @@
       }
 
   }
-    .games-image {
-      width: 150px;
-      height: 150px;
-      display: block;
+  .sack-img {
+    width: 170px;
+    height: 170px;
+    display: block;
+
+  }
+
+  .network-img {
+    width: 130px;
+    height: 130px;
+    display: block;
   }
 
    .card-footer {
@@ -151,19 +147,9 @@
 }
 
 
-  /**********************************************************
+/**********************************************************
 *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
 ***********************************************************/
-
-.background-frontpage {
-  background-image: url("../../media/background-ku-desktop.jpg");
-  background-repeat: no-repeat;
-  background-size: 100%, 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-}
 
 .create-game {
   display: flex;
@@ -214,11 +200,7 @@
 
   }
 
-  .games-image {
-    width: 80px;
-    height: 80px;
-    display: none;
-  }
+
 
 
     .card-footer {

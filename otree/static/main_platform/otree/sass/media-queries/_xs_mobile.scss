@@ -87,12 +87,13 @@
       }
   }
 
-  .games-image {
-    width: 80px;
-    height: 80px;
+  .sack-img {
     display: none;
   }
 
+  .network-img {
+    display: none;
+  }
    .card-footer {
       padding-top: 0;
      .footer-row {
@@ -236,7 +237,13 @@
 
   }
 
-  .games-image {
+   .sack-img {
+    width: 80px;
+    height: 80px;
+    display: none;
+  }
+
+  .network-img {
     width: 80px;
     height: 80px;
     display: none;

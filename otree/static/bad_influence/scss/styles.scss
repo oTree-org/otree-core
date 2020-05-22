@@ -1,10 +1,5 @@
 // Variables should always be the first import
-@import "modules/variables";
-@import "modules/buttons";
-@import "modules/mixins";
-@import "modules/typography";
-
-
+@import "../../main_platform/otree/sass/modules/variables";
 
 // Media Queries for Bad Influence
 @import "media-queries/xs_mobile";
