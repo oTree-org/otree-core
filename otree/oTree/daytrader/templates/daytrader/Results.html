@@ -41,7 +41,7 @@
         <tr>
             <td> {{ firma }}    </td>
             <td> {{ tilstand }} </td>
-            <td> {%if choice == True %} + {% else %} - {% endif %}
+            <td> {% if choice == True %} + {% else %} - {% endif %}
                  {{ deal }}     </td>
             <td> {{ price }}    </td>
             <td> {{ closing }}  </td>
