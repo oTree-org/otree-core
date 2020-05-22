@@ -1,63 +1,70 @@
-<style>
-#table {
-  border-collapse: collapse;
-  width: 100%;
-}
-
-#table td, #table th {
-  border: 1px solid #ddd;
-  padding: 8px;
-}
-
-#table th {
-  padding-top: 12px;
-  padding-bottom: 12px;
-  text-align: left;
-  color: black;
-}
-</style>
-
-{% block title %}
-    Børsen er lukket for i dag
-{% endblock %}
-
+{% extends 'global/Base.html' %}
+{% load otree %}
 {% block content %}
+    <style>
+        body {
+            background: #41739D;
+        }
 
-<p>
-  Vi lukker nu dine positioner. Du har handlet for i alt {{ handlet }}.
-  I tabellen kan du se, hvordan det gik.
-<p/>
+        ._otree-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-<table id="table">
-    <tr>
-        <th> firma     </th>
-        <th> tilstand  </th>
-        <th> dine handler   </th>
-        <th> købspris  </th>
-        <th> lukkepris </th>
-        <th> tjent     </th>
-    </tr>
-    {% for firma, tilstand, choice, deal, price, closing, tjent in data %}
-        <tr>
-            <td> {{ firma }}    </td>
-            <td> {{ tilstand }} </td>
-            <td> {% if choice == True %} + {% else %} - {% endif %}
-                 {{ deal }}     </td>
-            <td> {{ price }}    </td>
-            <td> {{ closing }}  </td>
-            <td> <strong> {{ tjent }} </strong> </td>
-        </tr>
-    {% endfor %}
-</table>
+        #timer {
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+    <div class="daytrader-game-container">
 
-<p>
-  Du har tjent i alt {{ player.payoff }}.
-  Gebyrer og kurtage ({{ kurtage_pct }} procent af handelsværdi) beløber sig til {{ kurtage }}.
-<p/>
-<p>
-  Din samlede fortjeneste er {{ ialt }}.
-<p/>
-<p>
-  Tak for at handle hos os.
-<p/>
+        <p class="daytrader-round-info">
+            Børsen er lukket for i dag.
+        </p>
+        <p class="daytrader-round-info">
+            Vi lukker nu dine positioner. Du har handlet for i alt {{ handlet }}.
+            I tabellen kan du se, hvordan det gik.
+        </p>
+
+        <table class="table daytrader-table">
+            <tr class="table-corners">
+                <th class="daytrader-table-header border-corner-left"> firma</th>
+                <th class="daytrader-table-header"> tilstand</th>
+                <th class="daytrader-table-header"> dine handler</th>
+                <th class="daytrader-table-header"> købspris</th>
+                <th class="daytrader-table-header"> lukkepris</th>
+                <th class="daytrader-table-header border-corner-right"> tjent</th>
+            </tr>
+            {% for firma, tilstand, choice, deal, price, closing, tjent in data %}
+                <tr class="daytrader-table-row">
+                    <td class="daytrader-table-data"> {{ firma }}    </td>
+                    <td class="daytrader-table-data">
+                        <div>
+                            {% for foo in tilstand %}
+                                {% if foo is True %}
+                                    <img src="{% static 'daytrader/media/' %}" alt="">
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </td>
+                    <td class="daytrader-table-data"> {% if choice == True %} + {% else %} - {% endif %}
+                        {{ deal }}     </td>
+                    <td class="daytrader-table-data"> {{ price }}    </td>
+                    <td class="daytrader-table-data"> {{ closing }}  </td>
+                    <td class="daytrader-table-data"><strong> {{ tjent }} </strong></td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        <p class="daytrader-round-info">
+            Du har tjent i alt {{ player.payoff }}.
+            Gebyrer og kurtage ({{ kurtage_pct }}% af handelsværdi) beløber sig til {{ kurtage }}.
+            Din samlede fortjeneste er {{ ialt }}.
+        </p>
+        <p class="daytrader-round-info">
+            Tak for at handle hos os.
+        </p>
+    </div>
+
 {% endblock %}
