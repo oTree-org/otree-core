@@ -16,8 +16,6 @@
   /******************************
   *   Play.html info styling    *
   *******************************/
-
-
   .daytrader-game-container {
     display: flex;
     flex-direction: column;
@@ -69,16 +67,15 @@
     }
 
 
-    .go-long-content {
-      margin: 25px 0;
-      width: 100%;
-      display: none;
-    }
+
 
     #continue {
       display: none;
     }
 
+  /*******************
+  *   intro1.html    *
+  ********************/
 
     .daytrader-intro-title {
       font-family: "Patrick Hand", sans-serif;
@@ -88,7 +85,7 @@
     }
 
     .daytrader-intro-frontpage-img {
-      background: url("../../../main_platform/otree/media/title-backgrounds/blue-round-title-background.svg") no-repeat;
+      background: url("../../../../static/main_platform/otree/media/front-page-sackbackground.svg") no-repeat;
       background-size: cover;
       width: 300px;
       height: 370px;
@@ -110,17 +107,13 @@
       }
     }
 
+  /*******************
+  *   intro2.html    *
+  ********************/
     .daytrader-sack {
       height: 175px;
       margin: 0 0 20px 0;
     }
-
-    .future-trader-stickman {
-      width: 200px;
-      height: 200px;
-      margin: 0 0 25px 0;
-    }
-
 
     .daytrader-intro-container-first {
       display: flex;
@@ -133,6 +126,9 @@
       }
     }
 
+  /*******************
+  *   intro3.html    *
+  ********************/
     .daytrader-intro-container-second {
       display: flex;
       align-items: flex-start;
@@ -149,7 +145,7 @@
       }
     }
 
-    .daytrader-future {
+      .daytrader-future {
       color: $ku-dark-blue;
       text-decoration: underline;
 
@@ -157,6 +153,21 @@
         cursor: pointer;
       }
     }
+
+
+  /*******************
+  *   intro4.html    *
+  ********************/
+
+     .go-long-content {
+      margin: 25px 0;
+      width: 100%;
+      display: none;
+    }
+
+  /***********************
+    *  All intro pages   *
+  ************************/
 
     .daytrader-round-info {
       font-size: 16px;
@@ -170,18 +181,17 @@
 
     .daytrader-round-title {
       font-family: "Patrick Hand", cursive;
-      font-size: 17px;
+      font-size: 25px;
       display: flex;
       justify-content: center;
       flex-direction: column;
       text-align: center;
-
-      background-image: url("../../../main_platform/otree/media/title-backgrounds/blue-round-title-background.svg");
-      background-repeat: no-repeat;
-      background-position: center;
-      padding: 35px 0;
-      color: white;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: $ku-dark-blue;
       width: 100%;
+      padding: 20px 0 20px 0;;
     }
 
     .round-introduction {
@@ -284,20 +294,23 @@
       justify-content: center;
 
       .daytrader-next-btn {
-        font-size: 22px;
+        font-size: 18px;
         background: $ku-dark-blue;
         font-family: "Patrick Hand", sans-serif;
         width: 166px;
         height: 40px;
         color: white;
-
-        border: 5px solid $ku-dark-blue;
-        box-sizing: border-box;
-        border-radius: 30px;
-
         display: flex;
         justify-content: center;
         align-items: center;
+        border-radius: 10px;
+        border: 2px solid $ku-dark-blue;
+
+             &:hover {
+          cursor: pointer;
+          background-color: $ku-dark-green;
+          border-color: transparent;
+        }
       }
     }
 
@@ -305,9 +318,10 @@
       width: 20px;
       height: 20px;
 
-      &:hover {
-        cursor: pointer;
-      }
+        &:hover {
+          cursor: pointer;
+
+        }
     }
 
     .field-choice_of_trade {

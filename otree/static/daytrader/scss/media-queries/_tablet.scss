@@ -71,13 +71,14 @@
       font-size: 80px;
     }
 
-    .future-trader-stickman {
-      width: 200px;
-      height: 240px;
-    }
 
+
+
+  /***********************
+    *  All intro pages   *
+  ************************/
     .daytrader-round-info {
-      font-size: 22px;
+      font-size: 20px;
       font-family: "Patrick Hand", sans-serif;
 
       h3 {
@@ -85,19 +86,9 @@
       }
     }
 
-
     .daytrader-round-title {
-      font-family: "Patrick Hand", cursive;
-      font-size: 32px;
-      display: flex;
-      justify-content: center;
-      flex-direction: column;
-      text-align: center;
-      background-image: url("../../../main_platform/otree/media/title-backgrounds/blue-round-title-background.svg");
-      background-repeat: no-repeat;
-      background-position: center;
+      font-size: 35px;
       padding: 35px 0 35px 0;
-      color: white;
     }
 
     .round-introduction {
@@ -207,11 +198,6 @@
         width: 344px;
         height: 55px;
         color: white;
-
-        border: 5px solid $ku-dark-blue;
-        box-sizing: border-box;
-        border-radius: 30px;
-
         display: flex;
         justify-content: center;
         align-items: center;

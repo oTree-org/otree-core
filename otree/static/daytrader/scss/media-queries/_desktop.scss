@@ -15,7 +15,6 @@
   *   Play.html info styling    *
   *******************************/
 
-
   .daytrader-game-container {
     display: flex;
     flex-direction: column;
@@ -31,38 +30,39 @@
       width: 70%;
     }
 
+    .future-modal-content, .short-modal-content, .long-modal-content, .info-cascade-modal-content {
+      width: 50%;
+    }
+
+    .daytrader-intro-info-container {
+      margin: 10px 0;
+    }
+
+  /**********************
+  *    intro1.html      *
+  ***********************/
 
     .daytrader-intro-title {
-      font-family: "Patrick Hand", sans-serif;
       font-size: 180px;
-      color: $ku-dark-blue;
-      text-transform: uppercase;
       margin: 0;
     }
 
     .daytrader-intro-frontpage-img {
-      background: url("../../../../static/main_platform/otree/media/front-page-sackbackground.svg") no-repeat;
-      background-size: cover;
-      width: 500px;
-      height: 650px;
+      width: 450px;
+      height: 550px;
       display: flex;
       justify-content: center;
       align-items: center;
 
       .daytrader-start-game-btn {
-        border: none;
-        font-family: "Patrick Hand", sans-serif;
-        background: transparent;
         font-size: 60px;
-        color: white;
         margin: 320px 0 0 0;
-
-        &:hover {
-          cursor: pointer;
-        }
       }
     }
 
+  /*******************
+  *   intro2.html    *
+  ********************/
     .daytrader-sack {
       height: 320px;
       flex: 3;
@@ -70,9 +70,7 @@
     }
 
     .daytrader-intro-container-first {
-      display: flex;
-      justify-content: space-evenly;
-      margin: 50px 0;
+      margin: 0;
       flex-direction: row;
 
       .daytrader-intro-first {
@@ -80,11 +78,9 @@
       }
     }
 
-    .future-trader-stickman {
-      width: 280px;
-      height: 350px;
-    }
-
+  /*******************
+  *   intro3.html    *
+  ********************/
     .daytrader-intro-container-second {
       display: flex;
       margin: 0;
@@ -101,15 +97,9 @@
       }
     }
 
-
-
-    .future-modal-content, .short-modal-content, .long-modal-content, .info-cascade-modal-content {
-      width: 50%;
-    }
-
-    .daytrader-intro-info-container {
-      margin: 10px 0;
-    }
+  /*******************
+  *   intro4.html    *
+  ********************/
 
     .go-long-content {
       margin: 50px 0;
@@ -122,27 +112,21 @@
     }
 
 
-    .daytrader-round-title {
-      font-family: "Patrick Hand", cursive;
-      font-size: 34px;
-      display: flex;
-      justify-content: center;
-      flex-direction: column;
-      text-align: center;
-      background-image: url("../../../../static/main_platform/otree/media/title-backgrounds/blue-round-title-background.svg");
-      padding: 35px 0 35px 0;
-      color: white;
-      width: 100%;
-    }
 
+
+  /***********************
+    *  All intro pages   *
+  ************************/
 
     .daytrader-round-info {
-      font-size: 30px;
-      font-family: "Patrick Hand", sans-serif;
+      font-size: 25px;
 
-      h3 {
-        font-weight: bold;
-      }
+    }
+
+    .daytrader-round-title {
+      font-size: 50px;
+      padding: 10px 0 10px 0;
+      width: 100%;
     }
 
     // Styling af det viste ansigt i teksten
@@ -246,37 +230,20 @@
       display: flex;
       justify-content: center;
 
-      .daytrader-next-btn {
-        font-size: 30px;
-        background: $ku-dark-blue;
-        font-family: "Patrick Hand", sans-serif;
-        width: 344px;
-        height: 55px;
-        color: white;
 
-        border: 5px solid $ku-dark-blue;
-        box-sizing: border-box;
-        border-radius: 30px;
-
-        display: flex;
-        justify-content: center;
-        align-items: center;
-
-        &:hover {
-          cursor: pointer;
-        }
+     .daytrader-next-btn {
+            font-size: 25px;
+            width: 344px;
+            height: 55px;
       }
     }
-
 
     .reveal-face {
-      width: 40px;
-      height: 40px;
-
-      &:hover {
-        cursor: pointer;
-      }
+       width: 40px;
+       height: 40px;
     }
+
+
 
     .field-choice_of_trade {
       margin: 0;
