@@ -4,7 +4,7 @@
 {% block styles %}
     <style>
         body {
-            background-image: url("../../static/main_platform/otree/media/ku-bgku-bgkujpg.jpg");
+            background-image: url("../../static/main_platform/otree/media/frontpage-background.jpg");
             background-repeat: no-repeat;
             background-size: 100%, 100%;
             display: flex;
@@ -16,7 +16,7 @@
 
 {% block content %}
 <div class="title-container">
-    <h1 class="games-title">KU-LÆRINGSSPIL</h1>
+    <h1 class="games-title">Multiplayer Dude</h1>
 <p class="sub-games-title">Udfordrende og sjove multiplayer læringsspil </p>
 </div>
 
@@ -26,21 +26,26 @@
       <header class="card-header">Bad Influence</header>
         <div class="card-body">
             <div class="body-row">
-                <img src="../../static/main_platform/otree/media/large_network.gif" alt="" class="games-image">
-                <span><b>Bad Influence</b> er et multiplayerspil hvor hver spiller har et “netværk” af medspillere.
-                Hver spille kan kun se og kommunikere med sit eget netværk.
-                Spillet vil gennemgå en række scenarier hvor hver spiller skal vælge mellem to muligheder.
+                <img src="../../static/main_platform/otree/media/bad-influence-network.gif" alt="" class="games-image">
+                <span><b>Bad Influence</b> er et multiplayer afstemningsspil for hele klassen. Spillerne stemmer om ti forskellige spørgsmål og dilemmaer, og skal forsøge at få andre til at vælge det de selv foretrækker.
                     <br>
                     <br>
-                Målet er at ens netværk skal være i konsensus med hinanden før tiden udløber, dette skal ske ved at chatte sammen i spillet.
+               <b>Temaer:</b>
+                    <br>
+                    <i>Sociale normer</i>,
+                    <i>Venskabsparadokset</i>,
+                    <i>Influencer-kultur</i>,
+                    <i>Flertalsillusioner</i>,
+                    <i>Sociale netværk</i>.
                 </span>
             </div>
         </div>
         <div class="card-footer">
         <div class="footer-row">
                 <span class="game-info">
-                <p>*Spil varighed: 20min</p>
-                <p>*Minimum 4 spillere</p>
+                <p>*Spillets varighed: 10-12min</p>
+                <p>*Debrief: 10-25min</p>
+                <p>*15-100 spillere</p>
             </span>
             <form action="{% url 'CreateSessionBadInfluence' %}">
                 <button class="btn btn-primary" >
@@ -56,11 +61,21 @@
       <header class="card-header">Day Trader</header>
         <div class="card-body">
             <div class="body-row">
-                <img src="../../static/daytrader/media/front-page-sackbackground.svg" alt="" class="games-image">
-                <span><b>Day Trader</b> er et multiplayerspil omkring hvordan bobler kan opstå i finansverdenen. I dette spil er et firma repræsenteret af en sæk med glade og ikke glade medarbejdere(ansigter).
+                <img src="../../static/main_platform/otree/media/front-page-sackbackground.svg" alt="" class="games-image">
+                <span><b>Day Trader</b> er et spil om hvordan bobler kan opstå i finansverdenen (og andre steder). Spillerne er <b><i>’day traders’</i></b> på en fiktiv børs, og handler
+                    med aktier i en række fiktive firmaer, samtidig med at de får indblik i firmaernes faktisk tilstand.
                     <br>
                     <br>
-                    Hver spiller skal gætte om firmaet er bestående af primært ”glade” eller ”ikke glade” omstændigheder, ud fra den information spillerne får i spillet.
+                    Spørgsmålet er dog: vil spillerne lytte til deres private information, eller vil de hellere gøre hvad de andre daytradere gør?
+                    <br>
+                    <br>
+                     <b>Temaer:</b>
+                    <br>
+                    <i>Informationskaskader</i>,
+                    <i>Ekkokamre</i>,
+                    <i>Børshandel</i>,
+                    <i>Lemminge-effekter</i>,
+                    <i>Bobler</i>.
 
                 </span>
             </div>
@@ -68,8 +83,9 @@
         <div class="card-footer">
         <div class="footer-row">
                 <span class="game-info">
-                <p>*Spil varighed: 20-30min</p>
-                <p>*Minimum 3 spillere</p>
+                <p>*Spillets varighed: 10-15min</p>
+                <p>*Debrief: 10-15min</p>
+                <p>*10-100 spillere</p>
             </span>
             <form action="{% url 'CreateSessionDayTrader' %}">
                 <button class="btn btn-primary" >

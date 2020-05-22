@@ -35,13 +35,13 @@
     .daytrader-intro-title {
       font-family: "Patrick Hand", sans-serif;
       font-size: 180px;
-      color: $daytrader-blue;
+      color: $ku-dark-blue;
       text-transform: uppercase;
       margin: 0;
     }
 
     .daytrader-intro-frontpage-img {
-      background: url("../../../../../../static/daytrader/media/front-page-sackbackground.svg") no-repeat;
+background: url("../../../../static/main_platform/otree/media/front-page-sackbackground.svg") no-repeat;
       background-size: cover;
       width: 600px;
       height: 750px;
@@ -121,7 +121,6 @@
     }
 
 
-
     .daytrader-round-title {
       font-family: "Patrick Hand", cursive;
       font-size: 34px;
@@ -129,7 +128,7 @@
       justify-content: center;
       flex-direction: column;
       text-align: center;
-      background-image: url("../../../../../../static/main_platform/otree/media/daytrader_titlekusvg.svg");
+      background-image: url("../../media/blue-round-title-background.svg");
       background-repeat: no-repeat;
       background-position: center;
       padding: 35px 0 35px 0;
@@ -169,7 +168,7 @@
       }
 
       .daytrader-table-header {
-        background: $daytrader-blue;
+        background: $ku-dark-blue;
         color: white;
         font-weight: bold;
         font-family: "Patrick Hand", sans-serif;
@@ -223,12 +222,12 @@
 
       .otree-btn-next {
         font-size: 30px;
-        background: $daytrader-blue;
+        background: $ku-dark-blue;
         font-family: "Patrick Hand", sans-serif;
         width: 344px;
         height: 55px;
 
-        border: 5px solid $daytrader-blue;
+        border: 5px solid $ku-dark-blue;
         box-sizing: border-box;
         border-radius: 30px;
 
@@ -238,7 +237,7 @@
       }
     }
 
-    .field-choice_of_number_of_shares, {
+    .field-choice_of_number_of_shares {
       display: flex;
       justify-content: center;
     }
@@ -250,13 +249,13 @@
 
       .daytrader-next-btn {
         font-size: 30px;
-        background: $daytrader-blue;
+        background: $ku-dark-blue;
         font-family: "Patrick Hand", sans-serif;
         width: 344px;
         height: 55px;
         color: white;
 
-        border: 5px solid $daytrader-blue;
+        border: 5px solid $ku-dark-blue;
         box-sizing: border-box;
         border-radius: 30px;
 
@@ -304,7 +303,7 @@
           height: 40px;
           border-radius: 50%;
           outline: none;
-          border: 3px solid $daytrader-blue;
+          border: 3px solid $ku-dark-blue;
 
           &:before {
             content: '';
@@ -316,11 +315,11 @@
           }
 
           &:checked:before {
-            background: $daytrader-blue;
+            background: $ku-dark-blue;
           }
 
           &:checked {
-            border-color: $daytrader-blue;
+            border-color: $ku-dark-blue;
           }
         }
       }

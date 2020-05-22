@@ -72,7 +72,7 @@
     text-transform: uppercase;
   }
   .daytrader-game-container .daytrader-intro-frontpage-img {
-    background: url("../../../../../../static/daytrader/media/front-page-sackbackground.svg") no-repeat;
+    background: url("../../../../static/main_platform/otree/media/front-page-sackbackground.svg") no-repeat;
     background-size: cover;
     width: 300px;
     height: 370px;
@@ -140,7 +140,7 @@
     justify-content: center;
     flex-direction: column;
     text-align: center;
-    background-image: url("../../../../../../static/main_platform/otree/media/daytrader_titlekusvg.svg");
+    background-image: url("../../media/blue-round-title-background.svg");
     background-repeat: no-repeat;
     background-position: center;
     padding: 35px 0;
@@ -548,7 +548,7 @@
     justify-content: center;
     flex-direction: column;
     text-align: center;
-    background-image: url("../../../../../../static/main_platform/otree/media/daytrader_titlekusvg.svg");
+    background-image: url("../../media/blue-round-title-background.svg");
     background-repeat: no-repeat;
     background-position: center;
     padding: 35px 0;
@@ -959,7 +959,7 @@
     justify-content: center;
     flex-direction: column;
     text-align: center;
-    background-image: url("../../../../../../static/main_platform/otree/media/daytrader_titlekusvg.svg");
+    background-image: url("../../media/blue-round-title-background.svg");
     background-repeat: no-repeat;
     background-position: center;
     padding: 35px 0 35px 0;
@@ -1347,7 +1347,7 @@
     margin: 0;
   }
   .daytrader-game-container .daytrader-intro-frontpage-img {
-    background: url("../../../../../../static/daytrader/media/front-page-sackbackground.svg") no-repeat;
+    background: url("../../../../static/main_platform/otree/media/front-page-sackbackground.svg") no-repeat;
     background-size: cover;
     width: 600px;
     height: 750px;
@@ -1417,7 +1417,7 @@
     justify-content: center;
     flex-direction: column;
     text-align: center;
-    background-image: url("../../../../../../static/main_platform/otree/media/daytrader_titlekusvg.svg");
+    background-image: url("../../media/blue-round-title-background.svg");
     background-repeat: no-repeat;
     background-position: center;
     padding: 35px 0 35px 0;
@@ -1840,16 +1840,5 @@
     border-radius: 10px;
   }
 }
-/*
-body::before {
-  font-family: "Source Code Pro", "SF Mono", Monaco, Inconsolata, "Fira Mono",
-      "Droid Sans Mono", monospace, monospace;
-  white-space: pre;
-  display: block;
-  padding: 1em;
-  margin-bottom: 1em;
-  border-bottom: 2px solid black;
-  content: 'Error: expected ":".\a   \2577 \a 1 \2502  $uni-red = #901A1E;\d\a   \2502           ^\a   \2575 \a   modules\\_variables.scss 1:10  @import\a   main.scss 2:9                 root stylesheet';
-}*/
 
 /*# sourceMappingURL=styles.css.map */

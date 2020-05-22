@@ -99,4 +99,4 @@ STATICFILES_DIRS = [
 MEDIA_URL = 'media/'
 
 #MEDIA_ROOT = 'otree/static/otree'
-MEDIA_ROOT = 'bad_influence/static/bad_influence'
+MEDIA_ROOT = 'bad_influence/static/main_platform'

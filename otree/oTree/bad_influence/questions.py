@@ -1,10 +1,10 @@
 colors = {
-    "red": "/static/bad_influence/media/red_peep.png",
-    "blue": "/static/bad_influence/media/blue_peep.png",
-    "pink": "/static/bad_influence/media/pink_peep.png",
-    "yellow": "/static/bad_influence/media/yellow_peep.png",
-    "grey": "/static/bad_influence/media/grey_peep.png",
-    "green": "/static/bad_influence/media/green_peep.png",
+    "red": "/static/main_platform/otree/media/peeps/red_peep.png",
+    "blue": "/static/main_platform/otree/media/peeps/blue_peep.png",
+    "pink": "/static/main_platform/otree/media/peeps/pink_peep.png",
+    "yellow": "/static/main_platform/otree/media/peeps/yellow_peep.png",
+    "grey": "/static/main_platform/otree/media/peeps/grey_peep.png",
+    "green": "/static/main_platform/otree/media/peeps/green_peep.png",
 }
 
 color_pairs = [('red','blue'), ('blue','yellow'), ('yellow','red'), ('green','blue'),
