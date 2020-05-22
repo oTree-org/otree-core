@@ -111,12 +111,14 @@
     }
 
     .daytrader-sack {
-      height: 150px;
+      height: 175px;
       margin: 0 0 20px 0;
     }
 
     .future-trader-stickman {
-      width: 100px;
+      width: 200px;
+      height: 200px;
+      margin: 0 0 25px 0;
     }
 
 
@@ -124,6 +126,7 @@
       display: flex;
       justify-content: space-evenly;
       flex-direction: column;
+      width: 77%;
 
       .daytrader-intro-first {
         align-self: center;
@@ -136,12 +139,13 @@
       flex-direction: column;
 
       .daytrader-intro-container-second-info {
-        flex-grow: 1;
+        width: 100%;
       }
 
       .daytrader-intro-container-second-button {
-        align-self: center;
-        margin: 0 0 30px 0;
+        display: flex;
+        justify-content: center;
+        width: 100%;
       }
     }
 
@@ -196,7 +200,7 @@
 
     // Daytrader Table
     .daytrader-table {
-      margin: 25px 0 0 0;
+      margin: 10px 0;
       border-collapse: separate;
       border-spacing: 0 0.5em;
 

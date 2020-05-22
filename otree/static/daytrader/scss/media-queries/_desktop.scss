@@ -25,7 +25,7 @@
     border-radius: 10px;
     width: 90%;
     background-color: white;
-    padding: 40px 120px;
+    padding: 40px 7.5%;
 
     .content-container {
       width: 70%;
@@ -64,7 +64,7 @@
     }
 
     .daytrader-sack {
-      height: 250px;
+      height: 320px;
       flex: 3;
       padding-right: 20px;
     }
@@ -81,12 +81,13 @@
     }
 
     .future-trader-stickman {
-      width: 200px;
+      width: 280px;
+      height: 350px;
     }
 
     .daytrader-intro-container-second {
       display: flex;
-      margin: 50px 0;
+      margin: 0;
       flex-direction: row;
       align-items: center;
 
@@ -107,7 +108,7 @@
     }
 
     .daytrader-intro-info-container {
-      margin: 25px 0;
+      margin: 10px 0;
     }
 
     .go-long-content {
@@ -281,7 +282,7 @@
     }
 
     .field-choice_of_trade {
-      margin: 50px 0 0 0;
+      margin: 0;
       display: flex;
       justify-content: center;
       padding-left: 90px;
@@ -294,7 +295,7 @@
 
         .form-check-label {
           font-family: "Patrick Hand", sans-serif;
-          font-size: 26px;
+          font-size: 24px;
           text-transform: capitalize;
         }
 

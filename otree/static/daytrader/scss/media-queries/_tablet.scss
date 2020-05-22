@@ -46,7 +46,22 @@
     .daytrader-intro-container-first {
       flex-direction: row;
       margin: 0 0 25px 0;
+      width: 100%;
     }
+
+    .daytrader-intro-container-second {
+      flex-direction: row;
+
+      .daytrader-intro-container-second-info {
+        width: 75%;
+      }
+
+      .daytrader-intro-container-second-button {
+        width: 25%;
+        margin: 0 0 0 10px;
+      }
+    }
+
 
     .daytrader-sack {
       margin: 0 20px;
@@ -54,6 +69,11 @@
 
     .daytrader-intro-title {
       font-size: 80px;
+    }
+
+    .future-trader-stickman {
+      width: 200px;
+      height: 240px;
     }
 
     .daytrader-round-info {
@@ -98,7 +118,7 @@
 
     // Daytrader Table
     .daytrader-table {
-      margin: 50px 0 0 0;
+      margin: 10px 0;
       border-collapse: separate;
       border-spacing: 0 0.5em;
 
@@ -226,6 +246,7 @@
           font-family: "Patrick Hand", sans-serif;
           font-size: 22px;
           text-transform: capitalize;
+          text-align: center;
         }
 
         input.form-check-input[type="radio"] {

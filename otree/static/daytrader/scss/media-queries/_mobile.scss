@@ -56,7 +56,18 @@
     }
 
     .future-trader-stickman {
-      width: 150px;
+      width: 250px;
+      height: 250px;
+    }
+
+    .daytrader-intro-container-second {
+
+      .daytrader-intro-container-second-info {
+        width: 100%;
+      }
+
+      .daytrader-intro-container-second-button {
+      }
     }
 
     .daytrader-round-title {
@@ -90,7 +101,6 @@
 
     // Daytrader Table
     .daytrader-table {
-      margin: 30px 0 0 0;
       border-collapse: separate;
       border-spacing: 0 0.5em;
 
@@ -270,7 +280,7 @@
   #timer-text {
     top: 0;
     left: 8px;
-    font-size: 25px;
+    font-size: 22px;
     display: flex;
     justify-content: center;
     padding-top: 2%;
