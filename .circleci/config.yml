@@ -1,0 +1,31 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.7
+      
+    working_directory: ~/repo
+        
+    steps:
+      - checkout
+      - setup_remote_docker
+      - deploy:
+          name: Build and Push
+          command: |
+            if [ "${CIRCLE_TAG}" != "" ]; then
+              IMAGE_NAME=$CIRCLE_PROJECT_REPONAME:$CIRCLE_TAG
+              docker login -u $DOCKER_USER -p $DOCKER_PASS
+              docker build -t $DOCKER_USER/$IMAGE_NAME .
+              docker push $DOCKER_USER/$IMAGE_NAME
+            fi
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/

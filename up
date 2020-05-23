@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+function docker_tag_exists() {
+    curl --silent -f -lSL https://index.docker.io/v1/repositories/$1/tags/$2 > /dev/null
+}
+if [ "$#" -ne 2 ]; then
+    echo "Usage: up [tag of docker image] [subdomain, e.g test if running on test.cibs.mef.sc.ku.dk]"
+    exit 1
+fi
+if docker_tag_exists mbirkegaard/otree-core $1
+then
+    export TAG=$1
+    export SUBDOMAIN=$2
+    rancher up -d -s $2
+else
+    echo "The docker image mbirkegaard/otree-core:$1 does not exists on docker hub"
+    exit 1
+fi
