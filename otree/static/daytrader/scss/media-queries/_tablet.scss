@@ -38,8 +38,9 @@
       height: 630px;
 
       .daytrader-start-game-btn {
-        font-size: 60px;
-        margin: 250px 0 0 0;
+        font-size: 50px;
+        margin: 250px 0 0 20px;
+        width: 307px
       }
     }
 
@@ -67,16 +68,29 @@
       margin: 0 20px;
     }
 
+  /*******************
+  *   intro1.html    *
+  ********************/
     .daytrader-intro-title {
       font-size: 80px;
+      padding: 20px 0 0 0;
+      letter-spacing: 8px;
     }
 
+  /*******************
+  *   intro2.html    *
+  ********************/
 
 
+  /****************************
+    *  All day trader pages   *
+  *****************************/
 
-  /***********************
-    *  All intro pages   *
-  ************************/
+    .daytrader-round-title {
+      font-size: 40px;
+      padding: 10px 0 10px 0;
+    }
+
     .daytrader-round-info {
       font-size: 20px;
       font-family: "Patrick Hand", sans-serif;
@@ -86,10 +100,6 @@
       }
     }
 
-    .daytrader-round-title {
-      font-size: 35px;
-      padding: 35px 0 35px 0;
-    }
 
     .round-introduction {
       font-family: "Patrick Hand", cursive;

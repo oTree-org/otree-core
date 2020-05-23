@@ -78,10 +78,13 @@
   ********************/
 
     .daytrader-intro-title {
-      font-family: "Patrick Hand", sans-serif;
-      font-size: 50px;
       color: $ku-dark-blue;
       text-transform: uppercase;
+      font-family: 'Noticia Text', serif;
+      font-weight: bold;
+      letter-spacing: 4px;
+      font-size: 40px;
+      padding: 20px 0 0 0;
     }
 
     .daytrader-intro-frontpage-img {
@@ -94,18 +97,23 @@
       align-items: center;
 
       .daytrader-start-game-btn {
-        border: none;
         font-family: "Patrick Hand", sans-serif;
-        background: transparent;
-        font-size: 40px;
+        background: $ku-dark-blue;
+        font-size: 38px;
         color: white;
         margin: 180px 0 0 0;
+        align-items: center;
+        border-radius: 10px;
+        border: 2px solid $ku-dark-blue;
+
 
         &:hover {
           cursor: pointer;
+          background: $ku-dark-green;
+           border-color: transparent;
+        }
         }
       }
-    }
 
   /*******************
   *   intro2.html    *
@@ -165,9 +173,23 @@
       display: none;
     }
 
-  /***********************
-    *  All intro pages   *
-  ************************/
+  /****************************
+    *  All day trader pages   *
+  *****************************/
+    .daytrader-round-title {
+      font-family: 'Noticia Text', serif;
+      font-weight: bold;
+      letter-spacing: 2px;
+      font-size: 25px;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      text-transform: uppercase;
+      color: $ku-dark-blue;
+      width: 100%;
+      padding: 20px 0 20px 0;;
+    }
 
     .daytrader-round-info {
       font-size: 16px;
@@ -179,20 +201,7 @@
       }
     }
 
-    .daytrader-round-title {
-      font-family: "Patrick Hand", cursive;
-      font-size: 25px;
-      display: flex;
-      justify-content: center;
-      flex-direction: column;
-      text-align: center;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      color: $ku-dark-blue;
-      width: 100%;
-      padding: 20px 0 20px 0;;
-    }
+
 
     .round-introduction {
       font-family: "Patrick Hand", cursive;

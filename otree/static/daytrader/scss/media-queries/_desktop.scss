@@ -43,7 +43,7 @@
   ***********************/
 
     .daytrader-intro-title {
-      font-size: 180px;
+      font-size: 120px;
       margin: 0;
     }
 
@@ -55,10 +55,12 @@
       align-items: center;
 
       .daytrader-start-game-btn {
-        font-size: 60px;
-        margin: 320px 0 0 0;
+        font-size: 55px;
+        margin: 250px 0 0 11px;
+        width: 280px;
       }
     }
+
 
   /*******************
   *   intro2.html    *
@@ -114,19 +116,18 @@
 
 
 
-  /***********************
-    *  All intro pages   *
-  ************************/
+  /****************************
+    *  All day trader pages   *
+  *****************************/
+    .daytrader-round-title {
+      font-size: 50px;
+      width: 100%;
+    }
+
 
     .daytrader-round-info {
       font-size: 25px;
 
-    }
-
-    .daytrader-round-title {
-      font-size: 50px;
-      padding: 10px 0 10px 0;
-      width: 100%;
     }
 
     // Styling af det viste ansigt i teksten

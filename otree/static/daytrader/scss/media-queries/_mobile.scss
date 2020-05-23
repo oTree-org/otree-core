@@ -46,9 +46,21 @@
   /*******************
   *   intro1.html    *
   ********************/
+    .daytrader-intro-title {
+      font-size: 60px;
+      padding: 20px 0 0 0;
+      letter-spacing: 6px;
+    }
+
     .daytrader-intro-frontpage-img {
       width: 320px;
       height: 400px;
+
+      .daytrader-start-game-btn {
+        font-size: 38px;
+        margin: 180px 0 0 0;
+        width: 200px;
+        }
     }
 
 
@@ -69,11 +81,11 @@
 
     }
 
-  /***********************
-    *  All intro pages   *
-  ************************/
+  /****************************
+    *  All day trader pages   *
+  *****************************/
     .daytrader-round-title {
-      font-size: 28px;
+      font-size: 30px;
     }
 
 
