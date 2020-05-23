@@ -1,0 +1,1747 @@
+@media (min-width: 0px) {
+  /*******************************
+  *  Hide otree default message  *
+  ********************************/
+  .otree-timer {
+    display: none;
+  }
+
+  .otree-title {
+    display: none;
+  }
+
+  /******************************
+  *   Play.html info styling    *
+  *******************************/
+  .round-info {
+    font-size: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: left;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .round-title {
+    font-family: "Patrick Hand", cursive;
+    font-size: 30px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    background-image: url("/static/main_platform/otree/media/title-backgrounds/red-round-title-background.svg");
+    background-repeat: no-repeat;
+    background-position: center;
+    padding: 35px 0 35px 0;
+    color: white;
+  }
+
+  .game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2%;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    border-radius: 10px;
+    background-color: white;
+  }
+
+  .round-introduction {
+    font-family: "Patrick Hand", cursive;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  /*****************************
+  *   Play.html svg styling    *
+  *******************************/
+  .answer-container {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    min-height: 300px;
+    width: 100%;
+  }
+  .answer-container svg {
+    width: 100%;
+  }
+
+  #timer-text {
+    top: 0;
+    left: 8px;
+    font-size: 25px;
+    display: flex;
+    justify-content: center;
+    padding-top: 2%;
+    font-family: "Patrick Hand", cursive;
+  }
+  #timer-text #timer {
+    padding-left: 5px;
+  }
+
+  .game-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 2%;
+  }
+
+  .svg-column {
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: column;
+    width: 90%;
+    align-self: center;
+    margin-bottom: 5%;
+    border-color: #901A1E;
+    border-radius: 2px;
+    border-style: solid solid solid solid;
+  }
+
+  /*********************************
+  *   Play.html timer styling     *
+  *********************************/
+  .flash {
+    animation-name: flash;
+    animation-duration: 0.2s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-play-state: running;
+  }
+
+  @keyframes flash {
+    from {
+      color: red;
+    }
+    to {
+      color: black;
+    }
+  }
+  /***********************************
+  *   Play.html chat+svg container  *
+  ***********************************/
+  .surround {
+    width: 100%;
+  }
+
+  /*********************************
+  *   Play.html chat styling      *
+  *********************************/
+  #chat {
+    height: 250px;
+    scroll-behavior: smooth;
+    background: #ebeded;
+    border-radius: 5px;
+    padding: 15px;
+    overflow: auto;
+  }
+
+  #chat::-webkit-scrollbar {
+    width: 1em;
+  }
+
+  #chat::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  }
+
+  #chat::-webkit-scrollbar-thumb {
+    background-color: darkgrey;
+    outline: 1px solid slategrey;
+    border-radius: 10px;
+  }
+
+  .chat-message {
+    display: flex;
+  }
+
+  .chat-message b {
+    padding: 0 10px 0 0;
+  }
+
+  #chat-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    font-family: "Patrick Hand", cursive;
+    width: 100%;
+    align-items: center;
+    margin-bottom: 5%;
+  }
+
+  .chat-title {
+    justify-content: center;
+    display: flex;
+    font-size: 20px;
+    width: 100%;
+  }
+
+  .chat, .message {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    font-size: 20px;
+  }
+  .chat #chat, .message #chat {
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    margin-bottom: 2%;
+    width: 100%;
+  }
+  .chat #message, .message #message {
+    font-size: 20px;
+    max-width: 90%;
+  }
+
+  .send {
+    width: 100%;
+    font-size: 20px;
+    border: none;
+    justify-content: center;
+    display: flex;
+  }
+  .send #send {
+    width: 90%;
+    height: 50px;
+    background-color: #901A1E;
+    font-size: 20px;
+    border-color: transparent;
+  }
+  .send #send:hover {
+    background-color: #5f861e;
+  }
+
+  .results-title {
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    color: #901A1E;
+    padding-top: 20px;
+    font-weight: bold;
+  }
+
+  .results-container {
+    margin-top: 4%;
+  }
+  .results-container .report-info {
+    padding-bottom: 30px;
+  }
+
+  /*********************************
+  *   Play.html button styling    *
+  *********************************/
+  .mobile-column {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .choice-button-holder {
+    justify-content: center;
+    display: flex;
+    width: 100%;
+  }
+
+  .choice-button {
+    width: 120px;
+    height: 110px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 50px;
+    color: black;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    font-family: "Annie Use Your Telescope", serif;
+    background-color: transparent;
+    border: 2px solid #901A1E;
+    margin: 5px 5px 10% 5px;
+  }
+  .choice-button:hover {
+    background-color: #5f861e;
+    color: white;
+    border-color: transparent;
+  }
+  .choice-button:active {
+    background-color: #5f861e;
+    color: white;
+  }
+  .choice-button:focus {
+    border-color: #5f861e;
+    background-color: #5f861e;
+    color: white;
+  }
+  .choice-button img {
+    width: 50px;
+    height: 50px;
+    align-self: center;
+  }
+
+  /*************************************
+  *   Intro1.html table styling   *
+  **************************************/
+  .intro-title {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    background-color: transparent;
+    width: 100%;
+    font-family: "Patrick Hand", cursive;
+    height: 100vh;
+  }
+  .intro-title .bad {
+    justify-content: center;
+    font-weight: bold;
+    font-size: 50px;
+    text-align: center;
+    letter-spacing: 20px;
+    color: #901A1E;
+    text-transform: uppercase;
+    margin: 0;
+    padding: 0;
+  }
+  .intro-title .influence {
+    font-weight: bold;
+    font-size: 50px;
+    text-align: center;
+    color: #901A1E;
+    text-transform: uppercase;
+    margin: -25px;
+    padding: 0;
+    letter-spacing: 7px;
+  }
+  .intro-title * {
+    box-sizing: border-box;
+  }
+  .intro-title *::before, .intro-title *::after {
+    box-sizing: border-box;
+  }
+  .intro-title button {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    outline: none;
+    border: 0;
+    vertical-align: middle;
+    text-decoration: none;
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    z-index: 2;
+  }
+  .intro-title button.start-game {
+    height: auto;
+    width: 100%;
+    margin-top: 30px;
+    font-size: 30px;
+  }
+  .intro-title button .button-text {
+    position: absolute;
+    top: -5px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    font-weight: 700;
+    line-height: 1.6;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background-color: #901A1E;
+    color: white;
+    border-radius: 20px;
+    height: 50px;
+  }
+  .intro-title button .button-text:hover {
+    background-color: #5f861e;
+  }
+}
+/*************************************
+*   Intro2.html table styling   *
+**************************************/
+.intro-2 {
+  font-family: "Patrick Hand", cursive;
+}
+.intro-2 .round-title {
+  font-size: 35px;
+}
+.intro-2 .game-introduction {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  width: 100%;
+}
+.intro-2 .round-info {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+}
+.intro-2 .round-info h3 {
+  font-weight: bold;
+}
+.intro-2 .text-column {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  width: 100%;
+}
+.intro-2 .svg-column {
+  display: flex;
+  justify-content: flex-end;
+  flex-direction: column;
+  width: 100%;
+  padding-right: 0;
+  margin-bottom: 2%;
+  border-color: #901A1E;
+  border-radius: 2px;
+  border-style: solid solid solid solid;
+}
+.intro-2 .svg-column h2 {
+  font-size: 20px;
+}
+.intro-2 * {
+  box-sizing: border-box;
+}
+.intro-2 *::before, .intro-2 *::after {
+  box-sizing: border-box;
+}
+.intro-2 button {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  outline: none;
+  border: 0;
+  vertical-align: middle;
+  text-decoration: none;
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
+  z-index: 2;
+}
+.intro-2 button.start-game {
+  height: auto;
+  width: 100%;
+  margin-top: 30px;
+  font-size: 30px;
+  padding: 40px;
+}
+.intro-2 button .button-text {
+  position: absolute;
+  top: -5px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  font-weight: 700;
+  line-height: 1.6;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background-color: #901A1E;
+  color: white;
+  border-radius: 20px;
+  height: 50px;
+}
+.intro-2 button .button-text {
+  color: #fff;
+}
+.intro-2 .width-size {
+  width: 100%;
+}
+
+@media (min-width: 375px) {
+  /*******************************
+  *  Hide otree default message  *
+  ********************************/
+  .otree-timer {
+    display: none;
+  }
+
+  .otree-title {
+    display: none;
+  }
+
+  /******************************
+  *   Play.html info styling    *
+  *******************************/
+  .round-info {
+    font-size: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: left;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .round-title {
+    font-family: "Patrick Hand", cursive;
+    font-size: 30px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 35px 0 35px 0;
+    color: white;
+  }
+
+  .game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2%;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    border-radius: 10px;
+    background-color: white;
+  }
+
+  .round-introduction {
+    font-family: "Patrick Hand", cursive;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  /*****************************
+  *   Play.html svg styling    *
+  *******************************/
+  .answer-container {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    min-height: 300px;
+    width: 100%;
+  }
+  .answer-container svg {
+    width: 100%;
+  }
+
+  #timer-text {
+    top: 0;
+    left: 8px;
+    font-size: 25px;
+    display: flex;
+    justify-content: center;
+    padding-top: 2%;
+    font-family: "Patrick Hand", cursive;
+  }
+  #timer-text #timer {
+    padding-left: 5px;
+  }
+
+  .game-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 2%;
+  }
+
+  .svg-column {
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: column;
+    width: 90%;
+    align-self: center;
+    margin-bottom: 5%;
+    border-color: #901A1E;
+    border-radius: 2px;
+    border-style: solid solid solid solid;
+  }
+
+  /*********************************
+  *   Play.html timer styling     *
+  *********************************/
+  .flash {
+    animation-name: flash;
+    animation-duration: 0.2s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-play-state: running;
+  }
+
+  @keyframes flash {
+    from {
+      color: red;
+    }
+    to {
+      color: black;
+    }
+  }
+  /***********************************
+  *   Play.html chat+svg container  *
+  ***********************************/
+  .surround {
+    width: 100%;
+  }
+
+  /*********************************
+  *   Play.html chat styling      *
+  *********************************/
+  #chat {
+    height: 250px;
+    scroll-behavior: smooth;
+    background: #ebeded;
+    border-radius: 5px;
+    padding: 15px;
+    overflow: auto;
+  }
+
+  #chat::-webkit-scrollbar {
+    width: 1em;
+  }
+
+  #chat::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  }
+
+  #chat::-webkit-scrollbar-thumb {
+    background-color: darkgrey;
+    outline: 1px solid slategrey;
+    border-radius: 10px;
+  }
+
+  .chat-message {
+    display: flex;
+  }
+
+  .chat-message b {
+    padding: 0 10px 0 0;
+  }
+
+  #chat-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    font-family: "Patrick Hand", cursive;
+    width: 100%;
+    align-items: center;
+    margin-bottom: 5%;
+  }
+
+  .chat-title {
+    justify-content: center;
+    display: flex;
+    font-size: 20px;
+    width: 100%;
+  }
+
+  .chat, .message {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    font-size: 20px;
+  }
+  .chat #chat, .message #chat {
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    margin-bottom: 2%;
+    width: 100%;
+  }
+  .chat #message, .message #message {
+    font-size: 20px;
+    max-width: 90%;
+  }
+
+  .send {
+    width: 100%;
+    font-size: 20px;
+    border: none;
+    justify-content: center;
+    display: flex;
+  }
+  .send #send {
+    width: 90%;
+    height: 50px;
+    background-color: #901A1E;
+    font-size: 20px;
+    border-color: transparent;
+  }
+  .send #send:hover {
+    background-color: #5f861e;
+  }
+
+  /*********************************
+  *   Play.html button styling    *
+  *********************************/
+  .mobile-column {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .choice-button-holder {
+    justify-content: center;
+    display: flex;
+    width: 100%;
+  }
+
+  .choice-button {
+    width: 120px;
+    height: 110px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 50px;
+    color: black;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    font-family: "Annie Use Your Telescope", serif;
+    background-color: transparent;
+    border: 2px solid #901A1E;
+    margin: 5px 5px 10% 5px;
+  }
+  .choice-button:hover {
+    background-color: #5f861e;
+    color: white;
+    border-color: transparent;
+  }
+  .choice-button:active {
+    background-color: #5f861e;
+    color: white;
+  }
+  .choice-button:focus {
+    border-color: #5f861e;
+    background-color: #5f861e;
+    color: white;
+  }
+  .choice-button img {
+    width: 50px;
+    height: 50px;
+    align-self: center;
+  }
+
+  /*************************************
+  *   Intro1.html.html table styling   *
+  **************************************/
+  .intro-title {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    background-color: transparent;
+    width: 100%;
+    font-family: "Patrick Hand", cursive;
+    height: 100vh;
+  }
+  .intro-title .bad {
+    justify-content: center;
+    font-weight: bold;
+    font-size: 50px;
+    text-align: center;
+    letter-spacing: 20px;
+    color: darkred;
+    text-transform: uppercase;
+    margin: 0;
+    padding: 0;
+  }
+  .intro-title .influence {
+    font-weight: bold;
+    font-size: 50px;
+    text-align: center;
+    color: #901A1E;
+    text-transform: uppercase;
+    margin: -25px;
+    padding: 0;
+    letter-spacing: 7px;
+  }
+  .intro-title * {
+    box-sizing: border-box;
+  }
+  .intro-title *::before, .intro-title *::after {
+    box-sizing: border-box;
+  }
+  .intro-title button {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    outline: none;
+    border: 0;
+    vertical-align: middle;
+    text-decoration: none;
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    z-index: 2;
+  }
+  .intro-title button.start-game {
+    height: auto;
+    width: 70%;
+    margin-top: 30px;
+    font-size: 30px;
+  }
+  .intro-title button.start-game .circle {
+    display: none;
+  }
+  .intro-title button.start-game .circle .icon {
+    display: none;
+  }
+  .intro-title button.start-game .circle .icon.arrow {
+    display: none;
+  }
+  .intro-title button.start-game .button-text {
+    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+    position: absolute;
+    top: -5px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    font-weight: 700;
+    line-height: 1.6;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background-color: #901A1E;
+    color: white;
+    border-radius: 20px;
+    height: 50px;
+  }
+  .intro-title button.start-game .button-text {
+    color: #fff;
+  }
+
+  /*************************************
+  *   Intro2.html table styling   *
+  **************************************/
+  .intro-2 .svg-column h2 {
+    font-size: 25px;
+  }
+  .intro-2 * {
+    box-sizing: border-box;
+  }
+  .intro-2 *::before, .intro-2 *::after {
+    box-sizing: border-box;
+  }
+  .intro-2 button {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    outline: none;
+    border: 0;
+    vertical-align: middle;
+    text-decoration: none;
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    z-index: 2;
+  }
+  .intro-2 button.start-game {
+    height: auto;
+    width: 100%;
+    margin-top: 30px;
+    font-size: 30px;
+    padding: 40px;
+  }
+  .intro-2 button.start-game .circle {
+    display: none;
+  }
+  .intro-2 button.start-game .circle .icon {
+    display: none;
+  }
+  .intro-2 button.start-game .circle .icon.arrow {
+    display: none;
+  }
+  .intro-2 button.start-game .button-text {
+    position: absolute;
+    top: -5px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    font-weight: 700;
+    line-height: 1.6;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background-color: #901A1E;
+    color: white;
+    border-radius: 20px;
+    height: 50px;
+  }
+  .intro-2 button.start-game .button-text {
+    color: #fff;
+  }
+  @supports (display: grid) {
+    .intro-2 body {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-gap: 0.625rem;
+      grid-template-areas: ". main main ." ". main main .";
+    }
+    .intro-2 #container {
+      grid-area: main;
+      align-self: center;
+      justify-self: center;
+    }
+  }
+}
+@media (min-width: 768px) {
+  /*******************************
+  *  Hide otree default message  *
+  ********************************/
+  .otree-timer {
+    display: none;
+  }
+
+  .otree-title {
+    display: none;
+  }
+
+  /******************************
+  *   Play.html info styling    *
+  *******************************/
+  .round-info {
+    font-size: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: left;
+    flex-direction: column;
+    text-align: left;
+  }
+
+  .round-title {
+    font-family: "Patrick Hand", cursive;
+    font-size: 30px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 35px 0 35px 0;
+    color: white;
+  }
+
+  .game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2%;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    border-radius: 10px;
+    background-color: white;
+    width: 90%;
+  }
+
+  .round-introduction {
+    font-family: "Patrick Hand", cursive;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 90%;
+  }
+
+  /*****************************
+  *   Play.html svg styling    *
+  *******************************/
+  .answer-container {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    min-height: 300px;
+    width: 100%;
+  }
+  .answer-container svg {
+    width: 100%;
+  }
+
+  #timer-text {
+    top: 0;
+    left: 8px;
+    font-size: 25px;
+    display: flex;
+    justify-content: center;
+    padding-top: 2%;
+    font-family: "Patrick Hand", cursive;
+  }
+  #timer-text #timer {
+    padding-left: 5px;
+  }
+
+  .game-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 2%;
+  }
+
+  .svg-column {
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: column;
+    width: 90%;
+    margin-bottom: 5%;
+    border-color: #901A1E;
+    border-radius: 2px;
+    border-style: solid solid solid solid;
+  }
+
+  /*********************************
+  *   Play.html timer styling     *
+  *********************************/
+  .flash {
+    animation-name: flash;
+    animation-duration: 0.2s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-play-state: running;
+  }
+
+  @keyframes flash {
+    from {
+      color: red;
+    }
+    to {
+      color: black;
+    }
+  }
+  /***********************************
+  *   Play.html chat+svg container  *
+  ***********************************/
+  .surround {
+    width: 100%;
+  }
+
+  /*********************************
+  *   Play.html chat styling      *
+  *********************************/
+  #chat {
+    height: 250px;
+    scroll-behavior: smooth;
+    background: #ebeded;
+    border-radius: 5px;
+    padding: 15px;
+    overflow: auto;
+  }
+
+  #chat::-webkit-scrollbar {
+    width: 1em;
+  }
+
+  #chat::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  }
+
+  #chat::-webkit-scrollbar-thumb {
+    background-color: darkgrey;
+    outline: 1px solid slategrey;
+    border-radius: 10px;
+  }
+
+  .chat-message {
+    display: flex;
+  }
+
+  .chat-message b {
+    padding: 0 10px 0 0;
+  }
+
+  #chat-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    font-family: "Patrick Hand", cursive;
+    width: 100%;
+    align-items: center;
+    margin-bottom: 5%;
+  }
+
+  .chat-title {
+    justify-content: center;
+    display: flex;
+    font-size: 20px;
+    width: 100%;
+  }
+
+  .chat, .message {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    font-size: 20px;
+  }
+  .chat #chat, .message #chat {
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    margin-bottom: 2%;
+    width: 70%;
+  }
+  .chat #message, .message #message {
+    font-size: 20px;
+    max-width: 70%;
+  }
+
+  .send {
+    width: 100%;
+    font-size: 20px;
+    border: none;
+    justify-content: center;
+    display: flex;
+  }
+  .send #send {
+    width: 70%;
+    height: 50px;
+    background-color: #901A1E;
+    font-size: 20px;
+    border-color: transparent;
+  }
+  .send #send:hover {
+    background-color: #5f861e;
+  }
+
+  /*********************************
+  *   Play.html button styling    *
+  *********************************/
+  .mobile-column {
+    display: initial;
+    justify-content: center;
+    flex-direction: row;
+  }
+
+  .choice-button-holder {
+    justify-content: center;
+    display: flex;
+    width: 100%;
+  }
+
+  .choice-button {
+    width: 235px;
+    height: 70px;
+    font-size: 18px;
+    border-radius: 50px;
+    color: black;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    font-family: "Annie Use Your Telescope", serif;
+    background-color: transparent;
+    border: 2px solid #901A1E;
+    margin: 5px 5px 10% 5px;
+  }
+  .choice-button:hover {
+    background-color: #5f861e;
+    color: white;
+    border-color: transparent;
+  }
+  .choice-button:active {
+    background-color: #5f861e;
+    color: white;
+  }
+  .choice-button:focus {
+    border-color: #5f861e;
+    background-color: #5f861e;
+    color: white;
+  }
+  .choice-button img {
+    width: 50px;
+    height: 50px;
+    align-self: center;
+  }
+
+  /*************************************
+  *   Intro1.html.html table styling   *
+  **************************************/
+  .intro-title {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    background-color: transparent;
+    width: 100%;
+    font-family: "Patrick Hand", cursive;
+    height: 100vh;
+  }
+  .intro-title .bad {
+    justify-content: center;
+    font-weight: bold;
+    font-size: 50px;
+    text-align: center;
+    letter-spacing: 20px;
+    color: darkred;
+    text-transform: uppercase;
+    margin: 0;
+    padding: 0;
+  }
+  .intro-title .influence {
+    font-weight: bold;
+    font-size: 50px;
+    text-align: center;
+    color: #901A1E;
+    text-transform: uppercase;
+    margin: -25px;
+    padding: 0;
+    letter-spacing: 7px;
+  }
+  .intro-title * {
+    box-sizing: border-box;
+  }
+  .intro-title *::before, .intro-title *::after {
+    box-sizing: border-box;
+  }
+  .intro-title button {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    outline: none;
+    border: 0;
+    vertical-align: middle;
+    text-decoration: none;
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    z-index: 2;
+  }
+  .intro-title button.start-game {
+    height: auto;
+    width: 40%;
+    margin-top: 30px;
+    font-size: 30px;
+  }
+  .intro-title button.start-game .circle {
+    display: none;
+  }
+  .intro-title button.start-game .circle .icon {
+    display: none;
+  }
+  .intro-title button.start-game .circle .icon.arrow {
+    display: none;
+  }
+  .intro-title button.start-game .button-text {
+    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+    position: absolute;
+    top: -5px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    font-weight: 700;
+    line-height: 1.6;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background-color: #901A1E;
+    color: white;
+    border-radius: 20px;
+    height: 50px;
+  }
+  .intro-title button.start-game .button-text {
+    color: #fff;
+  }
+
+  /*************************************
+  *   Intro2.html table styling   *
+  **************************************/
+  .intro-2 .svg-column h2 {
+    font-size: 30px;
+  }
+  .intro-2 * {
+    box-sizing: border-box;
+  }
+  .intro-2 *::before, .intro-2 *::after {
+    box-sizing: border-box;
+  }
+  .intro-2 button {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    outline: none;
+    border: 0;
+    vertical-align: middle;
+    text-decoration: none;
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    z-index: 2;
+  }
+  .intro-2 button.start-game {
+    height: auto;
+    width: 60%;
+    margin-top: 30px;
+    font-size: 30px;
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+    align-self: center;
+  }
+  .intro-2 button.start-game .circle {
+    display: none;
+  }
+  .intro-2 button.start-game .circle .icon {
+    display: none;
+  }
+  .intro-2 button.start-game .circle .icon.arrow {
+    display: none;
+  }
+  .intro-2 button.start-game .button-text {
+    position: absolute;
+    top: -5px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    font-weight: 700;
+    line-height: 1.6;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background-color: #901A1E;
+    color: white;
+    border-radius: 20px;
+    height: 50px;
+  }
+  .intro-2 button.start-game .button-text:hover {
+    background-color: #5f861e;
+  }
+}
+@media (min-width: 1024px) {
+  /*******************************
+  *  Hide otree default message  *
+  ********************************/
+  .otree-timer {
+    display: none;
+  }
+
+  .otree-title {
+    display: none;
+  }
+
+  /******************************
+  *   Play.html info styling    *
+  *******************************/
+  .round-info {
+    font-size: 25px;
+    width: 100%;
+    display: flex;
+    justify-content: left;
+    flex-direction: column;
+  }
+  .round-info h3 {
+    font-weight: bold;
+  }
+
+  .round-title {
+    font-family: "Patrick Hand", cursive;
+    font-size: 30px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    width: 100%;
+    color: white;
+  }
+
+  .game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2%;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    border-radius: 10px;
+    width: 90%;
+    background-color: white;
+    padding-top: 40px;
+  }
+
+  .round-introduction {
+    font-family: "Patrick Hand", cursive;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 70%;
+  }
+
+  /*****************************
+  *   Play.html svg styling    *
+  *******************************/
+  .answer-container {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    min-height: 300px;
+    width: 100%;
+  }
+
+  #timer-text {
+    top: 0;
+    left: 8px;
+    font-size: 25px;
+    display: flex;
+    justify-content: center;
+    padding-top: 2%;
+    font-family: "Patrick Hand", cursive;
+  }
+  #timer-text #timer {
+    padding-left: 5px;
+  }
+
+  .game-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    width: 100%;
+    margin-top: 2%;
+  }
+
+  .svg-column {
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: column;
+    width: 50%;
+    margin-left: 5%;
+    padding-right: 20px;
+    margin-bottom: 5%;
+    border-color: #901A1E;
+    border-radius: 2px;
+    border-style: solid solid solid solid;
+  }
+
+  /*********************************
+  *   Play.html timer styling     *
+  *********************************/
+  .flash {
+    animation-name: flash;
+    animation-duration: 0.2s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-play-state: running;
+  }
+
+  @keyframes flash {
+    from {
+      color: red;
+    }
+    to {
+      color: black;
+    }
+  }
+  /***********************************
+  *   Play.html chat+svg container  *
+  ***********************************/
+  .surround {
+    width: 100%;
+  }
+
+  /*********************************
+  *   Play.html chat styling      *
+  *********************************/
+  #chat {
+    height: 250px;
+    scroll-behavior: smooth;
+    background: #ebeded;
+    border-radius: 5px;
+    padding: 15px;
+    overflow: auto;
+  }
+
+  #chat::-webkit-scrollbar {
+    width: 1em;
+  }
+
+  #chat::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  }
+
+  #chat::-webkit-scrollbar-thumb {
+    background-color: darkgrey;
+    outline: 1px solid slategrey;
+    border-radius: 10px;
+  }
+
+  .chat-message {
+    display: flex;
+  }
+
+  .chat-message b {
+    padding: 0 10px 0 0;
+  }
+
+  #chat-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    font-family: "Patrick Hand", cursive;
+    width: 50%;
+    align-items: center;
+    margin-bottom: 5%;
+  }
+
+  .chat-title {
+    justify-content: center;
+    display: flex;
+    font-size: 50px;
+    width: 100%;
+  }
+
+  .chat, .message {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    font-size: 20px;
+  }
+  .chat #chat, .message #chat {
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    margin-bottom: 2%;
+    width: 80%;
+  }
+  .chat #message, .message #message {
+    font-size: 20px;
+    max-width: 50%;
+  }
+
+  .send {
+    width: 100%;
+    font-size: 20px;
+    border: none;
+    justify-content: center;
+    display: flex;
+  }
+  .send #send {
+    width: 50%;
+    height: 50px;
+    background-color: #901A1E;
+    font-size: 20px;
+    border-color: transparent;
+  }
+  .send #send:hover {
+    background-color: #5f861e;
+  }
+
+  /*********************************
+  *   Play.html button styling    *
+  *********************************/
+  .choice-button-holder {
+    justify-content: center;
+    display: flex;
+  }
+
+  .choice-button {
+    width: 235px;
+    height: 70px;
+    font-size: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 50px;
+    color: black;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    font-family: "Annie Use Your Telescope", serif;
+    background-color: transparent;
+    border: 2px solid #901A1E;
+    margin-bottom: 10%;
+    margin-left: 5%;
+  }
+  .choice-button:hover {
+    background-color: #5f861e;
+    color: white;
+    border-color: transparent;
+  }
+  .choice-button:active {
+    background-color: #5f861e;
+    color: white;
+  }
+  .choice-button:focus {
+    border-color: #5f861e;
+    background-color: #5f861e;
+    color: white;
+  }
+  .choice-button img {
+    width: 55px;
+    height: 55px;
+  }
+
+  /*********************************
+  *   Results.html table styling   *
+  *********************************/
+  .results-title {
+    font-size: 35px;
+    display: flex;
+    justify-content: center;
+    color: #901A1E;
+    padding-top: 20px;
+    font-weight: bold;
+  }
+
+  .results-container {
+    margin-top: 4%;
+  }
+  .results-container .report-info {
+    padding-bottom: 30px;
+  }
+
+  .game-results-table {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    border-radius: 10px;
+    background-color: white;
+    border-collapse: collapse;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    color: #901A1E;
+    font-size: 20px;
+  }
+
+  .d3-results-row {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-evenly;
+    font-size: 14px;
+    font-family: "Roboto Slab", serif;
+  }
+  .d3-results-row #d3consensus {
+    display: flex;
+    justify-content: center;
+  }
+  .d3-results-row #d3playback {
+    display: none;
+  }
+
+  .game-results {
+    margin-top: 2%;
+    padding: 10px 50px 10px 50px;
+    background-color: white !important;
+    border-radius: 10px;
+  }
+
+  /*************************************
+  *   Intro1.html table styling   *
+  **************************************/
+  .intro-title .bad {
+    font-size: 110px;
+  }
+  .intro-title .influence {
+    font-size: 80px;
+    margin: -55px;
+  }
+  .intro-title button.start-game {
+    max-width: 40%;
+    margin-top: 40px;
+    font-size: 35px;
+  }
+
+  /*************************************
+  *   Intro2.html table styling   *
+  **************************************/
+  .intro-2 .round-title {
+    font-size: 40px;
+  }
+  .intro-2 .game-introduction {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 70%;
+  }
+  .intro-2 .round-info {
+    text-align: left;
+  }
+  .intro-2 .text-column {
+    display: flex;
+    flex-direction: column;
+    width: 60%;
+    text-align: left;
+    padding-right: 10px;
+  }
+  .intro-2 .full-text-column {
+    width: 87%;
+  }
+  .intro-2 .svg-column {
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: column;
+    width: 30%;
+    margin-right: 2%;
+    padding-right: 0;
+    margin-bottom: 18%;
+    border-color: #901A1E;
+    border-radius: 2px;
+    border-style: solid solid solid solid;
+  }
+  .intro-2 .svg-column h2 {
+    font-size: 25px;
+    padding: 5px;
+  }
+  .intro-2 .game-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    width: 100%;
+    margin-top: 0;
+  }
+  .intro-2 button.start-game {
+    display: flex;
+    justify-content: flex-start;
+    align-self: flex-start;
+  }
+  .intro-2 button .button-text {
+    position: absolute;
+    top: -5px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    font-weight: 700;
+    line-height: 1.6;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background-color: #901A1E;
+    color: white;
+    border-radius: 20px;
+    height: 50px;
+  }
+  .intro-2 button .button-text:hover {
+    background-color: #5f861e;
+  }
+  .intro-2 button .button-text {
+    color: #fff;
+  }
+}
+@media (min-width: 1150px) {
+  /*************************************
+  *   Intro1.html table styling   *
+  **************************************/
+  .intro-title button.start-game {
+    max-width: 35%;
+    margin-top: 40px;
+    font-size: 35px;
+  }
+}
+@media (min-width: 1250px) {
+  /*************************************
+  *   Intro1.html table styling   *
+  **************************************/
+  .intro-title button.start-game {
+    max-width: 33%;
+    margin-top: 40px;
+    font-size: 35px;
+  }
+}
+@media (min-width: 1350px) {
+  /*************************************
+  *   Intro1.html table styling   *
+  **************************************/
+  .intro-title button.start-game {
+    max-width: 30%;
+    margin-top: 40px;
+    font-size: 35px;
+  }
+}
+@media (min-width: 1550px) {
+  /*************************************
+  *   Intro1.html table styling   *
+  **************************************/
+  .intro-title button.start-game {
+    max-width: 26%;
+    margin-top: 40px;
+    font-size: 35px;
+  }
+}
+@media (min-width: 1700px) {
+  /*************************************
+  *   Intro1.html table styling   *
+  **************************************/
+  .intro-title button.start-game {
+    max-width: 23%;
+    margin-top: 40px;
+    font-size: 35px;
+  }
+}
+
+/*# sourceMappingURL=styles.css.map */
