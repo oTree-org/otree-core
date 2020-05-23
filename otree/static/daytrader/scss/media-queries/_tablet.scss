@@ -46,7 +46,7 @@
 
     .daytrader-intro-container-first {
       flex-direction: row;
-      margin: 0 0 25px 0;
+      margin: 5px 0 0 0;
       width: 100%;
     }
 
@@ -80,7 +80,22 @@
   /*******************
   *   intro2.html    *
   ********************/
+ .daytrader-sack {
+      height: 230px;
+      padding-bottom: 20px;
+    }
 
+    .daytrader-intro-container-first {
+      display:flex;
+      justify-content: center;
+      flex-direction: row;
+      width: 100%;
+
+      .daytrader-intro-first {
+        align-self: center;
+        text-align: center;
+      }
+    }
 
   /****************************
     *  All day trader pages   *
@@ -202,15 +217,9 @@
       justify-content: center;
 
       .daytrader-next-btn {
-        font-size: 30px;
-        background: $ku-dark-blue;
-        font-family: "Patrick Hand", sans-serif;
-        width: 344px;
-        height: 55px;
-        color: white;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        font-size: 25px;
+        width: 334px;
+        height: 45px;
       }
 
     }

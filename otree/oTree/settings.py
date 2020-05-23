@@ -105,6 +105,10 @@ EXTENSION_APPS = [
     'daytrader'
 ]
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "../otree/static/main_platform/otree")
+]
+
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [

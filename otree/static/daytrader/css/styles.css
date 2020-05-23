@@ -61,6 +61,8 @@
     border: 1px solid #888;
     width: 80%;
     border-radius: 10px;
+    display: flex;
+    justify-content: center;
   }
   .daytrader-game-container .daytrader-future, .daytrader-game-container .short-modal-link, .daytrader-game-container .long-modal-link, .daytrader-game-container .info-cascade-link {
     color: #41739D;
@@ -175,6 +177,28 @@
     flex-direction: column;
     width: 100%;
   }
+  .daytrader-game-container .daytrader-next-btn-container {
+    display: flex;
+    justify-content: center;
+  }
+  .daytrader-game-container .daytrader-next-btn-container .daytrader-next-btn {
+    font-size: 18px;
+    background: #41739D;
+    font-family: "Patrick Hand", sans-serif;
+    width: 166px;
+    height: 40px;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    border: 2px solid #41739D;
+  }
+  .daytrader-game-container .daytrader-next-btn-container .daytrader-next-btn:hover {
+    cursor: pointer;
+    background-color: #5f861e;
+    border-color: transparent;
+  }
   .daytrader-game-container .company-face {
     width: 28px;
     height: 28px;
@@ -237,28 +261,6 @@
   .daytrader-game-container .field-choice_of_number_of_shares {
     display: flex;
     justify-content: center;
-  }
-  .daytrader-game-container .daytrader-next-btn-container {
-    display: flex;
-    justify-content: center;
-  }
-  .daytrader-game-container .daytrader-next-btn-container .daytrader-next-btn {
-    font-size: 18px;
-    background: #41739D;
-    font-family: "Patrick Hand", sans-serif;
-    width: 166px;
-    height: 40px;
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 10px;
-    border: 2px solid #41739D;
-  }
-  .daytrader-game-container .daytrader-next-btn-container .daytrader-next-btn:hover {
-    cursor: pointer;
-    background-color: #5f861e;
-    border-color: transparent;
   }
   .daytrader-game-container .reveal-face {
     width: 20px;
@@ -568,7 +570,7 @@
     font-weight: bold;
   }
   .daytrader-game-container .daytrader-intro-title {
-    font-size: 60px;
+    font-size: 45px;
     padding: 20px 0 0 0;
     letter-spacing: 6px;
   }
@@ -969,7 +971,7 @@
   }
   .daytrader-game-container .daytrader-intro-container-first {
     flex-direction: row;
-    margin: 0 0 25px 0;
+    margin: 5px 0 0 0;
     width: 100%;
   }
   .daytrader-game-container .daytrader-intro-container-second {
@@ -989,6 +991,20 @@
     font-size: 80px;
     padding: 20px 0 0 0;
     letter-spacing: 8px;
+  }
+  .daytrader-game-container .daytrader-sack {
+    height: 230px;
+    padding-bottom: 20px;
+  }
+  .daytrader-game-container .daytrader-intro-container-first {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    width: 100%;
+  }
+  .daytrader-game-container .daytrader-intro-container-first .daytrader-intro-first {
+    align-self: center;
+    text-align: center;
   }
   .daytrader-game-container .daytrader-round-title {
     font-size: 40px;
@@ -1077,15 +1093,9 @@
     justify-content: center;
   }
   .daytrader-game-container .daytrader-next-btn-container .daytrader-next-btn {
-    font-size: 30px;
-    background: #41739D;
-    font-family: "Patrick Hand", sans-serif;
-    width: 344px;
-    height: 55px;
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    font-size: 25px;
+    width: 334px;
+    height: 45px;
   }
   .daytrader-game-container .reveal-face {
     width: 40px;
@@ -1411,16 +1421,18 @@
     width: 280px;
   }
   .daytrader-game-container .daytrader-sack {
-    height: 320px;
-    flex: 3;
-    padding-right: 20px;
+    height: 300px;
+    padding-bottom: 20px;
   }
   .daytrader-game-container .daytrader-intro-container-first {
-    margin: 0;
+    display: flex;
+    justify-content: center;
     flex-direction: row;
   }
   .daytrader-game-container .daytrader-intro-container-first .daytrader-intro-first {
     align-self: center;
+    width: 40%;
+    text-align: center;
   }
   .daytrader-game-container .daytrader-intro-container-second {
     display: flex;
@@ -1449,6 +1461,11 @@
   }
   .daytrader-game-container .daytrader-round-info {
     font-size: 25px;
+    width: 70%;
+  }
+  .daytrader-game-container .daytrader-next-btn-container {
+    display: flex;
+    justify-content: center;
   }
   .daytrader-game-container .company-face {
     width: 50px;
@@ -1524,15 +1541,6 @@
   .daytrader-game-container .field-choice_of_number_of_shares {
     display: flex;
     justify-content: center;
-  }
-  .daytrader-game-container .daytrader-next-btn-container {
-    display: flex;
-    justify-content: center;
-  }
-  .daytrader-game-container .daytrader-next-btn-container .daytrader-next-btn {
-    font-size: 25px;
-    width: 344px;
-    height: 55px;
   }
   .daytrader-game-container .reveal-face {
     width: 40px;

@@ -29,6 +29,12 @@ class Intro4(Page):
         return self.round_number == 1
 
 
+class Intro4b(Page):
+    timeout_seconds = Constants.timeouts
+    def is_displayed(self):
+        return self.round_number == 1
+
+
 class Intro5(Page):
     timeout_seconds = Constants.timeouts
     def is_displayed(self):
@@ -124,6 +130,7 @@ page_sequence = [
     Intro2,
     Intro3,
     Intro4,
+    Intro4b,
     Intro5,
     Intro6,
     MyWaitPage,
