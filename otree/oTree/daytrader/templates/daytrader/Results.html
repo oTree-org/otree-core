@@ -36,25 +36,130 @@
                 <th class="daytrader-table-header"> lukkepris</th>
                 <th class="daytrader-table-header border-corner-right"> tjent</th>
             </tr>
-            {% for firma, tilstand, choice, deal, price, closing, tjent in data %}
-                <tr class="daytrader-table-row">
-                    <td class="daytrader-table-data"> {{ firma }}    </td>
-                    <td class="daytrader-table-data">
-                        <div>
-                            {% for foo in tilstand %}
-                                {% if foo is True %}
-                                    <img src="{% static 'daytrader/media/' %}" alt="">
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                    </td>
-                    <td class="daytrader-table-data"> {% if choice == True %} + {% else %} - {% endif %}
-                        {{ deal }}     </td>
-                    <td class="daytrader-table-data"> {{ price }}    </td>
-                    <td class="daytrader-table-data"> {{ closing }}  </td>
-                    <td class="daytrader-table-data"><strong> {{ tjent }} </strong></td>
-                </tr>
-            {% endfor %}
+            {#            {% for firma, tilstand, choice, deal, price, closing, tjent in data %}#}
+            {#                <tr class="daytrader-table-row daytrader-table-result-row">#}
+            {#                    <td class="daytrader-table-data"> {{ firma }}    </td>#}
+            {#                    <td class="daytrader-table-data" id="state-data">#}
+            {##}
+            {#                    </td>#}
+            {#                    <td class="daytrader-table-data"> {% if choice == True %} + {% else %} - {% endif %}#}
+            {#                        {{ deal }}     </td>#}
+            {#                    <td class="daytrader-table-data"> {{ price }}    </td>#}
+            {#                    <td class="daytrader-table-data"> {{ closing }}  </td>#}
+            {#                    <td class="daytrader-table-data"><strong> {{ tjent }} </strong></td>#}
+            {#                </tr>#}
+            {##}
+            {#            {% endfor %}#}
+
+
+            <script>
+                let stateData = document.getElementById("state-data");
+                let table = document.querySelector(".table");
+
+                function Currency(price) {
+                    return price;
+                }
+
+                let company = {{ firma|safe }};
+                let state = {{ tilstand|safe }};
+                let choices = {{ choices|safe }};
+                let price = {{ price|safe }};
+                let closePrice = {{ closing }};
+                let earned = {{ tjent }};
+
+                for (let i = 0; i < company.length; i++) {
+                    let resultTableRow = document.createElement("tr");
+                    resultTableRow.className = "daytrader-table-row";
+                    let tableDataCompany = document.createElement("td");
+                    tableDataCompany.className = "daytrader-table-data";
+                    tableDataCompany.textContent = company[i];
+                    resultTableRow.appendChild(tableDataCompany);
+
+                    let companyState = JSON.parse(state[i]);
+                    let tableDataState = document.createElement("td");
+
+                    for (let j = 0; j < companyState.length; j++) {
+                        let happyFace = document.createElement("img");
+                        happyFace.src = "{% static 'daytrader/media/happy_face_daytrader.png' %}"
+                        happyFace.className = "reveal-face"
+                        let sadFace = document.createElement("img");
+                        sadFace.src = "{% static 'daytrader/media/sad_face_daytrader.png' %}"
+                        sadFace.className = "reveal-face"
+                        tableDataState.className = "daytrader-table-data";
+                        if (companyState[j] === true) {
+                            tableDataState.appendChild(happyFace);
+                        }
+                        if (companyState[j] === false) {
+                            tableDataState.appendChild(sadFace);
+                        }
+                    }
+
+                    resultTableRow.appendChild(tableDataState);
+                    table.appendChild(resultTableRow);
+
+
+                    let tableDataChoice = document.createElement("td");
+                    tableDataChoice.className = "daytrader-table-data";
+                    if(choices[i] === true) {
+                        tableDataChoice.textContent = "+" + choices[i];
+                    } else if(choices[i] === false) {
+                        tableDataChoice.textContent = "-" + choices[i];
+                    } else {
+                        tableDataChoice.textContent = choices[i];
+                    }
+                    resultTableRow.appendChild(tableDataChoice);
+                    table.appendChild(resultTableRow);
+
+                    let tableDataBuyPrice = document.createElement("td");
+                    tableDataBuyPrice.className = "daytrader-table-data";
+                    tableDataBuyPrice.textContent = price[i] + "€";
+                    resultTableRow.appendChild(tableDataBuyPrice);
+                    table.appendChild(resultTableRow);
+
+                    let tableDataClosePrice = document.createElement("td");
+                    tableDataClosePrice.className = "daytrader-table-data";
+                    tableDataClosePrice.textContent = closePrice[i] + "€";
+                    resultTableRow.appendChild(tableDataClosePrice);
+                    table.appendChild(resultTableRow);
+
+                    let tableDataEarned = document.createElement("td");
+                    tableDataEarned.className = "daytrader-table-data";
+                    tableDataEarned.textContent = earned[i] + "€";
+                    resultTableRow.appendChild(tableDataEarned);
+                    table.appendChild(resultTableRow);
+                }
+
+
+                {#let data = {{ tilstand|safe }};#}
+                {##}
+                {#for (let iterator = 0; iterator < stateData.length; iterator++) {#}
+                {#    if (iterator % 3 === 0) {#}
+                {##}
+                {#        for (let i = 0; i < data.length; i++) {#}
+                {#            let element = JSON.parse(data[i]);#}
+                {##}
+                {#            element.forEach(item => {#}
+                {#                if (item === true) {#}
+                {#                    console.log(item);#}
+                {#                    let red = document.createElement("img");#}
+                {#                    red.src = "{% static "daytrader/media/red_peep.png" %}";#}
+                {#                    let divElement = document.createElement("div");#}
+                {#                    stateData.appendChild(divElement);#}
+                {#                    divElement.appendChild(red);#}
+                {#                } else {#}
+                {#                    console.log(item)#}
+                {#                    let blue = document.createElement("img");#}
+                {#                    blue.src = "{% static "daytrader/media/blue_peep.png" %}";#}
+                {#                    let divElement = document.createElement("div");#}
+                {#                    stateData.appendChild(divElement);#}
+                {#                    divElement.appendChild(blue);#}
+                {#                }#}
+                {#            });#}
+                {#        }#}
+                {#    }#}
+                {##}
+
+            </script>
         </table>
 
         <p class="daytrader-round-info">

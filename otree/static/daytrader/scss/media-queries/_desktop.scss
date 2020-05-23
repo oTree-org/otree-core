@@ -15,6 +15,11 @@
   *   Play.html info styling    *
   *******************************/
 
+  .pdf-embed {
+    #outerContainer {
+      display: none;
+    }
+  }
 
   .daytrader-game-container {
     display: flex;
@@ -102,7 +107,6 @@
     }
 
 
-
     .future-modal-content, .short-modal-content, .long-modal-content, .info-cascade-modal-content {
       width: 50%;
     }
@@ -120,7 +124,6 @@
     #continue {
       display: none;
     }
-
 
 
     .daytrader-round-title {
@@ -325,6 +328,12 @@
           }
         }
       }
+    }
+
+    .daytrader-admin-company-list {
+      font-size: 22px;
+      display: flex;
+      align-items: center;
     }
 
   }
@@ -573,7 +582,6 @@
     font-size: 35px;
     display: flex;
     justify-content: center;
-    color: $ku-red;
     padding-top: 20px;
     font-weight: bold;
 
@@ -583,6 +591,8 @@
 
     .report-info {
       padding-bottom: 30px;
+
+
     }
   }
 
@@ -595,7 +605,6 @@
     border-collapse: collapse;
     overflow: hidden;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    color: $ku-red;
     font-size: 20px;
 
   }
@@ -624,5 +633,24 @@
     padding: 10px 50px 10px 50px;
     background-color: white !important;
     border-radius: 10px;
+  }
+
+  .report-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #41739D;
+
+    .daytrader-admin-company-list {
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+    }
+
+    // Styling af det viste ansigt i teksten
+    .company-face {
+      width: 50px;
+      height: 50px;
+    }
   }
 }
