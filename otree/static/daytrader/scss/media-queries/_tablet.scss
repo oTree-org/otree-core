@@ -81,7 +81,7 @@
   *   intro2.html    *
   ********************/
  .daytrader-sack {
-      height: 250px;
+      height: 230px;
       padding-bottom: 20px;
     }
 
@@ -89,11 +89,11 @@
       display:flex;
       justify-content: center;
       flex-direction: row;
+      width: 100%;
 
       .daytrader-intro-first {
         align-self: center;
-        width: 40%;
-        text-align: left;
+        text-align: center;
       }
     }
 
@@ -217,15 +217,9 @@
       justify-content: center;
 
       .daytrader-next-btn {
-        font-size: 30px;
-        background: $ku-dark-blue;
-        font-family: "Patrick Hand", sans-serif;
-        width: 344px;
-        height: 55px;
-        color: white;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        font-size: 25px;
+        width: 334px;
+        height: 45px;
       }
 
     }

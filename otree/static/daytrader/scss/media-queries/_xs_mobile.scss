@@ -203,8 +203,6 @@
       }
     }
 
-
-
     .round-introduction {
       font-family: "Patrick Hand", cursive;
       display: flex;
@@ -212,6 +210,36 @@
       flex-direction: column;
       width: 100%;
     }
+
+    .daytrader-next-btn-container {
+
+      display: flex;
+      justify-content: center;
+
+      .daytrader-next-btn {
+        font-size: 18px;
+        background: $ku-dark-blue;
+        font-family: "Patrick Hand", sans-serif;
+        width: 166px;
+        height: 40px;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 10px;
+        border: 2px solid $ku-dark-blue;
+
+             &:hover {
+          cursor: pointer;
+          background-color: $ku-dark-green;
+          border-color: transparent;
+        }
+      }
+    }
+
+
+
+
 
     // Styling af det viste ansigt i teksten
     .company-face {
@@ -299,31 +327,7 @@
       justify-content: center;
     }
 
-    .daytrader-next-btn-container {
 
-      display: flex;
-      justify-content: center;
-
-      .daytrader-next-btn {
-        font-size: 18px;
-        background: $ku-dark-blue;
-        font-family: "Patrick Hand", sans-serif;
-        width: 166px;
-        height: 40px;
-        color: white;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        border-radius: 10px;
-        border: 2px solid $ku-dark-blue;
-
-             &:hover {
-          cursor: pointer;
-          background-color: $ku-dark-green;
-          border-color: transparent;
-        }
-      }
-    }
 
     .reveal-face {
       width: 20px;

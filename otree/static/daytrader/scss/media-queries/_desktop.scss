@@ -77,8 +77,8 @@
 
       .daytrader-intro-first {
         align-self: center;
-        width: 30%;
-        text-align: left;
+        width: 40%;
+        text-align: center;
       }
     }
 
@@ -133,6 +133,14 @@
     .daytrader-round-info {
       font-size: 25px;
       width: 70%;
+    }
+
+    .daytrader-next-btn-container {
+        display: flex;
+        justify-content: center;
+
+
+
     }
 
     // Styling af det viste ansigt i teksten
@@ -231,18 +239,7 @@
       justify-content: center;
     }
 
-    .daytrader-next-btn-container {
 
-      display: flex;
-      justify-content: center;
-
-
-     .daytrader-next-btn {
-            font-size: 25px;
-            width: 344px;
-            height: 55px;
-      }
-    }
 
     .reveal-face {
        width: 40px;
