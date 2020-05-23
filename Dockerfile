@@ -7,14 +7,14 @@ ADD ./ /opt/otree
 
 RUN apt-get update -y && apt-get install -y gcc libpq-dev
 
-RUN pip install --no-cache-dir dj_database_url 
+RUN pip install --no-cache-dir -r /opt/otree/requirements.txt
  
 RUN pip install --no-cache-dir -e /opt/otree/.[server] \
     && mkdir -p /opt/init \
     && chmod +x /opt/otree/otree/oTree/server_entrypoint.sh \
     && chmod +x /opt/otree/otree/oTree/worker_entrypoint.sh 
 
-RUN apt-get remove -y gcc libpq-dev
+RUN apt-get autoremove -y gcc
 
 WORKDIR /opt/otree
 VOLUME /opt/init

@@ -21,6 +21,21 @@ TEMPLATES = [
         },
     },
 ]
+
+
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
+sentry_sdk.init(
+            dsn="https://bc756496e8a64eefa6cef54d7899ff0e@o397173.ingest.sentry.io/5251429",
+                integrations=[DjangoIntegration()],
+
+                    # If you wish to associate users to errors (assuming you are using
+                        # django.contrib.auth) you may enable sending PII data.
+                            send_default_pii=True
+                            )
+
+
 # if you set a property in SESSION_CONFIG_DEFAULTS, it will be inherited by all configs
 # in SESSION_CONFIGS, except those that explicitly override it.
 # the session config can be accessed from methods in your apps as self.session.config,
