@@ -50,6 +50,8 @@
         border: 1px solid #888;
         width: 80%;
         border-radius: 10px;
+        display: flex;
+        justify-content: center;
       }
     }
 
@@ -88,7 +90,7 @@
     }
 
     .daytrader-intro-frontpage-img {
-      background: url("../../../../static/main_platform/otree/media/front-page-sackbackground.svg") no-repeat;
+      background: url("../../../main_platform/otree/media/front-page-sackbackground.svg") no-repeat;
       background-size: cover;
       width: 300px;
       height: 370px;

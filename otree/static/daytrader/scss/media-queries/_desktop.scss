@@ -66,19 +66,24 @@
   *   intro2.html    *
   ********************/
     .daytrader-sack {
-      height: 320px;
-      flex: 3;
+      height: 300px;
       padding-bottom: 20px;
     }
 
     .daytrader-intro-container-first {
-      margin: 0;
+      display:flex;
+      justify-content: center;
       flex-direction: row;
 
       .daytrader-intro-first {
         align-self: center;
+        width: 30%;
+        text-align: left;
       }
     }
+
+
+
 
   /*******************
   *   intro3.html    *
@@ -127,7 +132,7 @@
 
     .daytrader-round-info {
       font-size: 25px;
-
+      width: 70%;
     }
 
     // Styling af det viste ansigt i teksten

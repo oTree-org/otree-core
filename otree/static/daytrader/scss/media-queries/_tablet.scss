@@ -46,7 +46,7 @@
 
     .daytrader-intro-container-first {
       flex-direction: row;
-      margin: 0 0 25px 0;
+      margin: 5px 0 0 0;
       width: 100%;
     }
 
@@ -80,7 +80,22 @@
   /*******************
   *   intro2.html    *
   ********************/
+ .daytrader-sack {
+      height: 250px;
+      padding-bottom: 20px;
+    }
 
+    .daytrader-intro-container-first {
+      display:flex;
+      justify-content: center;
+      flex-direction: row;
+
+      .daytrader-intro-first {
+        align-self: center;
+        width: 40%;
+        text-align: left;
+      }
+    }
 
   /****************************
     *  All day trader pages   *

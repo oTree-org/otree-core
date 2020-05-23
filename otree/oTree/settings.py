@@ -89,8 +89,12 @@ EXTENSION_APPS = [
     'daytrader'
 ]
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "../otree/static/main_platform/otree")
+]
+
 STATIC_URL = '/static/'
 
 MEDIA_URL = 'media/'
 
-MEDIA_ROOT = 'bad_influence/static/main_platform'
+MEDIA_ROOT = 'otree/static/main_platform/otree/media/'
