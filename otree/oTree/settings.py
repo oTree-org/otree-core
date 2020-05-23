@@ -1,6 +1,7 @@
 from os import environ
 
 import os
+import dj_database_url
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -91,6 +92,11 @@ EXTENSION_APPS = [
 
 STATIC_URL = '/static/'
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "../otree/static/main_platform/otree")
+]
+
 MEDIA_URL = 'media/'
 
 MEDIA_ROOT = 'bad_influence/static/main_platform'
+DATABASES = {'default': dj_database_url.config(default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3'))}

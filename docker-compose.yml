@@ -1,0 +1,58 @@
+version: '2'
+
+services:
+  database:
+    image: postgres:9.5
+    environment:
+      POSTGRES_DATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_DB: db
+      POSTGRES_PASSWORD: my_postgres_password
+      POSTGRES_USER: otree_user
+    tmpfs:
+    - /run
+    - /tmp
+    read_only: true
+    volumes:
+    - database:/var/lib/postgresql/data
+
+  otree:
+    image: mbirkegaard/otree-core:${TAG}
+    environment:
+      AWS_ACCESS_KEY_ID: AKIAJ3TQDUCDZ72DGDCA
+      AWS_SECRET_ACCESS_KEY: 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
+      DATABASE_URL: postgres://otree_user:my_postgres_password@database/db
+      OTREE_ADMIN_PASSWORD: dip-calcine-headship-uncial-quinine-adjust
+      OTREE_AUTH_LEVEL: STUDY
+      OTREE_PRODUCTION: '1'
+      REDIS_URL: redis://redis:6379
+    labels:
+      io.rancher.container.pull_image: always
+      subdomain: ${SUBDOMAIN}
+    entrypoint: ./otree/oTree/server_entrypoint.sh
+    volumes:
+    - otree-resetdb:/opt/init
+    - static:/opt/otree/_static_root
+
+  worker:
+    extends:
+      service: otree
+    labels:
+      io.rancher.container.pull_image: always
+    entrypoint: ./otree/oTree/worker_entrypoint.sh
+
+  redis:
+    image: redis
+    command: "redis-server"
+    restart: always
+    read_only: true
+    networks:
+      - redis-net
+
+volumes:
+  database:
+  otree-resetdb:
+  static:
+
+networks:
+  db-net:
+  redis-net:

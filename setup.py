@@ -16,6 +16,7 @@ version = otree.__version__
 README = Path('README.rst').read_text('utf8')
 required = Path('requirements.txt').read_text().splitlines()
 required_mturk = Path('requirements_mturk.txt').read_text().splitlines()
+required_server = Path('requirements_server.txt').read_text().splitlines()
 
 if sys.argv[-1] == 'publish':
 
@@ -84,5 +85,5 @@ setup(
     ],
     entry_points={'console_scripts': ['otree=otree_startup:execute_from_command_line']},
     zip_safe=False,
-    extras_require={'mturk': required_mturk},
+    extras_require={'mturk': required_mturk, 'server': required_server},
 )
