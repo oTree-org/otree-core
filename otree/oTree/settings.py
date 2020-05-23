@@ -1,4 +1,4 @@
-from os import environ
+from os import environ, path
 
 import os
 
@@ -91,6 +91,10 @@ EXTENSION_APPS = [
 
 STATIC_URL = '/static/'
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "../otree/static/main_platform/otree")
+]
+
 MEDIA_URL = 'media/'
 
-MEDIA_ROOT = 'bad_influence/static/main_platform'
+MEDIA_ROOT = 'otree/static/main_platform'
