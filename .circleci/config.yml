@@ -22,7 +22,9 @@ jobs:
           IMAGE_NAME=$CIRCLE_PROJECT_REPONAME:$CIRCLE_SHA1
           docker login -u $DOCKER_USER -p $DOCKER_PASS
           docker build -t $DOCKER_USER/$IMAGE_NAME .
-          docker push $DOCKER_USER/$IMAGE_NAME
+          if [ "${CIRCLE_BRANCH}" == "master" ]; then
+            docker push $DOCKER_USER/$IMAGE_NAME
+          fi
       - slack/status:
           success_message: "Build :white_check_mark:\n*Author* $CIRCLE_USERNAME\n*Branch* $CIRCLE_BRANCH\n*Commit* <https://github.com/PrimeCodingSolutions/otree-core/commit/$CIRCLE_SHA1|$SHORT_GIT_HASH>\n>$COMMIT_MESSAGE"
           failure_message: "Build :x:\n*Author* $CIRCLE_USERNAME\n*Branch* $CIRCLE_BRANCH\n*Commit* <https://github.com/PrimeCodingSolutions/otree-core/commit/$CIRCLE_SHA1|$SHORT_GIT_HASH>\n>$COMMIT_MESSAGE"
