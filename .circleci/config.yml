@@ -16,7 +16,7 @@ jobs:
           echo "export COMMIT_MESSAGE=\"$(git log --format=%B -n 1 $CIRCLE_SHA1)\"" >> $BASH_ENV
           echo "export SHORT_GIT_HASH=\"$(echo $CIRCLE_SHA1 | cut -c -7)\"" >> $BASH_ENV
       - slack/notify:
-          message: "Starting Build\n*Author*\n$CIRCLE_USERNAME\n*Commit*\n<https://github.com/PrimeCodingSolutions/otree-core/commit/$CIRCLE_SHA1|$SHORT_GIT_HASH>\n$COMMIT_MESSAGE"
+          message: "Starting Build\n*Author* $CIRCLE_USERNAME\n*Branch* $CIRCLE_BRANCH\n*Commit \n<https://github.com/PrimeCodingSolutions/otree-core/commit/$CIRCLE_SHA1|$SHORT_GIT_HASH>\n>$COMMIT_MESSAGE"
       - setup_remote_docker
       - run: |
           IMAGE_NAME=$CIRCLE_PROJECT_REPONAME:$CIRCLE_SHA1
@@ -24,8 +24,8 @@ jobs:
           docker build -t $DOCKER_USER/$IMAGE_NAME .
           docker push $DOCKER_USER/$IMAGE_NAME
       - slack/status:
-          success_message: "Build :white_check_mark:\n*Author*\n$CIRCLE_USERNAME\n*Commit*\n<https://github.com/PrimeCodingSolutions/otree-core/commit/$CIRCLE_SHA1|$SHORT_GIT_HASH>\n$COMMIT_MESSAGE"
-          failure_message: "Build :x:\n*Author*\n$CIRCLE_USERNAME\n*Commit*\n<https://github.com/PrimeCodingSolutions/otree-core/commit/$CIRCLE_SHA1|$SHORT_GIT_HASH>\n$COMMIT_MESSAGE"
+          success_message: "Build :white_check_mark:\n*Author* $CIRCLE_USERNAME\n*Branch* $CIRCLE_BRANCH\n*Commit \n<https://github.com/PrimeCodingSolutions/otree-core/commit/$CIRCLE_SHA1|$SHORT_GIT_HASH>\n>$COMMIT_MESSAGE"
+          failure_message: "Build :x:\n*Author* $CIRCLE_USERNAME\n*Branch* $CIRCLE_BRANCH\n*Commit \n<https://github.com/PrimeCodingSolutions/otree-core/commit/$CIRCLE_SHA1|$SHORT_GIT_HASH>\n>$COMMIT_MESSAGE"
 
   deploy_to_staging:
     docker:
@@ -50,8 +50,8 @@ jobs:
           echo "export COMMIT_MESSAGE=\"$(git log --format=%B -n 1 $CIRCLE_SHA1)\"" >> $BASH_ENV
           echo "export SHORT_GIT_HASH=\"$(echo $CIRCLE_SHA1 | cut -c -7)\"" >> $BASH_ENV
       - slack/status:
-          success_message: "Deploy :white_check_mark:\n*Author*\n$CIRCLE_USERNAME\n*Commit*\n<https://github.com/PrimeCodingSolutions/otree-core/commit/$CIRCLE_SHA1|$SHORT_GIT_HASH>\n$COMMIT_MESSAGE"
-          failure_message: "Deploy :x:\n*Author*\n$CIRCLE_USERNAME\n*Commit*\n<https://github.com/PrimeCodingSolutions/otree-core/commit/$CIRCLE_SHA1|$SHORT_GIT_HASH>\n$COMMIT_MESSAGE"
+          success_message: "Deploy :white_check_mark:\n*Author* $CIRCLE_USERNAME\n*Branch* $CIRCLE_BRANCH\n*Commit \n<https://github.com/PrimeCodingSolutions/otree-core/commit/$CIRCLE_SHA1|$SHORT_GIT_HASH>\n>$COMMIT_MESSAGE"
+          failure_message: "Deploy :x:\n*Author* $CIRCLE_USERNAME\n*Branch* $CIRCLE_BRANCH\n*Commit \n<https://github.com/PrimeCodingSolutions/otree-core/commit/$CIRCLE_SHA1|$SHORT_GIT_HASH>\n>$COMMIT_MESSAGE"
 
 workflows:
   version: 2
