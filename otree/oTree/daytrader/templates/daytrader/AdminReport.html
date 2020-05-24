@@ -1,15 +1,32 @@
-{% load otree static %}
+{% load otree %}
+{% block content %}
+    <style>
+        body {
+            background: #41739D;
+        }
+
+        ._otree-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #timer {
+            display: flex;
+            justify-content: center;
+        }
+
+        #daytrader-admin-table {
+            width: 50%;
+        }
+
+    </style>
+    
 
 <h4>Aktiepriser:</h4>
-<!--
-<embed src="{% static 'daytrader/test.pdf' %}" width="600" height="500"/>
--->
 <embed src="{% static 'daytrader/test.png' %}"width="500" height="300"/>
-
-<h4>
-  Firmaernes faktisk tilstand:
-</h4>
-
+        
+        
 <ul>
   {% for firma in company %}
     <li>
@@ -25,12 +42,80 @@
   {% endfor %}
 </ul>
 
+        <h4>
+            Firmaernes faktisk tilstand:
+        </h4>
 
-<H4>
-  Kaskader:
-</H4>
-<p>
-  Prøv at se, om der er kaskader i de valg, der blev taget, og om de er korrekte eller forkerte.
+        <ul>
+            {% for firma in company %}
+                <li class="daytrader-admin-company-list">
+                    {{ firma.0 }}
+                    {% for state in firma.1 %}
+                        {% if forloop.parentloop.counter0 == 0 %}
+                            {% if state == 1 %}
+                                <embed src="{% static 'daytrader/C0glad.png' %}" class="company-face"/>
+                            {% else %}
+                                <embed src="{% static 'daytrader/C0sad.png' %}" class="company-face"/>
+                            {% endif %}
+                        {% elif forloop.parentloop.counter0 == 1 %}
+                            {% if state == 1 %}
+                                <embed src="{% static 'daytrader/C1glad.png' %}" class="company-face"/>
+                            {% else %}
+                                <embed src="{% static 'daytrader/C1sad.png' %}" class="company-face"/>
+                            {% endif %}
+                        {% elif forloop.parentloop.counter0 == 2 %}
+                            {% if state == 1 %}
+                                <embed src="{% static 'daytrader/C2glad.png' %}" class="company-face"/>
+                            {% else %}
+                                <embed src="{% static 'daytrader/C2sad.png' %}" class="company-face"/>
+                            {% endif %}
+                        {% elif forloop.parentloop.counter0 == 3 %}
+                            {% if state == 1 %}
+                                <embed src="{% static 'daytrader/C3glad.png' %}" class="company-face"/>
+                            {% else %}
+                                <embed src="{% static 'daytrader/C3sad.png' %}" class="company-face"/>
+                            {% endif %}
+                        {% elif forloop.parentloop.counter0 == 4 %}
+                            {% if state == 1 %}
+                                <embed src="{% static 'daytrader/C4glad.png' %}" class="company-face"/>
+                            {% else %}
+                                <embed src="{% static 'daytrader/C4sad.png' %}" class="company-face"/>
+                            {% endif %}
+                        {% elif forloop.parentloop.counter0 == 5 %}
+                            {% if state == 1 %}
+                                <embed src="{% static 'daytrader/C5glad.png' %}" class="company-face"/>
+                            {% else %}
+                                <embed src="{% static 'daytrader/C5sad.png' %}" class="company-face"/>
+                            {% endif %}
+                        {% elif forloop.parentloop.counter0 == 6 %}
+                            {% if state == 1 %}
+                                <embed src="{% static 'daytrader/C6glad.png' %}" class="company-face"/>
+                            {% else %}
+                                <embed src="{% static 'daytrader/C6sad.png' %}" class="company-face" />
+                            {% endif %}
+                        {% elif forloop.parentloop.counter0 == 7 %}
+                            {% if state == 1 %}
+                                <embed src="{% static 'daytrader/C7glad.png' %}" class="company-face" />
+                            {% else %}
+                                <embed src="{% static 'daytrader/C7sad.png' %}" class="company-face" />
+                            {% endif %}
+                        {% elif forloop.parentloop.counter0 == 8 %}
+                            {% if state == 1 %}
+                                <embed src="{% static 'daytrader/C8glad.png' %}" class="company-face" />
+                            {% else %}
+                                <embed src="{% static 'daytrader/C8sad.png' %}" class="company-face" />
+                            {% endif %}
+                        {% else %}
+                            {% if state == 1 %}
+                                <embed src="{% static 'daytrader/C9glad.png' %}" class="company-face" />
+                            {% else %}
+                                <embed src="{% static 'daytrader/C9sad.png' %}" class="company-face" />
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </li>
+            {% endfor %}
+        </ul>
 
 <table id="table" border=1>
   <tr>

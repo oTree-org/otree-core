@@ -561,7 +561,6 @@ table.table-debug td.debug-var-value {
     width: 100%;
     display: flex;
     justify-content: center;
-    color: #901A1E;
     font-family: "Roboto Slab", serif;
   }
   .report-container .report-info {
@@ -1990,7 +1989,6 @@ table.table-debug td.debug-var-value {
     width: 100%;
     display: flex;
     justify-content: center;
-    color: #901A1E;
     font-family: "Roboto Slab", serif;
   }
   .report-container .report-info {
