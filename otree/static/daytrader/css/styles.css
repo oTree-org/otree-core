@@ -280,12 +280,14 @@
     margin: 100px 0 0 0;
   }
   .daytrader-game-container .sack-btn {
-    margin: 0 10px;
+    margin: 0;
+    padding: 0;
     width: 40px;
     height: 40px;
   }
   .daytrader-game-container .sack-btn:hover {
     cursor: pointer;
+    filter: contrast(1.75);
   }
   .daytrader-game-container .field-choice_of_number_of_shares {
     display: flex;
@@ -1432,12 +1434,10 @@
     margin: 100px 0 0 0;
   }
   .daytrader-game-container .sack-btn {
-    margin: 0 10px;
-    width: 40px;
-    height: 40px;
-  }
-  .daytrader-game-container .sack-btn:hover {
-    cursor: pointer;
+    margin: 0;
+    padding: 0;
+    width: 60px;
+    height: 60px;
   }
   .daytrader-game-container .content-container {
     width: 70%;
@@ -1505,7 +1505,7 @@
   }
   .daytrader-game-container .daytrader-round-info {
     font-size: 25px;
-    width: 70%;
+    width: 90%;
   }
   .daytrader-game-container .daytrader-next-btn-container {
     display: flex;

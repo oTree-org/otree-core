@@ -340,12 +340,15 @@
     }
 
     .sack-btn {
-      margin: 0 10px;
+      margin: 0;
+      padding: 0;
       width: 40px;
       height: 40px;
 
-      &:hover {
+        &:hover {
         cursor: pointer;
+        filter: contrast(1.75);
+
       }
     }
 
