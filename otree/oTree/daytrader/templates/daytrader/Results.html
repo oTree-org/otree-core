@@ -51,19 +51,18 @@
             {##}
             {#            {% endfor %}#}
 
-
             <script>
                 let stateData = document.getElementById("state-data");
                 let table = document.querySelector(".table");
 
                 function Currency(price) {
-                    return price;
+                    return price.toFixed(2).toString().replace(".", ",");
                 }
 
                 let company = {{ firma|safe }};
                 let state = {{ tilstand|safe }};
                 let choices = {{ choices|safe }};
-                let price = {{ price|safe }};
+                let price = {{ price }};
                 let closePrice = {{ closing }};
                 let earned = {{ tjent }};
 
