@@ -121,7 +121,13 @@ class Results(Page):
             'kurtage': c(Constants.kurtage * handelsvaerdi),
             'ialt': self.player.payoff - (Constants.kurtage * handelsvaerdi),
             'data': data,
+            'firma': firma,
             'tilstand': tilstand,
+            'choices': choices,
+            'handler': handler,
+            'price': price,
+            'closing': closing,
+            'tjent': tjent
         }
 
 

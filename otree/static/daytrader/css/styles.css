@@ -1369,6 +1369,10 @@
   /******************************
   *   Play.html info styling    *
   *******************************/
+  .pdf-embed #outerContainer {
+    display: none;
+  }
+
   .daytrader-game-container {
     display: flex;
     flex-direction: column;
@@ -1585,6 +1589,11 @@
   }
   .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:checked {
     border-color: #41739D;
+  }
+  .daytrader-game-container .daytrader-admin-company-list {
+    font-size: 22px;
+    display: flex;
+    align-items: center;
   }
 
   .round-introduction {
@@ -1805,7 +1814,6 @@
     font-size: 35px;
     display: flex;
     justify-content: center;
-    color: #901A1E;
     padding-top: 20px;
     font-weight: bold;
   }
@@ -1826,7 +1834,6 @@
     border-collapse: collapse;
     overflow: hidden;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    color: #901A1E;
     font-size: 20px;
   }
 
@@ -1851,6 +1858,22 @@
     padding: 10px 50px 10px 50px;
     background-color: white !important;
     border-radius: 10px;
+  }
+
+  .report-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #41739D;
+  }
+  .report-info .daytrader-admin-company-list {
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+  }
+  .report-info .company-face {
+    width: 50px;
+    height: 50px;
   }
 }
 
