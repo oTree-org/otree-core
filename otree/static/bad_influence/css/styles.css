@@ -29,7 +29,7 @@
     justify-content: center;
     flex-direction: column;
     text-align: center;
-    background-image: url("/static/main_platform/otree/media/title-backgrounds/red-round-title-background.svg");
+    background-image: url("/static/main_platform/otree/media/red-round-title-background.svg");
     background-repeat: no-repeat;
     background-position: center;
     padding: 35px 0 35px 0;
@@ -95,7 +95,7 @@
     width: 90%;
     align-self: center;
     margin-bottom: 5%;
-    border-color: #901A1E;
+    border-color: #901a1e;
     border-radius: 2px;
     border-style: solid solid solid solid;
   }
@@ -178,18 +178,21 @@
     width: 100%;
   }
 
-  .chat, .message {
+  .chat,
+  .message {
     width: 100%;
     justify-content: center;
     display: flex;
     font-size: 20px;
   }
-  .chat #chat, .message #chat {
+  .chat #chat,
+  .message #chat {
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     margin-bottom: 2%;
     width: 100%;
   }
-  .chat #message, .message #message {
+  .chat #message,
+  .message #message {
     font-size: 20px;
     max-width: 90%;
   }
@@ -204,7 +207,7 @@
   .send #send {
     width: 90%;
     height: 50px;
-    background-color: #901A1E;
+    background-color: #901a1e;
     font-size: 20px;
     border-color: transparent;
   }
@@ -216,7 +219,7 @@
     font-size: 20px;
     display: flex;
     justify-content: center;
-    color: #901A1E;
+    color: #901a1e;
     padding-top: 20px;
     font-weight: bold;
   }
@@ -254,7 +257,7 @@
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     font-family: "Annie Use Your Telescope", serif;
     background-color: transparent;
-    border: 2px solid #901A1E;
+    border: 2px solid #901a1e;
     margin: 5px 5px 10% 5px;
   }
   .choice-button:hover {
@@ -296,7 +299,7 @@
     font-size: 50px;
     text-align: center;
     letter-spacing: 20px;
-    color: #901A1E;
+    color: #901a1e;
     text-transform: uppercase;
     margin: 0;
     padding: 0;
@@ -305,7 +308,7 @@
     font-weight: bold;
     font-size: 50px;
     text-align: center;
-    color: #901A1E;
+    color: #901a1e;
     text-transform: uppercase;
     margin: -25px;
     padding: 0;
@@ -314,7 +317,8 @@
   .intro-title * {
     box-sizing: border-box;
   }
-  .intro-title *::before, .intro-title *::after {
+  .intro-title *::before,
+  .intro-title *::after {
     box-sizing: border-box;
   }
   .intro-title button {
@@ -348,7 +352,7 @@
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 1px;
-    background-color: #901A1E;
+    background-color: #901a1e;
     color: white;
     border-radius: 20px;
     height: 50px;
@@ -394,7 +398,7 @@
   width: 100%;
   padding-right: 0;
   margin-bottom: 2%;
-  border-color: #901A1E;
+  border-color: #901a1e;
   border-radius: 2px;
   border-style: solid solid solid solid;
 }
@@ -404,7 +408,8 @@
 .intro-2 * {
   box-sizing: border-box;
 }
-.intro-2 *::before, .intro-2 *::after {
+.intro-2 *::before,
+.intro-2 *::after {
   box-sizing: border-box;
 }
 .intro-2 button {
@@ -439,7 +444,7 @@
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 1px;
-  background-color: #901A1E;
+  background-color: #901a1e;
   color: white;
   border-radius: 20px;
   height: 50px;
@@ -545,7 +550,7 @@
     width: 90%;
     align-self: center;
     margin-bottom: 5%;
-    border-color: #901A1E;
+    border-color: #901a1e;
     border-radius: 2px;
     border-style: solid solid solid solid;
   }
@@ -628,18 +633,21 @@
     width: 100%;
   }
 
-  .chat, .message {
+  .chat,
+  .message {
     width: 100%;
     justify-content: center;
     display: flex;
     font-size: 20px;
   }
-  .chat #chat, .message #chat {
+  .chat #chat,
+  .message #chat {
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     margin-bottom: 2%;
     width: 100%;
   }
-  .chat #message, .message #message {
+  .chat #message,
+  .message #message {
     font-size: 20px;
     max-width: 90%;
   }
@@ -654,7 +662,7 @@
   .send #send {
     width: 90%;
     height: 50px;
-    background-color: #901A1E;
+    background-color: #901a1e;
     font-size: 20px;
     border-color: transparent;
   }
@@ -688,7 +696,7 @@
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     font-family: "Annie Use Your Telescope", serif;
     background-color: transparent;
-    border: 2px solid #901A1E;
+    border: 2px solid #901a1e;
     margin: 5px 5px 10% 5px;
   }
   .choice-button:hover {
@@ -739,7 +747,7 @@
     font-weight: bold;
     font-size: 50px;
     text-align: center;
-    color: #901A1E;
+    color: #901a1e;
     text-transform: uppercase;
     margin: -25px;
     padding: 0;
@@ -748,7 +756,8 @@
   .intro-title * {
     box-sizing: border-box;
   }
-  .intro-title *::before, .intro-title *::after {
+  .intro-title *::before,
+  .intro-title *::after {
     box-sizing: border-box;
   }
   .intro-title button {
@@ -792,7 +801,7 @@
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 1px;
-    background-color: #901A1E;
+    background-color: #901a1e;
     color: white;
     border-radius: 20px;
     height: 50px;
@@ -810,7 +819,8 @@
   .intro-2 * {
     box-sizing: border-box;
   }
-  .intro-2 *::before, .intro-2 *::after {
+  .intro-2 *::before,
+  .intro-2 *::after {
     box-sizing: border-box;
   }
   .intro-2 button {
@@ -854,7 +864,7 @@
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 1px;
-    background-color: #901A1E;
+    background-color: #901a1e;
     color: white;
     border-radius: 20px;
     height: 50px;
@@ -971,7 +981,7 @@
     flex-direction: column;
     width: 90%;
     margin-bottom: 5%;
-    border-color: #901A1E;
+    border-color: #901a1e;
     border-radius: 2px;
     border-style: solid solid solid solid;
   }
@@ -1054,18 +1064,21 @@
     width: 100%;
   }
 
-  .chat, .message {
+  .chat,
+  .message {
     width: 100%;
     justify-content: center;
     display: flex;
     font-size: 20px;
   }
-  .chat #chat, .message #chat {
+  .chat #chat,
+  .message #chat {
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     margin-bottom: 2%;
     width: 70%;
   }
-  .chat #message, .message #message {
+  .chat #message,
+  .message #message {
     font-size: 20px;
     max-width: 70%;
   }
@@ -1080,7 +1093,7 @@
   .send #send {
     width: 70%;
     height: 50px;
-    background-color: #901A1E;
+    background-color: #901a1e;
     font-size: 20px;
     border-color: transparent;
   }
@@ -1112,7 +1125,7 @@
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     font-family: "Annie Use Your Telescope", serif;
     background-color: transparent;
-    border: 2px solid #901A1E;
+    border: 2px solid #901a1e;
     margin: 5px 5px 10% 5px;
   }
   .choice-button:hover {
@@ -1163,7 +1176,7 @@
     font-weight: bold;
     font-size: 50px;
     text-align: center;
-    color: #901A1E;
+    color: #901a1e;
     text-transform: uppercase;
     margin: -25px;
     padding: 0;
@@ -1172,7 +1185,8 @@
   .intro-title * {
     box-sizing: border-box;
   }
-  .intro-title *::before, .intro-title *::after {
+  .intro-title *::before,
+  .intro-title *::after {
     box-sizing: border-box;
   }
   .intro-title button {
@@ -1216,7 +1230,7 @@
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 1px;
-    background-color: #901A1E;
+    background-color: #901a1e;
     color: white;
     border-radius: 20px;
     height: 50px;
@@ -1234,7 +1248,8 @@
   .intro-2 * {
     box-sizing: border-box;
   }
-  .intro-2 *::before, .intro-2 *::after {
+  .intro-2 *::before,
+  .intro-2 *::after {
     box-sizing: border-box;
   }
   .intro-2 button {
@@ -1281,7 +1296,7 @@
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 1px;
-    background-color: #901A1E;
+    background-color: #901a1e;
     color: white;
     border-radius: 20px;
     height: 50px;
@@ -1387,7 +1402,7 @@
     margin-left: 5%;
     padding-right: 20px;
     margin-bottom: 5%;
-    border-color: #901A1E;
+    border-color: #901a1e;
     border-radius: 2px;
     border-style: solid solid solid solid;
   }
@@ -1470,18 +1485,21 @@
     width: 100%;
   }
 
-  .chat, .message {
+  .chat,
+  .message {
     width: 100%;
     justify-content: center;
     display: flex;
     font-size: 20px;
   }
-  .chat #chat, .message #chat {
+  .chat #chat,
+  .message #chat {
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     margin-bottom: 2%;
     width: 80%;
   }
-  .chat #message, .message #message {
+  .chat #message,
+  .message #message {
     font-size: 20px;
     max-width: 50%;
   }
@@ -1496,7 +1514,7 @@
   .send #send {
     width: 50%;
     height: 50px;
-    background-color: #901A1E;
+    background-color: #901a1e;
     font-size: 20px;
     border-color: transparent;
   }
@@ -1523,7 +1541,7 @@
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     font-family: "Annie Use Your Telescope", serif;
     background-color: transparent;
-    border: 2px solid #901A1E;
+    border: 2px solid #901a1e;
     margin-bottom: 10%;
     margin-left: 5%;
   }
@@ -1553,7 +1571,7 @@
     font-size: 35px;
     display: flex;
     justify-content: center;
-    color: #901A1E;
+    color: #901a1e;
     padding-top: 20px;
     font-weight: bold;
   }
@@ -1574,7 +1592,7 @@
     border-collapse: collapse;
     overflow: hidden;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    color: #901A1E;
+    color: #901a1e;
     font-size: 20px;
   }
 
@@ -1650,7 +1668,7 @@
     margin-right: 2%;
     padding-right: 0;
     margin-bottom: 18%;
-    border-color: #901A1E;
+    border-color: #901a1e;
     border-radius: 2px;
     border-style: solid solid solid solid;
   }
@@ -1681,7 +1699,7 @@
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 1px;
-    background-color: #901A1E;
+    background-color: #901a1e;
     color: white;
     border-radius: 20px;
     height: 50px;
