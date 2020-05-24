@@ -16,8 +16,6 @@
   /******************************
   *   Play.html info styling    *
   *******************************/
-
-
   .daytrader-game-container {
     display: flex;
     flex-direction: column;
@@ -45,52 +43,51 @@
       }
     }
 
+  /*******************
+  *   intro1.html    *
+  ********************/
+    .daytrader-intro-title {
+      font-size: 45px;
+      padding: 20px 0 0 0;
+      letter-spacing: 6px;
+    }
+
     .daytrader-intro-frontpage-img {
       width: 320px;
       height: 400px;
 
       .daytrader-start-game-btn {
-        font-size: 40px;
+        font-size: 38px;
         margin: 180px 0 0 0;
-      }
+        width: 200px;
+        }
     }
 
-    .future-trader-stickman {
-      width: 250px;
-      height: 250px;
-    }
 
+  /*******************
+  *   intro2.html    *
+  ********************/
+
+
+
+  /*******************
+  *   intro3.html    *
+  ********************/
     .daytrader-intro-container-second {
 
       .daytrader-intro-container-second-info {
         width: 100%;
       }
 
-      .daytrader-intro-container-second-button {
-      }
     }
 
+  /****************************
+    *  All day trader pages   *
+  *****************************/
     .daytrader-round-title {
-      font-family: "Patrick Hand", cursive;
-      font-size: 20px;
-      display: flex;
-      justify-content: center;
-      flex-direction: column;
-      text-align: center;
-      background-image: url("../../../main_platform/otree/media/title-backgrounds/blue-round-title-background.svg");
-      background-repeat: no-repeat;
-      background-position: center;
-      padding: 35px 0;
-      color: white;
+      font-size: 30px;
     }
 
-    .round-introduction {
-      font-family: "Patrick Hand", cursive;
-      display: flex;
-      justify-content: center;
-      flex-direction: column;
-      width: 100%;
-    }
 
     // Styling af det viste ansigt i teksten
     .company-face {
@@ -189,10 +186,6 @@
         width: 244px;
         height: 40px;
         color: white;
-
-        border: 5px solid $ku-dark-blue;
-        box-sizing: border-box;
-        border-radius: 30px;
 
         display: flex;
         justify-content: center;

@@ -245,9 +245,10 @@ table.table-debug td.debug-var-value {
   .align-games .card-body .body-row span {
     font-size: 12px;
   }
-  .align-games .games-image {
-    width: 80px;
-    height: 80px;
+  .align-games .sack-img {
+    display: none;
+  }
+  .align-games .network-img {
     display: none;
   }
   .align-games .card-footer {
@@ -369,7 +370,12 @@ table.table-debug td.debug-var-value {
     font-size: 14px;
     padding-bottom: 0;
   }
-  .create-game .games-image {
+  .create-game .sack-img {
+    width: 80px;
+    height: 80px;
+    display: none;
+  }
+  .create-game .network-img {
     width: 80px;
     height: 80px;
     display: none;
@@ -715,15 +721,6 @@ table.table-debug td.debug-var-value {
   /******************************
   *  Front Page  - games.html  *
   ******************************/
-  .background-frontpage {
-    background-image: url("../../media/background-ku-desktop.jpg");
-    background-repeat: no-repeat;
-    background-size: 100%, 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
   .title-container {
     margin-bottom: 5%;
   }
@@ -778,9 +775,14 @@ table.table-debug td.debug-var-value {
   .align-games .card-body .body-row span {
     font-size: 14px;
   }
-  .align-games .games-image {
-    width: 80px;
-    height: 80px;
+  .align-games .sack-img {
+    width: 190px;
+    height: 190px;
+    display: none;
+  }
+  .align-games .network-img {
+    width: 150px;
+    height: 150px;
     display: none;
   }
   .align-games .card-footer .footer-row {
@@ -862,9 +864,14 @@ table.table-debug td.debug-var-value {
     font-size: 14px;
     padding-bottom: 0;
   }
-  .create-game .games-image {
-    width: 80px;
-    height: 80px;
+  .create-game .sack-img {
+    width: 190px;
+    height: 190px;
+    display: none;
+  }
+  .create-game .network-img {
+    width: 150px;
+    height: 150px;
     display: none;
   }
   .create-game .card-footer {
@@ -1196,15 +1203,6 @@ table.table-debug td.debug-var-value {
   /******************************
   *  Front Page  - games.html  *
   ******************************/
-  .background-frontpage {
-    background-image: url("../../media/background-ku-desktop.jpg");
-    background-repeat: no-repeat;
-    background-size: 100%, 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
   .title-container {
     margin-bottom: 5%;
   }
@@ -1260,9 +1258,14 @@ table.table-debug td.debug-var-value {
     font-size: 14px;
     margin-left: 20px;
   }
-  .align-games .games-image {
-    width: 150px;
-    height: 150px;
+  .align-games .sack-img {
+    width: 170px;
+    height: 170px;
+    display: block;
+  }
+  .align-games .network-img {
+    width: 130px;
+    height: 130px;
     display: block;
   }
   .align-games .card-footer .footer-row {
@@ -1306,15 +1309,6 @@ table.table-debug td.debug-var-value {
   /**********************************************************
   *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
   ***********************************************************/
-  .background-frontpage {
-    background-image: url("../../media/background-ku-desktop.jpg");
-    background-repeat: no-repeat;
-    background-size: 100%, 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
   .create-game {
     display: flex;
     align-items: center;
@@ -1354,11 +1348,6 @@ table.table-debug td.debug-var-value {
     text-align: center;
     font-size: 18px;
     padding-bottom: 0;
-  }
-  .create-game .games-image {
-    width: 80px;
-    height: 80px;
-    display: none;
   }
   .create-game .card-footer {
     padding-top: 0;
@@ -1732,9 +1721,15 @@ table.table-debug td.debug-var-value {
     font-size: 18px;
     margin-left: 20px;
   }
-  .align-games .games-image {
-    width: 160px;
-    height: 160px;
+  .align-games .sack-img {
+    width: 190px;
+    height: 190px;
+    display: block;
+  }
+  .align-games .network-img {
+    width: 150px;
+    height: 150px;
+    display: block;
   }
   .align-games .card-footer .footer-row {
     display: flex;
@@ -1817,9 +1812,14 @@ table.table-debug td.debug-var-value {
     font-size: 18px;
     padding-bottom: 0;
   }
-  .create-game .games-image {
-    width: 80px;
-    height: 80px;
+  .create-game .sack-img {
+    width: 190px;
+    height: 190px;
+    display: none;
+  }
+  .create-game .network-img {
+    width: 150px;
+    height: 150px;
     display: none;
   }
   .create-game .card-footer {

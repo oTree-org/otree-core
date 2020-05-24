@@ -138,3 +138,7 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# Temporary directories
+otree/oTree/__temp_static_root/
+otree/oTree/__temp_migrations/

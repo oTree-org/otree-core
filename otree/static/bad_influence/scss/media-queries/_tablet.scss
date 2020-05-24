@@ -33,9 +33,7 @@
     justify-content: center;
     flex-direction: column;
     text-align: center;
-    background-image: url("../../../../static/main_platform/otree/media/title-backgrounds/red-round-title-background.svg");
-    background-repeat: no-repeat;
-    background-size: cover;
+
     padding: 35px 0 35px 0;
     color: white;
   }
@@ -104,8 +102,6 @@
   justify-content: flex-end;
   flex-direction: column;
   width: 90%;
-  align-self: center;
-
   margin-bottom: 5%;
   border-color: $ku-red;
   border-radius: 2px;

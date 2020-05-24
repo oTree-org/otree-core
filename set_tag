@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+if [ "$#" -ne 2 ]; then
+    echo "Usage: set_tag [tag of docker image] [tag description]"
+    exit 1
+fi
+
+if [ -z "$(git status --porcelain)" ]; then
+  echo "No uncommitted changes"
+else
+  echo "You have uncommitted changes. Commit them first, then re-run this command"
+  exit 1
+fi
+
+if git rev-parse "$1^{tag}" >/dev/null 2>&1
+then
+    echo "Tag $1 already exists..."
+    read -p "Do you wish to delete it? " -n 1 -r
+    echo    # (optional) move to a new line
+    if [[ $REPLY =~ ^[Yy]$ ]]
+    then
+        echo "Deleting tag $1 locally and on remote"
+        git tag --delete $1
+        git push --delete origin $1
+        exit 0
+    else
+        exit 1
+    fi
+fi
+echo "Setting tag $1"
+git tag -a $1 -m "$2"
+git push --follow-tags

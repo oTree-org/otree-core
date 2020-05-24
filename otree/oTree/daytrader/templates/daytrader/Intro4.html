@@ -19,20 +19,35 @@
     </style>
 
     <div class="daytrader-game-container">
-        <p class="daytrader-round-info">
-            Nu kan du starte med at handle.
+    <div class="daytrader-round-info">
+        <p>
+            Forestil dig, at du skal handle aktier i dette firma: <b>Hooli</b>
         </p>
-        <p class="daytrader-round-info">
-            Du kan kun trykke på et af tradernes ansigter og få vist deres private information. Denne information er
-            usynlig for andre traders.
-        </p>
-        <p class="daytrader-round-info">
+        <p>***TO DO - SÆK MED TRE SPØRGSMÅLSTEGN - SPILLEREN SKAL KLIKKE PÅ ET AF DEM OG SE EN KED AF DET ANSIGT</p>
+            <img style="height:200px; width: 200px;" src="{% static 'main_platform/otree/media/sack-images/sack-empty.svg' %}" >
+        <p>Du må gerne trykke på et af ansigterne for at se om det er glad eller ked af det. Det er din private information om det firma.</p>
+
+
+        <p>
+            ****TO DO -
+            Her en tabel over tidligere handler i firmaet. Du kan se, at de to første tradere også fik lov at se et ansigt inden de lavede deres handel.
+            Og du kan se hvor meget de gik short eller long i tabellen her: (minus er short, plus er long)”. (tabellen skal ikke KUNNE vise ansigterne endnu,
+            kun vise spørgsmålstegn)
+
+            Så skal der stå: ” De to forrige tradere har begge købt aktier i firmaet så du konkluderer at de begge har set glade ansigter. Selv har du set et surt
+            ansigt. Hvad vil du gøre? Vil du købe (gå long) eller sælge (gå short)? Det mest fornuftige ville være at gætte på, at firmaet er i god stand.
+            Altså køber du!
+
             Du ved dog, at de to første tradere også fik lov at se et ansigt inden de lavede deres handel. Og du kan se
             hvor meget de gik short eller long i tabellen her:
+
+
         </p>
-        <p class="daytrader-round-info">
+        <p >
             (Minus er <i class="short-modal-link">short</i>, plus er <i class="long-modal-link">long</i>)
         </p>
+    </div>
+
 
         <table class="table daytrader-table intro-table">
             <tr class="table-corners">
@@ -89,67 +104,25 @@
                 ansigt. Det ville derfor være fornuftigt at gå long.
             </p>
         </div>
-        <div class="daytrader-next-btn-container">
-            <button class="daytrader-next-btn" id="goLong">
-                Gå long
-            </button>
-        </div>
-        <div class="go-long-content">
-            <p class="daytrader-round-info long-info">
-                Du gik long og købte 30 aktier i firmaet.
-            </p>
-            <table class="table daytrader-table intro-table">
-                <tr class="table-corners">
-                    <th class="daytrader-table-header border-corner-left">trader</th>
-                    <th class="daytrader-table-header">pris</th>
-                    <th class="daytrader-table-header">ansigt</th>
-                    <th class="daytrader-table-header border-corner-right">handel</th>
-                </tr>
-                <tr class="daytrader-table-row">
-                    <td class="daytrader-table-data"> {{ 1 }}.</td>
-                    <td class="daytrader-table-data"> {{ 50|c }}</td>
-                    <td class="daytrader-table-data">
-                        <img src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" alt="unknown face"
-                             class="reveal-face">
-                    </td>
-                    <td class="daytrader-table-data"> +23 aktier</td>
-                </tr>
-                <tr class="daytrader-table-row">
-                    <td class="daytrader-table-data"> {{ 2 }}.</td>
-                    <td class="daytrader-table-data"> {{ 50.06|c }}</td>
-                    <td class="daytrader-table-data">
-                        <img src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" alt="unknown face"
-                             class="reveal-face">
-                    </td>
-                    <td class="daytrader-table-data"> +45 aktier</td>
-                </tr>
-                <tr class="daytrader-table-row">
-                    <td class="daytrader-table-data"> {{ 3 }}.</td>
-                    <td class="daytrader-table-data"> {{ 50.26|c }}</td>
-                    <td class="daytrader-table-data">
-                        <img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="happy face"
-                             class="company-face" id="introFace3">
-                    </td>
-                    <td class="daytrader-table-data"> +30 aktier</td>
-                </tr>
-            </table>
-        </div>
-        <div class="daytrader-next-btn-container">
-            <button class="daytrader-next-btn" id="continue">
-                Fortsæt...
+
+     <div class="daytrader-next-btn-container">
+            <button class="daytrader-next-btn">
+                Gå long!
             </button>
         </div>
         <div id="shortModal" class="short-modal">
             <div class="short-modal-content">
-                <p class="daytrader-round-info">Når man går short betyder bla bla bla</p>
+                <p class="daytrader-round-info">At gå short betyder at man sælger aktier da man tror at prisen vil nedstige i værdi indenfor den nærmeste fremtid. </p>
             </div>
         </div>
         <div id="longModal" class="long-modal">
             <div class="long-modal-content">
-                <p class="daytrader-round-info">Når går long betyder bla bla bla</p>
+                <p class="daytrader-round-info">At gå long betyder at man køber aktier med håbet om at det købte stiger i værdi indenfor den nærmeste fremtid.</p>
             </div>
         </div>
+
     </div>
+
 
     <script>
         let shortModal = document.getElementById("shortModal");
@@ -158,7 +131,7 @@
         let longLink = document.querySelector(".long-modal-link");
         let unknownFace1 = document.getElementById("unknownFace1");
         let unknownFace2 = document.getElementById("unknownFace2");
-        let goLong = document.getElementById("goLong");
+     //   let goLong = document.getElementById("goLong");
         let goLongContent = document.querySelector(".go-long-content");
         let continueBtn = document.getElementById("continue");
         let faceContainer1 = document.getElementById("faceContainer1");
@@ -182,7 +155,7 @@
             faceContainer2.appendChild(introFace2);
         }
 
-        goLong.onclick = event => {
+     /**   goLong.onclick = event => {
             event.preventDefault();
             goLongContent.style.display = "block";
             continueBtn.style.display = "block";
@@ -204,6 +177,7 @@
                 longModal.style.display = "none";
             }
         }
+    **/
 
 
     </script>

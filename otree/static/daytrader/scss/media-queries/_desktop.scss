@@ -15,7 +15,6 @@
   *   Play.html info styling    *
   *******************************/
 
-
   .daytrader-game-container {
     display: flex;
     flex-direction: column;
@@ -31,60 +30,64 @@
       width: 70%;
     }
 
+    .future-modal-content, .short-modal-content, .long-modal-content, .info-cascade-modal-content {
+      width: 50%;
+    }
+
+    .daytrader-intro-info-container {
+      margin: 10px 0;
+    }
+
+  /**********************
+  *    intro1.html      *
+  ***********************/
 
     .daytrader-intro-title {
-      font-family: "Patrick Hand", sans-serif;
-      font-size: 180px;
-      color: $ku-dark-blue;
-      text-transform: uppercase;
+      font-size: 120px;
       margin: 0;
     }
 
     .daytrader-intro-frontpage-img {
-      background: url("../../../../static/main_platform/otree/media/front-page-sackbackground.svg") no-repeat;
-      background-size: cover;
-      width: 500px;
-      height: 650px;
+      width: 450px;
+      height: 550px;
       display: flex;
       justify-content: center;
       align-items: center;
 
       .daytrader-start-game-btn {
-        border: none;
-        font-family: "Patrick Hand", sans-serif;
-        background: transparent;
-        font-size: 60px;
-        color: white;
-        margin: 320px 0 0 0;
-
-        &:hover {
-          cursor: pointer;
-        }
+        font-size: 55px;
+        margin: 250px 0 0 11px;
+        width: 280px;
       }
     }
 
+
+  /*******************
+  *   intro2.html    *
+  ********************/
     .daytrader-sack {
-      height: 320px;
-      flex: 3;
-      padding-right: 20px;
+      height: 300px;
+      padding-bottom: 20px;
     }
 
     .daytrader-intro-container-first {
-      display: flex;
-      justify-content: space-evenly;
-      margin: 50px 0;
+      display:flex;
+      justify-content: center;
       flex-direction: row;
 
       .daytrader-intro-first {
         align-self: center;
+        width: 40%;
+        text-align: center;
       }
     }
 
-    .future-trader-stickman {
-      width: 280px;
-      height: 350px;
-    }
 
+
+
+  /*******************
+  *   intro3.html    *
+  ********************/
     .daytrader-intro-container-second {
       display: flex;
       margin: 0;
@@ -101,15 +104,9 @@
       }
     }
 
-
-
-    .future-modal-content, .short-modal-content, .long-modal-content, .info-cascade-modal-content {
-      width: 50%;
-    }
-
-    .daytrader-intro-info-container {
-      margin: 10px 0;
-    }
+  /*******************
+  *   intro4.html    *
+  ********************/
 
     .go-long-content {
       margin: 50px 0;
@@ -122,27 +119,28 @@
     }
 
 
+
+
+  /****************************
+    *  All day trader pages   *
+  *****************************/
     .daytrader-round-title {
-      font-family: "Patrick Hand", cursive;
-      font-size: 34px;
-      display: flex;
-      justify-content: center;
-      flex-direction: column;
-      text-align: center;
-      background-image: url("../../../../static/main_platform/otree/media/title-backgrounds/blue-round-title-background.svg");
-      padding: 35px 0 35px 0;
-      color: white;
+      font-size: 50px;
       width: 100%;
     }
 
 
     .daytrader-round-info {
-      font-size: 30px;
-      font-family: "Patrick Hand", sans-serif;
+      font-size: 25px;
+      width: 70%;
+    }
 
-      h3 {
-        font-weight: bold;
-      }
+    .daytrader-next-btn-container {
+        display: flex;
+        justify-content: center;
+
+
+
     }
 
     // Styling af det viste ansigt i teksten
@@ -241,42 +239,14 @@
       justify-content: center;
     }
 
-    .daytrader-next-btn-container {
-
-      display: flex;
-      justify-content: center;
-
-      .daytrader-next-btn {
-        font-size: 30px;
-        background: $ku-dark-blue;
-        font-family: "Patrick Hand", sans-serif;
-        width: 344px;
-        height: 55px;
-        color: white;
-
-        border: 5px solid $ku-dark-blue;
-        box-sizing: border-box;
-        border-radius: 30px;
-
-        display: flex;
-        justify-content: center;
-        align-items: center;
-
-        &:hover {
-          cursor: pointer;
-        }
-      }
-    }
 
 
     .reveal-face {
-      width: 40px;
-      height: 40px;
-
-      &:hover {
-        cursor: pointer;
-      }
+       width: 40px;
+       height: 40px;
     }
+
+
 
     .field-choice_of_trade {
       margin: 0;

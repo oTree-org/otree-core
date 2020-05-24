@@ -17,7 +17,7 @@
 
 .round-info {
     font-size: 25px;
-    width: 100%;
+    width: 87%;
     display: flex;
     justify-content: left;
     flex-direction: column;
@@ -34,11 +34,7 @@
     justify-content: center;
     flex-direction: column;
     text-align: center;
-    background-image: url("../../../../static/main_platform/otree/media/title-backgrounds/red-round-title-background.svg");
-    background-repeat: no-repeat;
-    background-position: center;
-    width: 50%;
-    align-self: center;
+    width: 100%;
     color: white;
 
  }
@@ -233,13 +229,9 @@
 /*********************************
 *   Play.html button styling    *
 *********************************/
-
-
 .choice-button-holder {
   justify-content: center;
   display: flex;
-
-
 }
 
 .choice-button {
@@ -317,24 +309,23 @@
 
 }
 
+.d3-results-row {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-evenly;
+    font-size: 14px;
+    font-family: "Roboto Slab", serif;
 
-  .d3-results-row {
-      display: flex;
-      align-items: center;
-      flex-direction: row;
-      justify-content: space-evenly;
-      font-size: 14px;
-      font-family: "Roboto Slab", serif;
+      #d3consensus {
+        display: flex;
+        justify-content: center;
+      }
 
-        #d3consensus {
-          display: flex;
-          justify-content: center;
-        }
-
-        #d3playback {
-          display: none;
-        }
-    }
+      #d3playback {
+        display: none;
+      }
+}
 
 .game-results {
     margin-top: 2%;
@@ -347,7 +338,6 @@
 *   Intro1.html table styling   *
 **************************************/
 .intro-title {
-
       .bad {
           font-size: 110px;
       }
@@ -363,19 +353,9 @@
       max-width: 40%;
       margin-top: 40px;
       font-size: 35px;
-
-
-    }
-    .button-text {
-
-      &:hover {
-        background-color: $ku-dark-green
-      }
     }
   }
 }
-}
-
 
 /*************************************
 *   Intro2.html table styling   *
@@ -395,17 +375,20 @@
 
   .round-info {
     text-align: left;
+  }
 
+  .text-column {
+    display: flex;
+    flex-direction: column;
+    width: 60%;
+    text-align: left;
+    padding-right: 10px;
 
-}
-.text-column {
-  display: flex;
-  flex-direction: column;
-  width: 60%;
- text-align: left;
-  padding-right: 10px;
+  }
 
-}
+  .full-text-column {
+    width: 87%;
+  }
 
   .svg-column {
   display: flex;
@@ -414,7 +397,7 @@
   width: 30%;
   margin-right: 2%;
   padding-right: 0;
-  margin-bottom: 8%;
+  margin-bottom: 18%;
   border-color: $ku-red;
   border-radius: 2px;
   border-style: solid solid solid solid;
@@ -423,7 +406,15 @@
       font-size: 25px;
        padding: 5px;
     }
+
 }
+   .game-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    width: 100%;
+    margin-top: 0;
+  }
 
   button {
 
@@ -461,6 +452,7 @@
       color: $white;
     }
   }
+}
 }
 
 

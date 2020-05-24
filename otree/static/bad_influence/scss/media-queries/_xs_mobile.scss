@@ -32,7 +32,7 @@
     justify-content: center;
     flex-direction: column;
     text-align: center;
-    background-image: url("../../../../static/main_platform/otree/media/title-backgrounds/red-round-title-background.svg");
+    background-image: url("/static/main_platform/otree/media/title-backgrounds/red-round-title-background.svg");
     background-repeat: no-repeat;
     background-position: center;
     padding: 35px 0 35px 0;
@@ -225,7 +225,6 @@
 
   &:hover {
     background-color: $ku-dark-green;
-
   }
 }
 
@@ -382,13 +381,13 @@
       color: white;
       border-radius: 20px;
       height: 50px;
+
+        &:hover {
+        background-color: $ku-dark-green;
+      }
   }
-
-
   }
 }
-
-
 }
 
 /*************************************
@@ -399,7 +398,6 @@
 
   .round-title {
     font-size: 35px;
-
   }
 
 .game-introduction {
@@ -445,16 +443,10 @@
   }
 
 
-
-
-
     $bg: #f3f8fa;
     $white: #fff;
     $black: #901A1E;
 
-    @mixin transition($property: all, $duration: 0.45s, $ease: cubic-bezier(0.65,0,.076,1)) {
-      transition: $property $duration $ease;
-    }
 
    * {
     box-sizing: border-box;
@@ -484,16 +476,6 @@
       font-size: 30px;
       padding: 40px;
 
-      .circle {
-        display: none;
-
-    .icon {
-       display: none;
-        &.arrow {
-         display: none;
-
-        }
-      }
     }
     .button-text {
       position: absolute;
@@ -516,9 +498,13 @@
       color: $white;
     }
   }
+
+  .width-size  {
+    width: 100%;
+  }
 }
 
-}
+
 
 
 
