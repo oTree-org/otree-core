@@ -23,45 +23,29 @@
         <p>
             Forestil dig, at du skal handle aktier i dette firma: <b>Hooli</b>
         </p>
-        <p>***TO DO - SÆK MED TRE SPØRGSMÅLSTEGN - SPILLEREN SKAL KLIKKE PÅ ET AF DEM OG SE EN KED AF DET ANSIGT</p>
             <img style="height:200px; width: 200px;" src="{% static 'main_platform/otree/media/sack-images/sack-empty.svg' %}" >
-        <p>Du må gerne trykke på et af ansigterne for at se om det er glad eller ked af det. Det er din private information om det firma.</p>
+            <img style="height:100px; width: 100px;" src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" >
+            <img style="height:100px; width: 100px;" src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" >
+            <img style="height:100px; width: 100px;" src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" >
+            <img style="height:100px; width: 100px;" src="{% static 'daytrader/media/sad_face_daytrader.png' %}" >
+        <p>Du må gerne trykke på et af spørgsmålstegnene i sækken, for at se om det er glad eller ked af det. Det er din private information om det firma.</p>
 
-
-        <p>
-            ****TO DO -
-            Her en tabel over tidligere handler i firmaet. Du kan se, at de to første tradere også fik lov at se et ansigt inden de lavede deres handel.
-            Og du kan se hvor meget de gik short eller long i tabellen her: (minus er short, plus er long)”. (tabellen skal ikke KUNNE vise ansigterne endnu,
-            kun vise spørgsmålstegn)
-
-            Så skal der stå: ” De to forrige tradere har begge købt aktier i firmaet så du konkluderer at de begge har set glade ansigter. Selv har du set et surt
-            ansigt. Hvad vil du gøre? Vil du købe (gå long) eller sælge (gå short)? Det mest fornuftige ville være at gætte på, at firmaet er i god stand.
-            Altså køber du!
-
-            Du ved dog, at de to første tradere også fik lov at se et ansigt inden de lavede deres handel. Og du kan se
-            hvor meget de gik short eller long i tabellen her:
-
-
-        </p>
-        <p >
-            (Minus er <i class="short-modal-link">short</i>, plus er <i class="long-modal-link">long</i>)
-        </p>
     </div>
 
 
-        <table class="table daytrader-table intro-table">
+        <table class="table daytrader-table">
             <tr class="table-corners">
                 <th class="daytrader-table-header border-corner-left">trader</th>
                 <th class="daytrader-table-header">pris</th>
-                <th class="daytrader-table-header">ansigt</th>
+                <th class="daytrader-table-header">privat info</th>
                 <th class="daytrader-table-header border-corner-right">handel</th>
             </tr>
             <tr class="daytrader-table-row">
                 <td class="daytrader-table-data"> {{ 1 }}.</td>
                 <td class="daytrader-table-data"> {{ 50|c }}</td>
-                <td class="daytrader-table-data" id="faceContainer1">
+                <td class="daytrader-table-data">
                     <img src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" alt="unknown face"
-                         class="reveal-face" id="unknownFace1">
+                         class="reveal-face" >
                 </td>
                 <td class="daytrader-table-data"> +23 aktier</td>
             </tr>
@@ -99,8 +83,7 @@
                 Du tror derfor nu at firmaets tilstand er 2
                 <img src="{% static 'daytrader/media/happy_face_daytrader.png' %}" alt="happy face"
                      class="company-face">
-                ansigter og 1 <img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"
-                                   class="company-face">
+                spørgsmålstegnene og 1 <img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face" class="company-face">
                 ansigt. Det ville derfor være fornuftigt at gå long.
             </p>
         </div>
@@ -121,27 +104,47 @@
             </div>
         </div>
 
+
+        <p>
+            ****TO DO -
+            Her en tabel over tidligere handler i firmaet. Du kan se, at de to første tradere også fik lov at se et ansigt inden de lavede deres handel.
+            Og du kan se hvor meget de gik short eller long i tabellen her: (minus er short, plus er long)”. (tabellen skal ikke KUNNE vise ansigterne endnu,
+            kun vise spørgsmålstegn)
+
+            Så skal der stå: ” De to forrige tradere har begge købt aktier i firmaet så du konkluderer at de begge har set glade ansigter. Selv har du set et surt
+            ansigt. Hvad vil du gøre? Vil du købe (gå long) eller sælge (gå short)? Det mest fornuftige ville være at gætte på, at firmaet er i god stand.
+            Altså køber du!
+
+            Du ved dog, at de to første tradere også fik lov at se et ansigt inden de lavede deres handel. Og du kan se
+            hvor meget de gik short eller long i tabellen her:
+
+
+        </p>
+        <p >
+            (Minus er <i class="short-modal-link">short</i>, plus er <i class="long-modal-link">long</i>)
+        </p>
     </div>
 
 
     <script>
+         /**
         let shortModal = document.getElementById("shortModal");
         let longModal = document.getElementById("longModal");
         let shortLink = document.querySelector(".short-modal-link");
         let longLink = document.querySelector(".long-modal-link");
-        let unknownFace1 = document.getElementById("unknownFace1");
-        let unknownFace2 = document.getElementById("unknownFace2");
+      //  let unknownFace1 = document.getElementById("unknownFace1");
+      //  let unknownFace2 = document.getElementById("unknownFace2");
      //   let goLong = document.getElementById("goLong");
         let goLongContent = document.querySelector(".go-long-content");
         let continueBtn = document.getElementById("continue");
         let faceContainer1 = document.getElementById("faceContainer1");
         let faceContainer2 = document.getElementById("faceContainer2");
 
-        unknownFace1.onclick = () => {
+  unknownFace1.onclick = () => {
             unknownFace1.style.display = "none";
             unknownFace2.style.display = "none";
             let introFace1 = document.createElement("img");
-            introFace1.src = "{% static 'daytrader/media/happy_face_daytrader.png' %}";
+            introFace1.src = "";
             introFace1.className = "company-face";
             faceContainer1.appendChild(introFace1);
         }
@@ -150,12 +153,12 @@
             unknownFace1.style.display = "none";
             unknownFace2.style.display = "none";
             let introFace2 = document.createElement("img");
-            introFace2.src = "{% static 'daytrader/media/happy_face_daytrader.png' %}";
+            introFace2.src = "";
             introFace2.className = "company-face";
             faceContainer2.appendChild(introFace2);
         }
 
-     /**   goLong.onclick = event => {
+   goLong.onclick = event => {
             event.preventDefault();
             goLongContent.style.display = "block";
             continueBtn.style.display = "block";
