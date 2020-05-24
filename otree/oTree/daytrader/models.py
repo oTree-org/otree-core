@@ -105,6 +105,8 @@ class Subsession(BaseSubsession):
         ax.set_title('Aktieprisudvikling', fontsize='x-large')
         fig.savefig('_static/daytrader/test.pdf', transparent=True,
                     bbox_inches='tight', dpi=300)
+        fig.savefig('_static/daytrader/test.png', transparent=True,
+                    bbox_inches='tight', dpi=300)
 
         names = self.session.vars['company_names']
         states = self.session.vars['company_states']
@@ -126,16 +128,14 @@ class Player(BasePlayer):
     drawn_face = models.BooleanField()
     choice_of_trade = models.IntegerField(
         choices=[
-            [2, 'gør ingenting'],
             [1, 'køb (long)'],
             [0, 'lån og sælg (short)'],
         ],
-        default=2,
         widget=widgets.RadioSelectHorizontal()
     )
     price = models.CurrencyField()
     price_change = models.CurrencyField()
-    choice_of_number_of_shares = models.PositiveIntegerField(max=1000)
+    choice_of_number_of_shares = models.PositiveIntegerField(default=0, max=1000)
     can_buy = models.PositiveIntegerField()
 
     def choice_of_number_of_shares_max(self):
@@ -180,10 +180,8 @@ class Player(BasePlayer):
             # calculate price change and add up
             if previous_choice_of_trade == 1:
                 price_change += Constants.price_change_per_share * previous_choice_of_number_of_shares
-            elif previous_choice_of_trade == 0:
-                price_change -= Constants.price_change_per_share * previous_choice_of_number_of_shares
             else:
-                price_change += 0
+                price_change -= Constants.price_change_per_share * previous_choice_of_number_of_shares
             self.price = self.old_share_price() + price_change * self.old_share_price()
         return self.price
 
@@ -234,10 +232,8 @@ class Player(BasePlayer):
             if p.choice_of_trade == 1:
                 self.participant.vars['profit'].append((self.closing_price(p.company_name)
                                                 - p.price) * p.choice_of_number_of_shares)
-            elif p.choice_of_trade == 0:
+            else:
                 self.participant.vars['profit'].append(-(self.closing_price(p.company_name)
                                                 - p.price) * p.choice_of_number_of_shares)
-            else:
-                self.participant.vars['profit'].append(0)
         self.payoff = sum(self.participant.vars['profit'])
         return self.participant.vars['profit']
