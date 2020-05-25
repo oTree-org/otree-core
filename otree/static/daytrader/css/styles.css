@@ -78,9 +78,9 @@
     display: none;
   }
   .daytrader-game-container .daytrader-sack-button-container {
-    width: 100%;
-    height: 200px;
-    display: flex;
+    width: 80px;
+    height: 110px;
+    display: none;
     align-items: center;
     justify-content: center;
     background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
@@ -91,6 +91,10 @@
   }
   .daytrader-game-container .daytrader-sack-button-container .daytrader-sack-buttons:hover {
     cursor: pointer;
+  }
+  .daytrader-game-container .daytrader-sack-button-container .company-face {
+    height: 20px;
+    width: 20px;
   }
   .daytrader-game-container .daytrader-sack-button-container .company-face-in-sack {
     width: 90px;
@@ -555,6 +559,20 @@
     width: 50px;
     height: 50px;
     align-self: center;
+  }
+
+  .report-info .admin-sack-button-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
+    margin: 0 0 15px 0;
+  }
+  .report-info .admin-sack-button-container .daytrader-sack-buttons {
+    margin: 65px 0 0 0;
+  }
+  .report-info .admin-sack-button-container .daytrader-sack-buttons:hover {
+    cursor: pointer;
   }
 }
 @media (min-width: 375px) {
@@ -1433,8 +1451,9 @@
     *****************************/
   }
   .daytrader-game-container .daytrader-sack-button-container {
-    width: 223px;
-    height: 280px;
+    margin: 0 10px;
+    width: 119px;
+    height: 154px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1442,10 +1461,18 @@
   .daytrader-game-container .daytrader-sack-button-container .daytrader-sack-buttons {
     margin: 100px 0 0 4px;
   }
-  .daytrader-game-container .daytrader-sack-button-container .company-face-in-sack {
-    width: 150px;
-    height: 150px;
-    margin: 100px 0 0 0;
+  .daytrader-game-container .daytrader-sack-button-container .company-face {
+    width: 35px;
+    height: 35px;
+  }
+  .daytrader-game-container .daytrader-sack-button-container .result-table-face-1 {
+    margin: 77px 0 0 14px;
+  }
+  .daytrader-game-container .daytrader-sack-button-container .result-table-face-2 {
+    margin: 3px 0 0 0;
+  }
+  .daytrader-game-container .daytrader-sack-button-container .result-table-face-3 {
+    margin: 77px 14px 0 0;
   }
   .daytrader-game-container .sack-btn {
     margin: 0;
@@ -1533,7 +1560,8 @@
     margin: 10px 0;
     border-collapse: separate;
     border-spacing: 0 0.5em;
-    width: 80%;
+    width: 100%;
+    display: inline-table;
   }
   .daytrader-game-container .daytrader-table .border-corner-left {
     border-radius: 10px 0 0 10px;
@@ -1546,7 +1574,7 @@
     color: white;
     font-weight: bold;
     font-family: "Patrick Hand", sans-serif;
-    font-size: 30px;
+    font-size: 26px;
     border-top: none !important;
     text-align: center;
     box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
@@ -1919,6 +1947,13 @@
     flex-direction: column;
     align-items: center;
     color: #41739D;
+    padding: 5% 0;
+  }
+  .report-info .report-description {
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 26px;
+    color: black;
+    margin: 30px 0;
   }
   .report-info .daytrader-admin-company-list {
     font-size: 22px;
@@ -1928,6 +1963,78 @@
   .report-info .company-face {
     width: 50px;
     height: 50px;
+  }
+  .report-info .graph-image {
+    width: 700px;
+    height: 400px;
+  }
+  .report-info .daytrader-table {
+    margin: 10px 0;
+    border-collapse: separate;
+    border-spacing: 0 0.5em;
+    width: 80%;
+  }
+  .report-info .daytrader-table .border-corner-left {
+    border-radius: 10px 0 0 10px;
+  }
+  .report-info .daytrader-table .border-corner-right {
+    border-radius: 0 10px 10px 0;
+  }
+  .report-info .daytrader-table .daytrader-table-header {
+    background: #41739D;
+    color: white;
+    font-weight: bold;
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 26px;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
+  }
+  .report-info .daytrader-table .daytrader-table-data {
+    font-size: 26px;
+    font-family: "Patrick Hand", sans-serif;
+    border-top: none !important;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .report-info .daytrader-table .daytrader-table-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
+
+  .admin-table-data {
+    display: flex;
+    justify-content: center;
+  }
+  .admin-table-data .admin-sack-button-container {
+    margin: 0 10px;
+    width: 119px;
+    height: 154px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .admin-table-data .admin-sack-button-container .daytrader-sack-buttons {
+    margin: 100px 0 0 4px;
+  }
+  .admin-table-data .admin-sack-button-container .company-face {
+    width: 35px;
+    height: 35px;
+  }
+  .admin-table-data .admin-sack-button-container .admin-table-face-1 {
+    margin: 77px 0 0 14px;
+  }
+  .admin-table-data .admin-sack-button-container .admin-table-face-2 {
+    margin: 3px 0 0 0;
+  }
+  .admin-table-data .admin-sack-button-container .admin-table-face-3 {
+    margin: 77px 14px 0 0;
+  }
+  .admin-table-data .sack-btn {
+    margin: 0;
+    padding: 0;
+    width: 60px;
+    height: 60px;
   }
 }
 

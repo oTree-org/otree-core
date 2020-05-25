@@ -76,9 +76,9 @@
     }
 
       .daytrader-sack-button-container {
-        width: 100%;
-        height: 200px;
-        display: flex;
+        width: 80px;
+        height: 110px;
+        display: none;
         align-items: center;
         justify-content: center;
         background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
@@ -91,6 +91,11 @@
           cursor: pointer;
         }
       }
+
+        .company-face {
+          height: 20px;
+          width: 20px;
+        }
 
       .company-face-in-sack {
         width: 90px;
@@ -654,5 +659,21 @@
     }
   }
 
+  .report-info {
+    .admin-sack-button-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
+      margin: 0 0 15px 0;
 
+      .daytrader-sack-buttons {
+        margin: 65px 0 0 0;
+
+        &:hover {
+          cursor: pointer;
+        }
+      }
+    }
+  }
 }
