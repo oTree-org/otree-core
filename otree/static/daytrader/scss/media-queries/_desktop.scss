@@ -339,6 +339,48 @@
       align-items: center;
     }
 
+    #tableResults {
+
+      .daytrader-table-header {
+        font-size: 22px;
+      }
+
+      .daytrader-table-data {
+        font-size: 20px;
+      }
+
+      .results-sack-button-container {
+        margin: 0 10px;
+        width: 119px;
+        height: 154px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
+
+        .company-face {
+          width: 35px;
+          height: 35px;
+        }
+
+        .result-table-face-1 {
+        margin: 77px 0 0 14px;
+      }
+
+      .result-table-face-2 {
+        margin: 3px 0 0 0;
+      }
+
+      .result-table-face-3 {
+        margin: 77px 14px 0 0;
+      }
+
+      }
+
+
+
+    }
+
   }
 
   .round-introduction {
@@ -648,7 +690,7 @@
       font-family: "Patrick Hand", sans-serif;
       font-size: 26px;
       color: black;
-      margin: 30px 0;
+      margin: 15px 0;
     }
 
     .daytrader-admin-company-list {
@@ -719,6 +761,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
 
       .daytrader-sack-buttons {
         margin: 100px 0 0 4px;
@@ -752,5 +795,17 @@
     }
   }
 
+  /* Admin Navbar */
+  #admin-panel {
+    margin-top: 1%;
+
+    .btn-circle {
+      width: 175px;
+      height: 175px;
+      font-size: 26px;
+      padding: 0;
+      text-align: center;
+    }
+  }
 }
 

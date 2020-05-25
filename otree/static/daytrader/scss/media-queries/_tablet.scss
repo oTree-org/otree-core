@@ -68,25 +68,25 @@
       margin: 0 20px;
     }
 
-  /*******************
-  *   intro1.html    *
-  ********************/
+    /*******************
+    *   intro1.html    *
+    ********************/
     .daytrader-intro-title {
       font-size: 80px;
       padding: 20px 0 0 0;
       letter-spacing: 8px;
     }
 
-  /*******************
-  *   intro2.html    *
-  ********************/
- .daytrader-sack {
+    /*******************
+    *   intro2.html    *
+    ********************/
+    .daytrader-sack {
       height: 230px;
       padding-bottom: 20px;
     }
 
     .daytrader-intro-container-first {
-      display:flex;
+      display: flex;
       justify-content: center;
       flex-direction: row;
       width: 100%;
@@ -97,9 +97,9 @@
       }
     }
 
-  /****************************
-    *  All day trader pages   *
-  *****************************/
+    /****************************
+      *  All day trader pages   *
+    *****************************/
 
     .daytrader-round-title {
       font-size: 40px;
@@ -194,7 +194,7 @@
         height: 50px;
         left: 550px;
         top: 1637px;
-       font-size: 20px;
+        font-size: 20px;
         color: black;
 
         border: 5px solid #41739D;
@@ -284,7 +284,22 @@
       width: 100%;
     }
 
+    #tableResults {
+      display: inline-table;
+      width: 100%;
 
+      .daytrader-table-header {
+        font-size: 20px;
+      }
+
+      .daytrader-table-data {
+        font-size: 18px;
+      }
+    }
+
+    .results-desc {
+      padding: 0 30px;
+    }
   }
 
 
@@ -512,5 +527,38 @@
     }
   }
 
+  .report-info {
+    #tableReport {
+      display: inline-table;
 
+      .daytrader-table-header {
+        font-size: 20px;
+      }
+
+      .daytrader-table-data {
+        font-size: 18px;
+      }
+    }
+
+    .report-description {
+      font-size: 20px;
+    }
+
+    .graph-image {
+      margin-top: 5%;
+    }
+  }
+
+  /* Admin Navbar */
+  #admin-panel {
+    margin-top: 7.5%;
+
+    .btn-circle {
+      width: 150px;
+      height: 150px;
+      font-size: 24px;
+      padding: 0;
+      text-align: center;
+    }
+  }
 }
