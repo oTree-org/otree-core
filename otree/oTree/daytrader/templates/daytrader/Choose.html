@@ -25,45 +25,39 @@
 {% block content %}
     <div class="daytrader-game-container">
         <div class="content-container">
-
             <div class="round-introduction">
                 <h2 class="daytrader-round-title">{{ player.company_name }}</h2>
             </div>
-
             <div class="daytrader-sack-button-container">
                 <div class="daytrader-sack-buttons">
-
                     <table>
                         <tr>
                             <td></td>
-                            <td><img src="{% static 'daytrader/media/unknown-face-green.png' %}" alt="unknown face"
-                                     class="sack-btn"></td>
+                            <td id="sack-container-1"><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
+                                                           alt="unknown face"
+                                                           class="sack-btn"></td>
                             <td></td>
                         </tr>
                         <tr>
-                            <td><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
-                                     alt="unknown face" class="sack-btn"></td>
+                            <td id="sack-container-2"><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
+                                                           alt="unknown face" class="sack-btn"></td>
                             <td></td>
-                            <td><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
-                                     alt="unknown face" class="sack-btn"></td>
+                            <td id="sack-container-3"><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
+                                                           alt="unknown face" class="sack-btn"></td>
                         </tr>
                     </table>
                 </div>
             </div>
-
             {% if subsession.round_number > 1 %}
                 <div class="daytrader-round-info">
                 <p class="daytrader-round-info">
                     Nu er du trader nummer {{ player.round_number }} og du skal nu handle aktier i firmaet
-                   <b>'{{ player.company_name }}'. </b> </p>
+                    <b>'{{ player.company_name }}'. </b></p>
             {% else %}
                 <p class="daytrader-round-info">
                     Du er den første trader, og du skal nu handle aktier i firmaet
                     '{{ player.company_name }}'. </p>
             {% endif %}
-
-
-
 
             {% if subsession.round_number > 1 %}
 
@@ -80,7 +74,7 @@
                             <td class="daytrader-table-data"> {{ price|c }}</td>
                             <td class="daytrader-table-data">
                                 <img src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" alt="unknown face"
-                                class="reveal-face">
+                                     class="reveal-face">
                             </td>
                             <td class="daytrader-table-data"> {% if choice == True %} + {% else %} - {% endif %}
                                 {{ deals }} aktier
@@ -110,7 +104,7 @@
                     <p class="daytrader-form-info"> Hvor mange aktier?
                         <br>
                         <small> (du kan handle med maksimalt {{ player.can_buy }}
-                        aktier)</small></p>
+                            aktier)</small></p>
                     <div class="daytrader-formfield">
                         {% formfield player.choice_of_number_of_shares label=None %}
                     </div>
@@ -132,19 +126,20 @@
 {% block scripts %}
     <script>
 
-
         let containers = document.getElementsByClassName("faceContainer");
         let drawn_face = {{ player.drawn_face|yesno:"true,false" }};
         let states = document.getElementsByClassName("state-container");
         let buttonContainer = document.getElementsByClassName("btn-container");
-        let group_ids = []
+        let group_ids = [];
         let current_group_id = {{ group.id }};
         let companyIds = document.getElementsByClassName("company-id");
         let data = {{ rounds|safe }};
+        let sackContainer1 = document.querySelector("#sack-container-1");
+        let sackContainer2 = document.querySelector("#sack-container-2");
+        let sackContainer3 = document.querySelector("#sack-container-3");
 
         let containerSack = document.querySelector(".daytrader-sack-button-container");
         let sackButtons = document.getElementsByClassName("sack-btn");
-
 
         let radioButton = document.getElementsByClassName("form-check-input");
         let inputContainer = document.querySelector(".daytrader-submit-value");
@@ -156,26 +151,7 @@
         }
 
 
-        let selection = JSON.parse(localStorage.getItem("selected_click"));
-        console.log(selection.name);
-        console.log("{{ player.company_name }}");
 
-        if (selection.name === "{{ player.company_name }}" && selection.group_id === {{ group.id }}) {
-            toggle("sack-btn", "none");
-            let happyFace = document.createElement("img");
-            happyFace.className = "company-face-in-sack";
-            happyFace.src = "{% static 'daytrader/media/happy_face_daytrader.png' %}";
-            let sadFace = document.createElement("img");
-            sadFace.className = "company-face-in-sack";
-            sadFace.src = "{% static 'daytrader/media/sad_face_daytrader.png' %}";
-
-            if (drawn_face === true) {
-                containerSack.appendChild(happyFace);
-            }
-            if (drawn_face === false) {
-                containerSack.appendChild(sadFace);
-            }
-        }
 
         function toggle(className, displayState) {
             let elements = document.getElementsByClassName(className);
@@ -186,29 +162,23 @@
         }
 
         for (let i = 0; i < sackButtons.length; i++) {
-
+            sackButtons.id = "button" + i;
+            console.log(sackButtons[i].parentElement.getAttribute("id"));
             sackButtons[i].onclick = event => {
+                console.log(sackButtons);
                 event.preventDefault();
-                toggle("sack-btn", "none");
                 let happyFace = document.createElement("img");
                 happyFace.className = "company-face-in-sack";
                 happyFace.src = "{% static 'daytrader/media/happy_face_daytrader.png' %}";
                 let sadFace = document.createElement("img");
                 sadFace.className = "company-face-in-sack";
                 sadFace.src = "{% static 'daytrader/media/sad_face_daytrader.png' %}";
-
-                if (drawn_face === true) {
-                    containerSack.appendChild(happyFace);
-                }
-                if (drawn_face === false) {
-                    containerSack.appendChild(sadFace);
-                }
-
-
-        /**
-        if (!localStorage.getItem("all_groups").includes(current_group_id)) {
-            localStorage.removeItem("clicked");
-        } **/
+                let unknownFace1 = document.createElement("img");
+                unknownFace1.className = "company-face-in-sack";
+                unknownFace1.src = "{% static 'daytrader/media/unknown-face-green.png' %}";
+                let unknownFace2 = document.createElement("img");
+                unknownFace2.className = "company-face-in-sack";
+                unknownFace2.src = "{% static 'daytrader/media/unknown-face-green.png' %}";
 
                 let existingGroups = JSON.parse(localStorage.getItem("all_groups"));
                 if (existingGroups === null) existingGroups = [];
@@ -219,17 +189,121 @@
 
                 let selectedClick = {
                     name: "{{ player.company_name }}",
-                    group_id: {{ group.id }}
+                    group_id: {{ group.id }},
+                    button_click: sackButtons[i].parentElement.getAttribute("id")
                 };
+
 
                 let existingSelections = JSON.parse(localStorage.getItem("all_selections"));
                 if (existingSelections === null) existingSelections = [];
                 localStorage.setItem("selected_click", JSON.stringify(selectedClick));
                 existingSelections.push(selectedClick);
                 localStorage.setItem("all_selections", JSON.stringify(existingSelections));
+
+                if (sackButtons[i].parentElement.getAttribute("id") === "sack-container-1") {
+                    toggle("sack-btn", "none");
+                    if (drawn_face === true) {
+                        sackContainer1.appendChild(happyFace);
+                        sackContainer2.appendChild(unknownFace2);
+                        sackContainer3.appendChild(unknownFace1);
+                    } else if (drawn_face === false) {
+                        sackContainer1.appendChild(sadFace);
+                        sackContainer2.appendChild(unknownFace2);
+                        sackContainer3.appendChild(unknownFace1);
+                    }
+                }
+
+                if (sackButtons[i].parentElement.getAttribute("id") === "sack-container-2") {
+                    toggle("sack-btn", "none");
+                    if (drawn_face === true) {
+                        sackContainer1.appendChild(unknownFace2);
+                        sackContainer2.appendChild(happyFace);
+                        sackContainer3.appendChild(unknownFace1);
+                    } else if (drawn_face === false) {
+                        sackContainer1.appendChild(unknownFace2);
+                        sackContainer2.appendChild(sadFace);
+                        sackContainer3.appendChild(unknownFace1);
+                    }
+                }
+
+                if (sackButtons[i].parentElement.getAttribute("id") === "sack-container-3") {
+                    toggle("sack-btn", "none");
+                    if (drawn_face === true) {
+                        sackContainer1.appendChild(unknownFace1);
+                        sackContainer2.appendChild(unknownFace2);
+                        sackContainer3.appendChild(happyFace);
+                    } else if (drawn_face === false) {
+                        sackContainer1.appendChild(unknownFace1);
+                        sackContainer2.appendChild(unknownFace2);
+                        sackContainer3.appendChild(sadFace);
+                    }
+                }
+
+
             }
         }
 
+        let selection = JSON.parse(localStorage.getItem("selected_click"));
+        if (selection.name === "{{ player.company_name }}" && selection.group_id === {{ group.id }}) {
+            toggle("sack-btn", "none");
+            let happyFace = document.createElement("img");
+            happyFace.className = "company-face-in-sack";
+            happyFace.src = "{% static 'daytrader/media/happy_face_daytrader.png' %}";
+            let sadFace = document.createElement("img");
+            sadFace.className = "company-face-in-sack";
+            sadFace.src = "{% static 'daytrader/media/sad_face_daytrader.png' %}";
+            let unknownFace1 = document.createElement("img");
+            unknownFace1.className = "company-face-in-sack";
+            unknownFace1.src = "{% static 'daytrader/media/unknown-face-green.png' %}";
+            let unknownFace2 = document.createElement("img");
+            unknownFace2.className = "company-face-in-sack";
+            unknownFace2.src = "{% static 'daytrader/media/unknown-face-green.png' %}";
+
+            if (selection.button_click === "sack-container-1") {
+                toggle("sack-btn", "none");
+                if (drawn_face === true) {
+                    sackContainer1.appendChild(happyFace);
+                    sackContainer2.appendChild(unknownFace2);
+                    sackContainer3.appendChild(unknownFace1);
+                } else if (drawn_face === false) {
+                    sackContainer1.appendChild(sadFace);
+                    sackContainer2.appendChild(unknownFace2);
+                    sackContainer3.appendChild(unknownFace1);
+                }
+            }
+
+            if (selection.button_click === "sack-container-2") {
+                toggle("sack-btn", "none");
+                if (drawn_face === true) {
+                    sackContainer1.appendChild(unknownFace2);
+                    sackContainer2.appendChild(happyFace);
+                    sackContainer3.appendChild(unknownFace1);
+                } else if (drawn_face === false) {
+                    sackContainer1.appendChild(unknownFace2);
+                    sackContainer2.appendChild(sadFace);
+                    sackContainer3.appendChild(unknownFace1);
+                }
+            }
+
+            if (selection.button_click === "sack-container-3") {
+                toggle("sack-btn", "none");
+                if (drawn_face === true) {
+                    sackContainer1.appendChild(unknownFace1);
+                    sackContainer2.appendChild(unknownFace2);
+                    sackContainer3.appendChild(happyFace);
+                } else if (drawn_face === false) {
+                    sackContainer1.appendChild(unknownFace1);
+                    sackContainer2.appendChild(unknownFace2);
+                    sackContainer3.appendChild(sadFace);
+                }
+            }
+        }
+
+
+        /**
+         if (!localStorage.getItem("all_groups").includes(current_group_id)) {
+            localStorage.removeItem("clicked");
+        } **/
 
     </script>
 {% endblock %}

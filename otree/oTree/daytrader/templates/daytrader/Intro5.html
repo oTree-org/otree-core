@@ -24,14 +24,14 @@
             Den næste trader ser tre longs efter hinanden, og går derfor også long.
         </p>
         <p class="daytrader-round-info">
-            Og sådan vil alle ‘rationelle’ tradere fremover gå long, lige meget hvilken information de selv får, fordi
-            der er en overvægt af information som peger på at firmaet har det godt.
+            Og så vil alle ‘rationelle’ tradere fremover gå long, lige meget hvilken information de selv får, fordi
+            der er en overvægt af information som peger på at firmaet har det godt. Prøv at trykke på spørgsmålstegnene i tabellen og se effekten.
         </p>
         <table class="table daytrader-table">
             <tr class="table-corners">
                 <th class="daytrader-table-header border-corner-left">trader</th>
                 <th class="daytrader-table-header">pris</th>
-                <th class="daytrader-table-header">ansigt</th>
+                <th class="daytrader-table-header">private info</th>
                 <th class="daytrader-table-header border-corner-right">handel</th>
             </tr>
             <tr class="daytrader-table-row">
@@ -61,82 +61,111 @@
             <tr class="daytrader-table-row">
                 <td class="daytrader-table-data">{{ 4 }}.</td>
                 <td class="daytrader-table-data">{{ 50.51|c }}</td>
-                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/sad_face_daytrader.png' %}"
-                                                      alt="sad face"
-                                                      class="reveal-face"></td>
+                <td class="daytrader-table-data reveal-hidden-face"><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
+                                                      alt="unknown face"
+                                                      class="reveal-face unknown-face"></td>
                 <td class="daytrader-table-data">+20 aktier</td>
             </tr>
             <tr class="daytrader-table-row">
                 <td class="daytrader-table-data">{{ 5 }}.</td>
                 <td class="daytrader-table-data">{{ 50.66|c }}</td>
-                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/sad_face_daytrader.png' %}"
-                                                      alt="sad face"
-                                                      class="reveal-face"></td>
+                <td class="daytrader-table-data reveal-hidden-face"><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
+                                                      alt="unknown face"
+                                                      class="reveal-face unknown-face"></td>
                 <td class="daytrader-table-data">+70 aktier</td>
             </tr>
             <tr class="daytrader-table-row">
                 <td class="daytrader-table-data">{{ 6 }}.</td>
                 <td class="daytrader-table-data">{{ 50.92|c }}</td>
-                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/sad_face_daytrader.png' %}"
-                                                      alt="sad face"
-                                                      class="reveal-face"></td>
+                <td class="daytrader-table-data reveal-hidden-face"><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
+                                                      alt="unknown face"
+                                                      class="reveal-face unknown-face"></td>
                 <td class="daytrader-table-data">+120 aktier</td>
             </tr>
             <tr class="daytrader-table-row">
                 <td class="daytrader-table-data">{{ 7 }}.</td>
                 <td class="daytrader-table-data">{{ 51.22|c }}</td>
-                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/sad_face_daytrader.png' %}"
-                                                      alt="sad face"
-                                                      class="reveal-face"></td>
+                <td class="daytrader-table-data reveal-hidden-face"><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
+                                                      alt="unknown face"
+                                                      class="reveal-face unknown-face"></td>
                 <td class="daytrader-table-data">+100 aktier</td>
             </tr>
             <tr class="daytrader-table-row">
                 <td class="daytrader-table-data">{{ 8 }}.</td>
                 <td class="daytrader-table-data">{{ 51.50|c }}</td>
-                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/sad_face_daytrader.png' %}"
-                                                      alt="sad face"
-                                                      class="reveal-face"></td>
+                <td class="daytrader-table-data reveal-hidden-face">
+                    <img src="{% static 'daytrader/media/unknown-face-green.png' %}" alt="unknown face"
+                         class="reveal-face unknown-face">
+                </td>
                 <td class="daytrader-table-data">+200 aktier</td>
             </tr>
         </table>
         <div class="daytrader-round-info">
-        <p>
-            Det kaldes en <i class="info-cascade-link">informationskaskade</i> , og det er rationelt at gøre.
-        </p>
-          <p>Informationskaskader kaldes nogle gange også for <i class="info-lemminge-link">lemminge-effekter</i>.</p>
-        <p >
-            Men informationskaskader kan tage fejl. Traderne ignorerede deres private information, fordi de to første
-            tradere gik long. Firmaets sande tilstand er i virkeligheden et
-            <img src="{% static 'daytrader/media/happy_face_daytrader.png' %}" alt="happy face" class="company-face">
-            og to <img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face" class="company-face">
-            ansigter.
-        </p>
-</div>
+
+            <p>
+                Det kaldes en <i class="info-cascade-link">informationskaskade</i> , og det er rationelt at gøre.
+            </p>
+            <p>Informationskaskader kaldes nogle gange også for <i class="info-lemminge-link">lemminge-effekter</i>.</p>
+            <p>
+                Men informationskaskader kan tage fejl. Traderne ignorerede deres private information, fordi de to
+                første
+                tradere gik long. Firmaets sande tilstand er i virkeligheden et
+                <img src="{% static 'daytrader/media/happy_face_daytrader.png' %}" alt="happy face"
+                     class="company-face">
+                og to <img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"
+                           class="company-face">
+                ansigter.
+            </p>
+        </div>
         <div class="daytrader-intro-info-container">
             <div class="daytrader-next-btn-container">
-            <button class="daytrader-next-btn">
-                Fortsæt...
-            </button>
-        </div>
+                <button class="daytrader-next-btn">
+                    Fortsæt...
+                </button>
+            </div>
         </div>
         <div id="infoCascadeModal" class="info-cascade-modal">
             <div class="info-cascade-modal-content">
-                <p class="daytrader-round-info">En informationskaskade opstår når du tager det samme valg som dem før dig har taget, uafhængigt af hvilken privat information du selv måtte have. </p>
+                <p class="daytrader-round-info">En informationskaskade opstår når du tager det samme valg som dem før
+                    dig har taget, uafhængigt af hvilken privat information du selv måtte have. </p>
 
             </div>
         </div>
 
-         <div id="lemmingModal" class="lemming-modal">
-                <div class="lemminge-modal-content">
-                    <p class="daytrader-round-info">En person kaldes en lemming, hvis vedkommende i en beslutningssituation følger de valg,
-                        som andre har truffet før, frem for at følge sin egen information. En lemmingeeffekt er en beslutningssituation, hvori de fleste individer opfører sig som lemminger.
-                        <br>
-                        <a href="https://digitaluddannelse.org/wp-content/uploads/2019/03/DUDE-_-LIKE-Kap-1.2.pdf">Læs mere her</a></p>
-                </div>
-         </div>
+        <div id="lemmingModal" class="lemming-modal">
+            <div class="lemminge-modal-content">
+                <p class="daytrader-round-info">En person kaldes en lemming, hvis vedkommende i en beslutningssituation
+                    følger de valg,
+                    som andre har truffet før, frem for at følge sin egen information. En lemmingeeffekt er en
+                    beslutningssituation, hvori de fleste individer opfører sig som lemminger.
+                    <br>
+                    <a target="_blank"
+                       href="https://digitaluddannelse.org/wp-content/uploads/2019/03/DUDE-_-LIKE-Kap-1.2.pdf">Læs mere
+                        her</a></p>
+            </div>
+        </div>
     </div>
 
     <script>
+        // onClick change image
+        let unknownFaces = document.getElementsByClassName("unknown-face");
+        let hiddenFaceContainer = document.getElementsByClassName("reveal-hidden-face");
+
+        for(let item = 0; item < unknownFaces.length; item++) {
+            unknownFaces[item].onmouseover = () => {
+                unknownFaces[item].style.cursor = "pointer";
+            };
+
+            unknownFaces[item].onclick = event => {
+                unknownFaces[item].style.display = "none";
+                let sadFace = document.createElement("img");
+                sadFace.className = "reveal-face";
+                sadFace.src = "{% static 'daytrader/media/sad_face_daytrader.png' %}";
+                hiddenFaceContainer[item].appendChild(sadFace);
+            }
+        }
+
+        // Information modules
         let infoCascadeModal = document.getElementById("infoCascadeModal");
         let infoCascadeLink = document.querySelector(".info-cascade-link");
 
