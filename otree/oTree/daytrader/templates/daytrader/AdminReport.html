@@ -31,7 +31,7 @@
 
     <p class="report-description">Nedenunder kan du se en tabel der viser firmaernes tilstande og spillets forløb</p>
 
-    <table id="tableReport" class="table daytrader-table">
+    <table id="tableReport" class="table daytrader-table table-responsive">
         <tr id="removeLast" class="table-corners">
             <th class="daytrader-table-header border-corner-left"> firma</th>
             <th class="daytrader-table-header"> tilstand</th>
@@ -76,22 +76,16 @@
 {% endblock %}
 
 <script>
- // Remove last table column if row exceeds 2 columns
-  let rowLength = document.getElementById("removeLast");
-  let rowCount = document.getElementsByTagName("th").length;
+    // Remove last table column if row exceeds 2 columns
+    let rowLength = document.getElementById("removeLast");
+    let rowCount = document.getElementsByTagName("th").length;
+    let tableHeaders = document.getElementsByClassName("daytrader-table-header");
 
     if (rowCount > 2) {
         rowLength.deleteCell(-1);
     }
 
-
-
-
-
- /**
-  * let rowLength = document.getElementById("removeLast");
-  * rowLength.deleteCell(-1);
-  */
-
-
+    for (let item = 0; item < tableHeaders.length; item++) {
+        tableHeaders[tableHeaders.length - 1].style.borderRadius = "0 10px 10px 0";
+    }
 </script>
