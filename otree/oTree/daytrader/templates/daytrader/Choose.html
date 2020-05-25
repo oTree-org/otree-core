@@ -55,7 +55,7 @@
                 <div class="daytrader-round-info">
                 <p class="daytrader-round-info">
                     Nu er du trader nummer {{ player.round_number }} og du skal nu handle aktier i firmaet
-                    '{{ player.company_name }}'. </p>
+                   <b>'{{ player.company_name }}'. </b> </p>
             {% else %}
                 <p class="daytrader-round-info">
                     Du er den første trader, og du skal nu handle aktier i firmaet
@@ -63,14 +63,6 @@
             {% endif %}
 
 
-            <div class="daytrader-info-choice">
-                <div class="daytrader-round-info">
-                    Du har {{ player.wallet|c }} og aktieprisen er lige nu {{ player.price|c }}.
-                    <br>
-                    <br>
-                    <b>Hvad vil du gøre?</b>
-                </div>
-            </div>
 
 
             {% if subsession.round_number > 1 %}
@@ -79,7 +71,7 @@
                     <tr class="table-corners">
                         <th class="daytrader-table-header border-corner-left">trader</th>
                         <th class="daytrader-table-header">pris</th>
-                        <th class="daytrader-table-header">privat info</th>
+                        <th class="daytrader-table-header">private info</th>
                         <th class="daytrader-table-header border-corner-right">handel</th>
                     </tr>
                     {% for r, price, choice, deals, states in data %}
@@ -97,6 +89,15 @@
                     {% endfor %}
                 </table>
             {% endif %}
+
+            <div class="daytrader-info-choice">
+                <div class="daytrader-round-info">
+                    Du har {{ player.wallet|c }} og aktieprisen er lige nu {{ player.price|c }}.
+                    <br>
+                    <br>
+                    <b><u>Hvad vil du gøre?</u></b>
+                </div>
+            </div>
             <div id="timer-text" class="container justify-content-md-center">
                 Tid tilbage:
                 <strong><span id="timer" class="otree-timer__time-left"></span></strong>
@@ -106,8 +107,10 @@
                 {% formfield player.choice_of_trade label=None %}
 
                 <div class="daytrader-submit-value">
-                    <p class="daytrader-form-info"> Hvor mange aktier? (du kan handle med maksimalt {{ player.can_buy }}
-                        aktier)</p>
+                    <p class="daytrader-form-info"> Hvor mange aktier?
+                        <br>
+                        <small> (du kan handle med maksimalt {{ player.can_buy }}
+                        aktier)</small></p>
                     <div class="daytrader-formfield">
                         {% formfield player.choice_of_number_of_shares label=None %}
                     </div>
@@ -122,9 +125,6 @@
             </div>
         </div>
     </div>
-
-
-
 
 
 
@@ -154,9 +154,10 @@
             }
         }
 
+        /**
         if (!localStorage.getItem("all_groups").includes(current_group_id)) {
             localStorage.removeItem("clicked");
-        }
+        } **/
 
         let selection = JSON.parse(localStorage.getItem("selected_click"));
         console.log(selection.name);
@@ -215,7 +216,7 @@
                 let selectedClick = {
                     name: "{{ player.company_name }}",
                     group_id: {{ group.id }}
-                }
+                };
 
 
                 let existingSelections = JSON.parse(localStorage.getItem("all_selections"));
@@ -224,7 +225,6 @@
                 existingSelections.push(selectedClick);
                 localStorage.setItem("all_selections", JSON.stringify(existingSelections));
             }
-
         }
 
 
