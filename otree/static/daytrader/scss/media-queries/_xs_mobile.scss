@@ -75,35 +75,47 @@
       display: none;
     }
 
-      .daytrader-sack-button-container {
-        width: 80px;
-        height: 110px;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
-        margin: 0 0 15px 0;
+    .daytrader-sack-button-container {
+      width: 100%;
+      height: 170px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
+      margin: 0 0 15px 0;
 
-        .daytrader-sack-buttons {
-           margin: 65px 0 0 0;
+      .daytrader-sack-buttons {
+         margin: 65px 0 0 0;
 
-           &:hover {
-          cursor: pointer;
-        }
+         &:hover {
+        cursor: pointer;
+      }
+    }
+
+      .company-face {
+        height: 20px;
+        width: 20px;
       }
 
-        .company-face {
-          height: 20px;
-          width: 20px;
-        }
+    .company-face-in-sack {
+      width: 40px;
+      height: 40px;
 
-      .company-face-in-sack {
-        width: 90px;
-        height: 90px;
+      &:hover {
+        cursor: pointer;
+      }
+    }
+  }
+    .sack-btn {
+      margin: 0;
+      padding: 0;
+      width: 40px;
+      height: 40px;
 
         &:hover {
-          cursor: pointer;
-        }
+        cursor: pointer;
+        filter: contrast(1.75);
+
       }
     }
 
@@ -151,6 +163,8 @@
         }
       }
     }
+
+
 
     /*******************
     *   intro2.html    *
@@ -335,6 +349,8 @@
         font-size: 18px;
         font-family: "Patrick Hand", sans-serif;
         text-align: center;
+
+
       }
     }
 
@@ -343,6 +359,14 @@
       display: none;
       flex-direction: column;
       justify-content: center;
+
+        .form-group {
+          justify-content: center;
+          display: flex;
+        }
+      .controls {
+
+      }
 
       #id_choice_of_number_of_shares {
         max-width: 166px;
@@ -354,25 +378,19 @@
         border: 5px solid #41739D;
         box-sizing: border-box;
         border-radius: 30px;
+        text-align: center;
+        display: flex;
+        justify-content: center;
       }
     }
 
-    .sack-btn {
-      margin: 0;
-      padding: 0;
-      width: 45px;
-      height: 45px;
 
-        &:hover {
-        cursor: pointer;
-        filter: contrast(1.75);
-
-      }
-    }
 
     .field-choice_of_number_of_shares {
       display: flex;
       justify-content: center;
+      width: 50%;
+      text-align: center;
     }
 
 
@@ -390,9 +408,7 @@
       .form-check {
         display: flex;
         flex-direction: row;
-        margin-right: 0;
-        margin-bottom: 15px;
-        justify-content: left;
+        padding: 20px 0 20px 60px;
 
         .form-check-label {
           font-family: "Patrick Hand", sans-serif;

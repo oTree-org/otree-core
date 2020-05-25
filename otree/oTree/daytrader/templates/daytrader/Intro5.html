@@ -37,17 +37,17 @@
             <tr class="daytrader-table-row">
                 <td class="daytrader-table-data">{{ 1 }}.</td>
                 <td class="daytrader-table-data">{{ 50|c }}</td>
-                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/happy_face_daytrader.png' %}"
+                <td class="daytrader-table-data reveal-hidden-happy-face"><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
                                                       alt="sad face"
-                                                      class="reveal-face"></td>
+                                                        class="reveal-face unknown-happy-face"></td>
                 <td class="daytrader-table-data">+23 aktier</td>
             </tr>
             <tr class="daytrader-table-row">
                 <td class="daytrader-table-data">{{ 2 }}.</td>
                 <td class="daytrader-table-data">{{ 50.06|c }}</td>
-                <td class="daytrader-table-data"><img src="{% static 'daytrader/media/happy_face_daytrader.png' %}"
+                <td class="daytrader-table-data reveal-hidden-happy-face"><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
                                                       alt="happy face"
-                                                      class="reveal-face"></td>
+                                                      class="reveal-face unknown-happy-face"></td>
                 <td class="daytrader-table-data">+45 aktier</td>
             </tr>
             <tr class="daytrader-table-row">
@@ -147,7 +147,7 @@
     </div>
 
     <script>
-        // onClick change image
+        // onClick change image (Sad-face)
         let unknownFaces = document.getElementsByClassName("unknown-face");
         let hiddenFaceContainer = document.getElementsByClassName("reveal-hidden-face");
 
@@ -162,6 +162,24 @@
                 sadFace.className = "reveal-face";
                 sadFace.src = "{% static 'daytrader/media/sad_face_daytrader.png' %}";
                 hiddenFaceContainer[item].appendChild(sadFace);
+            }
+        }
+
+        // onClick change image (happy face 2 first rows)
+        let unknownHappyFaces = document.getElementsByClassName("unknown-happy-face");
+        let hiddenSadFaceContainer = document.getElementsByClassName("reveal-hidden-happy-face");
+
+        for(let item = 0; item < unknownHappyFaces.length; item++) {
+            unknownHappyFaces[item].onmouseover = () => {
+                unknownHappyFaces[item].style.cursor = "pointer";
+            };
+
+            unknownHappyFaces[item].onclick = event => {
+                unknownHappyFaces[item].style.display = "none";
+                let happyFace = document.createElement("img");
+                happyFace.className = "reveal-face";
+                happyFace.src = "{% static 'daytrader/media/happy_face_daytrader.png' %}";
+                hiddenSadFaceContainer[item].appendChild(happyFace);
             }
         }
 

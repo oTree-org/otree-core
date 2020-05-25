@@ -100,6 +100,10 @@
     .daytrader-table {
       border-collapse: separate;
       border-spacing: 0 0.5em;
+         td {
+          padding: 15px 6px 15px 0;
+          vertical-align: middle;
+        }
 
       .border-corner-left {
         border-radius: 10px 0 0 10px;
@@ -114,7 +118,7 @@
         color: white;
         font-weight: bold;
         font-family: "Patrick Hand", sans-serif;
-        font-size: 17px;
+        font-size: 15px;
         border-top: none !important;
         text-align: center;
         box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
@@ -140,7 +144,7 @@
       justify-content: center;
 
       .daytrader-form-info {
-        font-size: 18px;
+        font-size: 20px;
         font-family: "Patrick Hand", sans-serif;
         text-align: center;
       }
@@ -206,9 +210,7 @@
       flex-direction: column;
 
       .form-check {
-        display: flex;
-        flex-direction: row;
-        margin-right: 0;
+
         padding: 20px 0 20px 60px;
 
         .form-check-label {
