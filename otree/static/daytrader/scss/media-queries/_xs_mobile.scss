@@ -33,7 +33,7 @@
 
 
 
-    .future-modal, .short-modal, .long-modal, .info-cascade-modal {
+    .future-modal, .short-modal, .long-modal, .info-cascade-modal, .lemming-modal {
       display: none;
       position: fixed;
       z-index: 1;
@@ -45,7 +45,7 @@
       background-color: rgb(0, 0, 0);
       background-color: rgba(0, 0, 0, 0.4);
 
-      .future-modal-content, .short-modal-content, .long-modal-content, .info-cascade-modal-content {
+      .future-modal-content, .short-modal-content, .long-modal-content, .info-cascade-modal-content, .lemminge-modal-content {
         background-color: #fefefe;
         margin: 15% auto;
         padding: 20px;
@@ -57,7 +57,7 @@
       }
     }
 
-    .daytrader-future, .short-modal-link, .long-modal-link, .info-cascade-link {
+    .daytrader-future, .short-modal-link, .long-modal-link, .info-cascade-link, .info-lemminge-link {
       color: $ku-dark-blue;
       text-decoration: underline;
 
@@ -100,7 +100,6 @@
       .company-face-in-sack {
         width: 90px;
         height: 90px;
-        margin: 70px 0 0 0;
 
         &:hover {
           cursor: pointer;

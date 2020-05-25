@@ -42,7 +42,7 @@
   .daytrader-game-container .content-container {
     width: 96%;
   }
-  .daytrader-game-container .future-modal, .daytrader-game-container .short-modal, .daytrader-game-container .long-modal, .daytrader-game-container .info-cascade-modal {
+  .daytrader-game-container .future-modal, .daytrader-game-container .short-modal, .daytrader-game-container .long-modal, .daytrader-game-container .info-cascade-modal, .daytrader-game-container .lemming-modal {
     display: none;
     position: fixed;
     z-index: 1;
@@ -54,7 +54,7 @@
     background-color: black;
     background-color: rgba(0, 0, 0, 0.4);
   }
-  .daytrader-game-container .future-modal .future-modal-content, .daytrader-game-container .future-modal .short-modal-content, .daytrader-game-container .future-modal .long-modal-content, .daytrader-game-container .future-modal .info-cascade-modal-content, .daytrader-game-container .short-modal .future-modal-content, .daytrader-game-container .short-modal .short-modal-content, .daytrader-game-container .short-modal .long-modal-content, .daytrader-game-container .short-modal .info-cascade-modal-content, .daytrader-game-container .long-modal .future-modal-content, .daytrader-game-container .long-modal .short-modal-content, .daytrader-game-container .long-modal .long-modal-content, .daytrader-game-container .long-modal .info-cascade-modal-content, .daytrader-game-container .info-cascade-modal .future-modal-content, .daytrader-game-container .info-cascade-modal .short-modal-content, .daytrader-game-container .info-cascade-modal .long-modal-content, .daytrader-game-container .info-cascade-modal .info-cascade-modal-content {
+  .daytrader-game-container .future-modal .future-modal-content, .daytrader-game-container .future-modal .short-modal-content, .daytrader-game-container .future-modal .long-modal-content, .daytrader-game-container .future-modal .info-cascade-modal-content, .daytrader-game-container .future-modal .lemminge-modal-content, .daytrader-game-container .short-modal .future-modal-content, .daytrader-game-container .short-modal .short-modal-content, .daytrader-game-container .short-modal .long-modal-content, .daytrader-game-container .short-modal .info-cascade-modal-content, .daytrader-game-container .short-modal .lemminge-modal-content, .daytrader-game-container .long-modal .future-modal-content, .daytrader-game-container .long-modal .short-modal-content, .daytrader-game-container .long-modal .long-modal-content, .daytrader-game-container .long-modal .info-cascade-modal-content, .daytrader-game-container .long-modal .lemminge-modal-content, .daytrader-game-container .info-cascade-modal .future-modal-content, .daytrader-game-container .info-cascade-modal .short-modal-content, .daytrader-game-container .info-cascade-modal .long-modal-content, .daytrader-game-container .info-cascade-modal .info-cascade-modal-content, .daytrader-game-container .info-cascade-modal .lemminge-modal-content, .daytrader-game-container .lemming-modal .future-modal-content, .daytrader-game-container .lemming-modal .short-modal-content, .daytrader-game-container .lemming-modal .long-modal-content, .daytrader-game-container .lemming-modal .info-cascade-modal-content, .daytrader-game-container .lemming-modal .lemminge-modal-content {
     background-color: #fefefe;
     margin: 15% auto;
     padding: 20px;
@@ -64,11 +64,11 @@
     display: flex;
     justify-content: center;
   }
-  .daytrader-game-container .daytrader-future, .daytrader-game-container .short-modal-link, .daytrader-game-container .long-modal-link, .daytrader-game-container .info-cascade-link {
+  .daytrader-game-container .daytrader-future, .daytrader-game-container .short-modal-link, .daytrader-game-container .long-modal-link, .daytrader-game-container .info-cascade-link, .daytrader-game-container .info-lemminge-link {
     color: #41739D;
     text-decoration: underline;
   }
-  .daytrader-game-container .daytrader-future:hover, .daytrader-game-container .short-modal-link:hover, .daytrader-game-container .long-modal-link:hover, .daytrader-game-container .info-cascade-link:hover {
+  .daytrader-game-container .daytrader-future:hover, .daytrader-game-container .short-modal-link:hover, .daytrader-game-container .long-modal-link:hover, .daytrader-game-container .info-cascade-link:hover, .daytrader-game-container .info-lemminge-link:hover {
     cursor: pointer;
   }
   .daytrader-game-container .daytrader-intro-info-container {
@@ -99,7 +99,6 @@
   .daytrader-game-container .daytrader-sack-button-container .company-face-in-sack {
     width: 90px;
     height: 90px;
-    margin: 70px 0 0 0;
   }
   .daytrader-game-container .daytrader-sack-button-container .company-face-in-sack:hover {
     cursor: pointer;
@@ -1483,7 +1482,7 @@
   .daytrader-game-container .content-container {
     width: 70%;
   }
-  .daytrader-game-container .future-modal-content, .daytrader-game-container .short-modal-content, .daytrader-game-container .long-modal-content, .daytrader-game-container .info-cascade-modal-content {
+  .daytrader-game-container .future-modal-content, .daytrader-game-container .short-modal-content, .daytrader-game-container .long-modal-content, .daytrader-game-container .info-cascade-modal-content, .daytrader-game-container lemming-modal {
     width: 50%;
   }
   .daytrader-game-container .daytrader-intro-info-container {
