@@ -22,7 +22,7 @@ jobs:
           IMAGE_NAME=$CIRCLE_PROJECT_REPONAME:$CIRCLE_SHA1
           docker login -u $DOCKER_USER -p $DOCKER_PASS
           docker build -t $DOCKER_USER/$IMAGE_NAME .
-          if [ "${CIRCLE_BRANCH}" == "master" ]; then
+          if [ "${CIRCLE_BRANCH}" == "master" || "${CIRCLE_BRANCH}" == "production" ]; then
             docker push $DOCKER_USER/$IMAGE_NAME
           fi
       - slack/status:
@@ -64,6 +64,7 @@ workflows:
     jobs:
       - build
       - deploy:
+          name: "deploy_to_staging"
           requires:
             - build
           filters:
@@ -72,6 +73,7 @@ workflows:
                 - master
           domain: staging
       - deploy:
+          name: "deploy_to_production"
           requires:
             - build
           filters:
