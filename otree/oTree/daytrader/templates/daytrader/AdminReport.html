@@ -31,8 +31,8 @@
 
     <p class="report-description">Nedenunder kan du se en tabel der viser firmaernes tilstande og spillets forløb</p>
 
-    <table id="table" class="table daytrader-table">
-        <tr>
+    <table id="tableReport" class="table daytrader-table">
+        <tr id="removeLast" class="table-corners">
             <th class="daytrader-table-header border-corner-left"> firma</th>
             <th class="daytrader-table-header"> tilstand</th>
             {% for r in round_list %}
@@ -76,11 +76,22 @@
 {% endblock %}
 
 <script>
-    let sixthTableCell = document.getElementById("round_6");
-    sixthTableCell.style.display = "none";
+ // Remove last table column if row exceeds 2 columns
+  let rowLength = document.getElementById("removeLast");
+  let rowCount = document.getElementsByTagName("th").length;
 
-    let fifthTableCell = document.getElementById("round_5");
-    fifthTableCell.style.borderRadius = "0 10px 10px 0";
+    if (rowCount > 2) {
+        rowLength.deleteCell(-1);
+    }
+
+
+
+
+
+ /**
+  * let rowLength = document.getElementById("removeLast");
+  * rowLength.deleteCell(-1);
+  */
 
 
 </script>
