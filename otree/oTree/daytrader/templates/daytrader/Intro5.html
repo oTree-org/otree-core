@@ -99,17 +99,19 @@
                 <td class="daytrader-table-data">+200 aktier</td>
             </tr>
         </table>
-        <p class="daytrader-round-info">
+        <div class="daytrader-round-info">
+        <p>
             Det kaldes en <i class="info-cascade-link">informationskaskade</i> , og det er rationelt at gøre.
         </p>
-        <p class="daytrader-round-info">
+          <p>Informationskaskader kaldes nogle gange også for <i class="info-lemminge-link">lemminge-effekter</i>.</p>
+        <p >
             Men informationskaskader kan tage fejl. Traderne ignorerede deres private information, fordi de to første
             tradere gik long. Firmaets sande tilstand er i virkeligheden et
             <img src="{% static 'daytrader/media/happy_face_daytrader.png' %}" alt="happy face" class="company-face">
             og to <img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face" class="company-face">
             ansigter.
         </p>
-
+</div>
         <div class="daytrader-intro-info-container">
             <div class="daytrader-next-btn-container">
             <button class="daytrader-next-btn">
@@ -120,21 +122,44 @@
         <div id="infoCascadeModal" class="info-cascade-modal">
             <div class="info-cascade-modal-content">
                 <p class="daytrader-round-info">En informationskaskade opstår når du tager det samme valg som dem før dig har taget, uafhængigt af hvilken privat information du selv måtte have. </p>
+
             </div>
         </div>
+
+         <div id="lemmingModal" class="lemming-modal">
+                <div class="lemminge-modal-content">
+                    <p class="daytrader-round-info">En person kaldes en lemming, hvis vedkommende i en beslutningssituation følger de valg,
+                        som andre har truffet før, frem for at følge sin egen information. En lemmingeeffekt er en beslutningssituation, hvori de fleste individer opfører sig som lemminger.
+                        <br>
+                        <a href="https://digitaluddannelse.org/wp-content/uploads/2019/03/DUDE-_-LIKE-Kap-1.2.pdf">Læs mere her</a></p>
+                </div>
+         </div>
     </div>
 
     <script>
         let infoCascadeModal = document.getElementById("infoCascadeModal");
         let infoCascadeLink = document.querySelector(".info-cascade-link");
 
+        let lemmingModal = document.getElementById("lemmingModal");
+        let lemmingeInfo = document.querySelector(".info-lemminge-link");
+
         infoCascadeLink.onclick = () => {
             infoCascadeModal.style.display = "block";
-        }
+        };
 
         window.onclick = event => {
             if (event.target === infoCascadeModal) {
                 infoCascadeModal.style.display = "none";
+            }
+        };
+
+        lemmingeInfo.onclick = () => {
+            lemmingModal.style.display = "block";
+        };
+
+        window.onclick = event => {
+            if (event.target === lemmingModal) {
+                lemmingModal.style.display = "none";
             }
         }
     </script>

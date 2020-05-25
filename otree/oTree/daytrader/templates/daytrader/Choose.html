@@ -145,6 +145,7 @@
         let containerSack = document.querySelector(".daytrader-sack-button-container");
         let sackButtons = document.getElementsByClassName("sack-btn");
 
+
         let radioButton = document.getElementsByClassName("form-check-input");
         let inputContainer = document.querySelector(".daytrader-submit-value");
 
@@ -154,14 +155,11 @@
             }
         }
 
-        /**
-        if (!localStorage.getItem("all_groups").includes(current_group_id)) {
-            localStorage.removeItem("clicked");
-        } **/
 
         let selection = JSON.parse(localStorage.getItem("selected_click"));
         console.log(selection.name);
         console.log("{{ player.company_name }}");
+
         if (selection.name === "{{ player.company_name }}" && selection.group_id === {{ group.id }}) {
             toggle("sack-btn", "none");
             let happyFace = document.createElement("img");
@@ -206,6 +204,12 @@
                     containerSack.appendChild(sadFace);
                 }
 
+
+        /**
+        if (!localStorage.getItem("all_groups").includes(current_group_id)) {
+            localStorage.removeItem("clicked");
+        } **/
+
                 let existingGroups = JSON.parse(localStorage.getItem("all_groups"));
                 if (existingGroups === null) existingGroups = [];
                 localStorage.setItem("current_group", JSON.stringify(current_group_id));
@@ -217,7 +221,6 @@
                     name: "{{ player.company_name }}",
                     group_id: {{ group.id }}
                 };
-
 
                 let existingSelections = JSON.parse(localStorage.getItem("all_selections"));
                 if (existingSelections === null) existingSelections = [];
