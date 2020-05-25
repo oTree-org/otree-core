@@ -22,16 +22,19 @@ jobs:
           IMAGE_NAME=$CIRCLE_PROJECT_REPONAME:$CIRCLE_SHA1
           docker login -u $DOCKER_USER -p $DOCKER_PASS
           docker build -t $DOCKER_USER/$IMAGE_NAME .
-          if [ "${CIRCLE_BRANCH}" == "master" ]; then
+          if [ "${CIRCLE_BRANCH}" == "master" || "${CIRCLE_BRANCH}" == "production" ]; then
             docker push $DOCKER_USER/$IMAGE_NAME
           fi
       - slack/status:
           success_message: "Build :white_check_mark:\n*Author* $CIRCLE_USERNAME\n*Branch* $CIRCLE_BRANCH\n*Commit* <https://github.com/PrimeCodingSolutions/otree-core/commit/$CIRCLE_SHA1|$SHORT_GIT_HASH>\n>$COMMIT_MESSAGE"
           failure_message: "Build :x:\n*Author* $CIRCLE_USERNAME\n*Branch* $CIRCLE_BRANCH\n*Commit* <https://github.com/PrimeCodingSolutions/otree-core/commit/$CIRCLE_SHA1|$SHORT_GIT_HASH>\n>$COMMIT_MESSAGE"
 
-  deploy_to_staging:
+  deploy:
     docker:
       - image: circleci/python:3.7
+    parameters:
+      domain:
+        type: string
     steps:
       - checkout
       - run: |
@@ -41,10 +44,10 @@ jobs:
           sudo tar -xzvf rancher-linux-amd64-v0.6.14.tar.gz -C /usr/local/lib && \
           sudo ln -s /usr/local/lib/rancher-v0.6.14/rancher /usr/local/bin/rancher
       - run: |
-          export SUBDOMAIN=staging && \
+          export SUBDOMAIN=<< parameters.domain >> && \
           export TAG=$CIRCLE_SHA1 && \
           rancher up \
-          --stack staging \
+          --stack << parameters.domain >> \
           --force-upgrade \
           --confirm-upgrade \
           --pull -d
@@ -60,10 +63,21 @@ workflows:
   build_and_deploy:
     jobs:
       - build
-      - deploy_to_staging:
+      - deploy:
+          name: "deploy_to_staging"
           requires:
             - build
           filters:
             branches:
               only:
                 - master
+          domain: staging
+      - deploy:
+          name: "deploy_to_production"
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - production
+          domain: production

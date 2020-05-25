@@ -1,4 +1,3 @@
-
 from otree.api import Currency as c, currency_range
 from . import models
 from ._builtin import Page, WaitPage
@@ -7,42 +6,49 @@ from .models import Constants, Player
 
 class Intro1(Page):
     timeout_seconds = Constants.timeouts
+
     def is_displayed(self):
         return self.round_number == 1
 
 
 class Intro2(Page):
     timeout_seconds = Constants.timeouts
+
     def is_displayed(self):
         return self.round_number == 1
 
 
 class Intro3(Page):
     timeout_seconds = Constants.timeouts
+
     def is_displayed(self):
         return self.round_number == 1
 
 
 class Intro4(Page):
     timeout_seconds = Constants.timeouts
+
     def is_displayed(self):
         return self.round_number == 1
 
 
 class Intro4b(Page):
     timeout_seconds = Constants.timeouts
+
     def is_displayed(self):
         return self.round_number == 1
 
 
 class Intro5(Page):
     timeout_seconds = Constants.timeouts
+
     def is_displayed(self):
         return self.round_number == 1
 
 
 class Intro6(Page):
     timeout_seconds = Constants.timeouts
+
     def is_displayed(self):
         return self.round_number == 1
 
@@ -50,6 +56,7 @@ class Intro6(Page):
 class MyWaitPage(WaitPage):
     title_text = "Vent til alle er klar"
     body_text = "Spillet starter om et øjeblik..."
+
     def after_all_players_arrive(self):
         for player in self.group.get_players():
             player.new_share_price()
@@ -58,18 +65,19 @@ class MyWaitPage(WaitPage):
 
 
 class Choose(Page):
-    form_model = 'player' # setting a form model for current player
-    form_fields = ['choice_of_trade', 'choice_of_number_of_shares'] # setting a form field to fill out
+    form_model = 'player'  # setting a form model for current player
+    form_fields = ['choice_of_trade', 'choice_of_number_of_shares']  # setting a form field to fill out
 
     timeout_seconds = Constants.timeouts
+
     # retrieving variables for a trade history table
     def vars_for_template(self):
         prices = [self.session.vars['{}{}'.format(self.player.company_name, r)][0]
-                    for r in range(1, self.player.round_number)]
+                  for r in range(1, self.player.round_number)]
         choices = [self.session.vars['{}{}'.format(self.player.company_name, r)][3]
-                    for r in range(1, self.round_number)]
+                   for r in range(1, self.round_number)]
         deals = [self.session.vars['{}{}'.format(self.player.company_name, r)][4]
-                    for r in range(1, self.player.round_number)]
+                 for r in range(1, self.player.round_number)]
         rounds = [r for r in range(1, self.player.round_number)]
         states = []
         for player in Player.objects.all():
@@ -78,7 +86,8 @@ class Choose(Page):
         data = zip(rounds, prices, choices, deals, states)
 
         return {
-           'data': data,
+            'data': data,
+            'rounds': rounds
         }
 
 
@@ -113,7 +122,7 @@ class Results(Page):
 
         data = zip(firma, tilstand, choices, handler, price, closing, tjent)
         handelsvaerdi = c(sum([p.price * p.choice_of_number_of_shares
-                        for p in self.player.in_all_rounds()]))
+                               for p in self.player.in_all_rounds()]))
 
         return {
             'handlet': handelsvaerdi,

@@ -31,6 +31,8 @@
       width: 96%;
     }
 
+
+
     .future-modal, .short-modal, .long-modal, .info-cascade-modal {
       display: none;
       position: fixed;
@@ -69,15 +71,41 @@
     }
 
 
-
-
     #continue {
       display: none;
     }
 
-  /*******************
-  *   intro1.html    *
-  ********************/
+      .daytrader-sack-button-container {
+        width: 100%;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
+        margin: 0 0 15px 0;
+
+        .daytrader-sack-buttons {
+           margin: 65px 0 0 0;
+
+           &:hover {
+          cursor: pointer;
+        }
+      }
+
+      .company-face-in-sack {
+        width: 90px;
+        height: 90px;
+        margin: 70px 0 0 0;
+
+        &:hover {
+          cursor: pointer;
+        }
+      }
+    }
+
+    /*******************
+    *   intro1.html    *
+    ********************/
 
     .daytrader-intro-title {
       color: $ku-dark-blue;
@@ -88,6 +116,7 @@
       font-size: 40px;
       padding: 20px 0 0 0;
     }
+
 
     .daytrader-intro-frontpage-img {
       background: url("/static/main_platform/otree/media/front-page-sackbackground.svg") no-repeat;
@@ -112,14 +141,14 @@
         &:hover {
           cursor: pointer;
           background: $ku-dark-green;
-           border-color: transparent;
-        }
+          border-color: transparent;
         }
       }
+    }
 
-  /*******************
-  *   intro2.html    *
-  ********************/
+    /*******************
+    *   intro2.html    *
+    ********************/
     .daytrader-sack {
       height: 175px;
       margin: 0 0 20px 0;
@@ -136,9 +165,9 @@
       }
     }
 
-  /*******************
-  *   intro3.html    *
-  ********************/
+    /*******************
+    *   intro3.html    *
+    ********************/
     .daytrader-intro-container-second {
       display: flex;
       align-items: flex-start;
@@ -155,7 +184,7 @@
       }
     }
 
-      .daytrader-future {
+    .daytrader-future {
       color: $ku-dark-blue;
       text-decoration: underline;
 
@@ -165,19 +194,19 @@
     }
 
 
-  /*******************
-  *   intro4.html    *
-  ********************/
+    /*******************
+    *   intro4.html    *
+    ********************/
 
-     .go-long-content {
+    .go-long-content {
       margin: 25px 0;
       width: 100%;
       display: none;
     }
 
-  /****************************
-    *  All day trader pages   *
-  *****************************/
+    /****************************
+      *  All day trader pages   *
+    *****************************/
     .daytrader-round-title {
       font-family: 'Noticia Text', serif;
       font-weight: bold;
@@ -194,7 +223,7 @@
     }
 
     .daytrader-round-info {
-      font-size: 16px;
+      font-size: 18px;
       font-family: "Patrick Hand", sans-serif;
       text-align: center;
 
@@ -229,16 +258,13 @@
         border-radius: 10px;
         border: 2px solid $ku-dark-blue;
 
-             &:hover {
+        &:hover {
           cursor: pointer;
           background-color: $ku-dark-green;
           border-color: transparent;
         }
       }
     }
-
-
-
 
 
     // Styling af det viste ansigt i teksten
@@ -254,6 +280,11 @@
       border-collapse: separate;
       border-spacing: 0 0.5em;
 
+         td {
+          padding: 15px 12px 15px 0;
+          vertical-align: middle;
+        }
+
       .border-corner-left {
         border-radius: 10px 0 0 10px;
       }
@@ -267,7 +298,7 @@
         color: white;
         font-weight: bold;
         font-family: "Patrick Hand", sans-serif;
-        font-size: 16px;
+        font-size: 13px;
         border-top: none !important;
         text-align: center;
         box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
@@ -278,6 +309,8 @@
         font-family: "Patrick Hand", sans-serif;
         border-top: none !important;
         text-align: center;
+
+
       }
 
       .daytrader-table-row {
@@ -293,7 +326,7 @@
       justify-content: center;
 
       .daytrader-form-info {
-        font-size: 14px;
+        font-size: 18px;
         font-family: "Patrick Hand", sans-serif;
         text-align: center;
       }
@@ -301,7 +334,7 @@
 
     // Container til input af antal aktier og næste knap
     .daytrader-submit-value {
-      display: flex;
+      display: none;
       flex-direction: column;
       justify-content: center;
 
@@ -310,16 +343,25 @@
         height: 40px;
         left: 550px;
         top: 1637px;
-
+        font-size: 20px;
+        color: black;
         border: 5px solid #41739D;
         box-sizing: border-box;
         border-radius: 30px;
       }
     }
 
-    .otree-btn-next {
+    .sack-btn {
+      margin: 0;
+      padding: 0;
+      width: 45px;
+      height: 45px;
 
+        &:hover {
+        cursor: pointer;
+        filter: contrast(1.75);
 
+      }
     }
 
     .field-choice_of_number_of_shares {
@@ -328,15 +370,9 @@
     }
 
 
-
     .reveal-face {
       width: 20px;
       height: 20px;
-
-        &:hover {
-          cursor: pointer;
-
-        }
     }
 
     .field-choice_of_trade {
@@ -349,7 +385,8 @@
         display: flex;
         flex-direction: row;
         margin-right: 0;
-        padding: 20px 0 20px 60px;
+        margin-bottom: 15px;
+        justify-content: left;
 
         .form-check-label {
           font-family: "Patrick Hand", sans-serif;
@@ -387,6 +424,8 @@
 
     .daytrader-info-choice {
       width: 100%;
+      display: flex;
+      justify-content: center;
     }
   }
 
@@ -410,7 +449,7 @@
   #timer-text {
     top: 0;
     left: 8px;
-    font-size: 17px;
+    font-size: 16px;
     display: flex;
     justify-content: center;
     padding-top: 2%;

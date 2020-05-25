@@ -19,49 +19,31 @@
     </style>
 
     <div class="daytrader-game-container">
-    <div class="daytrader-round-info">
-        <p>
-            Forestil dig, at du skal handle aktier i dette firma: <b>Hooli</b>
-        </p>
-        <p>***TO DO - SÆK MED TRE SPØRGSMÅLSTEGN - SPILLEREN SKAL KLIKKE PÅ ET AF DEM OG SE EN KED AF DET ANSIGT</p>
-            <img style="height:200px; width: 200px;" src="{% static 'main_platform/otree/media/sack-images/sack-empty.svg' %}" >
-        <p>Du må gerne trykke på et af ansigterne for at se om det er glad eller ked af det. Det er din private information om det firma.</p>
+        <div class="daytrader-round-info">
+            <p style="font-size: 30px;">
+                Forestil dig, at du skal handle aktier i dette firma: <b><u>Pied Piper</u></b>
+            </p>
+                <img style="height:200px; width: 200px;" src="{% static 'main_platform/otree/media/sack-images/sack-empty.svg' %}" >
+                <img style="height:100px; width: 100px;" src="{% static 'daytrader/media/unknown_face_daytrader.svg' %}">
+                <img style="height:100px; width: 100px;" src="{% static 'daytrader/media/unknown_face_daytrader.svg' %}">
+                <img style="height:100px; width: 100px;" src="{% static 'daytrader/media/unknown_face_daytrader.svg' %}">
+                <img style="height:100px; width: 100px;" src="{% static 'daytrader/media/sad_face_daytrader.png' %}">
+            <p>Du må gerne trykke på et af spørgsmålstegnene i sækken, for at se om det er glad eller ked af det. Det er din private information om det firma.</p>
+        </div>
 
-
-        <p>
-            ****TO DO -
-            Her en tabel over tidligere handler i firmaet. Du kan se, at de to første tradere også fik lov at se et ansigt inden de lavede deres handel.
-            Og du kan se hvor meget de gik short eller long i tabellen her: (minus er short, plus er long)”. (tabellen skal ikke KUNNE vise ansigterne endnu,
-            kun vise spørgsmålstegn)
-
-            Så skal der stå: ” De to forrige tradere har begge købt aktier i firmaet så du konkluderer at de begge har set glade ansigter. Selv har du set et surt
-            ansigt. Hvad vil du gøre? Vil du købe (gå long) eller sælge (gå short)? Det mest fornuftige ville være at gætte på, at firmaet er i god stand.
-            Altså køber du!
-
-            Du ved dog, at de to første tradere også fik lov at se et ansigt inden de lavede deres handel. Og du kan se
-            hvor meget de gik short eller long i tabellen her:
-
-
-        </p>
-        <p >
-            (Minus er <i class="short-modal-link">short</i>, plus er <i class="long-modal-link">long</i>)
-        </p>
-    </div>
-
-
-        <table class="table daytrader-table intro-table">
+        <table class="table daytrader-table">
             <tr class="table-corners">
                 <th class="daytrader-table-header border-corner-left">trader</th>
                 <th class="daytrader-table-header">pris</th>
-                <th class="daytrader-table-header">ansigt</th>
+                <th class="daytrader-table-header">privat info</th>
                 <th class="daytrader-table-header border-corner-right">handel</th>
             </tr>
             <tr class="daytrader-table-row">
                 <td class="daytrader-table-data"> {{ 1 }}.</td>
                 <td class="daytrader-table-data"> {{ 50|c }}</td>
-                <td class="daytrader-table-data" id="faceContainer1">
-                    <img src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" alt="unknown face"
-                         class="reveal-face" id="unknownFace1">
+                <td class="daytrader-table-data">
+                    <img src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" alt="spørgsmålstegn"
+                         class="reveal-face" >
                 </td>
                 <td class="daytrader-table-data"> +23 aktier</td>
             </tr>
@@ -69,57 +51,55 @@
                 <td class="daytrader-table-data"> {{ 2 }}.</td>
                 <td class="daytrader-table-data"> {{ 50.06|c }}</td>
                 <td class="daytrader-table-data" id="faceContainer2">
-                    <img src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" alt="unknown face"
+                    <img src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" alt="spørgsmålstegn"
                          class="reveal-face" id="unknownFace2">
                 </td>
                 <td class="daytrader-table-data"> +45 aktier</td>
             </tr>
         </table>
-        <div class="daytrader-intro-info-container">
-            <p class="daytrader-round-info">
-                Du er den tredje til at trade i dette firma, du kigger i sækken og ser at din private information om
-                firmaet
-                er et <img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"
-                           class="company-face">
-                ansigt.
-            </p>
-            <p class="daytrader-round-info">
-                Du har {{ player.wallet|c }} og aktieprisen er {{ player.price|c }}, hvad vil du gøre?
-            </p>
-        </div>
 
-        <div class="daytrader-intro-info-container">
-            <p class="daytrader-round-info">
-                De to forrige tradere har begge købt aktier i firmaet så du konkludere at de begge har haft
-                <img src="{% static 'daytrader/media/happy_face_daytrader.png' %}" alt="happy face"
-                     class="company-face">
-                ansigter.
-            </p>
-            <p class="daytrader-round-info">
-                Du tror derfor nu at firmaets tilstand er 2
-                <img src="{% static 'daytrader/media/happy_face_daytrader.png' %}" alt="happy face"
-                     class="company-face">
-                ansigter og 1 <img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"
-                                   class="company-face">
-                ansigt. Det ville derfor være fornuftigt at gå long.
-            </p>
-        </div>
+
+            <div class="daytrader-round-info">
+                <p>Foroven er en tabel over tidligere handler i firmaet. Du kan se, at de to første tradere også fik lov til at se et ansigt inde de lavede deres handel.</p>
+
+                <p> Yderligere kan du se hvor meget de gik short eller long i tabellen.
+                    <br>
+                    <small>(Minus er <i class="short-modal-link">short</i>, plus er <i class="long-modal-link">long</i>)</small>
+                </p>
+
+                <p>De to forrige tradere har begge købt aktier i firmaet. Derfor konluderer du at de begge har set    <img src="{% static 'daytrader/media/happy_face_daytrader.png' %}" alt="happy face"
+                     class="company-face">ansigter. Du har selv set et<img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"
+                           class="company-face">ansigt.</p>
+                <p><u>Hvad vil du gøre? Vil du <b>købe (gå long)</b> eller <b>sælge (gå short)</b>?</u></p>
+                <p>Det mest fornuftige ville være at gætte på, at firmaet er i god stand, og derfor køber du!</p>
+            </div>
+
 
      <div class="daytrader-next-btn-container">
             <button class="daytrader-next-btn">
                 Gå long!
             </button>
+
         </div>
-        <div id="shortModal" class="short-modal">
+
+       <div id="shortModal" class="short-modal">
             <div class="short-modal-content">
-                <p class="daytrader-round-info">At gå short betyder at man sælger aktier da man tror at prisen vil nedstige i værdi indenfor den nærmeste fremtid. </p>
+                  <div class="daytrader-round-info">
+                     <p>At gå short betyder at man låner aktier af sin broker for at sælge dem på markedet med det samme, fordi man tror at aktieprisen vil falde.</p>
+                    <p>Senere køber man aktierne igen og afleverer dem tilbage (man ”lukker sin position”). Forskellen på salgs- og købsprisen er ens fortjeneste (eller tab).</p>
+                </div>
             </div>
         </div>
         <div id="longModal" class="long-modal">
             <div class="long-modal-content">
-                <p class="daytrader-round-info">At gå long betyder at man køber aktier med håbet om at det købte stiger i værdi indenfor den nærmeste fremtid.</p>
+                <div class="daytrader-round-info">
+                     <p>At gå long betyder at man køber aktier fordi man tror at de vil stige i værdi.
+                    Senere sælger man aktierne igen (man ”lukker sin position”).</p>
+                    <p> Forskellen på købs- og salgsprisen er ens fortjeneste (eller tab).</p>
+                </div>
             </div>
         </div>
+
 
     </div>
 
@@ -129,38 +109,6 @@
         let longModal = document.getElementById("longModal");
         let shortLink = document.querySelector(".short-modal-link");
         let longLink = document.querySelector(".long-modal-link");
-        let unknownFace1 = document.getElementById("unknownFace1");
-        let unknownFace2 = document.getElementById("unknownFace2");
-     //   let goLong = document.getElementById("goLong");
-        let goLongContent = document.querySelector(".go-long-content");
-        let continueBtn = document.getElementById("continue");
-        let faceContainer1 = document.getElementById("faceContainer1");
-        let faceContainer2 = document.getElementById("faceContainer2");
-
-        unknownFace1.onclick = () => {
-            unknownFace1.style.display = "none";
-            unknownFace2.style.display = "none";
-            let introFace1 = document.createElement("img");
-            introFace1.src = "{% static 'daytrader/media/happy_face_daytrader.png' %}";
-            introFace1.className = "company-face";
-            faceContainer1.appendChild(introFace1);
-        }
-
-        unknownFace2.onclick = () => {
-            unknownFace1.style.display = "none";
-            unknownFace2.style.display = "none";
-            let introFace2 = document.createElement("img");
-            introFace2.src = "{% static 'daytrader/media/happy_face_daytrader.png' %}";
-            introFace2.className = "company-face";
-            faceContainer2.appendChild(introFace2);
-        }
-
-     /**   goLong.onclick = event => {
-            event.preventDefault();
-            goLongContent.style.display = "block";
-            continueBtn.style.display = "block";
-        }
-
 
         shortLink.onclick = function () {
             shortModal.style.display = "block";
@@ -177,8 +125,5 @@
                 longModal.style.display = "none";
             }
         }
-    **/
-
-
     </script>
 {% endblock %}
