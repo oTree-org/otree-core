@@ -27,7 +27,7 @@
             I tabellen kan du se, hvordan det gik.
         </p>
 
-        <table class="table daytrader-table">
+        <table class="table daytrader-table table-responsive">
             <tr class="table-corners">
                 <th class="daytrader-table-header border-corner-left"> firma</th>
                 <th class="daytrader-table-header"> tilstand</th>
@@ -74,34 +74,40 @@
                     tableDataCompany.textContent = company[i];
                     resultTableRow.appendChild(tableDataCompany);
 
+                    let sackContainer = document.createElement("div");
+                    sackContainer.className = "daytrader-sack-button-container";
+                    sackContainer.style.display = "flex";
+                    sackContainer.style.alignItems = "center";
+
                     let companyState = JSON.parse(state[i]);
                     let tableDataState = document.createElement("td");
+                    tableDataState.setAttribute("align", "center");
 
                     for (let j = 0; j < companyState.length; j++) {
                         let happyFace = document.createElement("img");
                         happyFace.src = "{% static 'daytrader/media/happy_face_daytrader.png' %}"
-                        happyFace.className = "reveal-face"
+                        happyFace.className = `company-face result-table-face-${j + 1}`;
                         let sadFace = document.createElement("img");
                         sadFace.src = "{% static 'daytrader/media/sad_face_daytrader.png' %}"
-                        sadFace.className = "reveal-face"
-                        tableDataState.className = "daytrader-table-data";
+                        sadFace.className = `company-face result-table-face-${j + 1}`;
                         if (companyState[j] === true) {
-                            tableDataState.appendChild(happyFace);
+                            sackContainer.appendChild(happyFace);
                         }
                         if (companyState[j] === false) {
-                            tableDataState.appendChild(sadFace);
+                            sackContainer.appendChild(sadFace);
                         }
                     }
 
+                    tableDataState.appendChild(sackContainer)
                     resultTableRow.appendChild(tableDataState);
                     table.appendChild(resultTableRow);
 
 
                     let tableDataChoice = document.createElement("td");
                     tableDataChoice.className = "daytrader-table-data";
-                    if(choices[i] === true) {
+                    if (choices[i] === true) {
                         tableDataChoice.textContent = "+" + choices[i];
-                    } else if(choices[i] === false) {
+                    } else if (choices[i] === false) {
                         tableDataChoice.textContent = "-" + choices[i];
                     } else {
                         tableDataChoice.textContent = choices[i];
@@ -164,6 +170,8 @@
         <p class="daytrader-round-info">
             Du har tjent i alt {{ player.payoff }}.
             Gebyrer og kurtage ({{ kurtage_pct }}% af handelsværdi) beløber sig til {{ kurtage }}.
+        </p>
+        <p class="daytrader-round-info">
             Din samlede fortjeneste er {{ ialt }}.
         </p>
         <p class="daytrader-round-info">

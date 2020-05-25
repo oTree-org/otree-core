@@ -33,7 +33,7 @@
 
 
 
-    .future-modal, .short-modal, .long-modal, .info-cascade-modal {
+    .future-modal, .short-modal, .long-modal, .info-cascade-modal, .lemming-modal {
       display: none;
       position: fixed;
       z-index: 1;
@@ -45,7 +45,7 @@
       background-color: rgb(0, 0, 0);
       background-color: rgba(0, 0, 0, 0.4);
 
-      .future-modal-content, .short-modal-content, .long-modal-content, .info-cascade-modal-content {
+      .future-modal-content, .short-modal-content, .long-modal-content, .info-cascade-modal-content, .lemminge-modal-content {
         background-color: #fefefe;
         margin: 15% auto;
         padding: 20px;
@@ -57,7 +57,7 @@
       }
     }
 
-    .daytrader-future, .short-modal-link, .long-modal-link, .info-cascade-link {
+    .daytrader-future, .short-modal-link, .long-modal-link, .info-cascade-link, .info-lemminge-link {
       color: $ku-dark-blue;
       text-decoration: underline;
 
@@ -76,9 +76,9 @@
     }
 
       .daytrader-sack-button-container {
-        width: 100%;
-        height: 200px;
-        display: flex;
+        width: 80px;
+        height: 110px;
+        display: none;
         align-items: center;
         justify-content: center;
         background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
@@ -92,10 +92,14 @@
         }
       }
 
+        .company-face {
+          height: 20px;
+          width: 20px;
+        }
+
       .company-face-in-sack {
         width: 90px;
         height: 90px;
-        margin: 70px 0 0 0;
 
         &:hover {
           cursor: pointer;
@@ -654,5 +658,21 @@
     }
   }
 
+  .report-info {
+    .admin-sack-button-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
+      margin: 0 0 15px 0;
 
+      .daytrader-sack-buttons {
+        margin: 65px 0 0 0;
+
+        &:hover {
+          cursor: pointer;
+        }
+      }
+    }
+  }
 }
