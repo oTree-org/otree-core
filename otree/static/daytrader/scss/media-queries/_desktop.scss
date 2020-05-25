@@ -11,6 +11,7 @@
     display: none
   }
 
+
   /******************************
   *   Play.html info styling    *
   *******************************/
@@ -26,6 +27,33 @@
     background-color: white;
     padding: 40px 7.5%;
 
+    .daytrader-sack-button-container {
+      width: 223px;
+      height: 280px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .daytrader-sack-buttons {
+        margin: 100px 0 0 4px;
+      }
+
+      .company-face-in-sack {
+        width: 150px;
+        height: 150px;
+        margin: 100px 0 0 0;
+      }
+    }
+
+    .sack-btn {
+      margin: 0;
+      padding: 0;
+      width: 60px;
+      height: 60px;
+
+
+    }
+
     .content-container {
       width: 70%;
     }
@@ -38,9 +66,9 @@
       margin: 10px 0;
     }
 
-  /**********************
-  *    intro1.html      *
-  ***********************/
+    /**********************
+    *    intro1.html      *
+    ***********************/
 
     .daytrader-intro-title {
       font-size: 120px;
@@ -62,16 +90,16 @@
     }
 
 
-  /*******************
-  *   intro2.html    *
-  ********************/
+    /*******************
+    *   intro2.html    *
+    ********************/
     .daytrader-sack {
       height: 300px;
       padding-bottom: 20px;
     }
 
     .daytrader-intro-container-first {
-      display:flex;
+      display: flex;
       justify-content: center;
       flex-direction: row;
 
@@ -83,11 +111,9 @@
     }
 
 
-
-
-  /*******************
-  *   intro3.html    *
-  ********************/
+    /*******************
+    *   intro3.html    *
+    ********************/
     .daytrader-intro-container-second {
       display: flex;
       margin: 0;
@@ -104,9 +130,9 @@
       }
     }
 
-  /*******************
-  *   intro4.html    *
-  ********************/
+    /*******************
+    *   intro4.html    *
+    ********************/
 
     .go-long-content {
       margin: 50px 0;
@@ -119,11 +145,9 @@
     }
 
 
-
-
-  /****************************
-    *  All day trader pages   *
-  *****************************/
+    /****************************
+      *  All day trader pages   *
+    *****************************/
     .daytrader-round-title {
       font-size: 50px;
       width: 100%;
@@ -132,13 +156,12 @@
 
     .daytrader-round-info {
       font-size: 25px;
-      width: 70%;
+      width: 90%;
     }
 
     .daytrader-next-btn-container {
-        display: flex;
-        justify-content: center;
-
+      display: flex;
+      justify-content: center;
 
 
     }
@@ -196,14 +219,14 @@
       justify-content: center;
 
       .daytrader-form-info {
-        font-size: 30px;
+        font-size: 25px;
         font-family: "Patrick Hand", sans-serif;
       }
     }
 
     // Container til input af antal aktier og næste knap
     .daytrader-submit-value {
-      display: flex;
+      display: none;
       flex-direction: column;
       justify-content: center;
 
@@ -212,7 +235,8 @@
         height: 50px;
         left: 550px;
         top: 1637px;
-
+        font-size: 23px;
+        color: black;
         border: 5px solid #41739D;
         box-sizing: border-box;
         border-radius: 30px;
@@ -241,30 +265,27 @@
     }
 
 
-
     .reveal-face {
-       width: 40px;
-       height: 40px;
+      width: 40px;
+      height: 40px;
     }
-
 
 
     .field-choice_of_trade {
       margin: 0;
       display: flex;
       justify-content: center;
-      padding-left: 90px;
 
       .form-check {
         display: flex;
         flex-direction: row;
         margin-right: 0;
-        padding-right: 60px;
 
         .form-check-label {
           font-family: "Patrick Hand", sans-serif;
           font-size: 24px;
           text-transform: capitalize;
+          margin-left: 50px;
         }
 
         input.form-check-input[type="radio"] {
@@ -274,14 +295,13 @@
           border-radius: 50%;
           outline: none;
           border: 3px solid $ku-dark-blue;
+          position: absolute;
 
           &:before {
             content: '';
             display: block;
             width: 60%;
             height: 60%;
-            margin: 20% auto;
-            border-radius: 50%;
           }
 
           &:checked:before {
@@ -333,8 +353,7 @@
   #timer-text {
     top: 0;
     left: 8px;
-    font-size: 35px;
-
+    font-size: 22px;
     padding-top: 2%;
     font-family: "Patrick Hand", cursive;
 

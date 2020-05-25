@@ -157,7 +157,8 @@
         height: 40px;
         left: 550px;
         top: 1637px;
-
+        font-size: 18px;
+        color: black;
         border: 5px solid #41739D;
         box-sizing: border-box;
         border-radius: 30px;
@@ -196,10 +197,6 @@
     .reveal-face {
       width: 30px;
       height: 30px;
-
-      &:hover {
-        cursor: pointer;
-      }
     }
 
     .field-choice_of_trade {
@@ -273,7 +270,7 @@
   #timer-text {
     top: 0;
     left: 8px;
-    font-size: 22px;
+    font-size: 16px;
     display: flex;
     justify-content: center;
     padding-top: 2%;
