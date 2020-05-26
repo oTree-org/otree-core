@@ -124,9 +124,11 @@ class Subsession(BaseSubsession):
         states = self.session.vars['company_states']
         choices = [[self.session.vars['{}{}'.format(name, r)][3]
                     for r in range(1, tmp0)] for name in names]
+        drawn_faces = [[self.session.vars['{}{}'.format(name, r)][2]
+                    for r in range(1, tmp0)] for name in names]
         round_list = [r for r in range(1, tmp0 + 1)]
 
-        return dict(company=list(zip(names, states, choices)), round_list=round_list, tilstand=states)
+        return dict(company=list(zip(names, states, choices, drawn_faces)), round_list=round_list, faces=drawn_faces)
 
 
 class Group(BaseGroup):

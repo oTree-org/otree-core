@@ -84,10 +84,12 @@ class Choose(Page):
             states.append(player.drawn_face)
 
         data = zip(rounds, prices, choices, deals, states)
+        game_rounds = Constants.num_rounds
 
         return {
             'data': data,
-            'rounds': rounds
+            'rounds': rounds,
+            'runder': game_rounds
         }
 
 
