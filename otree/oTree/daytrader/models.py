@@ -100,6 +100,23 @@ class Subsession(BaseSubsession):
         plt.rc('axes', prop_cycle=(cycler(color=graph_colors)))
         fig = plt.figure(figsize=(4, 3))
         ax = plt.axes()
+
+        number_of_rounds = sum([1 if '{}{}'.format(self.session.vars['company_names'][0], r) in self.session.vars else 0 for r in range(1, Constants.num_rounds + 2)])
+        number_of_companies = len(self.session.vars['company_names'])
+
+        company_data = {}
+        price_table = []
+
+        for idx, name in enumerate(self.session.vars['company_names']):
+            company_data[name] = {}
+            prices = [self.session.vars['{}{}'.format(name, r)][0]
+                      for r in range(1, number_of_rounds)]
+            
+            company_data[name]['stock_price'] = prices
+            company_data[name]['state'] = self.session.vars['company_states'][idx]
+
+            price_table += [{'label': name, 'prices': [{'round': i + 1, 'price': float(p)} for i, p in enumerate(prices)]}]
+
         for company_name in self.session.vars['company_names']:
             # find the number of rounds played by looking in the dict and store
             # in tmp0:
@@ -126,7 +143,12 @@ class Subsession(BaseSubsession):
                     for r in range(1, tmp0)] for name in names]
         round_list = [r for r in range(1, tmp0 + 1)]
 
-        return dict(company=list(zip(names, states, choices)), round_list=round_list, tilstand=states)
+        return {
+            'company': list(zip(names, states, choices)),
+            'round_list': round_list,
+            'tilstand': states,
+            'price_table': json.dumps(price_table)
+            }
 
 
 class Group(BaseGroup):

@@ -24,9 +24,23 @@
             display: none;
         }
 
+        path { 
+            stroke: steelblue;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: grey;
+            stroke-width: 1;
+            shape-rendering: crispEdges;
+        }
+
     </style>
 
-
+    <div id="d3Container"></div>
     <embed src="{% static 'daytrader/test.png' %}" class="graph-image"/>
 
     <p class="report-description">Nedenunder kan du se en tabel der viser firmaernes tilstande og spillets forløb</p>
@@ -92,4 +106,55 @@
     for (let item = 0; item < tableHeaders.length; item++) {
         tableHeaders[tableHeaders.length - 1].style.borderRadius = "0 10px 10px 0";
     }
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+<script>
+    const colours = [
+        'steelblue',
+
+    ];
+
+    $(document).ready(function () {
+        const margin = {top: 30, right: 40, bottom: 30, left: 50},
+          width = 600 - margin.left - margin.right,  
+          height = 270 - margin.top - margin.bottom;
+    
+    const svg = d3.select('#d3Container').append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    const companies = JSON.parse('{{ price_table | safe }}')
+    const rounds = companies[0].prices.length
+
+    const minPrice = d3.min(companies, function (company) { return d3.min(company.prices, function (d) { return d.price }) })
+    const maxPrice = d3.max(companies, function (company) { return d3.max(company.prices, function (d) { return d.price }) })
+    const x = d3.scale.linear().domain([1, rounds]).range([0, width]);
+    const y = d3.scale.linear().domain([minPrice*0.99, maxPrice*1.01]).range([height, 0]);
+
+    const line = d3.svg.line()
+        .x(function(d) { return x(d.round); })
+        .y(function(d) { return y(d.price); });
+
+    var i;
+    for (i = 0; i < companies.length; i++) {
+        svg.append("path")
+                .attr("class", "line")
+                .attr("d", line(companies[i].prices))
+                .on('mouseenter')
+    }
+
+    const xAxis = d3.svg.axis().scale(x)
+        .orient("bottom").ticks(rounds);
+
+    const yAxis = d3.svg.axis().scale(y)
+        .orient("left").ticks(10);
+
+    svg.append("g").attr("transform", "translate(0," + height + ")").attr("class", "x axis").call(xAxis);
+    svg.append("g").attr("class", "y axis").call(yAxis);
+
+    })
+
 </script>
