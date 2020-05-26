@@ -488,15 +488,15 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
 
         field_names = otree.export.get_field_names_for_live_update(Participant)
         display_names = {
-            '_id_in_session': 'ID in session',
-            'code': 'Code',
+            '_id_in_session': 'Spiller ID',
+            'code': 'Kode',
             'label': 'Label',
-            '_current_page': 'Page',
-            '_current_app_name': 'App',
-            '_round_number': 'Round',
-            '_current_page_name': 'Page name',
+            '_current_page': 'Side',
+            '_current_app_name': 'Spil',
+            '_round_number': 'Runde',
+            '_current_page_name': 'Side navn',
             'status': 'Status',
-            '_last_page_timestamp': 'Time on page',
+            '_last_page_timestamp': 'Tid på siden',
         }
 
         callable_fields = {'status', '_id_in_session', '_current_page'}
